@@ -282,7 +282,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     bStdCutsDefined = kTRUE;
 
     trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
-    trackCuts->SetRequireTPCRefit(kTRUE);
+    // trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetMinNClustersTPC(70);
 
     trackCuts->SetEtaRange(-0.9,0.9);
@@ -298,7 +298,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     bStdCutsDefined = kTRUE;
 
     trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
-    trackCuts->SetRequireTPCRefit(kTRUE);
+    //  trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetMinNClustersTPC(0);
     trackCuts->SetMinNCrossedRowsTPC(120);
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off  

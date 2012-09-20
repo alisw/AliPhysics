@@ -59,7 +59,7 @@ void AddTaskPWG4HighPtSpectra2011(char *prodType = "LHC10h", Bool_t isPbPb=kTRUE
   AliPWG4HighPtSpectra *taskSpectra05cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlag,bSelHijingParticles);
   AliPWG4HighPtSpectra *taskSpectra74cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlag,bSelHijingParticles);
   AliPWG4HighPtSpectra *taskSpectra75cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlag,bSelHijingParticles);
-  AliPWG4HighPtSpectra *taskSpectra20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,iPhysicsSelectionFlag,bSelHijingParticles);
+  AliPWG4HighPtSpectra *taskSpectra40cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlag,bSelHijingParticles);
 
   AliPWG4HighPtSpectra *taskSpectraEMCJE00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
   AliPWG4HighPtSpectra *taskSpectraEMCJE01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
@@ -69,7 +69,7 @@ void AddTaskPWG4HighPtSpectra2011(char *prodType = "LHC10h", Bool_t isPbPb=kTRUE
   AliPWG4HighPtSpectra *taskSpectraEMCJE05cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
   AliPWG4HighPtSpectra *taskSpectraEMCJE74cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
   AliPWG4HighPtSpectra *taskSpectraEMCJE75cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
+  AliPWG4HighPtSpectra *taskSpectraEMCJE40cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
 
 
   if(isPbPb) {
@@ -83,7 +83,7 @@ void AddTaskPWG4HighPtSpectra2011(char *prodType = "LHC10h", Bool_t isPbPb=kTRUE
       AliPWG4HighPtSpectra *taskSpectra05 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlag,bSelHijingParticles);
       AliPWG4HighPtSpectra *taskSpectra74 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlag,bSelHijingParticles);
       AliPWG4HighPtSpectra *taskSpectra75 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlag,bSelHijingParticles);
-      AliPWG4HighPtSpectra *taskSpectra20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,iPhysicsSelectionFlag,bSelHijingParticles);
+      AliPWG4HighPtSpectra *taskSpectra40 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlag,bSelHijingParticles);
 
       AliPWG4HighPtSpectra *taskSpectraEMCJE00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
       AliPWG4HighPtSpectra *taskSpectraEMCJE01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
@@ -93,7 +93,7 @@ void AddTaskPWG4HighPtSpectra2011(char *prodType = "LHC10h", Bool_t isPbPb=kTRUE
       AliPWG4HighPtSpectra *taskSpectraEMCJE05 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
       AliPWG4HighPtSpectra *taskSpectraEMCJE74 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
       AliPWG4HighPtSpectra *taskSpectraEMCJE75 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
+      AliPWG4HighPtSpectra *taskSpectraEMCJE40 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles);
 
     }
 

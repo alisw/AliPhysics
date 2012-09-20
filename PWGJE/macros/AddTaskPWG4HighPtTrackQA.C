@@ -143,7 +143,6 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   UInt_t iPhysicsSelectionFlag = AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral;
   UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE;
   
-  cout << "Add cent10 AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral" << endl;
   AliPWG4HighPtTrackQA *taskTrackQA00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA70cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlag);
@@ -152,9 +151,8 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA74cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlag);
-  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0,iPhysicsSelectionFlag);
+  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlag);
 
-  cout << "Add cent10 AliVEvent::kEMCEJE" << endl;
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE70cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlagEMCEJE);
@@ -163,11 +161,11 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE74cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
-  AliPWG4HighPtTrackQA *taskTrackQAEMCJE20cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0,iPhysicsSelectionFlagEMCEJE);
+  AliPWG4HighPtTrackQA *taskTrackQAEMCJE40cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlagEMCEJE);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
-      cout << "Add Cent " << cent << endl;
+
       AliPWG4HighPtTrackQA *taskTrackQA00 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA01 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA70 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlag);
@@ -176,7 +174,7 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
       AliPWG4HighPtTrackQA *taskTrackQA05 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA74 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA75 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlag);
-      AliPWG4HighPtTrackQA *taskTrackQA20 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0,iPhysicsSelectionFlag);
+      AliPWG4HighPtTrackQA *taskTrackQA40 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlag);
 
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE00 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE01 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagEMCEJE);
@@ -186,7 +184,8 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE05 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE74 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE75 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
-      AliPWG4HighPtTrackQA *taskTrackQAEMCJE20 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0,iPhysicsSelectionFlagEMCEJE);
+      AliPWG4HighPtTrackQA *taskTrackQAEMCJE40 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlagEMCEJE);
+
     }
   }
 
