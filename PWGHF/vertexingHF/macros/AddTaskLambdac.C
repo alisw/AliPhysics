@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
-					 Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE)
+				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, TString postname="")
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -57,7 +57,7 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassLambdac";
 
-  TString finDirname="First_PbPb";
+  TString finDirname="pp";
   TString inname = "cinputLc";
   TString outname = "coutputLc";
   TString cutsname = "coutputLcCuts";
@@ -77,17 +77,15 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
   aPrioriname += finDirname.Data();
   multiplicityname += finDirname.Data();
 
-
-  TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
-  inname += centr;
-  outname += centr;
-  cutsname += centr;
-  normname += centr;
-  ntuplename += centr;
-  nev2 += centr;
-  outname2 += centr;
-  aPrioriname += centr;
-  multiplicityname += centr;
+  inname +=  postname.Data();
+  outname +=  postname.Data();
+  cutsname +=  postname.Data();
+  normname += postname.Data();
+  ntuplename +=  postname.Data();
+  nev2 +=  postname.Data();
+  outname2 +=  postname.Data();
+  aPrioriname +=  postname.Data();
+  multiplicityname +=  postname.Data();
 
 
   AliAnalysisDataContainer *cinputLambdac = mgr->CreateContainer(inname,TChain::Class(),
