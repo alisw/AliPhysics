@@ -738,9 +738,14 @@ void AliEMCALTenderSupply::ProcessEvent()
     // CLUSTER ENERGY ---------------------------------------------
     // does process local cell recalibration energy and time without replacing
     // the global cell values, in case of no cell recalib done yet
-    if( fReCalibCluster ) 
+    if( fReCalibCluster ) {
       fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, clust, cells);
-
+      if (clust->E() < 1e-9) {
+        delete clusArr->RemoveAt(icluster);
+        continue;
+      }
+    }
+    
     // CLUSTER POSITION -------------------------------------------
     // does process local cell energy recalibration, if enabled and cells
     // not calibrated yet
