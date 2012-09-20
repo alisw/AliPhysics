@@ -6001,7 +6001,166 @@ void GetDistAndFlow(void* hVoid, void* hMixedVoid, TH1** hist, Float_t* v2, Int_
 	vn[i-1] = vTrig[i-1] * vAssoc[i-1];
   }
 }
- 
+
+void CompareNtrDist(const char* fileName1, const char* fileNameCentrality1)
+{
+  loadlibs();
+  Int_t step = 8;
+
+  TCanvas *c1 = new TCanvas("c1", "", 1400, 1100);
+  TCanvas *c2 = new TCanvas("c2", "", 1400, 1100);
+
+  dndpt_central = ReadHepdata("/home/mkofarag/work/Project/2010/raa_dndpt_central.txt", kFALSE, 3);
+  AliUEHistograms* h1 = (AliUEHistograms*) GetUEHistogram(fileName1);
+  AliUEHistograms* hc1 = (AliUEHistograms*) GetUEHistogram(fileNameCentrality1);
+
+  h1->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + 0, -0.01 + 5);
+  ptDist1 = h1->GetUEHist(2)->GetEventHist()->Project(step, 0);
+  ptDist1->Scale(1.0/1.8/TMath::TwoPi()/hc1->GetCentralityDistribution()->Integral(hc1->GetCentralityDistribution()->FindBin(0.01), hc1->GetCentralityDistribution()->FindBin(4.99)));
+  for (Int_t i=1; i<=ptDist1->GetNbinsX(); i++)
+  {
+    ptDist1->SetBinContent(i, ptDist1->GetBinContent(i)/ptDist1->GetBinWidth(i));
+  }
+  for (Int_t i=0; i<dndpt_central->GetN();i++)
+  {
+    Double_t x = dndpt_central->GetX()[i];
+    Double_t y = dndpt_central->GetY()[i]*x;
+    dndpt_central->SetPoint(i,x,y);
+  }
+  ptDist2 = (TH1*) ptDist1->Clone("ptDist2");
+  ptDist2->Reset();
+  for (Int_t i=0; i<dndpt_central->GetN(); i++)
+  {
+    Float_t width = 0;
+    if (i > 0)
+      width += (dndpt_central->GetX()[i] - dndpt_central->GetX()[i-1]) / 2;
+    if (i < dndpt_central->GetN()-1)
+      width += (dndpt_central->GetX()[i+1] - dndpt_central->GetX()[i]) / 2;
+    if (i == 0 || i == dndpt_central->GetN() - 1)
+      width *= 2;
+    ptDist2->Fill(dndpt_central->GetX()[i],dndpt_central->GetY()[i]*width);
+  }
+  for (Int_t i=1; i<=ptDist2->GetNbinsX(); i++)
+  {
+    ptDist2->SetBinContent(i, ptDist2->GetBinContent(i)/ptDist2->GetBinWidth(i));
+    ptDist2->SetBinError(i,0);
+  }
+/*  for (Int_t i=1; i<=ptDist1->GetNbinsX(); i++)
+  {
+    ptDist1->SetBinError(i,0);
+  }
+*/
+  c1->cd();
+  c1->SetLogy();
+  ptDist1->SetMarkerStyle(3);
+  ptDist2->SetMarkerStyle(2);
+  ptDist1->SetMarkerColor(2);
+  ptDist2->SetMarkerColor(3);
+  ptDist1->SetLineColor(2);
+  ptDist2->SetLineColor(3);
+  ptDist1->DrawCopy("EP");
+  ptDist2->Draw("EPSAME");
+  ptDist1->Divide(ptDist1,ptDist2);
+  c2->cd();
+  ptDist1->Draw("EP");
+
+}
+
+void FitNtrDist(const char* fileName1, const char* fileNameCentrality1)
+{
+  loadlibs();
+  Int_t step = 8;
+
+  TCanvas *c1 = new TCanvas("c1", "", 1400, 1100);
+  TCanvas *c2 = new TCanvas("c2", "", 1400, 1100);
+  TCanvas *c3 = new TCanvas("c3", "", 1400, 1100);
+
+  dndpt_central = ReadHepdata("/home/mkofarag/work/Project/2010/raa_dndpt_central.txt", kFALSE, 3);
+  TF1* func1 = new TF1("func1", "[0]*x/TMath::Sqrt(0.1396*0.1396+x*x)*TMath::Power(1+x/[1],-1*[2])",0.5,5);
+  TF1* func2 = new TF1("func2", "[0]*TMath::Power(x,-1*[1])",5,20);
+
+  func1->SetParLimits(0, 2000, 5000);
+  func1->SetParLimits(1, 1, 6);
+  func1->SetParLimits(2, 7, 20);
+  dndpt_central->Fit(func1,"RB","",0.5,5);
+
+  func2->SetParLimits(0, 0, 1000);
+  func2->SetParLimits(1, 4, 8);
+  dndpt_central->Fit(func2,"RB","",5,20);
+
+  c1->cd();
+  c1->SetLogy();
+  c1->SetLogx();
+  dndpt_central->Draw("AP");
+  func1->Draw("SAME");
+  func2->Draw("SAME");
+
+  TF1* func3 = new TF1("func3", "[0]*x*x/TMath::Sqrt(0.1396*0.1396+x*x)*TMath::Power(1+x/[1],-1*[2])",0.5,5);
+  TF1* func4 = new TF1("func4", "[0]*x*TMath::Power(x,-1*[1])",5,20);
+
+  func3->FixParameter(0,func1->GetParameter(0));
+  func3->FixParameter(1,func1->GetParameter(1));
+  func3->FixParameter(2,func1->GetParameter(2));
+  func4->FixParameter(0,func2->GetParameter(0));
+  func4->FixParameter(1,func2->GetParameter(1));
+
+  AliUEHistograms* h1 = (AliUEHistograms*) GetUEHistogram(fileName1);
+  AliUEHistograms* hc1 = (AliUEHistograms*) GetUEHistogram(fileNameCentrality1);
+
+  h1->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + 0, -0.01 + 5);
+  ptDist1 = h1->GetUEHist(2)->GetEventHist()->Project(step, 0);
+  ptDist1->Scale(1.0/1.8/TMath::TwoPi()/hc1->GetCentralityDistribution()->Integral(hc1->GetCentralityDistribution()->FindBin(0.01), hc1->GetCentralityDistribution()->FindBin(4.99)));
+  ptDist2 = (TH1*) ptDist1->Clone("ptDist2");
+  ptDist2->Reset();
+  for (Int_t i=1; i<=ptDist1->GetNbinsX(); i++)
+  {
+    ptDist1->SetBinContent(i, ptDist1->GetBinContent(i)/ptDist1->GetBinWidth(i));
+    if (ptDist1->GetBinLowEdge(i)<5) ptDist2->SetBinContent(i, func3->Integral(ptDist1->GetBinLowEdge(i),ptDist1->GetBinLowEdge(i+1)));
+    else ptDist2->SetBinContent(i, func4->Integral(ptDist1->GetBinLowEdge(i),ptDist1->GetBinLowEdge(i+1)));
+  }
+
+  for (Int_t i=1; i<=ptDist2->GetNbinsX(); i++)
+  {
+    ptDist2->SetBinContent(i, ptDist2->GetBinContent(i)/ptDist2->GetBinWidth(i));
+  }
+  c2->cd();
+  c2->SetLogy();
+  ptDist1->SetMarkerStyle(3);
+  ptDist2->SetMarkerStyle(2);
+  ptDist1->SetMarkerColor(2);
+  ptDist2->SetMarkerColor(3);
+  ptDist1->SetLineColor(2);
+  ptDist2->SetLineColor(3);
+  ptDist1->DrawCopy("EP");
+  ptDist2->Draw("EPSAME");  
+
+  ptDist1->Divide(ptDist1,ptDist2);
+  c3->cd();
+  ptDist1->Draw("EP");
+}
+
+void DrawNtrDist(const char* fileName1, const char* fileName2, const char* fileNameCentrality1, const char* fileNameCentrality2)
+{
+  loadlibs();
+
+  Int_t step = 8;
+
+  new TCanvas("c", "", 1400, 1100);
+  AliUEHistograms* h1 = (AliUEHistograms*) GetUEHistogram(fileName1);
+  AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileName2);
+  AliUEHistograms* hc1 = (AliUEHistograms*) GetUEHistogram(fileNameCentrality1);
+  AliUEHistograms* hc2 = (AliUEHistograms*) GetUEHistogram(fileNameCentrality2);
+  h1->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + 0, -0.01 + 10);
+  h2->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + 0, -0.01 + 10);
+  ptDist1 = h1->GetUEHist(2)->GetEventHist()->Project(step, 0);
+  ptDist2 = h2->GetUEHist(2)->GetEventHist()->Project(step, 0);
+  ptDist1->Scale(1/hc1->GetCentralityDistribution()->Integral(hc1->GetCentralityDistribution()->FindBin(0.01), hc1->GetCentralityDistribution()->FindBin(9.99)));
+  ptDist2->Scale(1/hc2->GetCentralityDistribution()->Integral(hc2->GetCentralityDistribution()->FindBin(0.01), hc2->GetCentralityDistribution()->FindBin(9.99)));
+  ptDist1->Divide(ptDist1,ptDist2);
+  ptDist1->SetMarkerStyle(3);
+  ptDist1->Draw();
+}
+
 void GetSumOfRatios(void* hVoid, void* hMixedVoid, TH1** hist, Int_t step, Int_t centralityBegin, Int_t centralityEnd, Float_t ptBegin, Float_t ptEnd, Bool_t useVertexBins)
 {
   h = (AliUEHistograms*) hVoid;
@@ -6635,7 +6794,35 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  else
+  if (0) 
+  {
+    maxLeadingPt = 1;
+    maxAssocPt = 3;
+    Float_t leadingPtArr[] = { 2.0, 3.0};
+    Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 2.0};
+  }
+  if (0) //Comparison to STAR (p_T,t)
+  {
+    maxLeadingPt = 4;
+    maxAssocPt = 3;
+    Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 5.0, 6.0};
+    Float_t assocPtArr[] =     {0.15, 0.5, 1.5, 6.0};
+  }
+  if (0) //Comparison to STAR (p_T,a)
+  {
+    maxLeadingPt = 1;
+    maxAssocPt = 6;
+    Float_t leadingPtArr[] = { 3.0, 6.0};
+    Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0};
+  }
+  if (0) 
+  {
+    maxLeadingPt = 4;
+    maxAssocPt = 4;
+    Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0 };
+    Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 1.5, 2.0};
+  }
+  if (0)
   {
     Float_t leadingPtArr[] = { 0.15, 10.0 };
     Float_t assocPtArr[] =     { 0.15, 10.0 };
@@ -10714,6 +10901,22 @@ void PlotQA(const char* fileName)
   c->SaveAs(Form("qa/%s", c->GetTitle()));
 }
 
+void GetEventNumber(const char* fileName)
+{
+  loadlibs();
+  
+  new TCanvas("c1", "", 800, 600);
+ 
+  Int_t nEvent = 0;
+
+  TFile::Open(fileName);
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  centr = h->GetCentralityDistribution();
+  nEvent = h->GetCentralityDistribution()->Integral(h->GetCentralityDistribution()->FindBin(0.01), h->GetCentralityDistribution()->FindBin(59.99));
+
+  cout << "Number of events: " <<  nEvent << endl;
+  centr->Draw("HIST");
+}
 void CompareStepsOnePlot(const char* fileName, Int_t caseId)
 {
   loadlibs();
@@ -11383,6 +11586,166 @@ void PlotCorrections(const char* fileName)
     hist->Draw("COLZ");
 }
  
+void PlotFake(const char* fileName, const char* fileName2 = 0)
+{
+  loadlibs();
+  
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  if (fileName2) AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileName2); 
+ 
+  TLegend* legend = new TLegend(0.7, 0.8, 0.95, 0.95);
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.03);
+  const char* title[] = {"0-20%", "20-40%", "40-60%", "60-80%", "80-100%"};
+  TLegend* legend2 = new TLegend(0.7, 0.8, 0.95, 0.95);
+  legend2->SetFillColor(0);
+  legend2->SetTextSize(0.03);
+
+  c1 = new TCanvas("c1", "Ratio of fakes", 1200, 800);
+  c1->Divide(2, 3);
+  c2 = new TCanvas("c2", "pTrec vs pT", 1200, 800);
+  c2->Divide(2, 3);
+  c3 = new TCanvas("c3", "pTrec pT ratio", 1200, 800);
+  c3->Divide(2, 3);
+
+  h->SetEtaRange(-0.79, 0.79);
+  
+  for (Int_t i=0; i<5; i++)
+  {
+    h->GetUEHist(2)->SetCentralityRange(100.0/5*i + 0.1, 100.0/5*(i+1) - 0.1);
+    c1->cd(i+1);
+    h->GetUEHist(2)->GetFakeRate()->DrawClone("COLZ");
+    c1->cd(6);
+    proj = h->GetUEHist(2)->GetFakeRate(1);
+    proj->GetYaxis()->SetRangeUser(0,150);
+    proj->SetLineColor((i==4) ? 6 : i+1);
+    proj->DrawClone((i == 0) ? "" : "SAME");
+    legend->AddEntry(proj, title[i] , "PL");
+  }
+
+  legend->Draw();
+
+  c2->cd(1);
+  h->GetUEHist(2)->GetMCRecoPtCorrelation()->GetXaxis()->SetTitle("p_{T,rec}");
+  h->GetUEHist(2)->GetMCRecoPtCorrelation()->GetYaxis()->SetTitle("p_{T}");
+  h->GetUEHist(2)->GetMCRecoPtCorrelation()->GetZaxis()->SetTitle("Centrality");
+  h->GetUEHist(2)->GetMCRecoPtCorrelation()->DrawCopy();
+
+  Float_t difference = 0.05;
+
+  for (Int_t i=0; i<5; i++)
+  {
+    c2->cd(i+2);
+    h->GetUEHist(2)->GetMCRecoPtCorrelation()->GetZaxis()->SetRangeUser(100.0/5*i + 0.1,100.0/5*(i+1) - 0.1);
+    hist = h->GetUEHist(2)->GetMCRecoPtCorrelation()->Project3D("yx");
+    hist->DrawClone("COLZ");
+    c2->cd(i+2)->SetLogz();
+    c3->cd(i+1);
+    TH1* MisreconstructedPtRate = h->GetUEHist(2)->GetMCRecoPtCorrelation()->ProjectionX("MisreconstructedPtRate");
+    MisreconstructedPtRate->Reset();
+    MisreconstructedPtRate->GetYaxis()->SetRangeUser(0,1);
+    
+    for (Int_t x=0; x<=hist->GetNbinsX(); x++) 
+    {
+      Float_t ptRec = hist->GetXaxis()->GetBinCenter(x);
+      Float_t Misreconstructed = 0;
+      Float_t Reconstructed = 0;
+      for (Int_t y=0; y<=hist->GetNbinsY(); y++) 
+      {
+        Float_t pt = hist->GetYaxis()->GetBinCenter(y);
+        Reconstructed += hist->GetBinContent(x,y);
+        if (TMath::Abs(ptRec-pt)/pt > difference)
+          Misreconstructed += hist->GetBinContent(x,y);
+      }
+      if (Reconstructed!=0) MisreconstructedPtRate->Fill(ptRec,Misreconstructed/Reconstructed);
+    }
+    MisreconstructedPtRate->SetLineColor((i==4) ? 6 : i+1);
+    MisreconstructedPtRate->DrawClone();
+    if (i==0) legend2->AddEntry(MisreconstructedPtRate, "2010" , "L");
+    c3->cd(6);
+    MisreconstructedPtRate->DrawClone((i == 0) ? "" : "SAME");
+    if (fileName2)
+    {
+      h2->GetUEHist(2)->GetMCRecoPtCorrelation()->GetZaxis()->SetRangeUser(100.0/5*i + 0.1,100.0/5*(i+1) - 0.1);
+      hist = h2->GetUEHist(2)->GetMCRecoPtCorrelation()->Project3D("yx"); 
+      TH1* MisreconstructedPtRate2 = h2->GetUEHist(2)->GetMCRecoPtCorrelation()->ProjectionX("MisreconstructedPtRate2");
+      MisreconstructedPtRate2->Reset();
+      MisreconstructedPtRate2->GetYaxis()->SetRangeUser(0,1);
+      for (Int_t x=0; x<=hist->GetNbinsX(); x++)
+      {
+        Float_t ptRec = hist->GetXaxis()->GetBinCenter(x);
+        Float_t Misreconstructed = 0;
+        Float_t Reconstructed = 0;
+        for (Int_t y=0; y<=hist->GetNbinsY(); y++)
+        {
+          Float_t pt = hist->GetYaxis()->GetBinCenter(y);
+          Reconstructed += hist->GetBinContent(x,y);
+          if (TMath::Abs(ptRec-pt)/pt > difference)
+            Misreconstructed += hist->GetBinContent(x,y);
+        }
+        if (Reconstructed!=0) MisreconstructedPtRate2->Fill(ptRec,Misreconstructed/Reconstructed);
+      }
+      c3->cd(i+1);
+      MisreconstructedPtRate2->SetLineColor((i==2) ? 12 : i+8);
+      MisreconstructedPtRate2->DrawClone("SAME");
+      if (i==0) legend2->AddEntry(MisreconstructedPtRate2, "2011" , "L");
+      legend2->DrawClone();
+    }
+  }
+  c3->cd(6);
+ legend->Draw();
+}
+
+void CompareCorrections(const char* fileName1, const char* fileName2)
+{
+  loadlibs();
+  
+  AliUEHistograms* h1 = (AliUEHistograms*) GetUEHistogram(fileName1);
+  AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileName2);
+  
+  c = new TCanvas("c", "c", 1200, 800);
+
+  TLegend* legend = new TLegend(0.7, 0.8, 0.95, 0.95);
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.03);
+
+  h1->SetEtaRange(-0.89, 0.89);
+  h2->SetEtaRange(-0.89, 0.89);  
+
+
+//  const char* title1[] = {"2010, 0-10%", "2010, 10-20%", "2010, 20-30%", "2010, 30-40%", "2010, 40-50%"};
+  const char* title1[] = {"FullTPC, 0-10%", "FullTPC, 10-20%", "FullTPC, 20-30%", "FullTPC, 30-40%", "FullTPC, 40-50%"};
+  const char* title1[] = {"FullTPC, 0-10%", "FullTPC, 10-20%", "FullTPC, 20-30%", "FullTPC, 30-40%", "FullTPC, 40-50%"};
+//  const char* title2[] = {"2011, 0-10%", "2011, 10-20%", "2011, 20-30%", "2011, 30-40%", "2011, 40-50%"};
+  const char* title2[] = {"NotFullTPC, 0-10%", "NotFullTPC, 10-20%", "NotFullTPC, 20-30%", "NotFullTPC, 30-40%", "NotFullTPC, 40-50%"};
+
+  Int_t colors[16] =  { 1, 3, 2, 6, 4, 7, 8, 9, 11, 12, 28, 30, 36, 40, 46 };
+  Int_t markers[16] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 2, 5};
+
+  for (Int_t i=0; i<5; i++)
+  {
+    h1->GetUEHist(2)->SetCentralityRange(100.0/10*i + 0.1, 100.0/10*(i+1) - 0.1);
+    h2->GetUEHist(2)->SetCentralityRange(100.0/10*i + 0.1, 100.0/10*(i+1) - 0.1);
+    
+    c->cd(1);
+    proj = h1->GetUEHist(2)->GetTrackingEfficiency(1);
+    proj->SetLineColor(colors[6]);
+    proj->SetMarkerColor(colors[6]);
+    proj->SetMarkerStyle(markers[i]);
+    proj->DrawClone((i == 0) ? "" : "SAME");
+    legend->AddEntry(proj, title1[i] , "PL");
+
+    proj = h2->GetUEHist(2)->GetTrackingEfficiency(1);
+    proj->SetLineColor(colors[2]);
+    proj->SetMarkerColor(colors[2]);
+    proj->SetMarkerStyle(markers[i+5]);
+    proj->SetMarkerStyle(markers[i]);
+    proj->DrawClone("SAME");
+    legend->AddEntry(proj, title2[i] , "PL");
+    
+  legend->Draw();
+}
+
 void ComparePPHIMixedEvent(const char* ppFile, const char* pbpbFile)
 {
   loadlibs();
