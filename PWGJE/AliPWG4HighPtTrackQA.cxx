@@ -1017,7 +1017,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     if(fTrackType==1)
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
     else if(fTrackType==2 || fTrackType==4) {
-      track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+      track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(fESD),esdtrack->GetID());
       if(!track) {
 	fh1NTracksReject->Fill("noTPConly",1);
 	if(origtrack) delete origtrack;
@@ -1095,7 +1095,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4 && fTrackType!=5 && fTrackType!=6) {
       fh1NTracksReject->Fill("trackCuts",1);
       if(fTrackType==1 || fTrackType==2 || fTrackType==7) {
-	if(track) delete track;
+    	if(track) delete track;
       }
       if(origtrack) delete origtrack;
       continue;

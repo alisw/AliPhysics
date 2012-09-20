@@ -351,130 +351,179 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {   
+   
+
       //Get track for analysis
       AliESDtrack *track = 0x0;
       AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
-      if(!esdtrack) continue;
+      if(!esdtrack)
+	continue;
+      
 
-      if(fTrackType==1) {
-	track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
-	if(!track) continue;
+      if(fTrackType==4) {
+	if (!(fTrackCuts->AcceptTrack(esdtrack)))
+	  continue;
       }
-      else if(fTrackType==2) {
-	track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
-	if(!track) continue;
 
+      if(fTrackType==1)
+	track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+      else if(fTrackType==2 || fTrackType==4) {
+	track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(fESD),esdtrack->GetID());
+	if(!track)
+	  continue;
+	
 	AliExternalTrackParam exParam;
 	Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
 	if( !relate ) {
-	  delete track;
+	  if(track) delete track;
 	  continue;
 	}
 	track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
       }
+      else if(fTrackType==5 || fTrackType==6) {
+	if(fTrackCuts->AcceptTrack(esdtrack)) {
+	  continue;
+	}
+	else {
+	  if( !(fTrackCutsReject->AcceptTrack(esdtrack)) && fTrackCuts->AcceptTrack(esdtrack) ) {
+
+	    if(fTrackType==5) {
+	      //use TPConly constrained track
+	      track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+	      if(!track)
+		continue;
+	      
+	      AliExternalTrackParam exParam;
+	      Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	      if( !relate ) {
+		if(track) delete track;
+		continue;
+	      }
+	      track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+	    }
+	    else if(fTrackType==6) {
+	      //use global constrained track
+	      track = new AliESDtrack(*esdtrack);
+	      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+
+	    }
+	  }
+	}
+      }
       else if(fTrackType==7) {
 	//use global constrained track
 	track = new AliESDtrack(*esdtrack);
-	//	track = esdtrack;
-	//	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-
       }
       else
 	track = esdtrack;
     
-      if(!track) continue;
- 
-      if(fTrackType==2) {
+      if(!track)
+	continue;
+      
+
+      if(fTrackType==2 || fTrackType==4 || fTrackType==5) {
 	//Cut on chi2 of constrained fit
-	if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
-	  delete track;
+	if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax && fSigmaConstrainedMax>0.) {
+	  if(track) delete track;
 	  continue;
 	}
       }
-
-      if (fTrackCuts->AcceptTrack(track)) {
-
-	if(fTrackType==7) {
-	  if(fTrackCutsReject ) {
-	    if(fTrackCutsReject->AcceptTrack(track) ) {
-	      if(track) delete track;
-	      continue;
-	    }
-	  }
-	  
-	  if(esdtrack->GetConstrainedParam()) 
-	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+      if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4 && fTrackType!=5 && fTrackType!=6) {
+	if(fTrackType==1 || fTrackType==2 || fTrackType==7) {
+	  if(track) delete track;
 	}
+	continue;
+      }
 
-	//fill the container
-	containerInputRec[0] = track->Pt();
-	containerInputRec[1] = track->Phi();
-	containerInputRec[2] = track->Eta();
-	containerInputRec[3] = track->GetTPCNclsIter1();
+      if(fTrackType==7) {
+	if(fTrackCutsReject ) {
+	  if(fTrackCutsReject->AcceptTrack(track) ) {
+	    if(track) delete track;
+	    continue;
+	  }
+	}
+      
+	if(esdtrack->GetConstrainedParam()) 
+	  track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+      }
 
-	if(track->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
-	if(track->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+      if(!track) {
+	if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
+	  if(track) delete track;
+	}
+	continue;
+      }
+
+      //fill the container
+      containerInputRec[0] = track->Pt();
+      containerInputRec[1] = track->Phi();
+      containerInputRec[2] = track->Eta();
+      containerInputRec[3] = track->GetTPCNclsIter1();
+
+      if(track->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+      if(track->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 
   	
-	//Only fill the MC containers if MC information is available
-	if(fMC) {
-	  Int_t label = TMath::Abs(track->GetLabel());
-	  if(label>fStack->GetNtrack()) {
+      //Only fill the MC containers if MC information is available
+      if(fMC) {
+	Int_t label = TMath::Abs(track->GetLabel());
+	if(label>fStack->GetNtrack()) {
+	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	    delete track;
+	  continue;
+	}
+	//Only select particles generated by HIJING if requested
+	if(fbSelectHIJING) {
+	  if(!IsHIJINGParticle(label)) {
 	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
 	      delete track;
 	    continue;
-	  }
-	  //Only select particles generated by HIJING if requested
-	  if(fbSelectHIJING) {
-	    if(!IsHIJINGParticle(label)) {
-	      if(fTrackType==1 || fTrackType==2 || fTrackType==7)
-		delete track;
-	      continue;
-	    }
-	  }
-	  TParticle *particle = fStack->Particle(label) ;
-	  if(!particle) {
-	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
-	      delete track;
-	    continue;
-	  }
-	  containerInputRecMC[0] = particle->Pt();      
-	  containerInputRecMC[1] = particle->Phi();      
-	  containerInputRecMC[2] = particle->Eta();  
-	  containerInputRecMC[3] = track->GetTPCNclsIter1();
-
-	  //Container with primaries
-	  if(fStack->IsPhysicalPrimary(label)) {
-	    if(particle->GetPDG()->Charge()>0.) {
-	      fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-	    }
-	    if(particle->GetPDG()->Charge()<0.) {
-	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-	    }
-
-	    //Fill pT resolution plots for primaries
-	    fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
-
-	  }
-
-	  //Container with secondaries
-	  if (!fStack->IsPhysicalPrimary(label) ) {
-	    if(particle->GetPDG()->Charge()>0.) {
-	      fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
-	    }
-	    if(particle->GetPDG()->Charge()<0.) {
-	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
-	    }
-	    //Fill pT resolution plots for primaries
-	    fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 	  }
 	}
-	
-      }//trackCuts global tracks
+	TParticle *particle = fStack->Particle(label) ;
+	if(!particle) {
+	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	    delete track;
+	  continue;
+	}
+	containerInputRecMC[0] = particle->Pt();      
+	containerInputRecMC[1] = particle->Phi();      
+	containerInputRecMC[2] = particle->Eta();  
+	containerInputRecMC[3] = track->GetTPCNclsIter1();
 
-      if(fTrackType==1 || fTrackType==2 || fTrackType==7) {
+	//Container with primaries
+	if(fStack->IsPhysicalPrimary(label)) {
+	  if(particle->GetPDG()->Charge()>0.) {
+	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  }
+	  if(particle->GetPDG()->Charge()<0.) {
+	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  }
+
+	  //Fill pT resolution plots for primaries
+	  fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
+
+	}
+
+	//Container with secondaries
+	if (!fStack->IsPhysicalPrimary(label) ) {
+	  if(particle->GetPDG()->Charge()>0.) {
+	    fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
+	  }
+	  if(particle->GetPDG()->Charge()<0.) {
+	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
+	  }
+	  //Fill pT resolution plots for primaries
+	  fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
+	}
+      }
+	
+
+      if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
 	if(track) delete track;
       }
+
+
     }//track loop
   
 
@@ -544,7 +593,7 @@ Bool_t AliPWG4HighPtSpectra::PythiaInfoFromFile(const char* currFile,Float_t &fX
     // next trial fetch the histgram file
     fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
     if(!fxsec){
-	// not a severe condition but inciate that we have no information
+      // not a severe condition but indicates that we have no information
       return kFALSE;
     }
     else{
