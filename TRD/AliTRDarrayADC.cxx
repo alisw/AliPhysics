@@ -167,7 +167,7 @@ Short_t AliTRDarrayADC::GetDataBits(Int_t row, Int_t col, Int_t time) const
   // Get the ADC value for a given position: row, col, time
   // Taking bit masking into account
   //
-  // Adapted from code of the class AliTRDdataArrayDigits 
+  // Adapted from code of the class AliTRDclusterizer 
   //
 
   Short_t tempval = GetData(row,col,time);
@@ -193,7 +193,7 @@ UChar_t AliTRDarrayADC::GetPadStatus(Int_t row, Int_t col, Int_t time) const
   //               Bridged Right Masking    8
   //               Not Connected Masking Digits
   //
-  // Adapted from code of the class AliTRDdataArrayDigits
+  // Adapted from code of the class AliTRDclusterizer
   //
 
   UChar_t padstatus = 0;
@@ -234,7 +234,7 @@ void AliTRDarrayADC::SetPadStatus(Int_t row, Int_t col, Int_t time, UChar_t stat
   //               Bridged Left masking:    Bit 11(0), Bit 12(1)
   //               Bridged Right masking:   Bit 11(1), Bit 12(1)
   // 
-  // Adapted from code of the class AliTRDdataArrayDigits
+  // Adapted from code of the class AliTRDclusterizer
   //
 
   Short_t signal = GetData(row,col,time);
@@ -280,7 +280,7 @@ Bool_t AliTRDarrayADC::IsPadCorrupted(Int_t row, Int_t col, Int_t time)
   // 
   // Checks if the pad has any masking as corrupted (Bit 10 in signal set)
   // 
-  // Adapted from code of the class AliTRDdataArrayDigits
+  // Adapted from code of the class AliTRDclusterizer
   //
 
   Short_t signal = GetData(row,col,time);

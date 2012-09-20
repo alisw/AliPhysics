@@ -665,7 +665,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         (nhit[det] > 0)) {
 
       signals = new AliTRDarraySignal();
-	  
+
       // Convert the hits of the current detector to detector signals
       if (!ConvertHits(det,hits[det],nhit[det],signals)) {
 	AliError(Form("Conversion of hits failed for detector=%d",det));
@@ -1032,7 +1032,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
       colE       = padPlane->GetPadColNumber(locC+offsetTilt);
       if (colE < 0) continue;         
       colOffset  = padPlane->GetPadColOffset(colE,locC+offsetTilt);
-	  
+
       // Also re-retrieve drift velocity because col and row may have changed
       driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
       Float_t t0    = calT0DetValue     + calT0ROC->GetValue(colE,rowE);
@@ -1190,7 +1190,7 @@ Bool_t AliTRDdigitizer::ConvertSignals(Int_t det, AliTRDarraySignal *signals)
   }
 
   // Compress the arrays
-  CompressOutputArrays(det);   
+  CompressOutputArrays(det);
 
   return kTRUE;
 
@@ -1291,6 +1291,13 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   for (row  = 0; row  <  nRowMax; row++ ) {
     for (col  = 0; col  <  nColMax; col++ ) {
 
+      // halfchamber masking
+      Int_t iMcm            = (Int_t)(col/18); // current group of 18 col pads
+      Int_t halfchamberside = (iMcm>3 ? 1 : 0); // 0=Aside, 1=Bside
+      // Halfchambers that are switched off, masked by calibration
+      if (calibration->IsHalfChamberNoData(det, halfchamberside)) 
+	continue;
+
       // Check whether pad is masked
       // Bridged pads are not considered yet!!!
       if (calibration->IsPadMasked(det,col,row) || 
@@ -1383,12 +1390,20 @@ Bool_t AliTRDdigitizer::Signal2SDigits(Int_t det, AliTRDarraySignal *signals)
   // Create the sdigits for this chamber
   for (row  = 0; row  <  nRowMax; row++ ) {
     for (col  = 0; col  <  nColMax; col++ ) {
-      for (time = 0; time < nTimeTotal; time++) {         
+
+      // halfchamber masking
+      Int_t iMcm            = (Int_t)(col/18); // current group of 18 col pads
+      Int_t halfchamberside = (iMcm>3 ? 1 : 0); // 0=Aside, 1=Bside
+      // Halfchambers that are switched off, masked by calibration
+      if (calibration->IsHalfChamberNoData(det, halfchamberside))
+	continue;
+
+      for (time = 0; time < nTimeTotal; time++) {
         digits->SetData(row,col,time,signals->GetData(row,col,time));
       } // for: time
     } // for: col
   } // for: row
-  
+
   return kTRUE;
 
 }
@@ -1962,7 +1977,7 @@ void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
   for (Int_t side = 0; side <= 1; side++) {
     for(Int_t rob = side; rob < digits->GetNrow() / 2; rob += 2) {
       for(Int_t mcm = 0; mcm < 16; mcm++) {
-	fMcmSim->Init(det, rob, mcm); 
+	fMcmSim->Init(det, rob, mcm);
 	fMcmSim->SetDataByPad(digits, fDigitsManager);
 	fMcmSim->Filter();
 	if (feeParam->GetTracklet()) {
