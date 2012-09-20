@@ -192,7 +192,7 @@ void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2, 
   // correct for aspect ratio of figure plus aspect ratio of pad (coordinates are NDC!)
 //   Printf("%d %f %d %f", gPad->GetCanvas()->GetWindowHeight(), gPad->GetHNDC(), gPad->GetCanvas()->GetWindowWidth(), gPad->GetWNDC());
 //   x2 = x1 + (y2 - y1) * (620. / 671) * gPad->GetCanvas()->GetWindowHeight() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetCanvas()->GetWindowWidth());
-  x2 = x1 + (y2 - y1) * (620. / 671) * gPad->GetWh() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetWw());
+  x2 = x1 + (y2 - y1) * (466. / 523) * gPad->GetWh() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetWw());
 //   x2 = x1 + (y2 - y1) * (620. / 671) * gPad->GetWh() / gPad->GetWw();
 
 //   Printf("%f %f %f %f", x1, x2, y1, y2);
@@ -2828,13 +2828,17 @@ void DrawExampleAll(const char* histFileName, const char* graphFileName = 0)
   
   Int_t colors[] = { 1, 2, 4 };
   
-  Float_t exampleI[] = { 0, 2, 2 };
-  Float_t exampleJ[] = { 1, 1, 2 };
+  //Float_t exampleI[] = { 0, 2, 2 };
+  //Float_t exampleJ[] = { 1, 1, 2 };
+  Float_t exampleI[] = { 3, 3, 3 };
+  Float_t exampleJ[] = { 3, 4, 5 };
   
   TH1* projectionsPhi[9];
   TH1* projectionsEta[9];
   TH1* projectionsPhiSyst[9];
   TH1* projectionsEtaSyst[9];
+  
+  disableUncertainties = 1;
   
   Int_t count = 0;
   for (Int_t i=0; i<3; i++)
@@ -2852,36 +2856,45 @@ void DrawExampleAll(const char* histFileName, const char* graphFileName = 0)
     legend->SetFillColor(0);
 
     // syst first
-    for (Int_t histId = 0; histId<3; histId++)
+    if (!disableUncertainties)
     {
-      c->cd(1);
-      gPad->SetLeftMargin(0.12);
-      projectionsPhiSyst[count-3+histId]->SetFillStyle(3003+histId);
-      TH1* clone = projectionsPhiSyst[count-3+histId]->DrawCopy((histId > 0) ? "E2 ][ SAME" : "E2 ][");
-      clone->SetFillColor(colors[histId]);
-      TString label(clone->GetTitle());
-      TObjArray* objArray = label.Tokenize("-");
-      clone->SetTitle(Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName()));
-      
-      c->cd(2);
-      gPad->SetLeftMargin(0.12);
-      projectionsEtaSyst[count-3+histId]->SetFillStyle(3003+histId);
-      clone = projectionsEtaSyst[count-3+histId]->DrawCopy((histId > 0) ? "E2 ][ SAME" : "E2 ][");
-      clone->SetFillColor(colors[histId]);
-      clone->SetTitle(Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName()));
+      for (Int_t histId = 0; histId<3; histId++)
+      {
+	c->cd(1);
+	gPad->SetLeftMargin(0.12);
+	projectionsPhiSyst[count-3+histId]->SetFillStyle(3003+histId);
+	TH1* clone = projectionsPhiSyst[count-3+histId]->DrawCopy((histId > 0) ? "E2 ][ SAME" : "E2 ][");
+	clone->SetFillColor(colors[histId]);
+	TString label(clone->GetTitle());
+	TObjArray* objArray = label.Tokenize("-");
+	clone->SetTitle(Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName()));
+	
+	c->cd(2);
+	gPad->SetLeftMargin(0.12);
+	projectionsEtaSyst[count-3+histId]->SetFillStyle(3003+histId);
+	clone = projectionsEtaSyst[count-3+histId]->DrawCopy((histId > 0) ? "E2 ][ SAME" : "E2 ][");
+	clone->SetFillColor(colors[histId]);
+	clone->SetTitle(Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName()));
+      }
     }
     
-    for (Int_t histId = 0; histId<3; histId++)
+    for (Int_t histId = 0; histId<2; histId++)
     {
+      if (1)
+      {
+	projectionsPhi[count-3+histId]->Divide(projectionsPhi[count-3+2]);
+	projectionsEta[count-3+histId]->Divide(projectionsEta[count-3+2]);
+      }
+      
       c->cd(1);
-      TH1* clone = projectionsPhi[count-3+histId]->DrawCopy("SAME");
+      TH1* clone = projectionsPhi[count-3+histId]->DrawCopy((disableUncertainties && histId == 0) ? "" : "SAME");
       clone->SetLineColor(colors[histId]);
       TString label(clone->GetTitle());
       TObjArray* objArray = label.Tokenize("-");
       legend->AddEntry(clone, (objArray->GetEntries() == 4) ? Form("%s-%s", objArray->At(2)->GetName(), objArray->At(3)->GetName()) : objArray->At(2)->GetName(), "L");
       
       c->cd(2);
-      clone = projectionsEta[count-3+histId]->DrawCopy("SAME");
+      clone = projectionsEta[count-3+histId]->DrawCopy((disableUncertainties && histId == 0) ? "" : "SAME");
       clone->SetLineColor(colors[histId]);
     }
     
@@ -2900,6 +2913,8 @@ void DrawExampleAll(const char* histFileName, const char* graphFileName = 0)
     c->SaveAs(Form("ex/%s.png", c->GetName()));
     c->SaveAs(Form("ex/%s.eps", c->GetName()));
     
+//     return;
+
     if (graphFileName)
     {
       // fit curves
