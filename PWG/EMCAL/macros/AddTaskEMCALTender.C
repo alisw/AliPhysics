@@ -31,7 +31,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, nonLinFunct);
+    EMCALSupply = ConfigEmcalTenderSupply(kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, nonLinFunct);
 
     AliTender* alitender = new  AliTender("AliTender");
     alitender->AddSupply(EMCALSupply);
@@ -44,7 +44,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
 				    "default_tender");
   }
   else if (evhand->InheritsFrom("AliAODInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, nonLinFunct);
+    EMCALSupply = ConfigEmcalTenderSupply(kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, nonLinFunct);
 
     AliEmcalTenderTask* emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
     emcaltender->SetEMCALTenderSupply(EMCALSupply);
