@@ -4,3 +4,4 @@
 
 #pragma link C++ class AliFemtoK0Analysis+;
 #pragma link C++ class AliFemtoK0EventCollection+;
+#pragma link C++ class AliAnalysisTaskProtonLambda;

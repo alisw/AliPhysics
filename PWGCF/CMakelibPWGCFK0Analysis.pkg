@@ -29,6 +29,7 @@
 set ( SRCS  
     FEMTOSCOPY/K0Analysis/AliFemtoK0EventCollection.cxx
     FEMTOSCOPY/K0Analysis/AliFemtoK0Analysis.cxx
+    FEMTOSCOPY/PLamAnalysis/AliAnalysisTaskProtonLambda.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
