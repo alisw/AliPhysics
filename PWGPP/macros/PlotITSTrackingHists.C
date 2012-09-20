@@ -328,7 +328,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TDirectoryFile *dir=0;
   if(!list) {
     dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
-    if(dir) list = (TList*)dir->Get("cOutputITS_70_310");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
     // count active SPD HSs
     dir=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
     if(dir) listSPD = (TList*)dir->Get("coutput1");
@@ -389,6 +389,25 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 
   TH1F *fHistPhiTPCInAcc = (TH1F*)list->FindObject("fHistPhiTPCInAcc");
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
+  TH1F *fHistPhiITSMI6InAcc = (TH1F*)list->FindObject("fHistPhiITSMI6InAcc");
+  TH1F *fHistPhiITSMI5InAcc = (TH1F*)list->FindObject("fHistPhiITSMI5InAcc");
+  TH1F *fHistPhiITSMI4InAcc = (TH1F*)list->FindObject("fHistPhiITSMI4InAcc");
+  TH1F *fHistPhiITSMI3InAcc = (TH1F*)list->FindObject("fHistPhiITSMI3InAcc");
+  TH1F *fHistPhiITSMI2InAcc = (TH1F*)list->FindObject("fHistPhiITSMI2InAcc");
+  TH1F *fHistPhiITSMISPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMISPDInAcc");
+  TH1F *fHistPhiITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMIoneSPDInAcc");
+
+  TH1F *fHistEtaTPCInAcc = (TH1F*)list->FindObject("fHistEtaTPCInAcc");
+  TH1F *fHistEtaITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistEtaITSMIokbadoutinz6InAcc");
+  TH1F *fHistEtaITSMI6InAcc = (TH1F*)list->FindObject("fHistEtaITSMI6InAcc");
+  TH1F *fHistEtaITSMI5InAcc = (TH1F*)list->FindObject("fHistEtaITSMI5InAcc");
+  TH1F *fHistEtaITSMI4InAcc = (TH1F*)list->FindObject("fHistEtaITSMI4InAcc");
+  TH1F *fHistEtaITSMI3InAcc = (TH1F*)list->FindObject("fHistEtaITSMI3InAcc");
+  TH1F *fHistEtaITSMI2InAcc = (TH1F*)list->FindObject("fHistEtaITSMI2InAcc");
+  TH1F *fHistEtaITSMISPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMISPDInAcc");
+  TH1F *fHistEtaITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMIoneSPDInAcc");
+
+
 
   TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
   TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
@@ -613,14 +632,72 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistzlocSDDok->Divide(fHistzlocSDDall);
   fHistzlocSDDok->Draw();
 
-  TCanvas *c4 =new TCanvas("c4","c4",10,10,500,500);
-  c4->SetGridy();
-  fHistPhiITSMIokbadoutinz6InAcc->Divide(fHistPhiTPCInAcc);
-  fHistPhiITSMIokbadoutinz6InAcc->SetMinimum(0);
-  fHistPhiITSMIokbadoutinz6InAcc->SetMaximum(1.5);
-  fHistPhiITSMIokbadoutinz6InAcc->SetYTitle("ITS+TPC / TPC");
-  fHistPhiITSMIokbadoutinz6InAcc->SetTitle("Fraction of tracks with 6 layers ok");
-  fHistPhiITSMIokbadoutinz6InAcc->Draw();
+  TCanvas *c4 =new TCanvas("c4","c4",10,10,1000,500);
+  TLegend *l4a=new TLegend(0.5,0.5,0.9,0.9);
+  c4->Divide(2,1);
+  c4->cd(1);
+  c4_1->SetGridy();
+  fHistPhiITSMI6InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistPhiITSMI6InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistPhiITSMI6InAcc->Divide(fHistPhiITSMI6InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI6InAcc->SetLineColor(2);
+  l4a->AddEntry(fHistPhiITSMI6InAcc,"6 cls","l");
+  fHistPhiITSMI6InAcc->SetMaximum(1.5);
+  fHistPhiITSMI6InAcc->SetMinimum(0);
+  fHistPhiITSMI6InAcc->Draw();
+  fHistPhiITSMI5InAcc->Divide(fHistPhiITSMI5InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI5InAcc->SetLineColor(3);
+  //l4a->AddEntry(fHistPhiITSMI5InAcc,"5 cls","l");
+  //fHistPhiITSMI5InAcc->Draw("same");
+  fHistPhiITSMI4InAcc->Divide(fHistPhiITSMI4InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI4InAcc->SetLineColor(4);
+  //l4a->AddEntry(fHistPhiITSMI4InAcc,"4 cls","l");
+  //fHistPhiITSMI4InAcc->Draw("same");
+  fHistPhiITSMI3InAcc->Divide(fHistPhiITSMI3InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI3InAcc->SetLineColor(6);
+  //l4a->AddEntry(fHistPhiITSMI3InAcc,"3 cls","l");
+  //fHistPhiITSMI3InAcc->Draw("same");
+  fHistPhiITSMI2InAcc->Divide(fHistPhiITSMI2InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI2InAcc->SetLineColor(7);
+  //l4a->AddEntry(fHistPhiITSMI2InAcc,"2 cls","l");
+  //fHistPhiITSMI2InAcc->Draw("same");
+  fHistPhiITSMISPDInAcc->Divide(fHistPhiITSMISPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMISPDInAcc->SetLineColor(9);
+  l4a->AddEntry(fHistPhiITSMISPDInAcc,"2SPD + any","l");
+  fHistPhiITSMISPDInAcc->Draw("same");
+  fHistPhiITSMIoneSPDInAcc->Divide(fHistPhiITSMIoneSPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMIoneSPDInAcc->SetLineColor(15);
+  l4a->AddEntry(fHistPhiITSMIoneSPDInAcc,">=1SPD + any","l");
+  fHistPhiITSMIoneSPDInAcc->Draw("same");
+  l4a->Draw();
+  c4->cd(2);
+  c4_2->SetGridy();
+  fHistEtaITSMI6InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistEtaITSMI6InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistEtaITSMI6InAcc->Divide(fHistEtaITSMI6InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI6InAcc->SetLineColor(2);
+  fHistEtaITSMI6InAcc->SetMaximum(1.5);
+  fHistEtaITSMI6InAcc->SetMinimum(0);
+  fHistEtaITSMI6InAcc->Draw();
+  fHistEtaITSMI5InAcc->Divide(fHistEtaITSMI5InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI5InAcc->SetLineColor(3);
+  //fHistEtaITSMI5InAcc->Draw("same");
+  fHistEtaITSMI4InAcc->Divide(fHistEtaITSMI4InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI4InAcc->SetLineColor(4);
+  //fHistEtaITSMI4InAcc->Draw("same");
+  fHistEtaITSMI3InAcc->Divide(fHistEtaITSMI3InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI3InAcc->SetLineColor(6);
+  //fHistEtaITSMI3InAcc->Draw("same");
+  fHistEtaITSMI2InAcc->Divide(fHistEtaITSMI2InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI2InAcc->SetLineColor(7);
+  //fHistEtaITSMI2InAcc->Draw("same");
+  fHistEtaITSMISPDInAcc->Divide(fHistEtaITSMISPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMISPDInAcc->SetLineColor(9);
+  fHistEtaITSMISPDInAcc->Draw("same");
+  fHistEtaITSMIoneSPDInAcc->Divide(fHistEtaITSMIoneSPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMIoneSPDInAcc->SetLineColor(15);
+  fHistEtaITSMIoneSPDInAcc->Draw("same");
+  l4a->Draw();
 
   TCanvas *c5c =new TCanvas("c5c","c5c",10,10,600,600);
   c5c->SetGridy();
@@ -3028,11 +3105,11 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
   return;
 }
 //--------------------------------------------------------------------------
-void ITSTrackingTrending(Int_t firstrun=158508,Int_t lastrun=158511,
-			 //TString pathBeforeRun="/alice/sim/LHC11a10a_bis/",
-			 //TString pathAfterRun="/QA67/Stage_4/004/QAresults.root",
-			 TString pathBeforeRun="/alice/data/2011/LHC11d/000",
-			 TString pathAfterRun="/ESDs/pass1/QAresults.root",
+void ITSTrackingTrending(Int_t firstrun=138870,Int_t lastrun=139510,
+			 TString pathBeforeRun="/alice/sim/2012/LHC12c4/",
+			 TString pathAfterRun="/QAresults.root",
+			 //TString pathBeforeRun="/alice/data/2011/LHC11d/000",
+			 //TString pathAfterRun="/ESDs/pass1/QAresults.root",
 			 //TString pathBeforeRun="/alice/data/2010/LHC10b/000",
 			 //TString pathAfterRun="/ESDs/pass2/QA9/QAresults.root",
 			 TString pathAfterRun2="") 
