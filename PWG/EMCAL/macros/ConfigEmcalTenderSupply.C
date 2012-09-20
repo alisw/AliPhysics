@@ -10,6 +10,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t fidRegion     = kFALSE,
   Bool_t calibEnergy   = kTRUE,
   Bool_t calibTime     = kTRUE,
+  Bool_t remBC         = kTRUE,
   UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
@@ -26,10 +27,21 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   }
   EMCALSupply->SetRecParam(params);
 
-  if (distBC)
+  if (remBC) {
+    EMCALSupply->SwitchOnClusterBadChannelCheck();
+    EMCALSupply->SwitchOnBadCellRemove();
+  }
+  else {
+    EMCALSupply->SwitchOffClusterBadChannelCheck();
+    EMCALSupply->SwitchOffBadCellRemove();
+  }
+
+  if (distBC) {
     EMCALSupply->SwitchOnRecalDistBadChannel();
-  else
+  }
+  else {
     EMCALSupply->SwitchOffRecalDistBadChannel();
+  }
   
   if (recalibClus) {
     EMCALSupply->SwitchOnReCalibrateCluster();
@@ -53,10 +65,14 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOffNonLinearityCorrection();
   }
   
-  if (remExotic) 
-      EMCALSupply->SwitchOnClusterExoticChannelCheck();
-  else
+  if (remExotic) {
+    EMCALSupply->SwitchOnExoticCellRemove();
+    EMCALSupply->SwitchOnClusterExoticChannelCheck();
+  }
+  else {
+    EMCALSupply->SwitchOffExoticCellRemove();
     EMCALSupply->SwitchOffClusterExoticChannelCheck();
+  }
   
   if (fidRegion)
     EMCALSupply->SwitchOnCellFiducialRegion();
