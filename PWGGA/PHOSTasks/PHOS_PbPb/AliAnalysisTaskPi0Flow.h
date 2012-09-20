@@ -45,6 +45,7 @@ public:
     
     void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
+    void SetMaxAbsVertexZ(Float_t z) { fMaxAbsVertexZ = z; }
     void SetManualV0EPCalc(Bool_t manCalc = true) {fManualV0EPCalc = manCalc;}
     
     void SetPHOSBadMap(Int_t mod,TH2I * badMapHist);
@@ -150,9 +151,11 @@ private:
     UInt_t fNEMRPBins;
     
 
-    // Behavior
+    // Behavior / cuts
     Period fPeriod;
+    Float_t fMaxAbsVertexZ; // in cm
     Bool_t fManualV0EPCalc;
+
 
     TList * fOutputContainer;        //final histogram container
 

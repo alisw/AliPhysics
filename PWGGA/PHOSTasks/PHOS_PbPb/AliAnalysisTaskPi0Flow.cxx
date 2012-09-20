@@ -81,6 +81,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fCentNMixed(10),
   fNEMRPBins(9),
   fPeriod(period),
+  fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
   fOutputContainer(0x0),
   fNonLinCorr(0),
@@ -2291,7 +2292,7 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
     return true; // reject
   LogSelection(1, fInternalRunNumber);
 
-  if ( TMath::Abs(fVertexVector.z()) > 10. )
+  if ( TMath::Abs(fVertexVector.z()) > fMaxAbsVertexZ )
     return true; // reject
   LogSelection(2, fInternalRunNumber);
 
