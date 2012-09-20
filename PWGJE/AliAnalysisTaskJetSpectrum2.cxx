@@ -581,10 +581,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     delete [] xPt3;
 
     // Track QA bins track nr, pTrack, cent, eta, phi bins 5.4 M
-    const Int_t nBinsSparse4 = 6;
-    const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 180,2};
-    const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,   0.,-1.5};
-    const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi(),1.5};  
+    const Int_t nBinsSparse4 = 7;
+    const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,   20, 180,2,fNTrigger};
+    const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,  0.,-1.5,-0.5};
+    const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi(),1.5,fNTrigger-0.5};  
     
     // change the binning ot the pT axis:
     Double_t *xPt4 = new Double_t[nBins4[1]+1];
@@ -596,7 +596,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       else if(xPt4[i-1]<30)xPt4[i] = xPt4[i-1] +  2.5;
       else xPt4[i] = xPt4[i-1] + 5.;
     }
-    fhnTrackPtQA[ij] = new THnSparseF(Form("fhnTrackPtQA%s",cAdd.Data()),";track number;p_{T};cent;#eta;#phi;sign",nBinsSparse4,nBins4,xmin4,xmax4);
+    fhnTrackPtQA[ij] = new THnSparseF(Form("fhnTrackPtQA%s",cAdd.Data()),";track number;p_{T};cent;#eta;#phi;sign;trigger",nBinsSparse4,nBins4,xmin4,xmax4);
     fhnTrackPtQA[ij]->SetBinEdges(1,xPt4);
     fHistList->Add(fhnTrackPtQA[ij]);
     delete [] xPt4;
@@ -1154,7 +1154,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
   Double_t var3[6]; // track number;p_{T};cent;#tracks;RP
   var3[2] = fCentrality;
   var3[3] = refMult;
-  Double_t var4[6]; // track number;p_{T};cent;#eta;#phi;sign
+  Double_t var4[7]; // track number;p_{T};cent;#eta;#phi;sign
   var4[2] = fCentrality;
   Int_t nTrackOver = particlesList.GetSize();
   // do the same for tracks and jets
@@ -1229,15 +1229,22 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
 
 
 
-
-
-      fhnTrackPtQA[iType]->Fill(var4);
-
-      if(tmpTrack==leading){
-	var4[0] = 0;
+    for(int it = 0;it <fNTrigger;it++){
+      if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
+	var4[6] = it;
 	fhnTrackPtQA[iType]->Fill(var4);
-	continue;
+	if(tmpTrack==leading){
+	  var4[0] = 0;
+	  fhnTrackPtQA[iType]->Fill(var4);
+	  continue;
+	}
       }
+    }
+
+
+
+
+      
     }  
     fh1SumPtTrack[iType]->Fill(sumPt);
     delete trackIter;
