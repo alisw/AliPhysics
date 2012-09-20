@@ -1063,6 +1063,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     for(int it = 0;it <fNTrigger;it++){
       if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
 	var1[6] = it;
+	var2[6] = it;
 	fhnJetPt[iType]->Fill(var1);
 	fhnJetPtQA[iType]->Fill(var2);
       }
