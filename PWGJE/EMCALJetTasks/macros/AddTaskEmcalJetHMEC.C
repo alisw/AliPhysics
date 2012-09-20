@@ -45,7 +45,12 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetJetPhi(minPhi,maxPhi);
   correlationtask->SetJetEta(minEta,maxEta);
   correlationtask->SetAreaCut(minArea);
-  correlationtask->SetEventMixing(EvtMix);
+  if(EvtMix>0){
+    correlationtask->SetMixingTracks(EvtMix);
+    correlationtask->SetEventMixing(1);
+  }else{
+    correlationtask->SetEventMixing(EvtMix);
+  }
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
   correlationtask->SetTrkEta(TrkEta);

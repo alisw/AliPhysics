@@ -248,9 +248,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
  
-  Int_t nZvtxBins  = 7+1+7;
+  Int_t nZvtxBins  = 5+1+5;
   // bins for second buffer are shifted by 100 cm
-  Double_t vertexBins[] = { -10, -5, -3, -1, 1, 3, 5, 10, 93, 95, 97, 99, 101, 103, 105, 107 };
+  Double_t vertexBins[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, };
   Double_t* zvtxbin = vertexBins;
 
   Int_t nCentralityBins  = 100;
