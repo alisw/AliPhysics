@@ -52,6 +52,9 @@ fNCentBins(0),
 fNCentBinsDim(0), 
 fCentBins(0),
 
+fNofMCEventType(0),
+fMCEventType(0),
+
 fNTrackCuts(0),
 fAODTrackCuts(0),
 fTrackCutsNames(0),
@@ -59,7 +62,8 @@ fNvZeroCuts(0),
 fAODvZeroCuts(0),
 fvZeroCutsNames(0),
 fBit(0),
-fCharge(0) 
+fCharge(0),
+fDescription("")
 
 {
 	//
@@ -87,6 +91,9 @@ fNCentBins(0),
 fNCentBinsDim(0), 
 fCentBins(0),
 
+fNofMCEventType(0),
+fMCEventType(0),
+
 fNTrackCuts(0),
 fAODTrackCuts(0),
 fTrackCutsNames(0),
@@ -94,7 +101,8 @@ fNvZeroCuts(0),
 fAODvZeroCuts(0),
 fvZeroCutsNames(0),
 fBit(0),
-fCharge(0)
+fCharge(0),
+fDescription("")
 
 {
 	//
@@ -118,6 +126,9 @@ fNCentBins(source.fNCentBins),
 fNCentBinsDim(source.fNCentBinsDim), 
 fCentBins(source.fCentBins),
 
+fNofMCEventType(source.fNofMCEventType),
+fMCEventType(source.fMCEventType),
+
 fNTrackCuts(source.fNTrackCuts),
 fAODTrackCuts(source.fAODTrackCuts),
 fTrackCutsNames(source.fTrackCutsNames),
@@ -125,7 +136,8 @@ fNvZeroCuts(source.fNvZeroCuts),
 fAODvZeroCuts(source.fAODvZeroCuts),
 fvZeroCutsNames(source.fvZeroCutsNames),
 fBit(source.fBit),
-fCharge(source.fCharge)
+fCharge(source.fCharge),
+fDescription(source.fDescription)
 {
 	//
 	// copy constructor
@@ -290,18 +302,27 @@ Bool_t AliHFAssociatedTrackCuts::IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *
 	return kTRUE;
 }
 //--------------------------------------------------------------------------
-Int_t AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray){
+Bool_t *AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray){
   // Check origin in MC
 
   AliAODMCParticle* mcParticle;
   Int_t pdgCode = -1;
-  if (label<0) return 0;
+	
   Bool_t isCharmy = kFALSE;
   Bool_t isBeauty = kFALSE;
   Bool_t isD = kFALSE;
   Bool_t isB = kFALSE;
+    
+     Bool_t *originvect = new Bool_t[4];
+    
+    originvect[0] = kFALSE;
+	originvect[1] = kFALSE;
+	originvect[2] = kFALSE;
+	originvect[3] = kFALSE;
 
-  while(pdgCode!=2212){ // loops back to the collision to check the particle source
+	if (label<0) return originvect;
+  
+	while(pdgCode!=2212){ // loops back to the collision to check the particle source
 
     mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
     if(!mcParticle) {AliError("NO MC PARTICLE"); break;}
@@ -319,10 +340,15 @@ Int_t AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray
     if(label<0) break;
 
   }
-  if (isCharmy && isD) return 44; // the first 4(5) indicates the charm/beauty quark, the second the charmy meson
-  if (isBeauty && isD) return 54;
-  if (isBeauty && isB) return 55;
-  return 0;
+
+	
+	originvect[0] = isCharmy;
+	originvect[1] = isBeauty;
+	originvect[2] = isD;
+	originvect[3] = isB;
+ 
+    
+  return originvect;
 }
 
 //--------------------------------------------------------------------------
@@ -363,18 +389,25 @@ Bool_t AliHFAssociatedTrackCuts::InvMassDstarRejection(AliAODRecoDecayHF2Prong* 
 	return kTRUE;
 }
 //________________________________________________________
+void AliHFAssociatedTrackCuts::SetMCEventTypes(Int_t *MCEventTypeArray)
+// set the array of event types you want to process in MonteCarlo (gluon splitting, pair production etc.)
+{
+	if(!fMCEventType) fMCEventType = new Int_t[fNofMCEventType];
+	
+	for(Int_t k=0; k<fNofMCEventType; k++){
+		fMCEventType[k] = MCEventTypeArray[k];
+	}
+	return;	
+}
+
+//________________________________________________________
 void AliHFAssociatedTrackCuts::SetAODTrackCuts(Float_t *cutsarray)
 {
-	cout << "Check 1" << endl;
 	if(!fAODTrackCuts) fAODTrackCuts = new Float_t[fNTrackCuts];
-	cout << "Check 2" << endl;
 	for(Int_t i =0; i<fNTrackCuts; i++){
-		cout << "Check 2." << i << endl;
 		fAODTrackCuts[i] = cutsarray[i];
 	}
-	cout << "Check 3" << endl;
 	SetTrackCutsNames();
-	cout << "Check 4" << endl;
 	return;
 }
 //________________________________________________________
@@ -421,6 +454,8 @@ void AliHFAssociatedTrackCuts::SetvZeroCutsNames(/*TString *namearray*/){
 //--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintAll()
 {
+	
+	printf("\n=================================================");
 	printf("\nCuts for the associated track: \n \n");
 	       
 	printf("ITS Refit........................................: %s\n",fESDTrackCuts->GetRequireITSRefit() ? "Yes" : "No");
@@ -430,34 +465,42 @@ void AliHFAssociatedTrackCuts::PrintAll()
 	printf("Min number of ITS clusters.......................: %d\n",fESDTrackCuts->GetMinNClustersITS());
 	printf("Min number of TPC clusters.......................: %d\n",fESDTrackCuts->GetMinNClusterTPC());
 	Int_t spd = fESDTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
-	if(spd==0) cout <<  "SPD..............................................: kOff"  << endl;
-	if(spd==1) cout <<  "SPD..............................................: kNone"  << endl;
-	if(spd==2) cout <<  "SPD..............................................: kAny"  << endl;
-	if(spd==3) cout <<  "SPD..............................................: kFirst"  << endl;
-	if(spd==4) cout <<  "SPD..............................................: kOnlyFirst"  << endl;
-	if(spd==5) cout <<  "SPD..............................................: kSecond"  << endl;
-	if(spd==6) cout <<  "SPD..............................................: kOnlySecond"  << endl;
-	if(spd==7) cout <<  "SPD..............................................: kBoth"  << endl;
+	if(spd==0) std::cout <<  "SPD..............................................: kOff"  << std::endl;
+	if(spd==1) std::cout <<  "SPD..............................................: kNone"  << std::endl;
+	if(spd==2) std::cout <<  "SPD..............................................: kAny"  << std::endl;
+	if(spd==3) std::cout <<  "SPD..............................................: kFirst"  << std::endl;
+	if(spd==4) std::cout <<  "SPD..............................................: kOnlyFirst"  << std::endl;
+	if(spd==5) std::cout <<  "SPD..............................................: kSecond"  << std::endl;
+	if(spd==6) std::cout <<  "SPD..............................................: kOnlySecond"  << std::endl;
+	if(spd==7) std::cout <<  "SPD..............................................: kBoth"  << std::endl;
 	
-	cout <<  "Filter Bit.......................................: " << fBit  << endl;
-	cout <<  "Charge...........................................: " << fCharge  << endl;
+	std::cout <<  "Filter Bit.......................................: " << fBit  << std::endl;
+	std::cout <<  "Charge...........................................: " << fCharge  << std::endl;
 		
 	for(Int_t j=0;j<fNTrackCuts;j++){
-		cout << fTrackCutsNames[j] << fAODTrackCuts[j] << endl;
+		std::cout << fTrackCutsNames[j] << fAODTrackCuts[j] << std::endl;
 	}
-	
+	printf("\n");
+	printf("=================================================");
 	printf("\nCuts for the K0 candidates: \n \n");
 	for(Int_t k=0;k<fNvZeroCuts;k++){
-		cout << fvZeroCutsNames[k] <<  fAODvZeroCuts[k] << endl;
+		std::cout << fvZeroCutsNames[k] <<  fAODvZeroCuts[k] << std::endl;
 	}
-	cout << " " << endl;
+	std::cout << " " << std::endl;
 	PrintPoolParameters();
+	PrintSelectedMCevents();
+
+	printf("=================================================");
+	printf("\nAdditional description\n");
+	std::cout << fDescription << std::endl;
+	printf("\n");
 
 }
 
 //--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintPoolParameters()
-{
+{   
+	printf("=================================================");
 	printf("\nEvent Pool settings: \n \n");
 	
 	printf("Number of zVtx Bins: %d\n", fNzVtxBins);
@@ -466,14 +509,40 @@ void AliHFAssociatedTrackCuts::PrintPoolParameters()
 	for(Int_t k=0; k<fNzVtxBins; k++){
 		printf("Bin %d..............................................: %.1f - %.1f cm\n", k, fZvtxBins[k], fZvtxBins[k+1]);	
 	}
-	
+	printf("\n");
 	printf("\nNumber of Centrality(multiplicity) Bins: %d\n", fNCentBins);
 	printf("\nCentrality(multiplicity) Bins:\n");
 	for(Int_t k=0; k<fNCentBins; k++){
 		printf("Bin %d..............................................: %.1f - %.1f\n", k, fCentBins[k], fCentBins[k+1]);
 	}
+
 	
 	
+}
+
+//--------------------------------------------------------------------------
+void AliHFAssociatedTrackCuts::PrintSelectedMCevents()
+{
+	printf("\n=================================================");
+	
+	printf("\nSelected MC events: \n \n");
+	printf("Number of selected events: %d\n",fNofMCEventType);
+	
+	for(Int_t k=0; k<fNofMCEventType; k++){
+	if(fMCEventType[k]==28)	printf("=> Flavour excitation \n");	
+	if(fMCEventType[k]==53)	printf("=> Pair creation \n");	
+	if(fMCEventType[k]==68)	printf("=> Gluon splitting \n");	
+	}
+	
+	printf("\n");
+	for(Int_t k=0; k<fNofMCEventType; k++){
+		printf("MC process code %d \n",fMCEventType[k]);		
+	}
+	
+	printf("\n");
+	
+	
+		
 	
 }
 

@@ -49,6 +49,8 @@
 #include "AliNormalizationCounter.h"
 #include "AliReducedParticle.h"
 #include "AliHFCorrelator.h"
+#include "AliAODMCHeader.h"
+#include "AliEventPoolManager.h"
 
 using std::cout;
 using std::endl;
@@ -61,7 +63,6 @@ ClassImp(AliAnalysisTaskDStarCorrelations)
 AliAnalysisTaskDStarCorrelations::AliAnalysisTaskDStarCorrelations() :
 AliAnalysisTaskSE(),
 fhandler(0x0),
-//fPoolMgr(0x0),      
 fmcArray(0x0),
 fCounter(0x0),
 fCorrelator(0x0),
@@ -69,11 +70,13 @@ fselect(0),
 fmontecarlo(kFALSE),
 fmixing(kFALSE),
 fSystem(kFALSE),
+fReco(kTRUE),
 fEvents(0),
-fDebug(0),
+fDebugLevel(0),
 fDisplacement(0),
 
-fOutput(0x0),            
+fOutput(0x0), 
+fOutputMC(0x0),
 fCuts(0),
 fCuts2(0)
 {
@@ -92,21 +95,25 @@ fselect(0),
 fmontecarlo(kFALSE),
 fmixing(kFALSE),
 fSystem(kFALSE),
+fReco(kTRUE),
 fEvents(0),
-fDebug(0),
+fDebugLevel(0),
 fDisplacement(0),
 
-fOutput(0x0),                
+fOutput(0x0),   
+fOutputMC(0x0), 
 fCuts(0),
 fCuts2(AsscCuts)
 {
 	fCuts=cuts;
 	Info("AliAnalysisTaskDStarCorrelations","Calling Constructor");
 	DefineInput(0, TChain::Class());
-	DefineOutput(1,TList::Class()); // histos from data
-	DefineOutput(2,AliRDHFCutsDStartoKpipi::Class()); // my cuts
-	DefineOutput(3,AliNormalizationCounter::Class());   // normalization
-	DefineOutput(4,AliHFAssociatedTrackCuts::Class()); // my cuts
+	
+	DefineOutput(1,TList::Class()); // histos from data and MC
+	DefineOutput(2,TList::Class()); // histos from MC
+	DefineOutput(3,AliRDHFCutsDStartoKpipi::Class()); // my D meson cuts
+	DefineOutput(4,AliHFAssociatedTrackCuts::Class()); // my associated tracks cuts
+	DefineOutput(5,AliNormalizationCounter::Class());   // normalization
 }
 
 //__________________________________________________________________________
@@ -124,6 +131,7 @@ AliAnalysisTaskDStarCorrelations::~AliAnalysisTaskDStarCorrelations() {
 	if(fCounter) {delete fCounter; fCounter = 0;}
 	if(fCorrelator) {delete fCorrelator; fCorrelator = 0;}
 	if(fOutput) {delete fOutput; fOutput = 0;}
+	if(fOutputMC) {delete fOutputMC; fOutputMC = 0;}
 	if(fCuts) {delete fCuts; fCuts = 0;}
 	if(fCuts2) {delete fCuts2; fCuts2=0;}
 
@@ -134,7 +142,7 @@ void AliAnalysisTaskDStarCorrelations::Init(){
 	//
 	// Initialization
 	//
-	if(fDebug > 1) printf("AliAnalysisTaskDStarCorrelations::Init() \n");
+	if(fDebugLevel > 1) printf("AliAnalysisTaskDStarCorrelations::Init() \n");
 	
 	AliRDHFCutsDStartoKpipi* copyfCuts=new AliRDHFCutsDStartoKpipi(*fCuts);
 	
@@ -142,7 +150,7 @@ void AliAnalysisTaskDStarCorrelations::Init(){
 	
 	
 	// Post the D* cuts
-	PostData(2,copyfCuts);
+	PostData(3,copyfCuts);
 	
 	// Post the hadron cuts
 	PostData(4,fCuts2);
@@ -162,9 +170,12 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	fOutput = new TList();
 	fOutput->SetOwner();
 	
+	fOutputMC = new TList();
+	fOutputMC->SetOwner();
+	
 	// define histograms
 	DefineHistoForAnalysis();
-	fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(3)->GetContainer()->GetName()));
+	fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
 	fCounter->Init();
 	
     Double_t Pi = TMath::Pi();
@@ -174,31 +185,40 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	fCorrelator->SetAssociatedParticleType(fselect); // set 1/2/3 for hadron/kaons/kzeros
 	fCorrelator->SetApplyDisplacementCut(fDisplacement); //set kFALSE/kTRUE for using the displacement cut
 	fCorrelator->SetUseMC(fmontecarlo);
+	fCorrelator->SetUseReco(fReco);
 	Bool_t pooldef = fCorrelator->DefineEventPool();
 	
 	if(!pooldef) AliInfo("Warning:: Event pool not defined properly");
 
+
 	
 	PostData(1,fOutput); // set the outputs
-	PostData(3,fCounter); // set the outputs
+	PostData(2,fOutputMC); // set the outputs
+	PostData(5,fCounter); // set the outputs
 }
 //_________________________________________________
 void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 
 	
-	
-	std::cout << " " << std::endl;
-	std::cout << "=================================================================================" << std::endl;
-	if(!fmixing){
-	if(fselect==1) std::cout << "TASK::Correlation with hadrons on SE "<< std::endl;
-	if(fselect==2) std::cout << "TASK::Correlation with kaons on SE "<< std::endl;
-	if(fselect==3) std::cout << "TASK::Correlation with kzeros on SE "<< std::endl;
-	}
-	if(fmixing){
-		if(fselect==1) std::cout << "TASK::Correlation with hadrons on ME "<< std::endl;
-		if(fselect==2) std::cout << "TASK::Correlation with kaons on ME "<< std::endl;
-		if(fselect==3) std::cout << "TASK::Correlation with kzeros on ME "<< std::endl;
-	}
+	if(fDebugLevel){
+		
+		if(fReco) std::cout << "USING RECONSTRUCTION" << std::endl;
+		if(!fReco) std::cout << "USING MC TRUTH" << std::endl;
+        std::cout << " " << std::endl;
+        std::cout << "=================================================================================" << std::endl;
+        if(!fmixing){
+            if(fselect==1) std::cout << "TASK::Correlation with hadrons on SE "<< std::endl;
+            if(fselect==2) std::cout << "TASK::Correlation with kaons on SE "<< std::endl;
+            if(fselect==3) std::cout << "TASK::Correlation with kzeros on SE "<< std::endl;
+        }
+        if(fmixing){
+            if(fselect==1) std::cout << "TASK::Correlation with hadrons on ME "<< std::endl;
+            if(fselect==2) std::cout << "TASK::Correlation with kaons on ME "<< std::endl;
+            if(fselect==3) std::cout << "TASK::Correlation with kzeros on ME "<< std::endl;
+        }
+        
+    }// end if debug
+    
 	if (!fInputEvent) {
 		Error("UserExec","NO EVENT FOUND!");
 		return;
@@ -210,19 +230,28 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	  return;
 	}
 	
-	fCorrelator->SetAODEvent(aodEvent); // set the event to be processed
+	
 	
 	fEvents++; // event counter
 	((TH1D*)fOutput->FindObject("NofEvents"))->Fill(0);
+    fCounter->StoreEvent(aodEvent,fCuts,fmontecarlo);
+  
+	// load MC array
 	fmcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	
 	if(fmontecarlo && !fmcArray){
 	  AliError("Array of MC particles not found");
 	  return;
 	}
+	
+
+	
+	
 	Bool_t isEvSel=fCuts->IsEventSelected(aodEvent);
 	if(!isEvSel) return;
-	((TH1D*)fOutput->FindObject("NofEvents"))->Fill(1);
+	
+    fCorrelator->SetAODEvent(aodEvent); // set the event to be processed
+    
+    ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(1);
 	//
 	Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
 	if(!correlatorON) {
@@ -232,10 +261,40 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);
 	
 	if(fmontecarlo) fCorrelator->SetMCArray(fmcArray);
+	
+	
+	// check the event type
+	// load MC header
+	
+	if(fmontecarlo){
+		AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+		if (fmontecarlo && !mcHeader) {
+			AliError("Could not find MC Header in AOD");
+			return;
+		}
+	
+		Bool_t isMCeventgood = kFALSE;
+       
+		
+		Int_t eventType = mcHeader->GetEventType();
+		Int_t NMCevents = fCuts2->GetNofMCEventType();
+		
+		for(Int_t k=0; k<NMCevents; k++){
+			Int_t * MCEventType = fCuts2->GetMCEventType();
+			
+			if(eventType == MCEventType[k]) isMCeventgood= kTRUE;
+			((TH1D*)fOutputMC->FindObject("EventTypeMC"))->Fill(eventType);
+		}
+		
+		if(NMCevents && !isMCeventgood){
+		if(fDebugLevel)	std::cout << "The MC event " << eventType << " not interesting for this analysis: skipping" << std::endl;
+			return;	
+		}
+		
+	} // end if montecarlo
+	
 	// D* reconstruction
 	TClonesArray *arrayDStartoD0pi=0;
-
-	
 	if(!aodEvent && AODEvent() && IsStandardAOD()) {
 		// In case there is an AOD handler writing a standard AOD, use the AOD 
 		// event in memory rather than the input (ESD) event.    
@@ -274,7 +333,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	Int_t pdgDgDStartoD0pi[2]={421,211};
 	Int_t pdgDgD0toKpi[2]={321,211};
 
-	
+	Bool_t isDStarCand = kFALSE;
 	//loop on D* candidates
 	for (Int_t iDStartoD0pi = 0; iDStartoD0pi<arrayDStartoD0pi->GetEntriesFast(); iDStartoD0pi++) {
 		isInPeak = kFALSE;
@@ -382,6 +441,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 		
 		if(!isInPeak && !isInSideBand) continue; // skip if it is not side band or peak event - SAVE CPU TIME
 		
+		isDStarCand = kTRUE;
 		
 	    fCorrelator->SetTriggerParticleProperties(ptDStar,phiDStar,etaDStar); // pass to the object the necessary trigger part parameters
 		
@@ -411,9 +471,14 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				continue;
 			}
 		
+            //initialization of variables for correlations with leading particles
+            Double_t DeltaPhiLeading = -999.;
+			Double_t DeltaEtaLeading = -999.;
+			//Double_t ptleading = -999.;
+            Int_t labelleading = -999;
 		
 			Int_t NofTracks = fCorrelator->GetNofTracks();
-		
+			
 			for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ // looping on track candidates
 			
 				Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
@@ -428,7 +493,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				Double_t phiHad = hadron->Phi();
 				Double_t etaHad = hadron->Eta(); 
 				Double_t label = hadron->GetLabel(); 
-				Double_t trackid = hadron->GetID();
+				Int_t trackid = hadron->GetID();
 				
 				phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
 				
@@ -442,9 +507,17 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				
 				if(fmontecarlo && isDStarMCtag){ // check correlations of MC tagged DStars in MonteCarlo
 				
-					Int_t PartSource = fCuts2->IsMCpartFromHF(label,fmcArray); // check source of associated particle (hadron/kaon/K0)
-				
+					Bool_t* PartSource = fCuts2->IsMCpartFromHF(label,fmcArray); // check source of associated particle (hadron/kaon/K0)
 					FillMCTagCorrelations(ptDStar,DeltaPhi,DeltaEta,ptHad,PartSource);
+					
+					
+					((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,0);
+					if(PartSource[0]) ((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,1);
+					if(PartSource[1]) ((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,2);
+					if(PartSource[2]&&PartSource[0]) ((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,3);
+					if(PartSource[2]&&PartSource[1]) ((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,4);
+					if(PartSource[3]) ((TH3F*)fOutputMC->FindObject("MCPhiEtaPart"))->Fill(phiHad,etaHad,5);
+				
 				
 				}
 			
@@ -471,13 +544,28 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 			
 			
 			} // end loop on track candidates
+            
+            // fill the leading particle histograms
+            
+            if(isInPeak) ((TH3D*)fOutput->FindObject("LeadingCand"))->Fill(DeltaPhiLeading,ptDStar,DeltaEtaLeading);
+			if(isInSideBand) ((TH3D*)fOutput->FindObject("LeadingSB"))->Fill(DeltaPhiLeading,ptDStar,DeltaEtaLeading);
+            
+			if(fmontecarlo && isDStarMCtag){
+                Bool_t* LeadPartSource = fCuts2->IsMCpartFromHF(labelleading,fmcArray);
+                FillMCTagLeadingCorrelations(ptDStar,DeltaPhiLeading,DeltaEtaLeading,LeadPartSource);
+                
+            }
+            
 		} // end loop on events in the pool
 				
 	}// end loop on D* candidates		
+	
+	
 	Bool_t updated = fCorrelator->PoolUpdate();
+	
+	if(updated) EventMixingChecks(aodEvent);
 	if(!updated) AliInfo("Pool was not updated");
 	
-		//std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END OF THE EVENT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	
 	
 		
@@ -513,9 +601,13 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	// ========================= histograms for both Data and MonteCarlo
 	
 	
-	TH1D * NofEvents = new TH1D("NofEvents","NofEvents",3,0,3);
+	TH1D * NofEvents = new TH1D("NofEvents","NofEvents",11,0,11);
 	fOutput->Add(NofEvents);
-		
+	
+	
+	
+	
+	
 	TH2F *D0InvMass = new TH2F("D0InvMass","K#pi invariant mass distribution",300,0,30,1500,0.5,3.5);
 	fOutput->Add(D0InvMass);
 	
@@ -528,13 +620,13 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	TH2F *bkgDeltaInvMass = new TH2F("bkgDeltaInvMass","K#pi#pi - K#pi invariant mass distribution",300,0,30,750,0.1,0.2);
 	fOutput->Add(bkgDeltaInvMass);
 	
-	TH1F *RecoPtDStar = new TH1F("RecoPtDStar","RECO DStar pt distribution",30,0,30);
+	TH1F *RecoPtDStar = new TH1F("RecoPtDStar","RECO DStar pt distribution",50,0,50);
 	fOutput->Add(RecoPtDStar);
 	
-	TH1F *RecoPtBkg = new TH1F("RecoPtBkg","RECO pt distribution side bands",30,0,30);
+	TH1F *RecoPtBkg = new TH1F("RecoPtBkg","RECO pt distribution side bands",50,0,50);
 	fOutput->Add(RecoPtBkg);
 	
-	TH1F *MCtagPtDStar = new TH1F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",30,0,30);
+	TH1F *MCtagPtDStar = new TH1F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50);
 	fOutput->Add(MCtagPtDStar);
 	
 	TH2F *KZeroSpectra = new TH2F("KZeroSpectra","Spectra of K0s",500,0.3,0.8,250,0,25);
@@ -552,15 +644,9 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	TH2I * EventMixingCheck = new TH2I("EventMixingCheck","EventMixingCheck",5,-0.5,4.5,7,-0.5,6.5);
 	if(fmixing) fOutput->Add(EventMixingCheck);
 	
+	
 
 	
-	TH1F * MCSources = new TH1F("MCSources","Origin of associated particles in MC", 10, -0.5, 9.5);
-	MCSources->GetXaxis()->SetBinLabel(1,"All ");
-	MCSources->GetXaxis()->SetBinLabel(2," from Heavy flavour");
-	MCSources->GetXaxis()->SetBinLabel(3," from c->D");
-	MCSources->GetXaxis()->SetBinLabel(4," from b->D");
-	MCSources->GetXaxis()->SetBinLabel(5," from b->B");
-	if(fmontecarlo) fOutput->Add(MCSources);
 	
 	TH2F * PhiEtaTrigger = new TH2F("PhiEtaTrigger","#phi distribution of the trigger particle",36,-0.5*Pi,1.5*Pi,18,-0.9,0.9);
 	fOutput->Add(PhiEtaTrigger);
@@ -570,112 +656,380 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	
 	TH2F * PhiEtaPart = new TH2F("PhiEtaPart","#phi distribution of the associated particle",36,-0.5*Pi,1.5*Pi,18,-0.9,0.9);
 	fOutput->Add(PhiEtaPart);
-
-
+	
+	
 	//correlations histograms
 	TString histoname1 = "DPhiDStar";
 	if(fselect==1) histoname1 += "Hadron";
 	if(fselect==2) histoname1 += "Kaon";
 	if(fselect==3) histoname1 += "KZero";
-
 	
-	TH3D * DPhiDStar = new TH3D(histoname1.Data(),histoname1.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
 	
-	TH3D * DPhiDStarKZero1 = new TH3D("DPhiDStarKZero1","DPhiDStarKZero1",nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
+	TH3D * DPhiDStar = new TH3D(histoname1.Data(),histoname1.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TH3D * DPhiDStarKZero1 = new TH3D("DPhiDStarKZero1","DPhiDStarKZero1",nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
 	
 	//side band background histograms
 	TString histoname2 = "bkg";
 	histoname2 += histoname1;
-	TH3D * bkgDPhiDStar = new TH3D(histoname2.Data(),histoname2.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
-	TH3D * bkgDPhiDStarKZero1 = new TH3D("bkgDPhiDStarKZero1","bkgDPhiDStarKZero1",nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
+	TH3D * bkgDPhiDStar = new TH3D(histoname2.Data(),histoname2.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	TH3D * bkgDPhiDStarKZero1 = new TH3D("bkgDPhiDStarKZero1","bkgDPhiDStarKZero1",nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
 	
 	
 	fOutput->Add(DPhiDStar);
-
+	
 	if(fselect==3){fOutput->Add(DPhiDStarKZero1);}
 	
 	fOutput->Add(bkgDPhiDStar);
-
+	
 	if(fselect==3){fOutput->Add(bkgDPhiDStarKZero1);}
-
-
-	// ========================= histos for analysis on MC
+	
+	
+	// leading particle
+	TH3D * leadingcand = new TH3D("LeadingCand","LeadingCand",nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	TH3D * leadingsidebands = new TH3D("LeadingSB","LeadingSB",nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	fOutput->Add(leadingcand);
+	fOutput->Add(leadingsidebands);
+	
+	// ========================= histos for analysis on MC only
+	
+	TH1D * EventTypeMC = new TH1D("EventTypeMC","EventTypeMC",100,-0.5,99.5);
+	if(fmontecarlo) fOutputMC->Add(EventTypeMC);
+	
+	TH1F * MCSources = new TH1F("MCSources","Origin of associated particles in MC", 10, -0.5, 9.5);
+	MCSources->GetXaxis()->SetBinLabel(1,"All ");
+	MCSources->GetXaxis()->SetBinLabel(2," from hadron Heavy flavour");
+	MCSources->GetXaxis()->SetBinLabel(3," from c->D");
+	MCSources->GetXaxis()->SetBinLabel(4," from b->D");
+	MCSources->GetXaxis()->SetBinLabel(5," from b->B");
+	MCSources->GetXaxis()->SetBinLabel(6," from quark Heavy flavour");
+	MCSources->GetXaxis()->SetBinLabel(7," from c");
+	MCSources->GetXaxis()->SetBinLabel(8," from b");
+	
+	if(fmontecarlo) fOutputMC->Add(MCSources);
+    
+    // leading particle from mc source
+    TH1F * LeadingMCSources = new TH1F("LeadingMCSources","Origin of associated leading particles in MC", 10, -0.5, 9.5);
+	LeadingMCSources->GetXaxis()->SetBinLabel(1,"All ");
+	LeadingMCSources->GetXaxis()->SetBinLabel(2," from hadron Heavy flavour");
+	LeadingMCSources->GetXaxis()->SetBinLabel(3," from c->D");
+	LeadingMCSources->GetXaxis()->SetBinLabel(4," from b->D");
+	LeadingMCSources->GetXaxis()->SetBinLabel(5," from b->B");
+	LeadingMCSources->GetXaxis()->SetBinLabel(6," from quark Heavy flavour");
+	LeadingMCSources->GetXaxis()->SetBinLabel(7," from c");
+	LeadingMCSources->GetXaxis()->SetBinLabel(8," from b");
+	
+	if(fmontecarlo) fOutputMC->Add(LeadingMCSources);
+	
+    // all hadrons
 	TString histoname3 = "MCTag";
 	histoname3 += histoname1;
-	TH3D * MCTagDPhiDStar = new TH3D(histoname3.Data(),histoname3.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
-	 
+	TH3D * MCTagDPhiDStar = new TH3D(histoname3.Data(),histoname3.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
 	TString histoname44 = "CharmDOrigin";
 	histoname44 += histoname1;
 	histoname44 += "MC";
 	
-	TH3D * CharmDOriginDPhiDStar = new TH3D(histoname44.Data(),histoname44.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
+	TH3D * CharmDOriginDPhiDStar = new TH3D(histoname44.Data(),histoname44.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
 	
 	
 	TString histoname54 = "BeautyDOrigin";
 	histoname54 += histoname1;
 	histoname54 += "MC";
-	TH3D * BeautyDOriginDPhiDStar = new TH3D(histoname54.Data(),histoname54.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
+	TH3D * BeautyDOriginDPhiDStar = new TH3D(histoname54.Data(),histoname54.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
 	
 	TString histoname55 = "BeautyBOrigin";
 	histoname55 += histoname1;
 	histoname55 += "MC";
-	TH3D * BeautyBOriginDPhiDStar = new TH3D(histoname55.Data(),histoname55.Data(),nbinscorr,lowcorrbin,upcorrbin,30,0,30,19,-0.95,0.95);
+	TH3D * BeautyBOriginDPhiDStar = new TH3D(histoname55.Data(),histoname55.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TString histoname4 = "CharmQuarkOrigin";
+	histoname4 += histoname1;
+	histoname4 += "MC";
+	TH3D * CharmQuarkOriginDPhiDStar = new TH3D(histoname4.Data(),histoname4.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TString histoname5 = "BeautyQuarkOrigin";
+	histoname5 += histoname1;
+	histoname5 += "MC";
+	TH3D * BeautyQuarkOriginDPhiDStar = new TH3D(histoname5.Data(),histoname5.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+    
+    if(fmontecarlo){
+        
+        fOutputMC->Add(MCTagDPhiDStar);
+        fOutputMC->Add(CharmDOriginDPhiDStar);
+        fOutputMC->Add(BeautyDOriginDPhiDStar);
+        fOutputMC->Add(BeautyBOriginDPhiDStar);
+        fOutputMC->Add(CharmQuarkOriginDPhiDStar);
+        fOutputMC->Add(BeautyQuarkOriginDPhiDStar);
+        
+	}
+    
+    // ========================= histos for analysis on MC
+    // all leading hadron
+	TString Leadinghistoname3 = "LeadingMCTag";
+	Leadinghistoname3 += histoname1;
+	TH3D * LeadingMCTagDPhiDStar = new TH3D(Leadinghistoname3.Data(),Leadinghistoname3.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+    
+	TString Leadinghistoname44 = "LeadingCharmDOrigin";
+	Leadinghistoname44 += histoname1;
+	Leadinghistoname44 += "MC";
+	
+	TH3D * LeadingCharmDOriginDPhiDStar = new TH3D(Leadinghistoname44.Data(),Leadinghistoname44.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	
+	TString Leadinghistoname54 = "LeadingBeautyDOrigin";
+	Leadinghistoname54 += histoname1;
+	Leadinghistoname54 += "MC";
+	TH3D * LeadingBeautyDOriginDPhiDStar = new TH3D(Leadinghistoname54.Data(),Leadinghistoname54.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TString Leadinghistoname55 = "LeadingBeautyBOrigin";
+	Leadinghistoname55 += histoname1;
+	Leadinghistoname55 += "MC";
+	TH3D * LeadingBeautyBOriginDPhiDStar = new TH3D(Leadinghistoname55.Data(),Leadinghistoname55.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TString Leadinghistoname4 = "LeadingCharmQuarkOrigin";
+	Leadinghistoname4 += histoname1;
+	Leadinghistoname4 += "MC";
+	TH3D * LeadingCharmQuarkOriginDPhiDStar = new TH3D(Leadinghistoname4.Data(),Leadinghistoname4.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+	
+	TString Leadinghistoname5 = "LeadingBeautyQuarkOrigin";
+	Leadinghistoname5 += histoname1;
+	Leadinghistoname5 += "MC";
+	TH3D * LeadingBeautyQuarkOriginDPhiDStar = new TH3D(Leadinghistoname5.Data(),Leadinghistoname5.Data(),nbinscorr,lowcorrbin,upcorrbin,50,0,50,39,-1.95,1.95);
+    
+    
+	
 	
 	if(fmontecarlo){
-	
-	fOutput->Add(MCTagDPhiDStar);
-	fOutput->Add(CharmDOriginDPhiDStar);
-	fOutput->Add(BeautyDOriginDPhiDStar);
-	fOutput->Add(BeautyBOriginDPhiDStar);
-	
+		
+		fOutputMC->Add(LeadingMCTagDPhiDStar);
+		fOutputMC->Add(LeadingCharmDOriginDPhiDStar);
+		fOutputMC->Add(LeadingBeautyDOriginDPhiDStar);
+		fOutputMC->Add(LeadingBeautyBOriginDPhiDStar);
+		fOutputMC->Add(LeadingCharmQuarkOriginDPhiDStar);
+		fOutputMC->Add(LeadingBeautyQuarkOriginDPhiDStar);
+		
 	}
 	
+	TH3F * MCPhiEtaPart = new TH3F("MCPhiEtaPart","#phi distribution of the associated particle",36,-0.5*Pi,1.5*Pi,50,-2.5,2.5,6,-0.5,6.5);
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(1,"All particles");
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(2,"from c quark");
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(3,"from b quark");
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(4,"from D from c");
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(5,"from D from b");
+	MCPhiEtaPart->GetZaxis()->SetBinLabel(6,"from B from b");
+	if(fmontecarlo) fOutputMC->Add(MCPhiEtaPart);
+	
+	// ============================= EVENT MIXING CHECKS ======================================
+	
+	Int_t MaxNofEvents = fCuts2->GetMaxNEventsInPool();
+	Int_t MinNofTracks = fCuts2->GetMinNTracksInPool();
+	Int_t NofCentBins = fCuts2->GetNCentPoolBins();
+	Double_t * CentBins = fCuts2->GetCentPoolBins();
+	Int_t NofZVrtxBins = fCuts2->GetNZvtxPoolBins();
+	Double_t *ZVrtxBins = fCuts2->GetZvtxPoolBins();
+	
+	Int_t k =0;
+	
+	if(fSystem) k = 100; // PbPb centrality
+	if(!fSystem) k = NofCentBins; // pp multiplicity
+	
+	
+	Double_t minvalue = CentBins[0];
+	Double_t maxvalue = CentBins[NofCentBins+1];
+	Double_t Zminvalue = ZVrtxBins[0];
+	Double_t Zmaxvalue = ZVrtxBins[NofCentBins+1];
+	
+	
 
+	Double_t Nevents[]={0,2*MaxNofEvents/10,4*MaxNofEvents/10,6*MaxNofEvents/10,8*MaxNofEvents/10,MaxNofEvents};
+	Double_t * events = Nevents;
+	
+	TH3D * EventsPerPoolBin = new TH3D("EventsPerPoolBin","Number of events in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins,5,events);
+	EventsPerPoolBin->GetXaxis()->SetTitle("Centrality/multiplicity ");
+	EventsPerPoolBin->GetYaxis()->SetTitle("Z vertex [cm]");
+	EventsPerPoolBin->GetZaxis()->SetTitle("Number of events in pool bin");
+	if(fmixing) fOutput->Add(EventsPerPoolBin);
+	
+	Int_t MaxNofTracks = (MaxNofEvents+1)*MinNofTracks;
+	Int_t Diff = MaxNofTracks-MinNofTracks;
+	
+	Double_t Ntracks[]={MinNofTracks,MinNofTracks+Diff/5,MinNofTracks+2*Diff/5,MinNofTracks+3*Diff/5,MinNofTracks+4*Diff/5,MaxNofTracks};
+	Double_t  * trackN = Ntracks;
+	
+	TH3D * NofTracksPerPoolBin = new TH3D("NofTracksPerPoolBin","Number of tracks in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins,5,trackN);
+	NofTracksPerPoolBin->GetXaxis()->SetTitle("Centrality/multiplicity ");
+	NofTracksPerPoolBin->GetYaxis()->SetTitle("Z vertex [cm]");
+	NofTracksPerPoolBin->GetZaxis()->SetTitle("Number of tracks per bin");
+	
+	if(fmixing) fOutput->Add(NofTracksPerPoolBin);
+	
+	TH2D * NofPoolBinCalls = new TH2D("NofPoolBinCalls","Number of tracks in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins);
+	NofPoolBinCalls->GetXaxis()->SetTitle("Centrality/multiplicity ");
+	NofPoolBinCalls->GetYaxis()->SetTitle("Z vertex [cm]");
+	if(fmixing) fOutput->Add(NofPoolBinCalls);
+	
+
+	
+	TH2D * EventProps = new TH2D("EventProps","Number of tracks in bin pool",k,minvalue,maxvalue,100,Zminvalue,Zmaxvalue);
+	EventProps->GetXaxis()->SetTitle("Centrality/multiplicity ");
+	EventProps->GetYaxis()->SetTitle("Z vertex [cm]");
+	if(fmixing) fOutput->Add(EventProps);
 	
 }
 
 
 
 //____________________________  Function for MC correlations ___________________________________________________
-void AliAnalysisTaskDStarCorrelations::FillMCTagCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Double_t ptTrack, Int_t mcSource){
+void AliAnalysisTaskDStarCorrelations::FillMCTagCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Double_t ptTrack, Bool_t *mcSource){
 
-
-	if(fselect==1) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarHadron"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarKaon"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarKZero"))->Fill(DelPhi,ptTrig,DelEta);
-
-
-
-((TH1F*)fOutput->FindObject("MCSources"))->Fill(0);
-
-if (mcSource==44){ // is from charm ->D
-	if(fselect==1) ((TH3D*)fOutput->FindObject("CharmDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("CharmDOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH3D*)fOutput->FindObject("CharmDOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
 	
 	
-	((TH1F*)fOutput->FindObject("MCSources"))->Fill(1);
-	((TH1F*)fOutput->FindObject("MCSources"))->Fill(2);
-	}
-
-if (mcSource==54){ // is from beauty -> D
-	if(fselect==1) ((TH3D*)fOutput->FindObject("BeautyDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("BeautyDOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH3D*)fOutput->FindObject("BeautyDOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(1);
-	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(3);
-	}
-
-if (mcSource==55){ // is from beauty ->B
-	if(fselect==1) ((TH3D*)fOutput->FindObject("BeautyBOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("BeautyBOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH3D*)fOutput->FindObject("BeautyOriginBDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
-	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(1);
-	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(4);
-	}
+	
+			
+		if(fselect==1) ((TH3D*)fOutputMC->FindObject("MCTagDPhiDStarHadron"))->Fill(DelPhi,ptTrig,DelEta);
+		if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutputMC->FindObject("MCTagDPhiDStarKaon"))->Fill(DelPhi,ptTrig,DelEta);
+		if(fselect==3) ((TH3D*)fOutputMC->FindObject("MCTagDPhiDStarKZero"))->Fill(DelPhi,ptTrig,DelEta);
+		
+	
+		
+		((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(0);
+		
+		if(fDebugLevel){
+			std::cout << "MC source " << mcSource[0] << " "  << mcSource[1] << " " << mcSource[2] << " " << mcSource[3] << std::endl;
+		
+			if(mcSource[0]) std::cout << "mcSource 0 " << std::endl;
+			if(mcSource[1]) std::cout << "mcSource 1 " << std::endl;
+			if(mcSource[2]) std::cout << "mcSource 2 " << std::endl;
+			if(mcSource[3]) std::cout << "mcSource 3 " << std::endl;
+		
+		}
+		if(mcSource[0]){ // is from charm quark
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(5); // all HF quarks
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(6); //  charm quarks
+			if(fselect==1) ((TH3D*)fOutputMC->FindObject("CharmQuarkOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutputMC->FindObject("CharmQuarkOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==3) ((TH3D*)fOutputMC->FindObject("CharmQuarkOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
+		}
+		
+		if(mcSource[1]){ // is from b quark
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(5); // all HF quarks
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(7); // beauty quarks
+			if(fselect==1) ((TH3D*)fOutputMC->FindObject("BeautyQuarkOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutputMC->FindObject("BeautyQuarkOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==3) ((TH3D*)fOutputMC->FindObject("BeautyQuarkOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
+			
+		}
+		
+		if(mcSource[2]&&mcSource[0]){ // is from D meson and charm quark
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(1); // all HF mesons
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(2); //  charm + D
+			if(fselect==1) ((TH3D*)fOutputMC->FindObject("CharmDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutputMC->FindObject("CharmDOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==3) ((TH3D*)fOutputMC->FindObject("CharmDOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
+		}
+		
+		if(mcSource[2]&&mcSource[1]){ // is from D meson and b quark
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(1); // all HF mesons
+			((TH1F*)fOutputMC->FindObject("MCSources"))->Fill(3); //  beauty + D
+			if(fselect==1) ((TH3D*)fOutputMC->FindObject("BeautyDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutputMC->FindObject("BeautyDOriginDPhiDStarKaonMC"))->Fill(DelPhi,ptTrig,DelEta);
+			if(fselect==3) ((TH3D*)fOutputMC->FindObject("BeautyDOriginDPhiDStarKZeroMC"))->Fill(DelPhi,ptTrig,DelEta);
+		}
+		
 	return;
 }
 
+//____________________________  Function for MC leading part correlations ___________________________________________________
+void AliAnalysisTaskDStarCorrelations::FillMCTagLeadingCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Bool_t *mcSource){
+    // correlations with leading hadron on MC
+    
+	if(fselect==1) ((TH3D*)fOutputMC->FindObject("LeadingMCTagDPhiDStarHadron"))->Fill(DelPhi,ptTrig,DelEta);
+	
+    
+    
+	((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(0);
+	
+	if(fDebugLevel){ std::cout << "MC source " << mcSource[0] << " "  << mcSource[1] << " " << mcSource[2] << " " << mcSource[3] << std::endl;
+    
+		if(mcSource[0]) std::cout << "mcSource 0 " << std::endl;
+		if(mcSource[1]) std::cout << "mcSource 1 " << std::endl;
+		if(mcSource[2]) std::cout << "mcSource 2 " << std::endl;
+		if(mcSource[3]) std::cout << "mcSource 3 " << std::endl;
+    }
+    
+	if(mcSource[0]){ // is from charm quark
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(5); // all HF quarks
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(6); //  charm quarks
+		if(fselect==1) ((TH3D*)fOutputMC->FindObject("LeadingCharmQuarkOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+		
+	}
+    
+	if(mcSource[1]){ // is from b quaLeadingrk
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(5); // all HF quarks
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(7); // beauty quarks
+		if(fselect==1) ((TH3D*)fOutputMC->FindObject("LeadingBeautyQuarkOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+		
+		
+	}
+    
+	if(mcSource[2]&&mcSource[0]){ // is from D meson and charm quark
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(1); // all HF mesons
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(2); //  charm + D
+		if(fselect==1) ((TH3D*)fOutputMC->FindObject("LeadingCharmDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+		
+	}
+    
+	if(mcSource[2]&&mcSource[1]){ // is from D meson and b quark
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(1); // all HF mesons
+		((TH1F*)fOutputMC->FindObject("LeadingMCSources"))->Fill(3); //  beauty + D
+		if(fselect==1) ((TH3D*)fOutputMC->FindObject("LeadingBeautyDOriginDPhiDStarHadronMC"))->Fill(DelPhi,ptTrig,DelEta);
+		
+	}
+	
+    
+	return;
+}
+
+
+//____________________________  Run checks on event mixing ___________________________________________________
+void AliAnalysisTaskDStarCorrelations::EventMixingChecks(AliAODEvent* AOD){
+	
+	AliCentrality *centralityObj = 0;
+	Int_t multiplicity = -1;
+	Double_t MultipOrCent = -1;
+	
+	// get the pool for event mixing
+	if(!fSystem){ // pp
+		multiplicity = AOD->GetNTracks();
+		MultipOrCent = multiplicity; // convert from Int_t to Double_t
+	}
+	if(fSystem){ // PbPb
+		
+		centralityObj = AOD->GetHeader()->GetCentralityP();
+		MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
+		AliInfo(Form("Centrality is %f", MultipOrCent));
+	}
+	
+	AliAODVertex *vtx = AOD->GetPrimaryVertex();
+	Double_t zvertex = vtx->GetZ(); // zvertex
+	
+	
+	
+	
+	AliEventPool * pool = fCorrelator->GetPool();
+	
+
+	
+	
+	((TH2D*)fOutput->FindObject("NofPoolBinCalls"))->Fill(MultipOrCent,zvertex); // number of calls of pool
+	((TH2D*)fOutput->FindObject("EventProps"))->Fill(MultipOrCent,zvertex); // event properties
+	
+	((TH3D*)fOutput->FindObject("EventsPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->NTracksInPool()); // number of events in the pool
+	((TH3D*)fOutput->FindObject("NofTracksPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->GetCurrentNEvents()); // number of calls of pool
+}
+	
 
 
 
