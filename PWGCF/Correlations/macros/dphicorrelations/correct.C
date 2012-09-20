@@ -5160,7 +5160,8 @@ void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2, 
 {
   // correct for aspect ratio of figure plus aspect ratio of pad (coordinates are NDC!)
 //   Printf("%d %f %d %f", gPad->GetCanvas()->GetWindowHeight(), gPad->GetHNDC(), gPad->GetCanvas()->GetWindowWidth(), gPad->GetWNDC());
-  x2 = x1 + (y2 - y1) * 0.891 * gPad->GetCanvas()->GetWindowHeight() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetCanvas()->GetWindowWidth());
+  //x2 = x1 + (y2 - y1) * 0.891 * gPad->GetCanvas()->GetWindowHeight() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetCanvas()->GetWindowWidth());
+  x2 = x1 + (y2 - y1) * (466. / 523) * gPad->GetWh() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetWw());
 //   Printf("%f %f %f %f", x1, x2, y1, y2);
   
   if (!prel)
@@ -5833,8 +5834,8 @@ void GetDistAndFlow(void* hVoid, void* hMixedVoid, TH1** hist, Float_t* v2, Int_
 
       if (!cacheIds[cacheId])
       {
-	hMixed->SetPtRange(1.0, 10);
-	cacheMixed[cacheId] = (TH2*) hMixed->GetUEHist(2)->GetUEHist(stepMixed, 0, 1.0, 10.0, 1, 15, 1, kFALSE);
+	hMixed->SetPtRange(3.0, 10);
+	cacheMixed[cacheId] = (TH2*) hMixed->GetUEHist(2)->GetUEHist(stepMixed, 0, 3.0, 10.0, centralityBeginBin, centralityEndBin, 1, kFALSE);
 	cacheIds[cacheId] = hMixed;
 	Printf("GetDistAndFlow: Cached for %p on slot %d", hMixed, cacheId);
       }
@@ -6643,6 +6644,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb);
   hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPbMix, 0, kTRUE);
+//   hMixed3 = (AliUEHistograms*) hMixed->Clone();
   
   AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileNamepp);
   hMixed2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, 0, kTRUE);
@@ -6659,7 +6661,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   }
   
   for (Int_t i=0; i<maxLeadingPt; i++)
-    for (Int_t j=1; j<maxAssocPt; j++)
+    for (Int_t j=2; j<maxAssocPt; j++)
     {
       gpTMin = assocPtArr[j] + 0.01;
       gpTMax = assocPtArr[j+1] - 0.01;
@@ -6668,6 +6670,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       SetupRanges(hMixed);
       SetupRanges(h2);
       SetupRanges(hMixed2);
+//       SetupRanges(hMixed3);
 
       if (assocPtArr[j] >= leadingPtArr[i+leadingPtOffset])
 	continue;
@@ -6679,39 +6682,57 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       TH1* hist5 = 0;
       TH1* hist6 = 0;
       
-      Bool_t equivMixedBin = 1; //kFALSE; // TODO ?
+      Bool_t equivMixedBin = 0; //kFALSE; // TODO ?
       Bool_t scaleToPairs = kTRUE;
       
       Int_t histType = 1;
 
-      if (0)
+      if (1)
       {
 	Int_t step = 8;
       
-	GetSumOfRatios(h, hMixed, &hist1,  step, 0,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist1,     step, 0,  1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+// 	new TCanvas; hist1->DrawClone("SURF1");
+// 	return;
+
+/*	GetDistAndFlow(h, hMixed, &hist2,  0, step, 0,   10,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+	new TCanvas; hist2->DrawClone("SURF1");
+	
+	hist1->Divide(hist2);
+	new TCanvas; hist1->DrawClone("SURF1");
+	
+	return;*/
 	
 // 	new TCanvas; hist1->Draw("SURF1"); return;
 
-	GetSumOfRatios(h, hMixed, &hist5,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
-	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
-	GetSumOfRatios(h, hMixed, &hist6,  step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
-	GetSumOfRatios(h, hMixed, &hist2,  step, 60,  70, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
-// 	step = 6;
+// 	GetSumOfRatios(h, hMixed, &hist5,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+// 	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+// 	GetSumOfRatios(h, hMixed, &hist6,  step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+// 	GetSumOfRatios(h, hMixed, &hist2,  step, 60,  70, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	step = 8;
 	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 // 	new TCanvas; hist3->Draw("SURF1"); return;
       }
-      else if (1)
+      else if (0)
       {
-	Int_t step = 0;
+	Int_t step = 8;
 	
 	Printf(">>>>>>>> Not using GetSumOfRatios!!!");
 	GetDistAndFlow(h, hMixed, &hist1,  0, step, 0,   10,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist5,  0, step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist6,  0, step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+// 	Printf("integral: %f", ((TH2*) hist1)->Integral(1, 36, 5, 36));
+// 	return;
+
+// 	GetDistAndFlow(h, hMixed, &hist5,  0, step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+// 	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+// 	GetDistAndFlow(h, hMixed, &hist6,  0, step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
 // 	step = 6;
 	GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+// 	new TCanvas; hist3->DrawClone("SURF1");
+// 	GetDistAndFlow(hMixed2, 0, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+// 	new TCanvas; hist3->DrawClone("SURF1");
+// 	Printf("integral: %f", ((TH2*) hist3)->Integral(1, 36, 5, 36));
+// 	return;
       }
       else if (0)
       {
@@ -6775,7 +6796,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       
       file->Close();
       
-//       return;
+      return;
     }
 }
 
@@ -7025,7 +7046,7 @@ void CheckWing(const char* fileName)
 //       gPad->SetTopMargin(0.01);
       gPad->SetRightMargin(0.01);
       
-      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 0));
+      hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j+1, 0));
       
       if (!hist1)
 	continue;
@@ -7422,8 +7443,8 @@ void RemoveWing(const char* fileName)
 	if (!hist)
 	  continue;
 	
-	Float_t width = 0.25;
-	TH1* proj = hist->ProjectionY(Form("projx", hist->GetName()), hist->GetXaxis()->FindBin(TMath::Pi() / 2 - width), hist->GetXaxis()->FindBin(TMath::Pi() / 2 + width));
+	Float_t width = 1.5;
+	TH1* proj = hist->ProjectionY(Form("projx", hist->GetName()), hist->GetXaxis()->FindBin(TMath::Pi() - width), hist->GetXaxis()->FindBin(TMath::Pi()+ width));
 	proj->Fit("pol0", "0");
 	//new TCanvas; proj->DrawCopy();
 	proj->Divide(proj->GetFunction("pol0"));
@@ -10645,6 +10666,7 @@ void PlotQA(const char* fileName)
   centr = h->GetCentralityDistribution();
   NormalizeToBinWidth(centr);
   Int_t events = (Int_t) h->GetEventCount()->ProjectionX()->GetBinContent(3);
+  Int_t mergeCount = h->GetMergeCount();
   
   h->SetPtRange(1.01, 3.99);
   dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
@@ -10678,7 +10700,7 @@ void PlotQA(const char* fileName)
   c->cd(5); centr->Draw("HIST");
   
   c->cd(1);
-  latex = new TLatex(0.15, 0.8, Form("%d events", events));
+  latex = new TLatex(0.15, 0.8, Form("%d events, %d merged objects", events, mergeCount));
   latex->SetTextSize(0.075);
   latex->SetNDC();
   latex->Draw();
