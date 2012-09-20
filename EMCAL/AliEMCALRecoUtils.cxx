@@ -841,15 +841,22 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy,
   Float_t x0    = 1.31;
   Float_t ecr   = 8;
   Float_t depth = 0;
+  Float_t arg   = energy*1000/ ecr; //Multiply energy by 1000 to transform to MeV
   
   switch ( iParticle )
   {
     case kPhoton:
-      depth = x0 * (TMath::Log(energy*1000/ ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
+      if (arg < 1) 
+	depth = 0;
+      else
+	depth = x0 * (TMath::Log(arg) + 0.5); 
       break;
       
     case kElectron:
-      depth = x0 * (TMath::Log(energy*1000/ ecr) - 0.5); //Multiply energy by 1000 to transform to MeV
+      if (arg < 1) 
+	depth = 0;
+      else
+	depth = x0 * (TMath::Log(arg) - 0.5); 
       break;
       
     case kHadron:
@@ -872,13 +879,19 @@ Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy,
       }
       else
       {//electron
-        depth = x0 * (TMath::Log(energy*1000 / ecr)  - 0.5); //Multiply energy by 1000 to transform to MeV
+	if (arg < 1) 
+	  depth = 0;
+	else
+	  depth = x0 * (TMath::Log(arg) - 0.5); 
       }
         
       break;
       
     default://photon
-      depth = x0 * (TMath::Log(energy*1000 / ecr) + 0.5); //Multiply energy by 1000 to transform to MeV
+      if (arg < 1) 
+	depth = 0;
+      else
+	depth = x0 * (TMath::Log(arg) + 0.5);
   }  
   
   return depth;
@@ -1287,6 +1300,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   Bool_t shared = kFALSE;
 
   Float_t  clEnergy = clu->E(); //Energy already recalibrated previously
+  if (clEnergy <= 0)
+    return;
   GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
   Double_t depth = GetDepth(clEnergy,fParticleType,iSupModMax) ;
   
@@ -1370,6 +1385,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   Bool_t shared = kFALSE;
 
   Float_t clEnergy = clu->E(); //Energy already recalibrated previously.
+  if (clEnergy <= 0)
+    return;
   GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
   Float_t  depth = GetDepth(clEnergy,fParticleType,iSupMod) ;
 

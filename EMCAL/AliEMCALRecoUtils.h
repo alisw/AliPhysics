@@ -63,7 +63,8 @@ public:
   void     RecalculateClusterPositionFromTowerIndex (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   
-  Float_t  GetCellWeight(const Float_t eCell, const Float_t eCluster) const { return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster )) ; }
+  Float_t  GetCellWeight(const Float_t eCell, const Float_t eCluster) const { if (eCell > 0 && eCluster > 0) return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster )) ;
+                                                                              else                           return 0.                                                    ; }
   
   Float_t  GetDepth(const Float_t eCluster, const Int_t iParticle, const Int_t iSM) const ; 
   
