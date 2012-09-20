@@ -839,7 +839,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
 		index=GetSignalHistoIndex(iPtBin);
 
-		Int_t PartSource = fCuts->IsMCpartFromHF(label,arrayMC); // check source of associated particle (hadron/kaon/K0)
+		Bool_t* PartSource = fCuts->IsMCpartFromHF(label,arrayMC); // check source of associated particle (hadron/kaon/K0)
 		FillMCCorrelations(d,DeltaPhi,DeltaEta,index,PartSource,fSelect);   
 		
 			 
@@ -950,7 +950,7 @@ void AliAnalysisTaskSEDplusCorrelations::FillCorrelations(AliAODRecoDecayHF3Pron
 
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Prong* d, Double_t deltaPhi, Double_t deltaEta, Int_t ind,Int_t mcSource, Int_t sel) const{
+void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Prong* d, Double_t deltaPhi, Double_t deltaEta, Int_t ind,Bool_t* mcSource, Int_t sel) const{
   // Filling histos with MC information
 
   Double_t invMass=d->InvMassDplus();
@@ -963,15 +963,15 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
   	
     fMCSources->Fill(0);
 	
-    if (mcSource==44){ // is from charm ->D
+    if(mcSource[2]&&mcSource[0]){ // is from charm ->D
       fMCSources->Fill(1);
       fMCSources->Fill(2);
     }
-    if (mcSource==54){ // is from beauty -> D
+	if(mcSource[2]&&mcSource[1]){ // is from beauty -> D
       fMCSources->Fill(1);
       fMCSources->Fill(3);
     }	
-    if (mcSource==55){ // is from beauty ->B
+    if(mcSource[3]&&mcSource[1]){ // is from beauty ->B
       fMCSources->Fill(1);
       fMCSources->Fill(4);
     }
@@ -981,15 +981,15 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
     fMassVsdPhiHistKaon[ind]->Fill(invMass,deltaPhi);
     fMassVsdEtaHistKaon[ind]->Fill(invMass,deltaEta);
     fKaonOrigin->Fill(0);
-    if (mcSource==44){ // is from charm ->D
+    if(mcSource[2]&&mcSource[0]){ // is from charm ->D
       fKaonOrigin->Fill(1);
       fKaonOrigin->Fill(2);
     }	
-    if (mcSource==54){ // is from beauty -> D
+    if(mcSource[2]&&mcSource[1]){ // is from beauty -> D
       fKaonOrigin->Fill(1);
       fKaonOrigin->Fill(3);
     }	
-    if (mcSource==55){ // is from beauty ->B
+    if(mcSource[3]&&mcSource[1]){ // is from beauty ->B
       fKaonOrigin->Fill(1);
       fKaonOrigin->Fill(4);
     }
@@ -998,15 +998,15 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
     fMassVsdPhiHistKshort[ind]->Fill(invMass,deltaPhi);
     fMassVsdEtaHistKshort[ind]->Fill(invMass,deltaEta);
     fK0Origin->Fill(0);
-    if (mcSource==44){ // is from charm ->D
+    if(mcSource[2]&&mcSource[0]){ // is from charm ->D
       fK0Origin->Fill(1);
       fK0Origin->Fill(2);
     }	
-    if (mcSource==54){ // is from beauty -> D
+    if(mcSource[2]&&mcSource[1]){ // is from beauty -> D
       fK0Origin->Fill(1);
       fK0Origin->Fill(3);
     }
-    if (mcSource==55){ // is from beauty ->B
+    if(mcSource[3]&&mcSource[1]){ // is from beauty ->B
       fK0Origin->Fill(1);
       fK0Origin->Fill(4);
     }

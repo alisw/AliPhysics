@@ -64,7 +64,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
 
   
   void FillCorrelations(AliAODRecoDecayHF3Prong* d, Double_t deltaPhi, Double_t deltaEta, Int_t ind, Int_t sel) const;
-  void FillMCCorrelations(AliAODRecoDecayHF3Prong* d, Double_t deltaPhi, Double_t deltaEta, Int_t ind, Int_t mcSource,Int_t sel) const;
+  void FillMCCorrelations(AliAODRecoDecayHF3Prong* d, Double_t deltaPhi, Double_t deltaEta, Int_t ind, Bool_t* mcSource,Int_t sel) const;
   
   
 

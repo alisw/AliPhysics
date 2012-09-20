@@ -66,6 +66,8 @@ class AliHFCorrelator : public TNamed
 	void SetD0Properties(AliAODRecoDecayHF2Prong* d, Int_t D0hyp)
 	{fD0cand = d; fhypD0 = D0hyp;}
 	
+	void SetUseReco(Bool_t useReco) {fUseReco = useReco;}
+	
 	
 	
     Bool_t DefineEventPool(); // Definition of the Event pool parameters
@@ -116,6 +118,8 @@ class AliHFCorrelator : public TNamed
 	Bool_t fmixing;// switch for event mixing
 	Bool_t fmontecarlo; // switch for MonteCarlo
 	Bool_t fsystem; // select pp (kFALSE) or PbPb (kTRUE)
+	Bool_t fUseReco; // switch to use reconstruction (kTRUE) or MC truth (kFALSE)
+	
 	Int_t fselect; // 1 for hadrons, 2 for kaons, 3 for KZeros
 	Int_t fUseImpactParameter; // switch to use the impact parameter cut
 	Int_t fPIDmode; // set the PID mode for Kaon identification
@@ -137,7 +141,7 @@ class AliHFCorrelator : public TNamed
 	Double_t fk0InvMass; // KZero invariant mass
 	
 	
-	ClassDef(AliHFCorrelator,2); // class for HF correlations	
+	ClassDef(AliHFCorrelator,3); // class for HF correlations	
 };
 
 

@@ -32,6 +32,8 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include <TClonesArray.h>
 
+
+
 class AliAODTrack;
 class AliAODEvent;
 
@@ -56,7 +58,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t Charge(Short_t charge, AliAODTrack* track);
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
 	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
-	Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
+	Bool_t *IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;	
 	
 	//getters
@@ -68,6 +70,11 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Int_t GetNCentPoolBins() {return fNCentBins;}
 	Double_t *GetCentPoolBins(){return fCentBins;}
 	
+	Int_t GetNofMCEventType(){return fNofMCEventType;}	
+	Int_t *GetMCEventType(){return fMCEventType;}
+	TString GetDescription(){return fDescription;}
+	Int_t GetNVarsTrack(){return fNTrackCuts;}
+	
 	
 	
 	void AddTrackCuts(const AliESDtrackCuts *cuts) {
@@ -75,6 +82,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 		fESDTrackCuts=new AliESDtrackCuts(*cuts); 
 		return;
 	}
+	
 	//setters
 	//event pool settings
 	void SetMaxNEventsInPool(Int_t events){fPoolMaxNEvents=events;}
@@ -93,6 +101,12 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 		fZvtxBins=ZvtxBins; 
 		fCentBins=CentBins;
 	}
+	
+	// set MC events to process
+	
+	void SetNofMCEventTypes(Int_t k) {fNofMCEventType=k;}
+	void SetMCEventTypes(Int_t *MCEventTypeArray);
+	
 	//cut settings
 	void SetAODTrackCuts(Float_t *cutsarray);
 	void SetTrackCutsNames(/*TString *namearray*/);
@@ -103,15 +117,17 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	void SetFilterBit(Int_t bit) {fBit = bit;}
 	virtual void PrintAll();
 	virtual void PrintPoolParameters();
-	Int_t GetNVarsTrack(){return fNTrackCuts;}
+	virtual void PrintSelectedMCevents();
+
 	
 	
 	
 	void SetNVarsTrack(Int_t nVars){fNTrackCuts=nVars;}
 	void SetNVarsVzero(Int_t nVars){fNvZeroCuts=nVars;}
 	
+	
+	
 private:
-	//AliESDtrackCuts *fTrackCuts;
 	AliESDtrackCuts *fESDTrackCuts; // track cut object
 	AliAODPidHF * fPidObj;     /// PID object
 	
@@ -128,6 +144,9 @@ private:
 	Int_t fNCentBinsDim; //number of centrality bins bins +1 : necessary to initialize correctly the array
 	Double_t* fCentBins; // [fNCentBinsDim]
 	
+	Int_t fNofMCEventType;// number of event types to be selected in MC simultaneously;
+	Int_t *fMCEventType;//[fNofMCEventType]
+	
 	Int_t fNTrackCuts;     // array dimension
 	Float_t* fAODTrackCuts;//[fNTrackCuts]
 	TString * fTrackCutsNames;//[fNTrackCuts]
@@ -136,9 +155,10 @@ private:
 	TString * fvZeroCutsNames;//[fNvZeroCuts]
 	Int_t fBit; // filterBit
 	Short_t fCharge; // charge (+1 or -1)
+	TString fDescription; // additional description to the cuts
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,3);
+	ClassDef(AliHFAssociatedTrackCuts,4);
 };
 
 

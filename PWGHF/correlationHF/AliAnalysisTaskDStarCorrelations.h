@@ -71,13 +71,19 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 	void DefineHistoForAnalysis();
 	
 	// correlators
-	void FillMCTagCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Double_t ptTrack, Int_t mcSource);	
+	void FillMCTagCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Double_t ptTrack, Bool_t *mcSource);	
+	void FillMCTagLeadingCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Bool_t *mcSource);
+	// checker for event mixing
+	void EventMixingChecks(AliAODEvent * AOD); 
 	// setters
 	void SetMonteCarlo(Bool_t k) {fmontecarlo = k;}
 	void SetUseMixing (Bool_t j) {fmixing = j;}
 	void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
 	void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
 	void SetRunPbPb(Bool_t system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
+    void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
+	void SetUseReconstruction(Bool_t reco){fReco = reco;}
+
 	
 
 
@@ -87,7 +93,6 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 	AliAnalysisTaskDStarCorrelations& operator=(const AliAnalysisTaskDStarCorrelations& source); 
 
 	TObject* fhandler; //! Analysis Handler
-	//	AliEventPoolManager*     fPoolMgr;         //! event pool manager
 	TClonesArray* fmcArray; //mcarray
 	AliNormalizationCounter *fCounter; // counter
     AliHFCorrelator * fCorrelator; // object for correlations
@@ -98,16 +103,19 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 	Bool_t fmontecarlo;//switch for MC
 	Bool_t fmixing;// switch for event mixing
 	Bool_t fSystem; // pp or PbPb
+	Bool_t fReco; // use reconstruction or MC truth
+	
 	Int_t fEvents; //! number of event
-	Int_t fDebug; //! debug level
+	Int_t fDebugLevel; //! debug level
 	Int_t fDisplacement; // set 0 for no displacement cut, 1 for absolute d0, 2 for d0/sigma_d0
 	
 	
 	TList *fOutput;                  //! user output data
+	TList *fOutputMC;                //! outpu for MC
 	AliRDHFCutsDStartoKpipi *fCuts;  // Cuts D*
 	AliHFAssociatedTrackCuts *fCuts2; // cuts for associated 
 					  
-	ClassDef(AliAnalysisTaskDStarCorrelations,2); // class for D meson correlations				  
+	ClassDef(AliAnalysisTaskDStarCorrelations,3); // class for D meson correlations				  
 };
 
 #endif

@@ -7,7 +7,7 @@
 
 /* $Id$ */
 
-void makeInputHFCorrelation(){
+void makeInputHFCorrelation(TString suffix = ""){
 	
 	AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
 	HFCorrelationCuts->SetName("AssociatedCuts");
@@ -46,6 +46,13 @@ void makeInputHFCorrelation(){
 	
 	HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 	
+	//______________________________ MC event type
+	
+	
+	HFCorrelationCuts->SetNofMCEventTypes(2);
+	Int_t MCEvType[]={53,68};
+	Int_t *MCEvTypeArray = MCEvType;
+	HFCorrelationCuts->SetMCEventTypes(MCEvTypeArray);
 	
 	//______________________________ set kinematics cuts for AOD track 
 	const int nofcuts = 4;
@@ -91,12 +98,29 @@ void makeInputHFCorrelation(){
 	
 	HFCorrelationCuts->SetPidHF(pidObj);
 
+	 //______________________________ Add additional info
+	
+	TString description = "Cuts for hadron selection - low pt selection cut";
+	
+	HFCorrelationCuts->AddDescription(description);
     //______________________________ save to *.root file
 	HFCorrelationCuts->PrintAll();
 	
-	TFile* fout=new TFile("AssocPartCuts.root","recreate");   //set this!! 
+	TString outputfilename = "AssocPartCuts";
+	outputfilename += suffix;
+	outputfilename += ".root";
+	
+	TString pathOutputFile = "~/CorrelationAnalysis/CutObjects/AssocTracks/";
+	
+	outputfilename.Prepend(pathOutputFile.Data());
+	
+	
+	TFile* fout=new TFile(outputfilename.Data(),"recreate");   //set this!! 
 	fout->cd();
 	HFCorrelationCuts->Write();
 	fout->Close();
+	cout << "***************************************** " << endl;
+	cout << "File " << outputfilename << "  created " << endl;
+	cout << "***************************************** " << endl;
 
 }
