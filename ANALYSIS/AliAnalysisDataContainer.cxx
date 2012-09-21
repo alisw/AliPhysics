@@ -407,7 +407,7 @@ AliAnalysisDataWrapper *AliAnalysisDataContainer::ExportData() const
       return pack;
    } 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (mgr->GetDebugLevel() > 1) printf("   ExportData: Wrapping data %s for container %s\n", fData->GetName(),GetName());
+   if (mgr && mgr->GetDebugLevel() > 1) printf("   ExportData: Wrapping data %s for container %s\n", fData->GetName(),GetName());
    pack = new AliAnalysisDataWrapper(fData);
    pack->SetName(fName.Data());
    return pack;
@@ -424,7 +424,7 @@ void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
          return;
       }   
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      if (mgr->GetDebugLevel() > 1) printf("   ImportData: Unwrapping data %s for container %s\n", fData->GetName(),GetName());
+      if (mgr && mgr->GetDebugLevel() > 1) printf("   ImportData: Unwrapping data %s for container %s\n", fData->GetName(),GetName());
       fDataReady = kTRUE;
       // Imported wrappers do not own data anymore (AG 13-11-07)
       pack->SetDeleteData(kFALSE);
