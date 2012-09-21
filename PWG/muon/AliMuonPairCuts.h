@@ -3,10 +3,10 @@
 
 #include "AliAnalysisCuts.h"
 #include "AliMuonTrackCuts.h"
-#include "TArrayD.h"
 
 class TList;
 class TVector3;
+class TArrayI;
 
 class AliMuonPairCuts : public AliAnalysisCuts
 {
@@ -55,6 +55,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   /// Get flag to apply the sharp pt cut when matching with trigger
   Bool_t IsApplySharpPtCutInMatching () const { return fMuonTrackCuts.IsApplySharpPtCutInMatching(); }
   
+  Bool_t TrackPtCutMatchTrigClass ( const AliVParticle* track1, const AliVParticle* track2, const TArrayI ptCutFromClass ) const;
   
   /// Return the MuonTrackCuts (normally the standard user do not need to modify this data member)
   AliMuonTrackCuts& GetMuonTrackCuts () { return fMuonTrackCuts; }

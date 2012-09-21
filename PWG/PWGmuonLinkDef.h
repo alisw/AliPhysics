@@ -37,11 +37,13 @@
 #pragma link C++ class AliAnalysisMuMu+;
 #pragma link C++ class AliAnalysisMuMuFromAOD+;
 #pragma link C++ class AliAnalysisMuMuFromESD+;
+#pragma link C++ class AliMuonEventCuts+;
 #pragma link C++ class AliMuonTrackCuts+;
 #pragma link C++ class AliMuonPairCuts+;
 #pragma link C++ class AliMergeableCollection+;
 #pragma link C++ class AliMergeableCollectionIterator+;
 #pragma link C++ class AliVAnalysisMuon+;
 #pragma link C++ class AliAnalysisTaskFlowSingleMu+;
+#pragma link C++ class AliAnalysisMuonUtility+;
 #endif
 

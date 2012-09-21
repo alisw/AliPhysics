@@ -41,6 +41,7 @@ AliAnalysisTaskFlowSingleMu* AddTaskFlowSingleMu(Bool_t isMC = kFALSE)
   // Create task
   AliAnalysisTaskFlowSingleMu *flowSingleMuTask = new AliAnalysisTaskFlowSingleMu("FlowSingleMuTask", *muonTrackCuts);
   if ( isMC ) flowSingleMuTask->SetTrigClassPatterns("ANY");
+  flowSingleMuTask->GetMuonEventCuts()->SetVertexVzLimits(-10., 10.);
   mgr->AddTask(flowSingleMuTask);
 
   // Connect containers

@@ -66,8 +66,10 @@
 
 // PWG3 includes
 #include "AliMergeableCollection.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliMuonPairCuts.h"
+#include "AliAnalysisMuonUtility.h"
 
 /// \cond CLASSIMP
 ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
@@ -77,6 +79,7 @@ ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon() :
   AliAnalysisTaskSE(),
+  fMuonEventCuts(0x0),
   fMuonTrackCuts(0x0),
   fMuonPairCuts(0x0),
   fESDEvent(0x0),
@@ -85,15 +88,9 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(0x0),
-  fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fMinNvtxContirbutors(0),
-  fSelectedTrigPattern(0x0),
-  fRejectedTrigPattern(0x0),
-  fSelectedTrigLevel(0x0),
   fOutputPrototypeList(0x0)
 {
   /// Default ctor.
@@ -102,6 +99,7 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
+  fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
   fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
   fESDEvent(0x0),
@@ -110,25 +108,17 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(new THashList()),
-  fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fMinNvtxContirbutors(1),
-  fSelectedTrigPattern(new TObjArray()),
-  fRejectedTrigPattern(new TObjArray()),
-  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
   
-  fTriggerClasses->SetOwner();
   InitKeys();
-  SetTrigClassPatterns();
-  SetTrigClassLevels();
+  SetTrigClassPatterns("");
   SetCentralityClasses();
 
   DefineOutput(1, TObjArray::Class());
@@ -137,6 +127,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts) :
   AliAnalysisTaskSE(name),
+  fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
   fMuonPairCuts(0x0),
   fESDEvent(0x0),
@@ -145,25 +136,17 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(new THashList()),
-  fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fMinNvtxContirbutors(1),
-  fSelectedTrigPattern(new TObjArray()),
-  fRejectedTrigPattern(new TObjArray()),
-  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
   
-  fTriggerClasses->SetOwner();
   InitKeys();
-  SetTrigClassPatterns();
-  SetTrigClassLevels();
+  SetTrigClassPatterns("");
   SetCentralityClasses();
   
   DefineOutput(1, TObjArray::Class());
@@ -173,6 +156,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
+  fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(0x0),
   fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
   fESDEvent(0x0),
@@ -181,24 +165,16 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fChargeKeys(0x0),
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
-  fTriggerClasses(new THashList()),
-  fCentralityClasses(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
-  fMinNvtxContirbutors(1),
-  fSelectedTrigPattern(new TObjArray()),
-  fRejectedTrigPattern(new TObjArray()),
-  fSelectedTrigLevel(new TObjArray()),
   fOutputPrototypeList(0x0)
 {
   //
   /// Constructor.
   //
-  fTriggerClasses->SetOwner();
   InitKeys();
-  SetTrigClassPatterns();
-  SetTrigClassLevels();
+  SetTrigClassPatterns("");
   SetCentralityClasses();
     
   DefineOutput(1, TObjArray::Class());
@@ -212,17 +188,13 @@ AliVAnalysisMuon::~AliVAnalysisMuon()
   /// Destructor
   //
 
+  delete fMuonEventCuts;
   delete fMuonTrackCuts;
   delete fMuonPairCuts;
   delete fTerminateOptions;
   delete fChargeKeys;
   delete fSrcKeys;
   delete fPhysSelKeys;
-  delete fTriggerClasses;
-  delete fCentralityClasses;
-  delete fSelectedTrigPattern;
-  delete fRejectedTrigPattern;
-  delete fSelectedTrigLevel;
   delete fOutputPrototypeList;
 
 
@@ -286,11 +258,11 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
 
   fEventCounters = new AliCounterCollection("eventCounters");
 
-  if ( ! fCentralityClasses ) SetCentralityClasses();
+  if ( ! GetCentralityClasses() ) SetCentralityClasses();
   TString centralityClasses = "";
-  for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
+  for ( Int_t icent=1; icent<=GetCentralityClasses()->GetNbins(); ++icent ) {
     if ( ! centralityClasses.IsNull() ) centralityClasses += "/";
-    centralityClasses += fCentralityClasses->GetBinLabel(icent);
+    centralityClasses += GetCentralityClasses()->GetBinLabel(icent);
   }
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("trigger", 100);
@@ -302,6 +274,8 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
   fOutputList->Add(fMergeableCollection);
 
   PostData(1, fOutputList);
+  
+  fMuonEventCuts->Print();
   
   MyUserCreateOutputObjects();
 }
@@ -323,25 +297,19 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
     AliError ("AOD or ESD event not found. Nothing done!");
     return;
   }
+  
+  if ( ! fMuonEventCuts->IsSelected(fInputHandler) ) return;
 
   Int_t physSel = ( fInputHandler->IsEventSelected() & AliVEvent::kAny ) ? kPhysSelPass : kPhysSelReject;
 
   //
   // Global event info
   //
+  TObjArray* selectTrigClasses = fMuonEventCuts->GetSelectedTrigClassesInEvent(InputEvent());
 
-  TString firedTrigClasses = ( fAODEvent ) ? fAODEvent->GetFiredTriggerClasses() : fESDEvent->GetFiredTriggerClasses();
-  firedTrigClasses.Prepend("ANY ");
-  AliDebug(2, Form("Fired classes %s", firedTrigClasses.Data()));
-  TObjArray* selectTrigClasses = BuildTriggerClasses(firedTrigClasses);
-  if ( selectTrigClasses->GetEntries() == 0 ) {
-    delete selectTrigClasses;
-    return;
-  }
-
-  Double_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
-  Int_t centralityBin = fCentralityClasses->FindBin(centrality);
-  TString centralityBinLabel = fCentralityClasses->GetBinLabel(centralityBin);
+  Double_t centrality = fMuonEventCuts->GetCentrality(InputEvent());
+  Int_t centralityBin = GetCentralityClasses()->FindBin(centrality);
+  TString centralityBinLabel = GetCentralityClasses()->GetBinLabel(centralityBin);
 
   TString selKey = ( physSel == kPhysSelPass ) ? "yes" : "no";
   for ( Int_t itrig=0; itrig<selectTrigClasses->GetEntries(); ++itrig ) {
@@ -349,9 +317,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
     fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s", trigName.Data(), selKey.Data(), centralityBinLabel.Data()));
   }
 
-  ProcessEvent(fPhysSelKeys->At(physSel)->GetName(), *selectTrigClasses, fCentralityClasses->GetBinLabel(centralityBin));
-
-  delete selectTrigClasses;
+  ProcessEvent(fPhysSelKeys->At(physSel)->GetName(), *selectTrigClasses, centralityBinLabel);
 
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(1, fOutputList);
@@ -383,135 +349,6 @@ void AliVAnalysisMuon::Terminate(Option_t *)
 }
 
 
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::GetNTracks()
-{
-  //
-  /// Return the number of tracks in event
-  //
-  return ( fAODEvent ) ? fAODEvent->GetNTracks() : fESDEvent->GetNumberOfMuonTracks();
-}
-
-
-//________________________________________________________________________
-AliVParticle* AliVAnalysisMuon::GetTrack(Int_t itrack)
-{
-  //
-  /// Get the current track
-  //
-  AliVParticle* track = 0x0;
-  if ( fAODEvent ) track = fAODEvent->GetTrack(itrack);
-  else track = fESDEvent->GetMuonTrack(itrack);
-  return track;
-}
-
-//________________________________________________________________________
-Double_t AliVAnalysisMuon::MuonMass2() const
-{
-  /// A usefull constant
-  static Double_t m2 = 1.11636129640000012e-02;
-  return m2;
-}
-
-//________________________________________________________________________
-TLorentzVector AliVAnalysisMuon::GetTrackPair(AliVParticle* track1, AliVParticle* track2) const
-{
-  //
-  /// Get track pair
-  //
-  
-  AliVParticle* tracks[2] = {track1, track2};
-  
-  TLorentzVector vec[2];
-  for ( Int_t itrack=0; itrack<2; ++itrack ) {
-    Double_t trackP = tracks[itrack]->P();
-    Double_t energy = TMath::Sqrt(trackP*trackP + MuonMass2());
-    vec[itrack].SetPxPyPzE(tracks[itrack]->Px(), tracks[itrack]->Py(), tracks[itrack]->Pz(), energy);
-  }
-  
-  TLorentzVector vecPair = vec[0] + vec[1];
-  return vecPair;
-}
-
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::GetNMCTracks()
-{
-  //
-  /// Return the number of MC tracks in event
-  //
-  Int_t nMCtracks = 0;
-  if ( fMCEvent ) nMCtracks = fMCEvent->GetNumberOfTracks();
-  else if ( fAODEvent ) {
-    TClonesArray* mcArray = (TClonesArray*)fAODEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if ( mcArray ) nMCtracks = mcArray->GetEntries();
-  }
-  return nMCtracks;
-}
-
-//________________________________________________________________________
-AliVParticle* AliVAnalysisMuon::GetMCTrack(Int_t trackLabel)
-{
-  //
-  /// MC information can be provided by the MC input handler
-  /// (mostly when analyising ESDs) or can be found inside AODs
-  /// This method returns the correct one
-  //
-  AliVParticle* mcTrack = 0x0;
-  if ( fMCEvent ) mcTrack = fMCEvent->GetTrack(trackLabel);
-  else if ( fAODEvent ) {
-    TClonesArray* mcArray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
-    if ( mcArray ) mcTrack =  (AliVParticle*)mcArray->At(trackLabel);
-  }
-  if ( ! mcTrack ) AliWarning(Form("No track with label %i!", trackLabel));
-  return mcTrack;
-}
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::GetMotherIndex(AliVParticle* mcParticle)
-{
-  //
-  /// Return the mother index
-  //
-  Int_t imother = ( fMCEvent ) ? ((AliMCParticle*)mcParticle)->GetMother() : ((AliAODMCParticle*)mcParticle)->GetMother();
-  return imother;
-}
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::GetDaughterIndex(AliVParticle* mcParticle, Int_t idaughter)
-{
-  //
-  /// Return the daughter index
-  /// idaughter can be:
-  /// 0 -> first daughter
-  /// 1 -> last daughter
-  //
-  if ( idaughter < 0 || idaughter > 1 ) {
-    AliError(Form("Requested daughter %i Daughter index can be either 0 (first) or 1 (last)", idaughter));
-    return -1;
-  }
-  
-  if ( fMCEvent ) {
-    if ( idaughter == 0 ) return ((AliMCParticle*)mcParticle)->GetFirstDaughter();
-    else return ((AliMCParticle*)mcParticle)->GetLastDaughter();
-  }
-  
-  return ((AliAODMCParticle*)mcParticle)->GetDaughter(idaughter);
-}
-
-
-
-//________________________________________________________________________
-Bool_t AliVAnalysisMuon::IsMC()
-{
-  //
-  /// Contains MC info
-  //
-  return ( fMCEvent || ( fAODEvent && fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()) ) );
-}
-
-
 //________________________________________________________________________
 Int_t AliVAnalysisMuon::GetParticleType(AliVParticle* track)
 {
@@ -522,7 +359,7 @@ Int_t AliVAnalysisMuon::GetParticleType(AliVParticle* track)
   Int_t trackSrc = kUnidentified;
   Int_t trackLabel = track->GetLabel();
   if ( trackLabel >= 0 ) {
-    AliVParticle* matchedMCTrack = GetMCTrack(trackLabel);
+    AliVParticle* matchedMCTrack = AliAnalysisMuonUtility::GetMCTrack(trackLabel,InputEvent(),MCEvent());
     if ( matchedMCTrack ) trackSrc = RecoTrackMother(matchedMCTrack);
   } // track has MC label
   return trackSrc;
@@ -541,18 +378,18 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
   // Track is not a muon
   if ( TMath::Abs(recoPdg) != 13 ) return kRecoHadron;
   
-  Int_t imother = GetMotherIndex(mcParticle);
+  Int_t imother = AliAnalysisMuonUtility::GetMotherIndex(mcParticle);
   
   Int_t den[3] = {100, 1000, 1};
   
   Int_t motherType = kDecayMu;
   while ( imother >= 0 ) {
-    AliVParticle* part = GetMCTrack(imother);
+    AliVParticle* part = AliAnalysisMuonUtility::GetMCTrack(imother,InputEvent(),MCEvent());
     //if ( ! part ) return motherType;
     
     Int_t absPdg = TMath::Abs(part->PdgCode());
     
-    Bool_t isPrimary = ( fMCEvent ) ? ( imother < fMCEvent->GetNumberOfPrimaries() ) : ((AliAODMCParticle*)part)->IsPrimary();
+    Bool_t isPrimary = AliAnalysisMuonUtility::IsPrimary(part, MCEvent());
     
     if ( isPrimary ) {
       if ( absPdg == 24 ) return kWbosonMu;
@@ -580,23 +417,11 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
       }
     } // is secondary
     
-    imother = GetMotherIndex(part);
+    imother = AliAnalysisMuonUtility::GetMotherIndex(part);
     
   } // loop on mothers
   
   return motherType;
-}
-
-
-//________________________________________________________________________
-AliVVertex* AliVAnalysisMuon::GetVertexSPD() const
-{
-  //
-  /// Get vertex SPD
-  //
-  
-  AliVVertex* primaryVertex = ( fAODEvent ) ? (AliVVertex*)fAODEvent->GetPrimaryVertexSPD() : (AliVVertex*)fESDEvent->GetPrimaryVertexSPD();
-  return primaryVertex;
 }
 
 
@@ -648,14 +473,14 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
   /// - physSel, trigClassNames must be in the form: key1,key2
   /// - centrality must be in the form minValue_maxValue
   /// - objectPattern must be in the form match1,match2
-  ///   meaning that the object name must contain match1 and match2 (and either one of match3 and match4
+  ///   meaning that the object name must contain match1 or match2
   ///   wildcard * is allowed
   
   if ( ! fMergeableCollection ) return 0x0;
   
   // Get centrality range
   Int_t firstCentrality = 1;
-  Int_t lastCentrality = fCentralityClasses->GetNbins();
+  Int_t lastCentrality = GetCentralityClasses()->GetNbins();
   
   TObjArray* centralityRange = centrality.Tokenize("_");
   Float_t range[2] = {0., 100.};
@@ -663,15 +488,15 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
     for ( Int_t irange=0; irange<2; ++irange ) {
       range[irange] = ((TObjString*)centralityRange->At(irange))->GetString().Atof();
     }
-    firstCentrality = fCentralityClasses->FindBin(range[0]+0.0001);
-    lastCentrality = fCentralityClasses->FindBin(range[1]-0.0001);
+    firstCentrality = GetCentralityClasses()->FindBin(range[0]+0.0001);
+    lastCentrality = GetCentralityClasses()->FindBin(range[1]-0.0001);
   }
   delete centralityRange;
   
   TString sumCentralityString = "";
   for ( Int_t icent=firstCentrality; icent<=lastCentrality; ++icent ) {
     if ( ! sumCentralityString.IsNull() ) sumCentralityString += ",";
-    sumCentralityString += fCentralityClasses->GetBinLabel(icent);
+    sumCentralityString += GetCentralityClasses()->GetBinLabel(icent);
   }
   
 //  objectPattern.ReplaceAll(" ","");
@@ -822,84 +647,30 @@ Bool_t AliVAnalysisMuon::SetSparseRange(AliCFGridSparse* gridSparse,
 }
 
 //________________________________________________________________________
-void AliVAnalysisMuon::SetTrigClassPatterns(TString pattern)
+TString AliVAnalysisMuon::GetDefaultTrigClassPatterns() const
 {
-  /// Set trigger classes
-  ///
-  /// Classes are filled dynamically according to the pattern
-  /// - if name contains ! (without spaces): reject it
-  /// - otherwise, keep it
-  /// example:
-  /// SetTrigClassPatterns("CMBAC !ALLNOTRD")
-  /// keeps classes containing CMBAC, and not containing ALLNOTRD.
-  ///
-  /// CAVEAT: if you use an fCFContainer and you want an axis to contain the trigger classes,
-  ///         please be sure that each pattern matches only 1 trigger class, or triggers will be mixed up
-  ///         when merging different chuncks.
-
-  fSelectedTrigPattern->SetOwner();
-  if ( fSelectedTrigPattern->GetEntries() > 0 ) fSelectedTrigPattern->Delete();
-  fRejectedTrigPattern->SetOwner();
-  if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
-
-  pattern.ReplaceAll("  "," ");
-  pattern.ReplaceAll("! ","!");
-
-  TObjArray* fullList = pattern.Tokenize(" ");
-
-  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
-    TString currPattern = fullList->At(ipat)->GetName();
-    if ( currPattern.Contains("!") ) {
-      currPattern.ReplaceAll("!","");
-      fRejectedTrigPattern->AddLast(new TObjString(currPattern));
-    }
-    else fSelectedTrigPattern->AddLast(new TObjString(currPattern));
-  }
-  
-  delete fullList;
+  /// Get default trigger class patterns
+  return fMuonEventCuts->GetDefaultTrigClassPatterns();
 }
 
 //________________________________________________________________________
-void AliVAnalysisMuon::SetTrigClassLevels(TString pattern)
+void AliVAnalysisMuon::SetTrigClassPatterns(const TString pattern)
 {
-  /// Set trigger cut level associated to the trigger class
-  ///
-  /// example:
-  /// SetTrigClassLevels("MSL:Lpt MSH:Hpt")
-  ///
-  /// For the trigger classes defined in SetTrigClassPatterns
-  /// it check if they contains the keywords MSL or MSH
-  /// Hence, in the analysis, the function
-  /// TrackPtCutMatchTrigClass(track, "CPBIMSL") returns true if track match Lpt
-  /// TrackPtCutMatchTrigClass(track, "CPBIMSH") returns true if track match Hpt
-  /// TrackPtCutMatchTrigClass(track, "CMBAC") always returns true
-  
-  fSelectedTrigLevel->SetOwner();
-  if ( fSelectedTrigLevel->GetEntries() > 0 ) fSelectedTrigLevel->Delete();
-  
-  pattern.ReplaceAll("  "," ");
-  pattern.ReplaceAll(" :",":");
-  
-  TObjArray* fullList = pattern.Tokenize(" ");
-  
-  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
-    TString currPattern = fullList->At(ipat)->GetName();
-    TObjArray* arr = currPattern.Tokenize(":");
-    TObjString* trigClassPattern = new TObjString(arr->At(0)->GetName());
-    TString selTrigLevel = arr->At(1)->GetName();
-    selTrigLevel.ToUpper();
-    UInt_t trigLevel = 0;
-    if ( selTrigLevel.Contains("APT") ) trigLevel = 1;
-    else if ( selTrigLevel.Contains("LPT") ) trigLevel = 2;
-    else if ( selTrigLevel.Contains("HPT") ) trigLevel = 3;
-    trigClassPattern->SetUniqueID(trigLevel);
-    fSelectedTrigLevel->AddLast(trigClassPattern);
-    delete arr;
-  }
-  
-  delete fullList;
+  /// Set trigger classes
+  TString currPattern = pattern;
+  if ( currPattern.IsNull() ) { 
+    currPattern = GetDefaultTrigClassPatterns();
+    currPattern.Append(" !CMUP"); // by default do not account for UltraPeripheral events
+  } 
+  fMuonEventCuts->SetTrigClassPatterns(currPattern);
 }
 
+//________________________________________________________________________
+TList* AliVAnalysisMuon::GetAllSelectedTrigClasses() const
+{
+  /// Get trigger classes
+  return fMuonEventCuts->GetAllSelectedTrigClasses();
+}
 
 //________________________________________________________________________
 void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* centralityBins)
@@ -907,22 +678,16 @@ void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
   //
   /// Set centrality classes
   //
-  Double_t* bins = centralityBins;
-  Int_t nbins = nCentralityBins;
-  
-  Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100., 105.};
-  if ( ! centralityBins ) {
-    bins = defaultCentralityBins;
-    nbins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
-  }
+  fMuonEventCuts->SetCentralityClasses(nCentralityBins, centralityBins);
+}
 
-  if ( fCentralityClasses ) delete fCentralityClasses;
-  fCentralityClasses = new TAxis(nbins, bins);
-  TString currClass = "";
-  for ( Int_t ibin=1; ibin<=fCentralityClasses->GetNbins(); ++ibin ){
-    currClass = Form("%.0f_%.0f",fCentralityClasses->GetBinLowEdge(ibin),fCentralityClasses->GetBinUpEdge(ibin));
-    fCentralityClasses->SetBinLabel(ibin, currClass.Data());
-  }
+//________________________________________________________________________
+TAxis* AliVAnalysisMuon::GetCentralityClasses() const
+{
+  //
+  /// Set centrality classes
+  //
+  return fMuonEventCuts->GetCentralityClasses();
 }
 
 //________________________________________________________________________
@@ -993,96 +758,4 @@ void AliVAnalysisMuon::InitKeys()
   
   TString physSelKeys = "PhysSelPass PhysSelReject";
   fPhysSelKeys = physSelKeys.Tokenize(" ");
-}
-
-//________________________________________________________________________
-TObjArray* AliVAnalysisMuon::BuildTriggerClasses(TString firedTrigClasses)
-{
-  //
-  /// Return the list of trigger classes to be considered
-  /// for current event. Update the global list if necessary
-  //
-
-  TObjArray* selectedTrigClasses = new TObjArray(0);
-  selectedTrigClasses->SetOwner();
-  
-  TObjArray* firedTrigClassesList = firedTrigClasses.Tokenize(" ");
-  
-  UInt_t trigLevel = 0;
-  for ( Int_t itrig=0; itrig<firedTrigClassesList->GetEntries(); ++itrig ) {
-    TString trigName = ((TObjString*)firedTrigClassesList->At(itrig))->GetString();
-    
-    TObject* foundTrig = fTriggerClasses->FindObject(trigName.Data());
-    if ( foundTrig ) trigLevel = foundTrig->GetUniqueID();
-    else {
-      Bool_t rejectTrig = kFALSE;
-      for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) {
-          rejectTrig = kTRUE;
-          break;
-        }
-      } // loop on reject pattern
-      if ( rejectTrig ) continue;
-
-      rejectTrig = kTRUE;
-      for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) {
-          rejectTrig = kFALSE;
-          break;
-        }
-      } // loop on keep pattern
-      if ( rejectTrig ) continue;
-    
-      trigLevel = 0;
-      for ( Int_t ipat=0; ipat<fSelectedTrigLevel->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fSelectedTrigLevel->At(ipat)->GetName() ) ) {
-          trigLevel = fSelectedTrigLevel->At(ipat)->GetUniqueID();
-          break;
-        }
-      } // loop on trig level patterns      
-    }
-    TObjString* currTrig = new TObjString(trigName);
-    currTrig->SetUniqueID(trigLevel);
-    selectedTrigClasses->AddLast(currTrig);
-    
-    if ( foundTrig ) continue;
-    AliInfo(Form("Adding %s (trig level %u) to considered trigger classes",trigName.Data(),trigLevel));
-    TObjString* addTrig = new TObjString(trigName);
-    addTrig->SetUniqueID(trigLevel);
-    fTriggerClasses->Add(addTrig);
-  } // loop on trigger classes
-
-  delete firedTrigClassesList;
-
-  return selectedTrigClasses;
-}
-
-
-//________________________________________________________________________
-Bool_t AliVAnalysisMuon::TrackPtCutMatchTrigClass(AliVParticle* track, TString trigClassName)
-{
-  /// Check if track passes the trigger pt cut level used in the trigger class
-  Int_t matchTrig = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMatchTrigger() : ((AliESDMuonTrack*)track)->GetMatchTrigger();
-  Int_t classMatchLevel = GetTrigClassPtCutLevel(trigClassName);
-  Bool_t matchTrackerPt = kTRUE;
-  if ( fMuonTrackCuts && fMuonTrackCuts->IsApplySharpPtCutInMatching() ) {
-    matchTrackerPt = ( track->Pt() >= fMuonTrackCuts->GetSharpPtCut(classMatchLevel-1,kFALSE) );
-  }
-  Bool_t passCut = ( ( matchTrig >= classMatchLevel ) && matchTrackerPt );
-  AliDebug(1,Form("Class %s  matchTrig %i  trackMatchTrig %i  trackPt %g (required %i)  passCut %i", trigClassName.Data(), classMatchLevel, matchTrig, track->Pt(), fMuonTrackCuts->IsApplySharpPtCutInMatching(),passCut));
-  return passCut;
-}
-
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::GetTrigClassPtCutLevel(TString trigClassName)
-{
-  /// Get trigger class pt cut level for tracking/trigger matching
-  TObject* obj = fTriggerClasses->FindObject(trigClassName.Data());
-  if ( ! obj ) {
-    AliWarning(Form("Class %s not in the list!", trigClassName.Data()));
-    return -1;
-  }
-  
-  return obj->GetUniqueID();
 }

@@ -76,7 +76,9 @@
 #include "AliVAnalysisMuon.h"
 #include "AliMergeableCollection.h"
 #include "AliCounterCollection.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
+#include "AliAnalysisMuonUtility.h"
 
 
 /// \cond CLASSIMP
@@ -226,10 +228,8 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
   //
   // Base event cuts
   //
-  if ( GetVertexSPD()->GetNContributors() < fMinNvtxContirbutors ) return;
   //Bool_t isPileupFromSPD = ( fAODEvent && ! fAODEvent->GetTracklets() ) ? InputEvent()->IsPileupFromSPD(3, 0.8, 3., 2., 5.) : InputEvent()->IsPileupFromSPDInMultBins(); // Avoid break when reading Muon AODs (tracklet info is not present and IsPileupFromSPDInMultBins crashes
   //if ( isPileupFromSPD ) return;
-  if ( TMath::Abs(GetVertexSPD()->GetZ()) > 10. ) return;
 
   TArrayD psiPlane(fEPKeys->GetEntriesFast());
   psiPlane.Reset(-999.);
@@ -275,6 +275,7 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
         if ( qsub1 && qsub2 )
           ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, Form("hResoSub2%s",currEP.Data())))->Fill(TMath::Cos(qsub1->Phi()/2.-qsub2->Phi()/2.));
       }
+      //else ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, Form("hResoSub2%s",currEP.Data())))->Fill(TMath::Cos(2.*psiPlane[iep])); // REMEMBER TO CUT
     } // loop on trigger
   } // loop on EP
 
@@ -284,9 +285,9 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
   Double_t containerInput[kNvars];
   AliVParticle* track = 0x0;
   for ( Int_t istep = 0; istep<2; ++istep ) {
-    Int_t nTracks = ( istep == kStepReconstructed ) ? GetNTracks() : GetNMCTracks();
+    Int_t nTracks = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetNTracks(InputEvent()) : AliAnalysisMuonUtility::GetNMCTracks(InputEvent(),MCEvent());
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
-      track = ( istep == kStepReconstructed ) ? GetTrack(itrack) : GetMCTrack(itrack);
+      track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : AliAnalysisMuonUtility::GetMCTrack(itrack,InputEvent(),MCEvent());
       
       Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
       if ( ! isSelected ) continue;
@@ -316,7 +317,7 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
 
         for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
           TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
-          if ( istep == kStepReconstructed && ! TrackPtCutMatchTrigClass(track, trigClassName) ) continue;
+          if ( istep == kStepReconstructed && ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
           ((AliCFContainer*)GetMergeableObject(physSel, trigClassName, centrality, Form("FlowSingleMuContainer%s",currEP.Data())))->Fill(containerInput,istep);
         } // loop on selected trigger classes
       } // loop on event plane
@@ -396,8 +397,9 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   TAxis* customBins = 0x0;
   
   //Double_t myBins[] = {0., 0.5, 1., 1.5, 2., 3., 4., 5., 6., 8., 10.};
-  Double_t myBins[] = {4., 5., 6., 8., 10.}; // REMEMBER TO CHOOSE
-  //Double_t myBins[] = {2., 3., 4., 5., 6., 8., 10.};
+  //Double_t myBins[] = {4., 5., 6., 8., 10.}; // REMEMBER TO CHOOSE
+  //Double_t myBins[] = {6., 8., 10.};
+  Double_t myBins[] = {2., 3., 4., 5., 6., 8., 10.};
   //Double_t myBins[] = {0., 0.5, 1., 1.5, 2., 3., 4., 10.};
   //Double_t myBins[] = {2., 3., 4., 5., 6., 8., 10., 80.};
   Int_t nMyBins = sizeof(myBins)/sizeof(myBins[0])-1;
@@ -408,6 +410,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   Int_t yshift = 20;
   Int_t igroup1 = 0;
   Int_t igroup2 = 0;
+  
+  TList outList;
 
   //
   /// Read plane resolution file (if present)
@@ -458,15 +462,28 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
       resoCentrality.Add(new TObjString(centralityClasses->At(icent)->GetName()));
       Int_t icos = 0;
       Double_t sumRelErrSquare = 0.;
+      TString hResoTitle = "";
       for ( Int_t isub=0; isub<resoEParray.GetEntries(); isub++ ) {
-        for ( Int_t jsub=0; jsub<resoEParray.GetEntries(); jsub++ ) {
-          TH1* histo = static_cast<TH1*>(GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),Form("hResoSub3%s%s", resoEParray.At(isub)->GetName(),resoEParray.At(jsub)->GetName())));
+        TString resoDet1 = resoEParray.At(isub)->GetName();
+        for ( Int_t jsub=isub+1; jsub<resoEParray.GetEntries(); jsub++ ) {
+          TString resoDet2 = resoEParray.At(jsub)->GetName();
+          TH1* histo = 0x0;
+          // Try both combinations: we want the first two values to contain the selectedEP!
+          TString resoDet = "";
+          for ( Int_t icomb=0; icomb<2; icomb++ ) {
+            TString hName = "hResoSub3";
+            resoDet = ( icomb == 0 ) ? resoDet1 + resoDet2 : resoDet2 + resoDet1;
+            hName += resoDet;
+            histo = static_cast<TH1*>(GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),hName));
+            if ( histo ) break;
+          }
           if ( ! histo || histo->Integral() == 0 ) continue;
           currCos[icos] = histo->GetMean();
           if ( currCos[icos] <= 0. ) continue;
           Double_t relErr = histo->GetMeanError() / currCos[icos];
           sumRelErrSquare += relErr * relErr;
           icos++;
+          hResoTitle += Form("%s ", resoDet.Data());
         } // loop on sub events
       } // loop on sub events
       if ( icos != 3  ) {
@@ -476,7 +493,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
       }
       resolution[0][icent] = TMath::Sqrt((currCos[0]*currCos[1]/currCos[2]));
       resolution[1][icent] = resolution[0][icent]/2.*TMath::Sqrt(sumRelErrSquare);
-      printf("Resolution %s  %g +- %g\n", centralityClasses->At(icent)->GetName(), resolution[0][icent], resolution[1][icent]);
+      printf("Resolution (%s) %s  %g +- %g\n", hResoTitle.Data(), centralityClasses->At(icent)->GetName(), resolution[0][icent], resolution[1][icent]);
     }
   }
 
@@ -490,22 +507,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     if ( icent == 0 ) resoCentrArray.AddAt(range[0],ib++);
     resoCentrArray.AddAt(range[1], ib++);
   }
-
-  if ( hasResolution ) {
-    currName = externalReso ? Form("externalReso") : Form("reso_%s_%s_%s", resoEParray.At(0)->GetName(), resoEParray.At(1)->GetName(), resoEParray.At(2)->GetName());
-    can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
-    TGraphErrors* resoGraph = new TGraphErrors(centralityClasses->GetEntries());
-    for ( Int_t icent=0; icent<resoCentrality.GetEntries(); icent++ ) {
-
-      resoGraph->SetPoint(icent, 0.5*(resoCentrArray[icent+1] + resoCentrArray[icent]), resolution[0][icent]);
-      resoGraph->SetPointError(icent, 0.5*(resoCentrArray[icent+1] - resoCentrArray[icent]), resolution[1][icent]);
-    }
-    resoGraph->SetTitle(Form("Resolution %s", selectEP.Data()));
-    resoGraph->GetXaxis()->SetTitle("Centrality");
-    resoGraph->GetYaxis()->SetTitle("Resolution");
-    resoGraph->Draw("apz");
-  }
-
+  
   const Int_t kNresoCentr = resoCentrality.GetEntries();
 
   //
@@ -523,18 +525,130 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     for ( Int_t istep=0; istep<kNsteps; istep++ ) {
       stepName[istep] = cfContainer->GetStepTitle(istep);
       gridSparseArray[istep*kNresoCentr+icent] = cfContainer->GetGrid(istep);
+      if ( ! customBins ) customBins = gridSparseArray[istep*kNresoCentr+icent]->GetAxis(kHvarPt);
     } // loop on step
   } // loop on centrality
-
-  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
+  
   
   Bool_t isMC = furtherOpt.Contains("MC");
   Int_t firstSrc = ( isMC ) ? 0 : kUnidentified;
   Int_t lastSrc  = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
+  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
   if ( ! isMC ) srcColors[kUnidentified] = 1;
-
-  TList outList;
-
+  
+  
+  //
+  // Get histograms
+  //
+  const Int_t kNcentralities = centralityClasses->GetEntries();
+  const Int_t kNhistos = kNsteps*kNtrackSources*kNcentralities;
+  TObjArray ptVsDeltaPhiList(kNhistos);
+  TObjArray ptVsPhiList(kNhistos);
+  TArrayD wgtReso[3];
+  for ( Int_t ires=0; ires<3; ires++ ) {
+    wgtReso[ires].Set(kNhistos);
+    wgtReso[ires].Reset(0.);
+  }
+  for ( Int_t istep=0; istep<kNsteps; istep++ ) {
+    for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+      TString baseName = Form("%s_%s", stepName[istep].Data(), fSrcKeys->At(isrc)->GetName());
+      for ( Int_t icent=0; icent<centralityClasses->GetEntries(); icent++ ) {
+        Int_t idx = kNcentralities * kNtrackSources * istep + kNcentralities * isrc + icent;
+        TH1* hPtVsDeltaPhi = 0x0;
+        TH1* hPtVsPhi = 0x0;
+        TString baseNameCent = Form("%s_%s", baseName.Data(), centralityClasses->At(icent)->GetName());
+        Double_t nMuons = 0.;
+        TString debugString = Form("\n%s", centralityClasses->At(icent)->GetName());
+        for ( Int_t rcent=0; rcent<kNresoCentr; rcent++ ) {
+          if ( resoCentrArray[rcent] < centralityArray[icent] ||
+              resoCentrArray[rcent+1] > centralityArray[icent+1] ) continue;
+          AliCFGridSparse* gridSparse = gridSparseArray[istep*kNresoCentr+rcent];
+          if ( ! gridSparse ||  gridSparse->GetEntries() == 0. ) continue;
+          
+          SetSparseRange(gridSparse, kHvarEta, "", -3.999, -2.501);
+          SetSparseRange(gridSparse, kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
+          TH1* auxHisto = gridSparse->Project(kHvarDeltaPhi,kHvarPt);
+          
+          Double_t currYield = auxHisto->Integral();
+          if ( currYield == 0. ) continue;
+          nMuons += currYield;
+          debugString += Form("\nAdding %s  yield %g  reso", resoCentrality.At(rcent)->GetName(), currYield);
+          for ( Int_t ires=0; ires<3; ires++ ) {
+            wgtReso[ires][idx] += resolution[ires][rcent] * currYield;
+            debugString += Form("  %g", resolution[ires][rcent]);
+          }
+          if ( ! hPtVsDeltaPhi ) hPtVsDeltaPhi = static_cast<TH1*>(auxHisto->Clone(Form("ptVsDeltaPhi_%s", baseNameCent.Data())));
+          else hPtVsDeltaPhi->Add(auxHisto);
+          delete auxHisto;
+          
+          auxHisto = gridSparse->Project(kHvarPhi,kHvarPt);
+          if ( ! hPtVsPhi ) hPtVsPhi = static_cast<TH1*>(auxHisto->Clone(Form("ptVsPhi_%s", baseNameCent.Data())));
+          else hPtVsPhi->Add(auxHisto);
+          delete auxHisto;
+          
+        } // loop on resolution centralities
+        
+        if ( nMuons == 0. ) continue;
+        debugString += Form("\nWeighted reso ");
+        for ( Int_t ires=0; ires<3; ires++ ) {
+          wgtReso[ires][idx] = wgtReso[ires][idx]/nMuons;
+          debugString += Form("  %g", wgtReso[ires][idx]);
+        }
+        AliDebug(1,debugString.Data());
+        
+        ptVsDeltaPhiList.AddAt(hPtVsDeltaPhi,idx);
+        ptVsPhiList.AddAt(hPtVsPhi,idx);
+      } // loop on centralities
+    } // loop on sources
+  } // loop on steps
+  
+  
+  
+  /////////////////////
+  // Plot resolution //
+  /////////////////////
+  if ( hasResolution ) {
+    currName = Form("reso_%s", selectEP.Data());
+    currName += externalReso ? Form("_external") : Form("_sub_%s_%s_%s", resoEParray.At(0)->GetName(), resoEParray.At(1)->GetName(), resoEParray.At(2)->GetName());
+    TGraphErrors* resoGraph = new TGraphErrors(kNresoCentr);
+    resoGraph->SetName(currName.Data());
+    currName.Append("_can");
+    can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+    
+    for ( Int_t icent=0; icent<kNresoCentr; icent++ ) {
+      resoGraph->SetPoint(icent, 0.5*(resoCentrArray[icent+1] + resoCentrArray[icent]), resolution[0][icent]);
+      resoGraph->SetPointError(icent, 0.5*(resoCentrArray[icent+1] - resoCentrArray[icent]), resolution[1][icent]);
+    }
+    resoGraph->SetTitle(Form("Resolution %s", selectEP.Data()));
+    resoGraph->GetXaxis()->SetTitle("Centrality");
+    resoGraph->GetYaxis()->SetTitle("Resolution");
+    resoGraph->Draw("apz");
+    outList.Add(resoGraph);
+    
+    for ( Int_t istep=0; istep<kNsteps; istep++ ) {
+      for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+        currName = Form("wgtReso_%s_%s", stepName[istep].Data(), fSrcKeys->At(isrc)->GetName());
+        resoGraph = new TGraphErrors();
+        resoGraph->SetName(currName.Data());
+        for ( Int_t icent=0; icent<kNcentralities; icent++ ) {
+          Int_t idx = kNcentralities * kNtrackSources * istep + kNcentralities * isrc + icent;
+          if ( wgtReso[0][idx] == 0. ) continue;
+          resoGraph->SetPoint(icent, 0.5*(centralityArray[icent+1] + centralityArray[icent]), wgtReso[0][idx]);
+          resoGraph->SetPointError(icent, 0.5*(centralityArray[icent+1] - centralityArray[icent]), wgtReso[1][idx]);
+        } // loop on centralities
+        if ( resoGraph->GetN() == 0 ) continue;
+        printf("New reso %s\n", resoGraph->GetName());
+        resoGraph->SetTitle(Form("Resolution %s", selectEP.Data()));
+        resoGraph->GetXaxis()->SetTitle("Centrality");
+        resoGraph->GetYaxis()->SetTitle("Resolution");
+        resoGraph->Draw("pz");
+        outList.Add(resoGraph);
+      } // loop on sources
+    } // loop on steps
+  }
+  
+  
+  
   TString graphTypeName[3] = {"raw","correctStat","correctSyst"};
   Int_t drawOrder[3] = {0, 2, 1};
   TString drawOpt[3] = {"apz","pz","a2"};
@@ -544,6 +658,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   ///////////
   // Flow  //
   ///////////
+  
   gStyle->SetOptFit(1111);
   TString funcFormula = ( v2only ) ? "[0] * (1. + 2.*[1]*TMath::Cos(2*x))" : "[0] * (1. + 2.*([1]*TMath::Cos(x) + [2]*TMath::Cos(2*x) + [3]*TMath::Cos(3*x)))";
   //
@@ -551,7 +666,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   if  ( v2only ) func->SetParNames("scale", "v2");
   else func->SetParNames("scale","v1", "v2", "v3");
   Int_t v2par = ( v2only ) ? 1 : 2;
-
+  
   for ( Int_t istep=0; istep<kNsteps; istep++ ) {
     for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
       TString baseName = Form("%s_%s", stepName[istep].Data(), fSrcKeys->At(isrc)->GetName());
@@ -563,47 +678,13 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
         flowVsCentrality[itype]->SetTitle(histoName.Data());
       }
       for ( Int_t icent=0; icent<centralityClasses->GetEntries(); icent++ ) {
-        TH2* hDeltaPhi2D = 0x0;
+        Int_t idx = kNcentralities * kNtrackSources * istep + kNcentralities * isrc + icent;
+        TH2* histo2D = static_cast<TH2*> (ptVsDeltaPhiList.At(idx));
+        if ( ! histo2D ) continue;
         TString baseNameCent = Form("%s_%s", baseName.Data(), centralityClasses->At(icent)->GetName());
-        TArrayD weightedReso(3);
-        weightedReso.Reset(0.);
-        Double_t nMuons = 0.;
-        TString debugString = Form("\n%s", centralityClasses->At(icent)->GetName());
-        for ( Int_t rcent=0; rcent<kNresoCentr; rcent++ ) {
-          if ( resoCentrArray[rcent] < centralityArray[icent] ||
-               resoCentrArray[rcent+1] > centralityArray[icent+1] ) continue;
-          AliCFGridSparse* gridSparse = gridSparseArray[istep*kNresoCentr+rcent];
-          if ( ! gridSparse ||  gridSparse->GetEntries() == 0. ) continue;
 
-          SetSparseRange(gridSparse, kHvarEta, "", -3.999, -2.501);
-          SetSparseRange(gridSparse, kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
-          TH1* auxHisto = gridSparse->Project(kHvarDeltaPhi,kHvarPt);
-
-          Double_t currYield = auxHisto->Integral();
-          if ( currYield == 0. ) continue;
-          nMuons += currYield;
-          debugString += Form("\nAdding %s  yield %g  reso", resoCentrality.At(rcent)->GetName(), currYield);
-          for ( Int_t ires=0; ires<3; ires++ ) {
-            weightedReso[ires] += resolution[ires][rcent] * currYield;
-            debugString += Form("  %g", resolution[ires][rcent]);
-          }
-          histoName = Form("ptVsDeltaPhi_%s", baseNameCent.Data());
-          if ( ! hDeltaPhi2D ) hDeltaPhi2D = static_cast<TH2*>(auxHisto->Clone(histoName.Data()));
-          else hDeltaPhi2D->Add(auxHisto);
-          delete auxHisto;
-        }
-
-        if ( ! hDeltaPhi2D ) continue;
-
-        debugString += Form("\nWeighted reso ");
-        for ( Int_t ires=0; ires<3; ires++ ) {
-          weightedReso[ires] = weightedReso[ires]/nMuons;
-          debugString += Form("  %g", weightedReso[ires]);
-        }
-        AliDebug(1,debugString.Data());
-
-        TAxis* ptAxis = hDeltaPhi2D->GetYaxis();
-
+        TAxis* ptAxis = histo2D->GetYaxis();
+        
         Int_t ipad = 0;
         TGraphErrors* flowVsPt[3];
         for ( Int_t itype=0; itype<nTypes; itype++ ) {
@@ -612,10 +693,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
           flowVsPt[itype]->SetName(histoName.Data());
           flowVsPt[itype]->SetTitle(histoName.Data());
         }
-
-        if ( ! customBins ) customBins = static_cast<TAxis*>(ptAxis->Clone());
-
-
+        
         for ( Int_t ipt=0; ipt<=customBins->GetNbins(); ipt++ ) {
           Int_t minCustomBin = ( ipt == 0 ) ? 1 : ipt;
           Int_t maxCustomBin = ( ipt == 0 ) ? customBins->GetNbins() : ipt;
@@ -623,7 +701,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
           Int_t ptMaxBin = ptAxis->FindBin(customBins->GetBinUpEdge(maxCustomBin)-1.e-4);
           Double_t ptMin = ptAxis->GetBinLowEdge(ptMinBin);
           Double_t ptMax = ptAxis->GetBinUpEdge(ptMaxBin);
-          TH1* projHisto = hDeltaPhi2D->ProjectionX(Form("checkHisto_%s_ptBin%i", baseNameCent.Data(), ipt), ptMinBin, ptMaxBin);
+          TH1* projHisto = histo2D->ProjectionX(Form("%s_%s_ptBin%i", baseName.Data(), histo2D->GetName(), ipt), ptMinBin, ptMaxBin);
           projHisto->SetTitle(Form("%g < p_{t} (GeV/c) < %g", ptMin, ptMax));
           if ( projHisto->Integral() < 50 ) break;
           if ( ipad%4 == 0 ) {
@@ -642,8 +720,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
           projHisto->Fit(func,"R");
           for ( Int_t itype=0; itype<nTypes; itype++ ) {
             TGraphErrors* currGraph = ( ipt == 0 ) ? flowVsCentrality[itype] : flowVsPt[itype];
-            Double_t resoVal = ( itype == 0 ) ? 1. : weightedReso[0];
-            Double_t resoErr = ( itype == 0 ) ? 0. : weightedReso[itype];
+            Double_t resoVal = ( itype == 0 ) ? 1. : wgtReso[0][idx];
+            Double_t resoErr = ( itype == 0 ) ? 0. : wgtReso[itype][idx];
             Double_t rawVal = func->GetParameter(v2par);
             Double_t rawErr = (itype == 2 ) ? 0. : func->GetParError(v2par);
             Double_t yVal = rawVal/resoVal;
@@ -658,7 +736,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
               resoErr = 0.;
               TString graphTitle = currGraph->GetTitle();
               if ( ! graphTitle.Contains("|") ) {
-                graphTitle += Form(" | Rel. error on EP resolution: %.2g (stat.) %.2g (syst.)", weightedReso[1]/weightedReso[0], weightedReso[2]/weightedReso[0]);
+                graphTitle += Form(" | Rel. error on EP resolution: %.2g (stat.) %.2g (syst.)", wgtReso[1][idx]/wgtReso[0][idx], wgtReso[2][idx]/wgtReso[0][idx]);
                 currGraph->SetTitle(graphTitle.Data());
               }
             }
@@ -704,11 +782,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
       } // loop on type
       igroup1++;
       igroup2 = 0;
-    } // loop on track sources      
+    } // loop on track sources
   } // loop on steps
-
-  delete customBins;
-
 
   ///////////////////////
   // Event plane check //
@@ -721,20 +796,47 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   can->SetGridy();
   igroup2++;
 
+  const Int_t kNfits = 2;
+  TString fitTypeName[kNfits] = {"Cos","Sin"};
+
   Bool_t addOffsetToCentrality = kFALSE;
+  Double_t offsetStep = 0.1;
 
   TLegend* leg = new TLegend(0.7,0.7,0.92,0.92);
   leg->SetBorderSize(1);
+  
+  TGraphErrors* epCheck[kNfits];
+  for ( Int_t itype=0; itype<kNfits; itype++ ) {
+    histoName = Form("checkFourier_%s",fitTypeName[itype].Data());
+    epCheck[itype] = new TGraphErrors();
+    epCheck[itype]->SetName(histoName.Data());
+//    epCheck[itype]->SetTitle(histoName.Data());
+  }
   for ( Int_t icent=0; icent<centralityClasses->GetEntries(); icent++ ) {
     TH1* histo = static_cast<TH1*> ( GetSum(physSel,trigClassName,centralityClasses->At(icent)->GetName(),Form("hEventPlane%s", selectEP.Data())) );
     if ( ! histo ) continue;
     histo->SetName(Form("%s_%s", histo->GetName(), centralityClasses->At(icent)->GetName()));
     if ( histo->Integral() < 50. ) continue;
     if ( histo->GetSumw2N() == 0 ) histo->Sumw2();
+    
+    for ( Int_t itype=0; itype<kNfits; itype++ ) {
+      TString checkFormula = Form("[0]*(1.+2.*[1]*TMath::%s(2.*x))",fitTypeName[itype].Data());
+      TF1* checkFunc = new TF1(Form("checkFunc_%s", fitTypeName[itype].Data()), checkFormula.Data(), histo->GetXaxis()->GetBinLowEdge(1), histo->GetXaxis()->GetBinUpEdge(histo->GetXaxis()->GetNbins()));
+      checkFunc->SetParameters(histo->Integral(), 0.);
+      histo->Fit(checkFunc,"R0");
+      TGraphErrors* currGraph = epCheck[itype];
+      Double_t yVal = checkFunc->GetParameter(1);
+      Double_t yErr = checkFunc->GetParError(1);
+      Double_t xVal = 0.5*(centralityArray[icent+1] + centralityArray[icent]);
+      Double_t xErr = 0.5*(centralityArray[icent+1] - centralityArray[icent]);
+      Int_t ipoint = currGraph->GetN();
+      currGraph->SetPoint(ipoint,xVal,yVal);
+      currGraph->SetPointError(ipoint,xErr,yErr);
+    } // loop on type
     histo->Fit("pol0","R0");
     TF1* pol0 = histo->GetFunction("pol0");
     histo->Scale(1./pol0->GetParameter(0));
-    Int_t offset = ( addOffsetToCentrality ) ? icolor : 0;
+    Double_t offset = ( addOffsetToCentrality ) ? offsetStep*(Double_t)icolor : 0.;
     TGraphErrors* graph = new TGraphErrors();
     graph->SetTitle(Form("%s %s", histo->GetTitle(), trigClassName.Data()));
     for ( Int_t ipoint=0; ipoint<histo->GetXaxis()->GetNbins(); ipoint++ ) {
@@ -746,9 +848,9 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     graph->GetYaxis()->SetTitle("Data/Fit (pol0)");
     TString legTitle = Form("%s %%", centralityClasses->At(icent)->GetName());
     if ( addOffsetToCentrality ) {
-      graph->GetYaxis()->SetRangeUser(0, 1.5*(Double_t)centralityClasses->GetEntries());
+      graph->GetYaxis()->SetRangeUser(1.-offsetStep, 1.+1.5*offsetStep*(Double_t)centralityClasses->GetEntries());
       graph->GetYaxis()->SetNdivisions(2*centralityClasses->GetEntries(),0,0);
-      legTitle += Form(" ( + %i)", offset);
+      legTitle += Form(" ( + %g)", offset);
     }
     Int_t currColor = ( icolor < kNtrackSources ) ? srcColors[icolor] : 20+icolor;
     graph->SetLineColor(currColor);
@@ -768,6 +870,94 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     icolor++;
   }
   leg->Draw("same");
+  
+  currName = "epCheckCan";
+  can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+  can->SetGridy();
+  igroup2++;
+  leg = new TLegend(0.7,0.7,0.95,0.95);
+  leg->SetBorderSize(1);
+  for ( Int_t itype=0; itype<kNfits; itype++ ) {
+    epCheck[itype]->SetLineColor(srcColors[itype]);
+    epCheck[itype]->SetMarkerColor(srcColors[itype]);
+    epCheck[itype]->SetMarkerStyle(20+itype);
+    epCheck[itype]->GetXaxis()->SetTitle("Centrality (%)");
+    TString currDrawOpt = "pz";
+    if ( can->GetListOfPrimitives()->GetEntries() == 0 ) currDrawOpt.Prepend("a");
+    epCheck[itype]->Draw(currDrawOpt.Data());
+    leg->AddEntry(epCheck[itype],Form("<%s(2 #psi_{%s})>", fitTypeName[itype].Data(), selectEP.Data()),"lp");
+  }
+  leg->Draw("same");
+  
+  for ( Int_t istep=0; istep<kNsteps; istep++ ) {
+    for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+      TString baseName = Form("%s_%s", stepName[istep].Data(), fSrcKeys->At(isrc)->GetName());
+      for ( Int_t icent=0; icent<centralityClasses->GetEntries(); icent++ ) {
+        Int_t idx = kNcentralities * kNtrackSources * istep + kNcentralities * isrc + icent;
+        TH2* histo2D = static_cast<TH2*> (ptVsPhiList.At(idx));
+        if ( ! histo2D ) continue;
+        TString baseNameCent = Form("%s_%s", baseName.Data(), centralityClasses->At(icent)->GetName());
+        
+        TAxis* ptAxis = histo2D->GetYaxis();
+        
+        Int_t ipad = 0;
+        TGraphErrors* detEffect[kNfits];
+        for ( Int_t itype=0; itype<kNfits; itype++ ) {
+          histoName = Form("checkResoVsPt_%s_%s", baseNameCent.Data(), fitTypeName[itype].Data());
+          detEffect[itype] = new TGraphErrors();
+          detEffect[itype]->SetName(histoName.Data());
+          detEffect[itype]->SetTitle(histoName.Data());
+        }
+        
+        for ( Int_t ipt=0; ipt<=customBins->GetNbins(); ipt++ ) {
+          Int_t minCustomBin = ( ipt == 0 ) ? 1 : ipt;
+          Int_t maxCustomBin = ( ipt == 0 ) ? customBins->GetNbins() : ipt;
+          Int_t ptMinBin = ptAxis->FindBin(customBins->GetBinLowEdge(minCustomBin)+1.e-4);
+          Int_t ptMaxBin = ptAxis->FindBin(customBins->GetBinUpEdge(maxCustomBin)-1.e-4);
+          Double_t ptMin = ptAxis->GetBinLowEdge(ptMinBin);
+          Double_t ptMax = ptAxis->GetBinUpEdge(ptMaxBin);
+          TH1* projHisto = histo2D->ProjectionX(Form("checkReso_%s_%s_ptBin%i", baseName.Data(), histo2D->GetName(), ipt), ptMinBin, ptMaxBin);
+          projHisto->SetTitle(Form("%g < p_{t} (GeV/c) < %g", ptMin, ptMax));
+          if ( projHisto->Integral() < 50 ) break;
+          if ( ipad%4 == 0 ) {
+            currName = projHisto->GetName();
+            currName.Append("_can");
+            showCan = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+            showCan->Divide(2,2);
+            ipad = 0;
+          }
+          showCan->cd(++ipad);
+          for ( Int_t itype=0; itype<kNfits; itype++ ) {
+            TString checkFormula = Form("[0]*(1.+2.*[1]*TMath::%s(2.*x))",fitTypeName[itype].Data());
+            TF1* checkFunc = new TF1(Form("checkFunc_%s", fitTypeName[itype].Data()), checkFormula.Data(), projHisto->GetXaxis()->GetBinLowEdge(1), projHisto->GetXaxis()->GetBinUpEdge(projHisto->GetXaxis()->GetNbins()));
+            checkFunc->SetParameters(projHisto->Integral(), 0.);
+            projHisto->Fit(checkFunc,"R");
+            TGraphErrors* currGraph = detEffect[itype];
+            Double_t yVal = checkFunc->GetParameter(1);
+            Double_t yErr = checkFunc->GetParError(1);
+            Double_t xVal = 0.5*(ptMax + ptMin);
+            Double_t xErr = 0.5*(ptMax - ptMin);
+            Int_t ipoint = currGraph->GetN();
+            currGraph->SetPoint(ipoint,xVal,yVal);
+            currGraph->SetPointError(ipoint,xErr,yErr);
+          } // loop on type
+        } // loop on pt bins
+        for ( Int_t itype=0; itype<kNfits; itype++ ) {
+          currName = detEffect[itype]->GetName();
+          currName.Append("Can");
+          can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+          igroup2++;
+          can->cd();
+          detEffect[itype]->GetXaxis()->SetTitle(ptAxis->GetTitle());
+          detEffect[itype]->GetYaxis()->SetTitle("v2");
+//          detEffect[itype]->GetYaxis()->SetRangeUser(0., 0.25);
+          detEffect[itype]->SetFillStyle(0);
+          detEffect[itype]->Draw("ap");
+//          outList.Add(detEffect[itype]);
+        } // loop on types
+      } // loop on centrality
+    } // loop on track sources
+  } // loop on steps
 
 
   //////////////////////
@@ -794,4 +984,6 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     outList.Write();
     file->Close();
   }
+  
+  delete customBins;
 }

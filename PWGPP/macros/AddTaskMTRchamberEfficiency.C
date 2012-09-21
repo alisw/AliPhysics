@@ -41,7 +41,12 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
   AliAnalysisTaskTrigChEff* taskTrigChEff = new AliAnalysisTaskTrigChEff("TriggerChamberEfficiency", *muonTrackCuts);
   taskTrigChEff->SetUseGhostTracks(useGhosts);
   if ( isMC ) taskTrigChEff->SetTrigClassPatterns("ANY");
-  else taskTrigChEff->SetTrigClassPatterns("ANY CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE");
+  else {
+    TString trigClassPatterns = taskTrigChEff->GetDefaultTrigClassPatterns();
+    trigClassPatterns.Prepend("ANY !CMUP ");
+    taskTrigChEff->SetTrigClassPatterns(trigClassPatterns);
+  }
+  taskTrigChEff->GetMuonEventCuts()->SetFilterMask(AliMuonEventCuts::kSelectedTrig);
   mgr->AddTask(taskTrigChEff);
 
   // Create container

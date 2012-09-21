@@ -30,30 +30,12 @@ class AliAnalysisTaskFlowSingleMu : public AliVAnalysisMuon {
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
 
-  /*
-  enum {
-    kEPV0A, ///< EP form V0A
-    kEPTPC, ///< EP form TPC
-    kEPrandom ///< Random EP
-  };
-
-  void SetEPtype ( Int_t epType = kEPV0A ) { fEPtype = epType; }
-  */
-
  private:
 
   AliAnalysisTaskFlowSingleMu(const AliAnalysisTaskFlowSingleMu&);
   AliAnalysisTaskFlowSingleMu& operator=(const AliAnalysisTaskFlowSingleMu&);
 
   TArrayD GetCentralityRange(TString sRange);
-
-  /*
-  enum {
-    kTrackContainer, ///< CF container for tracks
-    kHistoEP,      ///< Event plane distribution
-    kNobjectTypes    ///< Number of objects
-  };
-  */
   
   enum {
     kStepReconstructed,  ///< Reconstructed tracks
