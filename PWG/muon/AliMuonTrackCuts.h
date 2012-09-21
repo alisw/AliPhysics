@@ -7,6 +7,7 @@
 class AliVParticle;
 class TList;
 class TVector3;
+class TArrayI;
 
 class AliMuonTrackCuts : public AliAnalysisCuts
 {
@@ -24,7 +25,6 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   
   AliMuonTrackCuts();
   AliMuonTrackCuts(const char* name, const char* title);
-  AliMuonTrackCuts(const char* name, const char* title, Bool_t isESD); // Obsolete
   AliMuonTrackCuts(const AliMuonTrackCuts& obj);
   AliMuonTrackCuts& operator=(const AliMuonTrackCuts& obj);
 
@@ -41,6 +41,8 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   void SetIsMC(Bool_t isMC = kTRUE) { fIsMC = isMC; }
 
   void Print ( Option_t* option = "" ) const;
+  
+  Bool_t TrackPtCutMatchTrigClass ( const AliVParticle* track, const TArrayI ptCutFromClass) const;
 
   TVector3 GetCorrectedDCA ( const AliVParticle* track ) const;
   Double_t GetAverageMomentum ( const AliVParticle* track ) const;
@@ -104,18 +106,16 @@ class AliMuonTrackCuts : public AliAnalysisCuts
  private:
   
   Int_t GetThetaAbsBin ( Double_t rAtAbsEnd ) const;
-  Bool_t SetParameter ( Int_t iparam, Float_t value );
+  Bool_t SetParameter ( Int_t iparam, Double_t value );
   Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName ) const;
-  Bool_t IsESDTrack ( const AliVParticle* track ) const;
 
-  Bool_t fIsESD;            ///< Event is ESD
   Bool_t fIsMC;             ///< Monte Carlo analysis
   Bool_t fUseCustomParam;   ///< Use custom parameters (do not search in OADB)
   Bool_t fSharpPtCut;       ///< Flag to apply sharp pt cut in track-trigger matching
 
   TArrayD fParameters;      ///< List of parameters
 
-  ClassDef(AliMuonTrackCuts, 2); // Class for muon track filters
+  ClassDef(AliMuonTrackCuts, 3); // Class for muon track filters
 };
  
 #endif

@@ -70,7 +70,9 @@
 #include "AliVAnalysisMuon.h"
 #include "AliMergeableCollection.h"
 #include "AliCounterCollection.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
+#include "AliAnalysisMuonUtility.h"
 
 
 /// \cond CLASSIMP
@@ -191,17 +193,8 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   /// Fill output objects
   //
 
-  if ( GetVertexSPD()->GetNContributors() < fMinNvtxContirbutors ) return;
-
-  Double_t ipVz = GetVertexSPD()->GetZ();
-  Double_t ipVzMC = 0;
-  if ( IsMC() ) {
-    if ( fMCEvent ) ipVzMC = fMCEvent->GetPrimaryVertex()->GetZ();
-    else if ( fAODEvent ) {
-      AliAODMCHeader* aodMCHeader = (AliAODMCHeader *)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName());
-      if ( aodMCHeader ) ipVzMC = aodMCHeader->GetVtxZ();
-    }
-  }
+  Double_t ipVz = AliAnalysisMuonUtility::GetVertexSPD(InputEvent())->GetZ();
+  Double_t ipVzMC = AliAnalysisMuonUtility::IsMCEvent(InputEvent(),MCEvent()) ? AliAnalysisMuonUtility::GetMCVertexZ(InputEvent(),MCEvent()) : 0.;
   
   for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
     TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
@@ -215,9 +208,9 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
   AliVParticle* track = 0x0;
 
   for ( Int_t istep = 0; istep<2; ++istep ) {
-    Int_t nTracks = ( istep == kStepReconstructed ) ? GetNTracks() : GetNMCTracks();
+    Int_t nTracks = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetNTracks(InputEvent()) : AliAnalysisMuonUtility::GetNMCTracks(InputEvent(),MCEvent());
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
-      track = ( istep == kStepReconstructed ) ? GetTrack(itrack) : GetMCTrack(itrack);
+      track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : AliAnalysisMuonUtility::GetMCTrack(itrack,InputEvent(),MCEvent());
       
       Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
       if ( ! isSelected ) continue;
@@ -225,12 +218,12 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       // In W simulations with Pythia, sometimes muon is stored twice.
       // Remove muon in case it has another muon as daugther
       if ( istep == kStepGeneratedMC ) {
-        Int_t firstDaughter = GetDaughterIndex(track, 0);
+        Int_t firstDaughter = AliAnalysisMuonUtility::GetDaughterIndex(track, 0);
         if ( firstDaughter >= 0 ) {
           Bool_t hasMuonDaughter = kFALSE;
-          Int_t lastDaughter = GetDaughterIndex(track, 1);
+          Int_t lastDaughter = AliAnalysisMuonUtility::GetDaughterIndex(track, 1);
           for ( Int_t idaugh=firstDaughter; idaugh<=lastDaughter; idaugh++ ) {
-            AliVParticle* currTrack = GetMCTrack(idaugh);
+            AliVParticle* currTrack = AliAnalysisMuonUtility::GetMCTrack(idaugh,InputEvent(),MCEvent());
             if ( currTrack->PdgCode() == track->PdgCode() ) {
               hasMuonDaughter = kTRUE;
               break;
@@ -247,8 +240,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       
       Double_t thetaAbsEndDeg = 0;
       if ( istep == kStepReconstructed ) {
-        Double_t rAbsEnd =  ( fAODEvent ) ? ((AliAODTrack*)track)->GetRAtAbsorberEnd(): ((AliESDMuonTrack*)track)->GetRAtAbsorberEnd();
-        thetaAbsEndDeg = TMath::ATan( rAbsEnd / 505. ) * TMath::RadToDeg();
+        thetaAbsEndDeg = AliAnalysisMuonUtility::GetThetaAbsDeg(track);
       }
       else {
         thetaAbsEndDeg = ( TMath::Pi()-track->Theta() ) * TMath::RadToDeg();
@@ -265,7 +257,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       
       for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
         TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
-        if ( istep == kStepReconstructed && ! TrackPtCutMatchTrigClass(track, trigClassName) ) continue;
+        if ( istep == kStepReconstructed && ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
         ((AliCFContainer*)GetMergeableObject(physSel, trigClassName, centrality, "SingleMuContainer"))->Fill(containerInput,istep);
       } // loop on selected trigger classes
     } // loop on tracks

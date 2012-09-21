@@ -61,7 +61,9 @@
 
 // PWG includes
 #include "AliMergeableCollection.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
+#include "AliAnalysisMuonUtility.h"
 
 
 /// \cond CLASSIMP
@@ -193,18 +195,15 @@ void AliAnalysisTaskMuonCuts::ProcessEvent(TString physSel, const TObjArray& sel
   /// Fill histogram
   //
 
-  if ( GetVertexSPD()->GetNContributors() < fMinNvtxContirbutors ) return;
-
   TString histoName = "";
   AliVParticle* track = 0x0;
-  Int_t nTracks = GetNTracks();
+  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(InputEvent());
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
-    track = GetTrack(itrack);
+    track = AliAnalysisMuonUtility::GetTrack(itrack, InputEvent());
     fMuonTrackCuts->SetNSigmaPdca(1.e10);
     if ( ! fMuonTrackCuts->IsSelected(track) ) continue;
 
-    Double_t rAbsEnd =  ( fAODEvent ) ? ((AliAODTrack*)track)->GetRAtAbsorberEnd(): ((AliESDMuonTrack*)track)->GetRAtAbsorberEnd();
-    Double_t thetaAbsEndDeg = TMath::ATan( rAbsEnd / 505. ) * TMath::RadToDeg();
+    Double_t thetaAbsEndDeg = AliAnalysisMuonUtility::GetThetaAbsDeg(track);
     Int_t thetaAbsBin = ( thetaAbsEndDeg < 3. ) ? kThetaAbs23 : kThetaAbs310;
 
     Int_t trackSrc = GetParticleType(track);
@@ -214,7 +213,7 @@ void AliAnalysisTaskMuonCuts::ProcessEvent(TString physSel, const TObjArray& sel
     Double_t dca = dcaAtVz.Mag();
     Double_t pDca = pTotMean * dca;
 
-    Double_t chi2 = pDca / fMuonTrackCuts->GetSigmaPdca(rAbsEnd) ;
+    Double_t chi2 = pDca / fMuonTrackCuts->GetSigmaPdca(AliAnalysisMuonUtility::GetRabs(track)) ;
     chi2 *= chi2;
     Double_t chiProb = TMath::Prob(chi2, 2);
 
@@ -336,7 +335,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
     for ( Int_t ihisto=0; ihisto<2; ++ihisto ) {
       TH2* histo = 0x0;
       histoPattern = "";
-      histoPattern = Form("%s & %s", fHistoTypeKeys->At(recoDcaHisto[ihisto])->GetName(), fThetaAbsKeys->At(itheta)->GetName());
+      histoPattern = Form("%s%s*", fHistoTypeKeys->At(recoDcaHisto[ihisto])->GetName(), fThetaAbsKeys->At(itheta)->GetName());
       histo = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
       if ( ! histo ) continue;
 
@@ -765,13 +764,13 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
         TLegend* leg = 0x0;
         histoName = GetHistoName(kSigmaVsPt, itheta, isrc);
-        for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
-          TH2* histo = (TH2*)GetSum(physSel, trigClassName, fCentralityClasses->GetBinLabel(icent), histoName);
+        for ( Int_t icent=1; icent<=GetCentralityClasses()->GetNbins(); ++icent ) {
+          TH2* histo = (TH2*)GetSum(physSel, trigClassName, GetCentralityClasses()->GetBinLabel(icent), histoName);
           if ( ! histo ) continue;
           Int_t ptMinBin = histo->GetXaxis()->FindBin(ptMin[iptmin]);
           Int_t ptMaxBin = histo->GetXaxis()->GetNbins()+1;
           currName = histo->GetName();
-          currName += Form("_%s_ptMin%i", fCentralityClasses->GetBinLabel(icent), TMath::Nint(ptMin[iptmin]));
+          currName += Form("_%s_ptMin%i", GetCentralityClasses()->GetBinLabel(icent), TMath::Nint(ptMin[iptmin]));
           TH1* projectHisto = histo->ProjectionY(currName.Data(), ptMinBin, ptMaxBin);
           if ( projectHisto->GetMaximum() < 50. ) {
             delete projectHisto;
@@ -795,12 +794,12 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
           drawOpt = "e";
           if ( gPad->GetListOfPrimitives()->GetEntries() != 0 ) drawOpt += "same";
           projectHisto->Draw(drawOpt.Data());
-          leg->AddEntry(projectHisto, fCentralityClasses->GetBinLabel(icent), "lp");
+          leg->AddEntry(projectHisto, GetCentralityClasses()->GetBinLabel(icent), "lp");
           Double_t keptEvents = projectHisto->GetBinContent(orderCuts[0]);
           Double_t totalEvents = projectHisto->GetBinContent(orderCuts[orderCuts.GetSize()-1]);
           Double_t accepted = ( totalEvents > 0. ) ? keptEvents / totalEvents : 1.;
           Double_t acceptedErr = ( totalEvents > 0. ) ? TMath::Sqrt(accepted*(1.-accepted)/totalEvents) : 1.;
-          printf("%12s %11s %6s (pt>%g) rejected evts : %6.2f +- %6.3f %%\n", fSrcKeys->At(isrc)->GetName(), fThetaAbsKeys->At(itheta)->GetName(), fCentralityClasses->GetBinLabel(icent), ptMin[iptmin], (1.-accepted)*100., acceptedErr*100.);
+          printf("%12s %11s %6s (pt>%g) rejected evts : %6.2f +- %6.3f %%\n", fSrcKeys->At(isrc)->GetName(), fThetaAbsKeys->At(itheta)->GetName(), GetCentralityClasses()->GetBinLabel(icent), ptMin[iptmin], (1.-accepted)*100., acceptedErr*100.);
           //printf("  rejected %g  total %g   (%s vs %s)\n",totalEvents-keptEvents,totalEvents,projectHisto->GetXaxis()->GetBinLabel(orderCuts[0]),projectHisto->GetXaxis()->GetBinLabel(orderCuts[orderCuts.GetSize()-1]));
         } // loop on centrality
         if ( leg ) leg->Draw("same");

@@ -18,6 +18,7 @@
 #include "TMath.h"
 #include "TList.h"
 #include "TLorentzVector.h"
+#include "TArrayI.h"
 
 #include "AliLog.h"
 #include "AliVParticle.h"
@@ -187,6 +188,28 @@ void AliMuonPairCuts::SetIsMC ( Bool_t isMC )
 {
   /// Set Is MC
   fMuonTrackCuts.SetIsMC(isMC);
+}
+
+//________________________________________________________________________
+Bool_t AliMuonPairCuts::TrackPtCutMatchTrigClass ( const AliVParticle* track1, const AliVParticle* track2, const TArrayI ptCutFromClass ) const
+{
+  /// Check if track pair passes the trigger pt cut level used in the trigger class
+  Bool_t matchTrig1 = fMuonTrackCuts.TrackPtCutMatchTrigClass(track1, ptCutFromClass);
+  Bool_t matchTrig2 = fMuonTrackCuts.TrackPtCutMatchTrigClass(track2, ptCutFromClass);
+  
+  Bool_t matchTrackerPt1 = kTRUE, matchTrackerPt2 = kTRUE;
+  if ( IsApplySharpPtCutInMatching() ) {
+    matchTrackerPt1 = ( track1->Pt() >= fMuonTrackCuts.GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
+    matchTrackerPt2 = ( track2->Pt() >= fMuonTrackCuts.GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
+  }
+  
+  matchTrig1 = ( matchTrig1 && matchTrackerPt1 );
+  matchTrig2 = ( matchTrig2 && matchTrackerPt2 );
+  
+  Bool_t passCut = ( ptCutFromClass[1]>0 ) ? ( matchTrig1 && matchTrig2 ) : ( matchTrig1 || matchTrig2 );
+
+  AliDebug(1,Form("Class matchTrig %i %i  trackMatchTrig %i %i trackPt %g %g (required %i)  passCut %i", ptCutFromClass[0], ptCutFromClass[1], matchTrig1, matchTrig2, track1->Pt(), track2->Pt(), IsApplySharpPtCutInMatching(),passCut));
+  return passCut;
 }
 
 //________________________________________________________________________

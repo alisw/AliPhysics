@@ -43,8 +43,10 @@
 
 // PWG3 includes
 #include "AliVAnalysisMuon.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliMergeableCollection.h"
+#include "AliAnalysisMuonUtility.h"
 
 
 /// \cond CLASSIMP
@@ -191,8 +193,8 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
 
   TString histoName = "";
   for ( Int_t isel=0; isel<kNselections; ++isel ) {
-    for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); ++itrig ) {
-      for ( Int_t icent=1; icent<=fCentralityClasses->GetNbins(); ++icent ) {
+    for ( Int_t itrig=0; itrig<GetAllSelectedTrigClasses()->GetEntries(); ++itrig ) {
+      for ( Int_t icent=1; icent<=GetCentralityClasses()->GetNbins(); ++icent ) {
         for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
           for ( Int_t itype=0; itype<kNhistoTypes; ++itype ) {
             for ( Int_t icount=-1; icount<kNcounts; ++icount ) {
@@ -201,10 +203,10 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
                   TH1* histo = 0x0;
                   for ( Int_t jmatch=imatch+1; jmatch<=kMatchHpt; ++jmatch ) {
                     histoName = GetHistoName(itype, icount, ich, jmatch, imethod);
-                    TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent)), histoName);
+                    TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent)), histoName);
                     if ( ! histoAdd ) continue;
                     histoName = GetHistoName(itype, icount, ich, imatch, imethod);
-                    if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), fTriggerClasses->At(itrig)->GetName(), fCentralityClasses->GetBinLabel(icent), histoName);
+                    if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent), histoName);
                     AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
                     histo->Add(histoAdd);
                   } // loop on higher pt matching
@@ -320,7 +322,7 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
     } // loop on track selection
   } // loop on eff method
 
-  fMuonTrackCuts->Print("mask");
+  fMuonTrackCuts->Print();
   
   fList = new TList();
   fList->SetOwner();
@@ -358,14 +360,14 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
 
   Int_t itrackSel = -1;
 
-  Int_t nTracks = GetNTracks();
+  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(InputEvent());
   for ( Int_t itrack = 0; itrack < nTracks; ++itrack ) {
-    track = GetTrack(itrack);
+    track = AliAnalysisMuonUtility::GetTrack(itrack,InputEvent());
 
-    Bool_t matchTracker = ( fAODEvent && ((AliAODTrack*)track)->IsMuonTrack() ) || ((AliESDMuonTrack*)track)->ContainTrackerData();
+    Bool_t matchTracker = AliAnalysisMuonUtility::IsMuonTrack(track);
     if ( ! matchTracker && ! fUseGhosts ) continue;
 
-    Int_t matchTrig = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMatchTrigger() : ((AliESDMuonTrack*)track)->GetMatchTrigger();
+    Int_t matchTrig = AliAnalysisMuonUtility::GetMatchTrigger(track);
     itrackSel = matchTrig;
     UInt_t selection = fMuonTrackCuts->GetSelectionMask(track);
     Bool_t isSelected = ( ( selection & fMuonTrackCuts->GetFilterMask() ) == fMuonTrackCuts->GetFilterMask() );
@@ -377,12 +379,12 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
     for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
       if ( imethod == kEffFromTrack ) {
         if ( track->P() < 10. ) continue;
-        pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMUONTrigHitsMapTrk() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigChTrk();
+        pattern = AliAnalysisMuonUtility::GetMUONTrigHitsMapTrk(track);
         board = AliESDMuonTrack::GetCrossedBoard(pattern);
       }
       else {
-        pattern = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMUONTrigHitsMapTrg() :  ((AliESDMuonTrack*)track)->GetHitsPatternInTrigCh();
-        board = ( fAODEvent ) ? AliESDMuonTrack::GetCrossedBoard(pattern) : ((AliESDMuonTrack*)track)->LoCircuit();
+        pattern = AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg(track);
+        board = ( AliAnalysisMuonUtility::IsAODEvent(InputEvent()) ) ? AliESDMuonTrack::GetCrossedBoard(pattern) : ((AliESDMuonTrack*)track)->LoCircuit();
       }
       
       Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);

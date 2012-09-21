@@ -22,6 +22,7 @@ class AliVParticle;
 class AliAODEvent;
 class AliESDEvent;
 class AliCFGridSparse;
+class AliMuonEventCuts;
 class AliMuonTrackCuts;
 class AliMuonPairCuts;
 class AliVVertex;
@@ -42,12 +43,18 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   virtual void   FinishTaskOutput();
 
   void SetCentralityClasses(Int_t nCentralityBins = -1, Double_t* centralityBins = 0x0);
+  TAxis* GetCentralityClasses() const;
   Bool_t SetCentralityClassesFromOutput();
 
-  void SetTrigClassPatterns(TString pattern = "CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE !PHS");
-  void SetTrigClassLevels(TString pattern = "MSL:Lpt MSH:Hpt MUL:Lpt MLL:Lpt");
+  void SetTrigClassPatterns(const TString pattern);
+  TString GetDefaultTrigClassPatterns() const;
+  /// Get trigger classes
+  TList* GetAllSelectedTrigClasses() const;
+  
   void SetTerminateOptions(TString physSel="All", TString trigClass="ANY", TString centralityRange="", TString furtherOpts="");
   
+  /// Get muon event cuts
+  AliMuonEventCuts* GetMuonEventCuts() { return fMuonEventCuts; }
   /// Get muon track cuts
   AliMuonTrackCuts* GetMuonTrackCuts() { return fMuonTrackCuts; }
   /// Get muon pair cuts
@@ -58,9 +65,6 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
                                Int_t ivar, TString labelName,
                                Double_t varMin, Double_t varMax,
                                TString option = "");
-  
-  /// Set minimum number of vertex contributors
-  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
 
  protected:
   
@@ -83,18 +87,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   /////////////////////
   // Utility methods //
   /////////////////////
-  
-  // Transparently handle tracks in ESD/AOD
-  Int_t GetNTracks();
-  AliVParticle* GetTrack(Int_t itrack);
-  TLorentzVector GetTrackPair(AliVParticle* track1, AliVParticle* track2) const;
-  
+    
   // Methods for MC
-  Bool_t IsMC();
-  Int_t GetNMCTracks();
-  AliVParticle* GetMCTrack(Int_t trackLabel);
-  Int_t GetMotherIndex(AliVParticle* mcParticle);
-  Int_t GetDaughterIndex(AliVParticle* mcParticle, Int_t idaughter);
   Int_t GetParticleType(AliVParticle* track);
   Int_t RecoTrackMother(AliVParticle* mcParticle);
   
@@ -102,16 +96,6 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
   TObject* GetMergeableObject(TString physSel, TString trigClassName, TString centrality, TString objectName);
   TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
-  
-  // A useful constant
-  Double_t MuonMass2() const;
-  
-  // Handle triggers
-  Bool_t TrackPtCutMatchTrigClass(AliVParticle* track, TString trigClassName);
-  Int_t GetTrigClassPtCutLevel(TString trigClassName);
-  
-  // Methods for event information
-  AliVVertex* GetVertexSPD() const;
   
   enum {
     kPhysSelPass,    ///< Physics selected events
@@ -130,7 +114,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
     kUnidentified,  ///< Particle that fails matching kine
     kNtrackSources  ///< Total number of track sources
   };
-    
+  
+  AliMuonEventCuts* fMuonEventCuts; ///< Muon event cuts
   AliMuonTrackCuts* fMuonTrackCuts; ///< Muon track cuts
   AliMuonPairCuts* fMuonPairCuts;   ///< Muon pair track cuts
   AliESDEvent* fESDEvent;      //!< ESD event, not owner
@@ -139,13 +124,10 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fChargeKeys;      ///< Muon charge keys
   TObjArray* fSrcKeys;         ///< MC sources names
   TObjArray* fPhysSelKeys;     ///< Physics selection names
-  TList* fTriggerClasses;      ///< List of trigger classes
-  TAxis* fCentralityClasses;   ///< Centrality classes
   
   AliCounterCollection* fEventCounters;  //!< event counters
   AliMergeableCollection* fMergeableCollection; //!< collection of mergeable objects
   TObjArray* fOutputList;  //!< List of outputs  
-  Int_t fMinNvtxContirbutors;  ///< Minimum number of vertex contributors
 
  private:
   AliVAnalysisMuon(const AliVAnalysisMuon&);
@@ -153,14 +135,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   
   void InitKeys();
   void CreateMergeableObjects(TString physSel, TString trigClassName, TString centrality);
-  TObjArray* BuildTriggerClasses(TString firedTrigClasses);
-  
-  TObjArray* fSelectedTrigPattern; ///< List of triggers to be kept
-  TObjArray* fRejectedTrigPattern; ///< List of triggers to be rejected
-  TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 3);
+  ClassDef(AliVAnalysisMuon, 4);
 };
 
 #endif
