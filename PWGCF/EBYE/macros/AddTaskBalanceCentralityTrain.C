@@ -15,7 +15,8 @@ Bool_t kUseBayesianPID = kFALSE;
 Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
-AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
+AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(TString analysisType = "ESD",
+						 Double_t centrMin=0.,
 						 Double_t centrMax=80.,  //100.
 						 Bool_t gRunShuffling=kFALSE,
 						 TString centralityEstimator="V0M",
@@ -102,6 +103,10 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
   }
+  else if (analysisType=="MCESD"){
+    bf  = GetBalanceFunctionObject("MCESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MCESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
+  }  
   else if (analysisType=="AOD"){
     bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
@@ -122,7 +127,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
 
   taskBF->SetCentralityPercentileRange(centrMin,centrMax);
-  if(analysisType == "ESD") {
+  if((analysisType == "ESD")||(analysisType == "MCESD")) {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
     if(kUsePID) {

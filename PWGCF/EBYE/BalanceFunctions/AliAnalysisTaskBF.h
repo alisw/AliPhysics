@@ -7,6 +7,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH2D;
 class TF1;
 
 class AliBalance;
@@ -198,7 +199,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Int_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Int_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
-  TH1F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
+ 
+  TH2D *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
 

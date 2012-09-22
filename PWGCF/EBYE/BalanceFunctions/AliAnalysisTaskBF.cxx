@@ -236,7 +236,7 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",130,0,130);
   fList->Add(fHistTrackStats);
 
-  fHistNumberOfAcceptedTracks = new TH1F("fHistNumberOfAcceptedTracks",";N_{acc.};Entries",4001,-0.5,4000.5);
+  fHistNumberOfAcceptedTracks = new TH2D("fHistNumberOfAcceptedTracks",";N_{acc.};;Centrality",4001,-0.5,4000.5,100,0,100);
   fList->Add(fHistNumberOfAcceptedTracks);
 
   // Vertex distributions
@@ -637,8 +637,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    }
 		    
 		    delete trackTPC;
-		    
+		    gNumberOfAcceptedTracks += 1;
 		  } //track loop
+		  // cout<<"Centrality: "<<fCentrality<<" - Accepted tracks: "<<gNumberOfAcceptedTracks<<endl;
 		}//Vz cut
 	      }//Vy cut
 	    }//Vx cut
@@ -1099,6 +1100,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		    gNumberOfAcceptedTracks += 1;
 		    
 		  } //track loop
+		  //cout<<"Centrality: "<<fCentrality<<" - Accepted tracks: "<<gNumberOfAcceptedTracks<<endl;
 		}//Vz cut
 	      }//Vy cut
 	    }//Vx cut
@@ -1301,7 +1303,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
       return;
   }
-  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
+  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks, fCentrality);
 
   // calculate balance function
   if(fUseMultiplicity) 
