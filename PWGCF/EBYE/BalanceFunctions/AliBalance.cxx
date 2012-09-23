@@ -880,18 +880,28 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
   TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
   TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
-  
+
+  TFile *fEfficiencyMatrix = NULL;
+  if(correctWithEfficiency){
+    fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
+    if(!fEfficiencyMatrix){
+      AliError("Efficiency histogram file not found");
+      return NULL;
+    }
+  }
+
   // do correction with the efficiency calculated from HIJING (for two particle correlations)
   if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
 
-    TFile *fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/efficienciesFromHijing.root");
-    TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get("h1d3n");
-    TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get("h1d4n");
-    TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get("h1d5n");
-    hEffPP->Smooth();
-    hEffPN->Smooth();
-    hEffNN->Smooth();
+    TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     
+    if( !hEffPP || !hEffNN || !hEffPN){
+      AliError(Form("Efficiency (eta) histograms not found: etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+      return NULL;
+    }
+  
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
 
       hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
@@ -922,21 +932,20 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     //   hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
     //   hTemp4->SetBinError(iBin+1,hTemp4->GetBinError(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
     // }      
-
-    fEfficiencyMatrix->Close();
   }
 
   // do correction with the efficiency calculated from HIJING (for two particle correlations)
   if(iAnalysisType == kPhi && correctWithEfficiency){
 
-    TFile *fEfficiencyMatrixPhi = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/efficienciesPhiFromHijing.root");
-    TH1F* hEffPhiPP = (TH1F*)fEfficiencyMatrixPhi->Get("h1d3n");
-    TH1F* hEffPhiNN = (TH1F*)fEfficiencyMatrixPhi->Get("h1d4n");
-    TH1F* hEffPhiPN = (TH1F*)fEfficiencyMatrixPhi->Get("h1d5n");
-    hEffPhiPP->Smooth();
-    hEffPhiPN->Smooth();
-    hEffPhiNN->Smooth();
+    TH1F* hEffPhiPP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffPhiNN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffPhiPN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     
+    if( !hEffPhiPP || !hEffPhiNN || !hEffPhiPN){
+      AliError("Efficiency (phi) histograms not found");
+      return NULL;
+    }
+
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
 
       hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/hEffPhiPN->GetBinContent(hEffPhiPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
@@ -949,8 +958,6 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
       hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/hEffPhiPP->GetBinContent(hEffPhiPP->FindBin(hTemp4->GetBinCenter(iBin+1))));
       
     }  
-
-    fEfficiencyMatrixPhi->Close();
   }
 
 
@@ -980,6 +987,8 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     }
   }
   
+  if(fEfficiencyMatrix)   fEfficiencyMatrix->Close();
+
   PrintResults(iAnalysisType,gHistBalanceFunctionHistogram);
 
   return gHistBalanceFunctionHistogram;
