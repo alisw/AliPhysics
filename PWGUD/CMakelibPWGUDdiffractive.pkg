@@ -1,7 +1,7 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWGUDdiffractive                                               #
-# Author : Felix Reidt (felix.reidt@cern.ch)                                     # 
+# Package File for PWGUDdiffractive                                              #
+# Author : Felix Reidt (felix.reidt@cern.ch)                                     #
 # Variables Defined :                                                            #
 #                                                                                #
 # SRCS - C++ source files                                                        #
@@ -26,10 +26,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS DIFFRACTIVE/AliAnalysisTaskDDMeson.cxx)
+set ( SRCS
+  DIFFRACTIVE/example/AliAnalysisTaskCDex.cxx
+  DIFFRACTIVE/example/AliCDMesonUtilsStripped.cxx
+  DIFFRACTIVE/example/AliCDMesonBaseStripped.cxx
+  DIFFRACTIVE/xsAndTwoProng/AliCDMesonTracks.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( EINCLUDE  PWGUD/DIFFRACTIVE ITS PWGPP/ITS STEER/STEER STEER/CDB STEER/STEERBase)
+set ( EINCLUDE PWGUD/DIFFRACTIVE/example PWGUD/DIFFRACTIVE/xsAndTwoProng ITS PWGPP/ITS STEER/STEER STEER/CDB STEER/STEERBase VZERO )
 
 set ( DHDR PWGUDdiffractiveLinkDef.h )
