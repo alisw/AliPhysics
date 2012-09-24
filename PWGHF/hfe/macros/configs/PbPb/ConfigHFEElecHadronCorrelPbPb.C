@@ -7,7 +7,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
   
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");
 //  hfecuts->CreateStandardCuts();
-  hfecuts->SetMinNClustersTPC(120);
+  hfecuts->SetMinNClustersTPC(100);
   hfecuts->SetMinNClustersITS(3);
   hfecuts->SetMinNTrackletsTRD(0);
   hfecuts->SetMinRatioTPCclusters(0.6);
@@ -28,7 +28,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
   AliAnalysisTaskElecHadronCorrel *task = new AliAnalysisTaskElecHadronCorrel("HFE-hadron correlations");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
-  task->SetInvariantMassCut(0.07);
+  task->SetInvariantMassCut(0.1);
   task->SetRejectKinkMother(kTRUE);
 //  task->SetRemovePileUp(kTRUE);
 
@@ -37,6 +37,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
   if(useMC) pid->SetHasMCData(kTRUE);
   pid->AddDetector("TPC", 0);
   pid->AddDetector("EMCAL", 1);
+  /*
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
   emcpid->SetEoPMax(1.2);
@@ -59,7 +60,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC){
   }
 //  pid->ConfigureTPCdefaultCut(cutmodel, params,3.0); 
   pid->ConfigureTPCasymmetric(0,30,-1,3.0); 
-
+*/
   printf("*************************************\n");
   printf("Configuring standard Task:\n");
 //  task->PrintStatus();
