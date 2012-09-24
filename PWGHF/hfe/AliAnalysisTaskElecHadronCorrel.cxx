@@ -38,7 +38,6 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
-#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDHandler.h"
 #include "AliAODEvent.h"
@@ -50,10 +49,14 @@
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
 #include "TVector.h"
+
 #include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliESDpid.h"
+#include "AliAODPid.h"
 #include "AliESDtrackCuts.h"
 #include "AliPhysicsSelection.h"
+#include "AliCentralitySelectionTask.h"
 #include "AliESDCaloCluster.h"
 #include "AliAODCaloCluster.h"
 #include "AliESDCaloTrigger.h"
@@ -68,8 +71,6 @@
 //#include "AliEventPoolManager.h"
 
 #include "AliCentrality.h"
-//#include "AliEMCALTrack.h"
-//#include "AliEMCALTracker.h"
 #include "AliMagF.h"
 
 #include "AliKFParticle.h"
@@ -85,13 +86,23 @@
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
+#include "AliVEvent.h"
+#include "AliStack.h"
+#include "AliMCEvent.h"
+#include "TProfile.h"
+#include "AliESDVZERO.h"
+#include "AliAODVZERO.h"
+#include "TVector3.h"
+#include "TRandom2.h"
 
 ClassImp(AliAnalysisTaskElecHadronCorrel)
 //ClassImp(AliehDPhiBasicParticle)  
 //________________________________________________________________________
   AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel(const char *name) 
   : AliAnalysisTaskSE(name)
+  ,fVevent(0)  
   ,fESD(0)
+  ,fAOD(0)
   ,fGeom(0)
   ,fOutputList(0)
   ,fTrackCuts1(new AliESDtrackCuts)
@@ -104,7 +115,6 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fCFM(0)	
   ,fPID(0)
   ,fPIDqa(0)	       
-  ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0.01)	
   ,fCentrality(0)
   ,fCentralityMin(0)
@@ -115,14 +125,8 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
 //  ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPBefHad(0)	 
-/*  ,fTrkEovPAft(0)	
-  ,fTrkEovPAftOwn(0)	
-  ,fdEdxBef(0)	 
-  ,fdEdxAft(0)	 
-  ,fdEdxAftOwn(0)	 
-  ,fOpeningAngleLS(0)	
-  ,fOpeningAngleULS(0)	
-*/  ,fSemiIncElecDphi(0) 	
+ // ,fdEdxBef(0)	 
+  ,fSemiIncElecDphi(0) 	
   ,fSemiIncElecDphi1(0) 	
   ,fSemiIncElecDphi2(0) 	
   ,fSemiIncElecDphi3(0) 	
@@ -162,17 +166,13 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fInclusiveElecPt(0)
   ,fULSElecPt(0)
   ,fLSElecPt(0)  
-//  ,fTrackPtBefTrkCuts(0)	 
-//  ,fTrackPtAftTrkCuts(0)
+  ,fTrackPtBefTrkCuts(0)	 
+  ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
-/*  ,fTPCnsigmaAft(0)
-  ,fTPCnsigmaAftOwn(0)
   ,fNCellv1(0)
   ,fClsEv1(0)
   ,fNClusv1(0)
-  ,fKFParticleP(0)
-  ,fKFParticleE(0)
-*/  ,fInvmassLS1(0)       
+  ,fInvmassLS1(0)       
   ,fInvmassLS2(0)       
   ,fInvmassLS3(0)       
   ,fInvmassLS4(0)       
@@ -216,12 +216,7 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fMixedDphiLSMassLow(0)  
   ,fMixedDphiLSMassLow1(0)  
   ,fMixedDphiLSMassLow2(0)  
-*/
-/*  ,fNLSminus(0)
-  ,fNLSplus(0)
-  ,fNULS(0)  
-*/  ,fHadronIPxy(0)  
-  ,fHadronIPz(0)  
+*/   
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -246,7 +241,9 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
 //________________________________________________________________________
 AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
+  ,fVevent(0)  
   ,fESD(0)
+  ,fAOD(0)
   ,fGeom(0)  
   ,fOutputList(0)
   ,fTrackCuts1(new AliESDtrackCuts)
@@ -259,7 +256,6 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fCFM(0)	
   ,fPID(0)       
   ,fPIDqa(0)	       
-  ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0.01)	
   ,fCentrality(0)
   ,fCentralityMin(0)
@@ -270,14 +266,8 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
 //  ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPBefHad(0)	 
-/*  ,fTrkEovPAft(0)	 
-  ,fTrkEovPAftOwn(0)	 
-  ,fdEdxBef(0)	 
-  ,fdEdxAft(0)	 
-  ,fdEdxAftOwn(0)	 
-  ,fOpeningAngleLS(0)	
-  ,fOpeningAngleULS(0)	
-*/  ,fSemiIncElecDphi(0) 	
+//  ,fdEdxBef(0)	 
+  ,fSemiIncElecDphi(0) 	
   ,fSemiIncElecDphi1(0) 	
   ,fSemiIncElecDphi2(0) 	
   ,fSemiIncElecDphi3(0) 	
@@ -317,17 +307,13 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fInclusiveElecPt(0)
   ,fULSElecPt(0)
   ,fLSElecPt(0)  
-//  ,fTrackPtBefTrkCuts(0)	 
-//  ,fTrackPtAftTrkCuts(0)	 	  
+  ,fTrackPtBefTrkCuts(0)	 
+  ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)	
-/*  ,fTPCnsigmaAft(0)	
-  ,fTPCnsigmaAftOwn(0)	
   ,fNCellv1(0)  
   ,fClsEv1(0)
   ,fNClusv1(0)
-  ,fKFParticleP(0)
-  ,fKFParticleE(0)
-*/  ,fInvmassLS1(0)   
+  ,fInvmassLS1(0)   
   ,fInvmassLS2(0)   
   ,fInvmassLS3(0)   
   ,fInvmassLS4(0)   
@@ -372,11 +358,6 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fMixedDphiLSMassLow1(0)      
   ,fMixedDphiLSMassLow2(0)      
 */
-/*  ,fNLSminus(0)
-  ,fNLSplus(0)    
-  ,fNULS(0)       
-*/  ,fHadronIPxy(0) 
-  ,fHadronIPz(0)      
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
@@ -421,9 +402,16 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   //Called for each event
 
   // create pointer to event
+  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
-    printf("ERROR: fESD not available\n");
+  
+  if(!(fESD || fAOD)){
+    printf("ERROR: fESD & fAOD not available\n");
+    return;
+  }
+  fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  if (!fVevent) {
+    printf("ERROR: fVEvent not available\n");
     return;
   }
 
@@ -435,40 +423,25 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
-    fPID->InitializePID(fESD->GetRunNumber());
+ 
+    if(IsAODanalysis())fPID->InitializePID(fAOD->GetRunNumber());
+    else fPID->InitializePID(fESD->GetRunNumber());
   }
 
-  //-------trigger selection
-  UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if (res==0)
-    return;
-
-  //	if( (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kFastOnly) )
-  //		return;
-
+  // trigger selection
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
-  //---------------CENTRALITY SELECTION-----------------------    
+  // centrality selection 
   SetCentralityParameters(0., 10., "V0M");
-  Bool_t pass = kFALSE; //to select centrality
-  CheckCentrality(fESD,pass);
-
+  Bool_t pass = kFALSE; 
+  CheckCentrality(fVevent,pass);
   if(!pass)return;
 
-  /*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
-
-  Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
-  fcentrality->Fill(centvalue);    
-  if(centvalue<0 || centvalue>10) return;
-*/
-  Int_t fNOtrks =  fESD->GetNumberOfTracks();
-  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  Int_t fNOtrks =  fVevent->GetNumberOfTracks();
+  const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
 
   Double_t pVtxZ = -999;
   pVtxZ = pVtx->GetZ();
-
-  // Event cut
-  //	if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
 
   if(TMath::Abs(pVtxZ)>10) return;
   fNoEvents->Fill(0);
@@ -483,56 +456,84 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
    fPID->SetPIDResponse(pidResponse);
 
-   fCFM->SetRecEventInfo(fESD);
-/*
+   fCFM->SetRecEventInfo(fVevent);
+
+   /*
    //Event mixing
    AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
    if (!pool)
-     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, pVtxZ));
-*/     
+     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, pVtxZ));     
+*/
+
+   // Look for kink mother for AOD
+   Double_t *listofmotherkink =0;
+   Int_t numberofvertices = 0, numberofmotherkink = 0;
+   if(IsAODanalysis()){
+     numberofvertices = fAOD->GetNumberOfVertices();
+     listofmotherkink = new Double_t[numberofvertices];
+     for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
+       AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+       if(!aodvertex) continue;
+       if(aodvertex->GetType()==AliAODVertex::kKink) {
+         AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
+         if(!mother) continue;
+         Int_t idmother = mother->GetID();
+         listofmotherkink[numberofmotherkink] = idmother;
+         numberofmotherkink++;
+       }
+     }
+   }
 
    // Track loop 
-   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-     AliESDtrack* track = fESD->GetTrack(iTracks);
-     if (!track) {
+   for (Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+     AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
+     if (!Vtrack) {
        printf("ERROR: Could not receive track %d\n", iTracks);
        continue;
      }
+     AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
+     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+     
+     if(IsAODanalysis())
+       if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 
      if(track->Pt()<1) continue;
 
-    // fTrackPtBefTrkCuts->Fill(track->Pt());		
+      fTrackPtBefTrkCuts->Fill(track->Pt());		
 
      // RecKine: ITSTPC cuts  
      if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 
-     //RecKink
+     // Reject kink mother
      if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
-       if(track->GetKinkIndex(0) != 0) continue;
-     } 
-
+       if(IsAODanalysis()){
+         Bool_t kinkmotherpass = kTRUE;
+         for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+           if(track->GetID() == listofmotherkink[kinkmother]) {
+             kinkmotherpass = kFALSE;
+             continue;
+           }
+         }
+         if(!kinkmotherpass) continue;
+       }
+       else{
+         if(etrack->GetKinkIndex(0) != 0) continue;
+       }
+     }
      // RecPrim
-     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+     //     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue; //gives warning for AOD, so not using
 
      // HFE cuts: TPC PID cleanup
      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 
-    // fTrackHFEcuts->Fill(track->Phi());
-
-     //track phi distribution for diff ITS layer hit
-//     if(track->HasPointOnITSLayer(0)) fTrakPhiSPD1->Fill(track->Phi());
-//     if(track->HasPointOnITSLayer(1)) fTrakPhiSPD2->Fill(track->Phi());
-
-
-//     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) fTrakPhiSPDOr->Fill(track->Phi());
-//     if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) fTrakPhiSPDAnd->Fill(track->Phi());
+     // fTrackHFEcuts->Fill(track->Phi());
 
      // HFEcuts: ITS layers cuts
      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 
-//     fTrackHFEcutsITS->Fill(track->Phi());
-
-//     fTrackPtAftTrkCuts->Fill(track->Pt());		
+     //     fTrackHFEcutsITS->Fill(track->Phi());
+     fTrackPtAftTrkCuts->Fill(track->Pt());		
 
      Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
      pt = track->Pt();
@@ -541,9 +542,9 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
 
      //TPC electron phi
-     if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
-//       fElecPhiTPC->Fill(track->Phi());
-     }
+    // if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
+       //       fElecPhiTPC->Fill(track->Phi());
+    // }
 
      //eta cut (-0.7,0.7)
      if(track->Eta() < -0.7 || track->Eta() > 0.7) continue;
@@ -551,12 +552,13 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      // Track extrapolation to EMCAL
      Int_t fClsId = track->GetEMCALcluster();
      if(fClsId <0) continue;
-     AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClsId);
+     AliVCluster *cluster = fVevent->GetCaloCluster(fClsId);
+     if(!cluster->IsEMCAL()) continue;
      if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) continue;    
-//     fdEdxBef->Fill(p,dEdx);
+     //     fdEdxBef->Fill(p,dEdx);
      fTPCnsigma->Fill(p,fTPCnSigma);
 
-//     fTrkpt->Fill(pt);
+     //     fTrkpt->Fill(pt);
      fClsE = cluster->E();
      fEovP = fClsE/p;
      /*
@@ -571,57 +573,39 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
         fSparseElectron->Fill(fvalueElectron);
       */
-     if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
+     if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && cluster->GetM20()<0.2 && cluster->GetM02()<0.5 && cluster->GetDispersion()<1){
        fTrkEovPBef->Fill(pt,fEovP);
      }
      if(fTPCnSigma < -3.5)fTrkEovPBefHad->Fill(pt,fEovP);
-     /*
-        Int_t pidpassed = 0;
-     //--- track accepted, do PID
-     AliHFEpidObject hfetrack;
-     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-     hfetrack.SetRecTrack(track);
-     hfetrack.SetPbPb();
-     if(fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 1;
-
-     if(pidpassed==1){
-     cout << "dedx, E/p :  "<< dEdx << ", " << fEovP <<endl;
-     fTrkEovPAft->Fill(pt,fEovP);
-     fdEdxAft->Fill(p,dEdx);
-     fTPCnsigmaAft->Fill(p,fTPCnSigma);
-     }
-      */
 
      //Electron id with TPC and E/p
      if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && fEovP >= 0.8 && fEovP <=1.2) {
-//       fElecPhiTPCEovP->Fill(track->Phi());
+       //   fElecPhiTPCEovP->Fill(track->Phi());
 
        //Electron id with shower shape  
        if(cluster->GetM20()<0.2 && cluster->GetM02()< 0.5 && cluster->GetDispersion()<1){
-         
+
          fElecPhi->Fill(track->Phi());
          fElecPhiPt->Fill(track->Phi(),track->Pt());
          if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
-//         fTrkEovPAftOwn->Fill(pt,fEovP);
-//         fdEdxAftOwn->Fill(p,dEdx);
-//         fTPCnsigmaAftOwn->Fill(p,fTPCnSigma);
-
+         
          HadronInfo(iTracks);
 
          Bool_t fFlagPhotonicElec = kFALSE;
          // select photonic electron
          SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+
          //Inclusive electron-hadron correlation
          ElectronHadCorrel(iTracks, track, fInclusiveElecDphi, fInclusiveElecDphi1,fInclusiveElecDphi2,fInclusiveElecDphi3,fInclusiveElecDphi4);
          fInclusiveElecPt->Fill(pt);
-//         MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2);
-         
+         //       MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2);
+
          // photonic electron
          if(fFlagPhotonicElec){
-         //Electron hadron correlation
-         ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
-         fPhotoElecPt->Fill(pt);
-//         MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2);
+           //Electron hadron correlation
+           ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
+           fPhotoElecPt->Fill(pt);
+           //       MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2);
          }
 
          // Semi inclusive electron 
@@ -629,36 +613,45 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
            //Electron hadron correlation
            ElectronHadCorrel(iTracks, track, fSemiIncElecDphi, fSemiIncElecDphi1,fSemiIncElecDphi2,fSemiIncElecDphi3,fSemiIncElecDphi4);
            fSemiInclElecPt->Fill(pt);
-//           MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2);
+   //        MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2);
          }
          
        }
      }
    }
-   /*
+   
    //EMC clusters  
-   Int_t clsNo = fESD->GetNumberOfCaloClusters();
+   Int_t clsNo = fVevent->GetNumberOfCaloClusters();
    fNClusv1->Fill(clsNo); 
    for(Int_t iclus=0; iclus<clsNo ; iclus++){ 
-     AliESDCaloCluster* clus = fESD->GetCaloCluster(iclus);
+     AliVCluster* clus = fVevent->GetCaloCluster(iclus);
      if(!clus->IsEMCAL()) continue; 
      fNCellv1->Fill(clus->GetNCells());
      fClsEv1->Fill(clus->E());  
    }
-*/
+
 /*
    TObjArray* tracksClone = CloneAndReduceTrackList();
    tracksClone->SetOwner();
    pool->UpdatePool(tracksClone);
- */  
+   */
+   delete listofmotherkink;
    PostData(1, fOutputList);
 }
 //_________________________________________
 void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 {
   //Create histograms
-  //  TGeoManager::Import("geometry.root");
-  //  fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+
+  AliDebug(3, "Creating Output Objects");
+  // Automatic determination of the analysis mode
+  AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
+    SetAODAnalysis();
+  } else {
+    SetESDAnalysis();
+  }
+  printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
 
   //--------Initialize PID
   fPID->SetHasMCData(kFALSE);
@@ -684,8 +677,10 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
     fCuts = new AliHFEcuts;
     fCuts->CreateStandardCuts();
   }
+
+  if(IsAODanalysis()) fCuts->SetAOD(); 
   fCuts->Initialize(fCFM);
-/*
+  /*
   //Mixed event initialising
   Int_t trackDepth = 2000;
   Int_t poolsize   = 1000;
@@ -708,46 +703,28 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fcentrality = new TH1F("fcentrality","centrality", 100,0,100);
   fOutputList->Add(fcentrality);
-/*
-  fTrkpt = new TH1F("fTrkpt","track pt",1000,0,50);
-  fOutputList->Add(fTrkpt);
+
+//  fTrkpt = new TH1F("fTrkpt","track pt",1000,0,50);
+//  fOutputList->Add(fTrkpt);
 
   fTrackPtBefTrkCuts = new TH1F("fTrackPtBefTrkCuts","track pt before track cuts",1000,0,50);
   fOutputList->Add(fTrackPtBefTrkCuts);
 
   fTrackPtAftTrkCuts = new TH1F("fTrackPtAftTrkCuts","track pt after track cuts",1000,0,50);
   fOutputList->Add(fTrackPtAftTrkCuts);
-*/
+
   fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsigma);
-/*
-  fTPCnsigmaAft = new TH2F("fTPCnsigmaAft", "TPC - n sigma after hfepid",1000,0,50,200,-10,10);
-  fOutputList->Add(fTPCnsigmaAft);
-
-  fTPCnsigmaAftOwn = new TH2F("fTPCnsigmaAftOwn", "TPC - n sigma after own pid",1000,0,50,200,-10,10);
-  fOutputList->Add(fTPCnsigmaAftOwn);
-*/
+  
   fTrkEovPBef = new TH2F("fTrkEovPBef","track E/p before HFE pid",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPBef);
 
   fTrkEovPBefHad = new TH2F("fTrkEovPBefHad","track E/p for TPCnsig < 3.5",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPBefHad);
-/*
-  fTrkEovPAft = new TH2F("fTrkEovPAft","track E/p after HFE pid",1000,0,50,100,0,2);
-  fOutputList->Add(fTrkEovPAft);
 
-  fTrkEovPAftOwn = new TH2F("fTrkEovPAftOwn","track E/p after own pid",1000,0,50,100,0,2);
-  fOutputList->Add(fTrkEovPAftOwn);
+//  fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",1000,0,50,150,0,150);
+//  fOutputList->Add(fdEdxBef);
 
-  fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",1000,0,50,150,0,150);
-  fOutputList->Add(fdEdxBef);
-
-  fdEdxAft = new TH2F("fdEdxAft","track dEdx vs p after HFE pid",1000,0,50,150,0,150);
-  fOutputList->Add(fdEdxAft);
-
-  fdEdxAftOwn = new TH2F("fdEdxAftOwn","track dEdx vs p own HFE pid",1000,0,50,150,0,150);
-  fOutputList->Add(fdEdxAftOwn);
-*/
   fElecPhi = new TH1F("fElecPhi", "Electron phi",1000,0,6.28);
   fOutputList->Add(fElecPhi);
 
@@ -790,12 +767,6 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fTrackHFEcutsITS = new TH1F("fTrackHFEcutsITS","Track phi for HFE cuts + ITS HFE cuts",1000,0,6.28);
   fOutputList->Add(fTrackHFEcutsITS);
-
-  fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
-  fOutputList->Add(fOpeningAngleLS);
-
-  fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
-  fOutputList->Add(fOpeningAngleULS);
 */
   fSemiIncElecDphi = new TH2F("fSemiIncElecDphi", "Semi Inclusive elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi);
@@ -916,7 +887,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fLSElecPt = new TH1F("fLSElecPt", "LS electron pt",1000,0,100);
   fOutputList->Add(fLSElecPt);
-/*
+
   fNCellv1 = new TH1F("fNCellv1","Ncell in clus (v1); NCell; count",100,0,100) ;
   fOutputList->Add(fNCellv1);
 
@@ -926,12 +897,6 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fNClusv1 = new TH1F("fNClusv1","Nclus in event (v1); NClus; count",500,0,500) ; 
   fOutputList->Add(fNClusv1);
 
-  fKFParticleP = new TH1F("fKFParticleP","KFparticle rec P; P(GeV/c)",1000,0,50);
-  fOutputList->Add(fKFParticleP);
-
-  fKFParticleE = new TH1F("fKFParticleE", "KfParticle rec E; E; count",1000,0,100); 
-  fOutputList->Add(fKFParticleE);
-*/
   fInvmassLS1 = new TH1F("fInvmassLS1", "Inv mass of LS (e,e); mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassLS1);
 
@@ -961,8 +926,8 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fInvmassULS5 = new TH1F("fInvmassULS5", "Inv mass of ULS (e,e) for pt^{e}>4; mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassULS5);
-/*
-  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
+
+/*  fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
   fOutputList->Add(fNoMixedEvents);
 
   fMixStat = new TH2F("fMixStat","no of events in pool  vs Centrality;Nevent in pool;Centrality",200,0,200,5,0,10);
@@ -1016,22 +981,6 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fMixedDphiLSMassLow2 = new TH2F("fMixedDphiLSMassLow2", "Mixed event - LS mass < cut elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedDphiLSMassLow2);
 */
-  /*
-  fNLSminus = new TH1F("fNLSminus","No of LS negative pairs (e-,e-) ",1000,-0.5,999.5);
-  fOutputList->Add(fNLSminus);
-
-  fNLSplus = new TH1F("fNLSplus","No of LS positive pairs (e+,e+)",1000,-0.5,999.5);
-  fOutputList->Add(fNLSplus);
-
-  fNULS = new TH1F("fNULS","No of ULS pairs (e+,e-)",1000,-0.5,999.5);
-  fOutputList->Add(fNULS);
-*/
-  fHadronIPxy = new TH1F("fHadronIPxy", "hadron impact paramter XY",1000,-5,5);
-  fOutputList->Add(fHadronIPxy);
-
-  fHadronIPz = new TH1F("fHadronIPz", "hadron impact paramter Z",1000,-20,20);
-  fOutputList->Add(fHadronIPz);
-
   fHadronPt = new TH1F("fHadronPt","hadron pt distribution",1000,0,100);
   fOutputList->Add(fHadronPt);
 
@@ -1066,8 +1015,9 @@ Bool_t AliAnalysisTaskElecHadronCorrel::ProcessCutStep(Int_t cutStep, AliVPartic
   if(!fCFM->CheckParticleCuts(cutStep + kMCOffset, track)) return kFALSE;
   return kTRUE;
 }
+
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
 
@@ -1076,24 +1026,38 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
   fTrackCuts1->SetRequireITSRefit(kTRUE);
   fTrackCuts1->SetEtaRange(-0.9,0.9);
   fTrackCuts1->SetRequireSigmaToVertex(kTRUE);
-  //fTrackCuts1->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts1->SetMaxChi2PerClusterTPC(4);
   fTrackCuts1->SetMinNClustersTPC(80);
-
-  //  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  fTrackCuts1->SetMaxDCAToVertexZ(3.2);
+  fTrackCuts1->SetMaxDCAToVertexXY(2.4);
+  fTrackCuts1->SetDCAToVertex2D(kTRUE);
 
   Bool_t flagPhotonicElec = kFALSE;
-  Int_t NLS_plus=0, NLS_minus=0, NULS=0;
 
-  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
-    AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
-    if (!trackAsso) {
+  for(Int_t jTracks = 0; jTracks<fVevent->GetNumberOfTracks(); jTracks++){
+    AliVParticle* VtrackAsso = fVevent->GetTrack(jTracks);
+    if (!VtrackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
       continue;
     }
+
+    AliVTrack *trackAsso = dynamic_cast<AliVTrack*>(VtrackAsso);
+
+    //track cuts applied
+    if(IsAODanalysis()) { 
+      AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
+      if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+      if(atrackAsso->GetTPCNcls() < 80) continue;
+      if((!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+    }
+    else{
+      AliESDtrack *etrackAsso = dynamic_cast<AliESDtrack*>(VtrackAsso);
+      if(!fTrackCuts1->AcceptTrack(etrackAsso)) continue;
+    }
+
     if(jTracks==itrack) continue;
 
-    Double_t dEdxAsso = -999., ptAsso=-999., openingAngle = -999.,nsigma=-999.0;
+    Double_t dEdxAsso = -999., ptAsso=-999., nsigma=-999.0;
     Double_t mass=-999., width = -999;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
 
@@ -1105,11 +1069,6 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
 
     if(ptAsso <0.3) continue;
     if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackAsso)) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackAsso)) continue;
-
-    if(!fTrackCuts1->AcceptTrack(trackAsso)) continue;
-    //    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
     if(nsigma < -3 || nsigma > 3) continue;
 
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
@@ -1127,20 +1086,8 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
 
-    openingAngle = ge1.GetAngle(ge2);
-    //    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
-    //    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
-
-    //   if(openingAngle > fOpeningAngleCut) continue;
-
     Int_t MassCorrect;
     MassCorrect = recg.GetMass(mass,width);
-
-    if(fFlagLS){
-      if(track->Charge() > 0 ) NLS_plus++;
-      if(track->Charge() < 0 ) NLS_minus++;
-    }
-    if(fFlagULS) NULS++;
 
     if(fFlagLS) {
       fInvmassLS1->Fill(mass);
@@ -1162,13 +1109,13 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
       {
         ElectronHadCorrel(itrack,track,fDphiULSMassLow, fDphiULSMassLow1,fDphiULSMassLow2,fDphiULSMassLow3,fDphiULSMassLow4);
         fULSElecPt->Fill(track->Pt());
-//        MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2);
+        //      MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2);
       }
       if(fFlagLS)
       {
         ElectronHadCorrel(itrack,track,fDphiLSMassLow,fDphiLSMassLow1,fDphiLSMassLow2,fDphiLSMassLow3,fDphiLSMassLow4);
         fLSElecPt->Fill(track->Pt());
-//        MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2);
+        //     MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2);
       }
       if(fFlagLS) ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiLSMassLowNoPartner, fDphiLSMassLowNoPartner1,fDphiLSMassLowNoPartner2,fDphiLSMassLowNoPartner3,fDphiLSMassLowNoPartner4);
       if(fFlagULS) ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiULSMassLowNoPartner, fDphiULSMassLowNoPartner1,fDphiULSMassLowNoPartner2,fDphiULSMassLowNoPartner3,fDphiULSMassLowNoPartner4);
@@ -1179,16 +1126,11 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
     }
     //   }
 
-  }
-  fFlagPhotonicElec = flagPhotonicElec;
-
-//  fNLSminus->Fill(NLS_minus);
-//  fNLSplus->Fill(NLS_plus);
-//  fNULS->Fill(NULS);
-
+}
+fFlagPhotonicElec = flagPhotonicElec;
 }
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4)
+void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4)
 {
   //Construct Delta Phi between electrons and hadrons
 
@@ -1197,44 +1139,48 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
   fTrackCuts2->SetRequireITSRefit(kTRUE);
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
-//  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
   fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMaxDCAToVertexZ(3.2);
+  fTrackCuts2->SetMaxDCAToVertexXY(2.4);
+  fTrackCuts2->SetDCAToVertex2D(kTRUE);
 
-  for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){
-    AliESDtrack* trackHad = fESD->GetTrack(ktracks);
-    if (!trackHad) {
+  for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){
+    AliVParticle* VtrackHad = fVevent->GetTrack(ktracks);
+    if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
+
+    AliVTrack *trackHad = dynamic_cast<AliVTrack*>(VtrackHad);
+
+    if(IsAODanalysis()) {
+      AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
+      if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+      if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      if(atrackHad->GetTPCNcls() < 80) continue; 
+    }
+    else{   
+      AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
+      if(!fTrackCuts2->AcceptTrack(etrackHad)) continue; 
+    }
+    
     if(ktracks == itrack) continue; //do not select the same electron
 
     Double_t ptHad= -999, pHad=-999., dEdxHad = -999;
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiHad = -999, Dphi = -999;
     Double_t pi = 3.14;
-    Float_t IPxy=-999.0, IPz=-999.0;
 
     dEdxHad = trackHad->GetTPCsignal();
     ptHad = trackHad->Pt();
     pHad = trackHad->P();
     ptEle = track->Pt();
-    trackHad->GetImpactParameters(IPxy,IPz);
 
-//    if(ptHad <2) continue;
+    //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
 
-    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
-  
-   // fHadronIPxy->Fill(IPxy);
-   // fHadronIPz->Fill(IPz);
-
-   // if(TMath::Abs(IPxy)>2.5) continue;
-   // fHadronPhi->Fill(trackHad->Phi());
-    
     phiEle = track->Phi();
     phiHad = trackHad->Phi();
     Dphi = phiEle - phiHad;
@@ -1252,7 +1198,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
   }
 }
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliESDtrack *track, TH2F *DphiPtNew, TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4)
+void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtNew, TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4)
 {
   //Construct Delta Phi between electrons and hadrons for electrons from invariant mass calculation excluding associated track
 
@@ -1261,39 +1207,47 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
   fTrackCuts2->SetRequireITSRefit(kTRUE);
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
- // fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);
   fTrackCuts2->SetMinNClustersTPC(80);
+  fTrackCuts2->SetMaxDCAToVertexZ(3.2);
+  fTrackCuts2->SetMaxDCAToVertexXY(2.4);
+  fTrackCuts2->SetDCAToVertex2D(kTRUE);
 
-  for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){
-    AliESDtrack* trackHad = fESD->GetTrack(ktracks);
-    if (!trackHad) {
+  for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){
+    AliVParticle* VtrackHad = fVevent->GetTrack(ktracks);
+    if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
-    if(ktracks == itrack || ktracks == jtrack) continue; //do not select the same electron and associated track from inv mass cal
+    
+    AliVTrack *trackHad = dynamic_cast<AliVTrack*>(VtrackHad);
 
+    if(IsAODanalysis()) {
+      AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
+      if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+      if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      if(atrackHad->GetTPCNcls() < 80) continue; 
+    }
+    else{   
+      AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
+      if(!fTrackCuts2->AcceptTrack(etrackHad)) continue; 
+    }
+
+    if(ktracks == itrack || ktracks == jtrack) continue; //do not select the same electron and associated track from inv mass cal
 
     Double_t ptHad= -999, pHad=-999., dEdxHad = -999;
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiHad = -999, Dphi = -999;
     Double_t pi = 3.14;
-    Float_t IPxy=-999.0, IPz=-999.0;
 
     dEdxHad = trackHad->GetTPCsignal();
     ptHad = trackHad->Pt();
     pHad = trackHad->P();
     ptEle = track->Pt();
-    trackHad->GetImpactParameters(IPxy,IPz);
 
 //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
-
-    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
-//    if(TMath::Abs(IPxy)>2.5) continue;
 
     phiEle = track->Phi();
     phiHad = trackHad->Phi();
@@ -1310,17 +1264,18 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
     if(ptHad>8 && ptHad<10) DphiPtNew4->Fill(ptEle,Dphi);
   }
 }
+
 /*
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2)
+void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliAODTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2)
 {
 
-  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
   Double_t zVtx;
   zVtx = pVtx->GetZ();
 
 
-  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
+  AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality();
   Double_t centvalue = fCentrality->GetCentralityPercentile("V0M");
 
   AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, zVtx); // Get the buffer associated with the current centrality and z-vtx
@@ -1361,7 +1316,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiP
           Dphi = Dphi - 2*pi;
         if (Dphi < -pi/2)
           Dphi = Dphi + 2*pi;
-        DphiPt->Fill(ptEle,Dphi);
+        if(ptmixtrk>2) DphiPt->Fill(ptEle,Dphi);
         if(ptmixtrk>2 && ptmixtrk<4) DphiPt1->Fill(ptEle,Dphi);
         if(ptmixtrk>4 && ptmixtrk<6) DphiPt2->Fill(ptEle,Dphi);
       }
@@ -1386,12 +1341,13 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
 
-  for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){
-    AliESDtrack* track = fESD->GetTrack(ktracks);
+  for(Int_t ktracks = 0; ktracks<fAOD->GetNumberOfTracks(); ktracks++){
+    AliAODTrack* track = fAOD->GetTrack(ktracks);
     if (!track) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
+    if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 
     //   if(ktracks == iTrack) continue;
     Double_t eta=-999,ptHad= -999, pHad=-999., phi=-999.0;
@@ -1403,10 +1359,13 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
     label= track->GetLabel();
     id=track->GetID();
     
+    if(track->Eta()<-0.9 || track->Eta()>0.9) continue; 
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; 
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue; 
     if(ptHad <2) continue;
-    if(!fTrackCuts2->AcceptTrack(track)) continue;
+//    if(!fTrackCuts2->AcceptTrack(track)) continue;
 
-    AliVParticle* particle = (AliVParticle*) fESD->GetTrack(ktracks);
+    AliVParticle* particle = (AliVParticle*) fAOD->GetTrack(ktracks);
     tracksClone->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
 
   }
@@ -1418,62 +1377,72 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
 void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
 {
   //Hadron information
+
   fTrackCuts2->SetAcceptKinkDaughters(kFALSE);                                           
   fTrackCuts2->SetRequireTPCRefit(kTRUE);                                                
   fTrackCuts2->SetRequireITSRefit(kTRUE);                                                
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);                                           
- // fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);                                             
   fTrackCuts2->SetMaxChi2PerClusterTPC(4);                                             
   fTrackCuts2->SetMinNClustersTPC(80);                                                   
+  fTrackCuts2->SetMaxDCAToVertexZ(3.2);
+  fTrackCuts2->SetMaxDCAToVertexXY(2.4);
+  fTrackCuts2->SetDCAToVertex2D(kTRUE);
 
-  for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){                  
-    AliESDtrack* trackHad = fESD->GetTrack(ktracks);                                     
-    if (!trackHad) {
+  for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){                  
+    AliVParticle* VtrackHad = fVevent->GetTrack(ktracks);                                     
+    if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);                            
       continue;                                                                          
     }
-    
+
+    AliVTrack *trackHad = dynamic_cast<AliVTrack*>(VtrackHad);
+
+    if(IsAODanalysis()) {
+      AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
+      if(!atrackHad->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+      if((!(atrackHad->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrackHad->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      if(atrackHad->GetTPCNcls() < 80) continue; 
+    }
+    else{   
+      AliESDtrack *etrackHad = dynamic_cast<AliESDtrack*>(VtrackHad); 
+      if(!fTrackCuts2->AcceptTrack(etrackHad)) continue; 
+    }
+
     if(ktracks == itrack) continue; //do not select the same electron
     
     Double_t ptHad= -999;
-    Float_t IPxy=-999.0, IPz=-999.0;                                                     
     ptHad = trackHad->Pt();
-    trackHad->GetImpactParameters(IPxy,IPz);
     
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+   // cout << "pt had = " << ptHad <<endl;
 
-    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;                                    
     if(ptHad<2) continue;
 
     fHadronPhi->Fill(trackHad->Phi());
     fHadronPhiPt->Fill(trackHad->Phi(),ptHad);
     if (trackHad->Eta() >0 && trackHad->Eta() <0.9) fHadronPhiTPChalf->Fill(trackHad->Phi());
 
-    fHadronIPxy->Fill(IPxy);
-    fHadronIPz->Fill(IPz);
     fHadronPt->Fill(ptHad);
   }
 }
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::CheckCentrality(AliESDEvent* event, Bool_t &centralitypass)
+void AliAnalysisTaskElecHadronCorrel::CheckCentrality(AliVEvent* event, Bool_t &centralitypass)
 {
   // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-//  cout << "--------------Centrality evaluated-------------------------"<<endl;
+ // cout << "Centrality evaluated-------------------------: " << fCentrality <<endl;
 
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
-//    cout << "--------------Fill no pass-------------------------"<<endl;
+  //  cout << "--------------Fill no pass-------------------------"<<endl;
     centralitypass = kFALSE;
   }else
   {
     fCentralityPass->Fill(fCentrality);
-//    cout << "--------------Fill pass-------------------------"<<endl;
+  //  cout << "--------------Fill pass-------------------------"<<endl;
     centralitypass = kTRUE;
   }
 

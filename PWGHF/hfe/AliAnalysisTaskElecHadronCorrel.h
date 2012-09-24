@@ -25,6 +25,7 @@ class AliEMCALRecoUtils;
 class AliAnalysisFilter;
 class AliESDtrackCuts;
 class AliESDtrack;
+class AliAODTrack;
 class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEpid;
@@ -46,24 +47,36 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
 
+    Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+    Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
+
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
-    void SetOpeningAngleCut (Double_t openingAngle) {fOpeningAngleCut = openingAngle;};
     void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
     AliHFEpid *GetPID() const { return fPID; }
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-    void SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec);
-    void ElectronHadCorrel(Int_t itrack, AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
-    void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliESDtrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
-//    void MixedEvent(AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void ElectronHadCorrel(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
+    void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
     void HadronInfo(Int_t itrack);
     void    SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
-    void    CheckCentrality(AliESDEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-//    TObjArray* CloneAndReduceTrackList();
-  private:
+    void    CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
+
+    void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+    void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+    /*    void MixedEvent(AliAODTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2);
+    TObjArray* CloneAndReduceTrackList();
+  */
+    private:
+
+    enum{
+      kAODanalysis = BIT(20),
+    };
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
 
+    AliVEvent 		      *fVevent;		//V event object
     AliESDEvent 		   *fESD;			//ESD object
+    AliAODEvent 		   *fAOD;			//AOD object
     AliEMCALGeometry  	*fGeom; 		// emcal geometry 
 
     TList       	   	*fOutputList;		//output list
@@ -78,7 +91,6 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
     AliHFEpid 		      *fPID;                  //PID
     AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
-    Double_t 		      fOpeningAngleCut;	//openingAngle cut value
     Double_t	         	fInvmassCut;		//invariant mass cut value
     Double_t             fCentrality; // event centrality for QA
     Double_t             fCentralityMin; // lower bound of cenrality bin
@@ -90,14 +102,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
 //    TH1F			*fTrkpt;		//track pt
     TH2F			*fTrkEovPBef;		//track E/p before HFE pid
     TH2F			*fTrkEovPBefHad;		//track E/p before HFE pid
-/*    TH2F			*fTrkEovPAft;		//track E/p after HFE pid
-    TH2F			*fTrkEovPAftOwn;		//track E/p after HFE pid
-    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
-    TH2F			*fdEdxAft;		//track dEdx vs p before HFE pid
-    TH2F			*fdEdxAftOwn;		//track dEdx vs p before HFE pid
-    TH1F			*fOpeningAngleLS;	//opening angle for LS pairs
-    TH1F			*fOpeningAngleULS;	//opening angle for ULS pairs
-*/    TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
+//    TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
+    TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi1;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi2;  	//Semi Inclusive elec - had DPhi
     TH2F			*fSemiIncElecDphi3;  	//Semi Inclusive elec - had DPhi
@@ -138,17 +144,12 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fULSElecPt; //ULS elec Pt
     TH1F        *fLSElecPt;// LS elec pt 
 
-//    TH1F			*fTrackPtBefTrkCuts;	//Track pt before track cuts	
-//    TH1F			*fTrackPtAftTrkCuts;	//Track pt after track cuts
+    TH1F			*fTrackPtBefTrkCuts;	//Track pt before track cuts	
+    TH1F			*fTrackPtAftTrkCuts;	//Track pt after track cuts
     TH2F			*fTPCnsigma;		//TPC n sigma vs p	
-//    TH2F			*fTPCnsigmaAft;		//TPC n sigma vs p	
-//    TH2F			*fTPCnsigmaAftOwn;		//TPC n sigma vs p	
-//    TH1F			*fNCellv1;		//No of cells in cluster, all EMCAL cluster
-//    TH1F			*fClsEv1;		//Cluster energy, all EMCAL cluster
-//    TH1F			*fNClusv1;		//No of clusters in event, all EMCAL cluster
-
-//    TH1F        *fKFParticleP; //KFparticle rec P distr
-//    TH1F        *fKFParticleE; //KFparticle rec E distr
+    TH1F			*fNCellv1;		//No of cells in cluster, all EMCAL cluster
+    TH1F			*fClsEv1;		//Cluster energy, all EMCAL cluster
+    TH1F			*fNClusv1;		//No of clusters in event, all EMCAL cluster
     TH1F        *fInvmassLS1; //LS Invmass for all rec par
     TH1F        *fInvmassLS2; //LS Invmass for all rec par
     TH1F        *fInvmassLS3; //LS Invmass for all rec par
@@ -194,11 +195,6 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F        *fMixedDphiLSMassLow1;//
     TH2F        *fMixedDphiLSMassLow2;//
 */
-/*    TH1F        *fNLSminus;//
-    TH1F        *fNLSplus;//
-    TH1F        *fNULS;//  
-*/    TH1F        *fHadronIPxy;//  
-    TH1F        *fHadronIPz;//  
     TH1F        *fHadronPt;//
     TH1F       *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F       *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
