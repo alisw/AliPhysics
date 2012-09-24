@@ -109,7 +109,12 @@ void AliSHIL::CreateMaterials()
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
   Float_t dAir1 = 1.20479E-10;
-
+//
+// Cast iron
+//
+  Float_t acasti[4] = {55.847,12.011,28.085,54.938};
+  Float_t zcasti[4] = {26.,6.,14.,25.};
+  Float_t wcasti[4] = {0.929,0.035,0.031,0.005};
   
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   
@@ -181,6 +186,11 @@ void AliSHIL::CreateMaterials()
   AliMixture(14, "INSULATION1", ains, zins, 0.41, 4, wins);
   AliMixture(34, "INSULATION2", ains, zins, 0.41, 4, wins);
   AliMixture(54, "INSULATION3", ains, zins, 0.41, 4, wins);
+
+  //     Cast iron
+  AliMixture(18, "CAST IRON1", acasti, zcasti, 7.2, 4, wcasti);
+  AliMixture(38, "CAST IRON2", acasti, zcasti, 7.2, 4, wcasti);
+  AliMixture(58, "CAST IRON3", acasti, zcasti, 7.2, 4, wcasti);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -254,6 +264,11 @@ void AliSHIL::CreateMaterials()
   AliMedium(37, "CC_C1           ", 37, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(57, "CC_C2           ", 57, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
+  //    Cast iron 
+  AliMedium(18, "CAST_IRON0      ", 18, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(38, "CAST_IRON1      ", 38, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(58, "CAST_IRON2      ", 58, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  
 }
 
 //_____________________________________________________________________________
