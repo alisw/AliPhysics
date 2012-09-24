@@ -220,8 +220,9 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
 		    
 		    Double_t pt = aodTrack->Pt();
 		    Double_t eta = aodTrack->Eta();
-		    Double_t nclus = aodTrack->GetTPCNcls();
-		    
+		    //Double_t nclus = aodTrack->GetTPCNcls();
+		    Double_t nclus = aodTrack->GetTPCClusterInfo(2,1);//important for 2011 data
+
 		    if( dxy > fDCAxy ) continue; 
 		    if( dz > fDCAz ) continue;
 		    if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;

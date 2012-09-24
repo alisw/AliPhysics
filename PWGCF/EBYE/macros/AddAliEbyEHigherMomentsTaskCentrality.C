@@ -13,20 +13,20 @@ TString fileNameBase="AnalysisResults.root";
 
 //_________________________________________________________//
 
-AliAnalysisTask* AddAliEbyEHigherMomentsTask(Double_t vx, 
-					     Double_t vy, 
-					     Double_t vz,
-					     Double_t dcaxy, 
-					     Double_t dcaz,
-					     Double_t ptl, 
-					     Double_t pth,
-					     Double_t eta,
-					     Int_t    nclus,
-					     Int_t AODfilterBit, 
-					     const char* centralityEstimator,
-					     Bool_t trigger = kFALSE,
-					     const char* analysisType,
-					     const char* taskss) {
+AliAnalysisTask* AddAliEbyEHigherMomentsTaskCentrality(Double_t vx, 
+						       Double_t vy, 
+						       Double_t vz,
+						       Double_t dcaxy, 
+						       Double_t dcaz,
+						       Double_t ptl, 
+						       Double_t pth,
+						       Double_t eta,
+						       Int_t    nclus,
+						       Int_t AODfilterBit, 
+						       const char* centralityEstimator,
+						       Bool_t trigger = kFALSE,
+						       const char* analysisType,
+						       const char* taskss) {
   
   
   TString taskname = "HM";
