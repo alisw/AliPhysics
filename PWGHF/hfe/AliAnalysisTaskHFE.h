@@ -43,11 +43,13 @@ class AliHFEtaggedTrackAnalysis;
 class AliCFManager;
 class AliMCEvent;
 class AliOADBContainer;
+class AliAODMCHeader;
 class AliVEvent;
 class AliVParticle;
 class AliTriggerAnalysis;
 class TH1I; 
 class TList;
+class TClonesArray;
 
 class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
   public:
@@ -164,6 +166,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
+    AliAODMCHeader *fAODMCHeader;         // ! MC info AOD
+    TClonesArray *fAODArrayMCInfo;        // ! MC info particle AOD
     ULong_t fQAlevel;                     // QA level
     UShort_t fPlugins;                    // Enabled Plugins
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
