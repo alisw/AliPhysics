@@ -1,9 +1,11 @@
-AliAnalysisTask *AddTaskHFEtpctof(Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t kMCQA = kFALSE, Bool_t kDEStep = kFALSE, Int_t tpcCls=110,  Int_t tpcClsPID = 70, Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, Double_t tpcs=0., Double_t tpcu=3., Double_t tofs=3., Double_t ipSig=3.0, Bool_t prodcut = kFALSE, Bool_t ipAbs = kFALSE, Int_t itspixelcut=AliHFEextraCuts::kBoth, Bool_t withetacorrection=kFALSE, TString listname="", Int_t ptbin=0){
+AliAnalysisTask *AddTaskHFEtpctof(Bool_t isMC,Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t kMCQA = kFALSE, Bool_t kDEStep = kFALSE, Long_t aodfilter=-1, Int_t tpcCls=110,  Int_t tpcClsPID = 70, Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, Double_t tpcs=0., Double_t tpcu=3., Double_t tofs=3., Double_t ipSig=3.0, Bool_t prodcut = kFALSE, Bool_t ipAbs = kFALSE, Int_t itspixelcut=AliHFEextraCuts::kBoth, Bool_t withetacorrection=kFALSE, TString listname="", Int_t ptbin=0){
 
   // libraries in case
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
 
+  AliLog::SetGlobalDebugLevel(AliLog::kError);
+  AliLog::SetClassDebugLevel("AliCFParticleGenCuts",4);
 
   //set config file name
   TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/pp/ConfigHFEpid2SYS.C");
@@ -14,6 +16,7 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t k
 
   // Name
 
+  Int_t iAODfilter = (Int_t) aodfilter;
   Int_t iDCAxy = (Int_t)(dcaxy*10.);
   Int_t iDCAz = (Int_t)(dcaz*10.);
   Int_t iTPCs = (Int_t)(tpcs*1000.);
@@ -34,7 +37,7 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t k
   if(kDEStep) iDEStep = 1;
 
 
-  TString appendix(TString::Format("T%dM%dD%dt%di%dr%dz%ds%dt%db%dp%da%dpa%detacorr%dptbin%d",iAnalyseTaggedTracks,iMCQA,iDEStep,tpcCls,itsCls,iDCAxy,iDCAz,iTPCs,iTOFs,iIpSig,iProdCut,iIPAbs,iPixelAny,iEtaCorr,ptbin));
+  TString appendix(TString::Format("T%dM%dD%df%dt%di%dr%dz%ds%dt%db%dp%da%dpa%detacorr%dptbin%d",iAnalyseTaggedTracks,iMCQA,iDEStep,iAODfilter,tpcCls,itsCls,iDCAxy,iDCAz,iTPCs,iTOFs,iIpSig,iProdCut,iIPAbs,iPixelAny,iEtaCorr,ptbin));
   printf("appendix %s\n", appendix.Data());
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -42,13 +45,13 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t k
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEventplane", "This task requires an input event handler");
+    printf("AddTaskEventplane", "This task requires an input event handler");
     return NULL;
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFE *task = ConfigHFEpid2SYS(kFALSE,appendix,tpcCls,tpcClsPID,itsCls,dcaxy,dcaz,tpcs,tpcu,tofs,ipSig,prodcut,ipAbs,itspixelcut,withetacorrection,listname,ptbin,kAnalyseTaggedTracks,kMCQA,kDEStep);  
+  AliAnalysisTaskHFE *task = ConfigHFEpid2SYS(isMC,appendix,tpcCls,tpcClsPID,itsCls,dcaxy,dcaz,tpcs,tpcu,tofs,ipSig,prodcut,ipAbs,itspixelcut,withetacorrection,listname,ptbin,kAnalyseTaggedTracks,kMCQA,kDEStep,aodfilter);  
 
   if (inputDataType == "AOD"){
     task->SetAODAnalysis();

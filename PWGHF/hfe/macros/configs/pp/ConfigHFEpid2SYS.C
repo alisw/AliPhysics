@@ -29,9 +29,10 @@ AliAnalysisTaskHFE* ConfigHFEpid2SYS(Bool_t useMC,
 				     Double_t DCAxy=1000., Double_t DCAz=1000.,
 				     Double_t TPCs=0., Double_t TPCu=3.09, Double_t TOFs=3.,
 				     Double_t IpSig=3., Bool_t prodcut = kFALSE, Bool_t IPAbs = kTRUE, Int_t itshitpixel = 0, 
-				     Bool_t withetacorrection = kTRUE, TString listname,
+				     Bool_t withetacorrection = kTRUE, TString listname="",
 				     Int_t ptbin=0,
-				     Bool_t kAnalyseTaggedTracks, Bool_t kMCQA, Bool_t kDEStep){
+				     Bool_t kAnalyseTaggedTracks=kFALSE, Bool_t kMCQA=kFALSE, Bool_t kDEStep=kFALSE,
+				     Long_t aodfilter=-1){
   //
   // HFE task configuration PID2 (TOF-TPC only!)
   //
@@ -84,6 +85,12 @@ AliAnalysisTaskHFE* ConfigHFEpid2SYS(Bool_t useMC,
   task->SetHFECuts(hfecuts);
   task->SetRemovePileUp(kTRUE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+  if(useMC) task->SetHasMCData(kTRUE); // necessary for AOD
+  if(aodfilter > 0) {
+    task->SetUseFlagAOD(kTRUE);
+    task->SetFlags(aodfilter);
+  }
+
 
   // Define Variables
   if(ptbin==1){
