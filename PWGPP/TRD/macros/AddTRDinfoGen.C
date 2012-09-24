@@ -10,11 +10,12 @@
 
 void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
 {
+  Bool_t mc = (Bool_t)mgr->GetMCtruthEventHandler();
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen((char*)"TRDinfoGen"));
   info->SetDebugLevel(0);
-  info->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  info->SetMCdata(mc);
   info->SetLocalTrkSelection();
   info->UseTrackPoints(kFALSE); // set it to true if track points for alignment are to be saved in trackInfo object
   info->SetOCDB("alien://folder=/alice/data/2010/OCDB");
