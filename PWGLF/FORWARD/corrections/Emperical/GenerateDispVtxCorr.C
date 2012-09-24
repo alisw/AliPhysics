@@ -83,10 +83,11 @@ TH1* GetHist(const TList* l, const char* name)
  * 
  * @param fmdfmd If true, use FMD results only 
  */
-void GenerateDispVtxCorr(Bool_t fmdfmd=true,
-			 const char* fmdDispVtx="forward_dndetaDispVtx.root",
-			 const char* fmdNomVtx="forward_dndetaNominalVtx.root",
-			 const char* fullDispVtx="dndetaPreliminaryQM12.root")
+void 
+GenerateDispVtxCorr(Bool_t fmdfmd=true,
+		    const char* fmdDispVtx="forward_dndetaDispVtx.root",
+		    const char* fmdNomVtx="forward_dndetaNominalVtxZDC.root",
+		    const char* fullDispVtx="dndetaPreliminaryQM12.root")
 {
   
   TString outName    = "EmpiricalCorrection.root";
@@ -124,6 +125,7 @@ void GenerateDispVtxCorr(Bool_t fmdfmd=true,
     corrcent[i]->SetLineColor(colors[i]);
     corrcent[i]->SetMarkerStyle(8);
     corrcent[i]->SetFillStyle(0);
+    corrcent[i]->SetFillColor(0);
 
     mg->Add(corrcent[i]);
     TGraphErrors* allsym = 
@@ -184,27 +186,41 @@ void GenerateDispVtxCorr(Bool_t fmdfmd=true,
   average->SetLineColor(colors[4]);
   average->SetMarkerStyle(8);
   average->SetFillStyle(0);
+  average->SetFillColor(0);
   mg->Add(average);
 
   for(Int_t k = 0; k < nMin; k++) {
-    Double_t mean = 0;
+    Double_t mean   = 0;
     Double_t error2 = 0;
+    Double_t sumw2  = 0;
     
     // Loop over centralities 
     for(Int_t l=0; l<4; l++) {
       Double_t eta  = corrcent[l]->GetX()[k];
       Double_t corr = corrcent[l]->GetY()[k];
       Double_t err  = corrcent[l]->GetErrorY(k);
+      Double_t err2 = err * err;
+      Double_t w    = 1 / err2;
+      sumw2         += w;
+      mean          += w * corr;
+#if 0
       mean   += corr;
       error2 += TMath::Power(err,2);
+#endif
     }
+    mean           /= sumw2;
+    Double_t error = TMath::Sqrt(1. / sumw2);
+#if 0
     mean           /= 4;
     Double_t error =  TMath::Sqrt(error2) / 4;
+#endif
     
     average->SetPoint(k,eta,mean);
     average->SetPointError(k,0.125,error);    
   }
 
+  Double_t min = +1000;
+  Double_t max = -1000;
   TMultiGraph* ratios = new TMultiGraph;
   for(Int_t l=0; l<4; l++) {
     Int_t cl        = limits[l];
@@ -217,10 +233,13 @@ void GenerateDispVtxCorr(Bool_t fmdfmd=true,
       Double_t x = r->GetX()[k];
       Double_t y = r->GetY()[k];
       Double_t a = average->Eval(x);
-      r->SetPoint(k, x, (y-a)/a);
+      Double_t s = (y-a)/a;
+      r->SetPoint(k, x, s);
+      min  = TMath::Min(s, min);
+      max  = TMath::Max(s, max);
     }
   }
-
+  Printf("Min=%f max=%f", min, max);
   // Draw the results 
   TCanvas* canvas = new TCanvas("overview","overview",800,600);
   TPad* overview =  new TPad("overview", "Overview", 0, .3, 1, 1, 0, 0);
@@ -251,6 +270,7 @@ void GenerateDispVtxCorr(Bool_t fmdfmd=true,
   details->SetGridx();
   details->cd();
 
+
   ratios->Draw("APEL");
   ratios->GetXaxis()->SetTitle("#eta");
   ratios->GetYaxis()->SetTitle("#frac{c-#LTc#GT}{#LTc#GT}");  
@@ -261,13 +281,43 @@ void GenerateDispVtxCorr(Bool_t fmdfmd=true,
   ratios->GetXaxis()->SetTitleOffset(0.5);
   ratios->GetXaxis()->SetLabelSize(0.08);
   ratios->GetYaxis()->SetNdivisions(10);
+
+  Double_t x1 = ratios->GetXaxis()->GetXmin();
+  Double_t x2 = ratios->GetXaxis()->GetXmax();
+  Double_t y1 = min; // ratios->GetHistogram()->GetMinimum();
+  Double_t y2 = max; // ratios->GetHistogram()->GetMaximum();
+  TGraphAsymmErrors* band = new TGraphAsymmErrors(2);
+  band->SetName("band");
+  band->SetTitle(Form("Error band min=%4.2f%% max=%4.2f%%", -100*min, 100*max));
+  band->SetPoint(0, x1, 0);
+  band->SetPoint(1, x2, 0);
+  band->SetPointError(0, 0, 0, -y1, y2);
+  band->SetPointError(1, 0, 0, -y1, y2);
+  band->SetFillColor(kYellow+2);
+  band->SetFillStyle(3001);
+  band->SetLineStyle(2);
+  band->SetLineColor(kBlack);
+  band->Draw("A E3 L");
+  band->GetXaxis()->SetTitle("#eta");
+  band->GetYaxis()->SetTitle("#frac{c-#LTc#GT}{#LTc#GT}");  
+  band->GetYaxis()->SetTitleSize(0.09);
+  band->GetYaxis()->SetTitleOffset(0.5);
+  band->GetYaxis()->SetLabelSize(0.08);
+  band->GetXaxis()->SetTitleSize(0.09);
+  band->GetXaxis()->SetTitleOffset(0.5);
+  band->GetXaxis()->SetLabelSize(0.08);
+  band->GetYaxis()->SetNdivisions(10);
+
   details->Clear();
-  ratios->DrawClone("APEC");
+  // band->DrawClone("A E3 L");
+  ratios->GetListOfGraphs()->AddFirst(band, "E3 L");
+  ratios->DrawClone("PEC same");
+
   leg = details->BuildLegend(0.35,0.6,0.6,0.975, "Centrality");
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
-      
+  
   // Store the results 
   TFile* fout = TFile::Open(outName,"RECREATE");
 
