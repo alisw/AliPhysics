@@ -644,11 +644,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       
        if(mcPho) // select photonic electrons
         {
-         double phoval[4];
+         double phoval[5];
          phoval[0] = cent;
          phoval[1] = pt;
          phoval[2] = fTPCnSigma;
          phoval[3] = iHijing;
+         phoval[4] = mcMompT;
 
          fIncpTMCpho->Fill(phoval);    
          if(fFlagPhotonicElec) fPhoElecPtMC->Fill(phoval);
@@ -662,6 +663,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
             // pi0->g->e
             if(mcWeight>-1)
               {
+               if(iHijing==1)mcWeight = 1.0; 
                fIncpTMCM20pho_pi0e->Fill(phoval,mcWeight);    
                if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
@@ -897,35 +899,38 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fIncpTMCM20hfeAll);
 
 
-  Int_t nBinspho2[4] =  { 200, 100,    7, 3};
-  Double_t minpho2[4] = {  0.,  0., -2.5, -0.5};   
-  Double_t maxpho2[4] = {100., 50.,  4.5, 2.5};   
+  Int_t nBinspho2[5] =  { 200, 100,    7,    3, 100};
+  Double_t minpho2[5] = {  0.,  0., -2.5, -0.5, 0.};   
+  Double_t maxpho2[5] = {100., 50.,  4.5,  2.5, 50.};   
 
-  fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",4,nBinspho2,minpho2,maxpho2);
+  fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCpho);
 
-  fIncpTMCM20pho = new THnSparseD("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",4,nBinspho2,minpho2,maxpho2);
+  fIncpTMCM20pho = new THnSparseD("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCM20pho);
 
-  fPhoElecPtMC = new THnSparseD("fPhoElecPtMC", "MC Pho-inclusive electron pt",4,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMC = new THnSparseD("fPhoElecPtMC", "MC Pho-inclusive electron pt",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMC);
   
-  fPhoElecPtMCM20 = new THnSparseD("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",4,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMCM20 = new THnSparseD("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMCM20);
 
-  fSameElecPtMC = new THnSparseD("fSameElecPtMC", "MC Same-inclusive electron pt",4,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMC = new THnSparseD("fSameElecPtMC", "MC Same-inclusive electron pt",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMC);
 
-  fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",4,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMCM20);
 
-  fIncpTMCM20pho_pi0e = new THnSparseD("fIncpTMCM20pho_pi0e","MC Pho pi0->e pid electro vs. centrality with M20",4,nBinspho2,minpho2,maxpho2);
+  fIncpTMCM20pho_pi0e = new THnSparseD("fIncpTMCM20pho_pi0e","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
+  fIncpTMCM20pho_pi0e->Sumw2();
   fOutputList->Add(fIncpTMCM20pho_pi0e);
 
-  fPhoElecPtMCM20_pi0e = new THnSparseD("fPhoElecPtMCM20_pi0e", "MC Pho-inclusive electron pt with M20 pi0->e",4,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMCM20_pi0e = new THnSparseD("fPhoElecPtMCM20_pi0e", "MC Pho-inclusive electron pt with M20 pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMCM20_pi0e->Sumw2();
   fOutputList->Add(fPhoElecPtMCM20_pi0e);
 
-  fSameElecPtMCM20_pi0e = new THnSparseD("fSameElecPtMCM20_pi0e", "MC Same-inclusive electron pt pi0->e",4,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMCM20_pi0e = new THnSparseD("fSameElecPtMCM20_pi0e", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMCM20_pi0e->Sumw2();
   fOutputList->Add(fSameElecPtMCM20_pi0e);
 
   CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
