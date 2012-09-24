@@ -73,15 +73,14 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
 
   /// overloaded from AliDxHFEParticleSelection: init the control objects
   virtual int InitControlObjects();
-  virtual THnSparse* DefineTHnSparse() const;
+  virtual THnSparse* DefineTHnSparse();
 
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent* pEvent);
 
   virtual int HistogramParticleProperties(AliVParticle* p, int selected);
 
-  // TODO: function can be renamed to better describe what it's doing
-  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
 
   /// set cuts object: a type cast check is implemented in the method
   virtual void SetCuts(TObject* /*cuts*/, int /*level*/=0);
@@ -103,7 +102,6 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliHFEcuts*   fCuts;               //! Cuts for HF electrons
   AliCFManager* fCFM;                //! Correction Framework Manager
 
-  static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
   ClassDef(AliDxHFEParticleSelectionEl, 2);

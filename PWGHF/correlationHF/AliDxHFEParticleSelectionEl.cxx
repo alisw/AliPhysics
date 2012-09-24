@@ -86,12 +86,6 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
   fCuts=NULL;
 }
 
-const char* AliDxHFEParticleSelectionEl::fgkTrackControlBinNames[]={
-  "Pt",
-  "Phi",
-  "Eta"
-};
-
 const char* AliDxHFEParticleSelectionEl::fgkCutBinNames[]={
   "kRecKineITSTPC",
   "kRecPrim",
@@ -141,23 +135,26 @@ int AliDxHFEParticleSelectionEl::Init()
 
 }
 
-THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse() const
+THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse()
 {
   //
   // Defines the THnSparse. For now, only calls CreatControlTHnSparse
+
+  // here is the only place to change the dimension
   const int thnSize = 3;
+  InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
 
-  //     		       0    1       2
-  // 	 	               Pt   Phi    Eta
-  int    thnBins[thnSize] = { 1000,  200, 500};
-  double thnMin [thnSize] = {    0,    0, -1.};
-  double thnMax [thnSize] = {  100, 2*Pi,  1.};
+  //                                 0    1       2
+  // 	 	                     Pt   Phi    Eta
+  int         thnBins [thnSize] = { 1000,  200, 500};
+  double      thnMin  [thnSize] = {    0,    0, -1.};
+  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
 
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
-
+  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
 }
 
 int AliDxHFEParticleSelectionEl::InitControlObjects()
@@ -183,25 +180,23 @@ int AliDxHFEParticleSelectionEl::HistogramParticleProperties(AliVParticle* p, in
   if (!p) return -EINVAL;
   //if (!fControlObjects) return 0;
   if(selectionCode==0) return  0;
-  // TODO: make array a member, consistent dimensions for THnSparse and array
-  Double_t eProperties[3]={0.0, 0.0, 0.0};
-  DefineParticleProperties(p, eProperties, 3);
-  if(fElectronProperties) fElectronProperties->Fill(eProperties);
-    
+  
+  if(fElectronProperties && ParticleProperties()) {
+    FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
+    fElectronProperties->Fill(ParticleProperties());
+  }
+
   return 0;
 }
 
-int AliDxHFEParticleSelectionEl::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+int AliDxHFEParticleSelectionEl::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
   AliAODTrack *track=(AliAODTrack*)p;
   if (!track) return -ENODATA;
   int i=0;
-  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
-  // use this consistently
-  const int requiredDimension=3;
-  if (dimension!=requiredDimension) {
+  if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }

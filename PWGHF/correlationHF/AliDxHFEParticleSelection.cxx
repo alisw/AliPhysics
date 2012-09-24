@@ -51,6 +51,8 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   , fhTrackControl(NULL)
   , fUseMC(0)
   , fVerbosity(0)
+  , fDimThn(-1)
+  , fParticleProperties(NULL)
 {
   // constructor
   // 
@@ -70,15 +72,11 @@ const char* AliDxHFEParticleSelection::fgkTrackControlBinNames[]={
   "nTrackSelected",
 };
 
-const char* AliDxHFEParticleSelection::fgkTrackControlDimNames[]={
-  "Pt",
-  "Phi",
-  "Eta"
-};
-
 AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
 {
   // destructor
+  if (fParticleProperties) delete[] fParticleProperties;
+  fParticleProperties=NULL;
   if (fSelectedTracks) delete fSelectedTracks;
   fSelectedTracks=NULL;
   if (fControlObjects) delete fControlObjects;
@@ -150,26 +148,29 @@ THnSparse* AliDxHFEParticleSelection::CreateControlTHnSparse(const char* name,
 
 }
 
-THnSparse* AliDxHFEParticleSelection::DefineTHnSparse() const
+THnSparse* AliDxHFEParticleSelection::DefineTHnSparse() 
 {
   //
   // Defines the THnSparse. For now, only calls CreatControlTHnSparse
 
   //TODO: Should make it more general. Or maybe one can use this here, and skip in PartSelEl?
 
+  // here is the only place to change the dimension
   const int thnSize = 3;
+  InitTHnSparseArray(thnSize);
+
   const double Pi=TMath::Pi();
   TString name;
-  //     		       0    1       2
-  // 	 	               Pt   Phi    Eta
-  int    thnBins[thnSize] = { 1000,  200, 500};
-  double thnMin [thnSize] = {    0,    0, -1.};
-  double thnMax [thnSize] = {  100, 2*Pi,  1.};
+  //     		            0    1       2
+  // 	 	                    Pt   Phi    Eta
+  int         thnBins [thnSize] = { 1000,  200, 500};
+  double      thnMin  [thnSize] = {    0,    0, -1.};
+  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
 
   name.Form("%s info", GetName());
 
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,fgkTrackControlDimNames);
-
+  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
 }
 
 int AliDxHFEParticleSelection::AddControlObject(TObject* pObj)
@@ -216,15 +217,12 @@ int AliDxHFEParticleSelection::HistogramParticleProperties(AliVParticle* p, int 
   return 0;
 }
 
-int AliDxHFEParticleSelection::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+int AliDxHFEParticleSelection::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
   int i=0;
-  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
-  // use this consistently
-  const int requiredDimension=3;
-  if (dimension!=requiredDimension) {
+  if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
