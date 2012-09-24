@@ -79,8 +79,7 @@ class AliDxHFEParticleSelection : public TNamed {
   /// histogram event properties
   virtual int HistogramEventProperties(int bin);
 
-  // TODO: function can be renamed to better describe what it's doing
-  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
 
   /// check and add track to internal array
   int CheckAndAdd(AliVParticle* p);
@@ -114,8 +113,12 @@ class AliDxHFEParticleSelection : public TNamed {
 
   /// set verbosity
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
+
   /// get verbosity
-  int GetVerbosity() const {return fVerbosity;}
+  inline int GetVerbosity() const {return fVerbosity;}
+
+  /// get the dimension of THn, fixed
+  inline int GetDimTHnSparse() const {return fDimThn;}
   
   /// create control THnSparse
   THnSparse* CreateControlTHnSparse(const char* name,
@@ -125,7 +128,9 @@ class AliDxHFEParticleSelection : public TNamed {
 				    double* thnMax,
 				    const char** binLabels) const;
 
-  virtual THnSparse* DefineTHnSparse() const;
+  // define and create the THnSparse object
+  // initializes also the dimension to be used further
+  virtual THnSparse* DefineTHnSparse();
 
  protected:
   /// add control object to list, the base class becomes owner of the object
@@ -133,6 +138,15 @@ class AliDxHFEParticleSelection : public TNamed {
 
   /// histogram particle properties
   virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
+
+  /// set the dimension of THn and allocate filling array
+  void InitTHnSparseArray(int dimension) {
+    fDimThn=dimension; 
+    if (fParticleProperties) delete[] fParticleProperties; fParticleProperties=NULL;
+    if (dimension>0) fParticleProperties=new Double_t[dimension];
+  }
+
+  inline Double_t* ParticleProperties() const {return fParticleProperties;}
 
  private:
   /// copy contructor prohibited
@@ -149,12 +163,13 @@ class AliDxHFEParticleSelection : public TNamed {
   TH1* fhTrackControl; //! track control histogram
   bool fUseMC;         // specific implementation for MC selection
   int fVerbosity;      //! verbosity
+  int fDimThn;         //  dim of thnsparse
+  Double_t* fParticleProperties;  //! filling array for THnSparse
 
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
   static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
-  static const char* fgkTrackControlDimNames[]; //! bin labels fro track thnsparse
 
-  ClassDef(AliDxHFEParticleSelection, 2);
+  ClassDef(AliDxHFEParticleSelection, 3);
 
 };
 

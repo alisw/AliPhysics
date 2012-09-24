@@ -32,9 +32,8 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
 
-  virtual THnSparse* DefineTHnSparse() const;
-  // TODO: function can be renamed to better describe what it's doing
-  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual THnSparse* DefineTHnSparse();
+  virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
 
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
@@ -53,8 +52,6 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   AliDxHFEToolsMC fMCTools;  // MC selction tools
   int fResultMC;             // Result on MC check
   int fOriginMother;         // Holds info on the original mother particle
-  static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
-
 
   ClassDef(AliDxHFEParticleSelectionMCD0, 1);
 };

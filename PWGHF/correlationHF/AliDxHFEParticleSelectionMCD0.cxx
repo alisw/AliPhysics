@@ -36,17 +36,6 @@ using namespace std;
 /// ROOT macro for the implementation of ROOT specific class methods
 ClassImp(AliDxHFEParticleSelectionMCD0)
 
-// TODO: can that be a common definition
-const char* AliDxHFEParticleSelectionMCD0::fgkTrackControlBinNames[]={
-"Pt",
-"Phi",
-"Ptbin", 
-"D0InvMass", 
-"Eta",
-"Statistics D0",
-"Mother of D0"
-};
-
 AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   : AliDxHFEParticleSelectionD0(opt)
   , fMCTools()
@@ -69,38 +58,46 @@ AliDxHFEParticleSelectionMCD0::~AliDxHFEParticleSelectionMCD0()
 {
   // destructor
 }
-THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse() const
+
+THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
 {
   //
   // Defines the THnSparse.
   // could/should remove Pt and leave Ptbin
 
+  // here is the only place to change the dimension
   const int thnSize2 = 7;
+  InitTHnSparseArray(thnSize2);
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
 
-  // 			       0    1      2      3          4     5         6      
-  // 	 	               Pt   Phi   Ptbin  D0InvMass  Eta  'stat D0'  mother 
-  int    thnBins[thnSize2] = { 1000,  200, 21,     200,     500,     2,       10  };
-  double thnMin [thnSize2] = {    0,    0,  0,    1.5648,   -1.,  -0.5,     -1.5  };
-  double thnMax [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1.,   1.5,      8.5  };
+  // 			             0    1      2      3          4     5         6      
+  // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  'stat D0'  mother 
+  int         thnBins [thnSize2] = { 1000,  200, 21,     200,     500,     2,       10  };
+  double      thnMin  [thnSize2] = {    0,    0,  0,    1.5648,   -1.,  -0.5,     -1.5  };
+  double      thnMax  [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1.,   1.5,      8.5  };
+  const char* thnNames[thnSize2] = {
+    "Pt",
+    "Phi",
+    "Ptbin", 
+    "D0InvMass", 
+    "Eta",
+    "Statistics D0",
+    "Mother of D0"
+  };
 
-  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
-
+  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
 }
 
-int AliDxHFEParticleSelectionMCD0::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+int AliDxHFEParticleSelectionMCD0::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
   AliAODTrack *track=(AliAODTrack*)p;
   if (!track) return -ENODATA;
   int i=0;
-  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
-  // use this consistently
-  const int requiredDimension=7;
-  if (dimension!=requiredDimension) {
+  if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
@@ -141,9 +138,11 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
 
   // step 2, only executed if MC check is last
   // MC selection  - > Should maybe also distinguish between D0 and D0bar
-  iResult=CheckMC(p, pEvent);
-  // TODO: why do we need to store the result in a member?
-  fResultMC=iResult;
+  // result stored to be filled into THnSparse
+  // TODO: strictly speaken the particles should be rejected
+  // if not mc selected, however skip this for the moment, because of
+  // the logic outside
+  fResultMC=CheckMC(p, pEvent);
  
   return iResult;
 }

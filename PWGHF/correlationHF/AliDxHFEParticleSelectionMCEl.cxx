@@ -78,26 +78,18 @@ const char* AliDxHFEParticleSelectionMCEl::fgkPDGMotherBinLabels[]={
   "others"
 };
 
-const char* AliDxHFEParticleSelectionMCEl::fgkTrackControlBinNames[]={
-  "Pt",
-  "Phi",
-  "Eta", 
-  "MC statistics electron"
-  "Mother", 
-  "PDG of selected electron", 
-};
-
 AliDxHFEParticleSelectionMCEl::~AliDxHFEParticleSelectionMCEl()
 {
   // destructor
 }
 
-THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse() const
+THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
 {
   //
   // Defines the THnSparse. 
 
   const int thnSize = 6;
+  InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
@@ -107,22 +99,26 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse() const
   int    thnBins[thnSize] = { 1000,  200, 500,    2,       14,      10 };
   double thnMin [thnSize] = {    0,    0, -1., -0.5,     -1.5,    -0.5 };
   double thnMax [thnSize] = {  100, 2*Pi,  1.,  1.5,     12.5,     9.5 };
+  const char* thnNames[thnSize]={
+    "Pt",
+    "Phi",
+    "Eta", 
+    "MC statistics electron",
+    "Mother", 
+    "PDG of selected electron"
+  };
  
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
-
+  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
 }
 
-int AliDxHFEParticleSelectionMCEl::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+int AliDxHFEParticleSelectionMCEl::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
   AliAODTrack *track=(AliAODTrack*)p;
   if (!track) return -ENODATA;
   int i=0;
-  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
-  // use this consistently
-  const int requiredDimension=6;
-  if (dimension!=requiredDimension) {
+  if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
@@ -163,10 +159,12 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
 
   // step 2, only executed if MC check is last
   // optional MC selection after the particle selection
-  iResult=CheckMC(p, pEvent);
-  // TODO: why do we need to store the result in a member?
-  fResultMC=iResult;
- 
+  // result stored to be filled into THnSparse
+  // TODO: strictly speaken the particles should be rejected
+  // if not mc selected, however skip this for the moment, because of
+  // the logic outside
+  fResultMC=CheckMC(p, pEvent);
+
   return iResult;
 }
 

@@ -33,10 +33,9 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   virtual ~AliDxHFEParticleSelectionMCEl();
 
   // Setting up control objects: overloaded from AliDxHFEParticleSelection
-  virtual THnSparse* DefineTHnSparse() const;
+  virtual THnSparse* DefineTHnSparse();
 
-  // TODO: function can be renamed to better describe what it's doing
-  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
 
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
@@ -57,7 +56,6 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
 
   /// TODO: check if the label definitions can be used from the ToolsMC
   static const char* fgkPDGMotherBinLabels[];
-  static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
 
   AliDxHFEToolsMC fMCTools;            // MC selection tools
   THnSparse*      fElectronProperties; // the particle properties of selected particles

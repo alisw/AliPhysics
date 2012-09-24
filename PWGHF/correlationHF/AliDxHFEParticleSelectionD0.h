@@ -33,9 +33,8 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
 
   /// overloaded from AliDxHFEParticleSelection: init the control objects
   virtual int InitControlObjects();
-  virtual THnSparse* DefineTHnSparse() const;
-  // TODO: function can be renamed to better describe what it's doing
-  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual THnSparse* DefineTHnSparse();
+  virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
 
   //Function for daughter control objects
   //TODO: move to AliDxHFEParticleSelection to be used for several particles?
@@ -73,7 +72,6 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   Double_t fD0InvMass;          // D0InvMass
   Int_t fPtBin;                 // Pt Bin
 
-  static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkDgTrackControlBinNames[]; //! bin labels for track control histogram
 
   // TODO: at the moment the dimensions of the different THnSparse objects are different
