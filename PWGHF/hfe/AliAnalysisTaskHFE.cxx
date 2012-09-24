@@ -82,12 +82,16 @@
 #include "AliHFEtools.h"
 #include "AliHFEvarManager.h"
 #include "AliAnalysisTaskHFE.h"
+#include "AliAODMCHeader.h"
+#include "TClonesArray.h"
 
 ClassImp(AliAnalysisTaskHFE)
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   AliAnalysisTaskSE("PID efficiency Analysis")
+  , fAODMCHeader(NULL)
+  , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
@@ -151,6 +155,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   AliAnalysisTaskSE(name)
+  , fAODMCHeader(NULL)
+  , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
@@ -220,6 +226,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   AliAnalysisTaskSE(ref)
+  , fAODMCHeader(NULL)
+  , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(ref.fFillSignalOnly)
@@ -290,6 +298,8 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   // Copy into object o
   //
   AliAnalysisTaskHFE &target = dynamic_cast<AliAnalysisTaskHFE &>(o);
+  target.fAODMCHeader = fAODMCHeader;
+  target.fAODArrayMCInfo = fAODArrayMCInfo;
   target.fQAlevel = fQAlevel;
   target.fPlugins = fPlugins;
   target.fFillSignalOnly = fFillSignalOnly;
@@ -386,6 +396,10 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
       SetHasMCData();
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+  if(IsAODanalysis()) {
+    printf("AOD filter: %s \n", fUseFlagAOD ? "Yes" : "No");
+    if(fUseFlagAOD) printf("AOD filter used: %lu \n", fFlags);
+  }
   printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
   // Enable Trigger Analysis
@@ -537,26 +551,34 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   //
   // Run the analysis
   // 
+
+  //printf("test00\n");
+
   AliDebug(3, "Starting Single Event Analysis");
   if(!fInputEvent){
     AliError("Reconstructed Event not available");
+    //printf("Reconstructed Event not available");
     return;
   }
-  if(HasMCData()){
+  if(HasMCData() && IsESDanalysis()){
     AliDebug(4, Form("MC Event: %p", fMCEvent));
     if(!fMCEvent){
       AliError("No MC Event, but MC Data required");
+      //printf("No MC Event, but MC Data required");
       return;
     }
   }
   if(!fCuts){
     AliError("HFE cuts not available");
+    //printf("HFE cuts not available");
     return;
   }
   if(!fPID->IsInitialized()){
     // Initialize PID with the given run number
     fPID->InitializePID(fInputEvent->GetRunNumber());
   }
+
+  //printf("test0\n");
 
   // Initialize hadronic background from OADB Container
   AliDebug(2, Form("Apply background factors: %s, OADB Container %p", fBackGroundFactorApply ? "Yes" : "No", fHadronBackgroundOADB));
@@ -566,6 +588,8 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     else AliDebug(2, "Successfully loaded Background from OADB");
     SetBit(kBackgroundInitialized); 
   }
+
+  //printf("test1\n");
 
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
@@ -579,14 +603,39 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->TreeTR()) return;
   }
 
+  if(IsAODanalysis() && HasMCData()){
+    // take MC info
+    AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(!aodE){ 
+      AliError("No AOD Event");
+      return;
+    }
+    fAODMCHeader = dynamic_cast<AliAODMCHeader *>(fInputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!fAODMCHeader){ 
+      AliError("No AliAODMCHeader");
+      //printf("No AliAODMCHeader");
+      return;
+    }
+    fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fAODArrayMCInfo){ 
+      AliError("No AOD MC particles");
+      //printf("No AOD MC particles");
+      return;
+    }
+  }
+
+  //printf("test2\n");
+
   // need the centrality for everything (MC also)
   fCentralityF = -1;
   if(!ReadCentrality()) fCentralityF = -1;
   //printf("pass centrality\n");
-  //printf("Reading fCentralityF %f\n",fCentralityF);
+  //printf("Reading fCentralityF %d\n",fCentralityF);
   
   // See if pile up and z in the range
   RejectionPileUpVertexRangeEventCut();
+
+  //printf("test3\n");
 
   // Protect agains missing 
   if(HasMCData()){
@@ -605,7 +654,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
 
   // Event loop
   if(IsAODanalysis()){
-    //printf("test\n");
+    //printf("test4\n");
     ProcessAOD();
   } else {
     const char *specialTrigger = GetSpecialTrigger(fInputEvent->GetRunNumber());
@@ -655,7 +704,7 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
       return;
     }
     postanalysis.SetTaskQA(qalist);
-    printf("Running post analysis\n");
+    //printf("Running post analysis\n");
     //if(HasMCData())
     postanalysis.DrawMCSignal2Background();
     postanalysis.DrawEfficiency();
@@ -707,7 +756,8 @@ void AliAnalysisTaskHFE::ProcessMC(){
   //
   AliDebug(3, "Processing MC Information");
   Double_t eventContainer [4];
-  eventContainer[0] = fMCEvent->GetPrimaryVertex()->GetZ();
+  if(IsESDanalysis()) eventContainer[0] = fMCEvent->GetPrimaryVertex()->GetZ();
+  else eventContainer[0] = fAODMCHeader->GetVtxZ();
   eventContainer[2] = fCentralityF;
   eventContainer[3] = fContributors;
   fVz = eventContainer[0];
@@ -761,9 +811,23 @@ void AliAnalysisTaskHFE::ProcessMC(){
   }
   // Run MC loop
   AliVParticle *mctrack = NULL;
-  AliDebug(3, Form("Number of Tracks: %d", fMCEvent->GetNumberOfTracks()));
-  for(Int_t imc = 0; imc <fMCEvent->GetNumberOfTracks(); imc++){
-    if(!(mctrack = fMCEvent->GetTrack(imc))) continue;
+  Int_t numberofmctracks = 0;
+  if(IsESDanalysis()){
+    numberofmctracks = fMCEvent->GetNumberOfTracks();
+  }
+  else {
+    numberofmctracks = fAODArrayMCInfo->GetEntriesFast();
+  }
+  AliDebug(3, Form("Number of Tracks: %d",numberofmctracks));
+  //printf("Number of MC track %d\n",numberofmctracks);
+  for(Int_t imc = 0; imc <numberofmctracks; imc++){
+    if(IsESDanalysis()) {
+      if(!(mctrack = fMCEvent->GetTrack(imc))) continue;
+    }
+    else {
+      if(!(mctrack = (AliVParticle *) fAODArrayMCInfo->At(imc))) continue;
+    }
+    //printf("Test in ProcessMC\n");
     AliDebug(4, "Next MC Track");
     if(ProcessMCtrack(mctrack)) nElectrons++;
   }
@@ -1445,11 +1509,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(HasMCData()){
 
       Int_t label = TMath::Abs(track->GetLabel());
-      if(label)
-        mctrack = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(label));
+      if(label && label < fAODArrayMCInfo->GetEntriesFast())
+        mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
         if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
     }
-    fVarManager->NewTrack(track, mctrack, fCentralityF, -1, kTRUE);
+    fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
     
     if(fFillNoCuts) {
       if(signal || !fFillSignalOnly){
@@ -1593,7 +1657,9 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
     if(aodmctrack) aodmctrack->XvYvZv(vertex);
   }
 
+  //printf("MC Generated\n");
   if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, track)) return kFALSE;
+  //printf("MC Generated pass\n");
   fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCGenerated, kFALSE);
   signalContainer[4] = 0;
   if(fSignalCuts->IsSelected(track)){
