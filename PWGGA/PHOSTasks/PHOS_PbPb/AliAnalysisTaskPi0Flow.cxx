@@ -1006,7 +1006,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
       }
       if(ph2->IsCPVOK()){
         FillHistogram(Form("hSingleCPV_cen%d",fCentBin),p12.M(),ph2->Pt()) ;
-        FillHistogram(Form("hSingleCPV_cen%d",fCentBin),pv12.M(),ph2->GetMomV2()->Pt()) ;
+        FillHistogram(Form("hSingleCPVcore_cen%d",fCentBin),pv12.M(),ph2->GetMomV2()->Pt()) ;
       }
       if(ph1->IsCPV2OK()){
         FillHistogram(Form("hSingleCPV2_cen%d",fCentBin),p12.M(),ph1->Pt()) ;
