@@ -38,10 +38,10 @@ enum {kCorr=0, kUnCorr, kNoPid};
 
 
 // Common variables: to be configured by the user
-const Int_t nPtBins=3;
-Double_t ptlims[nPtBins+1]={2.,4.,8.,16.};
-Int_t rebin[nPtBins]={4,6,6};
-Double_t sigmapt[nPtBins]={ 0.012, 0.016, 0.018 };
+const Int_t nPtBins=5;
+Double_t ptlims[nPtBins+1]={2.,4.,6.,8.,12.,16.};
+Int_t rebin[nPtBins]={4,6,6,6,8};
+Double_t sigmapt[nPtBins]={ 0.012, 0.016, 0.016, 0.018, 0.20 };
 Bool_t fixPeakSigma = kFALSE;
 //
 const Int_t nMultbins=6;
@@ -69,12 +69,12 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, Int_t nFiles);
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
 
-void ReadDvsMultiplicity(Int_t analysisType=kDplusKpipi,
-			 TString fileNameb="Mult/AnalysisResults.root",
-			 TString fileNamec="MultC/AnalysisResults.root",
-			 TString fileNamed="MultD/AnalysisResults.root",
-			 TString fileNamee="MultE/AnalysisResults.root",
-			 const char *CutsType="StdPid",
+void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
+			 TString fileNameb="AnalysisResults.root",
+			 TString fileNamec="",
+			 TString fileNamed="",
+			 TString fileNamee="",
+			 const char *CutsType="",
 			 Int_t Option=kCorr)
 {
   // gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Case -I$ALICE_ROOT/PWG/FLOW/Tasks -g");
@@ -326,8 +326,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kDplusKpipi,
   for(Int_t imult=0; imult<nMultbins; imult++) {
     hMass[imult]->SetMarkerStyle(20);
     hMass[imult]->GetXaxis()->SetTitle("Pt (GeV/c)");
-    hMass[imult]->GetXaxis()->SetTitle("Mass (GeV/c^{2})");
+    hMass[imult]->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
     hMass[imult]->SetMarkerColor(2*imult);
+    if(imult==5) hMass[imult]->SetMarkerColor(2*imult-3);
     if(imult==0) {
       hMass[imult]->SetMarkerColor(kBlack);
       hMass[imult]->Draw("PE");
@@ -339,8 +340,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kDplusKpipi,
     hSigma[imult]->SetMarkerStyle(20);
     //  hSigma[0]->Draw("PE");
     hSigma[imult]->GetXaxis()->SetTitle("Pt (GeV/c)");
-    hSigma[imult]->GetXaxis()->SetTitle("Sigma (GeV/c^{2})");
+    hSigma[imult]->GetYaxis()->SetTitle("Sigma (GeV/c^{2})");
     hSigma[imult]->SetMarkerColor(2*imult);
+    if(imult==5) hSigma[imult]->SetMarkerColor(2*imult-3);
     if(imult==0) {
       hSigma[imult]->SetMarkerColor(kBlack);
       hSigma[imult]->Draw("PE");
@@ -459,9 +461,10 @@ void ReadDvsMultiplicity(Int_t analysisType=kDplusKpipi,
     hBackgroundNormSigma[i]->GetXaxis()->SetTitle("Pt (GeV/c)");
     hBackgroundNormSigma[i]->GetYaxis()->SetTitle("Background #times 3 #times 0.012/ (3 #times #sigma)");
     hBackgroundNormSigma[i]->SetMarkerColor(2*i);
+    if(i==5) hBackgroundNormSigma[i]->SetMarkerColor(2*i-3);
     if(i==0) { 
       hBackgroundNormSigma[i]->SetMarkerColor(kBlack);
-      hBackgroundNormSigma[i]->Draw("PA");
+      hBackgroundNormSigma[i]->Draw("PE");
     }
     else  hBackgroundNormSigma[i]->Draw("Psame");
   }
@@ -606,7 +609,7 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZv
       hPtMassMult[0]->Add(htemp);
     }
     hNtrZvtx[iFile] = (TH2F*)hlist[iFile]->FindObject("hNtrVsZvtx");
-    //    hNtrZvtxCorr[iFile] = (TH2F*)hlist[iFile]->FindObject("hNtrVsZvtxCorr");
+    hNtrZvtxCorr[iFile] = (TH2F*)hlist[iFile]->FindObject("hNtrCorrVsZvtx");
   }
   
   //  cout<<" hPtMassMult:"<<hPtMassMult[0]<<endl;
@@ -761,7 +764,7 @@ TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse){
 //_____________________________________________________________________________________________
 Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFiles)
 {
-  /*
+
   TCanvas *cNtrVsZvtx = new TCanvas("cNtrVsZvtx","Ntr Vs Zvtx");
   cNtrVsZvtx->Divide(3,2);
   for(Int_t i=0; i<nFiles; i++){
@@ -779,7 +782,7 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
   }
 
   TH1F *hNtrAxis = (TH1F*)hNtrackVsVtxZ[0]->ProjectionY("hNtrAxis");
-  TH1F *hZvtx[nMultbins]; 
+  TH1F *hZvtx[nMultbins];
   Int_t firstbin=0, lastbin=0;
   TCanvas *cZvtx = new TCanvas("cZvtx","Zvtx projections");
   cZvtx->Divide(3,2);
@@ -793,13 +796,13 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
   TH1F *hZvtxCorr[nMultbins]; 
   TCanvas *cZvtxCorr = new TCanvas("cZvtxCorr","Zvtx projections Corr");
   cZvtxCorr->Divide(3,2);
-  for(Int_t i=0; i<nMultbins; i++){
+  for(Int_t i=0; i<nFiles; i++){
     cZvtxCorr->cd(i);
     firstbin = hNtrAxis->FindBin( multlims[i] );
     lastbin = hNtrAxis->FindBin( multlims[i+1] );
-    hZvtxCorr[i] = (TH1F*)hNtrackVsVtxZCorr[i]->ProjectionX(Form("hZvtx_%d",i),firstbin,lastbin);
+    hZvtxCorr[i] = (TH1F*)hNtrackVsVtxZCorr[i]->ProjectionX(Form("hZvtxCorr_%d",i),firstbin,lastbin);
     hZvtxCorr[i]->Draw();
   }
-  */
+
   return kTRUE;
 }
