@@ -15,4 +15,10 @@
  * @par External Information 
  *
  * - <a href="https://aliceinfo.cern.ch/Notes/node/25">Analysis Note</a>
+ *
+ * @par Observations on implementing tasks 
+ *
+ * - Any object propagated to the output must be allocated on the heap
+ *   and not deleted by the task.  The reason is, that PROOF cleans-up
+ *   tasks _before_ the output is flushed to disk
  */
