@@ -200,7 +200,7 @@ private:
      TH3F*      fh3JetDensityA4;           //jet density
      TH2F*      fh2RPJets;                  //reaction plane Jets
      TH2F*      fh2RPT;                     //reaction plane TT 
-     TH3F*      fh3spectriggeredC20RP;       //spec wrt RP
+     TH3F*      fh3spectriggeredC10;       //spec wrt RP
      TH3F*      fh3spectriggeredC20;           //triggered spectra
      TH3F*      fh3spectriggeredC3060;         //triggered spectra
 
