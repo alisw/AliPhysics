@@ -9,7 +9,8 @@
 /// Helper macro to initialize the environment for DxHFE. The macro can just
 /// prepend other macros like run-single-task in the command line.
 /// Usage:
-/// aliroot -b -q -l setupDxHFE.C'("localAodDir")' run-single-task.C'(...)'
+/// aliroot -b -q -l setupDxHFE.C'("localAodDirectory", nofDirectories)' run-single-task.C'(...)'
+/// aliroot -b -q -l setupDxHFE.C'("lhcPeriod", "mcPeriod")' run-single-task.C'(...)'
 ///
 /// Example:
 /// aliroot -b -q -l setupDxHFE.C run-single-task.C'(...)'
@@ -19,14 +20,18 @@
 ///   available for the alien handler initialization, a specific configuration
 ///   object is created
 /// - setting a default analysis name via a configuration object
-/// - the optional parameter 'localAodDir' allows to create an input chain from
+/// - the optional parameter 'localAodDirectory' allows to create an input chain from
 ///   local AODs; either a single AliAOD.root, or a folder containing directories
-///   named "1, 2, ..."
+///   named "1, 2, ...", the number of directories is specified as parameter
+///   nofDirectories
+/// - loading the runs defined by AddGoodRuns of vertexingHF using lhcPeriod and
+///   optional mcPeriod
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // environment specific for DxHFE
 //
+const char* analysisName="DxHFECorrelation";
 const char* includePath="-I$ALICE_ROOT/PWGHF/correlationHF -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/hfe";
 const char* libraryDependencies=
   "libSTEERBase "
@@ -42,8 +47,11 @@ const char* libraryDependencies=
   "libPWGHFcorrelationHF.so "
   ;
 
-void setupDxHFE(const char* aodDirectory=NULL)
+void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* lhcPeriod, const char* mcProd="")
 {
+  //
+  // adding include path and libraries
+  //
   gSystem->AddIncludePath(includePath);
   TString libraries=libraryDependencies;
   TObjArray* pTokens=libraries.Tokenize(" ");
@@ -57,29 +65,61 @@ void setupDxHFE(const char* aodDirectory=NULL)
   }
   libraries="";
 
+  //
   // allow run-single-task to fetch the analysis name and library names
-  if (gDirectory) gDirectory->Add(new TNamed("analysis_name", "DxHFECorrelation"));
+  //
+  if (gDirectory) gDirectory->Add(new TNamed("analysis_name", analysisName));
   if (gDirectory) gDirectory->Add(new TNamed("analysis_libraries", libraryDependencies));
 
-  if (aodDirectory) {
+  if (lhcPeriod) {
+    //
+    // setting up the runs for the dpecified period
+    //
+    TString alienHandlerName(analysisName); alienHandlerName+="Handler";
+    AliAnalysisAlien* alienHandler=new AliAnalysisAlien(alienHandlerName);
+    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
+    int nruns=AddGoodRuns(alienHandler, lhcPeriod, mcProd);
+    if (nruns<=0) {
+      ::Error("setupDxHFE.C", Form("can not find any good runs for period %s", lhcPeriod));
+      return;
+    }
+    gDirectory->Add(alienHandler);
+    ::Info("setupDxHFE.C", Form("setting up alien plugin '%s' for period %s\n>>>>> please use '%s' as input parameter for run-single-task.C <<<<<<", alienHandlerName.Data(), lhcPeriod, alienHandlerName.Data()));
+
+  } else if (localAodDirectory) {
+    //
     // create AOD tree from local files
     // the created object is added automatically to gDirectory and can be fetched
     // from there later
+    //
     gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/MakeAODInputChain.C");
-    TString aodPathName(aodDirectory);
+    TString aodPathName(localAodDirectory);
     if (!aodPathName.EndsWith("/")) aodPathName+="/";
     aodPathName+="AliAOD.root";
     if (gSystem->AccessPathName(aodPathName)==0) {
       // Create a chain with one set of AliAOD.root and AliAOD.VertexingHF.root. The set needs 
       // to be located in the same folder as you run from (physically or linked)
       ::Info("setupDxHFE.C", Form("make chain from single chunk %s", aodPathName));
-      TChain* chain = MakeAODInputChain(aodDirectory ,1, -1);
+      TChain* chain = MakeAODInputChain(localAodDirectory ,1, -1);
     } else {
       // Assume several folders containing different AODs. 
       // The AODs need to be in folders named 1, 2,...
-      ::Info("setupDxHFE.C", Form("make chain from directory %s", aodDirectory));
-      chain=MakeAODInputChain(aodDirectory, 1, 10);
+      ::Info("setupDxHFE.C", Form("make chain from directory %s", localAodDirectory));
+      chain=MakeAODInputChain(localAodDirectory, 1, nofDirectories);
     }
     ::Info("setupDxHFE.C", Form("local AOD chain: %d entries", chain->GetEntries()));
   }
+}
+
+void setupDxHFE(const char* lhcPeriod=NULL, const char* mcProd="")
+{
+  // Grid mode with optional calling of AddGoodRuns for specified
+  // period
+  setupDxHFE(NULL, 0, lhcPeriod, mcProd);
+}
+
+void setupDxHFE(const char* localAodDirectory, int nofDirectories)
+{
+  // local mode for AOD data
+  setupDxHFE(localAodDirectory, nofDirectories, NULL);
 }

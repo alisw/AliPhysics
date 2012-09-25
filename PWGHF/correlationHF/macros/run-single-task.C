@@ -8,26 +8,30 @@
 ///
 /// Helper macro to run a single task either locally or on Grid
 /// Usage:
-/// aliroot -b -q -l run-single-task.C'("mode", "run", "task", "name", useMC, events, "path", "pattern", "friendPattern", "outputDir", "user")'
+/// aliroot -b -q -l run-single-task.C'("mode", "run", "tasks", "name", useMC, events, "path", "pattern", "friendPattern", "outputDir", "user")'
 ///  arguments
 ///   mode:    local, full, test
 ///   run:     list of run numbers. Or if using AODs with predefined list/AODs in same folder, specifiy as "AOD"
-///   task:    class name of task
+///   tasks:   list of class names/source or header files of task
 ///
 ///  optional arguments
 ///   name:    analysis name (default 'myanalysis')
+///   useMC:   MC analysis enabled if true (default false')
 ///   events:  number of events to be processed (default -1 -> all)
 ///   path:    data search path for grid analysis (default from configuration file)
 ///   pattern: data search pattern (default from configuration file)
+///   friend pattern: friend file search pattern (default from configuration file)
+///   output dir: output directory in Grid home (default gridwork/yyyy-mm-dd_hh-mm)
+///   user:    default NULL, using user of active token
 ///
 /// Examples:
 /// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "myanalysis_LHC11a")'
 ///
 /// aliroot -b -q -l run-single-task.C'("local", "$ALICE_ROOT/test/ppbench/AliESDs.root", "AliAnalysisTaskSample")'
 ///
-/// aliroot -b -q -l run-single-task.C'("local", "AOD", "AddTaskSample.C"")'
+/// aliroot -b -q -l run-single-task.C'("local", "AOD", "AddTaskSample.C")'
 ///
-/// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "correlation3p_LHC11a", -1, "/alice/data/2011/LHC11a", "*/pass2_without_SDD/AOD*/*/AliAOD.root")'
+/// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "correlation3p_LHC11a", 0, -1, "/alice/data/2011/LHC11a", "*/pass2_without_SDD/AOD*/*/AliAOD.root")'
 ///
 /// Data input:
 /// depending on the format of the search pattern either the ESD or AOD input handler is used.
@@ -44,24 +48,29 @@
 ///
 /// Local analysis:
 /// requires only the path to the input file and the task class name. If the specified file is
-/// a text file (.txt) each line can contain an input file path, all files are chained.
-/// Note: AOD mode needs to be implemented
+/// a text file (.txt) each line can contain an input ESD file path, all files are chained.
+/// Analysis on local AOD files needs to be setup prior to this macro. gDirectory must contain
+/// a TChain object of name 'aodTree'. This is for example created by macros like
+/// $ALICE_ROOT/PWGHF/vertexingHF/MakeAODInputChain.C
+/// Set $ALICE_ROOT/PWGHF/correlationHF/macros/setupDxHFE.C for an example.
 ///
 /// Grid analysis:
 /// All modes provided by the AliAnalysisAlien plugin can be used, e.g. full, test, offline
 /// A couple of settings need to be defined in a configuration file 'grid-config.C' which can be
-/// either in the local directory or home directory.
+/// either in the local directory or home directory. The file can look like
 /// <pre>
 ///   const char* alienAPIVersion="V1.1x";
-///   const char* alienROOTVersion="v5-33-02a";
-///   const char* alienAliROOTVersion="v5-01-Rev-29";
+///   const char* alienROOTVersion="v5-34-01";
+///   const char* alienAliROOTVersion="v5-03-61-AN";
 ///   const char* defaultGridDataDir="/alice/data/2011/LHC11a";
 ///   const char* defaultDataPattern="*/pass2_without_SDD/*/AliESDs.root";
+///   const char* defaultFriendDataPattern="";
 ///   {} // note this empty body
 /// </pre>
 /// Data path and pattern can also be specified as command line arguments.
 /// The working directory in the grid home directory of the user is set to
-/// gridwork/<date>_<time>.
+/// gridwork/<date>_<time> (gridwork/yyyy-mm-dd_hh-mm), can be overridden by command line
+/// parameter.
 ///
 /// 
 
@@ -233,61 +242,61 @@ void run_single_task(const char* mode,
       TString taskSource=pTaskNames->At(iTaskName)->GetName();
       TString taskHeader=pTaskNames->At(iTaskName)->GetName();
       bool bIsAddTask=false;
-  if (taskSource.EndsWith(".C")) {
-    // suppose that's an 'AddTask' macro
-    taskHeader="";
-    bIsAddTask=true;
-  } else if (taskSource.EndsWith(".par")) {
-    // par file
-    if (gSystem->AccessPathName(taskSource)!=0) {
-      ::Error("run_single_task", Form("par file '%s' not found in current directory, you might want to set a symbolic link", taskSource.Data()));
-      return;
-    }
-    parPackages+=" ";
-    parPackages+=taskSource;
-    continue;
-  } else if (taskSource.EndsWith(".h")) {
-    taskSource.ReplaceAll(".h", "");
-    taskClasses+=" ";
-    taskClasses+=taskSource;
-    taskSource+=".cxx";
-  } else if (taskSource.EndsWith(".cxx")) {
-    taskHeader.ReplaceAll(".cxx", "");
-    taskClasses+=" ";
-    taskClasses+=taskHeader;
-    taskHeader+=".h";
-  } else {
-    taskClasses+=" ";
-    taskClasses+=taskSource;
-    taskSource+=".cxx";
-    taskHeader+=".h";
-  }
-  TString dependencyHeader;
-  TString dependencySource;
-  if (gSystem->AccessPathName(taskHeader)==0) {
-  GetIncludeHeaders(taskHeader, dependencyHeader, libraries);
-  taskHeaders+=" "; taskHeaders+=taskHeader;
-  }
-  if (gSystem->AccessPathName(taskSource)==0) {
-  GetIncludeHeaders(taskSource, dependencyHeader, libraries);
-  if (!bIsAddTask) {taskSources+=" "; taskSources+=taskSource;}
-  else {addTaskMacros+=" "; addTaskMacros+=taskSource;}
-  }
-  TObjArray* pTokens=dependencyHeader.Tokenize(" ");
-  if (pTokens) {
-    for (int i=0; i<pTokens->GetEntriesFast(); i++) {
-      TString sourceFile=pTokens->At(i)->GetName();
-      sourceFile.ReplaceAll(".h", ".cxx");
-      if (gSystem->AccessPathName(sourceFile)!=0) continue;
-      if (!dependencySource.IsNull()) dependencySource+=" ";
-      dependencySource+=sourceFile;
-      if (!libraries.IsNull()) libraries+=" ";
-      libraries+=sourceFile;
-    }
-    delete pTokens;
-  }
-  dependencySource.ReplaceAll(taskSource, "");
-  dependencyHeader.ReplaceAll(taskHeader, "");
+      if (taskSource.EndsWith(".C")) {
+	// suppose that's an 'AddTask' macro
+	taskHeader="";
+	bIsAddTask=true;
+      } else if (taskSource.EndsWith(".par")) {
+	// par file
+	if (gSystem->AccessPathName(taskSource)!=0) {
+	  ::Error("run_single_task", Form("par file '%s' not found in current directory, you might want to set a symbolic link", taskSource.Data()));
+	  return;
+	}
+	parPackages+=" ";
+	parPackages+=taskSource;
+	continue;
+      } else if (taskSource.EndsWith(".h")) {
+	taskSource.ReplaceAll(".h", "");
+	taskClasses+=" ";
+	taskClasses+=taskSource;
+	taskSource+=".cxx";
+      } else if (taskSource.EndsWith(".cxx")) {
+	taskHeader.ReplaceAll(".cxx", "");
+	taskClasses+=" ";
+	taskClasses+=taskHeader;
+	taskHeader+=".h";
+      } else {
+	taskClasses+=" ";
+	taskClasses+=taskSource;
+	taskSource+=".cxx";
+	taskHeader+=".h";
+      }
+      TString dependencyHeader;
+      TString dependencySource;
+      if (gSystem->AccessPathName(taskHeader)==0) {
+	GetIncludeHeaders(taskHeader, dependencyHeader, libraries);
+	taskHeaders+=" "; taskHeaders+=taskHeader;
+      }
+      if (gSystem->AccessPathName(taskSource)==0) {
+	GetIncludeHeaders(taskSource, dependencyHeader, libraries);
+	if (!bIsAddTask) {taskSources+=" "; taskSources+=taskSource;}
+	else {addTaskMacros+=" "; addTaskMacros+=taskSource;}
+      }
+      TObjArray* pTokens=dependencyHeader.Tokenize(" ");
+      if (pTokens) {
+	for (int i=0; i<pTokens->GetEntriesFast(); i++) {
+	  TString sourceFile=pTokens->At(i)->GetName();
+	  sourceFile.ReplaceAll(".h", ".cxx");
+	  if (gSystem->AccessPathName(sourceFile)!=0) continue;
+	  if (!dependencySource.IsNull()) dependencySource+=" ";
+	  dependencySource+=sourceFile;
+	  if (!libraries.IsNull()) libraries+=" ";
+	  libraries+=sourceFile;
+	}
+	delete pTokens;
+      }
+      dependencySource.ReplaceAll(taskSource, "");
+      dependencyHeader.ReplaceAll(taskHeader, "");
     }
     delete pTaskNames;
   }
@@ -337,27 +346,44 @@ void run_single_task(const char* mode,
     } else if(strInput.EndsWith("AOD")){
       // fetch aod tree from the setup macro
       if (gDirectory!=NULL) {
-	TObject* chainObject=gDirectory->FindObject("aodTree");
+	const char* aodTreeName="aodTree";
+	TObject* chainObject=gDirectory->FindObject(aodTreeName);
 	if (chainObject) {
 	  chain=dynamic_cast<TChain*>(chainObject);
 	}
       }
       if (!chain) {
-	cout << "failed to fetch aod tree object from setup" << endl;
-	return -1;
+	::Error("run_single_task", Form("failed to fetch aod tree object from setup; the chain with name '%s' has to be created before calling this macro", aodTreeName));
+	return;
       }
     } else {
-      cerr << "invalid input" << endl;
-      return -1;
+      ::Error("run_single_task", Form("invalid input"));
+      return;
     }
   } else {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // grid analysis
     //
-    alienHandler=new AliAnalysisAlien();
+    bool bSetRun=true;
+    TString strInput(input);
+    if (!strInput.IsDigit()) {
+      // support for external macros specifying the the runs to be
+      // analyzed
+      // the input is expected to be an external plugin with name 'input'
+      // and all run numbers being set
+      TObject* pObj=gDirectory->FindObject(input);
+      if (pObj) alienHandler=dynamic_cast<AliAnalysisAlien*>(pObj);
+      if (!alienHandler) {
+	::Error("run_single_task", Form("can not find plugin of name '%s', please setup alien handler with name and run numbers before calling this macro", input));
+	return;
+      }
+      bSetRun=false;
+    } else {
+      alienHandler=new AliAnalysisAlien();
+    }
     if (!alienHandler) {
-      cerr << "failed to create alien handler" << endl;
+      ::Error("run_single_task", Form("failed to create alien handler"));
       return;
     }
 
@@ -393,10 +419,13 @@ void run_single_task(const char* mode,
       delete packageTokens;
     }
 
-    if (!useMC)
-      alienHandler->SetRunPrefix("000");   // real data
+    if (bSetRun) {
+      // only set if input is a run number
+      if (!useMC && !strInput.BeginsWith("000"))
+	alienHandler->SetRunPrefix("000");   // real data
 
-    alienHandler->AddRunNumber(input);
+      alienHandler->AddRunNumber(input);
+    }
 
     // define working and output directories
     TDatime dt;
@@ -429,8 +458,7 @@ void run_single_task(const char* mode,
     alienHandler->SetOutputFiles(ofile);
 
     // Optionally define the files to be archived.
-    //-
-    //alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
+    alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
   
     // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
     TString macroName; macroName.Form("run_%s.C",analysisName); macroName.ReplaceAll("-","_");
@@ -447,7 +475,7 @@ void run_single_task(const char* mode,
     // Optionally resubmit threshold.
     alienHandler->SetMasterResubmitThreshold(90); // in %
 
-    alienHandler->SetTTL(30000);// in sec
+    alienHandler->SetTTL(86400);// in sec
   
     // Optionally set input format (default xml-single)
     alienHandler->SetInputFormat("xml-single");
@@ -485,35 +513,35 @@ void run_single_task(const char* mode,
   TObjArray* taskClassTokens=taskClasses.Tokenize(" ");
   if (taskClassTokens) {
     for (int iTaskClassToken=0; iTaskClassToken<taskClassTokens->GetEntriesFast(); iTaskClassToken++) {
-    AliAnalysisTaskSE *pTask=NULL;
-    TString taskName=taskClassTokens->At(iTaskClassToken)->GetName();
-    taskName.ReplaceAll(".cxx", "");
-    TClass* pCl=TClass::GetClass(taskName);
-    if (!pCl) {
-      cerr << "can not load class " << taskName << endl;
-      return -1;
-    }
-    TObject* p=pCl->New();
-    if (!p) {
-      cerr << "failed to instantiate class " << taskName << endl;
-      return -1;
-    }
-    pTask=reinterpret_cast<AliAnalysisTaskSE*>(p);
-    pManager->AddTask(pTask);
-    AliAnalysisDataContainer *pContainer=pManager->CreateContainer(analysisName ,TObject::Class(), AliAnalysisManager::kOutputContainer, ofile);       
-    pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
-    pManager->ConnectOutput(pTask,1,pContainer);
+      AliAnalysisTaskSE *pTask=NULL;
+      TString taskName=taskClassTokens->At(iTaskClassToken)->GetName();
+      taskName.ReplaceAll(".cxx", "");
+      TClass* pCl=TClass::GetClass(taskName);
+      if (!pCl) {
+	cerr << "can not load class " << taskName << endl;
+	return;
+      }
+      TObject* p=pCl->New();
+      if (!p) {
+	cerr << "failed to instantiate class " << taskName << endl;
+	return;
+      }
+      pTask=reinterpret_cast<AliAnalysisTaskSE*>(p);
+      pManager->AddTask(pTask);
+      AliAnalysisDataContainer *pContainer=pManager->CreateContainer(analysisName ,TObject::Class(), AliAnalysisManager::kOutputContainer, ofile);       
+      pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
+      pManager->ConnectOutput(pTask,1,pContainer);
     }
     delete taskClassTokens;
   }
   TObjArray* taskMacroTokens=addTaskMacros.Tokenize(" ");
   if (taskMacroTokens) {
     for (int iTaskMacroToken=0; iTaskMacroToken<taskMacroTokens->GetEntriesFast(); iTaskMacroToken++) {
-    taskSource+="+g";
-    TString configuration;
-    configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), useMC?"mc":"");
-    if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
-    gROOT->Macro(taskMacroTokens->At(iTaskMacroToken)->GetName());
+      taskSource+="+g";
+      TString configuration;
+      configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), useMC?"mc":"");
+      if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
+      gROOT->Macro(taskMacroTokens->At(iTaskMacroToken)->GetName());
     }
     delete taskMacroTokens;
   }
