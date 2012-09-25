@@ -27,7 +27,7 @@
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
+AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -75,6 +75,9 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
+  // Debug 
+  task->SetDebug(debug);
+
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 
   AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
@@ -84,9 +87,6 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
   AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
     
   // --- Make the output container and connect it --------------------
-  TString outputfile = ;
-  // outputfile += ":PWGLFforwardDnDeta"; 
-  // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer,
