@@ -315,6 +315,8 @@ int main(int argc, char** argv)
   // Make an application 
   TApplication* app = 0;
   if (gui) {
+    Info("", "Making an application and initializing graphics");
+    gROOT->SetBatch(false);
     app = new TApplication("runtrain", 0, 0);
     app->InitializeGraphics();
   }
