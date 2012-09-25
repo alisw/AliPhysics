@@ -114,7 +114,6 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fAreTrackletsEnabled(kTRUE),
   fESDpid(0x0),
   fIsPidOwner(kFALSE),
-  fTimeZeroType(AliESDpid::kTOF_T0),
   fTPCaloneTrackCuts(0),
   fDoPropagateTrackToEMCal(kTRUE)
 {
@@ -186,7 +185,6 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
 		fAreTrackletsEnabled(kTRUE),
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
-    fTimeZeroType(AliESDpid::kTOF_T0),
     fTPCaloneTrackCuts(0),
   fDoPropagateTrackToEMCal(kTRUE)
 {
