@@ -938,7 +938,7 @@ void AliPIDResponse::SetTPCParametrisation()
     //if (fIsMC) period="[A-Z0-9]*";
     //for MC use MC period information
     //pattern for the default entry (valid for all particles)
-    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN(_*)([A-Z1-9]*)",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN(_*)([A-Z1-9]*)",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
 
     //find particle id ang gain scenario
     for (Int_t igainScenario=0; igainScenario<AliTPCPIDResponse::fgkNumberOfGainScenarios; igainScenario++)
