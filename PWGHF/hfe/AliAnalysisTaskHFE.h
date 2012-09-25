@@ -115,9 +115,9 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetFillSignalOnly(Bool_t signalOnly) { fFillSignalOnly = signalOnly; }
    
     void SetFillNoCuts(Bool_t fillNoCuts) { fFillNoCuts = fillNoCuts; }
-    void SetUseFlagAOD(Bool_t useFlagAOD) { fUseFlagAOD = useFlagAOD; }
-    void SetApplyCutAOD(Bool_t applyCutAOD) { fApplyCutAOD = applyCutAOD; }
-    void SetFlags(ULong_t flags)          { fFlags = flags; }
+    void SetUseFilterAOD(Bool_t useFilterAOD) { fUseFilterAOD = useFilterAOD; }
+    void SetApplyCutAOD(Bool_t applyCutAOD)   { fApplyCutAOD = applyCutAOD; }
+    void SetFilter(UInt_t filter)             { fFilter = filter; }
     void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
@@ -172,9 +172,9 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     UShort_t fPlugins;                    // Enabled Plugins
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
     Bool_t fFillNoCuts;                   // Fill container before any cut
-    Bool_t fUseFlagAOD;                   // Use the preselected AOD track
+    Bool_t fUseFilterAOD;                   // Use the preselected AOD track
     Bool_t fApplyCutAOD;                  // Apply the analysis cut for AOD tracks
-    ULong_t fFlags;                       // reconstruction AOD status flags 
+    UInt_t fFilter;                       // filter AOD status  
     Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction,   MF: To be removed when transition to OADB container is finished
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up
@@ -221,6 +221,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
+    AliHFEcollection *fQAAODCollection;   //! Task own QA AOD collection
     //---------------------------------------
 
     ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task

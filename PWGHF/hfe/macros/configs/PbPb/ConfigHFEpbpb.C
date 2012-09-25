@@ -1,6 +1,5 @@
-TF1* GetEtaCorrection(){
-  TString list=gSystem->Getenv("LIST");
-
+TF1* GetEtaCorrection(TString listname){
+  
   TString etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
@@ -16,7 +15,7 @@ TF1* GetEtaCorrection(){
   for (Int_t i=0; i<keys->GetEntries(); ++i){
     TString kName=keys->At(i)->GetName();
     TPRegexp reg(kName);
-    if (reg.MatchB(list)){
+    if (reg.MatchB(listname)){
       printf("Using Eta Correction Function: %s\n",kName.Data());
       return (TF1*)f.Get(kName.Data());
     }
@@ -25,13 +24,22 @@ TF1* GetEtaCorrection(){
 }
 
 
-AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
+AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE,
+				  TString appendix,
+				  Int_t aodfilter=-1,
 				  UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				  Double_t TPCclRatio = 0.6, Double_t TPCclshared = 1.1,
 				  UChar_t ITScl=3,  Double_t ITSchi2perclusters=99999999.,
+				  Int_t itspixelcut=AliHFEextraCuts::kFirst,
                                   Double_t dcaxy=1.0, Double_t dcaz=2.0,
-				  Double_t TOFs=3.,Double_t IpSig=3., Int_t itspixelcut=AliHFEextraCuts::kFirst, TString appendix,
-				  Float_t prodlow=0., Float_t prodhigh=100., Int_t addflag=0., Int_t ptbin=0, Int_t etacor=0,
+				  Double_t TOFs=3.,
+				  Double_t IpSig=3., 				  
+				  Float_t prodlow=0., Float_t prodhigh=100., 
+				  Bool_t beauty=kFALSE,
+				  Bool_t kMCQA = kFALSE, 
+				  Bool_t kDEStep = kFALSE,
+				  Int_t addflag=0, Int_t ptbin=0, 
+				  Int_t etacor=0, TString listname="",
 				  Int_t nondefaultcentr=0, Float_t* arraycentr=NULL,
 				  Double_t* tpcdEdxcut=NULL,Double_t tpcu=3.0){
   //
@@ -74,6 +82,13 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
   task->SetPbPbAnalysis(kTRUE);
   task->SetRemovePileUp(kFALSE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+  if(useMC) task->SetHasMCData(kTRUE); // necessary for AOD
+  printf("AOD filter %d On/OFF?\n",aodfilter);
+  if(aodfilter > 0) {
+    printf("ON AOD filter %d\n",aodfilter);
+    task->SetUseFilterAOD(kTRUE);
+    task->SetFilter(aodfilter);
+  }
  
   
   if((nondefaultcentr!=0) && arraycentr) {
@@ -169,7 +184,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
       { 
 	// Apply eta correction
 	AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
-	TF1 *etacorrection = GetEtaCorrection();
+	TF1 *etacorrection = GetEtaCorrection(listname);
 	if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
 	
       }
@@ -183,10 +198,10 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
   // QA
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   //task->SetFillSignalOnly(kFALSE);    // for DE pluging for MC
-  task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
+  if(kMCQA) task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
-  task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
+  if(kDEStep) task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
   if(useMC && addflag==1) task->SetDebugStreaming();
 
   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);

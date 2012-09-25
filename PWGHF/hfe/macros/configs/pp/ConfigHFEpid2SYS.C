@@ -86,9 +86,11 @@ AliAnalysisTaskHFE* ConfigHFEpid2SYS(Bool_t useMC,
   task->SetRemovePileUp(kTRUE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
   if(useMC) task->SetHasMCData(kTRUE); // necessary for AOD
+  printf("AOD filter %d On/OFF?\n",aodfilter);
   if(aodfilter > 0) {
-    task->SetUseFlagAOD(kTRUE);
-    task->SetFlags(aodfilter);
+    printf("ON AOD filter %d\n",aodfilter);
+    task->SetUseFilterAOD(kTRUE);
+    task->SetFilter(aodfilter);
   }
 
 
