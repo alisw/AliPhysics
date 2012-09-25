@@ -50,6 +50,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
   // Default Constructor - do not use 
   //
   DGUARD(fDebug, 1, "Default CTOR of AliFMDEnergyFitter");
+  fRingHistos.SetOwner();
 }
 
 //____________________________________________________________________
@@ -128,7 +129,8 @@ AliFMDEnergyFitter::~AliFMDEnergyFitter()
   // 
   // Destructor
   //
-  fRingHistos.Delete();
+  DGUARD(fDebug, 1, "DTOR of AliFMDEnergyFitter");
+  // fRingHistos.Delete();
 }
 
 //____________________________________________________________________
@@ -144,6 +146,7 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
   // Return:
   //    Reference to this 
   //
+  fDebug = o.fDebug;
   DGUARD(fDebug, 3, "Assignment of AliFMDEnergyFitter");
   if (&o == this) return *this; 
   TNamed::operator=(o);
@@ -170,7 +173,7 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
   fMaxChi2PerNDF = o.fMaxChi2PerNDF;
   fMinWeight     = o.fMinWeight;
 
-  fRingHistos.Delete();
+  fRingHistos.Clear();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -288,7 +291,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
   // 
   // Return:
   //    True on success, false otherwise 
-  //  DGUARD(fDebug, 3, "Accumulate statistics in AliFMDEnergyFitter");
+  DGUARD(fDebug, 3, "Accumulate statistics in AliFMDEnergyFitter - cholm");
   Int_t icent = fCentralityAxis.FindBin(cent);
   if (icent < 1 || icent > fCentralityAxis.GetNbins()) icent = 0;
 
@@ -425,8 +428,11 @@ AliFMDEnergyFitter::DefineOutput(TList* dir)
   DGUARD(fDebug, 1, "Define output in AliFMDEnergyFitter");
   TList* d = new TList;
   d->SetName(GetName());
+  d->SetOwner();
   dir->Add(d);
+  
   d->Add(&fEtaAxis);
+  d->SetOwner(true);
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
@@ -487,7 +493,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(), 
     fEDist(0), 
     fEmpty(0),
-    fEtaEDists(), 
+    fEtaEDists(0), 
     fList(0),
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
@@ -503,7 +509,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r), 
     fEDist(0), 
     fEmpty(0),
-    fEtaEDists(), 
+    fEtaEDists(0), 
     fList(0),
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
@@ -515,7 +521,6 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    d detector
   //    r ring 
   //
-  fEtaEDists.SetName("EDists");
   DGUARD(fDebug, 0, "Named CTOR AliFMDEnergyFitter::RingHistos: FMD%d%c",
 	 d, r);
 }
@@ -524,7 +529,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
   : AliForwardUtil::RingHistos(o), 
     fEDist(o.fEDist), 
     fEmpty(o.fEmpty),
-    fEtaEDists(), 
+    fEtaEDists(0), 
     fList(0),
     fFits("AliFMDCorrELossFit::ELossFit"),
     fDebug(0)
@@ -537,14 +542,27 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
   //
   DGUARD(fDebug, 0, "Copy CTOR AliFMDEnergyFitter::RingHistos");
   fFits.Clear();
-  TIter next(&o.fEtaEDists);
-  TObject* obj = 0;
-  while ((obj = next())) fEtaEDists.Add(obj->Clone());
+  if (o.fEtaEDists) {
+    fEtaEDists = new TList;
+    fEtaEDists->SetOwner();
+    fEtaEDists->SetName(o.fEtaEDists->GetName());
+    TIter next(o.fEtaEDists);
+    TObject* obj = 0;
+    while ((obj = next())) fEtaEDists->Add(obj->Clone());
+  }
   if (o.fList) {
     fList = new TList;
+    fList->SetOwner();
     fList->SetName(fName);
-    TIter next2(o.fList);
-    while ((obj = next2())) fList->Add(obj->Clone());
+    TIter next(o.fList);
+    TObject* obj = 0;
+    while ((obj = next())) {
+      if (obj == o.fEtaEDists) {
+	fList->Add(fEtaEDists);
+	continue;
+      }
+      fList->Add(obj->Clone());
+    }
   }
 }
 
@@ -561,28 +579,42 @@ AliFMDEnergyFitter::RingHistos::operator=(const RingHistos& o)
   // Return:
   //    Reference to this 
   //
+  fDebug = o.fDebug;
   DGUARD(fDebug, 3, "Assignment of AliFMDEnergyFitter::RingHistos");
   if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
-  if (fEDist) delete fEDist;
-  if (fEmpty) delete fEmpty;
-  fEtaEDists.Delete();
-  if (fList) fList->Delete();
+  if (fEDist)     delete fEDist;
+  if (fEmpty)     delete fEmpty;
+  if (fEtaEDists) fEtaEDists->Delete();
+  if (fList)      fList->Delete();
   fFits.Clear();
 
   fEDist = static_cast<TH1D*>(o.fEDist->Clone());
   fEmpty = static_cast<TH1D*>(o.fEmpty->Clone());
   
-  TIter next(&o.fEtaEDists);
-  TObject* obj = 0;
-  while ((obj = next())) fEtaEDists.Add(obj->Clone());
+  if (o.fEtaEDists) {
+    fEtaEDists = new TList;
+    fEtaEDists->SetOwner();
+    fEtaEDists->SetName(o.fEtaEDists->GetName());
+    TIter next(o.fEtaEDists);
+    TObject* obj = 0;
+    while ((obj = next())) fEtaEDists->Add(obj->Clone());
+  }
 
   if (o.fList) {
     fList = new TList;
+    fList->SetOwner();
     fList->SetName(fName);
-    TIter next2(o.fList);
-    while ((obj = next2())) fList->Add(obj->Clone());
+    TIter next(o.fList);
+    TObject* obj = 0;
+    while ((obj = next())) {
+      if (obj == o.fEtaEDists) {
+	fList->Add(fEtaEDists);
+	continue;
+      }
+      fList->Add(obj->Clone());
+    }
   }
 
   return *this;
@@ -594,8 +626,8 @@ AliFMDEnergyFitter::RingHistos::~RingHistos()
   // Destructor 
   //
   DGUARD(fDebug, 3, "DTOR of AliFMDEnergyFitter::RingHistos");
-  if (fEDist) delete fEDist;
-  fEtaEDists.Delete();
+  // if (fEDist) delete fEDist;
+  // fEtaEDists.Delete();
 }
 
 //____________________________________________________________________
@@ -618,13 +650,17 @@ AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta,
     return;
   }
   fEDist->Fill(mult);
-  
+
+  if (!fEtaEDists) { 
+    Warning("Fill", "No list of E dists defined");
+    return;
+  }
   // Here, we should first look up in a centrality array, and then in
   // that array look up the eta bin - or perhaps we should do it the
   // other way around?
-  if (ieta < 0 || ieta >= fEtaEDists.GetEntries()) return;
+  if (ieta < 0 || ieta >= fEtaEDists->GetEntries()) return;
   
-  TH1D* h = static_cast<TH1D*>(fEtaEDists.At(ieta));
+  TH1D* h = static_cast<TH1D*>(fEtaEDists->At(ieta));
   if (!h) return;
 
   h->Fill(mult);
@@ -700,7 +736,7 @@ AliFMDEnergyFitter::RingHistos::Make(Int_t    ieta,
   h->SetFillStyle(3001);
   h->Sumw2();
   
-  fEtaEDists.AddAt(h, ieta-1);
+  fEtaEDists->AddAt(h, ieta-1);
 }
 //____________________________________________________________________
 TH1D* AliFMDEnergyFitter::RingHistos::MakePar(const char* name, 
@@ -861,7 +897,6 @@ AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis,
     //                     +- CentralityN
     Make(i, min, max, maxDE, nDEbins, useIncrBin);
   }
-  fList->Add(&fEtaEDists);
   // fEtaEDists.ls();
 }
 //____________________________________________________________________
@@ -901,7 +936,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   // Get the energy distributions from the output container 
   TList* dists = static_cast<TList*>(l->FindObject("EDists"));
   if (!dists) { 
-    AliWarning(Form("Didn't find %s_EtaEDists in %s", 
+    AliWarning(Form("Didn't find EtaEDists (%s) in %s", 
 		    fName.Data(), l->GetName()));
     l->ls();
     return 0;
@@ -1381,6 +1416,12 @@ AliFMDEnergyFitter::RingHistos::Output(TList* dir)
   //
   DGUARD(fDebug, 2, "Define output in AliFMDEnergyFitter::RingHistos");
   fList = DefineOutputList(dir);
+
+  fEtaEDists = new TList;
+  fEtaEDists->SetOwner();
+  fEtaEDists->SetName("EDists");
+
+  fList->Add(fEtaEDists);
 }
 
 //____________________________________________________________________
