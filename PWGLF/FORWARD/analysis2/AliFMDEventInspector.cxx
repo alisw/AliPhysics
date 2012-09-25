@@ -163,7 +163,8 @@ AliFMDEventInspector::~AliFMDEventInspector()
   // 
   // Destructor 
   //
-  if (fList)         delete fList;
+  DGUARD(fDebug,1,"DTOR of AliFMDEventInspector");
+  // if (fList)         delete fList;
 }
 //____________________________________________________________________
 AliFMDEventInspector&
@@ -514,6 +515,7 @@ AliFMDEventInspector::DefineOutput(TList* dir)
   DGUARD(fDebug,1,"Define output from AliFMDEventInspector");
   fList = new TList;
   fList->SetName(GetName());
+  fList->SetOwner();
   dir->Add(fList);
 }
 
@@ -738,7 +740,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   
   if (CheckFastPartition(fastonly))     offline = false;
   if (offline && CheckCosmics(trigStr)) offline = false;
-  if (!CheckpAExtraV0(esd))             offline = false;
+  // if (!CheckpAExtraV0(esd))             offline = false;
 
   DMSG(fDebug,2,"Event is %striggered by off-line", offline ? "" : "NOT ");
 
