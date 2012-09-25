@@ -87,7 +87,7 @@ AliFigure::AliFigure(const char* name, const char* title, Int_t ww, Int_t wh) :
   struct tm* loctis = localtime(&t);
   strftime(date, 30, fDateFormat.Data(), loctis);
 
-  fCollSystem = new TLatex(0.96, 0.95, "pp, #sqrt{s} = 7 TeV");
+  fCollSystem = new TLatex(0.96, 0.95, "pp #sqrt{s} = 7 TeV");
   fCollSystem->SetNDC();
   fCollSystem->SetTextSize(fTextSize);
   fCollSystem->SetTextFont(43);
