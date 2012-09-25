@@ -96,6 +96,11 @@ public:
    */
   virtual void Terminate(Option_t* option);
   /** 
+   * Called on the slaves when the job has finished. 
+   * 
+   */
+  virtual void FinishTaskOutput();
+  /** 
    * @} 
    */
   /** 

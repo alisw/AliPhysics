@@ -105,6 +105,7 @@ AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
   // Return:
   //    Reference to this object 
   //
+  fDebug = o.fDebug;
   DGUARD(fDebug,3,"Assignment of AliFMDEnergyFitterTask");
   if (&o == this) return *this; 
   AliAnalysisTaskSE::operator=(o);
@@ -129,6 +130,7 @@ AliFMDEnergyFitterTask::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg Debug level
   //
+  fDebug = dbg;
   fEventInspector.SetDebug(dbg);
   fEnergyFitter.SetDebug(dbg);
 }
@@ -197,7 +199,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
-  DGUARD(fDebug,1,"Analyse event of AliFMDEnergyFitterTask");
+  DGUARD(fDebug,3,"Analyse event of AliFMDEnergyFitterTask");
   
   AliMCEvent* mcevent = MCEvent();
   if(mcevent) {
@@ -274,6 +276,21 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
     return;
   }
   PostData(1, fList);
+}
+
+//____________________________________________________________________
+void
+AliFMDEnergyFitterTask::FinishTaskOutput()
+{
+  if (!fList) { 
+    Warning("FinishTaskOutput", "No list defined");
+  }
+  // else {
+  //   fList->ls();
+  // }
+  // if (fDebug)
+  // gDebug = 1;
+  AliAnalysisTaskSE::FinishTaskOutput();
 }
 
 //____________________________________________________________________
