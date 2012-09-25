@@ -145,7 +145,7 @@ fh3JetDensity(0x0),
 fh3JetDensityA4(0x0),
 fh2RPJets(0x0),
 fh2RPT(0x0),
-fh3spectriggeredC20RP(0x0),
+fh3spectriggeredC10(0x0),
 fh3spectriggeredC20(0x0),
 fh3spectriggeredC3060(0x0)
 
@@ -259,7 +259,7 @@ fh3JetDensity(0x0),
 fh3JetDensityA4(0x0),
 fh2RPJets(0x0),
 fh2RPT(0x0),
-fh3spectriggeredC20RP(0x0),
+fh3spectriggeredC10(0x0),
 fh3spectriggeredC20(0x0),
 fh3spectriggeredC3060(0x0)
 
@@ -401,7 +401,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
     fh2RPJets=new TH2F("RPJet","",fNRPBins,0.,fNRPBins,150,0.,150.);
     fh2RPT=new TH2F("RPTrigger","",fNRPBins,0.,fNRPBins,50,0.,50.); 
-    fh3spectriggeredC20RP = new TH3F("Triggered spectrumC20RP","",3,0.,3.,140,-80.,200.,10,0.,50.);
+    fh3spectriggeredC10 = new TH3F("Triggered spectrumC10","",100,0.,1.,140,-80.,200.,10,0.,50.);
     fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",100,0.,1.,140,-80.,200.,10,0.,50.);
     fh3spectriggeredC3060 = new TH3F("Triggered spectrumC3060","",100,0.,1.,140,-80.,200.,10,0.,50.);
 
@@ -461,7 +461,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         fOutputList->Add(fh3JetDensityA4);
         fOutputList->Add(fh2RPJets);
         fOutputList->Add(fh2RPT);
-        fOutputList->Add(fh3spectriggeredC20RP); 
+        fOutputList->Add(fh3spectriggeredC10); 
         fOutputList->Add(fh3spectriggeredC20); 
         fOutputList->Add(fh3spectriggeredC3060);   
 
@@ -713,7 +713,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                    Int_t index1=-1;
                    Int_t index2=-1;
 	   
-           if(centValue<20.)  fh3spectriggeredC20RP->Fill(phiBin,ptcorr,partback->Pt());
+	   if(centValue<10.)  fh3spectriggeredC10->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
            if(centValue<20.)  fh3spectriggeredC20->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
            if(centValue>30. && centValue<60.)  fh3spectriggeredC3060->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
 
