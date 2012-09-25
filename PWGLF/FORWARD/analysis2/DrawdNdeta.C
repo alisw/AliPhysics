@@ -350,14 +350,16 @@ struct dNdetaDrawer
     if (!fEmpirical.IsNull()) {
       TFile* empirical = TFile::Open(fEmpirical, "READ");
       if (!empirical) { 
-	Warning("Run", "Failed to open file %s for empirical corrections", 
-		fEmpirical.Data());
+	empirical = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/Empirical/%s", fEmpirical.Data()));
       }
-      else { 
+      if (empirical) { 
 	empCorr = static_cast<TGraphErrors*>(empirical->Get("average"));
 	if (!empCorr) 
 	  Warning("Open", "couldn't get the empirical correction");
       }
+      else 
+	Warning("Run", "Failed to open file %s for empirical corrections", 
+		fEmpirical.Data());
     }
     if (!empCorr) fEmpirical = "";
 
