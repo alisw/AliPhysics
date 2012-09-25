@@ -890,16 +890,29 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     }
   }
 
-  // do correction with the efficiency calculated from HIJING (for two particle correlations)
+  // do correction with the efficiency calculated from MC + Data (for single particles and two particle correlations)
+  // - single particle efficiencies from MC (AliAnalysiTaskEfficiency)
+  // - two particle efficiencies from convolution of data single particle distributions 
+  //   (normalized to single particle efficiency)
   if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
 
+    TH1F* hEffP  = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    TH1F* hEffN  = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
     TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     
-    if( !hEffPP || !hEffNN || !hEffPN){
+    if( !hEffP || !hEffN || !hEffPP || !hEffNN || !hEffPN){
       AliError(Form("Efficiency (eta) histograms not found: etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
       return NULL;
+    }
+
+    for(Int_t iBin = 0; iBin < hEffP->GetNbinsX(); iBin++){
+      hTemp5->SetBinError(iBin+1,hTemp5->GetBinError(iBin+1)/hEffN->GetBinContent(hEffN->FindBin(hTemp5->GetBinCenter(iBin+1))));
+      hTemp5->SetBinContent(iBin+1,hTemp5->GetBinContent(iBin+1)/hEffN->GetBinContent(hEffN->FindBin(hTemp5->GetBinCenter(iBin+1))));
+
+      hTemp6->SetBinError(iBin+1,hTemp6->GetBinError(iBin+1)/hEffP->GetBinContent(hEffP->FindBin(hTemp6->GetBinCenter(iBin+1))));
+      hTemp6->SetBinContent(iBin+1,hTemp6->GetBinContent(iBin+1)/hEffP->GetBinContent(hEffP->FindBin(hTemp6->GetBinCenter(iBin+1))));
     }
   
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
@@ -934,16 +947,29 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     // }      
   }
 
-  // do correction with the efficiency calculated from HIJING (for two particle correlations)
+  // do correction with the efficiency calculated from MC + Data (for single particles and two particle correlations)
+  // - single particle efficiencies from MC (AliAnalysiTaskEfficiency)
+  // - two particle efficiencies from convolution of data single particle distributions 
+  //   (normalized to single particle efficiency)  
   if(iAnalysisType == kPhi && correctWithEfficiency){
 
+    TH1F* hEffPhiP  = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    TH1F* hEffPhiN  = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
     TH1F* hEffPhiPP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPhiNN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPhiPN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     
-    if( !hEffPhiPP || !hEffPhiNN || !hEffPhiPN){
+    if( !hEffPhiP || !hEffPhiN || !hEffPhiPP || !hEffPhiNN || !hEffPhiPN){
       AliError("Efficiency (phi) histograms not found");
       return NULL;
+    }
+
+    for(Int_t iBin = 0; iBin < hEffPhiP->GetNbinsX(); iBin++){
+      hTemp5->SetBinError(iBin+1,hTemp5->GetBinError(iBin+1)/hEffPhiN->GetBinContent(hEffPhiN->FindBin(hTemp5->GetBinCenter(iBin+1))));
+      hTemp5->SetBinContent(iBin+1,hTemp5->GetBinContent(iBin+1)/hEffPhiN->GetBinContent(hEffPhiN->FindBin(hTemp5->GetBinCenter(iBin+1))));
+
+      hTemp6->SetBinError(iBin+1,hTemp6->GetBinError(iBin+1)/hEffPhiP->GetBinContent(hEffPhiP->FindBin(hTemp6->GetBinCenter(iBin+1))));
+      hTemp6->SetBinContent(iBin+1,hTemp6->GetBinContent(iBin+1)/hEffPhiP->GetBinContent(hEffPhiP->FindBin(hTemp6->GetBinCenter(iBin+1))));
     }
 
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
@@ -968,9 +994,9 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     hTemp3->Sumw2();
     hTemp4->Sumw2();
     hTemp1->Add(hTemp3,-2.);
-    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp1->Scale(1./hTemp5->Integral());
     hTemp2->Add(hTemp4,-2.);
-    hTemp2->Scale(1./hTemp6->GetEntries());
+    hTemp2->Scale(1./hTemp6->Integral());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5/fP2Step[iAnalysisType]);
   }
