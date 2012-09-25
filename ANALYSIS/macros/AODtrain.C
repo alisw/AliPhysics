@@ -167,9 +167,9 @@ void AddAnalysisTasks(){
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,AliESDpid::kTOF_T0,kTRUE,kFALSE,kFALSE,run_flag);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kTRUE,kFALSE,kFALSE,run_flag);
       } else {
-   	   AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,AliESDpid::kTOF_T0,kTRUE,kFALSE,kFALSE,run_flag); // others
+   	   AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
       }   
    }   
 
