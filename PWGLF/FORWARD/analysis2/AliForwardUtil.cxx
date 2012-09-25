@@ -236,7 +236,8 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
   Float_t v = value;
-  ret->SetUniqueID(*reinterpret_cast<UInt_t*>(&v));
+  UInt_t* tmp = reinterpret_cast<UInt_t*>(&v);
+  ret->SetUniqueID(*tmp);
   return ret;
 }
 //_____________________________________________________________________
