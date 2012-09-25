@@ -136,6 +136,16 @@ protected:
     if (!ps) 
       Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)",ps);
 
+    // --- Special for pPb pilot run Sep. 2012 -----------------------
+    if (fSys == 3) { 
+      Warning("CreatePhysicsSelection", 
+	      "Special setup for pPb pilot run September, 2012");
+      gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
+			       gROOT->GetMacroPath()));
+      gROOT->LoadMacro("PhysicsSelectionOADB_CINT5_pA.C");
+      gROOT->ProcessLine(Form("((AliPhysicsSelection*)%p)->SetCustomOADBObjects(OADBSelection_CINT5_V0A(),0);", ps));
+      ps->SetSkipTriggerClassSelection(true);
+    }
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
@@ -227,8 +237,8 @@ protected:
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
       o << "  --run=" << fRunNumbers.At(i) << " \\\n";
     TrainSetup::SaveOptions(o, "--", r);
-    if (fUseCent) o << "  --cent \\\n"
-      << "  --type=AOD \\\n"
+    if (fUseCent) o << "  --cent \\\n";
+    o << "  --type=AOD \\\n"
       << "  --trig=INEL \\\n"
       << "  --vzMin=-10 \\\n"
       << "  --vzMax=10 \\\n"
