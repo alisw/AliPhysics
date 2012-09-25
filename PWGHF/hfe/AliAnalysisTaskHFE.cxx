@@ -96,9 +96,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fUseFlagAOD(kTRUE)
+  , fUseFilterAOD(kTRUE)
   , fApplyCutAOD(kFALSE)
-  , fFlags(1<<4)
+  , fFilter(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -139,6 +139,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
+  , fQAAODCollection(NULL)
 {
   //
   // Dummy constructor
@@ -161,9 +162,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fUseFlagAOD(kTRUE)
+  , fUseFilterAOD(kTRUE)
   , fApplyCutAOD(kFALSE)
-  , fFlags(1<<4)
+  , fFilter(1<<4)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -204,6 +205,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(0x0)
+  , fQAAODCollection(NULL)
 {
   //
   // Default constructor
@@ -232,9 +234,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fPlugins(0)
   , fFillSignalOnly(ref.fFillSignalOnly)
   , fFillNoCuts(ref.fFillNoCuts)
-  , fUseFlagAOD(ref.fUseFlagAOD)
+  , fUseFilterAOD(ref.fUseFilterAOD)
   , fApplyCutAOD(ref.fApplyCutAOD)
-  , fFlags(ref.fFlags) 
+  , fFilter(ref.fFilter) 
   , fBackGroundFactorApply(ref.fBackGroundFactorApply)
   , fRemovePileUp(ref.fRemovePileUp)
   , fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
@@ -275,6 +277,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fHistSECVTX(NULL)
   , fHistELECBACKGROUND(NULL)
   , fQACollection(NULL)
+  , fQAAODCollection(NULL)
 {
   //
   // Copy Constructor
@@ -304,9 +307,9 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fPlugins = fPlugins;
   target.fFillSignalOnly = fFillSignalOnly;
   target.fFillNoCuts = fFillNoCuts;
-  target.fUseFlagAOD = fUseFlagAOD;
+  target.fUseFilterAOD = fUseFilterAOD;
   target.fApplyCutAOD = fApplyCutAOD;
-  target.fFlags = fFlags;
+  target.fFilter = fFilter;
   target.fBackGroundFactorApply = fBackGroundFactorApply;
   target.fRemovePileUp = fRemovePileUp;
   target.fIdentifiedAsPileUp = fIdentifiedAsPileUp;
@@ -347,6 +350,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fHistSECVTX = fHistSECVTX;
   target.fHistELECBACKGROUND = fHistELECBACKGROUND;
   target.fQACollection = fQACollection;
+  target.fQAAODCollection = fQAAODCollection;
 }
 
 //____________________________________________________________
@@ -386,6 +390,13 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   // Called once per worker
   //
   AliDebug(3, "Creating Output Objects");
+  
+  // Make lists for Output
+  if(!fQA) fQA = new TList;
+  fQA->SetOwner();
+  if(!fOutput) fOutput = new TList;
+  fOutput->SetOwner();
+
   // Automatic determination of the analysis mode
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
@@ -397,8 +408,13 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
   if(IsAODanalysis()) {
-    printf("AOD filter: %s \n", fUseFlagAOD ? "Yes" : "No");
-    if(fUseFlagAOD) printf("AOD filter used: %lu \n", fFlags);
+    printf("AOD filter: %s \n", fUseFilterAOD ? "Yes" : "No");
+    if(fUseFilterAOD) printf("AOD filter used: %d \n", fFilter);
+    // First Part: Make QA histograms
+    fQAAODCollection = new AliHFEcollection("TaskQAAOD", "QA histos from the AOD Electron Task");
+    fQAAODCollection->CreateTH1F("Filterorigin", "AOD filter of tracks at the origin", 21, -1, 20);
+    fQAAODCollection->CreateTH1F("Filterend", "AOD filter of tracks after all cuts", 21, -1, 20);
+    fQA->Add(fQAAODCollection);
   }
   printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
@@ -406,13 +422,6 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fTriggerAnalysis = new AliTriggerAnalysis;
   fTriggerAnalysis->EnableHistograms();
   fTriggerAnalysis->SetAnalyzeMC(HasMCData());
-
-
-  // Make lists for Output
-  if(!fQA) fQA = new TList;
-  fQA->SetOwner();
-  if(!fOutput) fOutput = new TList;
-  fOutput->SetOwner();
 
   // First Part: Make QA histograms
   fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
@@ -1500,11 +1509,24 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
     track = fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
-    if(fUseFlagAOD){
-      if(track->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
+    // Begining
+    Bool_t passone = kFALSE;  
+    fQAAODCollection->Fill("Filterorigin", -1);
+    for(Int_t k=0; k<20; k++) {
+      Int_t u = 1<<k;     
+      if((track->TestFilterBit(u))) {
+	fQAAODCollection->Fill("Filterorigin", k);
+      	passone = kTRUE;
+      }
+    }
+    //if(!passone) printf("what is the filter %d\n",track->GetFilterMap());
+
+    if(fUseFilterAOD){
+      //printf("Filter of the track  %d\n",track->GetFilterMap());
+      if(!(track->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
     }
     //printf("Pass the flag\n");
-
+    
     signal = kTRUE;
     if(HasMCData()){
 
@@ -1523,6 +1545,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     }
 
     if(fApplyCutAOD) {
+      //printf("Apply cuts\n");
       // RecKine: ITSTPC cuts  
       if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 
@@ -1571,7 +1594,15 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;    // we will do PID here as soon as possible
 
-    
+    // end AOD QA
+    fQAAODCollection->Fill("Filterend", -1);  
+    for(Int_t k=0; k<20; k++) {
+      Int_t u = 1<<k;
+      if((track->TestFilterBit(u))) {
+	fQAAODCollection->Fill("Filterend", k);
+      }
+    }
+       
     // Apply weight for background contamination
     //Double_t weightBackGround = 1.0;
     if(signal) {
