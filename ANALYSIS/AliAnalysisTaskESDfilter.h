@@ -88,7 +88,6 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 
   void SetPropagateTrackToEMCal(Bool_t propagate) {fDoPropagateTrackToEMCal = propagate;}
 
-  virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
   
 private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
@@ -171,14 +170,13 @@ private:
   Bool_t fAreTrackletsEnabled; // whether or not to fill the tracklets (true by default)
   AliESDpid* fESDpid; // esd pid
   Bool_t fIsPidOwner; // whether we own fESDpid
-  Int_t fTimeZeroType;  //  time zero type 
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   Double_t        fV0Cuts[7];       // Array to store the values for the different reco selections V0 related
   Double_t        fCascadeCuts[8];  // Array to store the values for the different reco selections cascades related
   Bool_t fDoPropagateTrackToEMCal;  // whether or not to propagate the tracks to EMCal surface (430cm) -- true by default
   
   
-  ClassDef(AliAnalysisTaskESDfilter, 15); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 16); // Analysis task for standard ESD filtering
 };
 
 #endif
