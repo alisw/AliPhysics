@@ -221,8 +221,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetSelectCharge(fSelectCharge);
   fHistosMixed->SetSelectCharge(fSelectCharge);
   
-  fHistos->SetSelectCharge(fTriggerSelectCharge);
-  fHistosMixed->SetSelectCharge(fTriggerSelectCharge);
+  fHistos->SetSelectTriggerCharge(fTriggerSelectCharge);
+  fHistosMixed->SetSelectTriggerCharge(fTriggerSelectCharge);
 
   fHistos->SetTriggerRestrictEta(fTriggerRestrictEta);
   fHistosMixed->SetTriggerRestrictEta(fTriggerRestrictEta);
@@ -541,6 +541,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       }
       fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality);
       fHistos->FillFakePt(fakeParticles, centrality);
+      Printf(">>>>> %d fakes", ((TObjArray*) fakeParticles->At(2))->GetEntriesFast());
       delete fakeParticles;
     
       // (MC-true all particles)
