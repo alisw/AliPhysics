@@ -477,11 +477,11 @@ protected:
 		    Double_t err) const;
     TH1D*        fEDist;        // Ring energy distribution 
     TH1D*        fEmpty;        // Ring energy distribution for empty events
-    TList        fEtaEDists;    // Energy distributions per eta bin. 
+    TList*       fEtaEDists;    // Energy distributions per eta bin. 
     TList*       fList;
     TClonesArray fFits;
     Int_t        fDebug;
-    ClassDef(RingHistos,1);
+    ClassDef(RingHistos,2);
   };
   /** 
    * Get the ring histogram container 
@@ -511,7 +511,7 @@ protected:
   Int_t    fDebug;         // Debug level 
   
 
-  ClassDef(AliFMDEnergyFitter,2); //
+  ClassDef(AliFMDEnergyFitter,3); //
 };
 
 #endif
