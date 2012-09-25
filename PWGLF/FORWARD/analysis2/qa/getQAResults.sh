@@ -186,7 +186,7 @@ path=/alice/${datd}/20${year}/${prod}/
 store=${dest}/${dprod}/${prep}${paid}${post}
 search="${esdd}${prep}${paid}${post}"
 if test $runn -gt 0 ; then 
-    path=`printf "${path}%09d/ESDs/${prep}${paid}${pass}${post}/" $runn` 
+    path=`printf "${path}%09d/ESDs/${prep}${paid}${post}/" $runn` 
     store=`printf "${store}/%09d" $runn` 
     search=
 fi
@@ -224,7 +224,7 @@ Settings:
 	Search string:		$search
 	Verbosity:		$verb
 	Redirection:		$redir
-EOF 
+EOF
     
 # --------------------------------------------------------------------
 mkdir -p ${store} 
