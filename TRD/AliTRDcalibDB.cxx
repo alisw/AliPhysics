@@ -1564,7 +1564,7 @@ AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMetho
 
     // Load Reference Histos from OCDB
 //    if(method == AliTRDPIDResponse::kLQ1D){
-    fPIDResponse->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
+    //fPIDResponse->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
     const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
 
     TIter refs(references);

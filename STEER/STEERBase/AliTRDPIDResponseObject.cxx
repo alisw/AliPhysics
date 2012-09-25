@@ -190,7 +190,7 @@ TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, 
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,AliTRDPIDResponse::ETRDPIDMethod method) const{
+Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod method) const{
 
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
 	AliError("Method does not exist");
@@ -198,7 +198,7 @@ Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_
     }
 
     if(fPIDParams[method]){
-	return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params);
+	return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params,centrality);
     }
     return kFALSE;
 }
@@ -226,6 +226,6 @@ void AliTRDPIDResponseObject::Print(const Option_t* opt) const{
    
     for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
 	if(fPIDReference[method])fPIDReference[method]->Print(opt);
-	if(fPIDParams[method])printf("+ Threshold Parameters \n");
+	if(fPIDParams[method])fPIDParams[method]->Print(opt);
     }
 }

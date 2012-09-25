@@ -144,7 +144,7 @@ void AliTRDTenderSupply::Init()
   // Load References
   if(fLoadReferences && !fLoadReferencesFromCDB) LoadReferences();
   //fESDpid->GetTRDResponse().SetGainNormalisationFactor(fNormalizationFactor);
-  fESDpid->SetTRDslicesForPID(fSlicesForPID[0], fSlicesForPID[1]);
+  //fESDpid->SetTRDslicesForPID(fSlicesForPID[0], fSlicesForPID[1]);
 
   if(fNameRunByRunCorrection.Length()) LoadRunByRunCorrection(fNameRunByRunCorrection.Data());
 

@@ -37,7 +37,7 @@ public:
 	Bool_t        CookPDF(const Double_t *point, Double_t &result, Double_t &error,TRDTKDMode mod=kInterpolation) const;
 	Bool_t Has(const Float_t *p) const;
 	void          Print(const Option_t * = "") const;
-	void          Store(TVectorD const *par, TMatrixD const *cov=NULL);
+	void          Store(TVectorD const *par, TMatrixD const *cov,Bool_t storeCov);
 
     private:
 	Int_t fNDim;              // Dimension of Points
@@ -72,6 +72,7 @@ public:
 
     void          SetUseWeights(Bool_t k=kTRUE){fUseWeights=k;}
     void          SetPDFMode(TRDTKDMode mod){fPDFMode=mod;}
+    void          SetStoreCov(Bool_t k){fStoreCov=k;}
 
     Bool_t        Build();
 
@@ -94,8 +95,9 @@ private:
     Bool_t        fUseHelperNodes; // Build Helper nodes to ensure boundary conditions
     Bool_t fUseWeights; // Use tricubic weights
     TRDTKDMode    fPDFMode; // Mode for PDF calculation
+    Bool_t        fStoreCov;
 
-    ClassDef(AliTRDTKDInterpolator, 1)   // data interpolator based on KD tree
+    ClassDef(AliTRDTKDInterpolator, 2)   // data interpolator based on KD tree
 };
 
 #endif

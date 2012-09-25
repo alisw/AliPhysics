@@ -47,7 +47,6 @@ AliTRDPIDResponse::AliTRDPIDResponse():
   TObject()
   ,fkPIDResponseObject(NULL)
   ,fGainNormalisationFactor(1.)
-  ,fPIDmethod(kLQ1D)
 {
   //
   // Default constructor
@@ -59,7 +58,6 @@ AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
   TObject(ref)
   ,fkPIDResponseObject(NULL)
   ,fGainNormalisationFactor(ref.fGainNormalisationFactor)
-  ,fPIDmethod(ref.fPIDmethod)
 {
   //
   // Copy constructor
@@ -77,7 +75,6 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
   TObject::operator=(ref);
   fGainNormalisationFactor = ref.fGainNormalisationFactor;
   fkPIDResponseObject = ref.fkPIDResponseObject;
-  fPIDmethod = ref.fPIDmethod;
   
   return *this;
 }
@@ -116,7 +113,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm) const
+Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod,Bool_t kNorm) const
 {
   //
   // Calculate TRD likelihood values for the track based on dedx and 
@@ -134,7 +131,9 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
   // 
   // Return value
   //   true if calculation success
-  // 
+    //
+    AliDebug(3,Form(" Response for PID method: %d",PIDmethod));
+
 
     if(!fkPIDResponseObject){
 	AliWarning("Missing reference data. PID calculation not possible.");
@@ -146,13 +145,13 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
     Double_t dE[10], s(0.);
     for(Int_t il(kNlayer); il--;){
 	memset(prLayer, 0, AliPID::kSPECIES*sizeof(Double_t));
-	if(!CookdEdx(n, &dedx[il*n], &dE[0])) continue;
+	if(!CookdEdx(n, &dedx[il*n], &dE[0],PIDmethod)) continue;
 
 	s=0.;
         Bool_t filled=kTRUE;
 	for(Int_t is(AliPID::kSPECIES); is--;){
-	    if((fPIDmethod==kLQ2D)&&(!(is==0||is==2)))continue;
-	    if((dE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], &dE[0]);
+	    if((PIDmethod==kLQ2D)&&(!(is==0||is==2)))continue;
+	    if((dE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], &dE[0],PIDmethod);
 	    AliDebug(3, Form("Probability for Species %d in Layer %d: %e", is, il, prLayer[is]));
 	    if(prLayer[is]<1.e-30){
 		AliDebug(2, Form("Null for species %d species prob layer[%d].",is,il));
@@ -186,7 +185,7 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
 }
 
 //____________________________________________________________
-Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx) const {
+Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod) const {
   //
   // Get the non-normalized probability for a certain particle species as coming
   // from the reference histogram
@@ -197,7 +196,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   Double_t probLayer = 0.;
   Float_t pLower, pUpper;
 	
-  switch(fPIDmethod){
+  switch(PIDmethod){
   case kNN: // NN
       break;
   case kLQ2D: // 2D LQ
@@ -259,12 +258,12 @@ void AliTRDPIDResponse::SetOwner(){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out) const
+Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out,ETRDPIDMethod PIDmethod) const
 {
     //
     // Recalculate dE/dx
     //
-  switch(fPIDmethod){
+  switch(PIDmethod){
   case kNN: // NN 
       break;
   case kLQ2D: // 2D LQ
@@ -292,7 +291,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level) const {
+Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level,Double_t centrality,ETRDPIDMethod PIDmethod) const {
     //
     // Check whether particle is identified as electron assuming a certain electron efficiency level
     // Only electron and pion hypothesis is taken into account
@@ -311,7 +310,7 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
   } 
   Double_t probEle = like[AliPID::kElectron]/(like[AliPID::kElectron] + like[AliPID::kPion]);
   Double_t params[4];
-  if(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,fPIDmethod)){
+  if(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod)){
     AliError("No Params found for the given configuration");
     return kTRUE;
   }

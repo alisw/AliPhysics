@@ -387,15 +387,15 @@ Bool_t AliTRDtrackV1::CookPID()
     if(!fTracklet[iseed]) continue;
     trackletP[iseed] = fTracklet[iseed]->GetMomentum();
     fTracklet[iseed]->SetPID();
-    if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
+    //if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
       dEdx[iseed] = fTracklet[iseed]->GetdQdl();
-    } else {
+   /* } else {
       fTracklet[iseed]->CookdEdx(nslices);
       const Float_t *trackletdEdx = fTracklet[iseed]->GetdEdx();
       for(Int_t islice = 0; islice < nslices; islice++){
         dEdx[iseed*nslices + islice] = trackletdEdx[islice];
       }
-    }
+  } */
   }
   pidResponse->GetResponse(nslices, dEdx, trackletP, fPID);
 

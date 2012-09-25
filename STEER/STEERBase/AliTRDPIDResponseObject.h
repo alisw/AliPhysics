@@ -55,7 +55,7 @@ public:
     Int_t GetNumberOfMomentumBins(AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
 
     // Derive threshold params
-    Bool_t GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
+    Bool_t GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality = -1,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
 
     // Number of SlicesQ0
     Int_t GetNSlicesQ0() const{return fNSlicesQ0;}

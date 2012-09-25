@@ -59,38 +59,35 @@ class AliTRDPIDResponse : public TObject {
     AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
     ~AliTRDPIDResponse();
     
-    ETRDPIDMethod     GetPIDmethod() const { return fPIDmethod;}
-    Bool_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
-    inline ETRDNslices  GetNumberOfSlices() const;
+    Bool_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
+    inline ETRDNslices  GetNumberOfSlices(ETRDPIDMethod PIDmethod=kLQ1D) const;
     
     Bool_t    IsOwner() const {return TestBit(kIsOwner);}
     
     void      SetOwner();
-    void      SetPIDmethod(ETRDPIDMethod m) {fPIDmethod=m;}
     void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
     Bool_t SetPIDResponseObject(const AliTRDPIDResponseObject * obj);
     
     Bool_t    Load(const Char_t *filename = NULL);
   
-    Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level) const;
+    Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level,Double_t centrality=-1,ETRDPIDMethod PIDmethod=kLQ1D) const;
   
   private:
-    Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out) const;
-    Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx) const;
+    Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out,ETRDPIDMethod PIDmethod=kLQ1D) const;
+    Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod=kLQ1D) const;
     
     const AliTRDPIDResponseObject *fkPIDResponseObject;   // PID References and Params
     Double_t  fGainNormalisationFactor;         // Gain normalisation factor
-    ETRDPIDMethod   fPIDmethod;                 // PID method selector
       
   
   ClassDef(AliTRDPIDResponse, 3)    // Tool for TRD PID
 };
 
-AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices() const {
+AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices(ETRDPIDMethod PIDmethod) const {
   // Get the current number of slices
   ETRDNslices slices = kNslicesLQ1D;
-  switch(fPIDmethod){
+  switch(PIDmethod){
     case kLQ1D: slices = kNslicesLQ1D; break;
     case kLQ2D: slices = kNslicesLQ2D; break;
     case kNN:   slices = kNslicesNN; break;

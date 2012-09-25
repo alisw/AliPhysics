@@ -21,7 +21,8 @@ fLambda(0),
 fNPointsI(0),
 fUseHelperNodes(kFALSE),
 fUseWeights(kFALSE),
-fPDFMode(kInterpolation)
+fPDFMode(kInterpolation),
+fStoreCov(kFALSE)
 {
   // default constructor
 }
@@ -35,7 +36,8 @@ fLambda(1 + ndim + (ndim*(ndim+1)>>1)),
 fNPointsI(100),
 fUseHelperNodes(kFALSE),
 fUseWeights(kFALSE),
-fPDFMode(kInterpolation)
+fPDFMode(kInterpolation),
+fStoreCov(kFALSE)
 {
 }
 
@@ -57,7 +59,8 @@ fLambda(ref.fLambda),
 fNPointsI(ref.fNPointsI),
 fUseHelperNodes(ref.fUseHelperNodes),
 fUseWeights(ref.fUseWeights),
-fPDFMode(ref.fPDFMode)
+fPDFMode(ref.fPDFMode),
+fStoreCov(ref.fStoreCov)
 {
     // Copy constructor
     this->Print("");
@@ -358,7 +361,7 @@ void AliTRDTKDInterpolator::BuildInterpolation()
 	fitter.GetParameters(par);
 
 	// store results
-	node->Store(&par,&cov);
+	node->Store(&par,&cov,fStoreCov);
     }
 
     delete KDhelper;
@@ -532,7 +535,7 @@ void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Print(const Option_t *opt) const
 }
 
 //_________________________________________________________________
-void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Store(TVectorD const *par, TMatrixD const *cov)
+void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Store(TVectorD const *par, TMatrixD const *cov,Bool_t storeCov)
 {
     // Store the parameters and the covariance in the node
 
@@ -545,7 +548,7 @@ void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Store(TVectorD const *par, TMatri
 
      if(!fPar){fPar = new Double_t[fNPar];}
      for(int ip=0; ip<fNPar; ip++) fPar[ip] = (*par)[ip];
-     if(!cov) return;
+     if(!cov||!storeCov) return;
      if(!fCov){fCov = new Double_t[fNCov];}
      for(int ip(0), np(0); ip<fNPar; ip++)
 	 for(int jp=ip; jp<fNPar; jp++) fCov[np++] = (*cov)(ip,jp);
@@ -600,6 +603,7 @@ Bool_t AliTRDTKDInterpolator::AliTRDTKDNodeInfo::CookPDF(const Double_t *point, 
 	if(error<fVal[1]){
 	    return kTRUE;
 	}
+	if(error==1)AliWarning("Covariance not available, always choose bin content");
 	error=fVal[1];
 	result=fVal[0];
 	return kTRUE;

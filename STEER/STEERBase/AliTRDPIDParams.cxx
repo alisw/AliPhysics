@@ -17,6 +17,7 @@
 //
 // Author: Markus Fasel <M.Fasel@gsi.de>
 //
+#include <TList.h>
 #include <TMath.h>
 #include <TSortedList.h>
 
@@ -25,6 +26,8 @@
 #include "AliTRDPIDParams.h"
 
 ClassImp(AliTRDPIDParams)
+//ClassImp(AliTRDPIDParams::AliTRDPIDThresholds)
+//ClassImp(AliTRDPIDParams::AliTRDPIDCentrality)
 
 const Double_t AliTRDPIDParams::kVerySmall = 1e-5;
 
@@ -46,7 +49,7 @@ AliTRDPIDParams::AliTRDPIDParams(const char *name) :
   //
   // Default constructor
   //
-  fEntries = new TSortedList;
+  fEntries = new TList;
 }
 
 //____________________________________________________________
@@ -58,7 +61,7 @@ fEntries(NULL)
     // Copy constructor
     //
 
-    fEntries=(TSortedList*)ref.fEntries->Clone();
+    fEntries=(TList*)ref.fEntries->Clone();
 }
 
 //____________________________________________________________
@@ -70,45 +73,65 @@ AliTRDPIDParams::~AliTRDPIDParams(){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDParams::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params) const{
+void AliTRDPIDParams::AddCentralityClass(Double_t minCentrality, Double_t maxCentrality){
+  // 
+  // Add new centrality class
+  //
+  
+  // check whether centrality class already exists
+  AliTRDPIDCentrality *checklow = FindCentrality(minCentrality + 0.01),
+                      *checkhigh = FindCentrality(maxCentrality - 0.01);
+
+  if(!checklow && ! checkhigh)
+    fEntries->Add(new AliTRDPIDCentrality(minCentrality, maxCentrality));
+}
+
+//____________________________________________________________ 
+AliTRDPIDParams::AliTRDPIDCentrality *AliTRDPIDParams::FindCentrality(Double_t val) const {
+  //
+  // Find centrality bin
+  //
+  TIter centralities(fEntries);
+  AliTRDPIDCentrality *obj(NULL), *tmp(NULL);
+  while((obj = dynamic_cast<AliTRDPIDCentrality *>(centralities()))){
+    if(val >= obj->GetMinCentrality() && val <= obj->GetMaxCentrality()){
+      tmp = obj;
+      break;
+    }
+  }
+  return tmp;
+}
+
+//____________________________________________________________
+Bool_t AliTRDPIDParams::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params, Double_t centrality) const{
   //
   // Retrieve params
   // Use IsEqual definition
   //
-  AliTRDPIDThresholds test(ntracklets, efficiency);
-  TObject *result = fEntries->FindObject(&test);
-  if(!result){ 
-    AliDebug(1, Form("No threshold params found for %d tracklets and an electron efficiency of %f", ntracklets, efficiency));
+  AliTRDPIDCentrality *cent = FindCentrality(centrality);
+  if(!cent){
+    AliDebug(1, "Centrality class not available");
     return kFALSE;
   }
-  AliTRDPIDThresholds *parResult = static_cast<AliTRDPIDThresholds *>(result);
-  AliDebug(1, Form("Threshold params found: NTracklets %d, Electron Efficiency %f", parResult->GetNTracklets(), parResult->GetElectronEfficiency()));
-  memcpy(params, parResult->GetThresholdParams(), sizeof(Double_t) * 4);
+  cent->GetThresholdParameters(ntracklets, efficiency, params);
   return kTRUE;
 }
 
 //____________________________________________________________
-void AliTRDPIDParams::SetThresholdParameters(Int_t ntracklets, Double_t effMin, Double_t effMax, Double_t *params){
-  // 
-  // Store new Params in the Object
+void AliTRDPIDParams::SetThresholdParameters(Int_t ntracklets, Double_t effMin, Double_t effMax, Double_t *params, Double_t centrality){
   //
-  if(effMin > effMax){
-    AliError("Min. efficiency has to be >= max. efficiency");
-    return;
-  }
-  AliDebug(1, Form("Save Parameters for %d tracklets at and electron efficiency of [%f|%f]", ntracklets, effMin, effMax));
-  fEntries->Add(new AliTRDPIDThresholds(ntracklets, effMin, effMax, params));
+  // Set new threshold parameters
+  //
+  AliTRDPIDCentrality *cent = FindCentrality(centrality);
+  if(cent) cent->SetThresholdParameters(ntracklets, effMin, effMax, params);
+  else AliDebug(1, "Centrality class not available");
 }
 
 //____________________________________________________________
 void AliTRDPIDParams::Print(Option_t *) const {
-  printf("Available thresholds:\n");
-  printf("_________________________________________\n");
-  TIter objects(fEntries);
-  AliTRDPIDThresholds *par;
-  while((par = dynamic_cast<AliTRDPIDThresholds *>(objects()))){
-    printf("Number of tracklets %d, Electron efficiency %f\n", par->GetNTracklets(), par->GetElectronEfficiency());
-  }
+  TIter centIter(fEntries);
+  AliTRDPIDCentrality *cent;
+  while((cent = dynamic_cast<AliTRDPIDCentrality *>(centIter()))) cent->Print(NULL);
 }
 
 //____________________________________________________________
@@ -219,3 +242,112 @@ Bool_t AliTRDPIDParams::AliTRDPIDThresholds::IsEqual(const TObject *ref) const {
   
   return  eqNTracklets && eqEff;
 }
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDCentrality::AliTRDPIDCentrality():
+  fEntries(NULL),
+  fMinCentrality(-1.),
+  fMaxCentrality(-1.)
+{
+  //
+  // Dummy constructor
+  //
+}
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDCentrality::AliTRDPIDCentrality(Double_t minCentrality, Double_t maxCentrality):
+  fEntries(NULL),
+  fMinCentrality(minCentrality),
+  fMaxCentrality(maxCentrality)
+{
+  //
+  // Default constructor
+  //
+  fEntries = new TSortedList;
+  fEntries->SetOwner();
+}
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDCentrality::AliTRDPIDCentrality(const AliTRDPIDParams::AliTRDPIDCentrality &ref):
+TObject(),
+fEntries(NULL),
+  fMinCentrality(ref.fMinCentrality),
+  fMaxCentrality(ref.fMaxCentrality)
+{
+  //
+  // Copy constructor
+  //
+  fEntries = new TSortedList;
+  // Coply entries to the new list
+  TIter entries(ref.fEntries);
+  TObject *o;
+  while((o = entries())) fEntries->Add(o);
+}
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDCentrality &AliTRDPIDParams::AliTRDPIDCentrality::operator=(const AliTRDPIDCentrality &ref){
+  //
+  // Assignment operator
+  //
+  if(&ref != this){
+    if(fEntries) delete fEntries;
+    fEntries = new TSortedList;
+    TIter entries(ref.fEntries);
+    TObject *o;
+    while((o = entries())) fEntries->Add(o);
+    fMinCentrality = ref.fMinCentrality;
+    fMaxCentrality = ref.fMaxCentrality;
+  }
+  return *this;
+}
+
+//____________________________________________________________
+AliTRDPIDParams::AliTRDPIDCentrality::~AliTRDPIDCentrality(){
+  //
+  // Destructor
+  //
+  if(fEntries) delete fEntries;
+}
+
+//____________________________________________________________
+Bool_t AliTRDPIDParams::AliTRDPIDCentrality::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params) const{
+  // 
+  // Get the threshold parameters
+  //
+  AliTRDPIDThresholds test(ntracklets, efficiency);
+  TObject *result = fEntries->FindObject(&test);
+  if(!result){ 
+    AliDebug(1, Form("No threshold params found for %d tracklets and an electron efficiency of %f", ntracklets, efficiency));
+    return kFALSE;
+  }
+  AliTRDPIDThresholds *parResult = static_cast<AliTRDPIDThresholds *>(result);
+  AliDebug(1, Form("Threshold params found: NTracklets %d, Electron Efficiency %f", parResult->GetNTracklets(), parResult->GetElectronEfficiency()));
+  memcpy(params, parResult->GetThresholdParams(), sizeof(Double_t) * 4);
+  return kTRUE;
+}
+
+//____________________________________________________________
+void AliTRDPIDParams::AliTRDPIDCentrality::SetThresholdParameters(Int_t ntracklets, Double_t effMin, Double_t effMax, Double_t *params){
+  // 
+  // Store new Params in the Object
+  //
+  if(effMin > effMax){
+    AliError("Min. efficiency has to be >= max. efficiency");
+    return;
+  }
+  AliDebug(1, Form("Save Parameters for %d tracklets at and electron efficiency of [%f|%f]", ntracklets, effMin, effMax));
+  fEntries->Add(new AliTRDPIDThresholds(ntracklets, effMin, effMax, params));
+}
+
+//____________________________________________________________
+void AliTRDPIDParams::AliTRDPIDCentrality::Print(Option_t *) const {
+  printf("Min. Centrality: %f, Max. Centrality: %f\n", fMinCentrality, fMaxCentrality);
+  printf("Available thresholds:\n");
+  printf("_________________________________________\n");
+  TIter objects(fEntries);
+  AliTRDPIDThresholds *par;
+  while((par = dynamic_cast<AliTRDPIDThresholds *>(objects()))){
+    printf("Number of tracklets %d, Electron efficiency %f\n", par->GetNTracklets(), 0.5*(par->GetElectronEfficiency(0)+par->GetElectronEfficiency(1)));
+  }
+}
+

@@ -86,7 +86,6 @@ fTuneMConData(kFALSE)
   AliLog::SetClassDebugLevel("AliESDpid",0);
   AliLog::SetClassDebugLevel("AliAODpidUtil",0);
 
-  memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
 }
 
 //______________________________________________________________________________
@@ -136,7 +135,6 @@ fTuneMConData(kFALSE)
   //
   // copy ctor
   //
-  memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
 }
 
 //______________________________________________________________________________
@@ -172,10 +170,10 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fOADBvoltageMaps=NULL;
     fTRDPIDResponseObject=NULL;
     fEMCALPIDParams=NULL;
-    memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFtail=1.1;
     fTOFPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
+
   }
   return *this;
 }
@@ -579,32 +577,34 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   return kDetPidOk;
 }
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
 {
   //
   // Compute PID response for the
-  //
-  
+    //
   // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kTRD, p, nSpecies);
+    if (track->GetDetectorPID()&&PIDmethod==AliTRDPIDResponse::kLQ1D){
+      AliDebug(3,"Return Cached Value");
+      return track->GetDetectorPID()->GetRawProbability(kTRD, p, nSpecies);
   }
   
+    UInt_t TRDslicesForPID[2];
+    SetTRDSlices(TRDslicesForPID,PIDmethod);
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   if((track->GetStatus()&AliVTrack::kTRDout)==0) return kDetNoSignal;
 
   Float_t mom[6]={0.};
   Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
-  Int_t nslices = fTRDslicesForPID[1] - fTRDslicesForPID[0] + 1;
-  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  fTRDslicesForPID[0], fTRDslicesForPID[1], nslices));
+  Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
+  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
   for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
     mom[ilayer] = track->GetTRDmomentum(ilayer);
-    for(UInt_t islice = fTRDslicesForPID[0]; islice <= fTRDslicesForPID[1]; islice++){
-      dedx[ilayer*nslices+islice-fTRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
+    for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
+      dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
     }
   }
-  fTRDResponse.GetResponse(nslices, dedx, mom, p);
+  fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
   return kDetPidOk;
 }
 //______________________________________________________________________________
@@ -1084,28 +1084,27 @@ void AliPIDResponse::InitializeTRDResponse(){
   // Set PID Params and references to the TRD PID response
   // 
     fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
-    SetTRDPIDmethod();
 }
 
-void AliPIDResponse::SetTRDPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method){
-  
-  fTRDResponse.SetPIDmethod(method);
-  if(fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
-    // backward compatibility for setting with 8 slices
-    fTRDslicesForPID[0] = 0;
-    fTRDslicesForPID[1] = 7;
-  }
-  else{
-    if(method==AliTRDPIDResponse::kLQ1D){
-      fTRDslicesForPID[0] = 0; // first Slice contains normalized dEdx
-      fTRDslicesForPID[1] = 0;
+//______________________________________________________________________________
+void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const{
+
+    if(fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
+	// backward compatibility for setting with 8 slices
+	TRDslicesForPID[0] = 0;
+	TRDslicesForPID[1] = 7;
     }
-    if(method==AliTRDPIDResponse::kLQ2D){
-      fTRDslicesForPID[0] = 1;
-      fTRDslicesForPID[1] = 7;
+    else{
+	if(method==AliTRDPIDResponse::kLQ1D){
+	    TRDslicesForPID[0] = 0; // first Slice contains normalized dEdx
+	    TRDslicesForPID[1] = 0;
+	}
+	if(method==AliTRDPIDResponse::kLQ2D){
+	    TRDslicesForPID[0] = 1;
+	    TRDslicesForPID[1] = 7;
+	}
     }
-  }
-  AliDebug(1,Form("Slice Range set to %d - %d",fTRDslicesForPID[0],fTRDslicesForPID[1]));
+    AliDebug(1,Form("Slice Range set to %d - %d",TRDslicesForPID[0],TRDslicesForPID[1]));
 }
 
 //______________________________________________________________________________
@@ -1152,12 +1151,13 @@ void AliPIDResponse::InitializeTOFResponse(){
 
 
 //_________________________________________________________________________
-Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel) const {
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
   //
   // Check whether track is identified as electron under a given electron efficiency hypothesis
-  //
+    //
+
   Double_t probs[AliPID::kSPECIES];
-  ComputeTRDProbability(vtrack, AliPID::kSPECIES, probs);
+  ComputeTRDProbability(vtrack, AliPID::kSPECIES, probs,PIDmethod);
 
   Int_t ntracklets = vtrack->GetTRDntrackletsPID();
   // Take mean of the TRD momenta in the given tracklets
@@ -1170,7 +1170,7 @@ Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t
   }
   p = TMath::Mean(nmomenta, trdmomenta);
 
-  return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel);
+  return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel,centrality,PIDmethod);
 }
 
 //______________________________________________________________________________

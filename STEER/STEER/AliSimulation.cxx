@@ -1091,8 +1091,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
    gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    AliSysInfo::AddStamp("RunSimulation_GetField");
-   
+   printf("Init() called \n");
    gAlice->GetMCApp()->Init();
+   printf("Init() back \n");
    AliSysInfo::AddStamp("RunSimulation_InitMCApp");
 
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
@@ -1211,7 +1212,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
-
+  printf("AliSimulation::ProcessRun called \n");
   gMC->ProcessRun(nEvents);
 
   // End of this run, close files

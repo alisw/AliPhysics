@@ -22,7 +22,10 @@ AliGenDPMjetEventHeader::AliGenDPMjetEventHeader():
     AliCollisionGeometry(),
     fTotalEnergy(0.),
     fTrials(0), 
-    fProcessType(0)
+    fProcessType(0),
+    fNSD1(0),
+    fNSD2(0),
+    fNDD(0)
 {
     // Default constructor
 }
@@ -33,7 +36,10 @@ AliGenDPMjetEventHeader::AliGenDPMjetEventHeader(const char* name):
     AliCollisionGeometry(),
     fTotalEnergy(0.),
     fTrials(0), 
-    fProcessType(0)
+    fProcessType(0),
+    fNSD1(0),
+    fNSD2(0),
+    fNDD(0)
 {
     // Constructor
 }
