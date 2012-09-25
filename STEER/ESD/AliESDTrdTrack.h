@@ -34,6 +34,9 @@ class AliESDTrdTrack : public TObject {
   Int_t GetPt()        const;
   Int_t GetStack()     const { return fStack; }
   Int_t GetSector()    const { return fSector; }
+  UChar_t GetFlags()   const { return fFlags; }
+  UChar_t GetFlagsTiming() const { return fFlagsTiming; }
+  Bool_t GetTrackInTime() const { return (fFlagsTiming & 0x1); }
   Int_t GetLabel()     const { return fLabel; }
   Int_t GetTrackletIndex(const Int_t iLayer) const { return fTrackletIndex[iLayer]; }
 
@@ -54,6 +57,7 @@ class AliESDTrdTrack : public TObject {
   void SetSector(Int_t sector)  { fSector = sector; }
   void SetStack(Int_t stack)    { fStack = stack; }
   void SetFlags(Int_t flags)    { fFlags = flags; }
+  void SetFlagsTiming(Int_t flags) { fFlagsTiming = flags; }
   void SetReserved(Int_t res)   { fReserved = res; }
   void SetTrackletIndex(const Char_t idx, const Int_t layer) { fTrackletIndex[layer] = idx; }
 
@@ -79,6 +83,7 @@ class AliESDTrdTrack : public TObject {
   Char_t   fLayerMask;			  // mask of contributing tracklets
   Char_t   fTrackletIndex[fgkNlayers];	  //[fgkNlayers] index to tracklets
   UShort_t fFlags;			  // flags (high-pt, electron, positron)
+  UChar_t  fFlagsTiming;                  // timing flags (track in-time, ...)
   UChar_t  fReserved;			  // reserved for future use
 
   TRef fTrackletRefs[fgkNlayers];         // references to contributing tracklets

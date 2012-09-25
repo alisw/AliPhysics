@@ -41,6 +41,7 @@ AliESDTrdTrack::AliESDTrdTrack():
   fPID(0),
   fLayerMask(0),
   fFlags(0),
+  fFlagsTiming(0),
   fReserved(0),
   fLabel(-1)
 {
@@ -62,6 +63,7 @@ AliESDTrdTrack::AliESDTrdTrack(const AliESDTrdTrack& track):
   fPID(track.fPID),
   fLayerMask(track.fLayerMask),
   fFlags(track.fFlags),
+  fFlagsTiming(track.fFlagsTiming),
   fReserved(track.fReserved),
   fLabel(track.fLabel)
 {
@@ -130,7 +132,8 @@ ULong64_t AliESDTrdTrack::GetExtendedTrackWord(Int_t /* rev */) const
 
   ULong64_t trackWord = 0;
   AppendBits(trackWord,  11, fFlags);
-  AppendBits(trackWord,  3, fReserved);
+  AppendBits(trackWord,  1, fFlagsTiming);
+  AppendBits(trackWord,  2, fReserved);
   AppendBits(trackWord, 13, fY);
   AppendBits(trackWord,  6, fTrackletIndex[5]);
   AppendBits(trackWord,  6, fTrackletIndex[4]);
