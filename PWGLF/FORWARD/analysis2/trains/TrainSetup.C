@@ -37,6 +37,7 @@
 #include <TSystemFile.h>
 #include <TROOT.h>
 #include <TUrl.h>
+#include <TApplication.h>
 
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
@@ -572,7 +573,7 @@ struct TrainSetup
    * @param r       Possible runner object 
    * @param asShell Passed to SaveSetup
    */
-  virtual void Run(Int_t nEvents, Runner* r=0, Bool_t asShell=false)
+  virtual Bool_t Run(Int_t nEvents, Runner* r=0, Bool_t asShell=false)
   {
     // Info("Exec", "Doing exec with type=%d, mode=%d, oper=%d, events=%d "
     //      "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
@@ -581,21 +582,21 @@ struct TrainSetup
     
     if (!Init()) { 
       Error("Run", "Failed to intialize the train");
-      return;
+      return false;
     }
     if (r) SaveSetup(*r, nEvents, asShell);
-    if (fExecOper == kInitialize) return;
+    if (fExecOper == kInitialize) return true;
     
     // --- Create the chain ------------------------------------------
     TChain* chain = CreateChain();
     if (fExecMode == kLocal) {
       if (!chain) {
 	Error("Run", "No chain defined in local mode!");
-	return;
+	return false;
       }
       if (chain->GetListOfFiles()->GetEntries() < 1) { 
 	Error("Run", "Empty chain in local mode!");
-	return;
+	return false;
       }
     }
 
@@ -608,6 +609,7 @@ struct TrainSetup
 
     // Return. 
     if (ret < 0) Error("Exec", "Analysis failed");
+    return ret < 0 ? false : true;
   }
   //------------------------------------------------------------------
   /** 
@@ -962,7 +964,7 @@ protected:
   virtual AliAnalysisAlien* 
   CreateGridHandler()
   {
-    if (fExecMode != kGrid && !IsAAF()) return 0;
+    if (!(fExecMode == kGrid || IsAAF())) return 0;
 
     TString name = EscapedName();
 
@@ -976,13 +978,16 @@ protected:
 
     // Set the proof server 
     if (fExecMode == kProof) {
-      plugin->SetProofCluster(fProofServer.GetHost());
+      Int_t nWorkers = ExtractWorkers(fProofServer);
+      if (nWorkers != 0) plugin->SetNproofWorkers(nWorkers);
+      if (!fProofServer.GetHost() || fProofServer.GetHost()[0] == '\0') 
+	plugin->SetProofCluster(Form("workers=%d", nWorkers));
+      else 
+	plugin->SetProofCluster(fProofServer.GetHost());
       plugin->SetProofReset(0);
       plugin->SetAliRootMode("default");
       if (!fDataSet.IsNull()) 
 	plugin->SetProofDataSet(fDataSet);
-      Int_t nWorkers = ExtractWorkers(fProofServer);
-      if (nWorkers != 0) plugin->SetNproofWorkers(nWorkers);
     }
     
     // Do not test copying 
@@ -1305,9 +1310,9 @@ protected:
       // gProof->Exec("gSystem->Load(\"libVMC.so\");");
     }
     
-    ret &= LoadLibrary("STEERBase",     basic, false);
-    ret &= LoadLibrary("ESD",           basic, false);
-    ret &= LoadLibrary("AOD",           basic, false);
+    ret &= LoadLibrary("STEERBase",     basic, true);
+    ret &= LoadLibrary("ESD",           basic, true);
+    ret &= LoadLibrary("AOD",           basic, true);
     ret &= LoadLibrary("ANALYSIS",      basic, true);
     ret &= LoadLibrary("OADB",          basic, true);
     ret &= LoadLibrary("ANALYSISalice", basic, true);
@@ -1355,26 +1360,24 @@ protected:
     case kGrid: 
     case kProof:
       if (par) { 
-	ret = SetupPAR(what) ? 0 : -1;
-	if (rec) fListOfPARs.Add(new TObjString(what));
-      } else  {
-	ret = gSystem->Load(libName.Data());
-	if (rec) fListOfLibraries.Add(new TObjString(libName));
-      }
-      break;
-#if 0
-    case kProof: 
-      if (par) {
-	Info("LoadLibrary", "Uploading %s", what);
-	ret = gProof->UploadPackage(what, TProof::kRemoveOld);
-	if (ret < 0)  {	
-	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
-								   what)));
+	TString fn(what);
+	if (IsAAF() || fExecMode==kGrid) {
+	  // Let plug-in handle the upload 
+	  ret = SetupPAR(what) ? 0 : -1;
+	  if (rec) fListOfPARs.Add(new TObjString(what));
+	}
+	else {
+	  Info("LoadLibrary", "Uploading %s", what);
+	  ret = gProof->UploadPackage(fn, TProof::kRemoveOld);
+	  if (ret < 0)  {
+	    fn.Prepend("../");
+	    gSystem->ExpandPathName(fn);
+	    ret = gProof->UploadPackage(fn);
+	  }
 	  if (ret < 0) {	
-	    ret = 
-	      gProof->UploadPackage(gSystem
-				    ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
-							  what)));
+	    fn  = Form("$ALICE_ROOT/%s.par", what);
+	    gSystem->ExpandPathName(fn);
+	    ret = gProof->UploadPackage(fn);
 	    if (ret < 0) {
 	      Error("LoadLibrary", 
 		    "Could not find module %s.par in current directory nor "
@@ -1383,16 +1386,14 @@ protected:
 	    }
 	  }
 	}
-	Info("LoadLibrary", "Enabling package %s", what);
+	Info("LoadLibrary", "Enabling package %s (from %s)", what, fn.Data());
 	ret = gProof->EnablePackage(what);
-      }
-      else { 
-	Info("LoadLibrary", "Enabling remote PROOF library %s", what);
+      }	    
+      else {
 	ret = gSystem->Load(libName.Data());
 	if (rec) fListOfLibraries.Add(new TObjString(libName));
       }
       break;
-#endif
     }
     if (ret < 0) { 
       Error("LoadLibrary", "Couldn't load %s", what);
@@ -1496,6 +1497,13 @@ protected:
       if (!b) 
 	throw TString::Format("Failed to open b shell script");
       b << "#!/bin/sh\n"
+	<< "if test x$ALICE_ROOT != x ; then\n"
+	<< "  if test x$ALICE_TARGET = x ; then\n"
+	<< "    export ALICE_TARGET=`$ROOTSYS/bin/root-config --arch`\n"
+	<< "  fi\n"
+	<< "  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"
+	"${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}\n"
+	<< "fi\n"
 	<< "echo BUILD.sh@`hostname`: Building " << base << "\n"
 	<< "root.exe -l -b -q PROOF-INF/BUILD.C 2>&1 | tee " << base << ".log\n"
 	<< "echo BUILD.sh@`hostname`: done: $?\n"
@@ -1821,10 +1829,12 @@ protected:
 			  gSystem->Getenv("ALICE_ROOT")));
 						     
       // --- Set OADB path on workers --------------------------------
-      // const char* oadbPath = AliAnalysisManager::GetOADBPath();
-      // TProof::AddEnvVar("OADB_PATH", oadbPath);
-      // if (lite) gSystem->Setenv("OADB_PATH", oadbPath);
-      // Info("Connect", "OADB_PATH=%s", gSystem->Getenv("OADB_PATH"));
+      if (!IsAAF() || lite) {
+	const char* oadbPath = AliAnalysisManager::GetOADBPath();
+	TProof::AddEnvVar("OADB_PATH", oadbPath);
+	if (lite) gSystem->Setenv("OADB_PATH", oadbPath);
+	Info("Connect", "OADB_PATH=%s", gSystem->Getenv("OADB_PATH"));
+      }
 
       // --- Only connect in ProofLite - plugin does this --------------
       if (!lite) {
@@ -2011,9 +2021,9 @@ protected:
     
     // Test the build 
     if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-      Info("SetupPar", "Building in PAR archive %s", what);
+      Info("SetupPAR", "Building in PAR archive %s", what);
       if (gSystem->Exec("PROOF-INF/BUILD.sh")) { 
-	Error("SetupPar", "Failed to build in PAR directory %s", what);
+	Error("SetupPAR", "Failed to build in PAR directory %s", what);
 	gSystem->ChangeDirectory(cwd.Data());
 	return false;
       }
@@ -2544,7 +2554,8 @@ public:
      * @param max   Maximum number of options
      */
     Runner(TrainSetup& train, UShort_t max=30)
-      : fTrain(&train), fOptions(0), fN(0), fMax(max)
+      : fTrain(&train), fOptions(0), fN(0), fMax(max), 
+	fNEvents(0), fAsShell(false)
     {
       fOptions = new Option*[fMax];
       for (Int_t i = 0; i < fMax; i++) fOptions[i] = 0;
@@ -2719,15 +2730,61 @@ public:
       fTrain->SetOptions(*this);
       fTrain->SetRuns(runs);
       // fTrain->SaveSetup(*this, nEvents, asShell);
-      
-      fTrain->Run(nEvents, this, asShell);
-      return true;
+      fNEvents = nEvents;
+      fAsShell = asShell;
+
+      if (gApplication && asShell) {
+	Info("Run", "Starting train via timer in 1 seconds");
+	new Deferred(*this);
+	Info("Run", "Running TApplication object %p", gApplication);
+	gApplication->Run();
+	return true;
+      }
+      return DeferredRun(0);
     }
-      
+    /** 
+     * Custom timer to do a deferred start after the application 
+     * has been started 
+     */
+    struct Deferred : public TTimer
+    {
+      Deferred(Runner& r)
+	: TTimer(1000, false), fRunner(r)
+      {
+	Start(1000, true);
+      }
+      Bool_t Notify()
+      {
+	// gSystem->RemoveTimer(this);
+	return fRunner.DeferredRun(this);
+      }
+      Runner& fRunner;
+    };
+    /** 
+     * Deferred run 
+     * 
+     * @param def If non-null, it's the timer we need to delete
+     */
+    Bool_t DeferredRun(Deferred* def) 
+    {
+      if (def) { 
+	def->Stop();
+      }
+      Info("DeferredRun", "Starting train");
+      Bool_t ret = fTrain->Run(fNEvents, this, fAsShell);
+      if (gApplication && fAsShell) {
+	Info("DeferredRun", "Terminating application with status %d",
+	     ret ? 0 : 1);
+	gApplication->Terminate(ret ? 0 : 1);
+      }
+      return ret;
+    }
     TrainSetup* fTrain;
     Option** fOptions;  // Our options 
     UShort_t fN;        // Current number of options 
     UShort_t fMax;      // Maximum number of options
+    Int_t    fNEvents;  // Number of events 
+    Bool_t   fAsShell;  // As shell 
   };
 protected:
   //__________________________________________________________________
