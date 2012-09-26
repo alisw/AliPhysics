@@ -535,9 +535,16 @@ public:
      */
     Histos& operator=(const Histos&) { return *this;}
     /** 
-     * Destructor
+     * Destructor.  This does not delete the interally allocated
+     * memory.  Use the member function Delete for that.
      */
     ~Histos();
+    /** 
+     * Clear internal memory.  Note, if the internal histograms are
+     * added to an output container, then we must not free this
+     * memory.
+     */
+    void Delete(Option_t* opt="");
     /** 
      * Initialize the object 
      * 

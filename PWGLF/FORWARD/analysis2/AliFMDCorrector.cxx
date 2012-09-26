@@ -447,7 +447,7 @@ AliFMDCorrector::RingHistos::~RingHistos()
   // 
   // Destructor 
   //
-  if (fDensity) delete fDensity;
+  // if (fDensity) delete fDensity;
 }
 
 //____________________________________________________________________

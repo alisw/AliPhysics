@@ -88,7 +88,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
   // Whether to use simple merging algorithm
-  task->GetSharingFilter().SetUseSimpleSharing(false);
+  task->GetSharingFilter().SetUseSimpleSharing(true);
   // Whether to allow for 3 strip hits 
   task->GetSharingFilter().SetAllow3Strips(true);
   // Do not cut fixed/hard on multiplicity 

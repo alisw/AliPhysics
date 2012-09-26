@@ -462,6 +462,9 @@ struct TrainSetup
   {
     if (fExecMode != kProof) return false;
     TString host(fProofServer.GetHost());
+    Info("IsAAF", "host %s contains \"alice-caf\"=%d or \"skaf\"=%d -> %d", 
+	 host.Data(), host.Contains("alice-caf"),  host.Contains("skaf"),
+	 host.Contains("alice-caf") || host.Contains("skaf"));
     return host.Contains("alice-caf") || host.Contains("skaf");
   }
   //__________________________________________________________________
@@ -1363,6 +1366,7 @@ protected:
 	TString fn(what);
 	if (IsAAF() || fExecMode==kGrid) {
 	  // Let plug-in handle the upload 
+	  Info("LoadLibrary", "Adding %s to plug-in PARs", what);
 	  ret = SetupPAR(what) ? 0 : -1;
 	  if (rec) fListOfPARs.Add(new TObjString(what));
 	}
@@ -1385,9 +1389,9 @@ protected:
 	      return false;
 	    }
 	  }
+	  ret = gProof->EnablePackage(what);
 	}
 	Info("LoadLibrary", "Enabling package %s (from %s)", what, fn.Data());
-	ret = gProof->EnablePackage(what);
       }	    
       else {
 	ret = gSystem->Load(libName.Data());
@@ -2733,7 +2737,7 @@ public:
       fNEvents = nEvents;
       fAsShell = asShell;
 
-      if (gApplication && asShell) {
+      if (!gROOT->IsBatch() && asShell) {
 	Info("Run", "Starting train via timer in 1 seconds");
 	new Deferred(*this);
 	Info("Run", "Running TApplication object %p", gApplication);
