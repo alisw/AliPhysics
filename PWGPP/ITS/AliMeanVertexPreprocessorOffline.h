@@ -20,14 +20,27 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 	virtual ~AliMeanVertexPreprocessorOffline();
 
 	void  ProcessOutput(const char *filename, AliCDBStorage *db, Int_t runNb);
-
+	Int_t GetStatus();
 
   private:
 	AliMeanVertexPreprocessorOffline(const AliMeanVertexPreprocessorOffline & proc); // copy constructor	
 	AliMeanVertexPreprocessorOffline& operator=(const AliMeanVertexPreprocessorOffline&); //operator
 	
+	enum EStatusCode_t {
+	  kOk,
+	  kInputError, /* open file error, missing histos */
+	  kLowStatistics, /* too low statistics */
+	  kStoreError, /* problems storing OCDB */
+	  kWriteMeanVertexSPD, /*write MeanVertex computed online*/
+	  kUseOfflineSPDvtx,  /*write SPD vtx offline*/
+	  kLumiRegCovMatrixProblem, /*lumi region or cov matrix computation problems, default values set*/
+	  kNStatusCodes
+	};
 
-	ClassDef(AliMeanVertexPreprocessorOffline, 1);
+	Int_t fStatus; /* status code */
+	static const Char_t *fgkStatusCodeName[kNStatusCodes];
+	
+	ClassDef(AliMeanVertexPreprocessorOffline, 2);
 };
 
 #endif

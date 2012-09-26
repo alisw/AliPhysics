@@ -141,6 +141,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Int_t tofStatus = (procesTOF) ?  procesTOF->GetStatus():0;
   Int_t t0Status  = (procesT0)  ?  procesT0->GetStatus():0;
   Int_t tpcStatus = (procesTPC) ?  procesTPC->GetStatus():0;
+  Int_t meanVtxStatus = (procesMeanVtx) ? procesMeanVtx->GetStatus():0;
   //
   printf("\n");
   printf("******* CPass0 calibration status *******\n");
@@ -148,6 +149,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   printf("TOF calibration status=%d\n",tofStatus);
   printf("TPC calibration status=%d\n",tpcStatus);
   printf("T0  calibration status=%d\n",t0Status);
+  printf("MeanVertex  calibration status=%d\n",meanVtxStatus);
   //
   TTreeSRedirector *pcstream = new TTreeSRedirector("cpassStat.root","recreate");
   printCalibStat(runNumber, "CalibObjects.root",pcstream);
