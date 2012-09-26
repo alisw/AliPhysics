@@ -814,7 +814,7 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow,Bool_t correctWithEfficiency) {
+TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow,Bool_t correctWithEfficiency, Bool_t correctWithAcceptanceOnly) {
   //Returns the BF histogram, extracted from the 6 TH2D objects 
   //(private members) of the AliBalance class.
   //
@@ -881,9 +881,13 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
   TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
 
+  // get the file with the efficiency matrices
+  // withAcceptanceOnly: Data single distributions are normalized to 1 (efficiency not taken into account)
+  // else : Data single distributions are normalized to give single particle efficiency of MC
   TFile *fEfficiencyMatrix = NULL;
   if(correctWithEfficiency){
-    fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
+    if(correctWithAcceptanceOnly) fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/accOnlyFromConvolutionAllCent.root");
+    else  fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
     if(!fEfficiencyMatrix){
       AliError("Efficiency histogram file not found");
       return NULL;
@@ -896,12 +900,23 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   //   (normalized to single particle efficiency)
   if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
 
-    TH1F* hEffP  = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
-    TH1F* hEffN  = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    TH1F* hEffP  = NULL;
+    TH1F* hEffN  = NULL;
     TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
-    
+
+    // take the data distributions
+    if(correctWithAcceptanceOnly){
+      hEffP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+      hEffN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    }
+    // take the MC distributions
+    else{
+      hEffP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
+      hEffN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    }
+
     if( !hEffP || !hEffN || !hEffPP || !hEffNN || !hEffPN){
       AliError(Form("Efficiency (eta) histograms not found: etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
       return NULL;
@@ -953,12 +968,23 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   //   (normalized to single particle efficiency)  
   if(iAnalysisType == kPhi && correctWithEfficiency){
 
-    TH1F* hEffPhiP  = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
-    TH1F* hEffPhiN  = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    TH1F* hEffPhiP  = NULL;
+    TH1F* hEffPhiN  = NULL;
     TH1F* hEffPhiPP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPhiNN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
     TH1F* hEffPhiPN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
-    
+
+    // take the data distributions
+    if(correctWithAcceptanceOnly){
+      hEffPhiP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+      hEffPhiN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    }
+    // take the MC distributions
+    else{
+      hEffPhiP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
+      hEffPhiN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    }
+
     if( !hEffPhiP || !hEffPhiN || !hEffPhiPP || !hEffPhiNN || !hEffPhiPN){
       AliError("Efficiency (phi) histograms not found");
       return NULL;
