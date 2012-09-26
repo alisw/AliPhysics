@@ -45,10 +45,23 @@
 
 ClassImp(AliMeanVertexPreprocessorOffline)
 
+//_______________________________________________________  
+  
+  const Char_t *AliMeanVertexPreprocessorOffline::fgkStatusCodeName[AliMeanVertexPreprocessorOffline::kNStatusCodes] = {
+  "ok",
+  "open file error or missing histos",
+  "too low statistics",
+  "problems storing OCDB",
+  "write MeanVertex computed online",
+  "write SPD vtx offline",
+  "lumi region or cov matrix computation problems, default values set"
+};
+
+
 //____________________________________________________
 AliMeanVertexPreprocessorOffline::AliMeanVertexPreprocessorOffline():
-TNamed("AliMeanVertexPreprocessorOffline","AliMeanVertexPreprocessorOffline")
- 
+  TNamed("AliMeanVertexPreprocessorOffline","AliMeanVertexPreprocessorOffline"),
+  fStatus(kOk)
 {
   //constructor
 }
@@ -65,11 +78,13 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	TFile *file = TFile::Open(filename);
 	if (!file || !file->IsOpen()){
 		AliError(Form("cannot open outputfile %s", filename));
+		fStatus=kInputError;
 		return; 
 	}
 
 	if (!db){
 	  AliError(Form("no OCDB storage found, return"));
+	  fStatus=kInputError;
 	  return;
 	}
     
@@ -119,6 +134,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 				
 				if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ){
 					AliError(Form("cannot find any histograms available from file"));
+					fStatus=kInputError;
 					return;
 				}	
 			}
@@ -151,6 +167,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 				
 				if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ){
 					AliError(Form("cannot find any histograms available from list"));
+					fStatus=kInputError;
 					return;
 				}	
 			}			 			 
@@ -192,6 +209,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 		spdAvailable = kFALSE;
 		if ((useTRKvtx==kFALSE) && (useITSSAvtx==kFALSE)){
 			AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
+			fStatus=kLowStatistics;
 			return;		 
 		}
 	}
@@ -208,12 +226,13 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	TF1 *fitVtxX, *fitVtxY, *fitVtxZ;
 	
 	if (useTRKvtx || useITSSAvtx){
-		histTRKvtxX ->Fit("gaus", "M");
+	  histTRKvtxX ->Fit("gaus", "M");
 		fitVtxX = histTRKvtxX -> GetFunction("gaus");
 		xMeanVtx = fitVtxX -> GetParameter(1);
 		if (TMath::Abs(xMeanVtx) > 2.) {
 			xMeanVtx = 0.;
 			writeMeanVertexSPD=kTRUE;
+			fStatus=kWriteMeanVertexSPD;
 		}	
 
 		histTRKvtxY ->Fit("gaus", "M");
@@ -222,9 +241,10 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 		if (TMath::Abs(yMeanVtx) > 2.) {
 			yMeanVtx = 0.;
 			writeMeanVertexSPD=kTRUE;
+			fStatus=kWriteMeanVertexSPD;
 		}	
 		
-		histTRKvtxZ ->Fit("gaus", "M");
+		histTRKvtxZ ->Fit("gaus", "M", "", -10, 10);
 		fitVtxZ = histTRKvtxZ -> GetFunction("gaus");
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
@@ -232,6 +252,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 		  zMeanVtx = histTRKvtxZ->GetMean();
 		  zSigmaVtx = histTRKvtxZ->GetRMS();
 		  writeMeanVertexSPD=kTRUE;
+		  fStatus=kWriteMeanVertexSPD;
 		}	
 		
 	}
@@ -250,6 +271,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
             useTRKvtx = kFALSE;
 	    useITSSAvtx = kFALSE;
 	    useSPDvtx = kTRUE;
+	    fStatus=kUseOfflineSPDvtx;
 	  }
 	  
 	  yHistoMean = histTRKvtxY ->GetMean();	
@@ -260,6 +282,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
             useTRKvtx = kFALSE;
 	    useITSSAvtx = kFALSE;
 	    useSPDvtx = kTRUE;
+	    fStatus=kUseOfflineSPDvtx;
 	  }
 	  
 	  zHistoMean = histTRKvtxZ -> GetMean();	
@@ -270,6 +293,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
             useTRKvtx = kFALSE;
 	    useITSSAvtx = kFALSE;
 	    useSPDvtx = kTRUE;
+	    fStatus=kUseOfflineSPDvtx;
 	  }
 	}
 	
@@ -432,134 +456,142 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 		
 		if ((nEntriesHighMultX >100) && (nEntriesHighMultY>100)) {
 			AliWarning(Form("Setting High Mulitplicity environment"));	
-	     	highMultEnvironment = kTRUE;
+			highMultEnvironment = kTRUE;
 		}
 		else {
-			AliWarning(Form("Setting Low Mulitplicity environment"));
-			highMultEnvironment=kFALSE;			
+		  AliWarning(Form("Setting Low Mulitplicity environment"));
+		  highMultEnvironment=kFALSE;			
 		}
 	}
 	
 	else{
-		AliWarning(Form("No histos found, setting Low Mulitplicity environment"));
-		highMultEnvironment=kFALSE;
-		
+	  AliWarning(Form("No histos found, setting Low Mulitplicity environment"));
+	  highMultEnvironment=kFALSE;
+	  
 	}
 	
 	if (highMultEnvironment==kFALSE){
-		
-		if ((!histTRKdefMultX) || (!histTRKdefMultY) || (histTRKdefMultX->GetEntries() < 40.) || (histTRKdefMultY->GetEntries() < 40.)){
-			AliWarning(Form("histos for lumi reg calculation not found, default value setted"));
-			xSigmaVtx=0.0120;
-			ySigmaVtx=0.0120;
-		} else {
-	
-			histTRKdefMultX -> Fit("gaus", "M", "", -0.4, 0.4);
-			sigmaFitX = histTRKdefMultX -> GetFunction("gaus");
-			xSigmaMult = sigmaFitX->GetParameter(2);
 	  
-			lumiRegSquaredX = (xSigmaMult*xSigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
-			if (lumiRegSquaredX < 0) {
-				AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-				xSigmaMult = 0.;
-				xSigmaVtx = 0.0120;
-			}
-	  
-			if (lumiRegSquaredX > 0 && lumiRegSquaredX < 0.0005){
-				xSigmaVtx = TMath::Sqrt(lumiRegSquaredX);
-				xSigmaVtx = xSigmaVtx*1.2;
-			}
-	  
-			histTRKdefMultY -> Fit("gaus", "M", "", -0.2, 0.6);
-			sigmaFitY = histTRKdefMultY -> GetFunction("gaus");
-			ySigmaMult = sigmaFitY->GetParameter(2);
-	  
-			lumiRegSquaredY= (ySigmaMult*ySigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
-			if (lumiRegSquaredY < 0) {
-				AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-				ySigmaMult = 0.;
-				ySigmaVtx = 0.0120;
-			}
-	  
-			if (lumiRegSquaredY > 0 && lumiRegSquaredY < 0.0005){
-				ySigmaVtx = TMath::Sqrt(lumiRegSquaredY);
-				ySigmaVtx = ySigmaVtx*1.2;
-			}
-		
-			TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
-			htrkXZ -> Fit("pol1", "M", "", -10., 10.);
-			corrFit = htrkXZ->GetFunction("pol1");
-			corrXZ = corrFit->GetParameter(1);
+	  if ((!histTRKdefMultX) || (!histTRKdefMultY) || (histTRKdefMultX->GetEntries() < 40.) || (histTRKdefMultY->GetEntries() < 40.)){
+	    AliWarning(Form("histos for lumi reg calculation not found, default value setted"));
+	    xSigmaVtx=0.0120;
+	    ySigmaVtx=0.0120;
+	    fStatus=kLumiRegCovMatrixProblem;
+	  } else {
+	    
+	    histTRKdefMultX -> Fit("gaus", "M", "", -0.4, 0.4);
+	    sigmaFitX = histTRKdefMultX -> GetFunction("gaus");
+	    xSigmaMult = sigmaFitX->GetParameter(2);
+	    
+	    lumiRegSquaredX = (xSigmaMult*xSigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+	    if (lumiRegSquaredX < 0) {
+	      AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	      xSigmaMult = 0.;
+	      xSigmaVtx = 0.0120;
+	      fStatus=kLumiRegCovMatrixProblem;
+	    }
+	    
+	    if (lumiRegSquaredX > 0 && lumiRegSquaredX < 0.0005){
+	      xSigmaVtx = TMath::Sqrt(lumiRegSquaredX);
+	      xSigmaVtx = xSigmaVtx*1.2;
+	    }
+	    
+	    histTRKdefMultY -> Fit("gaus", "M", "", -0.2, 0.6);
+	    sigmaFitY = histTRKdefMultY -> GetFunction("gaus");
+	    ySigmaMult = sigmaFitY->GetParameter(2);
+	    
+	    lumiRegSquaredY= (ySigmaMult*ySigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+	    if (lumiRegSquaredY < 0) {
+	      AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	      ySigmaMult = 0.;
+	      ySigmaVtx = 0.0120;
+	      fStatus=kLumiRegCovMatrixProblem;
+	    }
+	    
+	    if (lumiRegSquaredY > 0 && lumiRegSquaredY < 0.0005){
+	      ySigmaVtx = TMath::Sqrt(lumiRegSquaredY);
+	      ySigmaVtx = ySigmaVtx*1.2;
+	    }
+	    
+	    TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
+	    htrkXZ -> Fit("pol1", "M", "", -10., 10.);
+	    corrFit = htrkXZ->GetFunction("pol1");
+	    corrXZ = corrFit->GetParameter(1);
+	    
+	    if (TMath::Abs(corrXZ) > 0.01) {
+	      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	      corrXZ =0.;
+	      fStatus=kLumiRegCovMatrixProblem;
+	    }
+	    else{
+	      covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
+	      
+	    }
+	    
+	    TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
+	    htrkYZ -> Fit("pol1", "M", "", -10., 10.);
+	    corrFit = htrkYZ->GetFunction("pol1");
+	    corrYZ = corrFit->GetParameter(1);
 			
-			if (TMath::Abs(corrXZ) > 0.01) {
-				AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-				corrXZ =0.;
-			}
-			else{
-				covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
-				
-			}
-			
-			TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
-			htrkYZ -> Fit("pol1", "M", "", -10., 10.);
-			corrFit = htrkYZ->GetFunction("pol1");
-			corrYZ = corrFit->GetParameter(1);
-			
-			if (TMath::Abs(corrYZ) > 0.01) {
-				AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-				corrYZ =0.;
-			}
-			else{
-				covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
-			}
-			
-		}
+	    if (TMath::Abs(corrYZ) > 0.01) {
+	      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	      corrYZ =0.;
+	      fStatus=kLumiRegCovMatrixProblem;
+	    }
+	    else{
+	      covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
+	    }
+	    
+	  }
 	}
-		
-	if (highMultEnvironment==kTRUE){
 	
-		histTRKHighMultX -> Fit("gaus", "M", "", -0.4, 0.4);
-		sigmaFitX = histTRKHighMultX -> GetFunction("gaus");
-		xSigmaMult = sigmaFitX->GetParameter(2);
-		
-		if ((xSigmaMult <0) || (xSigmaMult>0.03)){
-			AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-			xSigmaMult = 0.;
-			xSigmaVtx = 0.0120;
-		}
-        else{
-			xSigmaVtx = xSigmaMult;
-		    xSigmaVtx = xSigmaVtx*1.2;
-		}
-			
-		histTRKHighMultY -> Fit("gaus", "M", "", -0.2, 0.5);
-		sigmaFitY = histTRKHighMultY -> GetFunction("gaus");
-		ySigmaMult = sigmaFitY->GetParameter(2);
-		
-		if ((ySigmaMult <0) || (ySigmaMult>0.03)){
-			AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-			ySigmaMult = 0.;
-			ySigmaVtx = 0.0120;
-		}
-        else{
-			ySigmaVtx = ySigmaMult;
-		    ySigmaVtx = ySigmaVtx*1.2;
-		}
-		
-	   TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
-	   htrkXZ -> Fit("pol1", "M", "", -10., 10.);
-	   corrFit = htrkXZ->GetFunction("pol1");
-	   corrXZ = corrFit->GetParameter(1);
+	if (highMultEnvironment==kTRUE){
+	  
+	  histTRKHighMultX -> Fit("gaus", "M", "", -0.4, 0.4);
+	  sigmaFitX = histTRKHighMultX -> GetFunction("gaus");
+	  xSigmaMult = sigmaFitX->GetParameter(2);
+	  
+	  if ((xSigmaMult <0) || (xSigmaMult>0.03)){
+	    AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	    xSigmaMult = 0.;
+	    xSigmaVtx = 0.0120;
+	    fStatus=kLumiRegCovMatrixProblem;
+	  }
+	  else{
+	    xSigmaVtx = xSigmaMult;
+	    xSigmaVtx = xSigmaVtx*1.2;
+	  }
+	  
+	  histTRKHighMultY -> Fit("gaus", "M", "", -0.2, 0.5);
+	  sigmaFitY = histTRKHighMultY -> GetFunction("gaus");
+	  ySigmaMult = sigmaFitY->GetParameter(2);
+	  
+	  if ((ySigmaMult <0) || (ySigmaMult>0.03)){
+	    AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	    ySigmaMult = 0.;
+	    ySigmaVtx = 0.0120;
+	    fStatus=kLumiRegCovMatrixProblem;
+	  }
+	  else{
+	    ySigmaVtx = ySigmaMult;
+	    ySigmaVtx = ySigmaVtx*1.2;
+	  }
+	  
+	  TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
+	  htrkXZ -> Fit("pol1", "M", "", -10., 10.);
+	  corrFit = htrkXZ->GetFunction("pol1");
+	  corrXZ = corrFit->GetParameter(1);
 	  
 	  if (TMath::Abs(corrXZ) > 0.01) {
 	    AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
 	    corrXZ =0.;
+	    fStatus=kLumiRegCovMatrixProblem;
 	  }
 	  else{
 	    covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
 	    
 	  }
-	
+	  
 	  TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
 	  htrkYZ -> Fit("pol1", "M", "", -10., 10.);
 	  corrFit = htrkYZ->GetFunction("pol1");
@@ -568,6 +600,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	  if (TMath::Abs(corrYZ) > 0.01) {
 	    AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
 	    corrYZ =0.;
+	    fStatus=kLumiRegCovMatrixProblem;
 	  }
 	  else{
 	    covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
@@ -575,41 +608,88 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	  
 	}
 	
-  Double_t position[3], covMatrix[6];
-  Double_t chi2=1.; 
-  Int_t nContr=1;	
- 
-  position[0] = xMeanVtx;
-  position[1] = yMeanVtx;
-  position[2] = zMeanVtx;
- 
-  covMatrix[0] = xSigmaVtx*xSigmaVtx;
-  covMatrix[1] = 0.; //xy
-  covMatrix[2] = ySigmaVtx*ySigmaVtx;
-  covMatrix[3] = covarXZ;
-  covMatrix[4] = covarYZ;
-  covMatrix[5] = zSigmaVtx*zSigmaVtx;
- 
+	Double_t position[3], covMatrix[6];
+	Double_t chi2=1.; 
+	Int_t nContr=1;	
+	
+	position[0] = xMeanVtx;
+	position[1] = yMeanVtx;
+	position[2] = zMeanVtx;
+	
+	covMatrix[0] = xSigmaVtx*xSigmaVtx;
+	covMatrix[1] = 0.; //xy
+	covMatrix[2] = ySigmaVtx*ySigmaVtx;
+	covMatrix[3] = covarXZ;
+	covMatrix[4] = covarYZ;
+	covMatrix[5] = zSigmaVtx*zSigmaVtx;
+	
 	
 	//Printf ("%f, %f, %f, %f", xSigmaVtx, ySigmaVtx, covarXZ, covarYZ);
- 
-  AliESDVertex  *vertex =  new AliESDVertex(position, covMatrix, chi2, nContr, "vertex");
-  
-  AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
- 
-  AliCDBMetaData metaData;
-  metaData.SetBeamPeriod(0); //check!!!!
-  metaData.SetResponsible("Davide Caffarri");
-  metaData.SetComment("Mean Vertex object used in reconstruction");
-      
-  if (!db->Put(vertex, id, &metaData)) {
-    AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
-   }
- 
-  delete vertex;
- 
-  
-
+	
+	AliESDVertex  *vertex =  new AliESDVertex(position, covMatrix, chi2, nContr, "vertex");
+	
+	AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
+	
+	AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0); //check!!!!
+	metaData.SetResponsible("Davide Caffarri");
+	metaData.SetComment("Mean Vertex object used in reconstruction");
+	
+	if (!db->Put(vertex, id, &metaData)) {
+	  AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
+	  fStatus=kStoreError;
+	}
+	
+	delete vertex;
+	
+		Int_t status=GetStatus();
+	if (status == 0) {
+	  AliInfo(Form("MeanVertex calibration successful: %s (status=%d)", fgkStatusCodeName[fStatus], status));
+	}
+	else if (status > 0) {
+	  AliInfo(Form("MeanVertex calibration failed: %s (status=%d)", fgkStatusCodeName[fStatus], status));
+	}
+	else if (status < 0) {
+	  AliInfo(Form("MeanVertex calibration but not fatal error: %s (status=%d)", fgkStatusCodeName[fStatus], status));
+	}
+	
+	
 }
 
+//__________________________________________________________________________
+Int_t AliMeanVertexPreprocessorOffline::GetStatus(){
+  /*
+   * get status
+   */
+
+  switch (fStatus) {
+
+    /* OK, return zero */
+  case kOk:
+    return 0;
+    break;
+    
+    /* non-fatal error, return negative status */
+  case kLowStatistics:
+  case kWriteMeanVertexSPD:
+  case kUseOfflineSPDvtx:
+  case kLumiRegCovMatrixProblem:
+    return -fStatus;
+    break;
+    
+    /* fatal error, return positive status */
+  case kInputError: 
+  case kStoreError:
+    return fStatus;
+    break;
+    
+    /* anything else, return negative large number */
+  default:
+    return -999;
+    break;
+  }
+  
+  /* should never arrive here, anyway return negative large number */
+  return -999;
+}
 
