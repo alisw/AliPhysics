@@ -34,6 +34,7 @@ Detailed description
 #include <AliLog.h>
 #include <AliExternalTrackParam.h>
 #include <AliPIDResponse.h>
+#include <AliTRDPIDResponse.h>
 #include <AliESDtrack.h> //!!!!! Remove once Eta correction is treated in the tender
 
 #include "AliDielectronVarManager.h"
@@ -274,6 +275,9 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     case kTRDeleEff:
       selected = IsSelectedTRDeleEff(part,icut);
       break;
+    case kTRDeleEff2D:
+      selected = IsSelectedTRDeleEff(part,icut,AliTRDPIDResponse::kLQ2D);
+      break;
     case kTOF:
       selected = IsSelectedTOF(part,icut);
       break;
@@ -362,7 +366,7 @@ Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut)
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut)
+Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod)
 {
   //
   // TRD part of the pid check using electron efficiency requirement
@@ -373,7 +377,13 @@ Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kFALSE;
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliVTrack::kTRDpid)) return kTRUE;
 
-  Bool_t selected=fPIDResponse->IdentifiedAsElectronTRD(part,fNsigmaLow[icut])^fExclude[icut];
+  Double_t centrality = -1.;
+  if(part->IsA() == AliESDtrack::Class())
+    centrality=(const_cast<AliESDEvent*>( (static_cast<const AliESDtrack*>(part))->GetESDEvent()) )->GetCentrality()->GetCentralityPercentile("V0M");
+  if(part->IsA() == AliAODTrack::Class())
+    centrality=(const_cast<AliAODEvent*>( (static_cast<const AliAODTrack*>(part))->GetAODEvent()) )->GetCentrality()->GetCentralityPercentile("V0M");
+
+  Bool_t selected=fPIDResponse->IdentifiedAsElectronTRD(part,fNsigmaLow[icut], centrality, PIDmethod)^fExclude[icut];
   return selected;
 }
 
