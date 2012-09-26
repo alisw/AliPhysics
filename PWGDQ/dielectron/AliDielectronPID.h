@@ -21,6 +21,7 @@
 
 #include <AliPID.h>
 #include <AliAnalysisCuts.h>
+#include <AliTRDPIDResponse.h>
 
 class TF1;
 class TList;
@@ -31,7 +32,7 @@ class AliDielectronVarManager;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
-  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTOF, kEMCAL};
+  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTRDeleEff2D, kTOF, kEMCAL};
   enum PIDbitType {kIgnore=0, kRequire, kIfAvailable};
   
   AliDielectronPID();
@@ -112,7 +113,7 @@ private:
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
-  Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D);
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedEMCAL(AliVTrack * const part, Int_t icut);
 
