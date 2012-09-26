@@ -1028,7 +1028,8 @@ Int_t AliTRDrawStream::ReadTrackingHeader(Int_t stack)
 	  AliESDTrdTrack *trk = (AliESDTrdTrack*) (*fTracks)[trackIndex];
 
 	  trk->SetFlags((trackWord >> 52) & 0x7ff);
-	  trk->SetReserved((trackWord >> 49) & 0x7);
+	  trk->SetFlagsTiming((trackWord >> 51) & 0x1);
+	  trk->SetReserved((trackWord >> 49) & 0x3);
 	  trk->SetY((trackWord >> 36) & 0x1fff);
 	  trk->SetTrackletIndex((trackWord >>  0) & 0x3f, 0);
 	  trk->SetTrackletIndex((trackWord >>  6) & 0x3f, 1);
