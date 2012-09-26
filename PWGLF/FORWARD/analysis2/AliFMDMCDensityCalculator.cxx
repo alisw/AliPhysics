@@ -33,7 +33,7 @@ AliFMDMCDensityCalculator::~AliFMDMCDensityCalculator()
   // 
   // Destructor 
   //
-  if (fComps)  fComps->Delete();
+  // if (fComps)  fComps->Delete();
 }
 
 //____________________________________________________________________

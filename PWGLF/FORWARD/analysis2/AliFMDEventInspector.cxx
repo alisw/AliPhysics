@@ -463,6 +463,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHCentVsQual->GetXaxis()->SetBinLabel(3, "V0 vs SPD outlier");
   fHCentVsQual->GetXaxis()->SetBinLabel(4, "V0 vs TPC outlier");
   fHCentVsQual->GetXaxis()->SetBinLabel(5, "V0 vs ZDC outlier");
+  fHCentVsQual->SetDirectory(0);
   fList->Add(fHCentVsQual);
 
   fHStatus = new TH1I("status", "Status", 7, 1, 8);

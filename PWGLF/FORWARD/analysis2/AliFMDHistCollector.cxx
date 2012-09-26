@@ -92,7 +92,7 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
 AliFMDHistCollector::~AliFMDHistCollector()
 { 
   DGUARD(fDebug, 3, "DTOR of AliFMDHistCollector");
-  if (fList) delete fList;
+  // if (fList) delete fList;
 }
 //____________________________________________________________________
 AliFMDHistCollector&

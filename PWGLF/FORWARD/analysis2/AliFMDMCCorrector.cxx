@@ -39,12 +39,12 @@ AliFMDMCCorrector::~AliFMDMCCorrector()
   // 
   // Destructor 
   //
-  if (fComps) fComps->Clear();
-  if (fFMD1i) delete fFMD1i;
-  if (fFMD2i) delete fFMD2i;
-  if (fFMD2o) delete fFMD2o;
-  if (fFMD3i) delete fFMD3i;
-  if (fFMD3o) delete fFMD3o;
+  // if (fComps) fComps->Clear();
+  // if (fFMD1i) delete fFMD1i;
+  // if (fFMD2i) delete fFMD2i;
+  // if (fFMD2o) delete fFMD2o;
+  // if (fFMD3i) delete fFMD3i;
+  // if (fFMD3o) delete fFMD3o;
 }
 
 //____________________________________________________________________

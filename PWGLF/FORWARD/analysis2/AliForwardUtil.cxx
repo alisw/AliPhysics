@@ -909,11 +909,23 @@ AliForwardUtil::Histos::~Histos()
   // 
   // Destructor
   //
+}
+
+//____________________________________________________________________
+void
+AliForwardUtil::Histos::Delete(Option_t* opt)
+{
   if (fFMD1i) delete fFMD1i;
   if (fFMD2i) delete fFMD2i;
   if (fFMD2o) delete fFMD2o;
   if (fFMD3i) delete fFMD3i;
   if (fFMD3o) delete fFMD3o;
+  fFMD1i = 0;
+  fFMD2i = 0;
+  fFMD2o = 0;
+  fFMD3i = 0;
+  fFMD3o = 0;
+  TObject::Delete(opt);
 }
 
 //____________________________________________________________________
