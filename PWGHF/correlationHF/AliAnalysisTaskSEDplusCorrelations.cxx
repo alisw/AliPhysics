@@ -304,6 +304,17 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
   TString hisname;
   Int_t index=0;
   Int_t nbins=GetNBinsHistos();
+
+
+   Int_t nbinsphi = 32;
+   Double_t philow = -0.5*Pi - Pi/32; // shift the bin by half the width so that at 0 is it the bin center
+   Double_t phiup = 1.5*Pi - Pi/32;	
+
+   Int_t nbinseta = 16;
+   Double_t etalow = -1.6; // shift the bin by half the width so that at 0 is it the bin center
+   Double_t etaup = +1.6;	
+     
+
   
   for(Int_t i=0;i<fNPtBins;i++){
 
@@ -311,35 +322,35 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
 
 
     hisname.Form("hMassVsdPhiHad%d",i);
-    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaHad%d",i);
-    fMassVsdEtaHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiKaon%d",i);
-    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaKaon%d",i);
-    fMassVsdEtaHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKaon[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiK0%d",i);
-    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKshort[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaK0%d",i);
-    fMassVsdEtaHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKshort[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKshort[index]->Sumw2();
     
     hisname.Form("hMassVsdPhiLeadHad%d",i);
-    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistLeadHad[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaLeadHad%d",i);
-    fMassVsdEtaHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistLeadHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistLeadHad[index]->Sumw2();
 
     hisname.Form("hMassPtK0S%d",i);
@@ -373,35 +384,35 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     index=GetSignalHistoIndex(i); 
 
     hisname.Form("hMassVsdPhiHadSig%d",i);
-    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaHadSig%d",i);
-    fMassVsdEtaHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiKaonSig%d",i);
-    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaKaonSig%d",i);
-    fMassVsdEtaHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKaon[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiK0Sig%d",i);
-    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKshort[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaK0Sig%d",i);
-    fMassVsdEtaHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKshort[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKshort[index]->Sumw2();
     
     hisname.Form("hMassVsdPhiLeadHadSig%d",i);
-    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistLeadHad[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaLeadHadSig%d",i);
-    fMassVsdEtaHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistLeadHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistLeadHad[index]->Sumw2();
 
  
@@ -432,36 +443,36 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     index=GetBackgroundHistoIndex(i);
 
     hisname.Form("hMassVsdPhiBkgHad%d",i);
-    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaBkgHad%d",i);
-    fMassVsdEtaHistHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistHad[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiBkgKaon%d",i);
-    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdEtaBkgKaon%d",i);
-    fMassVsdEtaHistKaon[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKaon[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKaon[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiBkgKshort%d",i);
-    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistKshort[index]->Sumw2();
 
 
     hisname.Form("hMassVsdPhiBkgKshort%d",i);
-    fMassVsdEtaHistKshort[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistKshort[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistKshort[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiBkgLeadHad%d",i);
-    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdPhiHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup);
     fMassVsdPhiHistLeadHad[index]->Sumw2();
 
     hisname.Form("hMassVsdPhiBkgKshort%d",i);
-    fMassVsdEtaHistLeadHad[index]=new TH2F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,25,(-1)*TMath::Pi()/2,3.*TMath::Pi()/2.);
+    fMassVsdEtaHistLeadHad[index]=new TH3D(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit,nbinsphi,philow,phiup,nbinseta,etalow,etaup);
     fMassVsdEtaHistLeadHad[index]->Sumw2();
     
     hisname.Form("hBkgPtK0S%d",i);
@@ -679,7 +690,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
  
   Int_t n3Prong = array3Prong->GetEntriesFast();
-  // printf("Number of D+->Kpipi: %d and of tracks: %d\n",n3Prong,aod->GetNumberOfTracks());  
+   printf("Number of D+->Kpipi: %d and of tracks: %d\n",n3Prong,aod->GetNumberOfTracks());  
   Int_t nOS=0;
   Int_t index;
   Int_t pdgDgDplustoKpipi[3]={321,211,211};
@@ -698,7 +709,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
     Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
      
-    if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
+     if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
       
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
@@ -751,7 +762,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 	fMassHist[index]->Fill(invMass);
 	
 	// loop for tight cuts
-	if(passTightCuts>0){   
+		if(passTightCuts>0){   
 	  fHistNEvents->Fill(10);
 	  nSelectedtight++;
 	  fMassHistTC[index]->Fill(invMass);
@@ -768,6 +779,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
 	  Double_t ptlead = 0;
 	  Double_t philead = 0;
+	  Double_t etalead = 0;
 	  Double_t refpt = 0;
 	    
 
@@ -796,8 +808,8 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 		 
 	    //start the track loop
 		  
-	    // Int_t NofTracks = fCorrelator->GetNofTracks();
-		  		  
+	    Int_t NofTracks = fCorrelator->GetNofTracks();
+	    cout<<NofTracks<<"******8"<<endl;  		  
 	    for (Int_t iTrack = 0;iTrack<fCorrelator->GetNofTracks();iTrack++) {	               
 	      Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
 		       
@@ -808,6 +820,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 	      AliReducedParticle* redpart = fCorrelator->GetAssociatedParticle();
 	      Double_t phiHad=redpart->Phi();
 	      Double_t ptHad=redpart->Pt();
+	      Double_t etaHad=redpart->Eta();
 	      Int_t label = redpart->GetLabel();
 	      Int_t trackid = redpart->GetID();
 	      phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
@@ -828,6 +841,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 	      if (ptHad > refpt) {
 		refpt = ptHad; ptlead = ptHad;
 		philead = d->Phi() - phiHad;
+		etalead = d->Eta() - etaHad;
 		if (philead < (-1)*TMath::Pi()/2) philead += 2*TMath::Pi();
 		if (philead > 3*TMath::Pi()/2) philead -= 2*TMath::Pi();
 		      
@@ -849,18 +863,21 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
 	    // For leading particle		  		  
 	    fMassVsdPhiHistLeadHad[index]->Fill(invMass,philead);	
+	    fMassVsdEtaHistLeadHad[index]->Fill(invMass,philead,etalead);
+
 	    fLeadPt[index]->Fill(ptlead);
 	     
 	    if(fReadMC && isDplus) {
 	      index=GetSignalHistoIndex(iPtBin);
-	      fMassVsdPhiHistLeadHad[index]->Fill(invMass,philead);	
+	      fMassVsdPhiHistLeadHad[index]->Fill(invMass,philead);
+	      fMassVsdEtaHistLeadHad[index]->Fill(invMass,philead,etalead);	
 	      fLeadPt[index]->Fill(ptlead);
 		     
 	    }
 	      
 	  }//jmix
 		
-	}// tc 
+	  	}// tc 
       }//fid
 		
 		
@@ -933,15 +950,15 @@ void AliAnalysisTaskSEDplusCorrelations::FillCorrelations(AliAODRecoDecayHF3Pron
 
   if(sel==1){	  	
     fMassVsdPhiHistHad[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistHad[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistHad[ind]->Fill(invMass,deltaPhi,deltaEta);
   }
   if(sel==2){
     fMassVsdPhiHistKaon[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistKaon[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistKaon[ind]->Fill(invMass,deltaPhi,deltaEta);
   }
   if(sel==3){
     fMassVsdPhiHistKshort[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistKshort[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistKshort[ind]->Fill(invMass,deltaPhi,deltaEta);
   }
 	 
   return;
@@ -958,7 +975,7 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
 
   if(sel==1){
     fMassVsdPhiHistHad[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistHad[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistHad[ind]->Fill(invMass,deltaPhi,deltaEta);
 
   	
     fMCSources->Fill(0);
@@ -979,7 +996,7 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
 
   if(sel==2){
     fMassVsdPhiHistKaon[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistKaon[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistKaon[ind]->Fill(invMass,deltaPhi,deltaEta);
     fKaonOrigin->Fill(0);
     if(mcSource[2]&&mcSource[0]){ // is from charm ->D
       fKaonOrigin->Fill(1);
@@ -996,7 +1013,7 @@ void AliAnalysisTaskSEDplusCorrelations::FillMCCorrelations(AliAODRecoDecayHF3Pr
   }
   if(sel==3){
     fMassVsdPhiHistKshort[ind]->Fill(invMass,deltaPhi);
-    fMassVsdEtaHistKshort[ind]->Fill(invMass,deltaEta);
+    fMassVsdEtaHistKshort[ind]->Fill(invMass,deltaPhi,deltaEta);
     fK0Origin->Fill(0);
     if(mcSource[2]&&mcSource[0]){ // is from charm ->D
       fK0Origin->Fill(1);
