@@ -688,18 +688,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskLctopKpi_CommonFramework";
+                outputfile+=coutName.Data();
 		output1name="CFHFchist0_3Prong_CommonFramework";
-                output1name+=coutName;
+                output1name+=coutName.Data();
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromBOnly_CommonFramework";
+                outputfile+=coutName.Data();
 		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
-                output1name+=coutName;
+                output1name+=coutName.Data();
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromB_CommonFramework";
+                outputfile+=coutName.Data();
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
-                output1name+=coutName;
+                output1name+=coutName.Data();
 	}
 
 	output4name= "Cuts_3Prong_CommonFramework";
