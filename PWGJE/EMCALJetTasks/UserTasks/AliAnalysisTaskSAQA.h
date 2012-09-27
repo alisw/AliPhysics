@@ -47,7 +47,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistCellsTracks;          //!Number of cells vs. number of tracks
 
   // Tracks
-  TH3F                       *fHistTrPhiEtaPt[4];        //!Phi-Eta-Pt distribution of tracks
+  TH3F                       *fHistTrPhiEtaPt[4][4];     //!Phi-Eta-Pt distribution of tracks
   TH2F                       *fHistTrEmcPhiEta;          //!Phi-Eta emcal propagated distribution of tracks
   TH2F                       *fHistTrPhiEtaNonProp;      //!Phi-Eta distribution of non emcal propagated tracks
   TH2F                       *fHistDeltaEtaPt;           //!Eta-EtaProp vs. Pt
@@ -71,14 +71,10 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistChVSneClus;           //!Charged vs. neutral (clusters) energy
   TH2F                       *fHistChVSneCorrCells;      //!Charged vs. neutral (corrected cells) energy
 
-  // Hybrid tracks
-  TH1F                       *fHistTrackPhi[5];          //!Phi distribution of hybrid tracks
-  TH1F                       *fHistTrackEta[5];          //!Eta distribution of hybrid tracks
-
  private:
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 15) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 16) // Quality task for Emcal analysis
 };
 #endif

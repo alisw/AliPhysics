@@ -58,13 +58,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 {
   // Default constructor.
 
-  for (Int_t i = 0; i < 5; i++) {
-    fHistTrackPhi[i] = 0;
-    fHistTrackEta[i] = 0;
-  }
-
   for (Int_t i = 0; i < 4; i++) {
-    fHistTrPhiEtaPt[i] = 0;
+    for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -101,13 +96,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
 {
   // Standard constructor.
 
-  for (Int_t i = 0; i < 5; i++) {
-    fHistTrackPhi[i] = 0;
-    fHistTrackEta[i] = 0;
-  }
-
   for (Int_t i = 0; i < 4; i++) {
-    fHistTrPhiEtaPt[i] = 0;
+    for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -138,13 +128,14 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     TString histname;
 
     for (Int_t i = 0; i < 4; i++) {
-      histname = "fHistTrPhiEtaPt_";
-      histname += i;
-      fHistTrPhiEtaPt[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
-      fHistTrPhiEtaPt[i] ->GetXaxis()->SetTitle("#eta");
-      fHistTrPhiEtaPt[i] ->GetYaxis()->SetTitle("#phi");
-      fHistTrPhiEtaPt[i] ->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-      fOutput->Add(fHistTrPhiEtaPt[i]);
+      for (Int_t j = 0; j < 4; j++) {
+	histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
+	fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
+	fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
+	fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
+	fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+	fOutput->Add(fHistTrPhiEtaPt[i][j]);
+      }
     }
 
     fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
@@ -166,31 +157,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistDeltaPhiPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
     fOutput->Add(fHistDeltaPhiPt);
-
-    for (Int_t i = 0; i < 5; i++) {
-      TString histnamephi("fHistTrackPhi_");
-      histnamephi += i;
-      fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 201, 0, TMath::Pi() * 2.01);
-      fHistTrackPhi[i]->GetXaxis()->SetTitle("Phi");
-      fOutput->Add(fHistTrackPhi[i]);
-      
-      TString histnameeta("fHistTrackEta_");
-      histnameeta += i;
-      fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 100, -1, 1);
-      fHistTrackEta[i]->GetXaxis()->SetTitle("Eta");
-      fOutput->Add(fHistTrackEta[i]);
-    }
-
-    fHistTrackPhi[0]->SetLineColor(kRed);
-    fHistTrackEta[0]->SetLineColor(kRed);
-    fHistTrackPhi[1]->SetLineColor(kBlue);
-    fHistTrackEta[1]->SetLineColor(kBlue);
-    fHistTrackPhi[2]->SetLineColor(kGreen);
-    fHistTrackEta[2]->SetLineColor(kGreen);
-    fHistTrackPhi[3]->SetLineColor(kOrange);
-    fHistTrackEta[3]->SetLineColor(kOrange);
-    fHistTrackPhi[4]->SetLineColor(kBlack);
-    fHistTrackEta[4]->SetLineColor(kBlack);
   }
 
   if (!fCaloName.IsNull()) {
@@ -520,18 +486,12 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     fNtracks++;
 
     sum += track->P();
-      
-    fHistTrPhiEtaPt[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
 
     Int_t label = track->GetLabel();
-
-    if (label >= 0 && label < 4) {
-      fHistTrackEta[label]->Fill(track->Eta());
-      fHistTrackPhi[label]->Fill(track->Phi());
-    }
-
-    fHistTrackEta[4]->Fill(track->Eta());
-    fHistTrackPhi[4]->Fill(track->Phi());
+    if (label < 0 || label > 3)
+      label = 3;
+    
+    fHistTrPhiEtaPt[fCentBin][label]->Fill(track->Eta(), track->Phi(), track->Pt());
 
     if (!vtrack)
       continue;

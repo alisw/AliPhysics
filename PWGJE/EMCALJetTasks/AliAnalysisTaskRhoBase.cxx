@@ -27,6 +27,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fRhoFunction(0),
   fScaleFunction(0),
   fInEventSigmaRho(35.83),
+  fAttachToEvent(kTRUE),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -66,6 +67,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fRhoFunction(0),
   fScaleFunction(0),
   fInEventSigmaRho(35.83),
+  fAttachToEvent(kTRUE),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -289,7 +291,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
       fHistDeltaRhovsNtrack->Fill(Ntracks, fRho->GetVal() - fCompareRho->GetVal());
   }
 
-  if (fScaleFunction) {
+  if (fRhoScaled) {
     fHistRhoScaledvsCent->Fill(fCent, fRhoScaled->GetVal());
     if (fTracks)
       fHistRhoScaledvsNtrack->Fill(Ntracks, fRhoScaled->GetVal());
@@ -311,23 +313,28 @@ void AliAnalysisTaskRhoBase::ExecOnce()
 {
   // Init the analysis.
 
-  // add rho to event if not yet there
-  fRho = new AliRhoParameter(fRhoName, 0);
+  if (!fRho) {
+    fRho = new AliRhoParameter(fRhoName, 0);
 
-  if (!(InputEvent()->FindListObject(fRhoName))) {
-    InputEvent()->AddObject(fRho);
-  } else {
-    AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoName.Data()));
-    return;
-  }
-
-  if (fScaleFunction) {
-    fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);
-    if (!(InputEvent()->FindListObject(fRhoScaledName))) {
-      InputEvent()->AddObject(fRhoScaled);
-    } else {
-      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoScaledName.Data()));
-      return;
+    if (fAttachToEvent) {
+      if (!(InputEvent()->FindListObject(fRhoName))) {
+	InputEvent()->AddObject(fRho);
+      } else {
+	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoName.Data()));
+	return;
+      }
+    }
+    
+    if (fScaleFunction && !fRhoScaled) {
+      fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);
+      if (fAttachToEvent) {
+	if (!(InputEvent()->FindListObject(fRhoScaledName))) {
+	  InputEvent()->AddObject(fRhoScaled);
+	} else {
+	  AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoScaledName.Data()));
+	  return;
+	}
+      }
     }
   }
 

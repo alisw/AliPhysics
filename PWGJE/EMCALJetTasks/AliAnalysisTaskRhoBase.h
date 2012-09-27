@@ -26,6 +26,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf   ;                   }
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf   ;                   }
   void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
+  void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                   }
 
  protected:
   void                   ExecOnce();
@@ -41,6 +42,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TF1                   *fRhoFunction;                   // pre-computed rho as a function of centrality
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
   Double_t               fInEventSigmaRho;               // in-event sigma rho
+  Bool_t                 fAttachToEvent;                 // whether or not attach rho to the event objects list
 
   AliRhoParameter       *fRhoScaled;                     //!scaled rho object
   AliRhoParameter       *fCompareRho;                    //!rho object to compare
@@ -71,6 +73,6 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoBase(const AliAnalysisTaskRhoBase&);             // not implemented
   AliAnalysisTaskRhoBase& operator=(const AliAnalysisTaskRhoBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoBase, 6); // Rho base task
+  ClassDef(AliAnalysisTaskRhoBase, 7); // Rho base task
 };
 #endif

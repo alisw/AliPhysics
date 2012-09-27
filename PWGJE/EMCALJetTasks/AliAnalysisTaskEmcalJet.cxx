@@ -107,7 +107,13 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
     return kFALSE;
 
-  return (Bool_t)(jet->Eta() > fJetMinEta && jet->Eta() < fJetMaxEta && jet->Phi() > fJetMinPhi && jet->Phi() < fJetMaxPhi);
+  Double_t jetPhi = jet->Phi();
+  Double_t jetEta = jet->Eta();
+  
+  if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
+    jetPhi -= TMath::Pi() * 2;
+
+  return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
 }
 
 //________________________________________________________________________
