@@ -9,6 +9,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJet+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
+#pragma link C++ class AliAnalysisTaskRhoFlow+;
 #pragma link C++ class AliAnalysisTaskRhoAverage+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;

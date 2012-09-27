@@ -29,6 +29,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoFlow.cxx
  EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
  EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
