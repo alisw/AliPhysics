@@ -145,7 +145,7 @@ AliFMDSharingFilter::~AliFMDSharingFilter()
   // Destructor
   //
   DGUARD(fDebug,3, "DTOR for AliFMDSharingFilter");
-  fRingHistos.Delete();
+  // fRingHistos.Delete();
 }
 
 //____________________________________________________________________
@@ -1184,15 +1184,15 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   fDet = o.fDet;
   fRing = o.fRing;
   
-  if (fBefore) delete  fBefore;
-  if (fAfter)  delete  fAfter;
-  if (fSingle) delete  fSingle;
-  if (fDouble) delete  fDouble;
-  if (fTriple) delete  fTriple;
+  if (fBefore) 	       delete  fBefore;
+  if (fAfter)  	       delete  fAfter;
+  if (fSingle) 	       delete  fSingle;
+  if (fDouble) 	       delete  fDouble;
+  if (fTriple)         delete  fTriple;
   if (fSinglePerStrip) delete fSinglePerStrip;
   if (fDistanceBefore) delete fDistanceBefore;
   if (fDistanceAfter)  delete fDistanceAfter;
-  if (fHits)   delete fHits;
+  if (fHits)   	       delete fHits;
   
   
   fBefore          = static_cast<TH1D*>(o.fBefore->Clone());

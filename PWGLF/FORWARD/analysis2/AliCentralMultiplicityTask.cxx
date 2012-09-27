@@ -34,6 +34,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fInspector("centralEventInspector"),
     fData(0),
     fList(0),
+    fHits(0),
     fAODCentral(kFALSE),
     fManager(),
     fUseSecondary(true),
@@ -62,6 +63,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fInspector(),
     fData(0),
     fList(0),
+    fHits(0),
     fAODCentral(),
     fManager(),
     fUseSecondary(true),
@@ -86,6 +88,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fInspector(o.fInspector),
     fData(o.fData),
     fList(o.fList),
+    fHits(o.fHits),
     fAODCentral(o.fAODCentral),
     fManager(o.fManager),
     fUseSecondary(o.fUseSecondary),
@@ -117,6 +120,7 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   fInspector         = o.fInspector;
   fData              = o.fData;
   fList              = o.fList;
+  fHits              = o.fHits;
   fAODCentral        = o.fAODCentral;
   fManager           = o.fManager;
   fUseSecondary      = o.fUseSecondary;
@@ -302,10 +306,10 @@ void AliCentralMultiplicityTask::FindEtaLimits()
   fEtaMin.Set(vaxis.GetNbins());
   fEtaMax.Set(vaxis.GetNbins());
   
-  TList* hits = new TList;
-  hits->SetOwner();
-  hits->SetName("hitMaps");
-  fList->Add(hits);
+  fHits = new TList;
+  fHits->SetOwner();
+  fHits->SetName("hitMaps");
+  fList->Add(fHits);
   
   TList* secs = new TList;
   secs->SetOwner();
@@ -355,7 +359,7 @@ void AliCentralMultiplicityTask::FindEtaLimits()
     data->GetZaxis()->SetTitle("");
     data->SetMarkerColor(kBlack);
     data->SetMarkerStyle(1);
-    hits->Add(data);
+    fHits->Add(data);
     
     TH1D* hAcceptance = fManager.GetAcceptanceCorrection(v);
     TH1D* accClone   = static_cast<TH1D*>(hAcceptance->Clone(Form("acceptance%02d",v)));
@@ -442,12 +446,9 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   ProcessESD(aodHist, spdmult);
   CorrectData(aodHist, ivz);
   //Producing hit maps
-  TList* hitList = static_cast<TList*>(fList->FindObject("hitMaps"));
-  TH2D* data  = 0;
-  if(hitList)
-    data = static_cast<TH2D*>(hitList->At(ivz-1));
-  if(data)
-    data->Add(&aodHist);
+  // TList* hitList = static_cast<TList*>(fList->FindObject("hitMaps"));
+  TH2D* data  = static_cast<TH2D*>(fHits->At(ivz-1));
+  if(data) data->Add(&aodHist);
   
   PostData(1,fList);
 }

@@ -366,6 +366,7 @@ protected:
   AliFMDEventInspector   fInspector;        // Inspect events 
   TH2D*                  fData;             // sum histogram if needed
   TList*                 fList;             // Output List for diagnostics
+  TList*                 fHits;             // Per-vertex histograms 
   AliAODCentralMult      fAODCentral;       // Output object
   Manager                fManager;          // Manager object for corrections
   Bool_t                 fUseSecondary;     // Whether to secondary map
@@ -378,7 +379,7 @@ protected:
   TH1D*                  fNTracklet;        //! number of tracklets 
   TArrayI                fEtaMin;           // Least eta bin to use
   TArrayI                fEtaMax;           // Largest eta bin to use
-  ClassDef(AliCentralMultiplicityTask,2)    // Forward multiplicity class
+  ClassDef(AliCentralMultiplicityTask,3)    // Forward multiplicity class
 };
 
 #endif
