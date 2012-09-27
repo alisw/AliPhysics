@@ -50,7 +50,7 @@ const Float_t multmax_50_102 = 102;
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta")
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -689,14 +689,17 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskLctopKpi_CommonFramework";
 		output1name="CFHFchist0_3Prong_CommonFramework";
+                output1name+=coutName;
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromBOnly_CommonFramework";
 		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
+                output1name+=coutName;
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromB_CommonFramework";
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
+                output1name+=coutName;
 	}
 
 	output4name= "Cuts_3Prong_CommonFramework";
