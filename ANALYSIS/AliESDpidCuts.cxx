@@ -24,10 +24,12 @@
 #include <TString.h>
 #include <TList.h>
 
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
-#include "AliESDpid.h"
+#include "AliPIDResponse.h"
 
 #include "AliESDpidCuts.h"
 
@@ -38,7 +40,7 @@ const Int_t AliESDpidCuts::kNcuts = 3;
 //_____________________________________________________________________
 AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
     AliAnalysisCuts(name, title)
-  , fESDpid(NULL)
+  , fPIDresponse(NULL)
   , fTPCsigmaCutRequired(0)
   , fTOFsigmaCutRequired(0)
   , fCutTPCclusterRatio(0.)
@@ -50,7 +52,6 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
   // Default constructor
   //
   
-  fESDpid = new AliESDpid;
   memset(fCutTPCnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
   memset(fCutTOFnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
 
@@ -62,7 +63,7 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
 //_____________________________________________________________________
 AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
     AliAnalysisCuts(ref)
-  , fESDpid(NULL)
+  , fPIDresponse(NULL)
   , fTPCsigmaCutRequired(ref.fTPCsigmaCutRequired)
   , fTOFsigmaCutRequired(ref.fTOFsigmaCutRequired)
   , fCutTPCclusterRatio(ref.fCutTPCclusterRatio)
@@ -73,7 +74,7 @@ AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
   //
   // Copy constructor
   //
-  fESDpid = new AliESDpid(*ref.fESDpid);
+  fPIDresponse = ref.fPIDresponse;
   memcpy(fCutTPCnSigma, ref.fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
   memcpy(fCutTOFnSigma, ref.fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
   
@@ -103,15 +104,27 @@ AliESDpidCuts::~AliESDpidCuts(){
   //
   // Destructor
   //
-  delete fESDpid;
 
-  delete fHcutStatistics;
   delete fHcutCorrelation;
   for(Int_t imode = 0; imode < 2; imode++){
     delete fHclusterRatio[imode];
     for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
       delete fHnSigmaTPC[ispec][imode];
       delete fHnSigmaTOF[ispec][imode];
+    }
+  }
+}
+
+//_____________________________________________________________________
+void AliESDpidCuts::Init(){
+  //
+  // Init function, get PID response from the Analysis Manager
+  //
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(mgr){
+    AliInputEventHandler *handler = dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+    if(handler){
+      fPIDresponse = handler->GetPIDResponse();
     }
   }
 }
@@ -141,7 +154,7 @@ void AliESDpidCuts::Copy(TObject &c) const {
   //
   AliESDpidCuts &target = dynamic_cast<AliESDpidCuts &>(c);
 
-  target.fESDpid = new AliESDpid(*fESDpid);
+  target.fPIDresponse = fPIDresponse;
 
   target.fCutTPCclusterRatio = fCutTPCclusterRatio;
   target.fMinMomentumTOF = fMinMomentumTOF;
@@ -233,6 +246,10 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *e
   //
   // Check whether the tracks survived the cuts
   //
+  if(!fPIDresponse){
+    AliError("PID Response not available");
+    return 0;
+  }
   enum{
     kCutClusterRatioTPC,
     kCutNsigmaTPC,
@@ -252,7 +269,7 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *e
   // check TPC nSigma cut
   Float_t nsigmaTPC[AliPID::kSPECIES], nsigma;   // need all sigmas for QA plotting
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    nsigmaTPC[ispec] = nsigma = fESDpid->NumberOfSigmasTPC(track,(AliPID::EParticleType)ispec);
+    nsigmaTPC[ispec] = nsigma = fPIDresponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)ispec);
     if(!(fTPCsigmaCutRequired & 1 << ispec)) continue;
     SETBIT(cutRequired, kCutNsigmaTPC); // We found at least one species where the n-Sigma Cut is required
     if(nsigma >= fCutTPCnSigma[2*ispec] && nsigma <= fCutTPCnSigma[2*ispec+1]) SETBIT(cutFullfiled, kCutNsigmaTPC);    // Fullfiled for at least one species
@@ -264,7 +281,7 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *e
   track->GetIntegratedTimes(times);
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
     
-    if(hasTOFpid && event) nsigmaTOF[ispec] = nsigma = fESDpid->NumberOfSigmasTOF(track,(AliPID::EParticleType)ispec, event->GetT0());
+    if(hasTOFpid && event) nsigmaTOF[ispec] = nsigma = fPIDresponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)ispec);
     if(!(fTOFsigmaCutRequired && 1 << ispec)) continue;
     SETBIT(cutRequired, kCutNsigmaTOF);
     if(track->GetOuterParam()->P() >= fMinMomentumTOF){

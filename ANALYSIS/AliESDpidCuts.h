@@ -35,6 +35,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
     AliESDpidCuts &operator=(const AliESDpidCuts &ref);
     virtual ~AliESDpidCuts();
 
+    virtual void Init();
     virtual void Copy(TObject &c) const;
     virtual Long64_t Merge(TCollection *coll);
 
@@ -46,7 +47,8 @@ class AliESDpidCuts : public AliAnalysisCuts{
     virtual Bool_t IsSelected(TList * /*lst*/) {return kTRUE; }
     virtual Bool_t AcceptTrack(const AliESDtrack *track, const AliESDEvent *event);
 
-    AliESDpid *GetESDpid() { return fESDpid; };
+    void SetPIDResponse(AliPIDResponse * pidresponse) { fPIDresponse = pidresponse; }
+    AliPIDResponse *GetPIDresponse() { return fPIDresponse; };
     
     void SetTPCclusterRatioCut(Float_t clr) { fCutTPCclusterRatio = clr; }
     inline void SetTPCnSigmaCut(AliPID::EParticleType itype, Float_t nSigma);
@@ -57,7 +59,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
   
   protected:
     static const Int_t kNcuts;                      // Number of Cuts
-    AliESDpid *fESDpid;                             //! PID helper (n-sigma-cut)
+    AliPIDResponse *fPIDresponse;                   //! PID helper (n-sigma-cut)
     Char_t  fTPCsigmaCutRequired;                   // Sigma cut Requirement for TPC and Particle Species
     Char_t  fTOFsigmaCutRequired;                   // Sigma cut Requirement for TOF and Particle Species
     Float_t fCutTPCnSigma[AliPID::kSPECIES * 2];    // Species dependent cut on the distance to the TPC dE/dx line
