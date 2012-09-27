@@ -30,6 +30,7 @@ void QAWriteTracks();
 void QAWriteNPi0();
 
 TH1D *Pi0InvMass(TH2 *hMassPt, Float_t ptmin, Float_t ptmax);
+TH1F *AddWriteTH1F(const char *name, const char *title, Double_t* values, Double_t* errors);
 void Fit1Pi0(TH1D *hMass,
 	     const Int_t polN,
 	     const Double_t mFitMin,
@@ -42,21 +43,34 @@ Double_t bgP2     (Double_t *x, Double_t *par);
 
 //-----------------------------------------------------------------------------
 // Global variabes
+const Int_t kNCents = 1;
+const Int_t kNPID = 8+4;
+const char* kPIDNames[kNPID] = {"All", "Allwou", "Disp", "Disp2", "Dispwou", "CPV", "CPV2", "Both",
+				"Allcore", "Dispcore", "CPVcore", "Bothcore"};
 
 Int_t runIndex;
 Int_t runNum[500];
 TList *listHist;
 Double_t run[500], erun[500];
+// Event selection:
 Double_t rVtx[500], rVtxZ10[500], rVtxZ10Cent[500];
 Double_t eVtx[500], eVtxZ10[500], eVtxZ10Cent[500];
+// Occupancy:
 Double_t nCellsM1[500], nCellsM2[500], nCellsM3[500];
+// Clusters:
+Double_t nCluEvent[500], eCluEvent[500];
+Double_t cluEnergy[500], ecluEnergy[500];
+Double_t nPhotPID[kNCents][kNPID][500], enPhotPID[kNCents][kNPID][500];
+Double_t mEnPID[kNCents][kNPID][500],   emEnPID[kNCents][kNPID][500];
+
+// Tracks:
+Double_t nTracks0[500], eTracks0[500];
+Double_t nTracks1[500], eTracks1[500];
+// Pi0:
 Double_t mPi0[500], emPi0[500];
 Double_t wPi0[500], ewPi0[500];
 Double_t nPi0Event[500], ePi0Event[500];
-Double_t nCluEvent[500], eCluEvent[500];
-Double_t cluEnergy[500], ecluEnergy[500];
-Double_t nTracks0[500], eTracks0[500];
-Double_t nTracks1[500], eTracks1[500];
+
 
 //-----------------------------------------------------------------------------
 void ExtractQA(const TString filelist="filelist.txt",
@@ -169,24 +183,30 @@ void QAFillOccupancy()
 void QAFillClusters()
 {
   TH1F *hTotSelEvents = (TH1F*)listHist->FindObject("hTotSelEvents");
+  Double_t nEvents4 = hTotSelEvents->GetBinContent(4);
+  if( ! nEvents4 ) return;
+
   TH2F *hCluEvsClu = (TH2F*)listHist->FindObject("hCluEvsClu");
   TH1D *hClusterE = hCluEvsClu->ProjectionX("hClusterE",4,41);
-  //hClusterE->SetAxisRange(0.3,30.);
-  Double_t meanE    = hClusterE->GetMean();
-  Double_t meanEerr = hClusterE->GetMeanError();
 
-  Double_t nTotEvents    = hTotSelEvents->GetBinContent(1);
-  Double_t nClusters = hClusterE->Integral(hClusterE->FindBin(0.3),
-					   hClusterE->FindBin(30.));
-
-  cluEnergy[runIndex]  = meanE;
-  ecluEnergy[runIndex] = meanEerr;
+  cluEnergy[runIndex]  = hClusterE->GetMean();
+  ecluEnergy[runIndex] = hClusterE->GetMeanError();
   
-   if( ! nTotEvents )
-     return;
+  nCluEvent[runIndex]  = hClusterE->Integral() / nEvents4;
+  eCluEvent[runIndex]  = TMath::Sqrt( hClusterE->Integral() )/nEvents4;
 
-  nCluEvent[runIndex]  = nClusters/nTotEvents;
-  eCluEvent[runIndex]  = TMath::Sqrt(nClusters)/nTotEvents;
+
+  for(int cent = 0; cent < kNCents; ++cent) {
+    for(int ipid = 0; ipid < kNPID; ++ipid) {
+      TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+
+      double nPhot = hPhot->Integral() /nEvents4;
+      nPhotPID [cent][ipid][runIndex] = nPhot;
+      enPhotPID[cent][ipid][runIndex] = TMath::Sqrt( nPhot /nEvents4 );
+      mEnPID   [cent][ipid][runIndex] = hPhot->GetMean();
+      emEnPID  [cent][ipid][runIndex] = hPhot->GetMeanError();
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -294,13 +314,13 @@ void QAFillNPi0()
   ePi0 = TMath::Sqrt(nPi0);
   // Fit1Pi0(hMass,2,0.05,0.20,nPi0,ePi0); 
   
-  Double_t nEvents = hTotSelEvents->GetBinContent(1);
+  Double_t nEvents4 = hTotSelEvents->GetBinContent(4);
   mPi0     [runIndex] = pi0Peak;
   emPi0    [runIndex] = epi0Peak;
   wPi0     [runIndex] = pi0Sigma;
   ewPi0    [runIndex] = epi0Sigma;
-  nPi0Event[runIndex] = nPi0/nEvents;
-  ePi0Event[runIndex] = ePi0/nEvents;
+  nPi0Event[runIndex] = nPi0/nEvents4;
+  ePi0Event[runIndex] = ePi0/nEvents4;
 
   // printf("Npi0(%d,%d) = %.1f\n",iMin,iMax,nPi0);
   // TCanvas *c1 = new TCanvas("c1","c1",0,0,800,600);
@@ -342,9 +362,9 @@ void QAWriteEventSelection()
   grVtxZ10       ->LabelsOption("v");
   grVtxZ10Cent   ->LabelsOption("v");
 
-  grVtx          ->SetMarkerStyle(20);
-  grVtxZ10       ->SetMarkerStyle(20);
-  grVtxZ10Cent   ->SetMarkerStyle(20);
+  grVtx          ->SetMarkerStyle(33);
+  grVtxZ10       ->SetMarkerStyle(33);
+  grVtxZ10Cent   ->SetMarkerStyle(33);
 
   grVtx          ->Write();
   grVtxZ10       ->Write();
@@ -381,9 +401,9 @@ void QAWriteOccupancy()
   grNCellsM1     ->LabelsOption("v");
   grNCellsM2     ->LabelsOption("v");
   grNCellsM3     ->LabelsOption("v");
-  grNCellsM1     ->SetMarkerStyle(20);
-  grNCellsM2     ->SetMarkerStyle(20);
-  grNCellsM3     ->SetMarkerStyle(20);
+  grNCellsM1     ->SetMarkerStyle(33);
+  grNCellsM2     ->SetMarkerStyle(33);
+  grNCellsM3     ->SetMarkerStyle(33);
   grNCellsM1     ->Write();
   grNCellsM2     ->Write();
   grNCellsM3     ->Write();
@@ -400,7 +420,7 @@ void QAWriteClusters()
   }
 
   grECluster ->LabelsOption("v");
-  grECluster ->SetMarkerStyle(20);
+  grECluster ->SetMarkerStyle(33);
   grECluster ->Write();
 
   TH1F *grNCluster = new TH1F("grNCluster","#LTN_{clusters}#GT",runIndex,0,runIndex);
@@ -410,8 +430,18 @@ void QAWriteClusters()
     grNCluster          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
   }
   grNCluster ->LabelsOption("v");
-  grNCluster ->SetMarkerStyle(20);
+  grNCluster ->SetMarkerStyle(33);
   grNCluster ->Write();
+
+  for(int cent=0; cent<kNCents; ++cent) {
+    for(int ipid = 0; ipid < kNPID; ++ipid) {
+      TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+      AddWriteTH1F(Form("grNPhot%s", kPIDNames[ipid]), Form("#LTN_{clusters}^{%s}#GT", kPIDNames[ipid]),
+		   nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
+      AddWriteTH1F(Form("grEn%s", kPIDNames[ipid]), Form("#LTE_{clusters}^{%s}#GT", kPIDNames[ipid]),
+		   nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -424,7 +454,7 @@ void QAWriteTracks()
     grNTracks0          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
   }
   grNTracks0 ->LabelsOption("v");
-  grNTracks0 ->SetMarkerStyle(20);
+  grNTracks0 ->SetMarkerStyle(33);
   grNTracks0 ->Write();
 
 //   TH1F *grNTracks1 = new TH1F("grNTracks1","#LTN_{tracks}#GT, N #geq 5",runIndex,0,runIndex);
@@ -434,7 +464,7 @@ void QAWriteTracks()
 //     grNTracks1          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
 //   }
 //   grNTracks1 ->LabelsOption("v");
-//   grNTracks1 ->SetMarkerStyle(20);
+//   grNTracks1 ->SetMarkerStyle(33);
 //   grNTracks1 ->Write();
 }
 
@@ -448,7 +478,7 @@ void QAWriteNPi0()
     grNPi0          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
   }
   grNPi0     ->LabelsOption("v");
-  grNPi0     ->SetMarkerStyle(20);
+  grNPi0     ->SetMarkerStyle(33);
   grNPi0     ->Write();
 
   TH1F *grMPi0 = new TH1F("grMPi0","M(#pi^{0})",runIndex,0,runIndex);
@@ -458,7 +488,7 @@ void QAWriteNPi0()
     grMPi0          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
   }
   grMPi0     ->LabelsOption("v");
-  grMPi0     ->SetMarkerStyle(20);
+  grMPi0     ->SetMarkerStyle(33);
   grMPi0     ->Write();
 
   TH1F *grWPi0 = new TH1F("grWPi0","#sigma(#pi^{0})",runIndex,0,runIndex);
@@ -468,7 +498,7 @@ void QAWriteNPi0()
     grWPi0          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
   }
   grWPi0     ->LabelsOption("v");
-  grWPi0     ->SetMarkerStyle(20);
+  grWPi0     ->SetMarkerStyle(33);
   grWPi0     ->Write();
 }
 
@@ -487,6 +517,24 @@ TH1D * Pi0InvMass(TH2 *hMassPt, Float_t ptmin, Float_t ptmax)
   
   return hMass;
 
+}
+
+//-----------------------------------------------------------------------------
+TH1F *AddWriteTH1F(const char *name, const char *title, Double_t* values, Double_t* errors)
+{
+  TH1F* hist = new TH1F(name, title, runIndex, 0, runIndex);
+  hist->SetContent(values);
+  hist->SetError(errors);
+
+  for(Int_t i=0; i<runIndex; i++) {
+    hist->GetXaxis()->SetBinLabel( i+1, Form("%d",runNum[i]) );
+  }
+
+  hist->LabelsOption("v");
+  hist->SetMarkerStyle(33);
+  hist->Write();
+
+  return hist;
 }
 
 //-----------------------------------------------------------------------------
