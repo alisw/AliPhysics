@@ -25,24 +25,24 @@ class AliCaloPhoton :public TLorentzVector{
   ~AliCaloPhoton(){} 
 
    const TLorentzVector * GetMomV2()const{return &fMomV2;}
-   Double_t EMCx(void)const {return fZ;}
-   Double_t EMCy(void)const {return fZ;}
+   Double_t EMCx(void)const {return fX;}
+   Double_t EMCy(void)const {return fY;}
    Double_t EMCz(void)const {return fZ;}
    Int_t    Module(void)const{return fModule;}
    Int_t    DistToBad()const  {return fBadDist ;}
    Int_t    GetNCells()const { return fNCells ;}
 
    Bool_t   IsDispOK(void)const {return fDisp;}
-   Bool_t   IsDisp2OK(void)const {return fDisp2;}
+   Bool_t   IsDisp2OK(void)const {return fDisp2;} //stricter cut
    Bool_t   IsTOFOK(void)const {return fTof;}
    Bool_t   IsCPVOK(void)const {return fCpv;}
    Bool_t   IsCPV2OK(void)const {return fCpv2;}
-   Bool_t   IsntUnfolded(void){return fUnfolded;}
    Bool_t   IsIsolated(void)const{return fIsIsolated ;}
    Bool_t   IsTagged(void) const{return fIsTagged ;} //check if this photon is tagged
    Bool_t   IsTagged(Int_t i,Int_t k) const{return fIsTagged_reg[i][k] ;} //check if this photon is tagged
    Bool_t   IsPIDOK(const Int_t ipid) const ;
    Bool_t   IsPhoton()const {return fIsPhoton ;} //check if this particle is indeed photon (this bit is set with MC stack info
+   Bool_t   IsntUnfolded()const{return fUnfolded;}
    Int_t    IsConvertedPartner(){ if(fConvertedPartner == 1) return 1; else return 0; }
 //ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
 //there is conversion of one or both of the photons and results of their conversion are registered by PHOS.
@@ -63,7 +63,7 @@ class AliCaloPhoton :public TLorentzVector{
    Int_t ComparePi0Ids( AliCaloPhoton *phot) { if(AliCaloPhoton::fPi0Id!=0 && (*phot).fPi0Id !=0 && AliCaloPhoton::fPi0Id == (*phot).fPi0Id) return 1; else return 0; }
    void SetConvertedPartner(Int_t flag){ fConvertedPartner=flag; }
    void SetPhoton(Int_t flag){ fIsPhoton=flag; }
-   void SetDispBit(Bool_t chi2){fDisp  = chi2 ;} 
+   void SetDispBit(Bool_t chi2){fDisp = chi2 ;} 
    void SetDisp2Bit(Bool_t chi2){fDisp2 = chi2 ;} 
    void SetTOFBit(Bool_t tof){fTof = tof ;} 
    void SetCPVBit(Bool_t cpv){fCpv = cpv; }
@@ -80,8 +80,12 @@ class AliCaloPhoton :public TLorentzVector{
    void SetIsolated(Bool_t bit){fIsIsolated=bit;}
    void SetPartnerPt(Double_t pt){fPartnerPt=pt;}
    void SetPrimary(Int_t label){fPrimary=label;}
-   void SetUnfolded(Bool_t unf){fUnfolded=unf ;}
-   
+   void SetUnfolded(Bool_t wasNotUnfolded){fUnfolded=wasNotUnfolded;} 
+
+   void SetLambdas(Double_t l1,Double_t l2){fLambda0=l1; fLambda1=l2;}
+   Double_t GetLambda1(void){return fLambda0;}
+   Double_t GetLambda2(void){return fLambda1;}
+
    Int_t GetPrimary(){return fPrimary;}
    Double_t GetPartnerPt(){return fPartnerPt;}  
 private:
@@ -97,10 +101,12 @@ private:
   Bool_t    fIsTagged_reg[10][20];   //If it is tagged 
   Bool_t    fIsIsolated ; //it is isolated
   Bool_t    fIsPhoton; //If it is really photon or not
-  Bool_t    fUnfolded; //Wheter cluster was unfolded
+  Bool_t    fUnfolded;  //True if was not unfolded
   Double_t  fX ;        //Cluster coordinates in ALICE ref system 
   Double_t  fY ;        //Cluster coordinates in ALICE ref system
   Double_t  fZ ;        //Cluster coordinates in ALICE ref system
+  Double_t  fLambda0 ;  //Short and 
+  Double_t  fLambda1 ;  //Long dispersion axis
   Int_t     fModule ;   //Module number
   Int_t     fBadDist ;  //Distance to bad module in module units
   Int_t     fNCells ;   //Number of cells in cluster
@@ -111,7 +117,7 @@ private:
   Double_t  fPartnerPt;
   Int_t     fPrimary;   //Primary label
 
-  ClassDef(AliCaloPhoton,1)
+  ClassDef(AliCaloPhoton,2)
 
 };
 
