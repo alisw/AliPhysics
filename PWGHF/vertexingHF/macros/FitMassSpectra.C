@@ -57,6 +57,8 @@ Int_t typeb=kExpo;
 Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
+Double_t minMassForFit=1.7;
+Double_t maxMassForFit=2.1;
 Float_t massRangeForCounting=0.05; // GeV
 TH2F* hPtMass=0x0;
 Double_t nEventsForNorm=0.;
@@ -144,8 +146,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
 
 
   Int_t nMassBins=hmass[0]->GetNbinsX();
-  Double_t hmin=hmass[0]->GetBinLowEdge(3);
-  Double_t hmax=hmass[0]->GetBinLowEdge(nMassBins-2)+hmass[0]->GetBinWidth(nMassBins-2);
+  Double_t hmin=TMath::Max(minMassForFit,hmass[0]->GetBinLowEdge(2));
+  Double_t hmax=TMath::Min(maxMassForFit,hmass[0]->GetBinLowEdge(nMassBins-2)+hmass[0]->GetBinWidth(nMassBins-2));
   Float_t minBinSum=hmass[0]->FindBin(massD-massRangeForCounting);
   Float_t maxBinSum=hmass[0]->FindBin(massD+massRangeForCounting);
   Int_t iPad=1;
@@ -173,8 +175,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     c1->cd(iPad++);
     Int_t origNbins=hmass[iBin]->GetNbinsX();
     TH1F* hRebinned=RebinHisto(hmass[iBin],rebin[iBin],firstUsedBin[iBin]);
-    hmin=hRebinned->GetBinLowEdge(2);
-    hmax=hRebinned->GetBinLowEdge(hRebinned->GetNbinsX());
+    hmin=TMath::Max(minMassForFit,hRebinned->GetBinLowEdge(2));
+    hmax=TMath::Min(maxMassForFit,hRebinned->GetBinLowEdge(hRebinned->GetNbinsX()));
     fitter[iBin]=new AliHFMassFitter(hRebinned,hmin, hmax,1,typeb,types);
     rebin[iBin]=origNbins/fitter[iBin]->GetBinN();
     fitter[iBin]->SetReflectionSigmaFactor(factor4refl);
@@ -198,6 +200,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     fitter[iBin]->Signal(3,s,errs);
     fitter[iBin]->Background(3,b,errb);
     fitter[iBin]->Significance(3,sig,errsig);
+    Double_t ry=fitter[iBin]->GetRawYield();
+    Double_t ery=fitter[iBin]->GetRawYieldError();
     Float_t cntSig1=0.;
     Float_t cntSig2=0.;
     Float_t cntErr=0.;
@@ -216,8 +220,8 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     hNDiffCntSig2->SetBinContent(iBin+1,(s-cntSig2)/s);
     hNDiffCntSig2->SetBinError(iBin+1,TMath::Sqrt(cntErr)/s);
     hCntSig2->SetBinError(iBin+1,TMath::Sqrt(cntErr));
-    hSignal->SetBinContent(iBin+1,s);
-    hSignal->SetBinError(iBin+1,errs);
+    hSignal->SetBinContent(iBin+1,ry);
+    hSignal->SetBinError(iBin+1,ery);
     hRelErrSig->SetBinContent(iBin+1,errs/s);
     hInvSignif->SetBinContent(iBin+1,1/sig);
     hInvSignif->SetBinError(iBin+1,errsig/(sig*sig));

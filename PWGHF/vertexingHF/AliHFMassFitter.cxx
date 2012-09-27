@@ -67,6 +67,8 @@ AliHFMassFitter::AliHFMassFitter() :
   fntuParam(0),
   fMass(1.865),
   fSigmaSgn(0.012),
+  fRawYield(0.),
+  fRawYieldErr(0.),
   fSideBands(0),
   fFixPar(0),
   fSideBandl(0),
@@ -101,6 +103,8 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fntuParam(0),
  fMass(1.865),
  fSigmaSgn(0.012),
+ fRawYield(0.),
+ fRawYieldErr(0.),
  fSideBands(0),
  fFixPar(0),
  fSideBandl(0),
@@ -153,6 +157,8 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fntuParam(mfit.fntuParam),
   fMass(mfit.fMass),
   fSigmaSgn(mfit.fSigmaSgn),
+  fRawYield(mfit.fRawYield),
+  fRawYieldErr(mfit.fRawYieldErr),
   fSideBands(mfit.fSideBands),
   fFixPar(0),
   fSideBandl(mfit.fSideBandl),
@@ -209,6 +215,8 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fntuParam= mfit.fntuParam;
   fMass= mfit.fMass;
   fSigmaSgn= mfit.fSigmaSgn;
+  fRawYield= mfit.fRawYield;
+  fRawYieldErr= mfit.fRawYieldErr;
   fSideBands= mfit.fSideBands;
   fSideBandl= mfit.fSideBandl;
   fSideBandr= mfit.fSideBandr;
@@ -1252,7 +1260,9 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //reset value of fMass and fSigmaSgn to those found from fit
   fMass=funcmass->GetParameter(fNFinalPars-2);
   fSigmaSgn=funcmass->GetParameter(fNFinalPars-1);
-  
+  fRawYield=funcmass->GetParameter(fNFinalPars-3)/fhistoInvMass->GetBinWidth(1);
+  fRawYieldErr=funcmass->GetParError(fNFinalPars-3)/fhistoInvMass->GetBinWidth(1);
+
   for(Int_t i=0;i<fNFinalPars;i++){
     fFitPars[i+2*bkgPar-3]=funcmass->GetParameter(i);
     fFitPars[fNFinalPars+4*bkgPar-6+i]= funcmass->GetParError(i);
