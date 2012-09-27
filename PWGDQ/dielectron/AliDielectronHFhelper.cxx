@@ -371,7 +371,7 @@ TH1F* AliDielectronHFhelper::MergeHistos(TObjArray *arr)
 void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
 {
   //
-  // Compare histo binning and cut variables. Add necessary cuts (largest limit)
+  // Compare histo binning and cut variables. Add necessary cuts (largest limits)
   //
 
 

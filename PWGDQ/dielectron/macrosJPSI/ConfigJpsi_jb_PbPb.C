@@ -122,9 +122,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // HF arrays setup
-  if(cutDefinition <  kEtaGap01 ) {
-    InitHF(die,cutDefinition);
-  }
+//   if(cutDefinition <  kEtaGap01 ) {
+//     InitHF(die,cutDefinition);
+//   }
 
 
   // bgrd estimators
@@ -225,7 +225,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
-  // trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 7); // ITS-3 = 1+2+4
+  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 15); // ITS-4 = 1+2+4+8
   // trkCuts->SetMaxWaivedITSNcls(1);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
@@ -396,6 +396,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to event class
   histos->AddClass("Event");
+  histos->UserHistogram("Event","RunNumber","Events per run;run;events",
+                        GetRunNumbers(),
+			AliDielectronVarManager::kRunNumber);
   histos->UserHistogram("Event","VtxZ","Vertex Z;z (cm)", 300,-15.,15.,
                         AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","Centrality","Centrality;centrality (%);events",
@@ -633,6 +636,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Track","TPCnSigmaEle_P","p (GeV/c);n#sigma_{ele}^{TPC};#tracks",
                           400,0.2,20.,200,-10.,10.,
                           AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+    histos->UserHistogram("Track","TOFbeta_P",";p (GeV/c);#beta;#tracks",
+                          250,0.0,5.0,300,0.,1.2,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta,kTRUE);
 
     ///// add histograms to Pair classes /////
     histos->UserHistogram("Pair","InvMass",";m_{ee} (GeV/c^{2});#pairs",
@@ -732,12 +737,12 @@ void InitHF(AliDielectron* die, Int_t cutDefinition)
   hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80."  );
   hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.,2.5,5.,100."                 );
   hf->AddCutVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2, 8,-1.*TMath::Pi(),TMath::Pi());
-  hf->AddCutVariable(AliDielectronVarManager::kY,           1, -0.9, 0.9                     );
+  //  hf->AddCutVariable(AliDielectronVarManager::kY,           1, -0.9, 0.9                     );
   //  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
-  hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
-  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
-  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100.",                 kTRUE, AliDielectronHF::kBinToMax);
-  hf->AddCutVariable(AliDielectronVarManager::kITSLayerFirstCls,4,0.,4.,              kFALSE, kTRUE, AliDielectronHF::kBinFromMin);
+  // hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
+  //  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
+  //hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100.",                 kTRUE, AliDielectronHF::kBinToMax);
+  //hf->AddCutVariable(AliDielectronVarManager::kITSLayerFirstCls,4,0.,4.,              kFALSE, kTRUE, AliDielectronHF::kBinFromMin);
   //hf->AddCutVariable(AliDielectronVarManager::kNclsITS,         5,2.,7.,              kFALSE, kTRUE, AliDielectronHF::kBinToMax);
   //hf->AddCutVariable(AliDielectronVarManager::kRunNumber,  GetRunNumbers());
 
