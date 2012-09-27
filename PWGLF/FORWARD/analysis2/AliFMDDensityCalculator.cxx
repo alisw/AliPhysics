@@ -164,7 +164,7 @@ AliFMDDensityCalculator::~AliFMDDensityCalculator()
   // Destructor 
   //
   DGUARD(fDebug, 3, "DTOR of FMD density calculator");
-  fRingHistos.Delete();
+  // fRingHistos.Delete();
 }
 
 //____________________________________________________________________

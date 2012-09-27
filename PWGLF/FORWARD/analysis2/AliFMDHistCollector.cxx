@@ -594,19 +594,18 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
+    UShort_t db = d << 4;
     for (UShort_t q=0; q<nr; q++) { 
+      UShort_t rb = db | ((q+1));
+      // Skipping selected FMD rings 
+      if (rb & fSkipFMDRings) continue;
+
       Char_t      r = (q == 0 ? 'I' : 'O');
       TH2D*       h = hists.Get(d,r);
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
       Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
       TH2D*       o = sums.Get(d, r);
       
-      // Skipping selected FMD rings 
-      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) { delete t; continue; }
-      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) { delete t; continue; }
-      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) { delete t; continue; }
-      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) { delete t; continue; }
-      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) { delete t; continue; }
       
       // Get valid range 
       Int_t first = 0;
@@ -673,13 +672,13 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 	  out.SetBinError(iEta,iPhi, re);
 	}
       }
-      // Remove temporary histogram 
       if(fBgAndHitMaps) {
 	TH2D* hRingSumVtx 
 	  = static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", 
 							d, r)));
 	hRingSumVtx->Add(t);
       }
+      // Remove temporary histogram 
       delete t;
     } // for r
   } // for d 

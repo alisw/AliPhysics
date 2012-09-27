@@ -335,6 +335,19 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 
 //____________________________________________________________________
 void
+AliForwardMultiplicityTask::FinishTaskOutput()
+{
+  if (!fList) 
+    Warning("FinishTaskOutput", "No list defined");
+  else {
+    if (fDebug) 
+      fList->ls();
+  }
+  AliAnalysisTaskSE::FinishTaskOutput();
+}
+
+//____________________________________________________________________
+void
 AliForwardMultiplicityTask::Terminate(Option_t*)
 {
   // 

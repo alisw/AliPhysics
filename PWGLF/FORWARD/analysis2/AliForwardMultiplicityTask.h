@@ -89,6 +89,11 @@ public:
    */  
   virtual void UserExec(Option_t* option);
   /** 
+   * Called on the slaves when the job has finished. 
+   * 
+   */
+  virtual void FinishTaskOutput();
+  /** 
    * End of job
    * 
    * @param option Not used 
