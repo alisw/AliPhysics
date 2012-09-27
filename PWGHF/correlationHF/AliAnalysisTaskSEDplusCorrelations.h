@@ -18,6 +18,7 @@
 #include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3D.h>
 #include <THnSparse.h>
 #include <TArrayD.h>
 
@@ -112,13 +113,13 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
   TH2F *fInvMassK0S; //!hist. for D- inv mass (TC)
   TH2F *fEventMix; //!hist. for event mixing
   TH2F *fMassVsdPhiHistHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH2F *fMassVsdEtaHistHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH3D *fMassVsdEtaHistHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH2F *fMassVsdPhiHistKaon[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH2F *fMassVsdEtaHistKaon[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH3D *fMassVsdEtaHistKaon[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH2F *fMassVsdPhiHistKshort[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH2F *fMassVsdEtaHistKshort[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH3D *fMassVsdEtaHistKshort[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH2F *fMassVsdPhiHistLeadHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH2F *fMassVsdEtaHistLeadHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH3D *fMassVsdEtaHistLeadHad[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHistK0S[3*kMaxPtBins]; //!hist. for inv mass (LC)
   
 
@@ -151,7 +152,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
   
   Bool_t fSystem; //
   
-  ClassDef(AliAnalysisTaskSEDplusCorrelations,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplusCorrelations,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

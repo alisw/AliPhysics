@@ -1,12 +1,11 @@
-AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
-						     Bool_t storeNtuple=kFALSE,
-						     Bool_t readMC=kFALSE,
-						     Bool_t mixing=kTRUE,
-						     Int_t select=1,
-						     Int_t usedisp=0,
-						     TString finDirname="Loose",
-						     TString filename="",
-						     TString finAnObjname="AnalysisCuts")
+AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,				                              Bool_t storeNtuple=kFALSE,
+					     Bool_t readMC=kFALSE,
+					     Bool_t mixing=kFALSE,
+					     Int_t select=2,
+					     Int_t usedisp=0,
+					     TString finDirname="Loose",
+					     TString filename="",
+					     TString finAnObjname="AnalysisCuts")
 {
 
     //                                                                                                                                    
