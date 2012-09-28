@@ -21,6 +21,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() :
   fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
   fTracksName(),
+  fIncludeNoITS(kTRUE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -34,6 +35,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
   fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
   fTracksName("TpcSpdVertexConstrainedTracks"),
+  fIncludeNoITS(kTRUE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -164,7 +166,8 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
         newTrack->SetLabel(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
-        if (etrack->GetConstrainedParam()) {
+	UInt_t status = etrack->GetStatus();
+        if (etrack->GetConstrainedParam() && ((status&AliESDtrack::kITSrefit)!=0 || fIncludeNoITS)) {
           new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
           AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
           ++ntrnew;
@@ -173,7 +176,6 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
                         constrainParam->GetAlpha(),
                         constrainParam->GetParameter(),
                         constrainParam->GetCovariance());
-          UInt_t status = etrack->GetStatus();
           if ((status&AliESDtrack::kITSrefit)==0)
             newTrack->SetLabel(2);
           else

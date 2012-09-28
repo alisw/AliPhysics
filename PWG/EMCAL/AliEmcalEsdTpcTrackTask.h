@@ -23,12 +23,14 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   void SetHybridTrackCuts(AliESDtrackCuts *cuts) { fHybridTrackCuts  = cuts; }
   void SetTrackCuts(AliESDtrackCuts *cuts)       { fEsdTrackCuts     = cuts; }
   void SetTracksName(const char *name)           { fTracksName       = name; }
+  void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
 
  protected:
   AliESDtrackCuts   *fEsdTrackCuts;      // esd track cuts
   Bool_t             fDoSpdVtxCon;       // if true then do vertex constraint
   AliESDtrackCuts   *fHybridTrackCuts;   // hybrid track cuts
   TString            fTracksName;        // name of tracks 
+  Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
@@ -36,7 +38,7 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   AliEmcalEsdTpcTrackTask(const AliEmcalEsdTpcTrackTask&);            // not implemented
   AliEmcalEsdTpcTrackTask &operator=(const AliEmcalEsdTpcTrackTask&); // not implemented
 
-  ClassDef(AliEmcalEsdTpcTrackTask, 1); // Class to constrain TPC tracks to SPD vertex
+  ClassDef(AliEmcalEsdTpcTrackTask, 2); // Class to constrain TPC tracks to SPD vertex
 };
 
 #endif

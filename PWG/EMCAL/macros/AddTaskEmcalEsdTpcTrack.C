@@ -2,7 +2,8 @@
 
 AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   const char *name       = "TpcSpdVertexConstrainedTracks",
-  const char *trackCuts  = "Hybrid_LHC11h"
+  const char *trackCuts  = "Hybrid_LHC11h",
+  Bool_t      noITS      = kTRUE
 )
 { 
   enum CutsType {
@@ -93,8 +94,8 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
       (dataSet == kLHC11d && cutsType == kHybrid) ||
       (dataSet == kLHC11h && cutsType == kHybrid)) {
     /* hybrid track cuts*/
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001007);       //1000 adds SPD any requirement
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041007);       //1004 removes ITSrefit requirement from standard set    
+    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001008);       //1000 adds SPD any requirement
+    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set    
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetTrackCuts(cutsp);
     eTask->SetHybridTrackCuts(hybsp);
@@ -110,6 +111,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   }
 
   eTask->SetTracksName(name);
+  eTask->SetIncludeNoITS(noITS);
 
   cout << " *** Track selector task configured to select " << cutsLabel  << " in dataset "<< dataSetLabel << " *** " << endl;
 
