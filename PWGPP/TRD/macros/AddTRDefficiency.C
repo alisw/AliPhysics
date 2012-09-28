@@ -16,7 +16,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   AliAnalysisDataContainer *evInfoContainer = ci[3];
   AliTRDrecoTask *eff(NULL);
   mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));
-  res->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  eff->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
   eff->SetDebugLevel(0);
   //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);  
   Int_t trackStatus = 0; // barrel tracks
