@@ -1,5 +1,6 @@
 AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bachelorCuts.root",
-						     Bool_t theMCon=kFALSE)
+						     Bool_t theMCon=kFALSE,
+						     Bool_t onTheFly=kFALSE)
 
 {
 
@@ -48,7 +49,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0prod,RDHFCutsLctoV0anal);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0prod,RDHFCutsLctoV0anal,onTheFly);
   task->SetMC(theMCon);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
@@ -62,7 +63,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
   // ----- output data -----
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
+  AliAnalysisDataContainer *coutput1   = mgr->CreateContainer("chist1",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
   mgr->ConnectOutput(task,1,coutput1);
   AliAnalysisDataContainer *coutputLc1 = mgr->CreateContainer("Lc2pK0SAll",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // production histos
   mgr->ConnectOutput(task,2,coutputLc1);

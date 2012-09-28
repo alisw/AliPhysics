@@ -284,7 +284,10 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     AliDebug(2,"No bachelor object");
     return 0;
   }
-  if (!(bachelorTrack->TestFilterMask(BIT(4)))) return 0;
+
+  // not used
+  //if ( fUseTrackSelectionWithFilterBits &&
+  //!(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
 
   // Get V0
   AliAODv0 *v0 = (AliAODv0*)d->Getv0();
@@ -317,17 +320,8 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 	   !(IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts)) ||
 	   !(IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts)) ) return 0;
     }
+    //if (!AreDaughtersSelected(d)) return 0;
   }
-
-  Int_t returnvaluePID = 7;
-
-  // selection on candidate
-  if (selectionLevel==AliRDHFCuts::kAll || 
-      selectionLevel==AliRDHFCuts::kCandidate || 
-      selectionLevel==AliRDHFCuts::kPID )
-    returnvaluePID = IsSelectedPID(d);
-
-  //if (fUsePID && returnvaluePID==0) return 0;
 
   Bool_t okLck0sp=kTRUE, okLcLpi=kTRUE, okLcLBarpi=kTRUE;
   Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
@@ -337,16 +331,21 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
       selectionLevel==AliRDHFCuts::kCandidate) {
 
     Double_t pt = d->Pt();
-    
     Int_t ptbin = PtBin(pt);
     
-    Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+    Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
     Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-    Double_t mLPDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
     // K0S + p
-    Double_t mk0s = v0->MassK0Short();
+    Double_t mk0s    = v0->MassK0Short();
     Double_t mLck0sp = d->InvMassLctoK0sP();
+
+    // Lambda + pi 
+    Double_t mlambda  = v0->MassLambda();
+    Double_t malambda = v0->MassAntiLambda();
+    Double_t mLcLpi   = d->InvMassLctoLambdaPi();
+
     // cut on Lc mass with K0S+p hypothesis
     if (TMath::Abs(mLck0sp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) {
       okLck0sp = kFALSE;
@@ -355,14 +354,10 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
     // cuts on the V0 mass: K0S case
     if (TMath::Abs(mk0s-mk0sPDG)>fCutsRD[GetGlobalIndex(2,ptbin)]) { 
-      okK0spipi = 0;
+      okK0spipi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to K0S cut",mk0s));
     }
 
-    // Lambda + pi 
-    Double_t mlambda = v0->MassLambda();
-    Double_t malambda = v0->MassAntiLambda();
-    Double_t mLcLpi = d->InvMassLctoLambdaPi();
     // cut on Lc mass with Lambda+pi hypothesis
     if (TMath::Abs(mLcLpi-mLcPDG)>fCutsRD[GetGlobalIndex(1,ptbin)]) {
       okLcLpi = kFALSE;
@@ -434,6 +429,16 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
           7  Lc->K0S + p AND Lc->LambdaBar + pi AND Lc->Lambda + pi
   */
 
+  Int_t returnvaluePID = 7;
+
+  // selection on candidate
+  if (selectionLevel==AliRDHFCuts::kAll || 
+      //selectionLevel==AliRDHFCuts::kCandidate || 
+      selectionLevel==AliRDHFCuts::kPID )
+    returnvaluePID = IsSelectedPID(d);
+
+  //if (fUsePID && returnvaluePID==0) return 0;
+
   Int_t returnvalueTot = 0;
   if ( fUsePID )
     returnvalueTot = CombinePIDCuts(returnvalue,returnvaluePID);
@@ -499,11 +504,11 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     trackIDtpc = fPidHF->ApplyPidTPCRaw(bachelor,4);
     AliDebug(1,Form(" fPidHF->ApplyPidTOFRaw(bachelor,4)=%d fPidHF->ApplyPidTPCRaw(bachelor,4)=%d",trackIDtof,trackIDtpc));
     isBachelorID1 = (trackIDtof==4) && (trackIDtpc==4); // K0S case
-    //Bool_t isBachelorID2 = fPidHF->ApplyPidTPCRaw(bachelor,2) && fPidHF->ApplyPidTOFRaw(bachelor,2); // LambdaBar case
+    //Bool_t isBachelorID2 = (fPidHF->ApplyPidTPCRaw(bachelor,2)==2) && (fPidHF->ApplyPidTOFRaw(bachelor,2)==2); // LambdaBar case
     //Bool_t isBachelorID4 = isBachelorID2; // Lambda case
 
     // identify V0neg
-    //Bool_t isV0NegID1 = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,2) && fPidHFV0neg->ApplyPidTOFRaw(v0Neg,2); // K0S case
+    //Bool_t isV0NegID1 = (fPidHFV0neg->ApplyPidTPCRaw(v0Neg,2)==2) && (fPidHFV0neg->ApplyPidTOFRaw(v0Neg,2)==2); // K0S case
     trackIDtof = fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4);
     trackIDtpc = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4);
     AliDebug(1,Form(" fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4)=%d fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4)=%d",trackIDtof,trackIDtpc));
@@ -511,7 +516,7 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     //Bool_t isV0NegID4 = isV0NegID1; // Lambda case
 
     // identify V0pos
-    //Bool_t isV0PosID1 = fPidHFV0pos->ApplyPidTPCRaw(v0Pos,2) && fPidHFV0pos->ApplyPidTOFRaw(v0Pos,2); // K0S case
+    //Bool_t isV0PosID1 = (fPidHFV0pos->ApplyPidTPCRaw(v0Pos,2)==2) && (fPidHFV0pos->ApplyPidTOFRaw(v0Pos,2)==2); // K0S case
     //Bool_t isV0PosID2 = isV0PosID1; // LambdaBar case
     trackIDtof = fPidHFV0pos->ApplyPidTOFRaw(v0Pos,4);
     trackIDtpc = fPidHFV0pos->ApplyPidTPCRaw(v0Pos,4);
@@ -531,6 +536,16 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
     isBachelorID1 = isBachelorID1 || dummy1;
 
 
+    // identify V0neg
+    trackIDtof = fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4);
+    trackIDtpc = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4);
+    AliDebug(1,Form(" fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4)=%d fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4)=%d",trackIDtof,trackIDtpc));
+    isV0NegID2    = ( trackIDtof==4 );
+    Bool_t dummy2 = ( !(fPidHFV0neg->CheckTOFPIDStatus(v0Neg)) && (trackIDtpc==4) &&
+		      fPidHFV0neg->IsExcluded(v0Neg,2,2.,"TPC") && fPidHFV0neg->IsExcluded(v0Neg,3,2.,"TPC") ); // LambdaBar case
+    isV0NegID2 = isV0NegID2 || dummy2;
+
+
     // identify V0pos
     trackIDtof = fPidHFV0pos->ApplyPidTOFRaw(v0Pos,4);
     trackIDtpc = fPidHFV0pos->ApplyPidTPCRaw(v0Pos,4);
@@ -540,15 +555,6 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
 		      fPidHFV0pos->IsExcluded(v0Pos,2,2.,"TPC") && fPidHFV0pos->IsExcluded(v0Pos,3,2.,"TPC") ); // Lambda case
     isV0PosID4 = isV0PosID4 || dummy4;
 
-
-    // identify V0neg
-    trackIDtof = fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4);
-    trackIDtpc = fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4);
-    AliDebug(1,Form(" fPidHFV0neg->ApplyPidTOFRaw(v0Neg,4)=%d fPidHFV0neg->ApplyPidTPCRaw(v0Neg,4)=%d",trackIDtof,trackIDtpc));
-    isV0NegID2    = ( trackIDtof==4 );
-    Bool_t dummy2 = ( !(fPidHFV0neg->CheckTOFPIDStatus(v0Neg)) && (trackIDtpc==4) &&
-		      fPidHFV0neg->IsExcluded(v0Neg,2,2.,"TPC") && fPidHFV0neg->IsExcluded(v0Neg,3,2.,"TPC") ); // LambdaBar case
-    isV0NegID2 = isV0NegID2 || dummy2;
 
     break;
 
@@ -565,9 +571,9 @@ Int_t AliRDHFCutsLctoV0::CombinePIDCuts(Int_t returnvalue, Int_t returnvaluePID)
 }
 
 //----------------------------------
-Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj, Int_t selectionLevel, Int_t cutIndex) {
+Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex) {
   //
-  // Apply selection
+  // Apply selection on single cut
   //
 
   if (!fCutsRD) {
@@ -577,29 +583,53 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj, Int_t selectionLevel, Int_t cu
 
   AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
   if (!d) {
-    cout<<"AliAODRecoCascadeHF null"<<endl;
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return 0;
+  }
+
+  // Get the v0 and all daughter tracks
+  AliAODTrack *bachelorTrack = (AliAODTrack*)d->GetBachelor();
+  if (!bachelorTrack) {
+    AliDebug(2,"No bachelor object");
+    return 0;
+  }
+
+  // not used
+  //if ( fUseTrackSelectionWithFilterBits && 
+  //!(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
+
+  AliAODv0 *v0 = (AliAODv0*)d->Getv0();
+  if (!v0) {
+    AliDebug(2,"No v0 object");
+    return 0;
+  }
+
+  // Get the V0 daughter tracks
+  AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack(); 
+  if (!v0positiveTrack || !v0negativeTrack ) {
+    AliDebug(2,"No V0 daughters' objects");
     return 0;
   }
 
   // selection on daughter tracks 
   if (selectionLevel==AliRDHFCuts::kAll || 
-      selectionLevel==AliRDHFCuts::kTracks || 
-      selectionLevel==AliRDHFCuts::kCandidate) {
-    if (!AreDaughtersSelected(d)) return 0;
+      selectionLevel==AliRDHFCuts::kTracks) {
+
+    if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
+      if (!bachelorTrack->HasPointOnITSLayer(0)) return 0;
+    }
+    if (fTrackCuts && fV0daughtersCuts) {
+      AliAODVertex *vAOD = (AliAODVertex*)d->GetPrimaryVtx();
+      Double_t pos[3]; vAOD->GetXYZ(pos);
+      Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
+      const AliESDVertex vESD(pos,cov,100.,100);
+      if ( !(IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) ||
+	   !(IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts)) ||
+	   !(IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts)) ) return 0;
+    }
+    //if (!AreDaughtersSelected(d)) return 0;
   }
-
-  // Get the v0 and all daughter tracks
-  AliAODTrack *bachelorTrack = (AliAODTrack*)d->GetBachelor();
-  if (!(bachelorTrack->TestFilterMask(BIT(4)))) return 0;
-
-  AliAODv0 *v0 = (AliAODv0*)d->Getv0();
-  AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack(); 
-  if ( !d->Getv0() || !d->Getv0PositiveTrack() || !d->Getv0NegativeTrack() ) {
-    AliInfo(Form("Not adapted for ESDv0s, return false..."));
-    return 0;
-  }
-
 
   Bool_t okLck0sp=kFALSE, okLcLpi=kFALSE, okLcLBarpi=kFALSE;
 
@@ -607,59 +637,67 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj, Int_t selectionLevel, Int_t cu
   if (selectionLevel==AliRDHFCuts::kAll || 
       selectionLevel==AliRDHFCuts::kCandidate) {
 
-    Double_t mLcPDG =  TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-    Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-    Double_t mLPDG =   TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    Double_t pt = d->Pt();
+    Int_t ptbin = PtBin(pt);
 
-    // k0s + p
+    Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+    Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+    Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+
+    // K0S + p
     Double_t mk0s    = v0->MassK0Short();
     Double_t mLck0sp = d->InvMassLctoK0sP();
 
-    // lambda + pi 
+    // Lambda + pi 
     Double_t mlambda  = v0->MassLambda();
     Double_t malambda = v0->MassAntiLambda();
     Double_t mLcLpi   = d->InvMassLctoLambdaPi();
 
-    Double_t pt = d->Pt();
-    Int_t ptbin = PtBin(pt);
-
     switch (cutIndex) {
     case 0:
+      // cut on Lc mass with K0S+p hypothesis
       okLck0sp   = TMath::Abs(mLck0sp-mLcPDG)<=fCutsRD[GetGlobalIndex(0,ptbin)];
       okLcLpi    = kFALSE;
       okLcLBarpi = kFALSE;
       break;
     case 1:
+      // cut on Lc mass with Lambda+pi hypothesis
       okLck0sp   = kFALSE;
       okLcLpi    = TMath::Abs(mLcLpi-mLcPDG)<=fCutsRD[GetGlobalIndex(1,ptbin)];
       okLcLBarpi = okLcLpi;
       break;
     case 2:
+      // cuts on the V0 mass: K0S case
       okLck0sp   = TMath::Abs(mk0s-mk0sPDG)<=fCutsRD[GetGlobalIndex(2,ptbin)];
       okLcLpi    = kFALSE;
       okLcLBarpi = kFALSE;
       break;
     case 3:
+      // cuts on the V0 mass: Lambda/LambdaBar case
       okLck0sp   = kFALSE;
       okLcLpi    = TMath::Abs(mlambda-mLPDG)<=fCutsRD[GetGlobalIndex(3,ptbin)];
       okLcLBarpi = TMath::Abs(malambda-mLPDG)<=fCutsRD[GetGlobalIndex(3,ptbin)];
       break;
     case 4:
+      // cuts on the minimum pt of bachelor
       okLck0sp   = TMath::Abs(bachelorTrack->Pt())>=fCutsRD[GetGlobalIndex(4,ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     case 5:
+      // cuts on the minimum pt of positive V0daughter
       okLck0sp   = TMath::Abs(v0positiveTrack->Pt())>=fCutsRD[GetGlobalIndex(5,ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     case 6:
+      // cuts on the minimum pt of negative V0daughter
       okLck0sp   = TMath::Abs(v0negativeTrack->Pt())>=fCutsRD[GetGlobalIndex(6,ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
     case 7:
+      // cut on cascade dca
       //okLck0sp = TMath::Abs(d->GetDCA(0))<=fCutsRD[GetGlobalIndex(8,ptbin)];
       okLck0sp   = TMath::Abs(d->GetDCA())<=fCutsRD[GetGlobalIndex(7,ptbin)] /*&&
 	TMath::Abs(d->Getd0Prong(0))<=fCutsRD[GetGlobalIndex(7,ptbin)] &&
@@ -668,6 +706,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj, Int_t selectionLevel, Int_t cu
       okLcLBarpi = okLck0sp;
       break;
     case 8:
+      // cut on V0 dca
       //okLck0sp   = TMath::Abs(v0->DcaV0Daughters())<=fCutsRD[GetGlobalIndex(7,ptbin)];
       okLck0sp   = TMath::Abs(v0->GetDCA())<=fCutsRD[GetGlobalIndex(8,ptbin)] /*&&
 	TMath::Abs(v0->DcaV0ToPrimVertex())<=fCutsRD[GetGlobalIndex(8,ptbin)] &&
@@ -693,15 +732,21 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj, Int_t selectionLevel, Int_t cu
   */
 
 
+  /*
   Int_t returnvaluePID = 7;
 
   // selection on PID
   if (selectionLevel==AliRDHFCuts::kAll || 
-      selectionLevel==AliRDHFCuts::kCandidate || 
+      //selectionLevel==AliRDHFCuts::kCandidate || 
       selectionLevel==AliRDHFCuts::kPID )
     returnvaluePID = IsSelectedPID(d);
+  */
 
-  Int_t returnvalueTot = CombinePIDCuts(returnvalue,returnvaluePID);
+  Int_t returnvalueTot = 0;
+  //if ( fUsePID )
+  //returnvalueTot = CombinePIDCuts(returnvalue,returnvaluePID);
+  //else
+  returnvalueTot = returnvalue;
 
   return returnvalueTot;
 
@@ -717,14 +762,15 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  //esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  esdTrackCuts->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCuts->SetMinNClustersTPC(70);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kAny); 
+  //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  //				           AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
-  esdTrackCuts->SetEtaRange(-0.8,+0.8);
+  //esdTrackCuts->SetEtaRange(-0.8,+0.8);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   AddTrackCuts(esdTrackCuts);
 
 
@@ -732,14 +778,15 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);
   //default
   esdTrackCutsV0daughters->SetRequireTPCRefit(kTRUE);
-  esdTrackCutsV0daughters->SetRequireITSRefit(kTRUE);
-  //esdTrackCutsV0daughters->SetMinNClustersITS(4); // default is 5
+  esdTrackCutsV0daughters->SetRequireITSRefit(kFALSE);//(kTRUE);
+  esdTrackCutsV0daughters->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCutsV0daughters->SetMinNClustersTPC(70);
-  esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					      AliESDtrackCuts::kAny); 
+  //esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  //					              AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
+  esdTrackCutsV0daughters->SetAcceptKinkDaughters(kFALSE);
   AddTrackCutsV0daughters(esdTrackCutsV0daughters);
 
   const Int_t nptbins=1;
@@ -767,10 +814,10 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
    prodcutsval[7][ipt2]=1000.; // dca cascade cut [cm]
    prodcutsval[8][ipt2]=1000.; // dca V0 cut [nSigma] // it's 1.5 x offline V0s
   }
- SetCuts(nvars,nptbins,prodcutsval);
+  SetCuts(nvars,nptbins,prodcutsval);
 
- SetGlobalIndex(nvars,nptbins);
- SetPtBins(nptbins+1,ptbins);
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
 
 
   //pid settings
