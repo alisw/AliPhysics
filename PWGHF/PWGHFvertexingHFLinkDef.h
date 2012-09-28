@@ -40,6 +40,7 @@
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;
 #pragma link C++ class AliCFVertexingHFCascade+;
+#pragma link C++ class AliCFVertexingHFLctoV0bachelor+;
 #pragma link C++ class AliCFTaskVertexingHF+;
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEDStarJets+;

@@ -461,6 +461,7 @@ Bool_t AliCFVertexingHF::FillRecoContainer(Double_t *containerInput)
 	delete [] vectorReco;
 	vectorValues = 0x0;
 	vectorReco = 0x0;
+
 	return recoContainerFilled;	
 }
 
@@ -813,6 +814,39 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 					return bLabelArray;
 				}
 			}
+			// added K0S case - Start
+			else if (pdgCode==311) {
+			  if (part->GetNDaughters()!=1) {
+			    delete [] fLabelArray; 
+			    fLabelArray = 0x0;  
+			    return bLabelArray;
+			  }
+			  Int_t labelK0Dau = part->GetDaughter(0);
+			  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelK0Dau));
+			  Int_t nDauRes=partK0S->GetNDaughters();
+			  if(nDauRes!=2 || partK0S->GetPdgCode()!=310) {
+			    delete [] fLabelArray;
+			    fLabelArray = 0x0;
+			    return bLabelArray;
+			  }
+			  Int_t labelFirstDauRes = partK0S->GetDaughter(0); 
+			  AliDebug(2,Form(" Found K0S (%d)",labelK0Dau));
+			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
+			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
+			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
+			    if (dauRes){
+			      fLabelArray[foundDaughters] = dauRes->GetLabel();
+			      foundDaughters++;
+			    }
+			    else {
+			      AliError("Error while casting resonant daughter! returning a NULL array");
+			      delete [] fLabelArray; 
+			      fLabelArray = 0x0;  
+			      return bLabelArray;
+			    }
+			  }
+			}
+			// added K0S case - End
 			else{
 				Int_t nDauRes=part->GetNDaughters();
 				if(nDauRes!=2) {

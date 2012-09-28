@@ -62,6 +62,7 @@ set ( SRCS
     vertexingHF/AliCFVertexingHF2Prong.cxx 
     vertexingHF/AliCFVertexingHF3Prong.cxx 
     vertexingHF/AliCFVertexingHFCascade.cxx 
+    vertexingHF/AliCFVertexingHFLctoV0bachelor.cxx
     vertexingHF/AliCFTaskVertexingHF.cxx 
     vertexingHF/AliCFTaskForDStarAnalysis.cxx 
     vertexingHF/AliAnalysisTaskSEDStarJets.cxx 
