@@ -85,14 +85,17 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor():
   fCounter(0),
   fProdCuts(0),
   fAnalCuts(0),
-  fListCuts(0)
+  fListCuts(0),
+  fUseOnTheFlyV0(kFALSE),
+  fIsEventSelected(kFALSE)
 {
   //
   // Default ctor
   //
 }
 //___________________________________________________________________________
-AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* prodCuts, AliRDHFCutsLctoV0* analCuts) :
+AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* prodCuts,
+							       AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -104,7 +107,9 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fCounter(0),
   fProdCuts(prodCuts),
   fAnalCuts(analCuts),
-  fListCuts(0)
+  fListCuts(0),
+  fUseOnTheFlyV0(useOnTheFly),
+  fIsEventSelected(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -172,6 +177,8 @@ void AliAnalysisTaskSELc2V0bachelor::Init() {
   // Initialization
   //
 
+  fIsEventSelected=kFALSE;
+
   if (fDebug > 1) AliInfo("Init");
 
   fListCuts = new TList();
@@ -216,38 +223,102 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   fCEvents->Fill(1);
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
 
-  // fix for temporary bug in ESDfilter 
-  // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!aodEvent->GetPrimaryVertex() ||
-      TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
-  fCEvents->Fill(2);
-
-  // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
-  TString trigclass = aodEvent->GetFiredTriggerClasses();
-  if (trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL"))
-    fCEvents->Fill(5); // in case of RealData events
-
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!vtx1) return;
+
+  // fix for temporary bug in ESDfilter 
+  if (TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
+  fCEvents->Fill(2);
+
+  Float_t zVertex = vtx1->GetZ();
+  ((TH1F*)(fOutput->FindObject("hZ2")))->Fill(zVertex);
+
   if (vtx1->GetNContributors()<1) return;
   fCEvents->Fill(3);
+
+  ((TH1F*)(fOutput->FindObject("hZ3")))->Fill(zVertex);
 
   if (!arrayLctopKos) {
     AliInfo("Could not find array of HF cascades, skipping the event");
     return;
   } else {
-    if (arrayLctopKos->GetEntriesFast()==0) {
-      AliInfo("Could not find cascades, skipping the event");
-      return;
-    } else {
+    if (arrayLctopKos->GetEntriesFast()) {
       AliInfo(Form("Found %d cascades",arrayLctopKos->GetEntriesFast()));
     }
   }
-
   fCEvents->Fill(4);
+  ((TH1F*)(fOutput->FindObject("hZ4")))->Fill(zVertex);
 
-  if(!fAnalCuts->IsEventSelected(aodEvent)) return;
+  // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
+  /*
+  TString trigclass = aodEvent->GetFiredTriggerClasses();
+  if (trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL"))
+    fCEvents->Fill(5); // in case of RealData events
+  */
+
+  ///////////////////////
+  Bool_t check1 = kFALSE;
+  TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
+  if ( !fUseMCInfo && // don't do for MC...
+       (aodEvent->GetRunNumber()<136851 || aodEvent->GetRunNumber()>139517) ) { // ...and for PbPb 2010 data
+    if ( !(firedTriggerClasses.Contains("CINT1")) ) {
+      AliInfo(Form(" ======================== firedTriggerClasses.Data() = %s",firedTriggerClasses.Data()));
+      fCEvents->Fill(8);
+      ((TH1F*)(fOutput->FindObject("hZ8")))->Fill(zVertex);
+      check1 = kTRUE;
+    }
+  }
+
+  ULong64_t fTriggerMask=AliVEvent::kAnyINT;
+  Bool_t isSelectedAAA = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+  if (!isSelectedAAA) {
+    fCEvents->Fill(9);
+    ((TH1F*)(fOutput->FindObject("hZ9")))->Fill(zVertex);
+  }
+
+  if (!isSelectedAAA || check1) {
+    fCEvents->Fill(16);
+    ((TH1F*)(fOutput->FindObject("hZ16")))->Fill(zVertex);
+  }
+
+  fTriggerMask=AliVEvent::kAny;
+  Bool_t isSelectedBBB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+  if (!isSelectedBBB) {
+    fCEvents->Fill(10);
+    ((TH1F*)(fOutput->FindObject("hZ10")))->Fill(zVertex);
+  }
+
+  TString title=vtx1->GetTitle();
+  if (title.Contains("Z")) {
+    fCEvents->Fill(11);
+    ((TH1F*)(fOutput->FindObject("hZ11")))->Fill(zVertex);
+  }
+  else if (title.Contains("3D")) {
+    fCEvents->Fill(12);
+    ((TH1F*)(fOutput->FindObject("hZ12")))->Fill(zVertex);
+  } else {
+    fCEvents->Fill(13);
+    ((TH1F*)(fOutput->FindObject("hZ13")))->Fill(zVertex);
+  }
+
+  if (TMath::Abs(zVertex)<=fAnalCuts->GetMaxVtxZ()) {
+    fCEvents->Fill(14);
+    ((TH1F*)(fOutput->FindObject("hZ14")))->Fill(zVertex);
+  }
+
+  fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent);
+  if ( fIsEventSelected ) {
+    fCEvents->Fill(7);
+    ((TH1F*)(fOutput->FindObject("hZ7")))->Fill(zVertex);
+  } else {
+    fCEvents->Fill(15);
+    ((TH1F*)(fOutput->FindObject("hZ15")))->Fill(zVertex);
+    return;
+  }
+  ///////////////////////
+
+
 
   // mc analysis 
   TClonesArray *mcArray = 0;
@@ -261,6 +332,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
       return;
     }
     fCEvents->Fill(5); // in case of MC events
+    ((TH1F*)(fOutput->FindObject("hZ5")))->Fill(zVertex);
 
     // load MC header
     mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
@@ -269,6 +341,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
       return;
     }
     fCEvents->Fill(6);
+    ((TH1F*)(fOutput->FindObject("hZ6")))->Fill(zVertex);
 
     //AliInfo("~~~~~~~~~~Sono dentro fUseMCInfo 2");
 
@@ -280,8 +353,77 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   //AliInfo("~~~~~~~~~~Sono prima di isEvSelA");
   Int_t nSelectedProd = 0;
   Int_t nSelectedAnal = 0;
-  if (fIsK0sAnalysis) MakeAnalysisForLc2prK0S(vtx1,arrayLctopKos,mcArray,
-					      nSelectedProd, fProdCuts, nSelectedAnal, fAnalCuts);
+  if (fIsK0sAnalysis) {
+    MakeAnalysisForLc2prK0S(vtx1,arrayLctopKos,mcArray,
+			    nSelectedProd, fProdCuts, nSelectedAnal, fAnalCuts);
+
+    if (nSelectedAnal) {
+
+      ((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(4);
+      ((TH1F*)(fOutput->FindObject("hZ4a")))->Fill(zVertex);
+
+      //TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
+      Bool_t check1a = kFALSE;
+      if ( !fUseMCInfo && // don't do for MC...
+	   (aodEvent->GetRunNumber()<136851 || aodEvent->GetRunNumber()>139517) ) { // ...and for PbPb 2010 data
+	if ( !(firedTriggerClasses.Contains("CINT1")) ) {
+	  AliInfo(Form(" ======================== firedTriggerClasses.Data() = %s",firedTriggerClasses.Data()));
+	  ((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(8);
+	  ((TH1F*)(fOutput->FindObject("hZ8a")))->Fill(zVertex);
+	  check1a = kTRUE;
+	}
+      }
+
+      //ULong64_t fTriggerMask=AliVEvent::kAnyINT;
+      fTriggerMask=AliVEvent::kAnyINT;
+      Bool_t isSelectedAAAa = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+      if (!isSelectedAAAa) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(9);
+	((TH1F*)(fOutput->FindObject("hZ9a")))->Fill(zVertex);
+      }
+
+      if (!isSelectedAAAa || check1a) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(16);
+	((TH1F*)(fOutput->FindObject("hZ16a")))->Fill(zVertex);
+      }
+
+      fTriggerMask=AliVEvent::kAny;
+      Bool_t isSelectedBBBa = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+      if (!isSelectedBBBa) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(10);
+	((TH1F*)(fOutput->FindObject("hZ10a")))->Fill(zVertex);
+      }
+
+      //TString title=vtx1->GetTitle();
+      if (title.Contains("Z")) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(11);
+	((TH1F*)(fOutput->FindObject("hZ11a")))->Fill(zVertex);
+      }
+      else if (title.Contains("3D")) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(12);
+	((TH1F*)(fOutput->FindObject("hZ12a")))->Fill(zVertex);
+      } else {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(13);
+	((TH1F*)(fOutput->FindObject("hZ13a")))->Fill(zVertex);
+      }
+
+      if (TMath::Abs(zVertex)<=fAnalCuts->GetMaxVtxZ()) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(14);
+	((TH1F*)(fOutput->FindObject("hZ14a")))->Fill(zVertex);
+      }
+
+      //Bool_t eventSelected = fAnalCuts->IsEventSelected(aodEvent);
+      if ( fIsEventSelected ) {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(7);
+	((TH1F*)(fOutput->FindObject("hZ7a")))->Fill(zVertex);
+      } else {
+	((TH1I*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(15);
+	((TH1F*)(fOutput->FindObject("hZ15a")))->Fill(zVertex);
+      }
+    }
+
+  }
+
 
   fCounter->StoreCandidates(aodEvent,nSelectedProd,kTRUE);
   fCounter->StoreCandidates(aodEvent,nSelectedAnal,kFALSE);
@@ -308,7 +450,7 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
     return;
   }
   
-  //fCEvents   = dynamic_cast<TH1F*>(fOutput->FindObject("fCEvents"));
+  //fCEvents = dynamic_cast<TH1I*>(fOutput->FindObject("fCEvents"));
 
   fOutputAll = dynamic_cast<TList*> (GetOutputData(2));
   if (!fOutputAll) {
@@ -380,9 +522,23 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
 //___________________________________ hiostograms _______________________________________
 void  AliAnalysisTaskSELc2V0bachelor::DefineHistograms() {
 
-  fCEvents = new TH1F("fCEvents","conter",11,0,11);
+  fCEvents = new TH1I("fCEvents","conter",17,0,17);
   fCEvents->SetStats(kTRUE);
-  fCEvents->GetXaxis()->SetTitle("1");
+  fCEvents->GetXaxis()->SetBinLabel(2,"Analyzed events");
+  fCEvents->GetXaxis()->SetBinLabel(3,"AliAODVertex exists");
+  fCEvents->GetXaxis()->SetBinLabel(4,"GetNContributors()>0");
+  fCEvents->GetXaxis()->SetBinLabel(5,"CascadesHF exists");
+  fCEvents->GetXaxis()->SetBinLabel(9,"triggerClass!=CINT1");
+  fCEvents->GetXaxis()->SetBinLabel(10,"triggerMask!=kAnyINT");
+  fCEvents->GetXaxis()->SetBinLabel(11,"triggerMask!=kAny");
+  fCEvents->GetXaxis()->SetBinLabel(12,"vtxTitle.Contains(Z)");
+  fCEvents->GetXaxis()->SetBinLabel(13,"vtxTitle.Contains(3D)");
+  fCEvents->GetXaxis()->SetBinLabel(14,"vtxTitle.Doesn'tContain(Z-3D)");
+  fCEvents->GetXaxis()->SetBinLabel(15,"zVtx<=10cm");
+  fCEvents->GetXaxis()->SetBinLabel(16,"!IsEventSelected");
+  fCEvents->GetXaxis()->SetBinLabel(17,"triggerMask!=kAnyINT || triggerClass!=CINT1");
+  fCEvents->GetXaxis()->SetBinLabel(8,"IsEventSelected");
+  //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 
   fOutput->Add(fCEvents);
@@ -410,6 +566,96 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineHistograms() {
   fOutput->Add(hpionV0SigmaVspTPC);
   fOutput->Add(hprotonBachSigmaVspTPC);
 
+  TH1F *hZ2 = new TH1F("hZ2","",100,-50.,50.);
+  fOutput->Add(hZ2);
+  TH1F *hZ3 = new TH1F("hZ3","",100,-50.,50.);
+  fOutput->Add(hZ3);
+  TH1F *hZ4 = new TH1F("hZ4","",100,-50.,50.);
+  fOutput->Add(hZ4);
+  TH1F *hZ5 = new TH1F("hZ5","",100,-50.,50.);
+  fOutput->Add(hZ5);
+  TH1F *hZ6 = new TH1F("hZ6","",100,-50.,50.);
+  fOutput->Add(hZ6);
+  TH1F *hZ7 = new TH1F("hZ7","",100,-50.,50.);
+  fOutput->Add(hZ7);
+  TH1F *hZ8 = new TH1F("hZ8","",100,-50.,50.);
+  fOutput->Add(hZ8);
+  TH1F *hZ9 = new TH1F("hZ9","",100,-50.,50.);
+  fOutput->Add(hZ9);
+  TH1F *hZ10 = new TH1F("hZ10","",100,-50.,50.);
+  fOutput->Add(hZ10);
+  TH1F *hZ11 = new TH1F("hZ11","",100,-50.,50.);
+  fOutput->Add(hZ11);
+  TH1F *hZ12 = new TH1F("hZ12","",100,-50.,50.);
+  fOutput->Add(hZ12);
+  TH1F *hZ13 = new TH1F("hZ13","",100,-50.,50.);
+  fOutput->Add(hZ13);
+  TH1F *hZ14 = new TH1F("hZ14","",100,-50.,50.);
+  fOutput->Add(hZ14);
+  TH1F *hZ15 = new TH1F("hZ15","",100,-50.,50.);
+  fOutput->Add(hZ15);
+  TH1F *hZ16 = new TH1F("hZ16","",100,-50.,50.);
+  fOutput->Add(hZ16);
+
+  TH1I *hCandidateSelection = new TH1I("hCandidateSelection","",12,0,12);
+  hCandidateSelection->GetXaxis()->SetBinLabel(1,"IsEventSelected");
+  hCandidateSelection->GetXaxis()->SetBinLabel(2,"IsSecondaryVtx");
+  hCandidateSelection->GetXaxis()->SetBinLabel(3,"V0toPosNeg");
+  hCandidateSelection->GetXaxis()->SetBinLabel(4,"prodCuts::kTracks");
+  hCandidateSelection->GetXaxis()->SetBinLabel(5,"prodCuts::kCandidate");
+  hCandidateSelection->GetXaxis()->SetBinLabel(6,"prodCuts::kPID");
+  hCandidateSelection->GetXaxis()->SetBinLabel(7,"prodCuts::kAll");
+  hCandidateSelection->GetXaxis()->SetBinLabel(8,"analCuts::kTracks");
+  hCandidateSelection->GetXaxis()->SetBinLabel(9,"analCuts::kCandidate");
+  hCandidateSelection->GetXaxis()->SetBinLabel(10,"analCuts::kPID");
+  hCandidateSelection->GetXaxis()->SetBinLabel(11,"analCuts::kAll");
+  fOutput->Add(hCandidateSelection);
+
+  TH1I *hEventsWithCandidates = new TH1I("hEventsWithCandidates","conter",17,0,17);
+  fOutput->Add(hEventsWithCandidates);
+
+  TH1F *hZ2a = new TH1F("hZ2a","",100,-50.,50.);
+  fOutput->Add(hZ2a);
+  TH1F *hZ3a = new TH1F("hZ3a","",100,-50.,50.);
+  fOutput->Add(hZ3a);
+  TH1F *hZ4a = new TH1F("hZ4a","",100,-50.,50.);
+  fOutput->Add(hZ4a);
+  TH1F *hZ5a = new TH1F("hZ5a","",100,-50.,50.);
+  fOutput->Add(hZ5a);
+  TH1F *hZ6a = new TH1F("hZ6a","",100,-50.,50.);
+  fOutput->Add(hZ6a);
+  TH1F *hZ7a = new TH1F("hZ7a","",100,-50.,50.);
+  fOutput->Add(hZ7a);
+  TH1F *hZ8a = new TH1F("hZ8a","",100,-50.,50.);
+  fOutput->Add(hZ8a);
+  TH1F *hZ9a = new TH1F("hZ9a","",100,-50.,50.);
+  fOutput->Add(hZ9a);
+  TH1F *hZ10a = new TH1F("hZ10a","",100,-50.,50.);
+  fOutput->Add(hZ10a);
+  TH1F *hZ11a = new TH1F("hZ11a","",100,-50.,50.);
+  fOutput->Add(hZ11a);
+  TH1F *hZ12a = new TH1F("hZ12a","",100,-50.,50.);
+  fOutput->Add(hZ12a);
+  TH1F *hZ13a = new TH1F("hZ13a","",100,-50.,50.);
+  fOutput->Add(hZ13a);
+  TH1F *hZ14a = new TH1F("hZ14a","",100,-50.,50.);
+  fOutput->Add(hZ14a);
+  TH1F *hZ15a = new TH1F("hZ15a","",100,-50.,50.);
+  fOutput->Add(hZ15a);
+  TH1F *hZ16a = new TH1F("hZ16a","",100,-50.,50.);
+  fOutput->Add(hZ16a);
+
+  TH1I *hSwitchOnCandidates0 = new TH1I("hSwitchOnCandidates0","",8,0,8);
+  fOutput->Add(hSwitchOnCandidates0);
+  TH1I *hSwitchOnCandidates1 = new TH1I("hSwitchOnCandidates1","",8,0,8);
+  fOutput->Add(hSwitchOnCandidates1);
+  TH1I *hSwitchOnCandidates2 = new TH1I("hSwitchOnCandidates2","",8,0,8);
+  fOutput->Add(hSwitchOnCandidates2);
+  TH1I *hSwitchOnCandidates3 = new TH1I("hSwitchOnCandidates3","",8,0,8);
+  fOutput->Add(hSwitchOnCandidates3);
+  TH1I *hSwitchOnCandidates4 = new TH1I("hSwitchOnCandidates4","",8,0,8);
+  fOutput->Add(hSwitchOnCandidates4);
+
   if (fIsK0sAnalysis) DefineK0SHistos();// hK0S histos declarations
 
   return;
@@ -426,8 +672,30 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   // Fill histos for Lc -> K0S+proton
   //
   
-  if ( ((cutsProd->IsSelectedPID(part)&(0x1))==1) &&
-       ((cutsProd->IsSelected(part,AliRDHFCuts::kCandidate,2)&(0x1))==1) ) nSelectedProd++;
+  if ( ( ( (cutsProd->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) )
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(4);
+  if ( ( ( (cutsProd->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) )
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(5);
+  if ( ( ( (cutsProd->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) {
+    nSelectedProd++;
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(6);
+  }
+  /*
+  if ( ( (cutsProd->IsSelectedPID(part))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)  && // to be used since fUsePID is kFALSE for cutsProd
+       ( ( (cutsProd->IsSelectedSingleCut(part,AliRDHFCuts::kCandidate,2))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) nSelectedProd++;
+  */
+
+
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(7);
+
+  //Bool_t usePID = cutsAnal->GetIsUsePID();
+  //cutsAnal->SetUsePID(kFALSE);
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(8);
+  //cutsAnal->SetUsePID(usePID);
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(9);
 
   TString fillthis="";
 
@@ -444,190 +712,239 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   Double_t ptK0s = TMath::Sqrt(v0part->Pt2V0());
   Double_t dcaV0 = v0part->DcaV0ToPrimVertex();
   Double_t invmassK0s = v0part->MassK0Short();
-  Bool_t isInV0window = ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,2)&(0x1))==1); // cut on V0 invMass
+  Bool_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part,AliRDHFCuts::kCandidate,2))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
 
   AliAODTrack *bachelor = (AliAODTrack*)part->GetBachelor();
   Double_t momBach  = bachelor->P();
-  Bool_t isBachelorID = ((cutsAnal->IsSelectedPID(part)&(0x1))==1); // ID x bachelor
+  Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
 
-  isBachelorID = isBachelorID && isInV0window; // ID x bachelor and invMass x V0
+  //if (isBachelorID && isInV0window) nSelectedAnal++;
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(10);
+    if (!onFlyV0) {
+      nSelectedAnal++;
+      ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(11);
+    }
+  }
 
-  if (isBachelorID) nSelectedAnal++;
+  if ( !onFlyV0 ) {
 
-  if (onFlyV0) {  
-    fillthis="histpK0Svsp";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+    ((TH1I*)(fOutput->FindObject("hSwitchOnCandidates0")))->Fill( cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate) );
 
-    fillthis="histcosOAK0Spvsp";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+    if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+      ((TH1I*)(fOutput->FindObject("hSwitchOnCandidates1")))->Fill( cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate) );
 
-    fillthis="histoDCAtoPVvsinvmassK0s";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+    if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+      ((TH1I*)(fOutput->FindObject("hSwitchOnCandidates2")))->Fill( cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate) );
+
+    if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+      ((TH1I*)(fOutput->FindObject("hSwitchOnCandidates3")))->Fill( cutsAnal->IsSelected(part,AliRDHFCuts::kPID) );
+
+    if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+      ((TH1I*)(fOutput->FindObject("hSwitchOnCandidates4")))->Fill( cutsAnal->IsSelected(part,AliRDHFCuts::kAll) );
+
+  }
+
+  if (onFlyV0 && fUseOnTheFlyV0) {  
 
     fillthis="histK0SMass";
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
     if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 
     if (isInV0window) {
+
+      fillthis="histpK0Svsp";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+
+      fillthis="histcosOAK0Spvsp";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+
+      fillthis="histoDCAtoPVvsinvmassK0s";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+
+      fillthis="histArmPodK0s";
+      FillArmPodDistribution(v0part,fillthis,fOutputAll);
+      if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
       fillthis="histLcMassByK0S";
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
       if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
  
-      fillthis="histArmPodK0s";
-      FillArmPodDistribution(v0part,fillthis,fOutputAll);
-      if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
-    }  
+    }
   }
-  else{  
-    fillthis="histpK0SvspOffline";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
-
-    fillthis="histcosOAK0SpvspOffline";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-  
-    fillthis="histoDCAtoPVvsinvmassK0sOffline";
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+  else if (!onFlyV0) {
 
     fillthis="histK0SMassOffline";
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
     if (isBachelorID) ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 
     if (isInV0window) {
-      fillthis="histLcMassOfflineByK0S";
-      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
-      if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
- 
+
+      fillthis="histpK0SvspOffline";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+
+      fillthis="histcosOAK0SpvspOffline";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+  
+      fillthis="histoDCAtoPVvsinvmassK0sOffline";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+
       fillthis="histOfflineArmPodK0s";
       FillArmPodDistribution(v0part,fillthis,fOutputAll);
       if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
+      fillthis="histLcMassOfflineByK0S";
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+      if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+
+      if (fIsEventSelected) {
+	fillthis="hist1LcMassOfflineByK0S";
+	if (isBachelorID) ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+      } else {
+	fillthis="hist0LcMassOfflineByK0S";
+	if (isBachelorID) ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+      }
+ 
     }
   }
 
 
   if (fUseMCInfo) {
     if (isLc==1) {
-      if (onFlyV0) {  
-	fillthis="histpK0SvspSgn";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
-
-	fillthis="histcosOAK0SpSgnvsp";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-	if (isBachelorID)     ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-
-	fillthis="histoDCAtoPVvsinvmassK0sSgn";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+      if (onFlyV0 && fUseOnTheFlyV0) {
 
 	fillthis="histK0SMassSgn";
 	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 	if (isBachelorID) ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 
 	if (isInV0window) {
-	  fillthis="histLcMassByK0SSgn";
-	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
-	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+
+	  fillthis="histpK0SvspSgn";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+
+	  fillthis="histcosOAK0SpSgnvsp";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+	  if (isBachelorID)     ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+
+	  fillthis="histoDCAtoPVvsinvmassK0sSgn";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
 
 	  fillthis="histArmPodK0sSgn";
 	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
 	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
+	  fillthis="histLcMassByK0SSgn";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+
 	}
     
       }     
-      else{  
-	fillthis="histpK0SvspOfflineSgn";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
-  
-	fillthis="histcosOAK0SpSgnvspOffline";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-	if (isBachelorID)     ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+      else if (!onFlyV0) {  
 
-	fillthis="histoDCAtoPVvsinvmassK0sOfflineSgn";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-   
 	fillthis="histK0SMassOfflineSgn";
 	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 	if (isBachelorID) ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 
- 
+ 	if (isInV0window) {
 
-	if (isInV0window) {
+	  fillthis="histpK0SvspOfflineSgn";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+  
+	  fillthis="histcosOAK0SpSgnvspOffline";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+	  if (isBachelorID)     ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+
+	  fillthis="histoDCAtoPVvsinvmassK0sOfflineSgn";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+   
+	  fillthis="histOfflineArmPodK0sSgn";
+	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
+	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
 	  fillthis="histLcMassOfflineByK0SSgn";
 	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 	  
-	  fillthis="histOfflineArmPodK0sSgn";
-	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
-	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
 	}
 
       }
 
     }// sgn
     else { // bkg
-      if (onFlyV0) {  
-	fillthis="histpK0SvspBkg";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
-
-	fillthis="histcosOAK0SpBkgvsp";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-	if (isBachelorID)   ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-
-	fillthis="histoDCAtoPVvsinvmassK0sBkg";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+      if (onFlyV0 && fUseOnTheFlyV0) {
 
 	fillthis="histK0SMassBkg";
 	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 
 	if (isInV0window) {
+
+	  fillthis="histpK0SvspBkg";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+
+	  fillthis="histcosOAK0SpBkgvsp";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+	  if (isBachelorID)   ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+
+	  fillthis="histoDCAtoPVvsinvmassK0sBkg";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+
+	  fillthis="histArmPodK0sBkg";
+	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
+	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
 	  fillthis="histLcMassByK0SBkg";
 	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
  
-	  fillthis="histArmPodK0sBkg";
-	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
-	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
 	}
 
       }
-      else {  
-	fillthis="histpK0SvspOfflineBkg";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
-   
-	fillthis="histcosOAK0SpBkgvspOffline";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-	if (isBachelorID)   ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
-    
-	fillthis="histoDCAtoPVvsinvmassK0sOfflineBkg";
-	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
-	if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+      else if (!onFlyV0) {
 
 	fillthis="histK0SMassOfflineBkg";
 	((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
 	if (isBachelorID) ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,ptK0s);
   
 	if (isInV0window) {
+
+	  fillthis="histpK0SvspOfflineBkg";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0s);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0s);
+   
+	  fillthis="histcosOAK0SpBkgvspOffline";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+	  if (isBachelorID)   ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(cosOAK0Sp,lambdacpt);
+    
+	  fillthis="histoDCAtoPVvsinvmassK0sOfflineBkg";
+	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0s,dcaV0);
+
+	  fillthis="histOfflineArmPodK0sBkg";
+	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
+	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+
 	  fillthis="histLcMassOfflineByK0SBkg";
 	  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 	  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
  
-	  fillthis="histOfflineArmPodK0sBkg";
-	  FillArmPodDistribution(v0part,fillthis,fOutputAll);
-	  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
 	}
-       }
+
+      }
+
     }
   } // if fUseMCInfo
  
@@ -688,7 +1005,13 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODVertex */*vtx
 
   // loop over cascades to search for candidates Lc->p+K0S
   Int_t nCascades= arrayLctopKos->GetEntriesFast();
+  if (nCascades==0) {
+    AliInfo("Could not find cascades, skipping the event");
+    return;
+  }
   for (Int_t iLctopK0s = 0; iLctopK0s<nCascades; iLctopK0s++) {
+
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(0);
 
     // Lc candidates and K0s from Lc
     AliAODRecoCascadeHF* lcK0spr = (AliAODRecoCascadeHF*)arrayLctopKos->At(iLctopK0s);
@@ -697,10 +1020,14 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODVertex */*vtx
       continue;
     }
 
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(1);
+
     AliAODTrack * v0Pos = lcK0spr->Getv0PositiveTrack();
     AliAODTrack * v0Neg = lcK0spr->Getv0NegativeTrack();
     if (v0Pos->Charge() ==  v0Neg->Charge()) continue;
   
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(2);
+
     Int_t isLc = 0;
 
     if (fUseMCInfo) {
@@ -729,7 +1056,8 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODVertex */*vtx
       }
     }
 
-    if( (cutsProd->IsSelected(lcK0spr,AliRDHFCuts::kTracks)&(0x1))==0 ) continue;
+    if ( !( ( (cutsProd->IsSelected(lcK0spr,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) continue;
+    ((TH1I*)(fOutput->FindObject("hCandidateSelection")))->Fill(3);
 
     FillLc2pK0Sspectrum(lcK0spr, isLc,
 			nSelectedProd, cutsProd,
@@ -1059,15 +1387,74 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
   ///---------------- START  K0S HISTOS DECLARATIONS -------------------///
 
-  // V0 invariant masses (on-the-fly)
-  nameMass="histK0SMass";
-  TH2F* spectrumK0SMass = new TH2F(nameMass.Data(),"K^{0}_{S} invariant mass VS p_{T}; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",
-				   520,0.43,0.56,200,0.,20.);
-  spectrumK0SMass->Sumw2();
-  spectrumK0SMass->SetLineColor(6);
-  spectrumK0SMass->SetMarkerStyle(20);
-  spectrumK0SMass->SetMarkerSize(0.6);
-  spectrumK0SMass->SetMarkerColor(6);
+  if (fUseOnTheFlyV0) {
+
+    // V0 invariant masses (on-the-fly)
+    nameMass="histK0SMass";
+    TH2F* spectrumK0SMass = new TH2F(nameMass.Data(),"K^{0}_{S} invariant mass VS p_{T}; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",
+				     520,0.43,0.56,200,0.,20.);
+    spectrumK0SMass->Sumw2();
+    spectrumK0SMass->SetLineColor(6);
+    spectrumK0SMass->SetMarkerStyle(20);
+    spectrumK0SMass->SetMarkerSize(0.6);
+    spectrumK0SMass->SetMarkerColor(6);
+
+    // Lc invariant masses (x K0S on-the-fly)
+    nameMass="histLcMassByK0S";
+    TH2F* spectrumLcMassByK0S = new TH2F(nameMass.Data(),"#Lambda_{C} invariant mass (by K^{0}_{S}) vs p_{T} ; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
+					    1000,2.,2.5,200,0.,20.);
+    spectrumLcMassByK0S->Sumw2();
+    spectrumLcMassByK0S->SetLineColor(6);
+    spectrumLcMassByK0S->SetMarkerStyle(20);
+    spectrumLcMassByK0S->SetMarkerSize(0.6);
+    spectrumLcMassByK0S->SetMarkerColor(6);
+
+    nameMass="histcosOAK0Spvsp";
+    TH2F* cosOpeningAngleK0Spvsp = new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} - p Opening Angle vs p; Cos(Opening Angle)  ; p ",
+					   200,-1.,1.,200,0.,20.);
+ 
+    nameMass="histpK0Svsp";
+    TH2F* momentumDistributionK0Svsp = new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} vs p Total Momentum Distribution;  p_{p}; p_{K^{0}_{S}}  ",
+					       200,0.,20.,200,0.,20.);
+
+    nameMass="histArmPodK0s";
+    TH2F* armenterosPodK0s = new TH2F(nameMass.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
+				      200,-1.,1.,300,0.,0.3);
+ 
+    nameMass="histoDCAtoPVvsinvmassK0s";
+    TH2F *dcatoPVvspK0s = new TH2F(nameMass.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass ; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",
+				   520,0.43,0.56,100,0.,10.0);
+
+    TH2F* allspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
+    TH2F* allspectrumLcMassByK0S    = (TH2F*)spectrumLcMassByK0S->Clone(); 
+    TH2F* allcosOpeningAngleK0Spvsp= (TH2F*)cosOpeningAngleK0Spvsp->Clone(); 
+    TH2F* allmomentumDistributionK0Svsp= (TH2F*)momentumDistributionK0Svsp->Clone(); 
+    TH2F* alldcatoPVvspK0s=(TH2F*)dcatoPVvspK0s->Clone(); 
+
+    TH2F* pidBachspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
+    TH2F* pidBachspectrumLcMassByK0S    = (TH2F*)spectrumLcMassByK0S->Clone(); 
+    TH2F* pidBachcosOpeningAngleK0Spvsp= (TH2F*)cosOpeningAngleK0Spvsp->Clone(); 
+    TH2F* pidBachmomentumDistributionK0Svsp= (TH2F*)momentumDistributionK0Svsp->Clone(); 
+    TH2F* pidBachdcatoPVvspK0s=(TH2F*)dcatoPVvspK0s->Clone(); 
+
+    TH2F* allArmenterosPodK0s = (TH2F*)armenterosPodK0s->Clone();
+    TH2F* pidBachArmenterosPodK0s = (TH2F*)armenterosPodK0s->Clone();
+
+    fOutputAll->Add(allspectrumK0SMass);
+    fOutputAll->Add(allspectrumLcMassByK0S);
+    fOutputAll->Add(allcosOpeningAngleK0Spvsp); 
+    fOutputAll->Add(allmomentumDistributionK0Svsp); 
+    fOutputAll->Add(allArmenterosPodK0s);
+    fOutputAll->Add(alldcatoPVvspK0s);
+
+    fOutputPIDBach->Add(pidBachspectrumK0SMass);
+    fOutputPIDBach->Add(pidBachspectrumLcMassByK0S);
+    fOutputPIDBach->Add(pidBachcosOpeningAngleK0Spvsp); 
+    fOutputPIDBach->Add(pidBachmomentumDistributionK0Svsp); 
+    fOutputPIDBach->Add(pidBachArmenterosPodK0s);
+    fOutputPIDBach->Add(pidBachdcatoPVvspK0s);
+ 
+  }
 
   // V0 invariant masses (offline)
   nameMass="histK0SMassOffline";
@@ -1080,22 +1467,10 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   spectrumK0SMassOffline->SetMarkerColor(6);
 
 
-  // Lc invariant masses (x K0S on-the-fly)
-  nameMass="histLcMassByK0S";
-  TH2F* spectrumLcMassByK0S    = new TH2F(nameMass.Data(),"#Lambda_{C} invariant mass (by K^{0}_{S}) vs p_{T} ; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
-					  1000,2.,2.5,200,0.,20.);
-  spectrumLcMassByK0S->Sumw2();
-  spectrumLcMassByK0S->SetLineColor(6);
-  spectrumLcMassByK0S->SetMarkerStyle(20);
-  spectrumLcMassByK0S->SetMarkerSize(0.6);
-  spectrumLcMassByK0S->SetMarkerColor(6);
-
-
-  
   // Lc invariant masses (x K0S offline)
   nameMass="histLcMassOfflineByK0S";
-  TH2F* spectrumLcMassOfflineByK0S    = new TH2F(nameMass.Data(),"#Lambda_{C} invariant mass (by K^{0}_{S})  vs p_{T}; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
-						 1000,2.,2.5,200,0.,20.);
+  TH2F* spectrumLcMassOfflineByK0S = new TH2F(nameMass.Data(),"#Lambda_{C} invariant mass (by K^{0}_{S})  vs p_{T}; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
+					      1000,2.,2.5,200,0.,20.);
   spectrumLcMassOfflineByK0S->Sumw2();
   spectrumLcMassOfflineByK0S->SetLineColor(6);
   spectrumLcMassOfflineByK0S->SetMarkerStyle(20);
@@ -1103,116 +1478,189 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   spectrumLcMassOfflineByK0S->SetMarkerColor(6);
 
 
-  nameMass="histcosOAK0Spvsp";
-  TH2F* cosOpeningAngleK0Spvsp= new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} - p Opening Angle vs p; Cos(Opening Angle)  ; p ",
-					 200,-1.,1.,200,0.,20.);
- 
   nameMass="histcosOAK0SpvspOffline";
-  TH2F* cosOpeningAngleK0SpvspOffline= new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} - p Opening Angle vs p  -  Offline ; Cos(Opening Angle)  ; p ",
+  TH2F* cosOpeningAngleK0SpvspOffline = new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} - p Opening Angle vs p  -  Offline ; Cos(Opening Angle)  ; p ",
 						200,-1.,1.,200,0.,20.);
-  nameMass="histpK0Svsp";
-  TH2F* momentumDistributionK0Svsp= new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} vs p Total Momentum Distribution;  p_{p}; p_{K^{0}_{S}}  ",
-					     200,0.,20.,200,0.,20.);
+
   nameMass="histpK0SvspOffline";
-  TH2F* momentumDistributionK0SvspOffline= new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} vs p Total Momentum Distribution - Offline ;  p_{p}; p_{K^{0}_{S}}  ",
+  TH2F* momentumDistributionK0SvspOffline = new TH2F(nameMass.Data(),"#Lambda_{C}  : K^{0}_{S} vs p Total Momentum Distribution - Offline ;  p_{p}; p_{K^{0}_{S}}  ",
 						    200,0.,20.,200,0.,20.);
-  nameMass="histArmPodK0s";
-  TH2F* armenterosPodK0s = new TH2F(nameMass.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
-				    200,-1.,1.,300,0.,0.3);
+
   nameMass="histOfflineArmPodK0s";
-  TH2F* armenterosPodK0sOff = new TH2F(nameMass.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",200,-1.,1.,300,0.,0.3);
+  TH2F* armenterosPodK0sOff = new TH2F(nameMass.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
+				       200,-1.,1.,300,0.,0.3);
 
-  
-  nameMass="histoDCAtoPVvsinvmassK0s";
-  TH2F *dcatoPVvspK0s=new TH2F(nameMass.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass ; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
   nameMass="histoDCAtoPVvsinvmassK0sOffline";
-  TH2F *dcatoPVvspK0sOffline=new TH2F(nameMass.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass -offline -; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
+  TH2F *dcatoPVvspK0sOffline = new TH2F(nameMass.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass -offline -; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",
+					520,0.43,0.56,100,0.,10.0);
 
 
 
-  TH2F* allspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
   TH2F* allspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone(); 
-  TH2F* allspectrumLcMassByK0S    = (TH2F*)spectrumLcMassByK0S->Clone(); 
   TH2F* allspectrumLcMassOfflineByK0S    = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
-  TH2F* allcosOpeningAngleK0Spvsp= (TH2F*)cosOpeningAngleK0Spvsp->Clone(); 
   TH2F* allcosOpeningAngleK0SpvspOffline= (TH2F*)cosOpeningAngleK0SpvspOffline->Clone(); 
-  TH2F* allmomentumDistributionK0Svsp= (TH2F*)momentumDistributionK0Svsp->Clone(); 
   TH2F* allmomentumDistributionK0SvspOffline= (TH2F*)momentumDistributionK0SvspOffline->Clone(); 
-  TH2F* alldcatoPVvspK0s=(TH2F*)dcatoPVvspK0s->Clone(); 
   TH2F* alldcatoPVvspK0sOffline=(TH2F*)dcatoPVvspK0sOffline->Clone(); 
 
-  TH2F* pidBachspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone(); 
   TH2F* pidBachspectrumK0SMassOffline = (TH2F*)spectrumK0SMassOffline->Clone(); 
-  TH2F* pidBachspectrumLcMassByK0S    = (TH2F*)spectrumLcMassByK0S->Clone(); 
   TH2F* pidBachspectrumLcMassOfflineByK0S    = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
-  TH2F* pidBachcosOpeningAngleK0Spvsp= (TH2F*)cosOpeningAngleK0Spvsp->Clone(); 
   TH2F* pidBachcosOpeningAngleK0SpvspOffline= (TH2F*)cosOpeningAngleK0SpvspOffline->Clone(); 
-  TH2F* pidBachmomentumDistributionK0Svsp= (TH2F*)momentumDistributionK0Svsp->Clone(); 
   TH2F* pidBachmomentumDistributionK0SvspOffline= (TH2F*)momentumDistributionK0SvspOffline->Clone(); 
-  TH2F* pidBachdcatoPVvspK0s=(TH2F*)dcatoPVvspK0s->Clone(); 
   TH2F* pidBachdcatoPVvspK0sOffline=(TH2F*)dcatoPVvspK0sOffline->Clone(); 
 
-  TH2F* allArmenterosPodK0s = (TH2F*)armenterosPodK0s->Clone();
   TH2F* allArmenterosPodK0sOff = (TH2F*)armenterosPodK0sOff->Clone();
-  TH2F* pidBachArmenterosPodK0s = (TH2F*)armenterosPodK0s->Clone();
   TH2F* pidBachArmenterosPodK0sOff = (TH2F*)armenterosPodK0sOff->Clone();
 
 
-  fOutputAll->Add(allspectrumK0SMass);
   fOutputAll->Add(allspectrumK0SMassOffline);
-  fOutputAll->Add(allspectrumLcMassByK0S);
   fOutputAll->Add(allspectrumLcMassOfflineByK0S);
-  fOutputAll->Add(allcosOpeningAngleK0Spvsp); 
   fOutputAll->Add(allcosOpeningAngleK0SpvspOffline); 
-  fOutputAll->Add(allmomentumDistributionK0Svsp); 
   fOutputAll->Add(allmomentumDistributionK0SvspOffline); 
-  fOutputAll->Add(allArmenterosPodK0s);
   fOutputAll->Add(allArmenterosPodK0sOff);
-  fOutputAll->Add(alldcatoPVvspK0s);
   fOutputAll->Add(alldcatoPVvspK0sOffline);
 
-  fOutputPIDBach->Add(pidBachspectrumK0SMass);
   fOutputPIDBach->Add(pidBachspectrumK0SMassOffline);
-  fOutputPIDBach->Add(pidBachspectrumLcMassByK0S);
   fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0S);
   fOutputPIDBach->Add(pidBachcosOpeningAngleK0SpvspOffline); 
-  fOutputPIDBach->Add(pidBachcosOpeningAngleK0Spvsp); 
-  fOutputPIDBach->Add(pidBachmomentumDistributionK0Svsp); 
   fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOffline); 
-  fOutputPIDBach->Add(pidBachArmenterosPodK0s);
   fOutputPIDBach->Add(pidBachArmenterosPodK0sOff);
-  fOutputPIDBach->Add(pidBachdcatoPVvspK0s);
   fOutputPIDBach->Add(pidBachdcatoPVvspK0sOffline);
 
 
+  nameMass="hist1LcMassOfflineByK0S";
+  TH2D* h1 = new TH2D(nameMass.Data(),"IsEventSelected; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",1000,2.,2.5,200,0.,20.);
+  fOutput->Add(h1);
+  nameMass="hist0LcMassOfflineByK0S";
+  TH2D* h0 = new TH2D(nameMass.Data(),"!IsEventSelected; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",1000,2.,2.5,200,0.,20.);
+  fOutput->Add(h0);
 
   if (fUseMCInfo) {
 
-    nameSgn="histK0SMassSgn";
-    nameBkg="histK0SMassBkg";
-    TH2F* spectrumK0SMassSgn = new TH2F(nameSgn.Data(), "K^{0}_{S} Signal invariant mass VS p_{T} - MC; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries", 520,0.43,0.56,200,0.,20.);
-    TH2F* spectrumK0SMassBkg = new TH2F(nameBkg.Data(), "K^{0}_{S} Background invariant mass VS p_{T} - MC; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",  520,0.43,0.56,200,0.,20.);
-    spectrumK0SMassSgn->Sumw2();
-    spectrumK0SMassBkg->Sumw2();
-    spectrumK0SMassSgn->SetLineColor(2);
-    spectrumK0SMassBkg->SetLineColor(4);
-    spectrumK0SMassSgn->SetMarkerStyle(20);
-    spectrumK0SMassBkg->SetMarkerStyle(20);
-    spectrumK0SMassSgn->SetMarkerSize(0.6);
-    spectrumK0SMassBkg->SetMarkerSize(0.6);
-    spectrumK0SMassSgn->SetMarkerColor(2);
-    spectrumK0SMassBkg->SetMarkerColor(4);
+    if (fUseOnTheFlyV0) {
 
-    TH2F* allspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
-    TH2F* allspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
-    TH2F* pidBachspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
-    TH2F* pidBachspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
+      nameSgn="histK0SMassSgn";
+      nameBkg="histK0SMassBkg";
+      TH2F* spectrumK0SMassSgn = new TH2F(nameSgn.Data(), "K^{0}_{S} Signal invariant mass VS p_{T} - MC; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries", 520,0.43,0.56,200,0.,20.);
+      TH2F* spectrumK0SMassBkg = new TH2F(nameBkg.Data(), "K^{0}_{S} Background invariant mass VS p_{T} - MC; M(K^{0}_{S}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",  520,0.43,0.56,200,0.,20.);
+      spectrumK0SMassSgn->Sumw2();
+      spectrumK0SMassBkg->Sumw2();
+      spectrumK0SMassSgn->SetLineColor(2);
+      spectrumK0SMassBkg->SetLineColor(4);
+      spectrumK0SMassSgn->SetMarkerStyle(20);
+      spectrumK0SMassBkg->SetMarkerStyle(20);
+      spectrumK0SMassSgn->SetMarkerSize(0.6);
+      spectrumK0SMassBkg->SetMarkerSize(0.6);
+      spectrumK0SMassSgn->SetMarkerColor(2);
+      spectrumK0SMassBkg->SetMarkerColor(4);
+
+      TH2F* allspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
+      TH2F* allspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
+      TH2F* pidBachspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
+      TH2F* pidBachspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
   
 
-    fOutputAll->Add(allspectrumK0SMassSgn);
-    fOutputAll->Add(allspectrumK0SMassBkg);
-    fOutputPIDBach->Add(pidBachspectrumK0SMassSgn);
-    fOutputPIDBach->Add(pidBachspectrumK0SMassBkg);
+      fOutputAll->Add(allspectrumK0SMassSgn);
+      fOutputAll->Add(allspectrumK0SMassBkg);
+      fOutputPIDBach->Add(pidBachspectrumK0SMassSgn);
+      fOutputPIDBach->Add(pidBachspectrumK0SMassBkg);
+
+
+      nameSgn="histLcMassByK0SSgn";
+      nameBkg="histLcMassByK0SBkg";
+      TH2F* spectrumLcMassByK0SSgn = new TH2F(nameSgn.Data(), "#Lambda_{C} Signal invariant mass (by K^{0}_{S}) vs p_{T}  - MC; M(#Lambda_{C}) [GeV/c^{2}];  p_{T}",
+					      1000,2.,2.5,200,0.,20.);
+      TH2F* spectrumLcMassByK0SBkg = new TH2F(nameBkg.Data(), "#Lambda_{C} Background invariant mass (by K^{0}_{S}) vs p_{T}  - MC; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
+					      1000,2.,2.5,200,0.,20.);
+      spectrumLcMassByK0SSgn->Sumw2();
+      spectrumLcMassByK0SBkg->Sumw2();
+      spectrumLcMassByK0SSgn->SetLineColor(2);
+      spectrumLcMassByK0SBkg->SetLineColor(4);
+      spectrumLcMassByK0SSgn->SetMarkerStyle(20);
+      spectrumLcMassByK0SBkg->SetMarkerStyle(20);
+      spectrumLcMassByK0SSgn->SetMarkerSize(0.6);
+      spectrumLcMassByK0SBkg->SetMarkerSize(0.6);
+      spectrumLcMassByK0SSgn->SetMarkerColor(2);
+      spectrumLcMassByK0SBkg->SetMarkerColor(4);
+
+      TH2F* allspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
+      TH2F* allspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
+      TH2F* pidBachspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
+      TH2F* pidBachspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
+      fOutputAll->Add(allspectrumLcMassByK0SSgn);
+      fOutputAll->Add(allspectrumLcMassByK0SBkg);
+      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgn);
+      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SBkg);
+
+
+      nameSgn="histcosOAK0SpSgnvsp";
+      nameBkg="histcosOAK0SpBkgvsp";
+      TH2F* cosOpeningAngleK0SpSgnvsp= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} - p Opening Angle  vs p - MC ; Cos(Opening Angle);  p ",
+						200,-1.,1.,200,0.,20.);
+      TH2F* cosOpeningAngleK0SpBkgvsp= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} - p Opening Angle  vs p - MC;  Cos(Opening Angle);  p ",
+						200,-1.,1.,200,0.,20.);
+
+      TH2F* allcosOpeningAngleK0SpSgnvsp= (TH2F*)cosOpeningAngleK0SpSgnvsp->Clone(); 
+      TH2F* allcosOpeningAngleK0SpBkgvsp= (TH2F*)cosOpeningAngleK0SpBkgvsp->Clone(); 
+      TH2F* pidBachcosOpeningAngleK0SpSgnvsp= (TH2F*)cosOpeningAngleK0SpSgnvsp->Clone(); 
+      TH2F* pidBachcosOpeningAngleK0SpBkgvsp= (TH2F*)cosOpeningAngleK0SpBkgvsp->Clone(); 
+      fOutputAll->Add(allcosOpeningAngleK0SpSgnvsp); 
+      fOutputAll->Add(allcosOpeningAngleK0SpBkgvsp); 
+      fOutputPIDBach->Add(pidBachcosOpeningAngleK0SpSgnvsp); 
+      fOutputPIDBach->Add(pidBachcosOpeningAngleK0SpBkgvsp); 
+
+      nameSgn="histpK0SvspSgn";
+      nameBkg="histpK0SvspBkg";
+      TH2F* momentumDistributionK0SvspSgn= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
+						    200,0.,20.,200,0.,20.);
+      TH2F* momentumDistributionK0SvspBkg= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
+						    200,0.,20.,200,0.,20.);
+
+      TH2F* allmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
+      TH2F* allmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
+      TH2F* pidBachmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
+      TH2F* pidBachmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
+      fOutputAll->Add(allmomentumDistributionK0SvspSgn); 
+      fOutputAll->Add(allmomentumDistributionK0SvspBkg); 
+      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspSgn); 
+      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspBkg); 
+
+
+      // armenteros-podolanski plots K0S
+      nameSgn="histArmPodK0sSgn";
+      nameBkg="histArmPodK0sBkg";
+      TH2F* armenterosPodK0sSgn = new TH2F(nameSgn.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
+					   200,-1.,1.,300,0.,0.3);
+      TH2F* armenterosPodK0sBkg = new TH2F(nameBkg.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
+					   200,-1.,1.,300,0.,0.3);
+
+      TH2F* allArmenterosPodK0sSgn = (TH2F*)armenterosPodK0sSgn->Clone();
+      TH2F* allArmenterosPodK0sBkg = (TH2F*)armenterosPodK0sBkg->Clone();
+      TH2F* pidBachArmenterosPodK0sSgn = (TH2F*)armenterosPodK0sSgn->Clone();
+      TH2F* pidBachArmenterosPodK0sBkg = (TH2F*)armenterosPodK0sBkg->Clone();
+
+      fOutputAll->Add(allArmenterosPodK0sSgn);
+      fOutputAll->Add(allArmenterosPodK0sBkg);
+
+      fOutputPIDBach->Add(pidBachArmenterosPodK0sSgn);
+      fOutputPIDBach->Add(pidBachArmenterosPodK0sBkg);
+
+
+      nameSgn="histoDCAtoPVvsinvmassK0sSgn";
+      nameBkg="histoDCAtoPVvsinvmassK0sBkg";
+      TH2F *dcatoPVvspK0sSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (sgn); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
+      TH2F *dcatoPVvspK0sBkg=new TH2F(nameBkg.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (bkg); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
+
+      TH2F* alldcatoPVvspK0sSgn= (TH2F*)dcatoPVvspK0sSgn->Clone();
+      TH2F* alldcatoPVvspK0sBkg= (TH2F*)dcatoPVvspK0sBkg->Clone();
+      TH2F* pidBachdcatoPVvspK0sSgn= (TH2F*)dcatoPVvspK0sSgn->Clone();
+      TH2F* pidBachdcatoPVvspK0sBkg= (TH2F*)dcatoPVvspK0sBkg->Clone();
+
+      fOutputAll->Add(alldcatoPVvspK0sSgn);
+      fOutputPIDBach->Add(pidBachdcatoPVvspK0sSgn);
+      fOutputAll->Add(alldcatoPVvspK0sBkg);
+      fOutputPIDBach->Add(pidBachdcatoPVvspK0sBkg);
+
+    }
 
 
     nameSgn="histK0SMassOfflineSgn";
@@ -1232,46 +1680,17 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     spectrumK0SMassOfflineSgn->SetMarkerColor(2);
     spectrumK0SMassOfflineBkg->SetMarkerColor(4);
 
-
-
     TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
     TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
-    TH2F* pidBachspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
-    TH2F* pidBachspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
-
     fOutputAll->Add(allspectrumK0SMassOfflineSgn);
     fOutputAll->Add(allspectrumK0SMassOfflineBkg);
+
+
+
+    TH2F* pidBachspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
+    TH2F* pidBachspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();
     fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineSgn);
     fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineBkg);
-
-
-    nameSgn="histLcMassByK0SSgn";
-    nameBkg="histLcMassByK0SBkg";
-    TH2F* spectrumLcMassByK0SSgn = new TH2F(nameSgn.Data(), "#Lambda_{C} Signal invariant mass (by K^{0}_{S}) vs p_{T}  - MC; M(#Lambda_{C}) [GeV/c^{2}];  p_{T}",
-					    1000,2.,2.5,200,0.,20.);
-    TH2F* spectrumLcMassByK0SBkg = new TH2F(nameBkg.Data(), "#Lambda_{C} Background invariant mass (by K^{0}_{S}) vs p_{T}  - MC; M(#Lambda_{C}) [GeV/c^{2}]; p_{T}",
-					    1000,2.,2.5,200,0.,20.);
-    spectrumLcMassByK0SSgn->Sumw2();
-    spectrumLcMassByK0SBkg->Sumw2();
-    spectrumLcMassByK0SSgn->SetLineColor(2);
-    spectrumLcMassByK0SBkg->SetLineColor(4);
-    spectrumLcMassByK0SSgn->SetMarkerStyle(20);
-    spectrumLcMassByK0SBkg->SetMarkerStyle(20);
-    spectrumLcMassByK0SSgn->SetMarkerSize(0.6);
-    spectrumLcMassByK0SBkg->SetMarkerSize(0.6);
-    spectrumLcMassByK0SSgn->SetMarkerColor(2);
-    spectrumLcMassByK0SBkg->SetMarkerColor(4);
-
-
-
-    TH2F* allspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
-    TH2F* allspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
-    TH2F* pidBachspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
-    TH2F* pidBachspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
-    fOutputAll->Add(allspectrumLcMassByK0SSgn);
-    fOutputAll->Add(allspectrumLcMassByK0SBkg);
-    fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgn);
-    fOutputPIDBach->Add(pidBachspectrumLcMassByK0SBkg);
 
 
     nameSgn="histLcMassOfflineByK0SSgn";
@@ -1301,22 +1720,6 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgn);
     fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SBkg);
   
-    nameSgn="histcosOAK0SpSgnvsp";
-    nameBkg="histcosOAK0SpBkgvsp";
-    TH2F* cosOpeningAngleK0SpSgnvsp= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} - p Opening Angle  vs p - MC ; Cos(Opening Angle);  p ",
-					      200,-1.,1.,200,0.,20.);
-    TH2F* cosOpeningAngleK0SpBkgvsp= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} - p Opening Angle  vs p - MC;  Cos(Opening Angle);  p ",
-					      200,-1.,1.,200,0.,20.);
-
-    TH2F* allcosOpeningAngleK0SpSgnvsp= (TH2F*)cosOpeningAngleK0SpSgnvsp->Clone(); 
-    TH2F* allcosOpeningAngleK0SpBkgvsp= (TH2F*)cosOpeningAngleK0SpBkgvsp->Clone(); 
-    TH2F* pidBachcosOpeningAngleK0SpSgnvsp= (TH2F*)cosOpeningAngleK0SpSgnvsp->Clone(); 
-    TH2F* pidBachcosOpeningAngleK0SpBkgvsp= (TH2F*)cosOpeningAngleK0SpBkgvsp->Clone(); 
-    fOutputAll->Add(allcosOpeningAngleK0SpSgnvsp); 
-    fOutputAll->Add(allcosOpeningAngleK0SpBkgvsp); 
-    fOutputPIDBach->Add(pidBachcosOpeningAngleK0SpSgnvsp); 
-    fOutputPIDBach->Add(pidBachcosOpeningAngleK0SpBkgvsp); 
-
  
 
 
@@ -1340,23 +1743,6 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
 
 
-    nameSgn="histpK0SvspSgn";
-    nameBkg="histpK0SvspBkg";
-    TH2F* momentumDistributionK0SvspSgn= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
-						  200,0.,20.,200,0.,20.);
-    TH2F* momentumDistributionK0SvspBkg= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
-						  200,0.,20.,200,0.,20.);
-
-    TH2F* allmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
-    TH2F* allmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
-    TH2F* pidBachmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
-    TH2F* pidBachmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
-    fOutputAll->Add(allmomentumDistributionK0SvspSgn); 
-    fOutputAll->Add(allmomentumDistributionK0SvspBkg); 
-    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspSgn); 
-    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspBkg); 
-
-
     nameSgn="histpK0SvspOfflineSgn";
     nameBkg="histpK0SvspOfflineBkg";
     TH2F* momentumDistributionK0SvspOfflineSgn= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC; p_{p};  p_{K^{0}_{S}}",
@@ -1378,14 +1764,6 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
 
 
-    // armenteros-podolanski plots K0S
-    nameSgn="histArmPodK0sSgn";
-    nameBkg="histArmPodK0sBkg";
-    TH2F* armenterosPodK0sSgn = new TH2F(nameSgn.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (sgn); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
-					 200,-1.,1.,300,0.,0.3);
-    TH2F* armenterosPodK0sBkg = new TH2F(nameBkg.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
-					 200,-1.,1.,300,0.,0.3);
-    
     // armenteros-podolanski plots K0S (offline)
     nameSgn="histOfflineArmPodK0sSgn";
     nameBkg="histOfflineArmPodK0sBkg";
@@ -1393,43 +1771,23 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2F* armenterosPodK0sOffBkg = new TH2F(nameBkg.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",200,-1.,1.,300,0.,0.3);
   
 
-    TH2F* allArmenterosPodK0sSgn = (TH2F*)armenterosPodK0sSgn->Clone();
-    TH2F* allArmenterosPodK0sBkg = (TH2F*)armenterosPodK0sBkg->Clone();
     TH2F* allArmenterosPodK0sOffSgn = (TH2F*)armenterosPodK0sOffSgn->Clone();
     TH2F* allArmenterosPodK0sOffBkg = (TH2F*)armenterosPodK0sOffBkg->Clone();
-
-    TH2F* pidBachArmenterosPodK0sSgn = (TH2F*)armenterosPodK0sSgn->Clone();
-    TH2F* pidBachArmenterosPodK0sBkg = (TH2F*)armenterosPodK0sBkg->Clone();
     TH2F* pidBachArmenterosPodK0sOffSgn = (TH2F*)armenterosPodK0sOffSgn->Clone();
     TH2F* pidBachArmenterosPodK0sOffBkg = (TH2F*)armenterosPodK0sOffBkg->Clone();
 
-    fOutputAll->Add(allArmenterosPodK0sSgn);
-    fOutputAll->Add(allArmenterosPodK0sBkg);
+
     fOutputAll->Add(allArmenterosPodK0sOffSgn);
     fOutputAll->Add(allArmenterosPodK0sOffBkg);
-
-    fOutputPIDBach->Add(pidBachArmenterosPodK0sSgn);
-    fOutputPIDBach->Add(pidBachArmenterosPodK0sBkg);
     fOutputPIDBach->Add(pidBachArmenterosPodK0sOffSgn);
     fOutputPIDBach->Add(pidBachArmenterosPodK0sOffBkg);
 
 
-
-    nameSgn="histoDCAtoPVvsinvmassK0sSgn";
-    nameBkg="histoDCAtoPVvsinvmassK0sBkg";
-    TH2F *dcatoPVvspK0sSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (sgn); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
-    TH2F *dcatoPVvspK0sBkg=new TH2F(nameBkg.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (bkg); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
-    
     nameSgn="histoDCAtoPVvsinvmassK0sOfflineSgn";
     nameBkg="histoDCAtoPVvsinvmassK0sOfflineBkg";
     TH2F *dcatoPVvspK0sOfflineSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass  -offline - (sgn); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     TH2F *dcatoPVvspK0sOfflineBkg=new TH2F(nameBkg.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass  -offline - (bkg); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     
-
-    TH2F* alldcatoPVvspK0sSgn= (TH2F*)dcatoPVvspK0sSgn->Clone();
-    TH2F* pidBachdcatoPVvspK0sSgn= (TH2F*)dcatoPVvspK0sSgn->Clone();
-    TH2F* alldcatoPVvspK0sBkg= (TH2F*)dcatoPVvspK0sBkg->Clone();
-    TH2F* pidBachdcatoPVvspK0sBkg= (TH2F*)dcatoPVvspK0sBkg->Clone();
 
     TH2F* alldcatoPVvspK0sOfflineSgn= (TH2F*)dcatoPVvspK0sOfflineSgn->Clone();
     TH2F* pidBachdcatoPVvspK0sOfflineSgn= (TH2F*)dcatoPVvspK0sOfflineSgn->Clone();
@@ -1437,11 +1795,6 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2F* pidBachdcatoPVvspK0sOfflineBkg= (TH2F*)dcatoPVvspK0sOfflineBkg->Clone();
 
 
-
-    fOutputAll->Add(alldcatoPVvspK0sSgn);
-    fOutputPIDBach->Add(pidBachdcatoPVvspK0sSgn);
-    fOutputAll->Add(alldcatoPVvspK0sBkg);
-    fOutputPIDBach->Add(pidBachdcatoPVvspK0sBkg);
 
     fOutputAll->Add(alldcatoPVvspK0sOfflineSgn);
     fOutputPIDBach->Add(pidBachdcatoPVvspK0sOfflineSgn);

@@ -36,7 +36,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
  public:
   
   AliAnalysisTaskSELc2V0bachelor();
-  AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cutsA, AliRDHFCutsLctoV0* cutsB);
+  AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cutsA, AliRDHFCutsLctoV0* cutsB,
+				 Bool_t useOnTheFly=kFALSE);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
   // Implementation of interface methods  
@@ -77,6 +78,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetK0sAnalysis(Bool_t a) {fIsK0sAnalysis=a;}
   Bool_t GetK0sAnalysis() const {return fIsK0sAnalysis;}
 
+  void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
+  Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
  private:
   
@@ -89,15 +92,17 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   TList *fOutputPIDBach;      // User output3 // histos with PId on Bachelor
 
   // define the histograms
-  TH1F *fCEvents;                   // Histogram to check selected events
-  AliPIDResponse *fPIDResponse;     //! PID response object
-  Bool_t fIsK0sAnalysis;            // switch between Lpi and K0sp
+  TH1I *fCEvents;                    // Histogram to check selected events
+  AliPIDResponse *fPIDResponse;      //! PID response object
+  Bool_t fIsK0sAnalysis;             // switch between Lpi and K0sp
   AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 4
   AliRDHFCutsLctoV0 *fProdCuts;      // Cuts - sent to output slot 5
   AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 5
   TList *fListCuts;                  // list of cuts
+  Bool_t fUseOnTheFlyV0;             // flag to analyze also on-the-fly V0 candidates
+  Bool_t fIsEventSelected;           // flag for event selected
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,1); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,2); // class for Lc->p K0
 };
 
 #endif
