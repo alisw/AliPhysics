@@ -81,6 +81,9 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 	  if(partname.Contains("D04")) cutobjname="D0toKpipipiCuts";
 	  else{
 	    if(partname.Contains("Lc")) cutobjname="LctopKpiAnalysisCuts";
+	    else{
+	      if(partname.Contains("LcToV0x")) cutobjname="LctoV0AnalysisCuts";
+	    }
 	  }
 	}
       }
