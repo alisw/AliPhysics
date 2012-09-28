@@ -11,6 +11,7 @@
 // Davide Caffarri
 //
 #include "TNamed.h"
+class AliCDBStorage;
 
 class AliMeanVertexPreprocessorOffline: public TNamed 
 {
@@ -18,7 +19,7 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 	AliMeanVertexPreprocessorOffline();  
 	virtual ~AliMeanVertexPreprocessorOffline();
 
-	void  ProcessOutput(const char *filename, const char *dbString, Int_t runNb);
+	void  ProcessOutput(const char *filename, AliCDBStorage *db, Int_t runNb);
 
 
   private:

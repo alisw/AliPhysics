@@ -75,8 +75,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   // Detector Tasks
   //
   if ( detStr.Contains("TPC"))  AddTaskTPCCalib(runNumber);
-  if ( detStr.Contains("TRD"))  AddTaskTRDCalib(runNumber);
-  if ( detStr.Contains("TOF"))  AddTOFAnalysisTaskCalibPass0();
+  if ( detStr.Contains("TRD") && detStr.Contains("TPC"))  AddTaskTRDCalib(runNumber);
+  if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  AddTOFAnalysisTaskCalibPass0();
   if ( detStr.Contains("T0"))   AddTaskT0Calib(runNumber);
   //if ( detStr.Contains("ITSSPD")) tMeanVtx = AddTaskMeanVertexCalib();
   //

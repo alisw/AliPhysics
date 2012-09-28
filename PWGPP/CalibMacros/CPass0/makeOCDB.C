@@ -12,10 +12,8 @@
 
 void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream);
 
-
 void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDBstorage="raw://")
 {
-
   //
   // extract OCDB entries for detectors participating in the calibration for the current run
   //
@@ -32,67 +30,80 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   // check the presence of the detectors
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
-  Int_t activeDetectors = grpData->GetDetectorMask(); 
+  Int_t activeDetectors = grpData->GetDetectorMask();
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
   printf("Detectors in the data:\n%s\n",detStr.Data());
-  printf("Monalisa: Detectors in the data:\t%s\n",detStr.Data());
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
-  //targetOCDBstorage+="?se=ALICE::CERN::SE";
 
-  // for tests, the target OCDB has to be different from raw://, but since the calibration procedure may need to read the OCDB,
-  // one cannot set the target OCDB as new default storage, since it could it that it does not contain all the necessary entries. 
-  // This is true only if the target OCDB storage is different from the one used as default source and to configure the train
-  if (targetOCDBstorage != sourceOCDBstorage) AliCDBManager::Instance()->SetSpecificStorage("*/*/*", targetOCDBstorage.Data());
+  // Setting the mirror SEs for the default storage
+  TString mirrorsStr("ALICE::CERN::OCDB,ALICE::FZK::SE,ALICE::LLNL::SE");
+  AliCDBManager::Instance()->SetMirrorSEs(mirrorsStr.Data());
+  printf("List of mirror SEs set to: \"%s\"\n",mirrorsStr.Data());
 
+  // activate target OCDB storage
+  AliCDBStorage* targetStorage = 0x0;
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+  else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
+    targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
+  }
+  else {
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+    targetStorage->SetMirrorSEs(mirrorsStr.Data());
+  }
+  printf("** targetOCDBstorage: \"%s\"\n",targetOCDBstorage.Data());
+
+  // specific storage for TPC/Calib/Correction entry
   if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
-  // set OCDB storage
-  if (targetOCDBstorage.Length()==0) targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
 
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
-  if  (detStr.Contains("TPC")){ 
+  if (detStr.Contains("TPC")){
     Printf("\n******* Calibrating TPC *******");
-    procesTPC = new AliTPCPreprocessorOffline; 
+    procesTPC = new AliTPCPreprocessorOffline;
     // switch on parameter validation
     procesTPC->SetTimeGainRange(0.5,5.0);
     procesTPC->SetMaxVDriftCorr(0.2); 
+    //procesTPC->SetMinTracksVdrift(100000);
     procesTPC->SwitchOnValidation();
 
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetOCDBstorage);
+    procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
     
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,targetOCDBstorage);
+    procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,targetStorage);
   }
 
   // TOF part
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
-  if ( detStr.Contains("TOF")){    
+  if (detStr.Contains("TOF") && detStr.Contains("TPC")){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
     Printf("\n******* Calibrating TOF *******");
-    procesTOF->ProcessOutput("CalibObjects.root", targetOCDBstorage);
+    procesTOF->ProcessOutput("CalibObjects.root", targetStorage);
   }
 
   // T0 part
   AliT0PreprocessorOffline *procesT0= 0;
-  if ( detStr.Contains("T0")) {
+  if (detStr.Contains("T0")) {
     Printf("\n******* Calibrating T0 *******");
     // Make  calibration of channels offset
-    procesT0= new  AliT0PreprocessorOffline;
-    procesT0->Process("CalibObjects.root",runNumber, runNumber, targetOCDBstorage);
+    procesT0 = new AliT0PreprocessorOffline;
+    procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
   }
 
   //TRD part
   AliTRDPreprocessorOffline *procesTRD = 0;
-  if ( detStr.Contains("TRD")){
+  if (detStr.Contains("TRD") && detStr.Contains("TPC")){
     Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
     procesTRD->SetLinearFitForVdrift(kTRUE);
@@ -112,15 +123,15 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     printf("version and subversion vdrift %d and %d\n",versionVdriftUsed,subversionVdriftUsed);
     printf("version and subversion gain %d and %d\n",versionGainUsed,subversionGainUsed);
     printf("version and subversion exb %d and %d\n",versionExBUsed,subversionExBUsed);
-    procesTRD->Process("CalibObjects.root",runNumber,runNumber,targetOCDBstorage);
+    procesTRD->Process("CalibObjects.root",runNumber,runNumber,targetStorage);
   }
   
   //Mean Vertex
   AliMeanVertexPreprocessorOffline * procesMeanVtx=0;
-  if ( detStr.Contains("ITSSPD")) {
+  if (detStr.Contains("ITSSPD")) {
     Printf("\n******* Calibrating MeanVertex *******");
-    procesMeanVtx =  new AliMeanVertexPreprocessorOffline;
-    procesMeanVtx->ProcessOutput("CalibObjects.root", targetOCDBstorage, runNumber);
+    procesMeanVtx = new AliMeanVertexPreprocessorOffline;
+    procesMeanVtx->ProcessOutput("CalibObjects.root", targetStorage, runNumber);
   }
 
   //
@@ -129,7 +140,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Int_t trdStatus = (procesTRD) ?  procesTRD->GetStatus():0;
   Int_t tofStatus = (procesTOF) ?  procesTOF->GetStatus():0;
   Int_t t0Status  = (procesT0)  ?  procesT0->GetStatus():0;
-  Int_t tpcStatus = (procesTPC) ? ((procesTPC->ValidateTimeDrift() || procesTPC->ValidateTimeGain())==kFALSE):0;
+  Int_t tpcStatus = (procesTPC) ?  procesTPC->GetStatus():0;
   //
   printf("\n");
   printf("******* CPass0 calibration status *******\n");
