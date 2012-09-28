@@ -381,6 +381,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	else  {
 		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
+	nameContainer+=coutName.Data();
 	
 	AliCFContainer* container;
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -653,7 +654,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	else  {
 		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
 	}
-
+	nameCorr+=coutName.Data();
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
 
@@ -706,6 +707,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	}
 
 	output4name= "Cuts_3Prong_CommonFramework";
+        output4name+=coutName.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
