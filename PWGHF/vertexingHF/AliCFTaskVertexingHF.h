@@ -28,6 +28,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliCFVertexingHF2Prong.h"
 #include "AliCFVertexingHF3Prong.h"
+#include "AliCFVertexingHFLctoV0bachelor.h"
 #include "AliCFVertexingHF.h"
 #include <TH1F.h>
 
@@ -160,7 +161,18 @@ public:
 
         void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
         UInt_t GetResonantDecay() const {return fResonantDecay;}
-	
+
+	void SetKeepLctoK0Sp() {fLctoV0bachelorOption=1;}
+	void SetKeepLctoLambdaBarpi() {fLctoV0bachelorOption=2;}
+	void SetKeepLctoLambdapi() {fLctoV0bachelorOption=4;}
+	void SetKeepLctoV0bachelor() {fLctoV0bachelorOption=7;}
+
+	void SetCountAllLctoBachelor(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountAllLctoV0;}
+	void SetCountLctoK0Sp(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountK0Sp;}
+	void SetCountLambdaBarpi(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountLambdapi;}
+
+	Bool_t ProcessLctoV0Bachelor(Int_t returnCodeDs) const;
+
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -200,8 +212,10 @@ protected:
 	TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
 	TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
         UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
+	Int_t fLctoV0bachelorOption; // Lc->V0+bachelor decay option (selection level)
+	Int_t fGenLctoV0bachelorOption; // Lc->V0+bachelor decay option (generation level)
 
-	ClassDef(AliCFTaskVertexingHF,12); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,13); // class for HF corrections as a function of many variables
 };
 
 #endif

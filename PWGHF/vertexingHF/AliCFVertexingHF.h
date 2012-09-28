@@ -43,7 +43,7 @@ class AliESDtrackCuts;
 class AliCFVertexingHF : public TObject {
 	public:
 
-        enum DecayChannel{kD0toKpi = 2, kDStartoKpipi = 21, kDplustoKpipi = 31, kLctopKpi = 32, kDstoKKpi = 33, kD0toKpipipi = 4};
+  enum DecayChannel{kD0toKpi = 2, kDStartoKpipi = 21, kLctoV0bachelor = 22, kDplustoKpipi = 31, kLctopKpi = 32, kDstoKKpi = 33, kD0toKpipipi = 4};
 
 	AliCFVertexingHF() ;
 	AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselection);
