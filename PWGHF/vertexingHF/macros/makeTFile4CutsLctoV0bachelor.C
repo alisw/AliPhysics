@@ -25,13 +25,14 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  esdTrackCuts->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCuts->SetMinNClustersTPC(70);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kAny); 
+  //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  //	 				   AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
 
 
@@ -39,14 +40,15 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);
   //default
   esdTrackCutsV0daughters->SetRequireTPCRefit(kTRUE);
-  esdTrackCutsV0daughters->SetRequireITSRefit(kTRUE);
-  esdTrackCutsV0daughters->SetMinNClustersITS(4); // default is 5
+  esdTrackCutsV0daughters->SetRequireITSRefit(kFALSE);//kTRUE);
+  esdTrackCutsV0daughters->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCutsV0daughters->SetMinNClustersTPC(70);
-  esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					      AliESDtrackCuts::kAny); 
+  //esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  //	      				              AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
+  esdTrackCutsV0daughters->SetAcceptKinkDaughters(kFALSE);
 
 
 
@@ -64,8 +66,10 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
 
-  RDHFLctoV0Prod->SetPidSelectionFlag(0); // TOF AND TPC
-  RDHFLctoV0An->SetPidSelectionFlag(0); // TOF AND TPC
+  RDHFLctoV0Prod->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
+                                          // 1 -> if (TOF) TOF else TPC w veto
+  RDHFLctoV0An->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
+                                        // 1 -> if (TOF) TOF else TPC w veto
 
   const Int_t nptbins=1;
   Float_t* ptbins;
@@ -122,7 +126,9 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjBachelor->SetTPC(kTRUE);
   pidObjBachelor->SetTOF(kTRUE);
   pidObjBachelor->SetTOFdecide(kFALSE);
+
   RDHFLctoV0An->SetPidHF(pidObjBachelor);
+  RDHFLctoV0Prod->SetPidHF(pidObjBachelor);
 
   //2. V0pos
   AliAODPidHF* pidObjV0pos = new AliAODPidHF();
@@ -133,7 +139,9 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0pos->SetTPC(kTRUE);
   pidObjV0pos->SetTOF(kTRUE);
   pidObjV0pos->SetTOFdecide(kFALSE);
+
   RDHFLctoV0An->SetPidV0pos(pidObjV0pos);
+  RDHFLctoV0Prod->SetPidV0pos(pidObjV0pos);
 
   //2. V0neg
   AliAODPidHF* pidObjV0neg = new AliAODPidHF();
@@ -144,7 +152,9 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0neg->SetTPC(kTRUE);
   pidObjV0neg->SetTOF(kTRUE);
   pidObjV0neg->SetTOFdecide(kFALSE);
+
   RDHFLctoV0An->SetPidV0neg(pidObjV0neg);
+  RDHFLctoV0Prod->SetPidV0neg(pidObjV0neg);
 
 
   // uncomment these lines for Baysian PID:
@@ -163,6 +173,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   Bool_t pidflag=kTRUE;
   RDHFLctoV0An->SetUsePID(pidflag);
+  RDHFLctoV0Prod->SetUsePID(kFALSE);
   if(pidflag) cout<<"PID is used"<<endl;
   else cout<<"PID is not used"<<endl;
 
@@ -170,7 +181,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0Prod->PrintAll();
   cout<<"This is the object I'm going to save:"<<endl;
   RDHFLctoV0An->PrintAll();
-  TFile* fout=new TFile("LctoV0bachelorCuts.root","RECREATE"); 
+  TFile* fout=new TFile("Lc2pK0SCuts.root","RECREATE"); 
   fout->cd();
   RDHFLctoV0Prod->Write();
   RDHFLctoV0An->Write();
@@ -224,7 +235,8 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   RDHFLctoV0->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
 
-  RDHFLctoV0->SetPidSelectionFlag(0); // TOF AND TPC
+  RDHFLctoV0->SetPidSelectionFlag(1); // 0 -> TOF AND TPC
+                                      // 1 -> if (TOF) TOF else TPC w veto
 
   const Int_t nvars=9;
 
