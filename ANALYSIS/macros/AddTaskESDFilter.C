@@ -286,7 +286,7 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
 
    // PID for the electrons
    AliESDpidCuts *electronID = new AliESDpidCuts("Electrons", "Electron PID cuts");
-   electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.);
+   electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.5);
 
    // standard cuts with very loose DCA
    AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
