@@ -49,6 +49,7 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   virtual void   SetJetRejectType(Int_t i){fJetRejectType = i;}
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
   virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
+  virtual void   SetJetRadius(Float_t r){fJetRadius = r;}
   
   enum {kTrackUndef=0, kTrackAOD, kTrackKine,kTrackAODMC};//for track selection
   enum {kNoReject=0, kReject1Track};//for jet rejection
@@ -58,6 +59,9 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   Int_t	   GetListOfJets(TList* list);
   void     FillJetProperties(TList *jetlist);
   void     FillJetShape(TList *jetlist);
+  void     FillJetShapeUE(TList *jetlist);
+  void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius,Double_t& sumPt);
+  Int_t    GetListOfTracks(TList *list, Int_t type);
   
   AliESDEvent*     fESD;          // ESD event
   AliAODEvent*     fAOD;          // AOD event
@@ -83,9 +87,12 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   Float_t fJetEtaMin;           // jet eta cut
   Float_t fJetEtaMax;           // jet eta cut
   Float_t fAvgTrials;           // average number of trials per event
+  Float_t fJetRadius;
   
   TList	    *fJetList;                //! List of jets
-  TList	    *fTrackList;              //! List of tracks in a jet
+  TList	    *fTrackList;              //! List of selected tracks
+  TList	    *fTrackListUE;            //! List of tracks in jet cone UE
+  TList	    *fTrackListJet;           //! List of tracks in a jet
   TList	    *fCommonHistList;         //! List of common histos
   TH1F      *fh1EvtSelection;         //! event cuts 
   TH1F	    *fh1VertexNContributors;  //! NContributors to prim vertex
@@ -122,11 +129,29 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   TH3F*     fh3PtDelRPtSum;           //!Pt sum vs R
   TProfile* fProDiffJetShape;         //!Diff jet shape pT=20-100
   TProfile* fProIntJetShape;          //!Int jet shape pT=20-100
-  TProfile* fProDelRNchSum[5];        //!Nch sum vs R
-  TProfile* fProDelRPtSum[5];         //!Pt sum vs R
-  TProfile* fProDiffJetShapeA[5];     //!Diff jet shape pT
-  TProfile* fProIntJetShapeA[5];      //!Int jet shape pT
+  TProfile* fProDelRNchSum[13];        //!Nch sum vs R
+  TProfile* fProDelRPtSum[13];         //!Pt sum vs R
+  TProfile* fProDiffJetShapeA[13];     //!Diff jet shape pT
+  TProfile* fProIntJetShapeA[13];      //!Int jet shape pT
 
+  TH1F*     fh1PtSumInJetConeUE;        //!pt sum of UE in cone R
+  TH2F*     fh2NtracksLeadingJetUE;     //!number of tracks in jet (UE)
+  TProfile* fProNtracksLeadingJetUE;    //!number of tracks in jet (UE)
+  TH2F*     fh2DelR80pcNchUE;           //!R containing 80% of Nch vs jet pt (UE)
+  TProfile* fProDelR80pcNchUE;          //!R containing 80% of Nch vs jet pt (UE)
+  TH2F*     fh2DelR80pcPtUE;            //!R containing 80% of pT vs jet pt (UE)
+  TProfile* fProDelR80pcPtUE;           //!R containing 80% of pT vs jet pt (UE)
+  TH2F*     fh2AreaChUE;                //!charged jet area vs jet pT (UE)
+  TProfile* fProAreaChUE;               //!charged jet area vs jet pT (UE)
+  TH3F*     fh3PtDelRNchSumUE;          //!Nch sum vs R (UE)
+  TH3F*     fh3PtDelRPtSumUE;           //!Pt sum vs R (UE)
+  TProfile* fProDiffJetShapeUE;         //!Diff jet shape pT=20-100 (UE)
+  TProfile* fProIntJetShapeUE;          //!Int jet shape pT=20-100 (UE)
+  TProfile* fProDelRNchSumUE[13];        //!Nch sum vs R (UE)
+  TProfile* fProDelRPtSumUE[13];         //!Pt sum vs R (UE)
+  TProfile* fProDiffJetShapeAUE[13];     //!Diff jet shape pT (UE)
+  TProfile* fProIntJetShapeAUE[13];      //!Int jet shape pT (UE)
+  
 
   AliAnalysisTaskJetProperties(const AliAnalysisTaskJetProperties&);// not implemented
   AliAnalysisTaskJetProperties& operator=(const AliAnalysisTaskJetProperties&);// not implemented
