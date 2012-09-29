@@ -89,8 +89,8 @@ AliAnalysisTaskJetProperties *AddTaskJetProperties(Char_t* bJet="clustersAOD",
     task->SetJetRejectType(AliAnalysisTaskJetProperties::kReject1Track);
     contName="_No1TrackJet";
   }
-  
-  task->SetEventCuts(8.0,2);//VtxZ=+-8cm, nContributors>2
+  task->SetJetRadius(radius);
+  task->SetEventCuts(10.0,2);//VtxZ=+-8cm, nContributors>2
   task->SetFilterMask(filterMask);
   task->SetTrackCuts();// default : pt > 0.150 GeV, |eta|<0.9, full phi acc
   Float_t minJetPt  = 10.0; 
