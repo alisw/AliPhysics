@@ -32,6 +32,7 @@ public:
     Int_t   NNw() const {return fNNwColl;}
     Int_t   NwN() const {return fNwNColl;}
     Int_t   NwNw() const {return fNwNwColl;}
+    void    SetNDiffractive(Int_t sd1, Int_t sd2, Int_t sdd) {fNSD1 = sd1; fNSD2 = sd2; fNDD = sdd;}
     // Setters
     void SetImpactParameter(Float_t b)     {fImpactParameter=b;}
     void SetReactionPlaneAngle(Float_t phi)     {fReactionPlaneAngle = phi;}
@@ -43,6 +44,7 @@ public:
     void SetSpectators(Int_t nprojspecn, Int_t nprojspecp, Int_t ntargspecn, Int_t ntargspecp)
 	{fProjectileSpecn=nprojspecn, fProjectileSpecp=nprojspecp, 
 	 fTargetSpecn=ntargspecn, fTargetSpecp=ntargspecp;}
+    void    GetNDiffractive(Int_t& sd1, Int_t& sd2, Int_t& sdd) {sd1 = fNSD1; sd2 = fNSD2; sdd = fNDD;}
  protected:
     Int_t   fNHardScatters;            // Number of hard scatterings
     Int_t   fNProjectileParticipants;  // Number of projectiles participants
@@ -57,11 +59,12 @@ public:
     Int_t   fTargetSpecp;    	       // Num. of spectator protons from target nucleus
     Float_t fImpactParameter;          // Impact Parameter
     Float_t fReactionPlaneAngle;       // Reaction plane angle
-
+    Int_t   fNSD1;                     // number of SD1 in pA, AA 
+    Int_t   fNSD2;                     // number of SD2 in pA, AA
+    Int_t   fNDD;                      // number of DD  in pA, AA
 private:
     AliCollisionGeometry& operator=(const AliCollisionGeometry& cg); //Not implemented
-    
-  ClassDef(AliCollisionGeometry,3)     // Collision Geometry
+  ClassDef(AliCollisionGeometry,4)     // Collision Geometry
 };
 #endif
 

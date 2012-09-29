@@ -39,7 +39,10 @@ AliCollisionGeometry::AliCollisionGeometry() :
   fTargetSpecn(0),
   fTargetSpecp(0),
   fImpactParameter(0),
-  fReactionPlaneAngle(0)
+  fReactionPlaneAngle(0),
+  fNSD1(0),
+  fNSD2(0),
+  fNDD(0)
 {
 }
 
@@ -56,7 +59,10 @@ AliCollisionGeometry::AliCollisionGeometry(const AliCollisionGeometry& cgeo):
   fTargetSpecn(cgeo.fTargetSpecn),
   fTargetSpecp(cgeo.fTargetSpecp),
   fImpactParameter(cgeo.fImpactParameter),
-  fReactionPlaneAngle(cgeo.fReactionPlaneAngle)
+  fReactionPlaneAngle(cgeo.fReactionPlaneAngle),
+  fNSD1(cgeo.fNSD1),
+  fNSD2(cgeo.fNSD2),
+  fNDD(cgeo.fNDD)
 {
     // Copy constructor
 }
