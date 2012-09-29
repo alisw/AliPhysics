@@ -19,6 +19,7 @@
 // Uses the TDPMjet implementation of TGenerator.
 
 #include <TDPMjet.h>
+#include "DPMcommon.h"
 #include <TRandom.h>
 #include <TArrayI.h>
 #include <TParticle.h>
@@ -481,6 +482,7 @@ void AliGenDPMjet::MakeHeader()
     // Event Vertex
     header->SetPrimaryVertex(fVertex);
     header->SetInteractionTime(fTime);
+    ((AliGenDPMjetEventHeader*) header)->SetNDiffractive(POEVT1.nsd1, POEVT1.nsd2, POEVT1.ndd);
     gAlice->SetGenEventHeader(header);    
     AddHeader(header);
 }

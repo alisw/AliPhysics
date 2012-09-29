@@ -241,7 +241,7 @@ COMMON_BLOCK_DEF(PoprcsCommon,POPRCS);
 
     COMMON /POEVT1/ NEVHEP,NHEP,ISTHEP(NMXHEP),IDHEP(NMXHEP),
      &                JMOHEP(2,NMXHEP),JDAHEP(2,NMXHEP),PHEP(5,NMXHEP),
-     &                VHEP(4,NMXHEP)
+     &                VHEP(4,NMXHEP), NSD1, NSD2, NDD
 */
 const Int_t nmxhep = 4000;
 
@@ -254,6 +254,9 @@ typedef struct {
   Int_t    jdahep[nmxhep][2];
   Double_t phep  [nmxhep][5];
   Double_t vhep  [nmxhep][4];
+  Int_t    nsd1;
+  Int_t    nsd2;
+  Int_t    ndd;
 } Poevt1Common;
 
 #define POEVT1 COMMON_BLOCK(POEVT1,poevt1)
