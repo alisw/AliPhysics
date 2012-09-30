@@ -55,6 +55,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fNcentBins(4),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -102,6 +103,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fNcentBins(4),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -141,6 +143,9 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner();
+
+  if (fForceBeamType == kpp)
+    fNcentBins = 1;
 
   if (!fGeneralHistograms)
     return;

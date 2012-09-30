@@ -94,6 +94,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
   Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
+  Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
