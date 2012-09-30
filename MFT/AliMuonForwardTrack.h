@@ -83,6 +83,11 @@ public:
   void SetTrackMCId(Int_t id) { fTrackMCId = id; }
   Int_t GetTrackMCId() { return fTrackMCId; }
   
+  Bool_t IsFromResonance();
+  Bool_t IsFromCharm();
+  Bool_t IsFromBeauty();
+  Bool_t IsFromBackground();
+
 protected:
 
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;        // max number of MFT planes

@@ -421,3 +421,106 @@ Double_t AliMuonForwardTrack::GetOffset(Double_t x, Double_t y, Double_t z) {
 
 //====================================================================================================================================================
 
+Bool_t AliMuonForwardTrack::IsFromResonance() {
+
+  Bool_t result = kFALSE;
+
+  if ( GetParentPDGCode(0) ==    113 ||
+       GetParentPDGCode(0) ==    221 ||
+       GetParentPDGCode(0) ==    223 ||
+       GetParentPDGCode(0) ==    331 ||
+       GetParentPDGCode(0) ==    333 ||
+       GetParentPDGCode(0) ==    443 ||
+       GetParentPDGCode(0) == 100443 ||
+       GetParentPDGCode(0) ==    553 ||
+       GetParentPDGCode(0) == 100553 ) result = kTRUE;
+  
+  if (result) AliDebug(1, Form("Muon comes from a resonance %d", GetParentPDGCode(0)));
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsFromCharm() {
+
+  Bool_t result = kFALSE;
+
+  if ( GetParentPDGCode(0) ==   411 ||
+       GetParentPDGCode(0) ==   421 ||
+       GetParentPDGCode(0) == 10411 ||
+       GetParentPDGCode(0) == 10421 ||
+       GetParentPDGCode(0) ==   413 ||
+       GetParentPDGCode(0) ==   423 ||
+       GetParentPDGCode(0) == 10413 ||
+       GetParentPDGCode(0) == 10423 ||
+       GetParentPDGCode(0) == 20413 ||
+       GetParentPDGCode(0) == 20423 ||
+       GetParentPDGCode(0) ==   415 ||
+       GetParentPDGCode(0) ==   425 ||
+       GetParentPDGCode(0) ==   431 ||
+       GetParentPDGCode(0) == 10431 ||
+       GetParentPDGCode(0) ==   433 ||
+       GetParentPDGCode(0) == 10433 ||
+       GetParentPDGCode(0) == 20433 ||
+       GetParentPDGCode(0) ==   435 ) result = kTRUE;
+  
+  if (result) AliDebug(1, Form("Muon comes from a charmed hadron %d", GetParentPDGCode(0)));
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsFromBeauty() {
+
+  Bool_t result = kFALSE;
+
+  if ( GetParentPDGCode(0) ==   511 ||
+       GetParentPDGCode(0) ==   521 ||
+       GetParentPDGCode(0) == 10511 ||
+       GetParentPDGCode(0) == 10521 ||
+       GetParentPDGCode(0) ==   513 ||
+       GetParentPDGCode(0) ==   523 ||
+       GetParentPDGCode(0) == 10513 ||
+       GetParentPDGCode(0) == 10523 ||
+       GetParentPDGCode(0) == 20513 ||
+       GetParentPDGCode(0) == 20523 ||
+       GetParentPDGCode(0) ==   515 ||
+       GetParentPDGCode(0) ==   525 ||
+       GetParentPDGCode(0) ==   531 ||
+       GetParentPDGCode(0) == 10531 ||
+       GetParentPDGCode(0) ==   533 ||
+       GetParentPDGCode(0) == 10533 ||
+       GetParentPDGCode(0) == 20533 ||
+       GetParentPDGCode(0) ==   535 ||
+       GetParentPDGCode(0) ==   541 ||
+       GetParentPDGCode(0) == 10541 ||
+       GetParentPDGCode(0) ==   543 ||
+       GetParentPDGCode(0) == 10543 ||
+       GetParentPDGCode(0) == 20543 ||
+       GetParentPDGCode(0) ==   545 ) result = kTRUE;
+  
+  if (result) AliDebug(1, Form("Muon comes from a beauty hadron %d", GetParentPDGCode(0)));
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsFromBackground() {
+
+  Bool_t result = kFALSE;
+
+  if (!IsFromResonance() && !IsFromCharm() && !IsFromBeauty()) result = kTRUE;
+
+  if (result) AliDebug(1, Form("Muon comes from a background source %d", GetParentPDGCode(0)));
+
+  return result;
+
+}
+
+//====================================================================================================================================================

@@ -39,8 +39,8 @@ void runReconstruction(Int_t seed, const Char_t *recOptions) {
   reco->SetRunReconstruction("MUON MFT");
   reco->SetRunLocalReconstruction("MUON MFT");
   reco->SetOption("MUON MFT",recOptions);
-  reco->SetRunQA("DetectorList:ActionList");
-  reco->SetQAWriteExpert(AliQAv1::kMUON);
+  //  reco->SetRunQA("DetectorList:ActionList");
+  //  reco->SetQAWriteExpert(AliQAv1::kMUON);
 
   reco->SetWriteESDfriend(kFALSE);
   reco->SetStopOnError(kFALSE);
