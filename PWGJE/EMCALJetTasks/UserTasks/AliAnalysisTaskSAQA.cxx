@@ -127,8 +127,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
     TString histname;
 
-    for (Int_t i = 0; i < 4; i++) {
-      for (Int_t j = 0; j < 4; j++) {
+    Int_t nlabels = 4;
+    if (fParticleLevel)
+      nlabels = 1;
+
+    for (Int_t i = 0; i < fNcentBins; i++) {
+      for (Int_t j = 0; j < nlabels; j++) {
 	histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
 	fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
 	fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
@@ -182,7 +186,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
     TString histname;
 
-    for (Int_t i = 0; i < 4; i++) {
+    for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistClusPhiEtaEnergy_";
       histname += i;
       fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
@@ -245,7 +249,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
     TString histname;
 
-    for (Int_t i = 0; i < 4; i++) {
+    for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistJetsPhiEtaPt_";
       histname += i;
       fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01,  (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
@@ -487,11 +491,18 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
     sum += track->P();
 
-    Int_t label = track->GetLabel();
-    if (label < 0 || label > 3)
-      label = 3;
-    
-    fHistTrPhiEtaPt[fCentBin][label]->Fill(track->Eta(), track->Phi(), track->Pt());
+    if (fParticleLevel) {
+      fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
+    }
+    else {
+      fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
+
+      Int_t label = track->GetLabel();
+      if (label >= 0 && label < 3)
+	fHistTrPhiEtaPt[fCentBin][label]->Fill(track->Eta(), track->Phi(), track->Pt());
+      else
+	AliWarning(Form("%s: track label %d not recognized!", GetName(), label));
+    }
 
     if (!vtrack)
       continue;

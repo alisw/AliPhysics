@@ -123,6 +123,7 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
     maxPhi -= TMath::Pi() * 2;
   }
   SetJetPhiLimits(minPhi, maxPhi);  
+  fNExclLeadJets = 1;
   AliAnalysisTaskRho::Run();
   fRhoAwaySide = fRho->GetVal();
 
@@ -134,6 +135,7 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
     maxPhi -= TMath::Pi() * 2;
   }
   SetJetPhiLimits(minPhi, maxPhi);  
+  fNExclLeadJets = 0;
   AliAnalysisTaskRho::Run();
   fRhoPerpSide1 = fRho->GetVal();
 
@@ -145,6 +147,7 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
     maxPhi -= TMath::Pi() * 2;
   }
   SetJetPhiLimits(minPhi, maxPhi);
+  fNExclLeadJets = 0;
   AliAnalysisTaskRho::Run();
   fRhoPerpSide2 = fRho->GetVal();
 
@@ -155,7 +158,8 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
     minPhi -= TMath::Pi() * 2;
     maxPhi -= TMath::Pi() * 2;
   }
-  SetJetPhiLimits(minPhi, maxPhi);  
+  SetJetPhiLimits(minPhi, maxPhi);
+  fNExclLeadJets = 1;
   AliAnalysisTaskRho::Run();
   fRhoNearSide = fRho->GetVal();
   
