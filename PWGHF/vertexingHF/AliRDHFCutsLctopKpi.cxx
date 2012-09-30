@@ -24,6 +24,9 @@
 
 #include <TDatabasePDG.h>
 #include <Riostream.h>
+#include <AliAnalysisManager.h>
+#include <AliInputEventHandler.h>
+#include <AliPIDResponse.h>
 
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliAODRecoDecayHF3Prong.h"
@@ -416,6 +419,25 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
     if(isMC) {
      fPidObjprot->SetMC(kTRUE);
      fPidObjpion->SetMC(kTRUE);
+    }
+
+   if(fPidObjprot->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjprot->SetPidResponse(pidResp);
+    }
+    if(fPidObjpion->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjpion->SetPidResponse(pidResp);
+    }
+    if(fPidHF->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidHF->SetPidResponse(pidResp);
     }
 
     for(Int_t i=0;i<3;i++){
