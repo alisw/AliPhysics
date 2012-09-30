@@ -21,6 +21,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
+  void                        SetParticleLevel(Bool_t s)                           { fParticleLevel      = s          ; }
 
  protected:
 
@@ -33,6 +34,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
+  Bool_t                      fParticleLevel;            // Set particle level analysis
   Int_t                       fNclusters;                //!Number of accepted clusters in the event
   Int_t                       fNtracks;                  //!Number of accepted tracks in the event
   Int_t                       fNjets;                    //!Number of accepted jets in the event
@@ -75,6 +77,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 16) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 17) // Quality task for Emcal analysis
 };
 #endif
