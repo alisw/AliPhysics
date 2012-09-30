@@ -126,9 +126,12 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    Float_t fTreeVariablePosEta; //!
    Float_t fTreeVariableNegEta; //!
 
+   Float_t fTreeVariableVertexZ; //!
+
    Int_t fTreeVariableLeastNbrCrossedRows;//!
    Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
    Int_t fTreeVariableMultiplicity;//!
+   Int_t fTreeVariableMultiplicityMC;//!
 
 //===========================================================================================
 //   Histograms
@@ -177,6 +180,14 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimRawPtVsYVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimRawPtVsYVsMultK0Short;    //! K0Short
+
+   TH3F      *f3dHistPrimRawPtVsYVsMultMCLambda;     //! Lambda
+   TH3F      *f3dHistPrimRawPtVsYVsMultMCAntiLambda; //! AntiLambda
+   TH3F      *f3dHistPrimRawPtVsYVsMultMCK0Short;    //! K0Short
+
+   TH3F      *f3dHistPrimRawPtVsYVsVertexZLambda;     //! Lambda
+   TH3F      *f3dHistPrimRawPtVsYVsVertexZAntiLambda; //! AntiLambda
+   TH3F      *f3dHistPrimRawPtVsYVsVertexZK0Short;    //! K0Short
 
    TH3F      *f3dHistPrimCloseToPVPtVsYVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimCloseToPVPtVsYVsMultAntiLambda; //! AntiLambda

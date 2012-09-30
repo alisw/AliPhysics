@@ -145,6 +145,12 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimRawPtVsYVsMultMCLambda(0),
+   f3dHistPrimRawPtVsYVsMultMCAntiLambda(0),
+   f3dHistPrimRawPtVsYVsMultMCK0Short(0),
+   f3dHistPrimRawPtVsYVsVertexZLambda(0),
+   f3dHistPrimRawPtVsYVsVertexZAntiLambda(0),
+   f3dHistPrimRawPtVsYVsVertexZK0Short(0),
    f3dHistPrimCloseToPVPtVsYVsMultLambda(0),
    f3dHistPrimCloseToPVPtVsYVsMultAntiLambda(0),
    f3dHistPrimCloseToPVPtVsYVsMultK0Short(0),
@@ -223,6 +229,12 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimRawPtVsYVsMultMCLambda(0),
+   f3dHistPrimRawPtVsYVsMultMCAntiLambda(0),
+   f3dHistPrimRawPtVsYVsMultMCK0Short(0),
+   f3dHistPrimRawPtVsYVsVertexZLambda(0),
+   f3dHistPrimRawPtVsYVsVertexZAntiLambda(0),
+   f3dHistPrimRawPtVsYVsVertexZK0Short(0),
    f3dHistPrimCloseToPVPtVsYVsMultLambda(0),
    f3dHistPrimCloseToPVPtVsYVsMultAntiLambda(0),
    f3dHistPrimCloseToPVPtVsYVsMultK0Short(0),
@@ -323,6 +335,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*27*/   fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
 //-----------MULTIPLICITY-INFO--------------------
 /*28*/   fTree->Branch("fTreeVariableMultiplicity",&fTreeVariableMultiplicity,"fTreeVariableMultiplicity/I");
+/*28*/   fTree->Branch("fTreeVariableMultiplicityMC",&fTreeVariableMultiplicityMC,"fTreeVariableMultiplicityMC/I");
 //------------------------------------------------
 /*29*/   fTree->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
 /*30*/   fTree->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
@@ -338,6 +351,8 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 
 /*39*/ 	 fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 /*40*/   fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
+
+/*34*/   fTree->Branch("fTreeVariableVertexZ",&fTreeVariableVertexZ,"fTreeVariableVertexZ/F");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -564,6 +579,36 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
    if(! f3dHistPrimRawPtVsYVsMultK0Short) {
       f3dHistPrimRawPtVsYVsMultK0Short = new TH3F( "f3dHistPrimRawPtVsYVsMultK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHistV0->Add(f3dHistPrimRawPtVsYVsMultK0Short);
+   }
+
+//--- 3D Histo (Pt, Y, MultiplicityMC)  
+
+   if(! f3dHistPrimRawPtVsYVsMultMCLambda) {
+      f3dHistPrimRawPtVsYVsMultMCLambda = new TH3F( "f3dHistPrimRawPtVsYVsMultMCLambda", "Pt_{lambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{lambda} (GeV/c); Y_{#Lambda} ; MultMC", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultMCLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsMultMCAntiLambda) {
+      f3dHistPrimRawPtVsYVsMultMCAntiLambda = new TH3F( "f3dHistPrimRawPtVsYVsMultMCAntiLambda", "Pt_{antilambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{antilambda} (GeV/c); Y_{#Lambda} ; MultMC", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultMCAntiLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsMultMCK0Short) {
+      f3dHistPrimRawPtVsYVsMultMCK0Short = new TH3F( "f3dHistPrimRawPtVsYVsMultMCK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; MultMC", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultMCK0Short);
+   }
+
+//--- 3D Histo (Pt, Y, VertexZ)  
+
+   if(! f3dHistPrimRawPtVsYVsVertexZLambda) {
+      f3dHistPrimRawPtVsYVsVertexZLambda = new TH3F( "f3dHistPrimRawPtVsYVsVertexZLambda", "Pt_{lambda} Vs Y_{#Lambda} Vs VertexZiplicity; Pt_{lambda} (GeV/c); Y_{#Lambda} ; VertexZ", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,40,-10,10);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsVertexZLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsVertexZAntiLambda) {
+      f3dHistPrimRawPtVsYVsVertexZAntiLambda = new TH3F( "f3dHistPrimRawPtVsYVsVertexZAntiLambda", "Pt_{antilambda} Vs Y_{#Lambda} Vs VertexZiplicity; Pt_{antilambda} (GeV/c); Y_{#Lambda} ; VertexZ", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,40,-10,10);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsVertexZAntiLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsVertexZK0Short) {
+      f3dHistPrimRawPtVsYVsVertexZK0Short = new TH3F( "f3dHistPrimRawPtVsYVsVertexZK0Short", "Pt_{K0S} Vs Y_{K0S} Vs VertexZiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; VertexZ", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,40,-10,10);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsVertexZK0Short);
    }
 
 //--- 3D Histo (Pt, Y, Multiplicity), close to PV criterion
@@ -887,6 +932,30 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    }
 //----- End Loop on primary Xi, Omega ----------------------------------------------------------
 
+//--------- GENERATED NUMBER OF CHARGED PARTICLES
+// ---> Set Variables to Zero again
+// ---> Variable Definition
+
+  Long_t lNumberOfCharged = 0; 
+
+//----- Loop on Stack ----------------------------------------------------------------
+   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++) 
+   {// This is the begining of the loop on tracks
+      TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
+      if(!particleOne) continue;
+      if(!particleOne->GetPDG()) continue;
+      Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+      if(TMath::Abs(lThisCharge)<0.001) continue;
+      if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+      
+      Double_t gpt = particleOne -> Pt();
+      Double_t geta = particleOne -> Eta(); 
+
+      if( TMath::Abs(geta) < 0.5) lNumberOfCharged++; 
+   }//End of loop on tracks
+//----- End Loop on Stack ------------------------------------------------------------
+
+
 //----- Loop on Lambda, K0Short ----------------------------------------------------------------
    for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++) 
    {// This is the begining of the loop on tracks
@@ -934,15 +1003,21 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 
          if( lPdgcodeCurrentPart == 3122 ){
             f3dHistPrimRawPtVsYVsMultLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHistPrimRawPtVsYVsMultMCLambda->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
+            f3dHistPrimRawPtVsYVsVertexZLambda->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
             if( TMath::Abs( lCurrentParticleForLambdaCheck->Eta() )<1.2 && lPtCurrentPart>2 ){
                lHasHighPtLambda = kTRUE; //Keep track of events with Lambda within |eta|<1.2 and pt>2
             }
          }
          if( lPdgcodeCurrentPart == -3122 ){
             f3dHistPrimRawPtVsYVsMultAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHistPrimRawPtVsYVsMultMCAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
+            f3dHistPrimRawPtVsYVsVertexZAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
          }
          if( lPdgcodeCurrentPart == 310 ){
             f3dHistPrimRawPtVsYVsMultK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHistPrimRawPtVsYVsMultMCK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
+            f3dHistPrimRawPtVsYVsVertexZK0Short->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
          }
          //Decay Length Acquisition=====================================================
          Double_t decaylength = -1; 
@@ -970,29 +1045,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    }//End of loop on tracks
 //----- End Loop on Lambda, K0Short ------------------------------------------------------------
 
-// ---> Set Variables to Zero again
-// ---> Variable Definition
-
-  Long_t lNumberOfCharged = 0; 
-
-//----- Loop on Stack ----------------------------------------------------------------
-   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++) 
-   {// This is the begining of the loop on tracks
-      TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
-      if(!particleOne) continue;
-      if(!particleOne->GetPDG()) continue;
-      Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-      if(TMath::Abs(lThisCharge)<0.001) continue;
-      if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
-      
-      Double_t gpt = particleOne -> Pt();
-      Double_t geta = particleOne -> Eta(); 
-
-      if( TMath::Abs(geta) < 0.5) lNumberOfCharged++; 
-   }//End of loop on tracks
-//----- End Loop on Stack ------------------------------------------------------------
 
    f2dHistMultiplicityVsTrueBeforeTrigSel->Fill ( lMultiplicity , lNumberOfCharged );
+
+    fTreeVariableMultiplicityMC = lNumberOfCharged;
 
    fHistGenVertexZBeforeTrigSel->Fill( (mcPrimaryVtx.At(2)) );
 
@@ -1022,7 +1078,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    }
 
    f2dHistMultiplicityVsTrueForTrigEvt->Fill ( lMultiplicity , lNumberOfCharged );
-   fHistGenVertexZForTrigEvt->Fill( (mcPrimaryVtx.At(2)) );
+   fHistGenVertexZForTrigEvt->Fill( mcPrimaryVtx.At(2) );
 //------------------------------------------------
 // After Trigger Selection
 //------------------------------------------------
@@ -1122,6 +1178,8 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          fHistPVzAnalysisHasHighPtLambda->Fill( lPrimaryVtxPosition[2] );
       }
    }
+
+  fTreeVariableVertexZ = lPrimaryVtxPosition[2];
 
 //------------------------------------------------
 // stack loop starts here
