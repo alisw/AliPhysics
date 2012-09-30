@@ -41,7 +41,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   if (strTrackCuts.Contains("LHC10h")) {
     dataSet = kLHC10h;
   }
-  else if (strTrackCuts.Contains("LHC11a")) {
+  else if (strTrackCuts.Contains("LHC11a") || strTrackCuts.Contains("LHC12a15a")) {
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
   }
@@ -53,7 +53,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     dataSet = kLHC11d;
     dataSetLabel = "LHC11d";
   }
-  else if (strTrackCuts.Contains("LHC11h")) {
+  else if (strTrackCuts.Contains("LHC11h") || strTrackCuts.Contains("LHC12a15e")) {
     dataSet = kLHC11h;
     dataSetLabel = "LHC11h";
   }
