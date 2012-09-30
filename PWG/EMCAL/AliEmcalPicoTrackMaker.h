@@ -27,6 +27,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void SetTrackEtaLimits(Double_t min, Double_t max)     { fMaxTrackEta      = max ; fMinTrackEta      = min ; }
   void SetTrackPhiLimits(Double_t min, Double_t max)     { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
   void SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency = eff  ; }
+  void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
 
  protected:
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
@@ -40,6 +41,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   Double_t           fMinTrackPhi;          // cut on track phi
   Double_t           fMaxTrackPhi;          // cut on track phi
   Double_t           fTrackEfficiency;      // track efficiency
+  Bool_t             fIncludeNoITS;         // includes tracks with failed ITS refit
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
 
@@ -47,6 +49,6 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   AliEmcalPicoTrackMaker(const AliEmcalPicoTrackMaker&);            // not implemented
   AliEmcalPicoTrackMaker &operator=(const AliEmcalPicoTrackMaker&); // not implemented
 
-  ClassDef(AliEmcalPicoTrackMaker, 3); // Task to make PicoTracks in AOD/ESD events
+  ClassDef(AliEmcalPicoTrackMaker, 4); // Task to make PicoTracks in AOD/ESD events
 };
 #endif

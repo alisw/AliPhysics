@@ -32,6 +32,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
+  fIncludeNoITS(kTRUE),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -54,6 +55,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
+  fIncludeNoITS(kTRUE),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -142,6 +144,8 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
           continue;
       }
       label = track->GetLabel();
+      if (!fIncludeNoITS & label==2)
+	continue;
       isEmc = track->IsEMCAL();
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
@@ -152,12 +156,23 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	  continue;
       }
       else {
-	if (aodtrack->TestFilterBit(fAODfilterBits[0]))
+	if (aodtrack->TestFilterBit(fAODfilterBits[0])) {
 	  label = 0;
-	else if (aodtrack->TestFilterBit(fAODfilterBits[1]))
-	  label = 3;
-	else /*not a good track*/
+	}
+	else if (aodtrack->TestFilterBit(fAODfilterBits[1])) {
+	  if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
+	    if (fIncludeNoITS)
+	      label = 2;
+	    else
+	      continue;
+	  }
+	  else {
+	    label = 1;
+	  }
+	}
+	else {/*not a good track*/
 	  continue;
+	}
       }
 
       if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 

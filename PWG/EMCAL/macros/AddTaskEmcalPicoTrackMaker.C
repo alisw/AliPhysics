@@ -1,10 +1,11 @@
 // $Id$
 
 AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
-  const char *name       = "PicoTracks",
-  const char *inname     = "tracks",
-  const char *runPeriod  = "",
-  AliESDtrackCuts *cuts  = 0
+  const char *name         = "PicoTracks",
+  const char *inname       = "tracks",
+  const char *runPeriod    = "",
+  Bool_t      includeNoITS = kTRUE,
+  AliESDtrackCuts *cuts    = 0
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -31,6 +32,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   AliEmcalPicoTrackMaker *eTask = new AliEmcalPicoTrackMaker();
   eTask->SetTracksOutName(name);
   eTask->SetTracksInName(inname);
+  eTask->SetIncludeNoITS(includeNoITS);
   if (!strcmp(runPeriod, "LHC11h")) {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
   }
