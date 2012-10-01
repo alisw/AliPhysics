@@ -53,6 +53,7 @@ Int_t runNum[500];
 TList *listHist;
 Double_t run[500], erun[500];
 // Event selection:
+Double_t nTotal4[500];
 Double_t rVtx[500], rVtxZ10[500], rVtxZ10Cent[500];
 Double_t eVtx[500], eVtxZ10[500], eVtxZ10Cent[500];
 // Occupancy:
@@ -62,6 +63,9 @@ Double_t nCluEvent[500], eCluEvent[500];
 Double_t cluEnergy[500], ecluEnergy[500];
 Double_t nPhotPID[kNCents][kNPID][500], enPhotPID[kNCents][kNPID][500];
 Double_t mEnPID[kNCents][kNPID][500],   emEnPID[kNCents][kNPID][500];
+Double_t nPhotPIDHigh[kNCents][kNPID][500], enPhotPIDHigh[kNCents][kNPID][500];
+Double_t mEnPIDHigh[kNCents][kNPID][500],   emEnPIDHigh[kNCents][kNPID][500];
+
 
 // Tracks:
 Double_t nTracks0[500], eTracks0[500];
@@ -144,6 +148,7 @@ void QAFillEventSelection()
   if( ! nTotal )
     return;
   
+  nTotal4[runIndex] = hSelEvents->GetBinContent(4);
   
   rVtx[runIndex]           = nVtx          /nTotal;
   rVtxZ10[runIndex]        = nVtxZ10       /nTotal;
@@ -200,11 +205,20 @@ void QAFillClusters()
     for(int ipid = 0; ipid < kNPID; ++ipid) {
       TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
 
+      hPhot->SetAxisRange(0., 100.);
       double nPhot = hPhot->Integral() /nEvents4;
       nPhotPID [cent][ipid][runIndex] = nPhot;
       enPhotPID[cent][ipid][runIndex] = TMath::Sqrt( nPhot /nEvents4 );
       mEnPID   [cent][ipid][runIndex] = hPhot->GetMean();
       emEnPID  [cent][ipid][runIndex] = hPhot->GetMeanError();
+
+      hPhot->SetAxisRange(1., 100.);
+      double nPhotHigh = hPhot->Integral() /nEvents4;
+      nPhotPIDHigh [cent][ipid][runIndex] = nPhotHigh;
+      enPhotPIDHigh[cent][ipid][runIndex] = TMath::Sqrt( nPhotHigh /nEvents4 );
+      mEnPIDHigh   [cent][ipid][runIndex] = hPhot->GetMean();
+      emEnPIDHigh  [cent][ipid][runIndex] = hPhot->GetMeanError();
+
     }
   }
 }
@@ -340,11 +354,14 @@ void QAFillNPi0()
 //-----------------------------------------------------------------------------
 void QAWriteEventSelection()
 {
+  TH1F *hNSelected       = new TH1F("hNSelected","N_{selected}",runIndex,0,runIndex);
   TH1F *grVtx           = new TH1F("grVtx","N_{vertex exists} / N_{total}",runIndex,0,runIndex);
   TH1F *grVtxZ10        = new TH1F("grVtxZ10","N_{vertex exists, |Z|<10 cm} / N_{total}",runIndex,0,runIndex);
   TH1F *grVtxZ10Cent    = new TH1F("grVtxZ10Cent","N_{vertex exists, |Z|<10 cm, centrality} / N_{total}",runIndex,0,runIndex);
 
   for (Int_t i=0; i<runIndex; i++) {
+    hNSelected->SetBinContent(i+1, nTotal4[i]);
+
     grVtx          ->SetBinContent(i+1,rVtx[i]);
     grVtxZ10       ->SetBinContent(i+1,rVtxZ10[i]);
     grVtxZ10Cent   ->SetBinContent(i+1,rVtxZ10Cent[i]);
@@ -366,6 +383,7 @@ void QAWriteEventSelection()
   grVtxZ10       ->SetMarkerStyle(33);
   grVtxZ10Cent   ->SetMarkerStyle(33);
 
+  hNSelected     ->Write();
   grVtx          ->Write();
   grVtxZ10       ->Write();
   grVtxZ10Cent   ->Write();
@@ -436,10 +454,14 @@ void QAWriteClusters()
   for(int cent=0; cent<kNCents; ++cent) {
     for(int ipid = 0; ipid < kNPID; ++ipid) {
       TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
-      AddWriteTH1F(Form("grNPhot%s", kPIDNames[ipid]), Form("#LTN_{clusters}^{%s}#GT", kPIDNames[ipid]),
+      AddWriteTH1F(Form("grNPhot%s_cen%d", kPIDNames[ipid], cent), Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
 		   nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
-      AddWriteTH1F(Form("grEn%s", kPIDNames[ipid]), Form("#LTE_{clusters}^{%s}#GT", kPIDNames[ipid]),
-		   nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
+      AddWriteTH1F(Form("grEn%s_cen%d", kPIDNames[ipid], cent), Form("#LTE_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
+		   mEnPID[cent][ipid], emEnPID[cent][ipid]);
+      AddWriteTH1F(Form("grNPhot%sHigh_cen%d", kPIDNames[ipid], cent), Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
+		   nPhotPIDHigh[cent][ipid], enPhotPIDHigh[cent][ipid]);
+      AddWriteTH1F(Form("grEn%sHigh_cen%d", kPIDNames[ipid], cent), Form("#LTE_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
+		   mEnPIDHigh[cent][ipid], emEnPIDHigh[cent][ipid]);
     }
   }
 }
