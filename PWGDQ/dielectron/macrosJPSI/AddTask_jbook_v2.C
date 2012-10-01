@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jbook_v2(TString prod=""){
+AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -24,11 +24,19 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod=""){
   }
   
   //set config file name
-  TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C");
-  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                                   
-  if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C";
+  TString configFile("");
+  printf("%s \n",gSystem->pwd());
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (!trainRoot.IsNull())
+    configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";   // gsi config
+  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
+    configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
+  else
+    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
-  
+  if(!gridconf)
+    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
+
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
