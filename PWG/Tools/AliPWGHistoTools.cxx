@@ -1063,8 +1063,8 @@ TH1F * AliPWGHistoTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){
     Double_t xmin   = h->GetBinLowEdge(ibin);
     Double_t xmax   = h->GetBinLowEdge(ibin+1);
     Double_t yfunc  = f->Integral(xmin,xmax)/(xmax-xmin);
-    Double_t ratio = invert ? yfunc/yhisto : yhisto/yfunc ;
-    Double_t error = yerror/yfunc  ;
+    Double_t ratio = yfunc&&yhisto ? (invert ? yfunc/yhisto : yhisto/yfunc) : 0 ;
+    Double_t error = yfunc ? yerror/yfunc : 0  ;
     hRatio->SetBinContent(ibin,ratio);
     hRatio->SetBinError  (ibin,error);
   }
@@ -1114,7 +1114,11 @@ TH1 * AliPWGHistoTools::GetRelativeError(TH1 * h){
   hrel->Reset();
   Int_t nbin = hrel->GetNbinsX();
   for(Int_t ibin = 1; ibin <= nbin; ibin++){
-    hrel->SetBinContent(ibin,h->GetBinError(ibin)/h->GetBinContent(ibin));
+    if(h->GetBinError(ibin)){
+      hrel->SetBinContent(ibin,h->GetBinError(ibin)/h->GetBinContent(ibin));
+    } else {
+      hrel->SetBinContent(ibin,0);
+    }
     hrel->SetBinError(ibin,0);
   }
   
