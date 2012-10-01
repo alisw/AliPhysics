@@ -59,6 +59,7 @@ class AliGenMC : public AliGenerator
 	{fTarget = tar; fATarget = a; fZTarget = z;}
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
+    virtual void SetDyBoost(Double_t dyBoost = 0.) {fDyBoost = dyBoost;}
     virtual void BeamCrossAngle();
     virtual void AddHeader(AliGenEventHeader* header);
 
