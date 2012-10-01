@@ -132,7 +132,6 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
   // here you should test that you got a non-null pointer
 
   if(!thresholds) return;
-  cout << "******************* thresholds : " << thresholds << endl;
   if(AliDAQ::DetectorID("T0")!= thresholds->GetDetectorId()){
     AliInfo(Form("DETECTOR ID %d DOES NOT MATCH TO TZERO",thresholds->GetDetectorId()));
     return;
