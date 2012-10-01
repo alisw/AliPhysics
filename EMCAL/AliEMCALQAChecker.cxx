@@ -235,7 +235,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 
 				//Checker for L1GammaPatch (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
 				Double_t dL1GmeanTrig = 1/2961.; 
-				Int_t sigmaG = 5; // deviation from mean value
+				Int_t sigmaG = 100; // deviation from mean value (increased to 100)
 				Double_t dL1GEntries = hL1GammaPatch->GetEntries();
 				Int_t badL1G[48][64] = {{0}} ;
 				Int_t nBadL1G = 0;
