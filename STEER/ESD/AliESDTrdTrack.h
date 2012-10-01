@@ -90,7 +90,7 @@ class AliESDTrdTrack : public TObject {
 
   Int_t fLabel;				  // Track label
 
-  ClassDef(AliESDTrdTrack,4)
+  ClassDef(AliESDTrdTrack,5)
 };
 
 #endif
