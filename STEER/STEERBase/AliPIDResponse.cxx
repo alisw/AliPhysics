@@ -255,6 +255,7 @@ Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EP
   
   Double_t mom  = track->GetTPCmomentum();
   Double_t sig  = track->GetTPCsignal();
+  if(fTuneMConData) sig = this->GetTPCsignalTunedOnData(track);
   UInt_t   sigN = track->GetTPCsignalN();
   
   Double_t nSigma = -999.;
