@@ -115,6 +115,20 @@ AliESDMuonCluster& AliESDMuonCluster::operator=(const AliESDMuonCluster& cluster
   return *this;
 }
 
+//_____________________________________________________________________________
+void AliESDMuonCluster::Copy(TObject &obj) const {
+  
+  /// This overwrites the virtual TOBject::Copy()
+  /// to allow run time copying without casting
+  /// in AliESDEvent
+
+  if(this==&obj)return;
+  AliESDMuonCluster *robj = dynamic_cast<AliESDMuonCluster*>(&obj);
+  if(!robj)return; // not an AliESDMuonCluster
+  *robj = *this;
+
+}
+
 //__________________________________________________________________________
 AliESDMuonCluster::~AliESDMuonCluster()
 {

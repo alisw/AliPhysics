@@ -19,6 +19,7 @@ public:
   virtual ~AliESDMuonPad() {} ///< Destructor
   AliESDMuonPad(const AliESDMuonPad& pad);
   AliESDMuonPad& operator=(const AliESDMuonPad& pad);
+  virtual void Copy(TObject &obj) const;
   
   /// Clear method (used by TClonesArray)
   virtual void Clear(Option_t* = "") {}

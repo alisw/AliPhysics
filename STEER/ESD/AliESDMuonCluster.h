@@ -23,6 +23,7 @@ public:
   virtual ~AliESDMuonCluster(); //< Destructor
   AliESDMuonCluster(const AliESDMuonCluster& cluster);
   AliESDMuonCluster& operator=(const AliESDMuonCluster& cluster);
+  virtual void Copy(TObject &obj) const;
   
   virtual void Clear(Option_t* opt = "");
   
