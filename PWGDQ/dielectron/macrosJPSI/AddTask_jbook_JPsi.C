@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jbook_JPsi(TString prod=""){
+AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -16,25 +16,33 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod=""){
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
-  
+
   // set AOD debug levels
   if(isAOD) {
     mgr->AddClassDebug("AliAODTrack", AliLog::kFatal);
-    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo); 
+    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo);
   }
-  
-  //set config file name
-  TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C");
-  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                                   
-  if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C";
 
-  
+  //set config file name
+  TString configFile("");
+  printf("%s \n",gSystem->pwd());
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (!trainRoot.IsNull())
+    configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";   // gsi config
+  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
+    configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
+  else
+    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
+
+  if(!gridconf)
+    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
+
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
-  
+
   //load dielectron configuration file
   TString checkconfig="ConfigJpsi_jb_PbPb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
@@ -46,7 +54,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod=""){
     if (jpsi ) task->AddDielectron(jpsi);
     //    if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
-  
+
   //Add event filter
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
@@ -56,7 +64,6 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod=""){
   eventCuts->SetCentralityRange(0.0,80.0);
   task->SetEventFilter(eventCuts);
 
-  
   //create output container
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("jbook_tree",
