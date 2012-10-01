@@ -59,9 +59,10 @@ class AliAnalysisTaskExtractV0AOD : public AliAnalysisTaskSE {
 	virtual void	 Terminate(Option_t *);
   void CheckChargeV0(AliESDv0 *thisv0);
 
-  void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
-  void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE ) { fkLowEnergyPP = lLowEnergyPP; }
-  void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
+  void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE  ) { fkIsNuclear   = lIsNuclear;   }
+  void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE  ) { fkLowEnergyPP = lLowEnergyPP; }
+  void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE  ) { fkUseOnTheFly = lUseOnTheFly; }
+  void SetTriggerMask         (TString lTriggerMask = "kMB" ) { fTriggerMask  = lTriggerMask; }
 
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -77,6 +78,8 @@ class AliAnalysisTaskExtractV0AOD : public AliAnalysisTaskSE {
   Bool_t fkIsNuclear;   // if true, replace multiplicity est. by centrality (default FALSE) 
   Bool_t fkLowEnergyPP; // if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; // if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
+
+  TString fTriggerMask; // Selected trigger mask (kMB, kINT7, kINT8, kAnyINT)
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!

@@ -27,6 +27,8 @@ AliAnalysisTaskExtractV0AOD *AddTaskExtractV0AOD( Bool_t lSwitchIsNuclear     = 
    taskv0extract -> SetIsNuclear     ( lSwitchIsNuclear     );
    taskv0extract -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
    taskv0extract -> SetUseOnTheFly   ( lSwitchUseOnTheFly   );
+   taskv0extract -> SetTriggerMask   ( "kAnyINT"            );
+
 
    mgr->AddTask(taskv0extract);
 
