@@ -61,7 +61,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fTracksName("PicoTrack"),
+    fTracksName("PicoTracks"),
     fTracks(0),
     fEvtSelect(1),
     fVtxCut(10.),
