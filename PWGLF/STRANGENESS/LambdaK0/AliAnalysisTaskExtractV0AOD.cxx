@@ -95,6 +95,7 @@ AliAnalysisTaskExtractV0AOD::AliAnalysisTaskExtractV0AOD()
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
+   fTriggerMask  ( "kMB"  ),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -126,6 +127,7 @@ AliAnalysisTaskExtractV0AOD::AliAnalysisTaskExtractV0AOD(const char *name)
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
+   fTriggerMask  ( "kMB"  ),
      
 //------------------------------------------------
 // HISTOGRAMS
@@ -422,7 +424,15 @@ void AliAnalysisTaskExtractV0AOD::UserExec(Option_t *)
 // new method        
    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
+   //kMB: default selection, also if fTriggerMask is something not understood...
    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+
+   if( fTriggerMask == "kINT7" )
+     isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+   if( fTriggerMask == "kINT8" )
+     isSelected = (maskIsSelected & AliVEvent::kINT8) == AliVEvent::kINT8;
+   if( fTriggerMask == "kAnyINT" )
+     isSelected = (maskIsSelected & AliVEvent::kAnyINT) == AliVEvent::kAnyINT;
 
    //pp at 2.76TeV: special case, ignore FastOnly
    if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliVEvent::kFastOnly) ){
