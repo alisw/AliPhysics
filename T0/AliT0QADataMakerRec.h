@@ -44,6 +44,7 @@ private:
   virtual void   ResetDetector(AliQAv1::TASKINDEX_t task) ;
 
   const AliT0RecoParam* GetRecoParam() { return dynamic_cast<const AliT0RecoParam*>(fRecoParam);}
+  void SetEfficiency(Int_t idxEffHisto,Int_t idxCounterHisto, Int_t trigger,  Float_t totNumOfEvts);
 
   // RS Commented by Ruben, read below:
   /*
@@ -74,7 +75,15 @@ private:
   Float_t fTrEffPhys[6];
   TH1F*  fhTimeDiff[24];
 */
-  Int_t fMeans[24];
+  Float_t fMeanCFDFromGoodRunParam[24]; //mean CFD for each PMT from a good run
+  Float_t fMeanRawVertexParam; //mean hRawVertex from a good run  
+  Float_t fMeanORAParam; // mean ORA from a good run
+  Float_t fMeanORCParam; // mean ORC from a good run
+  Float_t fCFDEffSubRangeLowParam; // lower border of subrange for efficiency of CFD
+  Float_t fCFDEffSubRangeHighParam;// higher border of subrange for efficiency of CFD
+  Float_t fLEDEffSubRangeLowParam; // lower border of subrange for efficiency of LED
+  Float_t fLEDEffSubRangeHighParam;// higher border of subrange for efficiency of LED
+
 
   ClassDef(AliT0QADataMakerRec,7)  // description 
 
