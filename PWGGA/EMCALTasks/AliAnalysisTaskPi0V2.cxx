@@ -61,7 +61,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fTracksName("Tracks"),
+    fTracksName("PicoTrack"),
     fTracks(0),
     fEvtSelect(1),
     fVtxCut(10.),
@@ -91,7 +91,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
     fESD(0),
-    fTracksName("Tracks"),
+    fTracksName("PicoTracks"),
     fTracks(0),
     fEvtSelect(1),
     fVtxCut(10.),
@@ -669,15 +669,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      if (!fTracks) {
        AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
        return;
-     } else {
-       TClass *cl = fTracks->GetClass();
-       if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
-	 AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracksName.Data())); 
-	 fTracks = 0;
-	 return;
-       }
      }
-   }
+  }
 
    Int_t ntracks = fTracks->GetEntries();
    for(Int_t i=0; i<ntracks; ++i){
