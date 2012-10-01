@@ -1,6 +1,7 @@
-AliAnalysisTaskExtractV0AOD *AddTaskExtractV0AOD( Bool_t lSwitchIsNuclear     = kTRUE, 
+AliAnalysisTaskExtractV0AOD *AddTaskExtractV0AOD( Bool_t lSwitchIsNuclear     = kFALSE, 
                                                   Bool_t lSwitchIsLowEnergyPP = kFALSE,
                                                   Bool_t lSwitchUseOnTheFly   = kFALSE, 
+                                                  TString lTriggerMask = "kMB",
                                                   const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
