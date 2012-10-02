@@ -740,8 +740,10 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
   Float_t emax=0.;
   Int_t imaxDigit=0;
   for(Int_t id=0; id<GetDigitsMultiplicity(); id++){
-    if(emax<fEnergyList[id])
+    if(emax<fEnergyList[id]){
       imaxDigit=id ;
+      emax=fEnergyList[id];
+    }
   }
   digit = static_cast<AliPHOSDigit *>(digits->At( fDigitsList[imaxDigit] )) ; 
   Int_t nprimaries = digit->GetNprimary() ;
@@ -784,8 +786,9 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
     if(fTracksList)delete [] fTracksList;
     fTracksList = new Int_t[fMulTrack] ;
   }
-  for(Int_t index = 0; index < fMulTrack; index++)
+  for(Int_t index = 0; index < fMulTrack; index++){
     fTracksList[index] = tempo[index] ;
+  }
   
   delete [] tempo ;
   
