@@ -12,11 +12,13 @@ TList *RsnManager() {
    Int_t mcMomentum        = 0;
    Int_t mcMon             = 0;
    
-   Int_t usePhysSel        = 1;
+   Int_t usePhysSel        = -1;
+//   usePhysSel              = AliVEvent::kMB;
    Int_t useCentralityTask = 0;
    Int_t useEventPlaneTask = 0;
    
    Double_t eventCutVertex = 10.0;
+   Int_t useYNotEta        = 0;
    
    // useCommonQualityCut=-1  -> Defaultcuts for 2010
    Int_t useCommonQualityCut = -1;
@@ -89,6 +91,7 @@ TList *RsnManager() {
    AliAnalysisManager::SetGlobalInt("rsnUsePIDResponse",1);
    
    AliAnalysisManager::SetGlobalInt("rsnCommonQualityCut",useCommonQualityCut);
+   AliAnalysisManager::SetGlobalInt("rsnUseRapidity",useYNotEta);
    
    // rsn options
 

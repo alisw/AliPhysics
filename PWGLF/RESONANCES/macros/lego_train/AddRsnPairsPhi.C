@@ -39,12 +39,13 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    Bool_t valid;
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
-
+   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("rsnUseRapidity",valid);
 
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    AliRsnValuePair *axisEta = new AliRsnValuePair("ETA", AliRsnValuePair::kEta);
+   AliRsnValuePair *axisRapidity = new AliRsnValuePair("Y", AliRsnValuePair::kY);
 
    AliRsnValueEvent *axisCentrality = 0;
    if (!isPP) axisCentrality = new AliRsnValueEvent("MULTI",AliRsnValueEvent::kCentralityV0);
@@ -54,7 +55,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    axisPt     ->SetBins(120, 0.0, 12.0);
 //    axisEta    ->SetBins(400, -2.0, 2.0);
    axisEta    ->SetBins(400, -0.5, 0.5);
-
+   axisRapidity    ->SetBins(10, -0.5, 0.5);
 
    if (axisCentrality) axisCentrality->SetBins(20,0,100);
 
@@ -67,7 +68,8 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
       outPair = new AliRsnListOutput("pair", AliRsnListOutput::kHistoSparse);
       outPair->AddValue(axisIM);
       outPair->AddValue(axisPt);
-      outPair->AddValue(axisEta);
+      if (useRapidity) outPair->AddValue(axisRapidity);
+      else outPair->AddValue(axisEta);
       if (axisCentrality) outPair->AddValue(axisCentrality);
    }
    // add outputs to loop
@@ -80,6 +82,8 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
    Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+
+   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("rsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
@@ -102,7 +106,6 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    /* eta              */ Int_t etaID = taskRsnMini->CreateValue(AliRsnMiniValue::kEta, kFALSE);
    /* rapidity         */ Int_t yID = taskRsnMini->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
-   Bool_t useRapidity = kTRUE;
 
    // use an array for more compact writing, which are different on mixing and charges
    // [0] = unlike
