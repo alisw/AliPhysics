@@ -35,9 +35,9 @@ Bool_t AddRsnToManagerKStar(TList *listRsn) {
 //    // END Subhash for train
 
   //Francesca for train PbPb
-  listRsn->Add(new TNamed("KStar","KStarNsigma:TPCveto_PiTOFnsig20_KTOFnsig20"));
-  listRsn->Add(new TNamed("KStar","KStarNsigma:TPCveto_PiTOFnsig15_KTOFnsig15"));
-  listRsn->Add(new TNamed("KStar","KStarNsigma:TPCveto_PiTOFnsig10_KTOFnsig10"));
+  listRsn->Add(new TNamed("KStar","KStarTOFanalysis:TPCveto_PiTOFnsig20_KTOFnsig20"));
+  listRsn->Add(new TNamed("KStar","KStarTOFanalysis:TPCveto_PiTOFnsig15_KTOFnsig15"));
+  listRsn->Add(new TNamed("KStar","KStarTOFanalysis:TPCveto_PiTOFnsig10_KTOFnsig10"));
 
   //Francesca for train pp @ 2.76
   //listRsn->Add(new TNamed("KStar","KStarNsigma:combined"));

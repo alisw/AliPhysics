@@ -29,6 +29,10 @@ public:
       kTOFnsigmaPi,// TOF number of sigmas pion
       kTOFnsigmaK, // TOF number of sigmas kaon
       kTOFnsigmaP, // TOF number of sigmas proton
+      kNITSclusters,  // n ITS clusters
+      kNTPCclusters,  // n TPC clusters
+      kITSchi2,    // ITS chi^2
+      kTPCchi2,    // TPC chi^2
       kTypes
    };
 

@@ -29,7 +29,7 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
       task = (AliAnalysisTaskSE *) taskRsn;
    }
 
-   if (isPhysSel) task->SelectCollisionCandidates(AliVEvent::kMB);
+   if (isPhysSel>=0) task->SelectCollisionCandidates((AliVEvent::EOfflineTriggerTypes)isPhysSel);
 
    // TODO this is tmp hack
    if (!rsnIH) rsnIH = new AliRsnInputHandler();

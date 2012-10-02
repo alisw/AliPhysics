@@ -259,6 +259,64 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
             fComputedValue = 0.0;
             return kFALSE;
          }
+      case kNITSclusters:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		fComputedValue =  trackESD->GetITSclusters(0);
+         	} else {
+         		fComputedValue =  ((AliAODTrack*)track)->GetITSNcls();
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get n ITS clusters for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kNTPCclusters:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		fComputedValue =  trackESD->GetTPCclusters(0);
+         	} else {
+         		fComputedValue =  ((AliAODTrack*)track)->GetTPCNcls();
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get n TPC clusters for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kITSchi2:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		UShort_t nClustersTPC = trackESD->GetITSclusters(0);
+         		fComputedValue =  trackESD->GetITSchi2()/Float_t(nClustersTPC);
+         	} else {
+         		fComputedValue = ((AliAODTrack*)track)->Chi2perNDF();
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get ITS chi^2 for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTPCchi2:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		UShort_t nClustersTPC = trackESD->GetTPCclusters(0);
+         		fComputedValue =  trackESD->GetTPCchi2()/Float_t(nClustersTPC);
+         	} else {
+         		fComputedValue = ((AliAODTrack*)track)->Chi2perNDF();
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TPC chi^2 for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
       default:
          AliError(Form("[%s] Invalid value type for this computation", GetName()));
          return kFALSE;
