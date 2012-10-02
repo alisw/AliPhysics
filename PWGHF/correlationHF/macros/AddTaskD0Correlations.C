@@ -1,5 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Int_t system=0/*0=pp,1=PbPb*/, Int_t flagD0D0bar=0,
-				       Float_t minC=0, Float_t maxC=0, TString finDirname="Output", TString cutsfilename="D0toKpiCuts.root", 
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Double_t etacorr=1.0, Int_t system=0/*0=pp,1=PbPb*/, Int_t   					flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", TString cutsfilename="D0toKpiCuts.root", 
 					TString cutsfilename2="AssocPartCuts.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", 						Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
 {
   //
@@ -148,6 +147,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetEvMixing(mixing);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
+  massD0Task->SetEtaForCorrel(etacorr);
 
 //*********************
 //correlation settings

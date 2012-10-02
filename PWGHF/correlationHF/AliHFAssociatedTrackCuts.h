@@ -59,7 +59,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
 	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
 	Bool_t *IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
-	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;	
+	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;
+	void SetPidAssociated();	
 	
 	//getters
 	Int_t GetMaxNEventsInPool() {return fPoolMaxNEvents;}
@@ -82,6 +83,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 		fESDTrackCuts=new AliESDtrackCuts(*cuts); 
 		return;
 	}
+	
+	void AddDescription(TString description){fDescription=description;}
 	
 	//setters
 	//event pool settings

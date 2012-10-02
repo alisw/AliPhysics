@@ -84,6 +84,7 @@ AliAnalysisTaskSE(),
   fFillOnlyD0D0bar(0),
   fIsSelectedCandidate(0),
   fSys(0),
+  fEtaForCorrel(0),
   fIsRejectSDDClusters(0),
   fFillGlobal(kTRUE)
 {
@@ -116,6 +117,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fFillOnlyD0D0bar(0),
   fIsSelectedCandidate(0),
   fSys(0),
+  fEtaForCorrel(0),
   fIsRejectSDDClusters(0),
   fFillGlobal(kTRUE)
 {
@@ -166,6 +168,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fFillOnlyD0D0bar(source.fFillOnlyD0D0bar),
   fIsSelectedCandidate(source.fIsSelectedCandidate),
   fSys(source.fSys),
+  fEtaForCorrel(source.fEtaForCorrel),
   fIsRejectSDDClusters(source.fIsRejectSDDClusters),
   fFillGlobal(source.fFillGlobal)
 {
@@ -242,6 +245,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fFillOnlyD0D0bar = orig.fFillOnlyD0D0bar;
   fIsSelectedCandidate = orig.fIsSelectedCandidate;
   fSys = orig.fSys;
+  fEtaForCorrel = orig.fEtaForCorrel;
   fIsRejectSDDClusters = orig.fIsRejectSDDClusters;
   fFillGlobal = orig.fFillGlobal;
 
@@ -478,6 +482,11 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     return;
   }
 
+  //Setting PIDResponse for associated tracks
+  fCorrelatorTr->SetPidAssociated();
+  fCorrelatorKc->SetPidAssociated();
+  fCorrelatorK0->SetPidAssociated();
+
   // Check the Nb of SDD clusters
   if (fIsRejectSDDClusters) { 
     Bool_t skipEvent = kFALSE;
@@ -591,12 +600,12 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       fCorrelatorK0->SetD0Properties(d,fIsSelectedCandidate);
 
       if(!fReadMC) {
-        CalculateCorrelations(d); //correlations on real data
+        if (TMath::Abs(d->Eta())<fEtaForCorrel) CalculateCorrelations(d); //correlations on real data
       } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
-        Int_t pdgDgD0toKpi[2]={321,211};
-	Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
-        if (labD0>-1) {
-          CalculateCorrelations(d,labD0,mcArray);
+        if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+          Int_t pdgDgD0toKpi[2]={321,211};
+	  Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
+          if (labD0>-1) CalculateCorrelations(d,labD0,mcArray);
         }
       }
       
@@ -1339,7 +1348,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       //retrieving leading info...
       if(track->Pt() > highPt) {
         if(fReadMC && track->GetLabel()<1) continue;
-        if(fReadMC && !(AliAODMCParticle*)mcArray->At(track->GetLabel())) return;
+        if(fReadMC && !(AliAODMCParticle*)mcArray->At(track->GetLabel())) continue;
         lead[0] = fCorrelatorTr->GetDeltaPhi();
         lead[1] = fCorrelatorTr->GetDeltaEta();
         lead[2] = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
@@ -1732,6 +1741,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
     cout << fPtThreshUp.at(i) << "; ";
   }
   cout << "\n--------------------------\n";
+  cout << "D0 Eta cut for Correl = "<<fEtaForCorrel<<"\n";
+  cout << "--------------------------\n";
   cout << "MC Truth = "<<fReadMC<<"\n";
   cout << "--------------------------\n";
   cout << "Ev Mixing = "<<fMixing<<"\n";

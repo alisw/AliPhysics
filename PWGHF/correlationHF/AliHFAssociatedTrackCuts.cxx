@@ -29,6 +29,8 @@
 #include "AliAODv0.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "TString.h"
 
 using std::cout;
@@ -186,6 +188,7 @@ AliHFAssociatedTrackCuts::~AliHFAssociatedTrackCuts()
 	if(fTrackCutsNames) {delete[] fTrackCutsNames; fTrackCutsNames=0;}
 	if(fAODvZeroCuts){delete[] fAODvZeroCuts; fAODvZeroCuts=0;}
 	if(fvZeroCutsNames) {delete[] fvZeroCutsNames; fvZeroCutsNames=0;}
+
 	
 }
 //--------------------------------------------------------------------------
@@ -449,6 +452,18 @@ void AliHFAssociatedTrackCuts::SetvZeroCutsNames(/*TString *namearray*/){
 	
 	
 	return;
+}
+
+//--------------------------------------------------------------------------
+void AliHFAssociatedTrackCuts::SetPidAssociated()
+{
+  //setting PidResponse
+  if(fPidObj->GetOldPid()==kFALSE && fPidObj->GetPidResponse()==0x0){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidObj->SetPidResponse(pidResp);
+  }
 }
 
 //--------------------------------------------------------------------------
