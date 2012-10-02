@@ -106,6 +106,16 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
    outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
    
+   TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 220,-11.,11.);
+   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
+
+   TH2F* hmc=new TH2F("MultiVsCent","",100,0.,100.,4000,0.,4000.);
+   hmc->GetYaxis()->SetTitle("QUALITY");
+   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
+
+   TH2F* hep=new TH2F("hEventPlaneVsCent","",100,0.,100., 180,0.,TMath::Pi());
+   task->SetEventQAHist("eventplane",hep);//plugs this histogram into the fHAEventPlane data member
+
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
