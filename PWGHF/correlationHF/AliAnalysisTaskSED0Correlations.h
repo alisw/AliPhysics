@@ -57,6 +57,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t  GetSystem() const {return fSys;}
   Bool_t GetRejectSDDClusters() const {return fIsRejectSDDClusters;}
   Bool_t GetFillGlobalPlots() const {return fFillGlobal;}
+  Double_t GetEtaForCorrel() {return fEtaForCorrel;}
 
   //correlations setters/printers
   void SetNPtBinsCorr(Int_t nbins) {fNPtBinsCorr = nbins;}
@@ -67,6 +68,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void PrintBinsAndLimits();
   Int_t PtBinCorr(Double_t pt) const;
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
+  void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
 
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
@@ -107,6 +109,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t     fFillOnlyD0D0bar;     	// flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
   Int_t     fIsSelectedCandidate; 	// selection outcome
   Int_t     fSys;                 	// fSys=0 -> p-p; fSys=1 ->PbPb
+  Double_t  fEtaForCorrel;		// cut for D0 eta to enable correlation with associated particles
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
 

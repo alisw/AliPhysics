@@ -70,14 +70,15 @@ class AliHFCorrelator : public TNamed
 	
 	
 	
-    Bool_t DefineEventPool(); // Definition of the Event pool parameters
+        Bool_t DefineEventPool(); // Definition of the Event pool parameters
 	Bool_t Initialize(); // function that initlize everything for the analysis	
 	Bool_t ProcessEventPool(); // processes the event pool
 	Bool_t ProcessAssociatedTracks(Int_t EventLoopIndex); //
 	Bool_t Correlate(Int_t loopindex); // function that computes the correlations between the trigger particle and the track n. loopindex
 	Bool_t PoolUpdate();// updates the event pool
 	Double_t SetCorrectPhiRange(Double_t phi); // sets all the angles in the correct range
-	
+	void SetPidAssociated() {fhadcuts->SetPidAssociated();}
+
 	//getters
 	AliEventPool* GetPool() {return fPool;}
 	TObjArray * GetTrackArray(){return fAssociatedTracks;}
