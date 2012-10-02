@@ -50,6 +50,7 @@ public:
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
+   void                SetEventQAHist(TString type,TH2F* histo); 
 
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);
@@ -67,6 +68,7 @@ private:
    void     FillMiniEvent(Char_t evType);
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
+   Double_t ComputeMultiplicity(Bool_t isESD,TString type);
    Double_t ApplyCentralityPatchAOD049();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
@@ -90,6 +92,9 @@ private:
    TClonesArray         fValues;          //  list of values to be computed
    TH1F                *fHEventStat;      //  histogram of event statistics
    TH1F                *fHAEventsVsMulti; //  histogram of event statistics
+   TH2F                *fHAEventVz;       //  histogram of vertex-z vs. multiplicity/centrality
+   TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
+   TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
 
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts
