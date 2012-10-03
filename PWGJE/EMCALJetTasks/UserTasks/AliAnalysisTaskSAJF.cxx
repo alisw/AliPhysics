@@ -25,7 +25,6 @@ ClassImp(AliAnalysisTaskSAJF)
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
-  fLeadingHadronType(0),
   fNjetsVsCent(0)
 
 {
@@ -54,7 +53,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fLeadingHadronType(0),
   fNjetsVsCent(0)
 {
   // Standard constructor.
@@ -83,20 +81,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
 AliAnalysisTaskSAJF::~AliAnalysisTaskSAJF()
 {
   // Destructor.
-}
-
-//________________________________________________________________________
-Float_t* AliAnalysisTaskSAJF::GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const
-{
-  Float_t *bins = new Float_t[n+1];
-
-  Float_t binWidth = (max-min)/n;
-  bins[0] = min;
-  for (Int_t i = 1; i <= n; i++) {
-    bins[i] = bins[i-1]+binWidth;
-  }
-
-  return bins;
 }
 
 //________________________________________________________________________
@@ -355,14 +339,7 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
 
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
 
-    Float_t ptLeading = 0;
-
-    if (fLeadingHadronType == 0)       // charged leading hadron
-      ptLeading = jet->MaxTrackPt();
-    else if (fLeadingHadronType == 1)  // neutral leading hadron
-      ptLeading = jet->MaxClusterPt();
-    else                               // charged or neutral
-      ptLeading = jet->MaxPartPt();
+    Float_t ptLeading = GetLeadingHadronPt(jet);
 
     fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi(), ptLeading);
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);

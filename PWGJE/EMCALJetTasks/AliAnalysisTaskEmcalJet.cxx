@@ -42,6 +42,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fJetMaxPhi(10),
   fMaxClusterPt(100),
   fMaxTrackPt(100),
+  fLeadingHadronType(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -67,6 +68,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fJetMaxPhi(10),
   fMaxClusterPt(100),
   fMaxTrackPt(100),
+  fLeadingHadronType(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -85,10 +87,42 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet) const
 { 
   // Accept jet with a bias.
 
-  if (jet->MaxTrackPt() < fPtBiasJetTrack && jet->MaxClusterPt() < fPtBiasJetClus)
-    return kFALSE;
-  else
-    return kTRUE;
+  if (fLeadingHadronType == 0) {
+    if (jet->MaxTrackPt() < fPtBiasJetTrack) return kFALSE;
+  }
+  else if (fLeadingHadronType == 1) {
+    if (jet->MaxClusterPt() < fPtBiasJetClus) return kFALSE;
+  }
+  else {
+    if (jet->MaxTrackPt() < fPtBiasJetTrack && jet->MaxClusterPt() < fPtBiasJetClus) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Float_t* AliAnalysisTaskEmcalJet::GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const
+{
+  Float_t *bins = new Float_t[n+1];
+
+  Float_t binWidth = (max-min)/n;
+  bins[0] = min;
+  for (Int_t i = 1; i <= n; i++) {
+    bins[i] = bins[i-1]+binWidth;
+  }
+
+  return bins;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet) const
+{
+  if (fLeadingHadronType == 0)       // charged leading hadron
+    return jet->MaxTrackPt();
+  else if (fLeadingHadronType == 1)  // neutral leading hadron
+    return jet->MaxClusterPt();
+  else                               // charged or neutral
+    return jet->MaxPartPt();
 }
 
 //________________________________________________________________________

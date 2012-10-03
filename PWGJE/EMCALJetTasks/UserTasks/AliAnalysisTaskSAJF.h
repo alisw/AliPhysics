@@ -22,14 +22,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
 
-  void                        SetLeadingHadronType(Int_t t)     { fLeadingHadronType = t; }
-
  protected:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       DoJetLoop()                                                   ;
-  Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
-
-  Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
 
   // General histograms
   TH1F                       *fHistEvents[4];              //!Events accepted/rejected
@@ -54,6 +49,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 13) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 14) // jet analysis task
 };
 #endif

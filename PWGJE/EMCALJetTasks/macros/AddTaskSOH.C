@@ -1,6 +1,6 @@
 // $Id$
 
-AliAnalysisTaskSOH* AddTaskSOH()
+AliAnalysisTaskSOH* AddTaskSOH(const char *name, Bool_t ScaleFactorP=kFALSE, Bool_t ClusterP=kFALSE, Double_t Zvtx=10)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -23,7 +23,7 @@ AliAnalysisTaskSOH* AddTaskSOH()
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskSOH *taskSOH = new AliAnalysisTaskSOH("AliAnalysisTaskSOH");
+  AliAnalysisTaskSOH *taskSOH = new AliAnalysisTaskSOH(Form("QA_soh_%s",name));
 
   AliESDtrackCuts *esdTrackCuts = 0x0;
   AliESDtrackCuts *hybridTrackCuts1 = 0x0;
@@ -38,16 +38,27 @@ AliAnalysisTaskSOH* AddTaskSOH()
   taskSOH->SetHybridTrackCuts1(hybridTrackCuts1);
   taskSOH->SetHybridTrackCuts2(hybridTrackCuts2);
 
+  taskSOH->SetMcProcess(kTRUE);
+  taskSOH->SetTrackProcess(kTRUE);
+  taskSOH->SetSFProcess(ScaleFactorP);
+  taskSOH->SetClusterProcess(ClusterP);
+  taskSOH->SetZvtx(Zvtx);
+
   // Add task(s)
   mgr->AddTask(taskSOH); 
 
+  // ESD handler
+  AliESDInputHandler* esdH = new AliESDInputHandler();
+  mgr->SetInputEventHandler(esdH);
+  
+  // MC truth handler
+  AliMCEventHandler* mcEvtHdl = new AliMCEventHandler();
+  mcEvtHdl->SetReadTR(kTRUE);
+  mgr->SetMCtruthEventHandler(mcEvtHdl); 
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer("soh", 
-                                                             TList::Class(), 
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             "AnalysisResults.root");
+  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults_soh.root");
 
   // Connect input/output
   mgr->ConnectInput(taskSOH, 0, cinput);
