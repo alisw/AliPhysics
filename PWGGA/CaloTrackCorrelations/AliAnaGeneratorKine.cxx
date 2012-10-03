@@ -77,12 +77,12 @@ fhPtPhoton(0),       fhPtPi0(0)
 }
 
 //_______________________________________________________________________________
-void  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger, 
-                                                    const Int_t   indexTrig,                     
-                                                    const Int_t   pdgTrig, 
-                                                    const Bool_t  leading[4],
-                                                    const Bool_t  isolated[4], 
-                                                    Int_t & iparton )  
+Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger, 
+                                                      const Int_t   indexTrig,                     
+                                                      const Int_t   pdgTrig, 
+                                                      const Bool_t  leading[4],
+                                                      const Bool_t  isolated[4], 
+                                                      Int_t & iparton )  
 {
   //Correlate trigger with partons or jets, get z
   
@@ -92,6 +92,7 @@ void  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger
   while (iparton > 7) 
   {
     iparton   = mother->GetFirstMother();
+    if(iparton < 0) { printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - Negative index, skip event\n"); return kFALSE; }
     mother = fStack->Particle(iparton);
   }
   
@@ -100,7 +101,7 @@ void  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger
   if(iparton < 6)
   {
     //printf("This particle is not from hard process - pdg %d, parton index %d\n",pdgTrig, iparton);
-    return; 
+    return kFALSE; 
   }
   
   Float_t ptTrig   = trigger.Pt(); 
@@ -220,6 +221,8 @@ void  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger
       }      
     } // photon
   } // conditions loop  
+  
+  return kTRUE;
 }  
 
 
@@ -972,7 +975,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     else if(pdgTrig != 111) continue;
     
     // Acceptance and kinematical cuts
-    if( ptTrig < 8 )    continue ;
+    if( ptTrig < GetMinPt() )    continue ;
     
     //EMCAL acceptance, a bit less
     if(TMath::Abs(particle->Eta()) > 0.6) continue ;
@@ -1000,8 +1003,9 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     IsLeadingAndIsolated(trigger, ipr, pdgTrig, leading, isolated);
     
     Int_t iparton = -1;
-    CorrelateWithPartonOrJet(trigger, ipr, pdgTrig, leading, isolated, iparton); 
-        
+    Int_t ok = CorrelateWithPartonOrJet(trigger, ipr, pdgTrig, leading, isolated, iparton); 
+    if(!ok) continue;
+    
     GetXE(trigger,ipr,pdgTrig,leading,isolated,iparton) ;    
     
   }
