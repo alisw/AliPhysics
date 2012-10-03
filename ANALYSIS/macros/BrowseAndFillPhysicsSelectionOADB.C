@@ -214,6 +214,20 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp");
 
   triggerCount++;  
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kEMCEJE,"+CEMC8EJE-S-NOPF-CENTNOTRD,CEMC8EJE-S-NOPF-ALLNOTRD","B",    triggerCount);
+  oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kEMCEJE,"+CEMC8EJE-ACE-NOPF-CENTNOTRD,CEMC8EJE-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
+  oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"T0");
+  // TODO EMC offline check missing, https://savannah.cern.ch/bugs/index.php?87104
+  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"!T0BG && !T0Pileup && !TPCLaserWarmUp");
+
+  triggerCount++;  
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kEMCEGA,"+CEMC8EGA-S-NOPF-CENTNOTRD,CEMC8EGA-S-NOPF-ALLNOTRD","B",    triggerCount);
+  oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kEMCEGA,"+CEMC8EGA-ACE-NOPF-CENTNOTRD,CEMC8EGA-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
+  oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"T0");
+  // TODO EMC offline check missing, https://savannah.cern.ch/bugs/index.php?87104
+  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"!T0BG && !T0Pileup && !TPCLaserWarmUp");
+
+  triggerCount++;  
   oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kSPI7,"+CSPI7-[B|S]-NOPF-ALLNOTRD","B",     triggerCount);
   //  oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kSPI7,"CSPI7-ACE-NOPF-ALLNOTRD","ACE", triggerCount);
   oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"SPDGFOL1 >= 10 && (V0A && V0C)");                      
