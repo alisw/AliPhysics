@@ -835,17 +835,17 @@ TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
   }
 
 
-  Int_t pdg = 0;
+//  Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fkMC){
     if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
-    pdg = fkMC->GetPDG();
+    //pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
-    pdg = CalcPDG(&cTrack);
+    //pdg = CalcPDG(&cTrack);
   }
   if(IsInRange(momentum)) hMom -> Fill(momentum);
   return hMom;
@@ -874,12 +874,12 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
   }
 
 
-  Int_t pdg = 0;
+  //Int_t pdg = 0;
   Float_t momentum = 0.;
 
   if(fkMC){
     if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
-    pdg = fkMC->GetPDG();
+    //pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);

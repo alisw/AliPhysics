@@ -568,7 +568,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].H()) continue;
-    for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(hp[ih].H(), ipt), jh++);
+    for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(hp[ih].Projection2Dbin(ipt), jh++);
   }
 
 /*  AliTRDrecoProjection prLab;  TH2 *hLab[3] = {0}; TH1 *hpLab[3] = {0};
@@ -592,7 +592,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
         (*pr0)+=(*pr1);
       }
       pr0->H()->SetNameTitle(Form("HEff%d", istat), Form("Efficiency :: Stat[#bf{%s}]", stat[istat]));
-      for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(pr0->H(), ipt), jh++);
+      for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
 
       if(istat>1 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff01"))) (*pr1)+=(*pr0);
       if(istat>2 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff02"))) (*pr1)+=(*pr0);
@@ -605,7 +605,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   for(Int_t istat(0); istat<3; istat++){
     if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, istat+1)))) continue;
     pr0->H()->SetNameTitle(Form("HEff%c", suffix[istat]), Form("Efficiency :: %s Tracks", sname[istat]));
-    for(Int_t ipt(-1); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(pr0->H(), ipt), jh++);
+    for(Int_t ipt(-1); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
   }
 
   // Efficiency
@@ -772,28 +772,4 @@ void AliTRDefficiency::MakeSummary()
   hs->SetMinimum(50.);
   hs->GetYaxis()->CenterTitle();
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-}
-
-
-//____________________________________________________________________
-TH2* AliTRDefficiency::Projection2D(TH3 *h3, Int_t ipt)
-{
-  TAxis *ax(h3->GetXaxis()), *ay(h3->GetYaxis());
-  TH2F *h2(NULL);
-  if(ipt<0){
-    h2 =(TH2F*)h3->Project3D("yx");
-    h2->SetNameTitle(Form("%s%d_2D", h3->GetName(), ipt), h3->GetTitle());
-  } else {
-    h2 = new TH2F(Form("%s%d_2D", h3->GetName(), ipt),
-                  Form("%s | #it{%4.2f<=p_{t}[GeV/c]<%4.2f};%s;%s;Entries", h3->GetTitle(),
-                  ipt?fgPt[ipt-1]:0., ipt==fNpt?9.99:fgPt[ipt], ax->GetTitle(), ay->GetTitle()),
-                  ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
-                  ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
-    for(Int_t ix(1); ix<=ax->GetNbins(); ix++){
-      for(Int_t iy(1); iy<=ay->GetNbins(); iy++){
-        h2->SetBinContent(ix, iy, h3->GetBinContent(ix, iy, ipt));
-      }
-    }
-  }
-  return h2;
 }

@@ -197,6 +197,7 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
       }
       if(tv->GetVal()<-998. ||
          (strstr(TV->GetName(), "TRDcheckDET")&&TMath::Abs(tv->GetVal())<1.e-5) ||
+         (strstr(TV->GetName(), "TRDefficiency")&&tv->GetVal()<1.e-5) ||
          (!(strcmp(TV->GetName(), "TRDcheckDET_ChargeTracklet"))&&TMath::Abs(tv->GetVal())<1.e1)) continue;
       if(IsRelativeMeanSigma()){
         (*tv)/=(*TV);
