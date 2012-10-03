@@ -26,12 +26,12 @@ public:
   AliAnaGeneratorKine() ; // default ctor
   virtual ~AliAnaGeneratorKine() { ; } //virtual dtor              
   
-  void CorrelateWithPartonOrJet(const TLorentzVector trigger,  
-                                const Int_t   indexTrig,                     
-                                const Int_t   pdgTrig, 
-                                const Bool_t  leading[4], 
-                                const Bool_t  isolated[4], 
-                                Int_t & iparton) ; 
+  Bool_t CorrelateWithPartonOrJet(const TLorentzVector trigger,  
+                                  const Int_t   indexTrig,                     
+                                  const Int_t   pdgTrig, 
+                                  const Bool_t  leading[4], 
+                                  const Bool_t  isolated[4], 
+                                  Int_t & iparton) ; 
   
   TList * GetCreateOutputObjects() ;
   
