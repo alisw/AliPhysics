@@ -290,6 +290,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
   fCorrelator->SetAssociatedParticleType(fSelect); // set 1/2/3 for hadron/kaons/kzeros
   fCorrelator->SetApplyDisplacementCut(fDisplacement); //set kFALSE/kTRUE for using the displacement cut
   fCorrelator->SetUseMC(fReadMC);
+  fCorrelator->SetPIDmode(2);
 
   Bool_t pooldef = fCorrelator->DefineEventPool();
   
@@ -506,7 +507,6 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     fOutput->Add(fMassVsdEtaHistKshort[i]);
     fOutput->Add(fMassVsdPhiHistLeadHad[i]);
     fOutput->Add(fMassVsdEtaHistLeadHad[i]);
-    // fOutput->Add(fMassVsdPhiHist[i]);
     fOutput->Add(fMassHistK0S[i]);
     fOutput->Add(fLeadPt[i]);
     fOutput->Add(fMassHist[i]);
@@ -650,7 +650,8 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
   if(!isEvSel)return;
   fHistNEvents->Fill(1);
 
- 
+  // set PIDResponse for associated tracks
+  fCorrelator->SetPidAssociated(); 
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -762,7 +763,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 	fMassHist[index]->Fill(invMass);
 	
 	// loop for tight cuts
-		if(passTightCuts>0){   
+       	if(passTightCuts>0){   
 	  fHistNEvents->Fill(10);
 	  nSelectedtight++;
 	  fMassHistTC[index]->Fill(invMass);
@@ -808,8 +809,10 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 		 
 	    //start the track loop
 		  
-	    Int_t NofTracks = fCorrelator->GetNofTracks();
-	    cout<<NofTracks<<"******8"<<endl;  		  
+	    // Int_t NofTracks = fCorrelator->GetNofTracks();
+
+	    //cout<<"*******"<<NofTracks<<endl;
+
 	    for (Int_t iTrack = 0;iTrack<fCorrelator->GetNofTracks();iTrack++) {	               
 	      Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
 		       
@@ -877,7 +880,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 	      
 	  }//jmix
 		
-	  	}// tc 
+	  }// tc 
       }//fid
 		
 		
