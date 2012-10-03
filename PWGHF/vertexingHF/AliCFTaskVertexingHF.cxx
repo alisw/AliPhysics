@@ -649,7 +649,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   cfVtxHF->SetCentralityValue(centValue);  
 	
   // number of tracklets - multiplicity estimator
-  Double_t multiplicity = (Double_t)(aodEvent->GetTracklets()->GetNumberOfTracklets()); // casted to double because the CF is filled with doubles
+  Double_t multiplicity = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
   cfVtxHF->SetMultiplicity(multiplicity);
 	
   for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
