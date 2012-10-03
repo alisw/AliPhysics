@@ -400,6 +400,7 @@ void AliGenHijing::Generate()
 	  }
       }
   } // event loop
+
   MakeHeader();
   SetHighWaterMark(nt);
 }
@@ -593,6 +594,23 @@ void AliGenHijing::MakeHeader()
 // Event Vertex
     fHeader.SetPrimaryVertex(fVertex);
     fHeader.SetInteractionTime(fTime);
+
+    Int_t nsd1 = 0,nsd2 = 0,ndd = 0;
+    Int_t nT = fHijing->GetNT();
+    Int_t nP = fHijing->GetNP();
+    for (Int_t i = 1; i <= nP; ++i) {
+      for (Int_t j = 1; j <= nT; ++j) {
+      Int_t tp = fHijing->GetNFP(i, 5);
+      Int_t tt = fHijing->GetNFT(j, 5);
+      if (tp == 2)
+        nsd1++;
+      if (tt == 2)
+        nsd2++;
+      if (tp == 2 && tt == 2)
+        ndd++;
+      }
+    }
+    fHeader.SetNDiffractive(nsd1, nsd2, ndd);
     AddHeader(&fHeader);
     fCollisionGeometry = &fHeader;
 }

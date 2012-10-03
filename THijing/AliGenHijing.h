@@ -78,7 +78,7 @@ class AliGenHijing : public AliGenMC
 	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}
     virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)      const
 	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180./TMath::Pi();}
-    
+     THijing       *GetTHijing()                         const {return fHijing;}
 
 // Physics Routines
     virtual Bool_t  ProvidesCollisionGeometry() const {return kTRUE;}
