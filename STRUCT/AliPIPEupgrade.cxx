@@ -181,15 +181,24 @@ void AliPIPEupgrade::CreateGeometry()
 //    
 // CP/1 Mother volume 
     //TGeoVolume* voCp1Mo = new TGeoVolume("CP1MO",  new TGeoTube(0., kCP1BeStRo,  kCP1Length / 2.),  kMedAir);
-    Double_t beamPipeLength = 553.8;//482.0; //552.0; 
-    TGeoVolume* voCp1Mo = new TGeoVolume("CP1MO", new TGeoTube(0., 3.6, beamPipeLength/2.), kMedVac);
-    //    voCp1Mo->SetVisibility(0);
-    voCp1Mo->SetVisibility(kVac);
+
+    //    Double_t beamPipeLength = 553.99;//482.0; //552.0; 
+    //    TGeoVolume* voCp1Mo = new TGeoVolume("CP1MO", new TGeoTube(0., 3.6, beamPipeLength/2.), kMedVac);
+    //    voCp1Mo->SetVisibility(kVac);
+
+    TGeoVolume* voCp1aMo = new TGeoVolume("CP1aMO", new TGeoTube(0., 3.6, (468.0-fIpHLength)/2), kMedVac);
+    voCp1aMo->SetVisibility(kVac);
+    TGeoVolume* voCp1bMo = new TGeoVolume("CP1bMO", new TGeoTube(0., fIpPipeRo, fIpHLength), kMedVac);
+    voCp1bMo->SetVisibility(kVac);
+    TGeoVolume* voCp1cMo = new TGeoVolume("CP1cMO", new TGeoTube(0., 3.6, (82.0-fIpHLength)/2), kMedVac);
+    voCp1cMo->SetVisibility(kVac);
   
    
     TGeoVolumeAssembly* voCp1 = new TGeoVolumeAssembly("Cp1");
+    voCp1->AddNode(voCp1aMo, 0, new TGeoTranslation(0,0, 161-(468.0-fIpHLength)/2-fIpHLength));
+    voCp1->AddNode(voCp1bMo, 0, new TGeoTranslation(0,0,161));
+    voCp1->AddNode(voCp1cMo, 0, new TGeoTranslation(0,0, 161+(82.0-fIpHLength)/2+fIpHLength));
 
-    voCp1->AddNode(voCp1Mo, 1, new TGeoTranslation(0.,0,-34));
     //    voCp1->AddNode(voCp1Mo, 1, gGeoIdentity);
 
     /*    //Edit
@@ -446,9 +455,11 @@ void AliPIPEupgrade::CreateGeometry()
     voCp2->AddNode(voFwdaBPPT, 1, new TGeoTranslation(0., 0., -kCP2Length / 2. + 13.8));
     voCp2->AddNode(voFwdaBPS,  1, new TGeoTranslation(0., 0., -kCP2Length / 2. +  5.1));
     
-//
-//  Assemble the central beam pipe
-//
+    //  ++++++++++++++++++++++++++++++++++++++
+    
+    //
+    //  Assemble the central beam pipe
+    //
     Double_t CP2Length = 36.5+68;
     TGeoVolumeAssembly* asCP = new TGeoVolumeAssembly("CP");
     z = 0.-CP2Length;
@@ -457,54 +468,103 @@ void AliPIPEupgrade::CreateGeometry()
     asCP->AddNode(voCp1, 1, new TGeoTranslation(0., 0., z));
     top->AddNode(asCP, 1,  new TGeoCombiTrans(0., 0., 400. -  kCP2Length / 2, rot180));
     
+
+    //  ++++++++++++++++++++++++++++++++++++++
     //edit part for upgrade
-
+    
     //    position shift dzS+161 and dyS =15    
-    Float_t dzS = 161+34, dyS = 0; //15;
-        
-    /*
-    //Define Material
-    TGeoMaterial *matAl = new TGeoMaterial("Al",26.98,13,2.7);
-    TGeoMaterial *matBe = new TGeoMaterial("Be",9.01,4,1.85);
-    //Set Medium
-    TGeoMedium *Alu = new TGeoMedium("Root Material",2,matAl);
-    TGeoMedium *Be = new TGeoMedium("Materail",3,matBe); 
-    */
-
-    //Create interactoin point in center path with Be
-    Double_t origIPHlength = 57.25; // from drawing
-    Double_t ro=fIpPipeRo, width=fIpPipeWidth, zLength = origIPHlength*2;
-    TGeoVolume *ipPipe =  gGeoManager->MakeTube("IP_PIPE",(TGeoMedium*)kMedBe,ro-width,ro,zLength/2.);
-    ipPipe->SetLineColor(kBe);
-    voCp1Mo->AddNode(ipPipe,3,new TGeoTranslation(0,dyS,dzS));
-   
-    //Create C-side section Length 24.65 cm
-    Double_t cyl1Length = 15.6;
-    Double_t cylLength = 2.0;
-    Double_t bellowLength = 3.8;
-    //    TGeoVolume* voCylVac = new TGeoVolume("cylVAC", new TGeoTube(0., ro-width,cylLength / 2.),  kMedVac);
-    //    voCylVac->SetLineColor(kVac);
-    TGeoVolume* cyl  = new TGeoVolume("cyl", new TGeoTube(ro-width, ro,  cylLength / 2.),  kMedAlu);
-    //    cyl->AddNode(voCylVac, 1, gGeoIdentity);
-    cyl->SetLineColor(kAlu);
-    voCp1Mo->AddNode(cyl,1,new TGeoTranslation(0.,dyS,dzS+zLength/2+cylLength/2));
-    voCp1Mo->AddNode(cyl,2,new TGeoTranslation(0.,dyS,dzS+zLength/2+cylLength+bellowLength + cylLength/2));
-    voCp1Mo->AddNode(cyl,3,new TGeoTranslation(0.,dyS,dzS+zLength/2+cyl1Length-cylLength/2 -bellowLength -cylLength));
-    voCp1Mo->AddNode(cyl,4,new TGeoTranslation(0.,dyS,dzS+zLength/2+cyl1Length-cylLength/2));
+    Float_t dzS = 0, dyS = 0; //15; 
     
 
-    Double_t cyl2Length = 1.0;
-    Double_t cone1Length = 9.05-cyl2Length;
-    TGeoVolume *cone1 =  gGeoManager->MakeCone("cone1",(TGeoMedium*)kMedAlu, cone1Length/2, 3.-width,3., ro-width,ro);
-    cone1->SetLineColor(kAlu);
+    if (fIpHLength>63.5) AliFatal("Chosen half length of the Be part at the IP is too large (>63.5cm)");
+    if (fIpHLength<20.) AliFatal("Chosen half length of the Be part at the IP is too small. (<20cm). Most likely hits the ITS upgrade structure");
+
+    
+    //  ++++++++++++++++++++++++++++++++++++++
+    //Create IP (interactoin point) in center path with Be
+
+    Double_t ro=fIpPipeRo, width=fIpPipeWidth, ipLengthZ = fIpHLength*2;
+    TGeoVolume *ipPipe =  gGeoManager->MakeTube("IP_PIPE",(TGeoMedium*)kMedBe,ro-width,ro,ipLengthZ/2.);
+    ipPipe->SetLineColor(kBe); 
+    voCp1bMo->AddNode(ipPipe,3,new TGeoTranslation(0,dyS,dzS));
+
+    //  ++++++++++++++++++++++++++++++++++++++
+    // Create A-side section
+    Double_t lengthFromIp = 468.0;
+
+    dzS = +(468.0-fIpHLength)/2+fIpHLength;
+
+
+    // Flansh in A side
+    Double_t cylFALength = 1.4, coneFALength = 1.87; 
+    TGeoVolume *cylFA =  gGeoManager->MakeTube("cylFA",(TGeoMedium*)kMedAlu,3.0-width,3.5, cylFALength/2);
+    cylFA->SetLineColor(kAlu);
+    TGeoVolume *coneFA =  gGeoManager->MakeCone("coneFA",(TGeoMedium*)kMedAlu,coneFALength/2, 3.-width,3.,2.5-width,2.5);
+    coneFA->SetLineColor(kAlu);
+
+    voCp1aMo->AddNode(cylFA,2,new TGeoTranslation(0.,dyS,dzS- lengthFromIp + cylFALength/2));
+    voCp1aMo->AddNode(coneFA,3,new TGeoTranslation(0,dyS,dzS- lengthFromIp + cylFALength + coneFALength/2));
+  
+    // rest
+
+    TGeoMedium *med = (TGeoMedium*)kMedAlu;  if (fConeIsBe) med = (TGeoMedium*)kMedBe;
+    
+    Double_t cylSmallALength = 2.0;
+    Double_t coneALength = 2.61;
+    Double_t cylLargeALength = lengthFromIp - ipLengthZ/2 - cylSmallALength - coneALength - cylFALength - coneFALength;
+    
+    TGeoVolume *coneA =  gGeoManager->MakeCone("coneA",med,coneALength/2,2.5-width,2.5,ro-width,ro);
+    TGeoVolume *cylLargeA = new TGeoVolume("cylLargeA", new TGeoTube(2.5-width, 2.5,  cylLargeALength/2),med); 
+    TGeoVolume *cylSmallA = new TGeoVolume("cylSmallA", new TGeoTube(ro-width, ro,  cylSmallALength/2),med); 
+ 
+    if (fConeIsBe) {
+      coneA->SetLineColor(kBe);
+      cylSmallA->SetLineColor(kBe);
+      cylLargeA->SetLineColor(kBe);
+    } else {
+      coneA->SetLineColor(kAlu);
+      cylSmallA->SetLineColor(kAlu);
+      cylLargeA->SetLineColor(kAlu);
+    }
+
+    voCp1aMo->AddNode(cylLargeA,4,new TGeoTranslation(0,dyS,dzS-lengthFromIp+cylFALength+coneFALength + cylLargeALength/2));
+    voCp1aMo->AddNode(coneA,    5,new TGeoTranslation(0,dyS,dzS-lengthFromIp+cylFALength+coneFALength + cylLargeALength +coneALength/2 ));
+    voCp1aMo->AddNode(cylSmallA,6,new TGeoTranslation(0,dyS,dzS-lengthFromIp+cylFALength+coneFALength + cylLargeALength +coneALength + cylSmallALength/2));
+
+  
+    //  ++++++++++++++++++++++++++++++++++++++
+    // Create C-side section 
+
+    dzS = -(82.0-fIpHLength)/2-fIpHLength;
+
+    // Connector of IpPipe to BellowPart
+    Double_t connectCLength = 63.52-fIpHLength;
+    TGeoVolume* connectC  = new TGeoVolume("conectC", new TGeoTube(ro-width, ro,  connectCLength/2),  kMedAlu); 
+    connectC->SetLineColor(kAlu);
+    voCp1cMo->AddNode(connectC,1,new TGeoTranslation(0.,dyS,dzS+ipLengthZ/2 + connectCLength/2));
+    
+    
+    // Bellow comiplation on C side
+    Double_t bellowLength = 12.6;
+    TGeoVolume* cyl0  = new TGeoVolume("cyl0", new TGeoTube(ro-width, ro,  2.0),  kMedAlu); cyl0->SetLineColor(kAlu);
+    voCp1cMo->AddNode(cyl0,2,new TGeoTranslation(0.,dyS,dzS+ipLengthZ/2+connectCLength + 5.8));
+    TGeoVolume* cyl1  = new TGeoVolume("cyl1", new TGeoTube(ro-width, ro,  0.5),  kMedAlu); cyl1->SetLineColor(kAlu);
+    voCp1cMo->AddNode(cyl1,3,new TGeoTranslation(0.,dyS,dzS+ipLengthZ/2+connectCLength + 11.6+0.5));
+
+
+    // Flansh in C side
+    Double_t cylFCLength = 1.4;
+    Double_t coneFCLength = 4.48;
+    TGeoVolume *coneFC =  gGeoManager->MakeCone("coneFC",(TGeoMedium*)kMedAlu, coneFCLength/2, 3.-width,3., ro-width,ro);
+    coneFC->SetLineColor(kAlu);
     TGeoRotation *rot1 = new TGeoRotation("rot1",0.,180.,0.); // not needed
-    TGeoCombiTrans *combi1 = new TGeoCombiTrans(0,dyS,dzS+zLength/2+cyl1Length+cone1Length/2,rot1);
-    voCp1Mo->AddNode(cone1,2,combi1);
+    TGeoCombiTrans *combi = new TGeoCombiTrans(0,dyS,dzS+ipLengthZ/2+connectCLength+bellowLength+coneFCLength/2,rot1);
+    voCp1cMo->AddNode(coneFC,2,combi);
+    TGeoVolume *cylFC =  gGeoManager->MakeTube("cylFC",(TGeoMedium*)kMedAlu,3.-width,3.5, cylFCLength/2);
+    cylFC->SetLineColor(kAlu);
+    voCp1cMo->AddNode(cylFC,2,new TGeoTranslation(0.,dyS,dzS+ipLengthZ/2+connectCLength+bellowLength+coneFCLength+cylFCLength/2));
 
-    TGeoVolume *cyl2 =  gGeoManager->MakeTube("cyl2",(TGeoMedium*)kMedAlu,3.-width,3.5, cyl2Length/2);
-    cyl2->SetLineColor(kAlu);
-    voCp1Mo->AddNode(cyl2,2,new TGeoTranslation(0.,dyS,dzS+zLength/2+cyl1Length+cone1Length+cyl2Length/2));
-    
+
     //Create Bellow
     // Adaptor tube [Pos 4]
 // 
@@ -706,54 +766,24 @@ void AliPIPEupgrade::CreateGeometry()
 	}
     }
     
-//
-// Add connecting undulation between bellow and connecting pipe
+    //
+    // Add connecting undulation between bellow and connecting pipe
     dz = - kCP3BellowUndulatedLength / 2. + kCP3ConnectionPlieR;
     voBellowMother->AddNode(voConnectionPO, 1,  new TGeoTranslation(0., 0.,  dz ));
     voBellowMother->AddNode(voConnectionPO, 2,  new TGeoTranslation(0., 0., -dz ));
       
     
-// Add bellow to CP/3 mother    
-    Double_t dz1 = dzS+zLength/2+ kCP3BellowConnectionLengthI/2;
-    voCp1Mo->AddNode(voBellowMother,1, new TGeoTranslation(0., dyS , dz1 + kCP3BellowUndulatedLength/2 + kCP3BellowConnectionLengthI/2 ));
-    voCp1Mo->AddNode(voBellowMother,1, new TGeoTranslation(0., dyS , dz1 +kCP3BellowUndulatedLength + kCP3BellowUndulatedLength/2 + kCP3BellowConnectionLengthI/2 + kCP3BellowConnectionLengthII ));
+    // Add bellow to CP/3 mother    
+    Double_t dz1 = dzS+ipLengthZ/2 + connectCLength-2 + kCP3BellowConnectionLengthI/2;
+    voCp1cMo->AddNode(voBellowMother,1, new TGeoTranslation(0., dyS , dz1 + kCP3BellowUndulatedLength/2 + kCP3BellowConnectionLengthI/2 ));
+    voCp1cMo->AddNode(voBellowMother,1, new TGeoTranslation(0., dyS , dz1 + kCP3BellowUndulatedLength + kCP3BellowUndulatedLength/2 
+							   + kCP3BellowConnectionLengthI/2 + kCP3BellowConnectionLengthII ));
       
-   
-    
-    //Create A-side conical section
-    Double_t lengthFromIp = 410.85;//342.85;//410.85; 
-    Double_t cyl3Length = 1.0, cone3Length = 9.05; 
-    Double_t cone2Length = lengthFromIp-cone3Length-cyl3Length;
-
-    TGeoMedium *med = (TGeoMedium*)kMedAlu;  if (fConeIsBe) med = (TGeoMedium*)kMedBe;
-    TGeoVolume *cone2 =  gGeoManager->MakeCone("cone2",med,cone2Length/2,2.26-width,2.26,ro-width,ro);
-    if (fConeIsBe)
-      cone2->SetLineColor(kBe);
-    else
-      cone2->SetLineColor(kAlu);
-    voCp1Mo->AddNode(cone2,2,new TGeoTranslation(0,dyS,dzS-zLength/2-cone2Length/2));
-
-    TGeoVolume *cone3 =  gGeoManager->MakeCone("cone3",(TGeoMedium*)kMedAlu,cone3Length/2,3.-width,3.,2.26-width,2.26);
-    cone3->SetLineColor(kAlu);
-    voCp1Mo->AddNode(cone3,2,new TGeoTranslation(0,dyS,dzS-zLength/2-cone2Length-cone3Length/2)); 
-  
-    TGeoVolume *cyl3 =  gGeoManager->MakeTube("cyl3",(TGeoMedium*)kMedAlu,3.0-width,3.5, cyl3Length/2);
-    cyl3->SetLineColor(kAlu);
-    voCp1Mo->AddNode(cyl3,2,new TGeoTranslation(0.,dyS,dzS-zLength/2-cone2Length-cone3Length-cyl3Length/2));
-
-    /*
-    TGeoVolume *ip =  gGeoManager->MakeTube("ip",Alu,3.0-width,3.5, 0.1);
-    ip->SetLineColor(kAlu);
-    voCp1Mo->AddNode(ip,2,new TGeoTranslation(0.,dyS,dzS));
-    */
     
     // Assemble voFwdaBPPT 
 
     voCp2->AddNode(voFwdaBPPT, 1, new TGeoTranslation(0., 0., -kCP2Length / 2. + 13.8 ));//edit volume 1
     voCp2->AddNode(voFwdaBPS,  1, new TGeoTranslation(0., 0., -kCP2Length / 2. +  5.1 ));
-  
-    printf("THE END ------------------------ \n");
-  
 
     //edit part
 

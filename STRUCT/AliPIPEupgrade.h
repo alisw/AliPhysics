@@ -24,9 +24,9 @@ class AliPIPEupgrade : public AliPIPE {
   enum constants {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16,
 		  kAir=15, kAlBe=21, kPA = 22};
   
-  AliPIPEupgrade(Bool_t coneIsBe=0, Float_t ro=1.8, Float_t width=0.08, Float_t hlength=57.25);
+  AliPIPEupgrade(Bool_t coneIsBe=0, Float_t ro=1.8, Float_t width=0.08, Float_t hlength=61.52);
   AliPIPEupgrade(const char *name, const char *title, 
-		 Bool_t coneIsBe=0, Float_t ro=1.8, Float_t width=0.08, Float_t hlength=57.25);
+		 Bool_t coneIsBe=0, Float_t ro=1.8, Float_t width=0.08, Float_t hlength=61.52);
   AliPIPEupgrade(Option_t *opt);
   // virtual       ~AliPIPEupgrade() {}
   virtual void   CreateGeometry();
@@ -55,3 +55,4 @@ class AliPIPEupgrade : public AliPIPE {
 };
  
 #endif
+ 
