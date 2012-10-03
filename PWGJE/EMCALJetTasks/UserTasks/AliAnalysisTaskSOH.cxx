@@ -354,7 +354,7 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
     fHDetRecSecPion->GetYaxis()->SetTitle("#eta");
     fHDetRecSecPion->GetZaxis()->SetTitle("#phi");
     fOutputList->Add(fHDetRecSecPion);
-    
+ 
     for(Int_t i=0; i<3; i++)
     {
       // pi+
@@ -784,8 +784,9 @@ void AliAnalysisTaskSOH::ProcessMc()
 
 	Int_t cutType = (Int_t)newTrack->GetTRDQuality();
 
-        if(TMath::Abs(newTrack->GetLabel())==ipart)
+        if(newTrack->GetLabel()==ipart)
         {
+	  
 	  if(vParticle->Charge()>0)
 	  {
 	    if(TMath::Abs(pdgCode)==211) 
