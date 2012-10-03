@@ -289,7 +289,8 @@ void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
   //Histograms array initialization
   
   for (Int_t i = 0; i < 8; i++) 
-  {
+  {    
+    fhV0[i] = 0;
     fhClus[i]=0;                   fhClusMax[i]=0;                   
     fhClusCen[i]=0;                fhClusCenMax[i]=0;        
     fhClusV0[i]=0;                 fhClusV0Max[i]=0;         
@@ -299,7 +300,6 @@ void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
     fhClusEtaPhiHighCellMax[i]=0;  fhClusEtaPhiHighCellMaxCluMax[i]=0;      
     fhClusEtaPhiLow[i]=0;          fhClusEtaPhiLowCluMax[i]=0;     
     fhClusEtaPhiLowCellMax[i]=0;   fhClusEtaPhiLowCellMaxCluMax[i]=0;
-    
     if(i<3){ fhClusMBPure[i]=0;   fhClusMaxMBPure[i]=0;}
   }
   
