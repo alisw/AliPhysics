@@ -32,10 +32,13 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
+  void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
  
  protected:
+  Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
   virtual Bool_t              AcceptJet(AliEmcalJet* jet)                                              const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
+  Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)                                     const;
   void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
   Int_t                      *GetSortedArray(TClonesArray *array)                                      const;
@@ -58,6 +61,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Float_t                     fJetMaxPhi;                  // maximum phi jet acceptance  
   Float_t                     fMaxClusterPt;               // maximum cluster constituent pt to accept the jet
   Float_t                     fMaxTrackPt;                 // maximum track constituent pt to accept the jet
+  Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!Event rho
   Double_t                    fRhoVal;                     //!Event rho value
@@ -66,6 +70,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 4) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJet, 5) // EMCAL Jet base analysis task
 };
 #endif

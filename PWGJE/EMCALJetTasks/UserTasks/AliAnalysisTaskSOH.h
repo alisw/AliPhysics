@@ -27,15 +27,22 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   void                UserExec(Option_t *option);
   void                Terminate(Option_t *);
   
+  void SetMcProcess(Bool_t p)                                        { fMcProcess=p;              }
+  void SetTrackProcess(Bool_t p)                                     { fTrackProcess=p;           }
+  void SetSFProcess(Bool_t p)                                        { fSFProcess=p;              }
+  void SetClusterProcess(Bool_t p)                                   { fClusterProcess=p;         }
+  void SetZvtx(Double_t zvtx)                                        { fZVtxMax = zvtx;           }
+
   void                SetEsdTrackCuts(AliESDtrackCuts *cuts)         { fEsdTrackCuts     = cuts ; }
   void                SetHybridTrackCuts1(AliESDtrackCuts *cuts)     { fHybridTrackCuts1 = cuts ; }
   void                SetHybridTrackCuts2(AliESDtrackCuts *cuts)     { fHybridTrackCuts2 = cuts ; }
 
  private:
 
-  AliESDtrack        *GetAcceptTrack(AliESDtrack *esdtrack) ;
+  AliESDtrack         *GetAcceptTrack(AliESDtrack *esdtrack)                ;
   Bool_t              IsGoodCluster(AliESDCaloCluster *cluster)             ;
   Bool_t              IsGoodMcParticle(AliVParticle* vParticle, Int_t ipart);
+  Bool_t              EsdVertexOk() const                  ;
   void                ProcessTrack()                       ;
   void                ProcessCluster()                     ;
   void                ProcessMc()                          ;
@@ -43,35 +50,21 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
 
   AliESDEvent        *fESD;                      //!esd event
   AliMCEvent         *fMC;                       //!mv event
+  Double_t           fZVtxMax;                  //  Max vertex z cut
   AliESDtrackCuts    *fEsdTrackCuts;             // esd track cuts
   AliESDtrackCuts    *fHybridTrackCuts1;         // hybrid track cuts
   AliESDtrackCuts    *fHybridTrackCuts2;         // hybrid track cuts
   TArrayI            *fTrackIndices;             //!selected track index
   TArrayI            *fClusterIndices;           //!cluster with two matched MC track index
   TObjArray          *fClusterArray;             //!selected cluster array
-  
+  Bool_t             fMcProcess;
+  Bool_t             fTrackProcess;  
+  Bool_t             fSFProcess;
+  Bool_t             fClusterProcess;
+
   TList              *fOutputList;               //!output list
+
   TH1F               *fHEventStat;               //!statistics histo
-  TH3F               *fHTrkEffParGenPtEtaPhi;    //!charged pion mc truth pt spectrum
-  TH3F               *fHTrkEffDetGenPtEtaPhi;    //!charged pion mc detector level pt spectrum
-  TH3F               *fHTrkEffDetRecPtEtaPhi;    //!charged pion reconstructed detector level pt spectrum
-  TH3F               *fHTrkEffDetRecFakePtEtaPhi;//!fake and secondary tracks pt spectrum
-  TH1F               *fHTrkEffParGenPt_rmInj;    //!mc truth without injected signal pt spectrum
-  TH1F               *fHTrkEffDetGenPt_rmInj;    //!generated detector level particle without injected signal pt spectrum 
-  TH1F               *fHTrkEffParGenPt_PiRmInj;    //!mc truth(pion) without injected signal pt spectrum
-  TH1F               *fHTrkEffDetGenPt_PiRmInj;    //!generated detector level particle(pion) without injected signal pt spectrum 
-  TH1F               *fHTrkEffParGenPt_all;      //!mc truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_all;      //!generated detector level pt spectrum
-  TH1F               *fHTrkEffParGenPt_Dch;      //!charged D meson truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_Dch;      //!charged D meson generated detector level pt spectrum
-  TH1F               *fHTrkEffParGenPt_Dn;       //!neutral D meson truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_Dn;       //!neutral D meson generated detector level pt spectrum
-  TH1F               *fHTrkEffParGenPt_Ds;       //!strange D meson truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_Ds;       //!strange D meson generated detector level pt spectrum
-  TH1F               *fHTrkEffParGenPt_cL;       //!charmed lambda truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_cL;       //!charmed lambda generated detector level pt spectrum
-  TH1F               *fHTrkEffParGenPt_JPsi;     //!J/Psi truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt_JPsi;     //!J/Psi reconstructed detector level pt spectrum
   TH1F               *fHScaleFactor;             //!scale factor spectrum
   TH1F               *fHScaleFactor100HC;        //!scale factor with 100% HC spectrum
   TH2F               *fHEOverPVsPt;              //!(cluster energy over reconstructed track p) vs. track pt
@@ -99,10 +92,26 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   THnSparse          *fHClsEoverMcE_Photon;      //!above for photon
   THnSparse          *fHClsEoverMcE_Elec;        //!above for electron
   THnSparse          *fHClsEoverMcE_Pion;        //!above for pion
-
+  TH3F               *fHParGenPion_p;            //!plus pion mc truth pt, phi, eta spectrum
+  TH3F               *fHParGenPion_m;            //!minus pion mc truth pt, phi, eta spectrum
+  TH3F               *fHParGenPion_rmInj_p;      //!plus charged mc truth(pion) without injected signal pt, phi, eta spectrum
+  TH3F               *fHParGenPion_rmInj_m;      //!minus charged mc truth(pion) without injected signal pt, phi, eta spectrum
+  TH3F               *fHDetGenFakePion;          //!fake pion tracks pt, phi, eta spectrum
+  TH3F               *fHDetRecFakePion;          //!fake pion tracks pt, phi, eta spectrum
+  TH3F               *fHDetGenSecPion;           //!secondary pion tracks pt, phi, eta spectrum
+  TH3F               *fHDetRecSecPion;           //!secondary pion tracks pt, phi, eta spectrum
+  TH3F               *fHDetGenPion_p[3];         //!plus pion mc detector level pt, phi, eta spectrum
+  TH3F               *fHDetRecPion_p[3];         //!plus pion reconstructed detector level pt, phi, eta spectrum
+  TH3F               *fHDetGenPion_m[3];         //!minus pion mc detector level pt, phi, eta spectrum
+  TH3F               *fHDetRecPion_m[3];         //!minus pion reconstructed detector level pt, phi, eta spectrum
+  TH3F               *fHDetGenPion_rmInj_p[3];   //!plus charged generated detector level particle(pion) without injected signal pt, phi, eta spectrum 
+  TH3F               *fHDetRecPion_rmInj_p[3];   //!plus charged reconstructed detector level pion+ track without injected signal pt, phi, eta spectrum
+  TH3F               *fHDetGenPion_rmInj_m[3];   //!minus charged generated detector level particle(pion) without injected signal pt, phi, eta spectrum 
+  TH3F               *fHDetRecPion_rmInj_m[3];   //!minus charged reconstructed detector level pion- track without injected signal pt, phi, eta spectrum
+  
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 9); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 10); // Analysis task Saehanseul Oh
 };
 #endif
