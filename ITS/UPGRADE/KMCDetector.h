@@ -98,7 +98,7 @@ class KMCProbe : public AliExternalTrackParam {
 inline Double_t KMCProbe::GetNormChi2(Bool_t penalize) const
 {
   // normalized chi2, penilized for missing hits
-  if (fNHitsITS<3) return 0;
+  //  if (fNHitsITS<3) return 0;
   double chi2 = fChi2;
   if (penalize) {
     int nMiss = fgNITSLayers - fNHitsITS - fInnLrCheck;

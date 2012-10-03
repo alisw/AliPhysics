@@ -18,14 +18,16 @@ TObjArray  summary;
 TObject* gDet=0;
 
 // ptBins to generate
-double pts[] = {0.15,0.175,0.2,0.225,0.25,0.3,0.4,0.5,0.8,1.1,1.6,2,4,8,13,20};
+//double pts[] = {0.15,0.175,0.2,0.225,0.25,0.3,0.4,0.5,0.8,1.1,1.6,2,4,8,13,20};
+double pts[] = {0.2};
 //double pts[] = {0.2, 1., 10.};
 
-void testDetKMC(int nev=10000,  // n events to generate per bin
+void testDetKMC(int nev=1000,  // n events to generate per bin
 		int setVer=0,   // optional version to pass for detector building
 		double mass=0.14,  // particle mass to generate
 		double eta=0.45,   // eta to test
-		Bool_t aliceNew=kTRUE,Bool_t tpc=kFALSE, Double_t eff=0.95,  // detector settings
+		Bool_t aliceNew=kFALSE,
+		Bool_t tpc=kTRUE, Double_t eff=0.95,  // detector settings
 		Double_t vtxConstr=-1., // use vertex constraint in the fit
 		const char* sumOut="trsumDef.root" // output file name
 		)
@@ -48,7 +50,7 @@ void testDetKMC(int nev=10000,  // n events to generate per bin
   its.SetUseBackground();
   //
   // min hits per track to validate it
-  its.RequireMinITSHits( its.GetNActiveITSLayers() - 2 );//(int)TMath::Max(4.0,(3./4.)*its.GetNActiveITSLayers()));
+  its.RequireMinITSHits( its.GetNActiveITSLayers() - 3 );//(int)TMath::Max(4.0,(3./4.)*its.GetNActiveITSLayers()));
   printf("Min number of hits requested: %d\n",its.GetMinITSHits());
   //
   // max cluster-track chi2 
@@ -64,6 +66,7 @@ void testDetKMC(int nev=10000,  // n events to generate per bin
   summary.Clear();
   //
   int npt = sizeof(pts)/sizeof(double);
+  printf("NPt bins = %d\n",npt);
   double ptMin = pts[0];
   double ptMax = pts[npt-1];
   //
@@ -72,7 +75,8 @@ void testDetKMC(int nev=10000,  // n events to generate per bin
     int nevR = nev;
     double pt = pts[ip];//1./(ptminI+dpt*ip);  // ptmin+ip*(ptmax-ptmin)/npt;
 
-    double chi2Cl = 16. - (16.-9.)*(1./pt-1./ptMax)/(1./ptMin-1./ptMax);
+    double chi2Cl = 16.;
+    if (npt>1) chi2Cl -= (16.-9.)*(1./pt-1./ptMax)/(1./ptMin-1./ptMax);
     //    if (pt<0.3) nevR = int(0.25*nevR);
     //    else if (pt<0.5) nevR = int(0.7*nevR);
     printf("Doing pt(%d)=%.3f for mass %.3f, %d ev | chi2Cl=%.2f\n",ip,pt,mass,nevR,chi2Cl);
@@ -106,6 +110,21 @@ TObjArray* CreateTrackConditions(const char* nm)
   // summary for ideal correct tracks
   sm = new KMCTrackSummary("corrAll","corrAll",nlr);
   sm->SetMinMaxClITS(nlr);
+  sm->SetMinMaxClITSFake(0,0);
+  sm->SetNamePrefix(nm);
+  sm->AddPatternITSCorr( sm->Bits(1,0));    // the innermost 2 layers must have correct cluster
+  sm->AddPatternITSCorr( sm->Bits(0,1));
+  arr->AddLast(sm);
+  //
+  sm = new KMCTrackSummary("any","any",nlr);
+  sm->SetMinMaxClITS(0);
+  sm->SetMinMaxClITSFake(0,999);
+  sm->SetNamePrefix(nm);
+  arr->AddLast(sm);
+  //
+  // summary for good correct tracks
+  sm = new KMCTrackSummary("corr3hSPD","corr3hSPD",nlr);
+  sm->SetMinMaxClITS(3);
   sm->SetMinMaxClITSFake(0,0);
   sm->SetNamePrefix(nm);
   arr->AddLast(sm);

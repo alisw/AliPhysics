@@ -29,7 +29,6 @@ class AliITSUv11 : public AliITSU {
   virtual       ~AliITSUv11() ;
   
   virtual void   AddAlignableVolumes() const;
-  virtual void   AddBeamPipe(const Double_t rmin, const Double_t rmax,const Double_t halfzlen=0.);
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   DefineLayer(const Int_t nlay, const Double_t r,
@@ -44,14 +43,11 @@ class AliITSUv11 : public AliITSU {
 				  const Double_t lthick = 0.,
 				  const Double_t dthick = 0.,
 				  const UInt_t detType=0);
-  virtual void   GetBeamPipeParameters(Double_t &rmin, Double_t &rmax,
-				       Double_t &hzlen);
   virtual void   GetLayerParameters(const Int_t nlay,
 				    Double_t &r, Double_t &zlen,
 				    Int_t &nladd, Int_t &nmod,
 				    Double_t &width, Double_t &tilt,
 				    Double_t &lthick, Double_t &mthick);
-  virtual Bool_t HasBeamPipe() const {return fBeamPipe;}
   virtual void   Init(); 
   virtual Bool_t IsLayerTurbo(const Int_t nlay);
   virtual Int_t  IsVersion() const { return 20;}  // vUpgrade ? do we need this
@@ -77,17 +73,10 @@ class AliITSUv11 : public AliITSU {
   Double_t *fLadTilt;        // Vector of ladder tilt (only used for turbo)
   Double_t *fDetThick;       // Vector of detector thicknesses
   UInt_t   *fDetTypeID;      // Vector of detector type id
-  Bool_t    fBeamPipe;       // True for creating the beam pipe
-  Double_t  fBeamPipeRmin;   // Rmin of beam pipe
-  Double_t  fBeamPipeRmax;   // Rmax of beam pipe
-  Double_t  fBeamPipeZlen;   // Half Z length of beam pipe
   //  
   AliITSUv11Layer **fUpGeom; //! Geometry
-  AliITSv11GeomBeamPipe     *fBPGeom; //! Beam Pipe Geometry
   
   // Parameters for the Upgrade geometry
-  
-  static const Double_t fgkBeamPipeHalfZLen;  // Default value for beampipe Z
   
   ClassDef(AliITSUv11,0)                          
 };

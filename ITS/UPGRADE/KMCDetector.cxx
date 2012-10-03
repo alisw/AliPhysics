@@ -1712,9 +1712,9 @@ void KMCDetector::MakeAliceCurrent(Bool_t flagTPC, Int_t AlignResiduals) {
 	     TMath::Sqrt(0.0130*0.0130+0.0050*0.0050));
     AddLayer((char*)"spd2_its", 7.6, 0.0114, 2.57e-01, TMath::Sqrt(0.0012*0.0012+0.0030*0.0030),
 	     TMath::Sqrt(0.0130*0.0130+0.0050*0.0050));
-    AddLayer((char*)"sdd1_its",15.0, 0.0113, 3.34e-01, TMath::Sqrt(0.0035*0.0035+0.0500*0.0500),
+    AddLayer((char*)"sdd1_its",15.0, 0.0113, 3.34e-01, TMath::Sqrt(0.0035*0.0035+0.0100*0.0100),
 	     TMath::Sqrt(0.0025*0.0025+0.0050*0.0050));
-    AddLayer((char*)"sdd2_its",23.9, 0.0126, 3.50e-01, TMath::Sqrt(0.0035*0.0035+0.0500*0.0500),
+    AddLayer((char*)"sdd2_its",23.9, 0.0126, 3.50e-01, TMath::Sqrt(0.0035*0.0035+0.0100*0.0100),
 	     TMath::Sqrt(0.0025*0.0025+0.0050*0.0050));
     AddLayer((char*)"ssd1_its",38.0, 0.0083, 2.38e-01, TMath::Sqrt(0.0020*0.0020+0.0020*0.0020), 
 	     TMath::Sqrt(0.0830*0.0830+0.1000*0.1000));
@@ -1956,9 +1956,10 @@ Bool_t KMCDetector::SolveSingleTrack(Double_t mass, Double_t pt, Double_t eta, T
   TStopwatch sw;
   sw.Start();
   for (int it=0;it<nMC;it++) {
-    //    printf("ev: %d\n",it);
+    printf("ev: %d\n",it);
     SolveSingleTrackViaKalmanMC(offset);
     KMCProbe* trc = vtx->GetWinnerMCTrack();
+    vtx->GetMCTracks()->Print();
     if (progressP==1 || (progressP>0 &&  (it%progressP)==0)) {
       printf("%d%% done |",it*100/nMC); 
       sw.Stop(); sw.Print(); sw.Start(kFALSE);
@@ -2543,14 +2544,21 @@ Bool_t KMCDetector::NeedToKill(KMCProbe* probe) const
     int il = probe->GetInnerLayerChecked();
     int nITS = probe->GetNITSHits();
     int nITSMax = nITS + il; // maximum it can have
-    if (nITSMax<fMinITSHits) {kill = kTRUE; break;}    // has no chance to collect enough ITS hits
+    if (nITSMax<fMinITSHits) {
+      kill = kTRUE; 
+      break;
+    }    // has no chance to collect enough ITS hits
     //
     int ngr = fPattITS.GetSize();
     if (ngr>0) { // check pattern
       UInt_t patt = probe->GetHitsPatt();
       // complete the layers not checked yet
       for (int i=il;i--;) patt |= (0x1<<i);
-      for (int ig=ngr;ig--;) if (!(((UInt_t)fPattITS[ig]) & patt)) {kill = kTRUE; break;}
+      for (int ig=ngr;ig--;) 
+	if (!(((UInt_t)fPattITS[ig]) & patt)) {
+	  kill = kTRUE; 
+	  break;
+	}
       //
     }
     //
@@ -2561,7 +2569,10 @@ Bool_t KMCDetector::NeedToKill(KMCProbe* probe) const
 	chi2min = nMiss*probe->GetMissingHitPenalty();
       }
       chi2min /= ((nITSMax<<1)-KMCProbe::kNDOF);
-      if (chi2min>fMaxNormChi2NDF) {kill = kTRUE; break;}
+      if (chi2min>fMaxNormChi2NDF) {
+	kill = kTRUE; 
+	break;
+      }
     }
     //
     // loose vertex constraint
@@ -2569,12 +2580,18 @@ Bool_t KMCDetector::NeedToKill(KMCProbe* probe) const
     if (nITS>=2) {
       probe->GetZAt(0,fBFieldG,dst);
       //printf("Zd (F%d): %f\n",probe->GetNFakeITSHits(),dst);
-      if (TMath::Abs(dst)>10.) {kill = kTRUE; break;}
+      if (TMath::Abs(dst)>10.) {
+	kill = kTRUE; 
+	break;
+      }
     }
     if (nITS>=3) {
       probe->GetYAt(0,fBFieldG,dst);
       //printf("Dd (F%d): %f\n",probe->GetNFakeITSHits(),dst);
-      if (TMath::Abs(dst)>10.) {kill = kTRUE; break;}
+      if (TMath::Abs(dst)>10.) {
+	kill = kTRUE; 
+	break;
+      }
     }
     //
     break;

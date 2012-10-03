@@ -49,12 +49,9 @@
 #include "AliTrackReference.h"
 #include "AliITSv11Geometry.h"
 #include "AliITSUv11Layer.h"
-#include "AliITSv11GeomBeamPipe.h"
 #include "AliITSUv11.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliGeomManager.h"
-
-const Double_t AliITSUv11::fgkBeamPipeHalfZLen = 400;
 
 
 ClassImp(AliITSUv11)
@@ -71,12 +68,7 @@ AliITSUv11::AliITSUv11()
   ,fLadTilt(0)
   ,fDetThick(0)
   ,fDetTypeID(0)
-  ,fBeamPipe(0)
-  ,fBeamPipeRmin(0)
-  ,fBeamPipeRmax(0)
-  ,fBeamPipeZlen(0)
   ,fUpGeom(0)
-  ,fBPGeom(0)
 {
   //    Standard default constructor
   // Inputs:
@@ -100,12 +92,7 @@ AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
   ,fLadTilt(0)
   ,fDetThick(0)
   ,fDetTypeID(0)
-  ,fBeamPipe(0)
-  ,fBeamPipeRmin(0)
-  ,fBeamPipeRmax(0)
-  ,fBeamPipeZlen(0)
   ,fUpGeom(0)
-  ,fBPGeom(0)
 {
   //    Standard constructor for the Upgrade geometry.
   // Inputs:
@@ -282,39 +269,6 @@ void AliITSUv11::AddAlignableVolumes() const{
 }
 
 //______________________________________________________________________
-void AliITSUv11::AddBeamPipe(const Double_t rmin, const Double_t rmax,
-				 const Double_t halfzlen) {
-
-  // Define the parameters for the beam pipe
-  if (fBeamPipe)
-    AliWarning("Redefining beam pipe parameters");
-
-  if (rmin <= 0) {
-    AliError(Form("Beam pipe min radius (%f) wrong",rmin));
-    return;
-  } else
-    fBeamPipeRmin = rmin;
-
-  if (rmax <= 0) {
-    AliError(Form("Beam pipe max radius (%f) wrong",rmax));
-    return;
-  } else
-    fBeamPipeRmax = rmax;
-
-  if (halfzlen < 0) {
-    AliError(Form("Beam pipe half Zlength (%f) wrong",halfzlen));
-    return;
-  } else {
-    if (halfzlen == 0) // Use default value
-      fBeamPipeZlen = fgkBeamPipeHalfZLen;
-    else
-      fBeamPipeZlen = halfzlen;
-  }
-
-  fBeamPipe = kTRUE;
-}
-
-//______________________________________________________________________
 void AliITSUv11::CreateGeometry() {
 
   // Create the geometry and insert it in the mother volume ITSV
@@ -373,11 +327,6 @@ void AliITSUv11::CreateGeometry() {
     fUpGeom[j]->CreateLayer(vITSV);
   }
   //
-  // Finally add the beam pipe
-  if (fBeamPipe) {
-    fBPGeom = new AliITSv11GeomBeamPipe(fBeamPipeRmin, fBeamPipeRmax,fBeamPipeZlen, kFALSE);
-    fBPGeom->CreateBeamPipe(vALIC); // We put the BP in the ALIC volume
-  }
 }
 
 //______________________________________________________________________
@@ -515,25 +464,6 @@ void AliITSUv11::DefineLayerTurbo(const Int_t nlay, const Double_t r,
   fDetThick[nlay] = dthick;
   fDetTypeID[nlay] = dettypeID;
   //
-}
-
-//______________________________________________________________________
-void AliITSUv11::GetBeamPipeParameters(Double_t &rmin, Double_t &rmax,
-					   Double_t &hzlen){
-  //     Gets the beam pipe parameters
-  // Inputs:
-  //   none.
-  // Outputs:
-  //          rmin    min radius
-  //          rmax    max radius
-  //          hzlen   half Z length
-  // Return:
-  //   none.
-
-  rmin  = fBeamPipeRmin;
-  rmax  = fBeamPipeRmax;
-  hzlen = fBeamPipeZlen;
-
 }
 
 //______________________________________________________________________

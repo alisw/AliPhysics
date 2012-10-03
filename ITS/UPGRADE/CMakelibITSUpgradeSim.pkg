@@ -32,7 +32,6 @@ v0/AliITSupgradeDigitizer.cxx
 AliITSU.cxx 
 AliITSUv11.cxx 
 AliITSUv11Layer.cxx 
-AliITSv11GeomBeamPipe.cxx
 AliITSUModule.cxx
 AliITSUSimuParam.cxx
 AliITSUSimulation.cxx

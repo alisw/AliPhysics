@@ -20,7 +20,6 @@
 #pragma link C++ class  AliITSU+;
 #pragma link C++ class  AliITSUv11+;
 #pragma link C++ class  AliITSUv11Layer+;
-#pragma link C++ class  AliITSv11GeomBeamPipe+;
 #pragma link C++ class  AliITSUModule+;
 #pragma link C++ class  AliITSUSimuParam+;
 #pragma link C++ class  AliITSUSimulation+;

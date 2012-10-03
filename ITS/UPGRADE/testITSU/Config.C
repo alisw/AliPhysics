@@ -28,6 +28,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv3.h"
 #include "STRUCT/AliPIPEv3.h"
+#include "STRUCT/AliPIPEupgrade.h"
 #include "ITS/AliITSv11.h"
 #include "ITS/UPGRADE/AliITSUv11.h"
 #include "TPC/AliTPCv2.h"
@@ -46,6 +47,8 @@
 #include "VZERO/AliVZEROv7.h"
 #include <TVirtualMagField.h>
 #endif
+
+Int_t generatorFlag = 1;
 
 /* $Id: Config.C 47147 2011-02-07 11:46:44Z amastros $ */
 enum PprTrigConf_t
@@ -77,6 +80,8 @@ void Config()
   gSystem->Load("libpythia6");
   gSystem->Load("libAliPythia6");
   gSystem->Load("libgeant321");
+  gSystem->Load("libhijing");	
+  gSystem->Load("libTHijing");
 #endif
   gSystem->Load("libITSUpgradeBase.so");
   gSystem->Load("libITSUpgradeSim.so");
@@ -154,39 +159,44 @@ void Config()
 
 
   // The cocktail itself
-
-  AliGenCocktail *gener = new AliGenCocktail();
-  Int_t nparticles = 20;
-  gener->SetPtRange(0.1,2.0001);  //
-  gener->SetPhiRange(0, 360);
-  Float_t thmin = EtaToTheta(1.5);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-1.5);  // theta max. <---> eta min 
-  gener->SetThetaRange(thmin,thmax);
-  gener->SetOrigin(0., 0., 0);  //vertex position
-  gener->SetSigma(0., 0., 0);   //Sigma in (X,Y,Z) (cm) on IP position
-
-  AliGenBox *gbox1 = new AliGenBox(nparticles/2);
-  gbox1->SetPart(kPiMinus);
-  gener->AddGenerator(gbox1,"GENBOX PIONS for ITS",1);
-  AliGenBox *gbox2 = new AliGenBox(nparticles/2);
-  gbox2->SetPart(kPiPlus);
-  gener->AddGenerator(gbox2,"GENBOX PIONS for ITS",1);
-    
-  gener->Init();
   
-  /*
-  // Francesco ...
-  int     nParticles = 50;//14022;
-  AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
-  gener->SetMomentumRange(0.01, 5);
-  gener->SetPhiRange(0., 360.);
-  Float_t thmin = EtaToTheta(1.5);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-1.5);  // theta max. <---> eta min
-  gener->SetThetaRange(thmin,thmax);
-  gener->SetOrigin(0, 0, 0);  //vertex position
-  gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
-  gener->Init();
-  */
+  if (generatorFlag==0) {
+    // Fast generator with parametrized pi,kaon,proton distributions
+    
+    int     nParticles = 50;//14022;
+    AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
+    gener->SetMomentumRange(0.1, 10.);
+    gener->SetPhiRange(0., 360.);
+    Float_t thmin = EtaToTheta(2.5);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-2.5);  // theta max. <---> eta min
+    gener->SetThetaRange(thmin,thmax);
+    gener->SetOrigin(0, 0, 0);  //vertex position
+    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+    gener->Init();
+    
+  } else if (generatorFlag==1) {
+    
+    // Pure HiJing generator adapted to ~2000dNdy at highest energy
+    
+    AliGenHijing *generHijing = new AliGenHijing(-1);
+    generHijing->SetEnergyCMS(5500.); // GeV
+    generHijing->SetImpactParameterRange(0,2);
+    generHijing->SetReferenceFrame("CMS");
+    generHijing->SetProjectile("A", 208, 82);
+    generHijing->SetTarget    ("A", 208, 82);
+    generHijing->KeepFullEvent();
+    generHijing->SetJetQuenching(1);
+    generHijing->SetShadowing(1);
+    generHijing->SetSpectators(0);
+    generHijing->SetSelectAll(0);
+    generHijing->SetPtHardMin(4.5);
+    
+    AliGenerator*  gener = generHijing;
+    gener->SetSigma(0, 0, 6);      // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetVertexSmear(kPerEvent);
+    gener->Init();
+      
+  }
 
   // 
   // Activate this line if you want the vertex smearing to happen
@@ -199,27 +209,27 @@ void Config()
   //TGeoGlobalMagField::Instance()->SetField(field);
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
 
-  Int_t   iABSO  =  0;
-  Int_t   iDIPO  =  0;
-  Int_t   iFMD   =  0;
-  Int_t   iFRAME =  0;
-  Int_t   iHALL  =  0;
+  Int_t   iABSO  =  1;
+  Int_t   iDIPO  =  1;
+  Int_t   iFMD   =  1;
+  Int_t   iFRAME =  1;
+  Int_t   iHALL  =  1;
   Int_t   iITS   =  1;
-  Int_t   iMAG   =  0;
-  Int_t   iMUON  =  0;
-  Int_t   iPHOS  =  0;
-  Int_t   iPIPE  =  0;
-  Int_t   iPMD   =  0;
-  Int_t   iHMPID =  0;
-  Int_t   iSHIL  =  0;
-  Int_t   iT0    =  0;
-  Int_t   iTOF   =  0;
-  Int_t   iTPC   =  0;
-  Int_t   iTRD   =  0;
-  Int_t   iZDC   =  0;
-  Int_t   iEMCAL =  0;
-  Int_t   iACORDE=  0;
-  Int_t   iVZERO =  0;
+  Int_t   iMAG   =  1;
+  Int_t   iMUON  =  1;
+  Int_t   iPHOS  =  1;
+  Int_t   iPIPE  =  1;
+  Int_t   iPMD   =  1;
+  Int_t   iHMPID =  1;
+  Int_t   iSHIL  =  1;
+  Int_t   iT0    =  1;
+  Int_t   iTOF   =  1;
+  Int_t   iTPC   =  1;
+  Int_t   iTRD   =  1;
+  Int_t   iZDC   =  1;
+  Int_t   iEMCAL =  1;
+  Int_t   iACORDE=  1;
+  Int_t   iVZERO =  1;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -274,7 +284,8 @@ void Config()
     {
       //=================== PIPE parameters ============================
 
-      AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
+      AliPIPE *PIPE = new AliPIPEupgrade("PIPE", "Beam Pipe",0,1.8,0.08,40.0);
+      //AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
     }
  
   if (iITS)
@@ -328,7 +339,7 @@ void Config()
       nlad = 52;
       ITS->DefineLayerTurbo(6, 43.0, nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID()); 
       //
-      ITS->AddBeamPipe(2.0, 2.08, 100);
+      //    ITS->AddBeamPipe(2.0, 2.08, 100);
     }
  
 
