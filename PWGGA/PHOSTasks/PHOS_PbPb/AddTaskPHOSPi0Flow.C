@@ -17,7 +17,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
     return NULL;
   }
 
-  AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow("PHOSPi0Flow");
+  AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow(Form("%sTask", name));
 
   // Reduce binning for reduece memory footprint
   const int nbins = 3;
@@ -36,8 +36,10 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PHOSPi0FlowCoutput1", TList::Class(), AliAnalysisManager::kOutputContainer, 
-							    Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name) 		);
+  
+  TString cname(Form("%sCoutput1", name));
+  TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
