@@ -63,7 +63,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fSpecies(-6)
-  ,fTriggerSlot(-1)
+  ,fTriggerSlot(0)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
@@ -92,7 +92,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fSpecies(-6)
-  ,fTriggerSlot(-1)
+  ,fTriggerSlot(0)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
@@ -720,6 +720,39 @@ Double_t AliTRDrecoTask::AliTRDrecoProjection::GetTrendValue(const Int_t mid, Do
   AliDebug(2, Form("%s[%d]:: %f {%f %f} Entries[%d]", fH->GetName(), mid, v, m?(*m):0., s?(*s):0., (Int_t)h1s->Integral()));
 
   return v;
+}
+
+//________________________________________________________
+TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2Dbin(Int_t bin)
+{
+// dumb 2D projection for bin including under/over flow. Default all [bin==-1]
+
+  TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
+  Int_t nbins(az->GetNbins());
+  TH2F *h2(NULL);
+  if(bin<0) h2 = new TH2F(Form("%s_2D", fH->GetName()),
+                Form("%s;%s;%s;Entries", fH->GetTitle(), ax->GetTitle(), ay->GetTitle()),
+                ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+                ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
+  else h2 = new TH2F(Form("%s%d_2D", fH->GetName(), bin),
+                Form("%s | #it{%4.2f<=p_{t}[GeV/c]<%4.2f};%s;%s;Entries", fH->GetTitle(),
+                bin?fgPt[bin-1]:0., bin==nbins?9.99:fgPt[bin], ax->GetTitle(), ay->GetTitle()),
+                ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
+                ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
+  printf("build %s\n", h2->GetName());
+  for(Int_t ix(1); ix<=ax->GetNbins(); ix++){
+    for(Int_t iy(1); iy<=ay->GetNbins(); iy++){
+      Int_t ibin = h2->GetBin(ix, iy);
+      for(Int_t iz(0); iz<=az->GetNbins()+1; iz++){
+        if(bin<0) h2->AddBinContent(ibin, fH->GetBinContent(ix, iy, iz));
+        else if(bin==iz){
+          h2->AddBinContent(ibin, fH->GetBinContent(ix, iy, iz));
+          break;
+        }
+      }
+    }
+  }
+  return h2;
 }
 
 //________________________________________________________

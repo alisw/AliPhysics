@@ -49,7 +49,6 @@ protected:
 private:
   AliTRDefficiency(const AliTRDefficiency&);
   AliTRDefficiency& operator=(const AliTRDefficiency&);
-  TH2*         Projection2D(TH3 *h3, Int_t ipt);
 
   TClonesArray     *fMissed;          // Missed ?
   TObjArray        *fProj;            //! result holder - sigma values

@@ -31,13 +31,18 @@ public:
   class AliESDinfo{
     friend class AliTRDtrackInfo;  // Friend class
   public:
+    enum EESDinfo{
+       kV0       = 0
+      ,kElectron = 1
+      ,kPion     = 2
+      ,kProton   = 3
+    };
     AliESDinfo();
     AliESDinfo(const AliESDinfo &esd);
     virtual ~AliESDinfo();
     AliESDinfo& operator=(const AliESDinfo &esd);
     void Delete(const Option_t *);
     Float_t     Eta() const                      { return fEta;}
-    Bool_t      HasV0() const                    { return fHasV0;}
     Int_t       GetId() const                    { return fId;}
     ULong_t     GetStatus() const                { return fStatus;}
     Int_t       GetKinkIndex() const             { return fKinkIndex;}
@@ -56,15 +61,23 @@ public:
     AliExternalTrackParam* GetTPCoutParam() const { return fTPCout;}
     const Int_t* GetV0pid() const                { return &fTRDv0pid[0];}
     Int_t       GetV0pid(Int_t i) const          { return fTRDv0pid[i];}
+    Bool_t      HasV0() const                    { return TESTBIT(fSteer, kV0);}
+    Bool_t      IsElectron() const               { return TESTBIT(fSteer, kElectron);}
+    Bool_t      IsPion() const                   { return TESTBIT(fSteer, kPion);}
+    Bool_t      IsProton() const                 { return TESTBIT(fSteer, kProton);}
     Float_t     Phi() const                      { return fPhi;}
     Float_t     Pt() const                       { return fPt;}
+    void        SetElectron(Bool_t e=kTRUE)      { e?SETBIT(fSteer, kElectron):CLRBIT(fSteer, kElectron);}
+    void        SetPion(Bool_t e=kTRUE)          { e?SETBIT(fSteer, kPion):CLRBIT(fSteer, kPion);}
+    void        SetProton(Bool_t e=kTRUE)        { e?SETBIT(fSteer, kProton):CLRBIT(fSteer, kProton);}
+    void        SetV0(Bool_t v=kTRUE)            { v?SETBIT(fSteer, kV0):CLRBIT(fSteer, kV0);}
     void        SetOuterParam(const AliExternalTrackParam *op);
     void        SetITSoutParam(const AliExternalTrackParam *op);
     void        SetTPCoutParam(const AliExternalTrackParam *op);
     void        SetTrackPointArray(const AliTrackPointArray *tps);
 
   protected:
-    UChar_t     fHasV0;                   // v0 bit
+    UChar_t     fSteer;                   // bit map
     Int_t       fId;                      // ESD track id
     ULong_t     fStatus;                  // ESD track status
     Int_t       fKinkIndex;               // ESD kink index
@@ -154,6 +167,9 @@ public:
   Bool_t             HasESDtrack() const              { return ((fTRDtrack != 0x0) ||(fESD.fOP != 0));}
   Bool_t             HasMCinfo() const                { return (Bool_t)fMC; }
 
+  void               SetElectron(Bool_t c = kTRUE)    { fESD.SetElectron(c);}
+  void               SetPion(Bool_t c = kTRUE)        { fESD.SetPion(c);}
+  void               SetProton(Bool_t c = kTRUE)      { fESD.SetProton(c);}
   void               SetCurved(Bool_t curv = kTRUE)   { SetBit(kCurv, curv);}
   void               SetLabel(Int_t lab)              { if(fMC) fMC->fLabel = lab; }
   void               SetTRDlabel(Int_t lab)           { if(fMC) fMC->fTRDlabel = lab; }
@@ -180,7 +196,7 @@ public:
   void               SetESDphi(Float_t phi)           { fESD.fPhi = phi;}
   void               SetESDpt(Float_t pt)             { fESD.fPt = pt;}
   inline void        SetV0pid(Int_t *);
-  void               SetV0(Bool_t v0=kTRUE)           { fESD.fHasV0 = v0;}
+  void               SetV0(Bool_t v0=kTRUE)           { fESD.SetV0(v0);}
   
 private:
     enum{

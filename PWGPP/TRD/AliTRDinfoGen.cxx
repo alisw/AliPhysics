@@ -66,6 +66,7 @@
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDv0KineCuts.h"
 #include "AliMCParticle.h"
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
@@ -118,6 +119,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fMCev(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fV0Identifier(NULL)
   ,fV0Cut(NULL)
   ,fOCDB("local://$ALICE_ROOT/OCDB")
   ,fTrackInfo(NULL)
@@ -145,6 +147,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fMCev(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fV0Identifier(NULL)
   ,fV0Cut(NULL)
   ,fOCDB("local://$ALICE_ROOT/OCDB")
   ,fTrackInfo(NULL)
@@ -180,6 +183,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
   if(fgReconstructor) delete fgReconstructor;
   if(fDebugStream) delete fDebugStream;
   if(fV0Cut) delete fV0Cut;
+  if(fV0Identifier) delete fV0Identifier;
   if(fTrackCut) delete fTrackCut;
   if(fEventCut) delete fEventCut;
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
@@ -450,6 +454,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
   UShort_t evBC(fESDev->GetBunchCrossNumber());
 
+  // electron identifier from conversions
+  if(!fV0Identifier) fV0Identifier = new AliESDv0KineCuts();
+  fV0Identifier->SetEvent(fESDev);
+
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
   Int_t nTracksMC = HasMCdata() ? fMCev->GetNumberOfTracks() : 0, nTracksESD = fESDev->GetNumberOfTracks();
@@ -465,7 +473,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   
   Double32_t dedx[100]; Int_t nSlices(0);
   Int_t nTRDout(0), nTRDin(0), nTPC(0), nITS(0)
-       ,nclsTrklt
+//        ,nclsTrklt
        ,nBarrel(0), nSA(0), nKink(0)
        ,nBarrelFriend(0), nSAFriend(0)
        ,nBarrelMC(0), nSAMC(0), nKinkMC(0);
@@ -482,13 +490,24 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliESDv0 *v0(NULL);
   Int_t v0pid[AliPID::kSPECIES];
   for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
-    if(!(v0 = fESDev->GetV0(iv0))) continue;
+    if(!(v0 = fESDev->GetV0(iv0)) && !v0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     // register v0
     if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
     else new(fV0Info) AliTRDv0Info();
     fV0Info->SetMagField(bField);
     fV0Info->SetV0tracks(fESDev->GetTrack(v0->GetPindex()), fESDev->GetTrack(v0->GetNindex()));
     fV0Info->SetV0Info(v0);
+    // tag conversion electrons
+    Int_t pdgV0, pdgP, pdgN;
+    if(fV0Identifier->ProcessV0(v0, pdgV0, pdgP, pdgN)) {
+      switch(pdgV0){
+      case kGamma: fV0Info->SetDecay(AliTRDv0Info::kGamma); break;
+      case kK0Short: fV0Info->SetDecay(AliTRDv0Info::kK0s); break;
+      case kLambda0: fV0Info->SetDecay(AliTRDv0Info::kLambda); break;
+      case kLambda0Bar: fV0Info->SetDecay(AliTRDv0Info::kAntiLambda); break;
+      default: AliDebug(1, Form("V0[%+4d] -> +[%+4d] -[%+4d]. Decay not mapped.", pdgV0, pdgP, pdgN));
+      }
+    }
     fV0List->Add(new AliTRDv0Info(*fV0Info));//  kFOUND=kFALSE;
   }
 
@@ -588,20 +607,24 @@ void AliTRDinfoGen::UserExec(Option_t *){
     Float_t tofTime = esdTrack->GetTOFsignal() - fESDev->GetT0TOF(0);
     fTrackInfo->SetTOFbeta(tofTime>0.?((esdTrack->GetIntegratedLength()/(tofTime*TMath::C()))*10e9):-999.);
     fTrackInfo->SetTOFbc(esdTrack->GetTOFBunchCrossing()==AliVTrack::kTOFBCNA?0:esdTrack->GetTOFBunchCrossing());
-    nclsTrklt = 0;
+//    nclsTrklt = 0;
   
     // set V0pid info
+    //printf("%4d Looking for V0s...\n" , fTrackInfo->GetTrackId());
     for(Int_t iv(0); iv<fV0List->GetEntriesFast(); iv++){
       if(!(v0info = (AliTRDv0Info*)fV0List->At(iv))) continue;
       if(!v0info->GetV0Daughter(1) && !v0info->GetV0Daughter(-1)) continue;
       if(!v0info->HasTrack(fTrackInfo)) continue;
+      //v0info->Print();
       memset(v0pid, 0, AliPID::kSPECIES*sizeof(Int_t));
       fTrackInfo->SetV0();
-      for(Int_t is=AliPID::kSPECIES; is--;){v0pid[is] = v0info->GetPID(is, fTrackInfo);}
-      fTrackInfo->SetV0pid(v0pid);
-      fTrackInfo->SetV0();
-      //const AliTRDtrackInfo::AliESDinfo *ei = fTrackInfo->GetESDinfo();
-      break;
+      for(Int_t is=AliPID::kSPECIES; is--;) v0pid[is] = v0info->GetPID(is, fTrackInfo); fTrackInfo->SetV0pid(v0pid);
+      if(v0info->IsDecay(AliTRDv0Info::kGamma)) fTrackInfo->SetElectron();
+      else if(v0info->IsDecay(AliTRDv0Info::kK0s)) fTrackInfo->SetPion();
+      else if(v0info->IsDecay(AliTRDv0Info::kLambda)) esdTrack->Charge()>0?fTrackInfo->SetProton():fTrackInfo->SetPion();
+      else if(v0info->IsDecay(AliTRDv0Info::kAntiLambda)) esdTrack->Charge()<0?fTrackInfo->SetProton():fTrackInfo->SetPion();
+      
+      //TODO one track can be attached to more than one v0. Ideally one would need a list of v0 attached to the track info
     }
 
     // read track REC info

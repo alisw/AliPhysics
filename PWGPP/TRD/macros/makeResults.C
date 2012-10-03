@@ -202,7 +202,7 @@ void processESD(TNamed *otask, const Char_t *filename)
   }
   esd->Terminate(NULL);
 
-  if(summary) esd->MakeSummary();
+  if(summary) esd->MakeSummaryFromCF(0, "", kFALSE, kFALSE);
   else{
     for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
       c->Clear();
