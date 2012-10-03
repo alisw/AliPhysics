@@ -2894,8 +2894,8 @@ void AliAnaCalorimeterQA::Init()
   if(fCalorimeter != "PHOS" && fCalorimeter !="EMCAL")
     AliFatal(Form("Wrong calorimeter name <%s>", fCalorimeter.Data()));
   
-  if(GetReader()->GetDataType()== AliCaloTrackReader::kMC)
-    AliFatal("Analysis of reconstructed data, MC reader not aplicable");
+  //if(GetReader()->GetDataType()== AliCaloTrackReader::kMC)
+  //  AliFatal("Analysis of reconstructed data, MC reader not aplicable");
   
 }
 
