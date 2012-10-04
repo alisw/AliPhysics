@@ -50,7 +50,7 @@ Int_t AliTRDtriggerInfo::Add(const Char_t *trigger, Int_t nstat, Bool_t select)
     fTriggerStat[itrig]+= nstat;
   } else {
     if(!nt) fTriggerList = new TObjArray;
-    fTriggerList->AddAt(new TObjString(trigger), nt);
+    fTriggerList->Add(new TObjString(trigger));
     fTriggerStat[nt] = nstat;
     fTriggerSel[nt]  = select;
     nt++;
