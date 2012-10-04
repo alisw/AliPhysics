@@ -25,6 +25,7 @@ class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
 class AliMCEvent;
+class AliInputEventHandler;
 class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
@@ -115,7 +116,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetStandardMuonTrackCuts() { InitMuonCuts();     fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
   void SetIsMuonMC(Bool_t isMC)   { InitMuonCuts();     fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
-  void SetRunsMuon( Int_t runN)   { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(runN);           return; }  // XZhang 20120604
+  void SetRunsMuon( const AliInputEventHandler* eventHandler )   { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}

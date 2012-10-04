@@ -13,6 +13,7 @@
 #include "TString.h"
 
 class TLorentzVector;
+class AliInputEventHandler;
 class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
@@ -71,6 +72,10 @@ class AliAnalysisMuonUtility : public TObject {
   
   // Transparently handle vertex
   static AliVVertex* GetVertexSPD ( const AliVEvent* event );
+  
+  // Utilities for ESD/AOD
+  static Int_t GetPassNumber ( const AliInputEventHandler* eventHandler );
+  static Int_t GetPassNumber ( const char* str );
   
   ClassDef(AliAnalysisMuonUtility, 0);
 };

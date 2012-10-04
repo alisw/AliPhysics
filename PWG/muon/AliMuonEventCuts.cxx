@@ -17,7 +17,6 @@
 
 #include "TMath.h"
 #include "THashList.h"
-#include "TArrayD.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TFile.h"
@@ -37,7 +36,6 @@
 #include "AliTimeStamp.h"
 
 #include "AliAnalysisMuonUtility.h"
-//#include "AliAnalysisManager.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMuonEventCuts) // Class implementation in ROOT context
@@ -47,10 +45,10 @@ ClassImp(AliMuonEventCuts) // Class implementation in ROOT context
 //________________________________________________________________________
 AliMuonEventCuts::AliMuonEventCuts() :
   AliAnalysisCuts(),
-//fIsMC(kFALSE),
-//fUseCustomParam(kFALSE),
   fPhysicsSelectionMask(0),
-  fParameters(TArrayD(kNParameters)),
+  fVertexMinNContributors(0),
+  fVertexVzMin(0.),
+  fVertexVzMax(0.),
   fDefaultTrigClassPatterns(""),
   fSelectedTrigPattern(0x0),
   fRejectedTrigPattern(0x0),
@@ -61,16 +59,15 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Default ctor.
-  fParameters.Reset();
 }
 
 //________________________________________________________________________
 AliMuonEventCuts::AliMuonEventCuts(const char* name, const char* title ) :
 AliAnalysisCuts(name, title),
-  //fIsMC(kFALSE),
-  //fUseCustomParam(kFALSE),
-  fPhysicsSelectionMask(AliVEvent::kAny),
-  fParameters(TArrayD(kNParameters)),
+  fPhysicsSelectionMask(0),
+  fVertexMinNContributors(0),
+  fVertexVzMin(0.),
+  fVertexVzMax(0.),
   fDefaultTrigClassPatterns(""),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
@@ -81,7 +78,6 @@ AliAnalysisCuts(name, title),
   fSelectedTrigClassesInEvent(new TObjArray())
 {
   /// Constructor
-  fParameters.Reset();
   SetDefaultParameters();
   SetDefaultFilterMask();
   SetDefaultTrigClassPatterns();
@@ -94,10 +90,10 @@ AliAnalysisCuts(name, title),
 //________________________________________________________________________
 AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   AliAnalysisCuts(obj),
-  //fIsMC(obj.fIsMC),
-  //fUseCustomParam(obj.fUseCustomParam),
   fPhysicsSelectionMask(obj.fPhysicsSelectionMask),
-  fParameters(obj.fParameters),
+  fVertexMinNContributors(obj.fVertexMinNContributors),
+  fVertexVzMin(obj.fVertexVzMin),
+  fVertexVzMax(obj.fVertexVzMax),
   fDefaultTrigClassPatterns(obj.fDefaultTrigClassPatterns),
   fSelectedTrigPattern(obj.fSelectedTrigPattern),
   fRejectedTrigPattern(obj.fRejectedTrigPattern),
@@ -117,10 +113,10 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
   /// Assignment operator
   if ( this != &obj ) { 
     AliAnalysisCuts::operator=(obj);
-    //fIsMC = obj.fIsMC;
-    //fUseCustomParam = obj.fUseCustomParam;
     fPhysicsSelectionMask = obj.fPhysicsSelectionMask;
-    fParameters = obj.fParameters;
+    fVertexMinNContributors = obj.fVertexMinNContributors,
+    fVertexVzMin = obj.fVertexVzMin;
+    fVertexVzMax = obj.fVertexVzMax;
     fDefaultTrigClassPatterns = obj.fDefaultTrigClassPatterns;
     fSelectedTrigPattern = obj.fSelectedTrigPattern;
     fRejectedTrigPattern = obj.fRejectedTrigPattern;
@@ -146,158 +142,6 @@ AliMuonEventCuts::~AliMuonEventCuts()
   delete fCentralityClasses;
   delete fTimeStamp;
 }
-
-//________________________________________________________________________
-//Bool_t AliMuonEventCuts::RunMatchesRange( Int_t runNumber, const Char_t* objName ) const
-//{
-//  /// Check if the object contains the run
-//  TString sname(objName);
-//  TObjArray* array = sname.Tokenize("_");
-//  array->SetOwner();
-//  Int_t runRange[2] = { -1, -1 };
-//  if ( array->GetEntries() >= 3 ) {
-//    for ( Int_t irun=0; irun<2; ++irun ) {
-//      TString currRun = array->At(irun+1)->GetName();
-//      if ( currRun.IsDigit() ) runRange[irun] = currRun.Atoi();
-//    }
-//  }
-//  delete array;
-//  return ( runNumber >= runRange[0] && runNumber <= runRange[1]);
-//}
-//
-//________________________________________________________________________
-//void AliMuonEventCuts::SetUseCustomParam( Bool_t useCustomParam, Int_t runNumber  )
-//{
-//  /// Flag to select custom parameters
-//  /// It first searches the default parameters in OADB
-//  /// then disables the access to the OADB
-//  /// and allows to manually modify parameters
-//
-//  if ( ! fUseCustomParam && useCustomParam ) SetRun(runNumber);
-//  fUseCustomParam = useCustomParam;
-//}
-//
-//________________________________________________________________________
-//Bool_t AliMuonEventCuts::SetRun( Int_t runNumber )
-//{
-//  /// Get parameters from OADB for runNumber
-//  
-//  if ( fUseCustomParam ) return kFALSE;
-//  return StreamParameters(runNumber, -1);
-//}
-//
-//
-//________________________________________________________________________
-//Bool_t AliMuonEventCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
-//{
-//  if ( runMax > 0 ) { // Stream to OADB
-//    if ( ! fUseCustomParam ) {
-//      AliError("Users are not allowed to update OADB. Use SetUseCustomParam() instead");
-//      return kFALSE;
-//    }
-//  }
-//
-//  TString filename = Form("%s/PWG/MUON/MuonEventCuts.root",AliAnalysisManager::GetOADBPath());
-//  if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
-//
-//  TString parNames[kNParameters];
-//  parNames[kMeanDcaX]       = "MeanDcaX";
-//  parNames[kMeanDcaY]       = "MeanDcaY";
-//  parNames[kMeanDcaZ]       = "MeanDcaZ";
-//  parNames[kMeanPCorr23]    = "MeanPCorr23";
-//  parNames[kMeanPCorr310]   = "MeanPCorr310";
-//  parNames[kSigmaPdca23]    = "SigmaPdca23";
-//  parNames[kSigmaPdca310]   = "SigmaPdca310";
-//  parNames[kNSigmaPdcaCut]  = "NSigmaPdcaCut";
-//  parNames[kChi2NormCut]    = "Chi2NormCut";
-//  parNames[kRelPResolution] = "RelPResolution";
-//  parNames[kSharpPtApt]     = "SharpPtApt";
-//  parNames[kSharpPtLpt]     = "SharpPtLpt";
-//  parNames[kSharpPtHpt]     = "SharpPtHpt";
-//
-//  TObjArray* paramList = 0x0;
-//
-//  if ( runMax < 0 ) { // Get from OADB
-//    TFile* file = TFile::Open(filename.Data(), "READ");
-//    if ( ! file ) {
-//      AliError(Form("OADB file %s not found!", filename.Data()));
-//      return kFALSE;
-//    }
-//
-//    TList* listOfKeys = file->GetListOfKeys();
-//    TIter next(listOfKeys);
-//    TObject* key = 0x0;
-//    Bool_t foundMatch = kFALSE;
-//    TObject* defaultObj = 0x0;
-//    while ( ( key = next() ) ) {
-//      TString objName = key->GetName();
-//      objName.ToUpper();
-//      if ( RunMatchesRange(runNumber, objName.Data()) ) {
-//        paramList = static_cast<TObjArray*>(file->Get(key->GetName()));
-//        foundMatch = kTRUE;
-//        break;
-//      }
-//      if ( objName.Contains("DEFAULT") ) defaultObj = file->Get(key->GetName());
-//    }
-//
-//    if ( ! foundMatch ) {
-//      AliWarning("Run number not found in OADB: using default");
-//      if ( defaultObj ) paramList = static_cast<TObjArray*>(defaultObj);
-//      else {
-//        file->Close();
-//        AliError("Default parameters not found in OADB!");
-//        return kFALSE;
-//      }
-//    }
-//
-//    AliInfo(Form("Required run %i. Param. set: %s", runNumber, paramList->GetName()));
-//
-//    for ( Int_t ipar=0; ipar<kNParameters; ++ipar ) {
-//      TParameter<Double_t>* param = static_cast<TParameter<Double_t>*>(paramList->FindObject(parNames[ipar].Data()));
-//      if ( ! param ) {
-//        AliWarning(Form("Parameter %s not set", parNames[ipar].Data()));
-//        continue;
-//      }
-//      fParameters[ipar] = param->GetVal();
-//    }
-//
-//    file->Close();
-//  }
-//  else {
-//    if ( ! paramList ) {
-//      paramList = new TObjArray(kNParameters);
-//      paramList->SetOwner();
-//    }
-//    for ( Int_t ipar=0; ipar<kNParameters; ++ipar ) {
-//      TParameter<Double_t>* param= new TParameter<Double_t>(parNames[ipar].Data(), fParameters[ipar]);
-//      paramList->AddAt(param, ipar);
-//    }
-//
-//    TString paramListName = "EventCuts_";
-//    paramListName += ( runNumber < 0 ) ? "Default" : Form("%i_%i",runNumber, runMax);
-//    AliInfo(Form("Adding %s to file %s", paramListName.Data(), filename.Data()));
-//    paramList->SetName(paramListName.Data());
-//    TFile* file = TFile::Open(filename.Data(), "UPDATE");
-//    paramList->Write(paramListName.Data(), TObject::kSingleKey);
-//    file->Close();
-//    delete paramList;
-//  }
-//  return kTRUE;
-//}
-
-//________________________________________________________________________
-Bool_t AliMuonEventCuts::SetParameter(Int_t iparam, Float_t value)
-{
-  /// Set parameter
-//  if ( fUseCustomParam ) {
-    fParameters.SetAt(value, iparam);
-    return kTRUE;
-//  }
-//
-//  AliWarning("Parameters automatically taken from OADB. If you want to use with custom parameters, use SetUseCustomParam()");
-//  return kFALSE;
-}
-
 
 //________________________________________________________________________
 Bool_t AliMuonEventCuts::IsSelected( TObject* obj )
@@ -458,7 +302,7 @@ void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
 }
 
 //________________________________________________________________________
-TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName) const
+TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName ) const
 {
   /// Get trigger class pt cut level for tracking/trigger matching
   TObject* obj = fAllSelectedTrigClasses->FindObject(trigClassName.Data());
@@ -540,10 +384,12 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses )
     fSelectedTrigClassesInEvent->AddLast(currTrig);
     
     if ( foundTrig ) continue;
-    AliInfo(Form("Adding %s (trig level %u) to considered trigger classes",trigName.Data(),trigLevel));
     TObjString* addTrig = new TObjString(trigName);
     addTrig->SetUniqueID(trigLevel);
     fAllSelectedTrigClasses->Add(addTrig);
+    TString trigLevelInfo = Form("trig level %i ", trigLevel & 0x3);
+    trigLevelInfo += ( trigLevel > 3 ) ? "di-muon" : "single-muon";
+    AliInfo(Form("Adding %s (%s) to considered trigger classes",trigName.Data(),trigLevelInfo.Data()));
   } // loop on trigger classes
   
   delete firedTrigClassesList;
@@ -638,8 +484,4 @@ void AliMuonEventCuts::Print(Option_t* option) const
     if ( filterMask & kGoodVertex )      printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());
     printf(" ******************** \n");
   }
-//  if ( sopt.Contains("param") ) {
-//    printf(" *** Muon track parameter summary: ***\n");
-//    printf(" ********************************\n");
-//  }
 }

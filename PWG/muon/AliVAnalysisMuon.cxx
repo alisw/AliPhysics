@@ -241,8 +241,8 @@ void AliVAnalysisMuon::FinishTaskOutput()
 void AliVAnalysisMuon::NotifyRun()
 {
   /// Set run number for cuts
-  if ( fMuonTrackCuts ) fMuonTrackCuts->SetRun(fCurrentRunNumber);
-  if ( fMuonPairCuts ) fMuonPairCuts->SetRun(fCurrentRunNumber);
+  if ( fMuonTrackCuts ) fMuonTrackCuts->SetRun(fInputHandler);
+  if ( fMuonPairCuts ) fMuonPairCuts->SetRun(fInputHandler);
 }
 
 //___________________________________________________________________________

@@ -276,7 +276,7 @@ void AliAnalysisTaskSEMuonsHF::NotifyRun()
 {
   // Notify of the current run number
 
-  if (fCutsMuon) fCutsMuon->SetRun(fCurrentRunNumber);
-  if (fCutsDimu) fCutsDimu->SetRun(fCurrentRunNumber);
+  if (fCutsMuon) fCutsMuon->SetRun(fInputHandler);
+  if (fCutsDimu) fCutsDimu->SetRun(fInputHandler);
   return;
 }

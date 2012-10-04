@@ -238,8 +238,8 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
 void AliAnalysisTaskFlowEvent::NotifyRun()
 {
   //at the beginning of each new run
-  if (fCutsRP)   fCutsRP->SetRunsMuon(fCurrentRunNumber);  // XZhang 20120604
-  if (fCutsPOI) fCutsPOI->SetRunsMuon(fCurrentRunNumber);  // XZhang 20120604
+  if (fCutsRP)   fCutsRP->SetRunsMuon(fInputHandler);  // XZhang 20120604
+  if (fCutsPOI) fCutsPOI->SetRunsMuon(fInputHandler);  // XZhang 20120604
 	AliESDEvent* fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   if (!fESD) return;
 
@@ -493,9 +493,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       for(int iCand=0; iCand!=candidates->GetEntriesFast(); ++iCand ) {
         AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(candidates->At(iCand));
         if (!cand) continue;
-        //printf(" Ⱶ Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
+        //printf(" - Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
         for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
-          //printf("    Ⱶ Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
+          //printf("    - Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
           for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs ) {
             AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack( iRPs ));
             if (!iRP) continue;
