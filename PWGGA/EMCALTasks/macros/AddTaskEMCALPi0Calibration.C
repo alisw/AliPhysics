@@ -39,7 +39,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   pi0calib->SetClusterMinNCells(1);
   pi0calib->SetNCellsGroup(0);
   pi0calib->SwitchOnSameSM();
-  pi0calib->SetPairDTimeCut(40);
+  pi0calib->SetPairDTimeCut(20);
   pi0calib->SetClusterMinTime(560);
   pi0calib->SetClusterMaxTime(610);
 
