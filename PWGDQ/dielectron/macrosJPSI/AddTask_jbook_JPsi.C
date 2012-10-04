@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE){
+AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE) {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -12,7 +12,6 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE){
   if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
-  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
@@ -20,9 +19,9 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE){
   // set AOD debug levels
   if(isAOD) {
     mgr->AddClassDebug("AliAODTrack", AliLog::kFatal);
-    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo);
+    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo); 
   }
-
+  
   //set config file name
   TString configFile("");
   printf("%s \n",gSystem->pwd());
@@ -49,10 +48,10 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="", Bool_t gridconf=kFALSE){
     gROOT->LoadMacro(configFile.Data());
 
   //add dielectron analysis with different cuts to the task
-  for (Int_t i=0; i<5; ++i){ //nDie defined in config file
+  for (Int_t i=0; i<6; ++i) { //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
-    //    if (jpsi ) printf("add: %s\n",jpsi->GetName());
+    if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
 
   //Add event filter

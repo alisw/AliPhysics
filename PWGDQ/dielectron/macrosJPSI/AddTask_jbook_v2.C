@@ -49,7 +49,7 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
     gROOT->LoadMacro(configFile.Data());
 
   //add dielectron analysis with different cuts to the task
-  for (Int_t i=16; i<nDie; ++i){ //nDie defined in config file
+  for (Int_t i=12; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf("add: %s\n",jpsi->GetName());

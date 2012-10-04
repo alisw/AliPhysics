@@ -51,7 +51,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod="", Bool_t gridconf=kFALSE){
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsiQA_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
-    //    if (jpsi ) printf("add: %s\n",jpsi->GetName());
+    if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
   
   //Add event filter
