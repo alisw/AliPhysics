@@ -200,7 +200,7 @@ void AliAnalysisTaskMuonCuts::ProcessEvent(TString physSel, const TObjArray& sel
   Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(InputEvent());
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
     track = AliAnalysisMuonUtility::GetTrack(itrack, InputEvent());
-    fMuonTrackCuts->SetNSigmaPdca(1.e10);
+    fMuonTrackCuts->CustomParam()->SetNSigmaPdca(1.e10);
     if ( ! fMuonTrackCuts->IsSelected(track) ) continue;
 
     Double_t thetaAbsEndDeg = AliAnalysisMuonUtility::GetThetaAbsDeg(track);
@@ -213,7 +213,8 @@ void AliAnalysisTaskMuonCuts::ProcessEvent(TString physSel, const TObjArray& sel
     Double_t dca = dcaAtVz.Mag();
     Double_t pDca = pTotMean * dca;
 
-    Double_t chi2 = pDca / fMuonTrackCuts->GetSigmaPdca(AliAnalysisMuonUtility::GetRabs(track)) ;
+    Double_t sigmaPdca = fMuonTrackCuts->IsThetaAbs23(track) ? fMuonTrackCuts->GetMuonTrackCutsParam().GetSigmaPdca23() : fMuonTrackCuts->GetMuonTrackCutsParam().GetSigmaPdca310();
+    Double_t chi2 = pDca / sigmaPdca;
     chi2 *= chi2;
     Double_t chiProb = TMath::Prob(chi2, 2);
 
@@ -243,7 +244,7 @@ void AliAnalysisTaskMuonCuts::ProcessEvent(TString physSel, const TObjArray& sel
     } // loop on selected trigger classes
 
     for ( Int_t isigma=0; isigma<fSigmaCuts.GetSize(); ++isigma) {
-      fMuonTrackCuts->SetNSigmaPdca(fSigmaCuts[isigma]);
+      fMuonTrackCuts->CustomParam()->SetNSigmaPdca(fSigmaCuts[isigma]);
       if ( ! fMuonTrackCuts->IsSelected(track) ) continue;
       for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
         TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
@@ -421,10 +422,10 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   //////////////
   // Fit pDCA //
   //////////////
-  Double_t nSigmaCut = fMuonTrackCuts->GetNSigmaPdca(); //6.;
-  Double_t sigmaMeasCut[2] = { fMuonTrackCuts->GetSigmaPdca(505.*TMath::Tan(2.5 * TMath::DegToRad())), fMuonTrackCuts->GetSigmaPdca(505.*TMath::Tan(4.5 * TMath::DegToRad()))}; //{99., 54.}; //{120., 63.};
-  Double_t relPResolution = fMuonTrackCuts->GetRelPResolution(); //4.5e-4; //6.e-3;//8.e-4;
-  Double_t angleResolution = 535.*fMuonTrackCuts->GetSlopeResolution(); //6.e-4;
+  Double_t nSigmaCut = fMuonTrackCuts->GetMuonTrackCutsParam().GetNSigmaPdca(); //6.;
+  Double_t sigmaMeasCut[2] = { fMuonTrackCuts->GetMuonTrackCutsParam().GetSigmaPdca23(), fMuonTrackCuts->GetMuonTrackCutsParam().GetSigmaPdca310()}; //{99., 54.}; //{120., 63.};
+  Double_t relPResolution = fMuonTrackCuts->GetMuonTrackCutsParam().GetRelPResolution(); //4.5e-4; //6.e-3;//8.e-4;
+  Double_t angleResolution = 535.*fMuonTrackCuts->GetMuonTrackCutsParam().GetSlopeResolution(); //6.e-4;
   Double_t pMinCut = 0.1;
   Double_t pMaxCut =  800.;
   const Int_t kNCutFuncs = 2;

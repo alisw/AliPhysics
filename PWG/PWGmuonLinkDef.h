@@ -45,5 +45,6 @@
 #pragma link C++ class AliVAnalysisMuon+;
 #pragma link C++ class AliAnalysisTaskFlowSingleMu+;
 #pragma link C++ class AliAnalysisMuonUtility+;
+#pragma link C++ class AliOADBMuonTrackCutsParam+;
 #endif
 

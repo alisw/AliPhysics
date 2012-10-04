@@ -2,7 +2,6 @@
 #define ALIMUONEVENTCUTS_H
 
 #include "AliAnalysisCuts.h"
-#include "TArrayD.h"
 
 class AliVEvent;
 class AliVVertex;
@@ -36,13 +35,6 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetDefaultFilterMask();
   void SetDefaultParameters();
   
-  enum {
-    kVertexMinNContributors,
-    kVertexVzMin,
-    kVertexVzMax,
-    kNParameters
-  };
-  
   // Handle trigger
   void SetTrigClassPatterns ( const TString pattern );
   /// Get default trigger class patterns
@@ -69,39 +61,29 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   
   /// Set minimum number of vertex contributors
-  void SetVertexMinNContributors ( const Int_t vertexMinNContributors ) { SetParameter(kVertexMinNContributors, (Double_t)vertexMinNContributors); }
+  void SetVertexMinNContributors ( const Int_t vertexMinNContributors ) { fVertexMinNContributors = vertexMinNContributors; }
   /// Get minimum number of vertex contributors
-  Int_t GetVertexMinNContributors () const { return (Int_t)fParameters[kVertexMinNContributors]; }
+  Int_t GetVertexMinNContributors () const { return fVertexMinNContributors; }
   /// Set Vz limits
-  void SetVertexVzLimits ( Double_t vzMin = -999., Double_t vzMax = 999. ) { SetParameter(kVertexVzMin, vzMin); SetParameter(kVertexVzMax, vzMax); }
+  void SetVertexVzLimits ( Double_t vzMin = -999., Double_t vzMax = 999. ) { fVertexVzMin = vzMin; fVertexVzMax = vzMax; }
   /// Get Vtx vz min
-  Double_t GetVertexVzMin () const { return fParameters[kVertexVzMin]; }
+  Double_t GetVertexVzMin () const { return fVertexVzMin; }
   /// Get Vtx vz max
-  Double_t GetVertexVzMax () const { return fParameters[kVertexVzMax]; }
-  
-  //Bool_t SetRun(Int_t runNumber);
-  //void SetUseCustomParam( Bool_t useCustomParam = kTRUE, Int_t runNumber = -1 );
-  //void SetIsMC(Bool_t isMC = kTRUE) { fIsMC = isMC; }
+  Double_t GetVertexVzMax () const { return fVertexVzMax; }
 
   void Print ( Option_t* option = "" ) const;
 
-  //Bool_t StreamParameters ( Int_t runNumber, Int_t maxRun );
-
  protected:
   
-  Bool_t SetParameter ( Int_t iparam, Float_t value );
   void BuildTriggerClasses ( const TString firedTrigClasses );
   Bool_t UpdateEvent( const AliVEvent* event );
   void SetDefaultTrigClassPatterns();
-  
-  //Bool_t RunMatchesRange ( Int_t runNumber, const Char_t* objName ) const;
-
-  //Bool_t fIsMC;             ///< Monte Carlo analysis
-  //Bool_t fUseCustomParam;   ///< Use custom parameters (do not search in OADB)
-  
+    
   UInt_t fPhysicsSelectionMask; ///< Physics selection mask
   
-  TArrayD fParameters;      ///< List of parameters
+  Int_t fVertexMinNContributors;  ///< Minimum number of SPD vertex contributors
+  Double_t fVertexVzMin;          ///< SPD vertex Vz min
+  Double_t fVertexVzMax;          ///< SPD vertex Vz max
   
   TString fDefaultTrigClassPatterns; ///< Default trigger class patterns
   TObjArray* fSelectedTrigPattern; ///< List of triggers to be kept
@@ -114,7 +96,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   AliTimeStamp* fTimeStamp; //!< current event time stamp
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event 
   
-  ClassDef(AliMuonEventCuts, 1); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 2); // Class for muon event filters
 };
 
 #endif

@@ -22,6 +22,7 @@
 
 #include "AliLog.h"
 #include "AliVParticle.h"
+#include "AliInputEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMuonPairCuts) // Class implementation in ROOT context
@@ -83,10 +84,10 @@ AliMuonPairCuts::~AliMuonPairCuts()
 }
 
 //________________________________________________________________________
-Bool_t AliMuonPairCuts::SetRun( Int_t runNumber )
+Bool_t AliMuonPairCuts::SetRun ( const AliInputEventHandler* eventHandler )
 {
   /// Get parameters from OADB for runNumber
-  return fMuonTrackCuts.SetRun(runNumber);
+  return fMuonTrackCuts.SetRun(eventHandler);
 }
 
 
@@ -199,8 +200,8 @@ Bool_t AliMuonPairCuts::TrackPtCutMatchTrigClass ( const AliVParticle* track1, c
   
   Bool_t matchTrackerPt1 = kTRUE, matchTrackerPt2 = kTRUE;
   if ( IsApplySharpPtCutInMatching() ) {
-    matchTrackerPt1 = ( track1->Pt() >= fMuonTrackCuts.GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
-    matchTrackerPt2 = ( track2->Pt() >= fMuonTrackCuts.GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
+    matchTrackerPt1 = ( track1->Pt() >= fMuonTrackCuts.GetMuonTrackCutsParam().GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
+    matchTrackerPt2 = ( track2->Pt() >= fMuonTrackCuts.GetMuonTrackCutsParam().GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
   }
   
   matchTrig1 = ( matchTrig1 && matchTrackerPt1 );

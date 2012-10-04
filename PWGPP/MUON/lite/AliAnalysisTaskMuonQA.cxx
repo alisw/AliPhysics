@@ -45,6 +45,7 @@
 #include "AliCounterCollection.h"
 
 // PWG includes
+#include "AliAnalysisMuonUtility.h"
 #include "AliMuonTrackCuts.h"
 
 using std::cout;
@@ -113,6 +114,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   DefineOutput(5,TObjArray::Class());
   
   fTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca );
+  fTrackCuts->SetAllowDefaultParams(kTRUE);
 }
 
 //________________________________________________________________________
@@ -136,7 +138,7 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
 void AliAnalysisTaskMuonQA::NotifyRun()
 {
   /// Notify run
-  fTrackCuts->SetRun(fCurrentRunNumber);
+  fTrackCuts->SetRun(fInputHandler);
 }
 
 

@@ -30,8 +30,12 @@
 #include "AliLog.h"
 #include "AliVParticle.h"
 #include "AliESDMuonTrack.h"
-#include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVEvent.h"
+
+#include "AliOADBContainer.h"
+
 #include "AliAnalysisMuonUtility.h"
 
 /// \cond CLASSIMP
@@ -45,10 +49,11 @@ AliMuonTrackCuts::AliMuonTrackCuts() :
   fIsMC(kFALSE),
   fUseCustomParam(kFALSE),
   fSharpPtCut(kFALSE),
-  fParameters(TArrayD(kNParameters))
+  fAllowDefaultParams(kFALSE),
+  fPassNumber(0),
+  fOADBParam()
 {
   /// Default ctor.
-  fParameters.Reset();
 }
 
 //________________________________________________________________________
@@ -57,10 +62,11 @@ AliAnalysisCuts(name, title),
   fIsMC(kFALSE),
   fUseCustomParam(kFALSE),
   fSharpPtCut(kFALSE),
-  fParameters(TArrayD(kNParameters))
+  fAllowDefaultParams(kFALSE),
+  fPassNumber(-1),
+  fOADBParam("muonTrackCutsParam")
 {
   /// Constructor
-  fParameters.Reset();
   SetDefaultFilterMask();
 }
 
@@ -71,7 +77,9 @@ AliMuonTrackCuts::AliMuonTrackCuts(const AliMuonTrackCuts& obj) :
   fIsMC(obj.fIsMC),
   fUseCustomParam(obj.fUseCustomParam),
   fSharpPtCut(obj.fSharpPtCut),
-  fParameters(obj.fParameters)
+  fAllowDefaultParams(obj.fAllowDefaultParams),
+  fPassNumber(obj.fPassNumber),
+  fOADBParam(obj.fOADBParam)
 {
   /// Copy constructor
 }
@@ -86,7 +94,9 @@ AliMuonTrackCuts& AliMuonTrackCuts::operator=(const AliMuonTrackCuts& obj)
     fIsMC = obj.fIsMC;
     fUseCustomParam = obj.fUseCustomParam;
     fSharpPtCut = obj.fSharpPtCut;
-    fParameters = obj.fParameters;
+    fAllowDefaultParams = obj.fAllowDefaultParams;
+    fPassNumber = obj.fPassNumber;
+    fOADBParam = obj.fOADBParam;
   }
   return *this;
 }
@@ -99,156 +109,112 @@ AliMuonTrackCuts::~AliMuonTrackCuts()
 }
 
 //________________________________________________________________________
-Bool_t AliMuonTrackCuts::RunMatchesRange( Int_t runNumber, const Char_t* objName ) const
+void AliMuonTrackCuts::SetCustomParamFromRun( Int_t runNumber, Int_t passNumber )
 {
-  /// Check if the object contains the run
-  TString sname(objName);
-  TObjArray* array = sname.Tokenize("_");
-  array->SetOwner();
-  Int_t runRange[2] = { -1, -1 };
-  if ( array->GetEntries() >= 3 ) {
-    for ( Int_t irun=0; irun<2; ++irun ) {
-      TString currRun = array->At(irun+1)->GetName();
-      if ( currRun.IsDigit() ) runRange[irun] = currRun.Atoi();
-    }
-  }
-  delete array;
-  return ( runNumber >= runRange[0] && runNumber <= runRange[1]);
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetUseCustomParam( Bool_t useCustomParam, Int_t runNumber  )
-{
-  /// Flag to select custom parameters
   /// It first searches the default parameters in OADB
   /// then disables the access to the OADB
   /// and allows to manually modify parameters
 
-  if ( ! fUseCustomParam && useCustomParam ) SetRun(runNumber);
-  fUseCustomParam = useCustomParam;
+  if ( passNumber >= 0 ) fPassNumber = passNumber;
+  ReadParamFromOADB ( runNumber );
+  fUseCustomParam = kTRUE;
+  //AliWarning (Form("Setting parameters from run %i pass %i. From now on SetRun does NOTHING!!", runNumber, passNumber));
+  AliWarning (Form("From now on SetRun does NOTHING!!"));
+}
+
+
+//________________________________________________________________________
+AliOADBMuonTrackCutsParam* AliMuonTrackCuts::CustomParam ( )
+{
+  /// Returning the muon track cuts parameters (not const, so you can change the parameters)
+  /// CAVEAT: if you only want to Get the parameters, please use GetMuonTrackCutsParam()
+  /// If you want to modify the parameters, you need to call SetCustomParamFromRun at least once,
+  /// otherwise CustomParam returns a null pointer.
+  
+  if ( ! fUseCustomParam ) {
+    AliError("This method allows you to modify the paramaters.\nIf you only want to get them, please use GetMuonTrackCutsParam instead.\nOtherwise, please call at least once SetCustomParamFromRun.");
+    return 0x0;
+  }
+  return &fOADBParam;
 }
 
 //________________________________________________________________________
-Bool_t AliMuonTrackCuts::SetRun( Int_t runNumber )
+Bool_t AliMuonTrackCuts::SetRun ( const AliInputEventHandler* eventHandler )
 {
-  /// Get parameters from OADB for runNumber
+  /// Get parameters from OADB for current run
   
   if ( fUseCustomParam ) return kFALSE;
-  return StreamParameters(runNumber, -1);
+  Int_t runNumber = eventHandler->GetEvent()->GetRunNumber();
+  // First try to guess the pass from data
+  Int_t guessPassNumber = AliAnalysisMuonUtility::GetPassNumber(eventHandler);
+  if ( guessPassNumber >= 0 ) {
+    // If pass is found, it will be used instead of the one reuqested by the user
+    if ( fPassNumber >= 0 && fPassNumber != guessPassNumber ) AliWarning(Form("Using pass from data (pass%i) instead of the requested pass%i",guessPassNumber,fPassNumber));
+    fPassNumber = guessPassNumber;
+  }
+  return ReadParamFromOADB ( runNumber );
 }
 
 
 //________________________________________________________________________
-Bool_t AliMuonTrackCuts::StreamParameters( Int_t runNumber,  Int_t runMax )
+Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber )
 {
-  if ( runMax > 0 ) { // Stream to OADB
-    if ( ! fUseCustomParam ) {
-      AliError("Users are not allowed to update OADB. Use SetUseCustomParam() instead");
-      return kFALSE;
-    }
-  }
 
+  /// Read parameters from OADB
+  
+  if ( fPassNumber < 0 && ! fAllowDefaultParams ) AliFatal("Pass number not specified!");
+  
   TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
   if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
 
-  TString parNames[kNParameters];
-  parNames[kMeanDcaX]       = "MeanDcaX";
-  parNames[kMeanDcaY]       = "MeanDcaY";
-  parNames[kMeanDcaZ]       = "MeanDcaZ";
-  parNames[kMeanPCorr23]    = "MeanPCorr23";
-  parNames[kMeanPCorr310]   = "MeanPCorr310";
-  parNames[kSigmaPdca23]    = "SigmaPdca23";
-  parNames[kSigmaPdca310]   = "SigmaPdca310";
-  parNames[kNSigmaPdcaCut]  = "NSigmaPdcaCut";
-  parNames[kChi2NormCut]    = "Chi2NormCut";
-  parNames[kRelPResolution] = "RelPResolution";
-  parNames[kSharpPtApt]     = "SharpPtApt";
-  parNames[kSharpPtLpt]     = "SharpPtLpt";
-  parNames[kSharpPtHpt]     = "SharpPtHpt";
-
-  TObjArray* paramList = 0x0;
-
-  if ( runMax < 0 ) { // Get from OADB
-    TFile* file = TFile::Open(filename.Data(), "READ");
-    if ( ! file ) {
-      AliError(Form("OADB file %s not found!", filename.Data()));
-      return kFALSE;
-    }
-
-    TList* listOfKeys = file->GetListOfKeys();
-    TIter next(listOfKeys);
-    TObject* key = 0x0;
-    Bool_t foundMatch = kFALSE;
-    TObject* defaultObj = 0x0;
-    while ( ( key = next() ) ) {
-      TString objName = key->GetName();
-      objName.ToUpper();
-      if ( RunMatchesRange(runNumber, objName.Data()) ) {
-        paramList = static_cast<TObjArray*>(file->Get(key->GetName()));
-        foundMatch = kTRUE;
-        break;
-      }
-      if ( objName.Contains("DEFAULT") ) defaultObj = file->Get(key->GetName());
-    }
-
-    if ( ! foundMatch ) {
-      AliWarning("Run number not found in OADB: using default");
-      if ( defaultObj ) paramList = static_cast<TObjArray*>(defaultObj);
-      else {
-        file->Close();
-        AliError("Default parameters not found in OADB!");
-        return kFALSE;
-      }
-    }
-
-    AliInfo(Form("Required run %i. Param. set: %s", runNumber, paramList->GetName()));
-
-    for ( Int_t ipar=0; ipar<kNParameters; ++ipar ) {
-      TParameter<Double_t>* param = static_cast<TParameter<Double_t>*>(paramList->FindObject(parNames[ipar].Data()));
-      if ( ! param ) {
-        AliWarning(Form("Parameter %s not set", parNames[ipar].Data()));
-        continue;
-      }
-      fParameters[ipar] = param->GetVal();
-    }
-
-    file->Close();
+  TFile* file = TFile::Open(filename.Data(), "READ");
+  if ( ! file ) {
+    AliFatal(Form("OADB file %s not found!", filename.Data()));
+    return kFALSE;
   }
-  else {
-    if ( ! paramList ) {
-      paramList = new TObjArray(kNParameters);
-      paramList->SetOwner();
-    }
-    for ( Int_t ipar=0; ipar<kNParameters; ++ipar ) {
-      TParameter<Double_t>* param= new TParameter<Double_t>(parNames[ipar].Data(), fParameters[ipar]);
-      paramList->AddAt(param, ipar);
-    }
 
-    TString paramListName = "MuonCuts_";
-    paramListName += ( runNumber < 0 ) ? "Default" : Form("%i_%i",runNumber, runMax);
-    AliInfo(Form("Adding %s to file %s", paramListName.Data(), filename.Data()));
-    paramList->SetName(paramListName.Data());
-    TFile* file = TFile::Open(filename.Data(), "UPDATE");
-    paramList->Write(paramListName.Data(), TObject::kSingleKey);
-    file->Close();
-    delete paramList;
+  // Search the container name to find the correct pass
+  AliOADBContainer* oadbContainer = 0x0;
+  Int_t foundPass = -999;
+  TList* listOfKeys = file->GetListOfKeys();
+  TIter next(listOfKeys);
+  TObject* key = 0x0;
+  // loop on keys
+  while ( ( key = next() ) ) {
+    Int_t currPass = AliAnalysisMuonUtility::GetPassNumber(key->GetName());
+    if ( ( fPassNumber < 0 ) ) {
+      if ( currPass < foundPass ) continue;
+    }
+    else if ( currPass != fPassNumber ) continue;
+    oadbContainer = static_cast<AliOADBContainer*> (file->Get(key->GetName()));
+    foundPass = currPass;
+    if ( foundPass == fPassNumber ) break;
   }
+  
+  if ( ! oadbContainer ) {
+    AliFatal(Form("Requested pass%i not found!", fPassNumber));
+    file->Close();
+    return kFALSE; // Not needed, but Coverity could complain
+  }
+  
+  if ( foundPass != fPassNumber ) AliWarning(Form("Requested pass%i not found: using pass%i", fPassNumber, foundPass));
+  
+  AliOADBMuonTrackCutsParam* currParams = static_cast<AliOADBMuonTrackCutsParam*> (oadbContainer->GetObject(runNumber, "default"));
+  Bool_t isDefault = oadbContainer->GetDefaultObject(currParams->GetName()) ? kTRUE : kFALSE;
+    
+  if ( isDefault ) {
+    if ( ! fAllowDefaultParams ) AliFatal(Form("Requested run %i not found in pass%i!", runNumber, foundPass));
+    else AliWarning(Form("Requested run %i not found in pass%i: using default", runNumber, foundPass));
+  }
+    
+  fOADBParam = *currParams;
+  
+  file->Close();
+
+  AliInfo(Form("Requested run %i pass %i. Param. set: %s (pass%i)", runNumber, fPassNumber, fOADBParam.GetName(), foundPass));
+  
   return kTRUE;
 }
-
-//________________________________________________________________________
-Bool_t AliMuonTrackCuts::SetParameter(Int_t iparam, Double_t value)
-{
-  /// Set parameter
-  if ( fUseCustomParam ) {
-    fParameters.SetAt(value, iparam);
-    return kTRUE;
-  }
-
-  AliWarning("Parameters automatically taken from OADB. If you want to use with custom parameters, use SetUseCustomParam()");
-  return kFALSE;
-}
-
 
 //________________________________________________________________________
 Bool_t AliMuonTrackCuts::IsSelected( TObject* obj )
@@ -284,11 +250,11 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   Double_t pt = track->Pt();
   for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
     if ( matchTrig < ilevel+1 ) break;
-    if ( fSharpPtCut && pt < GetSharpPtCut(ilevel) ) break;
+    if ( fSharpPtCut && pt < fOADBParam.GetSharpPtCut(ilevel) ) break;
     selectionMask |= cutLevel[ilevel];
   }
 
-  if ( AliAnalysisMuonUtility::GetChi2perNDFtracker(track) < GetChi2NormCut() ) selectionMask |= kMuTrackChiSquare;
+  if ( AliAnalysisMuonUtility::GetChi2perNDFtracker(track) < fOADBParam.GetChi2NormCut() ) selectionMask |= kMuTrackChiSquare;
 
   TVector3 dcaAtVz = GetCorrectedDCA(track);
   Double_t pTotMean = GetAverageMomentum(track);
@@ -296,7 +262,8 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   Double_t pDca = pTotMean * dcaAtVz.Mag();
     
   Double_t pTot = track->P();
-  Double_t rAbsEnd = AliAnalysisMuonUtility::GetRabs(track);
+  
+  Double_t sigmaPdca = IsThetaAbs23(track) ? fOADBParam.GetSigmaPdca23() : fOADBParam.GetSigmaPdca310();
   
   // Momentum resolution only
   // The cut depends on the momentum resolution. In particular:
@@ -310,7 +277,6 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   
   //Double_t pResolutionEffect = 0.4 * pTot;  // Values used in 2010 data
   //Double_t pResolutionEffect = 0.32 * pTot; // Values in 2011
-  //Double_t sigmaPdca = GetSigmaPdca(rAbsEnd);
   //Double_t sigmaPdcaWithRes = TMath::Sqrt( sigmaPdca*sigmaPdca + pResolutionEffect*pResolutionEffect );
   
   // Momentum resolution and slope resolution 
@@ -325,13 +291,13 @@ UInt_t AliMuonTrackCuts::GetSelectionMask( const TObject* obj )
   // Finally the cut value has to be summed in quadrature with the error on DCA,
   // which is given by the slope resolution
   // p_meas x DCA < N * Sqrt( ( Sigma_pDCA_meas / ( 1 - N*Delta_s*p_meas / (1+n*Delta_s*p_meas)) )^2 + (distance * sigma_slope * p_meas )^2)
-  Double_t nrp = GetNSigmaPdca() * GetRelPResolution() * pTot;
-  Double_t pResolutionEffect = GetSigmaPdca(rAbsEnd) / ( 1. - nrp / ( 1. + nrp ) );
-  Double_t slopeResolutionEffect = 535. * GetSlopeResolution() * pTot;
+  Double_t nrp = fOADBParam.GetNSigmaPdca() * fOADBParam.GetRelPResolution() * pTot;
+  Double_t pResolutionEffect = sigmaPdca / ( 1. - nrp / ( 1. + nrp ) );
+  Double_t slopeResolutionEffect = 535. * fOADBParam.GetSlopeResolution() * pTot;
   
   Double_t sigmaPdcaWithRes = TMath::Sqrt( pResolutionEffect*pResolutionEffect + slopeResolutionEffect*slopeResolutionEffect );
   
-  if ( pDca < GetNSigmaPdca() * sigmaPdcaWithRes ) selectionMask |= kMuPdca;
+  if ( pDca < fOADBParam.GetNSigmaPdca() * sigmaPdcaWithRes ) selectionMask |= kMuPdca;
   
   AliDebug(1, Form("Selection mask 0x%x\n", selectionMask));
 
@@ -349,12 +315,10 @@ Bool_t AliMuonTrackCuts::IsSelected( TList* /* list */)
 
 
 //________________________________________________________________________
-Int_t AliMuonTrackCuts::GetThetaAbsBin ( Double_t rAtAbsEnd ) const
+Bool_t AliMuonTrackCuts::IsThetaAbs23 ( const AliVParticle* track ) const
 {
-  /// Get theta abs bin
-  Double_t thetaAbsEndDeg = TMath::ATan( rAtAbsEnd / 505. ) * TMath::RadToDeg();
-  Int_t thetaAbsBin = ( thetaAbsEndDeg < 3. ) ? kThetaAbs23 : kThetaAbs310;
-  return thetaAbsBin;
+  /// Check if theta_abs is smaller than 3 degrees
+  return ( AliAnalysisMuonUtility::GetThetaAbsDeg(track) < 3. );
 }
 
 
@@ -367,7 +331,7 @@ TVector3 AliMuonTrackCuts::GetCorrectedDCA ( const AliVParticle* track ) const
   
   TVector3 dcaTrack(AliAnalysisMuonUtility::GetXatDCA(track), AliAnalysisMuonUtility::GetYatDCA(track), AliAnalysisMuonUtility::GetZatDCA(track));
   
-  TVector3 dcaAtVz = dcaTrack - vertex - GetMeanDCA();
+  TVector3 dcaAtVz = dcaTrack - vertex - fOADBParam.GetMeanDCA();
 
   return dcaAtVz;
 }
@@ -382,138 +346,13 @@ Double_t AliMuonTrackCuts::GetAverageMomentum ( const AliVParticle* track ) cons
   //if ( isESD ) pTotMean = 0.5 * ( pTot + ((AliESDMuonTrack*)track)->PUncorrected() );
   if ( ! AliAnalysisMuonUtility::IsAODTrack(track) ) pTotMean = ((AliESDMuonTrack*)track)->PUncorrected(); // Increased stability if using uncorrected value
   else {
-    pTotMean = pTot - GetMeanPCorr(((AliAODTrack*)track)->GetRAtAbsorberEnd());
+    Double_t meanPcorr = IsThetaAbs23(track) ? fOADBParam.GetMeanPCorr23() : fOADBParam.GetMeanPCorr310();
+    pTotMean = pTot - meanPcorr;
   }
 
   return pTotMean;
 }
 
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetMeanDCA ( Double_t xAtDca, Double_t yAtDca, Double_t zAtDca )
-{
-    /// Set mean DCA from track
-  SetParameter(kMeanDcaX, xAtDca);
-  SetParameter(kMeanDcaY, yAtDca);
-  SetParameter(kMeanDcaZ, zAtDca);
-}
-
-//________________________________________________________________________
-TVector3 AliMuonTrackCuts::GetMeanDCA () const
-{ 
-    /// Get mean DCA from track
-  return TVector3(fParameters[kMeanDcaX], fParameters[kMeanDcaY], fParameters[kMeanDcaZ]);
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetMeanPCorr ( Double_t pCorrThetaAbs23, Double_t pCorrThetaAbs310 )
-{
-  /// Set mean p correction
-  SetParameter(kMeanPCorr23, pCorrThetaAbs23);
-  SetParameter(kMeanPCorr310, pCorrThetaAbs310);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetMeanPCorr ( Double_t rAtAbsEnd ) const
-{
-  /// Get mean p correction
-  return fParameters[kMeanPCorr23+GetThetaAbsBin(rAtAbsEnd)];
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetSigmaPdca ( Double_t sigmaThetaAbs23, Double_t sigmaThetaAbs310 )
-{ 
-  /// Set sigma pdca
-  SetParameter(kSigmaPdca23, sigmaThetaAbs23);
-  SetParameter(kSigmaPdca310, sigmaThetaAbs310);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetSigmaPdca ( Double_t rAtAbsEnd ) const
-{ 
-  /// Get mean pdca
-  return fParameters[kSigmaPdca23+GetThetaAbsBin(rAtAbsEnd)];
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetNSigmaPdca ( Double_t nSigmas )
-{ 
-  /// Set N sigma pdca cut
-  SetParameter(kNSigmaPdcaCut, nSigmas);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetNSigmaPdca () const
-{
-  /// Get N sigma pdca cut
-  return fParameters[kNSigmaPdcaCut];
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetChi2NormCut ( Double_t chi2normCut )
-{
-  /// Set cut on normalized chi2 of tracks
-  SetParameter(kChi2NormCut,chi2normCut);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetChi2NormCut () const
-{
-  /// Get cut on normalized chi2 of tracks
-  return fParameters[kChi2NormCut];
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetRelPResolution ( Double_t relPResolution )
-{
-  /// Set relative momentum resolution
-  SetParameter(kRelPResolution,relPResolution);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetRelPResolution () const
-{
-  /// Get relative momentum resolution
-  return fParameters[kRelPResolution];
-}
-
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetSlopeResolution ( Double_t slopeResolution )
-{
-  /// Set slope resolution
-  SetParameter(kSlopeResolution,slopeResolution);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetSlopeResolution () const
-{
-  /// Get slope resolution
-  return fParameters[kSlopeResolution];
-}
-
-//________________________________________________________________________
-void AliMuonTrackCuts::SetSharpPtCut ( Double_t valueApt, Double_t valueLpt, Double_t valueHpt  )
-{
-  /// Set sharp tracker cut matching the trigger level
-
-  SetParameter(kSharpPtApt, valueApt);
-  SetParameter(kSharpPtLpt, valueLpt);
-  SetParameter(kSharpPtHpt, valueHpt);
-}
-
-//________________________________________________________________________
-Double_t AliMuonTrackCuts::GetSharpPtCut ( Int_t trigPtCut, Bool_t warn ) const
-{
-  /// Get sharp tracker cut matching the trigger level
-  /// trigPtCut can be 0 (Apt), 1 (Lpt) or 2 (Hpt)
-  if ( trigPtCut < 0 || trigPtCut > 2 ) {
-    if ( warn ) AliError("Allowed values for trigPtCut are 0 (Apt), 1 (Lpt), 2 (Hpt)");
-    return 0.;
-  }
-  Int_t ipar = kSharpPtApt + trigPtCut;
-  return fParameters[ipar];
-}
 
 //________________________________________________________________________
 void AliMuonTrackCuts::SetDefaultFilterMask ()
@@ -529,7 +368,7 @@ Bool_t AliMuonTrackCuts::TrackPtCutMatchTrigClass ( const AliVParticle* track, c
   Int_t matchTrig = AliAnalysisMuonUtility::GetMatchTrigger(track);
   Bool_t matchTrackerPt = kTRUE;
   if ( IsApplySharpPtCutInMatching() ) {
-    matchTrackerPt = ( track->Pt() >= GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
+    matchTrackerPt = ( track->Pt() >= fOADBParam.GetSharpPtCut(ptCutFromClass[0]-1,kFALSE) );
   }
   Bool_t passCut = ( ( matchTrig >= ptCutFromClass[0] ) && matchTrackerPt );
   AliDebug(1,Form("Class matchTrig %i %i  trackMatchTrig %i  trackPt %g (required %i)  passCut %i", ptCutFromClass[0], ptCutFromClass[1], matchTrig, track->Pt(), IsApplySharpPtCutInMatching(),passCut));
@@ -565,16 +404,5 @@ void AliMuonTrackCuts::Print(Option_t* option) const
     if ( filterMask & kMuTrackChiSquare ) printf("  Chi2 cut on track\n");
     printf(" ******************** \n");
   }
-  if ( sopt.Contains("param") ) {
-    printf(" *** Muon track parameter summary: ***\n");
-    printf("  Mean vertex DCA: (%g, %g, %g)\n", fParameters[kMeanDcaX], fParameters[kMeanDcaY], fParameters[kMeanDcaZ]);
-    printf("  Mean p correction (GeV/c): theta2-3 = %g  theta3-10 = %g\n", fParameters[kMeanPCorr23], fParameters[kMeanPCorr310]);
-    printf("  Sigma p x DCA (cm x GeV/c): theta2-3 = %g  theta3-10 = %g\n", fParameters[kSigmaPdca23], fParameters[kSigmaPdca310]);
-    printf("  Cut p x DCA in units of sigma: %g\n", fParameters[kNSigmaPdcaCut]);
-    printf("  Cut on track chi2/NDF: %g\n", fParameters[kChi2NormCut]);
-    printf("  Momentum resolution: %g\n", fParameters[kRelPResolution]);
-    printf("  Slope resolution: %g\n", fParameters[kSlopeResolution]);
-    printf("  Sharp pt cut: %g (Apt)  %g (Lpt)  %g (Hpt)\n", fParameters[kSharpPtApt], fParameters[kSharpPtLpt], fParameters[kSharpPtHpt]);
-    printf(" ********************************\n");
-  }
+  if ( sopt.Contains("param") ) fOADBParam.Print();
 }

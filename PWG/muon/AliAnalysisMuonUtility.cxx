@@ -30,17 +30,20 @@
 #include "TAxis.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
+#include "TFile.h"
 
 // STEER includes
+#include "AliInputEventHandler.h"
+#include "AliAODHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliVVertex.h"
-#include "AliAODMCHeader.h"
 #include "AliLog.h"
 
 // CORRFW includes
@@ -361,6 +364,65 @@ AliVVertex* AliAnalysisMuonUtility::GetVertexSPD ( const AliVEvent* event )
   
   AliVVertex* primaryVertex = ( IsAODEvent(event) ) ? (AliVVertex*)static_cast<const AliAODEvent*>(event)->GetPrimaryVertexSPD() : (AliVVertex*)static_cast<const AliESDEvent*>(event)->GetPrimaryVertexSPD();
   return primaryVertex;
+}
+
+
+//________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetPassNumber ( const AliInputEventHandler* eventHandler )
+{
+  /// Get pass number from event
+
+  // At present there is no straightforward way to get the pass number.
+  // The pass number is usually written in the path to the ESDs/AODs
+  // but this won't work for:
+  // - MC data (no pass info available)
+  // - local ESDs/AODs
+  
+  TString filePath = "";
+  const AliVEvent* event = eventHandler->GetEvent();  
+  if ( IsAODEvent(event) ) {
+    // In AODs, the header contains the path to the input ESD event
+    // However, sometimes there is not the FULL path of the ESDs.
+    // In that case we cannot extract the pass number.
+    // To increase the possibility of getting the pass number,
+    // try first to find the info in the AOD header
+    // (which is a priori safer because it works even on local copies of AODs)
+    // and if it does not work, directly check the path to the AOD
+    filePath = static_cast<const AliAODEvent*> (event)->GetHeader()->GetESDFileName();
+    Int_t passNumber = GetPassNumber(filePath.Data());
+    if ( passNumber < 0 ) AliWarningClass("Check again with the AOD path");
+    else return passNumber;
+  }
+  
+  filePath = eventHandler->GetTree()->GetCurrentFile()->GetName();
+  return GetPassNumber(filePath.Data());
+}
+
+
+//________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetPassNumber ( const char* str )
+{
+  //
+  /// Get pass number from string
+  //
+  
+  TString currName(str);
+  currName.ToUpper();
+  Int_t idx = currName.Index("PASS");
+  if ( idx >= 0 ) {
+    // Remove all of the words before PASS (and remove the word PASS itself)
+    currName.Remove(0,idx+4);
+    // Cut the word from the end untill only the digits are left
+    // (In this way we can extract the pass number even if it has more than one digit)
+    while ( ! currName.IsDigit() && currName.Length() > 0 ) {
+      currName.Remove(currName.Length()-1);
+    }
+    
+    if ( currName.Length() > 0 ) return currName.Atoi();
+  }
+  
+  AliWarningClass(Form("Cannot find pass number in: %s", str));
+  return -1;
 }
 
 

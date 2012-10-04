@@ -37,7 +37,8 @@ AliAnalysisTaskMuonCuts* AddTaskMuonCuts(Bool_t isMC = kFALSE)
   // Create cuts
   AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("TestStandardMuonTrackCuts", "TestStandardMuonTrackCuts");
   muonTrackCuts->SetIsMC(isMC);
-  muonTrackCuts->SetUseCustomParam(kTRUE);
+  muonTrackCuts->SetAllowDefaultParams();
+  muonTrackCuts->SetCustomParamFromRun();
 
   // Create task
   AliAnalysisTaskMuonCuts *muonCutsAnalysisTask = new AliAnalysisTaskMuonCuts("MuonCutsTask", *muonTrackCuts);
