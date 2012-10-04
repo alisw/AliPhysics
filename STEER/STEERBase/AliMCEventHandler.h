@@ -22,6 +22,7 @@
 class TFile;
 class TTree;
 class TList;
+class TTreeCache;
 
 class TParticle;
 class TString;
@@ -62,6 +63,7 @@ public:
     virtual void         AddSubsidiaryHandler(AliMCEventHandler* handler);
     virtual void         SetNumberOfEventsInContainer(Int_t nev) {fEventsInContainer = nev;}
     virtual void         SetPreReadMode(PreReadMode_t mode) {Changed(); fPreReadMode = mode;}
+    virtual void         SetCacheSize(Long64_t size) {if (fCacheSize==0) fCacheSize = size;}
     //
     AliMCEvent* MCEvent() const {return fMCEvent;}
     TTree*      TreeTR()  const {return fTreeTR;}
@@ -104,8 +106,11 @@ private:
     TList                 *fSubsidiaryHandlers; //! List of subsidiary MC handlers (for example for Background)
     Int_t                  fEventsInContainer;  //! Number of events in container class
     PreReadMode_t          fPreReadMode;        // Pre reading mode
+    Long64_t               fCacheSize;          // Cache size for kinematics tree
+    TTreeCache            *fCacheTK;            //! Cache for kinematics tree
+    TTreeCache            *fCacheTR;            //! Cache for track references tree
     
-    ClassDef(AliMCEventHandler,2)  //MC Truth EventHandler class
+    ClassDef(AliMCEventHandler,3)  //MC Truth EventHandler class
 };
 #endif 
 

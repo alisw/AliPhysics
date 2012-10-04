@@ -35,6 +35,7 @@
 #include "AliLog.h"
 
 #include <TTree.h>
+#include <TTreeCache.h>
 #include <TFile.h>
 #include <TList.h>
 #include <TParticle.h>
@@ -67,7 +68,10 @@ AliMCEventHandler::AliMCEventHandler() :
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
-    fPreReadMode(kNoPreRead)
+    fPreReadMode(kNoPreRead),
+    fCacheSize(0),
+    fCacheTK(0),
+    fCacheTR(0)
 {
   //
   // Default constructor
@@ -99,7 +103,10 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
-    fPreReadMode(kNoPreRead)
+    fPreReadMode(kNoPreRead),
+    fCacheSize(0),
+    fCacheTK(0),
+    fCacheTR(0)
 {
   //
   // Constructor
@@ -115,6 +122,8 @@ AliMCEventHandler::~AliMCEventHandler()
     delete fFileE;
     delete fFileK;
     delete fFileTR;
+    delete fCacheTK;
+    delete fCacheTR;
 }
 
 Bool_t AliMCEventHandler::Init(Option_t* opt)
@@ -184,7 +193,10 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
   if (!fInitOk) return kFALSE;
     
   Int_t inew  = iev / fEventsPerFile;
+  Bool_t firsttree = (fTreeK==0) ? kTRUE : kFALSE;
+  Bool_t newtree = firsttree;
   if (inew != fFileNumber) {
+    newtree = kTRUE;
     fFileNumber = inew;
     if (!OpenFile(fFileNumber)){
       return kFALSE;
@@ -227,8 +239,35 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
     // Connect TR to MCEvent
     fMCEvent->ConnectTreeTR(fTreeTR);
   }
-
-  //
+  // Now setup the caches if not yet done
+  if (fCacheSize) {
+    if (firsttree) {
+      fTreeK->SetCacheSize(fCacheSize);
+      fCacheTK = (TTreeCache*) fFileK->GetCacheRead(fTreeK);
+      TTreeCache::SetLearnEntries(1);
+      fTreeK->AddBranchToCache("*",kTRUE);
+      Info("LoadEvent","Read cache enabled %lld bytes for TreeK",fCacheSize);
+      if (fTreeTR) {
+        fTreeTR->SetCacheSize(fCacheSize);
+        fCacheTR = (TTreeCache*) fFileTR->GetCacheRead(fTreeTR);
+        TTreeCache::SetLearnEntries(1);
+        fTreeTR->AddBranchToCache("*",kTRUE);
+        Info("LoadEvent","Read cache enabled %lld bytes for TreeTR",fCacheSize);
+      } 
+    } else {
+      // We need to reuse the previous caches and every new event is a new tree
+      if (fCacheTK) {
+         fCacheTK->ResetCache();
+         if (fFileK) fFileK->SetCacheRead(fCacheTK, fTreeK);
+         fCacheTK->UpdateBranches(fTreeK);
+      }
+      if (fCacheTR) {
+         fCacheTR->ResetCache();
+         if (fFileTR) fFileTR->SetCacheRead(fCacheTR, fTreeTR);
+         fCacheTR->UpdateBranches(fTreeTR);
+      }   
+    }
+  }  
   return kTRUE;
 }
 
@@ -241,7 +280,7 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
 	fkExtension = "";
     }
     
-    
+    if (fFileK && fCacheTK) fFileK->SetCacheRead(0, fTreeK);
     delete fFileK;
     fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fkExtension));
     if (!fFileK) {
@@ -251,13 +290,14 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     }
     
     if (fReadTR) {
-	delete fFileTR;
-	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
-	if (!fFileTR) {
-	    AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
-	    fInitOk = kFALSE;
-	    return kFALSE;
-	}
+      if (fFileTR && fCacheTR) fFileTR->SetCacheRead(0, fTreeTR);
+      delete fFileTR;
+      fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
+      if (!fFileTR) {
+        AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
+        fInitOk = kFALSE;
+        return kFALSE;
+      }
     }
     
     fInitOk = kTRUE;
@@ -494,8 +534,10 @@ void AliMCEventHandler::ResetIO()
 Bool_t AliMCEventHandler::FinishEvent()
 {
     // Clean-up after each event
-    delete fDirTR;  fDirTR = 0;
-    delete fDirK;   fDirK  = 0;    
+   if (fFileK && fCacheTK) fFileK->SetCacheRead(0, fTreeK);
+   if (fFileTR && fCacheTR) fFileTR->SetCacheRead(0, fTreeTR);
+   delete fDirTR;  fDirTR = 0;
+   delete fDirK;   fDirK  = 0;    
     if (fInitOk) fMCEvent->FinishEvent();
 
     if (fSubsidiaryHandlers) {

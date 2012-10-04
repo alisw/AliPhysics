@@ -98,6 +98,7 @@ enum EAliAnalysisFlags {
                        GetAnalysisType() const    {return fMode;}
    void                GetAnalysisTypeString(TString &type) const;                    
    Bool_t              GetAutoBranchLoading() const {return fAutoBranchHandling;} 
+   Long64_t            GetCacheSize() const       {return fCacheSize;}
    static const char  *GetCommonFileName()        {return fgCommonFileName.Data();}
    AliAnalysisDataContainer *
                        GetCommonInputContainer() const  {return fCommonInput;}
@@ -106,6 +107,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetContainers() const      {return fContainers;}
    Long64_t            GetCurrentEntry() const    {return fCurrentEntry;}
    UInt_t              GetDebugLevel() const      {return fDebug;}
+   Bool_t              GetAsyncReading() const {return fAsyncReading;}
    TString             GetExtraFiles() const      {return fExtraFiles;}
    AliVEventPool*      GetEventPool()  const      {return fEventPool;}
    Bool_t              GetFileFromWrapper(const char *filename, const TList *source);
@@ -139,11 +141,13 @@ enum EAliAnalysisFlags {
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetAutoBranchLoading(Bool_t b) { fAutoBranchHandling = b; }
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
+   void                SetCacheSize(Long64_t size)                {fCacheSize = size;}
    void                SetCollectSysInfoEach(Int_t nevents=0)     {fNSysInfo = nevents;}
    void                SetCollectThroughput(Bool_t flag)          {Changed(); TObject::SetBit(kCollectThroughput,flag);}
    static void         SetCommonFileName(const char *name)        {fgCommonFileName = name;}
    void                SetDebugLevel(UInt_t level);
    void                SetDisableBranches(Bool_t disable=kTRUE)   {Changed(); TObject::SetBit(kDisableBranches,disable);}
+   void                SetAsyncReading(Bool_t flag=kTRUE)    {fAsyncReading = flag;}
    void                SetExternalLoop(Bool_t flag)               {Changed(); TObject::SetBit(kExternalLoop,flag);}
    void                SetEventPool(AliVEventPool* const epool)   {Changed(); fEventPool = epool;}
    void                SetFileInfoLog(const char *name) {TObject::SetBit(kCollectThroughput,kTRUE); fFileInfoLog = name;}
@@ -219,6 +223,7 @@ enum EAliAnalysisFlags {
    void                 UnLock();
    void                 Changed();
 protected:
+   void                 CreateReadCache();
    void                 ImportWrappers(TList *source);
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
    void                 DoLoadBranch(const char *name);
@@ -255,10 +260,12 @@ private:
    TString                 fExtraFiles;          // List of extra files to be merged
    TString                 fFileInfoLog;         // File name for fileinfo logs
    Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
+   Bool_t                  fAsyncReading;        // Enable async reading
    THashTable              fTable;               // keep branch ptrs in case of manual branch loading
    Int_t                   fRunFromPath;         // Run number retrieved from path to input data
    Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
    Long64_t                fMaxEntries;          // Maximum number of entries
+   Long64_t                fCacheSize;           // Cache size in bytes
    static Int_t            fPBUpdateFreq;        // Progress bar update freq.
    TString                 fStatisticsMsg;       // Statistics user message
    TString                 fRequestedBranches;   // Requested branch names
@@ -272,6 +279,6 @@ private:
    Double_t                fInitTime;            //! Cumulated time in initialization
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,17)  // Analysis manager class
+   ClassDef(AliAnalysisManager,18)  // Analysis manager class
 };   
 #endif

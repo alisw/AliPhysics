@@ -51,6 +51,7 @@ enum EEventHandlerFlags {
     void                 Lock();
     void                 UnLock();
     void                 Changed();
+    virtual void         SetCacheSize(Long64_t) {}
  private :
   ClassDef(AliVEventHandler, 1);
 };

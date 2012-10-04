@@ -33,6 +33,8 @@
 #include <TMap.h>
 #include <TClass.h>
 #include <TFile.h>
+#include <TTreeCache.h>
+#include <TEnv.h>
 #include <TMath.h>
 #include <TH1.h>
 #include <TMethodCall.h>
@@ -97,10 +99,12 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fExtraFiles(),
                     fFileInfoLog(),
                     fAutoBranchHandling(kTRUE), 
+                    fAsyncReading(kTRUE), // default prefetching on
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(0),
                     fMaxEntries(0),
+                    fCacheSize(100000000), // default 100 MB
                     fStatisticsMsg(),
                     fRequestedBranches(),
                     fStatistics(0),
@@ -165,10 +169,12 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fExtraFiles(other.fExtraFiles),
                     fFileInfoLog(other.fFileInfoLog),
                     fAutoBranchHandling(other.fAutoBranchHandling), 
+                    fAsyncReading(other.fAsyncReading),
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(other.fNcalls),
                     fMaxEntries(other.fMaxEntries),
+                    fCacheSize(other.fCacheSize),
                     fStatisticsMsg(other.fStatisticsMsg),
                     fRequestedBranches(other.fRequestedBranches),
                     fStatistics(other.fStatistics),
@@ -229,10 +235,12 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fgCommonFileName = "AnalysisResults.root";
       fgAnalysisManager = this;
       fAutoBranchHandling = other.fAutoBranchHandling;
+      fAsyncReading = other.fAsyncReading;
       fTable.Clear("nodelete");
       fRunFromPath = other.fRunFromPath;
       fNcalls     = other. fNcalls;
       fMaxEntries = other.fMaxEntries;
+      fCacheSize = other.fCacheSize;
       fStatisticsMsg = other.fStatisticsMsg;
       fRequestedBranches = other.fRequestedBranches;
       fStatistics = other.fStatistics;
@@ -272,6 +280,30 @@ AliAnalysisManager::~AliAnalysisManager()
    delete fInitTimer;
 }
 
+//______________________________________________________________________________
+void AliAnalysisManager::CreateReadCache()
+{
+// Create cache for reading according fCacheSize and fAsyncReading.
+   if (!fTree || !fTree->GetCurrentFile()) {
+      Error("CreateReadCache","Current tree or tree file not yet defined");
+      return;
+   }   
+   if (!fCacheSize) {
+      if (fDebug) Info("CreateReadCache","=== Read caching disabled ===");
+      return;
+   }
+//   gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
+//   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
+   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
+   fTree->SetCacheSize(fCacheSize);
+   TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
+   fTree->AddBranchToCache("*",kTRUE);    //<<< add all branches to the cache
+   if (fDebug) {
+      Info("CreateReadCache","Read cache enabled %lld bytes with async reading=%d",fCacheSize, (Int_t)fAsyncReading);
+   }
+   return;
+}   
+      
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
@@ -383,6 +415,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) InitAnalysis();
    if (!fInitOK) return kFALSE;
    fTree = tree;
+   CreateReadCache();
    fTable.Rehash(100);
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
@@ -408,7 +441,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    // Init timer should be already started
    // Apply debug options
    ApplyDebugOptions();
-   
+   if (fCacheSize && fMCtruthEventHandler) fMCtruthEventHandler->SetCacheSize(fCacheSize);
    if (!CheckTasks()) Fatal("SlaveBegin", "Not all needed libraries were loaded");
    static Bool_t isCalled = kFALSE;
    Bool_t init = kFALSE;
