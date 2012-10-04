@@ -195,11 +195,14 @@ private:
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
   
      TH2F*      fh2Ntriggers;              //triggers
-     TH2F*      fh2Ntriggers2;             //centrality bias of triggers 
+     TH2F*      fh2Ntriggers2C10;             //centrality bias of triggers 
+     TH2F*      fh2Ntriggers2C20;             //centrality bias of triggers 
      TH3F*      fh3JetDensity;             //jet density
      TH3F*      fh3JetDensityA4;           //jet density
-     TH2F*      fh2RPJets;                  //reaction plane Jets
-     TH2F*      fh2RPT;                     //reaction plane TT 
+     TH2F*      fh2RPJetsC10;                  //reaction plane Jets
+     TH2F*      fh2RPJetsC20;
+     TH2F*      fh2RPTC10;                     //reaction plane TT 
+     TH2F*      fh2RPTC20; 
      TH3F*      fh3spectriggeredC10;       //spec wrt RP
      TH3F*      fh3spectriggeredC20;           //triggered spectra
      TH3F*      fh3spectriggeredC3060;         //triggered spectra
