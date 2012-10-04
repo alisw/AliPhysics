@@ -688,7 +688,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        break;
      case 7:
        {
-         if ((ntokens !=8) && (ntokens != 10)) {
+         if ((ntokens !=8) && (ntokens != 10) && (ntokens != 11)) {
   	   AliError(Form("Invalid trigger class syntax (%s)!",strLine.Data()));
 	   return kFALSE;
          }
