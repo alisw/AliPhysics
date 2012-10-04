@@ -642,8 +642,18 @@ Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, const AliTRDtrackInfo * const track
   }
   if(x < 0.2)return 0;
 
-  Float_t upLimits[5]={85,1000,50*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+6,1000,50*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+10};
-  Float_t downLimits[5]={62,40,50*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-6,40,50*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-11};
+  Double_t upLimits[5]={
+      85.,
+      1000.,
+      50.*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+6.,
+      1000.,
+      50.*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+10.};
+  Double_t downLimits[5]={
+      62.,
+      40.,
+      50.*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-6.,
+      40.,
+      50.*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-11.};
   
   
   if(x < 0.7){
