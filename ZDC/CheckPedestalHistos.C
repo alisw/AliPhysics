@@ -27,7 +27,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
   TGrid::Connect("alien:",0,0,"t");
   
   char histoFName[150];
-  sprintf(histoFName,"alien:///alice/data/2011/Reference/ZDC/%d_pedestalReference.root",nRun);
+  sprintf(histoFName,"alien:///alice/data/2012/Reference/ZDC/%d_pedestalReference.root",nRun);
 
   int const kNChannels = 24;
   //
@@ -130,7 +130,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c6->cd(t+11);
     hPedCorrlg[t]->Draw();
   }
-  c6->Print("CorrSideC.ps");
+  c6->Print("CorrSideC.gif");
   //
   TCanvas *c7 = new TCanvas("c7","Side A correlations",300,200,1000,800);
   c7->Divide(5,4);
@@ -140,7 +140,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c7->cd(t+11);
     hPedCorrlg[t+12]->Draw();
   }
-  c7->Print("CorrSideA.ps");
+  c7->Print("CorrSideA.gif");
   //
   TCanvas *c8 = new TCanvas("c8","ZEM correlations",400,200,400,400);
   c8->Divide(2,2);
@@ -150,7 +150,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c8->cd(t+3);
     hPedCorrlg[t+10]->Draw();
   }
-  c8->Print("CorrZEM.ps");
+  c8->Print("CorrZEM.gif");
   //***********************************************************
   TCanvas *c1 = new TCanvas("c1","ZNC pedestals",0,0,1000,400);
   c1->Divide(5,2);
@@ -160,7 +160,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c1->cd(y+6);
     hPedlg[y]->Draw();
   }
-  c1->Print("ZNCPed.ps");
+  c1->Print("ZNCPed.gif");
   //
   TCanvas *c2 = new TCanvas("c2","ZPC pedestals",300,0,1000,400);
   c2->Divide(5,2);
@@ -170,7 +170,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c2->cd(y+6);
     hPedlg[y+5]->Draw();
   }
-  c2->Print("ZPCPed.ps");
+  c2->Print("ZPCPed.gif");
   //
   TCanvas *c3 = new TCanvas("c3","ZEM pedestals",400,0,400,400);
   c3->Divide(2,2);
@@ -180,7 +180,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c3->cd(y+3);
     hPedlg[y+10]->Draw();
   }
-  c3->Print("ZEMPed.ps");
+  c3->Print("ZEMPed.gif");
   //
   TCanvas *c4 = new TCanvas("c4","ZNA pedestals",0,400,1000,400);
   c4->Divide(5,2);
@@ -190,7 +190,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c4->cd(y+6);
     hPedlg[y+12]->Draw();
   }
-  c4->Print("ZNAPed.ps");
+  c4->Print("ZNAPed.gif");
   //
   TCanvas *c5 = new TCanvas("c5","ZPA pedestals",300,400,1000,400);
   c5->Divide(5,2);
@@ -200,6 +200,6 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
     c5->cd(y+6);
     hPedlg[y+17]->Draw();
   }
-  c5->Print("ZPAPed.ps");
+  c5->Print("ZPAPed.gif");
  }
 }
