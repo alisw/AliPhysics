@@ -249,12 +249,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   fMCEvent = MCEvent();
   if(fMCEvent){
     if(fDebug)
-      cout<<"MCevent exists\n";
+      std::cout<<"MCevent exists\n";
     fStack = (AliStack*)fMCEvent->Stack();
   }
   else{
     if(fDebug)
-      cout<<"ERROR: NO MC EVENT!!!!!!\n";
+      std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
   FillMcHists();
   if(fDebug)
@@ -515,7 +515,7 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     if(!mcmom)
       continue;
     Int_t pdgMom = mcmom->GetPdgCode();
-    if(imom==6 || imom==7 && pdgMom==22) {
+    if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug)
 	printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
