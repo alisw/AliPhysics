@@ -9,8 +9,8 @@ void AddMCSignals(AliDielectron *die);
 void SetEtaCorrection();
 TVectorD *GetRunNumbers();
 
-TString names=("TPC;TOF;TRD;rec;TOFTRD;TOFTRD2;ITScls;ITSamy;dca;chi2;Gam0;Gam01;Gam05;Gam10;Gam15;Gam20;EtaGap01;EtaGap02;EtaGap03;EtaGap04;EtaGap05;SubLS;SubRndm");
-enum { kTPC=0, kTOF, kTRD, krec, kTOFTRD, kTOFTRD2, kITScls, kITSamy, kDCA, kChi, kGam0, kGam01, kGam05, kGam10, kGam15, kGam20, kEtaGap01, kEtaGap02, kEtaGap03, kEtaGap04, kEtaGap05, kSubLS, kSubRndm };
+TString names=("TPC;TOF;TRD;TOFTRD;TOFTRD2D;rec;Gam0;Gam01;Gam05;Gam10;Gam15;Gam20;EtaGap01;EtaGap02;EtaGap03;EtaGap04;EtaGap05;SubLS;SubRndm");
+enum { kTPC=0, kTOF, kTRD, kTOFTRD, kTOFTRD2D, krec,kGam0, kGam01, kGam05, kGam10, kGam15, kGam20, kEtaGap01, kEtaGap02, kEtaGap03, kEtaGap04, kEtaGap05, kSubLS, kSubRndm };
 
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
@@ -35,38 +35,51 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
 
   // switch off some configurations
-  switch(cutDefinition) {
-  case kTPC:
-      //case kTOF:
-  case kTRD:
-  case kTOFTRD:
-      return 0x0;
-      break;
-  case krec:
-      if(!hasMC) return 0x0;
-      break;
-      //case kTOFTRD2:
-    case kITScls:
-    case kITSamy:
-    case kDCA:
-    case kChi:
-      return 0x0;
-      break;
-      //    case kGam0:
-      //    case kGam01:
-      //    case kGam05:
-      //    case kGam10:
-      //    case kGam15:
-      //    case kGam20:
-    case kEtaGap01:
-    case kEtaGap02:
-    case kEtaGap03:
-    case kEtaGap04:
-    case kEtaGap05:
-    case kSubLS:
-    case kSubRndm:
-      if( hasMC) return 0x0;
-      break;
+  if(hasMC) { // MONTE CARLO
+    switch(cutDefinition) {
+    case kTPC:       return 0x0;
+    case kTOF:       return 0x0;
+    case kTRD:       return 0x0;
+    case kTOFTRD:    return 0x0;
+    case kTOFTRD2D:  return 0x0;
+    case krec:       return 0x0;
+    case kGam0:      return 0x0;
+    case kGam01:     return 0x0;
+    case kGam05:     return 0x0;
+    case kGam10:     return 0x0;
+    case kGam15:     return 0x0;
+    case kGam20:     return 0x0;
+    case kEtaGap01:  return 0x0;
+    case kEtaGap02:  return 0x0;
+    case kEtaGap03:  return 0x0;
+    case kEtaGap04:  return 0x0;
+    case kEtaGap05:  return 0x0;
+    case kSubLS:     return 0x0;
+    case kSubRndm:   return 0x0;
+    case kCutStats:  return 0x0;
+    }
+  } else { // COLLISION DATA
+    switch(cutDefinition) {
+    case kTPC:       return 0x0;
+    //            case kTOF:       return 0x0;
+    case kTRD:       return 0x0;
+    //            case kTOFTRD:    return 0x0;
+    //            case kTOFTRD2D:  return 0x0;
+    case krec:       return 0x0;
+    case kGam0:      return 0x0;
+    case kGam01:     return 0x0;
+    case kGam05:     return 0x0;
+    case kGam10:     return 0x0;
+    case kGam15:     return 0x0;
+    case kGam20:     return 0x0;
+    case kEtaGap01:  return 0x0;
+    case kEtaGap02:  return 0x0;
+    case kEtaGap03:  return 0x0;
+    case kEtaGap04:  return 0x0;
+    case kEtaGap05:  return 0x0;
+    case kSubLS:     return 0x0;
+    case kSubRndm:   return 0x0;
+    }
   }
 
   // create the actual framework object
@@ -102,15 +115,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   SetupPairCuts(die,cutDefinition);
 
   // histogram setup
-  if(cutDefinition == kTOF     ||
-     cutDefinition == kTOFTRD  ||
-     cutDefinition == kGam0    ||
-     cutDefinition == kTOFTRD2 ||
-     cutDefinition >= kEtaGap01 ) {
-    InitHistograms(die,cutDefinition);
-    printf(" Add %d types and %03d histos to the manager \n",die->GetHistogramList()->GetEntries(),
-	   0/*die->GetHistoManager()->GetList()->GetEntries()*/);
-  }
+  InitHistograms(die,cutDefinition);
+  printf(" Add %d types and %03d histos to the manager \n",die->GetHistogramList()->GetEntries(),
+	 0/*die->GetHistoManager()->GetList()->GetEntries()*/);
 
   // CF container setup, switched off
   if(cutDefinition <  kEtaGap01 ||
@@ -122,9 +129,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // HF arrays setup
-//   if(cutDefinition <  kEtaGap01 ) {
-//     InitHF(die,cutDefinition);
-//   }
+  //  if(cutDefinition <  kEtaGap01 ) {
+    InitHF(die,cutDefinition);
+    //}
 
 
   // bgrd estimators
@@ -173,10 +180,8 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // prefilter settings
-  if(cutDefinition == kTOFTRD2)
-    die->SetPreFilterAllSigns();
-  else
-    die->SetPreFilterUnlikeOnly();
+  //    die->SetPreFilterAllSigns();
+  die->SetPreFilterUnlikeOnly();
 
   // setup eta correction
   //  if(isESD && list.Contains("LHC10h")) SetEtaCorrection();
@@ -212,7 +217,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);    //0.8
   cuts->AddCut(pt);
 
-	// track cuts ESD and AOD
+  // track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
@@ -220,6 +225,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  if(cutDefinition==kTOF || cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2D)
+    varCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   cuts->AddCut(varCuts);
 
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -236,11 +243,15 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   ////////////////////////////////// DATA
   if(!hasMC) {
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.0,0.,0.,kTRUE);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
 
-    if(cutDefinition==kTRD || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2)
+    if(cutDefinition==kTRD || cutDefinition==kTOFTRD)
       pid->AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.8,1.,3.5.,6.,kFALSE,
+                  AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
+
+    if(cutDefinition==kTOFTRD2D)
+      pid->AddCut(AliDielectronPID::kTRDeleEff2D,AliPID::kElectron,.8,1.,3.5.,6.,kFALSE,
                   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
   }
 
@@ -331,8 +342,9 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   ////////////////////////////////// DATA + MC
   // pid cuts TPC + TOF & TRD
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0,4.);
-  if(cutDefinition==kTOF || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2)
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
+  
+  if(cutDefinition==kTOF || cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2D)
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
 
   if(cutDefinition!=krec) cuts->AddCut(pid);
@@ -391,37 +403,94 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   // Initialise the histograms
   //
 
+  // booleans for histo selection
+  Bool_t bHistEvts = kFALSE, bHistPair = kFALSE, bHistPairME = kFALSE, bHistFlow = kFALSE, bHistFlowQA=kFALSE;
+  switch (cutDefinition) {
+  case kTPC:
+  case kTOF:      bHistEvts=kTRUE; bHistFlow=kTRUE; bHistPair=kTRUE; bHistPairME=kTRUE; break;
+  case kTRD:
+  case kTOFTRD:
+  case kTOFTRD2D: bHistFlow=kTRUE; bHistPair=kTRUE; break;
+  case krec:
+  case kITScls:
+  case kITSamy:
+  case kDCA:
+  case kChi:      break;
+  case kEtaGap01:
+  case kEtaGap02:
+  case kEtaGap03:
+  case kEtaGap04:
+  case kEtaGap05:
+  case kSubRndm:  bHistFlow=kTRUE; bHistFlowQA=kTRUE; break;
+  case kSubLS:    bHistFlow=kTRUE; bHistFlowQA=kTRUE; bHistEvts=kTRUE; break;
+  case kGam0:
+  case kGam01:
+  case kGam05:
+  case kGam10:
+  case kGam15:
+  case kGam20:    break;
+  }
+
+
   //Setup histogram Manager
   AliDielectronHistos *histos=new AliDielectronHistos(die->GetName(),die->GetTitle());
 
   //add histograms to event class
   histos->AddClass("Event");
-  histos->UserHistogram("Event","RunNumber","Events per run;run;events",
-                        GetRunNumbers(),
-			AliDielectronVarManager::kRunNumber);
-  histos->UserHistogram("Event","VtxZ","Vertex Z;z (cm)", 300,-15.,15.,
-                        AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","Centrality","Centrality;centrality (%);events",
                         "0.,5.,10.,20.,40.,50.,60.,80.",
                         AliDielectronVarManager::kCentrality);
-  histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0;events", 500,0.,25000.,
-                        AliDielectronVarManager::kMultV0);
-  histos->UserHistogram("Event","Cent_Mult","Centrality vs. Multiplicity;centrality (%);Multiplicity V0",
-                        10,0.,100., 500,0.,25000.,
-                        AliDielectronVarManager::kCentrality,AliDielectronVarManager::kMultV0);
-  histos->UserProfile("Event","Cent_Nacc",
-                      "accepted tracks;centrality (%)",
-                      AliDielectronVarManager::kNacc,
+
+  ////// EVENT HISTOS /////
+  if(bHistEvts) {
+    histos->UserHistogram("Event","RunNumber","Events per run;run;events",
+			  GetRunNumbers(),
+			  AliDielectronVarManager::kRunNumber);
+    histos->UserHistogram("Event","VtxZ","Vertex Z;z (cm)", 300,-15.,15.,
+			  AliDielectronVarManager::kZvPrim);
+    histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0;events", 500,0.,25000.,
+			  AliDielectronVarManager::kMultV0);
+    histos->UserHistogram("Event","Cent_Mult","Centrality vs. Multiplicity;centrality (%);Multiplicity V0",
+			  10,0.,100., 500,0.,25000.,
+			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kMultV0);
+    histos->UserProfile("Event","Cent_Nacc", "accepted tracks;centrality (%)",
+			AliDielectronVarManager::kNacc,
+			"0.,5.,10.,20.,40.,50.,60.,80.,100.",
+			AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Event","Cent_NVtxContrib", "number of vertex contributors;centrality (%)",
+			AliDielectronVarManager::kNVtxContrib,
                       "0.,5.,10.,20.,40.,50.,60.,80.,100.",
-                      AliDielectronVarManager::kCentrality);
-  histos->UserProfile("Event","Cent_NVtxContrib",
-                      "number of vertex contributors;centrality (%)",
-                      AliDielectronVarManager::kNVtxContrib,
-                      "0.,5.,10.,20.,40.,50.,60.,80.,100.",
-                      AliDielectronVarManager::kCentrality);
+			AliDielectronVarManager::kCentrality);
+  } //hist: event
+
 
   ////// FLOW //////
-  if(cutDefinition == kTOFTRD || cutDefinition==kTOF) {
+  if(bHistFlow) {
+
+    // RP angles versus centrality
+    histos->UserHistogram("Event","Cent_TPCrpH2","TPC RP;centrality (%);#Psi^{TPC} (rad.)",
+                          10,0.,100.,100,-2.,2.,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCrpH2);
+    histos->UserHistogram("Event","Cent_TPCsub1rpH2","TPC-1 RP;centrality (%);#Psi^{sub1} (rad.)",
+                          10,0.,100.,100,-2.,2.,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub1rpH2);
+    histos->UserHistogram("Event","Cent_TPCsub2rpH2","TPC-2 RP;centrality (%);#Psi^{sub2} (rad.)",
+                          10,0.,100.,100,-2.,2.,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub2rpH2);
+
+    histos->UserHistogram("Event","Cent_v0ACrpH2","VZERO-AC RP;centrality (%);#Psi_{2}^{V0AC} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ACrpH2);
+    histos->UserHistogram("Event","Cent_v0ArpH2","VZERO-A RP;centrality (%);#Psi_{2}^{V0A} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ArpH2);
+    histos->UserHistogram("Event","Cent_v0CrpH2","VZERO-C RP;centrality (%);#Psi_{2}^{V0C} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CrpH2);
+  } // hist: flow
+
+  if(bHistFlowQA) {
+    // TPC event plane
     histos->UserHistogram("Event","TPCxH2","TPC Qx component;TPCxH2",
                           100,-1500.,1500.,
                           AliDielectronVarManager::kTPCxH2);
@@ -483,113 +552,40 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
      histos->UserHistogram("Event","TPCsub12DiffH2uc","TPC reaction plane difference;TPCsub12DiffH2uc",
      100,-1.,1.,
      AliDielectronVarManager::kTPCsub12DiffH2uc);
-     */
-    histos->UserHistogram("Event","V0ACrpH2","VZERO-AC RP; #Psi_{2}^{V0AC} (rad.)",
-                          100,-2.0,2.0,
-                          AliDielectronVarManager::kV0ACrpH2);
-    histos->UserHistogram("Event","V0ArpH2","VZERO-A RP; #Psi_{2}^{V0A} (rad.)",
-                          100,-2.0,2.0,
-                          AliDielectronVarManager::kV0ArpH2);
-    histos->UserHistogram("Event","V0CrpH2","VZERO-C RP; #Psi_{2}^{V0C} (rad.)",
-                          100,-2.0,2.0,
-                          AliDielectronVarManager::kV0CrpH2);
+    */
 
-    histos->UserHistogram("Event","V0ATPCDiffH2","VZERO-A TPC diff; cos(2(#Psi^{V0A}-#Psi^{TPC}))",
-                          300,-1.0,1.0,
-                          AliDielectronVarManager::kV0ATPCDiffH2);
-    histos->UserHistogram("Event","V0CTPCDiffH2","VZERO-C TPC diff; cos(2(#Psi^{V0C}-#Psi^{TPC}))",
-                          300,-1.0,1.0,
-                          AliDielectronVarManager::kV0CTPCDiffH2);
-    histos->UserHistogram("Event","V0AV0CDiffH2","VZERO-A VZERO-C diff; cos(2(#Psi^{V0A}-#Psi^{V0C}))",
-                          300,-1.0,1.0,
-                          AliDielectronVarManager::kV0AV0CDiffH2);
-
-    // centrality dependent event plane histograms
-    histos->UserHistogram("Event","Cent_TPCrpH2","TPC RP;centrality (%);#Psi^{TPC} (rad.)",
-                          10,0.,100.,100,-2.,2.,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCrpH2);
-    histos->UserHistogram("Event","Cent_TPCsub1rpH2","TPC-1 RP;centrality (%);#Psi^{sub1} (rad.)",
-                          10,0.,100.,100,-2.,2.,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub1rpH2);
-    histos->UserHistogram("Event","Cent_TPCsub2rpH2","TPC-2 RP;centrality (%);#Psi^{sub2} (rad.)",
-                          10,0.,100.,100,-2.,2.,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub2rpH2);
-
-    histos->UserHistogram("Event","Cent_V0ACrpH2","VZERO-AC RP;centrality (%);#Psi_{2}^{V0AC} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0ACrpH2);
-    histos->UserHistogram("Event","Cent_V0ArpH2","VZERO-A RP;centrality (%);#Psi_{2}^{V0A} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0ArpH2);
-    histos->UserHistogram("Event","Cent_V0CrpH2","VZERO-C RP;centrality (%);#Psi_{2}^{V0C} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0CrpH2);
-    // for resolution calculation
-    histos->UserHistogram("Event","Cent_V0ATPCDiffH2","VZERO-A TPC diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{TPC}))",
+    // EP resolution calculation
+    histos->UserHistogram("Event","Cent_v0ATPCDiffH2","VZERO-A TPC diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{TPC}))",
                           10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0ATPCDiffH2);
-    histos->UserHistogram("Event","Cent_V0CTPCDiffH2","VZERO-C TPC diff;centrality (%);cos(2(#Psi^{V0C}-#Psi^{TPC}))",
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ATPCDiffH2);
+    histos->UserHistogram("Event","Cent_v0CTPCDiffH2","VZERO-C TPC diff;centrality (%);cos(2(#Psi^{V0C}-#Psi^{TPC}))",
                           10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0CTPCDiffH2);
-    histos->UserHistogram("Event","Cent_V0AV0CDiffH2","VZERO-A VZERO-C diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{V0C}))",
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CTPCDiffH2);
+    histos->UserHistogram("Event","Cent_v0Av0CDiffH2","VZERO-A VZERO-C diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{V0C}))",
                           10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kV0AV0CDiffH2);
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0Av0CDiffH2);
     histos->UserHistogram("Event","Cent_TPCsub12DiffH2","TPC-sub1 TPC-sub2 diff;centrality (%);cos(2(#Psi^{sub1}-#Psi^{sub2}))",
                           10,0.,100.,300,-1.0,1.0,
                           AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2);
     // detector effects
     histos->UserHistogram("Event","Cent_TPCsub12DiffH2Sin","TPC-sub1 TPC-sub2 diff;centrality (%);sin(2(#Psi^{sub1}-#Psi^{sub2}))",
-                          10,0.,100.,300,-1.0,1.0,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2Sin);
-
-    // EPSelectionTask V0 information directly from the ESDs
-    histos->UserHistogram("Event","Cent_v0ACrpH2","VZERO-AC RP;centrality (%);#Psi_{2}^{v0AC} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ACrpH2);
-    histos->UserHistogram("Event","Cent_v0ArpH2","VZERO-A RP;centrality (%);#Psi_{2}^{v0A} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ArpH2);
-    histos->UserHistogram("Event","Cent_v0CrpH2","VZERO-C RP;centrality (%);#Psi_{2}^{v0C} (rad.)",
-                          10,0.,100.,100,-2.0,2.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CrpH2);
-    // for resolution calculation
-    histos->UserHistogram("Event","Cent_v0ATPCDiffH2","VZERO-A TPC diff;centrality (%);cos(2(#Psi^{v0A}-#Psi^{TPC}))",
                           10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ATPCDiffH2);
-    histos->UserHistogram("Event","Cent_v0CTPCDiffH2","VZERO-C TPC diff;centrality (%);cos(2(#Psi^{v0C}-#Psi^{TPC}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CTPCDiffH2);
-    histos->UserHistogram("Event","Cent_v0Av0CDiffH2","VZERO-A VZERO-C diff;centrality (%);cos(2(#Psi^{v0A}-#Psi^{v0C}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0Av0CDiffH2);
+			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2Sin);
+  } //hist: flowQA
 
-  }
+  if(bHistPair) {
+    //Initialise histogram classes
+    histos->SetReservedWords("Track;Pair");
 
-  ////// MONTE CARLO //////
-  /*
-    if(cutDefinition == kTOFTRD && hasMC) {
-    histos->AddClass("MCEvent");
-    histos->UserHistogram("MCEvent","Cent_NJPsis","Centrality vs. generated incl. J/#psi per event;centrality (%);N_{J/#psi}",
-    10,0.,100., 21,-0.5,20.5,
-    AliDielectronVarManager::kCentrality,AliDielectronVarManager::kNumberOfJPsis);
+    //Pair classes
+    // to fill also mixed event histograms loop until 7 or 10
+    for (Int_t i=0; i<(bHistPairME ? 8 : 3); ++i){
+      histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(i)));
     }
-  */
-
-  //Initialise histogram classes
-  histos->SetReservedWords("Track;Pair");
-
-  //Pair classes
-  // to fill also mixed event histograms loop until 10
-  for (Int_t i=0; i<3; ++i){
-    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(i)));
-  }
-
-  if(cutDefinition < kEtaGap01) {
-
-    //legs from pair
+    //legs from pair (fill SE)
     for (Int_t i=0; i<3; ++i){
       histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(i)));
     }
-
     //Track classes
     //to fill also track info from 2nd event loop until 2
     for (Int_t i=0; i<2; ++i){
@@ -598,8 +594,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     //track rotation
     //   histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(AliDielectron::kEv1PMRot)));
     //   histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(AliDielectron::kEv1PMRot)));
-
-    ///// add histograms to Track classes /////
 
     // Vertex
     histos->UserHistogram("Track","ImpactParXY",";dXY (cm);#tracks", 500,-1.,1.,
@@ -657,69 +651,40 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Pair","LegDistXY",";dca_{xy} (cm)",
                           50,0.,5., AliDielectronVarManager::kLegDistXY);
 
-  }
+    //// FLOW results use tprofiles
+    if(bHistFlow) {
+      histos->UserProfile("Pair","M_Cent_Pt_v0ACrpH2FlowV2",
+			  "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+			  AliDielectronVarManager::kv0ACrpH2FlowV2,
+			  125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+			  AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+      histos->UserProfile("Pair","M_Cent_Pt_v0ArpH2FlowV2",
+			  "cos(2(#varphi-#Psi^{V0A}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+			  AliDielectronVarManager::kv0ArpH2FlowV2,
+			  125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+			  AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+      histos->UserProfile("Pair","M_Cent_Pt_v0CrpH2FlowV2",
+			  "cos(2(#varphi-#Psi^{V0C}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+			  AliDielectronVarManager::kv0CrpH2FlowV2,
+			  125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+			  AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+    } //hist: flow
+  } //hist: pair
 
-  //// FLOW results use tprofiles
-  if(cutDefinition == kTOFTRD || cutDefinition == kTOF || cutDefinition >= kEtaGap01) {
 
-    histos->UserProfile("Pair","M_Cent_Pt_V0ACrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kV0ACrpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+  ////// MONTE CARLO //////
+  /*
+    if(cutDefinition == kTOFTRD && hasMC) {
+    histos->AddClass("MCEvent");
+    histos->UserHistogram("MCEvent","Cent_NJPsis","Centrality vs. generated incl. J/#psi per event;centrality (%);N_{J/#psi}",
+    10,0.,100., 21,-0.5,20.5,
+    AliDielectronVarManager::kCentrality,AliDielectronVarManager::kNumberOfJPsis);
+    }
+  */
 
-    histos->UserProfile("Pair","M_Cent_Pt_V0ArpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0A}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kV0ArpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
-
-    histos->UserProfile("Pair","M_Cent_Pt_V0CrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0C}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kV0CrpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
-
-    histos->UserProfile("Pair","M_Cent_Pt_v0ACrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kv0ACrpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
-
-    histos->UserProfile("Pair","M_Cent_Pt_v0ArpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0A}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kv0ArpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
-
-    histos->UserProfile("Pair","M_Cent_Pt_v0CrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0C}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
-                        AliDielectronVarManager::kv0CrpH2FlowV2,
-                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
-
-    // 1D control histos
-    /*
-    histos->UserProfile("Pair","M_V0ACrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2})",
-                        AliDielectronVarManager::kV0ACrpH2FlowV2,
-                        125,0.,125*.04,
-                        AliDielectronVarManager::kM);
-
-    histos->UserProfile("Pair","M_V0ArpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2})",
-                        AliDielectronVarManager::kV0ArpH2FlowV2,
-                        125,0.,125*.04,
-                        AliDielectronVarManager::kM);
-
-    histos->UserProfile("Pair","M_V0CrpH2FlowV2",
-                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2})",
-                        AliDielectronVarManager::kV0CrpH2FlowV2,
-                        125,0.,125*.04,
-                        AliDielectronVarManager::kM);
-    */
-  }
-
+  histos->UserHistogram("Track","TRDprobEle",";P_{ele}^{TRD};#tracks", 
+			100,0.,1.,            AliDielectronVarManager::kTRDprobEle);
+  
   die->SetHistogramManager(histos);
 }
 
