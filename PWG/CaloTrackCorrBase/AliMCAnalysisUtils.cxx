@@ -1278,6 +1278,113 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
   return grandmom;
 }
 
+//_____________________________________________________________________________________
+Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
+{
+  //In case of an eta or pi0 decay into 2 photons, get the asymmetry  in the energy of the photons
+  
+  Float_t asym = -2;
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack())
+    {
+      if (fDebug >=0) 
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      
+      ok = kFALSE;
+      return asym;
+    }
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+      
+      Int_t grandmomLabel = momP->GetFirstMother();
+      Int_t grandmomPDG   = -1;
+      TParticle * grandmomP = 0x0;
+      while (grandmomLabel >=0 ) 
+      {
+        grandmomP   = reader->GetStack()->Particle(grandmomLabel);
+        grandmomPDG = grandmomP->GetPdgCode();
+        
+        if(grandmomPDG==pdg) break;
+        
+        grandmomLabel =  grandmomP->GetFirstMother();
+        
+      }
+      
+      if(grandmomPDG==pdg && grandmomP->GetNDaughters()==2) 
+      {
+        TParticle * d1 = reader->GetStack()->Particle(grandmomP->GetDaughter(0));
+        TParticle * d2 = reader->GetStack()->Particle(grandmomP->GetDaughter(1));
+        if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
+        {
+          asym = (d1->Energy()-d2->Energy())/grandmomP->Energy();
+        }
+      }
+      else 
+      {
+        ok=kFALSE;
+        printf("AliMCAnalysisUtils::GetMotherWithPDG(ESD) - mother with PDG %d, not found! \n",pdg);
+      }
+      
+      } // good label
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    if(!mcparticles) 
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      
+      ok=kFALSE;
+      return asym;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      
+      Int_t grandmomLabel = momP->GetMother();
+      Int_t grandmomPDG   = -1;
+      AliAODMCParticle * grandmomP = 0x0;
+      while (grandmomLabel >=0 ) 
+      {
+        grandmomP   = (AliAODMCParticle *) mcparticles->At(grandmomLabel);
+        grandmomPDG = grandmomP->GetPdgCode();
+        
+        if(grandmomPDG==pdg) break;
+        
+        grandmomLabel =  grandmomP->GetMother();
+        
+      }
+      
+      if(grandmomPDG==pdg && grandmomP->GetNDaughters()==2) 
+      {
+        AliAODMCParticle * d1 = (AliAODMCParticle *) mcparticles->At(grandmomP->GetDaughter(0));
+        AliAODMCParticle * d2 = (AliAODMCParticle *) mcparticles->At(grandmomP->GetDaughter(1));
+        if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
+        {
+          asym = (d1->E()-d2->E())/grandmomP->E();
+        }
+      }
+      else 
+      {
+        ok=kFALSE;
+        printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d, not found! \n",pdg);
+      }
+      
+    } // good label
+  }
+  
+  ok = kTRUE;
+  
+  return asym;
+}
+
+
 //________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {
