@@ -403,7 +403,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
         if( (fTotalQvector%2)!=1 )
           continue;
       if(inSubEvent==1)
-        if( fTotalQvector>0 )
+        if( fTotalQvector<2 )
           continue;
       Double_t dW=1;
       Double_t dPhiCenter = dPhi;
