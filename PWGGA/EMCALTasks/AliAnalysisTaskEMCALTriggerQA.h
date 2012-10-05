@@ -27,7 +27,7 @@ public:
   
   void   FillClusterHistograms(const Int_t triggerNumber, const Bool_t maxCluster,
                                const Float_t e,const Float_t eta,const Float_t phi,
-                               const Int_t ieta,const Int_t iphi,
+                               const Float_t ietamax,const Float_t iphimax,
                                const Float_t centrality, const Float_t v0AC);
   
   void   Init() ;

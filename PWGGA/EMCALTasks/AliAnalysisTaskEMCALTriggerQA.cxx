@@ -176,7 +176,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
 //_______________________________________________________________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(const Int_t triggerNumber, const Bool_t max,
                                                           const Float_t e,  const Float_t eta, const Float_t phi,
-                                                          const Int_t ieta, const Int_t iphi,
+                                                          const Float_t ieta, const Float_t iphi,
                                                           const Float_t centrality, const Float_t v0AC)
 {
   //Fill normal cluster related histograms depending on the trigger selection
