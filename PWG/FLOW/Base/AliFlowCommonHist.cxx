@@ -137,7 +137,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
   fHistList-> Add(fHistRefMult); 
-  if(!fBookOnlyBasic){fHistList-> Add(fHistMassPOI);} 
+  fHistList-> Add(fHistMassPOI);
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);} 
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -450,7 +450,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistRefMult);   
-  if(!fBookOnlyBasic){fHistList-> Add(fHistMassPOI);}   
+  fHistList-> Add(fHistMassPOI);
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);}           
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -692,7 +692,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	//mean pt
 	fHistProMeanPtperBin ->Fill(dPt,dPt,dW);
 	//mass
-	if(!fBookOnlyBasic){fHistMassPOI->Fill(pTrack->Mass(),dPt,dW);}
+	fHistMassPOI->Fill(pTrack->Mass(),dPt,dW);
 	//count
 	dMultPOI += dW;
       }
