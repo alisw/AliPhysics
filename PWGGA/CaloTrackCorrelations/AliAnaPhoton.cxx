@@ -2277,39 +2277,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 void  AliAnaPhoton::MakeAnalysisFillHistograms() 
 {
   //Fill histograms
-  
-  //-------------------------------------------------------------------
-  // Access MC information in stack if requested, check that it exists.	
-  AliStack         * stack       = 0x0;
-  TParticle        * primary     = 0x0;   
-  TClonesArray     * mcparticles = 0x0;
-  AliAODMCParticle * aodprimary  = 0x0; 
-  
-  if(IsDataMC())
-  {
-    if(GetReader()->ReadStack())
-    {
-      stack =  GetMCStack() ;
-      if(!stack) 
-      {
-        printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-        abort();
-      }
       
-    }
-    else if(GetReader()->ReadAODMCParticles())
-    {
-      
-      //Get the list of MC particles
-      mcparticles = GetReader()->GetAODMCParticles(0);
-      if(!mcparticles && GetDebug() > 0) 	
-      {
-        printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-      }	
-    }
-  }// is data and MC
-  
-  
   // Get vertex
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
@@ -2389,11 +2357,24 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     //Play with the MC data if available
     if(IsDataMC())
     {
+      if(GetDebug()>0)
+      {
+        if(GetReader()->ReadStack() && !GetMCStack())
+        {
+          printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called?\n");
+        }
+        else if(GetReader()->ReadAODMCParticles() && !GetReader()->GetAODMCParticles(0))
+        {
+          printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+        }	
+      }    
+      
       FillAcceptanceHistograms();
       
       //....................................................................
       // Access MC information in stack if requested, check that it exists.
       Int_t label =ph->GetLabel();
+      
       if(label < 0) 
       {
         if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
@@ -2402,226 +2383,74 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
-      if(GetReader()->ReadStack())
+      Bool_t ok = kFALSE;
+      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+      if(ok)
       {
-        if(label >=  stack->GetNtrack())
-        {
-          if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
-          continue ;
-        }
-        
-        primary = stack->Particle(label);
-        if(!primary)
-        {
-          printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
-          continue;
-        }
-        
-        eprim   = primary->Energy();
-        ptprim  = primary->Pt();		
-        
-      }
-      else if(GetReader()->ReadAODMCParticles())
-      {
-        //Check which is the input
-        if(ph->GetInputFileIndex() == 0)
-        {
-          if(!mcparticles) continue;
-          if(label >=  mcparticles->GetEntriesFast()) 
-          {
-            if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
-                                       label, mcparticles->GetEntriesFast());
-            continue ;
-          }
-          //Get the particle
-          aodprimary = (AliAODMCParticle*) mcparticles->At(label);
-          
-        }
-        
-        if(!aodprimary)
-        {
-          printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
-          continue;
-        }
-        
-        eprim   = aodprimary->E();
-        ptprim  = aodprimary->Pt();
-        
+        eprim   = primary.Energy();
+        ptprim  = primary.Pt();		
       }
       
       Int_t tag =ph->GetTag();
-      
+      Int_t mcParticleTag = -1;
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[kmcPhoton])
       {
-        fhMCE  [kmcPhoton] ->Fill(ecluster);
-        fhMCPt [kmcPhoton] ->Fill(ptcluster);
-        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster);
-        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster);
-        
-        fhMC2E[kmcPhoton]     ->Fill(ecluster, eprim);
-        fhMC2Pt[kmcPhoton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[kmcPhoton] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[kmcPhoton]->Fill(ptcluster,ptprim-ptcluster);     
-        
+        mcParticleTag = kmcPhoton;
+    
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && 
            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     &&
            fhMCE[kmcConversion])
         {
-          fhMCE  [kmcConversion] ->Fill(ecluster);
-          fhMCPt [kmcConversion] ->Fill(ptcluster);
-          fhMCPhi[kmcConversion] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcConversion] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcConversion]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcConversion]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcConversion] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcConversion]->Fill(ptcluster,ptprim-ptcluster);     
+          mcParticleTag = kmcConversion;
         }			
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[kmcPrompt])
+        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[kmcPrompt])
         {
-          fhMCE  [kmcPrompt] ->Fill(ecluster);
-          fhMCPt [kmcPrompt] ->Fill(ptcluster);
-          fhMCPhi[kmcPrompt] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcPrompt] ->Fill(ecluster,etacluster);      
-          
-          fhMC2E[kmcPrompt]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcPrompt]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcPrompt] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcPrompt]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcPrompt;
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)&& fhMCE[kmcFragmentation])
         {
-          fhMCE  [kmcFragmentation] ->Fill(ecluster);
-          fhMCPt [kmcFragmentation] ->Fill(ptcluster);
-          fhMCPhi[kmcFragmentation] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcFragmentation] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcFragmentation]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcFragmentation]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcFragmentation] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcFragmentation]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcFragmentation;
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)&& fhMCE[kmcISR])
         {
-          fhMCE  [kmcISR] ->Fill(ecluster);
-          fhMCPt [kmcISR] ->Fill(ptcluster);
-          fhMCPhi[kmcISR] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcISR] ->Fill(ecluster,etacluster);    
-          
-          fhMC2E[kmcISR]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcISR]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcISR] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcISR]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcISR; 
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
                 !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[kmcPi0Decay])
         {
-          fhMCE  [kmcPi0Decay] ->Fill(ecluster);
-          fhMCPt [kmcPi0Decay] ->Fill(ptcluster);
-          fhMCPhi[kmcPi0Decay] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcPi0Decay] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcPi0Decay]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcPi0Decay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcPi0Decay] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcPi0Decay]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcPi0Decay;
         }
         else if((( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) && 
                   !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)        ) || 
-                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[kmcOtherDecay])
+                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[kmcOtherDecay])
         {
-          fhMCE  [kmcOtherDecay] ->Fill(ecluster);
-          fhMCPt [kmcOtherDecay] ->Fill(ptcluster);
-          fhMCPhi[kmcOtherDecay] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcOtherDecay] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcOtherDecay]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcOtherDecay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcOtherDecay] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcOtherDecay]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcOtherDecay;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [kmcPi0])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[kmcPi0])
         {
-          fhMCE  [kmcPi0] ->Fill(ecluster);
-          fhMCPt [kmcPi0] ->Fill(ptcluster);
-          fhMCPhi[kmcPi0] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcPi0] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcPi0]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcPi0]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcPi0] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcPi0]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcPi0;   
         } 
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[kmcEta])
         {
-          fhMCE  [kmcEta] ->Fill(ecluster);
-          fhMCPt [kmcEta] ->Fill(ptcluster);
-          fhMCPhi[kmcEta] ->Fill(ecluster,phicluster);
-          fhMCEta[kmcEta] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[kmcEta]     ->Fill(ecluster, eprim);
-          fhMC2Pt[kmcEta]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[kmcEta] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[kmcEta]->Fill(ptcluster,ptprim-ptcluster);     
-          
+          mcParticleTag = kmcEta;
         }      
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[kmcAntiNeutron])
       {
-        fhMCE  [kmcAntiNeutron] ->Fill(ecluster);
-        fhMCPt [kmcAntiNeutron] ->Fill(ptcluster);
-        fhMCPhi[kmcAntiNeutron] ->Fill(ecluster,phicluster);
-        fhMCEta[kmcAntiNeutron] ->Fill(ecluster,etacluster);
-        
-        fhMC2E[kmcAntiNeutron]     ->Fill(ecluster, eprim);
-        fhMC2Pt[kmcAntiNeutron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[kmcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[kmcAntiNeutron]->Fill(ptcluster,ptprim-ptcluster);     
-        
+        mcParticleTag = kmcAntiNeutron;
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[kmcAntiProton])
       {
-        fhMCE  [kmcAntiProton] ->Fill(ecluster);
-        fhMCPt [kmcAntiProton] ->Fill(ptcluster);
-        fhMCPhi[kmcAntiProton] ->Fill(ecluster,phicluster);
-        fhMCEta[kmcAntiProton] ->Fill(ecluster,etacluster);
-        
-        fhMC2E[kmcAntiProton]     ->Fill(ecluster, eprim);
-        fhMC2Pt[kmcAntiProton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[kmcAntiProton] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[kmcAntiProton]->Fill(ecluster,ptprim-ptcluster);     
-        
+        mcParticleTag = kmcAntiProton; 
       } 
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[kmcElectron])
       {
-        fhMCE  [kmcElectron] ->Fill(ecluster);
-        fhMCPt [kmcElectron] ->Fill(ptcluster);
-        fhMCPhi[kmcElectron] ->Fill(ecluster,phicluster);
-        fhMCEta[kmcElectron] ->Fill(ecluster,etacluster);
-        
-        fhMC2E[kmcElectron]     ->Fill(ecluster, eprim);
-        fhMC2Pt[kmcElectron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[kmcElectron] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[kmcElectron]->Fill(ecluster,ptprim-ptcluster);             
+        mcParticleTag = kmcElectron;            
       }     
       else if( fhMCE[kmcOther])
       {
-        fhMCE  [kmcOther] ->Fill(ecluster);
-        fhMCPt [kmcOther] ->Fill(ptcluster);
-        fhMCPhi[kmcOther] ->Fill(ecluster,phicluster);
-        fhMCEta[kmcOther] ->Fill(ecluster,etacluster);
-        
-        fhMC2E[kmcOther]     ->Fill(ecluster, eprim);
-        fhMC2Pt[kmcOther]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[kmcOther] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[kmcOther]->Fill(ecluster,ptprim-ptcluster);     
+        mcParticleTag = kmcOther;
         
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",
         //					ph->GetLabel(),ph->Pt());
@@ -2631,6 +2460,16 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         //		  printf("\n");
         
       }
+      
+      fhMCE  [mcParticleTag] ->Fill(ecluster);
+      fhMCPt [mcParticleTag] ->Fill(ptcluster);
+      fhMCPhi[mcParticleTag] ->Fill(ecluster,phicluster);
+      fhMCEta[mcParticleTag] ->Fill(ecluster,etacluster);
+      
+      fhMC2E[mcParticleTag]     ->Fill(ecluster, eprim);
+      fhMC2Pt[mcParticleTag]    ->Fill(ptcluster, ptprim);     
+      fhMCDeltaE[mcParticleTag] ->Fill(ecluster,eprim-ecluster);
+      fhMCDeltaPt[mcParticleTag]->Fill(ptcluster,ptprim-ptcluster); 
       
     }//Histograms with MC
     

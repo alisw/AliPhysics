@@ -68,7 +68,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
 
     // MC histos
     fhMCPt(),                      fhMCPhi(),                    fhMCEta(),
-    fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),
+    fhMCPi0PtFraction(0),          fhMCEtaPtFraction(0),
+    fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),      
     fhMCEtaDecayPt(0),             fhMCEtaDecayPtFraction(0),
     fhMCOtherDecayPt(0),           
     fhMassPairMCPi0(0),            fhMassPairMCEta(0),
@@ -885,9 +886,20 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(IsDataMC()) 
   {
-    
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC && fAnaType==kSSCalo)
     {
+      fhMCPi0PtFraction = new TH2F("hMCPi0PtFraction","Number of clusters from #pi^{0} (2 #gamma) identified as #pi^{0} (#eta), pT versus pT / pT mother",
+                                   nptbins,ptmin,ptmax,100,0,1); 
+      fhMCPi0PtFraction->SetXTitle("p^{rec}_{T} (GeV/c)");
+      fhMCPi0PtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
+      outputContainer->Add(fhMCPi0PtFraction) ; 
+            
+      fhMCEtaPtFraction = new TH2F("hMCEtaPtFraction","Number of clusters from #eta (2 #gamma) identified as #pi^{0} (#eta), pT versus pT / pT mother",
+                                   nptbins,ptmin,ptmax,100,0,1); 
+      fhMCEtaPtFraction->SetXTitle("p^{rec}_{T} (GeV/c)");
+      fhMCEtaPtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
+      outputContainer->Add(fhMCEtaPtFraction) ; 
+      
       fhMCPi0DecayPt = new TH1F("hMCPi0DecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhMCPi0DecayPt->SetYTitle("N");
       fhMCPi0DecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
@@ -899,18 +911,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhMCPi0DecayPtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
       outputContainer->Add(fhMCPi0DecayPtFraction) ; 
       
-      fhMCEtaDecayPt = new TH1F("hMCEtaDecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
+      fhMCEtaDecayPt = new TH1F("hMCEtaDecayPt","Number of #gamma from #eta decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhMCEtaDecayPt->SetYTitle("N");
       fhMCEtaDecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
       outputContainer->Add(fhMCEtaDecayPt) ; 
       
-      fhMCEtaDecayPtFraction = new TH2F("hMCEtaDecayPtFraction","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta), pT versus pT / pT mother",
+      fhMCEtaDecayPtFraction = new TH2F("hMCEtaDecayPtFraction","Number of #gamma from #eta decay  identified as #pi^{0} (#eta), pT versus pT / pT mother",
                                         nptbins,ptmin,ptmax,100,0,1); 
       fhMCEtaDecayPtFraction->SetXTitle("p^{rec}_{T} (GeV/c)");
       fhMCEtaDecayPtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
       outputContainer->Add(fhMCEtaDecayPtFraction) ; 
       
-      fhMCOtherDecayPt = new TH1F("hMCOtherDecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
+      fhMCOtherDecayPt = new TH1F("hMCOtherDecayPt","Number of #gamma decay (not #eta or #pi^{0})  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhMCOtherDecayPt->SetYTitle("N");
       fhMCOtherDecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
       outputContainer->Add(fhMCOtherDecayPt) ; 
@@ -1213,7 +1225,7 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
     return kmcEta ; 
   }//eta          
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
-            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
+             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
   {
     return kmcConversion ; 
   }//conversion photon
@@ -1851,22 +1863,48 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       {
         Float_t efracMC = 0;
         Int_t label = pi0->GetLabel();
-        TLorentzVector mom   = GetMCAnalysisUtils()->GetMother(label,GetReader()); 
-
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+        
+        Bool_t ok = kFALSE;
+        TLorentzVector mom   = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok); 
+        if(!ok) continue;
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
+        {
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) 
+          {
+            efracMC =  mom.E()/grandmom.E();
+            fhMCPi0PtFraction ->Fill(pt,efracMC);
+          }
+        }        
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhMCPi0DecayPt->Fill(pt);
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader()); 
-          if(grandmom.E()>0) efracMC =  mom.E()/grandmom.E();
-          fhMCPi0DecayPtFraction ->Fill(pt,efracMC);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) 
+          {
+            efracMC =  mom.E()/grandmom.E();
+            fhMCPi0DecayPtFraction ->Fill(pt,efracMC);
+          }
         }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
+        {
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) 
+          {
+            efracMC =  mom.E()/grandmom.E();
+            fhMCEtaPtFraction ->Fill(pt,efracMC);
+          }
+        }        
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
         {
           fhMCEtaDecayPt->Fill(pt);
-          
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader()); 
-          if(grandmom.E()>0) efracMC =  mom.E()/grandmom.E();
-          fhMCEtaDecayPtFraction ->Fill(pt,efracMC);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) 
+          {
+            efracMC =  mom.E()/grandmom.E();
+            fhMCEtaDecayPtFraction ->Fill(pt,efracMC);
+          }
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
         {

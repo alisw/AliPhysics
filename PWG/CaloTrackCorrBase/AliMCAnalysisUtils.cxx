@@ -1115,24 +1115,46 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
   return fJetsList;
 }
 
-//_____________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader) 
+
+//_______________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader,
+                                             Bool_t & ok) 
 {
   //Return the kinematics of the particle that generated the signal
   
-  TLorentzVector mom;
+  Int_t pdg = -1; Int_t status = -1;
+  return GetMother(label,reader,pdg,status, ok);
+}
+
+//_______________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader, 
+                                             Int_t & pdg, Int_t & status, Bool_t & ok) 
+{
+  //Return the kinematics of the particle that generated the signal, its pdg and its status
+  
+  TLorentzVector mom(0,0,0,0);
   
   if(reader->ReadStack())
   {
-    if(!reader->GetStack()) {
+    if(!reader->GetStack()) 
+    {
       if (fDebug >=0) 
         printf("AliMCAnalysisUtils::GetMother() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
-      return -1;
+     
+      ok=kFALSE;
+      return mom;
     }
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
     {
       TParticle * momP = reader->GetStack()->Particle(label);
       momP->Momentum(mom);
+      pdg    = momP->GetPdgCode();
+      status = momP->GetStatusCode();
+    } 
+    else 
+    {
+      ok = kFALSE;
+      return mom;
     }
   }
   else if(reader->ReadAODMCParticles())
@@ -1142,7 +1164,9 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
     {
       if(fDebug >= 0)
         printf("AliMCAnalysisUtils::GetMother() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
-      return -1;
+      
+      ok=kFALSE;
+      return mom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1150,18 +1174,28 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
     {
       AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
       mom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
+      pdg    = momP->GetPdgCode();
+      status = momP->GetStatus();
+    }     
+    else 
+    {
+      ok = kFALSE;
+      return mom;
     }
   }
+  
+  ok = kTRUE;
   
   return mom;
 }
 
+
 //_____________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader) 
+TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
 {
   //Return the kinematics of the particle that generated the signal
   
-  TLorentzVector grandmom;
+  TLorentzVector grandmom(0,0,0,0);
   
   
   if(reader->ReadStack())
@@ -1170,7 +1204,9 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
     {
       if (fDebug >=0) 
         printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
-      return -1;
+      
+      ok = kFALSE;
+      return grandmom;
     }
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
     {
@@ -1203,7 +1239,9 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
     {
       if(fDebug >= 0)
         printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
-      return -1;
+      
+      ok=kFALSE;
+      return grandmom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1235,6 +1273,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
     }
   }
   
+  ok = kTRUE;
   
   return grandmom;
 }
