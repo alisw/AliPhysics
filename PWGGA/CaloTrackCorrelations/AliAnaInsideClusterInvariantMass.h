@@ -50,6 +50,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
 
+  void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto   = kTRUE  ; }
+  void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto   = kFALSE ; }
+
+  void         SwitchOnFillTMResidualHistograms()        { fFillTMResidualHisto = kTRUE  ; }
+  void         SwitchOffFillTMResidualHistograms()       { fFillTMResidualHisto = kFALSE ; }
+  
   //For histograms
   enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
                  kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6 };
@@ -61,6 +67,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fM02MinCut   ;          // Study clusters with l0 larger than cut
   Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
+  
+  Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
+  Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   
   //Histograms
   
@@ -106,7 +115,23 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02NLocMax1  [7][2] ; //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhM02NLocMax2  [7][2] ; //! M02 vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhM02NLocMaxN  [7][2] ; //! M02 vs E for N max in cluster > 2, 1-6 for different MC particle types
-
+  
+  TH2F       * fhMCAsymM02NLocMax1MCPi0Ebin[4] ; //! M02 vs decay asymmetry for N max in cluster = 1, for 4 energy bins
+  TH2F       * fhMCAsymM02NLocMax2MCPi0Ebin[4] ; //! M02 vs decay asymmetry for N max in cluster = 2, for 4 energy bins
+  TH2F       * fhMCAsymM02NLocMaxNMCPi0Ebin[4] ; //! M02 vs decay asymmetry for N max in cluster > 2, for 4 energy bins
+  
+  TH2F       * fhMCGenFracNLocMax1[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+  
+  TH2F       * fhM02MCGenFracNLocMax1Ebin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhM02MCGenFracNLocMax2Ebin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhM02MCGenFracNLocMaxNEbin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
+  
+  TH2F       * fhMassMCGenFracNLocMax1Ebin[7][4] ; //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassMCGenFracNLocMax2Ebin[7][4] ; //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassMCGenFracNLocMaxNEbin[7][4] ; //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
+  
   TH2F       * fhNCellNLocMax1[7][2] ; //! n cells in cluster vs E for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMax2[7][2] ; //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMaxN[7][2] ; //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
@@ -141,7 +166,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,12)
+  ClassDef(AliAnaInsideClusterInvariantMass,13)
   
 } ;
 

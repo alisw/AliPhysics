@@ -2395,13 +2395,29 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Int_t mcParticleTag = -1;
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[kmcPhoton])
       {
-        mcParticleTag = kmcPhoton;
-    
+        fhMCE  [kmcPhoton] ->Fill(ecluster);
+        fhMCPt [kmcPhoton] ->Fill(ptcluster);
+        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster);
+        
+        fhMC2E     [kmcPhoton] ->Fill(ecluster, eprim);
+        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE [kmcPhoton] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster,ptprim-ptcluster); 
+        
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && 
            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     &&
            fhMCE[kmcConversion])
         {
-          mcParticleTag = kmcConversion;
+          fhMCE  [kmcConversion] ->Fill(ecluster);
+          fhMCPt [kmcConversion] ->Fill(ptcluster);
+          fhMCPhi[kmcConversion] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcConversion] ->Fill(ecluster,etacluster);
+          
+          fhMC2E     [kmcConversion] ->Fill(ecluster, eprim);
+          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE [kmcConversion] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster,ptprim-ptcluster); 
         }			
         
         if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[kmcPrompt])

@@ -66,6 +66,8 @@ class AliMCAnalysisUtils : public TObject {
   TLorentzVector GetMother(const Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);
   TLorentzVector GetMotherWithPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok);
   
+  Float_t        GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok);
+
   //Check or set the bits produced in the above methods
   void    SetTagBit(Int_t &tag, const UInt_t set) const {
     // Set bit of type set (mcTypes) in tag
