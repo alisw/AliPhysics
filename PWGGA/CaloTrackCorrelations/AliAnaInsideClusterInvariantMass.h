@@ -128,6 +128,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
   
+  TH2F       * fhMCGenFracNLocMaxEbin[7][4] ;    //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, not matched to track
+  TH2F       * fhMCGenFracNLocMaxEbinMatched[7][4] ; //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, matched to track
+  
   TH2F       * fhM02MCGenFracNLocMax1Ebin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
   TH2F       * fhM02MCGenFracNLocMax2Ebin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
   TH2F       * fhM02MCGenFracNLocMaxNEbin[7][4] ; //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  

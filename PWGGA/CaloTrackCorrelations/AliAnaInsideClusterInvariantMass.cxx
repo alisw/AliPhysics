@@ -107,13 +107,16 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     
     for(Int_t jj = 0; jj < 4; jj++)
     {
-      fhM02MCGenFracNLocMax1Ebin[i][jj]= 0;
-      fhM02MCGenFracNLocMax2Ebin[i][jj]= 0;
-      fhM02MCGenFracNLocMaxNEbin[i][jj]= 0;
+      fhM02MCGenFracNLocMax1Ebin[i][jj] = 0;
+      fhM02MCGenFracNLocMax2Ebin[i][jj] = 0;
+      fhM02MCGenFracNLocMaxNEbin[i][jj] = 0;
       
       fhMassMCGenFracNLocMax1Ebin[i][jj]= 0;
       fhMassMCGenFracNLocMax2Ebin[i][jj]= 0;
       fhMassMCGenFracNLocMaxNEbin[i][jj]= 0;
+      
+      fhMCGenFracNLocMaxEbin[i][jj]     = 0;
+      fhMCGenFracNLocMaxEbinMatched[i][jj]= 0;
     }
     
     fhTrackMatchedDEtaLocMax1[i] = 0; 
@@ -394,6 +397,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCGenFracNLocMaxN[i][j]   ->SetYTitle("E_{reco} / E_{gen}");
         fhMCGenFracNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCGenFracNLocMaxN[i][j]) ; 
+        
       }
       
       if(fFillSSExtraHisto)
@@ -499,6 +503,21 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     {
       for(Int_t j = 0; j < 4; j++)
       {  
+        
+        fhMCGenFracNLocMaxEbin[i][j]  = new TH2F(Form("hMCGenFracNLocMax%sEbin%d",pname[i].Data(),j),
+                                                      Form("NLM vs E, %s, E bin %d",ptype[i].Data(),j),
+                                                      200,0,2,nMaxBins,0,nMaxBins); 
+        fhMCGenFracNLocMaxEbin[i][j]->SetYTitle("NLM");
+        fhMCGenFracNLocMaxEbin[i][j]->SetXTitle("E_{reco} / E_{gen}");
+        outputContainer->Add(fhMCGenFracNLocMaxEbin[i][j]) ;           
+        
+        fhMCGenFracNLocMaxEbinMatched[i][j]  = new TH2F(Form("hMCGenFracNLocMax%sEbin%dMatched",pname[i].Data(),j),
+                                                 Form("NLM vs E, %s, E bin %d, matched to a track",ptype[i].Data(),j),
+                                                 200,0,2,nMaxBins,0,nMaxBins); 
+        fhMCGenFracNLocMaxEbinMatched[i][j]->SetYTitle("NLM");
+        fhMCGenFracNLocMaxEbinMatched[i][j]->SetXTitle("E_{reco} / E_{gen}");
+        outputContainer->Add(fhMCGenFracNLocMaxEbinMatched[i][j]) ;   
+        
         fhMassMCGenFracNLocMax1Ebin[i][j]  = new TH2F(Form("hMassMCGenFracNLocMax1%sEbin%d",pname[i].Data(),j),
                                                       Form("Invariant mass of 2 highest energy cells vs E, %s, E bin %d",ptype[i].Data(),j),
                                                       200,0,2,mbins,mmin,mmax); 
@@ -914,6 +933,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Int_t mcindex   = -1;
     Float_t eprim   =  0;
     Float_t asymGen = -2; 
+    Int_t mcLabel   = cluster->GetLabel();
     if(IsDataMC())
     {
       Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(), 0);
@@ -941,13 +961,23 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
       
       Bool_t ok = kFALSE;
-      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(cluster->GetLabel(),GetReader(),ok);
+      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
       eprim = primary.E();
       
       if(mcindex == kmcPi0 || mcindex == kmcEta)
       {
-        if(mcindex == kmcPi0) asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(cluster->GetLabel(),111,GetReader(),ok));
-        else                  asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(cluster->GetLabel(),221,GetReader(),ok));
+        if(mcindex == kmcPi0) 
+        {
+          asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,111,GetReader(),ok));
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+        }
+        else 
+        {
+          asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,221,GetReader(),ok));
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok); 
+          if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+        }
       }
       
     } 
@@ -959,6 +989,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if(en > 12 && en <= 16) ebin = 1;
     if(en > 16 && en <= 20) ebin = 2;
     if(en > 20)             ebin = 3; 
+    
+    if(ebin >= 0 && IsDataMC())
+    {
+      if( !matched ) fhMCGenFracNLocMaxEbin       [mcindex][ebin]->Fill(efrac,nMax);
+      else           fhMCGenFracNLocMaxEbinMatched[mcindex][ebin]->Fill(efrac,nMax);
+    }
     
     if     (nMax==1) 
     { 
@@ -1064,8 +1100,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
           fhMCGenFracNLocMaxN  [mcindex][matched]->Fill(en     ,  efrac ); 
           if(!matched && ebin >= 0)
           {
-            fhM02MCGenFracNLocMax1Ebin [mcindex][ebin]->Fill(efrac  ,  l0     ); 
-            fhMassMCGenFracNLocMax1Ebin[mcindex][ebin]->Fill(efrac  ,  mass   ); 
+            fhM02MCGenFracNLocMaxNEbin [mcindex][ebin]->Fill(efrac  ,  l0     ); 
+            fhMassMCGenFracNLocMaxNEbin[mcindex][ebin]->Fill(efrac  ,  mass   ); 
             fhMCAsymM02NLocMaxNMCPi0Ebin        [ebin]->Fill(l0     ,  asymGen);
           }
           if(fFillSSExtraHisto)
