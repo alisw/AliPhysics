@@ -184,13 +184,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMCPhi[6];                  //! Phi of identified as pi0, coming from X
   TH2F         * fhMCEta[6];                  //! eta of identified as pi0, coming from X
 
-  TH2F         * fhMCPi0PtFraction;           //! SS id, clusters id as pi0, coming from 2 photon, pi0 decay, pt vs pt decay / pt mother
-  TH2F         * fhMCEtaPtFraction;           //! SS id, clusters id as pi0, coming from 2 photon, eta decay, pt vs pt decay / pt mother  
-  TH1F         * fhMCPi0DecayPt;              //! SS id, clusters id as pi0, coming from 1 photon, pi0 decay, pt
-  TH2F         * fhMCPi0DecayPtFraction;      //! SS id, clusters id as pi0, coming from 1 photon, pi0 decay, pt vs pt decay / pt mother
-  TH1F         * fhMCEtaDecayPt;              //! SS id, clusters id as pi0, coming from 1 photon, eta decay, pt
-  TH2F         * fhMCEtaDecayPtFraction;      //! SS id, clusters id as pi0, coming from 1 photon, eta decay, pt vs pt decay / pt mother  
-  TH1F         * fhMCOtherDecayPt;            //! SS id, clusters id as pi0, coming from 1 photon, other decay, pt
+  TH2F         * fhMCPi0PtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, pi0 primary, pt vs E prim pi0 / E reco
+  TH2F         * fhMCEtaPtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, eta primary, pt vs E prim eta / E reco  
+  TH1F         * fhMCPi0DecayPt;              //! SS id, clusters id as pi0 (eta), coming from 1 photon, pi0 decay primary, pt
+  TH2F         * fhMCPi0DecayPtFraction;      //! SS id, clusters id as pi0 (eta), coming from 1 photon, pi0 decay primary, pt vs pt decay / pt mother
+  TH1F         * fhMCEtaDecayPt;              //! SS id, clusters id as pi0 (eta), coming from 1 photon, eta decay primary, pt
+  TH2F         * fhMCEtaDecayPtFraction;      //! SS id, clusters id as pi0 (eta), coming from 1 photon, eta decay primary, pt vs pt decay / pt mother  
+  TH1F         * fhMCOtherDecayPt;            //! SS id, clusters id as pi0 (eta), coming from 1 photon, other decay primary, pt
 
   TH2F         * fhMassPairMCPi0;             //! pair mass, origin is same pi0
   TH2F         * fhMassPairMCEta;             //! pair mass, origin is same eta
@@ -232,7 +232,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,19)
+  ClassDef(AliAnaPi0EbE,20)
 } ;
 
 
