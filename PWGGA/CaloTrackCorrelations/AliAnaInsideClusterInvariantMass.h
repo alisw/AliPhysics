@@ -50,8 +50,11 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
 
-  void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto   = kTRUE  ; }
-  void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto   = kFALSE ; }
+  void         SwitchOnFillAngleHistograms()             { fFillAngleHisto      = kTRUE  ; }
+  void         SwitchOffFillAngleHistograms()            { fFillAngleHisto      = kFALSE ; }
+  
+  void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto    = kTRUE  ; }
+  void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto    = kFALSE ; }
 
   void         SwitchOnFillTMResidualHistograms()        { fFillTMResidualHisto = kTRUE  ; }
   void         SwitchOffFillTMResidualHistograms()       { fFillTMResidualHisto = kFALSE ; }
@@ -68,6 +71,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   
+  Bool_t       fFillAngleHisto;        // Fill splitted clusters angle histograms
   Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   
@@ -166,7 +170,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,13)
+  ClassDef(AliAnaInsideClusterInvariantMass,14)
   
 } ;
 
