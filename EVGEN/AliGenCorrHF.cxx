@@ -85,7 +85,11 @@
     gener->SetOrigin(0,0,0);          //vertex position    
     gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetForceDecay(kSemiMuonic);
-    gener->SetTrackingFlag(0);
+    gener->SetSelectAll(kTRUE);      //Force the transport of all particles. 
+                                     //Necessary while using a different 
+                                     //option than kAll for SetForceDecay
+    gener->SetTrackingFlag(1);       //1: Decay during transport, 
+                                     //0: No Decay during transport
     gener->Init();
 }
 */
@@ -838,4 +842,3 @@ void AliGenCorrHF::LoadTracks(Int_t iquark, Float_t *pq,
  
   return;
 }
-
