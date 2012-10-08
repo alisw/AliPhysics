@@ -433,6 +433,9 @@ void AliCaloTrackReader::InitParameters()
 
   fImportGeometryFromFile = kFALSE;
   
+  fPileUpParam[0] = 3   ; fPileUpParam[1] = 0.8 ;
+  fPileUpParam[2] = 3.0 ; fPileUpParam[3] = 2.0 ; fPileUpParam[4] = 5.0;
+  
 }
 
 //________________________________________________________
@@ -601,9 +604,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   {
     if(!fCaloFilterPatch)
     {
-      //Do not analyze events with pileup
-      Bool_t bPileup = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
-      //Bool_t bPileup = event->IsPileupFromSPD(); 
+      // Do not analyze events with pileup
+      // Default values: (3, 0.8, 3., 2., 5.)
+      Bool_t bPileup = fInputEvent->IsPileupFromSPD((Int_t) fPileUpParam[0] , fPileUpParam[1] , 
+                                                    fPileUpParam[2] ,fPileUpParam[3] , fPileUpParam[4] ); 
+      //IsPileupFromSPDInMultBins() // method to try
+      //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParam[0], fPileUpParam[1], fPileUpParam[2], fPileUpParam[3], fPileUpParam[4]);
       if(bPileup) return kFALSE;
       
       if(fDoV0ANDEventSelection)
