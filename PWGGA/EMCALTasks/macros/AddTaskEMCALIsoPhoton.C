@@ -28,7 +28,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetTrainMode(kTRUE);
   ana->SetTriggerBit(trigbitname);
   ana->SetMcMode(isMC);
-  
+  ana->SetPathStringSelect(pathstrsel.Data());
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
   cutsp->SetMinNClustersTPC(70);
   cutsp->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
