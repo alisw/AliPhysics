@@ -480,6 +480,7 @@ void  AliAnalysisTaskSOH::ProcessTrack()
     if(!esdtrack)continue;
     AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
     if(!newTrack) continue;
+    if(newTrack->Pt()<0.15 || TMath::Abs(newTrack->Eta())>0.9) {delete newTrack; continue;}
     
     if(fClusterProcess)
     {  
@@ -551,6 +552,7 @@ void  AliAnalysisTaskSOH::ProcessTrack()
 	}
       }
     }
+    if(newTrack) delete newTrack;
 
     // Track Indices
     fTrackIndices->AddAt(itr,nTracks);
@@ -707,13 +709,13 @@ void AliAnalysisTaskSOH::ProcessCluster()
 void AliAnalysisTaskSOH::ProcessMc()
 {
   // Process MC.
-  
-  for(Int_t i=0; i<fTrackIndices->GetSize(); i++)
+   for(Int_t i=0; i<fTrackIndices->GetSize(); i++)
   {
     AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(i));
     if(!esdtrack)continue;
     AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
     if(!newTrack) continue;
+    if(newTrack->Pt()<0.15 || TMath::Abs(newTrack->Eta())>0.9) {delete newTrack; continue;}
 
     Int_t index = esdtrack->GetLabel();
     if(index < 0) 
@@ -732,6 +734,8 @@ void AliAnalysisTaskSOH::ProcessMc()
       fHDetRecSecPion->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
       fHDetGenSecPion->Fill(vParticle2->Pt(), vParticle2->Eta(), vParticle2->Phi());
     }
+
+    if(newTrack) delete newTrack;
   }
 
   //tracking effciency
@@ -758,111 +762,103 @@ void AliAnalysisTaskSOH::ProcessMc()
  
     if(TMath::Abs(vParticle->Eta())<0.9)
     {
-      if(vParticle->Charge() > 0)
+      if(pdgCode==211) 
       {
-	if(TMath::Abs(pdgCode)==211) 
-	{
-	  fHParGenPion_p->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-	  if(McParticle->GetMother() < eventHeader->NProduced()) fHParGenPion_rmInj_p->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi()); 
-	}
+	fHParGenPion_p->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	if(McParticle->GetMother() < eventHeader->NProduced()) fHParGenPion_rmInj_p->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi()); 
       }
-      else if(vParticle->Charge() < 0)
-      {	
-	if(TMath::Abs(pdgCode)==211) 
-	{
-	  fHParGenPion_m->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-	  if(McParticle->GetMother() < eventHeader->NProduced()) fHParGenPion_rmInj_m->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi()); 
-	}
+    
+      else if(pdgCode==-211) 
+      {
+	fHParGenPion_m->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	if(McParticle->GetMother() < eventHeader->NProduced()) fHParGenPion_rmInj_m->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi()); 
       }
+    }
       
-      for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
+    for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
+    {
+      AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
+      if(!esdtrack)continue;
+      AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
+      if(!newTrack) continue;
+      if(newTrack->Pt()<0.15 || TMath::Abs(newTrack->Eta())>0.9) {delete newTrack; continue;}
+      
+      Int_t cutType = (Int_t)newTrack->GetTRDQuality();
+      
+      if(newTrack->GetLabel()==ipart && TMath::Abs(vParticle->Eta())<0.9)
       {
-        AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
-	if(!esdtrack)continue;
-	AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
-	if(!newTrack) continue;
-
-	Int_t cutType = (Int_t)newTrack->GetTRDQuality();
-
-        if(newTrack->GetLabel()==ipart)
-        {
-	  
-	  if(vParticle->Charge()>0)
+	if(pdgCode==211) 
+	{
+	  fHDetGenPion_p[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	  fHDetRecPion_p[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
+	  if(McParticle->GetMother() < eventHeader->NProduced())
 	  {
-	    if(TMath::Abs(pdgCode)==211) 
-	    {
-	      fHDetGenPion_p[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-	      fHDetRecPion_p[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
-	      if(McParticle->GetMother() < eventHeader->NProduced())
-	      {
-		fHDetGenPion_rmInj_p[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-		fHDetRecPion_rmInj_p[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
-	      }	  
-	    }
-	  }
-	  
-	  else if(vParticle->Charge()<0)
+	    fHDetGenPion_rmInj_p[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	    fHDetRecPion_rmInj_p[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
+	  }	  
+	}
+	else if(pdgCode==-211) 
+	{
+	  fHDetGenPion_m[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	  fHDetRecPion_m[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
+	  if(McParticle->GetMother() < eventHeader->NProduced())
 	  {
-	    if(TMath::Abs(pdgCode)==211) 
-	    {
-	      fHDetGenPion_m[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-	      fHDetRecPion_m[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
-	      if(McParticle->GetMother() < eventHeader->NProduced())
-	      {
-		fHDetGenPion_rmInj_m[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
-		fHDetRecPion_rmInj_m[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
-	      }	  
-	    }
-	  }
+	    fHDetGenPion_rmInj_m[cutType]->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	    fHDetRecPion_rmInj_m[cutType]->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
+	  }	  
+	}
+	  
 
     //cluster E vs. truth photon energy
-	  if(fClusterProcess)
-	  {
-	    for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
-	    {
-	      AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClusterIndices->At(k));
-	      Double_t clsE = cluster->E();
-	      TArrayI *MCLabels = cluster->GetLabelsArray();
-	      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
-	      AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
-	      
-	      if(vParticle1->PdgCode()==22 && vParticle2 == vParticle)
-	      {
-		fHPhotonEdiff0HC->Fill(vParticle1->E(), (vParticle1->E() - clsE)/vParticle1->E());
-		fHPhotonEVsClsE->Fill(vParticle1->E(), clsE);
-		
-		if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle1->E(), 1);
-		else  fHPhotonEdiff30HC->Fill(vParticle1->E(), (vParticle1->E() + 0.3*esdtrack->E() - clsE)/vParticle1->E());
-		
-		if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle1->E(), 1);
-		else  fHPhotonEdiff70HC->Fill(vParticle1->E(), (vParticle1->E() + 0.7*esdtrack->E() - clsE)/vParticle1->E());
-		
-		if((clsE - esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle1->E(), 1);
-		else  fHPhotonEdiff100HC->Fill(vParticle1->E(), (vParticle1->E() + esdtrack->E() - clsE)/vParticle1->E());
-		continue;
-	      }
-	      if(vParticle2->PdgCode()==22 && vParticle1 == vParticle)
-	      {
-		fHPhotonEdiff0HC->Fill(vParticle2->E(), (vParticle2->E() - clsE)/vParticle2->E());
-		fHPhotonEVsClsE->Fill(vParticle2->E(), clsE);
-		
-		if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle2->E(), 1);
-		else fHPhotonEdiff30HC->Fill(vParticle2->E(), (vParticle2->E() + 0.3*esdtrack->E() - clsE)/vParticle2->E());
-		
-		if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle2->E(), 1);
-		else fHPhotonEdiff70HC->Fill(vParticle2->E(), (vParticle2->E() + 0.7*esdtrack->E() - clsE)/vParticle2->E());
-		
-		if((clsE-esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle2->E(), 1);
-		else fHPhotonEdiff100HC->Fill(vParticle2->E(), (vParticle2->E() + esdtrack->E() - clsE)/vParticle2->E());
-	      }
-	    }
-	  }
-	  break;
-	}
+	if(fClusterProcess)
+	 {
+	   for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
+	   {
+	     AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClusterIndices->At(k));
+	     Double_t clsE = cluster->E();
+	     TArrayI *MCLabels = cluster->GetLabelsArray();
+	     AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
+	     AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
+	     
+	     if(vParticle1->PdgCode()==22 && vParticle2 == vParticle)
+	     {
+	       fHPhotonEdiff0HC->Fill(vParticle1->E(), (vParticle1->E() - clsE)/vParticle1->E());
+	       fHPhotonEVsClsE->Fill(vParticle1->E(), clsE);
+	       
+	       if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle1->E(), 1);
+	       else  fHPhotonEdiff30HC->Fill(vParticle1->E(), (vParticle1->E() + 0.3*esdtrack->E() - clsE)/vParticle1->E());
+	       
+	       if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle1->E(), 1);
+	       else  fHPhotonEdiff70HC->Fill(vParticle1->E(), (vParticle1->E() + 0.7*esdtrack->E() - clsE)/vParticle1->E());
+	       
+	       if((clsE - esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle1->E(), 1);
+	       else  fHPhotonEdiff100HC->Fill(vParticle1->E(), (vParticle1->E() + esdtrack->E() - clsE)/vParticle1->E());
+	       continue;
+	     }
+	     if(vParticle2->PdgCode()==22 && vParticle1 == vParticle)
+	     {
+	       fHPhotonEdiff0HC->Fill(vParticle2->E(), (vParticle2->E() - clsE)/vParticle2->E());
+	       fHPhotonEVsClsE->Fill(vParticle2->E(), clsE);
+	       
+	       if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle2->E(), 1);
+	       else fHPhotonEdiff30HC->Fill(vParticle2->E(), (vParticle2->E() + 0.3*esdtrack->E() - clsE)/vParticle2->E());
+	       
+	       if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle2->E(), 1);
+	       else fHPhotonEdiff70HC->Fill(vParticle2->E(), (vParticle2->E() + 0.7*esdtrack->E() - clsE)/vParticle2->E());
+	       
+	       if((clsE-esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle2->E(), 1);
+	       else fHPhotonEdiff100HC->Fill(vParticle2->E(), (vParticle2->E() + esdtrack->E() - clsE)/vParticle2->E());
+	     }
+	   }
+	 }
+	if(newTrack) delete newTrack;
+	break;
       }
+      if(newTrack) delete newTrack;
     }
   }
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskSOH::ProcessScaleFactor()
@@ -912,21 +908,20 @@ void AliAnalysisTaskSOH::ProcessScaleFactor()
 AliESDtrack *AliAnalysisTaskSOH::GetAcceptTrack(AliESDtrack *esdtrack)
 {
   // Get accepted track.
-
-  static AliESDtrack newTrack;
+  AliESDtrack *newTrack = 0x0;
   if(fEsdTrackCuts->AcceptTrack(esdtrack))
   {
-    esdtrack->Copy(newTrack);
-    newTrack.SetTRDQuality(0);
+    newTrack = new AliESDtrack(*esdtrack);
+    newTrack->SetTRDQuality(0);
   }
   else if(fHybridTrackCuts1->AcceptTrack(esdtrack))
   {
     if(esdtrack->GetConstrainedParam())
     {
-      esdtrack->Copy(newTrack);
+      newTrack = new AliESDtrack(*esdtrack);
       const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
-      newTrack.Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-      newTrack.SetTRDQuality(1);		
+      newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+      newTrack->SetTRDQuality(1);		
     }
     else 
       return 0x0;
@@ -935,10 +930,10 @@ AliESDtrack *AliAnalysisTaskSOH::GetAcceptTrack(AliESDtrack *esdtrack)
   {
     if(esdtrack->GetConstrainedParam())
     {
-      esdtrack->Copy(newTrack);
+      newTrack = new AliESDtrack(*esdtrack);
       const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
-      newTrack.Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-      newTrack.SetTRDQuality(2);		
+      newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+      newTrack->SetTRDQuality(2);		
     }
     else 
       return 0x0;
@@ -948,7 +943,7 @@ AliESDtrack *AliAnalysisTaskSOH::GetAcceptTrack(AliESDtrack *esdtrack)
     return 0x0;
   }
 
-  return &newTrack;
+  return newTrack;
 }
 
 //________________________________________________________________________
