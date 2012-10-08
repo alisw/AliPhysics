@@ -46,6 +46,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
+  void           FillPileUpHistograms(Float_t energy, Float_t time) ;
+  
   void           FillSelectedClusterHistograms(AliVCluster* cluster, 
                                                const Int_t nLocMax,
                                                const Int_t tag,
@@ -84,6 +86,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
   Double_t       GetTimeCutMax()                       const { return fTimeCutMax              ; }	
   
+  void           SwitchOnFillPileUpHistograms()              { fFillPileUpHistograms  = kTRUE  ; }
+  void           SwitchOffFillPileUpHistograms()             { fFillPileUpHistograms  = kFALSE ; }    
+    
   void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms  = kTRUE  ; }
   void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms  = kFALSE ; }  
   
@@ -113,6 +118,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   
+  Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
   Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
@@ -229,10 +235,20 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
+  // Pile-up
+  TH2F         * fhTimeENoCut;                    //! time of cluster vs E, no cut 
+  TH2F         * fhTimeESPD;                      //! time of cluster vs E, IsSPDPileUp
+  TH2F         * fhTimeESPDMulti;                 //! time of cluster vs E, IsSPDPileUpMulti
+  TH2F         * fhTimeNPileUpVertSPD;            //! time of cluster vs n pile-up vertices from SPD
+  TH2F         * fhTimeNPileUpVertTrack;          //! time of cluster vs n pile-up vertices from Tracks
+  TH2F         * fhTimeNPileUpVertContributors;   //! time of cluster vs n pile-up vertex from SPD contributors
+  TH2F         * fhTimePileUpMainVertexZDistance; //! time of cluster vs difference of z main vertex and pile-up vertex 
+  TH2F         * fhTimePileUpMainVertexZDiamond;  //! time of cluster vs difference of z diamond and pile-up vertex 
+  
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,20)
+  ClassDef(AliAnaPi0EbE,21)
 } ;
 
 

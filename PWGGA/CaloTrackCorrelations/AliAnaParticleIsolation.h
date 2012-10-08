@@ -49,6 +49,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   //Analysis specific methods 
   
+  void         FillPileUpHistograms(Int_t clusterID) ;
+  
   void         FillTrackMatchingShowerShapeControlHistograms(const Bool_t isolated,
                                                              const Int_t  clusterID, 
                                                              const Int_t  nLocMax,
@@ -90,6 +92,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
   void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
 
+  void         SwitchOnFillPileUpHistograms()        { fFillPileUpHistograms = kTRUE  ; }
+  void         SwitchOffFillPileUpHistograms()       { fFillPileUpHistograms = kFALSE ; }    
+  
   void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
   void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
   
@@ -117,6 +122,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
+  Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
   Bool_t   fFillTMHisto;                          // Fill track matching plots
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
 
@@ -277,6 +283,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0LocMaxN[2] ;                 //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
   TH2F *   fhELambda1LocMaxN[2] ;                 //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
   
+  // Pile-up
+  TH2F *   fhTimeENoCut;                          //! time of cluster vs E, no cut 
+  TH2F *   fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
+  TH2F *   fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
+  TH2F *   fhTimeNPileUpVertSPD;                  //! time of cluster vs n pile-up vertices from SPD
+  TH2F *   fhTimeNPileUpVertTrack;                //! time of cluster vs n pile-up vertices from Tracks
+  TH2F *   fhTimeNPileUpVertContributors;         //! time of cluster vs n pile-up vertex from SPD contributors
+  TH2F *   fhTimePileUpMainVertexZDistance;       //! time of cluster vs difference of z main vertex and pile-up vertex 
+  TH2F *   fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
+  
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
@@ -288,7 +304,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,16)
+  ClassDef(AliAnaParticleIsolation,17)
 } ;
 
 

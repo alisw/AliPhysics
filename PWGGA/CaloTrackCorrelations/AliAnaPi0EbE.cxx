@@ -40,6 +40,7 @@
 #include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliVCluster.h"
+#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 
@@ -49,7 +50,8 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() : 
     AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	
-    fTimeCutMin(-10000),           fTimeCutMax(10000),         
+    fTimeCutMin(-10000),           fTimeCutMax(10000),      
+    fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
     fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),
     fInputAODGammaConvName(""),
@@ -81,7 +83,12 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhTrackMatchedMCParticle(0),   fhdEdx(0),                     
     fhEOverP(0),                   fhEOverPNoTRD(0),                
     // Number of local maxima in cluster
-    fhNLocMax(0)
+    fhNLocMax(0),
+    // PileUp
+    fhTimeENoCut(0),                    fhTimeESPD(0),           fhTimeESPDMulti(0),
+    fhTimeNPileUpVertSPD(0),            fhTimeNPileUpVertTrack(0),
+    fhTimeNPileUpVertContributors(0),
+    fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
 {
   //default ctor
   
@@ -148,6 +155,79 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   //Initialize parameters
   InitParameters();
   
+}
+
+//___________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(Float_t energy, Float_t time) 
+{
+  // Fill some histograms to understand pile-up
+  if(!fFillPileUpHistograms) return;
+  
+  //printf("E %f, time %f\n",energy,time);
+  AliVEvent * event = GetReader()->GetInputEvent();
+  
+  fhTimeENoCut->Fill(energy,time);
+  if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
+  if(event->IsPileupFromSPDInMultBins()) fhTimeESPDMulti->Fill(energy,time);
+  
+  if(energy > 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
+  
+  AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
+  
+  // N pile up vertices
+  Int_t nVerticesSPD    = -1;
+  Int_t nVerticesTracks = -1;
+  
+  if      (esdEv)
+  {
+    nVerticesSPD    = esdEv->GetNumberOfPileupVerticesSPD();
+    nVerticesTracks = esdEv->GetNumberOfPileupVerticesTracks();
+    
+  }//ESD
+  else if (aodEv)
+  {
+    nVerticesSPD    = aodEv->GetNumberOfPileupVerticesSPD();
+    nVerticesTracks = aodEv->GetNumberOfPileupVerticesTracks();
+  }//AOD
+  
+  fhTimeNPileUpVertSPD  ->Fill(time,nVerticesSPD);
+  fhTimeNPileUpVertTrack->Fill(time,nVerticesTracks);
+  
+  //printf("Is SPD %d, Is SPD Multi %d, n spd %d, n track %d\n", 
+  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVerticesSPD,nVerticesTracks);
+  
+  Int_t ncont = -1;
+  Int_t z1 = -1, z2 = -1;
+  Float_t diamZ = -1;
+  for(Int_t iVert=0; iVert<nVerticesSPD;iVert++)
+  {
+    if      (esdEv)
+    {
+      const AliESDVertex* pv=esdEv->GetPileupVertexSPD(iVert);
+      ncont=pv->GetNContributors();
+      z1 = esdEv->GetPrimaryVertexSPD()->GetZ();
+      z2 = pv->GetZ();
+      diamZ = esdEv->GetDiamondZ();
+    }//ESD
+    else if (aodEv)
+    {
+      AliAODVertex *pv=aodEv->GetVertex(iVert);
+      if(pv->GetType()!=AliAODVertex::kPileupSPD) continue;
+      ncont=pv->GetNContributors();
+      z1=aodEv->GetPrimaryVertexSPD()->GetZ();
+      z2=pv->GetZ();
+      diamZ = aodEv->GetDiamondZ();
+    }// AOD
+    
+    Double_t distZ  = TMath::Abs(z2-z1);
+    diamZ  = TMath::Abs(z2-diamZ);
+    
+    fhTimeNPileUpVertContributors  ->Fill(time,ncont);
+    fhTimePileUpMainVertexZDistance->Fill(time,distZ);
+    fhTimePileUpMainVertexZDiamond ->Fill(time,diamZ);
+    
+  }// loop
 }
 
 //_____________________________________________________________________________________
@@ -504,6 +584,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();       
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  
+  Int_t   ntimebins= GetHistogramRanges()->GetHistoTimeBins();         
+  Float_t timemax  = GetHistogramRanges()->GetHistoTimeMax();         
+  Float_t timemin  = GetHistogramRanges()->GetHistoTimeMin();      
   
   TString nlm[]   ={"1 Local Maxima","2 Local Maxima", "NLM > 2"};
   TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
@@ -1193,6 +1277,50 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     }
   }
   
+  if(fFillPileUpHistograms)
+  {
+    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeENoCut->SetXTitle("E (GeV)");
+    fhTimeENoCut->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeENoCut);  
+    
+    fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeESPD->SetXTitle("E (GeV)");
+    fhTimeESPD->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeESPD);  
+    
+    fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeESPDMulti->SetXTitle("E (GeV)");
+    fhTimeESPDMulti->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeESPDMulti);  
+    
+    fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
+    fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
+    fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertSPD);  
+    
+    fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 ); 
+    fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
+    fhTimeNPileUpVertTrack->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertTrack);  
+    
+    fhTimeNPileUpVertContributors  = new TH2F ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
+    fhTimeNPileUpVertContributors->SetYTitle("# vertex ");
+    fhTimeNPileUpVertContributors->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertContributors);  
+    
+    fhTimePileUpMainVertexZDistance  = new TH2F ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50); 
+    fhTimePileUpMainVertexZDistance->SetYTitle("distance Z (cm) ");
+    fhTimePileUpMainVertexZDistance->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimePileUpMainVertexZDistance);  
+    
+    fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50); 
+    fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
+    fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
+    
+  }
+  
   //Keep neutral meson selection histograms if requiered
   //Setting done in AliNeutralMesonSelection
   
@@ -1518,9 +1646,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         fhPtDecay->Fill(photon2->Pt());
         fhEDecay ->Fill(photon2->E() );
-
+        
         //Create AOD for analysis
         mom = mom1+mom2;
+        
+        // Fill histograms to undertand pile-up before other cuts applied
+        // Remember to relax time cuts in the reader
+        FillPileUpHistograms(mom.E(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);        
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -1651,6 +1783,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         //Create AOD for analysis
         
         mom = mom1+mom2;
+        
+        // Fill histograms to undertand pile-up before other cuts applied
+        // Remember to relax time cuts in the reader
+        FillPileUpHistograms(mom.E(),cluster->GetTOF()*1e9);     
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -1804,7 +1940,12 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       Float_t asy =-10;      
       if(e1+e2 > 0 ) asy = (e1-e2) / (e1+e2);
       FillSelectedClusterHistograms(calo, nMaxima, tag, asy);
-    }         
+    }  
+    
+    // Fill histograms to undertand pile-up before other cuts applied
+    // Remember to relax time cuts in the reader
+    FillPileUpHistograms(calo->E(),calo->GetTOF()*1e9);
+    
     
     //Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);
