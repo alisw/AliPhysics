@@ -92,6 +92,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   // Control histograms
   TH1I *   fhNEvents;           //! Number of events counter histogram
+  TH1I *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1I *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins

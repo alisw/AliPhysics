@@ -446,6 +446,8 @@ Bool_t AliCaloTrackReader::IsPileUpFromSPD() const
   // Default values: (3, 0.8, 3., 2., 5.)
   return fInputEvent->IsPileupFromSPD((Int_t) fPileUpParam[0] , fPileUpParam[1] , 
                                               fPileUpParam[2] , fPileUpParam[3] , fPileUpParam[4] ); 
+  //printf("Param : %d, %2.2f, %2.2f, %2.2f, %2.2f\n",(Int_t) fPileUpParam[0], fPileUpParam[1], fPileUpParam[2], fPileUpParam[3], fPileUpParam[4]);
+
 }
 
 //________________________________________________________
@@ -609,6 +611,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
         TMath::Abs(fVertex[0][1] ) < 1.e-6 && 
         TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
   }
+  
+  //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
   if(fDoEventSelection)
   {
