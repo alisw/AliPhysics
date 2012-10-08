@@ -164,11 +164,13 @@ AliTPCclusterMI * AliTPCtrackerRow::FindNearest2(Double_t y, Double_t z, Double_
   AliTPCclusterMI *cl =0;
 
   //PH Check boundaries. 510 is the size of fFastCluster
-  Int_t iz1 = Int_t(z-roadz+254.5);
-  if (iz1<0 || iz1>=510) return cl;
+  Int_t iz1 = Int_t(z-roadz+254.5);  
+  if ( iz1>=510) return cl;
+  if (iz1<0 ) iz1 = 0;
   iz1 = TMath::Max(GetFastCluster(iz1)-1,0);
   Int_t iz2 = Int_t(z+roadz+255.5);
-  if (iz2<0 || iz2>=510) return cl;
+  if (iz2<0 ) return cl;
+  if ( iz2>=510) iz2 = 509;
   iz2 = TMath::Min(GetFastCluster(iz2)+1,fN);
   Bool_t skipUsed = !(AliTPCReconstructor::GetRecoParam()->GetClusterSharing());
   //FindNearest3(y,z,roady,roadz,index);
