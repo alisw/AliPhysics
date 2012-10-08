@@ -233,6 +233,8 @@ public:
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
   
+  void             SetPileUpParam(Int_t i, Double_t param) { fPileUpParam[i] = param   ; }
+  
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus       ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit        ; }		
@@ -487,7 +489,11 @@ public:
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
-  
+  Double_t         fPileUpParam[5];              // Parameters to pass to method IsPileupFromSPD: Int_t minContributors, 
+                                                 // Double_t minZdist, 
+                                                 // Double_t nSigmaZdist, 
+                                                 // Double_t nSigmaDiamXY, 
+                                                 // Double_t nSigmaDiamZ)
   //Centrality/Event plane
   TString          fCentralityClass;        // Name of selected centrality class     
   Int_t            fCentralityOpt;          // Option for the returned value of the centrality, possible options 5, 10, 100
@@ -500,7 +506,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,43)
+  ClassDef(AliCaloTrackReader,44)
   
 } ;
 
