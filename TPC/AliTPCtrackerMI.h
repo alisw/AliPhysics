@@ -42,6 +42,7 @@ public:
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
+  virtual Int_t Clusters2TracksHLT(AliESDEvent *const esd, const AliESDEvent *hltEvent);
   virtual Int_t Clusters2Tracks (AliESDEvent *const esd);
   virtual Int_t RefitInward (AliESDEvent *esd);
   virtual Int_t LoadClusters (TTree * const tree);
@@ -177,6 +178,10 @@ private:
 
    void MakeESDBitmaps(AliTPCseed *t, AliESDtrack *esd);
 
+   Int_t PropagateToRowHLT(AliTPCseed *pt, int nrow);
+   void TrackFollowingHLT(TObjArray *const arr);
+   TObjArray * MakeSeedsHLT(const AliESDEvent *hltEvent);
+
    const Int_t fkNIS;        //number of inner sectors
    AliTPCtrackerSector *fInnerSec;  //array of inner sectors;
    const Int_t fkNOS;        //number of outer sectors
@@ -190,6 +195,7 @@ private:
    TTree * fSeedTree;    // output tree with seeds - filled in debug mode 1
    TTree * fTreeDebug;   // output with a debug information about track
    AliESDEvent * fEvent;      // output with esd tracks
+   const AliESDEvent * fEventHLT;      // input with HLT tracks
    Int_t    fDebug;      // debug option        
    Bool_t   fNewIO;      // indicated if we have data using New IO 
    Int_t fNtracks;                     //current number of tracks
