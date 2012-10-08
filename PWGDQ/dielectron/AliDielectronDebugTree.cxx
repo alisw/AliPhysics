@@ -106,7 +106,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   //only in local mode!!!
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if (!man) return;
-  if (man->GetAnalysisType()!=AliAnalysisManager::kLocalAnalysis) return;
+//   if (man->GetAnalysisType()!=AliAnalysisManager::kLocalAnalysis) return;
   
   //Get File and event information
   TObjString fileName;
