@@ -26,6 +26,7 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
+#include "AliNormalizationCounter.h"
 #endif
 
 /* $Id$ */ 
@@ -41,11 +42,13 @@ enum {kCorr=0, kUnCorr, kNoPid};
 const Int_t nPtBins=5;
 Double_t ptlims[nPtBins+1]={2.,4.,6.,8.,12.,24.};
 Int_t rebin[nPtBins]={4,4,6,6,8};
-Double_t sigmapt[nPtBins]={ 0.012, 0.016, 0.016, 0.018, 0.20 };
+Double_t sigmapt[nPtBins]={ 0.010, 0.012, 0.016, 0.018, 0.20 };
 Bool_t fixPeakSigma = kFALSE;
 //
 const Int_t nMultbins=6;
 Double_t multlims[nMultbins+1]={1.,9.,14.,20.,31.,49.,100.};
+// const Int_t nMultbins=1;
+// Double_t multlims[nMultbins+1]={0.,500.};
 //
 Int_t firstUsedBin[nPtBins]={-1,-1,-1,-1,-1}; // -1 uses all bins, >=1 to set the lower bin to be accepted from original histo
 //
@@ -63,7 +66,7 @@ Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC1
 
 // Functions
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, const char *CutsType, Int_t Option);
-Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, 
+Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, AliNormalizationCounter *counter,
 			 const char *CutsType, Int_t Option);
 Bool_t CheckNtrVsZvtx(TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, Int_t nFiles);
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
@@ -100,12 +103,14 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   for(Int_t i=0; i<4; i++) hNtrZvtx[i]=0x0;
   TH2F** hNtrZvtxCorr=new TH2F*[4];
   for(Int_t i=0; i<4; i++) hNtrZvtxCorr[i]=0x0;
+  AliNormalizationCounter *counter=0x0;
+  TH1F * hNormalization = new TH1F("hNormalization","Events in the norm counter",nMultbins,multlims);
 
   Float_t massD;
   Bool_t retCode;
   if(analysisType==kD0toKpi) {
     massD=1.86484003067016602e+00;//(Float_t)(TDatabasePDG::Instance()->GetParticle(421)->Mass());
-    retCode=LoadD0toKpiHistos(listFiles,hPtMassMult,hNtrZvtx,hNtrZvtxCorr,CutsType,Option);
+    retCode=LoadD0toKpiHistos(listFiles,hPtMassMult,hNtrZvtx,hNtrZvtxCorr,counter,CutsType,Option);
   }
   else if(analysisType==kDplusKpipi) {
     massD=1.86961996555328369e+00;//(Float_t)(TDatabasePDG::Instance()->GetParticle(411)->Mass());
@@ -218,6 +223,11 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
     //    printf(" Studying multiplicity bin %d\n",j);
     Int_t multbinlow = hmultaxis->FindBin(multlims[j]);
     Int_t multbinhigh = hmultaxis->FindBin(multlims[j+1])-1;
+    Float_t val = multbinlow + (multbinhigh-multbinlow)/2.;
+    Int_t hnbin = hNormalization->FindBin(val);
+    Float_t nevents = 0.;
+    if(counter) { nevents = counter->GetNEventsForNorm(multbinlow,multbinhigh); cout << endl<<endl<<" Nevents ("<<multbinlow<<","<<multbinhigh<<") ="<<nevents<<endl<<endl<<endl;}
+    hNormalization->SetBinContent(hnbin,nevents);
     //
     // Loop on pt bins
     //
@@ -256,7 +266,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       }
       //      printf(" getting the fit parameters\n");
       Double_t mass=fitter[massBin]->GetMean();
+      Double_t massUnc=fitter[massBin]->GetMeanUncertainty();
       Double_t sigma=fitter[massBin]->GetSigma();
+      Double_t sigmaUnc=fitter[massBin]->GetSigmaUncertainty();
       if(j==0) arrchisquare0[iBin]=fitter[massBin]->GetReducedChiSquare();
       else if(j==1) arrchisquare1[iBin]=fitter[massBin]->GetReducedChiSquare();
       else if(j==2) arrchisquare2[iBin]=fitter[massBin]->GetReducedChiSquare();
@@ -274,8 +286,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       fitter[massBin]->Signal(3,s,errs);
       fitter[massBin]->Background(3,b,errb);
       fitter[massBin]->Significance(3,sig,errsig);
-      Double_t ry=fitter[iBin]->GetRawYield();
-      Double_t ery=fitter[iBin]->GetRawYieldError();
+      Double_t ry=fitter[massBin]->GetRawYield();
+      Double_t ery=fitter[massBin]->GetRawYieldError();
       myCanvas[massBin] = new TCanvas(Form("myCanvas_%d_%d",j,iBin),Form("Invariant mass mult bin %d, pt bin %d",j,iBin));
       fitter[massBin]->DrawHere(gPad);
     
@@ -309,9 +321,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       hSignificance[j]->SetBinContent(iBin+1,sig);
       hSignificance[j]->SetBinError(iBin+1,errsig);
       hMass[j]->SetBinContent(iBin+1,mass);
-      hMass[j]->SetBinError(iBin+1,0.0001);
+      hMass[j]->SetBinError(iBin+1,massUnc);
       hSigma[j]->SetBinContent(iBin+1,sigma);
-      hSigma[j]->SetBinError(iBin+1,0.0001);
+      hSigma[j]->SetBinError(iBin+1,sigmaUnc);
 
       massBin++;
       delete hRebinned;
@@ -483,14 +495,15 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
     if(analysisType==kDplusKpipi) partname="Dminus";
   }
 
-  TString outfilename = Form("RawYield_MultInt_%s_%s",partname.Data(),CutsType);
+  TString outfilename = Form("RawYield_Mult_%s_%s",partname.Data(),CutsType);
   if(fixPeakSigma) outfilename += "_SigmaFixed";
   if(typeb==0) outfilename += "_Expo.root";
   else if(typeb==1) outfilename += "_Linear.root";
   else if(typeb==2) outfilename += "_Pol2.root";
 
-  TFile* outf=new TFile(outfilename,"update");
+  TFile* outf=new TFile(outfilename,"recreate");
   outf->cd(); 
+  hNormalization->Write();
   for(Int_t j=0; j<massBin; j++) hmass[j]->Write();
   for(Int_t j=0; j<nMultbins; j++){
     hMass[j]->Write();
@@ -516,7 +529,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
 }
 
 //_____________________________________________________________________________________________
-Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, const char *CutsType, Int_t Option)
+Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, AliNormalizationCounter *counter, const char *CutsType, Int_t Option)
 {
   Int_t nFiles=listFiles->GetEntries();
   TList **hlist=new TList*[nFiles];
@@ -556,6 +569,10 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZv
     listnorm += CutsType;
     printf("List norm name %s\n",listnorm.Data());
     hlistNorm[nReadFiles]=(TList*)dir->Get(listnorm);
+    //    AliNormalizationCounter *tmpcounter = (AliNormalizationCounter*)hlistNorm[nReadFiles]->FindObject("NormCounterCorrMult");
+    //    counter->Add(tmpcounter);
+    //    delete tmpcounter;
+    //    counter = tmpcounter;
 
     TString cutsobjname="coutputCutsD0";
     if(optPartAntiPart==kParticleOnly) cutsobjname+="D0";
@@ -723,7 +740,7 @@ Int_t nFiles=listFiles->GetEntries();
   outf->Close();
   return kTRUE;
   
-     }
+}
 
 //_____________________________________________________________________________________________
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse){
