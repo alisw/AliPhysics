@@ -47,7 +47,8 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE), 
 fAnaDebug(0),                 fCuts(new TList), 
 fScaleFactor(-1),
-fhNEvents(0),                 fhZVertex(0),                 
+fhNEvents(0),                 fhNPileUpEvents(0),
+fhZVertex(0),                 
 fhTrackMult(0),               fhCentrality(0),
 fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0)
@@ -68,8 +69,11 @@ fOutputContainer(new TList()), fAnalysisContainer(new TList()),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
-fhNEvents(maker.fhNEvents),    fhZVertex(maker.fhZVertex),    
-fhTrackMult(maker.fhTrackMult),fhCentrality(maker.fhCentrality),
+fhNEvents(maker.fhNEvents), 
+fhNPileUpEvents(maker.fhNPileUpEvents),
+fhZVertex(maker.fhZVertex),    
+fhTrackMult(maker.fhTrackMult),
+fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNMergedFiles(maker.fhNMergedFiles),          
 fhScaleFactor(maker.fhScaleFactor)
@@ -174,6 +178,12 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents      = new TH1I("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
+  
+  fhNPileUpEvents      = new TH1I("hNPileUpEvents",   "Number of events considered as pile-up", 2 , 0 , 2  ) ;
+  fhNPileUpEvents->SetYTitle("# events");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
+  fOutputContainer->Add(fhNPileUpEvents);
   
   fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
@@ -414,15 +424,17 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   // Event control histograms
  
   fhNEvents        ->Fill(0); // Number of events analyzed
+  if(fReader->IsPileUpFromSPD()) 
+    fhNPileUpEvents->Fill(0.5);
+  if(fReader->GetInputEvent()->IsPileupFromSPDInMultBins()) 
+    fhNPileUpEvents->Fill(1.5);
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity()); 
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-  
-  
+
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);
-  
   
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
