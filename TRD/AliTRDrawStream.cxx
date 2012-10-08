@@ -73,6 +73,7 @@ const char* AliTRDrawStream::fgkErrorMessages[] = {
   "not a TRD equipment (1024-1041)",
   "Invalid Stack header",
   "Invalid detector number",
+  "Invalid pad row",
   "No digits could be retrieved from the digitsmanager",
   "HC header mismatch",
   "HC check bits wrong",
@@ -96,6 +97,7 @@ Int_t AliTRDrawStream::fgErrorDebugLevel[] = {
   1,
   0,
   1,
+  0,
   1,
   0,
   1,
@@ -119,6 +121,7 @@ AliTRDrawStream::ErrorBehav_t AliTRDrawStream::fgErrorBehav[] = {
   AliTRDrawStream::kAbort,
   AliTRDrawStream::kAbort,
   AliTRDrawStream::kAbort,
+  AliTRDrawStream::kDiscardMCM,
   AliTRDrawStream::kAbort,
   AliTRDrawStream::kDiscardHC,
   AliTRDrawStream::kDiscardHC,
@@ -1608,11 +1611,11 @@ Int_t AliTRDrawStream::ReadZSData()
     fPayloadCurr++;
 
     if ((row > 11) && (fCurrStack == 2)) {
-      MCMError(kUnknown, "Data in padrow > 11 for stack 2");
+      MCMError(kInvalidPadRow, "Data in padrow > 11 for stack 2");
     }
 
-    if (fErrorFlags & (kDiscardMCM | kDiscardHC | kDiscardDDL))
-      break; //???
+    if (fErrorFlags & (kDiscardHC | kDiscardDDL))
+      break;
 
     // ----- Reading ADC channels -----
     AliDebug(2, DumpAdcMask("ADC mask: ", *fPayloadCurr));
@@ -1692,20 +1695,20 @@ Int_t AliTRDrawStream::ReadZSData()
 	  }
 	}
 
-	// filling the actual timebin data
-	int tb2 = 0x3ff & *fPayloadCurr >> 22;
-	int tb1 = 0x3ff & *fPayloadCurr >> 12;
-	int tb0 = 0x3ff & *fPayloadCurr >> 2;
-	if (adcwc != 0 || fCurrNtimebins <= 30)
-	  fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
-	else
-	  tb0 = -1;
-	if (currentTimebin >= fCurrNtimebins)
-	  break;
-	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
-	if (currentTimebin >= fCurrNtimebins)
-	  break;
-	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
+	if ((fErrorFlags & kDiscardMCM) == 0) {
+	  // filling the actual timebin data
+	  int tb2 = 0x3ff & (*fPayloadCurr >> 22);
+	  int tb1 = 0x3ff & (*fPayloadCurr >> 12);
+	  int tb0 = 0x3ff & (*fPayloadCurr >>  2);
+	  if (adcwc != 0 || fCurrNtimebins <= 30)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
+	  else
+	    tb0 = -1;
+	  if (currentTimebin < fCurrNtimebins)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
+	  if (currentTimebin < fCurrNtimebins)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
+	}
 
 	adcwc++;
 	fPayloadCurr++;
@@ -1821,8 +1824,14 @@ Int_t AliTRDrawStream::ReadNonZSData()
     Int_t adccoloff = AdcColOffset(*fPayloadCurr);
     Int_t padcoloff = PadColOffset(*fPayloadCurr);
     Int_t row = Row(*fPayloadCurr);
-
     fPayloadCurr++;
+
+    if ((row > 11) && (fCurrStack == 2)) {
+      MCMError(kInvalidPadRow, "Data in padrow > 11 for stack 2");
+    }
+
+    if (fErrorFlags & (kDiscardHC | kDiscardDDL))
+      break;
 
     // ----- reading marked ADC channels -----
     while (channelcount < channelcountExp &&
@@ -1856,20 +1865,20 @@ Int_t AliTRDrawStream::ReadNonZSData()
 	  }
 	}
 
-	// filling the actual timebin data
-	int tb2 = 0x3ff & *fPayloadCurr >> 22;
-	int tb1 = 0x3ff & *fPayloadCurr >> 12;
-	int tb0 = 0x3ff & *fPayloadCurr >> 2;
-	if (adcwc != 0 || fCurrNtimebins <= 30)
-	  fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
-	else
-	  tb0 = -1;
-	if (currentTimebin >= fCurrNtimebins)
-	  break;
-	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
-	if (currentTimebin >= fCurrNtimebins)
-	  break;
-	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
+	if ((fErrorFlags & kDiscardMCM) == 0) {
+	  // filling the actual timebin data
+	  int tb2 = 0x3ff & (*fPayloadCurr >> 22);
+	  int tb1 = 0x3ff & (*fPayloadCurr >> 12);
+	  int tb0 = 0x3ff & (*fPayloadCurr >>  2);
+	  if (adcwc != 0 || fCurrNtimebins <= 30)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
+	  else
+	    tb0 = -1;
+	  if (currentTimebin < fCurrNtimebins)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
+	  if (currentTimebin < fCurrNtimebins)
+	    fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
+	}
 
 	adcwc++;
 	fPayloadCurr++;

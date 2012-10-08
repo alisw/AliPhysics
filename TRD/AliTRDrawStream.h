@@ -72,6 +72,7 @@ class AliTRDrawStream : public TObject
     kNonTrdEq,
     kStackHeaderInvalid,
     kInvalidDetector,
+    kInvalidPadRow,
     kNoDigits,
     kHCmismatch,
     kHCcheckFailed,
