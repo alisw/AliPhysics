@@ -261,6 +261,10 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
   // Apply selection for D*.
   //
+
+  fIsSelectedCuts=0;
+  fIsSelectedPID=0;
+
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
     return 0;
@@ -324,11 +328,14 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     
   }
 
+  fIsSelectedCuts = returnvalue;
+
   // selection on PID 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate ||
      selectionLevel==AliRDHFCuts::kPID) {
     returnvaluePID = IsSelectedPID(d);
+    fIsSelectedPID = returnvaluePID;
   }
   if(returnvaluePID!=3) returnvalue =0;
 
