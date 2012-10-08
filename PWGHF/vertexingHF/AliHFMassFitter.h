@@ -61,7 +61,9 @@ class AliHFMassFitter : public TNamed {
   void     GetTypeOfFit(Bool_t &background, Int_t &typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
   Double_t GetMean() const {return fMass;}
+  Double_t GetMeanUncertainty() const {return fMassErr;}
   Double_t GetSigma()const {return fSigmaSgn;}
+  Double_t GetSigmaUncertainty()const { return fSigmaSgnErr;}
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
   Double_t GetChiSquare() const;
@@ -135,7 +137,9 @@ class AliHFMassFitter : public TNamed {
   Int_t     ffactor;           // number to multiply to the sigma of the signal to obtain the reflected gaussian
   TNtuple*  fntuParam;         // contains fit parameters
   Double_t  fMass;             // signal gaussian mean value
+  Double_t  fMassErr;          // err signal gaussian mean value
   Double_t  fSigmaSgn;         // signal gaussian sigma
+  Double_t  fSigmaSgnErr;      // err signal gaussian sigma
   Double_t  fRawYield;         // signal gaussian integral
   Double_t  fRawYieldErr;      // err on signal gaussian integral
   Bool_t    fSideBands;        // kTRUE = only side bands considered
@@ -145,7 +149,7 @@ class AliHFMassFitter : public TNamed {
   Int_t     fcounter;          // internal counter
   TList*    fContourGraph;     // TList of TGraph containing contour plots
 
-  ClassDef(AliHFMassFitter,5); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,6); // class for invariant mass fit
 };
 
 #endif
