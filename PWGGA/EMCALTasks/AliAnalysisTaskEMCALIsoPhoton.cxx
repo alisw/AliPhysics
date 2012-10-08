@@ -217,8 +217,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 
   fEvtSel->Fill(1);
 
-  if (!fTracks)  
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
+  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
+  if(!fTracks){
+    AliError("Track array in event is NULL!");
+    return;
+  }
   // Track loop to fill a pT spectrum
   const Int_t Ntracks = fTracks->GetEntriesFast();
   for (Int_t iTracks = 0;  iTracks < Ntracks; ++iTracks) {
