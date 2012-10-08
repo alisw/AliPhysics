@@ -621,7 +621,7 @@ void AliAnaPhoton::FillPileUpHistograms(Float_t energy, Float_t time)
   //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVerticesSPD,nVerticesTracks);
   
   Int_t ncont = -1;
-  Int_t z1 = -1, z2 = -1;
+  Float_t z1 = -1, z2 = -1;
   Float_t diamZ = -1;
   for(Int_t iVert=0; iVert<nVerticesSPD;iVert++)
   {
