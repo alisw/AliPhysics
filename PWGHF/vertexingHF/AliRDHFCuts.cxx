@@ -513,11 +513,13 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 	if(accept) fWhyRejection=6;
 	accept=kFALSE;
       } 
-      if(fCutOnzVertexSPD==2 && TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) {
-	fEvRejectionBits+=1<<kZVtxSPDOutFid;
-	if(accept) fWhyRejection=6;
-	accept=kFALSE;
-      } 
+      if(fCutOnzVertexSPD==2 && vertex){
+	if(TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) {
+	  fEvRejectionBits+=1<<kZVtxSPDOutFid;
+	  if(accept) fWhyRejection=6;
+	  accept=kFALSE;
+	} 
+      }
     }
   }
 

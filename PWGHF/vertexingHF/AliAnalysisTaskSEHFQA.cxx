@@ -748,11 +748,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
   if (fCuts->GetIsUsePID() && fDecayChannel==kLambdactoV0) {
     fCuts->GetPidHF()->SetPidResponse(pidResp);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetPidResponse(pidResp);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetPidResponse(pidResp);
-    fCuts->GetPidHF()->SetOldPid(kFALSE);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetOldPid(kFALSE);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetOldPid(kFALSE);
+    AliRDHFCutsLctoV0* lccuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
+    if(lccuts){
+      lccuts->GetPidV0pos()->SetPidResponse(pidResp);
+      lccuts->GetPidV0neg()->SetPidResponse(pidResp);
+      fCuts->GetPidHF()->SetOldPid(kFALSE);
+      lccuts->GetPidV0pos()->SetOldPid(kFALSE);
+      lccuts->GetPidV0neg()->SetOldPid(kFALSE);
+    }
   }
 
   // Post the data

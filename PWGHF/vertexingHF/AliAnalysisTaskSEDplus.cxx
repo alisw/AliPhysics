@@ -989,7 +989,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fMassHist[index]->Fill(invMass);
 	  if(fCutsDistr){
 	    Float_t fact=1.;
-	    Float_t factor[3];
+	    Float_t factor[3]={1.,1.,1.};
 	    if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
 	    fCosPHist[index]->Fill(cosp,fact);
 	    fDLenHist[index]->Fill(dlen,fact);
