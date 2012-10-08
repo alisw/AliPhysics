@@ -184,8 +184,10 @@ Bool_t AliHFCorrelator::Initialize(){
 	
     //  std::cout << "AliHFCorrelator::Initialize"<< std::endl;
   AliInfo("AliHFCorrelator::Initialize") ;
-	if(!fAODEvent)
+  if(!fAODEvent){
     AliInfo("No AOD event") ;
+    return;
+  }
     //std::cout << "No AOD event" << std::endl;
 	
 	AliCentrality *centralityObj = 0;
@@ -298,7 +300,8 @@ Bool_t AliHFCorrelator::PoolUpdate(){
 	if(fmixing) { // update the pool for Event Mixing
 		TObjArray* objArr = NULL;
 		if(fselect==1 || fselect==2) objArr = (TObjArray*)AcceptAndReduceTracks(fAODEvent);
-		if(fselect==3) objArr = (TObjArray*)AcceptAndReduceKZero(fAODEvent);
+		else if(fselect==3) objArr = (TObjArray*)AcceptAndReduceKZero(fAODEvent);
+		else return kFALSE;
 		if(objArr->GetEntriesFast()>0) fPool->UpdatePool(objArr); // updating the pool only if there are entries in the array
 	}
 		

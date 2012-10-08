@@ -242,9 +242,11 @@ Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Boo
 	if(useMc) { // on MC
 		Int_t hadLabel = track->GetLabel();
 		if(hadLabel < 0) return kFALSE;
-		AliAODMCParticle* hadron = dynamic_cast<AliAODMCParticle*>(mcArray->At(hadLabel));
-		Int_t pdg = TMath::Abs(hadron->GetPdgCode()); 
-		if (pdg == 321) isKaon = kTRUE;
+		AliAODMCParticle* hadron = dynamic_cast<AliAODMCParticle*>(mcArray->At(hadLabel)); 
+		if(hadron){
+		  Int_t pdg = TMath::Abs(hadron->GetPdgCode()); 
+		  if (pdg == 321) isKaon = kTRUE;
+		}
 	}
 	
 	if(!useMc) { // on DATA
