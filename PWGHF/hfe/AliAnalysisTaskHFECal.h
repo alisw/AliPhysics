@@ -36,6 +36,7 @@ class AliHFEpidQAmanager;
 class AliCFManager;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliStack.h"
 
 class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  public:
@@ -53,7 +54,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce);
+  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, AliStack *stack, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent);
+  double GetMCweight(double mcPi0pT);
   void FindTriggerClusters();
  private:
   
@@ -95,6 +97,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fIncpTM20;		//! HFE pid electron vs centrality
   THnSparseD		*fInvmassLS;		//! Inv mass of LS (e,e)
   THnSparseD		*fInvmassULS;		//! Inv mass of ULS (e,e)
+  THnSparseD		*fInvmassLSmc;		//! Inv mass of LS (e,e)
+  THnSparseD		*fInvmassULSmc;		//! Inv mass of ULS (e,e)
   TH1F			*fOpeningAngleLS;	//! opening angle for LS pairs
   TH1F			*fOpeningAngleULS;	//! opening angle for ULS pairs
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
