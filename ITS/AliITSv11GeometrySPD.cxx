@@ -3084,11 +3084,34 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     const Double_t kSuppScrewXPos     = fgkmm *  4.0;
     const Double_t kSuppScrewZPos     = fgkmm *  3.0;
     const Double_t kRThermalShield    = fgkcm *  9.9255; // MUST match with GeometrySupport
+    // Sector supports
+    const Double_t kSectSuppWidth     = fgkmm * 15.0;
+    const Double_t kSectSuppLen1      = fgkmm * 16.9; // TO BE CHECKED!
+    const Double_t kSectSuppLen2      = fgkmm * 35.1; // TO BE CHECKED!
+    const Double_t kSectSuppThick     = fgkmm *  1.5;
+    const Double_t kSectSuppDepth     = fgkmm * 17.78; // MUST match with GeometrySupport
+    const Double_t kSectScrewZPos     = fgkmm *  5.1; // TO BE CHECKED!
+
+    const Double_t kSectSuppZPos      = fgkcm * 26.5;
+    // Sector clips
+    const Double_t kSectClipLength    = fgkmm * 30.0;
+    const Double_t kSectClipWidth     = fgkmm * 28.53;
+    const Double_t kSectClipThick1    = fgkmm *  2.0;
+    const Double_t kSectClipThick2    = fgkmm *  0.715;
+    const Double_t kSectClipInStave   = fgkmm * 11.0; // Tuned
+    const Double_t kSectClipAngle     =         29.0; // Degree. Tuned
     // M3 screws
     const Double_t kScrewM3Diam       = fgkmm *  3.0;
     const Double_t kScrewM3HeadThick  = fgkmm *  2.0;
     const Double_t kScrewM3HeadRmin   = fgkmm *  1.5;
     const Double_t kScrewM3HeadRmax   = fgkmm *  2.5;
+    const Double_t kScrewM3OutManifH  = fgkmm *  1.5;
+    // Central set pin (in sector support)
+    const Double_t kSetPinDiam        = fgkmm *  6.0;
+    const Double_t kSetPinHeadDiam    = fgkmm *  8.0;
+    const Double_t kSetPinHeadRmin    = fgkmm *  1.5;
+    const Double_t kSetPinHeadThick   = fgkmm *  1.5;
+    const Double_t kSetPinOutClipH    = fgkmm *  1.0;
     // Cooling pipes
     const Double_t kCoolPipeSideARin  = fgkmm *  1.5;
     const Double_t kCoolPipeSideARout = fgkmm *  1.8;
@@ -3104,6 +3127,7 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     Double_t xprof[12], yprof[12];
     Double_t radius, theta;
     Double_t xpos, ypos, zpos;
+    Double_t tmp;
 
 
     // The cooling manifold: an Assembly
@@ -3186,6 +3210,79 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     suppscrewheadsh->DefineSection(3, kScrewM3HeadThick/2,
 					 kScrewM3HeadRmin, kScrewM3HeadRmax);
 
+    TGeoTube *clipscrewbodysh = new TGeoTube(0, kScrewM3Diam/2,
+					     kSectClipThick1/2);
+
+    // The screw segment below the manifold and the sector clip
+    TGeoTube *screwoutmanifsh = new TGeoTube(0, kScrewM3Diam/2,
+					     kScrewM3OutManifH/2);
+
+    // The sector supports
+    TGeoXtru *suppsectsh = new TGeoXtru(2);
+
+    xprof[ 0] = kSectSuppLen2/2 + kSectSuppThick;
+    yprof[ 0] = 0;
+    xprof[ 1] = xprof[0];
+    yprof[ 1] = kSectSuppDepth;
+    xprof[ 2] = kSectSuppLen2/2 + kSectSuppLen1;
+    yprof[ 2] = yprof[1];
+    xprof[ 3] = xprof[2];
+    yprof[ 3] = yprof[2] + kSectSuppThick;
+    xprof[ 4] = kSectSuppLen2/2;
+    yprof[ 4] = yprof[3];
+    xprof[ 5] = xprof[4];
+    yprof[ 5] = kSectSuppThick;
+    xprof[ 6] = -xprof[5];
+    yprof[ 6] =  yprof[5];
+    xprof[ 7] = -xprof[4];
+    yprof[ 7] =  yprof[4];
+    xprof[ 8] = -xprof[3];
+    yprof[ 8] =  yprof[3];
+    xprof[ 9] = -xprof[2];
+    yprof[ 9] =  yprof[2];
+    xprof[10] = -xprof[1];
+    yprof[10] =  yprof[1];
+    xprof[11] = -xprof[0];
+    yprof[11] =  yprof[0];
+
+    suppsectsh->DefinePolygon(12,xprof,yprof);
+    suppsectsh->DefineSection(0,-kSectSuppWidth/2);
+    suppsectsh->DefineSection(1, kSectSuppWidth/2);
+
+    // The sector clips
+    TGeoXtru *sectclipsh = new TGeoXtru(2);
+
+    xprof[ 0] =  kSectClipWidth/2;
+    yprof[ 0] =  0;
+    xprof[ 1] = -kSectClipWidth/2;
+    yprof[ 1] =  yprof[0];
+    xprof[ 2] =  xprof[1];
+    yprof[ 2] = -kSectClipThick1;
+    xprof[ 3] =  kSectClipWidth/2 - kSectClipThick2;
+    yprof[ 3] =  yprof[2];
+    xprof[ 4] =  xprof[3] + kSectClipInStave*SinD(kSectClipAngle);
+    yprof[ 4] = -kSectClipInStave*CosD(kSectClipAngle);
+    xprof[ 5] =  xprof[4] + kSectClipThick2*CosD(kSectClipAngle);
+    yprof[ 5] =  yprof[4] + kSectClipThick2*SinD(kSectClipAngle);
+
+    sectclipsh->DefinePolygon(6,xprof,yprof);
+    sectclipsh->DefineSection(0,-kSectClipLength/2);
+    sectclipsh->DefineSection(1, kSectClipLength/2);
+
+    // The central set pin head and body
+    TGeoTube *setpinbodysh = new TGeoTube(0, kSetPinDiam/2,
+					  kSectSuppThick/2);
+
+    TGeoTube *setpinheadsh = new TGeoTube(kSetPinHeadRmin, kSetPinHeadDiam/2,
+					  kSetPinHeadThick/2);
+
+    TGeoTube *pinclipbodysh = new TGeoTube(0, kSetPinDiam/2,
+					   kSectClipThick1/2);
+
+    // The set pin segment below the sector clip
+    TGeoTube *setpinoutclipsh = new TGeoTube(0, kSetPinDiam/2,
+					     kSetPinOutClipH/2);
+
 
     // We have the shapes: now create the real volumes
     TGeoMedium *medInox  = GetMedium("INOX$");
@@ -3226,9 +3323,9 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
 					       suppscrewbodysh,medInox);
     suppscrewbody->SetLineColor(kGray);
 
-    xpos = kCoolManifLength/2  - kSuppScrewZPos;
+    xpos = kCoolManifLength/2 - kSuppScrewZPos;
     ypos = suppscrewbodysh->GetDz();
-    zpos = kCoolManifWidth/2   - kSuppScrewXPos;
+    zpos = kCoolManifWidth/2  - kSuppScrewXPos;
     suppmanif->AddNode(suppscrewbody, 1, new TGeoCombiTrans( xpos, ypos, zpos,
 					 new TGeoRotation("",0,90,0)));
     suppmanif->AddNode(suppscrewbody, 2, new TGeoCombiTrans( xpos, ypos,-zpos,
@@ -3241,6 +3338,60 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     TGeoVolume *suppscrewhead = new TGeoVolume("ITSSPDSuppScrewHead",
 					       suppscrewheadsh,medInox);
     suppscrewhead->SetLineColor(kGray);
+
+    TGeoVolume *screwoutmanif = new TGeoVolume("ITSSPDSuppScrewOutManif",
+					       screwoutmanifsh,medInox);
+    screwoutmanif->SetLineColor(kGray);
+
+    TGeoVolume *suppsect = new TGeoVolume("ITSSPDCoolSectorSupp",
+					  suppsectsh,medSPDcf);
+    suppsect->SetLineColor(7);
+
+    xpos = kSectSuppLen2/2 - kSectScrewZPos;
+    ypos = suppscrewbodysh->GetDz();
+    suppsect->AddNode(suppscrewbody, 1, new TGeoCombiTrans( xpos, ypos, 0,
+					new TGeoRotation("",0,90,0)));
+    suppsect->AddNode(suppscrewbody, 2, new TGeoCombiTrans(-xpos, ypos, 0,
+					new TGeoRotation("",0,90,0)));
+
+    TGeoVolume *setpinbody = new TGeoVolume("ITSSPDSetPinBody",
+					    setpinbodysh,medInox);
+    setpinbody->SetLineColor(kGray);
+
+    ypos = setpinbodysh->GetDz();
+    suppsect->AddNode(setpinbody, 1, new TGeoCombiTrans( 0, ypos, 0,
+					new TGeoRotation("",0,90,0)));
+
+    TGeoVolume *setpinhead = new TGeoVolume("ITSSPDSetPinHead",
+					    setpinheadsh,medInox);
+    setpinhead->SetLineColor(kGray);
+
+    TGeoVolume *sectclip = new TGeoVolume("ITSSPDCoolSectorClip",
+					  sectclipsh,medSPDcf);
+    sectclip->SetLineColor(7);
+
+    TGeoVolume *clipscrewbody = new TGeoVolume("ITSSPDClipScrewBody",
+					       clipscrewbodysh,medInox);
+    clipscrewbody->SetLineColor(kGray);
+
+    ypos = -clipscrewbodysh->GetDz();
+    zpos = kSectSuppLen2/2 - kSectScrewZPos;
+    sectclip->AddNode(clipscrewbody, 1, new TGeoCombiTrans( 0, ypos, zpos,
+					new TGeoRotation("",0,90,0)));
+    sectclip->AddNode(clipscrewbody, 2, new TGeoCombiTrans( 0, ypos,-zpos,
+					new TGeoRotation("",0,90,0)));
+
+    TGeoVolume *pinclipbody = new TGeoVolume("ITSSPDClipPinBody",
+					     pinclipbodysh,medInox);
+    pinclipbody->SetLineColor(kGray);
+
+    ypos = -pinclipbodysh->GetDz();
+    sectclip->AddNode(pinclipbody, 1, new TGeoCombiTrans( 0, ypos, 0,
+					new TGeoRotation("",0,90,0)));
+
+    TGeoVolume *setpinoutclip = new TGeoVolume("ITSSPDSetPinOutClip",
+					       setpinoutclipsh,medInox);
+    setpinoutclip->SetLineColor(kGray);
 
 
     // Add all volumes in the assemblies
@@ -3286,6 +3437,75 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     coolmanifA->AddNode(suppscrewhead, 4, new TGeoCombiTrans(-xpos, ypos,-zpos,
 					  new TGeoRotation("",0,-90,0)));
     coolmanifC->AddNode(suppscrewhead, 4, new TGeoCombiTrans(-xpos, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+
+    ypos = manifblksh->GetDY() + screwoutmanifsh->GetDz();
+    coolmanifA->AddNode(screwoutmanif, 1, new TGeoCombiTrans( xpos,-ypos, zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 1, new TGeoCombiTrans( xpos,-ypos, zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifA->AddNode(screwoutmanif, 2, new TGeoCombiTrans( xpos,-ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 2, new TGeoCombiTrans( xpos,-ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifA->AddNode(screwoutmanif, 3, new TGeoCombiTrans(-xpos,-ypos, zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 3, new TGeoCombiTrans(-xpos,-ypos, zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifA->AddNode(screwoutmanif, 4, new TGeoCombiTrans(-xpos,-ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 4, new TGeoCombiTrans(-xpos,-ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+
+    ypos = manifblksh->GetDY() + suppmanifsh->GetY(1) - suppsectsh->GetY(1);
+    zpos = manifblksh->GetDZ() + (kCoolManifZPos - kSectSuppZPos);
+    coolmanifA->AddNode(suppsect, 1, new TGeoCombiTrans(0, ypos,-zpos,
+					 new TGeoRotation("",-90,90,90)));
+    coolmanifC->AddNode(suppsect, 1, new TGeoCombiTrans(0, ypos,-zpos,
+					 new TGeoRotation("",-90,90,90)));
+
+    tmp = ypos; // Save it to avoid recomputing
+
+    ypos += (kSectSuppThick + kScrewM3HeadThick/2);
+    zpos += (kSectSuppLen2/2 - kSectScrewZPos);
+    coolmanifA->AddNode(suppscrewhead, 5, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(suppscrewhead, 5, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    zpos -= 2*(kSectSuppLen2/2 - kSectScrewZPos);
+    coolmanifA->AddNode(suppscrewhead, 6, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(suppscrewhead, 6, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+
+    ypos = tmp + kSectSuppThick + kSetPinHeadThick/2;
+    zpos += (kSectSuppLen2/2 - kSectScrewZPos);
+    coolmanifA->AddNode(setpinhead, 1, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(setpinhead, 1, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+
+    ypos = tmp;
+    coolmanifA->AddNode(sectclip, 1, new TGeoTranslation( 0, ypos,-zpos));
+    coolmanifC->AddNode(sectclip, 1, new TGeoCombiTrans ( 0, ypos,-zpos,
+					  new TGeoRotation("",-90,180,90)));
+
+    ypos -= (kSectClipThick1 + setpinoutclipsh->GetDz());
+    coolmanifA->AddNode(setpinoutclip, 1, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(setpinoutclip, 1, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+
+    ypos = tmp - (kSectClipThick1 + screwoutmanifsh->GetDz());
+    zpos += (kSectSuppLen2/2 - kSectScrewZPos);
+    coolmanifA->AddNode(screwoutmanif, 5, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 5, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    zpos -= 2*(kSectSuppLen2/2 - kSectScrewZPos);
+    coolmanifA->AddNode(screwoutmanif, 6, new TGeoCombiTrans( 0, ypos,-zpos,
+					  new TGeoRotation("",0,-90,0)));
+    coolmanifC->AddNode(screwoutmanif, 6, new TGeoCombiTrans( 0, ypos,-zpos,
 					  new TGeoRotation("",0,-90,0)));
 
     // We create here the cooling pipes because it's easier to place them now

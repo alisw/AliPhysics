@@ -78,8 +78,8 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   const Double_t kCoolManifHoleWid  = 24.0*fgkmm; // TO BE CHECKED!
   const Double_t kCoolManifHoleLen  = 57.5*fgkmm; // 54.2 + 1.5*2 + 0.3 toll.
   const Double_t kCoolManifHoleZPos = 36.47*fgkcm;// MUST match SPD class
-  const Double_t kCoolSuppHoleWid  = 15.0*fgkmm; // TO BE CHECKED!
-  const Double_t kCoolSuppHoleLen  = 35.1*fgkmm; // TO BE CHECKED!
+  const Double_t kCoolSuppHoleWid  = 15.0*fgkmm;
+  const Double_t kCoolSuppHoleLen  = 38.4*fgkmm; // 35.1 + 1.5*2 + 0.3 toll.// TO BE CHECKED!
   const Double_t kCoolSuppHoleZPos = 26.5*fgkcm;
   // Dimensions of the EndCap shield
   const Double_t kHalfLengthEndCap  = 25.*fgkmm;
@@ -272,7 +272,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 				    kCoolSuppHoleLen/2);
   supphole->SetName("shTS");
 
-  zpos = kCoolSuppHoleZPos + supphole->GetDZ();
+  zpos = kCoolSuppHoleZPos;
 
   TGeoTranslation *s1p = new TGeoTranslation("s1p",0,radius, zpos);
   TGeoTranslation *s1n = new TGeoTranslation("s1n",0,radius,-zpos);
