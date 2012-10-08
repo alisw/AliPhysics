@@ -80,9 +80,11 @@ public :
   THnSparseF* GetEffSecHisto() const {return fEffSecHisto;}
 
 private:
+
+  static const Int_t fgkMaxClones = 3, fgkMaxFakes = 3;
   
   // Helper Method
-  TH1D* AddHistoEff(Int_t axis, const Char_t *name, const Char_t* vsTitle);
+  TH1D* AddHistoEff(Int_t axis, const Char_t *name, const Char_t* vsTitle, const Int_t type, const Int_t secondary = 0);
 
   // Control histograms
   THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:charge
