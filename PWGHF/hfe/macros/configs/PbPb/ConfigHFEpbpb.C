@@ -24,27 +24,31 @@ TF1* GetEtaCorrection(TString listname){
 }
 
 
-AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE,
+AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
+				  Bool_t useMC,
 				  TString appendix,
 				  Int_t aodfilter=-1,
 				  UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				  Double_t TPCclRatio = 0.6, Double_t TPCclshared = 1.1,
 				  UChar_t ITScl=3,  Double_t ITSchi2perclusters=99999999.,
-				  Int_t itspixelcut=AliHFEextraCuts::kFirst,
+				  Int_t itspixelcut=AliHFEextraCuts::kBoth,
                                   Double_t dcaxy=1.0, Double_t dcaz=2.0,
+				  Bool_t usetof=kFALSE,
 				  Double_t TOFs=3.,
-				  Double_t IpSig=3., 				  
+				  Bool_t etacor=kFALSE,TString listname="",
+				  Double_t* tpcdEdxcutlow=NULL,Double_t* tpcdEdxcuthigh=NULL,
 				  Float_t prodlow=0., Float_t prodhigh=100., 
-				  Bool_t beauty=kFALSE,
-				  Bool_t kMCQA = kFALSE, 
-				  Bool_t kDEStep = kFALSE,
-				  Int_t addflag=0, Int_t ptbin=0, 
-				  Int_t etacor=0, TString listname="",
+				  Bool_t kMCQA = kFALSE,
 				  Int_t nondefaultcentr=0, Float_t* arraycentr=NULL,
-				  Double_t* tpcdEdxcut=NULL,Double_t tpcu=3.0){
+				  Int_t ptbin=0){
   //
   // HFE standard task configuration
   //
+
+  for(Int_t k=0; k < 12; k++) {
+    printf("TPC dEdx cut low %f, high %f for %d\n",tpcdEdxcutlow[k],tpcdEdxcuthigh[k],k);
+  }
+
 
   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts pbpb TOF TPC");
   hfecuts->CreateStandardCuts();
@@ -60,10 +64,8 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE,
   hfecuts->SetCutITSpixel(itspixelcut);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
 
-  hfecuts->SetIPcutParam(0,0,0,IpSig,kTRUE,kTRUE);
-  // if(useMC && beauty) hfecuts->SetProductionVertex(prodlow,prodhigh,prodlow,prodhigh);
-  if(useMC) hfecuts->SetProductionVertex(prodlow,prodhigh,prodlow,prodhigh);
-
+ if(useMC) hfecuts->SetProductionVertex(prodlow,prodhigh,prodlow,prodhigh);
+ 
   hfecuts->SetMaxImpactParam(dcaxy,dcaz);
 
   // event cuts
@@ -71,7 +73,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE,
   hfecuts->SetVertexRange(10.);
 
   // others
-  hfecuts->SetTOFPIDStep(kTRUE);
+   if(usetof) hfecuts->SetTOFPIDStep(kTRUE);
   //hfecuts->SetMaxChi2perClusterITS(36);
   //hfecuts->SetTOFMISMATCHStep(kTRUE);
   //hfecuts->SetTPCPIDCleanUpStep(kTRUE);
@@ -148,66 +150,62 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE,
   // Define PID
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);
-  pid->AddDetector("TOF", 0);
-  pid->AddDetector("TPC", 1);
-  //pid->ConfigureTPCrejection();
+  if(usetof){
+    pid->AddDetector("TOF", 0);
+    pid->AddDetector("TPC", 1);
+    //pid->ConfigureTPCrejection();
+  }
+  else {
+    pid->AddDetector("TPC", 0);
+  }
 
- 
+  if(usetof) pid->ConfigureTOF(TOFs);
 
   if(!useMC){
+    Double_t paramsTPCdEdxcutlow[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+    if(tpcdEdxcutlow) memcpy(paramsTPCdEdxcutlow,tpcdEdxcutlow,sizeof(paramsTPCdEdxcutlow));
     
-    // 0-10% 0.16
-    // 10-20% 0.29
-    // 20-30% 0.38
-    // 30-40% 0.44
-    Double_t paramsTPCdEdxcut[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-    if((nondefaultcentr!=0) && tpcdEdxcut) memcpy(paramsTPCdEdxcut,tpcdEdxcut,sizeof(paramsTPCdEdxcut));
+    Double_t paramsTPCdEdxcuthigh[12] ={3.0, 3.0, 3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
+    if(tpcdEdxcuthigh) memcpy(paramsTPCdEdxcuthigh,tpcdEdxcuthigh,sizeof(paramsTPCdEdxcuthigh));
 
-    if(etacor==1&&nondefaultcentr==0)
-      {
-        Double_t tpcdEdxcutetacor[12]={-0.08, 0.016, 0.12,0.22,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-	memcpy(paramsTPCdEdxcut,tpcdEdxcutetacor,sizeof(paramsTPCdEdxcut));
-      }
-    
     char *cutmodel;
     cutmodel="pol0";
     
     for(Int_t a=0;a<11;a++)
-    {
-     //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
-	Double_t tpcparam[1]={paramsTPCdEdxcut[a]};
-
-	pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparam,tpcu);
-    }
-
-    if(etacor==1)
+      {
+	//   cout << a << " " << paramsTPCdEdxcut[a] << endl;
+	Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
+	Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
+	pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
+      }
+    
+    if(etacor)
       { 
 	// Apply eta correction
 	AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
 	TF1 *etacorrection = GetEtaCorrection(listname);
 	if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
-	
       }
-
   }
-  pid->ConfigureTOF(TOFs);
-
-  AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
-  if(TOFs<3.) tofpid->SetTOFnSigmaBand(-3,TOFs);
-
+  
   // QA
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   //task->SetFillSignalOnly(kFALSE);    // for DE pluging for MC
   if(kMCQA) task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
-  if(kDEStep) task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
-  if(useMC && addflag==1) task->SetDebugStreaming();
+  //task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
+  //if(useMC && addflag==1) task->SetDebugStreaming();
 
   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
 
- 
+  task->SetFillNoCuts(kTRUE);
 
+  if(isaod) {
+    task->SetAODAnalysis();
+    task->SetApplyCutAOD(kTRUE);
+  }
+ 
   printf("*************************************\n");
   printf("Configuring task PbPb \n"); 
   //if(isLHC10) printf("Configuring TPC1 Task 2010 :\n");
