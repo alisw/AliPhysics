@@ -68,6 +68,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
 
+  void         FillPileUpHistograms(Float_t energy, Float_t time) ;
+  
+  void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms = kTRUE  ; }
+  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms = kFALSE ; }    
   
   // Analysis parameters setters getters
   
@@ -124,7 +128,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOnlySimpleSSHisto;       // Fill selected cluster histograms, selected SS histograms
   Int_t    fNOriginHistograms;           // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;          // Fill only NPrimaryHistograms of the 7 defined types
-
+  Bool_t   fFillPileUpHistograms;        // Fill pile-up related histograms
+  
   //Histograms 
   TH1F * fhClusterCuts[9];               //! control histogram on the different photon selection cuts
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
@@ -271,10 +276,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEOverP[2];                           //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts 
   TH2F * fhEOverPTRD[2];                        //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD 
 
+  // Pile-up
+  TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut 
+  TH2F * fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
+  TH2F * fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
+  TH2F * fhTimeNPileUpVertSPD;                  //! time of cluster vs n pile-up vertices from SPD
+  TH2F * fhTimeNPileUpVertTrack;                //! time of cluster vs n pile-up vertices from Tracks
+  TH2F * fhTimeNPileUpVertContributors;         //! time of cluster vs n pile-up vertex from SPD contributors
+  TH2F * fhTimePileUpMainVertexZDistance;       //! time of cluster vs difference of z main vertex and pile-up vertex 
+  TH2F * fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
+
+  
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,26)
+  ClassDef(AliAnaPhoton,27)
 
 } ;
  

@@ -42,6 +42,8 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliVTrack.h"
 #include "AliVCluster.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliAnaParticleIsolation)
 
@@ -49,6 +51,7 @@ ClassImp(AliAnaParticleIsolation)
 AliAnaParticleIsolation::AliAnaParticleIsolation() : 
 AliAnaCaloTrackCorrBaseClass(),   fCalorimeter(""), 
 fReMakeIC(0),                     fMakeSeveralIC(0),               
+fFillPileUpHistograms(0),
 fFillTMHisto(0),                  fFillSSHisto(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0), 
@@ -108,6 +111,11 @@ fhNLocMax(),
 fhELambda0LocMax1(),              fhELambda1LocMax1(),
 fhELambda0LocMax2(),              fhELambda1LocMax2(),
 fhELambda0LocMaxN(),              fhELambda1LocMaxN(),
+// PileUp
+fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
+fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
+fhTimeNPileUpVertContributors(0),
+fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
 // Histograms settings
 fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
 fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
@@ -201,6 +209,100 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     
   } 
   
+}
+
+//_________________________________________________________________
+void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID) 
+{
+  // Fill some histograms to understand pile-up
+  if(!fFillPileUpHistograms) return;
+  
+  if(clusterID < 0 ) 
+  {
+    printf("AliAnaParticleIsolation::FillPileUpHistograms(), ID of cluster = %d, not possible! ", clusterID);
+    return;
+  }
+  
+  Int_t iclus = -1;
+  TObjArray* clusters = 0x0;
+  if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
+  else if(fCalorimeter == "PHOS" ) clusters = GetPHOSClusters();
+  
+  Float_t energy = 0;
+  Float_t time   = -1000;
+
+  if(clusters)
+  {
+    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus); 
+    energy = cluster->E();
+    energy = cluster->GetTOF()*1e9;
+  } 
+  
+  //printf("E %f, time %f\n",energy,time);
+  AliVEvent * event = GetReader()->GetInputEvent();
+  
+  fhTimeENoCut->Fill(energy,time);
+  if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
+  if(event->IsPileupFromSPDInMultBins()) fhTimeESPDMulti->Fill(energy,time);
+  
+  if(energy > 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
+  
+  AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
+  
+  // N pile up vertices
+  Int_t nVerticesSPD    = -1;
+  Int_t nVerticesTracks = -1;
+  
+  if      (esdEv)
+  {
+    nVerticesSPD    = esdEv->GetNumberOfPileupVerticesSPD();
+    nVerticesTracks = esdEv->GetNumberOfPileupVerticesTracks();
+    
+  }//ESD
+  else if (aodEv)
+  {
+    nVerticesSPD    = aodEv->GetNumberOfPileupVerticesSPD();
+    nVerticesTracks = aodEv->GetNumberOfPileupVerticesTracks();
+  }//AOD
+  
+  fhTimeNPileUpVertSPD  ->Fill(time,nVerticesSPD);
+  fhTimeNPileUpVertTrack->Fill(time,nVerticesTracks);
+  
+  //printf("Is SPD %d, Is SPD Multi %d, n spd %d, n track %d\n", 
+  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVerticesSPD,nVerticesTracks);
+  
+  Int_t ncont = -1;
+  Int_t z1 = -1, z2 = -1;
+  Float_t diamZ = -1;
+  for(Int_t iVert=0; iVert<nVerticesSPD;iVert++)
+  {
+    if      (esdEv)
+    {
+      const AliESDVertex* pv=esdEv->GetPileupVertexSPD(iVert);
+      ncont=pv->GetNContributors();
+      z1 = esdEv->GetPrimaryVertexSPD()->GetZ();
+      z2 = pv->GetZ();
+      diamZ = esdEv->GetDiamondZ();
+    }//ESD
+    else if (aodEv)
+    {
+      AliAODVertex *pv=aodEv->GetVertex(iVert);
+      if(pv->GetType()!=AliAODVertex::kPileupSPD) continue;
+      ncont=pv->GetNContributors();
+      z1=aodEv->GetPrimaryVertexSPD()->GetZ();
+      z2=pv->GetZ();
+      diamZ = aodEv->GetDiamondZ();
+    }// AOD
+    
+    Double_t distZ  = TMath::Abs(z2-z1);
+    diamZ  = TMath::Abs(z2-diamZ);
+    
+    fhTimeNPileUpVertContributors  ->Fill(time,ncont);
+    fhTimePileUpMainVertexZDistance->Fill(time,distZ);
+    fhTimePileUpMainVertexZDiamond ->Fill(time,diamZ);
+    
+  }// loop
 }
 
 //________________________________________________________________________________________________
@@ -434,7 +536,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins(); 
   Float_t ssmax    = GetHistogramRanges()->GetHistoShowerShapeMax();  
   Float_t ssmin    = GetHistogramRanges()->GetHistoShowerShapeMin();
-  
+  Int_t   ntimebins= GetHistogramRanges()->GetHistoTimeBins();         
+  Float_t timemax  = GetHistogramRanges()->GetHistoTimeMax();         
+  Float_t timemin  = GetHistogramRanges()->GetHistoTimeMin();       
+
   Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();          
   Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();          
   Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
@@ -1387,6 +1492,50 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     }//ipt loop
   }
   
+  if(fFillPileUpHistograms)
+  {
+    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeENoCut->SetXTitle("E (GeV)");
+    fhTimeENoCut->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeENoCut);  
+    
+    fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeESPD->SetXTitle("E (GeV)");
+    fhTimeESPD->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeESPD);  
+    
+    fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    fhTimeESPDMulti->SetXTitle("E (GeV)");
+    fhTimeESPDMulti->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeESPDMulti);  
+    
+    fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
+    fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
+    fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertSPD);  
+    
+    fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 ); 
+    fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
+    fhTimeNPileUpVertTrack->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertTrack);  
+    
+    fhTimeNPileUpVertContributors  = new TH2F ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
+    fhTimeNPileUpVertContributors->SetYTitle("# vertex ");
+    fhTimeNPileUpVertContributors->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimeNPileUpVertContributors);  
+    
+    fhTimePileUpMainVertexZDistance  = new TH2F ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50); 
+    fhTimePileUpMainVertexZDistance->SetYTitle("distance Z (cm) ");
+    fhTimePileUpMainVertexZDistance->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimePileUpMainVertexZDistance);  
+    
+    fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50); 
+    fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
+    fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
+    outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
+    
+  }
+  
   return outputContainer ;
   
 }
@@ -1528,7 +1677,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                       n,nfrac,coneptsum, isolated);
   
   if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
-  
+    
   if(GetDebug() > 1) 
   {
     if(isolated)printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",idLeading);
@@ -1718,11 +1867,15 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f\n",pt, eta, phi);
     
     FillTrackMatchingShowerShapeControlHistograms(isolation, clID,aod->GetFiducialArea(),mcTag,reftracks,refclusters,aod,GetReader(), GetCaloPID());
-
+    
     if(isolation)
     {    
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED: fill histograms\n", iaod);
-            
+        
+      // Fill histograms to undertand pile-up before other cuts applied
+      // Remember to relax time cuts in the reader
+      FillPileUpHistograms(clID);     
+      
       fhEIso      ->Fill(energy);
       fhPtIso     ->Fill(pt);
       fhPhiIso    ->Fill(pt,phi);
