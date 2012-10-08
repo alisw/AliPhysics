@@ -53,6 +53,7 @@ AliHFEpidTRD::AliHFEpidTRD() :
   , fRunNumber(0)
   , fElectronEfficiency(0.90)
   , fTotalChargeInSlice0(kFALSE)
+  , fTRD2DPID(kFALSE)
 {
   //
   // default  constructor
@@ -70,6 +71,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
   , fRunNumber(0)
   , fElectronEfficiency(0.91)
   , fTotalChargeInSlice0(kFALSE)
+  , fTRD2DPID(kFALSE)
 {
   //
   // default  constructor
@@ -87,6 +89,7 @@ AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
   , fRunNumber(ref.fRunNumber)
   , fElectronEfficiency(ref.fElectronEfficiency)
   , fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
+  , fTRD2DPID(ref.fTRD2DPID)
 {
   //
   // Copy constructor
@@ -118,6 +121,7 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   target.fCutNTracklets = fCutNTracklets;
   target.fRunNumber = fRunNumber;
   target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
+  target.fTRD2DPID = fTRD2DPID;
   target.fElectronEfficiency = fElectronEfficiency;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
   AliHFEpidBase::Copy(ref);
@@ -133,6 +137,21 @@ AliHFEpidTRD::~AliHFEpidTRD(){
 //______________________________________________________
 Bool_t AliHFEpidTRD::InitializePID(Int_t run){
   //
+  // InitializePID call different init function depending on TRD PID method
+  //
+  //
+
+  //if(fTRD2DPID) return Initialize2D(run);
+  if(fTRD2DPID) return kTRUE;
+  else return Initialize1D(run);
+
+
+
+}
+
+//______________________________________________________
+Bool_t AliHFEpidTRD::Initialize1D(Int_t run){
+  //
   // InitializePID: Load TRD thresholds and create the electron efficiency axis
   // to navigate 
   //
@@ -147,8 +166,35 @@ Bool_t AliHFEpidTRD::InitializePID(Int_t run){
   return kFALSE;
 }
 
+/*
+//______________________________________________________
+Bool_t AliHFEpidTRD::Initialize2D(Int_t run){
+  //
+  // Initialize2DimPID
+  //
+  //
+
+    return kTRUE;
+
+}
+*/
+
 //______________________________________________________
 Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
+  //
+  // Does PID for TRD alone:
+  // PID algorithm selected according to flag
+  //
+  //
+
+    if(fTRD2DPID) return IsSelected2D(track, pidqa);
+    else return IsSelected1D(track, pidqa);
+
+
+}
+
+//______________________________________________________
+Int_t AliHFEpidTRD::IsSelected1D(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
   //
   // Does PID for TRD alone:
   // PID thresholds based on 90% Electron Efficiency level approximated by a linear 
@@ -206,6 +252,53 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
     return 11;
   }
   return 211;
+
+}
+
+//______________________________________________________
+Int_t AliHFEpidTRD::IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
+  //
+  // 2D TRD PID
+  // 
+  // 
+  //
+  AliDebug(2, "Applying TRD PID");
+  if(!fkPIDResponse){
+    AliDebug(2, "Cannot process track");
+    return 0;
+  }
+
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis: AliHFEpidObject::kAODanalysis;
+  Double_t p = GetP(track->GetRecTrack(), anatype);
+  if(p < fMinP){ 
+    AliDebug(2, Form("Track momentum below %f", fMinP));
+    return 0;
+  }
+
+  if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kBeforePID); 
+
+  if(fCutNTracklets > 0){
+    AliDebug(1, Form("Number of tracklets cut applied: %d\n", fCutNTracklets));
+    Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
+    if(TestBit(kExactTrackletCut)){
+      AliDebug(1, Form("Exact cut applied: %d tracklets found\n", ntracklets));
+      if(ntracklets != fCutNTracklets) return 0;
+    } else {
+      AliDebug(1, Form("Greater Equal cut applied: %d tracklets found\n", ntracklets));
+      if(ntracklets < fCutNTracklets) return 0;
+    }
+  }
+  AliDebug(1,"Track selected\n");
+
+  Int_t centralitybin = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
+  Float_t fCentralityLimitsdefault[12]= {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
+  Float_t centrality=fCentralityLimitsdefault[centralitybin]+1;
+
+
+  if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D)){
+      AliDebug(2, Form("Electron effi: %f\n", fElectronEfficiency));
+      return 11;
+  } else return 211;
 
 }
 

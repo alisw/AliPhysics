@@ -59,7 +59,11 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual ~AliHFEpidTRD();
 
     virtual Bool_t InitializePID(Int_t run);
-    virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
+    virtual Bool_t Initialize1D(Int_t run);
+    //virtual Bool_t Initialize2D(Int_t run);
+    virtual Int_t  IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
+    virtual Int_t  IsSelected1D(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
+    virtual Int_t  IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
     Double_t GetTRDSignalV1(const AliESDtrack *track, Float_t truncation = 0.7) const;
     Double_t GetTRDSignalV2(const AliESDtrack *track, Float_t trucation = 0.7) const;
@@ -69,6 +73,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void SelectCutOnTheFly(Bool_t onFly = kTRUE) { if(onFly) SetBit(kSelectCutOnTheFly, kTRUE); else SetBit(kSelectCutOnTheFly, kFALSE);}
     void SetOADBThresholds(AliOADBContainer *cont) { fOADBThresholds = cont; }
     void SetTotalChargeInSlice0() { fTotalChargeInSlice0 = kTRUE; }
+    void SetTRD2DPID() { fTRD2DPID = kTRUE; }
     void SetRenormalizeElPi(Bool_t doRenorm = kTRUE) { if(doRenorm) SetBit(kTRDrenormalize, kTRUE); else SetBit(kTRDrenormalize, kFALSE);}
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
     void SetNTracklets(Int_t nTracklets) { fNTracklets = nTracklets; }
@@ -107,7 +112,8 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Int_t    fRunNumber;                                    // Run number
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
-    Bool_t fTotalChargeInSlice0;                            // Flag for foreward/backward compatibility for the TRD total charge
+    Bool_t   fTotalChargeInSlice0;                          // Flag for foreward/backward compatibility for the TRD total charge
+    Bool_t   fTRD2DPID;                                     // Flag for 2D PID
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
 #endif
