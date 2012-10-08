@@ -602,16 +602,9 @@ void AliAnalysisTaskPhiFlow::VZEROSubEventAnalysis()
     Float_t qaqb = TMath::Cos(2.*(abcPsi2[0]-abcPsi2[1])); // vzeroa - tpc
     Float_t qaqc = TMath::Cos(2.*(abcPsi2[0]-abcPsi2[2])); // vzeroa - vzeroc
     Float_t qbqc = TMath::Cos(2.*(abcPsi2[1]-abcPsi2[2])); // tpc - vzeroc
-    if(qbqc==0||qaqb==0) return; // avoid division by zero
     fSubEventDPhiv2->Fill(0.5, qaqb);
     fSubEventDPhiv2->Fill(1.5, qaqc);
     fSubEventDPhiv2->Fill(2.5, qbqc);
-    Float_t _qaqb = fSubEventDPhiv2->GetBinContent(1); // get the updated averages
-    Float_t _qaqc = fSubEventDPhiv2->GetBinContent(2);
-    Float_t _qbqc = fSubEventDPhiv2->GetBinContent(3);
-    fSubEventDPhiv2->Fill(3.5, TMath::Sqrt((_qaqb*_qaqc)/_qbqc)); // resolution for correlation with qa
-    fSubEventDPhiv2->Fill(4.5, TMath::Sqrt((_qaqc*_qbqc)/_qaqb)); // resolution for correlation with qc
-    // do the magic
     Float_t minv[31];
     Float_t _dphi[30][fNPtBins][2]; //minv, pt, v0a-c
     Int_t occurence[30][fNPtBins]; //minv, pt
