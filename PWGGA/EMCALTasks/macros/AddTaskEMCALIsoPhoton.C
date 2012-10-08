@@ -2,7 +2,8 @@
 
 AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 						     TString period = "LHC11d",
-						     TString trigbitname = "kEMC7"
+						     TString trigbitname = "kEMC7",
+						     TString pathstrsel = "/"
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.

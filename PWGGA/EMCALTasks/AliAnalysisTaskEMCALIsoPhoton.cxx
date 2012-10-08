@@ -47,6 +47,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fIsTrain(0),
   fIsMc(0),
   fDebug(0),
+  fPathStrOpt("/"),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
@@ -83,6 +84,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fIsTrain(0),
   fIsMc(0),
   fDebug(0),
+  fPathStrOpt("/"),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
@@ -187,7 +189,13 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("isSelected = %d, fIsMC=%d\n", isSelected, fIsMc);
   if(!isSelected )
         return; 
-
+  if(fIsMc){
+    TTree *tree = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetTree();
+    TFile *file = (TFile*)tree->GetCurrentFile();
+    TString filename = file->GetName();
+    if(!filename.Contains(fPathStrOpt.Data()))
+      return;
+  }
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");

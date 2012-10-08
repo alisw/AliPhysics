@@ -46,6 +46,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   void                   SetMcMode(Bool_t mc)                   { fIsMc               = mc;      }
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
+  void                   SetPathStringSelect(char *p)           { fPathStrOpt         = p;       }
   
  protected:
   TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
@@ -60,6 +61,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fIsTrain;               // variable to set train mode
   Bool_t                 fIsMc;                  // variable to set mc mode
   Bool_t                 fDebug;                 // variable to set on/off debugging printouts
+  TString                fPathStrOpt;            // variable to set the name of files to be analyzed (MC only)
   Double_t               fExoticCut;             // variable to set the cut on exotic clusters
   Double_t               fIsoConeR;              // variable to set the isolation cone radius
   Int_t                  fNDimensions;           // variable to set the number of dimensions of n-sparse
