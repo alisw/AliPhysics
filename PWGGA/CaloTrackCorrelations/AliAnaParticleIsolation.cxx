@@ -235,7 +235,7 @@ void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID)
   {
     AliVCluster *cluster = FindCluster(clusters,clusterID,iclus); 
     energy = cluster->E();
-    energy = cluster->GetTOF()*1e9;
+    time   = cluster->GetTOF()*1e9;
   } 
   
   //printf("E %f, time %f\n",energy,time);
