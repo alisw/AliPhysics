@@ -787,12 +787,12 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
 	else {
 	  // Propagate the global track to the DCA.
 	  const AliVVertex *vAOD = fEvent->GetPrimaryVertex();
-	  Double_t PosAtDCA[2] = {-999,-999};
+	  Double_t posAtDCA[2] = {-999,-999};
 	  Double_t covar[3] = {-999,-999,-999};
 	  AliAODTrack *copyaodtrack = new AliAODTrack(*aodtrack);
-	  if(copyaodtrack && copyaodtrack->PropagateToDCA(vAOD,fEvent->GetMagneticField(),100.,PosAtDCA,covar)) {
-	    z = PosAtDCA[1];
-	    radial = PosAtDCA[0];
+	  if(copyaodtrack && copyaodtrack->PropagateToDCA(vAOD,fEvent->GetMagneticField(),100.,posAtDCA,covar)) {
+	    z = posAtDCA[1];
+	    radial = posAtDCA[0];
 	    //printf("Propagate z %f and radial %f\n",z,radial);
 	  }
 	  delete copyaodtrack;

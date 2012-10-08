@@ -544,6 +544,10 @@ AliHFEvarManager::AliHFEvariable::~AliHFEvariable(){
 
 //_______________________________________________
 Double_t* AliHFEvarManager::AliHFEvariable::GetBinning() { 
+  //
+  // Get the binning
+  //
+
   if(fUserDefinedBinning) return fBinning.GetArray(); 
 
   // No User defined Binning - create one and store in fBinning
