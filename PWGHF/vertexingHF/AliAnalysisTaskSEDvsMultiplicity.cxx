@@ -30,7 +30,7 @@
 #include <TH2F.h>     
 #include <TH3F.h>
 #include <THnSparse.h>
-#include <TProfile.h>  
+#include <TProfile.h>
 #include "AliAnalysisManager.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -591,6 +591,11 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       }
 
       fPtVsMassVsMultNoPid->Fill(countTreta1corr,invMass,ptCand);
+
+      if(fPdgMeson==421){
+	if(iHyp==0 && !(passAllCuts&1)) continue; // candidate not passing as D0
+	if(iHyp==1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
+      }
       if(passAllCuts){
 	fPtVsMassVsMult->Fill(countTreta1corr,invMass,ptCand);	   	      
 	fPtVsMassVsMultUncorr->Fill(countTreta1,invMass,ptCand);
@@ -599,8 +604,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(countTreta1corr,invMass,ptCand);
 	  else fPtVsMassVsMultAntiPart->Fill(countTreta1corr,invMass,ptCand);
 	}else if(fPdgMeson==421){
-	  if(passTopolCuts&1) fPtVsMassVsMultPart->Fill(countTreta1corr,invMass,ptCand);
-	  if(passTopolCuts&2) fPtVsMassVsMultAntiPart->Fill(countTreta1corr,invMass,ptCand);
+	  if(passAllCuts&1) fPtVsMassVsMultPart->Fill(countTreta1corr,invMass,ptCand);
+	  if(passAllCuts&2) fPtVsMassVsMultAntiPart->Fill(countTreta1corr,invMass,ptCand);
 	}else if(fPdgMeson==413){
 	  // FIXME ADD Dstar!!!!!!!!
 	}
@@ -615,7 +620,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
- fHistNtrUnCorrEvSel->Fill(countTreta1);
+  fHistNtrUnCorrEvSel->Fill(countTreta1);
   fHistNtrCorrEvSel->Fill(countTreta1corr);
   if(nSelectedPID>0) fHistNtrCorrEvWithCand->Fill(countTreta1corr);
   if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countTreta1corr);
