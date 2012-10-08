@@ -78,7 +78,8 @@ Double_t nPi0Event[500], ePi0Event[500];
 
 //-----------------------------------------------------------------------------
 void ExtractQA(const TString filelist="filelist.txt",
-	       const TString runlist="runlist.txt")
+	       const TString runlist="runlist.txt",
+	       const TString outputFileName = "outputQA.root")
 {
   // Loop over per-run root files and run various QA functions
 
@@ -117,7 +118,7 @@ void ExtractQA(const TString filelist="filelist.txt",
     QAFillOccupancy();
     QAFillClusters();
     QAFillTracks();
-//     QAFillNPi0();
+    QAFillNPi0();
 
     listHist->Clear();
     rootFile->Close();
@@ -125,12 +126,12 @@ void ExtractQA(const TString filelist="filelist.txt",
   }
 
   
-  TFile *fileQA = TFile::Open("runQA.root","recreate");
+  TFile *fileQA = TFile::Open(outputFileName.Data(), "recreate");
   QAWriteEventSelection();
   QAWriteOccupancy();
   QAWriteClusters();
   QAWriteTracks();
-//   QAWriteNPi0();
+  QAWriteNPi0();
   fileQA         ->Close();
 
 }
@@ -244,11 +245,19 @@ void QAFillTracks()
 //-----------------------------------------------------------------------------
 void QAFillNPi0()
 {
+  TH1 *hTotSelEvents = (TH1*)listHist->FindObject("hTotSelEvents");
+  Int_t nEvents4 = hTotSelEvents->GetBinContent(4);
+
+  if( nEvents4 < 10000 ) {
+    Printf(" -> skipping due to small number of selected events: %d", nEvents4);
+    return;
+  }
+  
+  
   TCanvas* canv = new TCanvas;
   canv->Divide(3,3);
   canv->cd(1);
   
-  TH1 *hTotSelEvents = (TH1*)listHist->FindObject("hTotSelEvents");
   TH2F *hReMassPt = (TH2F*)listHist->FindObject("hPi0All_cen0");
   TH2 *hMiMassPt = (TH2*)listHist->FindObject("hMiPi0All_cen0");
   TH1* hReMass = Pi0InvMass(hReMassPt,2.,10.);
@@ -261,14 +270,15 @@ void QAFillNPi0()
   // Draw
   hReMassPt->DrawCopy("colz");
   canv->cd(2);
-  hReMass->DrawCopy();
+  //hReMass->SetAxisRange(0.1, 0.2);
+  hReMass->DrawCopy("E");
   canv->cd(3);
   
   
   TH1* hReMiRatio = (TH1*)hReMass->Clone("hReMiRatio");
   TH1* hPi0SubBG  = (TH1*)hReMass->Clone("hPi0SubBG");
   hReMiRatio->Divide(hMiMass);
-  hReMiRatio->DrawCopy();
+  hReMiRatio->DrawCopy("E");
   canv->cd(4);
   
 
@@ -294,27 +304,48 @@ void QAFillNPi0()
   fitBG->SetParName(1,"a_{1}") ;
   fitBG->SetParName(2,"a_{2}") ;
 
-  fitM->SetParameters(0.1,0.136,0.007,0.0013,-0.0007, 0.0) ;
-  fitM->SetParLimits(0,0.000,1.000) ;
-  fitM->SetParLimits(1,0.130,0.14) ;
-  fitM->SetParLimits(2,0.005,0.012) ;
+  fitM->SetParameters(0.003, 0.134, 0.007, 0.14, -0.02, -0.01) ;
+  fitM->SetParLimits(0, 0., 1. ) ;
+  fitM->SetParLimits(1, 0.1, 0.2 ) ;
+  fitM->SetParLimits(2, 0., 0.05) ;
 
   Double_t rangeMin=0.06 ;
   Double_t rangeMax=0.25 ;
-  hReMiRatio->Fit(fitM,"NQ","",rangeMin,rangeMax) ;
-  hReMiRatio->Fit(fitM,"MQ","",rangeMin,rangeMax) ;
+  TFitResultPtr mrp = hReMiRatio->Fit(fitM,"Q","",rangeMin,rangeMax) ;
+  //mrp = hReMiRatio->Fit(fitM,"MQ","",rangeMin,rangeMax) ; // "M" always fail...
+  int error = mrp;
+  if( error % 1000) {
+    Printf(" -> fit of fitM to hReMiRatio failed with error code %d", error % 1000);
+    continue;
+  }
+  else if( error )
+    Printf("Warning: failure of 'improve result' of fit of fitM to hReMiRatio");
   fitBG->SetParameters(fitM->GetParameter(3),
 		       fitM->GetParameter(4),
 		       fitM->GetParameter(5)); 
+  hReMiRatio->SetAxisRange(rangeMin, rangeMax);
+  hReMiRatio->DrawCopy();
+  canv->cd(5);
+
+
   hMiMass->Multiply(fitBG) ;
   hPi0SubBG ->Add(hMiMass,-1.) ;
 
 
   fitG->SetParameters(100.,fitM->GetParameter(1),fitM->GetParameter(2)) ;
-  fitG->SetParLimits(0,0.000,1.e+5) ;
-  fitG->SetParLimits(1,0.120,0.145) ;
-  fitG->SetParLimits(2,0.005,0.012) ;
-  hPi0SubBG->Fit(fitG,"Q","",rangeMin,rangeMax);
+  // fitG->SetParLimits(0,0.000,1.e+5) ;
+  fitG->SetParLimits(1, rangeMin, rangeMax) ;
+  fitG->SetParLimits(2, 0., rangeMax) ;
+  mrp = hPi0SubBG->Fit(fitG,"Q","",rangeMin,rangeMax);
+  if( (error=mrp) ) {
+    Printf(" -> fit of fitG to hPi0SubBG failed with error code %d, skipping", error );
+    continue;
+  }
+  hPi0SubBG->SetAxisRange(rangeMin, rangeMax);
+  hPi0SubBG->DrawCopy();
+
+
+
   Double_t pi0Peak  = fitG->GetParameter(1);
   Double_t pi0Sigma = fitG->GetParameter(2);
   Double_t epi0Peak  = fitG->GetParError(1);
@@ -324,31 +355,17 @@ void QAFillNPi0()
 
   Double_t nPi0,ePi0;
   
-  nPi0 = hPi0SubBG->Integral(iMin,iMax);
-  ePi0 = TMath::Sqrt(nPi0);
+  
+  nPi0 = hPi0SubBG->IntegralAndError(iMin, iMax, ePi0);
+  //ePi0 = TMath::Sqrt(nPi0);
   // Fit1Pi0(hMass,2,0.05,0.20,nPi0,ePi0); 
   
-  Double_t nEvents4 = hTotSelEvents->GetBinContent(4);
   mPi0     [runIndex] = pi0Peak;
   emPi0    [runIndex] = epi0Peak;
   wPi0     [runIndex] = pi0Sigma;
   ewPi0    [runIndex] = epi0Sigma;
   nPi0Event[runIndex] = nPi0/nEvents4;
   ePi0Event[runIndex] = ePi0/nEvents4;
-
-  // printf("Npi0(%d,%d) = %.1f\n",iMin,iMax,nPi0);
-  // TCanvas *c1 = new TCanvas("c1","c1",0,0,800,600);
-  // c1->Divide(2,2);
-  // c1->cd(1);
-  // hReMass->DrawCopy();
-  // c1->cd(2);
-  // hMiMass->DrawCopy();
-  // c1->cd(3);
-  // hReMiRatio->DrawCopy();
-  // fitBG->Draw("same");
-  // c1->cd(4);
-  // hPi0SubBG->DrawCopy();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -537,6 +554,8 @@ TH1D * Pi0InvMass(TH2 *hMassPt, Float_t ptmin, Float_t ptmax)
   sprintf(htitle,"%.1f<p_{T}<%.1f GeV/c",ptmin,ptmax);
   hMass->SetTitle(htitle);
   
+  hMass->Sumw2();
+
   return hMass;
 
 }

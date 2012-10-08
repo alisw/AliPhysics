@@ -123,16 +123,20 @@ void DrawCPVRatio()
 void DrawNPhotAllAndHigh()
 {
   for(int cent=0; cent<kNCents; ++cent) {
-    TH1* grNPhotAll = (TH1*)file->Get(Form("grNPhotAll_cen0", cent))->Clone();
-    TH1* grNPhotAllHigh = (TH1*)file->Get(Form("grNPhotAllHigh_cen0", cent))->Clone();
+    TH1* grNPhotAll = (TH1*)file->Get(Form("grNPhotAll_cen%d", cent))->Clone();
+    TH1* grNPhotAllHigh = (TH1*)file->Get(Form("grNPhotAllHigh_cen%d", cent))->Clone();
+    TH1* grNPhotAllcoreHigh = (TH1*)file->Get(Form("grNPhotAllcoreHigh_cen%d", cent))->Clone();
 
     double sizeAll = grNPhotAll->Integral();
     double sizeAllHigh = grNPhotAllHigh->Integral();
-    double scale = (sizeAll / sizeAllHigh);
+    int scale = TMath::Nint(sizeAll / sizeAllHigh);
     grNPhotAllHigh->Scale(scale);
+    grNPhotAllcoreHigh->Scale(scale);
   
     grNPhotAllHigh->SetMarkerColor(kRed);
     grNPhotAllHigh->SetLineColor(kRed);
+    grNPhotAllcoreHigh->SetMarkerColor(kGreen+1);
+    grNPhotAllcoreHigh->SetLineColor(kGreen+1);
 
     TCanvas* canv = new TCanvas;
     canv->Divide(1,2);
@@ -140,30 +144,32 @@ void DrawNPhotAllAndHigh()
     canv->cd(1);
     grNPhotAll->SetTitle("#LTN_{clusters}#GT");
     grNPhotAll->GetXaxis()->SetRange(0, 84);
-    int min = grNPhotAll->GetMinimum(1.);
-    int max = grNPhotAll->GetMaximum() +1;
-    //grNPhotAll->GetYaxis()->SetRangeUser( min, max);
+    grNPhotAll->GetYaxis()->SetRange(15, 40);
+    //grNPhotAll->GetYaxis()->SetRangeUser(15, 45);
     grNPhotAll->DrawCopy();
     grNPhotAllHigh->DrawCopy("same");
+    grNPhotAllcoreHigh->DrawCopy("same");
 
     canv->cd(2);
     grNPhotAll->GetXaxis()->SetRange(85, 200);
     grNPhotAll->DrawCopy();
     grNPhotAllHigh->DrawCopy("same");
+    grNPhotAllcoreHigh->DrawCopy("same");
 
     canv->cd(1);
-    leg = new TLegend(0.8,0.8,0.99,0.99);
+    leg = new TLegend(0.8, 0.15, 0.99, 0.4);
     leg->SetFillColor(kWhite);
     leg->SetBorderSize(1);
     leg->AddEntry(grNPhotAll, Form("All"),"lP");
-    leg->AddEntry(grNPhotAllHigh, Form("High * %f", scale),"lP");
+    leg->AddEntry(grNPhotAllHigh, Form("AllHigh * %d", scale),"lP");
+    leg->AddEntry(grNPhotAllcoreHigh, Form("AllcoreHigh * %d", scale),"lP");
     leg->Draw();
 
     canv->SaveAs( Form("%s%s%s", prefixToName, Form("nPhotAllAndHigh_cen%d", cent), appendToName ));
   }
 }
 
-void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* append)
+void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* high)
 {
   int kNColors = 8;
   const Int_t colors[8] = {kBlack, kRed-1, kRed+1, kBlue, kCyan, kGreen+3, kYellow+1, kMagenta};
@@ -171,7 +177,7 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* append
   Int_t color;
   
   for(int cent=0; cent<kNCents; ++cent) {
-    TH1* hAll = (TH1*)file->Get( Form("grNPhot%s%s_cen%d", pidNames[0], append, cent) )->Clone();
+    TH1* hAll = (TH1*)file->Get( Form("grNPhot%s%s_cen%d", pidNames[0], high, cent) )->Clone();
 
     leg = new TLegend(0.91,0.6,0.99,0.99);
     leg->SetFillColor(kWhite);
@@ -181,7 +187,7 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* append
     canv->Divide(1,2);
     char* same = "";
     for(int ipid = 1; ipid < nPids; ++ipid) {
-      TString name(Form("grNPhot%s%s_cen%d", pidNames[ipid], append, cent));
+      TString name(Form("grNPhot%s%s_cen%d", pidNames[ipid], high, cent));
       TH1* hPID = (TH1*)file->Get( name.Data() )->Clone();
       hPID->Divide(hAll);
 
@@ -197,7 +203,7 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* append
       leg->AddEntry( hPID , pidNames[ipid], "lP");
 
       canv->cd(1);
-      hPID->SetTitle( Form("#LTN_{clusters}^{PID}#GT, cent=%d, %s", cent, append) );
+      hPID->SetTitle( Form("#LTN_{clusters}^{PID}#GT / #LTN_{clusters}^{%s}#GT, cent=%d, %s", pidNames[0], cent, high) );
       hPID->GetXaxis()->SetRange(0, 84);
       hPID->DrawCopy(same);
 
@@ -210,7 +216,8 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* append
     }
     canv->cd(1);
     leg->Draw();
-    canv->SaveAs(Form("%s%s%s", prefixToName, Form("CPVtoAllRatio_cen%d", cent), appendToName ));
+    TString fn(Form("CPVtoAllRatio%s_cen%d", high, cent));
+    canv->SaveAs(Form("%s%s%s", prefixToName, fn.Data(), appendToName ));
   }
 }
 
@@ -221,9 +228,9 @@ void DrawPIDRatios()
   const char* kPIDNames[nn] = {"All", "Allwou", "CPV", "CPV2", "Disp", "Disp2", "Dispwou", "Both"};
   const char* kPIDNamesCore[nc] = {"Allcore", "CPVcore", "Dispcore", "Bothcore"};
   const char* fillHigh[2] = {"", "High"};
-  for(int ihigh = 0; ihigh < 1; ++ihigh) {
+  for(int ihigh = 0; ihigh < 2; ++ihigh) {
     DrawPIDRatiosHighCore(kPIDNames, nn, fillHigh[ihigh]);
-    //DrawPIDRatiosHighCore(kPIDNamesCore, nc, fillHigh[ihigh]);
+    DrawPIDRatiosHighCore(kPIDNamesCore, nc, fillHigh[ihigh]);
   }
 }
 
@@ -231,7 +238,7 @@ void DrawQA()
 {
   gStyle->SetOptStat(0);
 
-  file = TFile::Open("runQA.root", "read");
+  file = TFile::Open("outputQA.root", "read");
 
   // Draw("grVtxZ10Cent", "", 0.7, 1.);
   // Draw("grNCellsM1", "E");
@@ -266,7 +273,11 @@ void DrawQA()
   // DrawPID();
   // DrawCPVRatio();
   DrawNPhotAllAndHigh();
-  DrawPIDRatios();
+  //DrawPIDRatios();
+
+  Draw("grMPi0");
+  Draw("grWPi0");
+  Draw("grNPi0");
 
   file->Close();
 }
