@@ -197,7 +197,16 @@ void AliPerformanceTask::UserExec(Option_t *)
 
   if(fUseESDfriend)
     {
-      fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+	  if (fUseHLT)
+	  {
+		AliESDEvent *fESDoffline;
+	    fESDoffline = (AliESDEvent*) (InputEvent());
+		fESDfriend = static_cast<AliESDfriend*>(fESDoffline->FindListObject("AliESDfriend"));
+	  }
+	  else
+	  {
+        fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+	  }
       if(!fESDfriend) {
         Printf("ERROR: ESD friends not available");
       }

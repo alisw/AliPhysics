@@ -226,11 +226,11 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
     */
   }
 
-
-
   // Fill TPC only resolution comparison information 
-  const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
-  if(!track) return;
+  const AliExternalTrackParam* tmpTrack = esdTrack->GetTPCInnerParam();
+  if(!tmpTrack) return;
+
+  AliExternalTrackParam track = *tmpTrack;
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParametersTPC(dca,cov);
@@ -259,7 +259,7 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   Float_t mcphi =  particle->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = particle->Pt();
-  Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
+  Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px())); 
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   // nb. TPC clusters cut
@@ -269,26 +269,44 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
-    
-    deltaYTPC= track->GetY()-particle->Vy();
-    deltaZTPC = track->GetZ()-particle->Vz();
-    deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
-    deltaPhiTPC = TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(particle->Py(),particle->Px());
-    //delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
-    deltaPtTPC = (track->Pt()-mcpt) / mcpt;
+	double Bz = esdEvent->GetMagneticField();
 
-    pullYTPC= (track->GetY()-particle->Vy()) / TMath::Sqrt(track->GetSigmaY2());
-    pullZTPC = (track->GetZ()-particle->Vz()) / TMath::Sqrt(track->GetSigmaZ2());
+	Double_t mclocal[4]; //Rotated x,y,px,py mc-coordinates - the MC data should be rotated since the track is propagated best along x
+	Double_t c = TMath::Cos(track.GetAlpha());
+	Double_t s = TMath::Sin(track.GetAlpha());
+	Double_t x = particle->Vx();
+	Double_t y = particle->Vy();
+	mclocal[0] = x*c + y*s;
+	mclocal[1] =-x*s + y*c;
+	Double_t px = particle->Px();
+	Double_t py = particle->Py();
+	mclocal[2] = px*c + py*s;
+	mclocal[3] =-px*s + py*c;
+    Float_t mcsnplocal = TMath::Sin(TMath::ATan2(mclocal[3],mclocal[2])); 
+
+
+	track.AliExternalTrackParam::PropagateTo(mclocal[0],Bz);
+
+    deltaYTPC= track.GetY()-mclocal[1];
+    deltaZTPC = track.GetZ()-particle->Vz();
+    deltaLambdaTPC = TMath::ATan2(track.Pz(),track.Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
+	//See comments in ProcessInnerTPC for remarks on local and global momentum coordinates for deltaPhi / pullSnp calculation
+    deltaPhiTPC = TMath::ATan2(track.Py(),track.Px())-TMath::ATan2(particle->Py(),particle->Px());
+    //delta1PtTPC = (track.OneOverPt()-1./mcpt)*mcpt;
+    deltaPtTPC = (track.Pt()-mcpt) / mcpt;
+
+    pullYTPC= deltaYTPC / TMath::Sqrt(track.GetSigmaY2());
+    pullZTPC = deltaZTPC / TMath::Sqrt(track.GetSigmaZ2());
  
-    //Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
-    //Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
-    pullPhiTPC = (track->GetSnp() - mcsnp) / TMath::Sqrt(track->GetSigmaSnp2());
-    pullLambdaTPC = (track->GetTgl() - mctgl) / TMath::Sqrt(track->GetSigmaTgl2());
+    //Double_t sigma_lambda = 1./(1.+track.GetTgl()*track.GetTgl()) * TMath::Sqrt(track.GetSigmaTgl2()); 
+    //Double_t sigma_phi = 1./TMath::Sqrt(1-track.GetSnp()*track.GetSnp()) * TMath::Sqrt(track.GetSigmaSnp2());
+    pullPhiTPC = (track.GetSnp() - mcsnplocal) / TMath::Sqrt(track.GetSigmaSnp2());
+    pullLambdaTPC = (track.GetTgl() - mctgl) / TMath::Sqrt(track.GetSigmaTgl2());
 
-    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track->GetSigmaTgl2());
-    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
-    if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
-    else pull1PtTPC = 0.;
+    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track.GetSigmaTgl2());
+    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track.GetSigmaSnp2()); 
+    if (mcpt) pull1PtTPC = (track.OneOverPt()-1./mcpt) / TMath::Sqrt(track.GetSigma1Pt2());
+    else pull1PtTPC = 0.; 
 
     Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,particle->Vy(),particle->Vz(),mcphi,mceta,mcpt};
     fResolHisto->Fill(vResolHisto);
@@ -604,24 +622,35 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   // exclude electrons
   if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
-  // calculate alpha angle
+  Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates - the MC data should be rotated since the track is propagated best along x
+  Double_t c = TMath::Cos(track->GetAlpha());
+  Double_t s = TMath::Sin(track->GetAlpha());
+  Double_t x = ref0->X();
+  Double_t y = ref0->Y();
+  mclocal[0] = x*c + y*s;
+  mclocal[1] =-x*s + y*c;
+  Double_t px = ref0->Px();
+  Double_t py = ref0->Py();
+  mclocal[2] = px*c + py*s;
+  mclocal[3] =-px*s + py*c;
+
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
-  Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
-  //if (alpha<0) alpha += TMath::TwoPi();
-
-  // rotate inner track to local coordinate system
-  // and propagate to the radius of the first track referenco of TPC
+  // propagate track to the radius of the first track reference within TPC
   Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  //Bool_t isOK = track->Propagate(alpha,trRadius,AliTracker::GetBz());
   Double_t field[3]; track->GetBxByBz(field);
-  Bool_t isOK = track->PropagateBxByBz(alpha,trRadius,field);
-  if(!isOK) return;
-
+  if (TGeoGlobalMagField::Instance()->GetField() == NULL) {
+    Error("ProcessInnerTPC", "Magnetic Field not set");
+  }
+  Bool_t isOK = track->PropagateToBxByBz(mclocal[0],field);
+  if(!isOK) {return;}
+  //track->AliExternalTrackParam::PropagateTo(mclocal[0],esdEvent->GetMagneticField());  //Use different propagation since above methods returns zero B field and does not work
+  
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = ref0->Pt();
   Float_t mcsnp = TMath::Sin(TMath::ATan2(ref0->Py(),ref0->Px()));
+  Float_t mcsnplocal = TMath::Sin(TMath::ATan2(mclocal[3],mclocal[2]));
   Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
@@ -631,23 +660,35 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  Bool_t isPrimary;
+  if ( IsUseTrackVertex() )
+  {
+	  isPrimary = TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ();
+  }
+  else
+  {
+	  //If Track vertex is not used the above check does not work, hence we use the MC reference track
+	  isPrimary = label < mcEvent->Stack()->GetNprimary();
+  }
+  if(isPrimary) 
   { 
     if(mcpt == 0) return;
     
-    deltaYTPC= track->GetY(); // already rotated
+    deltaYTPC= track->GetY()-mclocal[1];
     deltaZTPC = track->GetZ()-ref0->Z();
     deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(ref0->Pz(),ref0->Pt());
+	//track->Px() etc returns momentum in global coordinates, hence mc momentum must not be rotated.
     deltaPhiTPC = TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(ref0->Py(),ref0->Px());
     //delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
     deltaPtTPC = (track->Pt()-mcpt) / mcpt;
 
-    pullYTPC= track->GetY() / TMath::Sqrt(track->GetSigmaY2());
-    pullZTPC = (track->GetZ()-ref0->Z()) / TMath::Sqrt(track->GetSigmaZ2());
+    pullYTPC= deltaYTPC / TMath::Sqrt(track->GetSigmaY2());
+    pullZTPC = deltaZTPC / TMath::Sqrt(track->GetSigmaZ2());
  
     //Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
     //Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
-    pullPhiTPC = (track->GetSnp() - mcsnp) / TMath::Sqrt(track->GetSigmaSnp2());
+	//track->GetSnp returns value in local coordinates, hence here, in contrast to deltaPhiTPC, the mc momentum must be rotated
+    pullPhiTPC = (track->GetSnp() - mcsnplocal) / TMath::Sqrt(track->GetSigmaSnp2());
     pullLambdaTPC = (track->GetTgl() - mctgl) / TMath::Sqrt(track->GetSigmaTgl2());
 
     //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track->GetSigmaTgl2());
@@ -838,7 +879,6 @@ return refOut;
 void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
 {
   // Process comparison information 
-  //
   if(!esdEvent) 
   {
     Error("Exec","esdEvent not available");
@@ -894,12 +934,13 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   { 
     // track vertex
     vtxESD = esdEvent->GetPrimaryVertexTracks();
+	if(vtxESD && (vtxESD->GetStatus()<=0)) return;
   }
   else {
     // TPC track vertex
     vtxESD = esdEvent->GetPrimaryVertexTPC();
   }
-  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
+ 
 
 
 
@@ -933,6 +974,9 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
       continue;
     }
+
+	if (label == 0) continue;		//Cannot distinguish between track or fake track
+	if (track->GetLabel() < 0) continue; //Do not consider fake tracks
 
     if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
@@ -988,8 +1032,8 @@ void AliPerformanceRes::Analyse() {
   {
     for(Int_t j=5; j<10; j++) 
     {
-      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
+      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
       fResolHisto->GetAxis(9)->SetRangeUser(0.16,100.); // pt threshold
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
@@ -1062,6 +1106,15 @@ void AliPerformanceRes::Analyse() {
       //if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
     }
+  }
+
+  for (Int_t i = 0;i < fResolHisto->GetNdimensions();i++)
+  {
+	  fResolHisto->GetAxis(i)->SetRange(1,0);				//Reset Range
+  }
+  for (Int_t i = 0;i < fPullHisto->GetNdimensions();i++)
+  {
+	  fPullHisto->GetAxis(i)->SetRange(1,0);				//Reset Range
   }
 
   // export objects to analysis folder

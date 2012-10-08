@@ -40,7 +40,8 @@
 //____________________________________________
 AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, 
 						Bool_t highMult = kFALSE, const char *triggerClass=0, 
-						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE)
+						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE, Bool_t bTPCOnly = kFALSE,
+						Bool_t bDoEffTpcSec = kFALSE)
 {
   Char_t *taskName[] = {"TPC", "HLT"};
   Int_t idx = 0;
@@ -185,7 +186,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
 
   AliPerformanceRes *pCompRes4 = new AliPerformanceRes("AliPerformanceRes",
-						       "AliPerformanceRes",kTPC,kFALSE); 
+						       "AliPerformanceRes", bTPCOnly == kTRUE ? kTPCInner : kTPC,kFALSE); 
   if(!pCompRes4) {
     Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceRes");
   }
@@ -193,7 +194,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
 
   pCompRes4->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompRes4->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompRes4->SetUseTrackVertex(kTRUE);
+  pCompRes4->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
 
   //
   // Efficiency ------------------------------------------------------------------------------------
@@ -207,7 +208,21 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
 
   pCompEff5->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompEff5->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompEff5->SetUseTrackVertex(kTRUE);
+  pCompEff5->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
+
+  AliPerformanceEff *pCompEff5Sec;
+  if (bDoEffTpcSec)
+  {
+	  pCompEff5Sec = new AliPerformanceEff("AliPerformanceEffSec",
+						       "AliPerformanceEffSec",kTPCSec,kFALSE); 
+	  if(!pCompEff5Sec) {
+		  Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceEff");
+	  }
+
+	  pCompEff5Sec->SetAliRecInfoCuts(pRecInfoCutsTPC);
+	  pCompEff5Sec->SetAliMCInfoCuts(pMCInfoCuts);
+	  pCompEff5Sec->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
+  }
 
   //
   // TPC Constrain to vertex
@@ -237,8 +252,9 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompConstrain6 );
   if(bUseMCInfo)   {
-      //task->AddPerformanceObject( pCompRes4 );
+      task->AddPerformanceObject( pCompRes4 );
       task->AddPerformanceObject( pCompEff5 );
+	  if (bDoEffTpcSec) task->AddPerformanceObject( pCompEff5Sec );
   }
 
   //
