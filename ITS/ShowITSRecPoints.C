@@ -12,7 +12,7 @@
 #include "AliGeomManager.h"
 #include "AliHeader.h"
 #include "AliITS.h"
-#include "AliITSDetTypeRec.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
 #include "AliRun.h"
@@ -30,7 +30,7 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
     gInterpreter->ExecuteMacro("loadlibs.C");
   }
  
-  // retrives geometry 
+  // retrieves geometry 
   if(!gGeoManager){
     AliGeomManager::LoadGeometry("geometry.root");
   }
@@ -48,8 +48,9 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
   }
   ITSloader->LoadRecPoints("read");
 
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+
   Float_t cluglo[3]={0.,0.,0.}; 
-  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
 
   Int_t totmod=AliITSgeomTGeo::GetNModules();
   Int_t modmin=AliITSgeomTGeo::GetModuleIndex(1,1,1);
@@ -129,19 +130,14 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
   for(Int_t iev=0;iev<totev;iev++){
     rl->GetEvent(iev);
     TTree *TR = ITSloader->TreeR();
-    TClonesArray *ITSrec  = detTypeRec->RecPoints();
-    TBranch *branch = 0;
-    if(TR && ITSrec){
-      branch = ITSloader->TreeR()->GetBranch("ITSRecPoints");
-      if(branch)branch->SetAddress(&ITSrec);
-    }
+    rpcont->FetchClusters(0,TR);
+    TClonesArray *ITSrec  = NULL;
     if(iev%100==0) printf("Event #%d\n",iev);
 
 
     Int_t ipt=0;
     for (Int_t mod=modmin; mod<=modmax; mod++){
-      detTypeRec->ResetRecPoints();
-      branch->GetEvent(mod);
+      ITSrec = rpcont->UncheckedGetClusters(mod);
       Int_t nrecp = ITSrec->GetEntries();
       if(nrecp>0){
 	for(Int_t irec=0;irec<nrecp;irec++) {
