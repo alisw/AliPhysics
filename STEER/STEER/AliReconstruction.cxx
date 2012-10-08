@@ -2900,7 +2900,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     fTracker[iDet]->LoadClusters(tree);
     AliSysInfo::AddStamp(Form("TLoadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,2, eventNr);
     // run tracking
-    if (fTracker[iDet]->Clusters2Tracks(esd) != 0) {
+    if (fTracker[iDet]->Clusters2TracksHLT(esd, fhltesd) != 0) {
       AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
       return kFALSE;
     }
