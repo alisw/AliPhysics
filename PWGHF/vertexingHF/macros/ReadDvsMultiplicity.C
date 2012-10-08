@@ -47,7 +47,7 @@ Bool_t fixPeakSigma = kFALSE;
 const Int_t nMultbins=6;
 Double_t multlims[nMultbins+1]={1.,9.,14.,20.,31.,49.,100.};
 //
-Int_t firstUsedBin[nPtBins]={-1,-1,-1}; // -1 uses all bins, >=1 to set the lower bin to be accepted from original histo
+Int_t firstUsedBin[nPtBins]={-1,-1,-1,-1,-1}; // -1 uses all bins, >=1 to set the lower bin to be accepted from original histo
 //
 Bool_t isMC=kFALSE;
 Int_t typeb=kExpo;
@@ -155,7 +155,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   }
   printf(", defined...\n");
 
-  std::cout << " htemp :"<<hPtMassMult[0]<<std::endl;
+  //  std::cout << " htemp :"<<hPtMassMult[0]<<std::endl;
   TH1F* hptaxis = (TH1F*)hPtMassMult[0]->ProjectionZ("hptaxis");
   TH1F* hmassaxis = (TH1F*)hPtMassMult[0]->ProjectionY("hmassaxis");
   TH1F* hmultaxis = (TH1F*)hPtMassMult[0]->ProjectionX("hmultaxis");
@@ -217,7 +217,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   for(Int_t j=0; j<nMultbins; j++){
     //    printf(" Studying multiplicity bin %d\n",j);
     Int_t multbinlow = hmultaxis->FindBin(multlims[j]);
-    Int_t multbinhigh = hmultaxis->FindBin(multlims[j+1]);
+    Int_t multbinhigh = hmultaxis->FindBin(multlims[j+1])-1;
     //
     // Loop on pt bins
     //
@@ -226,10 +226,10 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       canvas[j]->cd(iPad++);
       //      printf(" projecting to the mass histogram\n");
       Int_t ptbinlow = hptaxis->FindBin(ptlims[iBin]);
-      Int_t ptbinhigh = hptaxis->FindBin(ptlims[iBin+1]);
+      Int_t ptbinhigh = hptaxis->FindBin(ptlims[iBin+1])-1;
       hmass[massBin] = (TH1F*)hPtMassMult[0]->ProjectionY(Form("hmass_%d_%d",j,iBin),multbinlow,multbinhigh,ptbinlow,ptbinhigh);
-      if(  hmass[massBin]->GetEntries() < 60 ) {  
-	massBin++; 
+      if(  hmass[massBin]->GetEntries() < 60 ) {
+	massBin++;
 	continue;
       }
       Int_t origNbins=hmass[massBin]->GetNbinsX(); 
@@ -274,6 +274,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       fitter[massBin]->Signal(3,s,errs);
       fitter[massBin]->Background(3,b,errb);
       fitter[massBin]->Significance(3,sig,errsig);
+      Double_t ry=fitter[iBin]->GetRawYield();
+      Double_t ery=fitter[iBin]->GetRawYieldError();
       myCanvas[massBin] = new TCanvas(Form("myCanvas_%d_%d",j,iBin),Form("Invariant mass mult bin %d, pt bin %d",j,iBin));
       fitter[massBin]->DrawHere(gPad);
     
@@ -295,8 +297,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       hNDiffCntSig2[j]->SetBinContent(iBin+1,(s-cntSig2)/s);
       hNDiffCntSig2[j]->SetBinError(iBin+1,TMath::Sqrt(cntErr)/s);
       hCntSig2[j]->SetBinError(iBin+1,TMath::Sqrt(cntErr));
-      hSignal[j]->SetBinContent(iBin+1,s);
-      hSignal[j]->SetBinError(iBin+1,errs);
+      hSignal[j]->SetBinContent(iBin+1,ry);
+      hSignal[j]->SetBinError(iBin+1,ery);
       hRelErrSig[j]->SetBinContent(iBin+1,errs/s);
       hInvSignif[j]->SetBinContent(iBin+1,1/sig);
       hInvSignif[j]->SetBinError(iBin+1,errsig/(sig*sig));
@@ -480,14 +482,15 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
     if(analysisType==kDplusKpipi) partname="Dminus";
   }
 
-  TString outfilename = Form("RawYield%s_%s",partname.Data(),CutsType);
+  TString outfilename = Form("RawYield_MultInt_%s_%s",partname.Data(),CutsType);
   if(fixPeakSigma) outfilename += "_SigmaFixed";
   if(typeb==0) outfilename += "_Expo.root";
   else if(typeb==1) outfilename += "_Linear.root";
   else if(typeb==2) outfilename += "_Pol2.root";
 
   TFile* outf=new TFile(outfilename,"update");
-  outf->cd();
+  outf->cd(); 
+  for(Int_t j=0; j<massBin; j++) hmass[j]->Write();
   for(Int_t j=0; j<nMultbins; j++){
     hMass[j]->Write();
     hSigma[j]->Write();
@@ -790,7 +793,7 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
   for(Int_t i=0; i<nFiles; i++){
     cZvtx->cd(i+1);
     firstbin = hNtrAxis->FindBin( multlims[i] );
-    lastbin = hNtrAxis->FindBin( multlims[i+1] );
+    lastbin = hNtrAxis->FindBin( multlims[i+1] ) -1;
     hZvtx[i] = (TH1F*)hNtrackVsVtxZ[i]->ProjectionX(Form("hZvtx_%d",i),firstbin,lastbin);
     hZvtx[i]->Draw();
   }
@@ -800,7 +803,7 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
   for(Int_t i=0; i<nFiles; i++){
     cZvtxCorr->cd(i+1);
     firstbin = hNtrAxis->FindBin( multlims[i] );
-    lastbin = hNtrAxis->FindBin( multlims[i+1] );
+    lastbin = hNtrAxis->FindBin( multlims[i+1] ) -1;
     hZvtxCorr[i] = (TH1F*)hNtrackVsVtxZCorr[i]->ProjectionX(Form("hZvtxCorr_%d",i),firstbin,lastbin);
     hZvtxCorr[i]->Draw();
   }
