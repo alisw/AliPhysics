@@ -286,12 +286,11 @@ class LMEECutLib {
 		  AliDielectronCutGroup* pairCutsCG2 =new AliDielectronCutGroup("pairCutsCG2","pairCutsCG2",AliDielectronCutGroup::kCompOR);
 		  AliDielectronCutGroup* pairCutsCG =new AliDielectronCutGroup("pairCutsCG","pairCutsCG",AliDielectronCutGroup::kCompAND);
 		  pairCutsPhiv =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad");
-		  //pairCutsPhiv->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude //acos(-1) == \pi
-		  pairCutsPhiv->AddCut(AliDielectronVarManager::kPhivPair, 0.0, 2.0); //exclude //acos(-1) == \pi
+		  pairCutsPhiv->AddCut(AliDielectronVarManager::kPhivPair, 0.0, 2.0); 
 		  pairCutsInvM =new AliDielectronVarCuts("InvM Cuts","InvM<0.3");
-		  pairCutsInvM->AddCut(AliDielectronVarManager::kM, 0.0, 0.3); //exclude
+		  pairCutsInvM->AddCut(AliDielectronVarManager::kM, 0.0, 0.3); 
 		  pairCutsInvMgood =new AliDielectronVarCuts("InvM Cuts good","InvM>0.3");
-		  pairCutsInvMgood->AddCut(AliDielectronVarManager::kM, 0.3, 99999.); //exclude
+		  pairCutsInvMgood->AddCut(AliDielectronVarManager::kM, 0.3, 99999.); 
 		  pairCutsCG->AddCut(pairCutsPhiv);
 		  pairCutsCG->AddCut(pairCutsInvM);
 		  pairCutsCG2->AddCut(pairCutsInvMgood);
@@ -300,7 +299,7 @@ class LMEECutLib {
 		  }
 		  else {
 			AliDielectronVarCuts* pairCutsV =new AliDielectronVarCuts("OpeningAngle","Opening angle > .035rad");
-			pairCutsV->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035,kTRUE); //Logic inverted with pre-cut
+			pairCutsV->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035,kTRUE); 
 			pairCuts = pairCutsV;
 		  }
 		  break;
