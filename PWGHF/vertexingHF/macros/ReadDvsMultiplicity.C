@@ -39,8 +39,8 @@ enum {kCorr=0, kUnCorr, kNoPid};
 
 // Common variables: to be configured by the user
 const Int_t nPtBins=5;
-Double_t ptlims[nPtBins+1]={2.,4.,6.,8.,12.,16.};
-Int_t rebin[nPtBins]={4,6,6,6,8};
+Double_t ptlims[nPtBins+1]={2.,4.,6.,8.,12.,24.};
+Int_t rebin[nPtBins]={4,4,6,6,8};
 Double_t sigmapt[nPtBins]={ 0.012, 0.016, 0.016, 0.018, 0.20 };
 Bool_t fixPeakSigma = kFALSE;
 //
@@ -238,9 +238,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       hmin=hRebinned->GetBinLowEdge(2);
       hmax=hRebinned->GetBinLowEdge(hRebinned->GetNbinsX());
       //      printf(" define the mass fitter and options \n");
-      fitter[massBin]=new AliHFMassFitter(hRebinned,hmin, hmax,1,typeb,types);
+      fitter[massBin] = new AliHFMassFitter(hRebinned,hmin, hmax,1,typeb,types);
       fitter[massBin]->SetRangeFit(1.65,2.10);
-      rebin[massBin]=origNbins/fitter[iBin]->GetBinN();
+      Int_t rebinItem = origNbins/fitter[massBin]->GetBinN();
       fitter[massBin]->SetReflectionSigmaFactor(factor4refl);
       fitter[massBin]->SetInitialGaussianMean(massD);
       fitter[massBin]->SetInitialGaussianSigma(sigmapt[iBin]);
@@ -283,8 +283,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       Float_t cntSig2=0.;
       Float_t cntErr=0.;
       for(Int_t iMB=minBinSum; iMB<=maxBinSum; iMB++){
-	Float_t bkg1=fB1 ? fB1->Eval(hmass[massBin]->GetBinCenter(iMB))/rebin[iBin] : 0;
-	Float_t bkg2=fB2 ? fB2->Eval(hmass[massBin]->GetBinCenter(iMB))/rebin[iBin] : 0;
+	Float_t bkg1=fB1 ? fB1->Eval(hmass[massBin]->GetBinCenter(iMB))/rebinItem : 0;
+	Float_t bkg2=fB2 ? fB2->Eval(hmass[massBin]->GetBinCenter(iMB))/rebinItem : 0;
 	cntSig1+=(hmass[massBin]->GetBinContent(iMB)-bkg1);
 	cntSig2+=(hmass[massBin]->GetBinContent(iMB)-bkg2);
 	cntErr+=(hmass[massBin]->GetBinContent(iMB));
@@ -314,6 +314,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       hSigma[j]->SetBinError(iBin+1,0.0001);
 
       massBin++;
+      delete hRebinned;
     }// end loop on pt bins
 
     canvas[j]->Update();
