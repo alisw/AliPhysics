@@ -112,6 +112,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTM20(0)	
   ,fInvmassLS(0)		
   ,fInvmassULS(0)		
+  ,fInvmassLSmc(0)		
+  ,fInvmassULSmc(0)		
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
@@ -203,6 +205,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTM20(0)	 
   ,fInvmassLS(0)		
   ,fInvmassULS(0)		
+  ,fInvmassLSmc(0)		
+  ,fInvmassULSmc(0)		
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
@@ -449,6 +453,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           // pi->e (Dalitz)
           if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
               {
+               /*
                  if(mcMompT>0.0 && mcMompT<5.0)
                    {
                     mcWeight = 0.323*mcMompT/(TMath::Exp(-1.6+0.767*mcMompT+0.0285*mcMompT*mcMompT));
@@ -457,6 +462,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                    {
                     mcWeight = 115.0/(0.718*mcMompT*TMath::Power(mcMompT,3.65));
                    }
+                */
+               mcWeight = GetMCweight(mcMompT); 
               }
 
           // access grand parent pi0->g->e
@@ -471,6 +478,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                  //if(mcGrandMompT>0.0 && mcGrandMompT<5.0)
                  if(pTtmp>0.0)
                    { 
+                    /*
                     if(pTtmp<5.0)
                     {
                      mcWeight = 0.323*pTtmp/(TMath::Exp(-1.6+0.767*pTtmp+0.0285*pTtmp*pTtmp));
@@ -479,6 +487,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                    {
                     mcWeight = 115.0/(0.718*pTtmp*TMath::Power(pTtmp,3.65));
                    }
+                   */
+                   mcWeight = GetMCweight(mcMompT); 
                   }
                 }
             }
@@ -561,7 +571,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		if(fTPCnSigma>-1.5 && fTPCnSigma<3.0)
 		{
-		  SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele);
+		  SelectPhotonicElectron(iTracks,cent,track,stack,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing);
 		}
 		if(fFlagPhotonicElec)oppstatus = 1.0;
 		if(fFlagConvinatElec)oppstatus = 2.0;
@@ -809,6 +819,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
+  fInvmassLSmc = new THnSparseD("fInvmassLSmc", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
+  fOutputList->Add(fInvmassLSmc);
+  
+  fInvmassULSmc = new THnSparseD("fInvmassULSmc", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
+  fOutputList->Add(fInvmassULSmc);
+
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
   fOutputList->Add(fOpeningAngleLS);
   
@@ -969,7 +985,7 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 //_________________________________________
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
-void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce)
+void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, AliStack *stack ,Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
@@ -986,6 +1002,14 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   Bool_t flagPhotonicElec = kFALSE;
   Bool_t flagConvinatElec = kFALSE;
   
+  int p1 = 0;
+  if(mce==3)
+     {
+       Int_t label = TMath::Abs(track->GetLabel());
+       TParticle* particle = stack->Particle(label);
+       p1 = particle->GetFirstMother();
+     }
+
   //for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
   for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
     AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
@@ -994,6 +1018,15 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
       continue;
     }
     if(itrack==jTracks)continue;    
+
+    int p2 = 0;
+    if(mce==3)
+    {
+      Int_t label2 = TMath::Abs(trackAsso->GetLabel());
+      TParticle* particle2 = stack->Particle(label2);
+      if(particle2->GetFirstMother()>-1)
+         p2 = particle2->GetFirstMother();
+    }
 
     Double_t dEdxAsso = -999., ptPrim=-999., ptAsso=-999., openingAngle = -999.;
     Double_t mass=999., width = -999;
@@ -1061,13 +1094,16 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
+    if(fFlagLS && ibgevent==0) fInvmassLSmc->Fill(phoinfo,w);
+    if(fFlagULS && ibgevent==0) fInvmassULSmc->Fill(phoinfo,w);
     
     //printf("fInvmassCut %f\n",fInvmassCut);
     //printf("openingAngle %f\n",fOpeningAngleCut);
 
     if(openingAngle > fOpeningAngleCut) continue;
       
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+    //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){
       flagPhotonicElec = kTRUE;
     }
     if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
@@ -1079,7 +1115,22 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fFlagConvinatElec = flagConvinatElec;
   
 }
+//-------------------------------------------
+//void AliAnalysisTaskHFECal::GetMCweight(double mcPi0pT)
+double AliAnalysisTaskHFECal::GetMCweight(double mcPi0pT)
+{
+        double weight = 1.0;
 
+	if(mcPi0pT>0.0 && mcPi0pT<5.0)
+	{
+		weight = 0.323*mcPi0pT/(TMath::Exp(-1.6+0.767*mcPi0pT+0.0285*mcPi0pT*mcPi0pT));
+	}
+	else
+	{
+		weight = 115.0/(0.718*mcPi0pT*TMath::Power(mcPi0pT,3.65));
+	}
+  return weight;
+}
 
 //_________________________________________
 void AliAnalysisTaskHFECal::FindTriggerClusters()
