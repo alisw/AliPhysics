@@ -233,6 +233,7 @@ public:
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
   
+  Bool_t           IsPileUpFromSPD() const ;    
   void             SetPileUpParam(Int_t i, Double_t param) { fPileUpParam[i] = param   ; }
   
   // Track selection

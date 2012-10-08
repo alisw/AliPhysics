@@ -438,6 +438,16 @@ void AliCaloTrackReader::InitParameters()
   
 }
 
+
+//________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromSPD() const
+{
+  // Check if event is from pile-up determined by SPD
+  // Default values: (3, 0.8, 3., 2., 5.)
+  return fInputEvent->IsPileupFromSPD((Int_t) fPileUpParam[0] , fPileUpParam[1] , 
+                                              fPileUpParam[2] , fPileUpParam[3] , fPileUpParam[4] ); 
+}
+
 //________________________________________________________
 void AliCaloTrackReader::Print(const Option_t * opt) const
 {
@@ -605,9 +615,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(!fCaloFilterPatch)
     {
       // Do not analyze events with pileup
-      // Default values: (3, 0.8, 3., 2., 5.)
-      Bool_t bPileup = fInputEvent->IsPileupFromSPD((Int_t) fPileUpParam[0] , fPileUpParam[1] , 
-                                                    fPileUpParam[2] ,fPileUpParam[3] , fPileUpParam[4] ); 
+      Bool_t bPileup = IsPileUpFromSPD();
       //IsPileupFromSPDInMultBins() // method to try
       //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParam[0], fPileUpParam[1], fPileUpParam[2], fPileUpParam[3], fPileUpParam[4]);
       if(bPileup) return kFALSE;
