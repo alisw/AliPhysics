@@ -170,7 +170,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t energy, Float_t time)
   if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
   if(event->IsPileupFromSPDInMultBins()) fhTimeESPDMulti->Fill(energy,time);
   
-  if(energy > 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
+  if(energy < 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
   
   AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
