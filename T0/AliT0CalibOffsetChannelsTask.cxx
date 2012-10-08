@@ -122,8 +122,8 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
     //    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, -1000, 1000);//6000, 7000);
   }
 
-  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-4000,4000);   //or A plus or C 
-  fResolution      = new TH1F("fResolution","fResolution",400,-2500,2500);// or A minus or C spectrum
+  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-4000,4000);   //or A plus or C 
+  fResolution      = new TH1F("fResolution","fResolution",200,-1000,1000);// or A minus or C spectrum
   fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-4000,4000);// or A spectrum
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-4000,4000);// or C spectrum
 
@@ -153,53 +153,64 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   // Called for each event
 
   // Post output data.
+
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
-
-  fRunNumber =  fESD->GetRunNumber() ; 
-
+  Int_t trigT0 = fESD->GetT0Trig();
+  Bool_t eq = kTRUE;
+  fRunNumber =  fESD->GetRunNumber() ;
+  if( fRunNumber<165747) eq = kFALSE;
+    
   const Double32_t* time = fESD->GetT0time();
   const Double32_t* amp = fESD->GetT0amplitude();
+  
   Double32_t diff;
-  for (Int_t i=0; i<12; i++) {
-    if( time[i] !=0  && amp[i]>0.1 ){
-      fCFD[i]->Fill( time[i] );
-      //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
-      
-      if(  time[fRefPMTC] != 0 ) {
-	diff =  time[i]-time[fRefPMTC] + fCDBdelays[i];
-	fTimeDiff[i]->Fill( diff);
-      }
+  for (Int_t i=0; i<24; i++) {
+    if( time[i] > 0  && amp[i]>0.1 ){
+      if (eq)	{
+	fCFD[i]->Fill( time[i] );
+	if(  time[fRefPMTC] > 0 && i<12)   {
+	  diff =  time[i]-time[fRefPMTC];
+	  fTimeDiff[i]->Fill( diff);
+	}
+	if(  time[fRefPMTA] >0  && i>11)  {
+	  diff =  time[i]-time[fRefPMTA] ;
+	  fTimeDiff[i]->Fill( diff);
+	}
+      } //eq=1
+      else  {
+	fCFD[i]->Fill( time[i] + fCDBdelays[i] );
+	if(  time[fRefPMTC] > 0 && i<12) {
+	  diff =  time[i]-time[fRefPMTC] + fCDBdelays[i];
+	  fTimeDiff[i]->Fill( diff);
+	} //C
+	if(  time[fRefPMTA] >0  && i>11) {
+	  diff =  time[i]-time[fRefPMTA] + fCDBdelays[i];
+	  fTimeDiff[i]->Fill( diff);
+	} //A
+      } //eq=0
     }
+    
   }
-  for (Int_t i=12; i<24; i++) {
-    if( time[i] != 0 && amp[i]>0.1) {
-      fCFD[i]->Fill( time[i]);
-      //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
-       if( time[fRefPMTA] != 0 ) {
-	diff =  time[i]-time[fRefPMTA] + fCDBdelays[i];
-	fTimeDiff[i]->Fill( diff);
-      }
-    }
-  }
-  const Double32_t* mean = fESD->GetT0TOF();
-  Double32_t meanTOF = mean[0] +  fCDBT0s[0];
-  Double32_t orA = mean[1]  +  fCDBT0s[1];
-  Double32_t orC = mean[2] +  fCDBT0s[2];
- 
-  if(orA<9999) fTzeroORA->Fill(orA);
-  if(orC<9999) fTzeroORC->Fill(orC);
-  if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
-  if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
-
-  //  printf("%f   %f  %f\n",orA,orC,meanTOF);
+  if (trigT0>5) {
+    const Double32_t* mean = fESD->GetT0TOF();
+    Double32_t meanTOF = mean[0]  +  fCDBT0s[0] ;
+    Double32_t orA = mean[1]  +  fCDBT0s[1] ;
+    Double32_t orC = mean[2] + fCDBT0s[2] ;
+    
+    if(orA<9999) fTzeroORA->Fill(orA);
+    if(orC<9999) fTzeroORC->Fill(orC);
+    if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
+    if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
+  } //if TVDC on
+    //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);
-}      
+  }      
  //________________________________________________________________________
-void AliT0CalibOffsetChannelsTask::Terminate(Option_t *) 
+  void AliT0CalibOffsetChannelsTask::Terminate(Option_t *) 
 {
   
    // Called once at the end of the query
