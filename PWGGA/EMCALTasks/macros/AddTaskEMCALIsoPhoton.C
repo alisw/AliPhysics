@@ -49,11 +49,16 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 
   
   mgr->AddTask(ana);
+  TString containername = "histosEMCALIsoPhoton";
+  if(pathstrsel != "/"){
+    TString dirpth = (TSubString)pathstrsel.operator()(1,1);
+    containername += dirpth;
+  }
   
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosEMCALIsoPhoton", 
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   
