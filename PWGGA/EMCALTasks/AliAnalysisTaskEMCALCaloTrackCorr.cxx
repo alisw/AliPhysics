@@ -954,7 +954,6 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
    }
 
    aodParticle = 0;
-   delete aodParticle;
 
   } 
 
@@ -1757,7 +1756,6 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::MakeChargedCorrelation(Int_t fTrackInd
    } 
    
    track=0;
-   delete track;
 
   }//end loop associated hadrons 
 
@@ -1834,11 +1832,8 @@ void AliAnalysisTaskEMCALCaloTrackCorr::MakeChargedMixCorrelation(Double_t ptTri
      }//end loop Associated pt bin
     }//end if Associated pt bins
      
-    delete track;
    }//end loop associated hadrons
 
-   delete bgTracks;
- 
   }//end loop Mixed event in pool 
 
   fhMixPtPhiLeading->Fill(ptTriggMix, phiTriggMix);
