@@ -400,7 +400,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
       }
       
       //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
-      if(fhTrackMatchedDEta && TMath::Abs(dR) < 999)
+      if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
       {
         fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
         fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
@@ -1850,11 +1850,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     fhPhiUEConeSumPt->Fill(pt, phiUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*TMath::Pi()));
     fhEtaUEConeSumPt->Fill(pt, etaUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*0.6));
 
-    Double_t SumPhiUESub = coneptsum-(phiUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*TMath::Pi()));
-    Double_t SumEtaUESub = coneptsum-(etaUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*0.6));
+    Double_t sumPhiUESub = coneptsum-(phiUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*TMath::Pi()));
+    Double_t sumEtaUESub = coneptsum-(etaUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*0.6));
 
-    fhConeSumPtPhiUESub->Fill(pt,SumPhiUESub);
-    fhConeSumPtEtaUESub->Fill(pt,SumEtaUESub);
+    fhConeSumPtPhiUESub->Fill(pt,sumPhiUESub);
+    fhConeSumPtEtaUESub->Fill(pt,sumEtaUESub);
      
  
     if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsum);
