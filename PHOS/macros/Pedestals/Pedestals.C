@@ -33,7 +33,7 @@ static AliRawReader       *reader;
 TString GetTriggerClass(ULong64_t);
 
 //-----------------------------------------------------------------------------
-void Pedestals(const TString rawFile=0, const char *selectTrigger="CPHI")
+void Pedestals(const TString rawFile= "", const char *selectTrigger="CPHI")
 {
   // Read raw data, decode it to samples,
   // calculate pedestals from presamples, 
