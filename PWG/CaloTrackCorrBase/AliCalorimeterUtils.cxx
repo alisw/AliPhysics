@@ -1597,7 +1597,7 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
     
   }
   
-  if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
+  if(GetDebug() > 1) printf("AliCalorimeterUtils::SplitEnergy() - n Local Max %d, Cluster energy  = %f, Ecell1 = %f, Ecell2 = %f, Enew1 = %f, Enew2 = %f, Remain %f, \n ncells %d, ncells1 %d, ncells2 %d, f1 %f, f2  %f, sum f12 = %f \n",
                             nMax, eCluster,ecell1,ecell2,e1,e2,eCluster-e1-e2,ncells,ncells1,ncells2,shareFraction1,shareFraction2,shareFraction1+shareFraction2);
   
   cluster1->SetE(e1);
@@ -1611,6 +1611,10 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
   
   cluster1->SetCellsAmplitudeFraction(fracList1);
   cluster2->SetCellsAmplitudeFraction(fracList2);
+  
+  //Correct linearity
+  CorrectClusterEnergy(cluster1) ;
+  CorrectClusterEnergy(cluster2) ;
   
   if(calorimeter=="EMCAL")
   {
