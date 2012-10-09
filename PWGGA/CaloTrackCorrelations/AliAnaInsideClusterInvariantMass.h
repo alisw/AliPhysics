@@ -154,6 +154,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02Pi0LocMaxN[7][2] ; //! M02 for Mass around pi0, N Local Maxima > 2
   TH2F       * fhM02EtaLocMaxN[7][2] ; //! M02 for Mass around eta, N Local Maxima > 2
   TH2F       * fhM02ConLocMaxN[7][2] ; //! M02 for Mass around close to 0, N Local Maxima > 2
+
+  TH2F       * fhSplitEFractionNLocMax1[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
+  TH2F       * fhSplitEFractionNLocMax2[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
+  TH2F       * fhSplitEFractionNLocMaxN[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
+  
+  TH2F       * fhMassSplitEFractionNLocMax1Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassSplitEFractionNLocMax2Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassSplitEFractionNLocMaxNEbin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
   
   TH2F       * fhAnglePairLocMax1[2] ; //! pair opening angle vs E
   TH2F       * fhAnglePairLocMax2[2] ; //! pair opening angle vs E
