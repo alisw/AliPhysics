@@ -289,8 +289,8 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
   }
   else 
   {
+    //printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available! \n");
     return 0;
-    printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available! \n");
   }
 }
 

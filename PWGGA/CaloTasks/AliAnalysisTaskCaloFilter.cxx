@@ -598,22 +598,19 @@ void AliAnalysisTaskCaloFilter::FillAODCaloTrigger()
 {
   // AOD CaloTrigger copy
   
+  if( !AODEvent() || !fAODEvent ) return;
+  
   AliAODCaloTrigger* triggerEM   = AODEvent()->GetCaloTrigger("EMCAL");
   AliAODCaloTrigger* triggerPH   = AODEvent()->GetCaloTrigger("PHOS");
-
+  
+  // Copy from AODs
+  
   AliAODCaloTrigger* inTriggerEM = fAODEvent ->GetCaloTrigger("EMCAL");
   AliAODCaloTrigger* inTriggerPH = fAODEvent ->GetCaloTrigger("PHOS");
   
-  // Copy from AODs
-  if(fAODEvent)
-  {
-    if(inTriggerPH && (fCaloFilter==kBoth || fCaloFilter==kPHOS))  *triggerPH = *inTriggerPH;
-    
-    if(inTriggerEM && (fCaloFilter==kBoth || fCaloFilter==kEMCAL)) *triggerEM = *inTriggerEM;
-    
-    return;
-  }
+  if(inTriggerPH && (fCaloFilter==kBoth || fCaloFilter==kPHOS))  *triggerPH = *inTriggerPH;
   
+  if(inTriggerEM && (fCaloFilter==kBoth || fCaloFilter==kEMCAL)) *triggerEM = *inTriggerEM;  
 }  
 
 //______________________________________________

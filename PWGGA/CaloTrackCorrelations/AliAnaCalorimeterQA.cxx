@@ -1598,7 +1598,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t EOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t EOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
   Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
   Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
@@ -2094,7 +2094,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhEtaPhiECharged);	
     }
     
-    fh1EOverP = new TH2F("h1EOverP","TRACK matches E/p",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fh1EOverP = new TH2F("h1EOverP","TRACK matches E/p",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fh1EOverP->SetYTitle("E/p");
     fh1EOverP->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fh1EOverP);
@@ -2114,7 +2114,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fh2EledEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fh2EledEdx) ;
     
-    fh1EOverPR02 = new TH2F("h1EOverPR02","TRACK matches E/p, all",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fh1EOverPR02 = new TH2F("h1EOverPR02","TRACK matches E/p, all",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fh1EOverPR02->SetYTitle("E/p");
     fh1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fh1EOverPR02);	
@@ -2651,7 +2651,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     //Track Matching 
     
-    fhMCEle1EOverP = new TH2F("hMCEle1EOverP","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCEle1EOverP = new TH2F("hMCEle1EOverP","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCEle1EOverP->SetYTitle("E/p");
     fhMCEle1EOverP->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCEle1EOverP);
@@ -2665,7 +2665,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCEle2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCEle2MatchdEdx);
     
-    fhMCChHad1EOverP = new TH2F("hMCChHad1EOverP","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCChHad1EOverP = new TH2F("hMCChHad1EOverP","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCChHad1EOverP->SetYTitle("E/p");
     fhMCChHad1EOverP->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCChHad1EOverP);
@@ -2679,7 +2679,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCChHad2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCChHad2MatchdEdx);
     
-    fhMCNeutral1EOverP = new TH2F("hMCNeutral1EOverP","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCNeutral1EOverP = new TH2F("hMCNeutral1EOverP","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCNeutral1EOverP->SetYTitle("E/p");
     fhMCNeutral1EOverP->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCNeutral1EOverP);
@@ -2693,17 +2693,17 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
     outputContainer->Add(fhMCNeutral2MatchdEdx);
     
-    fhMCEle1EOverPR02 = new TH2F("hMCEle1EOverPR02","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCEle1EOverPR02 = new TH2F("hMCEle1EOverPR02","TRACK matches E/p, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCEle1EOverPR02->SetYTitle("E/p");
     fhMCEle1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCEle1EOverPR02);
     
-    fhMCChHad1EOverPR02 = new TH2F("hMCChHad1EOverPR02","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCChHad1EOverPR02 = new TH2F("hMCChHad1EOverPR02","TRACK matches E/p, MC charged hadrons",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCChHad1EOverPR02->SetYTitle("E/p");
     fhMCChHad1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCChHad1EOverPR02);
     
-    fhMCNeutral1EOverPR02 = new TH2F("hMCNeutral1EOverPR02","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,EOverPmin,EOverPmax);
+    fhMCNeutral1EOverPR02 = new TH2F("hMCNeutral1EOverPR02","TRACK matches E/p, MC neutrals",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
     fhMCNeutral1EOverPR02->SetYTitle("E/p");
     fhMCNeutral1EOverPR02->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMCNeutral1EOverPR02);
