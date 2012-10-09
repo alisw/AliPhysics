@@ -15,14 +15,6 @@ void readHit(){
   Double_t xmin=0;
   Double_t xmax=1e-04;
 
-  const Int_t nLayers = 8;
-
-  TH1D *hDeLoss[nLayers];
-  for(Int_t i=0; i< nLayers; i++ ) {
-    hDeLoss[i] = new TH1D(Form("hDeLossl%i",i),Form("E loss distribution [ Layer %i] ",i),nbins,xmin,xmax);
-    hDeLoss[i]->SetXTitle("GeV");
-  }
-
   gAlice=NULL;
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   runLoader->LoadgAlice();
@@ -34,34 +26,49 @@ void readHit(){
   runLoader->LoadSDigits();
   runLoader->LoadHits();
 
+  AliGeomManager::LoadGeometry("geometry.root");
+  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
+
   AliLoader *dl = runLoader->GetDetectorLoader("ITS");
+
+
+
+  Int_t nLayers = gm->GetNLayers();
+
+  TH1D **hDeLoss = new TH1D*[nLayers];
+  for(Int_t i=0; i< nLayers; i++ ) {
+    hDeLoss[i] = new TH1D(Form("hDeLossl%i",i),Form("E loss distribution [ Layer %i] ",i),nbins,xmin,xmax);
+    hDeLoss[i]->SetXTitle("GeV");
+  }
+
 
   //HIT INIT
 
   TTree *hitTree = 0x0;
-  TClonesArray *hitList=new TClonesArray("AliITShit");
+  TClonesArray *hitList=new TClonesArray("AliITSUHit");
 
-  AliITSsegmentationUpgrade *segmentation = new AliITSsegmentationUpgrade();
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
  
     runLoader->GetEvent(iEvent);
     
     hitTree=dl->TreeH();
-    hitTree->SetBranchAddress("ITSupgrade",&hitList);
+    hitTree->SetBranchAddress("ITS",&hitList);
     for(Int_t iEnt=0;iEnt<hitTree->GetEntries();iEnt++){//entries loop degli hits
       hitTree->GetEntry(iEnt);
       for(Int_t iHit=0; iHit<hitList->GetEntries();iHit++){
 	      
-	AliITShit *pHit = (AliITShit*)hitList->At(iHit);
-  
+	AliITSUHit *pHit = (AliITSUHit*)hitList->At(iHit);
+	int id = pHit->GetModule();
+	int lr = gm->GetLayer(id);
+	int ld = gm->GetLadder(id);
+	//
 	if(pHit->GetParticle()->IsPrimary()){
 	  Double_t xg,yg,zg=0.;
 	  pHit->GetPositionG(xg,yg,zg);
 	  xyGlob->Fill(xg,yg);
 	  zGlob->Fill(zg);
-	  Int_t module = pHit->GetModule();
-	  cout<<module<<" "<<(module%100)<<endl;
-	  hDeLoss[pHit->GetModule()%100]->Fill(pHit->GetIonization());
+	  printf("Module %d | Lr:%d Ladder: %d\n",id,lr,ld);
+	  hDeLoss[lr]->Fill(pHit->GetIonization());
 	} // is primary
       }//loop hit 
     }//entryloopHitList
@@ -76,7 +83,7 @@ void readHit(){
   zGlob->Draw();
 
   TCanvas *c = new TCanvas("c","E loss  distribution per layer",1000,800);
-  c->Divide(3,2);
+  c->Divide(nLayers&0x1 ?  (nLayers/2+1) : nLayers/2,2);
   for(Int_t ip =1; ip<=nLayers; ip++){
     c->cd(ip);
     hDeLoss[ip-1]->Draw();
