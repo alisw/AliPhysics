@@ -268,6 +268,7 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
   int selectionCode=0;
 
   AliAODRecoDecayHF2Prong *d0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
+  if (!d0) return 0;
   if(d0->GetSelectionMap()) if(!d0->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
       AliDebug(1,"Skip D0 from Dstar");
       return 0; //skip the D0 from Dstar

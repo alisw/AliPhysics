@@ -78,7 +78,7 @@ const char* AliDxHFECorrelation::fgkCorrControlBinNames[]={
   "PhiD0",
   "PtBinD0",
   "dPhi",
-  "Pt electron",
+  "Pt electron"
 };
 
 AliDxHFECorrelation::~AliDxHFECorrelation()
@@ -221,10 +221,8 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   while ((otrigger=itrigger())!=NULL) {
     // loop over trigger D0 particle
     ctrigger++;
-    AliVParticle* ptrigger=dynamic_cast<AliVParticle*>(otrigger);
-    AliAODRecoDecayHF2Prong *d0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(ptrigger);
-
-    if (!ptrigger) continue;
+    AliAODRecoDecayHF2Prong *d0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(otrigger);
+    if (!d0) continue;
 
     TIter iElectron(associatedTracks);
     TObject* oElectron=NULL;
