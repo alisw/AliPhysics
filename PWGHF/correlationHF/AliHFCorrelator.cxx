@@ -186,7 +186,7 @@ Bool_t AliHFCorrelator::Initialize(){
   AliInfo("AliHFCorrelator::Initialize") ;
   if(!fAODEvent){
     AliInfo("No AOD event") ;
-    return;
+    return kFALSE;
   }
     //std::cout << "No AOD event" << std::endl;
 	
