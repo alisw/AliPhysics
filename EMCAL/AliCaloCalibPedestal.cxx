@@ -515,9 +515,10 @@ void AliCaloCalibPedestal::WriteParametersToFile(const char *parameterFile)
 //_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::AddInfo(AliCaloCalibPedestal *ped)
 {
-  ValidateProfiles(); // make sure histos/profiles exist
   // just do this for the basic histograms/profiles that get filled in ProcessEvent
   // may not have data for all modules, but let's just Add everything..
+  ValidateProfiles(); // make sure histos/profiles exist
+
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Add( ped->GetPedProfileLowGain(i) );
     GetPedProfileHighGain(i)->Add( ped->GetPedProfileHighGain(i) );
@@ -526,7 +527,6 @@ Bool_t AliCaloCalibPedestal::AddInfo(AliCaloCalibPedestal *ped)
     GetPeakProfileLowGain(i)->Add( ped->GetPeakProfileLowGain(i) );
     GetPeakProfileHighGain(i)->Add( ped->GetPeakProfileHighGain(i) );
     GetPeakHighGainHisto(i)->Add( ped->GetPeakHighGainHisto(i) );
-
   }//end for nModules 
 
   // We should also copy other pieces of info: counters and parameters 
