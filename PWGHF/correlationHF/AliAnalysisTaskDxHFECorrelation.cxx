@@ -187,23 +187,20 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   while((obj = next()))
     fOutput->Add(obj);
 
+  PostData(1, fOutput);
   if (fCutsD0) {
     AliRDHFCutsD0toKpi* cuts=dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0);
     if (!cuts) {
       AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
       return;
     }
+    // TODO: why copy? cleanup?
+    AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*cuts);
+    const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
+    copyfCuts->SetName(nameoutput);
+
+    PostData(2,copyfCuts);
   }
-
-  // TODO: why copy? cleanup?
-  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
-  const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
-  copyfCuts->SetName(nameoutput);
-
-  // all tasks must post data once for all outputs
-  PostData(1, fOutput);
-  PostData(2,copyfCuts);
-
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
