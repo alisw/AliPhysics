@@ -148,6 +148,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
     Bool_t        fUseBackgroundCalc;     // switches on background calculations
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
+    Bool_t        fRequireVZEROAC;        // switch to require V0 AC
+    Bool_t        fRequireTZEROvtx;       // switch to require T0 vtx
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fFilterMaskBestPt;      // filter bit to mark jets with high quality leading tracks
 
@@ -324,7 +326,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 21) 
+    ClassDef(AliAnalysisTaskJetCluster, 22) 
 };
  
 #endif
