@@ -618,10 +618,11 @@ void AliHMPIDQAChecker::InitOnlineThresholds()
     
   AliCDBManager* man = AliCDBManager::Instance(); 
   if(!man)  {     fIsOnlineThr = kFALSE;     return;   }
-  man->SetRun(AliQAChecker::Instance()->GetRunNumber()); //this should be the normal code
+  
+//  man->SetRun(AliQAChecker::Instance()->GetRunNumber()); //this should be the normal code
  //  man->SetSpecificStorage("GRP/Calib/QAThresholds","local://$ALICE_ROOT/OCDB/");// need for development machine testing
 
-  if( !man->Get("GRP/Calib/QAThresholds") )  {     fIsOnlineThr = kFALSE;    return;    }
+  if(!man->Get("GRP/Calib/QAThresholds"))  {     fIsOnlineThr = kFALSE;    return;    }
  
   AliCDBEntry* entry = man->Get("GRP/Calib/QAThresholds");
   if(!entry)    {     fIsOnlineThr = kFALSE;    return;    }
