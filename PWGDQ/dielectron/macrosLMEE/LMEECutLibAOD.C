@@ -356,10 +356,9 @@ class LMEECutLib {
 			
 		  
 
-			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);
-			//-AOD-trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 			//Legacy cut: Use Crossed Rows in ESD, in AOD ASAP
-			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,     60.0, 160.0);
+			//New: See below
+			//trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,     60.0, 160.0);
 
 			trackCutsAOD->AddCut(AliDielectronVarManager::kPt,0.05,200.);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kEta,-0.84,0.84);
@@ -384,8 +383,13 @@ class LMEECutLib {
 			
 			//-AOD-trackCuts->SetMinNClustersITS(3);
 			trackCutsDiel->SetITSclusterCut(AliDielectronTrackCuts::kAtLeast,7); //>=3
-			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst)
+			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
 			// trackCutsAOD->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
+
+			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);
+			//-AOD-trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+			trackCutsDiel->SetTPCNclFRobust(110);
+			trackCutsDiel->SetMinNCrossedRowsOverFindable(0.7);
 			
 			trackCuts->AddCut(trackCutsDiel);
 			trackCuts->AddCut(trackCutsAOD);
