@@ -317,6 +317,53 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
             fComputedValue = 0.0;
             return kFALSE;
          }
+      case kDCAXY:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		Float_t b[2], bCov[3];
+         		trackESD->GetImpactParameters(b, bCov);
+         		fComputedValue =  b[0];
+         	} else {
+         		Double_t b[2]={-999,-999}, cov[3];
+         		AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+         		if(vertex){
+         		  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
+         		  fComputedValue = b[0];
+         		} else {
+         		  fComputedValue = -999;
+         		}
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TPC chi^2 for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kDCAZ:
+         if (track) {
+         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
+         	if (trackESD) {
+         		Float_t b[2], bCov[3];
+         		trackESD->GetImpactParameters(b, bCov);
+         		fComputedValue =  b[1];
+         	} else {
+         		Double_t b[2]={-999,-999}, cov[3];
+         		AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+         		if(vertex){
+         		  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
+         		  fComputedValue = b[1];
+         		} else {
+         		  fComputedValue = -999;
+         		}
+
+         	}
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TPC chi^2 for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
       default:
          AliError(Form("[%s] Invalid value type for this computation", GetName()));
          return kFALSE;
