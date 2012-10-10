@@ -1923,6 +1923,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0 selection cuts passed: pT %3.2f, pdg %d\n",
                               aodpi0.Pt(), aodpi0.GetIdentifiedParticleType());
     
+    // Add number of local maxima to AOD, method name in AOD to be FIXED
+    aodpi0.SetFiducialArea(nMaxima);
+    
     //Play with the MC stack if available
     //Check origin of the candidates
     Int_t tag	= 0 ;
