@@ -44,11 +44,13 @@ public:
   void SetRequireTPCRefit(Bool_t req) { fRequireTPCRefit=req; }
 
   void SetTPCNclFRobust(Int_t cut) { fTPCNclRobustCut=cut; }
+  void SetMinNCrossedRowsOverFindable(Double_t CrossedOverFindable) { fTPCcrossedOverFindable = CrossedOverFindable; }
   
   Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
 
   void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
+
 
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
   void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
@@ -75,7 +77,9 @@ private:
   Bool_t fRequireITSRefit;                             // require ITS refit
   Bool_t fRequireTPCRefit;                             // require TPC refit
 
-  Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust
+  Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust, corresponds to 'crossed Rows' in ESDTrackCuts
+  Int_t fTPCcrossedOverFindable;
+
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
   Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit 
 
