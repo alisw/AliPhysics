@@ -43,6 +43,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
+  fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
   fWaiveITSNcls(-1)
 {
@@ -65,6 +66,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
+  fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
   fWaiveITSNcls(-1)
 {
@@ -131,9 +133,16 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
   if (fRequireTPCRefit) accept*=(vtrack->GetStatus()&AliVTrack::kTPCrefit)>0;
 
   if (fTPCNclRobustCut>0){
-    Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
-    accept*=(nclr>fTPCNclRobustCut);
+	Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
+	accept*=(nclr>fTPCNclRobustCut);
+	//implicitly requires NcrossedRows
+	if (fTPCcrossedOverFindable > 0.) {
+	  accept*=(vtrack->GetTPCNclsF()); //ESDtrackCut would return here true
+	  accept*=((nclr/vtrack->GetTPCNclsF()) >= fTPCcrossedOverFindable);
+	}
+
   }
+
 
   // use filter bit to speed up the AOD analysis (track pre-filter)
   // relevant filter bits are:
