@@ -927,7 +927,7 @@ void AliAnalysisTaskLK0Spectra::UserCreateOutputObjects()
   fHistMCPtLambda            = new TH1F("h1MCPtLambda", "#Lambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtLambda);
 
-fHistMCPtAntiLambda            = new TH1F("h1MCPtAntiLambda", "#AntiLambda^{0};p_{t} (GeV/c)",240,0,12);
+  fHistMCPtAntiLambda            = new TH1F("h1MCPtAntiLambda", "#AntiLambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtAntiLambda);
 /*
 
@@ -1386,13 +1386,13 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
 
   // Pt Vs Mass
-  fHistPtVsMassK0               = new TH2F("h2PtVsMassK0","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fHistPtVsMassK0               = new TH2F("h2PtVsMassK0","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",1200, 0.2, 0.8,240,0,12);
   fListHist->Add(fHistPtVsMassK0);
 
-  fHistPtVsMassLambda           = new TH2F("h2PtVsMassLambda","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",280, 1.06, 1.2,240,0,12);
+  fHistPtVsMassLambda           = new TH2F("h2PtVsMassLambda","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",840, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistPtVsMassLambda);
   
-  fHistPtVsMassAntiLambda           = new TH2F("h2PtVsMassAntiLambda","#AntiLambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",280, 1.06, 1.2,240,0,12);
+  fHistPtVsMassAntiLambda           = new TH2F("h2PtVsMassAntiLambda","#AntiLambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",840, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistPtVsMassAntiLambda);
  /*
 
@@ -1553,13 +1553,13 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 */
 
   //Pt versus Mass
-  fHistAsMcPtVsMassK0               = new TH2F("h2AsMcPtVsMassK0","K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
+  fHistAsMcPtVsMassK0               = new TH2F("h2AsMcPtVsMassK0","K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",600, 0.2, 0.8,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassK0);
 
-  fHistAsMcPtVsMassLambda           = new TH2F("h2AsMcPtVsMassLambda","#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
+  fHistAsMcPtVsMassLambda           = new TH2F("h2AsMcPtVsMassLambda","#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",420, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassLambda);
 
-  fHistAsMcPtVsMassAntiLambda       = new TH2F("h2AsMcPtVsMassAntiLambda","#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
+  fHistAsMcPtVsMassAntiLambda       = new TH2F("h2AsMcPtVsMassAntiLambda","#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});p_{t} (GeV/c)",420, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassAntiLambda);
 /*
 
@@ -1682,13 +1682,13 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambda);
 
 	// Pt and mass distribution
-  fHistAsMcSecondaryPtVsMassK0s          = new TH2F("h2AsMcSecondaryPtVsMassK0s", "K^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fHistAsMcSecondaryPtVsMassK0s          = new TH2F("h2AsMcSecondaryPtVsMassK0s", "K^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",600, 0.2, 0.8,240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtVsMassK0s);
 	
-  fHistAsMcSecondaryPtVsMassLambda       = new TH2F("h2AsMcSecondaryPtVsMassLambda", "#Lambda^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fHistAsMcSecondaryPtVsMassLambda       = new TH2F("h2AsMcSecondaryPtVsMassLambda", "#Lambda^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",420, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtVsMassLambda);
 	
-  fHistAsMcSecondaryPtVsMassAntiLambda   = new TH2F("h2AsMcSecondaryPtVsMassAntiLambda", "#bar{#Lambda}^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fHistAsMcSecondaryPtVsMassAntiLambda   = new TH2F("h2AsMcSecondaryPtVsMassAntiLambda", "#bar{#Lambda}^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",420, 0.92, 1.34,240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtVsMassAntiLambda);
 	/*
 	
@@ -2213,7 +2213,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   Int_t    lCheckGamma          = 0;
   Double_t mcPosMotherX         = 0, mcPosMotherY           = 0, mcPosMotherZ  = 0;
   Double_t mcPosMotherR         = 0;
-  Double_t mcMotherPt           = 0;
+	Double_t mcMotherPt           = 0, mcMotherRap			= 0;
 
   Int_t lIndexPosMother        = 0;
   Int_t lIndexNegMother        = 0;
@@ -2641,6 +2641,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 		{ continue;}
 		
 	  mcMotherPt   = lMCESDMother->Pt();
+		mcMotherRap  = lMCESDMother->Y();
 	}
       }
     } // end ESD condition
@@ -3129,7 +3130,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 		  if(lPtArmV0 >= TMath::Abs(cutArmenteros*lAlphaV0)) 
 		  {
 
-    if (TMath::Abs(lRapK0s) < lCutRap) {
+    if ((lCheckMcK0Short || lCheckSecondaryK0s) && TMath::Abs(mcMotherRap) < lCutRap) {
 
      // fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
      // fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
@@ -3143,7 +3144,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	if(lCheckMcK0Short) {
 	  fHistAsMcMassK0->Fill(lInvMassK0s);
 	  //fHistAsMcPtK0->Fill(lPtK0s);
-	  fHistAsMcPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
+	  fHistAsMcPtVsMassK0->Fill(lInvMassK0s,mcMotherPt);
 /*
 	  if (TMath::Abs(lRapK0s) < 0.3){
 	  fHistAsMcMassK0Rap3->Fill(lInvMassK0s);
@@ -3166,8 +3167,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	  fHistAsMcResPtVsPtK0->Fill(deltaPtK0s,lPtK0s);*/
 	}
 	else if (lCheckSecondaryK0s) {
-	  fHistAsMcSecondaryPtVsRapK0s->Fill(lPtK0s,lRapK0s);
-	  fHistAsMcSecondaryPtVsMassK0s->Fill(lInvMassK0s,lPtK0s);
+	  fHistAsMcSecondaryPtVsRapK0s->Fill(mcMotherPt,lRapK0s);
+	  fHistAsMcSecondaryPtVsMassK0s->Fill(lInvMassK0s,mcMotherPt);
 	 // fHistAsMcSecondaryProdRadiusK0s->Fill(mcPosMotherR);
 	//  fHistAsMcSecondaryProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
 	 /* switch (lPdgcodeMotherOfMother) {
@@ -3193,7 +3194,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 
   // if ((LambdaPID==1 && lMomInnerWallPos <=1) || (lMomInnerWallPos>1) ||  !(fUsePID.Contains("withPID"))){  
 
-    if (TMath::Abs(lRapLambda) < lCutRap) {
+    if ((lCheckMcLambda || lCheckSecondaryLambda) && TMath::Abs(mcMotherRap) < lCutRap) {
 
      // fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
      // fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
@@ -3208,7 +3209,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	  fHistAsMcMassLambda->Fill(lInvMassLambda);
 	//  fHistAsMcPtLambda->Fill(lPtLambda);
 	 // fHistCosPointAngleLvsMassVsPtsigL->Fill(lPtLambda,lV0cosPointAngle,lInvMassLambda);
-	  fHistAsMcPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
+	  fHistAsMcPtVsMassLambda->Fill(lInvMassLambda,mcMotherPt);
 
      /*   if (TMath::Abs(lRapLambda) < 0.3) {
 	  fHistAsMcMassLambdaRap3->Fill(lInvMassLambda);
@@ -3250,8 +3251,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	}
 	  
 	else if (lCheckSecondaryLambda) {
-          fHistAsMcSecondaryPtVsRapLambda->Fill(lPtLambda,lRapLambda);
-		fHistAsMcSecondaryPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
+          fHistAsMcSecondaryPtVsRapLambda->Fill(mcMotherPt,lRapLambda);
+		fHistAsMcSecondaryPtVsMassLambda->Fill(lInvMassLambda,mcMotherPt);
 		//fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
 	 /* fHistAsMcSecondaryProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
 	  if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigma->Fill(lPtLambda);
@@ -3287,7 +3288,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 
   //  if ((AntiLambdaPID==1 && lMomInnerWallNeg <=1) || (lMomInnerWallNeg>1) ||  !(fUsePID.Contains("withPID"))){          
 
-    if (TMath::Abs(lRapAntiLambda) < lCutRap) {
+    if ((lCheckMcAntiLambda || lCheckSecondaryAntiLambda) && TMath::Abs(mcMotherRap) < lCutRap) {
 
       //   fHistNsigmaPosProtonAntiLambda->Fill(nSigmaPosProton);
       //   fHistNsigmaNegPionAntiLambda->Fill(nSigmaNegPion);
@@ -3301,7 +3302,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 
  	  fHistAsMcMassAntiLambda->Fill(lInvMassAntiLambda);
 	 // fHistAsMcPtAntiLambda->Fill(lPtAntiLambda);
-	  fHistAsMcPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
+	  fHistAsMcPtVsMassAntiLambda->Fill(lInvMassAntiLambda,mcMotherPt);
 /*
     if (TMath::Abs(lRapAntiLambda) < 0.3) {
 	  fHistAsMcMassAntiLambdaRap3->Fill(lInvMassAntiLambda);
@@ -3344,8 +3345,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	}
 	  
 		else if (lCheckSecondaryAntiLambda) {
-	  fHistAsMcSecondaryPtVsRapAntiLambda->Fill(lPtAntiLambda,lRapAntiLambda);
-	  fHistAsMcSecondaryPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
+	  fHistAsMcSecondaryPtVsRapAntiLambda->Fill(mcMotherPt,lRapAntiLambda);
+	  fHistAsMcSecondaryPtVsMassAntiLambda->Fill(lInvMassAntiLambda,mcMotherPt);
 	//  fHistAsMcSecondaryProdRadiusAntiLambda->Fill(mcPosMotherR); 
 	//  fHistAsMcSecondaryProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
 	/*  if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
