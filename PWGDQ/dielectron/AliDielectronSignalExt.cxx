@@ -222,7 +222,8 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
+  else if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
   else if (fScaleMin>0.){
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);
@@ -289,7 +290,8 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
+  else if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
   else if (fScaleMin>0.){
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);
@@ -339,7 +341,8 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
-  if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
+  else if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
   else if (fScaleMin>0.){
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);

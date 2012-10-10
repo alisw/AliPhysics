@@ -222,9 +222,19 @@ public:
     kZRes,                   // primary vertex z-resolution
 
     //// v0 reaction plane quantities from AliEPSelectionTaks
-    kv0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
-    kv0CrpH2,                  //         reaction plane
-    kv0ACrpH2,                 // VZERO-AC reaction plane of the Q vector for 2nd harmonic
+    kv0ArpH2,                // VZERO-A reaction plane of the Q vector for 2nd harmonic
+    kv0CrpH2,                //         reaction plane
+    kv0ACrpH2,               // VZERO-AC reaction plane of the Q vector for 2nd harmonic
+    kv0AxH2,                 // VZERO-A x-component of the Q vector for 2nd harmonic
+    kv0AyH2,                 // VZERO-A y-component of the Q vector for 2nd harmonic
+    kv0CxH2,                 // VZERO-C x-component of the Q vector for 2nd harmonic
+    kv0CyH2,                 // VZERO-C y-component of the Q vector for 2nd harmonic
+    kv0ACxH2,                // VZERO-AC x-component of the Q vector for 2nd harmonic
+    kv0ACyH2,                // VZERO-AC y-component of the Q vector for 2nd harmonic
+    kv0A0rpH2,                 // VZERO-A 1st  ring reaction plane of the Q vector for 2nd harmonic
+    kv0A3rpH2,                 // VZERO-A last ring reaction plane of the Q vector for 2nd harmonic
+    kv0C0rpH2,                 // VZERO-C 1st  ring reaction plane of the Q vector for 2nd harmonic
+    kv0C3rpH2,                 // VZERO-C last ring reaction plane of the Q vector for 2nd harmonic
     kDeltaPhiv0ArpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
     kDeltaPhiv0CrpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
     kDeltaPhiv0ACrpH2,         // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-AC
@@ -685,8 +695,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
-  values[AliDielectronVarManager::kNFclsTPCr]     =  particle->GetTPCClusterInfo(2,1);
-  values[AliDielectronVarManager::kNFclsTPCrFrac] =  particle->GetTPCClusterInfo(2,1)/ particle->GetTPCNclsF();
+  values[AliDielectronVarManager::kNFclsTPCr]     = 0;
+  values[AliDielectronVarManager::kNFclsTPCrFrac] = 0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
@@ -1412,10 +1422,24 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   // TPC event plane (corrected)
 
   // VZERO event plane quantities from the AliEPSelectionTask
+  Double_t qx = 0, qy = 0;
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
-  values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(ep->GetEventplane("V0", event, 2));
-  values[AliDielectronVarManager::kv0ArpH2]   = TVector2::Phi_mpi_pi(ep->GetEventplane("V0A",event, 2));
-  values[AliDielectronVarManager::kv0CrpH2]   = TVector2::Phi_mpi_pi(ep->GetEventplane("V0C",event, 2));
+  values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event,10, 2, qx, qy));
+  values[AliDielectronVarManager::kv0ACxH2]   = qx;
+  values[AliDielectronVarManager::kv0ACyH2]   = qy;
+  qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0ArpH2]   = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 8, 2, qx, qy));
+  values[AliDielectronVarManager::kv0AxH2]    = qx;
+  values[AliDielectronVarManager::kv0AyH2]    = qy;
+  qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0CrpH2]   = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy));
+  values[AliDielectronVarManager::kv0CxH2]    = qx;
+  values[AliDielectronVarManager::kv0CyH2]    = qy;
+  qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy)); qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy)); qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy)); qx = 0, qy = 0;
+  values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy)); qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0ACrpH2FlowV2]  = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2]) );
   values[AliDielectronVarManager::kv0ArpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
   values[AliDielectronVarManager::kv0CrpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );

@@ -77,14 +77,17 @@ public:
   TH1* GetRfactorHistogram()     const {return fHistRfactor;}
   
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
+  void SetScaleRawToBackground(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
   Double_t GetScaleMin() const { return fScaleMin; }
   Double_t GetScaleMax() const { return fScaleMax; }
-
+  Double_t GetScaleMin2() const { return fScaleMin2; }
+  Double_t GetScaleMax2() const { return fScaleMax2; }
   Double_t GetScaleFactor() const { return fScaleFactor; }
 
   void SetMixingCorrection(Bool_t mixcorr=kTRUE) { fMixingCorr=mixcorr; }
   
   static Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
+  static Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2);
   
   virtual void Print(Option_t *option="") const;
 
@@ -120,6 +123,8 @@ protected:
   EBackgroundMethod fMethod;         // method for background substraction
   Double_t fScaleMin;                // min for scaling of raw and background histogram
   Double_t fScaleMax;                // max for scaling of raw and background histogram
+  Double_t fScaleMin2;                // min for scaling of raw and background histogram
+  Double_t fScaleMax2;                // max for scaling of raw and background histogram
   Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
   Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
   
