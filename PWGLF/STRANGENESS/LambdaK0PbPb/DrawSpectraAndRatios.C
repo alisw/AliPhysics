@@ -341,6 +341,8 @@ void DrawSpectraAndRatios() {
   TCanvas *c3=new TCanvas;
   c3->SetLeftMargin(0.13); c3->SetBottomMargin(0.13);
 
+  TH1 *lkRatio[nCent]={0};
+
   for (Int_t cent=0; cent<nCent1; cent++) {
       const Char_t *tit=title[cent];
       Int_t col=colour[cent];
@@ -382,6 +384,7 @@ void DrawSpectraAndRatios() {
 
       // Lambda/K0s
       TH1 *rawHlk=(TH1*)rawHl->Clone();
+      lkRatio[cent]=rawHlk;
       TString name=ratio+rawHlk->GetName();
       rawHlk->SetName(name.Data());      
       rawHlk->SetMaximum(1.7);      
@@ -392,6 +395,9 @@ void DrawSpectraAndRatios() {
       DrawRatio(rawHlk,option.Data());
 
       option+="same";
+  }
+  for (Int_t cent=0; cent<nCent; cent++) {
+    lkRatio[cent]->Draw("same");
   }
 
   Float_t offx=0.15, offy=0.16, sizx=0.22, sizy=0.22;
