@@ -103,6 +103,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fUseAODMCInput(kFALSE),
   fUseBackgroundCalc(kFALSE),
   fEventSelection(kFALSE),     
+  fRequireVZEROAC(kFALSE),     
+  fRequireTZEROvtx(kFALSE),
   fFilterMask(0),
   fFilterMaskBestPt(0),
   fFilterType(0),
@@ -267,7 +269,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseBackgroundCalc(kFALSE),
-  fEventSelection(kFALSE),							  fFilterMask(0),
+  fEventSelection(kFALSE),
+  fRequireVZEROAC(kFALSE),     
+  fRequireTZEROvtx(kFALSE), 
+  fFilterMask(0),
   fFilterMaskBestPt(0),
   fFilterType(0),
   fJetTypes(kJet),
@@ -945,7 +950,28 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       selectEvent = true;
     }
   }
+
+
+  Bool_t T0 = false;
+  Bool_t V0 = false;
+  const AliAODVZERO  *vzero = fAOD->GetVZEROData();
+  if(vzero){
+    if((vzero->GetTriggerChargeA()>0)&&(vzero->GetTriggerChargeC()>0)){
+      V0 = true;
+    }
+  }
   
+  const AliAODTZERO  *tzero = fAOD->GetTZEROData();
+  if(tzero){
+    if(TMath::Abs(tzero->GetT0VertexRaw())<100){
+      T0 = true;
+    }
+  }
+  
+  if(fRequireVZEROAC&&fRequireTZEROvtx)selectEvent = selectEvent&&V0&&T0;
+  else if(fRequireTZEROvtx)selectEvent = selectEvent&&T0;
+  else if(fRequireVZEROAC)selectEvent = selectEvent&&V0;
+
 
   if(!selectEvent){
     PostData(1, fHistList);
