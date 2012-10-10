@@ -18,8 +18,6 @@
 
 #include "AliDielectronVarManager.h"
 
-#include "AliDielectron.h"
-
 class AliDielectronHF : public TNamed {
 public:
   enum { kMaxCuts=20 };

@@ -54,6 +54,8 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
+  fScaleMin2(0.),
+  fScaleMax2(0.),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
   fProcessed(kFALSE)
@@ -83,6 +85,8 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
+  fScaleMin2(0.),
+  fScaleMax2(0.),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
   fProcessed(kFALSE)
@@ -160,7 +164,7 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
   //
-
+  printf("scale %f %f \n",intMin,intMax);
   //protect using over and underflow bins in normalisation calculation
   if (intMin<histRaw->GetXaxis()->GetXmin()) intMin=histRaw->GetXaxis()->GetXmin();
   if (intMin<histBackground->GetXaxis()->GetXmin()) intMin=histBackground->GetXaxis()->GetXmin();
@@ -172,6 +176,37 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   
   Double_t intRaw  = histRaw->Integral(histRaw->FindBin(intMin),histRaw->FindBin(intMax));
   Double_t intBack = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));
+  Double_t scaleFactor=intBack>0?intRaw/intBack:0.;
+  if (intBack>0){
+    histBackground->Sumw2();
+    histBackground->Scale(scaleFactor);
+  }
+
+  return scaleFactor;
+}
+//______________________________________________
+Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2)
+{
+  //
+  // scale histBackground to match the integral of histRaw in the interval intMin, intMax and intMin2, intMax2
+  //
+  printf("scale %f %f %f %f\n",intMin,intMax, intMin2, intMax2);
+  if(intMin2==intMax2) return (ScaleHistograms(histRaw, histBackground, intMin, intMax));
+
+  //protect using over and underflow bins in normalisation calculation
+  if (intMin<histRaw->GetXaxis()->GetXmin()) intMin=histRaw->GetXaxis()->GetXmin();
+  if (intMin<histBackground->GetXaxis()->GetXmin()) intMin=histBackground->GetXaxis()->GetXmin();
+  
+  if (intMax2>histRaw->GetXaxis()->GetXmax())
+    intMax2=histRaw->GetXaxis()->GetXmax()-histRaw->GetBinWidth(histRaw->GetNbinsX())/2.;
+  if (intMax2>histBackground->GetXaxis()->GetXmax())
+    intMax2=histBackground->GetXaxis()->GetXmax()-histBackground->GetBinWidth(histBackground->GetNbinsX())/2.;
+  
+  Double_t intRaw  = histRaw->Integral(histRaw->FindBin(intMin),histRaw->FindBin(intMax));
+  Double_t intBack = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));
+  intRaw  += histRaw->Integral(histRaw->FindBin(intMin2),histRaw->FindBin(intMax2));
+  intBack += histBackground->Integral(histBackground->FindBin(intMin2),histBackground->FindBin(intMax2));
+
   Double_t scaleFactor=intBack>0?intRaw/intBack:0.;
   if (intBack>0){
     histBackground->Sumw2();
