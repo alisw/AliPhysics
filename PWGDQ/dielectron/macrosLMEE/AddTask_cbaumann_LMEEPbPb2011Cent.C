@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE, Bool_t switchToPhiV=kTRUE,Bool_t switchToOA=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE, Bool_t switchToPhiV=kTRUE,Bool_t switchToOA=kFALSE, Bool_t getFromAlien=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -6,11 +6,19 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, B
 	return 0;
   }
 
-  //create config File names: TRAIN_ROOT is for running on GSI train, 
+  // 3 options:
+  // TRAIN_ROOT is for running on GSI train, 
   // ALICE_ROOT for CERN Lego trains
+  // getFromAlien: load files from user ALIEN dir 
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                            
   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+
+  if (getFromAlien && 
+      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
+     ) {
+	configFile=Form("%s/",gSystem->pwd());
+  }
   TString configFile("ConfigLMEEPbPb2011.C");
   TString configLMEECutLib("LMEECutLib.C");
 
