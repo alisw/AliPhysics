@@ -685,8 +685,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
-  values[AliDielectronVarManager::kNFclsTPCr]     = 0;
-  values[AliDielectronVarManager::kNFclsTPCrFrac] = 0;
+  values[AliDielectronVarManager::kNFclsTPCr]     =  particle->GetTPCClusterInfo(2,1);
+  values[AliDielectronVarManager::kNFclsTPCrFrac] =  particle->GetTPCClusterInfo(2,1)/ particle->GetTPCNclsF();
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
