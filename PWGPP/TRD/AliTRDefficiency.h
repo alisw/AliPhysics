@@ -34,7 +34,6 @@ public:
 //  void        UserCreateOutputObjects();
   void          LocalUserExec(Option_t *);
   Bool_t        GetRefFigure(Int_t ifig);
-  static Int_t  GetPtBin(Float_t pt);
   TObjArray*    Histos();
   TH1*          PlotBasicEff(const AliTRDtrackV1 *t=NULL);
 //  TH1*          PlotMC(const AliTRDtrackV1 *t=NULL);

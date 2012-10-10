@@ -132,9 +132,9 @@ TH1* AliTRDefficiency::PlotBasicEff(const AliTRDtrackV1 *track)
   val[0] =((status&AliESDtrack::kTRDin)?1:0) +
           ((status&AliESDtrack::kTRDStop)?1:0) +
           ((status&AliESDtrack::kTRDout)?2:0);
-  val[1] = fPhi;//fkESD->Phi();
-  val[2] = fEta;//fkESD->Eta();
-  val[3] = GetPtBin(fPt/*fkESD->Pt()*/);
+  val[1] = fkESD->Phi();
+  val[2] = fkESD->Eta();
+  val[3] = GetPtBin(fPt>0.?fPt:fkESD->Pt());
   val[4] = 0.;
   if(fkMC){
     if(fkMC->GetLabel() == fkMC->GetTRDlabel()) val[4] = 0.;
@@ -362,20 +362,6 @@ void AliTRDefficiency::LocalUserExec(Option_t *)
 }
 
 //____________________________________________________________________
-Int_t AliTRDefficiency::GetPtBin(Float_t pt)
-{
-// Get logaritmic pt bin
-
-  Float_t pt0(0.5), dpt(0.002);
-  Int_t ipt(0);
-  while(ipt<30){
-    if(pt<pt0) break;
-    ipt++; pt0+=(TMath::Exp(ipt*ipt*dpt)-1.);
-  }
-  return ipt-1;
-}
-
-//____________________________________________________________________
 Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
 // Steer reference figures
@@ -453,9 +439,9 @@ TObjArray* AliTRDefficiency::Histos()
     const Int_t mdim(7);
     Int_t nlabel(1);
     const Char_t *eTitle[mdim] = {"status", "#phi [rad]", "eta", "p_{t} [bin]", "label", "N_{trklt}", "chg*spec*rc"};
-    const Int_t eNbins[mdim]   = {   5,         180,       50,         fNpt,     nlabel, AliTRDgeometry::kNlayer-2, 5};
-    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -1.,       -0.5,       -0.5,        1.5,               -2.5},
-                   eMax[mdim]  = {  4.5,     TMath::Pi(),   1.,       fNpt-.5,  nlabel-0.5,    5.5,                2.5};
+    const Int_t eNbins[mdim]   = {   5,         144,        45,     fNpt-1,     nlabel, AliTRDgeometry::kNlayer-2, 5};
+    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -.9,       -0.5,       -0.5,        1.5,               -2.5},
+                   eMax[mdim]  = {  4.5,     TMath::Pi(),   .9,      fNpt-1.5,  nlabel-0.5,    5.5,                2.5};
     st = "basic efficiency;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:(HasMCdata()?5:4);
