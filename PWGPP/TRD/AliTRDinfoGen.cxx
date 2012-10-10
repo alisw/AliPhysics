@@ -369,7 +369,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
     MakeChambers();
-    printf("After MakeChambers()\n");
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
