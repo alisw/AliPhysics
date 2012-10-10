@@ -33,6 +33,8 @@ public:
       kNTPCclusters,  // n TPC clusters
       kITSchi2,    // ITS chi^2
       kTPCchi2,    // TPC chi^2
+      kDCAXY,      // DCA xy
+      kDCAZ,       // DCA z
       kTypes
    };
 

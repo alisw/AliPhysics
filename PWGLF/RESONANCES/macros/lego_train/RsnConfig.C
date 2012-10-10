@@ -494,6 +494,25 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
    if (mon) mon->Add(outMonitorTPCchi2);
    if (lm) lm->AddOutput(outMonitorTPCchi2);
 
+   // DCAXY
+   AliRsnValueDaughter *axisDCAXY = new AliRsnValueDaughter("XY", AliRsnValueDaughter::kDCAXY);
+   axisDCAXY->SetBins(200,-1,1);
+
+   AliRsnListOutput *outMonitorDCAXY = new AliRsnListOutput("DCA", AliRsnListOutput::kHistoDefault);
+   outMonitorDCAXY->AddValue(axisDCAXY);
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorDCAXY);
+   if (lm) lm->AddOutput(outMonitorDCAXY);
+
+   // DCAZ
+   AliRsnValueDaughter *axisDCAZ = new AliRsnValueDaughter("Z", AliRsnValueDaughter::kDCAZ);
+   axisDCAZ->SetBins(200,-1,1);
+
+   AliRsnListOutput *outMonitorDCAZ = new AliRsnListOutput("DCA", AliRsnListOutput::kHistoDefault);
+   outMonitorDCAZ->AddValue(axisDCAZ);
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorDCAZ);
+   if (lm) lm->AddOutput(outMonitorDCAZ);
 
    AliRsnListOutput *outMonitorPTvsMult = new AliRsnListOutput("PTvsMult",AliRsnListOutput::kHistoDefault);
    AliRsnValueDaughter *vd1 = new AliRsnValueDaughter("pt",AliRsnValueDaughter::kPt);
