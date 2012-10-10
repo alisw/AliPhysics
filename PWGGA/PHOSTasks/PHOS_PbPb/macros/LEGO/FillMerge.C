@@ -65,8 +65,8 @@ void FillMerge(const TString filelist="filelist.txt",
     
     if( ! fillToMerger.count( fill ) ) { // if no merger for fill
       fillToMerger[fill] = new TFileMerger(); // create merger
-      gSystem->mkdir("fillMerge");
-      fillToMerger[fill]->OutputFile(Form("fillMerge/%d.root", fill));
+      gSystem->mkdir((Form("%s/fill", gSystem->pwd())));
+      fillToMerger[fill]->OutputFile(Form("%s/fill/%d.root", gSystem->pwd(), fill));
     }
     
     fillToMerger[fill]->AddFile(rootFileName);
