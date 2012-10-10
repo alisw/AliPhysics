@@ -58,10 +58,11 @@ fNCones(0),                       fNPtThresFrac(0),
 fConeSizes(),                     fPtThresholds(),                 
 fPtFractions(),                   fSumPtThresholds(),
 // Histograms
-fhEIso(0),                        fhPtIso(0),                       
+fhEIso(0),                        fhPtIso(0),                      fhPtNLocMaxIso(0),                       
 fhPhiIso(0),                      fhEtaIso(0),                     fhEtaPhiIso(0), 
 fhEtaPhiNoIso(0), 
-fhPtNoIso(0),                     fhPtDecayIso(0),                 fhPtDecayNoIso(0),
+fhPtNoIso(0),                     fhPtNLocMaxNoIso(0),                     
+fhPtDecayIso(0),                  fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
 fhConeSumPt(0),                   fhPtInCone(0),                   
 fhPtInConePileUp(0),              fhPtInConeCent(0),
@@ -878,6 +879,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtIso->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtIso) ; 
     
+    fhPtNLocMaxIso  = new TH2F("hPtNLocMax",
+                               Form("Number of isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f vs NLM, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
+                               nptbins,ptmin,ptmax,10,0,10); 
+    fhPtNLocMaxIso->SetYTitle("NLM");
+    fhPtNLocMaxIso->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNLocMaxIso) ; 
+    
     fhPhiIso  = new TH2F("hPhi",
                          Form("Number of isolated particles vs #phi for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
                          nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
@@ -1039,6 +1047,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtIsoHadron->SetXTitle("p_{T}(GeV/c)");
       outputContainer->Add(fhPtIsoHadron) ; 
       
+      
       fhPhiIsoHadron  = new TH2F
       ("hPhiMCHadron","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoHadron->SetYTitle("#phi");
@@ -1064,6 +1073,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
   outputContainer->Add(fhPtNoIso) ;
   
+  fhPtNLocMaxNoIso  = new TH2F("hPtNLocMaxNoIso",
+                               Form("Number of not isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f vs NLM, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
+                               nptbins,ptmin,ptmax,10,0,10); 
+  fhPtNLocMaxNoIso->SetYTitle("NLM");
+  fhPtNLocMaxNoIso->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNLocMaxNoIso) ;   
   
   fhEtaPhiNoIso  = new TH2F("hEtaPhiNoIso",
                             Form("Number of not isolated leading particles #eta vs #phi for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
@@ -1876,10 +1891,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     Int_t mcTag = aod->GetTag() ;
     Int_t clID  = aod->GetCaloLabel(0) ;
-    
+    Int_t nlm = aod->GetFiducialArea();
     if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f\n",pt, eta, phi);
     
-    FillTrackMatchingShowerShapeControlHistograms(isolation, clID,aod->GetFiducialArea(),mcTag,reftracks,refclusters,aod,GetReader(), GetCaloPID());
+    FillTrackMatchingShowerShapeControlHistograms(isolation, clID,nlm,mcTag,reftracks,refclusters,aod,GetReader(), GetCaloPID());
     
     if(isolation)
     {    
@@ -1894,6 +1909,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPhiIso    ->Fill(pt,phi);
       fhEtaIso    ->Fill(pt,eta);
       fhEtaPhiIso ->Fill(eta,phi);
+      fhPtNLocMaxIso->Fill(pt,nlm);
       
       if(decay) 
       {
@@ -1966,7 +1982,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       
       fhPtNoIso    ->Fill(pt);
       fhEtaPhiNoIso->Fill(eta,phi);
-      
+      fhPtNLocMaxNoIso->Fill(pt,nlm);
+
       if(decay) 
       {
         fhPtDecayNoIso    ->Fill(pt);

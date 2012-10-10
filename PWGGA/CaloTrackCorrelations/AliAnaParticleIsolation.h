@@ -139,11 +139,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F *   fhEIso ;                               //! Number of isolated particles
   TH1F *   fhPtIso ;                              //! Number of isolated particles
+  TH2F *   fhPtNLocMaxIso ;                       //! Number of isolated particles vs NLM in cluster
   TH2F *   fhPhiIso ;                             //! Phi of isolated particles
   TH2F *   fhEtaIso ;                             //! eta of isolated particles
   TH2F *   fhEtaPhiIso ;                          //! eta vs phi of isolated particles
   TH2F *   fhEtaPhiNoIso ;                        //! eta vs phi of not isolated leading particles
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles
+  TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
   TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
   TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
   TH2F *   fhEtaPhiDecayIso ;                     //! eta vs phi of isolated Pi0 decay particles
@@ -305,7 +307,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,17)
+  ClassDef(AliAnaParticleIsolation,18)
 } ;
 
 
