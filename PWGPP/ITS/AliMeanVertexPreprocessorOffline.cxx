@@ -316,7 +316,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	    writeMeanVertexSPD=kTRUE;
 	  }	
 	  
-	  histSPDvtxZ ->Fit("gaus", "M", -12, 12);
+	  histSPDvtxZ ->Fit("gaus", "M", "", -12, 12);
 	  fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
 	  zMeanVtx = fitVtxZ -> GetParameter(1);
 	  zSigmaVtx = fitVtxZ -> GetParameter(2);
