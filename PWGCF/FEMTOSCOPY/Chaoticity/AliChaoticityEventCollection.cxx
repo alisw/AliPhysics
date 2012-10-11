@@ -9,8 +9,6 @@
 
 #include "AliChaoticityEventCollection.h"
 
-ClassImp(AliChaoticityEventCollection)
-
 AliChaoticityTrackStruct::AliChaoticityTrackStruct():
   fStatus(0),
   fFiltermap(0),
@@ -327,8 +325,13 @@ AliChaoticityEventCollection::AliChaoticityEventCollection():
 {
   // Default constructor
 }
-AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim, Int_t plimit, Bool_t MCcase){
- 
+AliChaoticityEventCollection::AliChaoticityEventCollection(Short_t a, Int_t lim, Int_t plimit, Bool_t MCcase):
+  fFIFO(0),
+  fLimit(0),
+  fPairLimit(0),
+  fEvtStr(0)
+{
+  
   // Main constructor
   SetBuffSize(a);
   
