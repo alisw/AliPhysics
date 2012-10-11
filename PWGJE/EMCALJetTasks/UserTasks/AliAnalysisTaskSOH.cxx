@@ -300,25 +300,25 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
     fOutputList->Add(fHClsEoverMcE_Pion);
   }
   
-  fHParGenPion_p = new TH3F("fHParGenPion_p","Particle level truth Phi-Eta-p_{T} distribution of #pi+", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+  fHParGenPion_p = new TH3F("fHParGenPion_p","Particle level truth Phi-Eta-p_{T} distribution of #pi+",  500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
   fHParGenPion_p->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHParGenPion_p->GetYaxis()->SetTitle("#eta");
   fHParGenPion_p->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHParGenPion_p);
   
-  fHParGenPion_m = new TH3F("fHParGenPion_m", "Particle level truth Phi-Eta-p_{T} distribution of all #pi-", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+  fHParGenPion_m = new TH3F("fHParGenPion_m", "Particle level truth Phi-Eta-p_{T} distribution of all #pi-", 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
   fHParGenPion_m->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHParGenPion_m->GetYaxis()->SetTitle("#eta");
   fHParGenPion_m->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHParGenPion_m);
   
-  fHParGenPion_rmInj_p = new TH3F("fHParGenPion_rmInj_p","Particle level truth Phi-Eta-p_{T} distribution of all #pi+ without injected signal", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+  fHParGenPion_rmInj_p = new TH3F("fHParGenPion_rmInj_p","Particle level truth Phi-Eta-p_{T} distribution of all #pi+ without injected signal",  500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
   fHParGenPion_rmInj_p->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHParGenPion_rmInj_p->GetYaxis()->SetTitle("#eta");
   fHParGenPion_rmInj_p->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHParGenPion_rmInj_p);
   
-  fHParGenPion_rmInj_m = new TH3F("fHParGenPion_rmInj_m","Particle level truth Phi-Eta-p_{T} distribution of #pi- without injected signal", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+  fHParGenPion_rmInj_m = new TH3F("fHParGenPion_rmInj_m","Particle level truth Phi-Eta-p_{T} distribution of #pi- without injected signal", 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
   fHParGenPion_rmInj_m->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHParGenPion_rmInj_m->GetYaxis()->SetTitle("#eta");
   fHParGenPion_rmInj_m->GetZaxis()->SetTitle("#phi");
@@ -330,26 +330,26 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   if(fMcProcess && fTrackProcess)
   {    
     //Fake
-    fHDetGenFakePion = new TH3F("fHDetGenFakePion", "fake charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+    fHDetGenFakePion = new TH3F("fHDetGenFakePion", "fake charged pion track Phi-Eta-p_{T} distribution",500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
     fHDetGenFakePion->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
     fHDetGenFakePion->GetYaxis()->SetTitle("#eta");
     fHDetGenFakePion->GetZaxis()->SetTitle("#phi");
     fOutputList->Add(fHDetGenFakePion);
 
-    fHDetRecFakePion = new TH3F("fHDetRecFakePion", "fake charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+    fHDetRecFakePion = new TH3F("fHDetRecFakePion", "fake charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
     fHDetRecFakePion->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
     fHDetRecFakePion->GetYaxis()->SetTitle("#eta");
     fHDetRecFakePion->GetZaxis()->SetTitle("#phi");
     fOutputList->Add(fHDetRecFakePion);
     
     //Secondary
-    fHDetGenSecPion = new TH3F("fHDetGenSecPion", "secondary charged pion charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+    fHDetGenSecPion = new TH3F("fHDetGenSecPion", "secondary charged pion charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
     fHDetGenSecPion->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
     fHDetGenSecPion->GetYaxis()->SetTitle("#eta");
     fHDetGenSecPion->GetZaxis()->SetTitle("#phi");
     fOutputList->Add(fHDetGenSecPion);
 
-    fHDetRecSecPion = new TH3F("fHDetRecSecPion", "secondary charged pion charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+    fHDetRecSecPion = new TH3F("fHDetRecSecPion", "secondary charged pion charged pion track Phi-Eta-p_{T} distribution", 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
     fHDetRecSecPion->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
     fHDetRecSecPion->GetYaxis()->SetTitle("#eta");
     fHDetRecSecPion->GetZaxis()->SetTitle("#phi");
@@ -364,46 +364,46 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
       fHDetGenPion_p[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetGenPion_p[i]);
       
-      fHDetRecPion_p[i] = new TH3F(Form("fHDetRecPion_p_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of all #pi+", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetRecPion_p[i] = new TH3F(Form("fHDetRecPion_p_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of all #pi+", trackCut[i]),  500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetRecPion_p[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetRecPion_p[i]->GetYaxis()->SetTitle("#eta");
       fHDetRecPion_p[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetRecPion_p[i]);
 
       // pi-
-      fHDetGenPion_m[i] = new TH3F(Form("fHDetGenPion_m_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi-", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetGenPion_m[i] = new TH3F(Form("fHDetGenPion_m_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi-", trackCut[i]),  500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetGenPion_m[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetGenPion_m[i]->GetYaxis()->SetTitle("#eta");
       fHDetGenPion_m[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetGenPion_m[i]);
       
-      fHDetRecPion_m[i] = new TH3F(Form("fHDetRecPion_m_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi-", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetRecPion_m[i] = new TH3F(Form("fHDetRecPion_m_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi-", trackCut[i]),  500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetRecPion_m[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetRecPion_m[i]->GetYaxis()->SetTitle("#eta");
       fHDetRecPion_m[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetRecPion_m[i]);
 
         //pi+ without injected signal
-      fHDetGenPion_rmInj_p[i] = new TH3F(Form("fHDetGenPion_rmInj_p_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi+ without injected signal", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetGenPion_rmInj_p[i] = new TH3F(Form("fHDetGenPion_rmInj_p_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi+ without injected signal", trackCut[i]), 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetGenPion_rmInj_p[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetGenPion_rmInj_p[i]->GetYaxis()->SetTitle("#eta");
       fHDetGenPion_rmInj_p[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetGenPion_rmInj_p[i]);
       
-      fHDetRecPion_rmInj_p[i] = new TH3F(Form("fHDetRecPion_rmInj_p_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi+ without injected signal", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetRecPion_rmInj_p[i] = new TH3F(Form("fHDetRecPion_rmInj_p_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi+ without injected signal", trackCut[i]), 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetRecPion_rmInj_p[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetRecPion_rmInj_p[i]->GetYaxis()->SetTitle("#eta");
       fHDetRecPion_rmInj_p[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetRecPion_rmInj_p[i]);
 
       //pi- charged particle without injected signal
-      fHDetGenPion_rmInj_m[i] = new TH3F(Form("fHDetGenPion_rmInj_m_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi- without injected signal", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetGenPion_rmInj_m[i] = new TH3F(Form("fHDetGenPion_rmInj_m_%s", trackCut[i]), Form("%s: Detector level truth Phi-Eta-p_{T} distribution of #pi- without injected signal", trackCut[i]), 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetGenPion_rmInj_m[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetGenPion_rmInj_m[i]->GetYaxis()->SetTitle("#eta");
       fHDetGenPion_rmInj_m[i]->GetZaxis()->SetTitle("#phi");
       fOutputList->Add(fHDetGenPion_rmInj_m[i]);
       
-      fHDetRecPion_rmInj_m[i] = new TH3F(Form("fHDetRecPion_rmInj_m_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi- without injected signal", trackCut[i]),  500, 0, 100, 60, -1.2, 1.2, 128, 0, 6.4);
+      fHDetRecPion_rmInj_m[i] = new TH3F(Form("fHDetRecPion_rmInj_m_%s", trackCut[i]), Form("%s: Reconstructed track Phi-Eta-p_{T} distribution of #pi- without injected signal", trackCut[i]), 500, 0, 100, 100, -1.0, 1.0, 120, 0.0,2.*TMath::Pi());
       fHDetRecPion_rmInj_m[i]->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
       fHDetRecPion_rmInj_m[i]->GetYaxis()->SetTitle("#eta");
       fHDetRecPion_rmInj_m[i]->GetZaxis()->SetTitle("#phi");

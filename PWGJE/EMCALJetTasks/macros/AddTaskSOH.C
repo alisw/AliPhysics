@@ -1,6 +1,6 @@
 // $Id$
 
-AliAnalysisTaskSOH* AddTaskSOH(const char *name, Bool_t ScaleFactorP=kFALSE, Bool_t ClusterP=kFALSE, Double_t Zvtx=10)
+AliAnalysisTaskSOH* AddTaskSOH()
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -23,7 +23,7 @@ AliAnalysisTaskSOH* AddTaskSOH(const char *name, Bool_t ScaleFactorP=kFALSE, Boo
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskSOH *taskSOH = new AliAnalysisTaskSOH(Form("QA_soh_%s",name));
+  AliAnalysisTaskSOH *taskSOH = new AliAnalysisTaskSOH("AliAnalysisTaskSOH");
 
   AliESDtrackCuts *esdTrackCuts = 0x0;
   AliESDtrackCuts *hybridTrackCuts1 = 0x0;
@@ -40,9 +40,9 @@ AliAnalysisTaskSOH* AddTaskSOH(const char *name, Bool_t ScaleFactorP=kFALSE, Boo
 
   taskSOH->SetMcProcess(kTRUE);
   taskSOH->SetTrackProcess(kTRUE);
-  taskSOH->SetSFProcess(ScaleFactorP);
-  taskSOH->SetClusterProcess(ClusterP);
-  taskSOH->SetZvtx(Zvtx);
+  taskSOH->SetSFProcess(kFALSE);
+  taskSOH->SetClusterProcess(kFALSE);
+  taskSOH->SetZvtx(10);
 
   // Add task(s)
   mgr->AddTask(taskSOH); 
@@ -58,7 +58,10 @@ AliAnalysisTaskSOH* AddTaskSOH(const char *name, Bool_t ScaleFactorP=kFALSE, Boo
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults_soh.root");
+  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer("soh", 
+                                                             TList::Class(), 
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             "AnalysisResults.root");
 
   // Connect input/output
   mgr->ConnectInput(taskSOH, 0, cinput);
