@@ -227,41 +227,41 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	
 	if (useTRKvtx || useITSSAvtx){
 	  histTRKvtxX ->Fit("gaus", "M");
-		fitVtxX = histTRKvtxX -> GetFunction("gaus");
-		xMeanVtx = fitVtxX -> GetParameter(1);
-		if (TMath::Abs(xMeanVtx) > 2.) {
-			xMeanVtx = 0.;
-			writeMeanVertexSPD=kTRUE;
-			fStatus=kWriteMeanVertexSPD;
-		}	
-
-		histTRKvtxY ->Fit("gaus", "M");
-		fitVtxY = histTRKvtxY -> GetFunction("gaus");
-		yMeanVtx = fitVtxY -> GetParameter(1);
-		if (TMath::Abs(yMeanVtx) > 2.) {
-			yMeanVtx = 0.;
-			writeMeanVertexSPD=kTRUE;
-			fStatus=kWriteMeanVertexSPD;
-		}	
-		
-		histTRKvtxZ ->Fit("gaus", "M", "", -10, 10);
-		fitVtxZ = histTRKvtxZ -> GetFunction("gaus");
-		zMeanVtx = fitVtxZ -> GetParameter(1);
-		zSigmaVtx = fitVtxZ -> GetParameter(2);
-		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
-		  zMeanVtx = histTRKvtxZ->GetMean();
-		  zSigmaVtx = histTRKvtxZ->GetRMS();
-		  writeMeanVertexSPD=kTRUE;
-		  fStatus=kWriteMeanVertexSPD;
-		}	
-		
+	  fitVtxX = histTRKvtxX -> GetFunction("gaus");
+	  xMeanVtx = fitVtxX -> GetParameter(1);
+	  if (TMath::Abs(xMeanVtx) > 2.) {
+	    xMeanVtx = 0.;
+	    writeMeanVertexSPD=kTRUE;
+	    fStatus=kWriteMeanVertexSPD;
+	  }	
+	  
+	  histTRKvtxY ->Fit("gaus", "M");
+	  fitVtxY = histTRKvtxY -> GetFunction("gaus");
+	  yMeanVtx = fitVtxY -> GetParameter(1);
+	  if (TMath::Abs(yMeanVtx) > 2.) {
+	    yMeanVtx = 0.;
+	    writeMeanVertexSPD=kTRUE;
+	    fStatus=kWriteMeanVertexSPD;
+	  }	
+	  
+	  histTRKvtxZ ->Fit("gaus", "M", "", -12, 12);
+	  fitVtxZ = histTRKvtxZ -> GetFunction("gaus");
+	  zMeanVtx = fitVtxZ -> GetParameter(1);
+	  zSigmaVtx = fitVtxZ -> GetParameter(2);
+	  if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
+	    zMeanVtx = histTRKvtxZ->GetMean();
+	    zSigmaVtx = histTRKvtxZ->GetRMS();
+	    writeMeanVertexSPD=kTRUE;
+	    fStatus=kWriteMeanVertexSPD;
+	  }	
+	  
 	}
 	
 	
 	//check fits: compare histo mean with fit mean value 
 	Double_t xHistoMean, yHistoMean, zHistoMean;
 	Double_t xHistoRMS, yHistoRMS, zHistoRMS;
-
+	
 	if (useTRKvtx || useITSSAvtx){
 	  xHistoMean = histTRKvtxX -> GetMean();	
 	  xHistoRMS = histTRKvtxX ->GetRMS();
@@ -311,25 +311,25 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	  histSPDvtxY ->Fit("gaus", "M");
 	  fitVtxY = histSPDvtxY -> GetFunction("gaus");
 	  yMeanVtx = fitVtxY -> GetParameter(1);
-		if (TMath::Abs(yMeanVtx) > 2.) {
-			yMeanVtx = 0.;
-			writeMeanVertexSPD=kTRUE;
-		}	
-		
-		histSPDvtxZ ->Fit("gaus", "M");
-		fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
-		zMeanVtx = fitVtxZ -> GetParameter(1);
-		zSigmaVtx = fitVtxZ -> GetParameter(2);
-		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
-		  zMeanVtx = histSPDvtxZ ->GetMean();
-		  zSigmaVtx = histSPDvtxZ->GetRMS();
-		  writeMeanVertexSPD = kTRUE;
-		}	
-				
+	  if (TMath::Abs(yMeanVtx) > 2.) {
+	    yMeanVtx = 0.;
+	    writeMeanVertexSPD=kTRUE;
+	  }	
+	  
+	  histSPDvtxZ ->Fit("gaus", "M", -12, 12);
+	  fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
+	  zMeanVtx = fitVtxZ -> GetParameter(1);
+	  zSigmaVtx = fitVtxZ -> GetParameter(2);
+	  if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
+	    zMeanVtx = histSPDvtxZ ->GetMean();
+	    zSigmaVtx = histSPDvtxZ->GetRMS();
+	    writeMeanVertexSPD = kTRUE;
+	  }	
+	  
 	}
 	else if ((useSPDvtx) && (!spdAvailable)){
-		AliError(Form("Difference between trkVtx and online one, SPD histos not enough entry or SPD 3D vertex off. Writing Mean Vertex SPD"));
-		writeMeanVertexSPD = kTRUE;	
+	  AliError(Form("Difference between trkVtx and online one, SPD histos not enough entry or SPD 3D vertex off. Writing Mean Vertex SPD"));
+	  writeMeanVertexSPD = kTRUE;	
 	}
 	
 	
