@@ -93,6 +93,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
     virtual void SetFixedEfficiency(Double_t eff) {fEfficiencyFixed = eff;}
+    virtual void SetRequireT0vtx(Bool_t b = true){fRequireTZEROvtx = b;}
+    virtual void SetRequireV0AC(Bool_t b = true){fRequireVZEROAC = b;}
 
     Double_t GetMomentumSmearing(Int_t cat, Double_t pt);
     void FitMomentumResolution();
