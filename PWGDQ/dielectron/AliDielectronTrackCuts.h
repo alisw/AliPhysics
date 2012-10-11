@@ -78,7 +78,7 @@ private:
   Bool_t fRequireTPCRefit;                             // require TPC refit
 
   Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust, corresponds to 'crossed Rows' in ESDTrackCuts
-  Int_t fTPCcrossedOverFindable;
+  Int_t fTPCcrossedOverFindable;			           // TPC Crossed Rows / Findable Clusters Cut, analogous to ESDTrackCuts
 
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
   Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit 
@@ -86,7 +86,7 @@ private:
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
 
-  ClassDef(AliDielectronTrackCuts,2)         // Dielectron TrackCuts
+  ClassDef(AliDielectronTrackCuts,3)         // Dielectron TrackCuts
 };
 
 

@@ -132,15 +132,16 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
   if (fRequireITSRefit) accept*=(vtrack->GetStatus()&AliVTrack::kITSrefit)>0;
   if (fRequireTPCRefit) accept*=(vtrack->GetStatus()&AliVTrack::kTPCrefit)>0;
 
+  Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
   if (fTPCNclRobustCut>0){
-	Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
 	accept*=(nclr>fTPCNclRobustCut);
-	//implicitly requires NcrossedRows
-	if (fTPCcrossedOverFindable > 0.) {
-	  accept*=(vtrack->GetTPCNclsF()); //ESDtrackCut would return here true
-	  accept*=((nclr/vtrack->GetTPCNclsF()) >= fTPCcrossedOverFindable);
+  }
+  if (fTPCcrossedOverFindable > 0.) {
+	Int_t tpcNclsF = vtrack->GetTPCNclsF();
+	accept*=(tpcNclsF); //ESDtrackCut would return here true
+	if (tpcNclsF != 0) {//'accept' already negated above in this case above
+	  accept*=(((Double_t)nclr/(Double_t)vtrack->GetTPCNclsF()) >= fTPCcrossedOverFindable);
 	}
-
   }
 
 
