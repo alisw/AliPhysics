@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, B
   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
 
   if (getFromAlien && 
-      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
+      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosJPSI/ConfigLMEEPbPb2011.C ."))
      ) {
 	configFile=Form("%s/",gSystem->pwd());
   }
