@@ -96,6 +96,7 @@ public:
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters in the TPC with more robust definition
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
+	kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
