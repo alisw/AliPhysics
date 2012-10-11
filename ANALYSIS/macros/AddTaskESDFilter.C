@@ -323,7 +323,7 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
    AliESDtrackCuts* esdTrackCutsHTGC = new AliESDtrackCuts(*esdTrackCutsHTG);
    esdTrackCutsHTGC->SetName("Global Constraint Hybrid tracks, loose DCA no it requirement");
    esdTrackCutsHTGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-   esdTrackCutsHTGC->SetRequireITSRefit(kFALSE);
+   esdTrackCutsHTGC->SetRequireITSRefit(kTRUE);
 
    // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
    AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
