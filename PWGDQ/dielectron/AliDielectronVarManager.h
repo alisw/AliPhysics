@@ -493,14 +493,16 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   Double_t tpcNclsS = particle->GetTPCnclsS(); 
   Double_t itsNcls=particle->GetNcls(0);
   Double_t tpcSignalN=particle->GetTPCsignalN();
+  Double_t tpcClusFindable=particle->GetTPCNclsF();
   values[AliDielectronVarManager::kNclsITS]       = itsNcls; // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls; // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
-  values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
-  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
-  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
+  values[AliDielectronVarManager::kNFclsTPC]       = tpcClusFindable;
+  values[AliDielectronVarManager::kNFclsTPCr]      = particle->GetTPCClusterInfo(2,1);
+  values[AliDielectronVarManager::kNFclsTPCrFrac]  = particle->GetTPCClusterInfo(2);
+  values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
   values[AliDielectronVarManager::kTPCsignalN]    = tpcSignalN;
   values[AliDielectronVarManager::kTPCsignalNfrac]= tpcNcls>0?tpcSignalN/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
@@ -687,6 +689,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   //Replace with method as soon as available
   TBits tpcSharedMap = particle->GetTPCSharedMap();   
   Double_t tpcNclsS=  tpcSharedMap.CountBits(0)-tpcSharedMap.CountBits(159);
+  Double_t tpcClusFindable=particle->GetTPCNclsF();
+
   // Reset AliESDtrack interface specific information
   values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
   values[AliDielectronVarManager::kITSchi2Cl]     = -1;
@@ -694,9 +698,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
-  values[AliDielectronVarManager::kNFclsTPC]      = 0;
-  values[AliDielectronVarManager::kNFclsTPCr]     = 0;
-  values[AliDielectronVarManager::kNFclsTPCrFrac] = 0;
+  values[AliDielectronVarManager::kNFclsTPC]      = tpcClusFindable;
+  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
+  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
+  values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
