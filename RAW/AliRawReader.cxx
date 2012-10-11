@@ -543,10 +543,11 @@ Bool_t AliRawReader::IsEventSelected() const
     // Possibility to introduce downscaling
     TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g");
     Int_t error;
-    if ((gROOT->ProcessLineFast(expr.Data(),&error) == 0) &&
-	(error == TInterpreter::kNoError)) {
+    Bool_t result = gROOT->ProcessLineFast(expr.Data(),&error);
+    if ( error == TInterpreter::kNoError)
+      return result;
+    else
       return kFALSE;
-    }
   }
 
   return kTRUE;
