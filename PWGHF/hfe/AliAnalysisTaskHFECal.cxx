@@ -488,7 +488,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                     mcWeight = 115.0/(0.718*pTtmp*TMath::Power(pTtmp,3.65));
                    }
                    */
-                   mcWeight = GetMCweight(mcMompT); 
+                   mcWeight = GetMCweight(pTtmp); 
                   }
                 }
             }
