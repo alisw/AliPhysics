@@ -283,9 +283,9 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
    // Than the complementary tracks which will be stored as global
    // constraint, complement is done in the ESDFilter task
    AliESDtrackCuts* esdTrackCutsHTGC = new AliESDtrackCuts(*esdTrackCutsHTG);
-   esdTrackCutsHTGC->SetName("Global Constraint Hybrid tracks, loose DCA no it requirement");
+   esdTrackCutsHTGC->SetName("Global Constraint Hybrid tracks, loose DCA no spd requirement");
    esdTrackCutsHTGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-   esdTrackCutsHTGC->SetRequireITSRefit(kFALSE);
+   esdTrackCutsHTGC->SetRequireITSRefit(kTRUE);
 
    // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
    AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
