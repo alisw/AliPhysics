@@ -233,6 +233,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"SPDGFOL1 >= 10 && (V0A && V0C)");                      
   oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"(SPDGFOL1 >= 10 && V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
 
+  triggerCount++;  
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kSPI,"+CSPI8-[B|S]-NOPF-ALLNOTRD,CSPI8-[B|S]-NOPF-CENTNOTRD","B",     triggerCount);
+  oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"T0");                      
+  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"!T0BG && !T0Pileup && !TPCLaserWarmUp");
+
   oadbContPS->AddDefaultObject(oadbDefaultPP);
   triggerCount = 0;
 

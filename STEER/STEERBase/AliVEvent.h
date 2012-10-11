@@ -62,6 +62,7 @@ public:
       kDG5          = BIT(18), // Double gap diffractive
       kZED          = BIT(19), // ZDC electromagnetic dissociation
       kSPI7         = BIT(20), // Power interaction trigger
+      kSPI          = BIT(20), // Power interaction trigger
       kINT8                 = BIT(21), // CINT8 trigger: 0TVX (T0 vertex) triger
       kMuonSingleLowPt8     = BIT(22), // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
       kMuonSingleHighPt8    = BIT(23), // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
