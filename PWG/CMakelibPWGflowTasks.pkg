@@ -50,6 +50,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskQAPmdflow.cxx 
     FLOW/Tasks/AliFlowBayesianPID.cxx
     FLOW/Tasks/AliAnalysisTaskPhiFlow.cxx
+    FLOW/Tasks/AliAnalysisTwoParticleResonanceFlowTask.cxx
     FLOW/Tasks/AliAnalysisTaskFilterFE.cxx
     FLOW/Tasks/AliAnalysisTaskVnV0.cxx
     FLOW/Tasks/AliFlowVZEROResults.cxx
