@@ -34,7 +34,6 @@ public:
 //  void        UserCreateOutputObjects();
   void          LocalUserExec(Option_t *);
   Bool_t        GetRefFigure(Int_t ifig);
-  static Int_t  GetPtBin(Float_t pt);
   TObjArray*    Histos();
   TH1*          PlotBasicEff(const AliTRDtrackV1 *t=NULL);
 //  TH1*          PlotMC(const AliTRDtrackV1 *t=NULL);
@@ -49,7 +48,6 @@ protected:
 private:
   AliTRDefficiency(const AliTRDefficiency&);
   AliTRDefficiency& operator=(const AliTRDefficiency&);
-  TH2*         Projection2D(TH3 *h3, Int_t ipt);
 
   TClonesArray     *fMissed;          // Missed ?
   TObjArray        *fProj;            //! result holder - sigma values

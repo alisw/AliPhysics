@@ -127,7 +127,7 @@ Int_t AliTRDtrackInfo::AliMCinfo::GetPID() const
 
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo::AliESDinfo()
-  :fHasV0(0)
+  :fSteer(0)
   ,fId(-1)
   ,fStatus(0)
   ,fKinkIndex(0)
@@ -156,7 +156,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
 
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
-  :fHasV0(esd.fHasV0)
+  :fSteer(esd.fSteer)
   ,fId(esd.fId)
   ,fStatus(esd.fStatus)
   ,fKinkIndex(esd.fKinkIndex)
@@ -312,7 +312,7 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   //
 
   if(this == &esd) return *this;
-  fHasV0       = esd.fHasV0;
+  fSteer       = esd.fSteer;
   fId          = esd.fId;
   fStatus      = esd.fStatus;
   fKinkIndex   = esd.fKinkIndex;

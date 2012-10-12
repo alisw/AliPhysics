@@ -23,6 +23,7 @@ class AliTRDeventInfo;
 class AliTRDv0Info;
 class AliTRDeventCuts;
 class AliESDtrackCuts;
+class AliESDv0KineCuts;
 class TObjArray;
 class TString;
 class TTreeSRedirector;
@@ -127,6 +128,7 @@ private:
   // event/track cuts OO - to be used
   AliTRDeventCuts  *fEventCut;       // event cut
   AliESDtrackCuts  *fTrackCut;       // track cut
+  AliESDv0KineCuts *fV0Identifier;   // V0 identifier
   AliTRDv0Info     *fV0Cut;          // v0 cut
   TString           fOCDB;           // OCDB location
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
@@ -141,6 +143,6 @@ private:
   TObjArray        *fRecos;          //! array of reco params
   TTreeSRedirector *fDebugStream;    //! debug stream
 
-  ClassDef(AliTRDinfoGen, 7)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 8)         // entry to TRD analysis train
 };
 #endif

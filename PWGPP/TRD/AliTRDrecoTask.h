@@ -53,6 +53,7 @@ public:
     TH3*      H() const { return fH;}
     void      Increment(Int_t bin[], Double_t v);
     TH2*      Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
+    TH2*      Projection2Dbin(Int_t ibin=-1);
     void      SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
     void      SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
   private:

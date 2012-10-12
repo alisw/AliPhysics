@@ -132,9 +132,9 @@ TH1* AliTRDefficiency::PlotBasicEff(const AliTRDtrackV1 *track)
   val[0] =((status&AliESDtrack::kTRDin)?1:0) +
           ((status&AliESDtrack::kTRDStop)?1:0) +
           ((status&AliESDtrack::kTRDout)?2:0);
-  val[1] = fPhi;//fkESD->Phi();
-  val[2] = fEta;//fkESD->Eta();
-  val[3] = GetPtBin(fPt/*fkESD->Pt()*/);
+  val[1] = fkESD->Phi();
+  val[2] = fkESD->Eta();
+  val[3] = GetPtBin(fPt>0.?fPt:fkESD->Pt());
   val[4] = 0.;
   if(fkMC){
     if(fkMC->GetLabel() == fkMC->GetTRDlabel()) val[4] = 0.;
@@ -362,20 +362,6 @@ void AliTRDefficiency::LocalUserExec(Option_t *)
 }
 
 //____________________________________________________________________
-Int_t AliTRDefficiency::GetPtBin(Float_t pt)
-{
-// Get logaritmic pt bin
-
-  Float_t pt0(0.5), dpt(0.002);
-  Int_t ipt(0);
-  while(ipt<30){
-    if(pt<pt0) break;
-    ipt++; pt0+=(TMath::Exp(ipt*ipt*dpt)-1.);
-  }
-  return ipt-1;
-}
-
-//____________________________________________________________________
 Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
 // Steer reference figures
@@ -453,9 +439,9 @@ TObjArray* AliTRDefficiency::Histos()
     const Int_t mdim(7);
     Int_t nlabel(1);
     const Char_t *eTitle[mdim] = {"status", "#phi [rad]", "eta", "p_{t} [bin]", "label", "N_{trklt}", "chg*spec*rc"};
-    const Int_t eNbins[mdim]   = {   5,         180,       50,         fNpt,     nlabel, AliTRDgeometry::kNlayer-2, 5};
-    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -1.,       -0.5,       -0.5,        1.5,               -2.5},
-                   eMax[mdim]  = {  4.5,     TMath::Pi(),   1.,       fNpt-.5,  nlabel-0.5,    5.5,                2.5};
+    const Int_t eNbins[mdim]   = {   5,         144,        45,     fNpt-1,     nlabel, AliTRDgeometry::kNlayer-2, 5};
+    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -.9,       -0.5,       -0.5,        1.5,               -2.5},
+                   eMax[mdim]  = {  4.5,     TMath::Pi(),   .9,      fNpt-1.5,  nlabel-0.5,    5.5,                2.5};
     st = "basic efficiency;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:(HasMCdata()?5:4);
@@ -568,7 +554,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].H()) continue;
-    for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(hp[ih].H(), ipt), jh++);
+    for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(hp[ih].Projection2Dbin(ipt), jh++);
   }
 
 /*  AliTRDrecoProjection prLab;  TH2 *hLab[3] = {0}; TH1 *hpLab[3] = {0};
@@ -592,7 +578,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
         (*pr0)+=(*pr1);
       }
       pr0->H()->SetNameTitle(Form("HEff%d", istat), Form("Efficiency :: Stat[#bf{%s}]", stat[istat]));
-      for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(pr0->H(), ipt), jh++);
+      for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
 
       if(istat>1 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff01"))) (*pr1)+=(*pr0);
       if(istat>2 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff02"))) (*pr1)+=(*pr0);
@@ -605,7 +591,7 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   for(Int_t istat(0); istat<3; istat++){
     if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, istat+1)))) continue;
     pr0->H()->SetNameTitle(Form("HEff%c", suffix[istat]), Form("Efficiency :: %s Tracks", sname[istat]));
-    for(Int_t ipt(-1); ipt<=fNpt; ipt++) fProj->AddAt(Projection2D(pr0->H(), ipt), jh++);
+    for(Int_t ipt(-1); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
   }
 
   // Efficiency
@@ -772,28 +758,4 @@ void AliTRDefficiency::MakeSummary()
   hs->SetMinimum(50.);
   hs->GetYaxis()->CenterTitle();
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-}
-
-
-//____________________________________________________________________
-TH2* AliTRDefficiency::Projection2D(TH3 *h3, Int_t ipt)
-{
-  TAxis *ax(h3->GetXaxis()), *ay(h3->GetYaxis());
-  TH2F *h2(NULL);
-  if(ipt<0){
-    h2 =(TH2F*)h3->Project3D("yx");
-    h2->SetNameTitle(Form("%s%d_2D", h3->GetName(), ipt), h3->GetTitle());
-  } else {
-    h2 = new TH2F(Form("%s%d_2D", h3->GetName(), ipt),
-                  Form("%s | #it{%4.2f<=p_{t}[GeV/c]<%4.2f};%s;%s;Entries", h3->GetTitle(),
-                  ipt?fgPt[ipt-1]:0., ipt==fNpt?9.99:fgPt[ipt], ax->GetTitle(), ay->GetTitle()),
-                  ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
-                  ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
-    for(Int_t ix(1); ix<=ax->GetNbins(); ix++){
-      for(Int_t iy(1); iy<=ay->GetNbins(); iy++){
-        h2->SetBinContent(ix, iy, h3->GetBinContent(ix, iy, ipt));
-      }
-    }
-  }
-  return h2;
 }

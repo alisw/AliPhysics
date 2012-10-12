@@ -405,11 +405,11 @@ void AliTRDcalibration::UserExec(Option_t *)
 	Float_t normalisation = 6.67;
 	Int_t detector = 0;
 	Int_t sector = 0;
-	Int_t crossrow = 0;
-	// Check no shared clusters
-	for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
-	  if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
-	}
+  /*Int_t crossrow = 0;
+  // Check no shared clusters
+  for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+    if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
+  }*/
 	// Loop on clusters
 	for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
 	  if(!(fcl = tracklet->GetClusters(ic))) continue;
@@ -808,7 +808,7 @@ Bool_t AliTRDcalibration::PostProcess()
     PostProcess();
   }
 
-  Bool_t storage[3] = {kFALSE,kFALSE,kFALSE};
+//  Bool_t storage[3] = {kFALSE,kFALSE,kFALSE};
 
   // Objects for fitting
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
@@ -868,7 +868,7 @@ Bool_t AliTRDcalibration::PostProcess()
 	  // store
 	  fArrayCalib->AddAt(objgaindet,0);
 	  fArrayCalib->AddAt(objgainpad,1);
-	  storage[0] = kTRUE;
+	  //storage[0] = kTRUE;
 	  // Make graph
 	  TGraph *graph = 0x0;
 	  if(FillGraphIndex(&object,graph)){ 

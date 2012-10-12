@@ -239,7 +239,7 @@ AliTRDv0Info::AliTRDv0Info()
 
 //_________________________________________________
 AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
-  : TObject()
+  : TObject((TObject&)ref)
   ,fQuality(ref.fQuality)
   ,fDCA(ref.fDCA)
   ,fPointingAngle(ref.fPointingAngle)
@@ -733,6 +733,7 @@ Int_t AliTRDv0Info::Quality(const AliESDv0 *const esdv0)
   fQuality = 1;
   return fQuality;
 }
+
 //________________________________________________________________
 Bool_t AliTRDv0Info::V0SignCheck(){
   //
@@ -746,6 +747,7 @@ Bool_t AliTRDv0Info::V0SignCheck(){
 
   return kTRUE;
 }
+
 //___________________________________________________________________
 Bool_t AliTRDv0Info::Armenteros(const AliESDv0 *esdv0, Int_t decay){
   //
@@ -815,10 +817,12 @@ Bool_t AliTRDv0Info::Armenteros(const AliESDv0 *esdv0, Int_t decay){
   }
   return kTRUE;
 }
+
 //_________________________________________________
 Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
 {
   // Decides if track is accepted for one of the reference data samples
+
   Int_t cutCode = -99;
   if(!(track)) {
     AliError("No track info");
@@ -864,10 +868,7 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   //specific cut criteria :
   if(ipart == AliPID::kProton) {
     if((fInvMass[kK0s] < fUpInvMass[kK0s][iPSlot]) && (fInvMass[kK0s] > fDownInvMass[kK0s])) return -11;//explicit exclusion of K0s decays
-
-    if(fOpenAngle < (0.3 - 0.2*fV0Momentum))return -9;
-
- 
+    if(fOpenAngle < (0.3 - 0.2*fV0Momentum)) return -9;
 
     //for proton sample: separate treatment of Lamba and Anti-Lambda decays:
     //for Anti-Lambda:
@@ -876,50 +877,40 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
     //if((fDetPID[kNeg][kTPC][AliPID::kProton] > fDownTPCPIDneg[AliPID::kProton]) && (fDetPID[kPos][kTPC][AliPID::kPion] > fDownTPCPIDpos[AliPID::kPion])){
     if((TPCdEdxCuts(ipart, track))){//momentary solution: direct cut on TPC dE/dx
       if(fNindex == trackID) {//we're only interested in the anti-proton
-	if(fArmenteros[kAntiLambda]){//Armenteros condition has to be fulfilled	  
-	  if(fChi2ndf[kAntiLambda] < fUpChi2ndf[kAntiLambda]){//Kalman filter Chi2/NDF not allowed to be too large
-	    if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])){  
-        return 1;
-	    } else cutCode = -15;
-	  }
-	  else cutCode =-14;
-	}
-	else cutCode = -13;
+        if(fArmenteros[kAntiLambda]){//Armenteros condition has to be fulfilled
+          if(fChi2ndf[kAntiLambda] < fUpChi2ndf[kAntiLambda]){//Kalman filter Chi2/NDF not allowed to be too large
+            if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])){
+              return 1;
+            } else cutCode = -15;
+          } else cutCode =-14;
+        } else cutCode = -13;
       }
-    }
-    else cutCode = -12;
+    } else cutCode = -12;
     //for Lambda:
     //TPC PID likelihoods high enough for pi- and proton ; invariant mass calculated accordingly
     //if((fComPID[kNeg][AliPID::kPion] > fDownComPIDnegPart[AliPID::kPion]) && (fComPID[kPos][AliPID::kProton] > fDownComPIDpos[AliPID::kProton])) {
     //if((fDetPID[kNeg][kTPC][AliPID::kPion] > fDownTPCPIDneg[AliPID::kPion]) && (fDetPID[kPos][kTPC][AliPID::kProton] > fDownTPCPIDpos[AliPID::kProton])){
     if((TPCdEdxCuts(ipart, track))){//momentary solution: direct TPC dE/dx cuts
       if(fPindex == trackID) {
-	if(fArmenteros[kLambda]){
-	  if(fChi2ndf[kLambda] < fUpChi2ndf[kLambda]){
-	    if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])){ 
-        return 1;
-	    } else cutCode = -15;
-	  }
-	  else cutCode = -14;
-	}
-	else cutCode = -13;
+        if(fArmenteros[kLambda]){
+          if(fChi2ndf[kLambda] < fUpChi2ndf[kLambda]){
+            if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])){
+              return 1;
+            } else cutCode = -15;
+          } else cutCode = -14;
+        } else cutCode = -13;
       }
-    }
-    else cutCode = -12;
+    } else cutCode = -12;
     return cutCode;
   }
  
   //for K0s decays: equal TPC PID likelihood criteria for both daughters ; invariant mass calculated postulating two pions
   if(ipart == AliPID::kPion) {
-    
-    if(fOpenAngle < (1.0/(fV0Momentum + 0.3) - 0.1))
-      return -9;
-    
+    if(fOpenAngle < (1.0/(fV0Momentum + 0.3) - 0.1)) return -9;
     //explicit exclusion of Lambda decays
     if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])) return -11;
     //explicit exclusion of Anti-Lambda decays
     if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])) return -11;
-    
     //if((fDetPID[kNeg][kTPC][ipart] < fDownTPCPIDneg[ipart]) || (fDetPID[kPos][kTPC][ipart] < fDownTPCPIDpos[ipart])) return -12;
     if(!(TPCdEdxCuts(ipart, track))){//momentary solution: direct TPC dE/dx cuts
       return -12;
@@ -939,22 +930,14 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
     if(!(TPCdEdxCuts(ipart, track))){//momentary solution for direct TPC dE/dx cut
       return -12;
     }
-    
   }
   
- 
   //Armenteros-Polanski cut
   if(!(fArmenteros[iDecay])) return -13;
-  
   //Kalman filter Chi2/NDF cut
   if(fChi2ndf[iDecay] > fUpChi2ndf[iDecay]) return -14;
-
   //Invariant mass cut for K0s and photons, assuming two pions/two electrons as daughters:
- 
-  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay])) {
-    return -15;
-    
-  }
+  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay])) return -15;
    
   return 1;
 }
@@ -964,16 +947,17 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
 void AliTRDv0Info::Print(Option_t *opt) const
 {
   //prints text for debugging etc.
-  printf("V0 P[%d] N[%d]\n", fPindex, fNindex);
-  printf("  DCA[%5.3f] Radius[%5.3f]\n", fDCA, fRadius);
-  printf("  Angles : Pointing[%5.3f] Open[%5.3f] Psi[%5.3f]\n", fPointingAngle, fOpenAngle, fPsiPair);
+  printf("V0 legs :: %4d[+] %4d[-]\n", fPindex, fNindex);
+  printf("  Decay :: Gamma[%c] K0s[%c] Lambda[%c] AntiLambda[%c]\n",
+    IsDecay(kGamma)?'y':'n', IsDecay(kK0s)?'y':'n', IsDecay(kLambda)?'y':'n', IsDecay(kAntiLambda)?'y':'n');
+  printf("  Kine  :: DCA[%5.3f] Radius[%5.3f]\n", fDCA, fRadius);
+  printf("  Angle :: Pointing[%5.3f] Open[%5.3f] Psi[%5.3f]\n", fPointingAngle, fOpenAngle, fPsiPair);
   if(strcmp(opt, "a")!=0) return;
-  printf("  Reconstructed PID\n"
-         "  sgn spec   ITS   TPC   TOF   COM\n");
+  printf("  PID   ::\n"
+         "             ITS   TPC   TOF   COM\n");
   for(Int_t idt=0; idt<kNDaughters; idt++){
-    printf("   %c", idt?'-':'+');
     for(Int_t is(0); is<AliPID::kSPECIES; is++){ 
-      printf("%s%s%s", is==0?"   ":"       ", AliPID::ParticleShortName(is), (is==1||is==2)?"  ":"   ");
+      printf("      %s%c%s", AliPID::ParticleShortName(is), idt?'-':'+', (is==1||is==2)?"  ":"   ");
       for(Int_t id(0); id<kNDetectors; id++){
         printf("%5.1f ", 1.e2*fDetPID[idt][id][is]);
       }
