@@ -321,3 +321,20 @@ Bool_t AliAODRecoCascadeHF::TrigonometricalCut() const {
   return kTRUE;
 }
 
+//-----------------------------------------------------------------------------
+Double_t AliAODRecoCascadeHF::DecayLengthV0() const
+{
+  //
+  // Returns V0 decay length wrt primary vertex
+  //
+
+  AliAODv0 *v0 = (AliAODv0*)Getv0();
+
+  if (!v0) 
+    return -1.;
+  AliAODVertex *vtxPrimary = GetPrimaryVtx();
+  Double_t posVtx[3] = {0.,0.,0.};
+  vtxPrimary->GetXYZ(posVtx);
+  return v0->DecayLengthV0(posVtx);
+
+}

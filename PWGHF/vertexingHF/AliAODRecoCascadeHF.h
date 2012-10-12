@@ -87,6 +87,11 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
                   Int_t *pdgDg,Int_t *pdgDg2prong,
                   TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
 
+  Double_t CosV0PointingAngle() const 
+  { if (Getv0()) return Getv0()->CosPointingAngle(GetPrimaryVtx()); else return -999.;}
+
+  Double_t DecayLengthV0() const;
+
  protected:
 
   ClassDef(AliAODRecoCascadeHF, 2); // heavy-flavour cascade class
