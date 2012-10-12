@@ -141,7 +141,7 @@ TDPMjet::TDPMjet(DpmProcess_t  iproc, Int_t Ip=208, Int_t Ipz=82, Int_t It=208, 
       fPi0Decay(0),
       fDecayAll(0),
       fProcess(iproc),
-      fFragmentation(-1)
+      fFragmentation(kFALSE)
 {  
     printf("TDPMJet Constructor %d %d %d %d \n", Ip, Ipz, It, Itz);
 }
@@ -268,6 +268,8 @@ void TDPMjet::Initialize()
 //
 //  Write standard DPMJET input cards 
 //
+    if(fFragmentation) printf("\tTDPMJet fragmentation/evaporation applied\n");
+
     FILE* out = fopen("dpmjet.inp","w");
 //  Projectile and Target definition 
     if (fIp == 1 && fIpz ==1) {
@@ -287,7 +289,7 @@ void TDPMjet::Initialize()
     }
 
 //  Beam energy and crossing-angle
-    fprintf(out, "CMENERGY      %10.1f\n",fCMEn);      
+    fprintf(out, "CMENERGY      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fCMEn, 0., 0., 0., 0., 0.);      
     if(fIt == 1 && fIp ==1){ 
       fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.); //p-p
     }
@@ -295,11 +297,11 @@ void TDPMjet::Initialize()
       if(fIp>1 && fIt>1) fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);//A-A
       else if(fIp==1 && fIt>1){ // proton towards A side (directed z>0)
         fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", fEpn,fEpn*fItz/fIt, 0., 0., 0., 0.);//pA
-	printf("\n  TDPMjet::Initialize() -> p-A: p beam energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn/2);
+	printf("\n  TDPMjet::Initialize() -> p-A: projectile (p) energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn);
       }
       else if(fIt==1 && fIp>1){ // proton towards C side (directed z<0)
-        fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", fEpn*fIpz/fIp, fEpn, 0., 0., 0., 0.);//A-p
-	printf("\n  TDPMjet::Initialize() -> A-p: p beam energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn/2);
+        fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", fEpn, fEpn*fIp/fIpz, 0., 0., 0., 0.);//A-p
+	printf("\n  TDPMjet::Initialize() -> A-p: projectile (A) energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn);
       }
     }
 //  Centrality

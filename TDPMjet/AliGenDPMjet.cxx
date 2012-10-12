@@ -45,9 +45,9 @@ ClassImp(AliGenDPMjet)
 //______________________________________________________________________________
 AliGenDPMjet::AliGenDPMjet()
     :AliGenMC(), 
-     fBeamEn(2750.),
+     fBeamEn(0.),
      fMinImpactParam(0.),
-     fMaxImpactParam(5.),
+     fMaxImpactParam(100.),
      fICentr(0),
      fSelectAll(0),
      fFlavor(0),
@@ -67,7 +67,9 @@ AliGenDPMjet::AliGenDPMjet()
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
      fProcDiff(0),
-     fFragmentation(kFALSE)
+     fFragmentation(kFALSE),
+     fHeader(AliGenDPMjetEventHeader("DPMJET"))
+
 {
 // Constructor
     fEnergyCMS = 5500.;
@@ -78,9 +80,9 @@ AliGenDPMjet::AliGenDPMjet()
 //______________________________________________________________________________
 AliGenDPMjet::AliGenDPMjet(Int_t npart)
     :AliGenMC(npart),
-     fBeamEn(2750.),
+     fBeamEn(0.),
      fMinImpactParam(0.),
-     fMaxImpactParam(5.),
+     fMaxImpactParam(100.),
      fICentr(0),
      fSelectAll(0),
      fFlavor(0),
@@ -100,7 +102,9 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
      fProcDiff(0),
-     fFragmentation(kFALSE)
+     fFragmentation(kFALSE),
+     fHeader(AliGenDPMjetEventHeader("DPMJET"))
+
 
 {
 // Default PbPb collisions at 5. 5 TeV
@@ -116,9 +120,9 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
 
 AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
     :AliGenMC(),
-     fBeamEn(2750.),
+     fBeamEn(0.),
      fMinImpactParam(0.),
-     fMaxImpactParam(5.),
+     fMaxImpactParam(100.),
      fICentr(0),
      fSelectAll(0),
      fFlavor(0),
@@ -138,7 +142,9 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
      fProcDiff(0),
-     fFragmentation(kFALSE)
+     fFragmentation(kFALSE),
+     fHeader(0x0)
+
 
 {
     // Dummy copy constructor
@@ -155,26 +161,25 @@ void AliGenDPMjet::Init()
 {
 // Initialization
     
+    if(fEnergyCMS>0. && fBeamEn<0.1) fBeamEn = fEnergyCMS/2;
     SetMC(new TDPMjet(fProcess, fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fBeamEn,fEnergyCMS));
 
     fDPMjet=(TDPMjet*) fMCEvGen;
-    //
+    if (fAProjectile == 1 && TMath::Abs(fZProjectile == 1)) fDPMjet->SetfIdp(1);
+    
     // **** Flag to force central production
     // fICentr=1. central production forced 
     // fICentr<0 && fICentr>-100 -> bmin = fMinImpactParam, bmax = fMaxImpactParam	  
     // fICentr<-99 -> fraction of x-sec. = XSFRAC		  
     // fICentr=-1. -> evaporation/fzc suppressed		  
-    // fICentr<-1. -> evaporation/fzc allowed		  
-    if (fAProjectile == 1 && TMath::Abs(fZProjectile == 1)) fDPMjet->SetfIdp(1);
-    
+    // fICentr<-1. -> evaporation/fzc allowed		      
     fDPMjet->SetfFCentr(fICentr);  
+    
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
     fDPMjet->SetPi0Decay(fPi0Decay);
     fDPMjet->SetDecayAll(fDecayAll);
     fDPMjet->SetFragmentProd(fFragmentation);
-
-    AliGenMC::Init();
     
 //
 //  Initialize DPMjet  
@@ -462,40 +467,40 @@ Bool_t AliGenDPMjet::Stable(TParticle*  particle)
 //______________________________________________________________________________
 void AliGenDPMjet::MakeHeader()
 {
-//  printf("MakeHeader %13.3f \n", fDPMjet->GetBImpac());
 // Builds the event header, to be called after each event
-    AliGenEventHeader* header = new AliGenDPMjetEventHeader("DPMJET");
-    ((AliGenDPMjetEventHeader*) header)->SetNProduced(fDPMjet->GetNumStablePc());
-    ((AliGenDPMjetEventHeader*) header)->SetImpactParameter(fDPMjet->GetBImpac());
-    ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
-    ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetProjParticipants(), 
-    							 fDPMjet->GetTargParticipants());
+    fHeader.SetNProduced(fDPMjet->GetNumStablePc());
+    fHeader.SetImpactParameter(fDPMjet->GetBImpac());
+    fHeader.SetTotalEnergy(fDPMjet->GetTotEnergy());
+    fHeader.SetParticipants(fDPMjet->GetProjParticipants(), 
+    		            fDPMjet->GetTargParticipants());
 
-    if(fProcDiff>0){
-    ((AliGenDPMjetEventHeader*) header)->SetProcessType(fProcDiff);
-    }
-    else 
-      ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
+    fHeader.SetCollisions(DTGLCP.ncp, DTGLCP.nct, 
+    	fDPMjet->GetProjWounded(),fDPMjet->GetTargWounded());
+		
+    if(fProcDiff>0)  fHeader.SetProcessType(fProcDiff);
+    else fHeader.SetProcessType(fDPMjet->GetProcessCode());
 
     // Bookkeeping for kinematic bias
-    ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);
+    fHeader.SetTrials(fTrials);
     // Event Vertex
-    header->SetPrimaryVertex(fVertex);
-    header->SetInteractionTime(fTime);
-    ((AliGenDPMjetEventHeader*) header)->SetNDiffractive(POEVT1.nsd1, POEVT1.nsd2, POEVT1.ndd);
-    gAlice->SetGenEventHeader(header);    
-    AddHeader(header);
+    fHeader.SetPrimaryVertex(fVertex);
+    fHeader.SetInteractionTime(fTime);
+    fHeader.SetNDiffractive(POEVT1.nsd1, POEVT1.nsd2, POEVT1.ndd);
+//    gAlice->SetGenEventHeader(fHeader);    
+    AddHeader(&fHeader);
+    fCollisionGeometry = &fHeader;
 }
 
-void AliGenDPMjet::AddHeader(AliGenEventHeader* header)
+//______________________________________________________________________________
+/*void AliGenDPMjet::AddHeader(AliGenEventHeader* fHeader)
 {
-    // Add header to container or runloader
+    // Add fHeader to container or runloader
     if (fContainer) {
-        fContainer->AddHeader(header);
+        fContainer->AddHeader(fHeader);
     } else {
-        AliRunLoader::Instance()->GetHeader()->SetGenEventHeader(header);
+        AliRunLoader::Instance()->GetHeader()->SetGenEventHeader(fHeader);
     }
-}
+}*/
 
 
 //______________________________________________________________________________

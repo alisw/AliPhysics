@@ -200,6 +200,8 @@ typedef struct {
    Int_t	nwtacc;
    Int_t	nwtaac;
    Int_t	nwtbac;
+   Int_t        ncp;
+   Int_t        nct;
 } DtglcpCommon;
 
 #define DTGLCP COMMON_BLOCK(DTGLCP,dtglcp)

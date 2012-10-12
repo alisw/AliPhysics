@@ -8,6 +8,7 @@
 
 #include "AliGenMC.h"
 #include "TDPMjet.h"
+#include "AliGenDPMjetEventHeader.h"
 #include <TString.h>
 #include <TArrayI.h>
 
@@ -34,8 +35,8 @@ class AliGenDPMjet : public AliGenMC
     virtual void    Generate();
     virtual void    Init();
     virtual void    FinishRun();
-    virtual void    SetEnergyCMS(Float_t energy = 14000.) {fEnergyCMS = energy; fBeamEn = energy / 2.;}
-    virtual void    SetpBeamEnergy(Float_t benergy = 14000.) {fBeamEn = benergy;}
+    virtual void    SetEnergyCMS(Float_t energy = 14000.) {fEnergyCMS = energy;}
+    virtual void    SetProjectileBeamEnergy(Float_t benergy = 7000.) {fBeamEn = benergy;}
     virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=1.)
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    SetProcess(DpmProcess_t iproc) {fProcess = iproc;}
@@ -59,15 +60,16 @@ class AliGenDPMjet : public AliGenMC
       fTriggerMultiplicityPtMin = ptmin;}
 
     AliGenDPMjet &  operator=(const AliGenDPMjet & rhs);
-    void     AddHeader(AliGenEventHeader* header);
+    //void     AddHeader(AliGenEventHeader* header);
 
    void SetTuneForDiff(Bool_t a=kTRUE) {fkTuneForDiff=a;}
 
    virtual void  SetFragmentProd(Bool_t val) {fFragmentation = val;}
+   virtual Bool_t ProvidesCollisionGeometry() const {return kTRUE;}
 
  protected:
-    Bool_t SelectFlavor(Int_t pid);
-    void   MakeHeader();
+   Bool_t SelectFlavor(Int_t pid);
+   void   MakeHeader();
 
  protected:
     Float_t       fBeamEn; 	   // beam energy
@@ -96,6 +98,7 @@ class AliGenDPMjet : public AliGenMC
     Int_t  fProcDiff;
     
     Bool_t fFragmentation; // Allows evaporation and fragments production
+    AliGenDPMjetEventHeader fHeader; // MC header
 
  private:
     // adjust the weight from kinematic cuts
@@ -109,7 +112,7 @@ class AliGenDPMjet : public AliGenMC
    Bool_t GetWeightsDiffraction(Double_t M, Double_t &Mmin, Double_t &Mmax, 
 					       Double_t &wSD, Double_t &wDD, Double_t &wND);
 
-    ClassDef(AliGenDPMjet,5) // AliGenerator interface to DPMJET
+    ClassDef(AliGenDPMjet,6) // AliGenerator interface to DPMJET
 };
 #endif
 
