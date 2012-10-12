@@ -51,14 +51,14 @@ TList *GetListOfObjects(const char* filename,
     Printf("The file %s is not found. Aborting...",filename);
     return listBF;
   }
-  //f->ls();
+  f->ls();
   
   TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionPsiAnalysis"));
   if(!dir) {   
     Printf("The TDirectoryFile is not found. Aborting...",filename);
     return listBF;
   }
-  //dir->ls();
+  dir->ls();
   
   TString listBFName;
   if(kData == 0) {
@@ -74,10 +74,11 @@ TList *GetListOfObjects(const char* filename,
     listBFName = "listBFPsiMixed_";
   }
   listBFName += centralityArray[gCentrality-1];
+  listBFName += "_Bit128_V0M";
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
   cout<<"List name: "<<listBF->GetName()<<endl;
-  //listBF->ls();
+  listBF->ls();
 
   //Get the histograms
   TString histoName;
