@@ -415,7 +415,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) InitAnalysis();
    if (!fInitOK) return kFALSE;
    fTree = tree;
-   CreateReadCache();
+   if (fMode != kProofAnalysis) CreateReadCache();
    fTable.Rehash(100);
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
@@ -441,7 +441,9 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    // Init timer should be already started
    // Apply debug options
    ApplyDebugOptions();
-   if (fCacheSize && fMCtruthEventHandler) fMCtruthEventHandler->SetCacheSize(fCacheSize);
+   if (fCacheSize && 
+       fMCtruthEventHandler &&
+       (fMode != kProofAnalysis)) fMCtruthEventHandler->SetCacheSize(fCacheSize);
    if (!CheckTasks()) Fatal("SlaveBegin", "Not all needed libraries were loaded");
    static Bool_t isCalled = kFALSE;
    Bool_t init = kFALSE;
