@@ -22,5 +22,6 @@
 #pragma link C++ class AliAnalysisTaskExtractCascade+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
 #pragma link C++ class AliAnalysisTaskLambdaOverK0sJets+;
+#pragma link C++ class AliAnalysisTaskV0ChCorrelations+;
 
 #endif
