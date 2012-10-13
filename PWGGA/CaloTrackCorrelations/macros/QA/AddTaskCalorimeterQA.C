@@ -2,14 +2,20 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                
 //
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data, 
-                                                          Int_t year = 2011, 
-                                                          Bool_t kPrintSettings = kFALSE,
-                                                          Bool_t kSimulation = kFALSE,
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = kFALSE,
+                                                          const char *suffix="default",
                                                           TString outputFile = "", 
-                                                          const char *suffix="default")
+                                                          Int_t year = 2012, 
+                                                          Bool_t kPrintSettings = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
+
+  if(kSimulation)
+  {
+    printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
+    TString ssuffix = suffix;
+    if(!ssuffix.Contains("default")) return;
+  }
   
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -37,8 +43,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(TString data,
   //Nothing else needs to be set.
   
   AliCaloTrackReader * reader = 0x0;
-  if     (data.Contains("AOD")) reader = new AliCaloTrackAODReader();
-  else if(data.Contains("ESD")) reader = new AliCaloTrackESDReader();
+  if     (inputDataType.Contains("AOD")) reader = new AliCaloTrackAODReader();
+  else if(inputDataType.Contains("ESD")) reader = new AliCaloTrackESDReader();
   //reader->SetDebug(10);//10 for lots of messages
   
   reader->SwitchOnEMCALCells(); 
