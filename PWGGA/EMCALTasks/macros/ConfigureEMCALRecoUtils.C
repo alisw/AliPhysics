@@ -57,11 +57,20 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if( bNonLin ) 
   { 
-    if(!kMC) reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
-    else     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+    if(!kMC) 
+    {
+      printf("xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+    }
+    else
+    {       
+      printf("xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+    }
   }
   else 
   {
+    printf("xxx DON'T SET Non linearity correction xxx\n");
     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
   }
   
