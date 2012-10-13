@@ -2543,28 +2543,32 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       for(Int_t iCh = 0; iCh < 2; iCh++)
       {
         fhRecoMCRatioE[iPart][iCh]  = new TH2F (Form("hRecoMCRatioE_%s_Match%d",particleName[iPart].Data(),iCh),
-                                                Form("Reco/Gen E, %s, Matched %d",particleName[iPart].Data(),iCh), 
+                                                Form("Reconstructed/Generated E, %s, Matched %d",particleName[iPart].Data(),iCh), 
                                                 nptbins, ptmin, ptmax, 200,0,2); 
-        fhRecoMCRatioE[iPart][iCh]->SetXTitle("E_{reconstructed}/E_{generated}");
+        fhRecoMCRatioE[iPart][iCh]->SetYTitle("E_{reconstructed}/E_{generated}");
+        fhRecoMCRatioE[iPart][iCh]->SetXTitle("E_{reconstructed} (GeV)");
         outputContainer->Add(fhRecoMCRatioE[iPart][iCh]);
         
         
         fhRecoMCDeltaE[iPart][iCh]  = new TH2F (Form("hRecoMCDeltaE_%s_Match%d",particleName[iPart].Data(),iCh),
-                                                Form("MC - Reco E, %s, Matched %d",particleName[iPart].Data(),iCh), 
+                                                Form("Generated - Reconstructed E, %s, Matched %d",particleName[iPart].Data(),iCh), 
                                                 nptbins, ptmin, ptmax, nptbins*2,-ptmax,ptmax); 
-        fhRecoMCDeltaE[iPart][iCh]->SetXTitle("#Delta E (GeV)");
+        fhRecoMCDeltaE[iPart][iCh]->SetYTitle("#Delta E (GeV)");
+        fhRecoMCDeltaE[iPart][iCh]->SetXTitle("E_{reconstructed} (GeV)");
         outputContainer->Add(fhRecoMCDeltaE[iPart][iCh]);
         
         fhRecoMCDeltaPhi[iPart][iCh]  = new TH2F (Form("hRecoMCDeltaPhi_%s_Match%d",particleName[iPart].Data(),iCh),
-                                                  Form("MC - Reco #phi, %s, Matched %d",particleName[iPart].Data(),iCh),
+                                                  Form("Generated - Reconstructed #phi, %s, Matched %d",particleName[iPart].Data(),iCh),
                                                   nptbins, ptmin, ptmax, nphibins*2,-phimax,phimax); 
-        fhRecoMCDeltaPhi[iPart][iCh]->SetXTitle("#Delta #phi (rad)");
+        fhRecoMCDeltaPhi[iPart][iCh]->SetYTitle("#Delta #phi (rad)");
+        fhRecoMCDeltaPhi[iPart][iCh]->SetXTitle("E_{reconstructed} (GeV)");
         outputContainer->Add(fhRecoMCDeltaPhi[iPart][iCh]);
         
         fhRecoMCDeltaEta[iPart][iCh]  = new TH2F (Form("hRecoMCDeltaEta_%s_Match%d",particleName[iPart].Data(),iCh),
-                                                  Form("MC- Reco #eta, %s, Matched %d",particleName[iPart].Data(),iCh),
+                                                  Form("Generated - Reconstructed #eta, %s, Matched %d",particleName[iPart].Data(),iCh),
                                                   nptbins, ptmin, ptmax,netabins*2,-etamax,etamax); 
-        fhRecoMCDeltaEta[iPart][iCh]->SetXTitle("#Delta #eta ");
+        fhRecoMCDeltaEta[iPart][iCh]->SetYTitle("#Delta #eta ");
+        fhRecoMCDeltaEta[iPart][iCh]->SetXTitle("E_{reconstructed} (GeV)");
         outputContainer->Add(fhRecoMCDeltaEta[iPart][iCh]);
         
         fhRecoMCE[iPart][iCh]  = new TH2F (Form("hRecoMCE_%s_Match%d",particleName[iPart].Data(),iCh),
@@ -2577,15 +2581,15 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhRecoMCPhi[iPart][iCh]  = new TH2F (Form("hRecoMCPhi_%s_Match%d",particleName[iPart].Data(),iCh),
                                              Form("#phi distribution, reconstructed vs generated, %s, Matched %d",particleName[iPart].Data(),iCh),
                                              nphibins,phimin,phimax, nphibins,phimin,phimax); 
-        fhRecoMCPhi[iPart][iCh]->SetXTitle("#phi_{rec} (rad)");
-        fhRecoMCPhi[iPart][iCh]->SetYTitle("#phi_{gen} (rad)");
+        fhRecoMCPhi[iPart][iCh]->SetXTitle("#phi_{reconstructed} (rad)");
+        fhRecoMCPhi[iPart][iCh]->SetYTitle("#phi_{generated} (rad)");
         outputContainer->Add(fhRecoMCPhi[iPart][iCh]);
         
         fhRecoMCEta[iPart][iCh]  = new TH2F (Form("hRecoMCEta_%s_Match%d",particleName[iPart].Data(),iCh),
                                              Form("#eta distribution, reconstructed vs generated, %s, Matched %d",particleName[iPart].Data(),iCh), 
                                              netabins,etamin,etamax,netabins,etamin,etamax); 
-        fhRecoMCEta[iPart][iCh]->SetXTitle("#eta_{rec} ");
-        fhRecoMCEta[iPart][iCh]->SetYTitle("#eta_{gen} ");
+        fhRecoMCEta[iPart][iCh]->SetXTitle("#eta_{reconstructed} ");
+        fhRecoMCEta[iPart][iCh]->SetYTitle("#eta_{generated} ");
         outputContainer->Add(fhRecoMCEta[iPart][iCh]);
       }
     }  
