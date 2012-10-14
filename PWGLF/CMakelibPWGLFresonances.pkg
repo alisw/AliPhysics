@@ -83,6 +83,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnMiniMonitor.cxx
            RESONANCES/AliRsnMiniAnalysisTask.cxx
            RESONANCES/AliRsnMiniMonitorTask.cxx
+           RESONANCES/AliRsnTrainManager.cxx
  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -94,5 +95,4 @@ set ( EXPORT )
 set ( EINCLUDE  PYTHIA6 PWGLF/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase ${EXTRA_INCLUDE})
 
 set ( PARINCLUDE PWGLF/RESONANCES )
-set ( EXPORT ${HDRS})
 set ( EXPORT ${HDRS})
