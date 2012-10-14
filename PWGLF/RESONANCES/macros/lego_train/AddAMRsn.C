@@ -8,7 +8,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    usePrivateTrain = kTRUE;
 
    TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
-   legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
+   //legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
    AliAnalysisManager::SetGlobalStr("RsnLegoTrainPath",legoTrainPath.Data());
 
 
