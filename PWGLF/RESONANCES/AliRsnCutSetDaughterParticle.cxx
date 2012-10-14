@@ -105,10 +105,8 @@ void AliRsnCutSetDaughterParticle::Init()
   // init cut sets by setting variable params
   //  
   fCutQuality->SetDefaults2010();
-  fCutQuality->SetPtRange(0.15, 1E+20);
+  fCutQuality->SetPtRange(0.15, 20.0);
   fCutQuality->SetEtaRange(-0.8, 0.8);
-  fCutQuality->SetAODTestFilterBit(fAODTrkCutFilterBit);
- 
   fCutQuality->SetDCARPtFormula("0.0182+0.0350/pt^1.01");
   fCutQuality->SetDCAZmax(2.0);
   fCutQuality->SetSPDminNClusters(1);
@@ -117,8 +115,10 @@ void AliRsnCutSetDaughterParticle::Init()
   fCutQuality->SetTPCminNClusters(70);
   fCutQuality->SetTPCmaxChi2(4.0);
   fCutQuality->SetRejectKinkDaughters();
-  //  fCutQuality->SetAODTestFilterBit(5);  	
-
+  fCutQuality->SetAODTestFilterBit(fAODTrkCutFilterBit);
+  //fCutQuality->SetITSmaxChi2(36);
+  //fCutQuality->SetMaxChi2TPCConstrainedGlobal(36);
+  
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
   AliRsnCutPIDNSigma *iCutTPCTOFNSigma = new AliRsnCutPIDNSigma("CutTPCTOFNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
@@ -136,7 +136,7 @@ void AliRsnCutSetDaughterParticle::Init()
       break;
 
     case AliRsnCutSetDaughterParticle::kQualityStd2011:	 
-      fCutQuality->SetAODTestFilterBit(10); 	  //1024
+      //fCutQuality->SetAODTestFilterBit(10); 	  //1024
       AddCut(fCutQuality);
       SetCutScheme(fCutQuality->GetName());
       break;
@@ -214,6 +214,14 @@ void AliRsnCutSetDaughterParticle::Init()
       AddCut(iCutTOFNSigma);
       AddCut(iCutTPCTOFNSigma);
       SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) );
+      break;
+
+    case AliRsnCutSetDaughterParticle::kTOFTPCmismatchKstarPbPb2010:     
+      iCutTPCTOFNSigma->SinglePIDRange(5.0); //5-sigma veto on tpc signal
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCTOFNSigma);
+      SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutTPCTOFNSigma->GetName()) );
       break;
 
     default :  

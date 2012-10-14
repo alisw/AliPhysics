@@ -425,8 +425,8 @@ void AliRsnCutTrackQuality::SetDefaults2010()
    SetDCAZmax(2.0);
    SetSPDminNClusters(1);
    SetITSminNClusters(0);
-   SetITSmaxChi2(36);
-   SetMaxChi2TPCConstrainedGlobal(36);
+   // SetITSmaxChi2(36);
+   // SetMaxChi2TPCConstrainedGlobal(36);
    SetTPCminNClusters(70);
    SetTPCmaxChi2(4.0);
    SetRejectKinkDaughters();
