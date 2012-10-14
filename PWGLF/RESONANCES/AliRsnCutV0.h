@@ -7,6 +7,8 @@
 #include "AliRsnCut.h"
 #include "AliPIDResponse.h"
 
+#include "AliRsnCutTrackQuality.h"
+
 class AliESDtrack;
 class AliAODTrack;
 
@@ -34,6 +36,10 @@ public:
    void           SetPIDCut2(Double_t value)               {fPIDCut2 = value;}
    void           SetPIDCut3(Double_t value)               {fPIDCut3 = value;}
 
+   AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
+   void           SetAODTestFilterBit(Int_t value) {fAODTestFilterBit = value;}
+   Int_t          GetAODTestFilterBit()                    {return fAODTestFilterBit;}
+
    virtual Bool_t IsSelected(TObject *obj);
    virtual void   Print(const Option_t *option = "") const;
 
@@ -59,6 +65,9 @@ protected:
 
 
    AliESDtrackCuts *fESDtrackCuts;     // quality cuts for v0 daughters
+
+   AliRsnCutTrackQuality fCutQuality;       // track quality cut
+   Int_t            fAODTestFilterBit;  // test filter bit for AODs 
 
    ClassDef(AliRsnCutV0, 1)
 };

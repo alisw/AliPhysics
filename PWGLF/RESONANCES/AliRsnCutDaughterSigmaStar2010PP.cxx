@@ -57,13 +57,21 @@ Bool_t AliRsnCutDaughterSigmaStar2010PP::IsSelected(TObject *obj)
       return kFALSE;
    }
 
+   AliDebugClass(2, "Checking status");
+
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
 
+   AliDebugClass(2, "Checking quality cuts");
+
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
+
+   AliDebugClass(2, "...passed");
+
 
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
