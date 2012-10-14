@@ -30,6 +30,7 @@ public:
      kFastTOFpidNsigma,
      kTPCTOFpidKstarPP2010,
      kTOFpidKstarPbPb2010,
+     kTOFTPCmismatchKstarPbPb2010,
      kNDaughterCuts
   };
      
