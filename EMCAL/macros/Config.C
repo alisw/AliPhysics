@@ -26,7 +26,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv3.h"
 #include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSvPPRasymmFMD.h"
+#include "ITS/AliITSv11.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv2.h"
@@ -250,7 +250,7 @@ void Config()
     
     //=================== ITS parameters ============================
     
-    AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+    AliITS *ITS  = new AliITSv11("ITS","ITS v11");
   }
   
   if (iTPC)
