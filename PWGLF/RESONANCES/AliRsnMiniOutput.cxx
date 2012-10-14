@@ -487,7 +487,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          if (fComputation == kTruePair) {
             if (fPair.Mother() < 0)  {
                continue;
-            } else if (TMath::Abs(fPair.MotherPDG()) != fMotherPDG) {
+            } else if (fPair.MotherPDG() != fMotherPDG) {
                continue;
             }
             Bool_t decayMatch = kFALSE;
