@@ -70,7 +70,6 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title,
     fIshunt   = 2; // All hits are associated with particles entering the calorimeter
     fTimeCut  = 30e-09;
   
-    printf("Geo %s, check %d \n", title, checkGeoAndRun );
     fGeometry = GetGeometry(); 
 }
 

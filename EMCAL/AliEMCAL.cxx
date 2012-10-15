@@ -442,6 +442,8 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
     mcname  = gMC->GetName()  ;
     mctitle = gMC->GetTitle() ;
   }
+ 
+  TString geoName(GetTitle());
   
   //Check if run number and requested geometry correspond to the same geometry as
   //in real data taking. To prevent errors in official simulation productions
@@ -449,6 +451,7 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   {
     // Check the transport model name and option, set sampling fraction depending on it
     if(!fCheckRunNumberAndGeoVersion){// Set geometry with the name used in the configuration file
+      AliInfo(Form("Geometry name in use <<%s>>, requested via Config file", geoName.Data()));
       return AliEMCALGeometry::GetInstance(GetTitle(),"EMCAL",mcname,mctitle) ;
     }
     else
@@ -461,7 +464,6 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
       Int_t runNumber = man->GetRun();
       
       //Instanciate geometry depending on the run number
-      TString geoName(GetTitle());
       if(runNumber >= 104064 && runNumber < 140000 ){//2009-2010 runs
         //First year geometry, 4 SM.
         

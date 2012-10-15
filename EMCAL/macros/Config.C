@@ -133,7 +133,7 @@ void Config()
   gMC->SetCut("TOFMAX", tofmax); 
   
   
-  int     nParticles = 5;
+  int     nParticles = 2;
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
   {
     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
@@ -169,27 +169,27 @@ void Config()
   // Field (L3 0.5 T)
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
   
-  Int_t   iABSO  =  0;
-  Int_t   iDIPO  =  0;
-  Int_t   iFMD   =  0;
-  Int_t   iFRAME =  0;
-  Int_t   iHALL  =  0;
-  Int_t   iITS   =  0;
-  Int_t   iMAG   =  0;
-  Int_t   iMUON  =  0;
-  Int_t   iPHOS  =  0;
-  Int_t   iPIPE  =  0;
-  Int_t   iPMD   =  0;
-  Int_t   iHMPID =  0;
-  Int_t   iSHIL  =  0;
-  Int_t   iT0    =  0;
-  Int_t   iTOF   =  0;
-  Int_t   iTPC   =  0;
-  Int_t   iTRD   =  0;
-  Int_t   iZDC   =  0;
+  Int_t   iABSO  =  1;
+  Int_t   iDIPO  =  1;
+  Int_t   iFMD   =  1;
+  Int_t   iFRAME =  1;
+  Int_t   iHALL  =  1;
+  Int_t   iITS   =  1;
+  Int_t   iMAG   =  1;
+  Int_t   iMUON  =  1;
+  Int_t   iPHOS  =  1;
+  Int_t   iPIPE  =  1;
+  Int_t   iPMD   =  1;
+  Int_t   iHMPID =  1;
+  Int_t   iSHIL  =  1;
+  Int_t   iT0    =  1;
+  Int_t   iTOF   =  1;
+  Int_t   iTPC   =  1;
+  Int_t   iTRD   =  1;
+  Int_t   iZDC   =  1;
   Int_t   iEMCAL =  1;
   Int_t   iACORDE=  0;
-  Int_t   iVZERO =  0;
+  Int_t   iVZERO =  1;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -269,7 +269,7 @@ void Config()
   if (iHMPID)
   {
     //=================== HMPID parameters ===========================
-    AliHMPID *HMPID = new AliHMPIDv2("HMPID", "normal HMPID");
+    AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
     
   }
   
@@ -286,6 +286,30 @@ void Config()
     //=================== TRD parameters ============================
     
     AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+    AliTRDgeometry *geoTRD = TRD->GetGeometry();
+    // starting at 3h in positive direction
+    if(year==2011 || year == 2010)
+    { // not sure if good for 2010
+      // Partial geometry: modules at 0,1,7,8,9,10,11,15,16,17
+      printf("*** TRD configuration for 2011\n");
+      geoTRD->SetSMstatus(2,0);
+      geoTRD->SetSMstatus(3,0);
+      geoTRD->SetSMstatus(4,0);
+      geoTRD->SetSMstatus(5,0);
+      geoTRD->SetSMstatus(6,0);
+      geoTRD->SetSMstatus(12,0);
+      geoTRD->SetSMstatus(13,0);
+      geoTRD->SetSMstatus(14,0);
+    }
+    else if(year==2012)
+    {
+      printf("*** TRD configuration for 2012\n");
+      geoTRD->SetSMstatus(4,0);
+      geoTRD->SetSMstatus(5,0);
+      geoTRD->SetSMstatus(12,0);
+      geoTRD->SetSMstatus(13,0);
+      geoTRD->SetSMstatus(14,0); 
+    }
   }
   
   if (iFMD)
@@ -304,7 +328,7 @@ void Config()
   
   if (iPHOS)
   {
-    AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+    AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
   }
   
   
