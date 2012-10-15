@@ -26,7 +26,8 @@ Bool_t ConfigTOFanalysisKStar
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
     Int_t                  aodN = 0,
-    Bool_t                 useMixLS = 0
+    Bool_t                 useMixLS = 0,
+    Int_t                  signedPdg = 313
 )
 {
   // manage suffix
@@ -39,7 +40,7 @@ Bool_t ConfigTOFanalysisKStar
 
   cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
   cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPionTOFPbPb2010_%2.1fsigma",nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTOFPbPb2010_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTOFPbPb2010_%2.1fsigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
@@ -87,7 +88,7 @@ Bool_t ConfigTOFanalysisKStar
     out->SetDaughter(1, AliRsnDaughter::kPion);
     out->SetCharge(0, charge1[i]);
     out->SetCharge(1, charge2[i]);
-    out->SetMotherPDG(313);
+    out->SetMotherPDG(signedPdg);
     out->SetMotherMass(0.89594);
     out->SetPairCuts(cutsPair);
 
