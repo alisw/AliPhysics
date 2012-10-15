@@ -229,6 +229,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunCascadeFinder(kTRUE),
   fRunMultFinder(kTRUE),
   fStopOnError(kTRUE),
+  fStopOnMissingTriggerFile(kTRUE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
   fFillTriggerESD(kTRUE),
@@ -353,6 +354,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunCascadeFinder(rec.fRunCascadeFinder),
   fRunMultFinder(rec.fRunMultFinder),
   fStopOnError(rec.fStopOnError),
+  fStopOnMissingTriggerFile(rec.fStopOnMissingTriggerFile),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
   fFillTriggerESD(rec.fFillTriggerESD),
@@ -493,6 +495,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunCascadeFinder      = rec.fRunCascadeFinder;
   fRunMultFinder         = rec.fRunMultFinder;
   fStopOnError           = rec.fStopOnError;
+  fStopOnMissingTriggerFile = rec.fStopOnMissingTriggerFile;
   fWriteAlignmentData    = rec.fWriteAlignmentData;
   fWriteESDfriend        = rec.fWriteESDfriend;
   fFillTriggerESD        = rec.fFillTriggerESD;
@@ -3941,6 +3944,7 @@ Bool_t AliReconstruction::GetEventInfo()
       fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
     }
     else {
+      if (fStopOnMissingTriggerFile) AliFatal("No trigger can be loaded! Stopping reconstruction!");
       AliWarning("No trigger can be loaded! The trigger information will not be used!");
       return kFALSE;
     }

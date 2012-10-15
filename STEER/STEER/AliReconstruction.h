@@ -98,6 +98,7 @@ public:
   void SetRunV0Finder(Bool_t flag=kTRUE) {fRunV0Finder=flag;};
   void SetRunCascadeFinder(Bool_t flag=kTRUE) {fRunCascadeFinder=flag;};
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
+  void SetStopOnMissingTriggerFile(Bool_t flag=kTRUE) {fStopOnMissingTriggerFile=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
@@ -268,6 +269,7 @@ private:
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
   Bool_t         fRunMultFinder;      // run the trackleter for ITS clusters
   Bool_t         fStopOnError;        // stop or continue on errors
+  Bool_t         fStopOnMissingTriggerFile; // stop if the simulated trigger file is absent
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
@@ -385,7 +387,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 44)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 45)      // class for running the reconstruction
 };
 
 #endif
