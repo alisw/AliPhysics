@@ -23,6 +23,24 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   // Eta
   AliRsnValueDaughter *axisMomEta = new AliRsnValueDaughter("eta", AliRsnValueDaughter::kEta);
   axisMomEta->SetBins(-1.0, 1.0, 0.1);
+  //ITS clusters
+  AliRsnValueDaughter *axisITScls = new AliRsnValueDaughter("ITScls", AliRsnValueDaughter::kNITSclusters);
+  axisITScls->SetBins(0.0, 10.0, 1.0);
+  //TPC clusters
+  AliRsnValueDaughter *axisTPCcls = new AliRsnValueDaughter("TPCcls", AliRsnValueDaughter::kNTPCclusters);
+  axisTPCcls->SetBins(0.0, 300.0, 1.0);
+  //ITS chi2
+  AliRsnValueDaughter *axisITSchi2 = new AliRsnValueDaughter("ITSchi2", AliRsnValueDaughter::kITSchi2);
+  axisITSchi2->SetBins(0.0, 10.0, 0.1);
+  //TPC chi2
+  AliRsnValueDaughter *axisTPCchi2 = new AliRsnValueDaughter("TPCchi2", AliRsnValueDaughter::kTPCchi2);
+  axisTPCchi2->SetBins(0.0, 10.0, 0.1);
+  //DCA xy
+  AliRsnValueDaughter *axisDCAxy = new AliRsnValueDaughter("DCAxy", AliRsnValueDaughter::kDCAXY);
+  axisDCAxy->SetBins(0.0, 10.0, 0.1);
+  //DCA z
+  AliRsnValueDaughter *axisDCAz = new AliRsnValueDaughter("DCAz", AliRsnValueDaughter::kDCAZ);
+  axisDCAxy->SetBins(0.0, 10.0, 0.1);
 
   /* dEdx tpc */
   AliRsnValueDaughter *axisSigTPC = new AliRsnValueDaughter("sTPC", AliRsnValueDaughter::kTPCsignal);
@@ -80,6 +98,65 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   outMonitorEta->AddValue(axisMomEta);
   if (mon) mon->Add(outMonitorEta);
   if (lm) lm->AddOutput(outMonitorEta);
+
+  /****************************************************************/
+  /***************      MONITOR TRACK QUALITY  ********************/
+  /****************************************************************/
+  // output: 2D histogram of DCAxy vs pt
+  AliRsnListOutput *outMonitorDCAxy = new AliRsnListOutput("DCAxyVsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorDCAxy->AddValue(axisMomPt);
+  outMonitorDCAxy->AddValue(axisDCAxy);
+  if (mon) mon->Add(outMonitorDCAxy);
+  if (lm) lm->AddOutput(outMonitorDCAxy);
+
+  // output: 2D histogram of DCAz vs pt
+  AliRsnListOutput *outMonitorDCAz = new AliRsnListOutput("DCAzVsP", AliRsnListOutput::kHistoDefault);
+  outMonitorDCAz->AddValue(axisMomP);
+  outMonitorDCAz->AddValue(axisDCAz);
+  if (mon) mon->Add(outMonitorDCAz);
+  if (lm) lm->AddOutput(outMonitorDCAz);
+
+  // output: 2D histogram of ITS cls vs pt
+  AliRsnListOutput *outMonitorITScls = new AliRsnListOutput("ITSclsVsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorITScls->AddValue(axisMomPt);
+  outMonitorITScls->AddValue(axisITScls);
+  if (mon) mon->Add(outMonitorITScls);
+  if (lm) lm->AddOutput(outMonitorITScls);
+
+  // output: 2D histogram of TPC cls vs. pt
+  AliRsnListOutput *outMonitorTPCcls = new AliRsnListOutput("TPCclsVsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorTPCcls->AddValue(axisMomPt);
+  outMonitorTPCcls->AddValue(axisTPCcls);
+  if (mon) mon->Add(outMonitorTPCcls);
+  if (lm) lm->AddOutput(outMonitorTPCcls);
+
+// output: 2D histogram of TPC cls vs. TPC momentum
+  AliRsnListOutput *outMonitorTPCclsVsPtpc = new AliRsnListOutput("TPCclsVsPtpc", AliRsnListOutput::kHistoDefault);
+  outMonitorTPCclsVsPtpc->AddValue(axisMomTPC);
+  outMonitorTPCclsVsPtpc->AddValue(axisTPCcls);
+  if (mon) mon->Add(outMonitorTPCclsVsPtpc);
+  if (lm) lm->AddOutput(outMonitorTPCclsVsPtpc);
+
+ // output: 2D histogram of ITS chi2 vs pt
+  AliRsnListOutput *outMonitorITSchi2 = new AliRsnListOutput("ITSchi2VsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorITSchi2->AddValue(axisMomPt);
+  outMonitorITSchi2->AddValue(axisITSchi2);
+  if (mon) mon->Add(outMonitorITSchi2);
+  if (lm) lm->AddOutput(outMonitorITSchi2);
+
+  // output: 2D histogram of TPC chi2 vs. pt
+  AliRsnListOutput *outMonitorTPCchi2 = new AliRsnListOutput("TPCchi2VsPt", AliRsnListOutput::kHistoDefault);
+  outMonitorTPCchi2->AddValue(axisMomPt);
+  outMonitorTPCchi2->AddValue(axisTPCchi2);
+  if (mon) mon->Add(outMonitorTPCchi2);
+  if (lm) lm->AddOutput(outMonitorTPCchi2);
+
+// output: 2D histogram of TPC chi2 vs. TPC momentum
+  AliRsnListOutput *outMonitorTPCchi2VsPtpc = new AliRsnListOutput("TPCchi2VsPtpc", AliRsnListOutput::kHistoDefault);
+  outMonitorTPCchi2VsPtpc->AddValue(axisMomTPC);
+  outMonitorTPCchi2VsPtpc->AddValue(axisTPCchi2);
+  if (mon) mon->Add(outMonitorTPCchi2VsPtpc);
+  if (lm) lm->AddOutput(outMonitorTPCchi2VsPtpc);
 
   /****************************************************************/
   /***************       MONITOR TPC           ********************/

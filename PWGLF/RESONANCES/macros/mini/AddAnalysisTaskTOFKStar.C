@@ -32,7 +32,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    Float_t     maxDiffAngleMixDeg = 20.0,
    Int_t       aodN = 0,
    TString     outNameSuffix = "",
-   Bool_t      useMixLS = 0
+   Bool_t      useMixLS = 0,
+   Int_t       signedPdg = 313
 )
 {  
   //
@@ -136,7 +137,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN, useMixLS)) return 0x0;
+   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN, useMixLS, signedPdg)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
