@@ -66,5 +66,5 @@
 #pragma link C++ class AliRsnMiniMonitor+;
 #pragma link C++ class AliRsnMiniAnalysisTask+;
 #pragma link C++ class AliRsnMiniMonitorTask+;
-
+#pragma link C++ class AliRsnTrainManager+;
 #endif
