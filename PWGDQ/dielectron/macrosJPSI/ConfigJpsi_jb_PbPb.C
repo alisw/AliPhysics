@@ -56,15 +56,14 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
     case kEtaGap05:  return 0x0;
     case kSubLS:     return 0x0;
     case kSubRndm:   return 0x0;
-    case kCutStats:  return 0x0;
     }
   } else { // COLLISION DATA
     switch(cutDefinition) {
     case kTPC:       return 0x0;
-    //            case kTOF:       return 0x0;
+      //            case kTOF:       return 0x0;
     case kTRD:       return 0x0;
-    //            case kTOFTRD:    return 0x0;
-    //            case kTOFTRD2D:  return 0x0;
+      //            case kTOFTRD:    return 0x0;
+      //            case kTOFTRD2D:  return 0x0;
     case krec:       return 0x0;
     case kGam0:      return 0x0;
     case kGam01:     return 0x0;
@@ -143,15 +142,16 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       rot->SetIterations(10);
       rot->SetConeAnglePhi(TMath::Pi());
       rot->SetStartAnglePhi(TMath::Pi());
-      die->SetTrackRotator(rot);
+      //      die->SetTrackRotator(rot);
+
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,     30,-10.,10.);
-      //      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
+      mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
+      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
+      mix->AddVariable(AliDielectronVarManager::kv0ACrpH2,    8,  TMath::Pi()/-2., TMath::Pi()/2.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
       mix->SetDepth(120);
       die->SetMixingHandler(mix);
-
 
       // TPC event plane configurations
       Double_t gGap;
@@ -180,7 +180,8 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // prefilter settings
-  //    die->SetPreFilterAllSigns();
+  //die->SetNoPairing();
+  //die->SetPreFilterAllSigns();
   die->SetPreFilterUnlikeOnly();
 
   // setup eta correction
@@ -207,10 +208,11 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
   die->GetTrackFilter().AddCuts(cuts);
 
-  // AOD track filter (needs to be first cut)
+  // AOD track filter (needs to be first cut to speed up)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
-  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDanyPIDele);
-  //  if(!isESD) cuts->AddCut(trkFilter);
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+  //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
+  if(!isESD) cuts->AddCut(trkFilter);
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
@@ -487,6 +489,19 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","Cent_v0CrpH2","VZERO-C RP;centrality (%);#Psi_{2}^{V0C} (rad.)",
                           10,0.,100.,100,-2.0,2.0,
                           AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CrpH2);
+
+    histos->UserHistogram("Event","Cent_v0A0rpH2","VZERO-A RP;centrality (%);#Psi_{2}^{V0A0} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0A0rpH2);
+    histos->UserHistogram("Event","Cent_v0A3rpH2","VZERO-A RP;centrality (%);#Psi_{2}^{V0A3} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0A3rpH2);
+    histos->UserHistogram("Event","Cent_v0C0rpH2","VZERO-C RP;centrality (%);#Psi_{2}^{V0C0} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0C0rpH2);
+    histos->UserHistogram("Event","Cent_v0C3rpH2","VZERO-C RP;centrality (%);#Psi_{2}^{V0C3} (rad.)",
+                          10,0.,100.,100,-2.0,2.0,
+                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0C3rpH2);
   } // hist: flow
 
   if(bHistFlowQA) {
@@ -500,21 +515,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","TPCrpH2","TPC reaction plane; #Psi^{TPC}",
                           100,-2.,2.,
                           AliDielectronVarManager::kTPCrpH2);
-    histos->UserHistogram("Event","TPCsub1xH2","TPC Qx component sub1;TPCsub1xH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCsub1xH2);
-    histos->UserHistogram("Event","TPCsub1yH2","TPC Qy component sub1;TPCsub1yH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCsub1yH2);
     histos->UserHistogram("Event","TPCsub1rpH2","TPC reaction plane sub1; #Psi^{sub1}",
                           100,-2.,2.,
                           AliDielectronVarManager::kTPCsub1rpH2);
-    histos->UserHistogram("Event","TPCsub2xH2","TPC Qx component sub2;TPCsub2xH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCsub2xH2);
-    histos->UserHistogram("Event","TPCsub2yH2","TPC Qy component sub2;TPCsub2yH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCsub2yH2);
     histos->UserHistogram("Event","TPCsub2rpH2","TPC reaction plane sub2; #Psi^{sub2}",
                           100,-2.,2.,
                           AliDielectronVarManager::kTPCsub2rpH2);
@@ -571,6 +574,16 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","Cent_TPCsub12DiffH2Sin","TPC-sub1 TPC-sub2 diff;centrality (%);sin(2(#Psi^{sub1}-#Psi^{sub2}))",
                           10,0.,100.,300,-1.0,1.0,
 			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2Sin);
+    // recentering stuff
+    histos->UserProfile("Pair","TPCxH2-Cent-RunNumber", ";centrality (%);run;#LTQ_{x}#GT",
+			AliDielectronVarManager::kTPCxH2,
+			AliDielectronHelper::MakeLinBinning(10, 0.,100.), GetRunNumbers(),
+			AliDielectronVarManager::kCentrality, AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Pair","TPCyH2-Cent-RunNumber", ";centrality (%);run;#LTQ_{x}#GT",
+			AliDielectronVarManager::kTPCyH2,
+			AliDielectronHelper::MakeLinBinning(10, 0.,100.), GetRunNumbers(),
+			AliDielectronVarManager::kCentrality, AliDielectronVarManager::kRunNumber);
+
   } //hist: flowQA
 
   if(bHistPair) {
