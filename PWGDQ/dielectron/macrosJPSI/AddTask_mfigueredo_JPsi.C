@@ -13,8 +13,13 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
   
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_pp.C");
-  if (hasMC) configFile="$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";
+  TString configFile("");
+  printf("%s \n",gSystem->pwd());
+  if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/mfiguere/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C ."))
+    configFile=Form("%s/ConfigJpsi_mf_PbPb.C",gSystem->pwd());                        // alien config                                                                                            
+  else
+    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C"; // aliroot config                                               
+  
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
