@@ -96,7 +96,7 @@ public:
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters in the TPC with more robust definition
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
-	kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
+    kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -118,7 +118,7 @@ public:
     kTrackLength,            // Track length
 
     kPdgCode,                // PDG code
-	kPdgCodeMother, 
+    kPdgCodeMother, 
     kPdgCodeGrandMother,     // PDG code of the grandmother
     kNumberOfDaughters,      // number of daughters
     kHaveSameMother,         // check that particles have the same mother (MC)
@@ -1515,6 +1515,10 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] - 
 								       values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
   
+  // TPC event plane quantities (corrected)
+  if(fgTPCEventPlane) 
+    FillVarTPCEventPlane(fgTPCEventPlane, values);
+
   // using corrected tpc quantities
   values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] - 
 								     values[AliDielectronVarManager::kTPCrpH2]) ); 
@@ -1656,7 +1660,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
   values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
   values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
   values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
- 
+
   values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
   values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
   values[AliDielectronVarManager::kTPCsub1rpH2]  = ((TMath::Abs(qcsub1->X())>1.0e-10) ? TMath::ATan2(qcsub1->Y(),qcsub1->X())/2.0 : 0.0);
@@ -1670,7 +1674,6 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
   values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] - 
 									values[AliDielectronVarManager::kTPCsub2rpH2]) );
 }
-  
 
 inline void AliDielectronVarManager::InitESDpid(Int_t type)
 {
