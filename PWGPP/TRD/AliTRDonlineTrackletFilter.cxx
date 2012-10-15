@@ -89,9 +89,11 @@ void AliTRDonlineTrackletFilter::CreateOutputObjects()
 
   OpenFile(1); 
   
-  fTrackletTree = new TTree("tracklets", "on-line tracklets");
+  fTrackletTree = new TTree("TRDtrackletfilter", "on-line tracklets");
   fTrackletTree->Branch("tracklets_sim", fTrackletsSim);
   fTrackletTree->Branch("tracklets_raw", fTrackletsRaw);
+
+  PostData(1, fTrackletTree);
 }
 
 Bool_t AliTRDonlineTrackletFilter::Notify()
@@ -101,10 +103,12 @@ Bool_t AliTRDonlineTrackletFilter::Notify()
 
   TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
 
-  AliInfo(Form("Now reading from %s", filename.Data()));
+  AliDebug(1, Form("Now reading from %s", filename.Data()));
 
   if (filename.Contains("AliAOD.root")) 
     filename.ReplaceAll("AliAOD.root", "");
+  else if (filename.Contains("NewAliESDs.root"))
+    filename.ReplaceAll("NewAliESDs.root", "");
   else if (filename.Contains("AliESDs.root"))
     filename.ReplaceAll("AliESDs.root", "");
   else if (filename.Contains("galice.root"))
@@ -117,7 +121,7 @@ Bool_t AliTRDonlineTrackletFilter::Notify()
   fTrackletFile = TFile::Open(Form("%sTRD.Tracklets.root", fPath.Data()));
 
   if (!fTrackletFile) {
-    AliError("No tracklet file");
+    AliError(Form("No tracklet file in %s", fPath.Data()));
     return kFALSE;
   }
 
@@ -158,15 +162,17 @@ void AliTRDonlineTrackletFilter::Exec(const Option_t * /* option */)
     fTrackletTreeRaw->SetBranchAddress("trkl", &trklArray);
     for (Int_t iHCidx = 0; iHCidx < fTrackletTreeRaw->GetEntries(); iHCidx++) {
       fTrackletTreeRaw->GetEntry(iHCidx);
-      for (Int_t iTracklet = 0; iTracklet < trklArray->GetEntries(); iTracklet++) {
-        AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) ((*trklArray)[iTracklet]);
-	trklWord->SetDetector(hc/2);
-        new ((*fTrackletsRaw)[fTrackletsRaw->GetEntriesFast()]) AliTRDtrackletWord(*trklWord);
+      if (trklArray) {
+	for (Int_t iTracklet = 0; iTracklet < trklArray->GetEntries(); iTracklet++) {
+	  AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) ((*trklArray)[iTracklet]);
+	  trklWord->SetDetector(hc/2);
+	  new ((*fTrackletsRaw)[fTrackletsRaw->GetEntriesFast()]) AliTRDtrackletWord(*trklWord);
+	}
       }
     }
   }
 
-  AliInfo(Form("%i tracklets", fTrackletsSim->GetEntriesFast()));
+  AliDebug(1, Form("%i tracklets", fTrackletsSim->GetEntriesFast()));
   fTrackletTree->SetBranchAddress("tracklets_sim", &fTrackletsSim);
   fTrackletTree->SetBranchAddress("tracklets_raw", &fTrackletsRaw);
   fTrackletTree->Fill();
@@ -199,7 +205,7 @@ Bool_t AliTRDonlineTrackletFilter::LoadEvent()
   fESD = dynamic_cast<AliESDEvent*> (fInputEvent);
 
   fEvent++;
-  Int_t inew = fEvent / fNEventsPerFile;
+  Int_t inew = fNEventsPerFile > 0 ? fEvent / fNEventsPerFile : 0;
   if ( inew != fFileNumber) {
     fFileNumber++;
 
