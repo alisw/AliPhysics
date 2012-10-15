@@ -4,6 +4,7 @@ TFile* file;
 const char* prefixToName = "imgs/";
 const char* appendToName = ".pdf";
 const int kNCents = 1;
+const int kFirstBinTo = 64;
 
 void Draw(const char* name, const char* options = "", double yFrom=0., double yTo=-1.)
 {
@@ -11,22 +12,25 @@ void Draw(const char* name, const char* options = "", double yFrom=0., double yT
   //hist->SetAxisRange(0, 30 );
   hist->GetXaxis()->SetLabelSize(0.011);
   //hist->GetXaxis()->SetTitle("Run");
-  hist->GetXaxis()->SetRange(1,84);
+  hist->GetXaxis()->SetRange(1,kFirstBinTo);
   if( yFrom < yTo )
     hist->GetYaxis()->SetRangeUser(yFrom, yTo);
 
 
   //if( ! TString(options).Contains("same") )
   TCanvas* canv = new TCanvas;
-  canv->SetGrid();
-  hist->GetYaxis()->SetNdivisions(16);
+  //canv->SetGrid();
+  //hist->GetYaxis()->SetNdivisions(16);
 
   canv->Divide(1,2);
 
   hist->GetXaxis()->SetLabelSize(0.051);
 
+  if( TString(options).Contains("LINFIT") )
+    hist->Fit("pol0", "Q");
+  
   canv->cd(1);
-  hist->GetXaxis()->SetRange(1,84);
+  hist->GetXaxis()->SetRange(1,kFirstBinTo);
   hist->DrawCopy(options);
 
   canv->cd(2);
@@ -61,7 +65,7 @@ void DrawPID()
 
     canv->cd(1);
     grNPhotAll->SetTitle("#LTN_{clusters}^{PID}#GT");
-    grNPhotAll->GetXaxis()->SetRange(0, 84);
+    grNPhotAll->GetXaxis()->SetRange(0, kFirstBinTo);
     grNPhotAll->DrawCopy();
     grNPhotDisp->DrawCopy("same");
     grNPhotDisp2->DrawCopy("same");
@@ -108,7 +112,7 @@ void DrawCPVRatio()
     TCanvas* canv = new TCanvas;
     canv->Divide(1,2);
     canv->cd(1);
-    grNPhotCPV->GetXaxis()->SetRange(0, 84);
+    grNPhotCPV->GetXaxis()->SetRange(0, kFirstBinTo);
     grNPhotCPV->DrawCopy();
 
     canv->cd(2);
@@ -143,7 +147,7 @@ void DrawNPhotAllAndHigh()
   
     canv->cd(1);
     grNPhotAll->SetTitle("#LTN_{clusters}#GT");
-    grNPhotAll->GetXaxis()->SetRange(0, 84);
+    grNPhotAll->GetXaxis()->SetRange(0, kFirstBinTo);
     grNPhotAll->GetYaxis()->SetRange(15, 40);
     //grNPhotAll->GetYaxis()->SetRangeUser(15, 45);
     grNPhotAll->DrawCopy();
@@ -204,7 +208,7 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* high)
 
       canv->cd(1);
       hPID->SetTitle( Form("#LTN_{clusters}^{PID}#GT / #LTN_{clusters}^{%s}#GT, cent=%d, %s", pidNames[0], cent, high) );
-      hPID->GetXaxis()->SetRange(0, 84);
+      hPID->GetXaxis()->SetRange(0, kFirstBinTo);
       hPID->DrawCopy(same);
 
       canv->cd(2);
@@ -237,6 +241,7 @@ void DrawPIDRatios()
 void DrawQA()
 {
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
 
   file = TFile::Open("outputQA.root", "read");
 
@@ -275,9 +280,9 @@ void DrawQA()
   DrawNPhotAllAndHigh();
   //DrawPIDRatios();
 
-  Draw("grMPi0");
-  Draw("grWPi0");
-  Draw("grNPi0");
+  Draw("grMPi0", "LINFIT", 0.13, 0.15 );
+  Draw("grWPi0", "LINFIT");
+  Draw("grNPi0", "LINFIT");
 
   file->Close();
 }

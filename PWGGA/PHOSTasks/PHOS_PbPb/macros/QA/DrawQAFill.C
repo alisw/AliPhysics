@@ -8,6 +8,7 @@ const int kNCents = 1;
 void Draw(const char* name, const char* options = "", double yFrom=0., double yTo=-1.)
 {
   TH1* hist = ((TH1*)file->Get(name))->Clone();
+  hist->GetXaxis()->SetTitle("Fill");
 
   if( yFrom < yTo )
     hist->GetYaxis()->SetRangeUser(yFrom, yTo);
