@@ -133,6 +133,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fIncpTMChfeAll;		//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCM20hfe;	//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCM20hfeAll;	//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMCM20hfeCheck;	//! MC HFE pid electron vs centrality
  THnSparseD		*fIncpTMCpho;		//! MC HFE pid electron vs centrality
  THnSparseD 		*fIncpTMCM20pho;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMC;	        //! Pho inclusive ele pt

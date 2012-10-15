@@ -144,6 +144,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTMChfeAll(0)	
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCM20hfeAll(0)	
+  ,fIncpTMCM20hfeCheck(0)	
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -237,6 +238,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTMChfeAll(0)	
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCM20hfeAll(0)	
+  ,fIncpTMCM20hfeCheck(0)	
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -650,6 +652,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          {
           fIncpTMChfe->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
+          if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
          }
       
        if(mcPho) // select photonic electrons
@@ -914,6 +917,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTMCM20hfeAll = new TH2F("fIncpTMCM20hfeAll","MC Alle pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTMCM20hfeAll);
 
+  fIncpTMCM20hfeCheck = new TH2F("fIncpTMCM20hfeCheck","MC HFE pid electro vs. centrality with M20 Check",200,0,100,100,0,50);
+  fOutputList->Add(fIncpTMCM20hfeCheck);
 
   Int_t nBinspho2[5] =  { 200, 100,    7,    3, 100};
   Double_t minpho2[5] = {  0.,  0., -2.5, -0.5, 0.};   
@@ -1065,12 +1070,13 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     
+    /*  for v5-03-70-AN
     AliKFVertex primV(*pVtx);
     primV += recg;
     recg.SetProductionVertex(primV);
     
     recg.SetMassConstraint(0,0.0001);
-    
+    */
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
@@ -1102,8 +1108,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
     if(openingAngle > fOpeningAngleCut) continue;
       
-    //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){
+    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+    //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
       flagPhotonicElec = kTRUE;
     }
     if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
