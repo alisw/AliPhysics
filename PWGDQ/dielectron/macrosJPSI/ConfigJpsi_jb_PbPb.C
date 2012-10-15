@@ -651,6 +651,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           300,.0,300*0.04, AliDielectronVarManager::kM); // 40MeV bins, 12GeV/c2
     histos->UserHistogram("Pair","Rapidity",";y;#pairs",
                           100,-1.,1., AliDielectronVarManager::kY);
+    histos->UserHistogram("Pair","Pt",";p_{T} (GeV/c);#pairs",
+			  400,0,20., AliDielectronVarManager::kPt);
     histos->UserHistogram("Pair","OpeningAngle","opening angle (rad.);#pairs",
                           100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
     histos->UserHistogram("Pair","Chi2NDF",";#chi^{2}/NDF;#pairs",
