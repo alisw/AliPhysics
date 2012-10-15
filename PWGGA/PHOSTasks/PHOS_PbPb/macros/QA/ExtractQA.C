@@ -518,6 +518,7 @@ void QAWriteNPi0()
   }
   grNPi0     ->LabelsOption("v");
   grNPi0     ->SetMarkerStyle(33);
+  grNPi0->GetYaxis()->SetTitle("#LTN#GT");
   grNPi0     ->Write();
 
   TH1F *grMPi0 = new TH1F("grMPi0","M(#pi^{0})",runIndex,0,runIndex);
@@ -528,6 +529,7 @@ void QAWriteNPi0()
   }
   grMPi0     ->LabelsOption("v");
   grMPi0     ->SetMarkerStyle(33);
+  grMPi0->GetYaxis()->SetTitle("#LTM#GT");
   grMPi0     ->Write();
 
   TH1F *grWPi0 = new TH1F("grWPi0","#sigma(#pi^{0})",runIndex,0,runIndex);
@@ -538,6 +540,7 @@ void QAWriteNPi0()
   }
   grWPi0     ->LabelsOption("v");
   grWPi0     ->SetMarkerStyle(33);
+  grWPi0->GetYaxis()->SetTitle("#LT#sigma#GT");
   grWPi0     ->Write();
 }
 
@@ -574,6 +577,11 @@ TH1F *AddWriteTH1F(const char *name, const char *title, Double_t* values, Double
   hist->LabelsOption("v");
   hist->SetMarkerStyle(33);
   hist->Write();
+
+  if( TString(name).Contains("En") )
+    hist->GetYaxis()->SetTitle("#LTE#GT");
+  if( TString(name).Contains("NPhot") )
+    hist->GetYaxis()->SetTitle("#LTN#GT");
 
   return hist;
 }
