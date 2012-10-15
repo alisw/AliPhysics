@@ -53,9 +53,15 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     dataSet = kLHC11d;
     dataSetLabel = "LHC11d";
   }
-  else if (strTrackCuts.Contains("LHC11h") || strTrackCuts.Contains("LHC12a15e")) {
+  else if (strTrackCuts.Contains("LHC11h") || strTrackCuts.Contains("LHC12a15e"))
+  {
     dataSet = kLHC11h;
     dataSetLabel = "LHC11h";
+  }
+  else if (strTrackCuts.Contains("LHC12g"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC12g";
   }
   else {
     ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
@@ -95,7 +101,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
       (dataSet == kLHC11h && cutsType == kHybrid)) {
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001008);       //1000 adds SPD any requirement
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set    
+    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set   
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetTrackCuts(cutsp);
     eTask->SetHybridTrackCuts(hybsp);
