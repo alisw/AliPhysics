@@ -1794,7 +1794,7 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* 
   if(fillHists) fHistT0->Fill(tvdc[0]);
     
   if (online) {
-    if(trig&1) return  kT0BB;
+    if(aEsd->GetHeader()->GetFiredTriggerInputs().Contains("0TVX") ) return kT0BB;
   }
   else {
   
