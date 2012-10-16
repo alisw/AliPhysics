@@ -131,7 +131,7 @@ public:
     /** At least one SPD cluster */ 
     kNClusterGt0 = 0x1000,
     /** V0-AND trigger */
-    kV0AND
+    kV0AND       = 0x2000
   };
   /** 
    * Bin numbers in trigger histograms 

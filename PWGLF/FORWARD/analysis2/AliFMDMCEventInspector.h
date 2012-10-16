@@ -86,7 +86,7 @@ public:
    *                  means outside of the defined vertex range
    * @param vz        On return, the z position of the interaction
    * @param b         On return, impact parameter [fm] (if available)
-   * @param b         On return, centrality estimate [%] (if available)
+   * @param c         On return, centrality estimate [%] (if available)
    * @param npart     On return, number of participants (if available)
    * @param nbin      On return, number of binary collisions (if available)
    * @param phiR      On return, reaction plane angle (if available)

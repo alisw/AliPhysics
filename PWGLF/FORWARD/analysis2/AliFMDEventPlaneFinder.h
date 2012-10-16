@@ -159,7 +159,7 @@ protected:
    */
   Double_t GetPhiWeight(Int_t etaBin, Int_t phiBin) const;
   /** 
-   * Calculat the difference @f$a_1 - a_2@$f between two angles
+   * Calculat the difference @f$a_1 - a_2@f$ between two angles
    * @f$a_1, a_2@f$ and normalize to @f$[-\pi/2,\pi/2]@f$
    * 
    * @param a1 First angle @f$a_1@f$

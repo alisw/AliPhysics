@@ -74,9 +74,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Least distance from primary to 2nd pile-up vertex (cm)
   task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
-  task->GetEventInspector().SetUseV0AndForNSD(true);
+  task->GetEventInspector().SetUseV0AndForNSD(false);
   // Use primary vertex selection from 1st physics WG
   // task->GetEventInspector().SetUseFirstPhysicsVtx(true);
+  // Use satellite collisions
+  // task->GetEventInspector().SetUseDisplacedVertices(true);
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits

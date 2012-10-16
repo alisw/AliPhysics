@@ -31,6 +31,8 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
 		     Bool_t      useCent  = false,
 		     const char* scheme   = 0,
 		     Bool_t      cutEdges = false,
+		     Double_t    trigEff  = 1, 
+		     Double_t    trigEff0 = 1,
 		     const char* mcanalysisfilename = "none")
 {
   // --- Load libraries ----------------------------------------------
@@ -54,8 +56,9 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
   // Set the vertex range to use 
   task->SetVertexRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
-  task->SetTriggerEff(0.997535);
   task->SetTriggerMask(trig);
+  task->SetTriggerEff(trigEff); // 0.997535);
+  task->SetTriggerEff0(trigEff0); 
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
   // Whether to correct for empty bins when projecting 

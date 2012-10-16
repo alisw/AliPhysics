@@ -48,23 +48,24 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsAccepted(0),
     fHEventsAcceptedXY(0),
     fHTriggers(0),
+    fHTriggerCorr(0),
     fHType(0),
   fHWords(0),
-    fHCent(0),
+  fHCent(0),
   fHCentVsQual(0),
   fHStatus(0),
-    fLowFluxCut(1000),
-    fMaxVzErr(0.2),
-    fList(0),
-    fEnergy(0),
+  fLowFluxCut(1000),
+  fMaxVzErr(0.2),
+  fList(0),
+  fEnergy(0),
     fField(999), 
-    fCollisionSystem(kUnknown),
+  fCollisionSystem(kUnknown),
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(true),
-    fUseV0AND(false),
-    fMinPileupContrib(3), 
+  fUseFirstPhysicsVertex(true),
+  fUseV0AND(false),
+  fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
     fUseDisplacedVertices(false),
   fDisplacedVertex(),
@@ -85,6 +86,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHEventsAccepted(0),
     fHEventsAcceptedXY(0),
     fHTriggers(0),
+    fHTriggerCorr(0),
     fHType(0),
     fHWords(0),
     fHCent(0),
@@ -125,6 +127,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHEventsAccepted(o.fHEventsAccepted),
     fHEventsAcceptedXY(o.fHEventsAcceptedXY),
     fHTriggers(o.fHTriggers),
+    fHTriggerCorr(o.fHTriggerCorr),
     fHType(o.fHType),
     fHWords(o.fHWords),
     fHCent(o.fHCent),
@@ -187,6 +190,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHEventsAccepted   = o.fHEventsAccepted;
   fHEventsAcceptedXY = o.fHEventsAcceptedXY;
   fHTriggers         = o.fHTriggers;
+  fHTriggerCorr      = o.fHTriggerCorr;
   fHType             = o.fHType;
   fHWords            = o.fHWords;
   fHCent             = o.fHCent;
@@ -213,6 +217,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHEventsTr)    fList->Add(fHEventsTr);
     if (fHEventsTrVtx) fList->Add(fHEventsTrVtx);
     if (fHTriggers)    fList->Add(fHTriggers);
+    if (fHTriggerCorr) fList->Add(fHTriggerCorr);
     if (fHType)        fList->Add(fHType);
     if (fHWords)       fList->Add(fHWords);
     if (fHCent)        fList->Add(fHCent);
@@ -409,19 +414,45 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHTriggers->SetFillStyle(3001);
   fHTriggers->SetStats(0);
   fHTriggers->SetDirectory(0);
-  fHTriggers->GetXaxis()->SetBinLabel(kInel   +1,"INEL");
-  fHTriggers->GetXaxis()->SetBinLabel(kInelGt0+1,"INEL>0");
-  fHTriggers->GetXaxis()->SetBinLabel(kNSD    +1,"NSD");
-  fHTriggers->GetXaxis()->SetBinLabel(kV0AND  +1,"VOAND");
-  fHTriggers->GetXaxis()->SetBinLabel(kEmpty  +1,"Empty");
-  fHTriggers->GetXaxis()->SetBinLabel(kA      +1,"A");
-  fHTriggers->GetXaxis()->SetBinLabel(kB      +1,"B");
-  fHTriggers->GetXaxis()->SetBinLabel(kC      +1,"C");
-  fHTriggers->GetXaxis()->SetBinLabel(kE      +1,"E");
-  fHTriggers->GetXaxis()->SetBinLabel(kPileUp +1,"Pileup");
-  fHTriggers->GetXaxis()->SetBinLabel(kMCNSD  +1,"NSD_{MC}");
-  fHTriggers->GetXaxis()->SetBinLabel(kOffline+1,"Offline");
+
+  fHTriggerCorr = new TH2I("triggerCorr", "Trigger correlation", 
+			   kOffline+1, 0, kOffline+1, 
+			   kOffline+1, 0, kOffline+1);
+  fHTriggerCorr->SetStats(0);
+  fHTriggerCorr->SetDirectory(0);
+  
+  Int_t binNum[] = { kInel   +1,
+		     kInelGt0+1,
+		     kNSD    +1,
+		     kV0AND  +1,
+		     kEmpty  +1,
+		     kA      +1,
+		     kB      +1,
+		     kC      +1,
+		     kE      +1,
+		     kPileUp +1,
+		     kMCNSD  +1,
+		     kOffline+1 };
+  const char* binLbl[] = { "INEL",	 
+			   "INEL>0",
+			   "NSD",	 
+			   "VOAND",
+			   "Empty",	 
+			   "A",	 
+			   "B",	 
+			   "C",	 
+			   "E",	 
+			   "Pileup",
+			   "NSD_{MC}", 
+			   "Offline" };
+  for (Int_t i = 0; i < kOffline; i++) {
+    fHTriggers->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
+    fHTriggerCorr->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
+    fHTriggerCorr->GetYaxis()->SetBinLabel(binNum[i], binLbl[i]);
+  }
   fList->Add(fHTriggers);
+  fList->Add(fHTriggerCorr);
+  
 
   fHType = new TH1I("type", Form("Event type (cut: SPD mult>%d)", 
 				 fLowFluxCut), 2, -.5, 1.5);
@@ -768,7 +799,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   if (triggers & AliAODForwardMult::kB) {
     fHTriggers->Fill(kB+.5);
     if (triggers & AliAODForwardMult::kInel) 
-      fHTriggers->Fill(kInel);
+      fHTriggers->Fill(kInel+.5);
     
     if (triggers & AliAODForwardMult::kInelGt0)
       fHTriggers->Fill(kInelGt0+.5);
@@ -782,7 +813,36 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   if (triggers & AliAODForwardMult::kA) fHTriggers->Fill(kA+.5);
   if (triggers & AliAODForwardMult::kC) fHTriggers->Fill(kC+.5);
   if (triggers & AliAODForwardMult::kE) fHTriggers->Fill(kE+.5);
+
+#define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
+  do { switch (BIN) { \
+    case kInel:    RET = triggers & AliAODForwardMult::kInel;    break; \
+    case kInelGt0: RET = triggers & AliAODForwardMult::kInelGt0; break; \
+    case kNSD:     RET = triggers & AliAODForwardMult::kNSD;     break; \
+    case kV0AND:   RET = triggers & AliAODForwardMult::kV0AND;   break; \
+    case kEmpty:   RET = triggers & AliAODForwardMult::kEmpty;   break; \
+    case kA:       RET = triggers & AliAODForwardMult::kA;       break; \
+    case kB:       RET = triggers & AliAODForwardMult::kB;       break; \
+    case kC:       RET = triggers & AliAODForwardMult::kC;       break; \
+    case kE:       RET = triggers & AliAODForwardMult::kE;       break; \
+    case kPileUp:  RET = triggers & AliAODForwardMult::kPileUp;  break; \
+    case kMCNSD:   RET = triggers & AliAODForwardMult::kMCNSD;   break; \
+    case kOffline: RET = triggers & AliAODForwardMult::kOffline; break; \
+    default:       RET = false; } } while(false)
+      
   
+  for (Int_t i = 0; i < kOffline+1; i++) { 
+    Bool_t hasX = false;
+    TEST_TRIG_BIN(hasX, i, triggers);
+    if (!hasX) continue;
+    for (Int_t j = i; j < kOffline+1; j++) { 
+      Bool_t hasY = false;
+      TEST_TRIG_BIN(hasY, j, triggers);
+      if (!hasY) continue;
+      
+      fHTriggerCorr->Fill(i+.5, j+.5);
+    }
+  }
   return kTRUE;
 }
 
