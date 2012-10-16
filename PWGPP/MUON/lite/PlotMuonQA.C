@@ -70,6 +70,8 @@ Bool_t IsTrigger(TObjArray *array, Int_t index, TString name);
 Bool_t IsTriggerSelectedForMuonPhysics(TObjArray *array, Int_t index);
 Bool_t IsHeavyIonCollision(AliCounterCollection *eventCounters);
 
+const Int_t kNMaxTriggers = 25;
+
 //--------------------------------------------------------------------------
 void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * triggerList = 0x0, Bool_t selectPhysics = kFALSE, const char *LHCPeriod = "LHC11c", const char *QAFileName = "QAresults.root") {
 	
@@ -222,27 +224,30 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TString centLegendName[centBinMax] ={"All collisions","[0-80%] from V0 amplitude","low mult. [60-80%] from V0 amplitude","high mult. [0-10%] from V0 amplitude"};
   TString centLegendNameShort[centBinMax] ={"All","[0-80%]","[60-80%]","[0-10%]"};
   TString selectionCent;
-		
-  Int_t colorTab[10]={1,4,2,3,6,7,12,1,1,1};
-  TArrayI *colorInd = new TArrayI(triggersB->GetEntriesFast());
-  for(Int_t i=0; i< triggersB->GetEntriesFast(); i++){
-    if(i<10) colorInd->AddAt(colorTab[i],i); 
-    else colorInd->AddAt(1,i);
-  }
+	       
+  Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
+  Int_t const colorNrFirst = 7;
+  Int_t colorTabFirst[colorNrFirst] = {1,4,2,3,6,7,12};
+  for (Int_t i = 0; i< triggersB->GetEntriesFast(); i++ ) {
+    if ( i < colorNrFirst ) colorTab[i] = colorTabFirst[i];
+    else colorTab[i] = 1;
+  } 
+  TArrayI *colorInd = new TArrayI( triggersB->GetEntriesFast() );
+  for(Int_t i=0; i< triggersB->GetEntriesFast(); i++) colorInd->AddAt(colorTab[i],i); 
 
-  TH1* hBNoPS[centBinMax][10]={}; 
-  TH1* hBWithPS[centBinMax][10]={};
-  TH1* hB[centBinMax][10]={};
-  TH1* hTriggerB[centBinMax][10], *hTrackerB[centBinMax][10], *hMatchedB[centBinMax][10], *hAllTracksB[centBinMax][10], *hMatchedLowPtB[centBinMax][10], *hMatchedHighPtB[centBinMax][10];
-  TH1* hMatchedLowPtBNoPS[centBinMax][10], *hMatchedHighPtBNoPS[centBinMax][10];
-  TH1* hPosMatchedB[centBinMax][10], *hNegMatchedB[centBinMax][10], *hAllMatchedB[centBinMax][10];
-  TH1* hBeamGasMatchedB[centBinMax][10], *hBeamGasMatchedHighPtB[centBinMax][10];
-  TH1 *hACWithPS[centBinMax][10]={}; 
-  TH1 *hACNoPS[centBinMax][10]={};
-  TH1 *hEWithPS[centBinMax][10]={};
-  TH1 *hENoPS[centBinMax][10]={};
+  TH1* hBNoPS[centBinMax][kNMaxTriggers];
+  TH1* hBWithPS[centBinMax][kNMaxTriggers];
+  TH1* hB[centBinMax][kNMaxTriggers]={};
+  TH1* hTriggerB[centBinMax][kNMaxTriggers], *hTrackerB[centBinMax][kNMaxTriggers], *hMatchedB[centBinMax][kNMaxTriggers], *hAllTracksB[centBinMax][kNMaxTriggers], *hMatchedLowPtB[centBinMax][kNMaxTriggers], *hMatchedHighPtB[centBinMax][kNMaxTriggers];
+  TH1* hMatchedLowPtBNoPS[centBinMax][kNMaxTriggers], *hMatchedHighPtBNoPS[centBinMax][kNMaxTriggers];
+  TH1* hPosMatchedB[centBinMax][kNMaxTriggers], *hNegMatchedB[centBinMax][kNMaxTriggers], *hAllMatchedB[centBinMax][kNMaxTriggers];
+  TH1* hBeamGasMatchedB[centBinMax][kNMaxTriggers], *hBeamGasMatchedHighPtB[centBinMax][kNMaxTriggers];
+  TH1 *hACWithPS[centBinMax][kNMaxTriggers]={}; 
+  TH1 *hACNoPS[centBinMax][kNMaxTriggers]={};
+  TH1 *hEWithPS[centBinMax][kNMaxTriggers]={};
+  TH1 *hENoPS[centBinMax][kNMaxTriggers]={};
   
-  if(triggersB->GetEntriesFast()>=10){
+  if(triggersB->GetEntriesFast()>=kNMaxTriggers){
     cout<<"Too many triggers = "<<triggersB->GetEntriesFast()<<endl;
     return;
   }
@@ -352,12 +357,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   if(count_trigger<=0) return;
 	
 	
-  Int_t NumOfBNoPS[centBinMax][10];
-  Int_t NumOfBWithPS[centBinMax][10];
-  Int_t NumOfACNoPS[centBinMax][10];
-  Int_t NumOfENoPS[centBinMax][10];
-  Int_t NumOfACWithPS[centBinMax][10];
-  Int_t NumOfEWithPS[centBinMax][10];
+  Int_t NumOfBNoPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfBWithPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfACNoPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfENoPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfACWithPS[centBinMax][kNMaxTriggers];
+  Int_t NumOfEWithPS[centBinMax][kNMaxTriggers];
 	
   for(centBin = 0; centBin < centBinMaxLoop; centBin++){
     for(Int_t i = 0; i < triggersB->GetEntriesFast(); i++){
@@ -582,6 +587,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     }
   }
   rootFileOut->cd();
+  legendHeader = ""; 
 
   cout<<"//===================================================================="<<endl;
   cout<<"// Draw beam gas contribution to matched tracks  for mus type trigger "<<endl;
@@ -1498,7 +1504,7 @@ TCanvas *ProcessCanvasRelativeTriggerContent(TObjArray *triggersB, TH1 **histo, 
   SetCanvas(cRelativeTriggerContent);
   cRelativeTriggerContent->cd();
 	
-  TH1* ratio[10];
+  TH1** ratio = new TH1*[triggersB->GetEntriesFast()];
   TLegend* legcRTC = new TLegend(0.2,0.15,0.50,0.40);
   legcRTC->SetHeader("Physics Selection");
 	
@@ -1547,12 +1553,12 @@ TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TO
   SetCanvas(c1);
   c1->cd();
 	 
-  TH1* ratioB[10], *ratioBNoPS[10];
-  TH1* ratioACNoPS[10];
-  TH1* ratioENoPS[10];
+  TH1** ratioB = new TH1*[triggersB->GetEntriesFast()], **ratioBNoPS = new TH1*[triggersB->GetEntriesFast()];
+  TH1** ratioACNoPS = new TH1*[triggersB->GetEntriesFast()];
+  TH1** ratioENoPS = new TH1*[triggersB->GetEntriesFast()];
   TLegend* legcRTC = new TLegend(0.2,0.15,0.50,0.40);
   legcRTC->SetHeader("Physics Selection");
-	 
+
   TString hName;
   for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
 		
