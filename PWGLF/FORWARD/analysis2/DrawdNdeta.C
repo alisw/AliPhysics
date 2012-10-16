@@ -529,11 +529,14 @@ struct dNdetaDrawer
   /** 
    * Get the results from the top-level list 
    * 
-   * @param list  List 
-   * @param name  name 
-   * @param max   On return, maximum of data 
-   * @param rmax  On return, maximum of ratios
-   * @param amax  On return, maximum of left-right comparisons
+   * @param list    List 
+   * @param mcList  List of histograms from MC
+   * @param empCorr Emperical correction if any
+   * @param name    name 
+   * @param max     On return, maximum of data 
+   * @param rmax    On return, maximum of ratios
+   * @param amax    On return, maximum of left-right comparisons
+   * @param truths  List of MC truths to compare to. 
    *
    * @return Array of results
    */
@@ -703,6 +706,8 @@ struct dNdetaDrawer
    * Fetch results for a particular centrality bin
    * 
    * @param list       List 
+   * @param mcList     List of MC results
+   * @param empCorr    Emperical correction if any 
    * @param name       Name 
    * @param thisOther  Other graphs 
    * @param color      Color 
@@ -710,6 +715,7 @@ struct dNdetaDrawer
    * @param max        On return, data maximum
    * @param rmax       On return, ratio maximum 
    * @param amax       On return, left-right maximum 
+   * @param truth      MC truth to compare to or possibly update
    *
    * @return Histogram of results 
    */
@@ -917,12 +923,13 @@ struct dNdetaDrawer
   /** 
    * Build main legend 
    * 
-   * @param stack   Stack to include 
-   * @param mg      (optional) Multi graph to include 
-   * @param x1      Lower X coordinate in the range [0,1]
-   * @param y1      Lower Y coordinate in the range [0,1]
-   * @param x2      Upper X coordinate in the range [0,1]
-   * @param y2 	    Upper Y coordinate in the range [0,1]
+   * @param stack    Stack to include 
+   * @param mg       (optional) Multi graph to include 
+   * @param x1       Lower X coordinate in the range [0,1]
+   * @param y1       Lower Y coordinate in the range [0,1]
+   * @param x2       Upper X coordinate in the range [0,1]
+   * @param y2 	     Upper Y coordinate in the range [0,1]
+   * @param forceCol If non-zero, force this many columns
    */
   void BuildLegend(THStack* stack, TMultiGraph* mg, 
 		   Double_t x1, Double_t y1, Double_t x2, Double_t y2,

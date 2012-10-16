@@ -102,6 +102,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 UShort_t    scheme,
 					 const TH2F* shapeCorr, 
 					 Double_t    trigEff,
+					 Double_t    trigEff0,
 					 Bool_t      symmetrice,
 					 Int_t       rebin, 
 					 Bool_t      rootProj,
@@ -116,7 +117,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   DGUARD(fDebug, 1, "In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
 	 GetName(), corrEmpty, cutEdges, rootProj);
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
-					shapeCorr, trigEff, 
+					shapeCorr, trigEff, trigEff0,
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
 					triggerMask, marker, color, mclist, 
@@ -145,14 +146,17 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
     AliError("Triggers histogram not set");
     return;
   }
+
   Double_t ntotal   = 0;
   Double_t epsilonT = trigEff;
+#if 0
   // TEMPORARY FIX
   if (triggerMask == AliAODForwardMult::kNSD) {
     // This is a local change 
     epsilonT = 0.92; 
     AliWarning(Form("Using hard-coded NSD trigger efficiency of %f",epsilonT));
   }
+#endif
   AliInfo("Adding per-ring histograms to output");
   Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal);
   TIter next(res->GetHists());

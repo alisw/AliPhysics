@@ -192,6 +192,7 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 					 UShort_t    scheme,
 					 const TH2F* shapeCorr, 
 					 Double_t    trigEff,
+					 Double_t    trigEff0,
 					 Bool_t      symmetrice,
 					 Int_t       rebin, 
 					 Bool_t      rootProj,
@@ -208,13 +209,13 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 	       "shapeCorr=%p, trigEff=%f, symmetrice=%d, rebin=%d, "
 	       "rootProj=%d, corrEmpty=%d, cutEdges=%d, triggerMask=0x%08x, "
 	       "marker=%d (%d)", 
-	       sums, results, scheme, shapeCorr, trigEff, symmetrice, 
+	       sums, results, scheme, shapeCorr, trigEff, trigEff0, symmetrice, 
 	       rebin, rootProj, corrEmpty, cutEdges, triggerMask, marker,
 	       GetMarkerStyle(kStar)));
 #endif
 
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
-					shapeCorr, trigEff, 
+					shapeCorr, trigEff, trigEff0,
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
 					triggerMask, marker, color, mclist, 

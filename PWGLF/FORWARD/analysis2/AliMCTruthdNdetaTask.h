@@ -166,6 +166,7 @@ protected:
      * @param scheme      Normalisation scheme options
      * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
+     * @param trigEff0    0-bin trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
      * @param rebin       Whether to rebin the results
      * @param rootProj    If true, use TH2::ProjectionX
@@ -182,6 +183,7 @@ protected:
 		     UShort_t    scheme,
 		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
+		     Double_t    trigEff0,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
 		     Bool_t      rootProj,

@@ -98,7 +98,7 @@ public:
   /** 
    * Initialize 
    * 
-   * @param default eta axis from parent task 
+   * @param axis Default eta axis from parent task 
    */
   void Init(const TAxis& axis);
   /** 

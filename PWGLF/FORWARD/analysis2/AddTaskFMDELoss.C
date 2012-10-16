@@ -21,6 +21,7 @@
  * 
  * @param mc      Assume MC input 
  * @param useCent Use centrality information 
+ * @param debug   Debug level
  *
  * @return Newly created task 
  *

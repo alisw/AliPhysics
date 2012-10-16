@@ -28,6 +28,23 @@ CentralAODConfig(AliCentralMultiplicityTask* task)
   task->SetUseSecondary(true);
   // Whether to do correction for acceptance
   task->SetUseAcceptance(true);
+
+  // --- Event inspector ---------------------------------------------
+  // Set the number of SPD tracklets for which we consider the event a
+  // low flux event
+  task->GetInspector().SetLowFluxCut(1000); 
+  // Set the maximum error on v_z [cm]
+  task->GetInspector().SetMaxVzErr(0.2);
+  // Least number of constributors to 2nd pile-up vertex
+  task->GetInspector().SetMinPileupContributors(3);
+  // Least distance from primary to 2nd pile-up vertex (cm)
+  task->GetInspector().SetMinPileupDistance(.8);
+  // V0-AND triggered events flagged as NSD 
+  task->GetInspector().SetUseV0AndForNSD(false);
+  // Use primary vertex selection from 1st physics WG
+  // task->GetInspector().SetUseFirstPhysicsVtx(true);
+  // Use satellite collisions
+  // task->GetInspector().SetUseDisplacedVertices(true);
   // task->GetInspector().SetDebug(4);
 
   // task->GetManager().SetSecMapPath(".");

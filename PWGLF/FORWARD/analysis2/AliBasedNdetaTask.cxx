@@ -28,6 +28,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCorrEmpty(true), 
     fUseROOTProj(false),
     fTriggerEff(1),
+  fTriggerEff0(1),
     fShapeCorr(0),
     fListOfCentralities(0),
     fSNNString(0),
@@ -59,6 +60,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCorrEmpty(true), 
     fUseROOTProj(false),
     fTriggerEff(1),
+    fTriggerEff0(1),
     fShapeCorr(0),
     fListOfCentralities(0),
     fSNNString(0),
@@ -101,6 +103,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fCorrEmpty(o.fCorrEmpty), 
     fUseROOTProj(o.fUseROOTProj),
     fTriggerEff(o.fTriggerEff),
+    fTriggerEff0(o.fTriggerEff0),
     fShapeCorr(o.fShapeCorr),
     fListOfCentralities(o.fListOfCentralities),
     fSNNString(o.fSNNString),
@@ -273,15 +276,8 @@ AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme)
 {
   DGUARD(fDebug,3,"Set the normalization scheme: 0x%x", scheme);
   fNormalizationScheme = scheme; 
-#if 0
-  const Char_t* tit = NormalizationSchemeString(scheme);
-  if (!fSchemeString) fSchemeString = new TNamed("scheme", "");
-  fSchemeString->SetTitle(tit);
-  fSchemeString->SetUniqueID(fNormalizationScheme);
-#else 
   if (fSchemeString) delete fSchemeString;
   fSchemeString = AliForwardUtil::MakeParameter("scheme", scheme);
-#endif
 }
 //________________________________________________________________________
 void 
@@ -302,16 +298,8 @@ AliBasedNdetaTask::SetTriggerMask(UShort_t mask)
 { 
   DGUARD(fDebug,3,"Set the trigger mask: 0x%0x", mask);
   fTriggerMask = mask; 
-#if 0
-  TString tit(AliAODForwardMult::GetTriggerString(mask));
-  tit = tit.Strip(TString::kBoth);
-  if (!fTriggerString) fTriggerString = new TNamed("trigger", "");
-  fTriggerString->SetTitle(tit);
-  fTriggerString->SetUniqueID(fTriggerMask);
-#else 
   if (fTriggerString) delete fTriggerString;
   fTriggerString = AliForwardUtil::MakeParameter("trigger", fTriggerMask);
-#endif
 }
 
 //________________________________________________________________________
@@ -436,26 +424,6 @@ AliBasedNdetaTask::UserExec(Option_t *)
   }
 
   // Here, we get the update 
-#if 0
-  if (!fSNNString) { 
-    UShort_t sNN = forward->GetSNN();
-    fSNNString = new TNamed("sNN", "");
-    fSNNString->SetTitle(AliForwardUtil::CenterOfMassEnergyString(sNN));
-    fSNNString->SetUniqueID(sNN);
-    fSums->Add(fSNNString);
-  
-    UShort_t sys = forward->GetSystem();
-    fSysString = new TNamed("sys", "");
-    fSysString->SetTitle(AliForwardUtil::CollisionSystemString(sys));
-    fSysString->SetUniqueID(sys);
-    fSums->Add(fSysString);
-
-    fSums->Add(fSchemeString);
-    fSums->Add(fTriggerString);
-
-    // Print();
-  }
-#else
   if (!fSNNString) { 
     fSNNString = AliForwardUtil::MakeParameter("sNN", forward->GetSNN());
     fSysString = AliForwardUtil::MakeParameter("sys", forward->GetSystem());
@@ -467,8 +435,6 @@ AliBasedNdetaTask::UserExec(Option_t *)
 
     // Print();
   }
-
-#endif
   PostData(1, fSums);
 }
 
@@ -689,7 +655,8 @@ AliBasedNdetaTask::Terminate(Option_t *)
   AliInfo(Form("Marker style=%d, color=%d", style, color));
   while ((bin = static_cast<CentralityBin*>(next()))) {
     
-    bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
+    bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, 
+	     fTriggerEff, fTriggerEff0, 
 	     fSymmetrice, fRebin, fUseROOTProj, fCorrEmpty, fCutEdges, 
 	     fTriggerMask, style, color, mclist, truthlist);
     if (fCentAxis && bin->IsAllBin()) continue;
@@ -789,6 +756,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
 
   // Output trigger efficiency and shape correction 
   fOutput->Add(AliForwardUtil::MakeParameter("triggerEff", fTriggerEff));
+  fOutput->Add(AliForwardUtil::MakeParameter("triggerEff0", fTriggerEff0));
   if (fShapeCorr) fOutput->Add(fShapeCorr);
 
   TNamed* options = new TNamed("options","");
@@ -864,6 +832,21 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   if (fTriggerEff != 1) SetTriggerEff(trigEff);
   if (fTriggerEff < 0)  fTriggerEff = 1;
 
+  // Trigger efficiency
+  TString eff0Name(Form("%sTriggerEff0", 
+		       fTriggerMask == AliAODForwardMult::kInel ? "inel" :
+		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
+		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
+		       "inelgt0" : "all"));
+
+  Double_t trigEff0 = 1; 
+  if (fNormalizationScheme & kTriggerEfficiency) { 
+    TObject* eff = fin->Get(eff0Name);
+    if (eff) AliForwardUtil::GetParameter(eff, trigEff0);
+  }
+  if (fTriggerEff0 != 1) SetTriggerEff0(trigEff0);
+  if (fTriggerEff0 < 0)  fTriggerEff0 = 1;
+
   // TEMPORARY FIX
   // Rescale the shape correction by the trigger efficiency 
   if (fShapeCorr) {
@@ -886,29 +869,31 @@ AliBasedNdetaTask::Print(Option_t*) const
   // 
   std::cout << this->ClassName() << ": " << this->GetName() << "\n"
 	    << std::boolalpha 
-	    << " Trigger:              " << (fTriggerString ? 
-					     fTriggerString->GetTitle() :
-					     "none") << "\n"
-	    << " Vertex range:         [" << fVtxMin << ":" << fVtxMax << "]\n"
-	    << " Rebin factor:         " << fRebin << "\n" 
-	    << " Cut edges:            " << fCutEdges << "\n"
-	    << " Symmertrice:          " << fSymmetrice << "\n"
-	    << " Use TH2::ProjectionX: " << fUseROOTProj << "\n"
-	    << " Correct for empty:    " << fCorrEmpty << "\n"
-	    << " Normalization scheme: " << (fSchemeString ? 
-					     fSchemeString->GetTitle() : 
+	    << " Trigger:                    " << (fTriggerString ? 
+						   fTriggerString->GetTitle() :
+						   "none") << "\n"
+	    << " Vertex range:               [" << fVtxMin << ":" 
+	    << fVtxMax << "]\n"
+	    << " Rebin factor:               " << fRebin << "\n" 
+	    << " Cut edges:                  " << fCutEdges << "\n"
+	    << " Symmertrice:                " << fSymmetrice << "\n"
+	    << " Use TH2::ProjectionX:       " << fUseROOTProj << "\n"
+	    << " Correct for empty:          " << fCorrEmpty << "\n"
+	    << " Normalization scheme:       " << (fSchemeString ? 
+						   fSchemeString->GetTitle() : 
 					     "none") <<"\n"
-	    << " Trigger efficiency:   " << fTriggerEff << "\n" 
-	    << " Shape correction:     " << (fShapeCorr ? 
-					   fShapeCorr->GetName() : 
-					   "none") << "\n"
-	    << " sqrt(s_NN):           " << (fSNNString ? 
-					     fSNNString->GetTitle() : 
-					   "unknown") << "\n"
-	    << " Collision system:     " << (fSysString ? 
-					     fSysString->GetTitle() : 
-					   "unknown") << "\n"
-	    << " Centrality bins:      " << (fCentAxis ? "" : "none");
+	    << " Trigger efficiency:         " << fTriggerEff << "\n" 
+	    << " Bin-0 Trigger efficiency:   " << fTriggerEff0 << "\n" 
+	    << " Shape correction:           " << (fShapeCorr ? 
+						   fShapeCorr->GetName() : 
+						   "none") << "\n"
+	    << " sqrt(s_NN):                 " << (fSNNString ? 
+						   fSNNString->GetTitle() : 
+						   "unknown") << "\n"
+	    << " Collision system:           " << (fSysString ? 
+						   fSysString->GetTitle() : 
+						   "unknown") << "\n"
+	    << " Centrality bins:            " << (fCentAxis ? "" : "none");
   if (fCentAxis) { 
     Int_t           nBins = fCentAxis->GetNbins();
     const Double_t* bins  = fCentAxis->GetXbins()->GetArray();
@@ -1546,7 +1531,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   Double_t nOffline    = t.GetBinContent(AliAODForwardMult::kBinOffline);
   Double_t nTriggered  = t.GetBinContent(AliAODForwardMult::kWithTrigger);
   Double_t nWithVertex = t.GetBinContent(AliAODForwardMult::kWithVertex);
-  Double_t nAccepted   = ntotal; // t.GetBinContent(AliAODForwardMult::kAccepted);
+  Double_t nAccepted   = ntotal; 
   ntotal               = 0;
   
   if (nTriggered <= 0.1) { 
@@ -1744,24 +1729,23 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   if(mclist) 
     centlist = static_cast<TList*> (mclist->FindObject(GetListName()));
   if(centlist)
-    dndetaMCCorrection = static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s",GetName(), postfix)));
+    dndetaMCCorrection = 
+      static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s",
+						   GetName(), postfix)));
   if(truthlist) 
-    truthcentlist = static_cast<TList*> (truthlist->FindObject(GetListName()));
+    truthcentlist =static_cast<TList*>(truthlist->FindObject(GetListName()));
   if(truthcentlist)
-    dndetaMCtruth =  static_cast<TH1D*> (truthcentlist->FindObject("dndetaTruth"));
-  //std::cout<<dndetaMCCorrection<<"  "<<dndetaMCtruth<<std::endl;
+    dndetaMCtruth =static_cast<TH1D*>(truthcentlist->FindObject("dndetaTruth"));
+
   if(dndetaMCCorrection && dndetaMCtruth) {
     AliInfo("Correcting with final MC correction");
     dndetaMCCorrection->Divide(dndetaMCtruth);
     dndetaMCCorrection->SetTitle("Final MC correction");
     dndetaMCCorrection->SetName("finalMCCorr");
-    dndeta->Divide(dndetaMCCorrection);
-    
-    //std::cout<<"histo "<<Form("dndeta%s%s",GetName(), postfix)<<"  "<<GetListName()<<"  "<<dndetaMCCorrection<<std::endl;
-    //std::cout<<"truth "<<GetListName()<<"  "<<dndetaMCtruth<<std::endl;
-  
+    dndeta->Divide(dndetaMCCorrection);    
   }
-  else AliInfo("No final MC correction applied");
+  else 
+    AliInfo("No final MC correction applied");
   
   // --- Set some histogram attributes -------------------------------
   TString post;
@@ -1790,6 +1774,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      UShort_t    scheme,
 				      const TH2F* shapeCorr, 
 				      Double_t    trigEff,
+				      Double_t    trigEff0,
 				      Bool_t      symmetrice,
 				      Int_t       rebin, 
 				      Bool_t      rootProj,
@@ -1845,7 +1830,10 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // --- Get normalization scaler ------------------------------------
   Double_t epsilonT  = trigEff;
-  Double_t epsilonT0 = trigEff;
+  Double_t epsilonT0 = trigEff0;
+  AliInfoF("Using epsilonT=%f, epsilonT0=%f for %d", 
+	   epsilonT, epsilonT0, triggerMask);
+#if 0
   // TEMPORARY FIX
   if (triggerMask == AliAODForwardMult::kNSD) {
     // This is a local change 
@@ -1868,15 +1856,16 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     AliWarning(Form("Using hard-coded NCluster>0 trigger efficiency of %f",
 		    epsilonT0));
   }
+#endif
 
   // Get our histograms 
   Double_t nSum   = 0;
-  TH2D*    sum    = fSum->CalcSum(fOutput, nSum, epsilonT0, 1, 
+  TH2D*    sum    = fSum->CalcSum(fOutput, nSum, epsilonT0, epsilonT, 
 				 marker, rootProj, corrEmpty);
   Double_t nSumMC = 0;
   TH2D*    sumMC  = 0;
   if (fSumMC) sumMC = fSumMC->CalcSum(fOutput, nSumMC, 
-				      epsilonT0, 1, marker,
+				      epsilonT0, epsilonT, marker,
 				      rootProj, corrEmpty);
   if (!sum) { 
     AliError("Failed to get sum from summer - bailing out");

@@ -57,9 +57,9 @@
  * 
  * or using the program @b runTrain
  * 
- * @verbatim
-   > runTrain --class=&lt;class&gt; --name=&lt;name&gt; [&lt;options&gt;] 
-   @endverbatim
+ * @code
+ * > runTrain --class=<class> --name=<name> [<options>] 
+ * @endcode
  *
  * Here, 
  *
@@ -100,6 +100,67 @@
  * setting used for the train and can easily be used to run merging
  * and terminate as needed.
  *
+ * @section train_setup_proof_spec PROOF specifics
+ *
+ * Local and Grid jobs are in a sense very similar.  That is, the
+ * individual Grid jobs are very much like Local jobs, in that they
+ * always produce output files which albiet not after Terminate.
+ *
+ * PROOF jobs are very different.  In a PROOF analysis, each slave
+ * only produces in memory output which is then sent via net
+ * connections (sockets) to the master.  One therefore needs to be
+ * very of output object ownership and the like.  
+ *
+ * Another major difference is that output files are generated within
+ * the PROOF cluster, and are generally not accessible from the
+ * outside.  For plain PROOF clusters in a local area network or
+ * so-called <i>Lite</i> session, it is generally not a problem since
+ * the files are accessible on the LAN or local machine for Lite
+ * sessions.  However, for large scale analysis farms (AAFs), the
+ * workers and masters are generally on a in-accessible sub-net, and
+ * there's no direct access to the produced files.  Now, for normal
+ * output files, like histogram files, etc. there are provisions for
+ * this, which means the final merged output is sent back to the
+ * client.  Special output, such as AODs, are however not merged nor
+ * sent back to the user by default.  There are two ways to deal with this: 
+ * 
+ * <ol>
+ *  <li> Register the output tree as a data set on the cluster.  This is useful if you need to process the results again on the cluster.</li>
+ *  <li> Send the output to a (possibly custom) XRootd server.  This is useful if you need to process the output outside of the cluster</li> 
+ * </ol>
+ *
+ * The first mode is specified by passing the option
+ * <tt>dsname=</tt><i>&lt;name&gt;</i> in the cluster URI.  The created
+ * dataset will normally be made in
+ * <tt>/default/</tt><i>&lt;user&gt;</i><tt>/</tt><i>&lt;name&gt;</i>. If the
+ * <tt>=</tt><i>&lt;name&gt;</i> part is left out, the <i>escaped name</i> of
+ * the job will be used.  
+ *
+ * The second mode is triggered by passing the option
+ * <tt>storage=<i>URI</i></tt> to the train setup.  The <i>URI</i>
+ * should be of the form
+ *
+ * @code
+ *   rootd://<host>[:<port>]/<path>
+ * @endcode
+ * 
+ * where <i>&lt;host&gt;</i> is the name of a machine accessible by
+ * the cluster, <i>&lt;port&gt;</i> is an optional port number (e.g.,
+ * if different from 1093), and <i>&lt;path&gt;</i> is an absolute
+ * path on <i>&lt;host&gt;</i>.
+ * 
+ * The XRootd process should be started (optionally by the user) on
+ * <i>&lt;host&gt;</i> as
+ *
+ * @code
+ *    xrootd -p <port> <path>
+ * @endcode
+ *
+ * When running jobs on AAFs, one can use the Grid handler to set-up
+ * aspects of the job.  However, sometimes it's desirable to leave the
+ * Grid handler out.  To do that, pass the option <tt>plain</tt> in
+ * the cluster URI.
+ *
  * @section train_setup_input Specifying the input
  * @subsection train_setup_local Local data input
  * 
@@ -128,12 +189,15 @@
  * @subsection train_setup_proof PROOF input. 
  * 
  * The input data for a PROOF based analysis can be specified as per a
- * Local job, in which case the data must be available to the slaves
- * at the specified locations, or one can specify a data-set name via 
+ * Local job if the cluster used is local, in which case the data must
+ * be available to the slaves at the specified locations, or one can
+ * specify a data-set name via
  * 
  * @code 
  *   train->SetDataSet("<data-set-name>");
  * @endcode 
+ *
+ * @b Note: For AAFs using the Grid Handler one <i>must</i> use data sets. 
  *
  * @subsection train_setup_grid_esd Grid ESD input. 
  *

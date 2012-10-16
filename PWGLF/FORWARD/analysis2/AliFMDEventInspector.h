@@ -24,6 +24,7 @@ class TH1D;
 class TH1I;
 class TH1F;
 class TH2F;
+class TH2I;
 class TAxis;
 // class TList;
 
@@ -444,6 +445,7 @@ protected:
   TH1I*    fHEventsAccepted; //! Events w/trigger and vertex in range 
   TH2D*    fHEventsAcceptedXY; //! XY vtx with trigger and Z vertex in range 
   TH1I*    fHTriggers;    //! Triggers
+  TH2I*    fHTriggerCorr; //! Correlation of triggers
   TH1I*    fHType;        //! Type (low/high flux) of event
   TH1I*    fHWords;       //! Trigger words 
   TH1F*    fHCent;        //! Centrality 

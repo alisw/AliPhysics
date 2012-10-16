@@ -172,6 +172,12 @@ public:
    */
   void SetTriggerEff(Double_t e) { fTriggerEff = e; } 
   /** 
+   * Trigger efficiency for 0-bin for selected trigger(s)
+   * 
+   * @param e Trigger efficiency for 0-bin
+   */
+  void SetTriggerEff0(Double_t e) { fTriggerEff0 = e; } 
+  /** 
    * Set the shape correction (a.k.a., track correction) for selected
    * trigger(s)
    * 
@@ -701,6 +707,7 @@ protected:
      * @param scheme      Normalisation scheme options
      * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
+     * @param trigEff0    0-bin trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
      * @param rebin       Whether to rebin the results
      * @param rootProj    If true, use TH2::ProjectionX
@@ -717,6 +724,7 @@ protected:
 		     UShort_t    scheme,
 		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
+		     Double_t    trigEff0,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
 		     Bool_t      rootProj,
@@ -858,28 +866,19 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
+  Double_t        fTriggerEff0;  // Bin-0 Trigger efficiency for sel trigger(s)
   TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
-#if 0
-  TNamed*         fSNNString;    // sqrt(s_NN) string 
-  TNamed*         fSysString;    // Collision system string 
-#else
-  TObject* fSNNString;    // sqrt(s_NN) string 
-  TObject* fSysString;    // Collision system string 
-#endif
+  TObject*        fSNNString;    // sqrt(s_NN) string 
+  TObject*        fSysString;    // Collision system string 
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
   UShort_t        fNormalizationScheme; // Normalization scheme
-#if 0
-  TNamed*         fSchemeString;     // Normalization scheme string
-  TNamed*         fTriggerString;    // Trigger string 
-#else 
   TObject*        fSchemeString;    // Normalization scheme string
   TObject*        fTriggerString;    // Trigger string 
-#endif
   TString         fFinalMCCorrFile; //Filename for final MC corr
   
-  ClassDef(AliBasedNdetaTask,8); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,9); // Determine charged particle density
 };
 
 #endif
