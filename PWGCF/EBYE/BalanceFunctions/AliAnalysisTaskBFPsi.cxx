@@ -280,15 +280,15 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistEta);
   fHistRapidity  = new TH2F("fHistRapidity","y distribution;y;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistRapidity);
-  fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi;Centrality percentile",200,-20,380,220,-5,105);
+  fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiAfter);
-  fHistPhiPos  = new TH2F("fHistPhiPos","#phi distribution for positive particles;#phi;Centrality percentile",200,-20,380,220,-5,105);
+  fHistPhiPos  = new TH2F("fHistPhiPos","#phi distribution for positive particles;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiPos);
-  fHistPhiNeg  = new TH2F("fHistPhiNeg","#phi distribution for negative particles;#phi;Centrality percentile",200,-20,380,220,-5,105);
+  fHistPhiNeg  = new TH2F("fHistPhiNeg","#phi distribution for negative particles;#phi;Centrality percentile",200,0.,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiNeg);
   fHistV0M  = new TH2F("fHistV0M","V0 Multiplicity C vs. A",500, 0, 20000, 500, 0, 20000);
   fList->Add(fHistV0M);
@@ -728,7 +728,7 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
     AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
     if (headerH) {
       gReactionPlane = headerH->ReactionPlaneAngle();
-      gReactionPlane *= TMath::RadToDeg();
+      //gReactionPlane *= TMath::RadToDeg();
     }
   }//MC
   
@@ -739,9 +739,10 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
     if(ep){ 
       gVZEROEventPlane = ep->CalculateVZEROEventPlane(event,10,2,qxTot,qyTot);
       if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
-      gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
+      //gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
+      gReactionPlane = gVZEROEventPlane;
     }
-    }//AOD,ESD,ESDMC
+  }//AOD,ESD,ESDMC
 
   return gReactionPlane;
 }
@@ -783,7 +784,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
       vY      = aodTrack->Y();
-      vPhi    = aodTrack->Phi() * TMath::RadToDeg();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
       
       Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
@@ -988,7 +989,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       vCharge = trackTPC->Charge();
       vY      = trackTPC->Y();
       vEta    = trackTPC->Eta();
-      vPhi    = trackTPC->Phi() * TMath::RadToDeg();
+      vPhi    = trackTPC->Phi();// * TMath::RadToDeg();
       vPt     = trackTPC->Pt();
       fHistClus->Fill(trackTPC->GetITSclusters(0),nClustersTPC);
       fHistDCA->Fill(b[1],b[0]);
@@ -1081,10 +1082,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       
       fHistPt->Fill(vPt,fCentrality);
       fHistEta->Fill(vEta,fCentrality);
-      fHistPhi->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      fHistPhi->Fill(vPhi,fCentrality);
+      //fHistPhi->Fill(vPhi*TMath::RadToDeg(),fCentrality);
       fHistRapidity->Fill(vY,fCentrality);
-      if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),fCentrality);
-      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      //if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      //else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,fCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,fCentrality);
       
       //Flow after burner
       if(fUseFlowAfterBurner) {
@@ -1111,8 +1115,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
 	fHistPhiAfter->Fill(vDeltaphiAfter,fCentrality);
       }
       
-      vPhi *= TMath::RadToDeg();
-          
+      //vPhi *= TMath::RadToDeg();
+                
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
       
     } //track loop

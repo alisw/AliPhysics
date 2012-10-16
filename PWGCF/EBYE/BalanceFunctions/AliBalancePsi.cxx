@@ -61,7 +61,7 @@ AliBalancePsi::AliBalancePsi() :
   fHistHBTafter(0),
   fHistConversionbefore(0),
   fHistConversionafter(0),
-  fHistPshiMinusPhi(0),
+  fHistPsiMinusPhi(0),
   fPsiInterval(15.),
   fHBTCut(kFALSE),
   fConversionCut(kFALSE) {
@@ -86,7 +86,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistHBTafter(balance.fHistHBTafter),
   fHistConversionbefore(balance.fHistConversionbefore),
   fHistConversionafter(balance.fHistConversionafter),
-  fHistPshiMinusPhi(balance.fHistPshiMinusPhi),
+  fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
   fPsiInterval(balance.fPsiInterval),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut) {
@@ -107,7 +107,7 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistHBTafter;
   delete fHistConversionbefore;
   delete fHistConversionafter;
-  delete fHistPshiMinusPhi;
+  delete fHistPsiMinusPhi;
 }
 
 //____________________________________________________________________//
@@ -133,15 +133,15 @@ void AliBalancePsi::InitHistograms() {
   dBinsPair[0]      = centralityBins;
   axisTitlePair[0]  = "Centrality percentile [%]"; */
 
-  //Psi_2: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (all)
+  //Psi_2: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest)
   const Int_t kNPsi2Bins = 4;
   Double_t psi2Bins[kNPsi2Bins+1] = {-0.5,0.5,1.5,2.5,3.5};
   iBinSingle[0]       = kNPsi2Bins;
   dBinsSingle[0]      = psi2Bins;
-  axisTitleSingle[0]  = "#phi - #Psi_{2} (a.u.)";
+  axisTitleSingle[0]  = "#varphi - #Psi_{2} (a.u.)";
   iBinPair[0]       = kNPsi2Bins;
   dBinsPair[0]      = psi2Bins;
-  axisTitlePair[0]  = "#phi - #Psi_{2} (a.u.)"; 
+  axisTitlePair[0]  = "#varphi - #Psi_{2} (a.u.)"; 
   
    // delta eta
   const Int_t kNDeltaEtaBins = 80;
@@ -150,17 +150,18 @@ void AliBalancePsi::InitHistograms() {
     deltaEtaBins[i] = -2.0 + i * 0.05;
   iBinPair[1]       = kNDeltaEtaBins;
   dBinsPair[1]      = deltaEtaBins;
-  axisTitlePair[1]  = "#Delta #eta"; 
+  axisTitlePair[1]  = "#Delta#eta"; 
 
    // delta phi
   const Int_t kNDeltaPhiBins = 72;
   Double_t deltaPhiBins[kNDeltaPhiBins+1];
   for(Int_t i = 0; i < kNDeltaPhiBins+1; i++){
-    deltaPhiBins[i] = -180.0 + i * 5.;
+    //deltaPhiBins[i] = -180.0 + i * 5.;
+    deltaPhiBins[i] = -TMath::Pi()/2. + i * 5.*TMath::Pi()/180.;
   } 
   iBinPair[2]       = kNDeltaPhiBins;
   dBinsPair[2]      = deltaPhiBins;
-  axisTitlePair[2]  = "#Delta #phi (#circ)"; 
+  axisTitlePair[2]  = "#Delta#varphi (rad)"; 
 
   // pt(trigger-associated)
   const Int_t kNPtBins = 16;
@@ -170,15 +171,15 @@ void AliBalancePsi::InitHistograms() {
   //} 
   iBinSingle[1]       = kNPtBins;
   dBinsSingle[1]      = ptBins;
-  axisTitleSingle[1]  = "p_{t}^{trig.} (GeV/c)"; 
+  axisTitleSingle[1]  = "p_{T,trig.} (GeV/c)"; 
 
   iBinPair[3]       = kNPtBins;
   dBinsPair[3]      = ptBins;
-  axisTitlePair[3]  = "p_{t}^{trig.} (GeV/c)"; 
+  axisTitlePair[3]  = "p_{T,trig.} (GeV/c)"; 
 
   iBinPair[4]       = kNPtBins;
   dBinsPair[4]      = ptBins;
-  axisTitlePair[4]  = "p_{t}^{assoc.} (GeV/c)";   
+  axisTitlePair[4]  = "p_{T,assoc.} (GeV/c)";   
 
   TString histName;
   //+ triggered particles
@@ -243,11 +244,11 @@ void AliBalancePsi::InitHistograms() {
   AliInfo("Finished setting up the AliTHn");
 
   // QA histograms
-  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,200);
-  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,200);
-  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,200);
-  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,200);
-  fHistPshiMinusPhi     = new TH2D("fHistPshiMinusPhi","",4,-0.5,3.5,100,0,360.);
+  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistPsiMinusPhi     = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
 }
 
 //____________________________________________________________________//
@@ -306,24 +307,24 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     Double_t gPsiMinusPhiBin = -10.;
     gPsiMinusPhi   = TMath::Abs(firstPhi - gReactionPlane);
     //in-plane
-    if((gPsiMinusPhi <= 7.5)||
-       ((172.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5)))
+    if((gPsiMinusPhi <= 7.5*TMath::DegToRad())||
+       ((172.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5*TMath::DegToRad())))
       gPsiMinusPhiBin = 0.0;
     //intermediate
-    else if(((37.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5))||
-	    ((127.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5))||
-	    ((217.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5))||
-	    ((307.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5)))
+    else if(((37.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5*TMath::DegToRad()))||
+	    ((127.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5*TMath::DegToRad()))||
+	    ((217.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5*TMath::DegToRad()))||
+	    ((307.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5*TMath::DegToRad())))
       gPsiMinusPhiBin = 1.0;
     //out of plane
-    else if(((82.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5))||
-	    ((262.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5)))
+    else if(((82.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5*TMath::DegToRad()))||
+	    ((262.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5*TMath::DegToRad())))
       gPsiMinusPhiBin = 2.0;
     //everything else
     else 
       gPsiMinusPhiBin = 3.0;
     
-    fHistPshiMinusPhi->Fill(gPsiMinusPhiBin,gPsiMinusPhi);
+    fHistPsiMinusPhi->Fill(gPsiMinusPhiBin,gPsiMinusPhi);
 
     Short_t  charge1 = (Short_t) firstParticle->Charge();
     
@@ -339,23 +340,27 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
     //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
     for(Int_t j = 0; j < iMax; j++) {  
-      
       if (particlesMixed && j == jMax-1 )  // if the mixed track number is smaller than the main event one 
 	break;
 
       if(j == i) continue; // no auto correlations
       
       AliVParticle* secondParticle = (AliVParticle*) particlesSecond->At(j);
-      
       Short_t charge2 = (Short_t) secondParticle->Charge();
       
       trackVariablesPair[0]    =  gPsiMinusPhiBin;
       trackVariablesPair[1]    =  firstEta - secondEta[j];  // delta eta
       trackVariablesPair[2]    =  firstPhi - secondPhi[j];  // delta phi
-      if (trackVariablesPair[2] > 180.)   // delta phi between -180 and 180 
-	trackVariablesPair[2] -= 360.;
-      if (trackVariablesPair[2] <  - 180.) 
-	trackVariablesPair[2] += 360.;
+      //if (trackVariablesPair[2] > 180.)   // delta phi between -180 and 180 
+      //trackVariablesPair[2] -= 360.;
+      //if (trackVariablesPair[2] <  - 180.) 
+      //trackVariablesPair[2] += 360.;
+      if (trackVariablesPair[2] > TMath::Pi()) // delta phi between -pi and pi 
+	trackVariablesPair[2] -= 2.*TMath::Pi();
+      if (trackVariablesPair[2] <  - TMath::Pi()) 
+	trackVariablesPair[2] += 2.*TMath::Pi();
+      if (trackVariablesPair[2] <  - TMath::Pi()/2.) 
+      trackVariablesPair[2] += 2.*TMath::Pi();
       
       trackVariablesPair[3]    =  firstPt;      // pt trigger
       trackVariablesPair[4]    =  secondPt[j];  // pt
@@ -377,8 +382,10 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
 	  {
 	    // phi in rad
-	    Float_t phi1rad = firstPhi*TMath::DegToRad();
-	    Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	    //Float_t phi1rad = firstPhi*TMath::DegToRad();
+	    //Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	    Float_t phi1rad = firstPhi;
+	    Float_t phi2rad = secondPhi[j];
 	    
 	    // check first boundaries to see if is worth to loop and find the minimum
 	    Float_t dphistar1 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 0.8, bSign);
@@ -420,8 +427,10 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  Float_t tantheta1 = 1e10;
 	  
 	  // phi in rad
-	  Float_t phi1rad = firstPhi*TMath::DegToRad();
-	  Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	  //Float_t phi1rad = firstPhi*TMath::DegToRad();
+	  //Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	  Float_t phi1rad = firstPhi;
+	  Float_t phi2rad = secondPhi[j];
 	  
 	  if (firstEta < -1e-10 || firstEta > 1e-10)
 	    tantheta1 = 2 * TMath::Exp(-firstEta) / ( 1 - TMath::Exp(-2*firstEta));
@@ -511,12 +520,12 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
     
     switch(iVariablePair) {
     case 1:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #eta");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta #eta)");
+      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#eta");
+      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta#eta)");
       break;
     case 2:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #phi (deg.)");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta #phi)");
+      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta#varphi)");
       break;
     default:
       break;
@@ -591,9 +600,9 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
     gHistBalanceFunctionHistogram = (TH2D*)hTemp1->Clone();
     gHistBalanceFunctionHistogram->Reset();
-    gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #eta");   
-    gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("#Delta #phi (deg.)");
-    gHistBalanceFunctionHistogram->GetZaxis()->SetTitle("B(#Delta #eta,#Delta #phi)");   
+    gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#eta");   
+    gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("#Delta#varphi (rad)");
+    gHistBalanceFunctionHistogram->GetZaxis()->SetTitle("B(#Delta#eta,#Delta#varphi)");   
     
     hTemp1->Sumw2();
     hTemp2->Sumw2();
