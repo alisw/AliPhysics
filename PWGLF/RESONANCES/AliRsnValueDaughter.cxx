@@ -291,8 +291,8 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          if (track) {
          	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
          	if (trackESD) {
-         		UShort_t nClustersTPC = trackESD->GetITSclusters(0);
-         		fComputedValue =  trackESD->GetITSchi2()/Float_t(nClustersTPC);
+         		UShort_t nClustersITS = trackESD->GetITSclusters(0);
+         		fComputedValue =  trackESD->GetITSchi2()/Float_t(nClustersITS);
          	} else {
          		fComputedValue = ((AliAODTrack*)track)->Chi2perNDF();
          	}
