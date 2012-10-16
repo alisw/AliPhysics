@@ -18,9 +18,9 @@
 //                                                                     //
 //  Note on the upgrade detector types:                                //
 //  The coarse type defines detectors served by different classes,     //
-//  like Pix. Each such a detector type can have kMaxSegmPerDetType //
+//  like Pix. Each such a detector type can have kMaxSegmPerDetType    //
 //  segmentations (pitch etc.) whose parameteres are stored in the     //
-//  AliITSsegmentation derived class (like AliITSUSegmentationPix)   //
+//  AliITSsegmentation derived class (like AliITSUSegmentationPix)     //
 //  This allows to have in the setup modules served by the same        //
 //  classes but with different segmentations.                          //
 //  The full detector type is composed as:                             //
@@ -110,8 +110,8 @@ class AliITSUGeomTGeo : public TObject {
   static const char* GetITSLadderPattern()                              {return fgkITSLadName;}
   static const char* GetITSModulePattern()                              {return fgkITSModName;}
   static const char* GetITSSensorPattern()                              {return fgkITSSensName;}
-  static const char* GetDetTypeName(Int_t i)                            {return (i<0||i>=kNDetTypes) ? 0 : fgkITSDetTypeName[i];}
   static const char* GetITSsegmentationFileName()                       {return fgITSsegmFileName.Data();}
+  static const char* GetDetTypeName(Int_t i);
   static void        SetITSsegmentationFileName(const char* nm)         {fgITSsegmFileName = nm;}
   static UInt_t      ComposeDetTypeID(UInt_t segmId);
   //
@@ -285,5 +285,11 @@ inline void AliITSUGeomTGeo::GlobalToLocal(Int_t lay, Int_t lad, Int_t det,const
   GlobalToLocal(GetModuleIndex(lay,lad,det), glob, loc);
 }
 
+//_____________________________________________________________________________________________
+inline const char* AliITSUGeomTGeo::GetDetTypeName(Int_t i)
+{
+  if (i>=kNDetTypes) i/=kMaxSegmPerDetType; // full type is provided
+  return fgkITSDetTypeName[i];
+}
 
 #endif

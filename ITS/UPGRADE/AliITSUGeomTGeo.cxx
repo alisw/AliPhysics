@@ -565,7 +565,7 @@ Int_t AliITSUGeomTGeo::ExtractLayerDetType(Int_t lay)  const
   // Determines the layer detector type the Upgrade Geometry
   //
   // Inputs:
-  //   lay: layer number from 1
+  //   lay: layer number from 0
   // Outputs:
   //   none
   // Return:
