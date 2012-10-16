@@ -373,14 +373,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     {
       timeCFD[i]=0; timeLED[i]=0; chargeQT0[i]=0; chargeQT1[i]=0;
     }
-     Int_t fBCID=Int_t (rawReader->GetBCID());
-      Int_t trmbunch= myrawreader.GetTRMBunchID();
-      AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
-      if( (trmbunch-fBCID)!=37) {
-	AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
-	type = -1;
-      }
- 
+  
       if(type == 7  ) {  //only physics 
 	for (Int_t i=0; i<107; i++) {
 	for (Int_t iHit=0; iHit<5; iHit++) 
@@ -389,6 +382,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
 	}
 	
+	Int_t fBCID=Int_t (rawReader->GetBCID());
+	Int_t trmbunch= myrawreader.GetTRMBunchID();
+	AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
+	if( (trmbunch-fBCID)!=37  ) {
+	  AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
+	  //	type = -1;
+	}
 	for (Int_t in=0; in<12; in++)  
 	  {
 	    for (Int_t iHit=0; iHit<5; iHit++) 
@@ -813,16 +813,18 @@ Bool_t AliT0Reconstructor::PileupFlag() const
   
 Bool_t AliT0Reconstructor::BackgroundFlag() const
 {
+ 
   Bool_t background = false;
-
-  Float_t orA = fESDTZERO->GetOrA(0);
-  Float_t orC = fESDTZERO->GetOrC(0);
-  Float_t tvdc =  fESDTZERO->GetTVDC(0);
-
-  if ( (orA > -5 && orA <5) && (orC > -5 && orC <5) && (tvdc < -5 || tvdc > 5)) {
-    background = true;
-    //   printf(" orA %f orC %f tvdc %f\n", orA, orC, tvdc);
-  } 
+  /*  
+      Float_t orA = fESDTZERO->GetOrA(0);
+      Float_t orC = fESDTZERO->GetOrC(0);
+      Float_t tvdc =  fESDTZERO->GetTVDC(ih);
+      
+      if ( (orA > -5 && orA <5) && (orC > -5 && orC <5) && (tvdc < -5 || tvdc > 5)) {
+      background = true;
+      //   printf(" orA %f orC %f tvdc %f\n", orA, orC, tvdc);
+      } 
+  */ 
   return background;
 
 
