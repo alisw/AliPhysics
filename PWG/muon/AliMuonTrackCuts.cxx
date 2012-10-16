@@ -50,7 +50,7 @@ AliMuonTrackCuts::AliMuonTrackCuts() :
   fUseCustomParam(kFALSE),
   fSharpPtCut(kFALSE),
   fAllowDefaultParams(kFALSE),
-  fPassNumber(0),
+  fPassNumber(-1),
   fOADBParam()
 {
   /// Default ctor.
@@ -145,12 +145,9 @@ Bool_t AliMuonTrackCuts::SetRun ( const AliInputEventHandler* eventHandler )
   
   if ( fUseCustomParam ) return kFALSE;
   Int_t runNumber = eventHandler->GetEvent()->GetRunNumber();
-  // First try to guess the pass from data
-  Int_t guessPassNumber = AliAnalysisMuonUtility::GetPassNumber(eventHandler);
-  if ( guessPassNumber >= 0 ) {
-    // If pass is found, it will be used instead of the one reuqested by the user
-    if ( fPassNumber >= 0 && fPassNumber != guessPassNumber ) AliWarning(Form("Using pass from data (pass%i) instead of the requested pass%i",guessPassNumber,fPassNumber));
-    fPassNumber = guessPassNumber;
+  if ( fPassNumber < 0 ) {
+    // Pass number not set by user: try to guess it from data
+    fPassNumber = AliAnalysisMuonUtility::GetPassNumber(eventHandler);
   }
   return ReadParamFromOADB ( runNumber );
 }
