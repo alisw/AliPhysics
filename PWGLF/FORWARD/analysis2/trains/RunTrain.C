@@ -66,11 +66,11 @@ NEVENTS:     Number of events to analyse
  *
  * @ingroup pwglf_forward_trains_run
  */
-void RunTrain(const char* trainClass, 
-	      const char* trainName, 
-	      const char* options="", 
-	      const char* runs="", 
-	      Int_t       nEvents=-1)
+void RunTrain(const TString& trainClass, 
+	      TString&       trainName, 
+	      const TString& options="", 
+	      const TString& runs="", 
+	      Int_t          nEvents=-1)
 {
   const char* builder = 
     "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/trains/BuildTrain.C";
@@ -79,10 +79,10 @@ void RunTrain(const char* trainClass,
   BuildTrain(trainClass);
 
   gROOT->ProcessLine(Form("trainObj = new %s(\"%s\")", 
-			  trainClass, trainName));
+			  trainClass.Data(), trainName.Data()));
   if (!trainObj) {
     Error("RunTrain", "Failed to make train %s of class %s", 
-	  trainName, trainClass);
+	  trainName.Data(), trainClass.Data());
     gApplication->Terminate();
   }
   TrainSetup::Runner r(*trainObj);
@@ -101,6 +101,7 @@ void RunTrain(const char* trainClass,
     return;
   }
   r.Run(runs, nEvents);
+  trainName = r.TrainName();
 }
 /*
  * EOF

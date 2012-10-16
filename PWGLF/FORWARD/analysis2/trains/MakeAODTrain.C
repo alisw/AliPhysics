@@ -226,8 +226,8 @@ protected:
     
     std::ofstream o("dNdeta.sh");
     o << "#!/bin/bash\n\n"
-      << "oper=$1\n"
-      << "if test x$oper = x ; then oper=full ; fi\n\n"
+      << "oper=${1:-full}\n"
+      << "shift\n\n"
       << "class=MakedNdetaTrain\n"
       << "name=" << fName << "_dNdeta\n"
       << "nev=" << nEvents << "\n\n"
@@ -244,9 +244,10 @@ protected:
       << "  --vzMax=10 \\\n"
       << "  --scheme=full \\\n"
       << "  --datadir=" << GetOutputDirectory(fExecMode) << " \\\n"
+      << "  --dataset=" << GetOutputDataSet() << " \\\n"
       << "  --oper=$oper)\n\n"
       << "echo \"Running runTrain ${opts[@]}\"\n"
-      << "runTrain \"${opts[@]}\"\n\n"
+      << "runTrain \"${opts[@]}\" $@\n\n"
       << "# EOF\n" << std::endl;
     o.close();
     gSystem->Exec("chmod a+x dNdeta.sh");
@@ -257,7 +258,7 @@ protected:
     TrainSetup::SaveSetupROOT(r, nEvents);
     
     std::ofstream o("dNdeta.C");
-    o << "void dNdeta()\n"
+    o << "void dNdeta(const char* extra=\"\")\n"
       << "{\n"
       << "  TString opts;\n";
     TrainSetup::SaveOptions(o, "opts", r);
@@ -267,15 +268,16 @@ protected:
       << "  opts.Append(\"vzMin=-10,\");\n"
       << "  opts.Append(\"vzMax=10,\");\n"
       << "  opts.Append(\"scheme=full,\");\n"
-      << "  opts.Append(\"datadir=" << GetOutputDirectory(fExecMode) 
-      << ":\");\n\n"
+      << "  opts.Append(\"datadir=" << GetOutputDirectory(fExecMode)<<"\",);\n"
+      << "  opts.Append(\"dataset=" << GetOutputDataSet() << "\",);\n"
+      << "  opts.Append(extra);\n\n"
       << "  TString runs(\"";
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
       o << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
     o << "\");\n\n"
       << "  Int_t   nEvents = " << nEvents << ";\n\n"
       << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C\");\n"
-      << "  RunTrain(\"MakedNdetaTrain\",\"dndeta_" << fName << "\",opts,runs,nEvents);\n"
+      << "  RunTrain(\"MakedNdetaTrain\",\"" << fName << "_dndeta\",opts,runs,nEvents);\n"
       << "}\n"
       << "// EOF" << std::endl;
     o.close();

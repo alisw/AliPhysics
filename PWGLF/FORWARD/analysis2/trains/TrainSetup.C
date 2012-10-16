@@ -57,6 +57,7 @@ class TDatime;
 class TString;
 class TSystemDirectory;
 class TUrl;
+class AliVEventHandler;
 #endif
 
 
@@ -133,9 +134,11 @@ struct TrainSetup
       fAliRootVersion("last"),
       fAliEnAPIVersion("V1.1x"),
       fProofServer("alice-caf.cern.ch"),
+      fPlainAAF(false),
       fDataDir("/alice/data/2010/LHC10c"),
       fDataPattern("*"),
       fDataSet("/COMMON/COMMON/LHC09a4_run8100X#/esdTree"),
+      fSpecialStorage(""),
       fXML(""), 
       fNReplica(4),
       fAllowOverwrite(kFALSE),
@@ -153,6 +156,7 @@ struct TrainSetup
       fUsePar(false), 
       fMC(false), 
       fPerRunMerge(false),
+    fNoPSTask(false),
       fVerbose(0)
   {
     fEscapedName = EscapeName(fName, fDatime);
@@ -451,6 +455,14 @@ struct TrainSetup
    * @param perRun If true, do final merge over all runs 
    */
   void SetPerRunMerge(Bool_t perRun) { fPerRunMerge = perRun; }
+  /** 
+   * If set, then a plain physics selection object is added to the 
+   * input handler.  Otherwise, a full task is added. 
+   * 
+   * @param noTask If true, do not add a task, but only the bare
+   * physics selection object
+   */
+  void SetNoPSTask(Bool_t noTask) { fNoPSTask = noTask; }
   /* @} */
   /** 
    * Check if we' running on a Alice Analysis Facility (AAF) like for
@@ -462,11 +474,43 @@ struct TrainSetup
   {
     if (fExecMode != kProof) return false;
     TString host(fProofServer.GetHost());
-    Info("IsAAF", "host %s contains \"alice-caf\"=%d or \"skaf\"=%d -> %d", 
-	 host.Data(), host.Contains("alice-caf"),  host.Contains("skaf"),
-	 host.Contains("alice-caf") || host.Contains("skaf"));
     return host.Contains("alice-caf") || host.Contains("skaf");
   }
+  void RegisterDataset(AliAnalysisManager* mgr,
+		       AliVEventHandler* handler)
+  {
+    // --- Register data set ---------------------------------------
+    // This seems to work when not using the Grid handler.  Perhaps
+    // we need to automatize the DS name - i.e., renaming the output
+    // AOD to something based on the name of the train.
+    if (!handler) return;
+    if (fExecMode != kProof) return;
+
+    TString opts(fProofServer.GetOptions());
+    Int_t idx = opts.Index("dsname");
+    if (idx == kNPOS) return;
+    
+    TString nme(EscapedName());
+    if (opts[idx+6] == '=') {
+      nme = opts(idx+7, opts.Length()-7-idx);
+      idx = nme.Index("&");
+      if (idx != kNPOS) nme.Remove(idx, nme.Length()-idx);
+    }
+    if (!nme.EndsWith(".root")) nme.Append(".root");
+
+    AliAnalysisDataContainer* cont = mgr->GetCommonOutputContainer();
+    cont->SetRegisterDataset(true);
+    handler->SetOutputFileName(nme);
+    // cont->SetFileName(nme);
+
+    TString base(handler->GetOutputFileName());
+    base.ReplaceAll(".root","");
+    Info("Init", "Will register AODs (%s%s) as dataset on %s",
+	 base.Data(), cont->GetTitle(), fProofServer.GetUrl());
+    // mgr->GetCommonOutputContainer()->SetSpecialOutput();
+    // mgr->SetSpecialOutputLocation("root://host:port/dir");
+  }
+  
   //__________________________________________________________________
   /**
    * @{ 
@@ -513,6 +557,13 @@ struct TrainSetup
     // --- AOD output handler -----------------------------------------
     AliVEventHandler*  outputHandler = CreateOutputHandler(fExecType);
     if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
+      
+    // --- Register data set ---------------------------------------
+    RegisterDataset(mgr, outputHandler);
+
+    // -- Special storage --------------------------------------------
+    if (fSpecialStorage.GetUrl() && fSpecialStorage.GetUrl()[0] != '\0') 
+      mgr->SetSpecialOutputLocation(fSpecialStorage.GetUrl());
     
     // --- Include analysis macro path in search path ----------------
     gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
@@ -561,6 +612,7 @@ struct TrainSetup
       Error("Run","Failed to initialise train");
       return false;
     }
+
 
     // --- Show status -----------------------------------------------
     mgr->PrintStatus();
@@ -641,6 +693,7 @@ struct TrainSetup
     PrintField(std::cout, "Monte-Carlo input",		fMC);
     PrintField(std::cout, "Monte-Carlo handler",        mc);
     PrintField(std::cout, "Per run merge",              fPerRunMerge);
+    PrintField(std::cout, "No Physics selection task",  fNoPSTask);
     PrintFieldName(std::cout, "Run numbers");
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
       std::cout << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
@@ -684,9 +737,11 @@ protected:
     fAliRootVersion(o.fAliRootVersion),
     fAliEnAPIVersion(o.fAliEnAPIVersion),
     fProofServer(o.fProofServer),
+    fPlainAAF(o.fPlainAAF),
     fDataDir(o.fDataDir),	
     fDataPattern(o.fDataPattern),
     fDataSet(o.fDataSet),	
+    fSpecialStorage(o.fSpecialStorage),
     fXML(o.fXML),	
     fNReplica(o.fNReplica),
     fAllowOverwrite(o.fAllowOverwrite),
@@ -694,8 +749,8 @@ protected:
     fMaxSplit(o.fMaxSplit),
     fRunNumbers(o.fRunNumbers),
     fListOfPARs(),
-    fListOfSources(),
-    fListOfLibraries(),
+		 fListOfSources(),
+		 fListOfLibraries(),
     fListOfExtras(),
     fDatime(o.fDatime),
     fExecType(o.fExecType), 
@@ -703,7 +758,8 @@ protected:
     fExecOper(o.fExecOper),
     fUsePar(o.fUsePar), 
     fMC(o.fMC), 
-    fPerRunMerge(o.fPerRunMerge),
+		 fPerRunMerge(o.fPerRunMerge),
+		 fNoPSTask(o.fNoPSTask),
     fVerbose(o.fVerbose)
   {
     if (isdigit(fName[0])) { 
@@ -737,6 +793,7 @@ protected:
     fDataDir		= o.fDataDir;	
     fDataPattern        = o.fDataPattern;
     fDataSet		= o.fDataSet;	
+    fSpecialStorage     = o.fSpecialStorage;
     fXML		= o.fXML;	
     fNReplica		= o.fNReplica;	
     fRunNumbers         = o.fRunNumbers;
@@ -959,6 +1016,29 @@ protected:
     Warning("ExtractWorkers", "Workers option not found");
     return 0;
   }
+  Int_t InspectOptions(TUrl& u)
+  {
+    TString    out;
+    TString    opts(u.GetOptions());
+    TObjArray* tokens = opts.Tokenize("&");
+    TObject*   obj    = 0;
+    TIter      next(tokens);
+    while ((obj = next())) {
+      TString opt(obj->GetName());
+      if (opt.BeginsWith("workers")) {
+	Int_t   idx = opt.Index("=");
+	if (idx == kNPOS) continue;
+      
+	TString val = opt(idx+1, opt.Length()-idx-1);
+	Info("InspectOptions", "Will use %d workers", val.Atoi());
+      }
+      if (opt.BeginsWith("plain")) { 
+	Info("InspectOptions", "Plain AAF mode enabled");
+	fPlainAAF = true;
+      }
+    }
+    return 0;
+  }
   /** 
    * Create a grid handler 
    * 
@@ -967,7 +1047,7 @@ protected:
   virtual AliAnalysisAlien* 
   CreateGridHandler()
   {
-    if (!(fExecMode == kGrid || IsAAF())) return 0;
+    if (!(fExecMode == kGrid || (IsAAF() && !fPlainAAF))) return 0;
 
     TString name = EscapedName();
 
@@ -1053,9 +1133,10 @@ protected:
 
     // Merge parameters 
     plugin->SetMaxMergeFiles(20);
-    plugin->SetMergeExcludes("AliAOD.root "
-			    "*EventStat*.root "
-			    "*event_stat*.root");
+    if (fExecMode != kProof && IsAAF())
+      plugin->SetMergeExcludes("AliAOD.root "
+			       "*EventStat*.root "
+			       "*event_stat*.root");
     
     // Keep log files 
     plugin->SetKeepLogs();
@@ -1247,6 +1328,16 @@ protected:
   virtual void CreatePhysicsSelection(Bool_t mc,
 				      AliAnalysisManager* mgr)
   {
+    if (fNoPSTask) {
+      AliInputEventHandler* input = 
+	dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
+      if (!input) return;
+
+      AliPhysicsSelection* ps = new AliPhysicsSelection();
+      if (mc) ps->SetAnalyzeMC();
+
+      input->SetEventSelection(ps);
+    }
     gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
     mgr->RegisterExtraFile("event_stat.root");
   }
@@ -1311,6 +1402,19 @@ protected:
       // gProof->Exec("gSystem->Load(\"libGeom.so\");");
       // gProof->Exec("gSystem->Load(\"libMinuit.so\");");
       // gProof->Exec("gSystem->Load(\"libVMC.so\");");
+      if (IsAAF() && fPlainAAF) {
+	TList *list = new TList();
+	list->Add(new TNamed("ALIROOT_MODE"      , "default"));
+	list->Add(new TNamed("ALIROOT_EXTRA_LIBS", 
+			     "STEERBase:ESD:AOD:ANALYSIS:OADB:ANALYSISalice"));
+	// list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "ITS:include"));
+	// list->Add(new TNamed("ALIROOT_ENABLE_ALIEN","1"));
+	Info("LoadCommonLibs", "Enabling package AliRoot %s on cluster %s", 
+	     fAliRootVersion.Data(), fProofServer.GetUrl());
+	gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",
+				   fAliRootVersion.Data()), list);
+	// gProof->SetParameter("PROOF_UseMergers", 0);
+      }
     }
     
     ret &= LoadLibrary("STEERBase",     basic, true);
@@ -1364,7 +1468,7 @@ protected:
     case kProof:
       if (par) { 
 	TString fn(what);
-	if (IsAAF() || fExecMode==kGrid) {
+	if ((IsAAF() && !fPlainAAF) || fExecMode==kGrid) {
 	  // Let plug-in handle the upload 
 	  Info("LoadLibrary", "Adding %s to plug-in PARs", what);
 	  ret = SetupPAR(what) ? 0 : -1;
@@ -1669,7 +1773,9 @@ protected:
 	if (nEvents < 0) nEvents = chain->GetEntries();
 	return mgr->StartAnalysis(mode, chain, nEvents);
       }
-      return mgr->StartAnalysis(mode); // , fDataSet);
+      if (IsAAF() && !fPlainAAF)
+	return mgr->StartAnalysis(mode); // , fDataSet);
+      return mgr->StartAnalysis(mode, fDataSet, nEvents);
     case kGrid: 
       Info("StartAnalysis", "Analysing %d events", nEvents);
       if (nEvents < 0)
@@ -1815,6 +1921,7 @@ protected:
       if (fProofServer.GetUser()[0] == '\0' && 
 	  !userName.IsNull())
 	fProofServer.SetUser(userName);
+      InspectOptions(fProofServer);
       serv = fProofServer.GetUrl();
 
       // --- Possibly debug slave sessions with GDB ------------------
@@ -1841,7 +1948,7 @@ protected:
       }
 
       // --- Only connect in ProofLite - plugin does this --------------
-      if (!lite) {
+      if (IsAAF() && !fPlainAAF) {
 	TString opts(fProofServer.GetOptions());
 	Int_t reset = 0;
 	if      (opts.Contains("reset=hard")) reset = 2;
@@ -1849,10 +1956,22 @@ protected:
 	if (reset > 0) TProof::Reset(serv.Data(), reset > 1);
       }
       else {
+	if (IsAAF()) { 
+	  // We need to set the ROOT version here 
+	  Info("Connect", "Setting ROOT version to %s for cluster %s", 
+	       fRootVersion.Data(), fProofServer.GetUrl());
+	  TProof::Mgr(fProofServer.GetHost())
+	    ->SetROOTVersion(Form("VO_ALICE@ROOT::%s", fRootVersion.Data()));
+	}
 	// --- Now open connection to PROOF cluster --------------------
+	TUrl reduced(fProofServer);
+	reduced.SetOptions("");
+	reduced.SetFile("");
+	TString opts(fProofServer.GetOptions());
+	opts.ReplaceAll("&", ",");
 	Info("Connect", "Connecting to PROOF server: %s w/options \"%s\"", 
-	     serv.Data(), fProofServer.GetOptions());
-	TProof::Open(serv, fProofServer.GetOptions());
+	     reduced.GetUrl(), opts.Data());
+	TProof::Open(reduced.GetUrl(), opts);
 	if (!gProof) { 
 	  Error("Connect", "Failed to connect to Proof cluster %s",
 		fProofServer.GetUrl());
@@ -1933,6 +2052,32 @@ protected:
       else 
 	ret = Form("%s/%s", fEscapedName.Data(), aa->GetGridOutputDir());
     }
+    return ret;
+  }
+  TString GetOutputDataSet()
+  {
+    TString ret="";
+    if (fExecMode != kProof) return ret;
+
+    AliAnalysisManager*       mgr = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler*         oh  = mgr->GetOutputEventHandler();
+    if (!oh) { 
+      Warning("GetOutputDataSet", "No outout event handler defined");
+      return ret;
+    }
+    AliAnalysisDataContainer* co  = mgr->GetCommonOutputContainer();
+    if (!co) { 
+      Warning("GetOutputDataSet", "No common output container defined");
+      return ret;
+    }
+    if (!co->IsRegisterDataset()) { 
+      Info("GetOutputDataSet", "Common output is not registered as dataset");
+      return ret;
+    }
+    ret = oh->GetOutputFileName();
+    ret.ReplaceAll(".root", "");
+    ret.Append(co->GetTitle());
+
     return ret;
   }
   /* @} */
@@ -2675,6 +2820,25 @@ public:
 	(*ptr)->PrintHelp(out, prefix);
 	ptr++;
       }
+      if (FindOption("cluster")) 
+	out << "CLUSTER is of the form\n\n"
+	    << "\t[proof[s]://]HOST[:PORT]/[?[workers=N[x][&]][plain[&]]][dsname[=NAME]]\n\n"
+	    << "where HOST is the master of the PROOF cluster\n"
+	    << "(e.g., alice-caf.cern.ch), PORT is an optional port number,\n"
+	    << "the option \"workers=N\" set the number of workers to use,\n"
+	    << "\"plain\" disables use of Grid handler, and \"dsname=NAME\"\n" 
+	    << "will register AOD output as a dataset with name NAME - which\n"
+	    << "defaults to the escaped name of the train.\n"
+	    << std::endl;
+      if (FindOption("storage")) 
+	out << "STORAGE is of the form\n\n"
+	    << "\troot://HOST[:PORT]/PATH\n\n"
+	    << "where HOST is a hostname, PORT an optional port number, and\n"
+	    << "PATH is an absolute path on HOST.\n"
+	    << "A server can be started like\n\n"
+	    << "\txrootd -p PORT PATH\n\n"
+	    << "on a machine accessible to the cluster\n"
+	    << std::endl;
     }
     /** 
      * Print the settings 
@@ -2746,6 +2910,7 @@ public:
       }
       return DeferredRun(0);
     }
+#ifndef __CINT__
     /** 
      * Custom timer to do a deferred start after the application 
      * has been started 
@@ -2764,6 +2929,9 @@ public:
       }
       Runner& fRunner;
     };
+#else
+    struct Deferred;
+#endif
     /** 
      * Deferred run 
      * 
@@ -2783,6 +2951,15 @@ public:
       }
       return ret;
     }
+    /**
+     * Get the train setup 
+     * 
+     */
+    TrainSetup* GetSetup() { return fTrain; }
+    /**
+     * 
+     */
+    const TString& TrainName() { return fTrain->EscapedName(); }
     TrainSetup* fTrain;
     Option** fOptions;  // Our options 
     UShort_t fN;        // Current number of options 
@@ -2809,24 +2986,26 @@ protected:
    */    
   virtual void MakeOptions(Runner& r)
   {
-    r.Add(new Option("help",   "Show this help"));
-    r.Add(new Option("par",    "Use PAR files (PROOF and Grid)"));
-    r.Add(new Option("mc",     "Assume simulation input"));
-    r.Add(new Option("debug",  "Execute in debugger"));
-    r.Add(new Option("type",   "Type of train",    "AOD|ESD"));
-    r.Add(new Option("mode",   "Execution mode",   "LOCAL|PROOF|GRID"));
-    r.Add(new Option("oper",   "Operation mode",   "TEST|TERMINATE|FULL|INIT"));
-    r.Add(new Option("date",   "Set date string",  "YYYY-MM-DD HH:MM:SS"));
-    r.Add(new Option("cluster","PROOF cluster",         "HOST"));
-    r.Add(new Option("dataSet","Data set (PROOF only)", "NAME"));
-    r.Add(new Option("dataDir","Data directory",        "DIRECTORY"));
-    r.Add(new Option("pattern","Data pattern (grid only)", "GLOB")); 
-    r.Add(new Option("verb",   "Verbosity",             "NUMBER")); 
-    r.Add(new Option("root",   "ROOT version (Grid)",   "TAG")); 
-    r.Add(new Option("aliroot","AliROOT version (Grid)","TAG")); 
-    r.Add(new Option("alien",  "AliEn API version (Grid)","TAG")); 
-    r.Add(new Option("overwrite", "Allow overwrite"));
-    r.Add(new Option("per-run", "Per run merge"));
+    r.Add(new Option("help",     "Show this help"));
+    r.Add(new Option("par",      "Use PAR files (PROOF/Grid)"));
+    r.Add(new Option("mc",       "Assume simulation input"));
+    r.Add(new Option("debug",    "Execute in debugger"));
+    r.Add(new Option("type",     "Type of train",               "AOD|ESD"));
+    r.Add(new Option("mode",     "Execution mode",   "LOCAL|PROOF|GRID"));
+    r.Add(new Option("oper",     "Operation mode", "TEST|TERMINATE|FULL|INIT"));
+    r.Add(new Option("date",     "Set date string",  "YYYY-MM-DD HH:MM:SS"));
+    r.Add(new Option("cluster",  "PROOF cluster",               "CLUSTER"));
+    r.Add(new Option("dataSet",  "Data set (PROOF)",            "NAME"));
+    r.Add(new Option("dataDir",  "Data directory",              "DIRECTORY"));
+    r.Add(new Option("pattern",  "Data pattern (Grid)",         "GLOB")); 
+    r.Add(new Option("verb",     "Verbosity",                   "NUMBER")); 
+    r.Add(new Option("root",     "ROOT version (PROOF/Grid)",   "TAG")); 
+    r.Add(new Option("aliroot",  "AliROOT version (PROOF/Grid)","TAG")); 
+    r.Add(new Option("alien",    "AliEn API version (Grid)",    "TAG")); 
+    r.Add(new Option("overwrite","Allow overwrite"));
+    r.Add(new Option("per-run",  "Per run merge"));
+    r.Add(new Option("storage",  "Special storage",             "URL"));
+    r.Add(new Option("noPSTask", "Use Physics selection w/o task"));
   } 
   //------------------------------------------------------------------
   /** 
@@ -2852,9 +3031,13 @@ protected:
     Option* alien       = r.FindOption("alien");
     Option* overwrite   = r.FindOption("overwrite");
     Option* run_merge   = r.FindOption("per-run");
+    Option* nops_task   = r.FindOption("noPSTask");
+    Option* spec_store  = r.FindOption("storage");
     
     if (date    && !date->IsSet())    date->fValue    = fDatime.AsString();
     if (cluster && !cluster->IsSet()) cluster->fValue = fProofServer.GetUrl();
+    if (spec_store && !spec_store->IsSet()) 
+      spec_store->fValue = fSpecialStorage.GetUrl();
     if (dataSet && !dataSet->IsSet()) dataSet->fValue = fDataSet;
     if (dataDir && !dataDir->IsSet()) dataDir->fValue = fDataSet;
     if (pattern && !pattern->IsSet()) pattern->fValue = fDataPattern;
@@ -2872,6 +3055,8 @@ protected:
       overwrite->fValue = fAllowOverwrite ? "1" : "";
     if (run_merge && !run_merge->IsSet()) 
       run_merge->fValue = fPerRunMerge ? "1" : "";
+    if (nops_task && !nops_task->IsSet()) 
+      nops_task->fValue = fNoPSTask ? "1" : "";
   }
   /** 
    * Set the option values on the train.  Sub-classes can overload 
@@ -2896,24 +3081,28 @@ protected:
     Option* alien       = r.FindOption("alien");
     Option* overwrite   = r.FindOption("overwrite");
     Option* run_merge   = r.FindOption("per-run");
+    Option* nops_task   = r.FindOption("noPSTask");
+    Option* spec_store  = r.FindOption("storage");
     
-    if (date && date->IsSet()) SetDateTime(date->AsString());
-    if (cluster)               SetProofServer(cluster->AsString());
-    if (dataSet)               SetDataSet(dataSet->AsString());
-    if (dataDir)               SetDataDir(dataDir->AsString());
-    if (pattern)               SetDataPattern(pattern->AsString());
-    if (debug)                 SetUseGDB(debug->AsBool());
-    if (type && type->IsSet()) SetType(type->AsString());
-    if (mode && mode->IsSet()) SetMode(mode->AsString());
-    if (oper && oper->IsSet()) SetOperation(oper->AsString());
-    if (par)                   SetUsePar(par->AsBool());
-    if (mc)                    SetMC(mc->AsBool());
-    if (verb)                  SetVerbose(verb->AsInt());
+    if (date && date->IsSet())       SetDateTime(date->AsString());
+    if (cluster)                     SetProofServer(cluster->AsString());
+    if (dataSet)                     SetDataSet(dataSet->AsString());
+    if (dataDir)                     SetDataDir(dataDir->AsString());
+    if (pattern)                     SetDataPattern(pattern->AsString());
+    if (debug)                       SetUseGDB(debug->AsBool());
+    if (type && type->IsSet())       SetType(type->AsString());
+    if (mode && mode->IsSet())       SetMode(mode->AsString());
+    if (oper && oper->IsSet())       SetOperation(oper->AsString());
+    if (par)                         SetUsePar(par->AsBool());
+    if (mc)                          SetMC(mc->AsBool());
+    if (verb)                        SetVerbose(verb->AsInt());
     if (root    && root->IsSet())    SetROOTVersion(root->AsString());
     if (aliroot && aliroot->IsSet()) SetAliROOTVersion(aliroot->AsString());
     if (alien   && alien->IsSet())   SetAliEnAPIVersion(alien->AsString());
     if (overwrite)                   SetAllowOverwrite(overwrite->AsBool());
     if (run_merge)                   SetPerRunMerge(run_merge->AsBool());
+    if (nops_task)                   SetNoPSTask(nops_task->AsBool());
+    if (spec_store)                  fSpecialStorage = spec_store->AsString().Data();
   }
   //------------------------------------------------------------------
   /** 
@@ -2939,7 +3128,9 @@ protected:
     Option* alien       = r.FindOption("alien");
     Option* overwrite   = r.FindOption("overwrite");
     Option* run_merge   = r.FindOption("per-run");
-    
+    Option* nops_task   = r.FindOption("noPSTask");
+    Option* spec_store  = r.FindOption("storage");
+
     if (date) date->Save(o, str, 
 			 Form("%04d-%02d-%02d %02d:%02d:00",
 			      fDatime.GetYear(), 
@@ -2947,22 +3138,24 @@ protected:
 			      fDatime.GetDay(), 
 			      fDatime.GetHour(),
 			      fDatime.GetMinute()));
-    if (cluster)  cluster->Save(o, str, fProofServer.GetUrl());
-    if (dataSet)  dataSet->Save(o, str, fDataSet);
-    if (dataDir)  dataDir->Save(o, str, fDataDir);
-    if (pattern)  pattern->Save(o, str, fDataPattern);
-    if (debug)    debug->Save(o, str, fUseGDB);
-    if (type)     type->Save(o, str, TypeString(fExecType));
-    if (mode)     mode->Save(o, str, ModeString(fExecMode));
-    if (oper)     oper->Save(o, str, OperString(fExecOper));
-    if (par)      par->Save(o, str, fUsePar);
-    if (mc)       mc->Save(o, str, fMC);
-    if (verb)     verb->Save(o, str, fVerbose);
-    if (root)     root->Save(o, str, fRootVersion);
-    if (aliroot)  aliroot->Save(o, str, fAliRootVersion);
-    if (alien)    alien->Save(o, str, fAliEnAPIVersion);
-    if (overwrite)overwrite->Save(o, str, fAllowOverwrite);
-    if (run_merge)run_merge->Save(o, str, fPerRunMerge);
+    if (cluster)    cluster->Save(o, str, fProofServer.GetUrl());
+    if (dataSet)    dataSet->Save(o, str, fDataSet);
+    if (dataDir)    dataDir->Save(o, str, fDataDir);
+    if (spec_store) spec_store->Save(o, str, fSpecialStorage.GetUrl());
+    if (pattern)    pattern->Save(o, str, fDataPattern);
+    if (debug)      debug->Save(o, str, fUseGDB);
+    if (type)       type->Save(o, str, TypeString(fExecType));
+    if (mode)       mode->Save(o, str, ModeString(fExecMode));
+    if (oper)       oper->Save(o, str, OperString(fExecOper));
+    if (par)        par->Save(o, str, fUsePar);
+    if (mc)         mc->Save(o, str, fMC);
+    if (verb)       verb->Save(o, str, fVerbose);
+    if (root)       root->Save(o, str, fRootVersion);
+    if (aliroot)    aliroot->Save(o, str, fAliRootVersion);
+    if (alien)      alien->Save(o, str, fAliEnAPIVersion);
+    if (overwrite)  overwrite->Save(o, str, fAllowOverwrite);
+    if (run_merge)  run_merge->Save(o, str, fPerRunMerge);
+    if (nops_task)  nops_task->Save(o, str, fNoPSTask);
   }
   /** 
    * Save the setup to file for later re-execution 
@@ -2986,8 +3179,8 @@ protected:
   {
     std::ofstream o("rerun.sh");
     o << "#!/bin/bash\n\n"
-      << "oper=$1\n"
-      << "if test x$oper = x ; then oper=full ; fi \n\n"
+      << "oper=${1:-full}\n"
+      << "shift\n\n"
       << "class=\"" << ClassName() << "\"\n"
       << "name=\"" << fName << "\"\n"
       << "nev=" << nEvents << "\n\n"
@@ -2999,7 +3192,7 @@ protected:
     SaveOptions(o, "--", r);
     o << "  --oper=$oper)\n\n"
       << "echo \"Running runTrain ${opts[@]}\"\n"
-      << "runTrain \"${opts[@]}\"\n\n"
+      << "runTrain \"${opts[@]}\" $@\n\n"
       << "# EOF" << std::endl;
     o.close();
     gSystem->Exec("chmod a+x rerun.sh");
@@ -3013,20 +3206,21 @@ protected:
   virtual void SaveSetupROOT(Runner& r, Int_t nEvents) 
   {
     std::ofstream o("rerun.C");
-    o << "void rerun(bool terminate=false)\n"
+    o << "void rerun(bool terminate=false, const char* extra=\"\")\n"
       << "{\n" 
       << "  TString opts;" << std::endl;
     SaveOptions(o, "opts", r);
       
-    o << "  if (terminate) opts.Append(\"mode=terminate;\");\n\n"
+    o << "  opts.Append(extra);\n\n"
+      << "  if (terminate) opts.Append(\"mode=terminate;\");\n\n"
       << "  TString runs(\"";
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
       o << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
     o << "\");\n\n"
       << "  Int_t   nEvents = " << nEvents << ";\n\n"
       << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C\");\n"
-      << "  RunTrain(\"" << ClassName() << "\",\"" 
-      << fName << "\",opts,runs,nEvents);\n"
+      << "  RunTrain(\"" << ClassName() << "\",\"" << fName 
+      << "\",opts,runs,nEvents);\n"
       << "}\n"
       << "// EOF" << std::endl;
     o.close();
@@ -3040,9 +3234,11 @@ protected:
   TString fAliRootVersion;   // AliROOT version to use 
   TString fAliEnAPIVersion;  // AliEn API version to use 
   TUrl    fProofServer;      // Name of proof server
+  Bool_t  fPlainAAF;         // Do not use plug-in on AAFs
   TString fDataDir;          // Grid Input directory 
   TString fDataPattern;      // Data directory pattern
   TString fDataSet;          // Proof data set name 
+  TUrl    fSpecialStorage;   // If set, the special storage
   TString fXML;              // XML collection for local/proof mode
   Int_t   fNReplica;         // Storage replication
   Bool_t  fAllowOverwrite;   // Allow overwriting output dir
@@ -3060,6 +3256,7 @@ protected:
   Bool_t  fUsePar;           // Wether to use PAR files 
   Bool_t  fMC;               // Whether to assume MC input 
   Bool_t  fPerRunMerge;      // Whether to merge per run or over-all
+  Bool_t  fNoPSTask;         // If true, only add PS - not task
   Int_t   fVerbose;          // Verbosity level 
 };
   
