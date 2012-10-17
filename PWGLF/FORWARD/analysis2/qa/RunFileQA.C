@@ -16,20 +16,18 @@
  * @ingroup pwglf_forward_qa_scripts
  */
 void
-RunFileQA(const char* input, const char* output=0)
+RunFileQA(const char* input, const char* output=0,
+	  Int_t prodYear=0, const char* prodLetter="")
 {
   int ret = 0;
-  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
-			   gROOT->GetMacroPath()));
-  gSystem->AddIncludePath("-I\${ALICE_ROOT}/PWGLF/FORWARD/analysis2/qa");
+  gROOT->SetMacroPath(Form(".:%s", gROOT->GetMacroPath()));
   gSystem->Load("libGpad");
   gSystem->Load("libTree");
   
   gROOT->LoadMacro("QABase.h+g");
   gROOT->LoadMacro("QATrender.C+g");
   
-  QATrender t(true, false);
+  QATrender t(true, false, prodYear, prodLetter[0]);
   t.AddFile(input);
   if (output && output[0] != '\0')
     t.SetOutputName(output);

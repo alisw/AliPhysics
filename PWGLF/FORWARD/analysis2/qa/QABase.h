@@ -41,7 +41,7 @@ struct QABase
    * 
    * @param single  If true, only process one file. 
    */
-  QABase(Bool_t single=false) 
+  QABase(Bool_t single=false, Int_t prodYear=0, Char_t prodLetter='\0') 
     : fFMD1i(0),
       fFMD2i(0),
       fFMD2o(0),
@@ -57,7 +57,9 @@ struct QABase
       fToDelete(""),
       fCanvas(0), 
       fSingle(single), 
-      fOutputName("forward_trend.root")
+      fOutputName("forward_trend.root"),
+      fYear(prodYear), 
+      fLetter(prodLetter)
   {}
   /** 
    * Copy constructor 
@@ -194,10 +196,13 @@ struct QABase
       	  << "\\thispagestyle{empty}\n"
 	  << "\\maketitle" << std::endl;
 
-    *fHtml << "<html>\n"
+    *fHtml << "<!DOCTYPE html>\n"
+	   << "<html>\n"
 	   << " <head>\n"
 	   << "  <title>QA information - "  << title << "</title>\n"
 	   << "  <link rel='stylesheet' href='style.css'>\n" 
+	   << "  <link rel='shortcut icon' href='fmd_favicon.png' "
+	   << "type='image/x-png'>\n"
 	   << " </head>\n"
 	   << "<body>\n" 
 	   << " <h1>" << title << "</h1>\n"
@@ -298,7 +303,7 @@ struct QABase
    * 
    * @param pngName Base name of PNG
    */
-  void PrintCanvas(const char* pngName)
+  void PrintCanvas(const char* pngName, TCollection* areas=0)
   {
     gSystem->Exec(Form("rm -f %s.png %s.html", pngName, pngName));
     fCanvas->SaveAs(Form("%s.png", pngName));
@@ -310,16 +315,25 @@ struct QABase
 	   << std::endl;
 
     std::ofstream img(Form("%s.html", pngName));
-    img << "<html>\n"
+    img << "<!DOCTYPE html>\n"
+	<< "<html>\n"
 	<< " <head>\n"
 	<< "  <title>" << pngName << "</title>\n"
-	<< "  <link rel='stylesheet' href='style.css'>\n"
+	<< "  <link rel='stylesheet' href='style.css'></link>\n"
+	<< "  <link rel='shortcut icon' href='fmd_favicon.png' "
+	<< "type='image/x-png'>\n"
 	<< " </head>\n"
 	<< " <body>\n"
 	<< "  <h1>" << pngName << "</h1>\n"
-	<< "  <div class='img'>\n"
-	<< "    <img src='" << pngName << ".png'>\n"
-	<< "  </div>\n" << std::endl;
+	<< "  <div id=\"imap\">\n"
+	<< "    <img src=\"" << pngName << ".png\">\n";
+    if (areas) { 
+      TIter next(areas);
+      TObject* o = 0;
+      while ((o = next())) 
+	img << "       " << o->GetName() << "\n";
+    }
+    img << "  </div>\n" << std::endl;
     WriteImageFooter(img, pngName);
     img << " </body>\n" 
 	<< "</html>" << std::endl;
@@ -430,6 +444,8 @@ struct QABase
   TCanvas*       fCanvas;	// Pointer to canvas object
   Bool_t         fSingle;	// Whether we're processing one run only
   TString        fOutputName;   // Output tree file name 
+  Int_t          fYear;         // Production year
+  Char_t         fLetter;       // Production letter
 };
 
 #endif
