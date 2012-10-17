@@ -50,6 +50,7 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() : 
     AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	
+    fNLMCutMin(-1),                fNLMCutMax(10),   
     fTimeCutMin(-10000),           fTimeCutMax(10000),      
     fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
@@ -1624,6 +1625,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(nMaxima1 >  1 && cluster2->GetM02() < 0.3 && cluster2->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass); 
       if(nMaxima2 >  1 && cluster1->GetM02() < 0.3 && cluster1->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass); 
       
+      //Skip events with too few or too many  NLM
+      if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima1 < fNLMCutMin || nMaxima2 > fNLMCutMax)) continue ;
+      
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - NLM of out of range: cluster1 %d, cluster2 %d \n",nMaxima1, nMaxima2);
+      
+      
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
@@ -1649,7 +1656,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         //Create AOD for analysis
         mom = mom1+mom2;
-        
+                
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
         FillPileUpHistograms(mom.E(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);        
@@ -1720,7 +1727,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   
   Int_t nCTS  = inputAODGammaConv->GetEntriesFast();
   Int_t nCalo = GetInputAODBranch()->GetEntriesFast();
-  if(nCTS<=0 || nCalo <=0) {
+  if(nCTS<=0 || nCalo <=0) 
+  {
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - nCalo %d, nCTS %d, cannot loop\n",nCalo,nCTS);
     return;
   }
@@ -1753,6 +1761,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       else if(nMaxima==2) fhMassPairLocMax[1]->Fill(epair,mass);
       else                fhMassPairLocMax[2]->Fill(epair,mass);
       
+      if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) continue ;
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - NLM %d of out of range \n",nMaxima);
+
       //Play with the MC stack if available
       if(IsDataMC())
       {
@@ -1853,13 +1864,13 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
     
     //Get Momentum vector, 
+    Double_t vertex[]={0,0,0};
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
       calo->GetMomentum(mom,GetVertex(evtIndex)) ;
     }//Assume that come from vertex in straight line
     else
     {
-      Double_t vertex[]={0,0,0};
       calo->GetMomentum(mom,vertex) ;
     }
 	  
@@ -1873,56 +1884,66 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       if(! in ) continue ;
     }
     
-    //Create AOD for analysis
-    AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
-    aodpi0.SetLabel(calo->GetLabel());
-    
-    //Set the indeces of the original caloclusters  
-    aodpi0.SetCaloLabel(calo->GetID(),-1);
-    aodpi0.SetDetector(fCalorimeter);
     if(GetDebug() > 1) 
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodpi0.Pt(),aodpi0.Phi(),aodpi0.Eta());	
-    
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",mom.Pt(),mom.Phi(),mom.Eta());	
+        
     //Check Distance to Bad channel, set bit.
     Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
     if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
     if(distBad < fMinDist) //In bad channel (PHOS cristal size 2.2x2.2 cm)
       continue ;
-    
+
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
+
     //.......................................
     // TOF cut, BE CAREFUL WITH THIS CUT
     Double_t tof = calo->GetTOF()*1e9;
     if(tof < fTimeCutMin || tof > fTimeCutMax) continue ;
     
-    
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
-    
-    if     (distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
-    else if(distBad > fMinDist2) aodpi0.SetDistToBad(1) ; 
-    else                         aodpi0.SetDistToBad(0) ;
+    //Skip matched clusters with tracks
+    if(IsTrackMatched(calo, GetReader()->GetInputEvent())) continue ;
+
     
     //Check PID
     //PID selection or bit setting
     Int_t    nMaxima = 0 ; 
     Double_t mass    = 0 , angle = 0;
     Double_t e1      = 0 , e2    = 0;
-    //Skip matched clusters with tracks
-    if(IsTrackMatched(calo, GetReader()->GetInputEvent())) continue ;
-      
+    Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
+                                                                                   GetVertex(evtIndex),nMaxima,
+                                                                                   mass,angle,e1,e2) ;   
+    
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
+    
+    //Skip events with too few or too many  NLM
+    if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) continue ;
+
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d of out of range \n",nMaxima);
+    
+    // If cluster does not pass pid, not pi0/eta, skip it.
+    if     (GetInputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) continue ;		
+    else if(GetInputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta) continue ;
+    
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
+                              mom.Pt(), idPartType);
+    
+    //-----------------------
+    //Create AOD for analysis
+    
+    AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
+    aodpi0.SetLabel(calo->GetLabel());
+    
+    //Set the indeces of the original caloclusters  
+    aodpi0.SetCaloLabel(calo->GetID(),-1);
+    aodpi0.SetDetector(fCalorimeter);
+
+    if     (distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
+    else if(distBad > fMinDist2) aodpi0.SetDistToBad(1) ; 
+    else                         aodpi0.SetDistToBad(0) ;
+    
     // Check if cluster is pi0 via cluster splitting
-    aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
-                                                                                                 GetVertex(evtIndex),nMaxima,
-                                                                                                 mass,angle,e1,e2)); 
-    
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
-    
-    // If cluster does not pass pid, not pi0, skip it.
-    // TO DO, add option for Eta ... or conversions
-    if(aodpi0.GetIdentifiedParticleType() != AliCaloPID::kPi0) continue ;		
-    
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0 selection cuts passed: pT %3.2f, pdg %d\n",
-                              aodpi0.Pt(), aodpi0.GetIdentifiedParticleType());
-    
+    aodpi0.SetIdentifiedParticleType(idPartType); 
+        
     // Add number of local maxima to AOD, method name in AOD to be FIXED
     aodpi0.SetFiducialArea(nMaxima);
     
@@ -1948,7 +1969,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
     FillPileUpHistograms(calo->E(),calo->GetTOF()*1e9);
-    
     
     //Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);

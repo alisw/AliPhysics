@@ -81,6 +81,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                               ; }
   
+  void           SetNLMCut(Double_t min, Double_t max)       { fNLMCutMin = min; 
+                                                               fNLMCutMax = max               ; }
+  Double_t       GetNLMCutMin()                        const { return fNLMCutMin              ; }
+  Double_t       GetNLMCutMax()                        const { return fNLMCutMax              ; }	
+  
   void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min; 
                                                                fTimeCutMax = max               ; }
   Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
@@ -115,9 +120,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist ;                // Minimal distance to bad channel to accept cluster
   Float_t        fMinDist2;                // Cuts on Minimal distance to study acceptance evaluation
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
+  Double_t       fNLMCutMin  ;             // Remove clusters/cells with number of local maxima smaller than this value
+  Double_t       fNLMCutMax  ;             // Remove clusters/cells with number of local maxima larger than this value
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
-  
+
   Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -248,7 +255,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,21)
+  ClassDef(AliAnaPi0EbE,22)
 } ;
 
 
