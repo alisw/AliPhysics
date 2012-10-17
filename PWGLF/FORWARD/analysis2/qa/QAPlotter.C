@@ -189,8 +189,8 @@ struct QAPlotter : public QABase
   /** 
    * Constructor 
    */
-  QAPlotter() 
-    : QABase(),
+  QAPlotter(Int_t prodYear=0, Char_t prodLetter='\0') 
+    : QABase(false, prodYear, prodLetter),
       fNAccepted(0),
       fVz(0)
   {
@@ -286,9 +286,14 @@ struct QAPlotter : public QABase
    */
   void Plot()
   {
-
     fTeXName = Form("trend_%09d_%09d", fFirst, fLast);
-    MakeCanvas(Form("QA trends for runs %d --- %d", fFirst, fLast));
+    TString title;
+    if (fYear != 0 && fLetter != '\0') 
+      title.Form("QA trends for LHC%d%c runs %d --- %d", 
+		 fYear, fLetter, fFirst, fLast);
+    else
+      title.Form("QA trends for runs %d --- %d", fFirst, fLast);
+    MakeCanvas(title);
 
     CanvasTitle("# of accepted events");
     fNAccepted->Draw("apl");
@@ -464,9 +469,11 @@ struct QAPlotter : public QABase
     }
     l->Draw();
 
-    AddRuns(h, title, &runs);
+    TList areas;
+    areas.SetOwner();
+    AddRuns(h, title, &runs, &areas);
 
-    PrintCanvas(mg->GetName());
+    PrintCanvas(mg->GetName(), &areas);
   }
   /** 
    * Find a run 
@@ -490,7 +497,8 @@ struct QAPlotter : public QABase
    * @param title  Title 
    * @param runs   List of runs, if any
    */
-  void AddRuns(TH1* h, const char* title, TArrayI* runs=0)
+  void AddRuns(TH1* h, const char* title, TArrayI* runs=0, 
+	       TList* areas=0)
   {
     h->GetXaxis()->SetNoExponent();
     // h->GetXaxis()->SetTitleOffset(1);
@@ -504,6 +512,8 @@ struct QAPlotter : public QABase
     Double_t wx  = 1 - fCanvas->GetLeftMargin() - fCanvas->GetRightMargin();
     Double_t dy  = .025;
     Double_t y   = fCanvas->GetBottomMargin()+dy;
+    UInt_t   cw  = fCanvas->GetWw();  // In pixels
+    UInt_t   ch  = fCanvas->GetWh(); // In pixels
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
       Int_t    r = fRuns[i];
       Double_t x = fCanvas->GetLeftMargin() + wx*Double_t(r-r1)/(r2-r1);
@@ -548,6 +558,24 @@ struct QAPlotter : public QABase
       tl->SetLineStyle(3);
       tl->SetLineColor(color);
       tl->Draw();
+
+      if (!areas) continue;
+      
+      TObjString* area = new TObjString;
+      TString&    spec = area->String();
+      spec.Form("<span style=\"left: %d%%; bottom: %d%%;\" "
+		"onClick='window.location=\"qa_%09d.html\"' "
+		"onMouseOver='this.style.cursor=\"pointer\"' "
+		"alt=\"%d\""
+		">%d</span>",
+		UInt_t(100*x)-2, UInt_t(100*y), r, r, r);
+      
+#if 0
+      spec.Form("<area shape='rect' alt='%d' title='%d' href='qa_%09d.html' "
+		"coords='%d,%d,%d,%d'>", r, r, r, 
+		UInt_t(cw*(x-tx)), 0, UInt_t(cw*(x+tx)), ch);
+#endif
+      areas->Add(area);
     }
   }
   /** 

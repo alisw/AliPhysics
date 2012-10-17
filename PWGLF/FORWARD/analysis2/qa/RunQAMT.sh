@@ -24,12 +24,15 @@ Options:
 	-p,--production IDENTIFIER Production identifier [$prodfull]
 	-P,--pass       IDENTIFIER Pass identifier [$passfull]
 	-l,--log-file              Log file output [$redir]
-	-b,--barrel     NUMBER     ? [$barrel]
+	-b,--barrel     MODE       Fetch barrel data  [$barrel]
+	-f,--force                 Force re-run analysis [$force]
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
 Production identifiers are of the form LHC11h, LHC11h3, or LHC11h_2. 
-Pass identifers are of the form pass2, pass1_HLT, or cpass1.
+Pass identifers are of the form pass2, pass1_HLT, or cpass1.  If barrel mode
+is >0, then do not assume ESD directory.  If mode>1, then get 
+trending_barrel.root and QAresults_barrel.root
 EOF
 }
 
@@ -123,6 +126,7 @@ parse_pass()
 }
 
 # --- Extract parts from the found path ------------------------------
+force=0
 year=0
 passfull=
 passno=0
@@ -250,7 +254,7 @@ get_filelist()
 EOF
     mess 1 "Getting list of files from AliEn - can take minutes - be patient"
     mess 2 "alien_find ${path} ${search}"
-    files=`alien_find ${path} ${search} | grep -v "files found" 2>> ${redir}` 
+    files=`alien_find ${path} ${search} | grep -v "\(files found\|AND THE\)" 2>> ${redir}` 
     for i in $files ; do 
 	let numf=$numf+1
     done 
@@ -282,7 +286,7 @@ CheckQAFile("$1");
 EOF
     local ret=$? 
     mess 2 "Check of $1 -> $ret"
-    rm -f ${scr}.C 
+    # rm -f ${scr}.C 
     return $ret
 }
 
@@ -296,19 +300,22 @@ analyse_file()
     mess 2 -n "Analysing $inp -> $out ... "
 
     if test -f $dir/$out ; then 
-	mess 2 "exits"
-	return 0
+	if test $force -lt 0 ; then 
+	    mess 2 "exits"
+	    return 0
+	fi
+	rm -f $dir/$out
     fi
 
     (cd $dir 
-	root -l -b  <<EOF > /dev/stderr
-.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunFileQA.C
-RunFileQA("$inp", "$out");
+	root -l -b  <<EOF 
+.L RunFileQA.C
+RunFileQA("$inp", "$out", $prodyear, "$prodletter");
 .q
 EOF
 	ret=$? 
 	mess 2 " -> $ret"
-	rm -f ${scr}.C 
+	# rm -f ${scr}.C 
     ) 2>> $redir
     return $ret
 }
@@ -437,12 +444,18 @@ analyse_runs()
 }
 
 # --- Copy style -----------------------------------------------------
+copy_aliroot_file()
+{
+    local file=$1 
+    if test ! -f $file ; then return ; fi 
+    base=`basename $file`
+    rm -f $base 
+    cp $file $base 
+    fix_perm $base
+}
 copy_style()
 {
-    if test ! -f $style ; then return ; fi 
-    rm -f style.css 
-    cp $style . 
-    fix_perm style.css 
+    copy_aliroot_file $style
 }	
 
 # --- Run the final trending -----------------------------------------
@@ -456,17 +469,17 @@ make_trend()
 	rm -f trend_*_*.pdf
 	rm -f trend_*_*.root
 
-	root -l -b <<EOF > /dev/stderr
-.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunFinalQA.C
-RunFinalQA(".");
+	root -l -b <<EOF 
+.L RunFinalQA.C
+RunFinalQA(".", $prodyear, "$prodletter");
 .q
 EOF
 	mess 1 -n " ... "
-	mess 3 -n "root -l -b -q ${scr}.C "
-	root -l -b -q ${scr}.C  > /dev/null 2>&1 
-	local ret=$? 
-	mess 1 " -> $ret"
-	rm -f ${scr}.C 
+	# mess 3 -n "root -l -b -q ${scr}.C "
+	# root -l -b -q ${scr}.C  > /dev/null 2>&1 
+	# local ret=$? 
+	# mess 1 " -> $ret"
+	# rm -f ${scr}.C 
 
 	# do the index file 
 	local idx=`ls trend_*_*.html 2> /dev/null` 
@@ -487,6 +500,8 @@ EOF
 	fi
 
 	copy_style
+	copy_aliroot_file $favicon
+	copy_aliroot_file $logo
     ) 2>> $redir
     return $ret
 }
@@ -505,16 +520,18 @@ make_index()
 	rm -f index.html 
 
 	cat <<EOF > index.html
+<!DOCTYPE html>
 <html>
   <head>
     <title>$title</title>
     <link rel='stylesheet' href='style.css'>
+    <link rel='shortcut icon' href='fmd_favicon.png' type='image/x-png'>
   </head>
   <body>
-    <h1>$title</h1>
+    <h1><img src='fmd_logo.png'>$title</h1>
 EOF
 	if test ! "x$desc" = "x" ; then 
-	    echo "$desc" >> index.html
+	    echo "<p>$desc</p>" >> index.html
 	fi
 	echo "      <ul>" >> index.html
 	for i in * ; do 
@@ -532,6 +549,8 @@ EOF
 </html>
 EOF
 	copy_style 
+	copy_aliroot_file $favicon
+	copy_aliroot_file $logo
 	fix_perm index.html
 	fix_perm . > /dev/null 2>&1 
     )
@@ -565,7 +584,7 @@ while test $# -gt 0 ; do
 	    ;;
 	-l|--log-file) redir= ; shift ;; 
 	-b|--barrel) barrel=$2; shift ;;
-	
+	-f|--force) force=1 ;; 
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -602,7 +621,11 @@ fi
 proddir=LHC${prodyear}${prodletter}
 store=${proddir}
 if test ! "x$passno" = "x" ; then 
-    store=${store}/pass${passno}
+    if test "x${passpre}" = "xv" ; then 
+	store=${store}/${passpre}pass${passno}
+    else
+	store=${store}/pass${passno}
+    fi
 elif test ! "x$prodpost" = "x" ; then 
     proddir=${proddir}${prodpost}
     store=${proddir}/sim
@@ -637,7 +660,29 @@ cat <<EOF
 	Output directory:	${store}
 	Lock file:		${lock}
 	Log:                    ${redir}
+	Force:                  ${force}
 EOF
+# --- Copy scripts to target -----------------------------------------
+for i in QABase.h QAPlotter.C QARing.h QAStructs.h QATrender.C \
+    RunFileQA.C RunFinalQA.C ; do
+    cp $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/$i ${store}/${i}
+    rm -f ${store}/`echo $i | tr '.' '_'`.{so,d}
+done
+mess 1 "Compiling QATrender.C"
+(cd $store && root -l -b <<EOF 
+gROOT->LoadMacro("QABase.h++g");
+gROOT->LoadMacro("QATrender.C++g");
+.q
+EOF
+)
+mess 1 "Compiling QAPlotter.C"
+(cd $store && root -l -b <<EOF 
+gROOT->LoadMacro("QABase.h++g");
+gROOT->LoadMacro("QAPlotter.C++g");
+.q
+EOF
+)
+
 # --- Do a search to find our files ----------------------------------
 get_filelist
 
@@ -650,6 +695,8 @@ analyse_runs ${top}/$store $numf $files
 
 # --- Now analyse all runs -------------------------------------------
 style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
+favicon=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_favicon.png
+logo=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_logo.png
 make_trend ${top}/$store
 
 # --- Make index files -----------------------------------------------

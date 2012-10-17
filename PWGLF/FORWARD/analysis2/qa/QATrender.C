@@ -549,9 +549,12 @@ public:
    * 
    * @param keep   Whehter to keep all info 
    * @param single Single run input 
+   * @param prodYear Production yead 
+   * @param prodLetter Production letter
    */
-  QATrender(Bool_t keep=false, Bool_t single=false) 
-    : QABase(single), 
+  QATrender(Bool_t keep=false, Bool_t single=false,
+	    Int_t prodYear=0, char prodLetter='\0') 
+    : QABase(single, prodYear, prodLetter), 
       fCurrentFile(0),
       fSharingFilter(0),
       fEventInspector(0),
@@ -663,7 +666,12 @@ public:
       return false;
     }
     fTeXName = Form("qa_%09d", fGlobal->runNo);
-    MakeCanvas(Form("QA plots for run %d", fGlobal->runNo));
+    TString title;
+    if (fYear > 0 && fLetter != '\0')
+      title.Form("QA plots for LHC%d%c run %d", fYear, fLetter, fGlobal->runNo);
+    else 
+      title.Form("QA plots for run %d", fGlobal->runNo);
+    MakeCanvas(title);
     Bool_t eloss = ProcessELossFitter();
     Bool_t merge = ProcessSharingFilter();
     Bool_t dense = ProcessDensityCalculator();
@@ -1023,8 +1031,10 @@ public:
 	   << "&p_tab=dqm&p_dqmagent=FMDQAshifter'>DQM plots</a>"
 	   << " (restricted)</li>\n" 
 	   << "  <li><a target='_blank' href='" << crUrl 
-	   << "?raw_run=" << fGlobal->runNo
-	   << "'>Condition Table</a></li>\n"
+	   << "?raw_run=" << fGlobal->runNo;
+    if (fYear > 0 && fLetter != '\0') 
+      *fHtml << "&partition=LHC" << fYear << fLetter;
+    *fHtml << "'>Condition Table</a></li>\n"
 	   << "  <li><a target='_blank' href='" << rpUrl << fGlobal->runNo 
 	   << "'>Processing Details</a></li>\n"
 	   << "</ul>" << std::endl;
