@@ -4,6 +4,8 @@ TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
 			    Int_t gCentrality = 1,
 			    Int_t gDeltaEtaDeltaPhi = 2,
+			    Int_t gBit = -1,
+			    const char* gCentralityEstimator = 0x0,
 			    Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 			    Double_t ptTriggerMin = -1.,
 			    Double_t ptTriggerMax = -1.,
@@ -21,9 +23,9 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
   gSystem->Load("libPWGCFebye.so");
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename,gCentrality,0);
-  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,1);
-  TList *listBFMixed = GetListOfObjects(filename,gCentrality,2);
+  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
+  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
+  TList *listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
@@ -37,7 +39,10 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
 
 //______________________________________________________//
 TList *GetListOfObjects(const char* filename, 
-			Int_t gCentrality, Int_t kData = 1) {
+			Int_t gCentrality, 
+			Int_t gBit,
+			const char* gCentralityEstimator, 
+			Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
   //kData == 0: data
   //kData == 1: shuffling
@@ -74,7 +79,10 @@ TList *GetListOfObjects(const char* filename,
     listBFName = "listBFPsiMixed_";
   }
   listBFName += centralityArray[gCentrality-1];
-  listBFName += "_Bit128_V0M";
+  if(gBit > -1) {
+    listBFName += "_Bit"; listBFName += gBit; }
+  if(gCentralityEstimator) {
+    listBFName += "_"; listBFName += gCentralityEstimator;}
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
   cout<<"List name: "<<listBF->GetName()<<endl;
