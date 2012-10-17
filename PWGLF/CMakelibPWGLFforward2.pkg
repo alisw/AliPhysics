@@ -107,6 +107,14 @@ target_link_libraries(runTrain
 install(TARGETS runTrain 
   RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
 
+add_executable(runTrain2
+  FORWARD/trains/trainMain.cxx)
+target_link_libraries(runTrain2 
+  ${BINLIBDIRS} ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS} 
+  -lSTEERBase -lESD -lAOD -lOADB -lANALYSIS -lANALYSISalice)
+install(TARGETS runTrain2 
+  RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
+
 # --------------------------------------------------------------------
 # Extra targets 
 #
@@ -171,6 +179,15 @@ install ( DIRECTORY FORWARD/analysis2/trains
 	  PATTERN "*.d"  EXCLUDE 
 	  PATTERN "*.so" EXCLUDE)
 
+# install trains 
+install ( DIRECTORY FORWARD/trains 
+	  DESTINATION PWGLF/FORWARD 
+	  PATTERN "*~"    EXCLUDE
+	  PATTERN ".svn"  EXCLUDE
+	  PATTERN "*.d"   EXCLUDE 
+	  PATTERN "*.so"  EXCLUDE
+	  PATTERN "test*" EXCLUDE)
+
 # Install other scripts
 install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
   		FORWARD/analysis2/AddTaskCentralMCCorr.C
@@ -203,6 +220,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 # Install corrections 
 install ( DIRECTORY FORWARD/corrections/DoubleHit
 	            FORWARD/corrections/ELossFits
+		    FORWARD/corrections/Emperical
 		    FORWARD/corrections/MergingEfficiency
 		    FORWARD/corrections/SecondaryMap
 		    FORWARD/corrections/VertexBias
