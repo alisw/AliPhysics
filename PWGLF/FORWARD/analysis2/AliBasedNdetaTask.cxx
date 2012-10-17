@@ -1273,7 +1273,7 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
   //    low  Lower centrality cut in percent 
   //    high Upper centrality cut in percent 
   //
-  DGUARD(0,0,"Named Centrality bin construction: %s [%d,%d]", name);
+  DGUARD(0,0,"Named Centrality bin construction: %s [%3d,%3d]",name,low,high);
   if (low <= 0 && high <= 0) { 
     fLow  = 0; 
     fHigh = 0;
