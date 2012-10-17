@@ -128,6 +128,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
   
+  TH2F       * fhMCGenSplitEFracNLocMax1[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracNLocMax2[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracNLocMaxN[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+    
   TH2F       * fhMCGenFracNLocMaxEbin[7][4] ;    //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, not matched to track
   TH2F       * fhMCGenFracNLocMaxEbinMatched[7][4] ; //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, matched to track
   
@@ -162,7 +166,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassSplitEFractionNLocMax1Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMax2Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMaxNEbin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
-  
+    
   TH2F       * fhAnglePairLocMax1[2] ; //! pair opening angle vs E
   TH2F       * fhAnglePairLocMax2[2] ; //! pair opening angle vs E
   TH2F       * fhAnglePairLocMaxN[2] ; //! pair opening angle vs E
