@@ -671,7 +671,7 @@ INPUT                  = ../analysis2 \
                          ../analysis2/scripts \
                          ../analysis2/corrs \
                          ../analysis2/qa \
-                         ../analysis2/trains \
+                         ../trains \
                          ../analysis2/doc
 
 # This tag can be used to specify the character encoding of the source files 
