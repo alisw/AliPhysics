@@ -17,48 +17,62 @@
  * public:
  *   MyTrain(const char* name="MyTrain")
  *     : TrainSetup(name), 
- *       fParameter(0)
  *   {
- *      // SetType(kAOD); // AOD input 
- *      // SetType(kESD); // ESD input 
- *      // Input unspecified - can be set later 
+ *      // fOptions.Set("type", "AOD"); // AOD input
+ *      // fOptions.Set("type", "ESD"); // ESD input
+ *      fOptions.Add("parameter", "VALUE", "Help on parameter", "value");
  *   }
  * protected:
- *   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+ *   void CreateTasks(AliAnalysisManager* mgr)
  *   {
  *     AliAnalysisManager::SetCommonFileName("my_analysis.root");
  *     LoadLibrary("MyAnalysis", par, true);
  *     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
- *     gROOT->Macro(Form("AddTaskMyAnalysis.C(%f)",fParameter));
+ *     Double_t param = fOptions.AsDouble("parameter");
+ *     gROOT->Macro(Form("AddTaskMyAnalysis.C(%f)",param));
  *   }
  *   const char* ClassName() const { return "MyTrain"; }
- *   void MakeOptions(Runner& r)
- *   { 
- *     TrainSetup::MakeOptions(r);
- *     r.Add(new Option("parameter", "My parameter", "VALUE"));
- *   }
- *   void SetOptions(Runner& r)
- *   {
- *     TrainSetup::SetOptions(r);
- *     Option* param = r.FindOption("parameter");
- *     if (param)  fParameter = param->AsDouble();
- *   }
- *   Double_t fParameter;
  * };
  * @endcode 
+ *
+ * @section train_setup_params Paramters of the setup 
+ *
+ * Parameters of the user defined class deriving from TrainSetup is
+ * best handled by adding options to the internal member @c fOptions
+ * in the constructor e.g.,
+ *
+ * @code 
+ *   fOptions.Add("<name>", "<dummy>", "<description>", "<default>");
+ *   fOptions.Add("<name>", "<description>");
+ * @endcode
+ * 
+ * The first form defined a parmater that has a value, while the
+ * second form defines a flag (or toggle).  The values or flags can be
+ * retrieved later by doing
+ * 
+ * @code 
+ *    Double_t value = fOptions.AsDouble("<name>",<value if not set>);
+ *    Int_t    value = fOptions.AsInt("<name>",<value if not set>);
+ *    Long64_t value = fOptions.AsLong("<name>",<value if not set>);
+ *    TString  value = fOptions.Get("<name>");
+ *    Bool_t   value = fOptions.Has("<name>");
+ * @endcode
+ *
+ * Parameters defined this way are directly accessible as options to
+ * pass to either runTrain or RunTrain.C
  *
  * @section train_setup_exec Execution of the train 
  *
  * A user defined TrainSetup class can then be run like 
  * 
  * @code 
- * Root> .x RunTrain.C("<class>", "<name>", "<options>", "<runs>", nEvents)
+ * Root> .x RunTrain.C("<class>", "<name>", "<uri>", "<options>")
  * @endcode 
  * 
  * or using the program @b runTrain
  * 
  * @code
- * > runTrain --class=<class> --name=<name> [<options>] 
+ * > runTrain --class=<class> --name=<name> --url=<uri> [<options>] 
  * @endcode
  *
  * Here, 
@@ -70,6 +84,10 @@
  *   @e escaped @e name will be generated from this, which replaces
  *   all spaces and the like with '_' and (optionally) with the date
  *   and time appended. 
+ *
+ * - &lt;uri&gt; is the job execution URI which specified both the
+ *   execution environment and the input data, as well as some options.  
+ *   See more below. 
  *
  * - &lt;options&gt; is a list of options.  For RunTrain this is a
  *   comma separated list of options in the form
@@ -95,11 +113,49 @@
  * For Grid analysis, various JDL and steering scripts are copied to
  * this directory.
  *
- * In all cases, a file named @c rerun.C (and for @b runTrain:
+ * In all cases, a file named @c ReRun.C (and for @b runTrain:
  * rerun.sh) is generated in this sub-directory.  It contains the
  * setting used for the train and can easily be used to run merging
  * and terminate as needed.
  *
+ * @section train_setup_url_spec Execution URI 
+ *
+ * This URI has the form 
+ * @code 
+ *  <protocol>://[[<user>@]<host>]/<input>[?<options>][#<treename>]
+ * @endcode 
+ * and specifies several things.
+ * 
+ * <dl>
+ *   <dt><tt>&lt;protocol&gt;</tt></dt>
+ *   <dd>One of 
+ *     <dl>
+ *       <dt><tt>local</tt></dt>
+ *       <dd>Local analysis on local data executed sequentially on the
+ *         local machine</dd>
+ *       <dt><tt>lite</tt></dt>
+ *       <dd>Proof-Lite analysis on local data executed in parallel on
+ *         the local machine</dd>
+ *       <dt><tt>proof</tt></dt> 
+ *       <dd>Proof analysis on cluster data executed in parallel on a
+ *         PROOF cluster</dd>
+ *       <dt><tt>alien</tt></dt>
+ *       <dd>Grid analysis on grid data executed on the Grid</dd>
+ *     </dl>
+ *   </dd>
+ *   <dt><tt>[[&lt;user&gt;@]&lt;host&gt;]</tt></dt>
+ *   <dd>Sets the master host for Proof analysis</dd>
+ *   <dt><tt>&lt;input&gt;</tt></dt>
+ *   <dd>Input data specification.  The exact form depends on the
+ *     protocol used e.g., for local analysis it can be a single,
+ *     while for other environments it could be a data set name, and
+ *     so on.</dd>
+ *   <dt><tt>&lt;options&gt;</tt></dt>
+ *   <dd>Protocol specific options</dd>
+ *   <dt><tt>&lt;treename&gt;</tt></dt>
+ *   <dd>If specified, gives what data to analyse</dd>
+ *  </dl>
+ *       
  * @section train_setup_proof_spec PROOF specifics
  *
  * Local and Grid jobs are in a sense very similar.  That is, the
@@ -125,8 +181,12 @@
  * sent back to the user by default.  There are two ways to deal with this: 
  * 
  * <ol>
- *  <li> Register the output tree as a data set on the cluster.  This is useful if you need to process the results again on the cluster.</li>
- *  <li> Send the output to a (possibly custom) XRootd server.  This is useful if you need to process the output outside of the cluster</li> 
+ *  <li> Register the output tree as a data set on the cluster.  This
+ *    is useful if you need to process the results again on the
+ *    cluster.</li>
+ *  <li> Send the output to a (possibly custom) XRootd server.  This
+ *    is useful if you need to process the output outside of the
+ *    cluster</li>
  * </ol>
  *
  * The first mode is specified by passing the option
@@ -157,12 +217,11 @@
  * @endcode
  *
  * When running jobs on AAFs, one can use the Grid handler to set-up
- * aspects of the job.  However, sometimes it's desirable to leave the
- * Grid handler out.  To do that, pass the option <tt>plain</tt> in
- * the cluster URI.
+ * aspects of the job.  To enable the Grid handler, pass the option
+ * <tt>plugin</tt> in the execution URI
  *
  * @section train_setup_input Specifying the input
- * @subsection train_setup_local Local data input
+ * @subsection train_setup_local Local and Lite data input
  * 
  * For both ESD and AOD input for local jobs, one must specify the
  * root of the sub-tree that holds the data.  That is, if - for
@@ -175,7 +234,8 @@
  * then one should specify the input location like 
  *
  * @code 
- *   train->SetDataDir("/some/directory");
+ *   local:///some/directory[?pattern=AliESDs.root][#esdTree]
+ *   lite:///some/directory[?pattern=AliESDs.root][#esdTree]
  * @endcode
  *
  * <tt>/some/directory</tt> is then search recursively for input files
@@ -188,16 +248,12 @@
  *
  * @subsection train_setup_proof PROOF input. 
  * 
- * The input data for a PROOF based analysis can be specified as per a
- * Local job if the cluster used is local, in which case the data must
- * be available to the slaves at the specified locations, or one can
- * specify a data-set name via
+ * The input data for a PROOF based analysis is specified as data set
+ * names,
  * 
  * @code 
- *   train->SetDataSet("<data-set-name>");
+ *   proof://[<user>@]<host>/<data-set-name>[?options][#<treename>]
  * @endcode 
- *
- * @b Note: For AAFs using the Grid Handler one <i>must</i> use data sets. 
  *
  * @subsection train_setup_grid_esd Grid ESD input. 
  *
@@ -211,20 +267,13 @@
  * specify the input location like
  *
  * @code 
- *   train->SetDataDir("/alice/data/<year>/<period>");
- *   train->SetDataPattern("ESDs/pass<no>/&ast;/");
- *   train->AddRun(<run>);
+ *   alien:///alice/data/<year>/<period>?pattern=ESDs/pass<no>/&ast;/&run=<run>[#<treename>]
  * @endcode
  *
  * If a particular kind of pass is needed, say
- * <tt>pass&lt;no&gt;_MUON</tt>, one should do
+ * <tt>pass&lt;no&gt;_MUON</tt>, one should do modify the
+ * <tt>pattern</tt> option accordingly
  *
- * @code 
- *  train->SetDataPattern("ESDs/pass<no>_MUON/&ast;/");
- * @endcode
- * 
- * The AliEn analysis plug-in is then instructed to look for data files under 
- * 
  * <pre>
  *   /alice/data/&lt;year&gt;/&lt;period&gt;/&lt;run&gt;/ESDs/pass&lt;no&gt;/&nbsp;*&nbsp;/AliESDs.root 
  * </pre>
@@ -241,9 +290,7 @@
  * specify the input location like
  *
  * @code 
- *   train->SetDataDir("/alice/data/<year>/<period>");
- *   train->SetDataPattern("*");
- *   train->AddRun(<run>);
+ *   alien:///alice/data/<year>/<period>?pattern=&ast;/&mc&run=<run>[#<treename>]
  * @endcode
  *
  *
@@ -259,9 +306,7 @@
  * then specify the input as 
  *
  * @code 
- *   train->SetDataDir("/some/directory");
- *   train->SetDataPattern("*");
- *   train->AddRun(<run>);
+ *   alien:///some/directory?pattern=&ast;/&run=<run>[#<treename>
  * @endcode
  * 
  * The AliEn analysis plug-in is then instructed to look for data files under 
@@ -279,55 +324,25 @@
  * </pre>
  * 
  *  @code 
- *   train->SetDataDir("/alice/data/<year>/<period>");
- *   train->SetDataPattern("ESDs/pass<no>/AOD<vers>/&ast;/");
- *   train->AddRun(<run>);
- * @endcode
- *
- * For simulation output, the files are generally stored like 
- * 
- * <pre>
- *   /alice/sim/&lt;year&gt;/&lt;prod&gt;/&lt;run&gt;/&lt;seq&gt;/AliAOD.root 
- * </pre> 
- *
- * where &lt;run&gt; is generally @e not zero-padded. One should
- * should specify the input location like 
- *
- * @code 
- *   train->SetDataDir("/alice/data/<year>/<period>");
- *   train->SetDataPattern("*");
- *   train->AddRun(<run>);
+ *   alien:///alice/data/<year>/<period>?pattern=ESDs/pass<no>/AOD<vers>/&ast;/&run=<run>[#<treename>]
  * @endcode
  *
  * @section train_setup_other Other features  
- * @subsection train_setup_options Options interface 
- *
- * If the train does not depend on additional options or parameters,
- * the member functions TrainSetup::MakeOptions and
- * TrainSetup::SetOptions can be left un-overloaded in the derived
- * class.  However, options defined in this way can be set through the
- * command line of the program @b runTrain, and provides a great deal
- * of flexiblity.  The Option class provides means of translating the
- * passed string values to integers, doubles, booleans, and of course
- * strings.
  *
  * @subsection train_setup_aux Auxillary libraries, sources, and files
  *
  * Auxillary libraries should be loaded using 
  *
- * - TrainSetup::LoadLibrary(const char*,Bool_t,Bool_t)
+ * - Helper::LoadLibrary(const char*)
  *
- * where first argument is the name of the library, the econd should
- * be true if the library should be loaded as a PAR file (PROOF and
- * Grid only), and the argument should be true if the library should
- * be loaded on the PROOF slaves/Grid workers too.
+ * where the argument is the name of the library
  *
  * If the train needs additional files, say a script for setting up
  * the tasks, or some data file, it can be passed on the the
  * PROOF/Grid workers using the member functions 
  *
- * - TrainSetup::AddExtraFile(const char*)
- * - TrainSetup::AddSource(const char*,bool)
+ * - Helper::LoadAux(const char*)
+ * - Helper::LoadSource(const char*,bool)
  * 
  * @subsection train_setup_overload Overloading the behaviour 
  *
@@ -337,8 +352,8 @@
  * 
  * - TrainSetup::CreateGridHandler()
  * - TrainSetup::CreateInputHandler(EType)
- * - TrainSetup::CreateMCHandler(EType,bool)
- * - TrainSetup::CreateOutputHandler(EType)
+ * - TrainSetup::CreateMCHandler(UShort_t,bool)
+ * - TrainSetup::CreateOutputHandler(UShort_t)
  * - TrainSetup::CreatePhysicsSelection(Bool_t,AliAnalysisManager*)
  * - TrainSetup::CreateCentralitySelection(Bool_t,AliAnalysisManager*)
  *
@@ -349,7 +364,7 @@
  * @include MyAnalysis.C 
  *
  * Our train set-up can then use the member function
- * TrainSetup::MakeScriptPAR to make a PAR file of the script and use
+ * ParUtilities::MakeScriptPAR to make a PAR file of the script and use
  * that to make a library loaded on the workers and then generate an
  * object of our task defined in the script.
  *
@@ -358,6 +373,29 @@
  * This can allow for fast development and testing of analysis tasks
  * without having to wait for official tasks and builds of all of
  * AliROOT
+ *
+ * @section train_setup_impl Implementation details
+ *
+ * @subsection train_setup_imp_helper Helpers 
+ *
+ * The specifics of the each possible execution environment and input
+ * is handled by sub-classes of the base class Helper. Each of these
+ * helpers define
+ *
+ * - URI options. 
+ * - Steps to be done before the tasks are added to the train 
+ * - How to load libraries, additional scripts and files 
+ * - Steps to be done after the setup of tasks 
+ * - How to execute the analysis 
+ * 
+ * Currently defined helpers are 
+ *
+ * - LocalHelper for local jobs 
+ * - ProofHelper for jobs running on a PROOF farm 
+ * - LiteHelper for jobs running in a PROOF-Lite session 
+ * - AAFHelper Special kind of ProofHelper for jobs running on AAFs 
+ * - AFFPluginHelper As AAFHelper, but uses the AliEn plugin 
+ * - GridHelper for Grid jobs 
  */
 //
 // EOF
