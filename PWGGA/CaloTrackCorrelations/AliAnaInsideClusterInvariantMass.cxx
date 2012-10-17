@@ -409,14 +409,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCGenFracNLocMax1[i][j]     = new TH2F(Form("hMCGenFracNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                  Form("#lambda_{0}^{2} vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                                  nptbins,ptmin,ptmax,200,0,2); 
-        fhMCGenFracNLocMax1[i][j]   ->SetYTitle("E_{reco} / E_{gen}");
+        fhMCGenFracNLocMax1[i][j]   ->SetYTitle("E_{gen} / E_{reco}");
         fhMCGenFracNLocMax1[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCGenFracNLocMax1[i][j]) ; 
         
         fhMCGenFracNLocMax2[i][j]     = new TH2F(Form("hMCGenFracNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
                                                  Form("#lambda_{0}^{2} vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                                  nptbins,ptmin,ptmax,200,0,2); 
-        fhMCGenFracNLocMax2[i][j]   ->SetYTitle("E_{reco} / E_{gen}");
+        fhMCGenFracNLocMax2[i][j]   ->SetYTitle("E_{gen} / E_{reco}");
         fhMCGenFracNLocMax2[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCGenFracNLocMax2[i][j]) ; 
         
@@ -424,7 +424,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCGenFracNLocMaxN[i][j]    = new TH2F(Form("hMCGenFracNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
                                                 Form("#lambda_{0}^{2} vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                                 nptbins,ptmin,ptmax,200,0,2); 
-        fhMCGenFracNLocMaxN[i][j]   ->SetYTitle("E_{reco} / E_{gen}");
+        fhMCGenFracNLocMaxN[i][j]   ->SetYTitle("E_{gen} / E_{reco}");
         fhMCGenFracNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCGenFracNLocMaxN[i][j]) ; 
         
@@ -559,56 +559,56 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                                    Form("NLM vs E, %s, E bin %d",ptype[i].Data(),j),
                                                    200,0,2,nMaxBins,0,nMaxBins); 
           fhMCGenFracNLocMaxEbin[i][j]->SetYTitle("NLM");
-          fhMCGenFracNLocMaxEbin[i][j]->SetXTitle("E_{reco} / E_{gen}");
+          fhMCGenFracNLocMaxEbin[i][j]->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhMCGenFracNLocMaxEbin[i][j]) ;           
           
           fhMCGenFracNLocMaxEbinMatched[i][j]  = new TH2F(Form("hMCGenFracNLocMax%sEbin%dMatched",pname[i].Data(),j),
                                                           Form("NLM vs E, %s, E bin %d, matched to a track",ptype[i].Data(),j),
                                                           200,0,2,nMaxBins,0,nMaxBins); 
           fhMCGenFracNLocMaxEbinMatched[i][j]->SetYTitle("NLM");
-          fhMCGenFracNLocMaxEbinMatched[i][j]->SetXTitle("E_{reco} / E_{gen}");
+          fhMCGenFracNLocMaxEbinMatched[i][j]->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhMCGenFracNLocMaxEbinMatched[i][j]) ;   
           
           fhMassMCGenFracNLocMax1Ebin[i][j]  = new TH2F(Form("hMassMCGenFracNLocMax1%sEbin%d",pname[i].Data(),j),
                                                         Form("Invariant mass of 2 highest energy cells vs E, %s, E bin %d",ptype[i].Data(),j),
                                                         200,0,2,mbins,mmin,mmax); 
           fhMassMCGenFracNLocMax1Ebin[i][j]->SetYTitle("M (GeV/c^{2})");
-          fhMassMCGenFracNLocMax1Ebin[i][j]->SetXTitle("E_{reco} / E_{gen}");
+          fhMassMCGenFracNLocMax1Ebin[i][j]->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhMassMCGenFracNLocMax1Ebin[i][j]) ;   
           
           fhMassMCGenFracNLocMax2Ebin[i][j]  = new TH2F(Form("hMassMCGenFracNLocMax2%sEbin%d",pname[i].Data(),j),
                                                         Form("Invariant mass of 2 local maxima cells vs E, %s, E bin %d",ptype[i].Data(),j),
                                                         200,0,2,mbins,mmin,mmax); 
           fhMassMCGenFracNLocMax2Ebin[i][j]->SetYTitle("M (GeV/c^{2})");
-          fhMassMCGenFracNLocMax2Ebin[i][j]->SetXTitle("E_{reco} / E_{gen}");
+          fhMassMCGenFracNLocMax2Ebin[i][j]->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhMassMCGenFracNLocMax2Ebin[i][j]) ;   
           
           fhMassMCGenFracNLocMaxNEbin[i][j]  = new TH2F(Form("hMassMCGenFracNLocMaxN%sEbin%d",pname[i].Data(),j),
                                                         Form("Invariant mass of N>2 local maxima cells vs E, %s, E bin %d",ptype[i].Data(),j),
                                                         200,0,2,mbins,mmin,mmax); 
           fhMassMCGenFracNLocMaxNEbin[i][j]->SetYTitle("M (GeV/c^{2})");
-          fhMassMCGenFracNLocMaxNEbin[i][j]->SetXTitle("E_{reco} / E_{gen}");
+          fhMassMCGenFracNLocMaxNEbin[i][j]->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhMassMCGenFracNLocMaxNEbin[i][j]) ;   
           
           fhM02MCGenFracNLocMax1Ebin[i][j]     = new TH2F(Form("hM02MCGenFracNLocMax1%sEbin%d",pname[i].Data(),j),
                                                           Form("#lambda_{0}^{2} vs E for N max  = 1 %s, E bin %d",ptype[i].Data(), j),
                                                           200,0,2,ssbins,ssmin,ssmax); 
           fhM02MCGenFracNLocMax1Ebin[i][j]   ->SetYTitle("#lambda_{0}^{2}");
-          fhM02MCGenFracNLocMax1Ebin[i][j]   ->SetXTitle("E_{reco} / E_{gen}");
+          fhM02MCGenFracNLocMax1Ebin[i][j]   ->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhM02MCGenFracNLocMax1Ebin[i][j]) ; 
           
           fhM02MCGenFracNLocMax2Ebin[i][j]     = new TH2F(Form("hM02MCGenFracNLocMax2%sEbin%d",pname[i].Data(),j),
                                                           Form("#lambda_{0}^{2} vs E for N max  = 2 %s, E bin %d",ptype[i].Data(),j),
                                                           200,0,2,ssbins,ssmin,ssmax); 
           fhM02MCGenFracNLocMax2Ebin[i][j]   ->SetYTitle("#lambda_{0}^{2}");
-          fhM02MCGenFracNLocMax2Ebin[i][j]   ->SetXTitle("E_{reco} / E_{gen}");
+          fhM02MCGenFracNLocMax2Ebin[i][j]   ->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhM02MCGenFracNLocMax2Ebin[i][j]) ; 
           
           fhM02MCGenFracNLocMaxNEbin[i][j]    = new TH2F(Form("hM02MCGenFracNLocMaxN%sEbin%d",pname[i].Data(),j),
                                                          Form("#lambda_{0}^{2} vs E for N max  > 2 %s, E bin %d",ptype[i].Data(),j),
                                                          200,0,2,ssbins,ssmin,ssmax); 
           fhM02MCGenFracNLocMaxNEbin[i][j]   ->SetYTitle("#lambda_{0}^{2}");
-          fhM02MCGenFracNLocMaxNEbin[i][j]   ->SetXTitle("E_{reco} / E_{gen}");
+          fhM02MCGenFracNLocMaxNEbin[i][j]   ->SetXTitle("E_{gen} / E_{reco}");
           outputContainer->Add(fhM02MCGenFracNLocMaxNEbin[i][j]) ; 
         }
       }

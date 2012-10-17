@@ -1626,7 +1626,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(nMaxima2 >  1 && cluster1->GetM02() < 0.3 && cluster1->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass); 
       
       //Skip events with too few or too many  NLM
-      if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima1 < fNLMCutMin || nMaxima2 > fNLMCutMax)) continue ;
+      if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima2 < fNLMCutMin || nMaxima2 > fNLMCutMax)) continue ;
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - NLM of out of range: cluster1 %d, cluster2 %d \n",nMaxima1, nMaxima2);
       
