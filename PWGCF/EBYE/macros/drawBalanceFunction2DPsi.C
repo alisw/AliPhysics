@@ -4,6 +4,8 @@ TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
 			      Int_t gCentrality = 1,
+			      Int_t gBit = -1,
+			      const char* gCentralityEstimator = 0x0,
 			      Bool_t kShowShuffled = kFALSE, 
 			      Bool_t kShowMixed = kTRUE, 
 			      Double_t psiMin = -0.5, Double_t psiMax = 0.5,
@@ -27,11 +29,11 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   gStyle->SetPalette(1,0);
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename,gCentrality,0);
+  TList *listBF = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
   TList *listBFShuffled = NULL;
-  if(kShowShuffled) listBFShuffled = GetListOfObjects(filename,gCentrality,1);
+  if(kShowShuffled) listBFShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
   TList *listBFMixed = NULL;
-  if(kShowMixed) listBFMixed = GetListOfObjects(filename,gCentrality,2);
+  if(kShowMixed) listBFMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
@@ -43,7 +45,9 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 
 //______________________________________________________//
 TList *GetListOfObjects(const char* filename, 
-			Int_t gCentrality, Int_t kData = 1) {
+			Int_t gCentrality, 
+			Int_t gBit, const char* gCentralityEstimator,
+			Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
   //kData == 0: data
   //kData == 1: shuffling
@@ -80,6 +84,10 @@ TList *GetListOfObjects(const char* filename,
     listBFName = "listBFPsiMixed_";
   }
   listBFName += centralityArray[gCentrality-1];
+  if(gBit > -1) {
+    listBFName += "_Bit"; listBFName += gBit; }
+  if(gCentralityEstimator) {
+    listBFName += "_"; listBFName += gCentralityEstimator;}
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
   cout<<"List name: "<<listBF->GetName()<<endl;
@@ -317,6 +325,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
   gHistBalanceFunction->DrawCopy("lego2");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();  
   TCanvas *c1a = new TCanvas("c1a","",600,0,600,500);
   c1a->SetFillColor(10); 
   c1a->SetHighLightColor(10);
@@ -329,6 +340,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     c2->SetHighLightColor(10);
     c2->SetLeftMargin(0.15);
     gHistBalanceFunctionShuffled->DrawCopy("lego2");
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
     TCanvas *c2a = new TCanvas("c2a","",700,100,600,500);
     c2a->SetFillColor(10); 
     c2a->SetHighLightColor(10);
@@ -342,6 +356,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     c3->SetHighLightColor(10);
     c3->SetLeftMargin(0.15);
     gHistBalanceFunctionMixed->DrawCopy("lego2");
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
     TCanvas *c3a = new TCanvas("c3a","",800,200,600,500);
     c3a->SetFillColor(10); 
     c3a->SetHighLightColor(10);
@@ -353,6 +370,9 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     c4->SetHighLightColor(10);
     c4->SetLeftMargin(0.15);
     gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
     TCanvas *c4a = new TCanvas("c4a","",900,300,600,500);
     c4a->SetFillColor(10); 
     c4a->SetHighLightColor(10);
@@ -530,6 +550,9 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
   gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunction->DrawCopy("lego2");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();  
 
   latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
   latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
@@ -545,7 +568,10 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
     gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
     gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
     gHistBalanceFunctionShuffled->DrawCopy("lego2");
-    
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
+
     latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
     latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
     latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
@@ -561,7 +587,10 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
     gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
     gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
     gHistBalanceFunctionMixed->DrawCopy("lego2");
-    
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
+
     latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
     latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
     latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
@@ -577,7 +606,10 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
     gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
     gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
     gHistBalanceFunctionSubtracted->DrawCopy("lego2");
-    
+    gPad->SetTheta(30); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();  
+
     latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
     latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
     latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());

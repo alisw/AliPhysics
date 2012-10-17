@@ -4,10 +4,12 @@ TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40
 const Int_t gRebin = 1;
 void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root", 
 				Int_t gCentrality = 1,
+				Int_t gBit = -1,
+				const char* gCentralityEstimator = 0x0,
 				Bool_t kShowShuffled = kFALSE, 
 				Bool_t kShowMixed = kTRUE, 
 				Double_t psiMin = -0.5, 
-				Double_t psiMax = 0.5,
+				Double_t psiMax = 3.5,
 				Double_t ptTriggerMin = -1.,
 				Double_t ptTriggerMax = -1.,
 				Double_t ptAssociatedMin = -1.,
@@ -28,11 +30,11 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
   gSystem->Load("libPWGCFebye.so");
 
   //Prepare the objects and return them
-  TList *list = GetListOfObjects(filename,gCentrality,0);
+  TList *list = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0);
   TList *listShuffled = NULL;
-  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,1);
+  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1);
   TList *listMixed = NULL;
-  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,2);
+  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2);
 
   if(!list) {
     Printf("The TList object was not created");
@@ -46,6 +48,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
 //______________________________________________________//
 TList *GetListOfObjects(const char* filename,
 			Int_t gCentrality,
+			Int_t gBit,
+			const char *gCentralityEstimator,
 			Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
   TList *listQA = 0x0;
@@ -81,6 +85,10 @@ TList *GetListOfObjects(const char* filename,
     listBFName = "listBFPsiMixed_";
   }
   listBFName += centralityArray[gCentrality-1];
+  if(gBit > -1) {
+    listBFName += "_Bit"; listBFName += gBit; }
+  if(gCentralityEstimator) {
+    listBFName += "_"; listBFName += gCentralityEstimator;}
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
   cout<<"List name: "<<listBF->GetName()<<endl;
@@ -294,7 +302,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   gHistPN[0]->SetTitle(histoTitle.Data());
   cPN[0] = new TCanvas("cPN0","",0,0,600,500);
   cPN[0]->SetFillColor(10); cPN[0]->SetHighLightColor(10);
-  gHistPN[0]->DrawCopy("lego2");
+  gHistPN[0]->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  //gPad->SetPhi(130); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
   pngName = "DeltaPhiDeltaEta.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -321,7 +333,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cPN[1] = new TCanvas("cPN1","",0,100,600,500);
     cPN[1]->SetFillColor(10); 
     cPN[1]->SetHighLightColor(10);
-    gHistPN[1]->DrawCopy("lego2");
+    gHistPN[1]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
     pngName = "DeltaPhiDeltaEtaShuffled.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -349,7 +365,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cPN[2] = new TCanvas("cPN2","",0,200,600,500);
     cPN[2]->SetFillColor(10); 
     cPN[2]->SetHighLightColor(10);
-    gHistPN[2]->DrawCopy("lego2");
+    gHistPN[2]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
     pngName = "DeltaPhiDeltaEtaMixed.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -377,7 +397,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   cNP[0] = new TCanvas("cNP0","",100,0,600,500);
   cNP[0]->SetFillColor(10); 
   cNP[0]->SetHighLightColor(10);
-  gHistNP[0]->DrawCopy("lego2");
+  gHistNP[0]->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  //gPad->SetPhi(130); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
   pngName = "DeltaPhiDeltaEta.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -404,7 +428,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cNP[1] = new TCanvas("cNP1","",100,100,600,500);
     cNP[1]->SetFillColor(10); 
     cNP[1]->SetHighLightColor(10);
-    gHistNP[1]->DrawCopy("lego2");
+    gHistNP[1]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaShuffled.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -432,7 +460,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cNP[2] = new TCanvas("cNP2","",100,200,600,500);
     cNP[2]->SetFillColor(10); 
     cNP[2]->SetHighLightColor(10);
-    gHistNP[2]->DrawCopy("lego2");
+    gHistNP[2]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaMixed.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -460,7 +492,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   cPP[0] = new TCanvas("cPP0","",200,0,600,500);
   cPP[0]->SetFillColor(10); 
   cPP[0]->SetHighLightColor(10);
-  gHistPP[0]->DrawCopy("lego2");
+  gHistPP[0]->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  //gPad->SetPhi(130); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
   pngName = "DeltaPhiDeltaEta.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -487,7 +523,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cPP[1] = new TCanvas("cPP1","",200,100,600,500);
     cPP[1]->SetFillColor(10); 
     cPP[1]->SetHighLightColor(10);
-    gHistPP[1]->DrawCopy("lego2");
+    gHistPP[1]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaShuffled.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -515,7 +555,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cPP[2] = new TCanvas("cPP2","",200,200,600,500);
     cPP[2]->SetFillColor(10); 
     cPP[2]->SetHighLightColor(10);
-    gHistPP[2]->DrawCopy("lego2");
+    gHistPP[2]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaMixed.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -543,7 +587,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   cNN[0] = new TCanvas("cNN0","",300,0,600,500);
   cNN[0]->SetFillColor(10); 
   cNN[0]->SetHighLightColor(10);
-  gHistNN[0]->DrawCopy("lego2");
+  gHistNN[0]->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  //gPad->SetPhi(-60); // default is 30
+  gPad->Update();
   pngName = "DeltaPhiDeltaEta.Centrality"; 
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -570,7 +618,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cNN[1] = new TCanvas("cNN1","",300,100,600,500);
     cNN[1]->SetFillColor(10); 
     cNN[1]->SetHighLightColor(10);
-    gHistNN[1]->DrawCopy("lego2");
+    gHistNN[1]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaShuffled.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
@@ -598,7 +650,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     cNN[2] = new TCanvas("cNN2","",300,200,600,500);
     cNN[2]->SetFillColor(10); 
     cNN[2]->SetHighLightColor(10);
-    gHistNN[2]->DrawCopy("lego2");
+    gHistNN[2]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();
     pngName = "DeltaPhiDeltaEtaMixed.Centrality"; 
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
