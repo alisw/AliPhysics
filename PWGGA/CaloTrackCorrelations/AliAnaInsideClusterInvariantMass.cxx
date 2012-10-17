@@ -107,6 +107,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMCGenFracNLocMax1[i][j]= 0;
       fhMCGenFracNLocMax2[i][j]= 0;
       fhMCGenFracNLocMaxN[i][j]= 0;
+      
+      fhMCGenSplitEFracNLocMax1[i][j]= 0;
+      fhMCGenSplitEFracNLocMax2[i][j]= 0;
+      fhMCGenSplitEFracNLocMaxN[i][j]= 0;      
     }
     
     for(Int_t jj = 0; jj < 4; jj++)
@@ -427,6 +431,28 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCGenFracNLocMaxN[i][j]   ->SetYTitle("E_{gen} / E_{reco}");
         fhMCGenFracNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCGenFracNLocMaxN[i][j]) ; 
+      
+        fhMCGenSplitEFracNLocMax1[i][j]     = new TH2F(Form("hMCGenSplitEFracNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                 Form("#lambda_{0}^{2} vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                 nptbins,ptmin,ptmax,200,0,2); 
+        fhMCGenSplitEFracNLocMax1[i][j]   ->SetYTitle("E_{gen} / (E_{1 split}+E_{2 split})");
+        fhMCGenSplitEFracNLocMax1[i][j]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCGenSplitEFracNLocMax1[i][j]) ; 
+        
+        fhMCGenSplitEFracNLocMax2[i][j]     = new TH2F(Form("hMCGenSplitEFracNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                 Form("#lambda_{0}^{2} vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                 nptbins,ptmin,ptmax,200,0,2); 
+        fhMCGenSplitEFracNLocMax2[i][j]   ->SetYTitle("E_{gen} / (E_{1 split}+E_{2 split})");
+        fhMCGenSplitEFracNLocMax2[i][j]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCGenSplitEFracNLocMax2[i][j]) ; 
+        
+        
+        fhMCGenSplitEFracNLocMaxN[i][j]    = new TH2F(Form("hMCGenSplitEFracNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                Form("#lambda_{0}^{2} vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                nptbins,ptmin,ptmax,200,0,2); 
+        fhMCGenSplitEFracNLocMaxN[i][j]   ->SetYTitle("E_{gen} / (E_{1 split}+E_{2 split})");
+        fhMCGenSplitEFracNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCGenSplitEFracNLocMaxN[i][j]) ; 
         
       }
       
@@ -1034,8 +1060,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
     } 
     
-    Float_t efrac = eprim/en;
-    
+    Float_t efrac      = eprim/en;
+    Float_t efracSplit = eprim/(e1+e2);
+
     Int_t ebin = -1;
     if(en > 8  && en <= 12) ebin = 0; 
     if(en > 12 && en <= 16) ebin = 1;
@@ -1064,6 +1091,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02NLocMax1          [mcindex][matched]->Fill(l0     ,  mass  ); 
           fhMCGenFracNLocMax1        [mcindex][matched]->Fill(en     ,  efrac ); 
+          fhMCGenSplitEFracNLocMax1  [mcindex][matched]->Fill(en     ,  efracSplit ); 
+
           if(!matched && ebin >= 0)
           {
             fhM02MCGenFracNLocMax1Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
@@ -1108,8 +1137,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         
         if(IsDataMC()) 
         {
-          fhMassM02NLocMax2    [mcindex][matched]->Fill(l0     ,  mass ); 
-          fhMCGenFracNLocMax2  [mcindex][matched]->Fill(en     ,  efrac ); 
+          fhMassM02NLocMax2        [mcindex][matched]->Fill(l0     ,  mass ); 
+          fhMCGenFracNLocMax2      [mcindex][matched]->Fill(en     ,  efrac ); 
+          fhMCGenSplitEFracNLocMax2[mcindex][matched]->Fill(en     ,  efracSplit ); 
+
           if(!matched && ebin >= 0)
           {
             fhM02MCGenFracNLocMax2Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
@@ -1154,8 +1185,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         
         if(IsDataMC()) 
         {
-          fhMassM02NLocMaxN    [mcindex][matched]->Fill(l0     ,  mass ); 
-          fhMCGenFracNLocMaxN  [mcindex][matched]->Fill(en     ,  efrac ); 
+          fhMassM02NLocMaxN        [mcindex][matched]->Fill(l0     ,  mass ); 
+          fhMCGenFracNLocMaxN      [mcindex][matched]->Fill(en     ,  efrac ); 
+          fhMCGenSplitEFracNLocMaxN[mcindex][matched]->Fill(en     ,  efracSplit ); 
+
           if(!matched && ebin >= 0)
           {
             fhM02MCGenFracNLocMaxNEbin [mcindex][ebin]->Fill(efrac  ,  l0     ); 
