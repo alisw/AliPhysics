@@ -420,7 +420,9 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
 			   kOffline+1, 0, kOffline+1);
   fHTriggerCorr->SetStats(0);
   fHTriggerCorr->SetDirectory(0);
-  
+  fHTriggerCorr->SetXTitle("Requirement");
+  fHTriggerCorr->SetYTitle("Companion");
+
   Int_t binNum[] = { kInel   +1,
 		     kInelGt0+1,
 		     kNSD    +1,
@@ -445,7 +447,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
 			   "Pileup",
 			   "NSD_{MC}", 
 			   "Offline" };
-  for (Int_t i = 0; i < kOffline; i++) {
+  for (Int_t i = 0; i < kOffline+1; i++) {
     fHTriggers->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
     fHTriggerCorr->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
     fHTriggerCorr->GetYaxis()->SetBinLabel(binNum[i], binLbl[i]);
@@ -783,17 +785,20 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
       AliWarning("Histogram of triggers not defined - has init been called");
       return false;
     }
-    fHTriggers->Fill(kOffline+0.5);
+    // fHTriggers->Fill(kOffline+0.5);
     
     CheckINELGT0(esd, nClusters, triggers);
   }
   
   CheckNSD(esd,triggers);
-  if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
-  if (CheckEmpty(trigStr, triggers)) fHTriggers->Fill(kEmpty+.5);
+  CheckPileup(esd, triggers);
+  CheckEmpty(trigStr, triggers);
+  // if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
+  // if (CheckEmpty(trigStr, triggers)) fHTriggers->Fill(kEmpty+.5);
 
   CheckWords(esd, triggers);
 
+#if 0
   // Now check - if we have a collision - for offline triggers and
   // fill histogram.
   if (triggers & AliAODForwardMult::kB) {
@@ -813,7 +818,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   if (triggers & AliAODForwardMult::kA) fHTriggers->Fill(kA+.5);
   if (triggers & AliAODForwardMult::kC) fHTriggers->Fill(kC+.5);
   if (triggers & AliAODForwardMult::kE) fHTriggers->Fill(kE+.5);
-
+#endif
 #define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
   do { switch (BIN) { \
     case kInel:    RET = triggers & AliAODForwardMult::kInel;    break; \
@@ -835,7 +840,8 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     Bool_t hasX = false;
     TEST_TRIG_BIN(hasX, i, triggers);
     if (!hasX) continue;
-    for (Int_t j = i; j < kOffline+1; j++) { 
+    fHTriggers->Fill(i+.5);
+    for (Int_t j = 0; j < kOffline+1; j++) { 
       Bool_t hasY = false;
       TEST_TRIG_BIN(hasY, j, triggers);
       if (!hasY) continue;
