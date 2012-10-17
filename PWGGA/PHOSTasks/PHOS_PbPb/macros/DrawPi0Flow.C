@@ -162,7 +162,7 @@ DrawPi0Flow(const TString filename = "AnalysisResults.root",
   hPi0All_cen0->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
   hPi0All_cen0->SetYTitle("p_{T} (GeV/c)");
   hPi0All_cen0->Draw("colz");
-  c3->Print("PHOS_MggAll.eps");
+  c8->Print("PHOS_MggAll.eps");
 
   //-----------------------------------------------------------------------------
   TCanvas *c9 = new TCanvas("c9","gg mass vs pt, PID=Allcore");
