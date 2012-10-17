@@ -33,6 +33,10 @@ ifneq ($(CORRFW_INCLUDE),)
    ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
+ifneq ($(OADB_INCLUDE),)
+   ALICEINC += -I../$(OADB_INCLUDE)
+endif
+
 ifneq ($(PWGLFresonances_INCLUDE),)
    ALICEINC += -I../$(PWGLFresonances_INCLUDE)
 else
