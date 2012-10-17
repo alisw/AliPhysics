@@ -5,4 +5,5 @@ test_*
 dndeta_*.C
 export_*.C
 runTrain
+*.root
 
