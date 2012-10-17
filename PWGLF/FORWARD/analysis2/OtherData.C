@@ -1096,6 +1096,117 @@ TGraphAsymmErrors* AliceCentralNsd2360()
   return g;
 }
 
+//____________________________________________________________________
+/** 
+ * Get the ALICE MB (CINT5, V0AND) data in @f$ |\eta|<2@f$ for pPb at 
+ * @f$ \sqrt{s} = 5.023TeV@f$ 
+ *
+ * arXiv:1210.3615 [nucl-ex]
+ *
+ * @return graph of data 
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralpPb5023()
+{  
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(43);
+  g->SetName("");
+  g->SetTitle("");
+  g->SetFillColor(1);
+  g->SetMarkerStyle(24);
+  g->SetMarkerSize(1.3);
+  g->SetPoint(0,-2.05,16.1757);
+  g->SetPointError(0,0.05,0.05,0.360241,0.360241);
+  g->SetPoint(1,-1.95,16.8454);
+  g->SetPointError(1,0.05,0.05,0.184436,0.184436);
+  g->SetPoint(2,-1.85,16.9748);
+  g->SetPointError(2,0.05,0.05,0.112833,0.112833);
+  g->SetPoint(3,-1.75,17.2504);
+  g->SetPointError(3,0.05,0.05,0.0851792,0.0851792);
+  g->SetPoint(4,-1.65,17.336);
+  g->SetPointError(4,0.05,0.05,0.0674453,0.0674453);
+  g->SetPoint(5,-1.55,17.4649);
+  g->SetPointError(5,0.05,0.05,0.0558537,0.0558537);
+  g->SetPoint(6,-1.45,17.5884);
+  g->SetPointError(6,0.05,0.05,0.0481065,0.0481065);
+  g->SetPoint(7,-1.35,17.7509);
+  g->SetPointError(7,0.05,0.05,0.0448122,0.0448122);
+  g->SetPoint(8,-1.25,17.8052);
+  g->SetPointError(8,0.05,0.05,0.0403298,0.0403298);
+  g->SetPoint(9,-1.15,17.8357);
+  g->SetPointError(9,0.05,0.05,0.0383174,0.0383174);
+  g->SetPoint(10,-1.05,17.7547);
+  g->SetPointError(10,0.05,0.05,0.0356689,0.0356689);
+  g->SetPoint(11,-0.95,17.6859);
+  g->SetPointError(11,0.05,0.05,0.034326,0.034326);
+  g->SetPoint(12,-0.85,17.6665);
+  g->SetPointError(12,0.05,0.05,0.0333449,0.0333449);
+  g->SetPoint(13,-0.75,17.6044);
+  g->SetPointError(13,0.05,0.05,0.0325356,0.0325356);
+  g->SetPoint(14,-0.65,17.4815);
+  g->SetPointError(14,0.05,0.05,0.0318004,0.0318004);
+  g->SetPoint(15,-0.55,17.4);
+  g->SetPointError(15,0.05,0.05,0.0312675,0.0312675);
+  g->SetPoint(16,-0.45,17.3425);
+  g->SetPointError(16,0.05,0.05,0.0310344,0.0310344);
+  g->SetPoint(17,-0.35,17.2885);
+  g->SetPointError(17,0.05,0.05,0.0306043,0.0306043);
+  g->SetPoint(18,-0.25,17.2646);
+  g->SetPointError(18,0.05,0.05,0.0303226,0.0303226);
+  g->SetPoint(19,-0.15,17.316);
+  g->SetPointError(19,0.05,0.05,0.0302368,0.0302368);
+  g->SetPoint(20,-0.05,17.312);
+  g->SetPointError(20,0.05,0.05,0.0301444,0.0301444);
+  g->SetPoint(21,0.05,17.4418);
+  g->SetPointError(21,0.05,0.05,0.0301526,0.0301526);
+  g->SetPoint(22,0.15,17.4944);
+  g->SetPointError(22,0.05,0.05,0.0303199,0.0303199);
+  g->SetPoint(23,0.25,17.642);
+  g->SetPointError(23,0.05,0.05,0.0303867,0.0303867);
+  g->SetPoint(24,0.35,17.8153);
+  g->SetPointError(24,0.05,0.05,0.0306752,0.0306752);
+  g->SetPoint(25,0.45,18.0244);
+  g->SetPointError(25,0.05,0.05,0.0310274,0.0310274);
+  g->SetPoint(26,0.55,18.1993);
+  g->SetPointError(26,0.05,0.05,0.0314353,0.0314353);
+  g->SetPoint(27,0.65,18.349);
+  g->SetPointError(27,0.05,0.05,0.0316803,0.0316803);
+  g->SetPoint(28,0.75,18.5976);
+  g->SetPointError(28,0.05,0.05,0.0322819,0.0322819);
+  g->SetPoint(29,0.85,18.8045);
+  g->SetPointError(29,0.05,0.05,0.0329447,0.0329447);
+  g->SetPoint(30,0.95,18.9865);
+  g->SetPointError(30,0.05,0.05,0.0337513,0.0337513);
+  g->SetPoint(31,1.05,19.2313);
+  g->SetPointError(31,0.05,0.05,0.0354009,0.0354009);
+  g->SetPoint(32,1.15,19.4055);
+  g->SetPointError(32,0.05,0.05,0.0367366,0.0367366);
+  g->SetPoint(33,1.25,19.5893);
+  g->SetPointError(33,0.05,0.05,0.0385048,0.0385048);
+  g->SetPoint(34,1.35,19.8196);
+  g->SetPointError(34,0.05,0.05,0.0421699,0.0421699);
+  g->SetPoint(35,1.45,19.9476);
+  g->SetPointError(35,0.05,0.05,0.0451541,0.0451541);
+  g->SetPoint(36,1.55,20.1012);
+  g->SetPointError(36,0.05,0.05,0.0513641,0.0513641);
+  g->SetPoint(37,1.65,20.1082);
+  g->SetPointError(37,0.05,0.05,0.060302,0.060302);
+  g->SetPoint(38,1.75,20.1732);
+  g->SetPointError(38,0.05,0.05,0.0739969,0.0739969);
+  g->SetPoint(39,1.85,20.1964);
+  g->SetPointError(39,0.05,0.05,0.0953757,0.0953757);
+  g->SetPoint(40,1.95,20.0509);
+  g->SetPointError(40,0.05,0.05,0.147212,0.147212);
+  g->SetPoint(41,2.05,20.3151);
+  g->SetPointError(41,0.05,0.05,0.272151,0.272151);
+  g->SetPoint(42,2.15,20.1319);
+  g->SetPointError(42,0.05,0.05,0.802706,0.802706);
+
+
+  SetGraphAttributes(g, INEL, ALICE, false, "alice_ppb50230", 
+		     "ALICE arXiv:1210.3615");
+  return g;
+}
   
 //____________________________________________________________________
 /** 
@@ -1264,6 +1375,13 @@ GetSingle(UShort_t which,
       }
     }
   }
+  else if (sys == 3) { // pPb 
+    if (TMath::Abs(energy - 5023) < 10) {
+      switch (which) { 
+      case ALICE: ret = AliceCentralpPb5023(); break;
+      }
+    }
+  }
 #if 0
   if (ret) {
     if (!wn.IsNull()) wn.Append(",");
@@ -1389,8 +1507,20 @@ GetData(UShort_t sys,
     sn = "PbPb";
     // Warning("GetData", "No other data for PbPb yet");
   }
-  else if (sys != 3) 
-    Warning("GetData", "Unknown system %d", sys);
+  else if (sys == 3) {
+    if (!(TMath::Abs(energy-5023) < 10)) {
+      Warning("GetData", "No other results for sys=%d, energy=%d",
+	      sys, energy);
+      return 0;
+    }
+    
+    Info("GetData", "Getting ALICE pPb data");
+    sn = "pPb";
+    TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, sys,energy, 0):0);
+    if (gALI) mp->Add(gALI);
+    Info("GetData", "Got %p", gALI);
+    // Warning("GetData", "Unknown system %d", sys);
+  }
 
   if (!mp->GetListOfGraphs() || mp->GetListOfGraphs()->GetEntries() <= 0) {
     delete mp;
