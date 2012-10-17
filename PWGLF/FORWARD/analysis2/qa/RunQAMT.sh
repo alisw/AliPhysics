@@ -228,8 +228,14 @@ get_filelist()
     esac
     
     local paid=
-    if test "x$passfull" != "x" && test $passno -gt 0 ; then 
-	paid=pass${passno}
+    if test echo "$passno" | grep -q -E '^[0-9]*[.]?[0-9]*$' ; then 
+	if test "x$passfull" != "x" && test $passno -gt 0 ; then 
+	    paid=pass${passno}
+	fi
+    else
+	paid=${passfull}
+	passpre=
+	post=
     fi
     local post=${passpost}
     case x$post in 
@@ -300,7 +306,7 @@ analyse_file()
     mess 2 -n "Analysing $inp -> $out ... "
 
     if test -f $dir/$out ; then 
-	if test $force -lt 0 ; then 
+	if test $force -lt 1 ; then 
 	    mess 2 "exits"
 	    return 0
 	fi
@@ -321,7 +327,7 @@ EOF
 }
 
 # --- Download a single file -----------------------------------------
-also_results=1
+also_results=0
 analyse_run()
 {
     local source=$1 ; shift 
@@ -330,10 +336,11 @@ analyse_run()
     local o=${store}/`basename $file .root`_${r}.root 
 
     mess 2 -n "$source -> $o ... "
-    if test -f $o ; then 
+    if test -f $o && test $force -lt 2; then 
 	mess 2 "exists" 
 	# sleep 1
     else
+	rm -f ${o}
 	mess 2 -n "copying ... " 
 	alien_cp alien:${source} file:${o} >> ${redir} 2>&1 
 	fix_perm $o 
@@ -346,9 +353,10 @@ analyse_run()
 	local q=${store}/`basename $other .root`_${r}.root
 
 	mess 2 -n "$s -> $q ... "
-	if test -f $q ; then 
+	if test -f $q && test $force -lt 2 ; then 
 	    mess 2 "exists" 
 	else
+	    rm -rf ${q}
 	    mess 2 -n "copying ... " 
 	    alien_cp alien:${s} file:${q} >> ${redir} 2>&1 
 	    fix_perm $q
@@ -528,7 +536,7 @@ make_index()
     <link rel='shortcut icon' href='fmd_favicon.png' type='image/x-png'>
   </head>
   <body>
-    <h1><img src='fmd_logo.png'>$title</h1>
+    <h1><img style='width: 200px;' src='fmd_logo.png'>  &nbsp;$title</h1>
 EOF
 	if test ! "x$desc" = "x" ; then 
 	    echo "<p>$desc</p>" >> index.html
@@ -584,7 +592,7 @@ while test $# -gt 0 ; do
 	    ;;
 	-l|--log-file) redir= ; shift ;; 
 	-b|--barrel) barrel=$2; shift ;;
-	-f|--force) force=1 ;; 
+	-f|--force) let force=$force+1 ;; 
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -662,7 +670,14 @@ cat <<EOF
 	Log:                    ${redir}
 	Force:                  ${force}
 EOF
-# --- Copy scripts to target -----------------------------------------
+# --- Do a search to find our files ----------------------------------
+get_filelist
+
+if test $maxf -gt 0 && test $maxf -lt $numf ; then 
+    numf=$maxf 
+fi
+
+# --- Copy scripts to target and compile -----------------------------
 for i in QABase.h QAPlotter.C QARing.h QAStructs.h QATrender.C \
     RunFileQA.C RunFinalQA.C ; do
     cp $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/$i ${store}/${i}
@@ -683,12 +698,6 @@ gROOT->LoadMacro("QAPlotter.C++g");
 EOF
 )
 
-# --- Do a search to find our files ----------------------------------
-get_filelist
-
-if test $maxf -gt 0 && test $maxf -lt $numf ; then 
-    numf=$maxf 
-fi
 
 # --- Now get and analyse each run -----------------------------------
 analyse_runs ${top}/$store $numf $files

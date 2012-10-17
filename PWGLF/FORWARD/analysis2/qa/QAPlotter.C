@@ -512,8 +512,6 @@ struct QAPlotter : public QABase
     Double_t wx  = 1 - fCanvas->GetLeftMargin() - fCanvas->GetRightMargin();
     Double_t dy  = .025;
     Double_t y   = fCanvas->GetBottomMargin()+dy;
-    UInt_t   cw  = fCanvas->GetWw();  // In pixels
-    UInt_t   ch  = fCanvas->GetWh(); // In pixels
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
       Int_t    r = fRuns[i];
       Double_t x = fCanvas->GetLeftMargin() + wx*Double_t(r-r1)/(r2-r1);
