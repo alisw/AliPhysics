@@ -4,7 +4,7 @@ const Double_t kMean=0.136 ; //Approximate peak position to facilitate error est
 
 //-----------------------------------------------------------------------------
 void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
-		 const TString listPath = "AliPHOSPi0Flow/PHOSPi0FlowCoutput1",
+		 const TString listPath = "PHOSPi0Flow/PHOSPi0FlowCoutput1",
 		 const Int_t centrality=0, 
 		 const char* pid="CPV")
 {
@@ -12,7 +12,7 @@ void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
 
   TFile * f = new TFile(filename) ;
   //TList *histoList = (TList*)f->Get("PHOSPi0Flow");
-  TList *histoList = (TList*)f->Get("PHOSPi0Flow/PHOSPi0FlowCoutput1"); // lego train
+  TList *histoList = (TList*)f->Get(listPath); // lego train
 
   char key[125] ;
 
@@ -52,7 +52,7 @@ void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
   PPRstyle();
   gStyle->SetPadLeftMargin(0.14);
   gStyle->SetPadRightMargin(0.01);
-  gStyle->SetPadTopMargin(0.01);
+  //gStyle->SetPadTopMargin(0.01);
   gStyle->SetPadBottomMargin(0.08);
 
   //Fit real only 
@@ -213,7 +213,17 @@ void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
     Int_t    intBinMin   = hp->GetXaxis()->FindBin(intRangeMin) ;
     Int_t    intBinMax   = hp->GetXaxis()->FindBin(intRangeMax) ;
     Double_t errStat     = hpm->Integral(intBinMin,intBinMax); 
-
+    
+    rawCanvas->cd(ptBin);
+    hpmScaled->Scale(fbg1(0.1349));
+    hp->SetTitle(key);
+    hp->SetLineColor(kBlack);
+    hp->SetAxisRange(0.05, 0.3);
+    hp->DrawCopy();
+    hpmScaled->SetLineColor(kRed);
+    hpmScaled->DrawCopy("same");
+    rawCanvas->Update();
+    
     hpm ->Multiply(fbg1) ;
     hpm2->Multiply(fbg2) ;
     hp  ->Add(hpm ,-1.) ;
