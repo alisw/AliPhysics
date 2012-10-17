@@ -65,7 +65,7 @@ void FillMerge(const TString filelist="filelist.txt",
     
     if( ! fillToMerger.count( fill ) ) { // if no merger for fill
       fillToMerger[fill] = new TFileMerger(); // create merger
-      gSystem->mkdir( Form("%s/fill/%d", gSystem->pwd(), fill) );
+      gSystem->mkdir( Form("%s/fill/%d", gSystem->pwd(), fill), true );
       fillToMerger[fill]->OutputFile(Form("%s/fill/%d/AnalysisResults.root", gSystem->pwd(), fill));
     }
     
