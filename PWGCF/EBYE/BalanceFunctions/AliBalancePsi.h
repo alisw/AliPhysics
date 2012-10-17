@@ -126,7 +126,7 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
   TH2D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
-  TH2D *GetQAHistPsiMinusPhi() {return fHistPshiMinusPhi;}
+  TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
 
   void UseHBTCut() {fHBTCut = kTRUE;}
   void UseConversionCut() {fConversionCut = kTRUE;}
@@ -155,7 +155,7 @@ class AliBalancePsi : public TObject {
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
   TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
   TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
-  TH2D *fHistPshiMinusPhi;//
+  TH2D *fHistPsiMinusPhi;//
 
   Double_t fPsiInterval;// interval in Psi-phi1
 
