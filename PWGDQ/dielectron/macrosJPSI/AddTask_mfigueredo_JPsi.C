@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
+AliAnalysisTask *AddTask_mfigueredo_JPsi(){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -10,11 +10,18 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
     return NULL;
   }
 
-  //Do we have an MC handler?
-  Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
+     
+    //Do we have an MC handler?
+  Bool_t hasMC = kFALSE;
+  TString list = gSystem->Getenv("LIST");
+  //if( list.IsNull()) list=prod;
+  if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
+  if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
   
   TString configFile("");
   printf("%s \n",gSystem->pwd());
+  
+
   if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/mfiguere/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C ."))
     configFile=Form("%s/ConfigJpsi_mf_PbPb.C",gSystem->pwd());                        // alien config                                                                                            
   else
@@ -33,8 +40,8 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_mf_pp(i,isAOD);
-    if (isAOD) jpsi->SetHasMC(hasMC_aod);
+    AliDielectron *jpsi; 
+    jpsi=ConfigJpsi_mf_PbPb(i,isAOD);
     if (jpsi) task->AddDielectron(jpsi);
   }
 
@@ -44,13 +51,13 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(Bool_t hasMC_aod = kFALSE){
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
-//   eventCuts->SetCentralityRange(0.,20.);
+  eventCuts->SetCentralityRange(0.0,90.0);
   // add event filter
-//   task->SetEventFilter(eventCuts);
+  task->SetEventFilter(eventCuts);
 
   // pileup rejection
 //   task->SetRejectPileup();
-   task->SetTriggerMask(AliVEvent::kEMCEGA);
+   if(!hasMC)  task->SetTriggerMask(AliVEvent::kEMCEGA);
    task->UsePhysicsSelection();
   //----------------------
   //create data containers
