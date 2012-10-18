@@ -190,43 +190,43 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	hAvDiffTimeVsRun->SetMarkerColor(kBlue);
 	//   hAvTimeVsRun->GetYaxis()->SetRangeUser(0.0, 50.0);
 
-	TH1F * hPeakDiffTimeVsRun=new TH1F("hPeakDiffTimeVsRun","t-t_{exp} (gaussian fit) ;run; <t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//,600, 0. , 600. );
+	TH1F * hPeakDiffTimeVsRun=new TH1F("hPeakDiffTimeVsRun","t-t_{exp} (gaussian fit) ;; <t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//,600, 0. , 600. );
 	hPeakDiffTimeVsRun->SetDrawOption("E1");
 	hPeakDiffTimeVsRun->SetMarkerStyle(20);
 	hPeakDiffTimeVsRun->SetMarkerColor(kBlue);
    
-	TH1F * hSpreadDiffTimeVsRun=new TH1F("hSpreadDiffTimeVsRun","#sigma(t-t_{exp}) (gaussian fit);run; #sigma(t^{TOF}-t_{exp,#pi}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadDiffTimeVsRun=new TH1F("hSpreadDiffTimeVsRun","#sigma(t-t_{exp}) (gaussian fit);; #sigma(t^{TOF}-t_{exp,#pi}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadDiffTimeVsRun->SetDrawOption("E1");
 	hSpreadDiffTimeVsRun->SetMarkerStyle(20);
 	hSpreadDiffTimeVsRun->SetMarkerColor(kBlue);
 
-	TH1F * hAvTimeVsRun=new TH1F("hAvTimeVsRun","<t^{TOF}>;run;<t^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hAvTimeVsRun=new TH1F("hAvTimeVsRun","<t^{TOF}>;;<t^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvTimeVsRun->SetDrawOption("E1");
 	hAvTimeVsRun->SetMarkerStyle(20);
 	hAvTimeVsRun->SetMarkerColor(kBlue);
 	//   hAvTimeVsRun->GetYaxis()->SetRangeUser(0.0, 50.0);
 
-	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","Peak value of t^{TOF} (landau fit);run;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
+	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","Peak value of t^{TOF} (landau fit);;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
 	hPeakTimeVsRun->SetDrawOption("E1");
 	hPeakTimeVsRun->SetMarkerStyle(20);
 	hPeakTimeVsRun->SetMarkerColor(kBlue);
    
-	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","Spread of t^{TOF} (landau fit);run; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","Spread of t^{TOF} (landau fit);; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadTimeVsRun->SetDrawOption("E1");
 	hSpreadTimeVsRun->SetMarkerStyle(20);
 	hSpreadTimeVsRun->SetMarkerColor(kBlue);
   
-	TH1F * hAvRawTimeVsRun=new TH1F("hAvRawTimeVsRun","Peak value of raw t^{TOF};run;<t_{raw}^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hAvRawTimeVsRun=new TH1F("hAvRawTimeVsRun","Peak value of raw t^{TOF};;<t_{raw}^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvRawTimeVsRun->SetDrawOption("E1");
 	hAvRawTimeVsRun->SetMarkerStyle(21);
 	hAvRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","Peak value of raw t^{TOF} (landau fit);run;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","Peak value of raw t^{TOF} (landau fit);;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hPeakRawTimeVsRun->SetDrawOption("E1");
 	hPeakRawTimeVsRun->SetMarkerStyle(21);
 	hPeakRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","Spread of raw t^{TOF} (landau fit);run;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","Spread of raw t^{TOF} (landau fit);;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadRawTimeVsRun->SetDrawOption("E1");
 	hSpreadRawTimeVsRun->SetMarkerStyle(21);
 	hSpreadRawTimeVsRun->SetMarkerColor(kGreen);
@@ -235,7 +235,7 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	hAvTotVsRun->SetDrawOption("E1");
 	hAvTotVsRun->SetMarkerStyle(22);
    
-	TH1F * hPeakTotVsRun=new TH1F("hPeakTotVsRun","<ToT> (gaussian fit);run;ToT_{peak} (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
+	TH1F * hPeakTotVsRun=new TH1F("hPeakTotVsRun","<ToT> (gaussian fit);;ToT_{peak} (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
 	hPeakTotVsRun->SetDrawOption("E1");
 	hPeakTotVsRun->SetMarkerStyle(22);
    
@@ -243,27 +243,27 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	hSpreadTotVsRun->SetDrawOption("E1");
 	hSpreadTotVsRun->SetMarkerStyle(22);
    
-	TH1F * hNegTimeRatioVsRun=new TH1F("hNegTimeRatioVsRun","Ratio of tracks with t^{TOF}<12.5 ns; run; ratio of tracks with t^{TOF}<12.5 ns (%)",nRuns, 0., nRuns);//, 100, 0. , 100.);
+	TH1F * hNegTimeRatioVsRun=new TH1F("hNegTimeRatioVsRun","Ratio of tracks with t^{TOF}<12.5 ns; ; ratio of tracks with t^{TOF}<12.5 ns (%)",nRuns, 0., nRuns);//, 100, 0. , 100.);
 	hNegTimeRatioVsRun->SetDrawOption("E");
 
-	TH1F * hOrphansRatioVsRun=new TH1F("hOrphansRatioVsRun","Ratio of orphans (hits with ToT=0); run; ratio of orphans (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
+	TH1F * hOrphansRatioVsRun=new TH1F("hOrphansRatioVsRun","Ratio of orphans (hits with ToT=0); ; ratio of orphans (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
 	hOrphansRatioVsRun->SetDrawOption("E");
 
-	TH1F * hMeanLVsRun=new TH1F("hMeanLVsRun","Average track length;run; <L> (cm)",nRuns, 0., nRuns);//, 350, 350. , 700.);
+	TH1F * hMeanLVsRun=new TH1F("hMeanLVsRun","Average track length;; <L> (cm)",nRuns, 0., nRuns);//, 350, 350. , 700.);
 	hMeanLVsRun->SetDrawOption("E");
-	TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","Ratio of tracks with L<350 cm;run; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
+	TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","Ratio of tracks with L<350 cm;; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
 	hNegLRatioVsRun->SetDrawOption("E");
-	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
 	hMatchEffVsRun->SetDrawOption("E");
-	TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","Matching efficiency normalized to percentage of TOF good channels;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+	TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","Matching efficiency normalized to percentage of TOF good channels;;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
 	hMatchEffVsRunNormToGoodCh->SetDrawOption("E");
 	
-	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);run;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
+	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
 	hMatchEffVsRun1->SetDrawOption("E");
-	TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);run;t0A (ps)",nRuns,0., nRuns);
-	TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
-	TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
-	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;run;t0_spread (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);;t0A (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
+	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;;t0_spread (ps)",nRuns,0., nRuns);
 	
 	
 
@@ -1456,7 +1456,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	}
 	fout->cd();
 	hTOFmatchedDzVsStrip->Write();
-
+	fout->Close();
+	fin->Close();
 	return 0;
 }
 
