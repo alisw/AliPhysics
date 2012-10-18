@@ -13,10 +13,11 @@ ClassImp(AliConversionSelection)
 
 
 //________________________________________________________________________
-AliConversionSelection::AliConversionSelection(AliConversionCuts *convCut) : TObject(),
+AliConversionSelection::AliConversionSelection(AliConversionCuts *convCut, AliConversionMesonCuts *mesonCut) : TObject(),
     fInputEvent(NULL),
     fMCEvent(NULL),
     fConversionCut(convCut),
+    fMesonCut(mesonCut),
     fESDTrackCuts(NULL),
     fGoodGammas(NULL),
     fPi0Candidates(NULL),
@@ -28,7 +29,7 @@ AliConversionSelection::AliConversionSelection(AliConversionCuts *convCut) : TOb
     fUnsmearedPy(NULL),
     fUnsmearedPz(NULL),
     fUnsmearedE(NULL),
-    fCurrentEventNumber(0)
+    fCurrentEventNumber(-1)
 {
     // Default Values
     fInvMassRange=new Double_t[2];
@@ -109,7 +110,7 @@ Bool_t AliConversionSelection::ProcessEvent(TClonesArray *photons,AliVEvent *inp
     }
 
     // Do MC Smearing
-    if(fConversionCut->UseMCPSmearing() && fMCEvent){
+    if(fMesonCut->UseMCPSmearing() && fMCEvent){
 	fUnsmearedPx = new Double_t[fGoodGammas->GetEntries()]; // Store unsmeared Momenta
 	fUnsmearedPy = new Double_t[fGoodGammas->GetEntries()];
 	fUnsmearedPz = new Double_t[fGoodGammas->GetEntries()];
@@ -120,7 +121,7 @@ Bool_t AliConversionSelection::ProcessEvent(TClonesArray *photons,AliVEvent *inp
 	    fUnsmearedPy[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Py();
 	    fUnsmearedPz[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Pz();
 	    fUnsmearedE[gamma] =  ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->E();
-	    fConversionCut->SmearParticle(dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(gamma)));
+	    fMesonCut->SmearParticle(dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(gamma)));
 	}
     }
 
@@ -130,7 +131,7 @@ Bool_t AliConversionSelection::ProcessEvent(TClonesArray *photons,AliVEvent *inp
     if(fBGHandler)fBGHandler->AddEvent(fGoodGammas,fInputEvent);
 
     // Undo MC Smearing
-    if(fConversionCut->UseMCPSmearing() && fMCEvent){
+    if(fMesonCut->UseMCPSmearing() && fMCEvent){
 	for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
 	    ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPx(fUnsmearedPx[gamma]); // Reset Unsmeared Momenta
 	    ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPy(fUnsmearedPy[gamma]);
@@ -213,7 +214,7 @@ void AliConversionSelection::CalculatePi0Candidates(){
 		    }
 		}
 
-		if((fConversionCut->MesonIsSelected(&pi0cand))){
+		if((fMesonCut->MesonIsSelected(&pi0cand))){
 		    if(MesonInMassWindow(&pi0cand)){
 
 			// Add Pi0 to Stack
@@ -251,11 +252,11 @@ void AliConversionSelection::RotateParticle(AliAODConversionPhoton *gamma,Int_t 
 void AliConversionSelection::CalculateBackground(){
 
     //Rotation Method
-    if(fConversionCut->UseRotationMethod()){
+    if(fMesonCut->UseRotationMethod()){
 
 	// Correct for the number of rotations
 	// BG is for rotation the same, except for factor NRotations
-	Double_t weight=1./Double_t(fConversionCut->NumberOfRotationEvents());
+	Double_t weight=1./Double_t(fMesonCut->NumberOfBGEvents());
 
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodGammas->GetEntriesFast();firstGammaIndex++){
 
@@ -264,13 +265,13 @@ void AliConversionSelection::CalculateBackground(){
 	    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodGammas->GetEntriesFast();secondGammaIndex++){
 		AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(secondGammaIndex));
 		if(!fConversionCut->PhotonIsSelected(gamma1,fInputEvent))continue;
-		for(Int_t nRandom=0;nRandom<fConversionCut->NumberOfRotationEvents();nRandom++){
+		for(Int_t nRandom=0;nRandom<fMesonCut->NumberOfBGEvents();nRandom++){
 
-		    RotateParticle(gamma1,fConversionCut->NDegreesRotation());
+		    RotateParticle(gamma1,fMesonCut->NDegreesRotation());
 
 		    AliAODConversionMother BGcandidate(gamma0,gamma1);
 
-		    if(fConversionCut->MesonIsSelected(&BGcandidate,kFALSE)){
+		    if(fMesonCut->MesonIsSelected(&BGcandidate,kFALSE)){
 			if(MesonInMassWindow(&BGcandidate)){
 
 			    new((*fBGPi0s)[fBGPi0s->GetEntriesFast()]) AliAODConversionMother(BGcandidate);
@@ -287,7 +288,7 @@ void AliConversionSelection::CalculateBackground(){
 	// Do Event Mixing
 
 	if(fBGHandler==NULL){
-	    fBGHandler=new AliConversionAODBGHandlerRP(fConversionCut->IsHeavyIon(),fConversionCut->UseTrackMultiplicity());
+	    fBGHandler=new AliConversionAODBGHandlerRP(fConversionCut->IsHeavyIon(),fMesonCut->UseTrackMultiplicity());
 	}
 
 	for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler->GetNBGEvents(fGoodGammas,fInputEvent);nEventsInBG++){
@@ -314,7 +315,7 @@ void AliConversionSelection::CalculateBackground(){
 
 			AliAODConversionMother BGcandidate(gamma0,gamma1);
 
-			if(fConversionCut->MesonIsSelected(&BGcandidate,kFALSE)){
+			if(fMesonCut->MesonIsSelected(&BGcandidate,kFALSE)){
 			    if(MesonInMassWindow(&BGcandidate)){
 
 				new((*fBGPi0s)[fBGPi0s->GetEntriesFast()]) AliAODConversionMother(BGcandidate);

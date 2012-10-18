@@ -7,6 +7,7 @@
 #include "TH3.h"
 #include "AliLog.h"
 #include "AliConversionSelection.h"
+#include "AliConversionMesonCuts.h"
 #include "AliV0ReaderV1.h"
 #include "AliEventplane.h"
 #include "TVector2.h"
@@ -41,7 +42,6 @@ public:
     virtual void   Terminate(Option_t *);
 
     void SetCentralityBins(Double_t *bins,Int_t nbins);
-    void SetRadialBins(Float_t *bins,Int_t nbins);
 
     void SetMeson(EPDGCode meson){fMesonPDGCode=meson;}
 
@@ -52,10 +52,12 @@ public:
 
     void SetMesonCuts(const TString cut);
     void SetCuts(TString *cutarray,Int_t ncuts);
+    void SetMesonCutList(Int_t nCuts, TList *cutArray){
+      fMesonCutList = cutArray;
+    }
+
 
     void SetFillQA(Bool_t fill){fFillQA=fill;}
-
-    void SetWeightMultiplicity(Bool_t b){fWeightMultiplicity=b;}
 
 private:
     Bool_t InitEvent();
@@ -94,10 +96,25 @@ private:
 
     // Constants
 
-    static const Int_t knbinsGamma=5;
-    static const Int_t knbinsGammaMult=4;
-    static const Int_t knbinsPi0=5;
+    enum Ebinsgamma{
+	kGammaPt=0,
+	kGammadPhi,
+	kGammaCent,
+	kGammaEPM,
+	knbinsGamma
+    };
 
+    enum Ebinspi0{
+	kPi0Pt=0,
+	kPi0Mass,
+	kPi0dPhi,
+	kPi0Cent,
+	kPi0EPM,
+	knbinsPi0
+    };
+
+    static const Int_t knbinsGammaMult=3;
+  
     static const Int_t kGCnYBinsSpectra = 80;
     static const Double_t kGCfirstYBinSpectra = 0.;
     static const Double_t kGClastYBinSpectra = 8.;
@@ -111,8 +128,6 @@ private:
     Double_t *fCentralityBins; // CentralityBins for Analysis
     Float_t fCentrality; //Event Centrality
     Int_t fCentralityBin; // Event Centrality Bin
-    Int_t fNRadialBins; // Number of Radial Bins for Photon Conversion Point
-    Double_t *fRadialBins; // Radial Bins for Photons Conversion Point
     Int_t fNBinsPhi; // Number of Phi wrt RP bins
     AliEventplane *fEP; // Event Plane Pointer
     Bool_t fWeightMultiplicity; // Use Multiplicity Weight
@@ -125,6 +140,8 @@ private:
     Int_t fNCuts; // NUmber of Photon Cuts for v2 analysis
     TList *fCutList; // Cuts for Photon v2 analysis
     AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
+   TList *fMesonCutList; // Cuts for Photon v2 analysis
+    AliConversionMesonCuts *fMesonCuts; // Cuts used by the V0Reader
     TRandom3 *fRandomizer; // Randomizer for Event Plane Randomisation
     TList *fOutputList; // List for Output (Histograms etc.)
     EPDGCode fMesonPDGCode; // PDG Code of the processed Meson (for MC truth)
@@ -156,10 +173,28 @@ private:
     TH2F *hRPTPCEtaAC;
     TH2F *hCos2TPCEta;
 
+    TH2F *hCos2TPCWeightedPhoton;
+    TH2F *hCos2TPCEtaWeightedPhoton;
+    TH2F *hCos2V0ATPCWeightedPhoton;
+    TH2F *hCos2V0CTPCWeightedPhoton;
+    TH2F *hCos2V0ACWeightedPhoton;
+
+    TH2F *hCos2TPCWeightedCharged;
+    TH2F *hCos2TPCEtaWeightedCharged;
+    TH2F *hCos2V0ATPCWeightedCharged;
+    TH2F *hCos2V0CTPCWeightedCharged;
+    TH2F *hCos2V0ACWeightedCharged;
+
+    TH2F *hCos2TPCWeightedV0Mult;
+    TH2F *hCos2TPCEtaWeightedV0Mult;
+    TH2F *hCos2V0ATPCWeightedV0Mult;
+    TH2F *hCos2V0CTPCWeightedV0Mult;
+    TH2F *hCos2V0ACWeightedV0Mult;
+
 
     // Gamma
     TH2F *hGammaMultCent;
-    TH3F **hGammaPhi;
+    TH2F **hGammaPhi;
     TH2F *hMultChargedvsNGamma;
     TH2F *hMultChargedvsVZERO;
     TH2F *hMultChargedvsSPD;
@@ -173,6 +208,7 @@ private:
     THnSparseF **hGammaMult;
 
     THnSparseF **hGamma;
+    THnSparseF *hGammaFull;
 
     THnSparseF *hCharged;
 
@@ -188,6 +224,8 @@ private:
     Float_t fMeanQ[nCentrBinV0][2][2];    // and recentering
     Float_t fWidthQ[nCentrBinV0][2][2];   // ...
 
+    //Event Plane
+    THnSparse *hEPVertex;
 
     AliAnalysisTaskPi0v2(const AliAnalysisTaskPi0v2&); // not implemented
     AliAnalysisTaskPi0v2& operator=(const AliAnalysisTaskPi0v2&); // not implemented

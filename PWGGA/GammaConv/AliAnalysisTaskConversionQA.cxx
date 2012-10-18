@@ -125,7 +125,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(){
       daughterProp(2) = posTrack->GetTPCsignal();
       daughterProp(9) = negTrack->GetTPCsignal();
       daughterProp(3) = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
-      daughterProp(10) = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+      daughterProp(10) = pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
       if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
          daughterProp(4) = posTrack->GetTOFsignal();
          daughterProp(5) = pidResonse->NumberOfSigmasTOF(posTrack, AliPID::kElectron);

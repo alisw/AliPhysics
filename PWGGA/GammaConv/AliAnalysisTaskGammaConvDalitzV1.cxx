@@ -296,12 +296,12 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
       sESDMotherBackInvMassPtZM[iCut]->Sumw2();
       fBackList[iCut]->Add(sESDMotherBackInvMassPtZM[iCut]);
 
-      if(((AliConversionCuts*)fCutGammaArray->At(iCut))->UseTrackMultiplicity()){
-         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,6,((AliConversionCuts*)fCutGammaArray->At(iCut))->NumberOfRotationEvents());
+      if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseTrackMultiplicity()){
+         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,6,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->NumberOfBGEvents());
          fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayTracks);
       }
       else{
-         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,5,((AliConversionCuts*)fCutGammaArray->At(iCut))->NumberOfRotationEvents());
+         fBGHandler[iCut] = new AliGammaConversionAODBGHandler(9,5,((AliConversionMesonCuts*)fCutGammaArray->At(iCut))->NumberOfBGEvents());
          fBGHandler[iCut]->Initialize(zBinLimitsArray, multiplicityBinLimitsArrayV0s);
       }
    }
@@ -849,7 +849,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
               // }
                Int_t zbin= fBGHandler[fiCut]->GetZBinIndex(fESDEvent->GetPrimaryVertex()->GetZ());
                Int_t mbin = 0;
-               if(((AliConversionCuts*)fCutGammaArray->At(fiCut))->UseTrackMultiplicity()){
+               if(((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->UseTrackMultiplicity()){
                   mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fNumberOfESDTracks);
                } else {
                   mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodGammas->GetEntries());

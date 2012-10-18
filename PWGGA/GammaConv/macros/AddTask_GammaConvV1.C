@@ -10,8 +10,12 @@ AliAnalysisTask *AddTask_GammaConvV1(TString collisionSystem = "pp"){
    Bool_t IsHeavyIon=collisionSystem.Contains("PbPb");
 
    TString cutnumber = "";
-   if(IsHeavyIon) cutnumber = "900400508050113211200001080000000";
-   else cutnumber = "900400508050113211360000000000000"; 
+	TString cutnumberMeson = "";
+   if(IsHeavyIon){ 
+		cutnumber = "1080000002084001001500000";cutnumberMeson = "01021035000"; 
+	} else{
+		cutnumber = "0000000002084001001500000";cutnumberMeson = "01631035000"; 
+	}
 	
    //========= Add PID Reponse to ANALYSIS manager ====
    if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
@@ -26,7 +30,7 @@ AliAnalysisTask *AddTask_GammaConvV1(TString collisionSystem = "pp"){
   
    AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-   //================================================
+      //================================================
    //              data containers
    //================================================
    //            find input container
@@ -47,350 +51,345 @@ AliAnalysisTask *AddTask_GammaConvV1(TString collisionSystem = "pp"){
    // Cut Numbers to use in Analysis
    
    Int_t numberOfCuts = 1;
-   if(IsHeavyIon) numberOfCuts = 8;
-   else numberOfCuts = 1;
-
+   if(trainConfig.Contains("PbPb")) numberOfCuts = 21;
+   else if(trainConfig.Contains("pPb")) numberOfCuts = 1;
+	else numberOfCuts = 9;
+	
    TString *cutarray = new TString[numberOfCuts];
-   if(IsHeavyIon){
+	TString *mesonCutArray = new TString[numberOfCuts];
+   if(trainConfig.Contains("PbPb")){
 		// Standard Cuts 
-			cutarray[0] = "900297209450304221200003012002000"; //standard cut Pi0 PbPb 00-05
-			cutarray[1] = "900297209450304221200003122002000"; //standard cut Pi0 PbPb 05-10
-			cutarray[2] = "900297209450304221200001012002000"; //standard cut Pi0 PbPb 00-10
-			cutarray[3] = "900297209450304221200001122002000"; //standard cut Pi0 PbPb 10-20
-			cutarray[4] = "900297209450304221200001022002000"; //standard cut Pi0 PbPb 00-20
-			cutarray[5] = "900297209450304221200001242002000"; //standard cut Pi0 PbPb 20-40     
-			cutarray[6] = "900297209450306221200001462002000"; //standard cut Pi0 PbPb 40-60
-			cutarray[7] = "900297209450306221200001682002000"; //standard cut Pi0 PbPb 60-80      
-
-	// 	CutStudies more BG events 20 events
-//			cutarray[0] = "900297209450304221230003012002000"; 
-//			cutarray[1] = "900297209450304221230003122002000"; 
-//			cutarray[2] = "900297209450304221230001012002000"; 
-//			cutarray[3] = "900297209450304221230001122002000"; 
-//			cutarray[4] = "900297209450304221230001022002000"; 
-//			cutarray[5] = "900297209450304221230001242002000"; 
-//			cutarray[6] = "900297209450306221230001462002000"; 
-//			cutarray[7] = "900297209450306221230001682002000"; 
+//       cutarray[0] = "1000000042092970023220000"; mesonCutArray[0] = "01022045000";  //standard cut Pi0 PbPb 00-100
+// 			cutarray[0] = "1000001042092970023220000"; mesonCutArray[0] = "01022045000";  //standard cut Pi0 PbPb 00-100
+//       cutarray[2] = "1000002042092970023220000"; mesonCutArray[2] = "01022045000";  //standard cut Pi0 PbPb 00-100
+// 			cutarray[0] = "3010001042092970023220000"; mesonCutArray[0] = "01022045000";  //standard cut Pi0 PbPb 00-05
+// 			cutarray[1] = "3120001042092970023220000"; mesonCutArray[1] = "01022045000";  //standard cut Pi0 PbPb 05-10
+// 			cutarray[2] = "1010001042092970023220000"; mesonCutArray[2] = "01022045000";  //standard cut Pi0 PbPb 00-10
+// 			cutarray[3] = "1120001042092970023220000"; mesonCutArray[3] = "01022045000";  //standard cut Pi0 PbPb 10-20
+// // 			cutarray[4] = "1020001042092970023220000"; mesonCutArray[4] = "01022045000";  //standard cut Pi0 PbPb 00-20
+// 			cutarray[4] = "1240001042092970023220000"; mesonCutArray[4] = "01022045000";  //standard cut Pi0 PbPb 20-40     
+// 			cutarray[5] = "1460001042092970023220000"; mesonCutArray[5] = "01022065000";  //standard cut Pi0 PbPb 40-60
+// 			cutarray[6] = "1680001042092970023220000"; mesonCutArray[6] = "01022065000";  //standard cut Pi0 PbPb 60-80      
+// 
+// 	// 	CutStudies more BG events 20 events
+// 			cutarray[7] = "3010001042092970023220000"; mesonCutArray[7] = "01322045000";  
+// 			cutarray[8] = "3120001042092970023220000"; mesonCutArray[8] = "01322045000"; 
+// 			cutarray[9] = "1010001042092970023220000"; mesonCutArray[9] = "01322045000"; 
+// 			cutarray[10] = "1120001042092970023220000"; mesonCutArray[10] = "01322045000"; 
+// // 			cutarray[12] = "1020001042092970023220000"; mesonCutArray[12] = "01322045000"; 
+// 			cutarray[11] = "1240001042092970023220000"; mesonCutArray[11] = "01322045000"; 
+// 			cutarray[12] = "1460001042092970023220000"; mesonCutArray[12] = "01322065000";
+// 			cutarray[13] = "1680001042092970023220000"; mesonCutArray[13] = "01322065000"; 
 
 	// 	CutStudies more BG events 50 events
-//			cutarray[0] = "900297209450304221250003012002000"; 
-//			cutarray[1] = "900297209450304221250003122002000"; 
-//			cutarray[2] = "900297209450304221250001012002000"; 
-//			cutarray[3] = "900297209450304221250001122002000"; 
-//			cutarray[4] = "900297209450304221250001022002000"; 
-//			cutarray[5] = "900297209450304221250001242002000"; 
-//			cutarray[6] = "900297209450306221250001462002000"; 
-//			cutarray[7] = "900297209450306221250001682002000"; 
+// 			cutarray[0] = "3010001042092970023220000"; mesonCutArray[0] = "01522045000"; 
+// 			cutarray[1] = "3120001042092970023220000"; mesonCutArray[1] = "01522045000"; 
+// 			cutarray[2] = "1010001042092970023220000"; mesonCutArray[2] = "01522045000"; 
+// 			cutarray[3] = "1120001042092970023220000"; mesonCutArray[3] = "01522045000"; 
+// // 			cutarray[4] = "1020001042092970023220000"; mesonCutArray[4] = "01522045000"; 
+// 			cutarray[4] = "1240001042092970023220000"; mesonCutArray[4] = "01522045000"; 
+// 			cutarray[5] = "1460001042092970023220000"; mesonCutArray[5] = "01522065000"; 
+// 			cutarray[6] = "1680001042092970023220000"; mesonCutArray[6] = "01522065000"; 
 
 		// Cutstudies 0-5% dEdx
-//			cutarray[0] = "900397209450304221200003012002000"; 
-//			cutarray[1] = "900697209450304221200003012002000"; 
-//			cutarray[2] = "900247209450304221200003012002000"; 
-//			cutarray[3] = "900277209450304221200003012002000"; 
-//			cutarray[4] = "900295209450304221200003012002000"; 
-		// Cutstudies 5-10% dEdx
-//			cutarray[0] = "900397209450304221200003122002000"; 
-//			cutarray[1] = "900697209450304221200003122002000"; 
-//			cutarray[2] = "900247209450304221200003122002000"; 
-//			cutarray[3] = "900277209450304221200003122002000"; 
-//			cutarray[4] = "900295209450304221200003122002000"; 
-		// Cutstudies 0-10% dEdx
-//			cutarray[0] = "900397209450304221200001012002000"; 
-//			cutarray[1] = "900697209450304221200001012002000"; 
-//			cutarray[2] = "900247209450304221200001012002000"; 
-//			cutarray[3] = "900277209450304221200001012002000"; 
-//			cutarray[4] = "900295209450304221200001012002000"; 
+		//	cutarray[7] = "3010001042093970023220000"; mesonCutArray[7] = "01022045000"; 
+		//	cutarray[8] = "3010001042096970023220000"; mesonCutArray[8] = "01022045000"; 
+		//	cutarray[9] = "3010001042092470023220000"; mesonCutArray[9] = "01022045000"; 
+		//	cutarray[10] = "3010001042092770023220000"; mesonCutArray[10] = "01022045000"; 
+		//	cutarray[11] = "3010001042092950023220000"; mesonCutArray[11] = "01022045000"; 
+		// // Cutstudies 5-10% dEdx
+		//	cutarray[12] = "3120001042093970023220000"; mesonCutArray[12] = "01022045000"; 
+		//	cutarray[13] = "3120001042096970023220000"; mesonCutArray[13] = "01022045000"; 
+// 			cutarray[7] = "3120001042092470023220000"; mesonCutArray[7] = "01022045000"; 
+// 			cutarray[8] = "3120001042092770023220000"; mesonCutArray[8] = "01022045000"; 
+// 			cutarray[9] = "3120001042092950023220000"; mesonCutArray[9] = "01022045000"; 
+// 		// Cutstudies 0-10% dEdx
+// 			cutarray[10] = "1010001042093970023220000"; mesonCutArray[10] = "01022045000"; 
+// 			cutarray[11] = "1010001042096970023220000"; mesonCutArray[11] = "01022045000"; 
+// 			cutarray[12] = "1010001042092470023220000"; mesonCutArray[12] = "01022045000"; 
+// 			cutarray[13] = "1010001042092770023220000"; mesonCutArray[13] = "01022045000"; 
+			cutarray[0] = "1010001042092950023220000"; mesonCutArray[0] = "01022045000"; 
 		// Cutstudies 10-20% dEdx
-//			cutarray[0] = "900397209450304221200001122002000"; 
-//			cutarray[1] = "900697209450304221200001122002000"; 
-//			cutarray[2] = "900247209450304221200001122002000"; 
-//			cutarray[3] = "900277209450304221200001122002000"; 
-//			cutarray[4] = "900295209450304221200001122002000"; 
-		// Cutstudies 40-60% dEdx
-//			cutarray[0] = "900397209450306221200001462002000"; 
-//			cutarray[1] = "900697209450306221200001462002000"; 
-//			cutarray[2] = "900247209450306221200001462002000"; 
-//			cutarray[3] = "900277209450306221200001462002000"; 
-//			cutarray[4] = "900295209450306221200001462002000"; 
+			cutarray[1] = "1120001042093970023220000"; mesonCutArray[1] = "01022045000"; 
+			cutarray[2] = "1120001042096970023220000"; mesonCutArray[2] = "01022045000";
+			cutarray[3] = "1120001042092470023220000"; mesonCutArray[3] = "01022045000"; 
+			cutarray[4] = "1120001042092770023220000"; mesonCutArray[4] = "01022045000"; 
+			cutarray[5] = "1120001042092950023220000"; mesonCutArray[5] = "01022045000"; 
+// 		Cutstudies 40-60% dEdx
+			cutarray[6] = "1460001042093970023220000"; mesonCutArray[6] = "01022065000"; 
+			cutarray[7] = "1460001042096970023220000"; mesonCutArray[7] = "01022065000"; 
+			cutarray[8] = "1460001042092470023220000"; mesonCutArray[8] = "01022065000"; 
+			cutarray[9] = "1460001042092770023220000"; mesonCutArray[9] = "01022065000"; 
+			cutarray[10] = "1460001042092950023220000"; mesonCutArray[10] = "01022065000"; 
 		// Cutstudies 60-80% dEdx
-//			cutarray[0] = "900397209450306221200001682002000"; 
-//			cutarray[1] = "900697209450306221200001682002000"; 
-//			cutarray[2] = "900247209450306221200001682002000"; 
-//			cutarray[3] = "900277209450306221200001682002000"; 
-//			cutarray[4] = "900295209450306221200001682002000"; 
+			cutarray[11] = "1680001042093970023220000"; mesonCutArray[11] = "01022065000"; 
+			cutarray[12] = "1680001042096970023220000"; mesonCutArray[12] = "01022065000"; 
+			cutarray[13] = "1680001042092470023220000"; mesonCutArray[13] = "01022065000";
+			cutarray[14] = "1680001042092770023220000"; mesonCutArray[14] = "01022065000"; 
+			cutarray[15] = "1680001042092950023220000"; mesonCutArray[15] = "01022065000"; 
+		// Cutstudies 20-40% dEdx
+			cutarray[16] = "1240001042093970023220000"; mesonCutArray[16] = "01022045000"; 
+			cutarray[17] = "1240001042096970023220000"; mesonCutArray[17] = "01022045000";
+			cutarray[18] = "1240001042092470023220000"; mesonCutArray[18] = "01022045000"; 
+			cutarray[19] = "1240001042092770023220000"; mesonCutArray[19] = "01022045000"; 
+			cutarray[20] = "1240001042092950023220000"; mesonCutArray[20] = "01022045000"; 
 
 		// Cutstudies 0-5% TOF
-//			cutarray[0] = "900297209450304221200003013002000"; 
-//			cutarray[1] = "900297209450304221200003014002000"; 
+//			cutarray[5] = "3010001042092970033220000"; mesonCutArray[5] = "01022045000"; 
+//			cutarray[6] = "3010001042092970043220000"; mesonCutArray[6] = "01022045000"; 
 		// Cutstudies 5-10% TOF
-//			cutarray[0] = "900297209450304221200003123002000"; 
-//			cutarray[1] = "900297209450304221200003124002000"; 
+//			cutarray[7] = "3120001042092970033220000"; mesonCutArray[7] = "01022045000"; 
+//			cutarray[8] = "3120001042092970043220000"; mesonCutArray[8] = "01022045000"; 
 		// Cutstudies 0-10% TOF
-//			cutarray[0] = "900297209450304221200001013002000"; 
-//			cutarray[1] = "900297209450304221200001014002000"; 
+//			cutarray[9] = "1010001042092970033220000"; mesonCutArray[9] = "01022045000"; 
+//			cutarray[10] = "1010001042092970043220000"; mesonCutArray[10] = "01022045000"; 
 		// Cutstudies 10-20% TOF
-//			cutarray[0] = "900297209450304221200001123002000"; 
-//			cutarray[1] = "900297209450304221200001124002000"; 
+//			cutarray[11] = "1120001042092970033220000"; mesonCutArray[11] = "01022045000"; 
+//			cutarray[12] = "1120001042092970043220000"; mesonCutArray[12] = "01022045000"; 
 		// Cutstudies 20-40% TOF
-//			cutarray[0] = "900297209450304221200001243002000"; 
-//			cutarray[1] = "900297209450304221200001244002000"; 
+//			cutarray[13] = "1240001042092970033220000"; mesonCutArray[13] = "01022045000"; 
+//			cutarray[14] = "1240001042092970043220000"; mesonCutArray[14] = "01022045000"; 
 		// Cutstudies 40-60% TOF
-//			cutarray[0] = "900297209450306221200001463002000"; 
-//			cutarray[1] = "900297209450306221200001464002000"; 
+//			cutarray[15] = "1460001042092970033220000"; mesonCutArray[15] = "01022065000"; 
+//			cutarray[16] = "1460001042092970043220000"; mesonCutArray[16] = "01022065000"; 
 		// Cutstudies 60-80% TOF
-//			cutarray[0] = "900297209450306221200001683002000"; 
-//			cutarray[1] = "900297209450306221200001684002000"; 
+//			cutarray[17] = "1680001042092970033220000"; mesonCutArray[17] = "01022065000"; 
+//			cutarray[18] = "1680001042092970043220000"; mesonCutArray[18] = "01022065000"; 
 
 		// Cutstudies 0-5% Alpha
-//			cutarray[0] = "900297209450308221200003012002000"; 
-//			cutarray[1] = "900297209450300221200003012002000"; 
+//			cutarray[0] = "3010001042092970023220000"; mesonCutArray[0] = "01022085000"; 
+//			cutarray[1] = "3010001042092970023220000"; mesonCutArray[1] = "01022005000"; 
 		// Cutstudies 5-10% Alpha
-//			cutarray[0] = "900297209450308221200003122002000"; 
-//			cutarray[1] = "900297209450300221200003122002000"; 
+//			cutarray[2] = "3120001042092970023220000"; mesonCutArray[2] = "01022085000"; 
+//			cutarray[3] = "3120001042092970023220000"; mesonCutArray[3] = "01022005000"; 
 		// Cutstudies 0-10% Alpha
-//			cutarray[0] = "900297209450308221200001012002000"; 
-//			cutarray[1] = "900297209450300221200001012002000"; 
+//			cutarray[4] = "1010001042092970023220000"; mesonCutArray[4] = "01022085000"; 
+//			cutarray[5] = "1010001042092970023220000"; mesonCutArray[5] = "01022005000"; 
 		// Cutstudies 10-20% Alpha
-//			cutarray[0] = "900297209450308221200001122002000"; 
-//			cutarray[1] = "900297209450300221200001122002000"; 
+//			cutarray[6] = "1120001042092970023220000"; mesonCutArray[6] = "01022085000"; 
+//			cutarray[7] = "1120001042092970023220000"; mesonCutArray[7] = "01022005000"; 
 		// Cutstudies 20-40% Alpha
-//       cutarray[0] = "900297209450308221200001242002000";
-//       cutarray[1] = "900297209450300221200001242002000";
-		// Cutstudies 40-60% Alpha
-//       cutarray[0] = "900297209450307221200001682002000";
-//       cutarray[1] = "900297209450305221200001682002000";
+//       cutarray[8] = "1240001042092970023220000"; mesonCutArray[8] = "01022085000";
+//       cutarray[9] = "1240001042092970023220000"; mesonCutArray[9] = "01022005000"; 
 		// Cutstudies 60-80% Alpha
-//       cutarray[8] = "900297209450307221200001462002000";
-//       cutarray[9] = "900297209450305221200001462002000";
+//       cutarray[10] = "1680001042092970023220000"; mesonCutArray[10] = "01022075000"; 
+//       cutarray[11] = "1680001042092970023220000"; mesonCutArray[11] = "01022055000"; 
+		// Cutstudies 40-60% Alpha
+//       cutarray[12] = "1460001042092970023220000"; mesonCutArray[12] = "01022075000"; 
+//       cutarray[13] = "1460001042092970023220000"; mesonCutArray[13] = "01022055000"; 
 
 		// Cutstudies 0-5% Qt
-//			cutarray[0] = "900297209450404221200003012002000"; 
-//			cutarray[1] = "900297209450204221200003012002000"; 
+//			cutarray[14] = "3010001042092970024220000"; mesonCutArray[14] = "01022045000"; 
+//			cutarray[15] = "3010001042092970022220000"; mesonCutArray[15] = "01022045000"; 
 		// Cutstudies 5-10% Qt
-//			cutarray[0] = "900297209450404221200003122002000"; 
-//			cutarray[1] = "900297209450204221200003122002000"; 
+//			cutarray[16] = "3120001042092970024220000"; mesonCutArray[16] = "01022045000"; 
+//			cutarray[17] = "3120001042092970022220000"; mesonCutArray[17] = "01022045000"; 
 		// Cutstudies 0-10% Qt
-//			cutarray[0] = "900297209450404221200001012002000"; 
-//			cutarray[1] = "900297209450204221200001012002000"; 
+//			cutarray[0] = "1010001042092970024220000"; mesonCutArray[0] = "01022045000"; 
+//			cutarray[1] = "1010001042092970022220000"; mesonCutArray[1] = "01022045000"; 
 		// Cutstudies 10-20% Qt
-//			cutarray[0] = "900297209450404221200001122002000"; 
-//			cutarray[1] = "900297209450204221200001122002000"; 
+//			cutarray[2] = "1120001042092970024220000"; mesonCutArray[2] = "01022045000"; 
+//			cutarray[3] = "1120001042092970022220000"; mesonCutArray[3] = "01022045000"; 
 		// Cutstudies 20-40% Qt
-//			cutarray[0] = "900297209450404221200001242002000"; 
-//			cutarray[1] = "900297209450204221200001242002000"; 
+//			cutarray[4] = "1240001042092970024220000"; mesonCutArray[4] = "01022045000"; 
+//			cutarray[5] = "1240001042092970022220000"; mesonCutArray[5] = "01022045000"; 
 		// Cutstudies 40-60% Qt
-//			cutarray[0] = "900297209450406221200001462002000"; 
-//			cutarray[1] = "900297209450206221200001462002000"; 
+//			cutarray[6] = "1460001042092970024220000"; mesonCutArray[6] = "01022065000"; 
+//			cutarray[7] = "1460001042092970022220000"; mesonCutArray[7] = "01022065000"; 
 		// Cutstudies 60-80% Qt
-//			cutarray[0] = "900297209450406221200001682002000"; 
-//			cutarray[1] = "900297209450206221200001682002000"; 
+//			cutarray[8] = "1680001042092970024220000"; mesonCutArray[8] = "01022065000"; 
+//			cutarray[9] = "1680001042092970022220000"; mesonCutArray[9] = "01022065000"; 
 
 		// Cutstudies 0-5% Single Pt
-//			cutarray[0] = "900297249450304221200003012002000"; 
-//			cutarray[1] = "900297219450304221200003012002000"; 
+//			cutarray[10] = "3010001042492970023220000"; mesonCutArray[10] = "01022045000";
+//			cutarray[11] = "3010001042192970023220000"; mesonCutArray[11] = "01022045000";
 		// Cutstudies 5-10% Single Pt
-//			cutarray[0] = "900297249450304221200003122002000"; 
-//			cutarray[1] = "900297219450304221200003122002000"; 
+//			cutarray[12] = "3120001042492970023220000"; mesonCutArray[12] = "01022045000"; 
+//			cutarray[13] = "3120001042192970023220000"; mesonCutArray[13] = "01022045000"; 
 		// Cutstudies 0-10% Single Pt
-//			cutarray[0] = "900297249450304221200001012002000"; 
-//			cutarray[1] = "900297219450304221200001012002000"; 
+//			cutarray[14] = "1010001042492970023220000"; mesonCutArray[14] = "01022045000"; 
+//			cutarray[15] = "1010001042192970023220000"; mesonCutArray[15] = "01022045000"; 
 		// Cutstudies 10-20% Single Pt
-//			cutarray[0] = "900297249450304221200001122002000"; 
-//			cutarray[1] = "900297219450304221200001122002000"; 
+//			cutarray[16] = "1120001042492970023220000"; mesonCutArray[16] = "01022045000"; 
+//			cutarray[17] = "1120001042192970023220000"; mesonCutArray[17] = "01022045000"; 
 		// Cutstudies 20-40% Single Pt
-//			cutarray[0] = "900297249450304221200001242002000"; 
-//			cutarray[1] = "900297219450304221200001242002000"; 
+//			cutarray[0] = "1240001042492970023220000"; mesonCutArray[0] = "01022045000"; 
+//			cutarray[1] = "1240001042192970023220000"; mesonCutArray[1] = "01022045000"; 
 		// Cutstudies 40-60% Single Pt
-//			cutarray[0] = "900297249450306221200001462002000"; 
-//			cutarray[1] = "900297219450306221200001462002000"; 
+//			cutarray[2] = "1460001042492970023220000"; mesonCutArray[2] = "01022065000"; 
+//			cutarray[3] = "1460001042192970023220000"; mesonCutArray[3] = "01022065000"; 
 		// Cutstudies 60-80% Single Pt
-//			cutarray[0] = "900297249450306221200001682002000"; 
-//			cutarray[1] = "900297219450306221200001682002000"; 
+//			cutarray[4] = "1680001042492970023220000"; mesonCutArray[4] = "01022065000"; 
+//			cutarray[5] = "1680001042192970023220000"; mesonCutArray[5] = "01022065000"; 
 
 		// Cutstudies 0-5% Chi2 Gamma
-//			cutarray[0] = "900297109450304221200003012002000"; 
-//			cutarray[1] = "900297809450304221200004012002000"; 
+//			cutarray[6] = "3010001042092970023120000"; mesonCutArray[6] = "01022045000"; 
+//			cutarray[7] = "3010001042092970023820000"; mesonCutArray[7] = "01022045000"; 
 		// Cutstudies 5-10% Chi2 Gamma
-//			cutarray[0] = "900297109450304221200003122002000"; 
-//			cutarray[1] = "900297809450304221200003122002000"; 
+//			cutarray[8] = "3120001042092970023120000"; mesonCutArray[8] = "01022045000"; 
+//			cutarray[9] = "3120001042092970023820000"; mesonCutArray[9] = "01022045000"; 
 		// Cutstudies 0-10% Chi2 Gamma
-//			cutarray[0] = "900297109450304221200001012002000"; 
-//			cutarray[1] = "900297809450304221200001012002000"; 
+//			cutarray[10] = "1010001042092970023120000"; mesonCutArray[10] = "01022045000"; 
+//			cutarray[11] = "1010001042092970023820000"; mesonCutArray[11] = "01022045000"; 
 		// Cutstudies 10-20% Chi2 Gamma
-//			cutarray[0] = "900297109450304221200001122002000"; 
-//			cutarray[1] = "900297809450304221200001122002000"; 
+//			cutarray[12] = "1120001042092970023120000"; mesonCutArray[12] = "01022045000"; 
+//			cutarray[13] = "1120001042092970023820000"; mesonCutArray[13] = "01022045000"; 
 		// Cutstudies 20-40% Chi2 Gamma
-//			cutarray[0] = "900297109450304221200001242002000"; 
-//			cutarray[1] = "900297809450304221200001242002000"; 
+//			cutarray[14] = "1240001042092970023120000"; mesonCutArray[14] = "01022045000"; 
+//			cutarray[15] = "1240001042092970023820000"; mesonCutArray[15] = "01022045000"; 
 		// Cutstudies 40-60% Chi2 Gamma
-//			cutarray[0] = "900297109450306221200001462002000"; 
-//			cutarray[1] = "900297809450306221200001462002000"; 
+//			cutarray[16] = "1460001042092970023120000"; mesonCutArray[16] = "01022065000"; 
+//			cutarray[17] = "1460001042092970023820000"; mesonCutArray[17] = "01022065000"; 
 		// Cutstudies 60-80% Chi2 Gamma
-//			cutarray[0] = "900297109450306221200001682002000"; 
-//			cutarray[1] = "900297809450306221200001682002000"; 
+//			cutarray[18] = "1680001042092970023120000"; mesonCutArray[18] = "01022065000"; 
+//			cutarray[19] = "1680001042092970023820000"; mesonCutArray[19] = "01022065000"; 
 
 		// Cutstudies 0-5% TPC Cluster
-//			cutarray[0] = "900297206450304221200003012002000"; 
-//			cutarray[1] = "900297208450304221200003012002000"; 
+//			cutarray[0] = "3010001042062970023220000"; mesonCutArray[0] = "01022045000"; 
+//			cutarray[1] = "3010001042082970023220000"; mesonCutArray[1] = "01022045000";
 		// Cutstudies 5-10% TPC Cluster
-//			cutarray[0] = "900297206450304221200003122002000"; 
-//			cutarray[1] = "900297208450304221200003122002000"; 
+//			cutarray[2] = "3120001042062970023220000"; mesonCutArray[2] = "01022045000"; 
+//			cutarray[3] = "3120001042082970023220000"; mesonCutArray[3] = "01022045000"; 
 		// Cutstudies 0-10% TPC Cluster
-//			cutarray[0] = "900297206450304221200001012002000"; 
-//			cutarray[1] = "900297208450304221200001012002000"; 
+//			cutarray[4] = "1010001042062970023220000"; mesonCutArray[4] = "01022045000"; 
+//			cutarray[5] = "1010001042082970023220000"; mesonCutArray[5] = "01022045000"; 
 		// Cutstudies 10-20% TPC Cluster
-//			cutarray[0] = "900297206450304221200001122002000"; 
-//			cutarray[1] = "900297208450304221200001122002000"; 
+//			cutarray[6] = "1120001042062970023220000"; mesonCutArray[6] = "01022045000"; 
+//			cutarray[7] = "1120001042082970023220000"; mesonCutArray[7] = "01022045000"; 
 		// Cutstudies 20-40% TPC Cluster
-//			cutarray[0] = "900297206450304221200001242002000"; 
-//			cutarray[1] = "900297208450304221200001242002000"; 
+//			cutarray[8] = "1240001042062970023220000"; mesonCutArray[8] = "01022045000"; 
+//			cutarray[9] = "1240001042082970023220000"; mesonCutArray[9] = "01022045000"; 
 		// Cutstudies 40-60% TPC Cluster
-//			cutarray[0] = "900297206450306221200001462002000"; 
-//			cutarray[1] = "900297208450306221200001462002000"; 
+//			cutarray[10] = "1460001042062970023220000"; mesonCutArray[10] = "01022065000"; 
+//			cutarray[11] = "1460001042082970023220000"; mesonCutArray[11] = "01022065000"; 
 		// Cutstudies 60-80% TPC Cluster
-//			cutarray[0] = "900297206450306221200001682002000"; 
-//			cutarray[1] = "900297208450306221200001682002000"; 
+//			cutarray[12] = "1680001042062970023220000"; mesonCutArray[12] = "01022065000"; 
+//			cutarray[13] = "1680001042082970023220000"; mesonCutArray[13] = "01022065000"; 
 
 		// Cutstudies 0-5% Psi Pair
-//			cutarray[0] = "900297209450304221200003012001000"; 
-//			cutarray[1] = "900297209450304221200003012003000"; 
+//			cutarray[14] = "3010001042092970023210000"; mesonCutArray[14] = "01022045000"; 
+//			cutarray[15] = "3010001042092970023230000"; mesonCutArray[15] = "01022045000"; 
 		// Cutstudies 5-10% Psi Pair
-//			cutarray[0] = "900297209450304221200003122001000"; 
-//			cutarray[1] = "900297209450304221200003122003000"; 
+//			cutarray[16] = "3120001042092970023210000"; mesonCutArray[16] = "01022045000"; 
+//			cutarray[17] = "3120001042092970023230000"; mesonCutArray[17] = "01022045000"; 
 		// Cutstudies 0-10% Psi Pair
-//			cutarray[0] = "900297209450304221200001012001000"; 
-//			cutarray[1] = "900297209450304221200001012003000"; 
+//			cutarray[0] = "1010001042092970023210000"; mesonCutArray[0] = "01022045000"; 
+//			cutarray[1] = "1010001042092970023230000"; mesonCutArray[1] = "01022045000"; 
 		// Cutstudies 10-20% Psi Pair
-//			cutarray[0] = "900297209450304221200001122001000"; 
-//			cutarray[1] = "900297209450304221200001122003000"; 
+//			cutarray[2] = "1120001042092970023210000"; mesonCutArray[2] = "01022045000"; 
+//			cutarray[3] = "1120001042092970023230000"; mesonCutArray[3] = "01022045000";
 		// Cutstudies 20-40% Psi Pair
-//			cutarray[0] = "900297209450304221200001242001000"; 
-//			cutarray[1] = "900297209450304221200001242003000"; 
+//			cutarray[4] = "1240001042092970023210000"; mesonCutArray[4] = "01022045000"; 
+//			cutarray[5] = "1240001042092970023230000"; mesonCutArray[5] = "01022045000"; 
 		// Cutstudies 40-60% Psi Pair
-//			cutarray[0] = "900297209450306221200001462001000"; 
-//			cutarray[1] = "900297209450306221200001462003000"; 
+//			cutarray[6] = "1460001042092970023210000"; mesonCutArray[6] = "01022065000"; 
+//			cutarray[7] = "1460001042092970023230000"; mesonCutArray[7] = "01022065000"; 
 		// Cutstudies 60-80% Psi Pair
-//			cutarray[0] = "900297209450306221200001682001000"; 
-//			cutarray[1] = "900297209450306221200001682003000"; 
+//			cutarray[8] = "1680001042092970023210000"; mesonCutArray[8] = "01022065000"; 
+//			cutarray[9] = "1680001042092970023230000"; mesonCutArray[9] = "01022065000"; 
 
 		// Cutstudies 0-5% R Cut
-//			cutarray[0] = "900297209450304121200003012002000"; 
-//			cutarray[1] = "900297209450304421200003012002000"; 
+//			cutarray[10] = "3010001041092970023220000"; mesonCutArray[10] = "01022045000"; 
+//			cutarray[11] = "3010001044092970023220000"; mesonCutArray[11] = "01022045000"; 
 		// Cutstudies 5-10% R Cut
-//			cutarray[0] = "900297209450304121200003122002000"; 
-//			cutarray[1] = "900297209450304421200003122002000"; 
+//			cutarray[12] = "3120001041092970023220000"; mesonCutArray[12] = "01022045000"; 
+//			cutarray[13] = "3120001044092970023220000"; mesonCutArray[13] = "01022045000";
 		// Cutstudies 0-10% R Cut
-//			cutarray[0] = "900297209450304121200001012002000"; 
-//			cutarray[1] = "900297209450304421200001012002000"; 
+//			cutarray[14] = "1010001041092970023220000"; mesonCutArray[14] = "01022045000"; 
+//			cutarray[15] = "1010001044092970023220000"; mesonCutArray[15] = "01022045000"; 
 		// Cutstudies 10-20% R Cut
-//			cutarray[0] = "900297209450304121200001122002000"; 
-//			cutarray[1] = "900297209450304421200001122002000"; 
+//			cutarray[16] = "1120001041092970023220000"; mesonCutArray[16] = "01022045000"; 
+//			cutarray[17] = "1120001044092970023220000"; mesonCutArray[17] = "01022045000"; 
 		// Cutstudies 20-40% R Cut
-//			cutarray[0] = "900297209450304121200001242002000"; 
-//			cutarray[1] = "900297209450304421200001242002000"; 
+//			cutarray[0] = "1240001041092970023220000"; mesonCutArray[0] = "01022045000"; 
+//			cutarray[1] = "1240001044092970023220000"; mesonCutArray[1] = "01022045000"; 
 		// Cutstudies 40-60% R Cut
-//			cutarray[0] = "900297209450306121200001462002000"; 
-//			cutarray[1] = "900297209450306421200001462002000"; 
+//			cutarray[2] = "1460001041092970023220000"; mesonCutArray[2] = "01022065000"; 
+//			cutarray[3] = "1460001044092970023220000"; mesonCutArray[3] = "01022065000"; 
 		// Cutstudies 60-80% R Cut
-//			cutarray[0] = "900297209450306121200001682002000"; 
-//			cutarray[1] = "900297209450306421200001682002000"; 
-
+//			cutarray[4] = "1680001041092970023220000"; mesonCutArray[4] = "01022065000"; 
+//			cutarray[5] = "1680001044092970023220000"; mesonCutArray[5] = "01022065000"; 
+	} else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
+		 cutarray[0] = "1000000042092172023220000"; mesonCutArray[0] = "01024045000";  //standard cut Pi0 PbPb 00-100
    } else {
-       cutarray[0] = "900366809010333211361000000900000"; //Standard Cut Pi0 with PileUp Rejection
-//       cutarray[1] = "900226609010303211361000004900000"; //Standard Cut Gamma with PileUp Rejection
-// 		// V0 finder      
-//		cutarray[2] = "910366809010333211361000000900000"; //Standard Cut Pi0 with PileUp Rejection V0 offline
+//        cutarray[0] = "0000010002093663003800000"; mesonCutArray[0] = "01631031009"; //Standard Cut Pi0 with PileUp Rejection
+//  		// V0 finder      
+// // 		 cutarray[1] = "0000010102093663003800000"; mesonCutArray[1] = "01631031009"; //Standard Cut Pi0 with PileUp Rejection
+//        cutarray[1] = "0000011002093663003800000"; mesonCutArray[1] = "01631031009"; //Standard Cut only MinBias in MC
+// 		 cutarray[2] = "0000012002093663003800000"; mesonCutArray[2] = "01631031009"; //Standard Cut only added Signals in MC		 
+// //       cutarray[1] = "0000010002093260043800000"; mesonCutArray[0] = "01631031009";  //Standard Cut Gamma with PileUp Rejection
+// 
 // 		// dEdx e-line
-//       cutarray[2] = "900166809010333211361000000900000"; 
-//       cutarray[3] = "900266809010333211361000000900000"; 
+//       cutarray[3] = "0000011002091663003800000"; mesonCutArray[3] = "01631031009"; 
+//       cutarray[4] = "0000011002092663003800000"; mesonCutArray[4] = "01631031009";
 // 		// dEdx pi-line
-// 		cutarray[4] = "900386809010333211361000000900000";
-// 		cutarray[5] = "900355809010333211361000000900000";
-// 		cutarray[6] = "900310809010303211361000000900000";
-// 		cutarray[7] = "900367809010343211361000000900000";
+// 		cutarray[5] = "0000011002093863003800000"; mesonCutArray[5] = "01631031009"; 
+// 		cutarray[6] = "0000011002093553003800000"; mesonCutArray[6] = "01631031009"; 
+// 		cutarray[7] = "0000011002093100003800000"; mesonCutArray[7] = "01631031009"; 
+// 		cutarray[8] = "0000011002093674003800000"; mesonCutArray[8] = "01631031009"; 
 // 		// Alpha 
-// 		cutarray[8] = "900366809010330211361000000900000";
+// 		cutarray[9] = "0000011002093663003800000"; mesonCutArray[9] = "01631001009"; 
 // 		// chi2 gamma
-//       cutarray[9] = "900366909010333211361000000900000";
-//       cutarray[10] = "900366209010333211361000000900000";
+//       cutarray[10] = "0000011002093663003900000"; mesonCutArray[10] = "01631031009"; 
+//       cutarray[11] = "0000011002093663003200000"; mesonCutArray[11] = "01631031009"; 
 // 		// pt single e+/e-
-//       cutarray[11] = "900366849010333211361000000900000";
-//       cutarray[12] = "900366819010333211361000000900000";
-// 		// findable cluster TPC
-// 		cutarray[0] = "900366800010333211361000000900000";
-// 		cutarray[1] = "900366808010333211361000000900000";
-// 		// qt variation
-// 		cutarray[2] = "900366809010433211361000000900000";
-// 		cutarray[3] = "900366809010233211361000000900000";
-// 		// TOF
-// 		cutarray[4] = "900366809010333211361000002900000";
-// 		cutarray[5] = "900366809010333211361000003900000";
-// 		cutarray[6] = "900366809010333211361000004900000";
-// 		// track sharing
-// 		cutarray[7] = "900366809010333211361000000900013";
-// 		cutarray[8] = "900366809010333211361000000900012";
-
-      // cutarray[1] = "9006266090103032113600000049000";
-      // cutarray[2] = "9007266090103032113600000049000";
-      // cutarray[3] = "9006267090103032113600000049000";
-      // cutarray[4] = "9006268090103032113600000049000";
-      // cutarray[5] = "9006265090103032113600000049000";
-      // cutarray[6] = "9006265090103032113600000049010";
-      // cutarray[7] = "9006265090103032113600000049020";
-      // cutarray[8] = "9006265090103032113600000049030";
-      // cutarray[9] = "9003662080100332113600000009000";
-      // cutarray[0] = "9006166090103032113600000049000";
-      // cutarray[1] = "9006266090103032113600000049000";
-      // cutarray[2] = "9006366090103032113600000049000";
-      // cutarray[3] = "9006206090103032113600000049000";
-      // cutarray[4] = "9006666090103032113600000049000";
-      // cutarray[5] = "9006566090103032113600000049000";
-      // cutarray[6] = "9006266090104032113600000049000";
-      // cutarray[7] = "9006266090102032113600000049000";
-      // cutarray[8] = "9006266090103032113600000049020";
-      // cutarray[9] = "9003662080100332113600000009000";
-      // cutarray[0] = "9006266090103032113600000049000";
-      // cutarray[1] = "9006267090103032113600000049000";
-      // cutarray[2] = "9006268090103032113600000049000";
-      // cutarray[3] = "9006266190103032113600000049000";
-      // cutarray[4] = "9006266290103032113600000049000";
-      // cutarray[5] = "9006266080103032113600000049000";
-      // cutarray[6] = "9006266091103032113600000049000";
-      // cutarray[7] = "9006266091403032113600000049000";
-      // cutarray[8] = "9002265090103032113600000049000";
-      // cutarray[9] = "9003662080100332113600000009000";
-      
-      // cutarray[1] = "9003662080100332113600000009000";
-      // cutarray[2] = "9006266090103031113600000049000";
-      // cutarray[3] = "9006266090103035113600000049000";
-      // cutarray[4] = "9006266090103032113600000029000";
-      // cutarray[5] = "9006266090103032113600000039000";
-      // cutarray[6] = "9002266090103032113600000049000";
-      // cutarray[7] = "9003266090103032113600000049000";
-      // cutarray[8] = "9002267090103032113600000049000";
-      // cutarray[9] = "9002268090103032113600000049000";
-   }
+//       cutarray[12] = "0000011002493663003800000"; mesonCutArray[12] = "01631031009"; 
+//       cutarray[13] = "0000011002193663003800000"; mesonCutArray[13] = "01631031009"; 
+		// findable cluster TPC
+		cutarray[0] = "0000010002003663003800000"; mesonCutArray[0] = "01631031009"; 
+		cutarray[1] = "0000010002083663003800000"; mesonCutArray[1] = "01631031009"; 
+		// qt variation
+		cutarray[2] = "0000010002093663004800000"; mesonCutArray[2] = "01631031009"; 
+		cutarray[3] = "0000010002093663002800000"; mesonCutArray[3] = "01631031009"; 
+		// TOF
+		cutarray[4] = "0000010002093663023800000"; mesonCutArray[4] = "01631031009"; 
+		cutarray[5] = "0000010002093663033800000"; mesonCutArray[5] = "01631031009"; 
+		cutarray[6] = "0000010002093663043800000"; mesonCutArray[6] = "01631031009"; 
+		// track sharing
+		cutarray[7] = "0000010002093663003800013"; mesonCutArray[7] = "01631031009"; 
+		cutarray[8] = "0000010002093663003800012"; mesonCutArray[8] = "01631031009"; 
+  }
   
    TList *ConvCutList = new TList();
+	TList *MesonCutList = new TList();
+
+   TList *HeaderList = new TList();
+   TObjString *Header1 = new TObjString("PARAM");
+   HeaderList->Add(Header1);
+   TObjString *Header2 = new TObjString("BOX");
+   HeaderList->Add(Header2);
+   TObjString *Header3 = new TObjString("Pythia");
+   HeaderList->Add(Header3);
+   
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	MesonCutList->SetOwner(kTRUE);
+   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+
    for(Int_t i = 0; i<numberOfCuts; i++){
       analysisCuts[i] = new AliConversionCuts();
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
+ 		if (trainConfig.Contains("pPb")) analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kCINT5);
       ConvCutList->Add(analysisCuts[i]);
+		
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-//      if(i == 0 ){ //|| i == 1
-//       if(!IsHeavyIon){
-//          AddQATaskV1(analysisCuts[i],IsHeavyIon);
-//          TString addoutput=gSystem->Getenv("ADD_OUTPUT_FILES");
-//          if (addoutput.Length()) addoutput+=",";
-//          addoutput+=Form("GammaConvV1_QA_%s.root",((analysisCuts[i])->GetCutNumber()).Data());
-//          gSystem->Setenv("ADD_OUTPUT_FILES",addoutput.Data());
-//          cout<<"Adding addoutput.Data()"<<endl;
- //      }
-//		}
+//      if(i == 2 ){
+ //        analysisCuts[i]->SetAcceptedHeader(HeaderList);
+//      }
+      analysisMesonCuts[i] = new AliConversionMesonCuts();
+      analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+      MesonCutList->Add(analysisMesonCuts[i]);
+		analysisMesonCuts[i]->SetFillCutHistograms("",kFALSE);
+ 		if (i < 7 && trainConfig.Contains("PbPb")){
+			AddQATaskV1(analysisCuts[i],IsHeavyIon);
+ 			TString addoutput=gSystem->Getenv("ADD_OUTPUT_FILES");
+ 			if (addoutput.Length()) addoutput+=",";
+ 			addoutput+=Form("GammaConvV1_QA_%s.root",((analysisCuts[i])->GetCutNumber()).Data());
+ 			gSystem->Setenv("ADD_OUTPUT_FILES",addoutput.Data());
+     	}
    }
    task->SetConversionCutList(numberOfCuts,ConvCutList);
+	task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
    mgr->AddTask(task);
@@ -400,14 +399,15 @@ AliAnalysisTask *AddTask_GammaConvV1(TString collisionSystem = "pp"){
       mgr->CreateContainer("GammaConvV1", TList::Class(),
                            AliAnalysisManager::kOutputContainer,"GammaConvV1.root");
    AliAnalysisDataContainer *coutput0 =
-      mgr->CreateContainer("gammaConv_tree",
+      mgr->CreateContainer("kkoch_tree",
                            TTree::Class(),
                            AliAnalysisManager::kExchangeContainer,
-                           "gammaConv_default");
+                           "kkoch_default");
    mgr->ConnectInput  (task,  0, cinput );
    mgr->ConnectOutput (task,  0, coutput0);
    mgr->ConnectOutput (task,  1, coutput1);
    return task;
+
 }
 
 void ConfigV0ReaderV1(AliV0ReaderV1 *fV0ReaderV1,TString analysiscut="",Bool_t IsHeavyIon=kFALSE){
