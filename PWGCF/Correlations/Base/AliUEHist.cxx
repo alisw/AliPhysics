@@ -92,12 +92,14 @@ AliUEHist::AliUEHist(const char* reqHist) :
   trackAxisTitle[0] = "#eta";
   
   // delta eta
-  const Int_t kNDeltaEtaBins = 40;
-  Double_t deltaEtaBins[kNDeltaEtaBins+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
+  const Int_t kNDeltaEtaBins = 50;
+  Double_t deltaEtaBins[kNDeltaEtaBins+1] = { -2.5, -2.4, -2.3, -2.2, -2.1, 
+					      -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
 					      -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
 					      0, 
 					      0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-					      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
+					      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+					      2.1, 2.2, 2.3, 2.4, 2.5 };
   
   const Int_t kNDeltaEtaBinsTTR = 40+4;
   Double_t deltaEtaBinsTTR[kNDeltaEtaBinsTTR+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
@@ -107,8 +109,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
 						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
 
   // pT
-  iTrackBin[1] = 22;
-  Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 15.0, 20.0};
+  iTrackBin[1] = 20;
+  Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
