@@ -48,7 +48,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
-  static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE);  // XZhang 20120604
+  static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE, Int_t passN=2);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);
 
@@ -114,9 +114,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID (requested if Bayesian PID is used)
   void SetFlowTagType(AliFlowTrackSimple::tagType t) {fFlowTagType=t;}
 
-  void SetStandardMuonTrackCuts() { InitMuonCuts();     fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
-  void SetIsMuonMC(Bool_t isMC)   { InitMuonCuts();     fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
-  void SetRunsMuon( const AliInputEventHandler* eventHandler )   { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
+  AliMuonTrackCuts *GetMuonTrackCuts() { InitMuonCuts(); return fMuonTrackCuts; }                           // XZhang 20121014
+  void SetStandardMuonTrackCuts()      { InitMuonCuts(); fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
+  void SetIsMuonMC(Bool_t isMC)        { InitMuonCuts(); fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
+  void SetMuonPassNumber(Int_t passN)  { InitMuonCuts(); fMuonTrackCuts->SetPassNumber(passN);   return; }  // XZhang 20121013
+  void SetRunsMuon(const AliInputEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}

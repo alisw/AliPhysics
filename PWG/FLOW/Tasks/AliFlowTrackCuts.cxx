@@ -1203,13 +1203,14 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPri
 }
 
 //-----------------------------------------------------------------------------
-AliFlowTrackCuts* AliFlowTrackCuts::GetStandardMuonTrackCuts(Bool_t isMC)
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardMuonTrackCuts(Bool_t isMC, Int_t passN)
 {
 // XZhang 20120604
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard muon track cuts");
   cuts->SetParamType(kMUON);
   cuts->SetStandardMuonTrackCuts();
   cuts->SetIsMuonMC(isMC);
+  cuts->SetMuonPassNumber(passN);
   return cuts;
 }
 
