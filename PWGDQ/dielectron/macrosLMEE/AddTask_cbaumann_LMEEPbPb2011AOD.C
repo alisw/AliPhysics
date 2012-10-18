@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -6,31 +6,44 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE){
 	return 0;
   }
 
-  //set config file name
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/ConfigLMEEPbPb2011AOD.C");
-
-  //AOD Usage not yet testes/avialable-------------------------------------
-
-  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-	::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
-//	configFile="$TRAIN_ROOT/util/dielectron/dielectron/macros/ConfigLMEEPbPb2011AOD.C";	
-	
-  }
-
-  //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-/*
-  const Int_t kNtriggers=1;
-    ULong64_t triggers[]={AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB };
-	const char* triggerNames[]={"all"};
-*/
-
 
 //  create task and add it to the manager
 //	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
 
-	gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/LMEECutLibAOD.C");
-	gROOT->LoadMacro(configFile.Data());
+
+  TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+
+  if (getFromAlien &&
+	  (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosJPSI/ConfigLMEEPbPb2011.C ."))
+	 ) {
+	configFile=Form("%s/",gSystem->pwd());
+  }
+  TString configFile("ConfigLMEEPbPb2011AOD.C");
+  TString configLMEECutLib("LMEECutLibAOD.C");
+
+  TString configFilePath(configBasePath+configFile);
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+
+  //AOD Usage currently tested with separate task, to be merged
+  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+	::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
+  }
+
+  //Do we have an MC handler?
+  Bool_t hasMC=setMC;
+  if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)
+	hasMC=kTRUE;
+
+
+
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
+	gROOT->LoadMacro(configLMEECutLibPath.Data());
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
+	gROOT->LoadMacro(configFilePath.Data());
+
+
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
@@ -42,17 +55,13 @@ task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
   //load dielectron configuration file
 
   //add dielectron analysis with different cuts to the task
-if (runAll) {
   AliDielectron *lowmass4=ConfigLMEEPbPb2011AOD(4,hasMC);
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
 
-}
-else {
-  AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC);
-  task->AddDielectron(lowmass1);
-  printf("add: %s\n",lowmass1->GetName())
-}
+  AliDielectron *lowmass6=ConfigLMEEPbPb2011AOD(6,hasMC);
+  task->AddDielectron(lowmass6);
+  printf("add: %s\n",lowmass6->GetName());
 
   mgr->AddTask(task);
 
