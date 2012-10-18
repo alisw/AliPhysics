@@ -3,8 +3,8 @@ void RsnTrainCommonSettings(TString type) {
    Bool_t valid;
    AliRsnTrainManager::GetGlobalStr("LegoTrainPath",valid);
    if (!valid) {
-      AliRsnTrainManager::SetGlobalStr("LegoTrainPath",legoTrainPath.Data());
       TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
+      AliRsnTrainManager::SetGlobalStr("LegoTrainPath",legoTrainPath.Data());
    }
 
    // CollisionType (pp=0,PbPb=1,pPb=2)

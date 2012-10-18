@@ -1,22 +1,22 @@
 #ifndef __CINT__
 #endif
 void AddRsnPairsLambda(AliAnalysisTaskSE *task,
-                      Bool_t isMC,
-                      Bool_t isMixing,
-                      AliPID::EParticleType pType1,
-                      Int_t listID1,
-                      AliPID::EParticleType pType2,
-                      Int_t listID2,
-                      AliRsnCutSet *cutsEvent=0,
-                      AliRsnCutSet *cutsPair=0,
-                      TString suffix = "") {
+                       Bool_t isMC,
+                       Bool_t isMixing,
+                       AliPID::EParticleType pType1,
+                       Int_t listID1,
+                       AliPID::EParticleType pType2,
+                       Int_t listID2,
+                       AliRsnCutSet *cutsEvent=0,
+                       AliRsnCutSet *cutsPair=0,
+                       TString suffix = "") {
 
    Printf("id1=%d id2=%d",listID1,listID2);
 
    // retrieve mass from PDG database
    Int_t    pdg  = 3124;
    Double_t mass = 1.5195;
-   
+
    Bool_t valid;
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
    if (isRsnMini) {
@@ -57,7 +57,7 @@ void AddPairOutputMiniLambda(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing
    Bool_t valid;
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
-   
+
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);

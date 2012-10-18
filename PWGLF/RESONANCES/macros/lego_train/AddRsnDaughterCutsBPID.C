@@ -8,7 +8,7 @@ Int_t AddRsnDaughterCutsBPID(AliPID::EParticleType type1,AliPID::EParticleType t
 {
 
    if (!rsnIH) return 0;
-   
+
    Bool_t valid;
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
 
