@@ -211,7 +211,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     
     bStdCutsDefined = kTRUE;
     
-    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
     //accept secondaries
     trackCuts->SetMaxDCAToVertexXY(2.4);
     trackCuts->SetMaxDCAToVertexZ(3.2);
@@ -231,7 +231,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     
     bStdCutsDefined = kTRUE;
     
-    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
     //accept secondaries
     trackCuts->SetMaxDCAToVertexXY(2.4);
     trackCuts->SetMaxDCAToVertexZ(3.2);

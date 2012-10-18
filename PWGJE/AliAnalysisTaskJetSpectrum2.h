@@ -222,6 +222,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
+    TH3F*         fh3RelPtFGenLeadTrkPt;    //! relative difference between generated and found vs leading track pT
 
     
 
