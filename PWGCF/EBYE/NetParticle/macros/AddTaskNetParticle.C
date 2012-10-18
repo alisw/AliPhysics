@@ -86,9 +86,9 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   else if (sName.Contains("Kaon")) {
     task->SetParticleSpecies(AliPID::kKaon);
     task->SetControlParticleSpecies(3122, kTRUE, "Lambda");  /// maybe something else ...
-    minPt    = 0.2;    maxPt    = 0.4;
+    minPt    = 0.4;    maxPt    = 0.8;
     minPtEff = 0.1;    maxPtEff = 2.5;
-    minPtForTOF = 0.8;
+    minPtForTOF = 0.5;
   }
   else {
     Error("AddTaskNetParticle", "Unknown Particle type.");
@@ -127,8 +127,8 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   task->SetNSigmaMaxCdd(3.); 
   task->SetNSigmaMaxCzz(3.); 
 
-  task->SetNSigmaMaxTPC(2.5);
-  task->SetNSigmaMaxTOF(2.5);
+  task->SetNSigmaMaxTPC(3);
+  task->SetNSigmaMaxTOF(3);
   task->SetMinPtForTOFRequired(minPtForTOF);
 
   // -- Set analysis ranges
