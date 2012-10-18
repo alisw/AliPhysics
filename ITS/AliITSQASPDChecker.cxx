@@ -441,8 +441,8 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
      hist->SetOption("colz") ;
      hist->DrawCopy("colz");   
      TList *l = hist->GetListOfFunctions(); 
-     l->Print();
-      gPad->GetListOfPrimitives()->Print();
+     //l->Print();
+     // gPad->GetListOfPrimitives()->Print();
      TH2F *h2 =  (TH2F*)(gPad->GetListOfPrimitives()->At(0)); 
      for(Int_t i=0; i<h2->GetListOfFunctions()->GetEntries(); i++){
        TString cname = h2->GetListOfFunctions()->At(i)->ClassName();
@@ -452,14 +452,14 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
        }
       }
      hist->DrawCopy("colz");   
-     gPad->Update();
+     //gPad->Update();
     }
 
 
    }
 
    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
-   fImage[esIndex]->SaveAs("image.png");
+   //fImage[esIndex]->SaveAs("image.png");
   }
  }
  return kTRUE;
