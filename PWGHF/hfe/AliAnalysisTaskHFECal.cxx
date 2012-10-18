@@ -455,16 +455,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           // pi->e (Dalitz)
           if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
               {
-               /*
-                 if(mcMompT>0.0 && mcMompT<5.0)
-                   {
-                    mcWeight = 0.323*mcMompT/(TMath::Exp(-1.6+0.767*mcMompT+0.0285*mcMompT*mcMompT));
-                   }
-                 else
-                   {
-                    mcWeight = 115.0/(0.718*mcMompT*TMath::Power(mcMompT,3.65));
-                   }
-                */
                mcWeight = GetMCweight(mcMompT); 
               }
 
@@ -480,16 +470,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                  //if(mcGrandMompT>0.0 && mcGrandMompT<5.0)
                  if(pTtmp>0.0)
                    { 
-                    /*
-                    if(pTtmp<5.0)
-                    {
-                     mcWeight = 0.323*pTtmp/(TMath::Exp(-1.6+0.767*pTtmp+0.0285*pTtmp*pTtmp));
-                    }
-                   else
-                   {
-                    mcWeight = 115.0/(0.718*pTtmp*TMath::Power(pTtmp,3.65));
-                   }
-                   */
                    mcWeight = GetMCweight(pTtmp); 
                   }
                 }
@@ -1023,12 +1003,15 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
       continue;
     }
     if(itrack==jTracks)continue;    
+    int jbgevent = 0;    
 
     int p2 = 0;
     if(mce==3)
     {
       Int_t label2 = TMath::Abs(trackAsso->GetLabel());
       TParticle* particle2 = stack->Particle(label2);
+      Bool_t MChijing_ass = fMC->IsFromBGEvent(label2);
+      if(MChijing_ass)jbgevent =1;
       if(particle2->GetFirstMother()>-1)
          p2 = particle2->GetFirstMother();
     }
@@ -1070,13 +1053,13 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     
-    /*  for v5-03-70-AN
+    //  for v5-03-70-AN comment
     AliKFVertex primV(*pVtx);
     primV += recg;
     recg.SetProductionVertex(primV);
     
     recg.SetMassConstraint(0,0.0001);
-    */
+    
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
@@ -1100,22 +1083,40 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
-    if(fFlagLS && ibgevent==0) fInvmassLSmc->Fill(phoinfo,w);
-    if(fFlagULS && ibgevent==0) fInvmassULSmc->Fill(phoinfo,w);
+    if(fFlagLS && ibgevent==0 && jbgevent==0) fInvmassLSmc->Fill(phoinfo,w);
+    if(fFlagULS && ibgevent==0 && jbgevent==0) fInvmassULSmc->Fill(phoinfo,w);
     
     //printf("fInvmassCut %f\n",fInvmassCut);
     //printf("openingAngle %f\n",fOpeningAngleCut);
 
     if(openingAngle > fOpeningAngleCut) continue;
-      
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
-    //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
-      flagPhotonicElec = kTRUE;
-    }
-    if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
-      flagConvinatElec = kTRUE;
-    }
     
+    // for real data  
+    printf("mce =%f\n",mce);
+    if(mce<-0.5) // mce==-1. is real
+       {
+         printf("Real data\n");
+	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
+	       flagPhotonicElec = kTRUE;
+	      }
+	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
+	       flagConvinatElec = kTRUE;
+	      }
+        }
+    // for MC data  
+    else
+       {
+         printf("MC data\n");
+	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (ibgevent==jbgevent)){
+	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
+	       flagPhotonicElec = kTRUE;
+	      }
+	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec && (ibgevent==jbgevent)){
+	       flagConvinatElec = kTRUE;
+	      }
+        }
+
   }
   fFlagPhotonicElec = flagPhotonicElec;
   fFlagConvinatElec = flagConvinatElec;
