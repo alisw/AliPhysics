@@ -37,15 +37,16 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   enum cutIds {
 	kMesonKind,
-	kchi2MesonCut,
-	kalphaMesonCut,               
+	kBackgroundScheme,            
+	kNumberOfBGEvents,           
+	kDegreesForRotationMethod,    
 	kRapidityMesonCut,    
 	kRCut,
-	kBackgroundScheme,            
-	kDegreesForRotationMethod,    
-	kNumberOfRotations,           
+	kalphaMesonCut,               
+	kchi2MesonCut,
 	kElecShare,
 	kToCloseV0s,
+	kuseMCPSmearing,              
 	kNCuts
   };
 
@@ -76,7 +77,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
   void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
   TList *GetCutHistograms(){return fHistograms;}
-
+  void SmearParticle(AliAODConversionPhoton * photon);
+  
   ///Cut functions
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -88,19 +90,22 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
   Bool_t SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod);
-  Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
+  Bool_t SetNumberOfBGEvents(Int_t NumberOfBGEvents);
+  Bool_t SetMCPSmearing(Int_t useMCPSmearing);
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
 
 
   // Request Flags
   Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
-  Int_t NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
+  Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
+  Int_t NumberOfBGEvents(){return fNumberOfBGEvents;}
   Int_t NDegreesRotation(){return fnDegreeRotationPMForBG;}
   Bool_t DoBGProbability(){return fdoBGProbability;}
   Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
   Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
-
+  Bool_t UseMCPSmearing(){return fUseMCPSmearing;}
+  
   protected:
   TList *fHistograms;
   //cuts
@@ -114,11 +119,16 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t fdoBGProbability; // flag to use probability method for meson bg estimation
   Bool_t fUseTrackMultiplicityForBG; // flag to use track multiplicity for meson bg estimation (else V0 mult)
   Int_t fnDegreeRotationPMForBG; //
-  Int_t fnumberOfRotationEventsForBG; //
+  Int_t fNumberOfBGEvents; //
   Float_t fOpeningAngle; // min opening angle for meson
   Bool_t fDoToCloseV0sCut; //
   Double_t fminV0Dist; //
   Bool_t fDoSharedElecCut; //
+  Bool_t fUseMCPSmearing; // flag
+  Double_t fPBremSmearing;//
+  Double_t fPSigSmearing; //
+  Double_t fPSigSmearingCte; //
+  TF1 *fBrem; //
   TRandom3 fRandom; //
   Int_t *fElectronLabelArray; // Array with elec/pos v0 label
   

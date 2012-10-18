@@ -36,46 +36,31 @@ class AliConversionCuts : public AliAnalysisCuts {
 
 
   enum cutIds {
-	kgoodId=0, 
-	kv0FinderType,                
-	keProbCut,                    
-	kededxSigmaCut,               
-	kpidedxSigmaCut,              
-	kpiMomdedxSigmaCut,           
-	kchi2GammaCut,                
-	ksinglePtCut,                 
-	kclsTPCCut,                   
-	ketaCut,                      
-	kchi2MesonCut,
-	kLowPRejectionSigmaCut,       
-	kQtMaxCut,                    
-	kpiMaxMomdedxSigmaCut,        
-	kalphaMesonCut,               
-	kminRCut,                     
-	kRapidityMesonCut,            
-	kBackgroundScheme,            
-	kDegreesForRotationMethod,    
-	kNumberOfRotations,           
-	kremovePileUp,                
-	kselectV0AND,                 
-	kmultiplicityMethod,             
 	kisHeavyIon,                  
 	kCentralityMin,               
 	kCentralityMax,               
+	kselectV0AND,                 
+	kmultiplicityMethod,             
+	kremovePileUp,                
+	kExtraSignals,	
+	kv0FinderType,                
+	ketaCut,                                     
+	kRCut,                     
+	ksinglePtCut,                 
+	kclsTPCCut,                   
+	kededxSigmaCut,               
+	kpidedxSigmaCut,              
+	kpiMomdedxSigmaCut,        
+	kpiMaxMomdedxSigmaCut,        
+	kLowPRejectionSigmaCut,       
 	kTOFelectronPID,              
-	kuseMCPSmearing,              
-	kdoPhotonAsymmetryCut,
+	kQtMaxCut,                    
+	kchi2GammaCut,                
 	kPsiPair, 
+	kdoPhotonAsymmetryCut,
 	kCosPAngle,
-        kElecShare,
-        kToCloseV0s,
-     //   kHBTmultiplicityBin,
-     //   kprimaryCutNumber,
-     //   kuseBayesPID,
-     //   kdalitzelectronsPID,
-     //   kpsiCutNumber,
-     //   kdalitzBackgroundType,
-     //   keleclsTPCCut,
+	kElecShare,
+	kToCloseV0s,
 	kNCuts
   };
 
@@ -105,7 +90,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
   void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
   void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
-   
+  void SetAcceptedHeader(TList *HeaderList){fHeaderList = HeaderList;}   
+
   Int_t GetEventQuality(){return fEventQuality;}
 
   AliConversionCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
@@ -142,8 +128,6 @@ class AliConversionCuts : public AliAnalysisCuts {
 
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
 
-  void SmearParticle(AliAODConversionPhoton * photon);
-
   ///Cut functions
   Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
   Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
@@ -163,6 +147,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
+  Bool_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack);
+  void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliMCEvent *MCEvent);
+
   // Event Cuts
   Bool_t IsCentralitySelected(AliVEvent *fInputEvent);
   Double_t GetCentrality(AliVEvent *event);
@@ -173,56 +160,46 @@ class AliConversionCuts : public AliAnalysisCuts {
   // Set Individual Cuts
   Bool_t SetRCut(Int_t RCut);
   Bool_t SetV0Finder(Int_t v0FinderType);
-  Bool_t SetElectronProbCut(Int_t eProbCut);
   Bool_t SetChi2GammaCut(Int_t chi2GammaCut);
   Bool_t SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut);
   Bool_t SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut);
   Bool_t SetSinglePtCut(Int_t singlePtCut);
   Bool_t SetTPCClusterCut(Int_t clsTPCCut);
   Bool_t SetEtaCut(Int_t etaCut);
-  Bool_t SetChi2MesonCut(Int_t chi2MesonCut);
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
   Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
   Bool_t SetQtMaxCut(Int_t QtMaxCut);
-  Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
   Bool_t SetTOFElectronPIDCut(Int_t TOFelectronPID);
   Bool_t SetTRDElectronCut(Int_t TRDElectronCut);
-  Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
   Bool_t SetCentralityMin(Int_t useCentrality);
   Bool_t SetIsHeavyIon(Int_t isHeavyIon);
   Bool_t SetCentralityMax(Int_t centralityBin);
   Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
-  Bool_t SetRemovePileUp(Int_t removePileUp);
-  Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
-  Bool_t SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod);
-  Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
-  Bool_t SetMCPSmearing(Int_t useMCPSmearing);
+  Bool_t SetRemovePileUp(Int_t removePileUp);  
   Bool_t SetMultiplicityMethod(Int_t multiplicityMethod);
   Bool_t SetSelectV0AND(Int_t selectV0AND);
   Bool_t SetCosPAngleCut(Int_t cosCut);
   Bool_t SetPsiPairCut(Int_t psiCut);
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
-
+  Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
 
   // Request Flags
 
-  Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
-  Int_t NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
-  Int_t NDegreesRotation(){return fnDegreeRotationPMForBG;}
   Bool_t IsHeavyIon(){return fIsHeavyIon;}
-  Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
-  Bool_t DoBGProbability(){return fdoBGProbability;}
   Int_t GetFirstTPCRow(Double_t radius);
-  Bool_t UseMCPSmearing(){return fUseMCPSmearing;}
+
   Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
   Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
   Int_t GetMultiplicityMethod(){return fMultiplicityMethod;}
   Double_t GetEtaCut(){return fEtaCut;}
+  Int_t GetSignalRejection(){return fRejectExtraSignals;}
+  TList* GetAcceptedHeader(){return fHeaderList;}
 
   protected:
   TList *fHistograms;
+  TList *fHeaderList;
   AliPIDResponse *fPIDResponse;
 
 
@@ -242,7 +219,6 @@ class AliConversionCuts : public AliAnalysisCuts {
   Double_t fLineCutZRSlopeMin; //linecut
   Double_t fLineCutZValueMin; //linecut
   Double_t fChi2CutConversion; //chi2cut
-  Double_t fChi2CutMeson; //chicut meson
   Double_t fPIDProbabilityCutNegativeParticle;
   Double_t fPIDProbabilityCutPositiveParticle;
   Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
@@ -288,19 +264,6 @@ class AliConversionCuts : public AliAnalysisCuts {
   Int_t fCentralityMax; // centrality selection upper bin value
   Bool_t fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t fUseTOFpid; // flag to use tof pid
-  Double_t fAlphaMinCutMeson; // min value for meson alpha cut
-  Double_t fAlphaCutMeson; // max value for meson alpha cut
-  Double_t fRapidityCutMeson; // max value for meson rapidity
-  Bool_t fUseRotationMethodInBG; // flag to apply rotation method for meson bg estimation
-  Bool_t fdoBGProbability; // flag to use probability method for meson bg estimation
-  Bool_t fUseTrackMultiplicityForBG; // flag to use track multiplicity for meson bg estimation (else V0 mult)
-  Int_t fnDegreeRotationPMForBG; //
-  Int_t fnumberOfRotationEventsForBG; //
-  Bool_t fUseMCPSmearing; // flag
-  Double_t fPBremSmearing;//
-  Double_t fPSigSmearing; //
-  Double_t fPSigSmearingCte; //
-  TF1 *fBrem; //
   Int_t fMultiplicityMethod; // selected multiplicity method
   Bool_t fSelectV0AND; // flag
   Bool_t fRemovePileUp; //flag
@@ -308,6 +271,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Float_t fPsiPairCut;
   Float_t fCosPAngleCut;
   Bool_t fDoToCloseV0sCut; //
+  Int_t fRejectExtraSignals;//
   Double_t fminV0Dist; //
   Bool_t fDoSharedElecCut; //
   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
@@ -316,6 +280,11 @@ class AliConversionCuts : public AliAnalysisCuts {
   Float_t fConversionPointXArray; // Array with conversion Point x
   Float_t fConversionPointYArray; // Array with conversion Point y
   Float_t fConversionPointZArray; // Array with conversion Point z
+  Int_t *fNotRejectedStart;
+  Int_t *fNotRejectedEnd;
+  TString *fGeneratorNames;
+  Int_t fnHeaders;
+
 
   // Histograms
   TObjString *fCutString; // cut number used for analysis
@@ -336,8 +305,6 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hCentrality; // centrality distribution for selected events
   TH1F *hVertexZ; // vertex z distribution for selected events
   TH1F *hTriggerClass; //fired offline trigger class
-  TH1F *hMesonCuts; // bookkeeping for meson cuts
-  TH1F *hMesonBGCuts; // bookkeeping for meson bg cuts
 
 
 private:

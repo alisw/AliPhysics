@@ -6,6 +6,7 @@
 #include "AliAODConversionPhoton.h"
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionCuts.h"
+#include "AliConversionMesonCuts.h"
 #include "TRandom3.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
@@ -16,7 +17,7 @@ class AliConversionSelection : public TObject{
 
 public:
 
-    AliConversionSelection(AliConversionCuts *convCut);
+    AliConversionSelection(AliConversionCuts *convCut, AliConversionMesonCuts *mesonCut);
     virtual ~AliConversionSelection();
 
     // Main Functions
@@ -64,6 +65,7 @@ protected:
     AliVEvent *fInputEvent;
     AliMCEvent *fMCEvent;
     AliConversionCuts *fConversionCut;
+	 AliConversionMesonCuts *fMesonCut;
     AliESDtrackCuts *fESDTrackCuts;
     TObjArray *fGoodGammas; // Pointer to selected photons
     TClonesArray *fPi0Candidates;

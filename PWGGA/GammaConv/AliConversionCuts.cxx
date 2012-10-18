@@ -40,6 +40,7 @@
 #include "AliCentrality.h"
 #include "TList.h"
 #include "AliLog.h"
+#include "AliGenCocktailEventHeader.h"
 
 class iostream;
 
@@ -49,36 +50,28 @@ ClassImp(AliConversionCuts)
 
 
 const char* AliConversionCuts::fgkCutNames[AliConversionCuts::kNCuts] = {
-"GoodId",
-"V0FinderType",
-"eProbCut",
-"ededxSigmaCut",
-"pidedxSigmaCut",
-"piMomdedxSigmaCut",
-"Chi2GammaCut",
-"SinglePtCut",
-"ClsTPCCut",
-"EtaCut",
-"Chi2MesonCut",
-"LowPRejectionSigmaCut",
-"QtMaxCut",
-"piMaxMomdedxSigmaCut",
-"AlphaMesonCut",
-"MinRCut",
-"RapidityMesonCut",
-"BackgroundScheme",
-"DegreesForRotationMethod",
-"NumberOfRotations",
-"RemovePileUp",
-"SelectV0AND",
-"MultiplicityMethod",
 "HeavyIon",
 "CentralityMin",
 "CentralityMax",
+"SelectV0AND",
+"MultiplicityMethod",
+"RemovePileUp",
+"RejectExtraSignals",
+"V0FinderType",
+"EtaCut",
+"MinRCut",
+"SinglePtCut",
+"ClsTPCCut",
+"ededxSigmaCut",
+"pidedxSigmaCut",
+"piMomdedxSigmaCut",
+"piMaxMomdedxSigmaCut",
+"LowPRejectionSigmaCut",
 "TOFelectronPID",
-"UseMCPSmearing",
-"DoPhotonAsymmetryCut",
+"QtMaxCut",
+"Chi2GammaCut",
 "PsiPair",
+"DoPhotonAsymmetryCut",
 "CosinePointingAngle",
 "SharedElectronCuts",
 "RejectToCloseV0s",
@@ -104,17 +97,16 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) : AliAn
     fLineCutZRSlopeMin(0.),
     fLineCutZValueMin(0),
     fChi2CutConversion(1000),
-    fChi2CutMeson(1000),
     fPIDProbabilityCutNegativeParticle(0),
     fPIDProbabilityCutPositiveParticle(0),
     fDodEdxSigmaCut(kTRUE),
-    fDoTOFsigmaCut(kFALSE), // RRnewTOF
+    fDoTOFsigmaCut(kFALSE), 
     fPIDTRDEfficiency(1),
     fDoTRDPID(kFALSE),
     fPIDnSigmaAboveElectronLine(100),
     fPIDnSigmaBelowElectronLine(-100),
-    fTofPIDnSigmaAboveElectronLine(100), // RRnewTOF
-    fTofPIDnSigmaBelowElectronLine(-100), // RRnewTOF
+    fTofPIDnSigmaAboveElectronLine(100), 
+    fTofPIDnSigmaBelowElectronLine(-100), 
     fPIDnSigmaAbovePionLine(0),
     fPIDnSigmaAbovePionLineHighPt(-100),
     fPIDMinPnSigmaAbovePionLine(0),
@@ -150,19 +142,6 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) : AliAn
     fCentralityMax(0),
     fUseCorrectedTPCClsInfo(kFALSE),
     fUseTOFpid(kFALSE),
-    fAlphaMinCutMeson(0),
-    fAlphaCutMeson(1),
-    fRapidityCutMeson(1),
-    fUseRotationMethodInBG(kFALSE),
-    fdoBGProbability(kFALSE),
-    fUseTrackMultiplicityForBG(kFALSE),
-    fnDegreeRotationPMForBG(0),
-    fnumberOfRotationEventsForBG(0),
-    fUseMCPSmearing(kFALSE),
-    fPBremSmearing(0),
-    fPSigSmearing(0),
-    fPSigSmearingCte(0),
-    fBrem(NULL),
     fMultiplicityMethod(0),
     fSelectV0AND(kFALSE),
     fRemovePileUp(kFALSE),
@@ -170,11 +149,15 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) : AliAn
     fPsiPairCut(10000),
     fCosPAngleCut(10000),
     fDoToCloseV0sCut(kFALSE),
+    fRejectExtraSignals(0),
     fminV0Dist(200.),
     fDoSharedElecCut(kFALSE),
     fOfflineTriggerMask(0),
     fRandom(0),
     fElectronLabelArray(NULL),
+    fNotRejectedStart(NULL),
+    fNotRejectedEnd(NULL),
+    fGeneratorNames(NULL),
     fCutString(NULL),
     hdEdxCuts(NULL),
     hTPCdEdxbefore(NULL),
@@ -192,22 +175,14 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) : AliAn
     hV0EventCuts(NULL),
     hCentrality(NULL),
     hVertexZ(NULL),
-    hTriggerClass(NULL),
-    hMesonCuts(NULL),
-    hMesonBGCuts(NULL)
+    hTriggerClass(NULL)
 {
     InitPIDResponse();
     for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
     fCutString=new TObjString((GetCutNumber()).Data());
 
-    if (fBrem == NULL){
-       fBrem = new TF1("fBrem","pow(-log(x),[0]/log(2.0)-1.0)/TMath::Gamma([0]/log(2.0))",0.00001,0.999999999);
-       // tests done with 1.0e-14
-       fBrem->SetParameter(0,fPBremSmearing);
-       fBrem->SetNpx(100000);
-    }
-
     fElectronLabelArray = new Int_t[500];
+
 }
 
 //________________________________________________________________________
@@ -221,15 +196,22 @@ AliConversionCuts::~AliConversionCuts() {
       delete fCutString;
       fCutString = NULL;
    }
-   if(fBrem){
-      delete fBrem;
-      fBrem = NULL;
-   }
    if(fElectronLabelArray){
       delete fElectronLabelArray;
       fElectronLabelArray = NULL;
    }
-
+   if(fNotRejectedStart){
+      delete[] fNotRejectedStart;
+      fNotRejectedStart = NULL;
+   }
+   if(fNotRejectedEnd){
+      delete[] fNotRejectedEnd;
+      fNotRejectedEnd = NULL;
+   }
+   if(fGeneratorNames){
+      delete[] fGeneratorNames;
+      fGeneratorNames = NULL;
+   }
 }
 
 //________________________________________________________________________
@@ -372,34 +354,15 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
        hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
        fHistograms->Add(hVertexZ);
        
-       hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",4,-0.5,3.5);
+       hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",4,-0.5,5.5);
        hTriggerClass->GetXaxis()->SetBinLabel(1,"kAny");
        hTriggerClass->GetXaxis()->SetBinLabel(2,"kMB");
        hTriggerClass->GetXaxis()->SetBinLabel(3,"kCentral");
        hTriggerClass->GetXaxis()->SetBinLabel(4,"kSemiCentral");
+		 hTriggerClass->GetXaxis()->SetBinLabel(4,"kCINT5");
+		 hTriggerClass->GetXaxis()->SetBinLabel(5,"kINT7");
        fHistograms->Add(hTriggerClass);
     }
-    
-    // Meson Cuts
-    hMesonCuts=new TH1F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts",10,-0.5,9.5);
-    hMesonCuts->GetXaxis()->SetBinLabel(1,"in");
-    hMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
-    hMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
-    hMesonCuts->GetXaxis()->SetBinLabel(4,"opening angle");
-    hMesonCuts->GetXaxis()->SetBinLabel(5,"alpha max");
-    hMesonCuts->GetXaxis()->SetBinLabel(6,"alpha min");
-    hMesonCuts->GetXaxis()->SetBinLabel(7,"out");
-    fHistograms->Add(hMesonCuts);
-
-    hMesonBGCuts=new TH1F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts",10,-0.5,9.5);
-    hMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(4,"opening angle");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(5,"alpha max");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
-    hMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");
-    fHistograms->Add(hMesonBGCuts);
 }
 
 //________________________________________________________________________
@@ -414,6 +377,7 @@ Bool_t AliConversionCuts::InitPIDResponse(){
     
   }
   
+
   return kFALSE;
 }
 ///________________________________________________________________________
@@ -580,46 +544,6 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
 }
 
 
-//________________________________________________________________________
-Bool_t AliConversionCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack,Bool_t bMCDaughtersInAcceptance){
-    // Returns true for all pions within acceptance cuts for decay into 2 photons
-    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
-
-    if(!fMCStack)return kFALSE;
-    
-    if(fMCMother->GetPdgCode()==111 || fMCMother->GetPdgCode()==221){
-       
-       if(fMCMother->R()>fMaxR)	return kFALSE; // cuts on distance from collision point
-
-       Double_t rapidity = 10.;
-       if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
-          rapidity=8.;
-       }
-       else{
-          rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())));
-       }	
-       
-       // Rapidity Cut
-       if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
-
-	// Select only -> 2y decay channel
-	if(fMCMother->GetNDaughters()!=2)return kFALSE;
-
-	for(Int_t i=0;i<2;i++){
-	    TParticle *MDaughter=fMCStack->Particle(fMCMother->GetDaughter(i));
-
-	    // Is Daughter a Photon?
-	    if(MDaughter->GetPdgCode()!=22)return kFALSE;
-            // Is Photon in Acceptance?
-	    if(bMCDaughtersInAcceptance){
-		if(!PhotonIsSelectedMC(MDaughter,fMCStack)){return kFALSE;}
-	    }
-	}
-	return kTRUE;
-    }
-    return kFALSE;
-}
-
 ///________________________________________________________________________
 Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *event)
 {   // Specific Photon Cuts
@@ -776,66 +700,6 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
     FillPhotonCutIndex(kPhotonOut);
     return kTRUE;
 }
-
-///________________________________________________________________________
-Bool_t AliConversionCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal)
-{
-    // Selection of reconstructed Meson candidates
-    // Use flag IsSignal in order to fill Fill different
-    // histograms for Signal and Background
-    TH1 *hist=0x0;
-
-    if(IsSignal){hist=hMesonCuts;
-    }
-    else{hist=hMesonBGCuts;}
-
-    Int_t cutIndex=0;
-    if(hist)hist->Fill(cutIndex);
-    cutIndex++;
-
-    // Undefined Rapidity -> Floating Point exception
-    if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
-        if(hist)hist->Fill(cutIndex);
-	cutIndex++;
-	return kFALSE;
-    }
-    else{
-       	// PseudoRapidity Cut --> But we cut on Rapidity !!!
-        cutIndex++;
-        if(TMath::Abs(pi0->Rapidity())>fRapidityCutMeson){
-        //if(TMath::Abs(pi0->PseudoRapidity())>fRapidityCutMeson){
-	    if(hist)hist->Fill(cutIndex);
-	    return kFALSE;
-	}
-    }
-    cutIndex++;
-
-    // Opening Angle Cut
-    //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
-    if(pi0->GetOpeningAngle()<fOpeningAngle){
-	if(hist)hist->Fill(cutIndex);
-	return kFALSE;
-    }
-    cutIndex++;
-
-    // Alpha Max Cut
-    if(pi0->GetAlpha()>fAlphaCutMeson){
-	if(hist)hist->Fill(cutIndex);
-	return kFALSE;
-    }
-    cutIndex++;
-
-    // Alpha Min Cut
-    if(pi0->GetAlpha()<fAlphaMinCutMeson){
-	if(hist)hist->Fill(cutIndex);
-	return kFALSE;
-    }
-    cutIndex++;
-
-    if(hist)hist->Fill(cutIndex);
-    return kTRUE;
-}
-
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
@@ -1293,7 +1157,7 @@ Bool_t AliConversionCuts::UpdateCutString(cutIds cutID, Int_t value) {
 Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
    // Initialize Cuts from a given Cut string
 
-    AliInfo(Form("Set Cut Number: %s",analysisCutSelection.Data()));
+    AliInfo(Form("Set Photoncut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
 	AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
 	return kFALSE;
@@ -1307,13 +1171,6 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
   #define ASSIGNARRAY(i)	fCuts[i] = cutSelection[i] - '0'
   for(Int_t ii=0;ii<kNCuts;ii++){
       ASSIGNARRAY(ii);
-  }
-
-  // TestFlag
-  if(fCuts[0] !=9){
-    AliError("Analysis Cut Selection does not start with 9");
-	PrintCuts();
-    return kFALSE;
   }
 
   // Set Individual Cuts
@@ -1336,25 +1193,10 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 
 
   switch (cutID) {
-  case kgoodId:
-	fCuts[kgoodId] = value;
-	if(value != 9) {
-	  AliError("First value of cut string is wrong, aborting!!");
-	  return kFALSE;
-	} else {
-	  return kTRUE;
-	}
-
+ 
   case kv0FinderType:
 	if( SetV0Finder(value)) {
 	  fCuts[kv0FinderType] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case keProbCut:
-	if( SetElectronProbCut(value)) {
-	  fCuts[keProbCut] = value;
 	  UpdateCutString(cutID, value);
 	  return kTRUE;
 	} else return kFALSE;
@@ -1408,13 +1250,6 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 	  return kTRUE;
 	} else return kFALSE;
 
-  case kchi2MesonCut:
-	if( SetChi2MesonCut(value)) {
-	  fCuts[kchi2MesonCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
   case kLowPRejectionSigmaCut:
 	if( SetLowPRejectionCuts(value)) {
 	  fCuts[kLowPRejectionSigmaCut] = value;
@@ -1436,44 +1271,9 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 	  return kTRUE;
 	} else return kFALSE;
 
-  case kalphaMesonCut:
-	if( SetAlphaMesonCut(value)) {
-	  fCuts[kalphaMesonCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case kminRCut:
+  case kRCut:
 	if( SetRCut(value)) {
-	  fCuts[kminRCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case kRapidityMesonCut:
-	if( SetRapidityMesonCut(value)) {
-	  fCuts[kRapidityMesonCut] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case kBackgroundScheme:
-	if( SetBackgroundScheme(value)) {
-	  fCuts[kBackgroundScheme] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case kDegreesForRotationMethod:
-	if( SetNDegreesForRotationMethod(value)) {
-	  fCuts[kDegreesForRotationMethod] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
-  case kNumberOfRotations:
-	if( SetNumberOfRotations(value)) {
-	  fCuts[kNumberOfRotations] = value;
+	  fCuts[kRCut] = value;
 	  UpdateCutString(cutID, value);
 	  return kTRUE;
 	} else return kFALSE;
@@ -1527,13 +1327,6 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 	  return kTRUE;
 	} else return kFALSE;
 
-  case kuseMCPSmearing:
-	if( SetMCPSmearing(value)) {
-	  fCuts[kuseMCPSmearing] = value;
-	  UpdateCutString(cutID, value);
-	  return kTRUE;
-	} else return kFALSE;
-
   case kdoPhotonAsymmetryCut:
 	if( SetPhotonAsymmetryCut(value)) {
 	  fCuts[kdoPhotonAsymmetryCut] = value;
@@ -1570,6 +1363,14 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
 	  UpdateCutString(cutID, value);
 	  return kTRUE;
 	} else return kFALSE;
+
+ case kExtraSignals:
+	if( SetRejectExtraSignalsCut(value)) {
+	  fCuts[kExtraSignals] = value;
+	  UpdateCutString(cutID, value);
+	  return kTRUE;
+	} else return kFALSE;
+
 
   case kNCuts:
       AliError("Cut id out of range");
@@ -1628,77 +1429,6 @@ Bool_t AliConversionCuts::SetMultiplicityMethod(Int_t multiplicityMethod)
     return kTRUE;
 }
 
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetMCPSmearing(Int_t useMCPSmearing)
-{// Set Cut
-    switch(useMCPSmearing){
-    case 0:
-	fUseMCPSmearing=0;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.;
-	fPSigSmearingCte=0.;
-	break;
-    case 1:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.0e-14;
-	fPSigSmearing=0.;
-	fPSigSmearingCte=0.;
-	break;
-    case 2:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.0e-15;
-	fPSigSmearing=0.0;
-	fPSigSmearingCte=0.;
-	break;
-    case 3:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.003;
-	fPSigSmearingCte=0.002;
-	break;
-    case 4:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.003;
-	fPSigSmearingCte=0.007;
-	break;
-    case 5:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.003;
-	fPSigSmearingCte=0.016;
-	break;
-    case 6:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.007;
-	fPSigSmearingCte=0.016;
-	break;
-    case 7:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.0e-16;
-	fPSigSmearing=0.0;
-	fPSigSmearingCte=0.;
-	break;
-    case 8:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.007;
-	fPSigSmearingCte=0.014;
-	break;
-    case 9:
-	fUseMCPSmearing=1;
-	fPBremSmearing=1.;
-	fPSigSmearing=0.007;
-	fPSigSmearingCte=0.011;
-	break;
-
-    default:
-	AliError("Warning: UseMCPSmearing not defined");
-	return kFALSE;
-    }
-    return kTRUE;
-}
 
 ///________________________________________________________________________
 void AliConversionCuts::PrintCuts() {
@@ -1952,33 +1682,6 @@ Bool_t AliConversionCuts::SetV0Finder(Int_t v0FinderType)
     return kTRUE;
 }
 
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetElectronProbCut(Int_t eProbCut)
-{   // Set Cut
-
-    switch(eProbCut){
-    case 0:
-	fPIDProbabilityCutNegativeParticle=0;
-	fPIDProbabilityCutPositiveParticle=0;
-	break;
-    case 1:
-	fPIDProbabilityCutNegativeParticle=0.1;
-	fPIDProbabilityCutPositiveParticle=0.1;
-	break;
-    case 2:
-	fPIDProbabilityCutNegativeParticle=0.5;
-	fPIDProbabilityCutPositiveParticle=0.5;
-	break;
-    case 3:
-	fPIDProbabilityCutNegativeParticle=0.7;
-	fPIDProbabilityCutPositiveParticle=0.7;
-	break;
-    default:
-	AliError(Form("Warning: eProbCut not defined %d",eProbCut));
-	return kFALSE;
-    }
-    return kTRUE;
-}
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetSinglePtCut(Int_t singlePtCut)
@@ -2126,35 +1829,6 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::SetChi2MesonCut(Int_t chi2MesonCut)
-{   // Set Cut
-    switch(chi2MesonCut){
-    case 0:  // 100.
-	fChi2CutMeson = 100.;
-	break;
-    case 1:  // 50.
-	fChi2CutMeson = 50.;
-	break;
-    case 2:  // 30.
-	fChi2CutMeson = 30.;
-	break;
-    case 3:
-	fChi2CutMeson = 200.;
-	break;
-    case 4:
-	fChi2CutMeson = 500.;
-	break;
-    case 5:
-	fChi2CutMeson = 1000.;
-	break;
-    default:
-	AliError(Form("Chi2MesonCut not defined %d",chi2MesonCut));
-	return kFALSE;
-    }
-    return kTRUE;
-}
-
-///________________________________________________________________________
 Bool_t AliConversionCuts::SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut)
 {   // Set Cut
     switch(piMaxMomdedxSigmaCut){
@@ -2212,73 +1886,6 @@ Bool_t AliConversionCuts::SetIsHeavyIon(Int_t isHeavyIon)
    return kTRUE;
 }
 
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
-{   // Set Cut
-    switch(alphaMesonCut){
-    case 0:	// 0- 0.7
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.7;
-	break;
-    case 1:	// 0-0.5
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.5;
-	break;
-    case 2:	// 0.5-1
-	fAlphaMinCutMeson	 = 0.5;
-	fAlphaCutMeson	 = 1.;
-	break;
-    case 3:	// 0.0-1
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 1.;
-	break;
-    case 4:	// 0-0.65
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.65;
-	break;
-    case 5:	// 0-0.75
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.75;
-	break;
-    case 6:	// 0-0.8
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.8;
-	break;
-    case 7:	// 0.0-0.85
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.85;
-	break;
-    case 8:	// 0.0-0.6
-	fAlphaMinCutMeson	 = 0.0;
-	fAlphaCutMeson	 = 0.6;
-	break;
-    default:
-        AliError(Form("AlphaMesonCut not defined %d",alphaMesonCut));
-	return kFALSE;
-    }
-    return kTRUE;
-}
-
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetRapidityMesonCut(Int_t RapidityMesonCut)
-{   // Set Cut
-    switch(RapidityMesonCut){
-    case 0:  //
-	fRapidityCutMeson   = 0.9;
-	break;
-    case 1:  //
-	fRapidityCutMeson   = 0.8;
-	break;
-    case 2:  //
-	fRapidityCutMeson   = 0.7;
-	break;
-
-    default:
-        AliError(Form("RapidityMesonCut not defined %d",RapidityMesonCut));
-	return kFALSE;
-    }
-    return kTRUE;
-}
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
@@ -2329,7 +1936,7 @@ Bool_t AliConversionCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     // Set Cut
-    switch(TOFelectronPID){ // RRnewTOF start //////////////////////////////////////////////////////////////////////////
+    switch(TOFelectronPID){ 
     case 0: // no cut
 	fUseTOFpid = kFALSE;
 	fTofPIDnSigmaBelowElectronLine=-100;
@@ -2358,7 +1965,7 @@ Bool_t AliConversionCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     default:
         AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
 	return kFALSE;
-    } //////////////////////// RRnewTOF end //////////////////////////////////////////////////////////////////////////
+    } 
     return kTRUE;
 }
 
@@ -2559,93 +2166,6 @@ Bool_t AliConversionCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut){
     return kTRUE;
 }
 
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetBackgroundScheme(Int_t BackgroundScheme){
-    // Set Cut
-    switch(BackgroundScheme){
-    case 0: //Rotation
-	fUseRotationMethodInBG=kTRUE;
-	fdoBGProbability=kFALSE;
-	break;
-    case 1: // mixed event with V0 multiplicity
-	fUseRotationMethodInBG=kFALSE;
-	fUseTrackMultiplicityForBG=kFALSE;
-	fdoBGProbability=kFALSE;
-	break;
-    case 2: // mixed event with track multiplicity
-	fUseRotationMethodInBG=kFALSE;
-	fUseTrackMultiplicityForBG=kTRUE;
-	fdoBGProbability=kFALSE;
-	break;
-    case 3: //Rotation
-	fUseRotationMethodInBG=kTRUE;
-	fdoBGProbability=kTRUE;
-	break;
-    default:
-	AliError(Form("BackgroundScheme not defined %d",BackgroundScheme));
-	return kFALSE;
-    }
-    return kTRUE;
-}
-
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod){
-    // Set Cut
-    switch(DegreesForRotationMethod){
-    case 0:
-	fnDegreeRotationPMForBG = 5;
-	break;
-    case 1:
-	fnDegreeRotationPMForBG = 10;
-	break;
-    case 2:
-	fnDegreeRotationPMForBG = 15;
-	break;
-    case 3:
-	fnDegreeRotationPMForBG = 20;
-	break;
-    default:
-	AliError(Form("DegreesForRotationMethod not defined %d",DegreesForRotationMethod));
-	return kFALSE;
-    }
-    fCuts[kDegreesForRotationMethod]=DegreesForRotationMethod;
-    return kTRUE;
-}
-
-///________________________________________________________________________
-Bool_t AliConversionCuts::SetNumberOfRotations(Int_t NumberOfRotations)
-{   // Set Cut
-    switch(NumberOfRotations){
-    case 0:
-	fnumberOfRotationEventsForBG = 5;
-	break;
-    case 1:
-	fnumberOfRotationEventsForBG = 10;
-	break;
-    case 2:
-	fnumberOfRotationEventsForBG = 15;
-	break;
-    case 3:
-	fnumberOfRotationEventsForBG = 20;
-	break;
-    case 4:
-	fnumberOfRotationEventsForBG = 2;
-	break;
-    case 5:
-	fnumberOfRotationEventsForBG = 50;
-	break;
-    case 6:
-	fnumberOfRotationEventsForBG = 80;
-	break;
-    case 7:
-	fnumberOfRotationEventsForBG = 100;
-	break;
-    default:
-	AliError(Form("NumberOfRotations not defined %d",NumberOfRotations));
-	return kFALSE;
-    }
-    return kTRUE;
-}
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetPsiPairCut(Int_t psiCut) {
@@ -2768,8 +2288,25 @@ Bool_t AliConversionCuts::SetToCloseV0sCut(Int_t toClose) {
    }
    return kTRUE;
 }
+///________________________________________________________________________
+Bool_t AliConversionCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 
-
+   switch(extraSignal){
+   case 0:
+      fRejectExtraSignals = 0;
+      break; // No Rejection
+   case 1:
+      fRejectExtraSignals = 1;
+      break; // MinBias Header
+   case 2:
+      fRejectExtraSignals = 2;
+      break; // User String Array
+   default:
+      AliError(Form("Extra Signal Rejection not defined %d",extraSignal));
+      return kFALSE;
+   }
+   return kTRUE;
+}
 
 ///________________________________________________________________________
 
@@ -2833,10 +2370,12 @@ Bool_t AliConversionCuts::IsTriggerSelected()
 
     // Fill Histogram
     if(hTriggerClass){
-	if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(0);
-	if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(1);
-	if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClass->Fill(2);
-	if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClass->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(0);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(1);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClass->Fill(2);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClass->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClass->Fill(4);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClass->Fill(5);
     }
 
     
@@ -2930,38 +2469,6 @@ TString AliConversionCuts::GetCutNumber(){
 }
 
 ///________________________________________________________________________
-void AliConversionCuts::SmearParticle(AliAODConversionPhoton* photon)
-{
-   Double_t facPBrem = 1.;
-   Double_t facPSig = 0.;
-
-   Double_t phi=0.;
-   Double_t theta=0.;
-   Double_t P=0.;
-
-   
-   P=photon->P();
-   phi=photon->Phi();
-   if( photon->P()!=0){
-      theta=acos( photon->Pz()/ photon->P());
-   }
-
-   if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){ 
-      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
-   }
-	
-   if( fPBremSmearing != 1.){
-      if(fBrem!=NULL){
-         facPBrem = fBrem->GetRandom();
-      }
-   }
-
-   photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
-   photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
-   photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
-   photon->SetE(photon->P());
-}
-///________________________________________________________________________
 void AliConversionCuts::FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0){
    
    Int_t posLabel = photon->GetTrackLabelPositive();
@@ -3012,4 +2519,104 @@ Bool_t AliConversionCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList
       
    }
    return kTRUE;
+}
+///________________________________________________________________________
+void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliMCEvent *MCEvent){
+   
+   if(fNotRejectedStart){
+      delete[] fNotRejectedStart;
+      fNotRejectedStart = NULL;
+   }
+   if(fNotRejectedEnd){
+      delete[] fNotRejectedEnd;
+      fNotRejectedEnd = NULL;
+   }
+   if(fGeneratorNames){
+      delete[] fGeneratorNames;
+      fGeneratorNames = NULL;
+   }
+   
+   if(rejection == 0) return; // No Rejection
+   AliGenCocktailEventHeader *cHeader = dynamic_cast<AliGenCocktailEventHeader*>(MCEvent->GenEventHeader());
+   if(cHeader){
+      TList *genHeaders = cHeader->GetHeaders();
+      AliGenEventHeader* gh = 0;
+      fnHeaders = 0;
+      if(rejection == 1) fnHeaders = 1; // MinBiasHeader
+      if(rejection == 2){ // TList of Headers Names
+         for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+            gh = (AliGenEventHeader*)genHeaders->At(i);
+            TString GeneratorName = gh->GetName();
+            for(Int_t j = 0; j<HeaderList->GetEntries();j++){
+               TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+               if(GeneratorName.CompareTo(GeneratorInList) == 0){
+                  fnHeaders++;
+                  continue;
+               }
+            }
+         }
+      }
+
+      fNotRejectedStart = new Int_t[fnHeaders];
+      fNotRejectedEnd = new Int_t[fnHeaders];
+      fGeneratorNames = new TString[fnHeaders];
+
+      if(rejection == 1){
+         fNotRejectedStart[0] = 0;
+         fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced();
+         fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+
+         return;
+      }
+      
+      Int_t firstindex = 0;
+      Int_t lastindex = -1;
+      Int_t nummer = 0;
+      for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+         gh = (AliGenEventHeader*)genHeaders->At(i);
+         TString GeneratorName = gh->GetName();
+         lastindex = lastindex + gh->NProduced();
+         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
+            TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+            if(GeneratorName.CompareTo(GeneratorInList) == 0){
+               fNotRejectedStart[nummer] = firstindex;
+               fNotRejectedEnd[nummer] = lastindex;
+               fGeneratorNames[nummer] = GeneratorName;
+               nummer++;
+               continue;
+            }
+         }
+         firstindex = firstindex + gh->NProduced();
+      }
+   }
+   else{
+      fNotRejectedStart = new Int_t[1];
+      fNotRejectedEnd = new Int_t[1];
+      fGeneratorNames = new TString[1];
+      if(rejection == 1 || rejection == 0){  fnHeaders = 1; } else {fnHeaders = 0;}
+      fNotRejectedStart[0] = 0;
+      fNotRejectedEnd[0] = MCEvent->Stack()->GetNprimary();
+      fGeneratorNames[0] = "NoGenerator";
+      //cout << "rejection: " << rejection << " start: " << fNotRejectedStart[0] << " end: " << fNotRejectedEnd[0] << endl;
+   }
+   
+}
+//_________________________________________________________________________
+Bool_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack){
+   
+   if(index < 0) return kFALSE; // No Particle
+   
+   Bool_t accepted = kFALSE; 
+   if( index >= MCStack->GetNprimary()){ // Secondary Particle
+      if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return kTRUE; // Secondary Particle without Mother??
+      //cout<<"Secondary "<<index<<"   "<<((TParticle*)MCStack->Particle(index))->GetPdgCode()<<"  "<<((TParticle*)MCStack->Particle(index))->GetMother(0)<<endl;
+      return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack);
+   }
+//   cout<<index<<"   "<<((TParticle*)MCStack->Particle(index))->GetPdgCode()<<"  "<<fNotRejectedStart[0]<<"  "<<fNotRejectedEnd[0]<<"  "<<MCStack->GetNprimary()<<endl;
+   for(Int_t i = 0;i<fnHeaders;i++){
+      if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i])
+         accepted = kTRUE;
+   }
+   
+   return accepted;
 }

@@ -30,11 +30,8 @@ ClassImp(AliAnalysisTaskPi0v2)
     fCentralityBins(NULL),
     fCentrality(-1),
     fCentralityBin(0),
-    fNRadialBins(1),
-    fRadialBins(NULL),
     fNBinsPhi(6),
     fEP(NULL),
-    fWeightMultiplicity(kTRUE),
     fEtaMax(0.75),
     fEtaGap(1),
     fRPTPCEtaA(0),
@@ -44,6 +41,8 @@ ClassImp(AliAnalysisTaskPi0v2)
     fNCuts(0),
     fCutList(NULL),
     fConversionCuts(NULL),
+    fMesonCutList(NULL),
+    fMesonCuts(NULL),
     fRandomizer(NULL),
     fOutputList(NULL),
     fMesonPDGCode(kPi0),
@@ -70,6 +69,21 @@ ClassImp(AliAnalysisTaskPi0v2)
     hRPTPCEtaC(NULL),
     hRPTPCEtaAC(NULL),
     hCos2TPCEta(NULL),
+    hCos2TPCWeightedPhoton(NULL),
+    hCos2TPCEtaWeightedPhoton(NULL),
+    hCos2V0ATPCWeightedPhoton(NULL),
+    hCos2V0CTPCWeightedPhoton(NULL),
+    hCos2V0ACWeightedPhoton(NULL),
+    hCos2TPCWeightedCharged(NULL),
+    hCos2TPCEtaWeightedCharged(NULL),
+    hCos2V0ATPCWeightedCharged(NULL),
+    hCos2V0CTPCWeightedCharged(NULL),
+    hCos2V0ACWeightedCharged(NULL),
+    hCos2TPCWeightedV0Mult(NULL),
+    hCos2TPCEtaWeightedV0Mult(NULL),
+    hCos2V0ATPCWeightedV0Mult(NULL),
+    hCos2V0CTPCWeightedV0Mult(NULL),
+    hCos2V0ACWeightedV0Mult(NULL),
     hGammaMultCent(NULL),
     hGammaPhi(NULL),
     hMultChargedvsNGamma(NULL),
@@ -83,13 +97,15 @@ ClassImp(AliAnalysisTaskPi0v2)
     hGammaMultdPhi(NULL),
     hGammaMult(NULL),
     hGamma(NULL),
+    hGammaFull(NULL),
     hCharged(NULL),
     hPi0(NULL),
     hPi0BG(NULL),
 
     fMultV0(0x0),
     fV0Cpol(0.),
-    fV0Apol(0.)
+    fV0Apol(0.),
+    hEPVertex(NULL)
 
 {
     fInvMassRange=new Double_t[2];
@@ -119,14 +135,15 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
 	delete fInvMassRange;
         fInvMassRange=NULL;
     }
-    if(fRadialBins){
-	delete fRadialBins;
-	fRadialBins=NULL;
-    }
     if(fCutList){
 	delete fCutList;
 	fCutList=NULL;
     }
+    if(fMesonCutList){
+        delete fMesonCutList;
+        fMesonCutList=NULL;
+    }
+
     if(fConversionSelection){
 	delete fConversionSelection;
 	fConversionSelection=NULL;
@@ -174,10 +191,10 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
     Double_t maxpi0[knbinsPi0]={kGClastYBinSpectra,kGClastXBinSpectra,TMath::Pi()/2,fNCentralityBins-0.5,fNEPMethods-0.5};
     const char *binpi0[knbinsPi0]={"pt","mass","dPhi","centr","EPm"};
 
-    Int_t nbinsg[knbinsGamma]={kGCnYBinsSpectra,fNRadialBins,6,fNCentralityBins,fNEPMethods};
-    Double_t ming[knbinsGamma]={kGCfirstYBinSpectra,-0.5,0,-0.5,-0.5};
-    Double_t maxg[knbinsGamma]={kGClastYBinSpectra,fNRadialBins-0.5,TMath::Pi()/2,fNCentralityBins-0.5,fNEPMethods-0.5};
-    const char *bingamma[knbinsGamma]={"pt","R","dPhi","centr","EPm"};
+    Int_t nbinsg[knbinsGamma]={kGCnYBinsSpectra,6,fNCentralityBins,fNEPMethods};
+    Double_t ming[knbinsGamma]={kGCfirstYBinSpectra,0,-0.5,-0.5};
+    Double_t maxg[knbinsGamma]={kGClastYBinSpectra,TMath::Pi()/2,fNCentralityBins-0.5,fNEPMethods-0.5};
+    const char *bingamma[knbinsGamma]={"pt","dPhi","centr","EPm"};
 
     // Define Binning
 
@@ -278,6 +295,64 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	hCos2V0AC=new TH2F("Cos2_V0AC" ,"Cos2_V0AC" ,fNCentralityBins,fCentralityBins,100,-1,1);
 	hCos2V0AC->Sumw2();
 	fRPList->Add(hCos2V0AC);
+
+	hCos2TPCWeightedPhoton=new TH2F("Cos2_TPCAC_WeightedPhoton" ,"Cos2_TPCAC_WeightedPhoton" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCWeightedPhoton->Sumw2();
+	fRPList->Add(hCos2TPCWeightedPhoton);
+	hCos2TPCEtaWeightedPhoton=new TH2F("Cos2_TPCEtaAC_WeightedPhoton" ,"Cos2_TPCEtaAC_WeightedPhoton" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCEtaWeightedPhoton->Sumw2();
+	fRPList->Add(hCos2TPCEtaWeightedPhoton);
+	hCos2V0ATPCWeightedPhoton=new TH2F("Cos2_V0ATPC_WeightedPhoton" ,"Cos2_V0ATPC_WeightedPhoton" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ATPCWeightedPhoton->Sumw2();
+	fRPList->Add(hCos2V0ATPCWeightedPhoton);
+	hCos2V0CTPCWeightedPhoton=new TH2F("Cos2_V0CTPC_WeightedPhoton" ,"Cos2_V0CTPC_WeightedPhoton" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0CTPCWeightedPhoton->Sumw2();
+	fRPList->Add(hCos2V0CTPCWeightedPhoton);
+	hCos2V0ACWeightedPhoton=new TH2F("Cos2_V0AC_WeightedPhoton" ,"Cos2_V0AC_WeightedPhoton" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ACWeightedPhoton->Sumw2();
+	fRPList->Add(hCos2V0ACWeightedPhoton);
+
+	hCos2TPCWeightedCharged=new TH2F("Cos2_TPCAC_WeightedCharged" ,"Cos2_TPCAC_WeightedCharged" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCWeightedCharged->Sumw2();
+	fRPList->Add(hCos2TPCWeightedCharged);
+	hCos2TPCEtaWeightedCharged=new TH2F("Cos2_TPCEtaAC_WeightedCharged" ,"Cos2_TPCEtaAC_WeightedCharged" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCEtaWeightedCharged->Sumw2();
+	fRPList->Add(hCos2TPCEtaWeightedCharged);
+	hCos2V0ATPCWeightedCharged=new TH2F("Cos2_V0ATPC_WeightedCharged" ,"Cos2_V0ATPC_WeightedCharged" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ATPCWeightedCharged->Sumw2();
+	fRPList->Add(hCos2V0ATPCWeightedCharged);
+	hCos2V0CTPCWeightedCharged=new TH2F("Cos2_V0CTPC_WeightedCharged" ,"Cos2_V0CTPC_WeightedCharged" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0CTPCWeightedCharged->Sumw2();
+	fRPList->Add(hCos2V0CTPCWeightedCharged);
+	hCos2V0ACWeightedCharged=new TH2F("Cos2_V0AC_WeightedCharged" ,"Cos2_V0AC_WeightedCharged" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ACWeightedCharged->Sumw2();
+	fRPList->Add(hCos2V0ACWeightedCharged);
+
+	hCos2TPCWeightedV0Mult=new TH2F("Cos2_TPCAC_WeightedV0Mult" ,"Cos2_TPCAC_WeightedV0Mult" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCWeightedV0Mult->Sumw2();
+	fRPList->Add(hCos2TPCWeightedV0Mult);
+	hCos2TPCEtaWeightedV0Mult=new TH2F("Cos2_TPCEtaAC_WeightedV0Mult" ,"Cos2_TPCEtaAC_WeightedV0Mult" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2TPCEtaWeightedV0Mult->Sumw2();
+	fRPList->Add(hCos2TPCEtaWeightedV0Mult);
+	hCos2V0ATPCWeightedV0Mult=new TH2F("Cos2_V0ATPC_WeightedV0Mult" ,"Cos2_V0ATPC_WeightedV0Mult" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ATPCWeightedV0Mult->Sumw2();
+	fRPList->Add(hCos2V0ATPCWeightedV0Mult);
+	hCos2V0CTPCWeightedV0Mult=new TH2F("Cos2_V0CTPC_WeightedV0Mult" ,"Cos2_V0CTPC_WeightedV0Mult" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0CTPCWeightedV0Mult->Sumw2();
+	fRPList->Add(hCos2V0CTPCWeightedV0Mult);
+	hCos2V0ACWeightedV0Mult=new TH2F("Cos2_V0AC_WeightedV0Mult" ,"Cos2_V0AC_WeightedV0Mult" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hCos2V0ACWeightedV0Mult->Sumw2();
+	fRPList->Add(hCos2V0ACWeightedV0Mult);
+
+        const Int_t nepbins=4;
+	Int_t nbinsep[nepbins]={30,30,40,180};
+	Double_t minep[nepbins]={-0.015,0.17,-10,0};
+	Double_t maxep[nepbins]={0.015,0.20,10,TMath::Pi()};
+
+	hEPVertex=new THnSparseF("EP_Vertex","EP_Vertex",nepbins,nbinsep,minep,maxep);
+	fRPList->Add(hEPVertex);
+
+	
     }
 
     TList *fPhotonQAList=new TList();
@@ -287,9 +362,9 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 
     if(fFillQA){
 	// Gamma QA
-	hGammaPhi=new TH3F*[fNCentralityBins];
+	hGammaPhi=new TH2F*[fNCentralityBins];
 	for(Int_t m=0;m<fNCentralityBins;m++){
-	    hGammaPhi[m]=new TH3F(Form("%d_GammaPhi",m),"GammaPhi",kGCnYBinsSpectra,kGCfirstYBinSpectra,kGClastYBinSpectra,fNRadialBins,-0.5,fNRadialBins-0.5,360,0,2*TMath::Pi());
+	    hGammaPhi[m]=new TH2F(Form("%d_GammaPhi",m),"GammaPhi",kGCnYBinsSpectra,kGCfirstYBinSpectra,kGClastYBinSpectra,360,0,2*TMath::Pi());
 	    hGammaPhi[m]->Sumw2();
 	    fPhotonQAList->Add(hGammaPhi[m]);
 	}
@@ -308,11 +383,11 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	hMultChargedvsNGamma->Sumw2();
 	fPhotonQAList->Add(hMultChargedvsNGamma);
 
-	Int_t nbinsgmult[knbinsGammaMult]={kGCnYBinsSpectra,fNRadialBins,400,fNCentralityBins};
-	Double_t mingmult[knbinsGammaMult]={kGCfirstYBinSpectra,-0.5,0,-0.5};
-	Double_t maxgmult[knbinsGammaMult]={kGClastYBinSpectra,fNRadialBins-0.5,8000,fNCentralityBins-0.5};
-	Double_t maxgmultdPhi[knbinsGammaMult]={kGClastYBinSpectra,fNRadialBins-0.5,2000,fNCentralityBins-0.5};
-	const char *bingammamult[knbinsGammaMult]={"pt","R","gmult","centr"};
+	Int_t nbinsgmult[knbinsGammaMult]={kGCnYBinsSpectra,400,fNCentralityBins};
+	Double_t mingmult[knbinsGammaMult]={kGCfirstYBinSpectra,0,-0.5};
+	Double_t maxgmult[knbinsGammaMult]={kGClastYBinSpectra,8000,fNCentralityBins-0.5};
+	Double_t maxgmultdPhi[knbinsGammaMult]={kGClastYBinSpectra,2000,fNCentralityBins-0.5};
+	const char *bingammamult[knbinsGammaMult]={"pt","gmult","centr"};
 
 	if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
 
@@ -367,6 +442,15 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	hCharged->GetAxis(2)->SetName("EPm");
 	hCharged->Sumw2();
 	fPhotonQAList->Add(hCharged);
+
+	Int_t nbinsgfull[knbinsGamma]={kGCnYBinsSpectra,24,fNCentralityBins,fNEPMethods};
+	Double_t mingfull[knbinsGamma]={kGCfirstYBinSpectra,0,-0.5,-0.5};
+	Double_t maxgfull[knbinsGamma]={kGClastYBinSpectra,2*TMath::Pi(),fNCentralityBins-0.5,fNEPMethods-0.5};
+	hGammaFull=new THnSparseF("Gamma_Sparse_Full","Gamma_Sparse_Full",knbinsGamma,nbinsgfull,mingfull,maxgfull);
+	for(Int_t i=0;i<knbinsGamma;i++) hGammaFull->GetAxis(i)->SetName(bingamma[i]);
+	hGammaFull->Sumw2();
+	fPhotonQAList->Add(hGammaFull);
+
     }
     hNEvents=new TH1F("NEvents","NEvents",fNCentralityBins,fCentralityBins);
     fPhotonQAList->Add(hNEvents);
@@ -388,7 +472,8 @@ void AliAnalysisTaskPi0v2::InitConversionSelection(){
     for(Int_t iCut=0;iCut<fNCuts;iCut++){
 	AliConversionCuts *fPhotonv2Cuts=(AliConversionCuts*)fCutList->At(iCut);
 	if(iCut==0)fEtaMax=fPhotonv2Cuts->GetEtaCut();
-	fConversionSelection[iCut]=new AliConversionSelection(fPhotonv2Cuts);
+        AliConversionMesonCuts *fMesonv2Cuts=(AliConversionMesonCuts*)fMesonCutList->At(iCut);
+	fConversionSelection[iCut]=new AliConversionSelection(fPhotonv2Cuts,fMesonv2Cuts);
 	fConversionSelection[iCut]->SetInvMassRange(fInvMassRange);
     }
 }
@@ -473,10 +558,7 @@ void AliAnalysisTaskPi0v2::ProcessPi0s(Int_t iCut,EEventPlaneMethod iEP){
     if(photonMultiplicity==0)return;
 
     // Process Pi0s
-    Float_t weight=1; // Weight for Multiplicity
-    if(fWeightMultiplicity){
-	weight*=1/Float_t(photonMultiplicity);
-    }
+    Float_t weight=1/Float_t(photonMultiplicity);
 
     for(Int_t ii=0;ii<fConversionSelection[iCut]->GetNumberOfPi0s();ii++){
 
@@ -485,14 +567,13 @@ void AliAnalysisTaskPi0v2::ProcessPi0s(Int_t iCut,EEventPlaneMethod iEP){
 	if(!pi0cand)continue;
 
 	Double_t val[knbinsPi0];
-	val[0]=pi0cand->Pt();
-	val[1]=pi0cand->M();
-	val[2]=GetPi0PhiwrtRP(pi0cand,iEP);
-	val[3]=fCentralityBin;
-	val[4]=Int_t(iEP);
+	val[kPi0Pt]=pi0cand->Pt();
+	val[kPi0Mass]=pi0cand->M();
+	val[kPi0dPhi]=GetPi0PhiwrtRP(pi0cand,iEP);
+	val[kPi0Cent]=fCentralityBin;
+	val[kPi0EPM]=Int_t(iEP);
 
 	hPi0[iCut]->Fill(val,weight);
-
     }
 
     // Pi0 BG
@@ -503,11 +584,11 @@ void AliAnalysisTaskPi0v2::ProcessPi0s(Int_t iCut,EEventPlaneMethod iEP){
 	if(!pi0cand)continue;
 
 	Double_t val[knbinsPi0];
-	val[0]=pi0cand->Pt();
-	val[1]=pi0cand->M();
-	val[2]=GetPi0PhiwrtRP(pi0cand,iEP);
-	val[3]=fCentralityBin;
-	val[4]=Int_t(iEP);
+	val[kPi0Pt]=pi0cand->Pt();
+	val[kPi0Mass]=pi0cand->M();
+	val[kPi0dPhi]=GetPi0PhiwrtRP(pi0cand,iEP);
+	val[kPi0Cent]=fCentralityBin;
+	val[kPi0EPM]=Int_t(iEP);
 
 	hPi0BG[iCut]->Fill(val,pi0cand->GetWeight()*weight);
     }
@@ -521,25 +602,30 @@ void AliAnalysisTaskPi0v2::ProcessGammas(Int_t iCut,EEventPlaneMethod iEP){
     Int_t photonMultiplicity=fConversionSelection[iCut]->GetMultiplicity(fInputEvent);
     if(photonMultiplicity==0)return;
 
-    Float_t weight=1; // Weight for Multiplicity
-    if(fWeightMultiplicity){
-	weight*=1/Float_t(photonMultiplicity);
-    }
+    Float_t weight=1/Float_t(photonMultiplicity);
 
     for(Int_t ii=0;ii<fConversionSelection[iCut]->GetNumberOfPhotons();ii++){
 
 	AliAODConversionPhoton *gamma=fConversionSelection[iCut]->GetPhoton(ii);
 
 	Double_t val[knbinsGamma];
-	val[0]=gamma->Pt();
-	val[1]=GetRadialBin(gamma->GetConversionRadius());
-	val[2]=GetPhotonPhiwrtRP(gamma,iEP);
-	val[3]=fCentralityBin;
-	val[4]=Int_t(iEP);
+	val[kGammaPt]=gamma->Pt();
+	val[kGammadPhi]=GetPhotonPhiwrtRP(gamma,iEP);
+	val[kGammaCent]=fCentralityBin;
+	val[kGammaEPM]=Int_t(iEP);
 
 	hGamma[iCut]->Fill(val,weight);
 
-	if(iCut==0&&fFillQA)hGammadNdPhi->Fill(val);
+	if(iCut==0&&fFillQA){
+	    hGammadNdPhi->Fill(val);
+
+	    Double_t EPAngle=GetEventPlaneAngle(iEP,gamma->Eta(),gamma,NULL);
+	    Double_t dPhi=gamma->Phi()-EPAngle;
+	    if(dPhi>=(2*TMath::Pi()))dPhi-=2*TMath::Pi();
+	    if(dPhi<0)dPhi+=2*TMath::Pi();
+	    val[kGammadPhi]=dPhi;
+	    hGammaFull->Fill(val);
+	}
     }
 }
 
@@ -562,10 +648,7 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
     // Efficiency Purity
 
     Int_t photonMultiplicity=fConversionSelection[0]->GetMultiplicity(fInputEvent);
-    Float_t weight=1; // Weight for Multiplicity
-    if(fWeightMultiplicity){
-	weight*=1/Float_t(photonMultiplicity);
-    }
+    Float_t weight=1/Float_t(photonMultiplicity);
 
     Double_t valdPhi[knbinsGammaMult];
     Double_t val[knbinsGammaMult];
@@ -580,20 +663,18 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 	for(Int_t ii=0;ii<fConversionSelection[0]->GetNumberOfPhotons();ii++){
 	    AliAODConversionPhoton *gamma=fConversionSelection[0]->GetPhoton(ii);
             val[0]=gamma->Pt();
-	    val[1]=GetRadialBin(gamma->GetConversionRadius());
-	    val[2]=ncharged;
-	    val[3]=fCentralityBin;
+	    val[1]=ncharged;
+	    val[2]=fCentralityBin;
 
 	    valdPhi[0]=gamma->Pt();
-	    valdPhi[1]=GetRadialBin(gamma->GetConversionRadius());
-	    valdPhi[2]=dNdPhi[GetPhotonPhiBin(gamma,iEP)];
-	    valdPhi[3]=fCentralityBin;
+	    valdPhi[1]=dNdPhi[GetPhotonPhiBin(gamma,iEP)];
+	    valdPhi[2]=fCentralityBin;
        
 	    hGammaMult[iEP]->Fill(val,weight);
 	    hGammaMultdPhi[iEP]->Fill(valdPhi,weight);
 
 	    // Gamma Phi
-	    hGammaPhi[fCentralityBin]->Fill(gamma->Pt(),GetRadialBin(gamma->GetConversionRadius()),gamma->Phi());
+	    hGammaPhi[fCentralityBin]->Fill(gamma->Pt(),gamma->Phi());
 	    hGammaMultCent->Fill(fCentrality,Float_t(fConversionSelection[0]->GetNumberOfPhotons()));
 
 	    if(fMCStack){
@@ -613,14 +694,12 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 		    TParticle *daughter=(TParticle *)fMCStack->Particle(particle->GetDaughter(0));
 		    if(daughter){
 			val[0]=particle->Pt();
-			val[1]=GetRadialBin(daughter->R());
-			val[2]=ncharged;
-			val[3]=fCentralityBin;
+			val[1]=ncharged;
+			val[2]=fCentralityBin;
        
 			valdPhi[0]=particle->Pt();
-			valdPhi[1]=GetRadialBin(daughter->R());
-			valdPhi[2]=dNdPhi[GetPhiBin(GetMCPhotonPhiwrtRP(particle,EEventPlaneMethod(iEP)))];
-			valdPhi[3]=fCentralityBin;
+			valdPhi[1]=dNdPhi[GetPhiBin(GetMCPhotonPhiwrtRP(particle,EEventPlaneMethod(iEP)))];
+			valdPhi[2]=fCentralityBin;
        
 			hGammaMultTRUE->Fill(val,weight);
 			hGammaMultdPhiTRUE->Fill(valdPhi,weight);
@@ -727,25 +806,29 @@ void AliAnalysisTaskPi0v2::Terminate(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskPi0v2::ProcessEventPlane()
 {
-
     if(!fMCEvent&&fConversionCuts->IsHeavyIon()){
+
+        Double_t val[4];
+	val[0]=fInputEvent->GetPrimaryVertex()->GetX();
+         val[1]=fInputEvent->GetPrimaryVertex()->GetY();
+         val[2]=fInputEvent->GetPrimaryVertex()->GetZ();
+	 val[3]=GetEventPlaneAngle(kTPC);
+         hEPVertex->Fill(val);
 
 	// TPC EP
 	Double_t PsiRP1=fEP->GetQsub1()->Phi()/2;
 	Double_t PsiRP2=fEP->GetQsub2()->Phi()/2;
-	Double_t dPsi=fEP->GetQsubRes();
 	Double_t EPTPC=GetEventPlaneAngle(kTPC);
 
 	hRPTPC->Fill(fCentrality,EPTPC);
 	hRPTPCAC->Fill(PsiRP1,PsiRP2);
-	hCos2TPC->Fill(fCentrality,TMath::Cos(2.*dPsi));
+	hCos2TPC->Fill(fCentrality,TMath::Cos(2*(PsiRP1-PsiRP2)));
 
 	// TPC Eta Gap
 	hRPTPCEtaA->Fill(fCentrality,fRPTPCEtaA);
         hRPTPCEtaC->Fill(fCentrality,fRPTPCEtaC);
 	hRPTPCEtaAC->Fill(fRPTPCEtaA,fRPTPCEtaC);
-	dPsi=fRPTPCEtaA-fRPTPCEtaC;
-	hCos2TPCEta->Fill(fCentrality,TMath::Cos(2.*dPsi));
+	hCos2TPCEta->Fill(fCentrality,TMath::Cos(2.*(fRPTPCEtaA-fRPTPCEtaC)));
 
 	// V0
 	hCos2V0ATPC->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0A)));
@@ -758,6 +841,36 @@ void AliAnalysisTaskPi0v2::ProcessEventPlane()
 	hRPV0ATPC->Fill(fRPV0A,EPTPC);
 	hRPV0CTPC->Fill(fRPV0C,EPTPC);
 	hRPV0AC->Fill(fRPV0A,fRPV0C);
+
+        // Weight with Photon Mult
+	Float_t weightphoton=Float_t(fConversionSelection[0]->GetNumberOfPhotons());
+
+	hCos2TPCWeightedPhoton->Fill(fCentrality,TMath::Cos(2*(PsiRP1-PsiRP2)),weightphoton);
+	hCos2TPCEtaWeightedPhoton->Fill(fCentrality,TMath::Cos(2.*(fRPTPCEtaA-fRPTPCEtaC)),weightphoton);
+	hCos2V0ATPCWeightedPhoton->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0A)),weightphoton);
+	hCos2V0CTPCWeightedPhoton->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0C)),weightphoton);
+	hCos2V0ACWeightedPhoton->Fill(fCentrality,TMath::Cos(2*(fRPV0C-fRPV0A)),weightphoton);
+
+	// Weight with charged Track Mult
+
+	Float_t weightcharged=Float_t(fConversionSelection[0]->GetNumberOfChargedTracks(fInputEvent));
+
+        hCos2TPCWeightedCharged->Fill(fCentrality,TMath::Cos(2*(PsiRP1-PsiRP2)),weightcharged);
+	hCos2TPCEtaWeightedCharged->Fill(fCentrality,TMath::Cos(2.*(fRPTPCEtaA-fRPTPCEtaC)),weightcharged);
+	hCos2V0ATPCWeightedCharged->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0A)),weightcharged);
+	hCos2V0CTPCWeightedCharged->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0C)),weightcharged);
+	hCos2V0ACWeightedCharged->Fill(fCentrality,TMath::Cos(2*(fRPV0C-fRPV0A)),weightcharged);
+
+	// Weight with V0 mult
+
+	Float_t weightv0Mult=Float_t(fConversionSelection[0]->GetVZEROMult(fInputEvent));
+
+        hCos2TPCWeightedV0Mult->Fill(fCentrality,TMath::Cos(2*(PsiRP1-PsiRP2)),weightv0Mult);
+	hCos2TPCEtaWeightedV0Mult->Fill(fCentrality,TMath::Cos(2.*(fRPTPCEtaA-fRPTPCEtaC)),weightv0Mult);
+	hCos2V0ATPCWeightedV0Mult->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0A)),weightv0Mult);
+	hCos2V0CTPCWeightedV0Mult->Fill(fCentrality,TMath::Cos(2*(EPTPC-fRPV0C)),weightv0Mult);
+	hCos2V0ACWeightedV0Mult->Fill(fCentrality,TMath::Cos(2*(fRPV0C-fRPV0A)),weightv0Mult);
+
     }
 }
 
@@ -779,7 +892,7 @@ Double_t AliAnalysisTaskPi0v2::GetCorrectedTPCEPAngle(AliAODConversionPhoton *ga
     if(gamma0)q0-=GetEPContribution(gamma0);
     if(gamma1)q0-=GetEPContribution(gamma1);
     Double_t EPangle=q0.Phi()/2;
-    EPangle=ApplyFlatteningTPC(EPangle,fCentrality);
+    //EPangle=ApplyFlatteningTPC(EPangle,fCentrality);
 
     return EPangle;
 }
@@ -887,37 +1000,6 @@ void AliAnalysisTaskPi0v2::SetCuts(TString *cutarray,Int_t ncuts){
 	analysisCuts[i] = new AliConversionCuts();
 	analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
 	fCutList->Add(analysisCuts[i]);
-    }
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisTaskPi0v2::GetRadialBin(Double_t radius){
-    if(fNRadialBins<=1)return 0;
-    for(Int_t ii=0;ii<fNRadialBins;ii++){
-	if(radius>fRadialBins[ii]){
-	    if(radius<fRadialBins[ii+1]){return ii;}
-	}
-    }
-    return -1;
-}
-
-
-
-//________________________________________________________________________
-void AliAnalysisTaskPi0v2::SetRadialBins(Float_t *bins,Int_t nbins)
-{
-    // Set Centrality bins for analysis
-
-    fNRadialBins=nbins;
-
-    if(fRadialBins){
-	delete[] fRadialBins;
-	fRadialBins=NULL;
-    }
-
-    fRadialBins=new Double_t[fNRadialBins+1];
-    for(Int_t ii=0;ii<=fNRadialBins;ii++){
-	fRadialBins[ii]=bins[ii];
     }
 }
 
