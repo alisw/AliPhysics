@@ -5,6 +5,7 @@
 #include "TSystem.h" 
 #include "TFile.h" 
 #include "TPRegexp.h"
+#include "TDatabasePDG.h"
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -12,6 +13,9 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
+#include "AliAODInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 #include "AliCentrality.h"
 #include "AliTracker.h"
 
@@ -35,6 +39,8 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fESDHandler(NULL),
   fPIDResponse(NULL),
   fESD(NULL),
+  fAODHandler(NULL),
+  fAOD(NULL),
   fMCEvent(NULL),
   fStack(NULL),
 
@@ -120,13 +126,22 @@ Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC) {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent) {
+Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent) {
   // -- Setup Event
 
   // -- Get ESD objects
-  fESDHandler  = esdHandler;
-  fPIDResponse = esdHandler->GetPIDResponse();
-  fESD         = fESDHandler->GetEvent();
+  if(esdHandler){
+    fESDHandler  = esdHandler;
+    fPIDResponse = esdHandler->GetPIDResponse();
+    fESD         = fESDHandler->GetEvent();
+  }
+
+  // -- Get AOD objects
+  else if(aodHandler){
+    fAODHandler  = aodHandler;
+    fPIDResponse = aodHandler->GetPIDResponse();
+    fAOD         = fAODHandler->GetEvent();
+  }
 
   // -- Get MC objects
   fMCEvent     = mcEvent;
@@ -137,8 +152,13 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   // >  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
   // >   0   1     2     3     4     5     6     7     8     9
 
-  AliCentrality *centrality = fESD->GetCentrality();
-  
+  AliCentrality *centrality = NULL;
+
+  if(esdHandler)
+    centrality = fESD->GetCentrality();
+  else if(aodHandler)
+    centrality = fAOD->GetHeader()->GetCentralityP();
+
   Int_t centBin = centrality->GetCentralityClass10("V0M");
   if (centBin == 0)
     fCentralityBin = centrality->GetCentralityClass5("V0M");
@@ -148,15 +168,17 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
     fCentralityBin = centBin + 1;
   else
     fCentralityBin = -2;
-
+  
   // -- Stay within the max centrality bin
   if (fCentralityBin >= fCentralityBinMax)
     fCentralityBin = -2;
-
+  
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
 
-  // -- Update TPC pid with eta correction
-  UpdateEtaCorrectedTPCPid();
+  if(esdHandler){
+    // -- Update TPC pid with eta correction (only for ESDs?) XXX
+    UpdateEtaCorrectedTPCPid();
+  }
 
   return 0;
 }
@@ -175,12 +197,21 @@ Bool_t AliAnalysisNetParticleHelper::IsEventTriggered() {
   for (Int_t ii = 0; ii < fNTriggers; ++ii)
     aTriggerFired[ii] = kFALSE;
 
-  if ((fESDHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
-  if ((fESDHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
-  if ((fESDHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
-  if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
-  if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
-  
+  if(fESDHandler){
+    if ((fESDHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
+    if ((fESDHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
+    if ((fESDHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
+    if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
+    if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
+  }
+  else if(fAODHandler){
+    if ((fAODHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
+    if ((fAODHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
+    if ((fAODHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
+    if ((fAODHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
+    if ((fAODHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
+  }
+
   Bool_t isTriggered = kFALSE;
 
   for (Int_t ii=0; ii<fNTriggers; ++ii) {
@@ -217,9 +248,18 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
 
   // -- 2 - No Vertex 
   ++iCut;
-  const AliESDVertex* vtxESD = fESD->GetPrimaryVertexTracks();
-  if (!vtxESD)
-    aEventCuts[iCut] = 1;
+  const AliESDVertex* vtxESD = NULL;
+  const AliAODVertex* vtxAOD = NULL;
+  if (fESD){
+    vtxESD = fESD->GetPrimaryVertexTracks();
+    if (!vtxESD)
+      aEventCuts[iCut] = 1;
+  }
+  else if (fAOD){
+    vtxAOD = fAOD->GetPrimaryVertex();
+    if (!vtxAOD)
+      aEventCuts[iCut] = 1;
+  }
 
   // -- 3 - Vertex z outside cut window
   ++iCut;
@@ -227,9 +267,13 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
     if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
+  else if(vtxAOD){
+    if(TMath::Abs(vtxAOD->GetZ()) > fVertexZMax) 
+      aEventCuts[iCut] = 1;
+  }
   else
     aEventCuts[iCut] = 1;
-
+  
   // -- 4 - Centrality = -1  (no centrality or not hadronic)
   ++iCut;
   if(fCentralityBin == -1.) 
@@ -277,6 +321,27 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(TParticle *p
   return kTRUE;
 }
 //________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCParticle *particle) {
+  // -- Check if MC particle is accepted for basic parameters
+  
+  if (!particle) 
+    return kFALSE;
+
+  // -- check if PDF code exists
+  if (!(TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))) 
+    return kFALSE;
+    
+  // -- check if charged
+  if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.0) 
+    return kFALSE;
+      
+  // -- check if physical primary
+  if(!particle->IsPhysicalPrimary()) 
+    return kFALSE;
+        
+  return kTRUE;
+}
+//________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC) {
   // -- Check if MC particle is accepted for basic parameters
   
@@ -297,7 +362,27 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(TParticle *p
         
   return kTRUE;
 }
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCParticle *particle) {
+  // -- Check if MC particle is accepted for basic parameters
+  
+  if (!particle) 
+    return kFALSE;
 
+  // -- check if PDF code exists
+  if (!(TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))) 
+    return kFALSE;
+    
+  // -- check if charged
+  if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() != 0.0) 
+    return kFALSE;
+      
+  // -- check if physical primary
+  if(!particle->IsPhysicalPrimary()) 
+    return kFALSE;
+        
+  return kTRUE;
+}
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP) {
   // -- Check if particle is accepted
@@ -339,12 +424,12 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleFindable(Int_t label) {
  *                            Accept Track Methods - public
  * ---------------------------------------------------------------------------------
  */
-  
+
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliESDtrack *track) {
   // -- Check if track is accepted 
   // > for basic parameters
-  
+
   if (!track)
     return kFALSE;
   
@@ -356,10 +441,28 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliESDtrack *tr
     return kFALSE;
   
   return kTRUE;
+} 
+ 
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliAODTrack *track) {
+  // -- Check if track is accepted 
+  // > for basic parameters
+
+  if (!track)
+    return kFALSE;
+  
+  if (track->Charge() == 0) 
+    return kFALSE;
+  
+  //// -- Get momentum for dEdx --> returns always ZERO XXX
+  //if (!track->GetInnerParam()) 
+  //  return kFALSE;
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliESDtrack *track, Double_t &yP) {
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliVTrack *track, Double_t &yP) {
   // -- Check if track is accepted
   // > in rapidity
   // > return 0 if not accepted
@@ -370,7 +473,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliESDtrack *track,
   Double_t pvec[3];
   track->GetPxPyPz(pvec);
 
-  Double_t p  = track->GetP();
+  Double_t p  = track->P();
   Double_t eP = TMath::Sqrt(p*p + mP*mP);
            yP = 0.5 * TMath::Log((eP + pvec[2]) / (eP - pvec[2]));
   
@@ -382,7 +485,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliESDtrack *track,
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliESDtrack *track) {
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliESDtrack *track) {  //ONLY FOR ESDs so far XXX
   // -- Check if track is accepted 
   // > for DCA, if both SPD layers have hits
 
@@ -413,7 +516,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliESDtrack *track) {
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliESDtrack *track, Double_t* pid) {
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double_t* pid) {
   // -- Check if track is accepted 
   // > provides TPC and TOF nSigmas to the argument
 
@@ -659,6 +762,7 @@ Bool_t AliAnalysisNetParticleHelper::FillEventStats(Int_t *aEventCuts) {
 
   // -- Fill event statistics
   for (Int_t idx = 0; idx < fHEventStatMax ; ++idx) {
+
     if (aEventCuts[idx])
       isRejected = kTRUE;
     else

@@ -25,7 +25,7 @@
 
 AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton", 
 				    Bool_t isModeDist, Bool_t isModeEff, Bool_t isModeDCA, Bool_t useQAThnSparse = kFALSE,
-				    Bool_t isCreateCSC = kFALSE) {
+				    Bool_t isCreateCSC = kFALSE, Bool_t isModeAOD = kFALSE) {
 
   TString sName(name);
 
@@ -87,7 +87,7 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     task->SetParticleSpecies(AliPID::kKaon);
     task->SetControlParticleSpecies(3122, kTRUE, "Lambda");  /// maybe something else ...
     minPt    = 0.2;    maxPt    = 0.4;
-    minPtEff = 0.1;    maxPtEff = 0.8;
+    minPtEff = 0.1;    maxPtEff = 2.5;
     minPtForTOF = 0.8;
   }
   else {
@@ -103,7 +103,10 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     task->SetModeDCACreation(1);     // => 1 = on    | 0 = off (default)
   if (isModeDist)
     task->SetModeDistCreation(1);    // => 1 = on    | 0 = off (default)
-
+  if(isModeAOD){
+    task->SetIsAOD(1);               // => 1 = AODs  | 0 = ESDs
+    task->SetTrackFilterBit(1024);   // 1024 = RAA cuts
+  }
   // -- Enable QA plots
   if (useQAThnSparse)
     task->SetUseQATHnSparse(kTRUE);

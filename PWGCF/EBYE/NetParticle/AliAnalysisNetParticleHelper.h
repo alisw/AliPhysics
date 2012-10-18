@@ -19,6 +19,10 @@ class AliMCEvent;
 class AliStack;
 class AliPIDResponse;
 class AliESDInputHandler;
+class AliAODInputHandler;
+class AliAODEvent;
+class AliAODTrack;
+class AliAODMCParticle;
 
 class AliAnalysisNetParticleHelper : public TNamed {
 
@@ -87,7 +91,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Int_t Initialize(Bool_t isMC);
 
   /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent);
+  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -108,10 +112,14 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
   
   /** Check if charged MC particle is accepted for basic parameters */
+  /** NOT possible for AODs (AliAODMCParticle NOT from TParticle)*/
   Bool_t IsParticleAcceptedBasicCharged(TParticle *particle, Int_t idxMC);
+  Bool_t IsParticleAcceptedBasicCharged(AliAODMCParticle *particle);
 
   /** Check if neutral MC particle is accepted for basic parameters */
+  /** NOT possible for AODs (AliAODMCParticle NOT from TParticle)*/
   Bool_t IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC);
+  Bool_t IsParticleAcceptedBasicNeutral(AliAODMCParticle *particle);
  
   /** Check if MC particle is accepted for Rapidity */
   Bool_t IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP);
@@ -126,16 +134,18 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
   
   /** Check if track is accepted for basic parameters */
+  /** NOT possible with AliVTrack (GetInnerParam returns NULL) */
   Bool_t IsTrackAcceptedBasicCharged(AliESDtrack *track);
+  Bool_t IsTrackAcceptedBasicCharged(AliAODTrack *track);
   
   /** Check if track is accepted for Rapidity */
-  Bool_t IsTrackAcceptedRapidity(AliESDtrack *track, Double_t &yP);
+  Bool_t IsTrackAcceptedRapidity(AliVTrack *track, Double_t &yP);
 
   /** Check if track is accepted for DCA */
   Bool_t IsTrackAcceptedDCA(AliESDtrack *track);
 
   /** Check if track is accepted for PID */
-  Bool_t IsTrackAcceptedPID(AliESDtrack *track, Double_t *pid);
+  Bool_t IsTrackAcceptedPID(AliVTrack *track, Double_t *pid);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -198,6 +208,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   AliESDInputHandler   *fESDHandler;               //! Ptr to ESD handler 
   AliPIDResponse       *fPIDResponse;              //! Ptr to PID response Object
   AliESDEvent          *fESD;                      //! Ptr to ESD event
+  AliAODInputHandler   *fAODHandler;               //! Ptr to AOD handler 
+  AliAODEvent          *fAOD;                      //! Ptr to AOD event
   AliMCEvent           *fMCEvent;                  //! Ptr to MC event
   AliStack             *fStack;                    //! Ptr to stack
 

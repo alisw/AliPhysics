@@ -21,6 +21,7 @@ class AliStack;
 class AliPIDResponse;
 class AliESDInputHandler;
 class AliESDtrackCuts;
+class AliAODInputHandler;
 
 class AliAnalysisNetParticleDistribution : public TNamed {
 
@@ -42,13 +43,13 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax);
+  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit);
 
   /** Add histograms to outlist */
   void CreateHistograms(TList *outList);
 
   /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent);
+  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
 
   /** Resre Event */
   void ResetEvent();
@@ -70,6 +71,9 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
    /** Process ESD tracks and fill histograms */
   Int_t ProcessESDTracks();
+
+   /** Process AOD tracks and fill histograms */
+  Int_t ProcessAODTracks();
 
   /** Process primary particles from the stack and fill histograms */
   Int_t ProcessStackParticles();
@@ -103,6 +107,9 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   AliPIDResponse       *fPIDResponse;           //! Ptr to PID response Object
   AliESDEvent          *fESD;                   //! Ptr to ESD event
 
+  AliAODInputHandler   *fAODHandler;            //! Ptr to AOD handler 
+  AliAODEvent          *fAOD;                   //! Ptr to AOD event
+
   Bool_t                fIsMC;                  //  Is MC event
 
   AliMCEvent           *fMCEvent;               //! Ptr to MC event
@@ -112,6 +119,8 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   // -----------------------------------------------------------------------
   Float_t               fEtaMax;                //  Max, absolut eta
   Float_t              *fPtRange;               //  Array of pt [min,max]
+
+  Int_t                 fAODtrackCutBit;        //  Track filter bit for AOD tracks
   // -----------------------------------------------------------------------
   Float_t              *fNp;                    //  Array of particle/anti-particle counts
 

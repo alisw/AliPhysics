@@ -17,6 +17,9 @@
 #include "AliESDpid.h"
 #include "AliCentrality.h"
 #include "AliTracker.h"
+#include "AliAODInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
 
 #include "AliAnalysisNetParticleDistribution.h"
 
@@ -42,12 +45,15 @@ AliAnalysisNetParticleDistribution::AliAnalysisNetParticleDistribution() :
   fESDHandler(NULL),
   fPIDResponse(NULL),
   fESD(NULL),
+  fAODHandler(NULL),
+  fAOD(NULL),
   fIsMC(kFALSE),
   fMCEvent(NULL),
   fStack(NULL),
   fESDTrackCuts(NULL),
   fEtaMax(0.9),
   fPtRange(NULL),
+  fAODtrackCutBit(1024),
   fNp(NULL),
   fNCorrNp(2),
   fCorrNp(NULL),
@@ -90,7 +96,7 @@ AliAnalysisNetParticleDistribution::~AliAnalysisNetParticleDistribution() {
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax) {
+Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit) {
   // -- Initialize
   
   fHelper = helper;
@@ -98,6 +104,7 @@ Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelpe
   fIsMC = isMC;
   fPtRange = ptRange;
   fEtaMax = etaMax;
+  fAODtrackCutBit = trackCutBit;
 
   // ------------------------------------------------------------------
   // -- N particles / N anti-particles
@@ -199,15 +206,24 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent) {
+Int_t AliAnalysisNetParticleDistribution::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler,  AliMCEvent *mcEvent) {
   // -- Setup Event
 
   ResetEvent();
 
   // -- Get ESD objects
-  fESDHandler  = esdHandler;
-  fPIDResponse = esdHandler->GetPIDResponse();
-  fESD         = fESDHandler->GetEvent();
+  if(esdHandler){
+    fESDHandler  = esdHandler;
+    fPIDResponse = esdHandler->GetPIDResponse();
+    fESD         = fESDHandler->GetEvent();
+  }
+
+  // -- Get AOD objects
+  else if(aodHandler){
+    fAODHandler  = aodHandler;
+    fPIDResponse = aodHandler->GetPIDResponse();
+    fAOD         = fAODHandler->GetEvent();
+  }
 
   // -- Get MC objects
   fMCEvent     = mcEvent;
@@ -223,6 +239,9 @@ void AliAnalysisNetParticleDistribution::ResetEvent() {
   
   // -- Reset ESD Event
   fESD       = NULL;
+
+  // -- Reset AOD Event
+  fAOD       = NULL;
 
   // -- Reset MC Event
   if (fIsMC)
@@ -251,11 +270,14 @@ void AliAnalysisNetParticleDistribution::ResetEvent() {
 //________________________________________________________________________
 Int_t AliAnalysisNetParticleDistribution::Process() {
   // -- Process NetParticle Distributions
-  
+
   // -- Fill ESD tracks
-  ProcessESDTracks();
+  if (fESD) ProcessESDTracks();
+
+  // -- Fill AOD tracks
+  else if (fAOD) ProcessAODTracks();
     
-  // -- Fill MC truth particles
+  // -- Fill MC truth particles (missing for AOD XXX)
   if (fIsMC)  {
     ProcessStackParticles();
     ProcessStackControlParticles();
@@ -318,6 +340,81 @@ Int_t AliAnalysisNetParticleDistribution::ProcessESDTracks() {
     //  idxPart = 1 -> particle
 
     Int_t idxPart = (track->GetSign() < 0) ? 0 : 1;
+    fNp[idxPart] += 1.;
+    
+    for (Int_t ii = 0; ii < fNCorrNp; ++ii) 
+      fCorrNp[ii][idxPart] += fHelper->GetTrackbyTrackCorrectionFactor(aTrack, ii);      
+    
+  } // for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
+
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  // -- Fill Particle Fluctuation Histograms
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+  // -- Uncorrected
+  FillHistSet("fHDist", fNp);
+    
+  // -- Corrected 
+  for (Int_t ii = 0 ; ii < fNCorrNp; ++ii) 
+    FillHistSet(Form("fHDistCorr%d", ii), fCorrNp[ii]); 
+
+  return 0;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisNetParticleDistribution::ProcessAODTracks() {
+  // -- Process ESD tracks and fill histograms
+
+  for (Int_t idxTrack = 0; idxTrack < fAOD->GetNumberOfTracks(); ++idxTrack) {
+    AliAODTrack *track = (AliAODTrack*)fAOD->GetTrack(idxTrack); 
+
+    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    // -- Check track cuts
+    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+    // -- Check if charged track is accepted for basic parameters
+    if (!fHelper->IsTrackAcceptedBasicCharged(track))
+      continue;
+
+    // -- Check if accepted
+    if(!track->TestFilterBit(fAODtrackCutBit)) 
+      continue;
+
+    // -- Check if accepted in rapidity window
+    Double_t yP;
+    if (!fHelper->IsTrackAcceptedRapidity(track, yP))
+      continue;
+
+    // -- Check if accepted bt PID from TPC or TPC+TOF
+    Double_t pid[2];
+    if (!fHelper->IsTrackAcceptedPID(track, pid))
+      continue;
+
+    // -- Check if accepted with thighter DCA cuts XXX
+    // if (fHelper->IsTrackAcceptedDCA(track))
+    //  continue;
+    
+    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    // -- Fill Probe Particle
+    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+    Double_t aTrack[6] = {
+      Double_t(fHelper->GetCentralityBin()),       //  0 centrality 
+      track->Pt(),                    //  1 pt
+      track->Charge(),                //  2 sign
+      track->Eta(),                   //  3 eta
+      track->Phi(),                   //  4 phi
+      yP                              //  5 rapidity
+    };
+    
+    fHnTrackUnCorr->Fill(aTrack);
+    
+    // -- Count particle / anti-particle 
+    // ------------------------------------------------------------------
+    //  idxPart = 0 -> anti particle
+    //  idxPart = 1 -> particle
+
+    Int_t idxPart = (track->Charge() < 0) ? 0 : 1;
     fNp[idxPart] += 1.;
     
     for (Int_t ii = 0; ii < fNCorrNp; ++ii) 

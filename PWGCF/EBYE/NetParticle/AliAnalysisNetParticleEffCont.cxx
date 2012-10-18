@@ -2,13 +2,16 @@
 
 #include "TMath.h"
 #include "TAxis.h"
+#include "TDatabasePDG.h"
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
-
 #include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
+#include "AliAODMCParticle.h"
 
 #include "AliAnalysisNetParticleEffCont.h"
 
@@ -33,8 +36,13 @@ AliAnalysisNetParticleEffCont::AliAnalysisNetParticleEffCont() :
   fESD(NULL), 
   fESDTrackCuts(NULL),
 
+  fAOD(NULL), 
+  fArrayMC(NULL),
+
   fCentralityBin(-1.),
   fNTracks(0),
+
+  fAODtrackCutBit(1024),
 
   fStack(NULL),
   fMCEvent(NULL),
@@ -67,7 +75,7 @@ AliAnalysisNetParticleEffCont::~AliAnalysisNetParticleEffCont() {
  */
 
 //________________________________________________________________________
-void AliAnalysisNetParticleEffCont::Initialize(AliESDtrackCuts *cuts , AliAnalysisNetParticleHelper* helper) {
+void AliAnalysisNetParticleEffCont::Initialize(AliESDtrackCuts *cuts , AliAnalysisNetParticleHelper* helper, Int_t trackCutBit) {
 
   // -- ESD track cuts
   // -------------------
@@ -86,6 +94,11 @@ void AliAnalysisNetParticleEffCont::Initialize(AliESDtrackCuts *cuts , AliAnalys
   fLabelsRec        = new Int_t*[2];
   for (Int_t ii = 0; ii < 2 ; ++ii)
     fLabelsRec[ii] = NULL;
+
+  // -- AOD track filter bit
+  // -------------------------
+  fAODtrackCutBit = trackCutBit;
+
 
   // -- Create THnSparse Histograms
   // --------------------------------
@@ -141,6 +154,47 @@ Int_t AliAnalysisNetParticleEffCont::SetupEvent(AliESDInputHandler *esdHandler, 
 }
 
 //________________________________________________________________________
+Int_t AliAnalysisNetParticleEffCont::SetupEvent(AliAODInputHandler *aodHandler) {
+  // -- Setup event
+
+  // -- Reset of event
+  // -------------------
+  ResetEvent();
+
+  // -- Setup of event
+  // -------------------
+  fAOD           = aodHandler->GetEvent();
+  fNTracks       = fAOD->GetNumberOfTracks();
+
+  fArrayMC       = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!fArrayMC)
+    AliFatal("No array of MC particles found !!!");
+
+  fCentralityBin = fHelper->GetCentralityBin();
+
+  // -- Create label arrays
+  // ------------------------
+  fLabelsRec[0] = new Int_t[fNTracks];
+  if(!fLabelsRec[0]) {
+    AliError("Cannot create fLabelsRec[0]");
+    return -1;
+  }
+
+  fLabelsRec[1] = new Int_t[fNTracks];
+  if(!fLabelsRec[1]) {
+    AliError("Cannot create fLabelsRec[1] for TPC");
+    return -1;
+  }
+
+  for(Int_t ii = 0; ii < fNTracks; ++ii) {
+    fLabelsRec[0][ii] = 0;
+    fLabelsRec[1][ii] = 0;
+  }
+
+  return 0;
+}
+
+//________________________________________________________________________
 void AliAnalysisNetParticleEffCont::ResetEvent() {
   // -- Reset event
   
@@ -159,11 +213,17 @@ void AliAnalysisNetParticleEffCont::Process() {
 
   // -- Setup (clean, create and fill) MC labels
   // ---------------------------------------------
-  FillMCLabels();
-
+  if(fESD)
+    FillMCLabels();
+  else if(fAOD)
+    FillMCLabelsAOD();
+  
   // -- Fill  MC histograms for efficiency studies
   // -----------------------------------------------
-  FillMCEffHist();
+  if(fESD)
+    FillMCEffHist();
+  else if(fAOD)
+    FillMCEffHistAOD();
 
   return;
 }      
@@ -336,10 +396,60 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack) {
-  // Check if particle is contamination or correctly identified
-  // Fill contamination THnSparse
+void AliAnalysisNetParticleEffCont::FillMCLabelsAOD() {
+  // Fill MC labels for AOD analysis
+  // Loop over ESD tracks and fill arrays with MC lables
+  //  fLabelsRec[0] : all Tracks
+  //  fLabelsRec[1] : all Tracks accepted by PID of TPC
+  // Check every accepted track if correctly identified
+  //  otherwise check for contamination
 
+  for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
+    AliAODTrack *track = fAOD->GetTrack(idxTrack); 
+    
+    // -- Check if track is accepted for basic parameters
+    if (!fHelper->IsTrackAcceptedBasicCharged(track))
+      continue;
+    
+    // -- Check if accepted
+    if (!track->TestFilterBit(fAODtrackCutBit)) 
+      continue;
+
+    // -- Check if accepted in rapidity window
+    Double_t yP;
+    if (!fHelper->IsTrackAcceptedRapidity(track, yP))
+      continue;
+
+    // -- Check if accepted with thighter DCA cuts (not yet done for AODs XXX)
+    //if (!fHelper->IsTrackAcceptedDCA(track))
+    //  continue;
+
+    Int_t label  = TMath::Abs(track->GetLabel()); 
+    
+    // -- Fill Label of all reconstructed
+    fLabelsRec[0][idxTrack] = label;
+
+    // -- Check if accepted by PID from TPC or TPC+TOF
+    Double_t pid[2];
+    if (!fHelper->IsTrackAcceptedPID(track, pid))
+      continue;
+
+    // -- Fill Label of all reconstructed && recPid_TPC+TOF    
+    fLabelsRec[1][idxTrack] = label;    
+
+    // -- Check for contamination and fill contamination THnSparse
+    CheckContTrackAOD(label, track->Charge(), idxTrack);
+
+  } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
+
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack) {
+  // Check if particle is contamination or correctly identified for ESDs
+  // Fill contamination THnSparse
+  
   TParticle* particle = fStack->Particle(label);
   if (!particle)
     return;
@@ -402,8 +512,77 @@ void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, In
 }
 
 //________________________________________________________________________
+void AliAnalysisNetParticleEffCont::CheckContTrackAOD(Int_t label, Float_t sign, Int_t idxTrack) {
+  // Check if particle is contamination or correctly identified for AODs
+  // Fill contamination THnSparse
+  
+  AliAODMCParticle* particle = (AliAODMCParticle*)fArrayMC->At(label);
+
+  if (!particle)
+    return;
+
+  Bool_t isSecondaryFromWeakDecay = kFALSE;
+  Bool_t isSecondaryFromMaterial  = kFALSE;
+  
+  // -- Check if correctly identified 
+  if (particle->GetPdgCode() == (sign*fPdgCode)) {
+    
+    // Check if is physical primary -> all ok 
+    if(particle->IsPhysicalPrimary())
+      return;
+    
+    // -- Check if secondaries from material or weak decay
+    isSecondaryFromWeakDecay = particle->IsSecondaryFromWeakDecay();
+    isSecondaryFromMaterial  = particle->IsSecondaryFromMaterial();
+    
+  } 
+  
+  // -- Get MC pdg 
+  Float_t contSign = 0.;
+  if      ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.) contSign =  0.;
+  else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() <  0.) contSign = -1.;	
+  else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() >  0.) contSign =  1.;	
+
+  // -- Get contaminating particle
+  Float_t contPart = 0;
+  if        (isSecondaryFromWeakDecay)                   contPart = 7; // probeParticle from WeakDecay
+  else if   (isSecondaryFromMaterial)                    contPart = 8; // probeParticle from Material
+  else {
+    if      (TMath::Abs(particle->GetPdgCode()) ==  211) contPart = 1; // pion
+    else if (TMath::Abs(particle->GetPdgCode()) ==  321) contPart = 2; // kaon
+    else if (TMath::Abs(particle->GetPdgCode()) == 2212) contPart = 3; // proton
+    else if (TMath::Abs(particle->GetPdgCode()) ==   11) contPart = 4; // electron
+    else if (TMath::Abs(particle->GetPdgCode()) ==   13) contPart = 5; // muon
+    else                                                 contPart = 6; // other
+  }
+  
+  // -- Get Reconstructed values 
+  Float_t etaRec = 0.;
+  Float_t phiRec = 0.;
+  Float_t ptRec  = 0.;
+
+  AliAODTrack *track = fAOD->GetTrack(idxTrack);
+  
+  if (track) {
+    // if no track present (which should not happen)
+    // -> pt = 0. , which is not in the looked at range
+    
+    // -- Get Reconstructed eta/phi/pt
+    etaRec = track->Eta();
+    phiRec = track->Phi();	  
+    ptRec  = track->Pt();
+  } 	
+
+  // -- Fill THnSparse
+  Double_t hnCont[14] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, 
+			 contPart, contSign, etaRec, phiRec, ptRec, 
+			 particle->Eta()-etaRec, particle->Phi()-phiRec, particle->Pt()-ptRec};
+  fHnCont->Fill(hnCont);
+}
+
+//________________________________________________________________________
 void AliAnalysisNetParticleEffCont::FillMCEffHist() {
-  // Fill efficiency THnSparse
+  // Fill efficiency THnSparse for ESDs
   
   Int_t nPart  = fStack->GetNprimary();
 
@@ -464,6 +643,82 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
     Double_t hnEff[15] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, 
 			  findable, recStatus, recPid, etaRec, phiRec, ptRec, 
 			  particle->Eta()-etaRec, particle->Phi()-phiRec, particle->Pt()-ptRec};
+    fHnEff->Fill(hnEff);
+
+  } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
+  
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleEffCont::FillMCEffHistAOD() {
+  // Fill efficiency THnSparse for AODs
+  
+  Int_t nPart  = fArrayMC->GetEntriesFast();
+
+  for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
+    
+    AliAODMCParticle* particle = (AliAODMCParticle*)fArrayMC->At(idxMC);
+             
+    // -- Check basic MC properties -> charged physical primary
+    if (!fHelper->IsParticleAcceptedBasicCharged(particle))
+      continue;
+
+    // -- Check rapidity window
+    Double_t yMC;
+    if (!fHelper->IsParticleAcceptedRapidity((TParticle*)particle, yMC))
+      continue;
+
+    // -- Check if probeParticle / anti-probeParticle
+    if (TMath::Abs(particle->GetPdgCode()) != fPdgCode)
+      continue;
+    
+    // -- Get sign of particle
+    Float_t sign      = (particle->GetPdgCode() < 0) ? -1. : 1.;
+
+    // -- Get if particle is findable 
+    Float_t findable  = 1.;// Float_t(fHelper->IsParticleFindable(idxMC)); XXX
+
+    // -- Get recStatus and pidStatus
+    Float_t recStatus = 0.;
+    Float_t recPid    = 0.;
+
+    // -- Get Reconstructed values 
+    Float_t etaRec = 0.;
+    Float_t phiRec = 0.;
+    Float_t ptRec  = 0.;
+
+    // -- Loop over all labels
+    for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {
+      if (idxMC == fLabelsRec[0][idxRec]) {
+    	recStatus = 1.;
+	
+    	if (idxMC == fLabelsRec[1][idxRec])
+    	  recPid = 1.;
+
+    	AliVTrack *track = NULL;
+    	if(fESD)
+    	  track = fESD->GetTrack(idxRec);
+    	else if(fAOD)
+    	  track = fAOD->GetTrack(idxRec);
+
+    	if (track) {
+    	  // if no track present (which should not happen)
+    	  // -> pt = 0. , which is not in the looked at range
+
+    	  // -- Get Reconstructed eta/phi/pt
+    	  etaRec = track->Eta();
+    	  phiRec = track->Phi();	  
+    	  ptRec  = track->Pt();
+    	} 	
+    	break;
+      }
+    } // for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {  
+    
+    // -- Fill THnSparse
+    Double_t hnEff[15] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, 
+    			  findable, recStatus, recPid, etaRec, phiRec, ptRec, 
+    			  particle->Eta()-etaRec, particle->Phi()-phiRec, particle->Pt()-ptRec};
     fHnEff->Fill(hnEff);
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
