@@ -19,7 +19,7 @@ void AddRsnPairsKStar(AliAnalysisTaskSE *task,
 
    Bool_t valid;
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
-   
+
    if (isRsnMini) {
       AddPairOutputMiniKStar(task,isMC,isMixing,pType1,listID1,pType2,listID2,pdg,mass,cutsPair,suffix);
    } else {
@@ -31,7 +31,7 @@ void AddRsnPairsKStar(AliAnalysisTaskSE *task,
 void AddPairOutputKStar(AliRsnLoopPair *pair)
 {
    Bool_t valid;
-   
+
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
@@ -71,7 +71,7 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
- 
+
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
    if (collisionType==0) taskRsnMini->UseMultiplicity("QUALITY");

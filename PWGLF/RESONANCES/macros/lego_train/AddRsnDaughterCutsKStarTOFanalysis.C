@@ -35,32 +35,32 @@ Int_t AddRsnDaughterCutsKStarTOFanalysis(AliPID::EParticleType type1,AliPID::EPa
    Bool_t useTPCveto_K = kFALSE;
    Bool_t useCombined_Pi = kFALSE;
    Bool_t useCombined_K = kFALSE;
-   
+
    if (opt.Contains("qualityonly")) {
-     useTPC_Pi=kFALSE;
-     useTOF_Pi=kFALSE;
-     useTPC_K=kFALSE;
-     useTOF_K=kFALSE;
-     useTPCveto_Pi = kFALSE;
-     useTPCveto_K = kFALSE;
-     useCombined_Pi = kFALSE;
-     useCombined_K = kFALSE;
+      useTPC_Pi=kFALSE;
+      useTOF_Pi=kFALSE;
+      useTPC_K=kFALSE;
+      useTOF_K=kFALSE;
+      useTPCveto_Pi = kFALSE;
+      useTPCveto_K = kFALSE;
+      useCombined_Pi = kFALSE;
+      useCombined_K = kFALSE;
    } else {
-     if (opt.Contains("combined")) {
-       useCombined_Pi = kTRUE;
-       useCombined_K = kTRUE;
-     } else {
-       if (opt.Contains("PiTPCnsig")) useTPC_Pi=kTRUE;
-       if (opt.Contains("PiTOFnsig")) useTOF_Pi=kTRUE;
-       if (opt.Contains("KTPCnsig"))  useTPC_K=kTRUE;
-       if (opt.Contains("KTOFnsig"))  useTOF_K=kTRUE;
-       if(opt.Contains("TPCveto")) {
-	 useTPCveto_Pi = kTRUE;
-	 useTPCveto_K = kTRUE;
-	 nSigmaTPCveto_Pi = 5.0;
-	 nSigmaTPCveto_K = 5.0;
-       }
-     }
+      if (opt.Contains("combined")) {
+         useCombined_Pi = kTRUE;
+         useCombined_K = kTRUE;
+      } else {
+         if (opt.Contains("PiTPCnsig")) useTPC_Pi=kTRUE;
+         if (opt.Contains("PiTOFnsig")) useTOF_Pi=kTRUE;
+         if (opt.Contains("KTPCnsig"))  useTPC_K=kTRUE;
+         if (opt.Contains("KTOFnsig"))  useTOF_K=kTRUE;
+         if(opt.Contains("TPCveto")) {
+            useTPCveto_Pi = kTRUE;
+            useTPCveto_K = kTRUE;
+            nSigmaTPCveto_Pi = 5.0;
+            nSigmaTPCveto_K = 5.0;
+         }
+      }
    }
 
    if (opt.Contains("PiTPCnsig10")) nSigmaTPC_Pi = 1.0;
@@ -105,59 +105,59 @@ Int_t AddRsnDaughterCutsKStarTOFanalysis(AliPID::EParticleType type1,AliPID::EPa
    TString cutname = "K_Kstar";
    if (!opt.IsNull()) cutname += Form("_%s",opt.Data());
    AliRsnCutSet *cutsK;
-   
+
    if (useCombined_K) {
-       cutsK = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010, AliPID::kKaon, nSigmaTOF_K, 5);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += cutsK->GetCutScheme();
-   } else { 
-     if (useTPCveto_K) {
-       cutsK = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010, AliPID::kKaon, nSigmaTOF_K, 5);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += cutsK->GetCutScheme();
-     } else { 
-       cutsK = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
-       
-       AliRsnCutTrackQuality *qualityCutK = new AliRsnCutTrackQuality("cutQuatityK");
-       qualityCutK->SetDefaults2010();
-       cutsK->AddCut(qualityCutK);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += qualityCutK->GetName();
-       
-       if (useTPC_K) {
-	 AliRsnCutPIDNSigma *cutKTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCK",AliPID::kKaon,AliRsnCutPIDNSigma::kTPC);
-	 cutKTPC->SinglePIDRange(nSigmaTPC_K);
-	 cutsK->AddCut(cutKTPC);
-	 if (!scheme.IsNull()) scheme += "&";
-	 scheme += cutKTPC->GetName();
-       }
-       
-       if (useTOF_K) {
-	 AliRsnCutPIDNSigma *cutKTOF = new AliRsnCutPIDNSigma("cutNSigmaTOFK",AliPID::kKaon,AliRsnCutPIDNSigma::kTOF);
-	 cutKTOF->SinglePIDRange(nSigmaTOF_K);
-	 cutsK->AddCut(cutKTOF);
-	 if (!scheme.IsNull()) scheme += "&";
-	 scheme += cutKTOF->GetName();
-       }    
-     }
+      cutsK = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010, AliPID::kKaon, nSigmaTOF_K, 5);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutsK->GetCutScheme();
+   } else {
+      if (useTPCveto_K) {
+         cutsK = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010, AliPID::kKaon, nSigmaTOF_K, 5);
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += cutsK->GetCutScheme();
+      } else {
+         cutsK = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
+
+         AliRsnCutTrackQuality *qualityCutK = new AliRsnCutTrackQuality("cutQuatityK");
+         qualityCutK->SetDefaults2010();
+         cutsK->AddCut(qualityCutK);
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += qualityCutK->GetName();
+
+         if (useTPC_K) {
+            AliRsnCutPIDNSigma *cutKTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCK",AliPID::kKaon,AliRsnCutPIDNSigma::kTPC);
+            cutKTPC->SinglePIDRange(nSigmaTPC_K);
+            cutsK->AddCut(cutKTPC);
+            if (!scheme.IsNull()) scheme += "&";
+            scheme += cutKTPC->GetName();
+         }
+
+         if (useTOF_K) {
+            AliRsnCutPIDNSigma *cutKTOF = new AliRsnCutPIDNSigma("cutNSigmaTOFK",AliPID::kKaon,AliRsnCutPIDNSigma::kTOF);
+            cutKTOF->SinglePIDRange(nSigmaTOF_K);
+            cutsK->AddCut(cutKTOF);
+            if (!scheme.IsNull()) scheme += "&";
+            scheme += cutKTOF->GetName();
+         }
+      }
    }
-   
+
    if (useEta) {
-     AliRsnValueDaughter *valEtaK = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type2),opt.Data()),AliRsnValueDaughter::kEta);
-     AliRsnCutValue *cutEtaK = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type2),opt.Data()),-etaRange,etaRange);
-     cutEtaK->SetTargetType(AliRsnTarget::kDaughter);
-     cutEtaK->SetValueObj(valEtaK);
-     cutsK->AddCut(cutEtaK);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutEtaK->GetName();
+      AliRsnValueDaughter *valEtaK = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type2),opt.Data()),AliRsnValueDaughter::kEta);
+      AliRsnCutValue *cutEtaK = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type2),opt.Data()),-etaRange,etaRange);
+      cutEtaK->SetTargetType(AliRsnTarget::kDaughter);
+      cutEtaK->SetValueObj(valEtaK);
+      cutsK->AddCut(cutEtaK);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutEtaK->GetName();
    }
    if (usePDG) {
-     AliRsnCutPID *cutPDGK = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type2),opt.Data()),type2,0.0,kTRUE);
-     cutsK->AddCut(cutPDGK);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutPDGK->GetName();
+      AliRsnCutPID *cutPDGK = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type2),opt.Data()),type2,0.0,kTRUE);
+      cutsK->AddCut(cutPDGK);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutPDGK->GetName();
    }
-   
+
    Printf ("CUT Scheme for KAON is '%s'",scheme.Data());
    cutsK->SetCutScheme(scheme.Data());
 
@@ -169,55 +169,55 @@ Int_t AddRsnDaughterCutsKStarTOFanalysis(AliPID::EParticleType type1,AliPID::EPa
    cutname = "Pi_Kstar";
    if (!opt.IsNull()) cutname += Form("_%s",opt.Data());
    AliRsnCutSet *cutsPi;
-   
+
    if (useCombined_Pi) {
-     cutsPi = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010, AliPID::kPion, nSigmaTOF_Pi, 5);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutsPi->GetCutScheme();
-   } else { 
-     if (useTPCveto_Pi) {
-       cutsPi = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010, AliPID::kPion, nSigmaTOF_Pi, 5);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += cutsPi->GetCutScheme();
-     } else { 
-       cutsPi = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
-       
-       AliRsnCutTrackQuality *qualityCutPi = new AliRsnCutTrackQuality("cutQuatityPi");
-       qualityCutPi->SetDefaults2010();
-       cutsPi->AddCut(qualityCutPi);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += qualityCutPi->GetName();
-       if (useTPC_Pi) {
-	 AliRsnCutPIDNSigma *cutPiTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCPi",AliPID::kPion,AliRsnCutPIDNSigma::kTPC);
-	 cutPiTPC->SinglePIDRange(nSigmaTPC_Pi);
-	 cutsPi->AddCut(cutPiTPC);
-	 if (!scheme.IsNull()) scheme += "&";
-	 scheme += cutPiTPC->GetName();
-       }
-       if (useTOF_Pi) {
-	 AliRsnCutPIDNSigma *cutPiTOF = new AliRsnCutPIDNSigma("cutNSigmaTOFPi",AliPID::kPion,AliRsnCutPIDNSigma::kTOF);
-	 cutPiTOF->SinglePIDRange(nSigmaTOF_Pi);
-	 cutsPi->AddCut(cutPiTOF);
-	 if (!scheme.IsNull()) scheme += "&";
-	 scheme += cutPiTOF->GetName();
-       }
-     }
+      cutsPi = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010, AliPID::kPion, nSigmaTOF_Pi, 5);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutsPi->GetCutScheme();
+   } else {
+      if (useTPCveto_Pi) {
+         cutsPi = new AliRsnCutSetDaughterParticle(cutname.Data(), AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010, AliPID::kPion, nSigmaTOF_Pi, 5);
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += cutsPi->GetCutScheme();
+      } else {
+         cutsPi = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
+
+         AliRsnCutTrackQuality *qualityCutPi = new AliRsnCutTrackQuality("cutQuatityPi");
+         qualityCutPi->SetDefaults2010();
+         cutsPi->AddCut(qualityCutPi);
+         if (!scheme.IsNull()) scheme += "&";
+         scheme += qualityCutPi->GetName();
+         if (useTPC_Pi) {
+            AliRsnCutPIDNSigma *cutPiTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCPi",AliPID::kPion,AliRsnCutPIDNSigma::kTPC);
+            cutPiTPC->SinglePIDRange(nSigmaTPC_Pi);
+            cutsPi->AddCut(cutPiTPC);
+            if (!scheme.IsNull()) scheme += "&";
+            scheme += cutPiTPC->GetName();
+         }
+         if (useTOF_Pi) {
+            AliRsnCutPIDNSigma *cutPiTOF = new AliRsnCutPIDNSigma("cutNSigmaTOFPi",AliPID::kPion,AliRsnCutPIDNSigma::kTOF);
+            cutPiTOF->SinglePIDRange(nSigmaTOF_Pi);
+            cutsPi->AddCut(cutPiTOF);
+            if (!scheme.IsNull()) scheme += "&";
+            scheme += cutPiTOF->GetName();
+         }
+      }
    }
-     
+
    if (useEta) {
-     AliRsnValueDaughter *valEtaP = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kEta);
-     AliRsnCutValue *cutEtaP = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type1),opt.Data()),-etaRange,etaRange);
-     cutEtaP->SetTargetType(AliRsnTarget::kDaughter);
-     cutEtaP->SetValueObj(valEtaP);
-     cutsPi->AddCut(cutEtaP);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutEtaP->GetName();
+      AliRsnValueDaughter *valEtaP = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kEta);
+      AliRsnCutValue *cutEtaP = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type1),opt.Data()),-etaRange,etaRange);
+      cutEtaP->SetTargetType(AliRsnTarget::kDaughter);
+      cutEtaP->SetValueObj(valEtaP);
+      cutsPi->AddCut(cutEtaP);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutEtaP->GetName();
    }
    if (usePDG) {
-     AliRsnCutPID *cutPDGP = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type1),opt.Data()),type1,0.0,kTRUE);
-     cutsPi->AddCut(cutPDGP);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutPDGP->GetName();
+      AliRsnCutPID *cutPDGP = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type1),opt.Data()),type1,0.0,kTRUE);
+      cutsPi->AddCut(cutPDGP);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutPDGP->GetName();
    }
 
    Printf ("CUT Scheme for PROTON is '%s'",scheme.Data());

@@ -22,7 +22,7 @@ void AddRsnPairsRho(AliAnalysisTaskSE *task,
    Double_t mass = part->Mass();
    Bool_t valid;
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
-   
+
    if (isRsnMini) {
       AddPairOutputMiniRho(task,isMC,isMixing,pType1,listID1,pType2,listID2,pdg,mass,cutsPair,suffix);
    } else {
@@ -35,7 +35,7 @@ void AddPairOutputRho(AliRsnLoopPair *pair)
 {
    Bool_t valid;
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
-   
+
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
@@ -66,7 +66,7 @@ void AddPairOutputMiniRho(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
-   
+
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);

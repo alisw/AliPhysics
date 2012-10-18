@@ -177,7 +177,7 @@ Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EPartic
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutKTOF->GetName();
    }
-   
+
    if (useEta) {
       AliRsnValueDaughter *valEtaK = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type2),opt.Data()),AliRsnValueDaughter::kEta);
       AliRsnCutValue *cutEtaK = new AliRsnCutValue(Form("cut%sETA%s",AliPID::ParticleName(type2),opt.Data()),-etaRange,etaRange);
