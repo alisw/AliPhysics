@@ -573,9 +573,9 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
   double sumyield = 0.;
   double sumyielderror2 = 0.;
 
-  int ipt[2]    = {0.,0.};
-  int iptMerged[2]    = {0.,0.};
-  int ierror[2] = {0.,0.};
+  int ipt[2]    = {0,0};
+  int iptMerged[2]    = {0,0};
+  int ierror[2] = {0,0};
 
   Int_t check = 0;
   Double_t pTgen, pTrec;
@@ -1087,12 +1087,7 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *h
   //x-axis: generated
   //y-axis: reconstructed
 
-  if(fDebug>0) printf(">>AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency)");
-
-  if(!hEfficiency) {
-    printf("Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function. Aborting!");
-    return 0;
-  }
+  if(fDebug>0) printf(">>AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency)\n");
 
   TH1D *hRec = hResponse->ProjectionY("hRec");
   hRec->Sumw2();
@@ -1112,17 +1107,20 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *h
     //get pTMC
     sumYield = 0.;
     double pTMC = hResponse->GetXaxis()->GetBinCenter(igen);
-    int binEff = hEfficiency->FindBin(pTMC);
-    if(fEffFlat>0.)
-      eff = fEffFlat;
-    else
+    if(hEfficiency) { 
+      int binEff = hEfficiency->FindBin(pTMC);
       eff = hEfficiency->GetBinContent(binEff);
-    yieldMC = fGen->Eval(pTMC)*eff;
+    }
+    else eff = 1.;
+    // yieldMC = fGen->Eval(pTMC)*eff;
+    yieldMC = fGen->Integral(hResponse->GetXaxis()->GetBinLowEdge(igen),hResponse->GetXaxis()->GetBinUpEdge(igen))*eff;
     for(int irec=1; irec<=hResponse->GetNbinsY(); irec++) {
       hRec->AddBinContent(irec,yieldMC*hResponse->GetBinContent(igen,irec));
       sumYield+=hResponse->GetBinContent(igen,irec);
     }
-    cout << "igen: " << igen << "\tpTMC: " << pTMC << "\tsumYield: " << sumYield << endl;
+    //    cout << "igen: " << igen << "\tpTMC: " << pTMC << "\tsumYield: " << sumYield << endl;
+    //    cout << "yieldMC: " << yieldMC << endl;
+    
   }
 
   return hRec;
