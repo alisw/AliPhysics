@@ -27,6 +27,8 @@
 #include "AliAnalysisTaskNetParticle.h"
 #include "AliGenEventHeader.h"
 #include "AliCentrality.h"
+#include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
 
 using namespace std;
 
@@ -63,7 +65,11 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
   fESDTrackCutsBkg(NULL),
   fESDTrackCutsEff(NULL),
 
+  fAOD(NULL), 
+  fAODHandler(NULL),
+
   fIsMC(kFALSE),
+  fIsAOD(kFALSE),
   fESDTrackCutMode(0),
   fModeEffCreation(0),
   fModeDCACreation(0),
@@ -77,7 +83,9 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
 
   fEtaMax(0.9),
   fPtRange(new Float_t[2]),
-  fPtRangeEff(new Float_t[2]) {
+  fPtRangeEff(new Float_t[2]),
+
+  fAODtrackCutBit(1024){
   // Constructor   
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskNetParticle",10);
@@ -165,7 +173,7 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // ------------------------------------------------------------------
   // -- Add histograms from efficiency/contamination class
   // ------------------------------------------------------------------
-  if (fIsMC && fModeEffCreation == 1) {
+  if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     fOutListEff->Add(fEffCont->GetHnEff());
     fOutListCont->Add(fEffCont->GetHnCont());
   }
@@ -278,7 +286,7 @@ void AliAnalysisTaskNetParticle::UserExec(Option_t *) {
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   // -- Process Efficiency / Contamination Determination
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  if (fIsMC && fModeEffCreation == 1)
+  if ((fIsMC||fIsAOD) && fModeEffCreation == 1)
     fEffCont->Process();
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -392,9 +400,9 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   // -- Create / Initialize Efficiency/Contamination
   // ------------------------------------------------------------------
-  if (fIsMC && fModeEffCreation == 1) {
+  if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
     fEffCont = new AliAnalysisNetParticleEffCont;
-    fEffCont->Initialize(fESDTrackCutsEff, fHelper);
+    fEffCont->Initialize(fESDTrackCutsEff, fHelper,fAODtrackCutBit);
   }
 
   // ------------------------------------------------------------------
@@ -410,7 +418,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if (fModeDistCreation == 1) {
     fDist = new AliAnalysisNetParticleDistribution;
-    fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax);
+    fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax,fAODtrackCutBit);
   }
 
   // ------------------------------------------------------------------
@@ -438,11 +446,22 @@ Int_t AliAnalysisTaskNetParticle::SetupEvent() {
 
   // -- ESD Event
   // ------------------------------------------------------------------
-  if (SetupESDEvent() < 0) {
-    AliError("Setup ESD Event failed");
-    return -1;
+  if(!fIsAOD){
+    if (SetupESDEvent() < 0) {
+      AliError("Setup ESD Event failed");
+      return -1;
+    }
   }
 
+  // -- AOD Event
+  // ------------------------------------------------------------------
+  else {
+    if (SetupAODEvent() < 0) {
+      AliError("Setup AOD Event failed");
+      return -1;
+    }
+  }
+  
   // -- Setup MC Event
   // ------------------------------------------------------------------
   if (fIsMC && SetupMCEvent() < 0) {
@@ -452,16 +471,19 @@ Int_t AliAnalysisTaskNetParticle::SetupEvent() {
 
   // -- Setup Event for Helper / EffCont  / DCA / Dist classes
   // ------------------------------------------------------------------
-  fHelper->SetupEvent(fESDHandler, fMCEvent);
+  fHelper->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
 
   if (fIsMC && fModeEffCreation)
     fEffCont->SetupEvent(fESDHandler, fMCEvent);
+
+  if (fIsAOD && fModeEffCreation)
+    fEffCont->SetupEvent(fAODHandler);
 
   if (fModeDCACreation == 1)
     fDCA->SetupEvent(fESDHandler, fMCEvent);
 
   if (fModeDistCreation == 1)
-    fDist->SetupEvent(fESDHandler, fMCEvent);
+    fDist->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
 
   // -- Evaluate Event cuts
   // ------------------------------------------------------------------
@@ -504,6 +526,49 @@ Int_t AliAnalysisTaskNetParticle::SetupESDEvent() {
   // -- Check Centrality
   // ------------------------------------------------------------------
   if (!fESD->GetCentrality()) {
+    AliError("Could not get centrality");
+    return -1;
+  }
+
+  return 0;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskNetParticle::SetupAODEvent() {
+  // -- Setup AOD Event
+  // > return 0 for success 
+  // > return -1 for failed setup
+
+  fAODHandler= dynamic_cast<AliAODInputHandler*> 
+    (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!fAODHandler) {
+    AliError("Could not get AOD input handler");
+    return -1;
+  } 
+
+  fAOD = fAODHandler->GetEvent();
+  if (!fAOD) {
+    AliError("Could not get AOD event");
+    return -1;
+  }
+
+  // -- Check PID response
+  // ------------------------------------------------------------------
+  if (!fAODHandler->GetPIDResponse()) {
+    AliError("Could not get PID response");
+    return -1;
+  } 
+
+  // -- Check Vertex
+  // ------------------------------------------------------------------
+  if (!fAOD->GetPrimaryVertex()) {
+    AliError("Could not get primary vertex");
+    return -1;
+  }
+
+  // -- Check Centrality
+  // ------------------------------------------------------------------
+  if (!fAOD->GetHeader()->GetCentralityP()) {
     AliError("Could not get centrality");
     return -1;
   }
@@ -565,6 +630,9 @@ void AliAnalysisTaskNetParticle::ResetEvent() {
   
   // -- Reset ESD Event
   fESD       = NULL;
+
+  // -- Reset ESD Event
+  fAOD       = NULL;
 
   // -- Reset MC Event
   if (fIsMC)

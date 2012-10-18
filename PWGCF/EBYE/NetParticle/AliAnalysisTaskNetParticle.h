@@ -20,6 +20,8 @@
 
 class AliESDEvent;
 class AliESDInputHandler;
+class AliAODEvent;
+class AliAODInputHandler;
 class AliMCEvent;
 class AliStack;
 class AliPIDResponse;
@@ -64,16 +66,20 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
    */
 
   void SetIsMC()                          {fIsMC             = kTRUE;}
+  void SetIsAOD(Bool_t b)                 {fIsAOD            = b;}
   void SetUseQATHnSparse(Bool_t b)        {fUseQATHnSparse   = b;}
   
   void SetESDTrackCutMode(Int_t i)        {fESDTrackCutMode  = i;}
   void SetModeEffCreation(Int_t i)        {fModeEffCreation  = i;}
   void SetModeDCACreation(Int_t i)        {fModeDCACreation  = i;}
   void SetModeDistCreation(Int_t i)       {fModeDistCreation = i;}
+
  
   void SetEtaMax(Float_t f)               {fEtaMax           = f;}
   void SetPtRange(Float_t f1, Float_t f2) {fPtRange[0] = f1; fPtRange[1] = f2;}
   void SetPtRangeEff(Float_t f1, Float_t f2) {fPtRangeEff[0] = f1; fPtRangeEff[1] = f2;}
+
+  void SetTrackFilterBit(Int_t i)         {fAODtrackCutBit   = i;}
 
   /*
    * ---------------------------------------------------------------------------------
@@ -117,6 +123,9 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   /** Setup ESD Event */
   Int_t SetupESDEvent();
 
+  /** Setup AOD Event */
+  Int_t SetupAODEvent();
+
   /** Setup MC Event */
   Int_t SetupMCEvent();
 
@@ -151,10 +160,16 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   AliESDtrackCuts    *fESDTrackCuts;            //! ESD cuts  
   AliESDtrackCuts    *fESDTrackCutsBkg;         //! ESD cuts for Bkg
   AliESDtrackCuts    *fESDTrackCutsEff;         //! ESD cuts for efficiency determination -> larger pt Range
+
+  // --- AOD only ----------------------------------------------------------
+
+  AliAODEvent        *fAOD;                     //! Ptr to AOD event
+  AliAODInputHandler *fAODHandler;              //! Ptr to AOD Handler
   
   // --- Flags -------------------------------------------------------------
 
   Bool_t              fIsMC;                   //  Is MC event
+  Bool_t              fIsAOD;                  //  analysis mode            : 0 = ESDs  | 1 = AODs
   Int_t               fESDTrackCutMode;        //  ESD track cut mode       : 0 = clean | 1 dirty
   Int_t               fModeEffCreation ;       //  Correction creation mode : 1 = on | 0 = off
   Int_t               fModeDCACreation;        //  DCA creation mode        : 1 = on | 0 = off
@@ -175,6 +190,8 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   Float_t             fEtaMax;                 //  Max, absolut eta 
   Float_t            *fPtRange;                //  Array of pt [min,max]
   Float_t            *fPtRangeEff;             //  Array of pt [min,max] for efficiency
+
+  Int_t               fAODtrackCutBit;         //  Track filter bit for AOD tracks
 
   // -----------------------------------------------------------------------
   

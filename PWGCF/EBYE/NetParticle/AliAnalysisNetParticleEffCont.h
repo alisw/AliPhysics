@@ -15,6 +15,7 @@
 
 class AliESDEvent;
 class AliESDInputHandler;
+class AliAODInputHandler;
 class AliMCEvent;
 
 class AliAnalysisNetParticleEffCont : public TNamed {
@@ -37,10 +38,11 @@ class AliAnalysisNetParticleEffCont : public TNamed {
    */
 
   /** Initialize */
-  void Initialize(AliESDtrackCuts *cuts, AliAnalysisNetParticleHelper* helper);
+  void Initialize(AliESDtrackCuts *cuts, AliAnalysisNetParticleHelper* helper, Int_t trackCutBit);
 
   /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent);
+  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent); 
+  Int_t SetupEvent(AliAODInputHandler *esdHandler); // MC particles are stored in AOD
 
   /** Reset Event */
   void ResetEvent();
@@ -79,12 +81,15 @@ class AliAnalysisNetParticleEffCont : public TNamed {
 
   /** Fill MC labels */
   void FillMCLabels(); 
+  void FillMCLabelsAOD();  
 
   /** Fill efficiency THnSparse */
   void FillMCEffHist();
+  void FillMCEffHistAOD();
 
   /** Check if particle is contamination */
   void CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack);
+  void CheckContTrackAOD(Int_t label, Float_t sign, Int_t idxTrack);
       
   /*
    * ---------------------------------------------------------------------------------
@@ -103,11 +108,18 @@ class AliAnalysisNetParticleEffCont : public TNamed {
   AliESDEvent        *fESD;                   //! ESD object
   AliESDtrackCuts    *fESDTrackCuts;          //! ESD cuts  
 
+  // --- AOD only ----------------------------------------------------------
+
+  AliAODEvent        *fAOD;                   //! AOD object
+  TClonesArray       *fArrayMC;               //! array of MC particles
+
   // -----------------------------------------------------------------------
 
   Float_t             fCentralityBin;         //  Centrality of current event  
   Int_t               fNTracks;               //  N Tracks in the current event
   
+  Int_t               fAODtrackCutBit;        //  Track filter bit for AOD tracks
+
   // --- MC only -----------------------------------------------------------
 
   AliStack           *fStack;                 //! Ptr to stack
