@@ -113,8 +113,8 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
 	return;
     }
 
-    Printf("\ndumping entriesMap (entries'cache) with %d entries!\n", fEntryCache.GetEntries()); 
-    Printf("\ndumping entriesList with %d entries!\n", fIds->GetEntries());
+    AliInfo(Form("Dumping entriesMap (entries'cache) with %d entries!\n", fEntryCache.GetEntries())); 
+    AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
 
     f->cd();                                                                                           
 
@@ -905,6 +905,10 @@ AliCDBEntry* AliCDBManager::GetEntryFromSnapshot(const char* path) {
 
     TString sPath(path);
     sPath.ReplaceAll("/","*");
+    if(!fSnapshotFile){
+	AliError("No snapshot file is open!");
+	return 0;
+    }
     AliCDBEntry *entry = dynamic_cast<AliCDBEntry*>(fSnapshotFile->Get(sPath.Data()));
     if(!entry){
 	AliDebug(2,Form("Cannot get a CDB entry for \"%s\" from snapshot file",path));
