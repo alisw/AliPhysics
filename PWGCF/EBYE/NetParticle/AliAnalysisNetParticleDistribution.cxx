@@ -379,6 +379,10 @@ Int_t AliAnalysisNetParticleDistribution::ProcessAODTracks() {
     // -- Check if accepted
     if(!track->TestFilterBit(fAODtrackCutBit)) 
       continue;
+    
+    // -- Check if in pT and eta range (is done in ESDTrackCuts for ESDs)
+    if(!(track->Pt() > fPtRange[0] && track->Pt() < fPtRange[1] && TMath::Abs(track->Eta()) <= fEtaMax))
+      continue;
 
     // -- Check if accepted in rapidity window
     Double_t yP;
