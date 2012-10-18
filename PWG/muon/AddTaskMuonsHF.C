@@ -1,4 +1,4 @@
-AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_t isTree=kFALSE, Bool_t isSel)
+AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Int_t passN=2, Bool_t isMC=kFALSE, Bool_t isTree=kFALSE, Bool_t isSel=kTRUE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -31,8 +31,8 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_
                           999999.0,   // up limit of vt
                          -999999.0,   // centrality min
                           999999.0};  // centrality max
-  AliMuonTrackCuts *cutsMuon = new AliMuonTrackCuts("cutsMuon", "cutsMuon"); cutsMuon->SetIsMC(isMC);
-  AliMuonPairCuts  *cutsDimu = new  AliMuonPairCuts("cutsDimu", "cutsDimu"); cutsDimu->SetIsMC(isMC);
+  AliMuonTrackCuts *cutsMuon = new AliMuonTrackCuts("cutsMuon", "cutsMuon"); cutsMuon->SetIsMC(isMC); cutsMuon->SetPassNumber(passN);
+  AliMuonPairCuts  *cutsDimu = new  AliMuonPairCuts("cutsDimu", "cutsDimu"); cutsDimu->SetIsMC(isMC); cutsDimu->GetMuonTrackCuts()->SetPassNumber(passN);
   AliAnalysisTaskSEMuonsHF *taskMuonsHF = new AliAnalysisTaskSEMuonsHF("MuonsHF Analysis Task",*cutsMuon,*cutsDimu);
   taskMuonsHF->SetAnaMode(mode);
   taskMuonsHF->SetUseMC(isMC);
