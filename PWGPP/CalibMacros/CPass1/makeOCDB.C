@@ -55,7 +55,6 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   }
   else {
     targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
-    targetStorage->SetMirrorSEs(mirrorsStr.Data());
   }
   printf("** targetOCDBstorage: \"%s\"\n",targetOCDBstorage.Data());
 
