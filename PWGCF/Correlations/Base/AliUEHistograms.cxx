@@ -706,6 +706,9 @@ void AliUEHistograms::FillFakePt(TObjArray* fake, Double_t centrality)
   TObjArray* tracksReco = (TObjArray*) fake->At(0);
   TObjArray* tracksMC = (TObjArray*) fake->At(1);
   
+  if (tracksReco->GetEntriesFast() != tracksMC->GetEntriesFast())
+    AliFatal(Form("Inconsistent arrays: %d vs %d", tracksReco->GetEntriesFast(), tracksMC->GetEntriesFast()));
+  
   for (Int_t i=0; i<tracksReco->GetEntriesFast(); i++)
   {
     AliVParticle* particle1 = (AliVParticle*) tracksReco->At(i);

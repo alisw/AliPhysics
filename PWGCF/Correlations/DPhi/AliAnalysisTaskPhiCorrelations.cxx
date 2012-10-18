@@ -212,9 +212,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   	}
 
   // Initialize class to handle histograms 
-  const char* histType = "4";
+  const char* histType = "4R";
   if (fUseVtxAxis)
-    histType = "5";
+    histType = "5R";
   fHistos = new AliUEHistograms("AliUEHistogramsSame", histType);
   fHistosMixed = new AliUEHistograms("AliUEHistogramsMixed", histType);
   
