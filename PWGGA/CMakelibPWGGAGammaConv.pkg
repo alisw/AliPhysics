@@ -43,6 +43,7 @@ set ( SRCS
 	GammaConv/AliConversionTrackCuts.cxx
    GammaConv/AliGammaConversionAODBGHandler.cxx
    GammaConv/AliAnalysisTaskConversionQA.cxx
+   GammaConv/AliAnalysisTaskMaterial.cxx
 	GammaConv/AliAnalysisTaskGammaConvDalitz.cxx
 	GammaConv/AliAnalysisTaskPi0v2.cxx
    GammaConv/AliAnalysisTaskGammaConvV1.cxx
