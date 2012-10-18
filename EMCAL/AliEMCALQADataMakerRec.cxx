@@ -518,7 +518,7 @@ void AliEMCALQADataMakerRec::InitRaws()
  TProfile2D *hS0 = new TProfile2D("hL1Amp", "Mean STU signal per Row and Column", nSTUCols, -0.5, nSTUCols-0.5, nSTURows, -0.5, nSTURows-0.5);
  Add2RawsList(hS0, kAmpL1, expert, !image, !saveCorr) ;
 	
- TH2F *hS1 = new TH2F("hL1Gamma", "L1 Gamma patch position (FastOR top-left)", nSTUCols, -0.50, nSTUCols-0.5, nSTURows, -0.5, nSTURows-0.5);
+ TH2F *hS1 = new TH2F("hL1Gamma", "L1 Gamma patch position (FastOR top-left)", nSTUCols, -0.50, nSTUCols-0.5, nSTURows + 5, -0.5, nSTURows-0.5 + 5); //+5 for better visible error box
  Add2RawsList(hS1, kGL1, !expert, image, !saveCorr) ;
 	
  TH2F *hS2 = new TH2F("hL1Jet", "L1 Jet patch position (FastOR top-left)", 12, -0.5, nSTUCols-0.5, 16, 0, nSTURows-0.5);

@@ -45,8 +45,11 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
+#include "AliQAThresholds.h"
 #include "AliEMCALQAChecker.h"
 
 ClassImp(AliEMCALQAChecker)
@@ -83,7 +86,7 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 	}
 
 	for(int i = 0; i < 3; i++) {
-		fTextL1[i] = new TPaveText(0.2,0.7,0.8,0.9,"NDC");
+		fTextL1[i] = new TPaveText(0.2,0.8,0.8,0.9,"NDC");
 	}
 
 
@@ -158,7 +161,39 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
   //adding new checking method: 25/04/2010, Yaxian Mao
   //Comparing the amplitude from current run to the reference run, if the ratio in the range [0.8, .12], count as a good tower.
   //If more than 90% towers are good, EMCAL works fine, otherwise experts should be contacted. 
-   				
+
+
+  // Retrieve the thresholds
+  Float_t ratioThresh = 0.9;   // threshold for calibration ratio = good towers/all towers (default 0.9)
+  Float_t ThreshG     = 0.5;   // threshold for L1 Gamma triggers (default 0.5)
+  Float_t ThreshJ     = 0.5;   // threshold for L1 Jet triggers (default 0.5)
+  Int_t badLinkThresh = 1;     // threshold for bad links (default 1)
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if(man){
+    AliCDBEntry* entry = man->Get("GRP/Calib/QAThresholds");
+    if(entry){
+      TObjArray* branch = (TObjArray*) entry->GetObject();
+      if(branch){
+	AliQAThresholds* thresholds = (AliQAThresholds*) branch->FindObject("EMC");
+	if(thresholds){
+	  TParameter<float>* ParamR  = (TParameter<float>*) thresholds->GetThreshold(0);
+	  TParameter<float>* ParamG  = (TParameter<float>*) thresholds->GetThreshold(1);
+	  TParameter<float>* ParamJ  = (TParameter<float>*) thresholds->GetThreshold(2);
+	  TParameter<int>* ParamL  = (TParameter<int>*) thresholds->GetThreshold(3);
+	  if(ParamR)
+	    ratioThresh = ParamR->GetVal();
+	  if(ParamG)
+	    ThreshG = ParamG->GetVal();
+	  if(ParamJ)
+	    ThreshJ = ParamJ->GetVal();
+	  if(ParamL)
+	    badLinkThresh = ParamL->GetVal();
+	}
+      }
+    }
+  }
+  
   Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
   Double_t nTot = fgknSM * nTowersPerSM ;
   TList *lstF = 0;
@@ -212,14 +247,14 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 					fText->Clear() ; 
         
 					fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
-					if (rv < 0.9) {
-						test[specie] = 0.9 ;
+					if (rv < ratioThresh) {
+						test[specie] = ratioThresh;
 						// 2 lines text info for quality         
 						fText->SetFillColor(2) ;
 						fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
 					}
 					else {
-						test[specie] = 0.1 ;
+						test[specie] = 1 - ratioThresh;
 						fText->SetFillColor(3) ;
 						fText->AddText(Form("EMCAL = OK, ENJOY...")); 
 					}
@@ -233,42 +268,75 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 				CleanListOfFunctions(lstF);
 
 
-				//Checker for L1GammaPatch (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
-				Double_t dL1GmeanTrig = 1/2961.; 
-				Int_t sigmaG = 100; // deviation from mean value (increased to 100)
+				// Checker for L1GammaPatch 
+				//Double_t dL1GmeanTrig    = 1./2961.; 
+				//Double_t dL1GmeanTrigTRU = 1./32.; 
+				//Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
+				//Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
 				Double_t dL1GEntries = hL1GammaPatch->GetEntries();
-				Int_t badL1G[48][64] = {{0}} ;
-				Int_t nBadL1G = 0;
+				Int_t badL1G[48][64]   = {{0}} ;
+				Int_t badL1GTRU[2][16] = {{0}} ;
+				Int_t nBadL1G    = 0;
+				Int_t nBadL1GTRU = 0;
+				Double_t binContentTRU[2][16] = {{0.}};
 				for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
-					for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
-						Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
-						if (binContent != 0) {
-							if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
-								badL1G[ix-1][iy-1] += 1;
-								nBadL1G += 1;
-							}
-						}
-					}
+				  for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
+				    Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
+				    if (binContent != 0) {
+				      
+				      // fill counter for TRUs
+				      binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;
+				      
+				      // OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
+				      // if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
+				      // 	badL1G[ix-1][iy-1] += 1;
+				      // 	nBadL1G += 1;
+				      // }
+
+				      // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+				      // Thresold = how much does the noisy tower/TRU contribute to the rate
+				      //            1.0 --> Rate of noisy tower/TRU = Rate of all other towers/TRUs  
+				      if (binContent/dL1GEntries > ThreshG / ( 1 + ThreshG )) {
+					badL1G[ix-1][iy-1] += 1;
+					nBadL1G += 1;
+				      }
+				    }
+				  }
 				}
 
+				// check TRUs
+				for(Int_t ix = 1; ix <=  2; ix++) {
+				  for(Int_t iy = 1; iy <=  16; iy++) {
+				    if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {
+				      badL1GTRU[ix-1][iy-1] += 1;
+				      nBadL1GTRU += 1;
+				    }
+				  }
+				}
+				
 				if(fTextL1[0]){
 					lstF->Add(fTextL1[0]->Clone()) ;
 					fTextL1[0]->Clear() ; 
 
-					if (nBadL1G == 0) {
+					if (nBadL1G == 0 && nBadL1GTRU == 0 ) {
 						fTextL1[0]->SetFillColor(3) ;
 						fTextL1[0]->AddText(Form("L1 GAMMA TRIGGER = OK, ENJOY...")); 
 					}
-					else {
+					else if (nBadL1G == 0){
 						fTextL1[0]->SetFillColor(2) ;
-						fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER = CALL EXPERT!!"));
-/*
-						for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
-							for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
+						fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER (TRU) = CALL EXPERT!!"));
+						
+					}
+					else{
+					  fTextL1[0]->SetFillColor(2) ;
+					  fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER = CALL EXPERT!!"));
+					  /*
+					    for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
+					    for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
 								if(badL1G[ix-1][iy-1] != 0) printf("L1 Gamma patch with position x = %d, y = %d is out of range\n",ix,iy);
-							}
-						}
-*/
+								}
+								}
+					  */
 					}
 				}//fTextL1[0]
 			}// L1 gamma patch checking done
@@ -277,24 +345,33 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 				lstF = hL1JetPatch->GetListOfFunctions();
 				CleanListOfFunctions(lstF);
 			
-				//Checker for L1JetPatch (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
-				Double_t dL1JmeanTrig = 1/126.;
-				Int_t sigmaJ = 5; // deviation from  mean value
+				// Checker for L1JetPatch
+				//Double_t dL1JmeanTrig = 1/126.;
+				//Int_t sigmaJ = 5; // deviation from  mean value
 				Double_t dL1JEntries = hL1JetPatch->GetEntries();
 				Int_t badL1J[12][16] = {{0}} ;
 				Int_t nBadL1J = 0;
 				for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
-					for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
-						Double_t binContent = hL1JetPatch->GetBinContent(ix, iy) ; 
-						if (binContent != 0) {
-							if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
-								badL1J[ix-1][iy-1] += 1 ;
-								nBadL1J += 1;
-							}
-						}
-					}
-				}
+				  for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
+				    Double_t binContent = hL1JetPatch->GetBinContent(ix, iy) ; 
+				    if (binContent != 0) {
+				      
+				      // OLD METHOD  (if a patch triggers > sigmaJ * mean value (1/#patch positions total) says "hot spot !")
+				      // if ((double)binContent/(double)dL1JEntries > sigmaJ*dL1JmeanTrig) {
+				      // 	badL1J[ix-1][iy-1] += 1 ;
+				      // 	nBadL1J += 1;
+				      // }
 
+				      // NEW METHOD (if Rate > Threshold * ( (Number of towers or TRUs * Average rate) - Rate ) --> "hot spot !")
+				      // Threshold: same definitionas for Gamma
+				       if ((double)binContent/(double)dL1JEntries > ThreshJ / ( 1 + ThreshJ )) {
+				       	badL1J[ix-1][iy-1] += 1 ;
+				       	nBadL1J += 1;
+				       }
+				    }
+				  }
+				}
+				
 				if(fTextL1[1]){
 					lstF->Add(fTextL1[1]->Clone()) ;
 					fTextL1[1]->Clear() ; 
@@ -336,7 +413,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 					lstF->Add(fTextL1[2]->Clone()) ;
 					fTextL1[2]->Clear() ; 
 	
-				if (nBadLink == 0) {
+				if (nBadLink < badLinkThresh) {
 						fTextL1[2]->SetFillColor(3) ;
 						fTextL1[2]->AddText(Form("LINK TRU-STU = OK, ENJOY...")); 
 					}
