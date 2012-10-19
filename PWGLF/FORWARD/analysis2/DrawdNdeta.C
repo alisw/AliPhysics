@@ -298,6 +298,8 @@ struct dNdetaDrawer
       Error("Open", "Cannot open %s", filename);
       return;
     }
+    Info("Open", "Drawing results from %s", file->GetName());
+
     // --- Get forward list ------------------------------------------
     TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
     if (!forward) { 
@@ -309,7 +311,7 @@ struct dNdetaDrawer
     // --- Set the macro pathand load other data script --------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
-    gROOT->LoadMacro("OtherData.C");
+    gROOT->LoadMacro("OtherData.C+");
 
     // --- Get the central results -----------------------------------
     TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
@@ -327,7 +329,7 @@ struct dNdetaDrawer
 
     // --- Try to open the final MC file, and find relevant lists ----
     TList* forwardMC = 0;
-    TList* centralMC = 0;
+    // TList* centralMC = 0;
     if (!fFinalMC.IsNull()) { 
       TFile* finalMC = TFile::Open(fFinalMC, "READ");
       if (!finalMC) { 
@@ -338,9 +340,11 @@ struct dNdetaDrawer
 	forwardMC = static_cast<TList*>(finalMC->Get("ForwardResults"));
 	if (!forwardMC) 
 	  Warning("Open", "Couldn't find list ForwardResults for final MC");
+#if 0
 	centralMC = static_cast<TList*>(finalMC->Get("CentralResults"));
-	if (!forwardMC) 
+	if (!centralMC) 
 	  Warning("Open", "Couldn't find list CentralResults for final MC");
+#endif
       }
     }
     if (!forwardMC) fFinalMC = "";
@@ -350,7 +354,9 @@ struct dNdetaDrawer
     if (!fEmpirical.IsNull()) {
       TFile* empirical = TFile::Open(fEmpirical, "READ");
       if (!empirical) { 
-	empirical = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/Empirical/%s", fEmpirical.Data()));
+	// Notice the spelling error!
+	empirical = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
+				     "Emperical/%s", fEmpirical.Data()));
       }
       if (empirical) { 
 	empCorr = static_cast<TGraphErrors*>(empirical->Get("average"));
@@ -493,7 +499,7 @@ struct dNdetaDrawer
     }
     Info("FetchInformation", 
 	 "Initialized for\n"
-	 "   Trigger:       %-30s  (%d)\n"
+	 "   Trigger:       %-30s  (0x%x)\n"
 	 "   sqrt(sNN):     %-30s  (%dGeV)\n"
 	 "   System:        %-30s  (%d)\n"
 	 "   Vz range:      %-30s  (%f,%f)\n"
@@ -506,6 +512,14 @@ struct dNdetaDrawer
 	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
 	 fNormString->GetTitle(), fNormString->GetUniqueID(),
 	 centTxt.Data(), (options ? options->GetTitle() : "none"));
+    if (fSysString->GetUniqueID() == 3) {
+      Info("FetchResults", "Left/Right assymmetry, mirror, and systematic "
+	   "errors explicitly disabled for pPb");
+      fShowLeftRight = false;
+      fMirror        = false;
+      fFwdSysErr     = 0;
+      fCenSysErr     = 0;
+    }
   }
   //__________________________________________________________________
   TMultiGraph* FetchOthers(UShort_t centLow, UShort_t centHigh)
@@ -697,6 +711,8 @@ struct dNdetaDrawer
 		"Didn't find the list '%s' in %s for final MC correction", 
 		folderName, mcList->GetName());
     }
+    TObject* normCalc = folder->FindObject("normCalc");
+    if (normCalc) Info("FetchOne", "%s:\n%s", folderName, normCalc->GetTitle());
     TH1* h = FetchResults(folder, mcFolder, empCorr, name, 
 			  others, col, txt, max, rmax, amax, truth);
     return h;
@@ -906,6 +922,8 @@ struct dNdetaDrawer
     trg          = trg.Strip(TString::kBoth);
     trg.ReplaceAll(" ", "_");
     trg.ReplaceAll(">", "Gt");
+    trg.ReplaceAll("&", "AND");
+    trg.ReplaceAll("|", "OR");
     TString base(Form("dndeta_%s_%s_%s_%c%02d%c%02dcm_%09dev",
 		      fSysString->GetTitle(), 
 		      fSNNString->GetTitle(), 
@@ -2278,32 +2296,42 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 void
 Usage()
 {
-  Info("DrawdNdeta", "Usage: DrawdNdeta(FILE,TITLE,REBIN,OTHERS,FLAGS)\n\n"
-       "  const char* FILE   File name to open (\"forward_root\")\n"
-       "  const char* TITLE  Title to put on plot (\"\")\n"
-       "  UShort_t    REBIN  Rebinning factor (1)\n"
-       "  UShort_t    OTHERS Other data to draw - more below (0x7)\n"
-       "  UShort_t    FLAGS  Visualisation flags - more below (0x7)\n\n"
-       " OTHERS is a bit mask of\n\n"
-       "  0x1   Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
-       "  0x2   Show CMS data (NSD, pp)\n"
-       "  0x4   Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
-       "  0x8   Show event genertor data\n\n"
-       " FLAGS is a bit mask of\n\n"
-       "  0x1   Show ratios of data to other data and possibly MC\n"
-       "  0x2   Show left-right asymmetry\n"
-       "  0x4   Show systematic error band\n"
-       "  0x8   Show individual ring results (INEL only)\n"
-       "  0x10  Cut edges when rebinning\n"
-       "  0x20  Remove FMDxO points\n"
-       "  0x40  Do not make our own canvas\n"
-       "  0x80  Force use of MB\n"
-       "  0x100 Mirror data\n"
-       "  0x200 Apply `final MC' correction\n"
-       "  0x400 Apply `Emperical' correction\n\n"
-       "0x200 requires the file forward_dndetamc.root\n"
-       "0x400 requires the file EmpiricalCorrection.root\n"
-       );
+  printf("Usage: DrawdNdeta(FILE,TITLE,REBIN,OTHERS,FLAGS,"
+	 "SNN,SYS,TRIG,IPZMIN,IPZMAX)\n\n"
+	 "  const char* FILE   File name to open (\"forward_dndeta.root\")\n"
+	 "  const char* TITLE  Title to put on plot (\"\")\n"
+	 "  UShort_t    REBIN  Rebinning factor (1)\n"
+	 "  UShort_t    OTHERS Other data to draw - more below (0x7)\n"
+	 "  UShort_t    FLAGS  Visualisation flags - more below (0x7)\n"
+	 "  UShort_t    SYS    (optional) 1:pp, 2:PbPb, 3:pPb\n"
+	 "  UShort_t    SNN    (optional) sqrt(s_NN) in GeV\n"
+	 "  UShort_t    TRIG   (optional) 1: INEL, 2: INEL>0, 4: NSD, ...\n"
+	 "  Float_t     IPZMIN (optional) Least z coordinate of IP\n"
+	 "  Float_t     IPZMAX (optional) Largest z coordinate of IP\n\n"
+	 " OTHERS is a bit mask of\n\n"
+	 "  0x1   Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
+	 "  0x2   Show CMS data (NSD, pp)\n"
+	 "  0x4   Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
+	 "  0x8   Show event genertor data\n\n"
+	 " FLAGS is a bit mask of\n\n"
+	 "  0x1   Show ratios of data to other data and possibly MC\n"
+	 "  0x2   Show left-right asymmetry\n"
+	 "  0x4   Show systematic error band\n"
+	 "  0x8   Show individual ring results (INEL only)\n"
+	 "  0x10  Cut edges when rebinning\n"
+	 "  0x20  Remove FMDxO points\n"
+	 "  0x40  Do not make our own canvas\n"
+	 "  0x80  Force use of MB\n"
+	 "  0x100 Mirror data\n"
+	 "  0x200 Apply `final MC' correction\n"
+	 "  0x400 Apply `Emperical' correction\n"
+	 "  0x800 Export results to script\n\n"
+	 "0x200 requires the file forward_dndetamc.root\n"
+	 "0x400 requires the file EmpiricalCorrection.root\n"
+	 "To specify that you want ratios, force MB, apply empirical "
+	 "correction, and export to script, set flags to\n\n"
+	 "  0x1|0x80|0x400|0x800=0xC81\n\n"
+	 );
 }
 
 //____________________________________________________________________
@@ -2358,6 +2386,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetMirror(flags & 0x100);
   d.SetFinalMC(flags & 0x200 ? "forward_dndetamc.root" : "");
   d.SetEmpirical(flags & 0x400 ? "EmpiricalCorrection.root" : "");
+  d.SetExport(flags & 0x800);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
