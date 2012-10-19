@@ -36,4 +36,10 @@
 
 #pragma link C++ class AliAnalysisTaskPIDFluctuation+;
 
+#pragma link C++ class AliAnalysisNetParticleDCA+;
+#pragma link C++ class AliAnalysisNetParticleDistribution+;
+#pragma link C++ class AliAnalysisNetParticleEffCont+;
+#pragma link C++ class AliAnalysisNetParticleHelper+;
+#pragma link C++ class AliAnalysisTaskNetParticle+;
+
 #endif

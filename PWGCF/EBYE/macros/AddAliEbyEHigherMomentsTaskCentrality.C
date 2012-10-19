@@ -22,6 +22,7 @@ AliAnalysisTask* AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
 						       Double_t pth,
 						       Double_t eta,
 						       Int_t    nclus,
+						       Double_t chi2ndf,
 						       Int_t AODfilterBit, 
 						       const char* centralityEstimator,
 						       Bool_t trigger = kFALSE,
@@ -55,6 +56,7 @@ AliAnalysisTask* AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
   taskHM->SetPtRange(ptl,pth);
   taskHM->SetEta(eta);
   taskHM->SetTPCNclus(nclus);
+  taskHM->SetChi2PerNDF(chi2ndf);
   taskHM->SetAODtrackCutBit(AODfilterBit);
   if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
