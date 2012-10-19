@@ -342,6 +342,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   nbin           = 0;
   b              = -1;
   c              = -1;
+  phiR           = -1111;
   if (colGeometry) { 
     b     = colGeometry->ImpactParameter();
     phi   = colGeometry->ReactionPlaneAngle();
@@ -410,6 +411,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
       else if (phi > 2*TMath::Pi()) phi -= 2*TMath::Pi();
       else                          break;
     }
+    phiR = phi;
   }
 
   // Do a check on particles
