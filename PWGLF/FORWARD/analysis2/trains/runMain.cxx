@@ -159,7 +159,8 @@ void AppendPath(const char* dir)
  */
 void PrintFakeOption(std::ostream& o, const char* opt, const char* desc)
 {
-  o << "  --" << std::left << std::setw(30) << opt << " " << desc << std::endl;
+  o << "  --" << std::left << std::setw(30) << opt << " " << desc 
+    << std::right << std::endl;
 }
 
 /** 
