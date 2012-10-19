@@ -847,7 +847,8 @@ protected:
   //------------------------------------------------------------------
   static void PrintFieldName(std::ostream& o, const char* name)
   {
-    o << "  " << std::left << std::setw(25) << name << ": " << std::flush;
+    o << "  " << std::left << std::setw(25) << name << ": " 
+      << std::right << std::flush;
   }
   //------------------------------------------------------------------
   static void PrintFieldList(std::ostream& o, const char* name, 
@@ -2438,12 +2439,13 @@ protected:
     }
     
     TGridCollection* collection = reinterpret_cast<TGridCollection*>(ret);
+#if 0
     if (!collection) { 
       Error("CreateChainFromXML", "Cannot create AliEn collection from "
 	    "XML file %s", xmlFile);
       return 0;
     }
-
+#endif
     TChain* chain = new TChain(treeName);
     collection->Reset();
     while (collection->Next()) chain->Add(collection->GetTURL(""));
@@ -2614,7 +2616,7 @@ public:
       o << "  " << std::left << std::setw(30) << fName << ": ";
       if (fArg.IsNull()) o << (IsSet() ? "true" : "false");
       else               o << fValue;
-      o << std::endl;
+      o << std::right << std::endl;
     }
     /** 
      * Save the setting 
