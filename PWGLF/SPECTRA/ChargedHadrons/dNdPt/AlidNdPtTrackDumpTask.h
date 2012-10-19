@@ -103,6 +103,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   TList* fOutput;       //! list send on output slot 0
   TIterator *fPitList;  //! iterator over the output objetcs  
 
+
   Bool_t fUseMCInfo;        // use MC information
   Bool_t fUseESDfriends;        // use esd friends
 
@@ -122,7 +123,14 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Double_t fProcessAll; // Calculate all track properties including MC
   
   Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
-  
+
+  TTree* fTree1;       //! list send on output slot 0
+  TTree* fTree2;       //! list send on output slot 0
+  TTree* fTree3;       //! list send on output slot 0
+  TTree* fTree4;       //! list send on output slot 0
+  TTree* fTree5;       //! list send on output slot 0
+  TTree* fTree6;       //! list send on output slot 0
+
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented
