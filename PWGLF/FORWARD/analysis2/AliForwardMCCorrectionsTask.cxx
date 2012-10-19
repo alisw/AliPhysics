@@ -379,19 +379,19 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
   }
 
   // Some variables 
-  UInt_t   triggers; // Trigger bits
-  Bool_t   lowFlux;  // Low flux flag
-  UShort_t iVz;      // Vertex bin from ESD
-  Double_t vZ;       // Z coordinate from ESD
-  Double_t cent;     // Centrality 
-  UShort_t iVzMc;    // Vertex bin from MC
-  Double_t vZMc;     // Z coordinate of IP vertex from MC
-  Double_t b;        // Impact parameter
-  Double_t cMC;      // Centrality estimate from b
-  Int_t    nPart;    // Number of participants 
-  Int_t    nBin;     // Number of binary collisions 
-  Double_t phiR;     // Reaction plane from MC
-  UShort_t nClusters;// Number of SPD clusters 
+  UInt_t   triggers  = 0;    // Trigger bits
+  Bool_t   lowFlux   = true; // Low flux flag
+  UShort_t iVz       = 0;    // Vertex bin from ESD
+  Double_t vZ        = 1000; // Z coordinate from ESD
+  Double_t cent      = -1;   // Centrality 
+  UShort_t iVzMc     = 0;    // Vertex bin from MC
+  Double_t vZMc      = 1000; // Z coordinate of IP vertex from MC
+  Double_t b         = -1;   // Impact parameter
+  Double_t cMC       = -1;   // Centrality estimate from b
+  Int_t    nPart     = -1;   // Number of participants 
+  Int_t    nBin      = -1;   // Number of binary collisions 
+  Double_t phiR      = 100;  // Reaction plane from MC
+  UShort_t nClusters = 0;    // Number of SPD clusters 
   // Process the data 
   UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, 
 				     cent, nClusters);
