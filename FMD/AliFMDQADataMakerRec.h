@@ -21,6 +21,9 @@ class AliFMDReconstructor;
 class AliFMDQADataMakerRec: public AliQADataMakerRec 
 {
 public:
+  enum { 
+    kResetBit = BIT(23)
+  };
   /** 
    * Constructor
    */

@@ -195,8 +195,6 @@ protected:
    * @param low   Lower bound on fit range 
    * @param high  Upper bound on fit range 
    */
-  void AddFitResults(TH1* hist, const TFitResultPtr& res, Int_t color,
-		     Double_t low, Double_t high) const;
   UShort_t CheckFit(TH1* hist, const TFitResultPtr& res, 
 		    Double_t low, Double_t high, Int_t& color) const;
   Bool_t   fDoScale;           // Whether to scale all histograms 
@@ -209,8 +207,12 @@ protected:
   Int_t    fELossMinEntries;   // Least number of entries before fitting
   Int_t    fELossMaxEntries;   // Maximum number of entries before clear
   Double_t fELossGoodParError; // Least relative error
+  Double_t fELossMinSharing;   // Least to consider for sharing fit
   Double_t fROErrorsBad;       // Cut on read-out errors 
   Double_t fROErrorsFkup;      // Cut on read-out errors 
+  Int_t    fMaxNProblem;       // Maximum number of problematic fits
+  Int_t    fMaxNBad;           // Maximum number of bad fits
+  Bool_t   fNoFits;            // If true, do not fit at all 
 private:
   /** 
    * Copy constructor - not implemented 
@@ -227,7 +229,7 @@ private:
    */
   AliFMDQAChecker& operator=(const AliFMDQAChecker& qac); 
 
-  ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
+  ClassDef(AliFMDQAChecker,0)  // Checker of FMD data quality 
 };
 
 #endif // AliFMDQAChecker_H

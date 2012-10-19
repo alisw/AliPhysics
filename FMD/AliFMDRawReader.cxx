@@ -128,7 +128,7 @@ AliFMDRawReader::AddError(Int_t ddl, Int_t hwaddr)
 {
   Int_t nErr = fErrors.GetEntries();
   TObject* o = new (fErrors[nErr]) TObject;
-  o->SetUniqueID((ddl & 0xFF) << 12 & (hwaddr & 0xFFF));
+  o->SetUniqueID((ddl & 0xFF) << 12 | (hwaddr & 0xFFF));
 }
 //____________________________________________________________________
 void
@@ -731,8 +731,8 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	} // for (i)
       } // while (bunch)
       if (errors) { 
-	AliWarning(Form("Channel %3d/0x%03x contain errors, "
-			"resetting index %d to %d", ddl, hwaddr, first, last));
+	AliDebugF(2,"Channel %3d/0x%03x contain errors, "
+		  "resetting index %d to %d", ddl, hwaddr, first, last);
 	if (first >= 0) {
 	  for (Int_t i = first; i <= last; i++) { 
 	    AliFMDDigit* digit = static_cast<AliFMDDigit*>(array->At(i));
@@ -838,8 +838,8 @@ AliFMDRawReader::ReadAdcs(AliFMDUShortMap& map)
 	} // for (i)
       } // while (bunch)
       if (errors) { 
-	AliWarning(Form("Channel %3d/0x%03x contain errors, "
-			"resetting strips %d to %d", ddl, hwaddr, first, last));
+	AliDebugF(2, "Channel %3d/0x%03x contain errors, "
+		  "resetting strips %d to %d", ddl, hwaddr, first, last);
 	if (first >= 0) {
 	  Int_t ds = first <= last ? 1 : -1;
 	  for (Int_t i = first; i != last+ds; i += ds) { 

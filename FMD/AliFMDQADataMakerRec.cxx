@@ -94,6 +94,7 @@ AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm )
   // Return:
   //    Reference to this
   //
+  if (&qadm == this) return *this;
   fRecPointsArray   = qadm.fRecPointsArray;
   fReconstructor    = qadm.fReconstructor;
   fUseReconstructor = qadm.fUseReconstructor;
@@ -226,9 +227,9 @@ void AliFMDQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir  
   Info("InitRaws", "Initializing Raws");
-  const Bool_t expert   = kTRUE ; 
-  const Bool_t saveCorr = kTRUE ; 
-  const Bool_t image    = kTRUE ; 
+  const Bool_t expert   = kTRUE ; // Flag - not the setting
+  const Bool_t saveCorr = kTRUE ; // Flag - not setting
+  const Bool_t image    = kTRUE ; // Flag - not the setting
   TH2I* hErrors = new TH2I("readoutErrors", "Read out errors", 3, .5, 3.5,
 			   160, -.5, 159.5); 
   hErrors->GetXaxis()->SetBinLabel(1, "FMD1");
@@ -255,11 +256,11 @@ void AliFMDQADataMakerRec::InitRaws()
     // AliLog::SetModuleDebugLevel("FMD", oldDbg);
   }
 
-  TH2* status = new TH2D("status", "Status per cycle", 
+  TH2* status = new TH2D("status", "Fit status per cycle", 
 			  5, .5, 5.5, 4, -.5, 3.5);
   status->SetDirectory(0);
-  status->SetXTitle("Detector");
-  status->SetYTitle("Status");
+  // status->SetXTitle("Detector");
+  // status->SetYTitle("Status");
   status->SetZTitle("N_{cycles} [LOG]");
   status->GetXaxis()->SetBinLabel(1, "FMD1i");
   status->GetXaxis()->SetBinLabel(2, "FMD2i");
@@ -270,6 +271,8 @@ void AliFMDQADataMakerRec::InitRaws()
   status->GetYaxis()->SetBinLabel(2, "Problem");
   status->GetYaxis()->SetBinLabel(3, "Bad");
   status->GetYaxis()->SetBinLabel(4, "What the ...?");
+  status->GetXaxis()->SetLabelSize(0.16);
+  status->GetYaxis()->SetLabelSize(0.16);
   status->SetStats(0);
   Add2RawsList(status, GetHalfringIndex(4, 'i', 0, 0), 
 	       !expert, image, !saveCorr);
@@ -536,11 +539,11 @@ void AliFMDQADataMakerRec::StartOfDetectorCycle()
       while ((object = nextObject())) { 
 	if (!object->InheritsFrom(TH1::Class())) continue;
 	TH1* hist = static_cast<TH1*>(object);
-	if (!hist->TestBit(BIT(23))) continue;
+	if (!hist->TestBit(kResetBit)) continue;
 	
 	AliInfoF("Resetting histogram %s", hist->GetName());
 	hist->Reset("M");
-	hist->SetBit(BIT(23), false);
+	hist->SetBit(kResetBit, false);
       }
     }
   }

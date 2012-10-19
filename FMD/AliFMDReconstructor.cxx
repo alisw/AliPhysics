@@ -555,7 +555,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   //    adc     ADC counts
   // 
   if (adc >= AliFMDRawReader::kBadSignal) { 
-    AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is marked bad", det, rng, sec, str));
+    AliFMDDebug(3, ("FMD%d%c[%2d,%3d] is marked bad", det, rng, sec, str));
     fBad(det,rng,sec,str) = true;
     return;
   }
@@ -563,7 +563,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   // Check that the strip is not marked as dead 
   AliFMDParameters* param  = AliFMDParameters::Instance();
   if (param->IsDead(det, rng, sec, str)) {
-    AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    AliFMDDebug(3, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
     fBad(det,rng,sec,str) = true;
     return;
   }
