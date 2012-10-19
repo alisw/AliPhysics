@@ -18,6 +18,7 @@
 #include <TClonesArray.h>
 #include <TBtree.h>
 
+#define _ROWWISE_SORT_
 
 class AliITSUSensMap: public TObject 
 {
@@ -49,7 +50,7 @@ class AliITSUSensMap: public TObject
   TObject* GetFree()                             {return (*fItems)[fItems->GetEntriesFast()];}
   //
   void   GetCell(UInt_t index,UInt_t &i,UInt_t &j) const;
-  UInt_t GetIndex(UInt_t i,UInt_t j)       const  {return j+i*fDim1;}
+  UInt_t GetIndex(UInt_t i,UInt_t j)       const;
   //
   TClonesArray* GetItems()                 const {return fItems;}
   TBtree*       GetItemsBTree()            const {return fBTree;}
@@ -71,4 +72,15 @@ class AliITSUSensMap: public TObject
   //
   ClassDef(AliITSUSensMap,1) // list of sensor signals (should be sortable objects)
 };	
+
+inline UInt_t AliITSUSensMap::GetIndex(UInt_t i,UInt_t j) const  
+{
+  // linearized ID of digit
+#ifdef _ROWWISE_SORT_
+  return j*fDim0+i; // sorted in row, then in column
+#else
+  return j+i*fDim1; // sorted in column, then in row
+#endif
+}
+
 #endif

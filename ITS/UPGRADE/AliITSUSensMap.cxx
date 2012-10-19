@@ -133,7 +133,13 @@ void AliITSUSensMap::GetCell(UInt_t index,UInt_t &i,UInt_t &j) const
     i=-1;j=-1;
     return;
   } // end if
-  i = index/fDim1;
+#ifdef _ROWWISE_SORT_
+  i = index%fDim0;   // sorted in row, then in column
+  j = index/fDim0;
+#else
+  i = index/fDim1;   // sorted in column, then in row
   j = index%fDim1;
+#endif  
+  //
   return;
 }
