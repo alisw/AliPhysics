@@ -5,6 +5,11 @@
 # The scripts downloads and runs the single run QA in parallel 
 #
 
+# --- Some aux files -------------------------------------------------
+style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
+favicon=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_favicon.png
+logo=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_logo.png
+
 # --- Help output ----------------------------------------------
 usage()
 {
@@ -228,7 +233,7 @@ get_filelist()
     esac
     
     local paid=
-    if test echo "$passno" | grep -q -E '^[0-9]*[.]?[0-9]*$' ; then 
+    if echo "$passno" | grep -q -E '^[0-9]*[.]?[0-9]*$' ; then 
 	if test "x$passfull" != "x" && test $passno -gt 0 ; then 
 	    paid=pass${passno}
 	fi
@@ -572,27 +577,20 @@ top=.
 while test $# -gt 0 ; do 
     case $1 in 
 	-h|--help) usage ; exit 0 ;; 
-	-v|--verbose) let verb=$verb+1 ;; 
-	-j|--jobid)   jobid=$2 ; shift ;; 
-	-m|--max-files) maxf=$2 ; shift ;; 
-	-M|--max-jobs)  maxjobs=$2 ; shift ;;
-	-t|--top)       top=$2 ; shift ;;
-	-R|--also-results) also_results=1 ;; 
-	-Q|--qa-number) qanumber=$2 ; shift ;;
+	-v|--verbose)      let verb=$verb+1   ;; 
+	-j|--jobid)        jobid=$2           ; shift ;; 
+	-m|--max-files)    maxf=$2            ; shift ;; 
+	-M|--max-jobs)     maxjobs=$2         ; shift ;;
+	-t|--top)          top=$2             ; shift ;;
+	-R|--also-results) also_results=1     ;; 
+	-Q|--qa-number)    qanumber=$2        ; shift ;;
+	-l|--log-file)     redir=             ;; 
+	-b|--barrel)       barrel=$2          ; shift ;;
+	-f|--force)        let force=$force+1 ;; 
 	-p|--production) 
-	    prodfull=$2 
-	    shift 
-	    parse_prod 
-	    year=20${prodyear}
-	    ;; 
+	    prodfull=$2; shift; parse_prod ; year=20${prodyear} ;;
 	-P|--pass) 
-	    passfull=$2
-	    shift
-	    parse_pass 
-	    ;;
-	-l|--log-file) redir= ; shift ;; 
-	-b|--barrel) barrel=$2; shift ;;
-	-f|--force) let force=$force+1 ;; 
+	    passfull=$2; shift; parse_pass ;;
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -653,6 +651,7 @@ fi
 
 check_lock ${top}/$store
 
+# --- Some friendly information --------------------------------------
 cat <<EOF
 	Year:			$year
 	Production:		$prodfull 
@@ -703,9 +702,6 @@ EOF
 analyse_runs ${top}/$store $numf $files
 
 # --- Now analyse all runs -------------------------------------------
-style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
-favicon=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_favicon.png
-logo=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_logo.png
 make_trend ${top}/$store
 
 # --- Make index files -----------------------------------------------
