@@ -31,7 +31,7 @@ public:
    * Constructor 
    * 
    */
-  AliCentraldNdetaTask() : AliBasedNdetaTask() {}
+  AliCentraldNdetaTask();
   /** 
    * Constructor
    *
