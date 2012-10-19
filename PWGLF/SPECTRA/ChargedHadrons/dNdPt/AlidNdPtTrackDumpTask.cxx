@@ -86,12 +86,22 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fLowPtV0DownscaligF(0)
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
+  , fTree1(0)
+  , fTree2(0)
+  , fTree3(0)
+  , fTree4(0)
+  , fTree5(0)
+  , fTree6(0)
 {
   // Constructor
 
   // Define input and output slots here
-  DefineOutput(1, TList::Class());
-
+  DefineOutput(1, TTree::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
 }
 
 //_____________________________________________________________________________
@@ -104,6 +114,8 @@ AlidNdPtTrackDumpTask::~AlidNdPtTrackDumpTask()
   if(fdNdPtAcceptanceCuts) delete fdNdPtAcceptanceCuts; fdNdPtAcceptanceCuts=NULL;
   if(fdNdPtRecAcceptanceCuts) delete fdNdPtRecAcceptanceCuts; fdNdPtRecAcceptanceCuts=NULL;  
   if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
+
+
 }
 
 //____________________________________________________________________________
@@ -132,7 +144,27 @@ void AlidNdPtTrackDumpTask::UserCreateOutputObjects()
   // create temporary file for output tree
   fTreeSRedirector = new TTreeSRedirector("jotwinow_Temp_Trees.root");
 
-  PostData(1, fOutput);
+  fTree1 = new TTree;
+  fTree2 = new TTree;
+  fTree3 = new TTree;
+  fTree4 = new TTree;
+  fTree5 = new TTree;
+  fTree6 = new TTree;
+
+  fOutput->Add(fTree1);
+  fOutput->Add(fTree2);
+  fOutput->Add(fTree3);
+  fOutput->Add(fTree4);
+  fOutput->Add(fTree5);
+  fOutput->Add(fTree6);
+
+  PostData(1, fTree1);
+  PostData(2, fTree2);
+  PostData(3, fTree3);
+  PostData(4, fTree4);
+  PostData(5, fTree5);
+  PostData(6, fTree6);
+
 }
 
 //_____________________________________________________________________________
@@ -180,9 +212,6 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
 
   if (fProcessCosmics) { ProcessCosmics(fESD); }
   if(IsUseMCInfo()) { ProcessMCEff(fESD,fMC,fESDfriend); }
-
-  // Post output data.
-  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -323,8 +352,6 @@ void AlidNdPtTrackDumpTask::ProcessCosmics(AliESDEvent *const event)
 	    "\n";      
         }
       }
-
-  PostData(1, fOutput);
 }
 
 
@@ -511,7 +538,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       // TPC-ITS tracks
       //
       if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"dNdPtTree"<<
+      (*fTreeSRedirector)<<"highPt"<<
         "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
@@ -527,7 +554,6 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
     }
   }
   
-  PostData(1, fOutput);
 }
 
 
@@ -1049,7 +1075,7 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       //
       if(fTreeSRedirector && dumpToTree) 
       {
-        (*fTreeSRedirector)<<"dNdPtTree"<<
+        (*fTreeSRedirector)<<"highPt"<<
           "fileName.="<<&fileName<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
@@ -1103,7 +1129,6 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
     }
   }
   
-  PostData(1, fOutput);
 }
 
 
@@ -1351,7 +1376,6 @@ void AlidNdPtTrackDumpTask::ProcessMCEff(AliESDEvent *const esdEvent, AliMCEvent
     }
   }
   
-  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -1507,7 +1531,6 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
       "\n";
   }
   }
-  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -1954,78 +1977,78 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   // open temporary file and copy trees to the ouptut container
 
   TChain* chain = 0;
+  /*
   TTree* tree1 = 0;
   TTree* tree2 = 0;
   TTree* tree3 = 0;
   TTree* tree4 = 0;
   TTree* tree5 = 0;
   TTree* tree6 = 0;
+  */
   //
-  chain = new TChain("dNdPtTree");
+  chain = new TChain("highPt");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree1 = chain->CopyTree("1");
+    fTree1 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree1) tree1->Print();
+  if(fTree1) fTree1->Print();
 
   //
   chain = new TChain("V0s");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree2 = chain->CopyTree("1");
+    fTree2 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree2) tree2->Print();
+  if(fTree2) fTree2->Print();
 
   //
   chain = new TChain("dEdx");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree3 = chain->CopyTree("1");
+    fTree3 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree3) tree3->Print();
+  if(fTree3) fTree3->Print();
 
   //
   chain = new TChain("Laser");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree4 = chain->CopyTree("1");
+    fTree4 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree4) tree4->Print();
+  if(fTree4) fTree4->Print();
 
   //
   chain = new TChain("MCEffTree");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree5 = chain->CopyTree("1");
+    fTree5 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree5) tree5->Print();
+  if(fTree5) fTree5->Print();
 
   //
   chain = new TChain("CosmicPairs");
   if(chain) { 
     chain->Add("jotwinow_Temp_Trees.root");
-    tree6 = chain->CopyTree("1");
+    fTree6 = chain->CopyTree("1");
     delete chain; chain=0; 
   }
-  if(tree6) tree6->Print();  
+  if(fTree6) fTree6->Print();  
 
 
   OpenFile(1);
 
-  if(tree1) fOutput->Add(tree1);
-  if(tree2) fOutput->Add(tree2);
-  if(tree3) fOutput->Add(tree3);
-  if(tree4) fOutput->Add(tree4);
-  if(tree5) fOutput->Add(tree5);
-  if(tree6) fOutput->Add(tree6);
-  
   // Post output data.
-  PostData(1, fOutput);
+  PostData(1, fTree1);
+  PostData(2, fTree2);
+  PostData(3, fTree3);
+  PostData(4, fTree4);
+  PostData(5, fTree5);
+  PostData(6, fTree6);
 }
 
 //_____________________________________________________________________________
@@ -2035,7 +2058,7 @@ void AlidNdPtTrackDumpTask::Terminate(Option_t *)
   /*
   fOutputSummary = dynamic_cast<TTree*> (GetOutputData(1));
   if(fOutputSummary) delete fOutputSummary; fOutputSummary=0;
-  TChain* chain = new TChain("dNdPtTree");
+  TChain* chain = new TChain("highPt");
   if(!chain) return;
   chain->Add("jotwinow_HighPt_TrackAndV0_Trees.root");
   TTree *tree = chain->CopyTree("1");
@@ -2049,7 +2072,4 @@ void AlidNdPtTrackDumpTask::Terminate(Option_t *)
     return;
   }
   */
-
-  PostData(1, fOutput);
-
 }
