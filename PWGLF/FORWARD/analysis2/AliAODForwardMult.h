@@ -405,7 +405,8 @@ public:
    * 
    * @return Newly allocated histogram 
    */
-  static TH1I* MakeTriggerHistogram(const char* name="triggers");
+  static TH1I* MakeTriggerHistogram(const char* name="triggers",
+				    Int_t mask=0);
   /** 
    * Utility function to make a trigger mask from the passed string. 
    * 

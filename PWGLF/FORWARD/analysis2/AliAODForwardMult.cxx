@@ -175,6 +175,13 @@ AliAODForwardMult::Browse(TBrowser* b)
   b->Add(&ncl);
 }
 
+namespace { 
+  void AppendAnd(TString& trg, const TString& what)
+  {
+    if (!trg.IsNull()) trg.Append(" & ");
+    trg.Append(what);
+  }
+}
 //____________________________________________________________________
 const Char_t*
 AliAODForwardMult::GetTriggerString(UInt_t mask)
@@ -187,22 +194,22 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   //   Character string representation of mask 
   static TString trg;
   trg = "";
-  if ((mask & kInel)        != 0x0) trg.Append("INEL ");
-  if ((mask & kInelGt0)     != 0x0) trg.Append("INEL>0 ");
-  if ((mask & kNSD)         != 0x0) trg.Append("NSD ");
-  if ((mask & kV0AND)       != 0x0) trg.Append("V0AND ");
-  if ((mask & kA)           != 0x0) trg.Append("A ");
-  if ((mask & kB)           != 0x0) trg.Append("B ");
-  if ((mask & kC)           != 0x0) trg.Append("C ");
-  if ((mask & kE)           != 0x0) trg.Append("E ");
-  if ((mask & kMCNSD)       != 0x0) trg.Append("MCNSD ");
-  if ((mask & kNClusterGt0) != 0x0) trg.Append("NCluster>0 ");
+  if ((mask & kInel)        != 0x0) AppendAnd(trg, "INEL");
+  if ((mask & kInelGt0)     != 0x0) AppendAnd(trg, "INEL>0");
+  if ((mask & kNSD)         != 0x0) AppendAnd(trg, "NSD");
+  if ((mask & kV0AND)       != 0x0) AppendAnd(trg, "V0AND");
+  if ((mask & kA)           != 0x0) AppendAnd(trg, "A");
+  if ((mask & kB)           != 0x0) AppendAnd(trg, "B");
+  if ((mask & kC)           != 0x0) AppendAnd(trg, "C");
+  if ((mask & kE)           != 0x0) AppendAnd(trg, "E");
+  if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, "MCNSD");
+  if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, "NCluster>0");
   return trg.Data();
 }
   
 //____________________________________________________________________
 TH1I*
-AliAODForwardMult::MakeTriggerHistogram(const char* name) 
+AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask) 
 {
   // 
   // Make a histogram to record triggers in. 
@@ -217,25 +224,33 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name)
   // Return:
   //    Newly allocated histogram 
   //
+  TString sel("");
+  TString andSel("");
+  if (mask > 0) {
+    sel    = GetTriggerString(mask);
+    andSel = GetTriggerString(mask & ~kB);
+    andSel.Prepend(" & ");
+  }
   TH1I* ret = new TH1I(name, "Triggers", kAccepted+1, -.5, kAccepted+.5);
   ret->SetYTitle("Events");
   ret->SetFillColor(kRed+1);
   ret->SetFillStyle(3001);
   ret->GetXaxis()->SetBinLabel(kBinAll,         "All events");
-  ret->GetXaxis()->SetBinLabel(kBinB,           "w/B trigger");
-  ret->GetXaxis()->SetBinLabel(kBinA,           "w/A trigger");
-  ret->GetXaxis()->SetBinLabel(kBinC,           "w/C trigger");
-  ret->GetXaxis()->SetBinLabel(kBinE,           "w/E trigger");
-  ret->GetXaxis()->SetBinLabel(kBinInel,        "Minimum Bias");
-  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "INEL>0");
-  ret->GetXaxis()->SetBinLabel(kBinNSD,         "NSD");
-  ret->GetXaxis()->SetBinLabel(kBinV0AND,       "V0AND");
+  ret->GetXaxis()->SetBinLabel(kBinB,           Form("B%s", andSel.Data()));
+  ret->GetXaxis()->SetBinLabel(kBinA,           Form("A%s", andSel.Data()));
+  ret->GetXaxis()->SetBinLabel(kBinC,           Form("C%s", andSel.Data()));
+  ret->GetXaxis()->SetBinLabel(kBinE,           Form("E%s", andSel.Data()));
+  ret->GetXaxis()->SetBinLabel(kBinInel,        "B & INEL");
+  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "B & INEL>0");
+  ret->GetXaxis()->SetBinLabel(kBinNSD,         "B & NSD");
+  ret->GetXaxis()->SetBinLabel(kBinV0AND,       "B & V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
   ret->GetXaxis()->SetBinLabel(kBinNClusterGt0, "w/N_{cluster}>1");
   ret->GetXaxis()->SetBinLabel(kWithVertex,     "w/Vertex");
-  ret->GetXaxis()->SetBinLabel(kWithTrigger,    "w/Selected trigger");
+  ret->GetXaxis()->SetBinLabel(kWithTrigger,    Form("w/Selected trigger (%s)",
+						     sel.Data()));
   ret->GetXaxis()->SetBinLabel(kAccepted,       "Accepted by cut");
   ret->GetXaxis()->SetNdivisions(kAccepted, false);
   ret->SetStats(0);
@@ -249,10 +264,13 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
   UShort_t    trgMask = 0;
   TString     trgs(what);
   trgs.ToUpper();
+  TObjArray*  parts = trgs.Tokenize("&");
   TObjString* trg;
-  TIter       next(trgs.Tokenize(" ,|"));
+  TIter       next(parts);
   while ((trg = static_cast<TObjString*>(next()))) { 
     TString s(trg->GetString());
+    s.Strip(TString::kBoth, ' ');
+    s.ToUpper();
     if      (s.IsNull()) continue;
     if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
     else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
@@ -269,6 +287,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));
   }
+  parts->Delete();
   return trgMask;
 }
 
@@ -306,11 +325,12 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
   if (cMin < cMax && (cMin > fCentrality || cMax <= fCentrality)) return false;
 
   if (hist) { 
+    Int_t tmp = triggerMask & ~kB;
     hist->AddBinContent(kBinAll);
-    if (IsTriggerBits(kB|triggerMask))  hist->AddBinContent(kBinB);
-    if (IsTriggerBits(kA|triggerMask))  hist->AddBinContent(kBinA);
-    if (IsTriggerBits(kC|triggerMask))  hist->AddBinContent(kBinC);
-    if (IsTriggerBits(kE|triggerMask))  hist->AddBinContent(kBinE);
+    if (IsTriggerBits(kB|tmp))          hist->AddBinContent(kBinB);
+    if (IsTriggerBits(kA|tmp))          hist->AddBinContent(kBinA);
+    if (IsTriggerBits(kC|tmp))          hist->AddBinContent(kBinC);
+    if (IsTriggerBits(kE|tmp))          hist->AddBinContent(kBinE);
     if (IsTriggerBits(kB|kInel))        hist->AddBinContent(kBinInel);
     if (IsTriggerBits(kB|kInelGt0))     hist->AddBinContent(kBinInelGt0);
     if (IsTriggerBits(kB|kNSD))         hist->AddBinContent(kBinNSD);
@@ -319,6 +339,9 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
     if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
     if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
+    if (IsTriggerBits(triggerMask) && !IsTriggerBits(kB|tmp))
+      Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
+	     fTriggers, triggerMask, tmp, tmp|kB);
   }
   // Check if we have an event of interest. 
   Int_t mask = triggerMask; //|kB
@@ -353,12 +376,13 @@ AliAODForwardMult::Print(Option_t* option) const
   switch (sys) { 
   case 1:  str = "pp"; break;
   case 2:  str = "PbPb"; break;
+  case 3:  str = "pPb" ; break;
   }
   std::cout << "Ipz:         " << fIpZ << "cm " << (HasIpZ() ? "" : "in") 
 	    << "valid\n"
-	    << "Triggers:    " << GetTriggerString(fTriggers) 
+	    << "Triggers:    " << GetTriggerString(fTriggers)  << "\n"
 	    << "sNN:         " << GetSNN() << "GeV\n" 
-	    << "System:      " << str 
+	    << "System:      " << str << "\n"
 	    << "Centrality:  " << fCentrality << "%" 
 	    << std::endl;
 }
