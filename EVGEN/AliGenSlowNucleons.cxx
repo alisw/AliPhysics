@@ -113,9 +113,10 @@ void AliGenSlowNucleons::Init()
   //
   // Initialization
   //
-    Float_t kMass  = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
+    Double_t kMass  = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
     fMomentum = fCMS/2. * Float_t(fZTarget) / Float_t(fATarget);
     fBeta     = fMomentum / TMath::Sqrt(kMass * kMass + fMomentum * fMomentum);
+    //printf("  fMomentum %f    fBeta %1.10f\n",fMomentum, fBeta);
     if (fDebug) {
 	fDebugHist1 = new TH2F("DebugHist1", "nu vs N_slow", 100, 0., 100., 20, 0., 20.);
 	fDebugHist2 = new TH2F("DebugHist2", "b  vs N_slow", 100, 0., 100., 15, 0., 15.);
@@ -162,18 +163,18 @@ void AliGenSlowNucleons::Generate()
 	//      Int_t  nwn  = fCollisionGeometry->NwN();
 	//      Int_t  nnw  = fCollisionGeometry->NNw();
 	//      Int_t  nwnw = fCollisionGeometry->NwNw();
-
+	
 	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
+	    //printf("Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
 	    printf("Slow nucleons: %d grayp  %d grayn  %d blackp  %d blackn \n", fNgp, fNgn, fNbp, fNbn);
 	    fDebugHist1->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NwN(), 1.);
 	    fDebugHist2->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), b, 1.);
-	    //printf("AliGenSlowNucleons: Impact parameter from Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
 	}
     }     
 
    //
-    Float_t p[3], theta=0;
+    Float_t p[3] = {0., 0., 0.}, theta=0;
     Float_t origin[3] = {0., 0., 0.};
     Float_t time = 0.;
     Float_t polar [3] = {0., 0., 0.};    
@@ -194,7 +195,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 //
@@ -206,7 +207,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 //
@@ -217,7 +218,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 //
@@ -228,7 +229,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.);
+		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
     }
 }
@@ -246,7 +247,7 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
    Three-momentum [GeV/c] is given back in q[3]    
 */
 
- //printf("Generating slow nuc. with: charge %d. temp. %1.3f, beta %1.2f\n",charge,T,beta);
+ //printf("Generating slow nuc. with: charge %d. temp. %1.4f, beta %f \n",charge,T,beta);
  
  Double_t m, pmax, p, f, phi;
  TDatabasePDG * pdg = TDatabasePDG::Instance();
@@ -259,7 +260,7 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
 
  /* Momentum at maximum of Maxwell-distribution */
 
- pmax = TMath::Sqrt(2*T*(T+sqrt(T*T+m*m)));
+ pmax = TMath::Sqrt(2*T*(T+TMath::Sqrt(T*T+m*m)));
 
  /* Try until proper momentum                                  */
  /* for lack of primitive function of the Maxwell-distribution */
@@ -282,18 +283,21 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
  //
  phi   = 2. * TMath::Pi() * Rndm();
 
+
  /* Determine momentum components in system of the moving source */
  q[0] = p * TMath::Sin(theta) * TMath::Cos(phi);
  q[1] = p * TMath::Sin(theta) * TMath::Sin(phi);
  q[2] = p * TMath::Cos(theta);
 
+
  /* Transform to system of the target nucleus                             */
  /* beta is passed as negative, because the gray nucleons are slowed down */
  Lorentz(m, -beta, q);
-
+ 
  /* Transform to laboratory system */
  Lorentz(m, fBeta, q);
  q[2] *= fProtonDirection; 
+
 }
 
 Double_t AliGenSlowNucleons::Maxwell(Double_t m, Double_t p, Double_t T)
@@ -309,8 +313,9 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
 {
 /* Lorentz transform in the direction of q[2] */
  
-    Double_t gamma  = 1./sqrt((1.-beta)*(1.+beta)); 
-    Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
+    Double_t gamma  = 1./TMath::Sqrt((1.-beta)*(1.+beta)); 
+    Double_t energy = TMath::Sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
+    //printf(" \t beta %1.10f gamma %f energy %f -> p_z = %f\n",beta, gamma, energy,q[2]);
 }
 

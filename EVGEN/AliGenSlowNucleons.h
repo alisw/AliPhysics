@@ -59,8 +59,8 @@ public:
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
  protected:
     Float_t  fCMS;             // Center of mass energy
-    Float_t  fMomentum;        // Target nucleus momentum
-    Float_t  fBeta;            // Target nucleus beta
+    Double_t fMomentum;        // Target nucleus momentum
+    Double_t fBeta;            // Target nucleus beta
     Float_t  fPmax;            // Maximum slow nucleon momentum
     Int_t    fCharge;          // Slow nucleon charge
     Float_t  fProtonDirection; // Direction of the proton
