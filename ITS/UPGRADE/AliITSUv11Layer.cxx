@@ -236,7 +236,8 @@ void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,
 
   // First create the ladder container
   alpha = (360./(2*fNLadders))*TMath::DegToRad();
-  fLadderWidth = fLayRadius*TMath::Tan(alpha);
+
+  //  fLadderWidth = fLayRadius*TMath::Tan(alpha);
 
   rmin = 0.98*fLayRadius;
   rmax = 1.02*TMath::Sqrt( fLadderWidth*fLadderWidth +
@@ -327,14 +328,14 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
 
   // rcont is the radius of the air container
   rcont = RadiusOfTurboContainer();
-
+  
   if (rcont > 0)
     rmin = 0.98*rcont;
   else
-  rmin = 0.98*TMath::Sqrt( rladd*rladd + d*d - 2*rladd*d*CosD(gamma) );
-
+    rmin = 0.98*TMath::Sqrt( rladd*rladd + d*d - 2*rladd*d*CosD(gamma) );
+  
   rmax = 1.02*TMath::Sqrt( rladd*rladd + d*d + 2*rladd*d*CosD(gamma) );
-
+  
   TGeoTube *layer = new TGeoTube(rmin, rmax, 0.5*fZLength);
 
 
@@ -397,6 +398,7 @@ TGeoVolume* AliITSUv11Layer::CreateLadder(const TGeoManager *mgr){
 
   // The ladder
   xlen = fLayRadius*TMath::Tan(alpha);
+  if (fIsTurbo) xlen = 0.5*fLadderWidth;
   ylen = 0.5*fLadderThick;
   zlen = 0.5*fZLength;
 

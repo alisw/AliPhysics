@@ -48,7 +48,7 @@
 #include <TVirtualMagField.h>
 #endif
 
-Int_t generatorFlag = 1;
+Int_t generatorFlag = 0;
 
 /* $Id: Config.C 47147 2011-02-07 11:46:44Z amastros $ */
 enum PprTrigConf_t
@@ -163,7 +163,7 @@ void Config()
   if (generatorFlag==0) {
     // Fast generator with parametrized pi,kaon,proton distributions
     
-    int     nParticles = 50;//14022;
+    int     nParticles = 30;//14022;
     AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     gener->SetMomentumRange(0.1, 10.);
     gener->SetPhiRange(0., 360.);
@@ -209,27 +209,27 @@ void Config()
   //TGeoGlobalMagField::Instance()->SetField(field);
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
 
-  Int_t   iABSO  =  1;
-  Int_t   iDIPO  =  1;
-  Int_t   iFMD   =  1;
-  Int_t   iFRAME =  1;
-  Int_t   iHALL  =  1;
+  Int_t   iABSO  =  0;
+  Int_t   iDIPO  =  0;
+  Int_t   iFMD   =  0;
+  Int_t   iFRAME =  0;
+  Int_t   iHALL  =  0;
   Int_t   iITS   =  1;
-  Int_t   iMAG   =  1;
-  Int_t   iMUON  =  1;
-  Int_t   iPHOS  =  1;
+  Int_t   iMAG   =  0;
+  Int_t   iMUON  =  0;
+  Int_t   iPHOS  =  0;
   Int_t   iPIPE  =  1;
-  Int_t   iPMD   =  1;
-  Int_t   iHMPID =  1;
-  Int_t   iSHIL  =  1;
-  Int_t   iT0    =  1;
-  Int_t   iTOF   =  1;
-  Int_t   iTPC   =  1;
-  Int_t   iTRD   =  1;
-  Int_t   iZDC   =  1;
-  Int_t   iEMCAL =  1;
-  Int_t   iACORDE=  1;
-  Int_t   iVZERO =  1;
+  Int_t   iPMD   =  0;
+  Int_t   iHMPID =  0;
+  Int_t   iSHIL  =  0;
+  Int_t   iT0    =  0;
+  Int_t   iTOF   =  0;
+  Int_t   iTPC   =  0;
+  Int_t   iTRD   =  0;
+  Int_t   iZDC   =  0;
+  Int_t   iEMCAL =  0;
+  Int_t   iACORDE=  0;
+  Int_t   iVZERO =  0;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -295,51 +295,64 @@ void Config()
       // create segmentations:
       AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,    // segID (0:9)
 								5,    // chips per module
-								1750, // ncols (total for module)
-								835,  // nrows
+								1500, // ncols (total for module)
+								750,  //835,  // nrows
 								20.,  // default row pitch in microns
 								20.,  // default col pitch in microns
 								300.  // sensor thickness in microns
 								);    // see AliITSUSegmentationPix.h for extra options
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
-								5,    // chips per module
-								1750, // ncols (total for module)
-								835,  // nrows
+								5*2,    // chips per module
+								1500, // ncols (total for module)
+								750*2,//835,  // nrows
 								20.,  // default row pitch in microns
 								20.,  // default col pitch in microns
 								300.  // sensor thickness in microns
 								);    // see AliITSUSegmentationPix.h for extra options
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
+      AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
+								5*2,    // chips per module
+								1500, // ncols (total for module)
+								750*2,//835,  // nrows
+								20.,  // default row pitch in microns
+								20.,  // default col pitch in microns
+								300.   // sensor thickness in microns
+								);    // see AliITSUSegmentationPix.h for extra options
+      seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //
       int nmod,nlad; // modules per ladded, n ladders
+      // sum of insensitive boarder around module (in cm)
+      Float_t deadX = 0.1;  // on each side
+      Float_t deadZ = 0.01; // on each side
       const double kUM2CM=1e-4;
-      double tilt = 10.;
-      double thickLr = 0.15;
+      double tilt = 10.;     double thickLr = 0.05;
+      //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
+      //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
       AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
-      nmod = 8;
-      nlad = 10;
-      ITS->DefineLayerTurbo(0, 2.2,  nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
-      nmod = 8;
-      nlad = 14;
-      ITS->DefineLayerTurbo(1, 2.8,  nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
-      nmod = 8;
-      nlad = 18;
-      ITS->DefineLayerTurbo(2, 3.6,  nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
-      nmod = 24;
-      nlad = 30;
-      ITS->DefineLayerTurbo(3, 20.0, nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
-      nmod = 24;
-      nlad = 32;
-      ITS->DefineLayerTurbo(4, 22.0, nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
-      nmod = 42;
-      nlad = 50;
-      ITS->DefineLayerTurbo(5, 40.0, nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID()); //41 creates ovl!
-      nmod = 42;
-      nlad = 52;
-      ITS->DefineLayerTurbo(6, 43.0, nmod*seg0->Dz()*kUM2CM, nlad, nmod, seg0->Dx()*kUM2CM, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID()); 
+      nmod = 9;
+      nlad = 12;
+      ITS->DefineLayerTurbo(0, 2.2,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      nmod = 9;
+      nlad = 16;
+      ITS->DefineLayerTurbo(1, 2.8,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      nmod = 9;
+      nlad = 20;
+      ITS->DefineLayerTurbo(2, 3.6,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      nmod = 29;
+      nlad = 48;
+      ITS->DefineLayerTurbo(3, 20.0, nmod*(seg1->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg1->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
+      nmod = 29;
+      nlad = 48;
+      ITS->DefineLayerTurbo(4, 22.0, nmod*(seg1->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg1->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
+      nmod = 50;
+      nlad = 94;
+      ITS->DefineLayerTurbo(5, 40.0, nmod*(seg2->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg2->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg2->Dy()*kUM2CM, seg2->GetDetTypeID()); //41 creates ovl!
+      nmod = 50;
+      nlad = 94;
+      ITS->DefineLayerTurbo(6, 43.0, nmod*(seg2->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg2->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg2->Dy()*kUM2CM, seg2->GetDetTypeID()); 
       //
-      //    ITS->AddBeamPipe(2.0, 2.08, 100);
+
     }
  
 

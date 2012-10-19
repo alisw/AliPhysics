@@ -439,7 +439,7 @@ void AliITSUv11::DefineLayerTurbo(const Int_t nlay, const Double_t r,
   //          zlen    layer length
   //          nladd   number of ladders
   //          nmod    number of modules per ladder
-  //          width   layer width
+  //          width   ladder width
   //          tilt    layer tilt angle (degrees)
   //          lthick  ladder thickness (if omitted, defaults to 0)
   //          dthick  detector thickness (if omitted, defaults to 0)
