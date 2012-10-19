@@ -94,6 +94,61 @@ protected:
   AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   //__________________________________________________________________
   const char* ClassName() const { return "MakedNdetaTrain"; }
+  //__________________________________________________________________
+  /** 
+   * Overloaded to create new draw.C 
+   * 
+   * @param asShellScript 
+   */
+  void SaveSetup(Bool_t asShellScript)
+  {
+    TrainSetup::SaveSetup(asShellScript);
+
+    std::ofstream o("draw.C");
+    if (!o) { 
+      Error("MakedNdetaTrain::SaveSetup", "Failed to open draw.C");
+      return;
+    }
+
+    o << "// Created by " << ClassName() << "\n"
+      << "// \n"
+      << "// Will draw dN/deta results from produced file\n"
+      << "// \n"
+      << "// Options can be specified as needed. To get help, pass the\n"
+      << "// string \"help\" for the title\n"
+      << "// \n"
+      << "void draw(const TString& title="",\n"
+      << "          UShort_t       rebin=5,\n"
+      << "          UShort_t       others=0x7,\n"
+      << "          UShort_t       flags=0xD87,\n"
+      << "          UShort_t       sNN=0,\n"
+      << "          UShort_t       sys=0,\n"
+      << "          UShort_t       trg=0,\n"
+      << "          Float_t        vzMin=999,"
+      << "          Float_t        vzMax=-999)\n"
+      << "{\n"
+      << "   gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/"
+      << "DrawdNdeta.C++\");\n\n"
+      << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
+      << "    DrawdNdeta(\"help\"); // Get the help\n"
+      << "    return;\n"
+      << "  }\n\n"
+      << "  DrawdNdeta(\"forward_dndeta.root\",\n"
+      << "             title,\n"
+      << "             rebin,\n"
+      << "             others,\n"
+      << "             flags,\n"
+      << "             sNN,\n"
+      << "             sys,\n"
+      << "             trg,\n"
+      << "             vzMin,\n"
+      << "             vzMax);\n"
+      << "}\n"
+      << "//\n"
+      << "// EOF\n"
+      << "//" << std::endl;
+    o.close();
+  }
 };
 //
 // EOF

@@ -78,6 +78,28 @@ struct LocalHelper : public Helper
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
   }
   /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  LocalHelper(const LocalHelper& o) 
+    : Helper(o), fChain(o.fChain)
+  {}
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this 
+   */
+  LocalHelper& operator=(const LocalHelper& o) 
+  {
+    if (&o == this) return *this;
+    Helper::operator=(o);
+    fChain = o.fChain;
+    return *this;
+  }
+  /** 
    * Destructor 
    */
   virtual ~LocalHelper() {}

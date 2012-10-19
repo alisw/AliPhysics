@@ -88,6 +88,32 @@ struct LiteHelper : public ProofHelper
     fOptions.Remove("storage");
   }
   /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  LiteHelper(const LiteHelper& o) 
+    : ProofHelper(o), fChain(o.fChain)
+  {}
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this 
+   */
+  LiteHelper& operator=(const LiteHelper& o) 
+  {
+    if (&o == this) return *this;
+    ProofHelper::operator=(o);
+    fChain = o.fChain;
+    return *this;
+  }
+  /** 
+   * Destructor 
+   */
+  virtual ~LiteHelper() {}
+  /** 
    * Set-up done before task set-ups 
    * 
    * @return true on success 

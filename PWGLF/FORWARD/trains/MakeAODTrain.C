@@ -169,7 +169,8 @@ protected:
     opts.Add("trig", "TRIGGER", "Trigger type", "");
     opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", "-10");
     opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", "+10");
-    opts.Add("scheme", "FLAGS", "Normalization scheme", "EVENT BACKGROUND");
+    opts.Add("scheme", "FLAGS", "Normalization scheme", 
+	     "TRIGGER EVENT BACKGROUND");
     opts.Add("cut-edges", "Cut edges of acceptance");
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", "1");
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", "1");
@@ -177,8 +178,7 @@ protected:
     if (out.IsNull()) out = fEscapedName;
     opts.Set("url", out);
     opts.Set("type", "AOD");
-    // opts.Show(std::cout);
-
+  
     SaveSetupROOT("dNdeta", cls, name, opts);
     if (asShellScript) 
       SaveSetupShell("dndeta", cls, name, opts);

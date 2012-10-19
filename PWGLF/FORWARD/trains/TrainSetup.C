@@ -32,6 +32,7 @@
 # include <AliAODInputHandler.h>
 # include <AliAODHandler.h>
 # include <AliMCEventHandler.h>
+# include <ctime>
 #else 
 struct Helper;
 struct OptionList;
@@ -62,6 +63,7 @@ struct TrainSetup
   TrainSetup(const TString& name)
     : fName(name), 
       fEscapedName(name),
+      fOptions(),
       fHelper(0)
   {
     fOptions.Add("help", "Show help");
@@ -75,6 +77,22 @@ struct TrainSetup
     fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
     fEscapedName = EscapeName(fName, "");
   }
+  TrainSetup(const TrainSetup& o) 
+    : fName(o.fName), 
+      fEscapedName(o.fEscapedName), 
+      fOptions(o.fOptions), 
+      fHelper(o.fHelper)
+  {}
+  TrainSetup& operator=(const TrainSetup& o) 
+  {
+    if (&o == this) return *this;
+    fName        = o.fName;
+    fEscapedName = o.fEscapedName;
+    fOptions     = o.fOptions;
+    fHelper      = o.fHelper;
+    return *this;
+  }
+  
   /** 
    * Destructor
    */
@@ -103,6 +121,7 @@ struct TrainSetup
       return false;
     }
 
+    // --- Check the type, if possible -------------------------------
     UShort_t type    = fHelper->InputType();
     if (fOptions.Has("type")) { 
       const TString& it = fOptions.Get("type");
@@ -112,6 +131,12 @@ struct TrainSetup
 	type = Helper::kUser;
     }
 
+    // --- Rewrite the escpaed name ----------------------------------
+    if (fOptions.Has("date")) { 
+      TString date = fOptions.Get("date");
+      fEscapedName = EscapeName(fName, date);
+    }
+    
     // --- Get current directory and set-up sub-directory ------------
     TString cwd = gSystem->WorkingDirectory();
     if (!SetupWorkingDirectory()) return false;
@@ -494,15 +519,39 @@ protected:
     char  c[] = { ' ', '/', '@', 0 };
     char* p   = c;
     while (*p) { 
-      escaped.ReplaceAll(Form("%c", *p), "_");
+      char tmp[] = { *p, '\0' };
+      escaped.ReplaceAll(tmp, "_");
       p++;
     }
     if (!datimeStr.IsNull()) {
       TDatime datime;
       if (datimeStr.EqualTo("now", TString::kIgnoreCase)) 
 	datime.Set();
-      else 
-	datime.Set(datimeStr.Data());
+      else {
+	// Try various formats 
+	struct tm t;
+	const char* formats[] = { "%Ec", // Locale 
+				  "%c", // Locale 
+				  "%Ex EX", // Locale 
+				  "%x %X", // Locale 
+				  "%F %R", // ISO standard, no seconds 
+				  0 };
+	const char** f = formats;
+	Bool_t found = false;
+	while (*f && !found) { 
+	  // Reset needed fields 
+	  t.tm_year  = 0;
+	  t.tm_mon   = 0;
+	  t.tm_mday  = 0;
+	  t.tm_hour  = 0;
+	  t.tm_min   = 0;
+	  // Stop processing on first match 
+	  if (strptime(datimeStr.Data(), *f, &t) != 0) found = true;
+	  f++;
+	}
+	if (found) 
+	  datime.Set(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, 0); 
+      }
       if (datime.GetYear() <= 1995 ||
 	  datime.GetMonth() == 0 || 
 	  datime.GetDay() == 0) return escaped;
@@ -567,9 +616,11 @@ protected:
    */
   virtual void SaveSetup(Bool_t asShellScript)
   {
+    OptionList tmp(fOptions);
+    if (tmp.Find("overwrite")) tmp.Set("overwrite");
     if (asShellScript) 
-      SaveSetupShell("rerun", ClassName(), fName, fOptions);
-    SaveSetupROOT("ReRun", ClassName(), fName, fOptions);
+      SaveSetupShell("rerun", ClassName(), fName, tmp);
+    SaveSetupROOT("ReRun", ClassName(), fName, tmp);
   }
   /** 
    * Save a setup as a shell script 
@@ -626,6 +677,19 @@ protected:
       << "  TString opts(";
     tmp.Store(o, "\"", ",\"\n               ", false);
     o << ");\n\n"
+      << "  TString path(";
+    TString     path(gROOT->GetMacroPath());
+    TObjArray*  elements = path.Tokenize(":");
+    TObjString* element = 0;
+    TIter       next(elements);
+    while ((element = static_cast<TObjString*>(next()))) {
+      if (element->String().IsNull()) continue;
+      o << "\n               \"" << element->GetName() << ":\"";
+    }
+    elements->Delete();
+    o << ");\n"
+      << "  path.Append(\"$ALICE_ROOT/PWGLF/FORWARD/trains\");\n"
+      << "  gROOT->SetMacroPath(path);\n\n"
       << "  gROOT->LoadMacro(\"RunTrain.C\");\n\n"
       << "  return RunTrain(name, cls, uri, opts);\n"
       << "}\n" 

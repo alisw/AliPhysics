@@ -48,6 +48,20 @@ struct Deferred : public TTimer
   {
     Start(1000, true);
   }
+  Deferred(const Deferred& o)
+    : TTimer(), 
+      fName(o.fName),
+      fClass(o.fClass),
+      fOptions(o.fOptions)
+  {}
+  Deferred& operator=(const Deferred& o) 
+  { 
+    if (&o == this) return *this;
+    fName    = o.fName;
+    fClass   = o.fClass;
+    fOptions = o.fOptions;
+    return *this; 
+  }
   Bool_t Notify()
   {
     // gSystem->RemoveTimer(this);

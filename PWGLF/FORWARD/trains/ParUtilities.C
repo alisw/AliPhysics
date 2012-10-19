@@ -34,7 +34,7 @@ struct ParUtilities
 {
   /** 
    * Find PAR file (either in current or parent directory or directly 
-   * in $ALICE_ROOT), and copy/link here
+   * in $ALICE_ROOT), and link it here
    * 
    * @param what PAR file name (sans .par)
    * 
@@ -48,24 +48,39 @@ struct ParUtilities
     if (!parFile.EndsWith(".par")) parFile.Append(".par");
     if (gSystem->AccessPathName(parFile.Data())) { 
       // If not found
-      if (gSystem->AccessPathName(Form("../%s.par", parFile.Data()))) { 
+      TString src;
+      if (gSystem->AccessPathName(Form("../%s.par", parFile.Data())) == 0) 
+	src.Form("../%s", parFile.Data());
+      else {
 	// If not found 
 	TString aliParFile = 
 	  gSystem->ExpandPathName(Form("$(ALICE_ROOT)/%s", parFile.Data()));
-	if (gSystem->AccessPathName(aliParFile.Data())) { 
+	if (gSystem->AccessPathName(aliParFile.Data()) == 0) 
+	  src = aliParFile;
+      }
+      if (src.IsNull()) {
 	  Error("ParUtilities::Find", 
 		"PAR file %s not found in current or parent "
 		"directory nor in $(ALICE_ROOT)", parFile.Data());
 	  return false;
-	}
-	// Copy to current directory 
-	TFile::Cp(aliParFile, parFile);
       }
-      else 
-	gSystem->Exec(Form("ln -s %s .", parFile.Data()));
+      // Copy to current directory 
+      // TFile::Copy(aliParFile, parFile);
+      if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
+	Error("ParUtilities::Find", "Failed to symlink %s to %s", 
+	      src.Data(), parFile.Data());
+	return false;
+      }
     }
     return true;
   }
+  /** 
+   * Unpack and load a PAR file previously found with Find.
+   * 
+   * @param name PAR file name 
+   * @deprecated Use Find  and Build instead
+   * @return true on success
+   */
   static Bool_t Load(const TString& name) 
   {
     if (name.IsNull()) return true;
