@@ -77,28 +77,71 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
   return "unknown";
 }
 //____________________________________________________________________
+Float_t
+AliForwardUtil::BeamRapidity(Float_t beam, UShort_t z, UShort_t a)
+{
+  const Double_t pMass = 9.38271999999999995e-01;
+  const Double_t nMass = 9.39564999999999984e-01;
+  Double_t       beamE = z * beam / 2;
+  Double_t       beamM = z * pMass + (a - z) * nMass;
+  Double_t       beamP = TMath::Sqrt(beamE * beamE - beamM * beamM);
+  Double_t       beamY = .5* TMath::Log((beamE+beamP) / (beamE-beamP));
+  return beamY;
+}
+//____________________________________________________________________
+Float_t
+AliForwardUtil::CenterOfMassEnergy(Float_t beam, 
+				   UShort_t z1, 
+				   UShort_t a1, 
+				   Short_t z2, 
+				   Short_t a2) 
+{
+  // Calculate the center of mass energy given target/projectile 
+  // mass and charge numbers
+  if (z2 < 0) z2 = z1;
+  if (a2 < 0) a2 = a1;
+  return TMath::Sqrt(Float_t(z1*z2)/a1/a2) * beam;
+}
+//____________________________________________________________________
+Float_t
+AliForwardUtil::CenterOfMassRapidity(UShort_t z1, 
+				     UShort_t a1, 
+				     Short_t z2, 
+				     Short_t a2) 
+{
+  // Calculate the center of mass rapidity (shift) given target/projectile 
+  // mass and charge numbers
+  if (z2 < 0) z2 = z1;
+  if (a2 < 0) a2 = a1;
+  if (z2 == z1 && a2 == a1) return 0;
+  return .5 * TMath::Log(Float_t(z1*a2)/z2/a1);
+}
+
+//____________________________________________________________________
 UShort_t
-AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
+AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
 {
   // 
   // Parse the center of mass energy given as a float and return known 
   // values as a unsigned integer
   // 
   // Parameters:
-  //    sys  Collision system (needed for AA)
-  //    cms  Center of mass energy * total charge 
+  //    sys   Collision system (needed for AA)
+  //    beam  Center of mass energy * total charge 
   // 
   // Return:
   //    Center of mass energy per nucleon
   //
-  Float_t energy = v; 
+  Float_t energy = beam; 
   // Below no longer needed apparently
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
+  if (sys == AliForwardUtil::kPPb) 
+    energy = CenterOfMassEnergy(beam, 82, 208, 1, 1);
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
   if (TMath::Abs(energy - 2750.)  < 20)  return 2750;
   if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
-  if (TMath::Abs(energy - 5022.)  < 10)  return 5000;
+  if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
   if (TMath::Abs(energy - 8000.)  < 10)  return 8000;

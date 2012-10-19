@@ -63,6 +63,44 @@ public:
   };
   //__________________________________________________________________
   /** 
+   * Calculate the beam rapidity. 
+   *
+   * @b Note: The beam energy is given in GeV/charge
+   * 
+   * @param beam Beam energy in GeV/charge 
+   * @param z    Charge number of projectile
+   * @param a    Mass number of projectile 
+   * 
+   * @return The rapidity of the beam
+   */
+  static Float_t BeamRapidity(Float_t beam, UShort_t z, UShort_t a);
+  /** 
+   * Calculate the center of mass energy from the beam energy per
+   * charge and the nucleus numbers.
+   * 
+   * @param beam Beam energy in GeV/charge 
+   * @param z1   Charge number of projectile
+   * @param a1   Mass number of projectile
+   * @param z2   Charge number of projectile
+   * @param a2 	 Mass number of projectile  
+   * 
+   * @return The center of mass energy in GeV/nucleon
+   */
+  static Float_t CenterOfMassEnergy(Float_t beam, UShort_t z1, UShort_t a1, 
+				    Short_t z2=-1, Short_t a2=-1);
+  /** 
+   * Calculate the center of mass rapidity (shift)
+   * 
+   * @param z1 Charge number of projectile
+   * @param a1 Mass number of projectile  
+   * @param z2 Charge number of projectile
+   * @param a2 Mass number of projectile  
+   * x
+   * @return Rapidity of the center of mass 
+   */
+  static Float_t CenterOfMassRapidity(UShort_t z1, UShort_t a1, 
+				      Short_t z2=-1, Short_t a2=-1);
+  /** 
    * Parse a collision system spec given in a string.   Known values are 
    * 
    *  - "pp", "p-p" which returns kPP 
