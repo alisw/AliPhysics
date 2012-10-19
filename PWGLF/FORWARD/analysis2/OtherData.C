@@ -11,12 +11,29 @@
  * 
  * @ingroup pwglf_forward_script_otherdata
  */
-#include <TGraphAsymmErrors.h>
-#include <TMultiGraph.h>
-#include <TStyle.h>
-#include <TMath.h>
-#include <TCanvas.h>
-#include <TLegend.h>
+#ifndef __CINT__
+# include <TGraphAsymmErrors.h>
+# include <TMultiGraph.h>
+# include <TStyle.h>
+# include <TMath.h>
+# include <TCanvas.h>
+# include <TLegend.h>
+# include <TLegendEntry.h>
+# include <TList.h>
+# include <TAxis.h>
+# include <TH1F.h>
+#else
+class TGraphAsymmErrors;
+class TMultiGraph;
+class TStyle;
+class TCanvas;
+class TLegend;
+class TLegendEntry;
+class TList;
+class TAxis;
+class TH1F;
+class TGraph;
+#endif
 
 //____________________________________________________________________
 /**
@@ -84,7 +101,7 @@ enum {
  * @ingroup pwglf_forward_otherdata
  */
 void
-SetGraphAttributes(TGraph* g, Int_t trig, Int_t exp, bool mirror,
+SetGraphAttributes(TGraph* g, Int_t /*trig*/, Int_t exp, bool mirror,
 		   const Char_t* name, const Char_t* title)
 {
   Int_t color = 0;
@@ -1308,7 +1325,7 @@ GetSingle(UShort_t which,
 	  UShort_t sys, 
 	  UShort_t energy, 
 	  UShort_t type=0x1, 
-	  UShort_t centLow=0, 
+	  UShort_t centLow=0,
 	  UShort_t centHigh=0) 
 {
   TGraphAsymmErrors* ret = 0;
@@ -1376,11 +1393,17 @@ GetSingle(UShort_t which,
     }
   }
   else if (sys == 3) { // pPb 
-    if (TMath::Abs(energy - 5023) < 10) {
+    if (TMath::Abs(energy - 5023) < 10 || 
+	TMath::Abs(energy - 8000) < 10) {
       switch (which) { 
       case ALICE: ret = AliceCentralpPb5023(); break;
       }
     }
+  }
+  if (!ret) {
+    Warning("GetOne", "Nothing to get for "
+	    "which=%d, sys=%d, energy=%d, type=0x%x, centLow=%d, centHigh=%d",
+	    which, sys, energy, type, centLow, centHigh);
   }
 #if 0
   if (ret) {
@@ -1508,17 +1531,18 @@ GetData(UShort_t sys,
     // Warning("GetData", "No other data for PbPb yet");
   }
   else if (sys == 3) {
-    if (!(TMath::Abs(energy-5023) < 10)) {
+    if (!(TMath::Abs(energy-5023) < 10 ||
+	  TMath::Abs(energy-8000) < 10) ) {
       Warning("GetData", "No other results for sys=%d, energy=%d",
 	      sys, energy);
       return 0;
     }
     
-    Info("GetData", "Getting ALICE pPb data");
+    // Info("GetData", "Getting ALICE pPb data");
     sn = "pPb";
     TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, sys,energy, 0):0);
     if (gALI) mp->Add(gALI);
-    Info("GetData", "Got %p", gALI);
+    // Info("GetData", "Got %p", gALI);
     // Warning("GetData", "Unknown system %d", sys);
   }
 
