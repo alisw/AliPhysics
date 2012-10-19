@@ -79,6 +79,10 @@
 #pragma link C++ class AliAnaVZEROQA+;
 #pragma link C++ class AliAnaVZEROPbPb+;
 
+#pragma link C++ class AliAnalysisTaskFilteredTree+;
+#pragma link C++ class AliFilteredTreeEventCuts+;
+#pragma link C++ class AliFilteredTreeAcceptanceCuts+;
+
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
