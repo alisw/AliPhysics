@@ -182,11 +182,17 @@ install ( DIRECTORY FORWARD/analysis2/trains
 # install trains 
 install ( DIRECTORY FORWARD/trains 
 	  DESTINATION PWGLF/FORWARD 
-	  PATTERN "*~"    EXCLUDE
-	  PATTERN ".svn"  EXCLUDE
-	  PATTERN "*.d"   EXCLUDE 
-	  PATTERN "*.so"  EXCLUDE
-	  PATTERN "test*" EXCLUDE)
+	  FILES_MATCHING PATTERN "*.C"
+	  PATTERN "*~"        EXCLUDE
+	  PATTERN ".svn"      EXCLUDE)
+	  # PATTERN "*.d"       EXCLUDE 
+	  # PATTERN "*.so"      EXCLUDE
+	  # PATTERN "*.root"    EXCLUDE
+	  # PATTERN "*.png"     EXCLUDE
+	  # PATTERN "test*"     EXCLUDE
+	  # PATTERN "export*.C" EXCLUDE
+	  # PATTERN "dndeta_*.C" EXCLUDE
+	  # PATTERN "dndeta_*.root" EXCLUDE
 
 # Install other scripts
 install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
