@@ -815,12 +815,12 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
 {
   /// Transfert trigger data from ESDMuon track to the MUONLocalTtrigger object
   
-  // if the ESDMuon track is a ghost then return an empty MUON track
-  if (!esdTrack.ContainTriggerData()) {
-    AliMUONLocalTrigger emptyLocTrg;
-    locTrg = emptyLocTrg;
-    return;
-  }
+  // reset the local trigger content
+  AliMUONLocalTrigger emptyLocTrg;
+  locTrg = emptyLocTrg;
+  
+  // if the ESDMuon track is a ghost then return an empty local trigger
+  if (!esdTrack.ContainTriggerData()) return;
   
   locTrg.SetUniqueID(esdTrack.GetUniqueID());
   locTrg.SetLoCircuit(esdTrack.LoCircuit());
@@ -829,8 +829,10 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
   locTrg.SetDeviation(esdTrack.LoDev());
   locTrg.SetLoLpt(esdTrack.LoLpt());
   locTrg.SetLoHpt(esdTrack.LoHpt());
-  locTrg.SetTriggerWithoutChamber(esdTrack.GetTriggerWithoutChamber());
-  locTrg.SetLoTrigY(1);
+  for (Int_t ich = 0; ich < 4; ich++)
+    if (esdTrack.TriggerFiredWithoutChamber(ich))
+      locTrg.SetTriggerWithoutChamber(ich);
+  locTrg.SetLoTrigY(0);
   locTrg.SetX1Pattern(esdTrack.GetTriggerX1Pattern());
   locTrg.SetX2Pattern(esdTrack.GetTriggerX2Pattern());
   locTrg.SetX3Pattern(esdTrack.GetTriggerX3Pattern());

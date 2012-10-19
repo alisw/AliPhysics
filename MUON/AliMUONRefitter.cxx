@@ -362,7 +362,10 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
     // refit the track
     if (!fTracker->RefitTrack(*currentTrack)) continue;
     
-    // find best track (the one with the higher number of cluster or the best chi2 in case of equality)
+    // check the status of the improvement if enabled
+    if (fkRecoParam->ImproveTracks() && !currentTrack->IsImproved()) continue;
+    
+    // find best track (the one with the highest number of cluster or the best chi2 in case of equality)
     currentNCluster = currentTrack->GetNClusters();
     currentChi2 = currentTrack->GetGlobalChi2();
     if (currentNCluster > bestNClusters || (currentNCluster == bestNClusters && currentChi2 < bestChi2)) {
