@@ -80,6 +80,7 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
   fEtaLowerLimit(-0.8),
   fEtaHigherLimit(0.8),
   fTPCNClus(80),
+  fChi2perNDF(4.),
   nAODtrackCutBit(128),
   fEventCounter(0)
 { 
@@ -89,10 +90,10 @@ AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
       fhNplusNminus[i] = NULL;
     }
   
-  for ( Int_t i = 0; i < 11; i++) { 
+  for ( Int_t i = 0; i < 13; i++) { 
     fHistQA[i] = NULL;
   }
-   
+  
   DefineOutput(1, TList::Class()); // Outpput....
 }
 
@@ -119,12 +120,14 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
   fHistQA[8] = new TH1D("fHistQAPt","p_{T} distribution",600,0,6);
   fHistQA[9] = new TH1D("fHistQAEta","#eta distribution",240,-1.2,1.2);
   fHistQA[10] = new TH1D("fHistQAPhi","#phi distribution",340,0,6.8);
+  fHistQA[11] = new TH1D("fHistQANCls","Number of TPC cluster",200,0,200);
+  fHistQA[12] = new TH1D("fHistQAChi2","Chi2 per NDF",100,0,10);
   
-  for(Int_t i = 0; i < 11; i++)
+  for(Int_t i = 0; i < 13; i++)
     {
       fListOfHistos->Add(fHistQA[i]);
     }
- 
+  
   
   TString hname;
   TString htitle;
@@ -142,20 +145,21 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
     fhNplusNminus[i] = new TH2F(hname.Data(),htitle.Data(),800,0.5,800.5,800,0.5,800.5);
     fListOfHistos->Add(fhNplusNminus[i]);
   }
-       
+  
   for(Int_t i = 50; i < 91; i++) {
     hname  = "hPlusMinusCentBin"; hname+=i;
     htitle = "N+ and N- in Cent Bin "; htitle+=i;
     fhNplusNminus[i] = new TH2F(hname.Data(),htitle.Data(),500,0.5,500.5,500,0.5,500.5);
     fListOfHistos->Add(fhNplusNminus[i]);
   }
-    
+  
   PostData(1, fListOfHistos);
 }
 
 
 //----------------------------------------------------------------------------------
 void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
+  
   fEventCounter->Fill(1);
   Double_t nPlusCharge = 0.;
   Double_t nMinusCharge = 0.;
@@ -173,85 +177,91 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
     Double_t count = (Int_t)cent + 20;
     fEventCounter->Fill(count);
     
-    if(cent < 0 || cent >= 99.99) return;
-
-      fEventCounter->Fill(2);
-      
-      Int_t nCentrality = (Int_t)cent;
-   
-      const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
-      
-      if(vertex) {
-	Double32_t fCov[6];
-	vertex->GetCovarianceMatrix(fCov);
-	if(vertex->GetNContributors() > 0){
-	  if(fCov[5] != 0) {
-	    
-	    Double_t lvx = vertex->GetX();
-	    Double_t lvy = vertex->GetY();
-	    Double_t lvz = vertex->GetZ();
-	    
-	    fEventCounter->Fill(5);
-	    
-	    fHistQA[3]->Fill(lvx);fHistQA[4]->Fill(lvy);fHistQA[5]->Fill(lvz);
-	    
-	    if(TMath::Abs(lvx) < fVxMax) {
-	      if(TMath::Abs(lvy) < fVyMax) {
-		if(TMath::Abs(lvz) < fVzMax) {
+    if(cent < 0 || cent >= 91) return;
+    
+    fEventCounter->Fill(2);
+    
+    Int_t nCentrality = (Int_t)cent;
+    
+    const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
+    
+    if(vertex) {
+      Double32_t fCov[6];
+      vertex->GetCovarianceMatrix(fCov);
+      if(vertex->GetNContributors() > 0){
+	if(fCov[5] != 0) {
+	  
+	  Double_t lvx = vertex->GetX();
+	  Double_t lvy = vertex->GetY();
+	  Double_t lvz = vertex->GetZ();
+	  
+	  fEventCounter->Fill(5);
+	  
+	  fHistQA[3]->Fill(lvx);fHistQA[4]->Fill(lvy);fHistQA[5]->Fill(lvz);
+	  
+	  if(TMath::Abs(lvx) < fVxMax) {
+	    if(TMath::Abs(lvy) < fVyMax) {
+	      if(TMath::Abs(lvz) < fVzMax) {
+		
+		fEventCounter->Fill(6);
+		fHistQA[0]->Fill(lvx);fHistQA[1]->Fill(lvy);fHistQA[2]->Fill(lvz);
+		
+		Int_t ntracks = gAOD->GetNumberOfTracks();
+		
+		for(Int_t i = 0; i < ntracks; i++) {
+		  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(i)); 
+		  if(!aodTrack) {
+		    AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+		    continue;
+		  }
 		  
-		  fEventCounter->Fill(6);
-		  fHistQA[0]->Fill(lvx);fHistQA[1]->Fill(lvy);fHistQA[2]->Fill(lvz);
+		  if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
 		  
-		  Int_t ntracks = gAOD->GetNumberOfTracks();
+		  Float_t dxy, dz;
 		  
-		  for(Int_t i = 0; i < ntracks; i++) {
-		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(i)); 
-		    if(!aodTrack) {
-		      AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
-		      continue;
-		    }
-		    
-		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
-		    
-		    Float_t dxy, dz;
-		    
-		    dxy = aodTrack->DCA();
-		    dz  = aodTrack->ZAtDCA();
-		    
-		    Double_t pt = aodTrack->Pt();
-		    Double_t eta = aodTrack->Eta();
-		    //Double_t nclus = aodTrack->GetTPCNcls();
-		    Double_t nclus = aodTrack->GetTPCClusterInfo(2,1);//important for 2011 data
-
-		    if( dxy > fDCAxy ) continue; 
-		    if( dz > fDCAz ) continue;
-		    if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;
-		    if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) continue;
-		    if( nclus < fTPCNClus ) continue;
-		    
-		    fHistQA[8]->Fill(pt);
-		    fHistQA[9]->Fill(eta);
-		    fHistQA[10]->Fill(aodTrack->Phi());
-		    fHistQA[6]->Fill(dxy);
-		    fHistQA[7]->Fill(dz);
-		    
-		    Short_t gCharge = aodTrack->Charge();
-		    
-		    
-		    if(gCharge > 0) nPlusCharge += 1.;
-		    if(gCharge < 0) nMinusCharge += 1.;
-		    
-		  } //--------- Track Loop
-		  //  cout << "nCentrality "<<nCentrality<<" nPlusCharge "<< nPlusCharge << " nMinusCharge " << nMinusCharge << endl;
-		  fhNplusNminus[nCentrality]->Fill(nPlusCharge,nMinusCharge);
-		  fEventCounter->Fill(7);
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }//AOD--analysis-----
+		  dxy = aodTrack->DCA();
+		  dz  = aodTrack->ZAtDCA();
+		  
+		  Double_t pt = aodTrack->Pt();
+		  Double_t eta = aodTrack->Eta();
+		  //Double_t nclus = aodTrack->GetTPCNcls();
+		  Double_t nclus = aodTrack->GetTPCClusterInfo(2,1);//important for 2011 data
+		  Double_t chi2ndf = aodTrack->Chi2perNDF(); //
+		  
+		  //Set the track cuts--------------
+		  if( dxy > fDCAxy ) continue; 
+		  if( dz > fDCAz ) continue;
+		  if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;
+		  if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) continue;
+		  if( nclus < fTPCNClus ) continue;
+		  if( chi2ndf > fChi2perNDF ) continue;
+		  
+		  //Fill the Trackwise QA-histograms-----
+		  fHistQA[6]->Fill(dxy);
+		  fHistQA[7]->Fill(dz);
+		  fHistQA[8]->Fill(pt);
+		  fHistQA[9]->Fill(eta);
+		  fHistQA[10]->Fill(aodTrack->Phi());
+		  fHistQA[11]->Fill(nclus);
+		  fHistQA[12]->Fill(chi2ndf);
+		  
+		  //Count the charge particles-----
+		  Short_t gCharge = aodTrack->Charge();
+		  
+		  if(gCharge > 0) nPlusCharge += 1.;
+		  if(gCharge < 0) nMinusCharge += 1.;
+		  
+		}//--------- Track Loo
+		//cout << "nCentrality "<<nCentrality<<" nPlusCharge "<< nPlusCharge << " nMinusCharge " << nMinusCharge << endl;
+		fhNplusNminus[nCentrality]->Fill(nPlusCharge,nMinusCharge);
+		fEventCounter->Fill(7);
+	      }//Z-vertex cut-------
+	    }//Vetecx-Y cut---
+	  }//Vertex-X cut
+	}//Covariant matrix cuts---
+      }//N-Contributors-----------
+    }//Check for vertex--------
+  }//AOD--analysis-----
   
   else if(fAnalysisType == "MCAOD") {
     TClonesArray *arrayMC = (TClonesArray*) gAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
@@ -280,16 +290,16 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
       if(vertex->GetNContributors() > 0) {
 	if(fCov[5] != 0) {
 	  
-	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		  ver = kTRUE;
-		}
+	  if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	    if(TMath::Abs(vertex->GetY()) < fVyMax) {
+	      if(TMath::Abs(vertex->GetZ()) < fVzMax) {
+		ver = kTRUE;
 	      }
 	    }
-	}
+	  }
 	}
       }
+    }
     
     if(!ver) return;
     Int_t nMC = arrayMC->GetEntries();
@@ -301,17 +311,17 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
       
       if(partMC->Charge() > 0) nPlusCharge += 1.;
       if(partMC->Charge() < 0) nMinusCharge += 1.;
-	  
+      
     }//MC Track loop-----
     fhNplusNminus[nCentrality]->Fill(nPlusCharge,nMinusCharge);
     //cout << "Cent=" << nCentrality << " MC-PlusChrg=" << nPlusCharge << " MC-MinusChrg=" << nMinusCharge << endl;
-      
-    }//MCAOD--analysis---- 
+    
+  }//MCAOD--analysis---- 
   else return;
   
   
   
-
+  
   fEventCounter->Fill(8);
   PostData(1, fListOfHistos);
   

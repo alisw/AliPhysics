@@ -52,6 +52,11 @@ set ( SRCS
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
     EBYE/PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx	 
+    EBYE/NetParticle/AliAnalysisNetParticleDCA.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleDistribution.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleEffCont.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleHelper.cxx
+    EBYE/NetParticle/AliAnalysisTaskNetParticle.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -60,4 +65,4 @@ set ( DHDR PWGCFebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)
+set ( EINCLUDE ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/NetParticle PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)

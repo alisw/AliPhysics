@@ -34,16 +34,15 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   void SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   void SetDCA(Double_t xy, Double_t z) { fDCAxy = xy; fDCAz = z; }
   void SetPtRange(Double_t ptl, Double_t pth){fPtLowerLimit = ptl; fPtHigherLimit = pth;}
-  void SetEta(Double_t eta){fEtaLowerLimit=-eta; fEtaHigherLimit=eta;}
+  void SetEta(Double_t eta){fEtaLowerLimit= -1*eta; fEtaHigherLimit=eta;}
   void SetTPCNclus(Int_t nclus) { fTPCNClus = nclus;}
-  void SetAODtrackCutBit(Int_t bit){
-    nAODtrackCutBit = bit;
-  }
+  void SetChi2PerNDF( Double_t chi2ndf ) { fChi2perNDF = chi2ndf;}
+  void SetAODtrackCutBit(Int_t bit){ nAODtrackCutBit = bit;}
   
   void SetKinematicsCutsAOD(Double_t ptl, Double_t pth, Double_t eta){
     fPtLowerLimit = ptl;
     fPtHigherLimit = pth;
-    fEtaLowerLimit = -eta;
+    fEtaLowerLimit = -1*eta;
     fEtaHigherLimit = eta;
     
   }
@@ -66,12 +65,13 @@ class AliEbyEHigherMomentsTask: public AliAnalysisTaskSE {
   Double_t fEtaLowerLimit;
   Double_t fEtaHigherLimit;
   Int_t fTPCNClus;
+  Double_t fChi2perNDF;
   Int_t nAODtrackCutBit;//track cut bit from track selection (only used for AODs)
   TH1D *fEventCounter;
 
   TH2F *fhNplusNminus[91]; //Data 
   
-  TH1D *fHistQA[11];
+  TH1D *fHistQA[13];
   
   AliEbyEHigherMomentsTask(const AliEbyEHigherMomentsTask&);
   AliEbyEHigherMomentsTask& operator = (const AliEbyEHigherMomentsTask&);//Not implimented..
