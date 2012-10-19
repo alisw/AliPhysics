@@ -19,6 +19,13 @@ ClassImp(AliCentraldNdetaTask)
 #endif
 
 //____________________________________________________________________
+AliCentraldNdetaTask::AliCentraldNdetaTask()
+  : AliBasedNdetaTask() 
+{ 
+  DGUARD(fDebug,0,"Default construction of AliCentraldNdetaTask");
+}
+
+//____________________________________________________________________
 AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
   : AliBasedNdetaTask("Central") 
 { 

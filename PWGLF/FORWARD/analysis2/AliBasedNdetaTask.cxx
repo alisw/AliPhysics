@@ -176,8 +176,14 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
   //    low  Low cut
   //    high High cut
   //
-  DGUARD(fDebug,3,"Add a centrality bin [%f,%f] @ %d", low, high, at);
+  DGUARD(fDebug,3,"Add a centrality bin [%d,%d] @ %d", low, high, at);
   CentralityBin* bin = MakeCentralityBin(GetName(), low, high);
+  if (!bin) { 
+    Error("AddCentralityBin", 
+	  "Failed to create centrality bin for %s [%d,%d] @ %d", 
+	  GetName(), low, high, at);
+    return;
+  }
   bin->SetDebugLevel(fDebug);
   fListOfCentralities->AddAtAndExpand(bin, at);
 }
@@ -198,7 +204,7 @@ AliBasedNdetaTask::MakeCentralityBin(const char* name,
   // Return:
   //    A newly created centrality bin 
   //
-  DGUARD(fDebug,3,"Make a centrality bin [%f,%f]: %s", low, high, name);
+  DGUARD(fDebug,3,"Make a centrality bin %s [%d,%d]", name, low, high);
   return new CentralityBin(name, low, high);
 }
 
@@ -363,7 +369,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   TIter next(fListOfCentralities);
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) 
-    bin->CreateOutputObjects(fSums);
+    bin->CreateOutputObjects(fSums, fTriggerMask);
   
 
   // Post data for ALL output slots >0 here, to get at least an empty
@@ -1150,8 +1156,8 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   Int_t n        = Int_t(fEvents->GetBinContent(1));
   Int_t n0       = Int_t(fEvents->GetBinContent(2));
 
-  AliInfoF("Adding histograms %s and %s with weights %f and %f resp.",
-	   fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
+  AliInfoF("Adding histograms %s(%d) and %s(%d) with weights %f and %f resp.",
+	   fSum0->GetName(), n, fSum->GetName(), n0, 1./epsilon, 1./epsilon0);
   DMSG(fDebug,2, "Adding histograms %s and %s with weights %f and %f resp.",
        fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
   // Generate merged histogram 
@@ -1371,7 +1377,7 @@ AliBasedNdetaTask::CentralityBin::GetListName() const
 }
 //____________________________________________________________________
 void
-AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
+AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir, Int_t mask)
 {
   // 
   // Create output objects 
@@ -1385,7 +1391,7 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
   fSums->SetOwner();
   dir->Add(fSums);
 
-  fTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers");
+  fTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers", mask);
   fTriggers->SetDirectory(0);
   fSums->Add(fTriggers);
 }
@@ -1511,7 +1517,8 @@ Double_t
 AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 						UShort_t    scheme,
 						Double_t    trigEff,
-						Double_t&   ntotal) const
+						Double_t&   ntotal,
+						TString*    text) const
 {
   // 
   // Calculate normalization 
@@ -1522,7 +1529,8 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   //    trigEff From MC
   //    ntotal  On return, contains the number of events. 
   //
-  DGUARD(fDebug,1,"Normalize centrality bin with %s", t.GetName());
+  DGUARD(fDebug,1,"Normalize centrality bin %s with %s", 
+	 GetName(), t.GetName());
   Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
   Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
   Double_t nA          = t.GetBinContent(AliAODForwardMult::kBinA);
@@ -1547,45 +1555,60 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   Double_t scaler = 1;
   Double_t beta   = nA + nC - 2*nE;
 
-  if (scheme & kEventLevel && !(scheme & kZeroBin)) {
-    ntotal = nAccepted / vtxEff;
-    scaler = vtxEff;
-    AliInfo(Form("Calculating event normalisation as\n"
-		 " N = N_A * N_T / N_V = %d * %d / %d = %f (%f)",
-		 Int_t(nAccepted), Int_t(nTriggered), Int_t(nWithVertex), 
-		 ntotal, scaler));
-	    
-    if (scheme & kBackground) {
-      //          1            E_V             E_V
-      //   s = --------- = ------------- = ------------ 
-      //        1 - beta   1 - beta E_V    1 - beta N_V 
-      //       ---  ----       --------        ---- ---
-      //       E_V  N_V          N_V           N_V  N_T 
-      // 
-      //          E_V
-      //     = ------------
-      //        1 - beta 
-      //            ----
-      //             N_T 
-      // 
-      ntotal -= nAccepted * beta / nWithVertex;
-      // This one is direct and correct. 
-      // scaler = 1. / (1. / vtxEff - beta / nWithVertex);
-      // A simpler expresion
-      scaler /= (1 - beta / nTriggered); // 0.831631 -> 0.780689
-      AliInfo(Form("Calculating event normalisation as\n"
-		   " beta = N_a + N_c + 2 N_e = %d + %d - 2 * %d = %d\n"
-		   " N = N - N_A * beta / N_V = %f - %d * %d / %d = %f (%f)",
-		   Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta),
-		   nAccepted / vtxEff, Int_t(nAccepted), Int_t(beta), 
-		   Int_t(nWithVertex), ntotal, scaler));
-    }
-  }
-  if (scheme & kZeroBin) {
+
+  TString rhs("N = N_acc");
+  if (!(scheme & kZeroBin)) {
+    if (scheme & kEventLevel) {
+      ntotal = nAccepted / vtxEff;
+      scaler = vtxEff;
+      AliInfoF("Calculating event normalisation as\n"
+	       " N = N_A * N_T / N_V = %d * %d / %d = %f (%f)",
+	       Int_t(nAccepted), Int_t(nTriggered), Int_t(nWithVertex), 
+	       ntotal, scaler);	    
+      if (scheme & kBackground) {
+	//          1            E_V             E_V
+	//   s = --------- = ------------- = ------------ 
+	//        1 - beta   1 - beta E_V    1 - beta N_V 
+	//       ---  ----       --------        ---- ---
+	//       E_V  N_V          N_V           N_V  N_T 
+	// 
+	//          E_V
+	//     = ------------
+	//        1 - beta 
+	//            ----
+	//             N_T 
+	// 
+	ntotal -= nAccepted * beta / nWithVertex;
+	// This one is direct and correct. 
+	// scaler = 1. / (1. / vtxEff - beta / nWithVertex);
+	// A simpler expresion
+	scaler /= (1 - beta / nTriggered); // 0.831631 -> 0.780689
+	AliInfo(Form("Calculating event normalisation as\n"
+		     " beta = N_a + N_c + 2 N_e = %d + %d - 2 * %d = %d\n"
+		     " N = N - N_A * beta / N_V = %f - %d * %d / %d = %f (%f)",
+		     Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta),
+		     nAccepted / vtxEff, Int_t(nAccepted), Int_t(beta), 
+		     Int_t(nWithVertex), ntotal, scaler));
+	rhs.Append("(1/eps_V - beta/N_vtx)");
+      } // Background 
+      else 
+	rhs.Append("/eps_V");
+    } // Event-level
+    if (scheme & kTriggerEfficiency) {
+      ntotal /= trigEff;
+      scaler *= trigEff;
+      AliInfo(Form("Correcting for trigger efficiency:\n"
+		   " N = 1 / E_X * N = 1 / %f * %d = %f (%f)", 
+		   trigEff, Int_t(ntotal), ntotal / trigEff, scaler));
+      rhs.Append("/eps_T");
+    } // Trigger efficiency
+  } 
+  else  {
     // Calculate as 
     // 
     //  N = N_A + 1/E_X * N_A / N_V (N_T - N_V - beta)
     //    = N_A (1 + 1/E_X (N_T/N_V - 1 - beta / N_V))
+    //    = N_A (1 + 1/E_X (1/E_V - 1 - beta / N_V))
     // 
     //  s = N_A/N = 1 / (1 + 1/E_X (N_T/N_V - 1 - beta / N_V))
     //    = N_V / (N_V + 1/E_X (N_T - N_V - beta)) 
@@ -1603,13 +1626,22 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 		 Int_t(nAccepted), trigEff, Int_t(nTriggered), 
 		 Int_t(nWithVertex), Int_t(beta), Int_t(nWithVertex), 
 		 ntotal, scaler));
+    rhs.Append("(1+1/eps_T(1/eps_V-1-beta/N_vtx))");
   }
-  if (scheme & kTriggerEfficiency && !(scheme & kZeroBin)) {
-    ntotal /= trigEff;
-    scaler *= trigEff;
-    AliInfo(Form("Correcting for trigger efficiency:\n"
-		 " N = 1 / E_X * N = 1 / %f * %d = %f (%f)", 
-		 trigEff, Int_t(ntotal), ntotal / trigEff, scaler));
+
+  if (text) {
+    text->Append(Form("%-40s = %d\n", "N_all",	          UInt_t(nAll)));
+    text->Append(Form("%-40s = %d\n", "N_acc",	          UInt_t(nAccepted)));
+    text->Append(Form("%-40s = %d\n", "N_trg",            UInt_t(nTriggered)));
+    text->Append(Form("%-40s = %d\n", "N_vtx",	          UInt_t(nWithVertex)));
+    text->Append(Form("%-40s = %d\n", "N_B",	          UInt_t(nB)));
+    text->Append(Form("%-40s = %d\n", "N_A",	          UInt_t(nA)));
+    text->Append(Form("%-40s = %d\n", "N_C",  	          UInt_t(nC)));
+    text->Append(Form("%-40s = %d\n", "N_E",	          UInt_t(nE)));
+    text->Append(Form("%-40s = %d\n", "beta = N_A + N_C - 2N_E",UInt_t(beta)));
+    text->Append(Form("%-40s = %f\n", "eps_V = N_vtx/N_trg",vtxEff));
+    text->Append(Form("%-40s = %f\n", "eps_T",		  trigEff));
+    text->Append(Form("%-40s = %f\n", rhs.Data(),         ntotal));
   }
 
   AliInfo(Form("\n"
@@ -1625,11 +1657,12 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 	       "  Vertex efficiency:          %f\n"
 	       "  Trigger efficiency:         %f\n"
 	       "  Total number of events: N = %f\n"
-	       "  Scaler (N_A/N):             %f",
+	       "  Scaler (N_A/N):             %f\n"
+	       "  %25s = %f",
 	       Int_t(nAll), GetTitle(), Int_t(nOffline), 
 	       Int_t(nTriggered), Int_t(nWithVertex), Int_t(nAccepted),
 	       Int_t(nB), Int_t(nA+nC), Int_t(nA), Int_t(nC), Int_t(nE), 
-	       vtxEff, trigEff, ntotal, scaler));
+	       vtxEff, trigEff, ntotal, scaler, rhs.Data(), ntotal));
   return scaler;
 }
 
@@ -1872,13 +1905,15 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     return;
   }
     
+  TString  text;
   Double_t ntotal = nSum;
-  Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal);
+  Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal, &text);
   if (scaler < 0) { 
     AliError("Failed to calculate normalization - bailing out");
     return;
   }
   fOutput->Add(fTriggers->Clone());
+  fOutput->Add(new TNamed("normCalc", text.Data()));
 
   // --- Make result and store ---------------------------------------
   MakeResult(sum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,

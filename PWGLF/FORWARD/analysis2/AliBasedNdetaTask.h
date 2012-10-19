@@ -588,8 +588,9 @@ protected:
      * Create output objects 
      * 
      * @param dir   Parent list
+     * @param mask  Trigger mask
      */
-    virtual void CreateOutputObjects(TList* dir);
+    virtual void CreateOutputObjects(TList* dir, Int_t mask);
     /** 
      * Process an event
      * 
@@ -662,13 +663,15 @@ protected:
      * @param scheme  Normalisation scheme 
      * @param trgEff  Trigger efficiency 
      * @param ntotal  On return, the total number of events to normalise to.
+     * @param text    If non-null, fill with normalization calculation
      * 
      * @return @f$N_A/N@f$ or negative number in case of errors. 
      */
     virtual Double_t Normalization(const TH1I& t, 
 				   UShort_t    scheme,
 				   Double_t    trgEff,
-				   Double_t&   ntotal) const;
+				   Double_t&   ntotal,
+				   TString*    text) const;
     /** 
      * Generate the dN/deta result from input 
      * 

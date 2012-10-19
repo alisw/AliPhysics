@@ -158,12 +158,14 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   }
 #endif
   AliInfo("Adding per-ring histograms to output");
-  Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal);
+  TString text;
+  Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal, &text);
   TIter next(res->GetHists());
   TH1*  hist = 0;
   while ((hist = static_cast<TH1*>(next()))) hist->Scale(scaler);
   res->SetName("dndetaRings");
   fOutput->Add(res);
+  fOutput->Add(new TNamed("normCalc", text.Data()));
 }
 
 //________________________________________________________________________
