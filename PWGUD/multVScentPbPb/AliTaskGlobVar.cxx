@@ -163,7 +163,8 @@ void AliTaskGlobVar::UserExec(Option_t *)
   fGlobVars.spd2 = (Short_t)multESD->GetNumberOfITSClusters(1);
   //
   float v0Corr,v0CorrR;
-  v0Corr = GetCorrV0(esd,v0CorrR);
+  //  v0Corr = GetCorrV0(esd,v0CorrR); MF: Deprecated: V0corr isnot needed any more
+  v0corr = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
   fGlobVars.v0Corr = (Short_t)v0Corr;
   //  fGlobVars.v0CorrResc = (Short_t)v0CorrR;
 
