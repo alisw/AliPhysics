@@ -116,10 +116,10 @@ Double_t AliPHOSEPFlattener::MakeFlat(Double_t oldPhi,Double_t centrality)const
   //Offset in the array
   icen=icen*fNHarmonics ;
 
-  for(Int_t i = 0; i<fNHarmonics; i+=2){
-    Double_t c = fParam[icen+i] ;  //Mean cos(n*phi) for a given centrality
-    Double_t s = fParam[icen+i+1]; //Mean sin(n*phi) for a given centrality
-    result += c*TMath::Sin((i/2+1)*oldPhi)-s*TMath::Cos((i/2+1)*oldPhi) ;  
+  for(Int_t i = 1; i<=fNHarmonics/2; i++){
+    Double_t c = 1./i*fParam[icen+2*i-2] ;  //Mean cos(n*phi) for a given centrality
+    Double_t s = 1./i*fParam[icen+2*i-1]; //Mean sin(n*phi) for a given centrality
+    result += c*TMath::Sin(i*oldPhi)-s*TMath::Cos(i*oldPhi) ;      
   }
   return result ;
 }
