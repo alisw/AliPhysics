@@ -47,7 +47,8 @@ BuildScript(const char* name, Bool_t verbose, Bool_t force, Bool_t debug)
  * @ingroup pwglf_forward_trains
  */
 Bool_t
-BuildHelpers(Bool_t verbose, Bool_t force, Bool_t debug)
+BuildHelpers(Bool_t verbose, Bool_t force, Bool_t debug,
+	     Bool_t all=false)
 {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS");
@@ -58,14 +59,14 @@ BuildHelpers(Bool_t verbose, Bool_t force, Bool_t debug)
 			    "OutputUtilities", 
 			    "Option",
 			    "Helper", 
-			    "LocalHelper", 
-			    "ProofHelper", 
-			    "LiteHelper",
-			    "AAFHelper", 
-			    "PluginHelper",
-			    "AAFPluginHelper", 
-			    "GridHelper",
 			    "TrainSetup",
+			    (all ? "LocalHelper" : 0), 
+			    "ProofHelper", 
+			    "LiteHelper", 
+			    "AAFHelper", 
+			    "PluginHelper", 
+			    "AAFPluginHelper", 
+			    "GridHelper", 
 			    0 };
   const char** ptr = scripts;
   while ((*ptr)) {
@@ -106,7 +107,8 @@ Bool_t RunTrain(const TString& name, const TString& cls,
 {
   // Check for help 
   if (name.IsNull() || name.EqualTo("help", TString::kIgnoreCase) || 
-      cls.IsNull()  || cls.EqualTo("help", TString::kIgnoreCase)) {
+      cls.IsNull()  || cls.EqualTo("help", TString::kIgnoreCase) || 
+      uri.IsNull()) {
     PlainUsage();
     return true;
   }
@@ -120,7 +122,7 @@ Bool_t RunTrain(const TString& name, const TString& cls,
   opts.Append("url="); 
   opts.Append(uri);
   TObjArray* optList = opts.Tokenize(",");
-  return TrainSetup::Main(name, cls, optList);
+  return TrainSetup::Main(name, cls, optList, false);
 }
 /*
  * EOF

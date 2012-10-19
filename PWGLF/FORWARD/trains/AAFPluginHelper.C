@@ -83,6 +83,9 @@ struct AAFPluginHelper : public PluginHelper
   {
     fOptions.Add("workers", "N[x]", "Number of workers to use", "0");
     fOptions.Add("dsname",  "NAME", "Make output dataset", "");
+    fOptions.Add("wrapper", "CMD", "Wrapper command", "");
+    fOptions.Add("clear",   "Clear all packages");
+    fOptions.Add("reset",   "soft|hard", "Reset cluster", "hard");
 
   }
   /** 
@@ -96,10 +99,13 @@ struct AAFPluginHelper : public PluginHelper
    */
   virtual Bool_t PreSetup()
   {
+    // --- Handle software options -----------------------------------
     TString root = fOptions.Get("root");
     fHandler->SetRootVersionForProof(Form("VO_ALICE@ROOT::%s", root.Data()));
     fHandler->SetProofCluster(fUrl.GetHost());
     fHandler->SetProofDataSet(fUrl.GetFile());
+
+    // --- Handle worker options -------------------------------------
     if (fOptions.Has("workers")) {
       TString nwork = fOptions.Get("workers");
       if (nwork.EndsWith("x")) 
@@ -107,6 +113,32 @@ struct AAFPluginHelper : public PluginHelper
       else 
 	fHandler->SetNproofWorkers(nwork.Atoi());
     }
+    
+    // --- Check if we're using a wrapper ----------------------------
+    if (fOptions.Has("wrapper")) { 
+      TString wrapper = fOptions.Get("wrapper");
+      if (wrapper.IsNull()) 
+	// In case of no argument, use GDB 
+	// Just run and backtrace 
+	wrapper = "/usr/bin/gdb --batch -ex run -ex bt --args";
+      Info("ProofHelper::PreSetup", "Using wrapper command: %s", 
+	   wrapper.Data());
+      TProof::AddEnvVar("PROOF_WRAPPERCMD", wrapper);
+    }
+    
+    // --- Check if we need to clear packages ------------------------
+    fHandler->SetClearPackages(fOptions.Has("clear"));
+
+    // --- Check if we need to reset first ---------------------------
+    if (fOptions.Has("reset")) { 
+      TString reset = fOptions.Get("reset");
+      Bool_t  hard  = (reset.IsNull() || 
+		       reset.EqualTo("hard", TString::kIgnoreCase));
+      Info("AAFPluginHelper::PreSetup", "Will do a %s reset of %s", 
+	   hard ? "hard" : "soft", fUrl.GetHost());
+      fHandler->SetProofReset(hard ? 2 : 1);
+    }
+    
     return PluginHelper::PreSetup();
   }
   /** 

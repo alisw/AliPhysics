@@ -306,7 +306,8 @@ struct Helper
       gSystem->Load("libProof");
       gSystem->Load("libProofPlayer");
     }
-    gROOT->LoadMacro(Form("%s.C+",cl.Data()));
+    // Always recompile and with debug symbols 
+    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
     Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
 					 cl.Data(), url.GetUrl(), verbose));
     if (verbose > 3) gSystem->RedirectOutput(0);
@@ -408,8 +409,16 @@ protected:
     if (!path.BeginsWith("/")) path.Prepend("../");
     if (gSystem->AccessPathName(path.Data())) { 
       // File not accessible
-      Warning("Helper::LoadSource", "File %s not accessible", path.Data());
+      Warning("Helper::AuxFile", "File %s not accessible", path.Data());
       return false;
+    }
+    TString base(gSystem->BaseName(path.Data()));
+    if (gSystem->AccessPathName(base.Data()) == 0) { 
+      // File or link exists - remove it 
+      if (gSystem->Unlink(base) != 0) { 
+	Error("Helper::AuxFile", "Failed to remove old %s", base.Data());
+	return false;
+      }
     }
     gSystem->Exec(Form("ln -s %s .", path.Data()));
     return true;

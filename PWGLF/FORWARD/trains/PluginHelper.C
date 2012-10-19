@@ -80,6 +80,32 @@ struct PluginHelper : public Helper
     fOptions.Add("storage", "URL", "Location for external storage", "");    
     fOptions.Add("plugin", "Use AliEn handler");
   }
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  PluginHelper(const PluginHelper& o) 
+    : Helper(o), fHandler(o.fHandler), fUsePars(o.fUsePars)
+  {}
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this 
+   */
+  PluginHelper& operator=(const PluginHelper& o) 
+  {
+    if (&o == this) return *this;
+    Helper::operator=(o);
+    fHandler = o.fHandler;
+    fUsePars = o.fUsePars;
+    return *this;
+  }
+  /** 
+   * Destructor 
+   */
   virtual ~PluginHelper() {}
   /** 
    * Load a library/PAR/script 

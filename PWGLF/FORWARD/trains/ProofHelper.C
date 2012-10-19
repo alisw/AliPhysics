@@ -95,6 +95,9 @@ struct ProofHelper : public Helper
    */
   ProofHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), 
+      fExtraLibs(""),
+      fExtraPars(""),
+      fExtraSrcs(""),
       fUsePars(false), 
       fBasePars(false)
   {
@@ -103,10 +106,15 @@ struct ProofHelper : public Helper
     fOptions.Add("par",      "tasks|all", "Use par files",           "tasks");
     fOptions.Add("mode",     "default|rec|sim", "AliROOT mode",      "default");
     fOptions.Add("storage",  "URL", "Location for external storage", "");    
-
+    fOptions.Add("wrapper",  "CMD", "Wrapper command", "");
+    fOptions.Add("clear",    "PKGS", "Clear packages ','-separated", "");
+    fOptions.Add("reset",    "soft|hard", "Reset cluster", "hard");
     if (!fUrl.GetUser() || fUrl.GetUser()[0] == '\0') 
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
   }
+  /** 
+   * Destructor 
+   */
   virtual ~ProofHelper() {}
   /** 
    * Load a library/PAR/script 
@@ -220,6 +228,26 @@ struct ProofHelper : public Helper
     if (fBasePars) return true;
 
     TString parName(AliROOTParName());
+    TString parFile(Form("%s.par", parName.Data()));
+
+    // --- Check if we have the drirectory already -------------------
+    if (gSystem->AccessPathName(parName.Data()) == 0) { 
+      // Let's remove it to get a clean slate 
+      if (gSystem->Exec(Form("rm -rf %s", parName.Data())) != 0) {
+	Error("ProofHelper", "Failed to remove %s", parName.Data());
+	return false;
+      }
+    }
+    // --- Check if the PAR file is there, and remove it if so -------
+    if (gSystem->AccessPathName(parFile.Data()) == 0) { 
+      if (gSystem->Unlink(parFile.Data()) != 0) { 
+	Error("ProofHelper::CreateAliROOTPar", "Failed to remove %s", 
+	      parFile.Data());
+	return false;
+      }
+    }
+      
+
     // Set-up directories 
     if (gSystem->MakeDirectory(parName) < 0) {
       Error("ProofHelper::CreateAliROOTPar", "Could not make directory '%s'", 
@@ -319,15 +347,15 @@ struct ProofHelper : public Helper
       << std::endl;
     s.close();
 
-    Int_t ret = gSystem->Exec(Form("tar -czf %s.par %s",
-				   parName.Data(), parName.Data()));
+    Int_t ret = gSystem->Exec(Form("tar -czf %s %s",
+				   parFile.Data(), parName.Data()));
     if (ret != 0) { 
-      Error("ProofHelper::CreateAliROOTPar", "Failed to pack up PAR files");
+      Error("ProofHelper::CreateAliROOTPar", "Failed to pack up PAR file %s",
+	    parFile.Data());
       return false;
     }
 
-    ret = gProof->UploadPackage(Form("./%s.par", parName.Data()),
-				TProof::kRemoveOld);
+    ret = gProof->UploadPackage(parFile.Data(),TProof::kRemoveOld);
     if (ret != 0) { 
       Error("ProofHelper::CreateAliROOTPar", 
 	    "Failed to upload the AliROOT PAR file");
@@ -357,12 +385,45 @@ struct ProofHelper : public Helper
     // --- Set prefered GSI method ---------------------------------
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 
-      // --- Add ALICE_ROOT directory to search path for packages ----
-    Info("ProofHelper::PreSetup", "Set location of packages");
+    // --- Add ALICE_ROOT directory to search path for packages ----
+    // Info("ProofHelper::PreSetup", "Set location of packages");
     gEnv->SetValue("Proof.GlobalPackageDirs", 
 		   Form("%s:%s", 
 			gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
 			gSystem->Getenv("ALICE_ROOT")));
+
+    // --- Forming the URI we use to connect with --------------------
+    TUrl connect(fUrl);
+    connect.SetAnchor("");
+    connect.SetFile("");
+    connect.SetOptions("");
+
+    // --- Check if we need to reset first ---------------------------
+    if (fOptions.Has("reset")) { 
+      TString reset = fOptions.Get("reset");
+      Bool_t  hard  = (reset.IsNull() || 
+		       reset.EqualTo("hard", TString::kIgnoreCase));
+      Info("ProofHelper::PreSetup", "Doing a %s reset of %s", 
+	   hard ? "hard" : "soft", connect.GetUrl());
+      TProof::Reset(connect.GetUrl(), hard);
+      Int_t secs = 3;
+      Info("ProofHelper::PreSetup", 
+	   "Waiting for %d second%s for things to settle", secs,
+	   secs > 1 ? "s" : "");
+      gSystem->Sleep(1000*secs);
+    }
+      
+    // --- Check if we're using a wrapper ----------------------------
+    if (fOptions.Has("wrapper")) { 
+      TString wrapper = fOptions.Get("wrapper");
+      if (wrapper.IsNull()) 
+	// In case of no argument, use GDB 
+	// Just run and backtrace 
+	wrapper = "/usr/bin/gdb --batch -ex run -ex bt --args";
+      Info("ProofHelper::PreSetup", "Using wrapper command: %s", 
+	   wrapper.Data());
+      TProof::AddEnvVar("PROOF_WRAPPERCMD", wrapper);
+    }
 
     // --- PAR parameters --------------------------------------------
     fUsePars  = fOptions.Has("par");
@@ -370,10 +431,6 @@ struct ProofHelper : public Helper
 		 fOptions.Get("par").EqualTo("all",TString::kIgnoreCase));
 
     // --- Connect to the cluster ------------------------------------
-    TUrl connect(fUrl);
-    connect.SetAnchor("");
-    connect.SetFile("");
-    connect.SetOptions("");
     TString opts;
     if (fOptions.Has("workers")) 
       opts.Append(Form("workers=%s", fOptions.Get("workers").Data()));
@@ -393,8 +450,28 @@ struct ProofHelper : public Helper
 	    connect.GetUrl());
       return false;
     }
-    Info("ProofHelper::PreSetup", "Using progress dialog=%d", 	 
-	 gProof->TestBit(TProof::kUseProgressDialog));
+    
+    // --- Check if we need to clear packages ------------------------
+    if (fOptions.Has("clear")) {
+      TString pkgs = fOptions.Get("clear");
+      if (pkgs.IsNull() || pkgs.EqualTo("all", TString::kIgnoreCase)) { 
+	// No value given, clear all 
+	if (gProof->ClearPackages() != 0) 
+	  Warning("ProofHelper::PreSetup", "Failed to lear all packages");
+      }
+      else { 
+	// Tokenize on ',' and clear each package 
+	TObjArray* pars = pkgs.Tokenize(",");
+	TObject*   pkg  = 0;
+	TIter      next(pars); 
+	while ((pkg = next())) { 
+	  if (gProof->ClearPackage(pkg->GetName()) != 0)
+	    Warning("ProofHelper::PreSetup", "Failed to clear package %s", 
+		    pkg->GetName());
+	}
+	pars->Delete();
+      }
+    }
     return true;
   }
   /** 
@@ -440,7 +517,8 @@ struct ProofHelper : public Helper
     TObject*   obj  = 0;
     TIter      next(pars);
     while ((obj = next())) { 
-      Int_t ret = gProof->EnablePackage(obj->GetName());
+      // Enable the package, but do not build on client - already done
+      Int_t ret = gProof->EnablePackage(obj->GetName(), true);
       if (ret < 0) { 
 	Error("ProofHelper::PostSetup", "Failed to enable PAR %s",
 	      obj->GetName());
@@ -484,7 +562,7 @@ struct ProofHelper : public Helper
     //   dsName.Append(Form("#%s", fUrl.GetAnchor()));
     Long64_t ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName, nEvents);
     
-    if (fVerbose > 2) 
+    if (fVerbose > 10) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","proof.log");
     return ret;
   }

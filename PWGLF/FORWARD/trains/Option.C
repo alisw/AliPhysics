@@ -225,6 +225,20 @@ struct OptionList
       if (fNext) fNext->fPrev = fPrev;
       delete fThis;
     }
+    Link(const Link& o)
+      : fPrev(o.fPrev), 
+	fNext(o.fNext), 
+	fThis(o.fThis)
+    {
+    }
+    Link& operator=(const Link& o)
+    {
+      if (&o == this) return *this;
+      fPrev = o.fPrev;
+      fNext = o.fNext;
+      fThis = o.fThis;
+      return *this;
+    }	
   };
   /** 
    * Constructor 
