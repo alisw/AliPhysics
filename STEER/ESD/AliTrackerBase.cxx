@@ -286,7 +286,7 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     if (!track->GetXYZAt(x,bz,xyz1)) return kFALSE;   // no prolongation
     xyz1[2]+=kEpsilon; // waiting for bug correction in geo
 
-    if (TMath::Abs(track->GetSnpAt(x,bz)) >= maxSnp) return kFALSE;
+    if (maxSnp>0 && TMath::Abs(track->GetSnpAt(x,bz)) >= maxSnp) return kFALSE;
     if (!track->PropagateTo(x,bz))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);	
@@ -298,15 +298,16 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     //
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
-      if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
       track->GetXYZ(xyz1);   // global position
       Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
-      //
-      Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
-               sa=TMath::Sin(alphan-track->GetAlpha());
-      Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
-      Double_t sinNew =  sf*ca - cf*sa;
-      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      if (maxSnp>0) {
+	if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+	//
+	Double_t ca=TMath::Cos(alphan-track->GetAlpha()), sa=TMath::Sin(alphan-track->GetAlpha());
+	Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
+	Double_t sinNew =  sf*ca - cf*sa;
+	if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      }
       if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
     }
     xpos = track->GetX();
@@ -354,7 +355,7 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
     if (!track->GetXYZAt(x,b[2],xyz1)) return kFALSE;   // no prolongation
     xyz1[2]+=kEpsilon; // waiting for bug correction in geo
 
-    if (TMath::Abs(track->GetSnpAt(x,b[2])) >= maxSnp) return kFALSE;
+    if (maxSnp>0 && TMath::Abs(track->GetSnpAt(x,b[2])) >= maxSnp) return kFALSE;
     if (!track->PropagateToBxByBz(x,b))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);    
@@ -366,15 +367,15 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
     //
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
-      if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
       track->GetXYZ(xyz1);   // global position
       Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
-      //
-      Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
-               sa=TMath::Sin(alphan-track->GetAlpha());
-      Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
-      Double_t sinNew =  sf*ca - cf*sa;
-      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      if (maxSnp>0) {
+	if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+	Double_t ca=TMath::Cos(alphan-track->GetAlpha()), sa=TMath::Sin(alphan-track->GetAlpha());
+	Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
+	Double_t sinNew =  sf*ca - cf*sa;
+	if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      }
       if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
     }
     xpos = track->GetX();    
