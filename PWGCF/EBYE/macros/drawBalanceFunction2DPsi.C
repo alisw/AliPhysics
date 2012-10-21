@@ -12,7 +12,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
-			      Double_t ptAssociatedMax = -1.) {
+			      Double_t ptAssociatedMax = -1.,
+			      Bool_t k2pMethod = kFALSE) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -40,7 +41,8 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   }
   else 
     draw(listBF,listBFShuffled,listBFMixed,gCentrality,psiMin,psiMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);  
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
+	 k2pMethod);  
 }
 
 //______________________________________________________//
@@ -91,7 +93,7 @@ TList *GetListOfObjects(const char* filename,
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
   cout<<"List name: "<<listBF->GetName()<<endl;
-  //listBF->ls();
+  listBF->ls();
 
   //Get the histograms
   TString histoName;
@@ -180,7 +182,8 @@ TList *GetListOfObjects(const char* filename,
 void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
-	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {  
+	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
+	  Bool_t k2pMethod = kFALSE) {  
   //balance function
   AliTHn *hP = NULL;
   AliTHn *hN = NULL;
@@ -294,20 +297,45 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   else 
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
   
-  gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(k2pMethod) 
+    if(bMixed)
+      gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    else{
+      cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
+      return;
+    }
+  else
+    gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
   gHistBalanceFunction->SetName("gHistBalanceFunction");
 
   if(listBFShuffled) {
-    gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    
+    if(k2pMethod) 
+      if(bMixed)
+	gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      else{
+	cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
+	return;
+      }
+    else
+      gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistBalanceFunctionShuffled->SetTitle(histoTitle.Data());
     gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
     gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
   }
 
   if(listBFMixed) {
-    gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(k2pMethod) 
+      if(bMixed)
+	gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+      else{
+	cerr<<"NO MIXED BF BUT REQUESTED CORRECTING WITH IT! --> FAIL"<<endl;
+	return;
+      }
+    else
+      gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistBalanceFunctionMixed->SetTitle(histoTitle.Data());
     gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
     gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
@@ -391,6 +419,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
+  if(k2pMethod) newFileName += "_2pMethod";
   newFileName += ".root";
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");

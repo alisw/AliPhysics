@@ -116,11 +116,27 @@ class AliBalancePsi : public TObject {
 				    Double_t ptAssociatedMin=-1.,
 				    Double_t ptAssociatedMax=-1);
 
+  TH1D *GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
+				    Int_t iVariablePair,
+				    Double_t psiMin, Double_t psiMax,
+				    Double_t ptTriggerMin=-1.,
+				    Double_t ptTriggerMax=-1.,
+				    Double_t ptAssociatedMin=-1.,
+				    Double_t ptAssociatedMax=-1,
+				    AliBalancePsi *bfMix=NULL);
+
   TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax,
 					   Double_t ptTriggerMin=-1.,
 					   Double_t ptTriggerMax=-1.,
 					   Double_t ptAssociatedMin=-1.,
 					   Double_t ptAssociatedMax=-1);
+  
+  TH2D *GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin, Double_t psiMax,
+						   Double_t ptTriggerMin=-1.,
+						   Double_t ptTriggerMax=-1.,
+						   Double_t ptAssociatedMin=-1.,
+						   Double_t ptAssociatedMax=-1.,
+						   AliBalancePsi *bfMix=NULL);
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
