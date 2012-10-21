@@ -272,15 +272,15 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     bMixed->SetHistNnn(hNNMixed);
   }
 
-  TH2D *gHistPN[3];
-  TH2D *gHistNP[3];
-  TH2D *gHistPP[3];
-  TH2D *gHistNN[3];
+  TH2D *gHistPN[4];
+  TH2D *gHistNP[4];
+  TH2D *gHistPP[4];
+  TH2D *gHistNN[4];
   
-  TCanvas *cPN[3];
-  TCanvas *cNP[3];
-  TCanvas *cPP[3];
-  TCanvas *cNN[3];
+  TCanvas *cPN[4];
+  TCanvas *cNP[4];
+  TCanvas *cPP[4];
+  TCanvas *cNN[4];
   TString histoTitle, pngName;
   
   //(+-)
@@ -298,7 +298,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistPN[0]->GetYaxis()->SetTitleOffset(1.5);
-  gHistPN[0]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+  gHistPN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPN[0]->SetTitle(histoTitle.Data());
   cPN[0] = new TCanvas("cPN0","",0,0,600,500);
   cPN[0]->SetFillColor(10); cPN[0]->SetHighLightColor(10);
@@ -328,7 +328,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistPN[1]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPN[1]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistPN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPN[1]->SetTitle(histoTitle.Data());
     cPN[1] = new TCanvas("cPN1","",0,100,600,500);
     cPN[1]->SetFillColor(10); 
@@ -360,7 +360,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistPN[2]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPN[2]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistPN[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPN[2]->SetTitle(histoTitle.Data());
     cPN[2] = new TCanvas("cPN2","",0,200,600,500);
     cPN[2]->SetFillColor(10); 
@@ -375,6 +375,25 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositiveNegative.png";
     cPN[2]->SaveAs(pngName.Data());
+
+    //Correlation function (+-)
+    gHistPN[3] = dynamic_cast<TH2D *>(gHistPN[0]->Clone());
+    gHistPN[3]->Divide(gHistPN[2]);
+    gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHistPN[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
+    cPN[3] = new TCanvas("cPN3","",0,300,600,500);
+    cPN[3]->SetFillColor(10); 
+    cPN[3]->SetHighLightColor(10);
+    gHistPN[3]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
+    pngName = "CorrelationFunction.Centrality"; 
+    pngName += centralityArray[gCentrality-1]; 
+    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+    pngName += ".PositiveNegative.png";
+    cPN[3]->SaveAs(pngName.Data());
   }
 
   //(-+)
@@ -392,7 +411,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistNP[0]->GetYaxis()->SetTitleOffset(1.5);
-  gHistNP[0]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+  gHistNP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNP[0]->SetTitle(histoTitle.Data());
   cNP[0] = new TCanvas("cNP0","",100,0,600,500);
   cNP[0]->SetFillColor(10); 
@@ -423,7 +442,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistNP[1]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNP[1]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistNP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNP[1]->SetTitle(histoTitle.Data());
     cNP[1] = new TCanvas("cNP1","",100,100,600,500);
     cNP[1]->SetFillColor(10); 
@@ -455,7 +474,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistNP[2]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNP[2]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistNP[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNP[2]->SetTitle(histoTitle.Data());
     cNP[2] = new TCanvas("cNP2","",100,200,600,500);
     cNP[2]->SetFillColor(10); 
@@ -470,6 +489,25 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativePositive.png";
     cNP[2]->SaveAs(pngName.Data());
+
+    //Correlation function (-+)
+    gHistNP[3] = dynamic_cast<TH2D *>(gHistNP[0]->Clone());
+    gHistNP[3]->Divide(gHistNP[2]);
+    gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHistNP[3]->GetZaxis()->SetTitle("C_{-+}(#Delta#eta,#Delta#varphi)");
+    cNP[3] = new TCanvas("cNP3","",100,300,600,500);
+    cNP[3]->SetFillColor(10); 
+    cNP[3]->SetHighLightColor(10);
+    gHistNP[3]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
+    pngName = "CorrelationFunction.Centrality"; 
+    pngName += centralityArray[gCentrality-1]; 
+    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+    pngName += ".NegativePositive.png";
+    cNP[3]->SaveAs(pngName.Data());
   }
   
   //(++)
@@ -487,7 +525,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistPP[0]->GetYaxis()->SetTitleOffset(1.5);
-  gHistPP[0]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+  gHistPP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPP[0]->SetTitle(histoTitle.Data());
   cPP[0] = new TCanvas("cPP0","",200,0,600,500);
   cPP[0]->SetFillColor(10); 
@@ -518,7 +556,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistPP[1]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPP[1]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistPP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPP[1]->SetTitle(histoTitle.Data());
     cPP[1] = new TCanvas("cPP1","",200,100,600,500);
     cPP[1]->SetFillColor(10); 
@@ -550,7 +588,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistPP[2]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPP[2]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistPP[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPP[2]->SetTitle(histoTitle.Data());
     cPP[2] = new TCanvas("cPP2","",200,200,600,500);
     cPP[2]->SetFillColor(10); 
@@ -565,6 +603,25 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositivePositive.png";
     cPP[2]->SaveAs(pngName.Data());
+
+    //Correlation function (++)
+    gHistPP[3] = dynamic_cast<TH2D *>(gHistPP[0]->Clone());
+    gHistPP[3]->Divide(gHistPP[2]);
+    gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHistPP[3]->GetZaxis()->SetTitle("C_{++}(#Delta#eta,#Delta#varphi)");
+    cPP[3] = new TCanvas("cPP3","",200,300,600,500);
+    cPP[3]->SetFillColor(10); 
+    cPP[3]->SetHighLightColor(10);
+    gHistPP[3]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
+    pngName = "CorrelationFunction.Centrality"; 
+    pngName += centralityArray[gCentrality-1]; 
+    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+    pngName += ".PositivePositive.png";
+    cPP[3]->SaveAs(pngName.Data());
   }
 
   //(--)
@@ -582,7 +639,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistNN[0]->GetYaxis()->SetTitleOffset(1.5);
-  gHistNN[0]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+  gHistNN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNN[0]->SetTitle(histoTitle.Data());
   cNN[0] = new TCanvas("cNN0","",300,0,600,500);
   cNN[0]->SetFillColor(10); 
@@ -613,7 +670,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistNN[1]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNN[1]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistNN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNN[1]->SetTitle(histoTitle.Data());
     cNN[1] = new TCanvas("cNN1","",300,100,600,500);
     cNN[1]->SetFillColor(10); 
@@ -645,7 +702,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     gHistNN[2]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNN[2]->GetYaxis()->SetTitle("#Delta #varphi (^{o})");
+    gHistNN[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNN[2]->SetTitle(histoTitle.Data());
     cNN[2] = new TCanvas("cNN2","",300,200,600,500);
     cNN[2]->SetFillColor(10); 
@@ -660,6 +717,25 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativeNegative.png";
     cNN[2]->SaveAs(pngName.Data());
+
+    //Correlation function (--)
+    gHistNN[3] = dynamic_cast<TH2D *>(gHistNN[0]->Clone());
+    gHistNN[3]->Divide(gHistNN[2]);
+    gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHistNN[3]->GetZaxis()->SetTitle("C_{--}(#Delta#eta,#Delta#varphi)");
+    cNN[3] = new TCanvas("cNN3","",300,300,600,500);
+    cNN[3]->SetFillColor(10); 
+    cNN[3]->SetHighLightColor(10);
+    gHistNN[3]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
+    pngName = "CorrelationFunction.Centrality"; 
+    pngName += centralityArray[gCentrality-1]; 
+    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+    pngName += ".NegativeNegative.png";
+    cNN[3]->SaveAs(pngName.Data());
   }
 }
 
