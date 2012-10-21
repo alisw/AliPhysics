@@ -77,11 +77,15 @@ fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
+//Split
 fDoClusterSplitting(kFALSE),
+fUseSimpleMassCut(kFALSE),
+fUseSimpleM02Cut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
-fMassPhoMin(0),           fMassPhoMax(0)
+fMassPhoMin(0),           fMassPhoMax(0),
+fSplitEFracMin(0),        fSplitWidthSigma(0)
 {
   //Ctor
   
@@ -106,11 +110,15 @@ fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
+//Split
 fDoClusterSplitting(kFALSE),
+fUseSimpleMassCut(kFALSE),
+fUseSimpleM02Cut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
-fMassPhoMin(0),           fMassPhoMax(0)
+fMassPhoMin(0),           fMassPhoMax(0),
+fSplitEFracMin(0),        fSplitWidthSigma(0)
 {
   //Ctor
 	
@@ -137,11 +145,16 @@ fEMCALL0CutMax(100.),        fEMCALL0CutMin(0),
 fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000),    fPHOSRCut(1000),
+//Split
 fDoClusterSplitting(kFALSE),
+fUseSimpleMassCut(kFALSE),
+fUseSimpleM02Cut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
-fMassPhoMin(0),           fMassPhoMax(0)
+fMassPhoMin(0),           fMassPhoMax(0),
+fSplitEFracMin(0),        fSplitWidthSigma(0)
+
 {
   //Ctor
   
@@ -212,20 +225,99 @@ void AliCaloPID::InitParameters()
   
   // Cluster splitting
   
-  fSplitM02MinCut = 0.26 ;
-  fSplitM02MaxCut = 100  ;
-  fSplitMinNCells = 4    ;
+  fSplitM02MinCut = 0.3 ;
+  fSplitM02MaxCut = 5   ;
+  fSplitMinNCells = 4   ;
 
   fMassEtaMin  = 0.4;
   fMassEtaMax  = 0.6;
   
-  fMassPi0Min  = 0.08;
-  fMassPi0Max  = 0.20;
+  fMassPi0Min  = 0.11;
+  fMassPi0Max  = 0.18;
   
   fMassPhoMin  = 0.0;
-  fMassPhoMax  = 0.05;
+  fMassPhoMax  = 0.08;
+  
+  fMassWidthPi0Param[0] = 0.111;  // Aboslute Low mass cut for NLM=1 and E < 12 GeV
+  fMassWidthPi0Param[1] = 0.110;  // Aboslute Low mass cut for NLM=2 and E < 9 GeV
+  fMassWidthPi0Param[2] = 0.009;  // constant width for E < 8 GeV, 9 MeV
+  fMassWidthPi0Param[3] = 0.0023; // pol1 param0 of width for E > 8 GeV
+  fMassWidthPi0Param[4] = 0.0008; // pol1 param1 of width for E > 8 GeV
+  fMassWidthPi0Param[5] = 0.130;  // Mean mass value for NLM=1
+  fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
+  
+  fM02MinParam[0] = 0.6 ;     // Min for NLM>1 and E < 8 NLM=1
+  fM02MinParam[1] = 1.9 ;     // pol2 param0 for NLM=1 , 8 < E < 18 GeV
+  fM02MinParam[2] =-0.186 ;   // pol2 param1 for NLM=1 , 8 < E < 18 GeV
+  fM02MinParam[3] = 0.0053 ;  // pol2 param2 for NLM=1 , 8 < E < 18 GeV
+  fM02MinParam[4] = 0.3;      // absolute minimum in any case
+  
+  fSplitEFracMin   = 0.85 ;
+  fSplitWidthSigma = 2.5  ;
   
 }
+
+//_________________________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mass, const Int_t nlm)
+{
+  // Select the appropriate mass range for pi0 selection in splitting method
+  
+  if(fUseSimpleMassCut)
+  {
+    if(mass < fMassPi0Max && mass > fMassPi0Min) return kTRUE;
+    else                                         return kFALSE;
+  }
+  
+  // Get the selected mean value as reference for the mass
+  Float_t       meanMass = fMassWidthPi0Param[6];
+  if(nlm == 1)  meanMass = fMassWidthPi0Param[5];
+  
+  // Get the parametrized width of the mass
+  Float_t width   = 0.009;
+  if(energy < 8) width = fMassWidthPi0Param[2];
+  else           width = fMassWidthPi0Param[3]+energy*fMassWidthPi0Param[4];  
+
+  // Calculate the 2 sigma cut
+  Float_t minMass = meanMass-fSplitWidthSigma*width;
+  Float_t maxMass = meanMass+fSplitWidthSigma*width;
+
+  // In case of low energy, hard cut to avoid conversions
+  if(energy < 12 && nlm == 1) minMass = fMassWidthPi0Param[0];
+  if(energy < 9  && nlm == 2) minMass = fMassWidthPi0Param[1];
+  
+  //printf("\t \t sigma %1.1f width %3.1f, mean Mass %3.0f, minMass %3.0f, maxMass %3.0f\n ", 
+  //       fSplitWidthSigma, width*1000, meanMass*1000,minMass*1000,maxMass*1000);
+  
+  if(mass < maxMass && mass > minMass) return kTRUE;
+  else                                 return kFALSE;
+
+  
+}
+
+//_____________________________________________________________________________________________
+Bool_t AliCaloPID::IsInSplitM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+{
+  // Select the appropriate m02 range in splitting method
+  // Min value between 0.3 and 0.6
+  
+  Float_t minCut = fSplitM02MinCut;
+  
+  if(!fUseSimpleM02Cut)
+  {
+    if   ( nlm > 1 || (nlm==1 && energy<8) ) minCut = fM02MinParam[0]; // 0.6
+    else minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3];  
+    
+    //In any case, the parameter cannot be smaller than this (0.3)
+    if(minCut < fM02MinParam[4]) minCut = fM02MinParam[4];
+  }
+  
+  //printf("\t \t m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",m02,minCut,fSplitM02MaxCut);
+  
+  if(m02 < fSplitM02MaxCut && m02 > minCut) return kTRUE;
+  else                                      return kFALSE;
+
+}
+
 
 //______________________________________________
 AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils() 
@@ -378,24 +470,21 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // if this is a photon, pi0, eta, ...
   
   Int_t   absId1 = -1; Int_t absId2 = -1;
-  Float_t l0     = cluster->GetM02();
+  Float_t eClus  = cluster->E();
+  Float_t m02    = cluster->GetM02();
   const Int_t nc = cluster->GetNCells();
   Int_t   absIdList[nc]; 
   Float_t maxEList [nc]; 
   
-  nMax  = -1 ;
   mass  = -1.;
   angle = -1.;
-  
-  //If too small or big E or low number of cells, or close to a bad channel skip it
-  if( l0 < fSplitM02MinCut || l0 > fSplitM02MaxCut || nc < fSplitMinNCells) 
-  {
-    return kNeutralUnknown ; 
-  }
-  
+
   // Get Number of local maxima
-  nMax      = caloutils->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ;  
+  nMax  = caloutils->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ; 
   
+  if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting() - Cluster : E %1.1f, M02 %1.2f, NLM %d, N Cells %d\n",
+                        eClus,m02,nMax,nc);
+
   //---------------------------------------------------------------------
   // Get the 2 max indeces and do inv mass
   //---------------------------------------------------------------------
@@ -479,10 +568,24 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   e1    = cluster1.E();
   e2    = cluster2.E();
   
-  if     (mass < fMassPhoMax && mass > fMassPhoMin) return kPhoton;
-  else if(mass < fMassPi0Max && mass > fMassPi0Min) return kPi0;
-  else if(mass < fMassEtaMax && mass > fMassEtaMin) return kEta;
-  else                                              return kNeutralUnknown;
+  if(fDebug > 0) 
+    printf("\t Split : E1 %1.2f, E2 %1.2f, mass %3.3f \n", e1,e2,mass);
+  
+  // Consider clusters with splitted energy not too different to original cluster energy
+  if((e1+e2)/eClus < fSplitEFracMin) return kNeutralUnknown ;
+  
+  if(fDebug > 0) printf("\t pass Split E frac cut\n");
+  
+  //If too small or big E or low number of cells, or close to a bad channel skip it
+  if ( !IsInSplitM02Range(eClus,m02,nMax) || nc < fSplitMinNCells)  return kNeutralUnknown ; 
+  
+  if(fDebug > 0) printf("\t pass M02 and nCells cut\n");
+  
+  // Check the mass, and set an ID to the splitted cluster
+  if     (mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
+  else if(mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
+  else if(IsInPi0SplitMassRange(cluster->E(),mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
+  else                                                                                                return kNeutralUnknown ;
   
 }
 
@@ -655,7 +758,8 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
   //Set PID pdg
   ph->SetIdentifiedParticleType(GetIdentifiedParticleType(cluster));
   
-  if(fDebug > 0){ 
+  if(fDebug > 0)
+  { 
     printf("AliCaloPID::SetPIDBits: TOF %e, Lambda0 %2.2f, Lambda1 %2.2f\n",tof , l0, l1); 	
     printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
            ph->GetIdentifiedParticleType(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
@@ -717,9 +821,9 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
       else                                                                    return kFALSE;
       
     }//PHOS
-    else {//EMCAL
-      
-    if(fDebug > 0) 
+    else //EMCAL
+    {
+    if(fDebug > 1) 
         printf("AliCaloPID::IsTrackMatched - EMCAL dR %f < %f, dZ %f < %f \n",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut);
       
       if(TMath::Abs(dR) < fEMCALDPhiCut && 
