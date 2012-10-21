@@ -479,6 +479,11 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   mass  = -1.;
   angle = -1.;
 
+  //If too low number of cells, skip it
+  if ( nc < fSplitMinNCells)  return kNeutralUnknown ; 
+  
+  if(fDebug > 0) printf("\t pass nCells cut\n");
+  
   // Get Number of local maxima
   nMax  = caloutils->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ; 
   
@@ -548,6 +553,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
     
   } // n local maxima > 2
   
+  if(absId2<0 || absId1<0) 
+  {
+    if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting() - Bad index for local maxima : N max %d, i1 %d, i2 %d, cluster E %2.2f, ncells %d, m02 %2.2f\n",
+                          nMax,absId1,absId2,eClus,nc,m02);
+    return kNeutralUnknown ; 
+  }
+  
   //---------------------------------------------------------------------
   // Split the cluster energy in 2, around the highest 2 local maxima
   //---------------------------------------------------------------------  
@@ -576,10 +588,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
   
-  //If too small or big E or low number of cells, or close to a bad channel skip it
-  if ( !IsInSplitM02Range(eClus,m02,nMax) || nc < fSplitMinNCells)  return kNeutralUnknown ; 
+  //If too small or big M02 low number of cells, skip it
+  if (!IsInSplitM02Range(eClus,m02,nMax))  return kNeutralUnknown ; 
   
-  if(fDebug > 0) printf("\t pass M02 and nCells cut\n");
+  if(fDebug > 0) printf("\t pass M02 cut\n");
   
   // Check the mass, and set an ID to the splitted cluster
   if     (mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
