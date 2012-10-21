@@ -73,6 +73,10 @@ class AliCaloPID : public TObject {
 
   void      InitParameters();
   
+  Bool_t    IsInPi0SplitMassRange(const Float_t energy, const Float_t mass, const Int_t nlm);
+  
+  Bool_t    IsInSplitM02Range    (const Float_t energy, const Float_t m02,  const Int_t nlm);
+  
   Int_t     GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL, const Double_t * pid, const Float_t energy) ;
 
   Int_t     GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster * cluster, AliVCaloCells* cells, 
@@ -193,22 +197,35 @@ class AliCaloPID : public TObject {
   
   void    SwitchOnClusterSplittingPID()        { fDoClusterSplitting = kTRUE  ; }
   void    SwitchOffClusterplittingPID()        { fDoClusterSplitting = kFALSE ; }
+  
+  void    SwitchOnSimpleSplitMassCut()         { fUseSimpleMassCut   = kTRUE  ; }
+  void    SwitchOffSimpleSplitMassCut()        { fUseSimpleMassCut   = kFALSE ; }
 
+  void    SwitchOnSimpleSplitM02Cut()          { fUseSimpleM02Cut    = kTRUE  ; }
+  void    SwitchOffSimpleSplitM02Cut()         { fUseSimpleM02Cut    = kFALSE ; }
+  
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
   
   void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells   = cut ; }  
   
-  Float_t GetPi0MinMass()                const { return fMassPi0Min           ; }
-  Float_t GetEtaMinMass()                const { return fMassEtaMin           ; }
+  Float_t GetPi0MinMass()                const { return fMassPi0Min           ; } // Simple cut case
+  Float_t GetEtaMinMass()                const { return fMassEtaMin           ; } // Simple cut case
   Float_t GetPhotonMinMass()             const { return fMassPhoMin           ; }  
   Float_t GetPi0MaxMass()                const { return fMassPi0Max           ; }
   Float_t GetEtaMaxMass()                const { return fMassEtaMax           ; }
   Float_t GetPhotonMaxMass()             const { return fMassPhoMax           ; }
   
-  void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min  = min ; fMassPi0Max = max ; }
-  void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin  = min ; fMassEtaMax = max ; }
-  void    SetPhotonMassRange(Float_t min, Float_t max) { fMassPhoMin  = min ; fMassPhoMax = max ; }
+  void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
+  void    SetPi0MassWidthSelectionParameters(Int_t iparam, Float_t param) { if(iparam < 7 ) fMassWidthPi0Param[iparam] = param ; }
+  void    SetM02MinimumSelectionParameters  (Int_t iparam, Float_t param) { if(iparam < 5 ) fM02MinParam      [iparam] = param ; }
+
+  void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min    = min ; fMassPi0Max = max ; } // Simple case
+  void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin    = min ; fMassEtaMax = max ; }
+  void    SetPhotonMassRange(Float_t min, Float_t max) { fMassPhoMin    = min ; fMassPhoMax = max ; }
+  
+  void    SetSplitEnergyFractionMinimum(Float_t min)   { fSplitEFracMin = min ; }
+  
   
 private:
   
@@ -250,20 +267,29 @@ private:
   
   // Cluster splitting mass ranges
   Bool_t    fDoClusterSplitting;                // Cluster splitting analysis
-  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut
-  Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut
+  Bool_t    fUseSimpleMassCut;                  // Use simple min-max pi0 mass cut
+  Bool_t    fUseSimpleM02Cut;                   // Use simple min-max M02 cut
+  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut 
+  Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut  // simple case
   Int_t     fSplitMinNCells ;                   // Study clusters with ncells larger than cut  
   Float_t   fMassEtaMin  ;                      // Min Eta mass
   Float_t   fMassEtaMax  ;                      // Max Eta mass  
-  Float_t   fMassPi0Min  ;                      // Min Pi0 mass
-  Float_t   fMassPi0Max  ;                      // Min Pi0 mass
+  Float_t   fMassPi0Min  ;                      // Min Pi0 mass // simple cut case
+  Float_t   fMassPi0Max  ;                      // Min Pi0 mass // simple cut case
   Float_t   fMassPhoMin  ;                      // Min Photon mass
   Float_t   fMassPhoMax  ;                      // Min Photon mass
+  Float_t   fMassWidthPi0Param[7] ;             // 3 param for pol2 fit on width, 2 param for mass position NLM=1 and NLM>1 for pi0 selection
+  Float_t   fM02MinParam[5] ;                   // 3 param for pol2 fit on M02 minimum
+  Float_t   fSplitEFracMin  ;                   // Do not use clusters with too large energy in cluster compared 
+                                                // to energy in splitted clusters
+  Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
+
+
   
-  AliCaloPID & operator = (const AliCaloPID & g) ; // cpy assignment
-  AliCaloPID(              const AliCaloPID & g) ; // cpy ctor
+  AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
+  AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,13)
+  ClassDef(AliCaloPID,14)
   
 } ;
 
