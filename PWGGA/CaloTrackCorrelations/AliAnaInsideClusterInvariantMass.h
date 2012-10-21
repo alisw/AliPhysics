@@ -131,7 +131,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenSplitEFracNLocMax1[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracNLocMax2[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracNLocMaxN[7][2] ; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
-    
+  
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax1[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+  
+  TH2F       * fhMCGenEvsSplitENLocMax1[7][2] ; //! E generated particle vs E1+E2 for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenEvsSplitENLocMax2[7][2] ; //! E generated particle vs E1+E2 for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenEvsSplitENLocMaxN[7][2] ; //! E generated particle vs E1+E2 for N max in cluster > 2, 1-6 for different MC particle types  
+  
   TH2F       * fhMCGenFracNLocMaxEbin[7][4] ;    //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, not matched to track
   TH2F       * fhMCGenFracNLocMaxEbinMatched[7][4] ; //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, matched to track
   
@@ -159,6 +167,18 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02EtaLocMaxN[7][2] ; //! M02 for Mass around eta, N Local Maxima > 2
   TH2F       * fhM02ConLocMaxN[7][2] ; //! M02 for Mass around close to 0, N Local Maxima > 2
 
+  TH2F       * fhMassPi0LocMax1[7][2] ; //! Mass for selected pi0, N Local Maxima = 1
+  TH2F       * fhMassEtaLocMax1[7][2] ; //! Mass for selected around eta, N Local Maxima = 1
+  TH2F       * fhMassConLocMax1[7][2] ; //! Mass for selected around close to 0, N Local Maxima = 1
+  
+  TH2F       * fhMassPi0LocMax2[7][2] ; //! Mass for selected around pi0, N Local Maxima = 2
+  TH2F       * fhMassEtaLocMax2[7][2] ; //! Mass for selected around eta, N Local Maxima = 2
+  TH2F       * fhMassConLocMax2[7][2] ; //! Mass for selected around close to 0, N Local Maxima = 2
+  
+  TH2F       * fhMassPi0LocMaxN[7][2] ; //! Mass for selected around pi0, N Local Maxima > 2
+  TH2F       * fhMassEtaLocMaxN[7][2] ; //! Mass for selected around eta, N Local Maxima > 2
+  TH2F       * fhMassConLocMaxN[7][2] ; //! Mass for selected around close to 0, N Local Maxima > 2
+  
   TH2F       * fhSplitEFractionNLocMax1[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
   TH2F       * fhSplitEFractionNLocMax2[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
   TH2F       * fhSplitEFractionNLocMaxN[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2

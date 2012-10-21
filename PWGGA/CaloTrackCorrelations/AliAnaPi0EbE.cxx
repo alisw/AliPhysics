@@ -1918,13 +1918,24 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Skip events with too few or too many  NLM
     if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) continue ;
 
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d of out of range \n",nMaxima);
+    if(GetDebug() > 1)
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
     
     // If cluster does not pass pid, not pi0/eta, skip it.
-    if     (GetInputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) continue ;		
-    else if(GetInputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta) continue ;
+    if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) 
+    { 
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Pi0\n");
+      continue ;
+    }	
     
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
+    else if(GetOutputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta)     
+    { 
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Eta\n");
+      continue ;
+    }	
+    
+    if(GetDebug() > 1) 
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
                               mom.Pt(), idPartType);
     
     //-----------------------
