@@ -59,6 +59,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
+    fhMass(0),                     fhSelectedMass(0),
     fhPtDecay(0),                  fhEDecay(0),  
     // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
@@ -622,6 +623,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEtaPhi->SetYTitle("#phi (rad)");
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ; 
+  
+  fhMass  = new TH2F
+  ("hMass","all pairs mass: E vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax); 
+  fhMass->SetYTitle("mass (GeV/c^{2})");
+  fhMass->SetXTitle("E (GeV)");
+  outputContainer->Add(fhMass) ; 
+  
+  fhSelectedMass  = new TH2F
+  ("hSelectedMass","Selected #pi^{0} (#eta) pairs mass: E vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax); 
+  fhSelectedMass->SetYTitle("mass (GeV/c^{2})");
+  fhSelectedMass->SetXTitle("E (GeV)");
+  outputContainer->Add(fhSelectedMass) ; 
   
   if(fAnaType != kSSCalo)
   {
@@ -1630,6 +1643,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - NLM of out of range: cluster1 %d, cluster2 %d \n",nMaxima1, nMaxima2);
       
+      //Mass of all pairs
+      fhMass->Fill(epair,(mom1+mom2).M());
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
@@ -1657,6 +1672,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         //Create AOD for analysis
         mom = mom1+mom2;
                 
+        //Mass of selected pairs
+        fhSelectedMass->Fill(epair,mom.M());
+        
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
         FillPileUpHistograms(mom.E(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);        
@@ -1773,6 +1791,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         HasPairSameMCMother(photon1, photon2, label, tag) ;
       }
       
+      //Mass of selected pairs
+      fhSelectedMass->Fill(epair,(mom1+mom2).M());
+      
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
@@ -1794,6 +1815,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         //Create AOD for analysis
         
         mom = mom1+mom2;
+        
+        //Mass of selected pairs
+        fhSelectedMass->Fill(epair,mom.M());
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
@@ -1921,6 +1945,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
     
+    //mass of all clusters
+    fhMass->Fill(mom.E(),mass);
+    
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) 
     { 
@@ -1938,6 +1965,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
                               mom.Pt(), idPartType);
     
+    //Mass of selected pairs
+    fhSelectedMass->Fill(mom.E(),mass);
+
     //-----------------------
     //Create AOD for analysis
     
