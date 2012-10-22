@@ -16,6 +16,13 @@ void AddRsnPairsRho(AliAnalysisTaskSE *task,
    Printf("id1=%d id2=%d",listID1,listID2);
 
    // retrieve mass from PDG database
+	
+	// pdg rho = 133
+	// pdg omega = 223
+	// pdg eta = 221
+	// pdg eta' = 331
+	// pdg kshort = 310
+	
    Int_t         pdg  = 113;
    TDatabasePDG *db   = TDatabasePDG::Instance();
    TParticlePDG *part = db->GetParticle(pdg);
@@ -40,10 +47,11 @@ void AddPairOutputRho(AliRsnLoopPair *pair)
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
    AliRsnValuePair *axisEta = new AliRsnValuePair("ETA", AliRsnValuePair::kEta);
-   axisIM     ->SetBins(1000, 0.2, 1.2);
+   axisIM     ->SetBins(180, 0.2, 2.0);
 //   axisIM     ->SetBins(1000, 0.9, 1.9);
-   axisPt     ->SetBins(120, 0.0, 12.0);
-   axisEta    ->SetBins(400, -2.0, 2.0);
+   axisPt     ->SetBins(100, 0.0, 12.0);
+   axisEta    ->SetBins(100, -2.0, 2.0);
+   axisY      ->SetBins(100,-2.0, 2.0);
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
@@ -55,6 +63,7 @@ void AddPairOutputRho(AliRsnLoopPair *pair)
       outPair->AddValue(axisIM);
       outPair->AddValue(axisPt);
       outPair->AddValue(axisEta);
+	  outPair->AddValue(axisY);
    }
    // add outputs to loop
    pair->AddOutput(outPair);
@@ -74,6 +83,7 @@ void AddPairOutputMiniRho(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    /* transv. momentum */ Int_t ptID   = taskRsnMini->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
    /* eta              */ Int_t etaID = taskRsnMini->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+   /* y                */ Int_t yID    = taskRsnMini->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
 
    // use an array for more compact writing, which are different on mixing and charges
@@ -92,9 +102,10 @@ void AddPairOutputMiniRho(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    if (isFullOutput) outputType = "SPARSE";
 
    Int_t nIM   = 1000; Double_t minIM   = 0.2, maxIM =  1.2;
-   Int_t nEta   = 400; Double_t minEta   = -2.0, maxEta =  2.0;
+   Int_t nEta   = 100; Double_t minEta   = -2.0, maxEta =  2.0;
+   Int_t nY    = 100;  Double_t minY    = -2.0,maxY =  2.0;
 //   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
-   Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
+   Int_t nPt   = 100; Double_t minPt   = 0.0, maxPt = 12.0;
    Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
@@ -127,8 +138,9 @@ void AddPairOutputMiniRho(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, nPt, minPt, maxPt);
-
          out->AddAxis(etaID, nEta, minEta, maxEta);
+		 out->AddAxis(yID, nY, minY, maxY);
+		  
          // axis Z: centrality
          if (collisionType==1) out->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -180,6 +192,7 @@ void AddPairOutputMiniRho(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
          // axis Y: transverse momentum
          outMC->AddAxis(ptID, nPt, minPt, maxPt);
          outMC->AddAxis(etaID, nEta, minEta, maxEta);
+		 outRes->AddAxis(yID, nY, minY, maxY);
          // axis Z: centrality
          if (collisionType==1) outMC->AddAxis(centID, nCent, minCent, maxCent);
       }

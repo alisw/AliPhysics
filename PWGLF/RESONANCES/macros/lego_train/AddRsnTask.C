@@ -41,7 +41,7 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    TList *listRsn = new TList();
    listRsn->Add(new TNamed(rsnPart.Data(),rsnCut.Data()));
 
-   gROOT->LoadMacro("RsnConfig.C");
+   if (!RsnLoadMacro("RsnConfig.C")) return kFALSE;
    if (!RsnConfig(task,rsnIH,listRsn)) {
       Printf("Error in RsnConfig.C");
       return 0;

@@ -12,10 +12,10 @@ AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const 
    //    return AddRsnTask(rsnStr,rsnCutStr,"");
 
    Bool_t valid;
-   AliRsnTrainManager::GetGlobalStr("LegoTrainPath",valid);
+   AliAnalysisManager::GetGlobalStr("LegoTrainPath",valid);
    if (!valid) {
       TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
-      AliRsnTrainManager::SetGlobalStr("LegoTrainPath",legoTrainPath.Data());
+      AliAnalysisManager::SetGlobalStr("LegoTrainPath",legoTrainPath.Data());
    }
 
    // Creating Rsn Train Manager
