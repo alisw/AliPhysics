@@ -304,8 +304,13 @@ Bool_t AliCaloPID::IsInSplitM02Range(const Float_t energy, const Float_t m02,  c
   
   if(!fUseSimpleM02Cut)
   {
-    if   ( nlm > 1 || (nlm==1 && energy<8) ) minCut = fM02MinParam[0]; // 0.6
-    else minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3];  
+    if     ( nlm > 1 ) minCut = fM02MinParam[0]; // 0.6
+    else if( nlm== 1 )
+    { 
+      if     (energy < 8 )  minCut = fM02MinParam[0]; // 0.6
+      else if(energy < 20)  minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3]; // (check the range of applicability of the function) 
+      else                  minCut = fM02MinParam[4]; // 0.3
+    }
     
     //In any case, the parameter cannot be smaller than this (0.3)
     if(minCut < fM02MinParam[4]) minCut = fM02MinParam[4];
