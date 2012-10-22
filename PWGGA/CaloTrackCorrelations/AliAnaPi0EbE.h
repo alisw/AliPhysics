@@ -142,6 +142,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta 
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
 
+  TH2F         * fhMass  ;                 //! pair mass vs E, for all pairs
+  TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
+  
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
   
