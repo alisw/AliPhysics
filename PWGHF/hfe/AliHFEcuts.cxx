@@ -512,16 +512,16 @@ void AliHFEcuts::SetParticleGenCutList(){
   }
   if(IsRequireProdVertex()){
     AliDebug(3, Form("Vertex Range: fProdVtx[0] %f, fProdVtx[1] %f, fProdVtx[2] %f, fProdVtx[3] %f", fProdVtx[0], fProdVtx[1], fProdVtx[2], fProdVtx[3]));
-    if(!IsAOD()) {
-      genCuts->SetProdVtxRangeX(fProdVtx[0], fProdVtx[1]);
-      genCuts->SetProdVtxRangeY(fProdVtx[2], fProdVtx[3]);
-      genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
-    }
-    else {
-      // (ONLY PROVISOIRE FOR MC AOD)
-      genCuts->SetProdVtxRangeX(-TMath::Abs(fProdVtx[1]), TMath::Abs(fProdVtx[1]));
-      genCuts->SetProdVtxRangeY(-TMath::Abs(fProdVtx[3]), TMath::Abs(fProdVtx[3]));
-    }
+    //if(!IsAOD()) {
+    genCuts->SetProdVtxRangeX(fProdVtx[0], fProdVtx[1]);
+    genCuts->SetProdVtxRangeY(fProdVtx[2], fProdVtx[3]);
+    genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
+    //}
+    //else {
+    // (ONLY PROVISOIRE FOR MC AOD)
+    //genCuts->SetProdVtxRangeX(-TMath::Abs(fProdVtx[1]), TMath::Abs(fProdVtx[1]));
+    //genCuts->SetProdVtxRangeY(-TMath::Abs(fProdVtx[3]), TMath::Abs(fProdVtx[3]));
+    //}
   }
   genCuts->SetRequirePdgCode(11, kTRUE);
   if(IsQAOn()) genCuts->SetQAOn(fHistQA);
