@@ -63,7 +63,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       //            case kTOF:       return 0x0;
     case kTRD:       return 0x0;
       //            case kTOFTRD:    return 0x0;
-      //            case kTOFTRD2D:  return 0x0;
+    case kTOFTRD2D:  return 0x0;
     case krec:       return 0x0;
     case kGam0:      return 0x0;
     case kGam01:     return 0x0;
@@ -109,14 +109,15 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 	}*/
   }
 
-  // cut setup
-  SetupTrackCuts(die,cutDefinition);
-  SetupPairCuts(die,cutDefinition);
-
   // histogram setup
   InitHistograms(die,cutDefinition);
   printf(" Add %d types and %03d histos to the manager \n",die->GetHistogramList()->GetEntries(),
 	 0/*die->GetHistoManager()->GetList()->GetEntries()*/);
+
+  // cut setup
+  SetupTrackCuts(die,cutDefinition);
+  SetupPairCuts(die,cutDefinition);
+
 
   // CF container setup, switched off
   if(cutDefinition <  kEtaGap01 ||
@@ -206,21 +207,25 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   // Quality cuts
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
+  //  cuts->AddDielectron(die);
   die->GetTrackFilter().AddCuts(cuts);
 
   // AOD track filter (needs to be first cut to speed up)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
+  //  trkFilter->AddCutQA(die->GetHistoManager());
   trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
   //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
   if(!isESD) cuts->AddCut(trkFilter);
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
+  //  pt->AddCutQA(die->GetHistoManager());
   pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);    //0.8
   cuts->AddCut(pt);
 
   // track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+  //  varCuts->AddCutQA(die->GetHistoManager());
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
@@ -230,8 +235,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   if(cutDefinition==kTOF || cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2D)
     varCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   cuts->AddCut(varCuts);
+  varCuts->Print();
 
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  //  trkCuts->AddCutQA(die->GetHistoManager());
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
   trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 15); // ITS-4 = 1+2+4+8
@@ -242,7 +249,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   AliDielectronPID *pid = new AliDielectronPID("PID","PID");
-
+  //  pid->AddCutQA(die->GetHistoManager());
   ////////////////////////////////// DATA
   if(!hasMC) {
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
@@ -440,7 +447,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to event class
   histos->AddClass("Event");
   histos->UserHistogram("Event","Centrality","Centrality;centrality (%);events",
-                        "0.,5.,10.,20.,40.,50.,60.,80.",
+                        100, 0.0, 100.0,
                         AliDielectronVarManager::kCentrality);
 
   ////// EVENT HISTOS /////
@@ -453,7 +460,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0;events", 500,0.,25000.,
 			  AliDielectronVarManager::kMultV0);
     histos->UserHistogram("Event","Cent_Mult","Centrality vs. Multiplicity;centrality (%);Multiplicity V0",
-			  10,0.,100., 500,0.,25000.,
+			  100,0.,100., 500,0.,25000.,
 			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kMultV0);
     histos->UserProfile("Event","Cent_Nacc", "accepted tracks;centrality (%)",
 			AliDielectronVarManager::kNacc,
@@ -461,7 +468,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			AliDielectronVarManager::kCentrality);
     histos->UserProfile("Event","Cent_NVtxContrib", "number of vertex contributors;centrality (%)",
 			AliDielectronVarManager::kNVtxContrib,
-                      "0.,5.,10.,20.,40.,50.,60.,80.,100.",
+			100,0.,100.,
 			AliDielectronVarManager::kCentrality);
   } //hist: event
 
@@ -615,7 +622,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           AliDielectronVarManager::kImpactParZ);
 
     // Kinematics
-    histos->UserHistogram("Track","Pt",";p_{T} (GeV/c);#tracks", 400,0,20.,
+    histos->UserHistogram("Track","pt",";p_{T} (GeV/c);#tracks", 400,0,20.,
                           AliDielectronVarManager::kPt);
     histos->UserHistogram("Track","Eta_Phi",";#eta;#varphi;#tracks", 200,-1,1,200,0,6.285,
                           AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
@@ -653,7 +660,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           100,-1.,1., AliDielectronVarManager::kY);
     histos->UserHistogram("Pair","Pt",";p_{T} (GeV/c);#pairs",
 			  400,0,20., AliDielectronVarManager::kPt);
-    histos->UserHistogram("Pair","OpeningAngle","opening angle (rad.);#pairs",
+    histos->UserHistogram("Pair","OpeningAngle",";opening angle (rad.);#pairs",
                           100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
     histos->UserHistogram("Pair","Chi2NDF",";#chi^{2}/NDF;#pairs",
                           100,0.,20, AliDielectronVarManager::kChi2NDF);
