@@ -146,6 +146,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
  TH2D                   *Hpi0pTcheck; 
+ TH2D                   *HETApTcheck; 
  TH2D                   *HphopTcheck; 
  TH2D                   *fMomDtoE; 
  
