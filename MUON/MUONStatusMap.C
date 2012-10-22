@@ -356,10 +356,24 @@ void DrawEvolution(const char* file, bool normalized=true)
 
   DrawPeriod(167703,170593,0,ymax,"11h");
 
-  DrawPeriod(176661,177295,0,ymax,"12a");
+  // 2012
+    
+    DrawPeriod(176661,177295,0,ymax,"12a");
 
-  DrawPeriod(177384,178053,0,ymax,"12b");
+    DrawPeriod(177384,178053,0,ymax,"12b");
 
+    DrawPeriod(179603,180569,0,ymax,"12c");
+
+    DrawPeriod(183913,186320,0,ymax,"12d");
+    
+    DrawPeriod(186365,186602,0,ymax,"12e");
+    
+    DrawPeriod(186668,188123,0,ymax,"12f");
+    
+    DrawPeriod(188362,188503,0,ymax,"12g");
+    
+    DrawPeriod(189122,190110,0,ymax,"12h");
+  
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
