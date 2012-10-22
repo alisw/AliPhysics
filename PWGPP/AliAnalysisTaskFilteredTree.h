@@ -19,10 +19,15 @@ class AliESDEvent;
 class AliMCEvent; 
 class AliKFParticle; 
 class AliESDv0; 
+class AliExternalTrackParam;
+class AliESDtrack;
+class AliESDVertex;
+class AliStack;
 class TList;
 class TObjArray;
 class TTree;
 class TTreeSRedirector;
+class TParticle;
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
