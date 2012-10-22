@@ -7,6 +7,7 @@
 #include "AliTPCcalibBase.h"
 #include "TH2F.h"
 #include "TF1.h"
+#include "THnSparse.h"
 #include "TArrayD.h"
 #include "TObjArray.h"
 #include "AliSplineFit.h"
@@ -14,7 +15,6 @@
 class TH1F;
 class TH3F;
 class TH2F;
-class THnSparse;
 class TList;
 class TGraphErrors;
 class AliESDEvent;
@@ -60,8 +60,13 @@ public:
   void SetLowMemoryConsumption(Bool_t LowMemoryConsumption){fLowMemoryConsumption = LowMemoryConsumption;};
   void SetUseCookAnalytical(Bool_t UseCookAnalytical){fUseCookAnalytical = UseCookAnalytical;};
 
+  static void SetMergeEntriesCut(Double_t entriesCut){fgMergeEntriesCut = entriesCut;}
+
+  Double_t GetEntries() const {return fHistGainTime->GetEntries();}
+
 private:
-  //
+  static Double_t fgMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
+
   Float_t GetTPCdEdx(AliTPCseed * seed);   // wrapper for CookdEdxNorm or analytical
   //
   THnSparse    * fHistGainTime;            // dEdx vs. time, type, Driftlength, momentum P

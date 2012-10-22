@@ -66,8 +66,13 @@ public:
   void     UpdateGainMap();
   void     UpdateClusterParam();
 
+  Double_t GetEntries() const {return fHistGainSector->GetEntries();}
+
+  static void SetMergeEntriesCut(Double_t c) {fgMergeEntriesCut=c;}
 
 private:
+  static Double_t fgMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
+
   //
   // parameter specifications
   //

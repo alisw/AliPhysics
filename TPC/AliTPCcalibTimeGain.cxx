@@ -180,6 +180,7 @@ TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
 
 ClassImp(AliTPCcalibTimeGain)
 
+Double_t AliTPCcalibTimeGain::fgMergeEntriesCut=10000000.;
 
 AliTPCcalibTimeGain::AliTPCcalibTimeGain() 
   :AliTPCcalibBase(), 
@@ -550,7 +551,19 @@ Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
     }
 
     // add histograms here...
-    if (cal->GetHistGainTime()) fHistGainTime->Add(cal->GetHistGainTime());
+    if (cal->GetHistGainTime() && fHistGainTime ) 
+    {
+      if ((fHistGainTime->GetEntries() + cal->GetHistGainTime()->GetEntries()) < fgMergeEntriesCut) 
+      {
+        //AliInfo(Form("fHistGainTime has %.0f tracks, going to add %.0f\n",fHistGainTime->GetEntries(),cal->GetHistGainTime()->GetEntries()));
+        fHistGainTime->Add(cal->GetHistGainTime());
+      }
+      else
+      {
+        AliInfo(Form("fHistGainTime full (has %.0f merged tracks, max allowed: %.0f)",fHistGainTime->GetEntries(),fgMergeEntriesCut));
+      }
+    }
+
     if (cal->GetHistDeDxTotal()) fHistDeDxTotal->Add(cal->GetHistDeDxTotal());
 
   }

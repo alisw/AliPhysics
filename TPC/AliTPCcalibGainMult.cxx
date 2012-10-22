@@ -70,6 +70,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 
 ClassImp(AliTPCcalibGainMult)
 
+Double_t AliTPCcalibGainMult::fgMergeEntriesCut=10000000.;
 
 AliTPCcalibGainMult::AliTPCcalibGainMult() 
   :AliTPCcalibBase(),
@@ -477,7 +478,19 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
     if (cal->GetHistNTracks()) fHistNTracks->Add(cal->GetHistNTracks());
     if (cal->GetHistClusterShape()) fHistClusterShape->Add(cal->GetHistClusterShape());
     if (cal->GetHistQA()) fHistQA->Add(cal->GetHistQA());
-    if (cal->GetHistGainSector()) fHistGainSector->Add(cal->GetHistGainSector());
+    if (cal->GetHistGainSector() && fHistGainSector )
+    { 
+      if ((fHistGainSector->GetEntries()+cal->GetHistGainSector()->GetEntries()) < fgMergeEntriesCut)
+      {        
+        //AliInfo(Form("fHistGainSector has %.0f tracks, going to add %.0f\n",fHistGainSector->GetEntries(),cal->GetHistGainSector()->GetEntries()));
+        fHistGainSector->Add(cal->GetHistGainSector());
+      }
+      else 
+      { 
+        AliInfo(Form("fHistGainSector full (has %.0f entries, trying to add %.0f., max allowed: %.0f)",
+        fHistGainSector->GetEntries(),cal->GetHistGainSector()->GetEntries(),fgMergeEntriesCut));
+      }
+    }
     if (cal->GetHistPadEqual()) fHistPadEqual->Add(cal->GetHistPadEqual());
     if (cal->GetHistGainMult()) {
        if (fHistGainMult->GetEntries()<kMaxEntriesSparse) fHistGainMult->Add(cal->GetHistGainMult());
@@ -1343,7 +1356,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
       Int_t eventNumber = event->GetEventNumberInFile(); 
       Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
       Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
-      printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
+      AliInfo(Form("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS));
       //
       //       
       TTreeSRedirector * pcstream =  GetDebugStreamer();
