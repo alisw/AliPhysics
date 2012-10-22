@@ -61,6 +61,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
 
   task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
   task->SetTriggerMask(triggers);
+  //task->SetTriggerMask(AliVEvent::kMB);
 
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
@@ -82,7 +83,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
+  eventCuts->SetVertexZ(-10.,+10.);
   eventCuts->SetCentralityRange(0.0,80.0);
   task->SetEventFilter(eventCuts);
 
@@ -95,19 +96,19 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   */
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("jbook_QA_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jbook_QA"),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("jbook_CF_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jbook_CF"),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("jbook_EventStat_%s",triggerNames[j]),
+    mgr->CreateContainer(Form("jbook_EventStat"),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
