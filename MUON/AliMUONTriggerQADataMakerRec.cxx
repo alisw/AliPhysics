@@ -1158,7 +1158,7 @@ AliMUONTriggerQADataMakerRec::GetDCSValues(Int_t iMeas, Int_t detElemId,
 
   if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger) return 0x0;
 
-  TString currAlias = triggerDcsNamer.DCSChannelName(detElemId, 0, iMeas);
+  TString currAlias = triggerDcsNamer.DCSAliasName(detElemId, 0, iMeas);
 
   TPair* triggerDcsPair = static_cast<TPair*>(triggerDcsMap->FindObject(currAlias.Data()));
 

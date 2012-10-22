@@ -28,9 +28,11 @@ public:
 
   Bool_t SetDetector(const char* detName);
   
-  const char* DCSChannelName(Int_t detElemId, Int_t sector=0, Int_t dcsMeasure=0) const;
-  
-  const char* DCSSwitchName(Int_t detElemId, Int_t pcbNumber) const;
+  const char* DCSChannelNameFromAlias(const char* dcsAliasName) const;
+
+  const char* DCSAliasName(Int_t detElemId, Int_t sector=0, Int_t dcsMeasure=0) const;
+
+  const char* DCSSwitchAliasName(Int_t detElemId, Int_t pcbNumber) const;
 
   Int_t DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const;
   

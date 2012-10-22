@@ -89,16 +89,16 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
       {
         for ( int i = 0; i <3; ++i)
         {
-          aliases.Add(new TObjString(hvNamer.DCSChannelName(detElemId,i)));
+          aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId,i)));
         }
       }
       break;
       case AliMp::kStation345:
       {
-        aliases.Add(new TObjString(hvNamer.DCSChannelName(detElemId)));
+        aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId)));
         for ( int i = 0; i < hvNamer.NumberOfPCBs(detElemId); ++i)
         {
-          aliases.Add(new TObjString(hvNamer.DCSSwitchName(detElemId,i)));
+          aliases.Add(new TObjString(hvNamer.DCSSwitchAliasName(detElemId,i)));
         }
       }
       break;

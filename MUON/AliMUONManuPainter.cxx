@@ -178,11 +178,11 @@ AliMUONManuPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
     {
       Int_t sector = hvNamer.ManuId2Sector(fDetElemId,fManuId);
 
-      rv += hvNamer.DCSChannelName(fDetElemId,sector);
+      rv += hvNamer.DCSChannelNameFromAlias(hvNamer.DCSAliasName(fDetElemId,sector));
     }
     else
     {
-      rv += hvNamer.DCSChannelName(fDetElemId);
+        rv += hvNamer.DCSChannelNameFromAlias(hvNamer.DCSAliasName(fDetElemId));
     }
   }
   

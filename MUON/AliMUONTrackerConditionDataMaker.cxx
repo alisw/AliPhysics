@@ -297,7 +297,7 @@ AliMUONTrackerConditionDataMaker::CreateHVStore(TMap& m)
       
       if ( nPCBs ) 
       {
-        TString switchName(hvNamer.DCSSwitchName(detElemId,i));
+        TString switchName(hvNamer.DCSSwitchAliasName(detElemId,i));
 
         TPair* p = static_cast<TPair*>(m.FindObject(switchName.Data()));
         TObjArray* a = static_cast<TObjArray*>(p->Value());

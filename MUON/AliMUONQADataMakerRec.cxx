@@ -46,6 +46,7 @@ fTracker(tracker ? new AliMUONTrackerQADataMakerRec(this) : 0x0),
 fTrigger(trigger ? new AliMUONTriggerQADataMakerRec(this) : 0x0)
 {
   /// ctor
+  AliInfo(Form("tracker=%d trigger=%d",tracker,trigger));
 }
 
 //__________________________________________________________________

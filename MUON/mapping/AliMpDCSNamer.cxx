@@ -376,30 +376,35 @@ AliMpDCSNamer::DetElemId2DCS(Int_t detElemId, Int_t& side, Int_t &chId) const
 
 
 //_____________________________________________________________________________
-const char* 
-  AliMpDCSNamer::DCSChannelName(Int_t detElemId, Int_t sector, Int_t dcsMeasure) const
+const char*
+AliMpDCSNamer::DCSChannelNameFromAlias(const char* dcsAliasName) const
 {
-  /// Return the alias name of the DCS Channel for a given DCS area 
-  /// \param detElemId 
-  /// \param sector = 0,1 or 2 for St12, and is unused for st345 and trigger
-  /// \param dcsMeasure = kDCSHV, kDCSI and is unused for tracker
+  /// Convert an AliasName to a ChannelName.
+  /// This method is needed because there is, for MCH, a -1 offset
+  /// between channel and alias name for some
+  /// unknown reason deeply rooted in DCS ???)
+  ///
+  /// \param dcsAliasName
+
+  Int_t detElemId = DetElemIdFromDCSAlias(dcsAliasName);
   
   Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
   if ( chamberId < 0 ) return 0x0;
-
+    
   Int_t side(-1), chId(-1);
   Int_t dcsNumber = DetElemId2DCS(detElemId,side,chId);
-
+  Int_t index = DCSIndexFromDCSAlias(dcsAliasName);
+    
   switch (AliMpDEManager::GetStationType(detElemId))
   {
     case AliMp::kStation12:
-      return Form(fgkDCSChannelSt12Pattern[side],chamberId,dcsNumber,sector);
+      return Form(fgkDCSChannelSt12Pattern[side],chamberId+1,dcsNumber+1,index+1);
       break;
     case AliMp::kStation345:
-      return Form(fgkDCSChannelSt345Pattern[side],chamberId,dcsNumber);
+      return Form(fgkDCSChannelSt345Pattern[side],chamberId+1,dcsNumber+1);
       break;
     case AliMp::kStationTrigger:
-      return Form(fgkDCSChannelTriggerPattern[side],fgkDCSSideTriggerName[side],chId,dcsNumber,fgkDCSMeasureName[dcsMeasure]);
+          return dcsAliasName;
       break;
     default:
       return 0x0;
@@ -408,8 +413,40 @@ const char*
 }
 
 //_____________________________________________________________________________
+const char*
+AliMpDCSNamer::DCSAliasName(Int_t detElemId, Int_t sector, Int_t dcsMeasure) const
+{
+    /// Return the alias name of the DCS Channel for a given DCS area
+    /// \param detElemId
+    /// \param sector = 0,1 or 2 for St12, and is unused for st345 and trigger
+    /// \param dcsMeasure = kDCSHV, kDCSI and is unused for tracker
+    
+    Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+    if ( chamberId < 0 ) return 0x0;
+    
+    Int_t side(-1), chId(-1);
+    Int_t dcsNumber = DetElemId2DCS(detElemId,side,chId);
+    
+    switch (AliMpDEManager::GetStationType(detElemId))
+    {
+        case AliMp::kStation12:
+            return Form(fgkDCSChannelSt12Pattern[side],chamberId,dcsNumber,sector);
+            break;
+        case AliMp::kStation345:
+            return Form(fgkDCSChannelSt345Pattern[side],chamberId,dcsNumber);
+            break;
+        case AliMp::kStationTrigger:
+            return Form(fgkDCSChannelTriggerPattern[side],fgkDCSSideTriggerName[side],chId,dcsNumber,fgkDCSMeasureName[dcsMeasure]);
+            break;
+        default:
+            return 0x0;
+            break;
+    }
+}
+
+//_____________________________________________________________________________
 const char* 
-AliMpDCSNamer::DCSSwitchName(Int_t detElemId, Int_t pcbNumber) const
+AliMpDCSNamer::DCSSwitchAliasName(Int_t detElemId, Int_t pcbNumber) const
 {
   /// Return the alias name of the DCS Switch for a given PCB 
   /// within a slat of St345
@@ -604,14 +641,14 @@ AliMpDCSNamer::GenerateAliases() const
 	case AliMp::kStation12:
 	  for ( int sector = 0; sector < 3; ++sector)
 	  {
-	    aliases->Add(new TObjString(DCSChannelName(detElemId,sector)));
+	    aliases->Add(new TObjString(DCSAliasName(detElemId,sector)));
 	  }
 	  break;
 	case AliMp::kStation345:
-	  aliases->Add(new TObjString(DCSChannelName(detElemId)));
+	  aliases->Add(new TObjString(DCSAliasName(detElemId)));
 	  for ( Int_t i = 0; i < NumberOfPCBs(detElemId); ++i )
 	  {
-	    aliases->Add(new TObjString(DCSSwitchName(detElemId,i)));
+	    aliases->Add(new TObjString(DCSSwitchAliasName(detElemId,i)));
 	  }
 	  break;
 	default:
@@ -625,7 +662,7 @@ AliMpDCSNamer::GenerateAliases() const
 	{
 	case AliMp::kStationTrigger:
 	  AliDebug(10,Form("Current DetElemId %i",detElemId));
-	  aliases->Add(new TObjString(DCSChannelName(detElemId,0,iMeas)));
+	  aliases->Add(new TObjString(DCSAliasName(detElemId,0,iMeas)));
 	  break;
 	default:
 	  break;

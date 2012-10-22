@@ -88,7 +88,7 @@ AliMUONTriggerDCSSubprocessor::Process(TMap* dcsAliasMap)
     if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStationTrigger) {
 
       for(Int_t iMeas=0; iMeas<AliMpDCSNamer::kNDCSMeas; iMeas++){
-	aliases.Add(new TObjString(dcsMapNamer.DCSChannelName(detElemId, 0, iMeas)));
+	aliases.Add(new TObjString(dcsMapNamer.DCSAliasName(detElemId, 0, iMeas)));
       }
 
     }
