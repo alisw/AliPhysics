@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mfigueredo_JPsi(){
+AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(){
     //Do we have an MC handler?
   Bool_t hasMC = kFALSE;
   TString list = gSystem->Getenv("LIST");
-  //if( list.IsNull()) list=prod;
+  if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
   
