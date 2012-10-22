@@ -347,12 +347,12 @@ void ana(Int_t mode=mGRID)
       
       AliAnalysisTaskCaloTrackCorrelation *anav1trig   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                               kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM,
-                                                                              -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+                                                                              -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     }
     
     AliAnalysisTaskCaloTrackCorrelation *anav1mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,"AnyINT",arrayNameV1,mixing,reTM,anTM,
-                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     
     
     
@@ -371,13 +371,13 @@ void ana(Int_t mode=mGRID)
       
       AliAnalysisTaskCaloTrackCorrelation *anav2tr   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM, 
-                                                                            -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+                                                                            -1,-1,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     }
     
     
     AliAnalysisTaskCaloTrackCorrelation *anav2mb     = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM,
-                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale);
+                                                                            -1,-1, qa, hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
   }
   
   if(kCollision=="PbPb")
@@ -427,13 +427,13 @@ void ana(Int_t mode=mGRID)
     {
       AliAnalysisTaskCaloTrackCorrelation *anav1c   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM, 
-                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
       AliAnalysisTaskCaloTrackCorrelation *anav1m   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM,
-                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
       AliAnalysisTaskCaloTrackCorrelation *anav1p   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC,  selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,anTrigger,arrayNameV1,mixing,reTM,anTM,
-                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     }
     
     //Analysis with clusterizer V2
@@ -452,24 +452,24 @@ void ana(Int_t mode=mGRID)
       
       AliAnalysisTaskCaloTrackCorrelation *anav2cT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM, 
-                                                                            0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                            0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
       AliAnalysisTaskCaloTrackCorrelation *anav2mT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM,
-                                                                            20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                            20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
       AliAnalysisTaskCaloTrackCorrelation *anav2pT   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                             kYear,kCollision,anTrigger,arrayNameV2,mixing,reTM,anTM,
-                                                                            60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                            60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     }
     
     AliAnalysisTaskCaloTrackCorrelation *anav2cMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM, 
-                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           0,20,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     AliAnalysisTaskCaloTrackCorrelation *anav2mMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM,
-                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           20,40,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     AliAnalysisTaskCaloTrackCorrelation *anav2pMB   = AddTaskCaloTrackCorr(kInputData, "EMCAL", kMC, selectEvents, exo, annonlin, outputFile.Data(), 
                                                                            kYear,kCollision,"AnyINT",arrayNameV2,mixing,reTM,anTM,
-                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint);
+                                                                           60,80,qa,hadron,calibEE,badMap,calibTT,deltaAOD,kPrint,scale,kRun);
     
     
   }
