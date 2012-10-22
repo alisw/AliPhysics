@@ -148,7 +148,7 @@ void AliRsnTrainManager::SetGlobalDbl(const char *key, Double_t value)
 		::Error("AliRsnTrainManager::SetGlobalInt", "Global %s = %g already defined.", key, existing);
 		return;
 	}
-	mgr->GetGlobals()->Add(new TObjString(key), new TObjString(TString::Format("%f.16",value)));
+	mgr->GetGlobals()->Add(new TObjString(key), new TObjString(TString::Format("%f",value)));
 }
 
 //______________________________________________________________________________
@@ -219,7 +219,9 @@ void AliRsnTrainManager::Print(Option_t */*option*/) const {
 		}
 	}
 	Printf("\n=========================================================");
-	Printf("            Rsn Particles and Cuts \n");
+
+/*	Printf("            Rsn Particles and Cuts \n");
+
 
 	next.Reset();
 //	AliRsnCut
@@ -236,5 +238,6 @@ void AliRsnTrainManager::Print(Option_t */*option*/) const {
 	}
 
 	Printf("\n=========================================================");
-
+	
+*/
 }

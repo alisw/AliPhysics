@@ -12,6 +12,13 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    AliAnalysisManager::SetGlobalStr("RsnLegoTrainPath",legoTrainPath.Data());
 
 
+   // RSN Setting (same as old AddRsnToManager<Rsn>.C)
+   // Rsn Particle
+   TString rsnStr="Phi";
+   // Rsn Cut
+   TString rsnCutStr="PhiNsigma:KTPCnsig30";
+   
+   
    input.ToLower();
    inputMC.ToLower();
    Bool_t useMC = !inputMC.CompareTo("mc");
@@ -142,8 +149,8 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    // use mini
    rsnBaseSettings.Append("_MINI");
 
-   gROOT->LoadMacro("AddRsnTaskTrain.C");
-   AddRsnTaskTrain(rsnBaseSettings,"Phi","PhiNsigma:KTPCnsig30");
+   if (!RsnLoadMacro("AddRsnTaskTrain.C")) return kFALSE;
+   AddRsnTaskTrain(rsnBaseSettings,rsnStr.Data(),rsnCutStr.Data());
 
    return kTRUE;
 }
