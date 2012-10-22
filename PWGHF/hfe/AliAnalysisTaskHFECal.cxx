@@ -157,6 +157,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
+  ,HETApTcheck(0)
   ,HphopTcheck(0)
   ,fMomDtoE(0) 
 {
@@ -251,6 +252,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
+  ,HETApTcheck(0)
   ,HphopTcheck(0)
   ,fMomDtoE(0)
 {
@@ -336,6 +338,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       int iHijing = 1;
       if(!MChijing)iHijing = 0;
       if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
+      if(fPDG==221)HETApTcheck->Fill(pTMC,iHijing);
 
       if(particle->GetFirstMother()>-1 && fPDG==22)
         {
@@ -942,6 +945,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(Hpi0pTcheck);
+
+  HETApTcheck = new TH2D("HETApTcheck","Eta pT from Hijing",100,0,50,3,-0.5,2.5);
+  fOutputList->Add(HETApTcheck);
 
   HphopTcheck = new TH2D("HphopTcheck","Pho pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(HphopTcheck);
