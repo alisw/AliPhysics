@@ -118,11 +118,20 @@ public:
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
-  Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin        ; }
-  Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax        ; }	
+  //Time cut
+  
+  Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
+  Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
 
-  void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a; 
+  void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a ; 
                                                              fEMCALTimeCutMax = b          ; } // ns
+  
+  void             SetEMCALParametrizedMinTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMin[i] = par ; } 
+  void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; } 
+  
+  void             SwitchOnUseParametrizedTimeCut()        { fUseParamTimeCut = kTRUE      ; }
+  void             SwitchOffUseParametrizedTimeCut()       { fUseParamTimeCut = kFALSE     ; }
+
   // Fidutial cuts  
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
@@ -421,7 +430,10 @@ public:
   Float_t          fPHOSPtMax;              // pT Threshold on phos clusters
   Double_t         fEMCALTimeCutMin;        // Remove clusters/cells with time smaller than this value, in ns
   Double_t         fEMCALTimeCutMax;        // Remove clusters/cells with time larger than this value, in ns
-   
+  Float_t          fEMCALParamTimeCutMin[4];// Remove clusters/cells with time smaller than parametrized value, in ns
+  Double_t         fEMCALParamTimeCutMax[4];// Remove clusters/cells with time larger than parametrized value, in ns
+  Bool_t           fUseParamTimeCut;        // Use simple or parametrized time cut
+  
   TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis  
   TObjArray      * fCTSTracks ;             //-> temporal array with tracks
   TObjArray      * fEMCALClusters ;         //-> temporal array with EMCAL CaloClusters
@@ -507,7 +519,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,44)
+  ClassDef(AliCaloTrackReader,45)
   
 } ;
 

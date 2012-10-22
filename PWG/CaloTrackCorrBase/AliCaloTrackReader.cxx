@@ -67,6 +67,8 @@ fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
+fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
+fUseParamTimeCut(kFALSE),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -436,6 +438,13 @@ void AliCaloTrackReader::InitParameters()
   fPileUpParam[0] = 3   ; fPileUpParam[1] = 0.8 ;
   fPileUpParam[2] = 3.0 ; fPileUpParam[3] = 2.0 ; fPileUpParam[4] = 5.0;
   
+  // Parametrized time cut (LHC11d)
+  fEMCALParamTimeCutMin[0] =-5; fEMCALParamTimeCutMin[1] =-1 ; fEMCALParamTimeCutMin[2] = 3.5 ; fEMCALParamTimeCutMin[3] = 1.  ;   
+  fEMCALParamTimeCutMax[0] = 5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.45; fEMCALParamTimeCutMax[3] = 1.25;   
+
+  // Parametrized time cut (LHC11c)
+  //fEMCALParamTimeCutMin[0] =-5;   fEMCALParamTimeCutMin[1] =-1 ; fEMCALParamTimeCutMin[2] = 1.87; fEMCALParamTimeCutMin[3] = 0.4;   
+  //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;   
 }
 
 
@@ -1138,13 +1147,24 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   
   clus->GetMomentum(momentum, fVertex[vindex]);      
   
-  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
+  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return ;
   
-  if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return;
+  if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return ;
   
   Double_t tof = clus->GetTOF()*1e9;
-  if(tof < fEMCALTimeCutMin     || tof > fEMCALTimeCutMax)             return;
-  
+
+  if(!fUseParamTimeCut)
+  {
+    if( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )            return ;
+  }
+  else 
+  {
+    Float_t minCut= fEMCALParamTimeCutMin[0]+fEMCALParamTimeCutMin[1]*TMath::Exp(-(momentum.E()-fEMCALParamTimeCutMin[2])/fEMCALParamTimeCutMin[3]);
+    Float_t maxCut= fEMCALParamTimeCutMax[0]+fEMCALParamTimeCutMax[1]*TMath::Exp(-(momentum.E()-fEMCALParamTimeCutMax[2])/fEMCALParamTimeCutMax[3]);
+    //printf("tof %f, minCut %f, maxCut %f\n",tof,minCut,maxCut);
+    if( tof < minCut || tof > maxCut )  return ;
+  }
+
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
            momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
