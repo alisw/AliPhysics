@@ -22,45 +22,82 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libpythia6.so");     // Pythia
     gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
 
+    // ANALYSIS
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSIScalib.so");
     gSystem->Load("libEventMixing.so");
-
-    gSystem->Load("libPWG0base.so");
-    gSystem->Load("libPWG0dep.so");
-    gSystem->Load("libPWG0selectors.so");
-
     gSystem->Load("libTENDER.so");
-    gSystem->Load("libPWGPP.so");
+    gSystem->Load("libTENDERSupplies.so");
 
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWG2AOD.so");
-    gSystem->Load("libPWG2ebye.so");
-    gSystem->Load("libPWG2evchar.so");
-    gSystem->Load("libPWG2femtoscopy.so");
-    gSystem->Load("libPWG2femtoscopyUser.so");
-    gSystem->Load("libPWG2flowCommon.so");
-    gSystem->Load("libPWG2flowTasks.so");
-    gSystem->Load("libPWG2forward.so");
-    gSystem->Load("libPWG2kink.so");
-    gSystem->Load("libPWG2resonances.so");
-    gSystem->Load("libPWG2spectra.so");
-    gSystem->Load("libPWG2unicor.so");
+    // CORRFW
+    gSystem->Load("libCORRFW.so"); // 
 
+    // PWG
+    gSystem->Load("libPWGTools.so");
+    gSystem->Load("libPWGGlauber.so");
+    gSystem->Load("libPWGflowBase.so");
+    gSystem->Load("libPWGflowTasks.so");
+    gSystem->Load("libPWGmuon.so");
+    gSystem->Load("libPWGmuondep.so");
+    gSystem->Load("libPWGEMCAL.so");
+    gSystem->Load("libPWGCaloTrackCorrBase.so");
+
+    // PWGCF
+    gSystem->Load("libPWGCFCorrelationsBase.so");
+    gSystem->Load("libPWGCFCorrelationsDPhi.so");
+    gSystem->Load("libPWGCFCorrelationsJCORRAN.so");
+    gSystem->Load("libPWGCFChaoticity.so");
+    gSystem->Load("libPWGCFFEMTOSCOPYAOD.so");
+    gSystem->Load("libPWGCFfemtoscopy.so");
+    gSystem->Load("libPWGCFfemtoscopyUser.so");
+    gSystem->Load("libPWGCFunicor.so");
+    gSystem->Load("libPWGCFebye.so");
+    //PH    gSystem->Load("libPWGCFK0Analysis.so");
+
+    // PWGDQ
+    gSystem->Load("libPWGDQbase.so");
+    gSystem->Load("libPWGDQdielectron.so");
+
+    // PWGGA
+    gSystem->Load("libPWGGACaloTasks.so");
+    gSystem->Load("libPWGGACaloTrackCorrelations.so");
+    gSystem->Load("libPWGGAEMCALTasks.so");
+    gSystem->Load("libPWGGAGammaConv.so");
+    gSystem->Load("libPWGGAPHOSTasks.so");
+
+    // PWGHF
     gSystem->Load("libPWGHFbase.so");
     gSystem->Load("libPWGHFhfe.so");
-    gSystem->Load("libPWGmuondep.so");
-    gSystem->Load("libPWGmuon.so");
+    gSystem->Load("libPWGHFcorrelationHF.so");
     gSystem->Load("libPWGHFvertexingHF.so");
 
+    // PWGJE
     gSystem->Load("libJETAN.so");
-    gSystem->Load("libPWG4CaloCalib.so");
-    gSystem->Load("libPWG4GammaConv.so");
-    gSystem->Load("libPWG4JetTasks.so");
-    gSystem->Load("libPWG4omega3pi.so");
-    gSystem->Load("libPWG4PartCorrBase.so");
-    gSystem->Load("libPWG4PartCorrDep.so");
+    // gSystem->Load("libPWGJE.so");
+    // gSystem->Load("libPWGJEEMCALJetTasks.so");
+
+    // PWGLF
+    gSystem->Load("libPWGLFSTRANGENESS.so");
+    gSystem->Load("libPWGLFforward.so");
+    gSystem->Load("libPWGLFforward2.so");
+    gSystem->Load("libPWGLFresonances.so");
+    gSystem->Load("libPWGLFrsnextra.so");
+    gSystem->Load("libPWGLFspectra.so");
+    // gSystem->Load("libPWGLFtotEt.so")
+
+    // PWGPP
+    gSystem->Load("libPWGPP.so");
+    gSystem->Load("libPWGPPMUONdep.so");
+    gSystem->Load("libPWGPPMUONlite.so");
+    gSystem->Load("libPWGPPevchar.so");
+
+    // PWGUD
+
+    gSystem->Load("libPWGUDbase.so");
+    gSystem->Load("libPWGUDFP.so");
+    gSystem->Load("libPWGUDdiffractive.so");
+    gSystem->Load("libPWGUDselectors.so");
 
     // EVE
     gSystem->Load("libEve.so");
