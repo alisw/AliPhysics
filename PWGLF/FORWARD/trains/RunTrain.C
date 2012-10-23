@@ -103,12 +103,12 @@ void PlainUsage()
  * @ingroup pwglf_forward_trains
  */
 Bool_t RunTrain(const TString& name, const TString& cls, 
-		const TString& uri,  const TString& opts)
+		const TUrl& uri,     const TString& opts)
 {
   // Check for help 
   if (name.IsNull() || name.EqualTo("help", TString::kIgnoreCase) || 
       cls.IsNull()  || cls.EqualTo("help", TString::kIgnoreCase) || 
-      uri.IsNull()) {
+      !uri.IsValid()) {
     PlainUsage();
     return true;
   }
@@ -120,7 +120,7 @@ Bool_t RunTrain(const TString& name, const TString& cls,
   // Tokenize options 
   if (!opts.EndsWith(",")) opts.Append(",");
   opts.Append("url="); 
-  opts.Append(uri);
+  opts.Append(uri.GetUrl());
   TObjArray* optList = opts.Tokenize(",");
   return TrainSetup::Main(name, cls, optList, false);
 }
