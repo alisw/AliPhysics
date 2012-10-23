@@ -86,7 +86,26 @@ struct Option /* : public TNamed */
    * 
    * @param val New value 
    */
-  void Set(const TString& val) { fIsSet = true; fValue = val; }
+  void Set(const TString& val) 
+  { 
+    if (HasArg()) {
+      fIsSet = true;
+      fValue = val;
+      return;
+    }
+
+    // Allow flags to get =true, =1, =false, =0 values
+    if (!val.IsNull() && 
+	(val.EqualTo("false", TString::kIgnoreCase) || 
+	 (val.IsDigit() && !val.Atoi()))) {
+      fIsSet = false;
+      fValue = "false";
+    }
+    else {
+      fIsSet = true;
+      fValue = "true";
+    }
+  }
   /** 
    * Set the value
    */
@@ -96,13 +115,17 @@ struct Option /* : public TNamed */
       Error("Option::Set", "Option %s needs an argument", fName.Data());
       return;
     }
-    Set("");
+    Set("true");
   }
   /** 
    * Reset the set flag
    * 
    */
-  void Reset() { fIsSet = false; }
+  void Reset() 
+  { 
+    fIsSet = false; 
+    if (!HasArg()) fValue = "false";
+  }
   /**
    * @return constant reference to value 
    */
@@ -358,7 +381,7 @@ struct OptionList
   Option* Add(const TString& name, 
 	      const TString& arg, 
 	      const TString& desc, 
-	      const TString& val)
+	      const TString& val="")
   {
     Option* o = Find(name);
     if (o) { 
@@ -410,6 +433,68 @@ struct OptionList
   {
     return Add(name, "", desc, "");
   }
+  /** 
+   * Add an option with argument 
+   * 
+   * @param name Name of option
+   * @param arg  Dummy argument
+   * @param desc Description
+   * @param val  Default value 
+   * 
+   * @return Newly added option 
+   */
+  Option* Add(const TString& name, 
+	      const TString& arg, 
+	      const TString& desc, 
+	      Int_t          val, 
+	      Bool_t         asHex=false)
+  {
+    if (asHex) {
+      UInt_t uval = val;
+      return Add(name, arg, desc, Form("0x%x", uval));
+    }
+    return Add(name, arg, desc, Form("%d", val));
+  }
+  /** 
+   * Add an option with argument 
+   * 
+   * @param name Name of option
+   * @param arg  Dummy argument
+   * @param desc Description
+   * @param val  Default value 
+   * 
+   * @return Newly added option 
+   */
+  Option* Add(const TString& name, 
+	      const TString& arg, 
+	      const TString& desc, 
+	      Long64_t       val, 
+	      Bool_t         asHex=false)
+  {
+    if (asHex) {
+      ULong64_t uval = val;
+      return Add(name, arg, desc, Form("0x%llx", uval));
+    }
+    return Add(name, arg, desc, Form("%lld", val));
+  }
+  /** 
+   * Add an option with argument 
+   * 
+   * @param name Name of option
+   * @param arg  Dummy argument
+   * @param desc Description
+   * @param val  Default value 
+   * 
+   * @return Newly added option 
+   */
+  Option* Add(const TString& name, 
+	      const TString& arg, 
+	      const TString& desc, 
+	      Double_t val)
+  {
+    return Add(name, arg, desc, Form("%lg", val));
+  }
+
   /** 
    * Remove an option 
    * 
@@ -732,7 +817,8 @@ struct OptionList
    * @param prefix Prefix for each option
    */
   void Store(std::ostream& o, const char* prefix="", 
-	     const char* delim=",", bool quote=true) const 
+	     const char* delim=",", bool quote=true, 
+	     bool onlySet=false) const 
   {
     Int_t nWidth, aWidth;
     Widest(nWidth, aWidth);
@@ -740,7 +826,7 @@ struct OptionList
     const Link* cur = fList;
     while (cur) { 
       Option* opt = cur->fThis;
-      if (!opt->HasArg() && !opt->IsSet()) {
+      if ((!opt->HasArg() || onlySet) && !opt->IsSet()) {
 	cur = cur->fNext;
 	continue;
       }
@@ -753,7 +839,7 @@ struct OptionList
   // Our linked list
   Link* fList;
 
-  static void Test()
+  static void Test(const char* opts="")
   {
     OptionList l;
     l.Add("int", "NUMBER", "Integer", "42");
@@ -765,6 +851,7 @@ struct OptionList
     
     std::cout << "Find" << std::endl;
     Option* b = l.Find("bool");
+    b->Set("true");
     b->Show(std::cout);
 
     std::cout << "SetF" << std::endl;
@@ -782,12 +869,16 @@ struct OptionList
     std::cout << "Set" << std::endl;
     l.Set("int", "10");
     l.Set("hex", 0xbeef, true);
+    l.Set("bool", "false");
     l.Show(std::cout, "\t");
 
     std::cout << "Copy" << std::endl;
     OptionList c(l);
     c.Show(std::cout, "\t");
 
+    std::cout << "Parse" << std::endl;
+    c.Parse(opts,",");
+    c.Show(std::cout, "\t");
     std::cout << "End of test" << std::endl;
   }
   // TList fList;
