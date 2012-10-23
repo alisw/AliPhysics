@@ -922,6 +922,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
 //create graph according to selection
   if (drawGraph){
     TGraph *graph=new TGraph(fValuesX,fValuesY);
+    graph->Sort();
     TString grDraw="p";
     if (!drawSame) grDraw+="a";
     if (!fIsCustomDraw) grDraw+="l";
