@@ -58,43 +58,40 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kQbins = 20,
     kQbinsWeights = 40,
     kEDbins = 1,
-    kRVALUES = 8,
+    kRVALUES = 6+1,// 6 Gaussian radii (3-8fm), last slot for Therminator source
     kNDampValues = 16,// change to 11 soon
     kDENtypes = (kRVALUES)*kNDampValues,
     kCentBins=10,// 0-50%
     kSCLimit2 = 1,// 1, 6
     kSCLimit3 = 1,// 1, 10
-    kNlinesCoulFile = 99
-  };
+    kMCfixedRbin = 3,// 3 normally, (Rbin=3 (R=6fm)), 4 for systematic variation
+    kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
+ };
 
   void ParInit();
   Bool_t AcceptPair(AliChaoticityTrackStruct, AliChaoticityTrackStruct);
   Float_t GamovFactor(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
-  short FillIndex2part(short);
-  short FillIndex3part(short);
-  short SetQcutBin(short);
-  short SetNormBin(short);
-  void SetFillBins2(short, short, short, Int_t, Int_t, Int_t&, Int_t&);
-  void SetFillBins3(short, short, short, short, Int_t, Int_t, Int_t, short, Int_t&, Int_t&, Int_t&, Bool_t&, Bool_t&, Bool_t&);
-  void ArrangeQs(short, short, short, short, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, short, short, Float_t&, Float_t&, Float_t&);
-  Float_t GetQinv(short, Float_t[], Float_t[]);
+  Short_t FillIndex2part(Short_t);
+  Short_t FillIndex3part(Short_t);
+  Short_t SetQcutBin(Short_t);
+  Short_t SetNormBin(Short_t);
+  void SetFillBins2(Short_t, Short_t, Short_t, Int_t, Int_t, Int_t&, Int_t&);
+  void SetFillBins3(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Short_t, Int_t&, Int_t&, Int_t&, Bool_t&, Bool_t&, Bool_t&);
+  void ArrangeQs(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Short_t, Short_t, Float_t&, Float_t&, Float_t&);
+  Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
-  void SetWeightArrays();
-  void SetWeightArraysLEGO(TH3F *histos[kKbinsT][kCentBins]);
-  void SetMomResCorrections();
-  void SetMomResCorrectionsLEGO(TH2D *histo);
-  Float_t GetMomRes(Int_t, Float_t);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[kKbinsT][kCentBins]=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
+  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[2]=0x0);
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
-  Float_t CoulCorr(Int_t, Int_t, Int_t, Float_t);
-  void SetCoulCorrections();
-  void SetCoulCorrectionsLEGO(Float_t[kNlinesCoulFile], Float_t[kRVALUES][kNlinesCoulFile], Float_t[kRVALUES][kNlinesCoulFile]);
+  Float_t FSICorrelation2(Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeightOSL(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
-  Float_t MCWeightr3(Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
+  Float_t MCWeight3D(Bool_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
+  Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
   //
   Int_t GetNumKtbins() const {return kKbinsT;}
-  Int_t GetNumCoulLines() const {return kNlinesCoulFile;}
   Int_t GetNumRValues() const {return kRVALUES;}
   Int_t GetNumCentBins() const {return kCentBins;}
 
@@ -119,6 +116,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St_DT {
     TH3D *fTwoPartNorm; //!
     //TH3D *fTwoPartNormErr; //!
+    TH2D *f4VectProdTwoPartNorm; //!
   };  
   struct St6 {
     TH1D *fExplicit3; //!
@@ -126,6 +124,11 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //
     TH1D *fNorm3; //!
     TH3D *fTerms3; //!
+    TH2D *f4VectProdTermsCC3; //!
+    TH2D *f4VectProdTermsCC2; //!
+    TH2D *f4VectProdTermsCC0; //!
+    TH3D *fIdeal; //!
+    TH3D *fSmeared; //!
     //
     struct St_DT DT[kDENtypes];
   };
@@ -135,6 +138,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   };
   struct St5 {
     TH2D *fExplicit2; //!
+    TH2D *fExplicit2QW; //!
     TH3I *fExplicit2ThreeD; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
@@ -206,15 +210,18 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t fKmiddleT[kKbinsT];
   Float_t fKmiddleY[kKbinsY];
   Float_t fQstep;
+  Float_t fQstepWeights;
   Float_t fQmean[kQbinsWeights];
   Float_t fDampStart;
   Float_t fDampStep;
   
-  Float_t fQCoul[100];//! 2 MeV bins
-  Float_t fCoulSS[kRVALUES][100];//! Radii, Q
-  Float_t fCoulOS[kRVALUES][100];//! Radii, Q
-  Float_t fMomResWeights[kDENtypes][kQbinsWeights];//!
 
+  TH2D *fMomResC2;//!
+  TH3D *fMomRes3DTerm1;//!
+  TH3D *fMomRes3DTerm2;//!
+  TH3D *fMomRes3DTerm3;//!
+  TH3D *fMomRes3DTerm4;//!
+  TH3D *fMomRes3DTerm5;//!
 
   Float_t fTPCTOFboundry;
   Float_t fTOFboundry;
@@ -256,7 +263,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
   
   AliChaoticityNormPairStruct *fNormPairs[3];//!
  
- 
+  TH2D *fFSI2SS;//!
+  TH2D *fFSI2OS;//!
+  TH3D *fFSIOmega0SS;//!
+  TH3D *fFSIOmega0OS;//!
+  //
+
    
   ClassDef(AliChaoticity, 1); 
 };
