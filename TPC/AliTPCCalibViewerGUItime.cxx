@@ -450,9 +450,21 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeNam
   //
   // retrieve tree from file
   //
-  TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
-//   TString s(fileName);
-  TObjArray *arr=s.Tokenize("\n");
+  TObjArray *arr=0x0;
+  TString file(fileName);
+  if (file.Contains("://")) {
+    if (file.Contains(";")) {
+      arr=file.Tokenize(";");
+    } else {
+      arr=new TObjArray;
+      arr->Add(new TObjString(fileName));
+    }
+  } else {
+    TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
+    arr=s.Tokenize("\n");
+  }
+
+  if (!arr) return;
   TIter next(arr);
   TObject *o=0;
   if (fTree) delete fTree;
@@ -460,6 +472,7 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeNam
   while ( (o=next()) ){
     fTree->AddFile(o->GetName());
   }
+  arr->SetOwner();
   delete arr;
   if (!CheckChain()) return;
   UseConfigFile(fConfigFile.Data());
