@@ -81,9 +81,9 @@ struct AAFPluginHelper : public PluginHelper
   AAFPluginHelper(const TUrl& url, Int_t verbose)
     : PluginHelper(url, verbose)
   {
-    fOptions.Add("workers", "N[x]", "Number of workers to use", "0");
-    fOptions.Add("dsname",  "NAME", "Make output dataset", "");
-    fOptions.Add("wrapper", "CMD", "Wrapper command", "");
+    fOptions.Add("workers", "N[x]", "Number of workers to use", 0);
+    fOptions.Add("dsname",  "NAME", "Make output dataset");
+    fOptions.Add("wrapper", "CMD", "Wrapper command");
     fOptions.Add("clear",   "Clear all packages");
     fOptions.Add("reset",   "soft|hard", "Reset cluster", "hard");
 
