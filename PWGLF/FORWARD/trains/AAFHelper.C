@@ -116,6 +116,9 @@ struct AAFHelper : public ProofHelper
 
     fBasePars = false;
 
+    // Set this before we try to access the cluster
+    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+
     TProof::Mgr(fUrl.GetHost())
       ->SetROOTVersion(Form("VO_ALICE@ROOT::%s", root.Data()));
 

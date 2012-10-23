@@ -8,6 +8,7 @@
  * @ingroup pwglf_forward_trains_specific
  */
 #include "TrainSetup.C"
+#include <sstream>
 
 //====================================================================
 /**
@@ -31,12 +32,12 @@ public:
     fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
     fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", "");
     fOptions.Add("field", "STRENGTH","L3 field strength in kG", "");
-    fOptions.Add("cent",  "Use centrality");
-    fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("forward-config", "FILE", "Forward configuration", 
 		 "ForwardAODConfig.C");
     fOptions.Add("central-config", "FILE", "Forward configuration", 
 		 "CentralAODConfig.C");
+    fOptions.Add("cent",  "Use centrality");
+    fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Set("type", "ESD");
   }
@@ -155,6 +156,14 @@ protected:
   void SaveSetup(Bool_t asShellScript)
   {
     TrainSetup::SaveSetup(asShellScript);
+
+    if (!fHelper) { 
+      Warning("MakeAODTrain::SaveSetup", 
+	      "Cannot make dNdeta.C script with helper");
+      return;
+    }
+    
+    OptionList  uopts(fHelper->Options());
     
     TString cls("MakedNdetaTrain");
     TString name(fName); name.Append("_dndeta");
@@ -166,22 +175,34 @@ protected:
     opts.Remove("field");
     opts.Remove("bare-ps");
     opts.Remove("tpc-ep");
-    opts.Add("trig", "TRIGGER", "Trigger type", "");
-    opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", "-10");
-    opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", "+10");
+    opts.Add("trig", "TRIGGER", "Trigger type");
+    opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
+    opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
     opts.Add("scheme", "FLAGS", "Normalization scheme", 
 	     "TRIGGER EVENT BACKGROUND");
     opts.Add("cut-edges", "Cut edges of acceptance");
-    opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", "1");
-    opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", "1");
-    TString out = fHelper->OutputLocation();
-    if (out.IsNull()) out = fEscapedName;
-    opts.Set("url", out);
+    opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
+    opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
+
+    
+    // Rewrite our URL 
+    TString outString = fHelper->OutputLocation();
+    if (outString.IsNull()) outString = fEscapedName;
+    TUrl    outUrl(outString);
+    
+    if (uopts.Find("pattern")) uopts.Set("pattern", "*/AliAOD.root");
+    if (uopts.Find("concat")) uopts.Set("concat", true);
+
+    std::stringstream s;
+    uopts.Store(s, "", "&", false, true);
+    outUrl.SetOptions(s.str().c_str());
+      
+    opts.Set("url", outUrl.GetUrl());
     opts.Set("type", "AOD");
-  
-    SaveSetupROOT("dNdeta", cls, name, opts);
+
+    SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
     if (asShellScript) 
-      SaveSetupShell("dndeta", cls, name, opts);
+      SaveSetupShell("dndeta", cls, name, opts, &uopts);
   }
 };
 //
