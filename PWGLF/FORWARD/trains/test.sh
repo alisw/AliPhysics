@@ -10,6 +10,7 @@ dbg=
 ex=
 par=0
 dir=/data/alice/data/ppb/LHC12g/pass1/188359/
+outds=LHC12g_pass1_uncalib_AOD_188359
 
 usage()
 {
@@ -39,12 +40,13 @@ EOF
 
 while test $# -gt 0 ; do 
     case $1 in 
-	-t|--type) type=$2 ; shift ;; 
-	-d|--debug) dbg="gdb --args" ;; 
-	-b|--batch) ex="$ex --batch" ;; 
+	-t|--type)    type=$2 ; shift ;; 
+	-d|--debug)   dbg="gdb --args" ;; 
+	-b|--batch)   ex="$ex --batch" ;; 
 	-v|--verbose) ex="$ex --verbose=$2" ; shift ;; 
-	-p|--par)   par=1 ;;
-	-h|--help)  usage ; exit 0 ;;
+	-p|--par)     par=1 ;;
+	-h|--help)    usage ; exit 0 ;;
+	--) shift ;   break ;; 
     esac
     shift 
 done
@@ -54,26 +56,30 @@ case $type in
 	file="$dir"
 	if test "x$type" = "xlite" ; then opts="workers=10" ; fi
 	;;
-    hehi*)
+    hehi*|caf*)
 	proto=proof
-	host="hehi00.nbi.dk";
-	file="/default/cholm/LHC12g_pass1_uncalibrated_ESD_188359_partial";
-	opts="mode=default&dsname"
-	if test $par -gt 0 ; then opts="$opts&par=tasks" ; fi
-	;;
-    caf*)
-	proto=proof
-	host="alice-caf.cern.ch";
-	file="/alice/data/LHC12g_000188359_ESDs_p1_uncalibrated";
-	opts="mode=default&workers=60&aliroot=v5-03-68-AN&dsname"
+	opts="mode=default&dsname=${outds}"
 	if test $par -gt 0 ; then opts="$opts&par=tasks" ; fi
 	case $type in 
-	    *plugin*) opts="${opts}&plugin" ;;
+	    hehi*) 
+		host="hehi00.nbi.dk";
+		f="/default/cholm/LHC12g_pass1_uncalibrated_ESD_188359_partial"
+		;;
+	    caf*)
+		host="alice-caf.cern.ch";
+		f="/alice/data/LHC12g_000188359_ESDs_p1_uncalibrated";
+		opts="${opts}&workers=60&aliroot=v5-03-68-AN&reset&clear"
+		case $type in 
+		    *plugin*) opts="${opts}&plugin" ;;
+		esac
+		;;
 	esac
+	file=$f
 	;;
     grid*)
 	proto=alien
-	opts="run=188359-188359"
+	opts="run=188359-188359&split=30"
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
 	case $type in 
 	    *hijing*)
 		file="/alice/sim/2012/LHC12g1/";
@@ -94,23 +100,23 @@ case $type in
 	;;
 esac
 
-echo "Building runTrain ..."
-bld="g++ -g `root-config --cflags --glibs` \
-    -lVMC -lGeom -lMinuit -lXMLIO -lTree -lTreePlayer \
-    -I$ALICE_ROOT/include -L$ALICE_ROOT/lib/tgt_${ALICE_TARGET} \
-    -lSTEERBase -lESD -lAOD -lANALYSIS -lOADB -lANALYSISalice \
-    trainMain.cxx -o runTrain"
-echo $bld
-$bld || exit 1
+# echo "Building runTrain ..."
+# bld="g++ -g `root-config --cflags --glibs` \
+#     -lVMC -lGeom -lMinuit -lXMLIO -lTree -lTreePlayer \
+#     -I$ALICE_ROOT/include -L$ALICE_ROOT/lib/tgt_${ALICE_TARGET} \
+#     -lSTEERBase -lESD -lAOD -lANALYSIS -lOADB -lANALYSISalice \
+#     trainMain.cxx -o runTrain"
+# echo $bld
+# $bld || exit 1
 
 echo "Cleaning previous run ($name) ..."
-name=test_`echo $type | tr ' \t&/' '_'`
+name=LHC12g_p1_uncalib_188359_`echo $type | tr ' \t&/' '_'`
 rm -rf $name
 
 echo "Running the job ..."
-cmd="./runTrain --class=MakeAODTrain --name=$name \
+cmd="runTrain2 --class=MakeAODTrain --name=$name \
     --url=${proto}://${host}/${file}?${opts}#${anchor} \
-    --sys=3 --snn=5023 --field=-5  --cent \
+    --overwrite --sys=3 --snn=5023 --field=-5  --cent --date=now \
     $ex $@"
 echo "$dbg $cmd"
 $dbg $cmd
