@@ -112,12 +112,21 @@ void PrintFakeOption(std::ostream& o, const char* opt, const char* desc)
  */
 void Usage(const char* progname, std::ostream& o)
 {
-  o << "Usage: " << progname << " --class=CLASS --name=NAME [OPTIONS]\n\n"
+  o << "Usage: " << progname 
+    << " --class=CLASS --name=NAME --url=URI [OPTIONS]\n\n"
     << "PROGRAM OPTIONS:\n";
   PrintFakeOption(o, "class=CLASS",       "Train class");
   PrintFakeOption(o, "name=NAME",         "Name of train");
   PrintFakeOption(o, "include=DIRECTORY", "Append dir to macro/header path");
   PrintFakeOption(o, "batch",             "Batch mode");
+  PrintFakeOption(o, "url=URI",           "Execution URI");
+  o << "\nAlternatively to using --url=URI, one can use\n";
+  PrintFakeOption(o, "where=BASE_URI",    "Set protocol, user, host, "
+		  "and port URI");
+  PrintFakeOption(o, "file=FILE_OR_PATH", "File/path part of URI");
+  PrintFakeOption(o, "options=OPTIONS",   "Query options for URI");
+  PrintFakeOption(o, "anchor=ANCHOR",     "Query anchor for URI");
+
 }
 
 int
@@ -126,8 +135,13 @@ main(int argc, char** argv)
   TList optList;
   TString name;
   TString cls;
-  Bool_t  batch = false;
-  Bool_t  help  = false;
+  TString where;
+  TString file;
+  TString opts;
+  TString anchor;
+  Bool_t  batch   = false;
+  Bool_t  help    = false;
+  Bool_t  urlSeen = false;
 
   // --- Parse options -----------------------------------------------
   for (int i = 1; i < argc; i++) { 
@@ -140,11 +154,31 @@ main(int argc, char** argv)
       if      (arg.BeginsWith("--class"))   cls  = val;
       else if (arg.BeginsWith("--name"))    name = val;
       else if (arg.BeginsWith("--include")) AppendPath(val);
-      else if (arg.BeginsWith("--batch"))   batch = true;
-      else if (arg.BeginsWith("--help"))    help  = true;
-      else optList.Add(new TObjString(&(argv[i][2])));
+      else if (arg.BeginsWith("--batch"))   batch  = true;
+      else if (arg.BeginsWith("--help"))    help   = true;
+      else if (arg.BeginsWith("--where"))   where  = val;
+      else if (arg.BeginsWith("--file"))    file   = val;
+      else if (arg.BeginsWith("--opts"))    opts   = val;
+      else if (arg.BeginsWith("--anchor"))  anchor = val;
+      else {
+	if (arg.BeginsWith("--url")) urlSeen = true;
+	optList.Add(new TObjString(&(argv[i][2])));
+      }
     }
   }
+  // --- Initial check or URI/WHERE ----------------------------------
+  if (!where.IsNull()) {
+    if (urlSeen) {
+      Error("main", "option --url and --where mutually exclusive");
+      return 1;
+    }
+    TUrl u(where);
+    if (!file.IsNull())   u.SetFile(file);
+    if (!opts.IsNull())   u.SetOptions(opts);
+    if (!anchor.IsNull()) u.SetAnchor(anchor);
+    optList.Add(new TObjString(Form("url=%s", u.GetUrl())));
+  }
+
   // --- check for help ----------------------------------------------
   if (help && cls.IsNull()) {
     if (cls.IsNull()) {
