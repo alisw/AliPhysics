@@ -84,11 +84,13 @@ struct GridHelper : public PluginHelper
     : PluginHelper(url, verbose)
   {
     fOptions.Add("oper", "FULL|TERMINATE|SUBMIT", "Analysis operation", "FULL");
-    fOptions.Add("split",  "N", "Maximum number of files before split", "max");
-    fOptions.Add("merge",  "N", "Maximum number of files for merge", "max");
-    fOptions.Add("run",    "RUNS", "Range, list, and/or file of runs", "");
-    fOptions.Add("pattern","GLOB", "File/directory name pattern", "");
-    fOptions.Add("mc", "Assume MC input");
+    fOptions.Add("split",  "N|max",  "Max number of files before split","max");
+    fOptions.Add("merge",  "N|max",  "Max number of files for merge",   "max");
+    fOptions.Add("run",    "RUNS",   "Range, list, and/or file of runs");
+    fOptions.Add("pattern","GLOB",   "File/directory name pattern");
+    fOptions.Add("alien",  "VERSION","Alien API version",              "V1.1x");
+    fOptions.Add("concat", "Concatenate all runs");
+    fOptions.Add("mc",     "Assume MC input");
   }
   virtual ~GridHelper() {}
   /** 
@@ -129,12 +131,13 @@ struct GridHelper : public PluginHelper
       return -1;
     }
     Int_t       nRuns  = 0;
-    TString     runs   = fOptions.Get("runs");
+    TString     runs   = fOptions.Get("run");
     TObjArray*  tokens = runs.Tokenize(",");
     TObjString* part   = 0;
     TIter       next(tokens);
     Bool_t      range  = false;
     Bool_t      individual = false;
+    Info("GridHelper::RegisterRuns", "Runs specified are %s", runs.Data());
     while ((part = static_cast<TObjString*>(next()))) {
       TString& s = part->String();
       if (s.Contains("-")) { // Run range 
@@ -159,6 +162,8 @@ struct GridHelper : public PluginHelper
 	Int_t first = static_cast<TObjString*>(ranges->At(0))->String().Atoi();
 	Int_t last  = static_cast<TObjString*>(ranges->At(1))->String().Atoi();
 	nRuns       = last-first+1;
+	Info("GridHelper::RegisterRuns", "Run range %d -> %d", 
+	     first, last);
 	fHandler->SetRunRange(first, last);
 	ranges->Delete();
 	range = true;
@@ -171,18 +176,20 @@ struct GridHelper : public PluginHelper
 		  "ignoring %s", s.Data());
 	  continue;
 	}
+	Info("GridHandler::RegisterRuns", "Adding run %s", s.Data());
 	fHandler->AddRunNumber(s.Data());
 	nRuns++;
 	individual = true;
 	continue;
       }
-	if (range) { 
-	  Warning("GridHelper::RegisterRuns", "Run ranges and list file "
-		  "do not mix, ignoring %s", s.Data());
-	  continue;
-	}
+      if (range) { 
+	Warning("GridHelper::RegisterRuns", "Run ranges and list file "
+		"do not mix, ignoring %s", s.Data());
+	continue;
+      }
 
       // We assume this part is a file 
+      Info("GridHelper::RegisterRuns", "Reading runs from %s", s.Data());
       std::ifstream in(s.Data());
       if (!in) { 
 	Warning("GridHelper::RegisterRuns", "Failed to open %s", s.Data());
@@ -191,6 +198,7 @@ struct GridHelper : public PluginHelper
       while (!in.eof()) { 
 	Int_t r;
 	in >> r;
+	Info("GridHelper::RegisterRuns", "Read %d, adding", r);
 	fHandler->AddRunNumber(r);
 	nRuns++;
 	Char_t c;
@@ -210,9 +218,15 @@ struct GridHelper : public PluginHelper
   virtual Bool_t PreSetup() 
   {
     if (!PluginHelper::PreSetup()) return false;
+    
+    // --- Add system library dir to load path -----------------------
+    gSystem->AddDynamicPath("/usr/lib");
 
     // --- Open a connection to the grid -----------------------------
-    TGrid::Connect(Form("%s://", fUrl.GetProtocol()));
+    if (!TGrid::Connect(Form("%s://", fUrl.GetProtocol()))) { 
+      Error("GridHelper::PreSetup", "Failed to connect to AliEN");
+      return false;
+    }
     if (!gGrid || !gGrid->IsConnected()) { 
       Error("GridHelper::PreSetup", "Failed to connect to AliEN");
       return false;
@@ -227,8 +241,14 @@ struct GridHelper : public PluginHelper
    */
   virtual Bool_t PostSetup() 
   {
+    Info("GridHelper::PostSetup", "Calling super.PostSetup");
     if (!PluginHelper::PostSetup()) return false;
 
+    // --- API version -----------------------------------------------
+    fHandler->SetAPIVersion(fOptions.Get("alien"));
+    
+    // --- Get the name ----------------------------------------------
+    Info("GridHandler", "Proceeding with plugin setup");
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     TString name(mgr->GetName());
 
@@ -236,6 +256,10 @@ struct GridHelper : public PluginHelper
     TString operation("FULL");
     if (fOptions.Has("oper")) operation = fOptions.Get("oper");
     fHandler->SetRunMode(operation);
+
+    // --- Add the run numbers ---------------------------------------
+    fHandler->SetRunPrefix(mgr->GetMCtruthEventHandler() ? "%d" : "%09d");
+    Int_t nRun = RegisterRuns();
 
     // --- Do not test copying ---------------------------------------
     fHandler->SetCheckCopy(false);
@@ -285,21 +309,24 @@ struct GridHelper : public PluginHelper
     // --- How much to split -----------------------------------------
     if (fOptions.Has("split")) { 
       if (!fOptions.Get("split").EqualTo("max")) {
-	fHandler->SetSplitMaxInputFileNumber(fOptions.Get("split").Atoi());
+	fHandler->SetSplitMaxInputFileNumber(fOptions.AsInt("split"));
       }
     }
-    
-    // --- Enable default outputs ------------------------------------
-    fHandler->SetDefaultOutputs(true);
-
     // --- Merge parameters ------------------------------------------
     if (fOptions.Has("merge")) { 
       if (!fOptions.Get("merge").EqualTo("max")) { 
-	fHandler->SetMaxMergeFiles(fOptions.Get("merge").Atoi());
+	fHandler->SetMaxMergeFiles(fOptions.AsInt("merge"));
       }
     }
     fHandler->SetMergeExcludes("AliAOD.root *EventStat*.root "
 			       "*event_stat*.root");
+    
+    // --- Set number of runs per master - 1 or all ------------------
+    fHandler->SetNrunsPerMaster(fOptions.Has("concat") ? nRun+1 : 1);
+
+
+    // --- Enable default outputs ------------------------------------
+    fHandler->SetDefaultOutputs(true);
 
     // --- Keep log files ------------------------------------------
     fHandler->SetKeepLogs();
@@ -325,13 +352,6 @@ struct GridHelper : public PluginHelper
       else if (treeName.EqualTo("aodTree")) pattern = "AliAOD";
     }
     fHandler->SetDataPattern(pattern);
-    fHandler->SetRunPrefix(mgr->GetMCtruthEventHandler() ? "" : "000");
-
-    // --- Add the run numbers ---------------------------------------
-    Int_t nRun = RegisterRuns();
-
-    // --- Set number of runs per master - set to one to per run -----
-    fHandler->SetNrunsPerMaster(fOptions.Has("run-merge") ? 1 : nRun+1);
 
     // --- Loop over defined containers in the analysis manager, and -
     // --- declare these as outputs
@@ -436,6 +456,194 @@ struct GridHelper : public PluginHelper
    * @return Short description
    */
   virtual const char* Desc() const { return "AliEn"; }
+  /** 
+   * Write auxillary ROOT (and possible shell) script for more 
+   * (post-)processing e.g., terminate
+   * 
+   * @param escaped        Escaped name  
+   * @param asShellScript  also save as shell script
+   */
+  void AuxSave(const TString& escaped, 
+	       Bool_t asShellScript) 
+  {
+    // Write plug-in to file 
+    TFile* plug = TFile::Open(Form("%s_plugin.root", escaped.Data()), 
+			      "RECREATE");
+    fHandler->Write("plugin");
+    plug->Close();
+    
+    std::ofstream o("Terminate.C");
+    if (!o) { 
+      Error("GridHelper::AuxSave", "Failed to make terminate ROOT script");
+      return;
+    }
+    
+    o << "// Generated by GridHelper\n"
+      << "Bool_t LoadLib(const char* libName)\n"
+      << "{\n"
+      << "  if (gSystem->Load(libName) < 0) {\n"
+      << "    Error(\"Terminate\", \"Failed to load library %s\",libName);\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  Info(\"Terminate\",\"Loaded library %s\",libName);\n"
+      << "  return true;\n"
+      << "}\n\n"
+      << "Bool_t LoadPar(const char* parName)\n"
+      << "{\n"
+      << "  if (!AliAnalysisAlien::SetupPar(parName)) {\n"
+      << "    Error(\"Terminate\",\"Failed to load PAR %s\",parName);\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  Info(\"Terminate\",\"Loaded package %s\",parName);\n"
+      << "  return true;\n"
+      << "}\n\n"
+      << "Bool_t Terminate()\n"
+      << "{\n"
+      << "  // Name of job\n"
+      << "  TString name = \"" << escaped << "\";\n\n" 
+      << "  // Load basic ROOT libraries\n"
+      << "  gSystem->AddDynamicPath(\"/usr/lib\");\n"
+      << "  if (gSystem->Load(\"libTree.so\")       < 0) return false;\n"
+      << "  if (gSystem->Load(\"libGeom.so\")       < 0) return false;\n"
+      << "  if (gSystem->Load(\"libVMC.so\")        < 0) return false;\n"
+      << "  if (gSystem->Load(\"libPhysics.so\")    < 0) return false;\n"
+      << "  if (gSystem->Load(\"libMinuit.so\")     < 0) return false;\n\n"
+      << "  // Load basic AliROOT libraries\n"
+      << "  if (gSystem->Load(\"libSTEERBase\")     < 0) return false;\n"
+      << "  if (gSystem->Load(\"libESD\")           < 0) return false;\n"
+      << "  if (gSystem->Load(\"libAOD\")           < 0) return false;\n"
+      << "  if (gSystem->Load(\"libANALYSIS\")      < 0) return false;\n"
+      << "  if (gSystem->Load(\"libOADB\")          < 0) return false;\n"
+      << "  if (gSystem->Load(\"libANALYSISalice\") < 0) return false;\n\n";
+    // Now load libraries 
+    o << " // Load libraries\n";
+    TIter nextLib(&fExtraLibs);
+    TObjString* lib = 0;
+    while ((lib = static_cast<TObjString*>(nextLib()))) {
+      const TString& libName = lib->String();
+      if (libName.Contains("libSTEERBase") ||
+	  libName.Contains("libESD") ||
+	  libName.Contains("libAOD") ||
+ 	  libName.Contains("libANALYSIS") ||
+ 	  libName.Contains("libOADB") ||
+ 	  libName.Contains("libANALYSISalice")) continue;
+      if (libName.Contains(".so")) continue;
+      o << "  if(!LoadLib(\"" << libName << "\")) return false;\n";
+    }
+    // Now load PARs
+    o << "\n"
+      << "  // Load packages\n";
+    TIter nextPar(&fExtraPars);
+    TObjString* par = 0;
+    while ((par = static_cast<TObjString*>(nextPar()))) {
+      TString parName(par->String());
+      if (parName.EndsWith(".par")) parName.ReplaceAll(".par", "");
+      if (parName.Contains("STEERBase") ||
+	  parName.Contains("ESD") ||
+	  parName.Contains("AOD") ||
+ 	  parName.Contains("ANALYSIS") ||
+ 	  parName.Contains("OADB") ||
+ 	  parName.Contains("ANALYSISalice")) continue;
+      o << "  if (!LoadPar(\"" << parName << "\")) return false;\n";
+    }
+    // Now load scripts 
+    o << "\n"
+      << "  // Load sources\n";
+    TIter nextSrc(&fExtraSrcs);
+    TObjString* src = 0;
+    while ((src = static_cast<TObjString*>(nextSrc()))) {
+      const TString& srcName = src->String();
+      o << "  gROOT->ProcessLine(\".L " << srcName << "+g\");\n";
+    }
+	
+    // We're ready to load the analysis manager.  
+    o << "  \n"
+      << "  // Load the analysis manager from file\n"
+      << "  TString base(name);\n"
+      << "  base.Append(\".root\");\n"
+      << "  if (gSystem->AccessPathName(base.Data())) {\n"
+      << "    // Couldn't read from current directory, try sub-dir\n"
+      << "    TString sub(gSystem->ConcatFileName(name, base));\n"
+      << "    if (gSystem->AccessPathName(sub)) {\n"
+      << "      Error(\"Terminate\",\"Couldn't find manager file %s\","
+      << "base.Data());\n"
+      << "      return false;\n"
+      << "    }\n"
+      << "    base = sub;\n"
+      << "  }\n"
+      << "  AliAnalysisManager* mgr= "
+      << "AliAnalysisAlien::LoadAnalysisManager(base);\n"
+      << "  if (!mgr) {\n"
+      << "    Error(\"Terminate\", \"Failed to load manager from %s\","
+      << "base.Data());\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  if (!name.EqualTo(mgr->GetName())) {\n"
+      << "    Error(\"Terminate\",\"Read manager %s is not %s\","
+      << "mgr->GetName(),name.Data());\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  Info(\"Terminate\",\"Loaded analysis manager\");\n\n"
+      << "  // Load plugin\n"
+      << "  TFile* plug = TFile::Open(Form(\"%s_plugin.root\",name.Data()),"
+      << "\"READ\");\n"
+      << "  if (!plug) {\n"
+      << "    Error(\"Terminate\",\"Failed to open %s_plugin.root\","
+      << "name.Data());\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  AliAnalysisAlien* handler = "
+      << "static_cast<AliAnalysisAlien*>(plug->Get(\"plugin\"));\n"
+      << "  if (!handler) {\n"
+      << "    Error(\"Terminate\",\"Failed to load plugin\");\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  Info(\"Terminate\",\"Setting grid handler\");\n"
+      << "  handler->SetRunMode(\"terminate\");\n"
+      << "  mgr->SetGridHandler(handler);\n\n"
+      << "  // Run the terminate job\n"
+      << "  Info(\"Terminate\",\"Starting terminate job\");\n"
+      << "  if (mgr->StartAnalysis(\"grid\") < 0) return false;\n"
+      << "  return true;\n"
+      << "}\n"
+      << "// \n"
+      << "// EOF\n"
+      << "//\n"
+      << std::endl;
+    o.close();
+
+    if (!asShellScript) return;
+
+    std::ofstream s("terminate.sh");
+    if (!s) { 
+      Error("GridHelper::AuxSave", "Failed to make terminate shell script");
+      return;
+    }
+    s << "#!/bin/sh\n"
+      << "# Generated by GridHelper\n"
+      << "nam=" << escaped << "\n"
+      << "scr=Terminate.C\n"
+      << "mgr=$name.root\n"
+      << "\n"
+      << "if test ! -f $scr || test ! -f $mgr ; then\n"
+      << "  if test ! -d $nam ; then\n"
+      << "    echo \"Directory $nam not found\"\n"
+      << "    exit 1\n"
+      << "  fi\n\n"
+      << "  if test ! -f $nam/$scr || test -f $nam/$scr ; then\n"
+      << "    echo \"Script $nam/$scr, manager $nam/$scr not found\"\n"
+      << "    exit 1\n"
+      << "  fi\n\n"
+      << "  (cd $nam && aliroot -l $scr)\n"
+      << "fi\n\n"
+      << " aliroot -l $scr\n"
+      << "#\n"
+      << "# EOF\n"
+      << "#\n"
+      << std::endl;
+    s.close();
+    gSystem->Exec("chmod a+x terminate.sh");
+  }
 };
 #endif
 //

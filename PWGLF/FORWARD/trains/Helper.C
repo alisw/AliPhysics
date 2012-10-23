@@ -293,6 +293,15 @@ struct Helper
    */
   const OptionList& Options() const { return fOptions; }
   /** 
+   * Write auxillary ROOT (and possible shell) script for more 
+   * (post-)processing e.g., terminate
+   * 
+   * @param escaped        Escaped name  
+   * @param asShellScript  also save as shell script
+   */
+  virtual void AuxSave(const TString& /*escaped*/, 
+		       Bool_t /*asShellScript*/) {}
+  /** 
    * Create an instance of a helper class 
    */
   static Helper* CreateObject(const TString& cl, 
