@@ -69,7 +69,8 @@ struct PluginHelper : public Helper
    * @param opts Options 
    */
   PluginHelper(const TUrl& url, Int_t verbose)
-    : Helper(url, verbose), fHandler(0), fUsePars(false)
+    : Helper(url, verbose), fHandler(0), fUsePars(false), 
+      fExtraLibs(), fExtraPars(), fExtraSrcs()
   {
     fHandler = new AliAnalysisAlien();
 
@@ -77,8 +78,12 @@ struct PluginHelper : public Helper
     fOptions.Add("root",    "VERSION", "ROOT version", "last");
     fOptions.Add("par", "Use par files");
     fOptions.Add("mode", "default|rec|sim", "AliROOT mode", "default");
-    fOptions.Add("storage", "URL", "Location for external storage", "");    
+    fOptions.Add("storage", "URL", "Location for external storage");    
     fOptions.Add("plugin", "Use AliEn handler");
+
+    fExtraLibs.SetOwner();
+    fExtraPars.SetOwner();
+    fExtraSrcs.SetOwner();
   }
   /** 
    * Copy constructor 
@@ -86,7 +91,8 @@ struct PluginHelper : public Helper
    * @param o Object to copy from 
    */
   PluginHelper(const PluginHelper& o) 
-    : Helper(o), fHandler(o.fHandler), fUsePars(o.fUsePars)
+    : Helper(o), fHandler(o.fHandler), fUsePars(o.fUsePars), 
+      fExtraLibs(), fExtraPars(), fExtraSrcs()
   {}
   /** 
    * Assignment operator 
@@ -123,7 +129,10 @@ struct PluginHelper : public Helper
       TString fullName(MakeLibraryName(name));
       Int_t ret = gSystem->Load(fullName);
       if (ret < 0) return false;
-      if (slaves) fHandler->AddAdditionalLibrary(fullName);
+      if (slaves) {
+	fHandler->AddAdditionalLibrary(fullName);
+	fExtraLibs.Add(new TObjString(fullName));
+      }
     }
     else { 
       if (!ParUtilities::Find(name)) { 
@@ -137,6 +146,7 @@ struct PluginHelper : public Helper
 	return false;
       }
       fHandler->EnablePackage(name);
+      fExtraPars.Add(new TObjString(name));
     }
     return true;
   }
@@ -153,6 +163,7 @@ struct PluginHelper : public Helper
     if (!Helper::LoadSource(name)) return false;
     s.Append(Form(" %s", gSystem->BaseName(name.Data())));
     fHandler->SetAnalysisSource(s);
+    fExtraSrcs.Add(new TObjString(name));
     return true;
   }
   
@@ -266,6 +277,9 @@ struct PluginHelper : public Helper
   }
   AliAnalysisAlien* fHandler;
   Bool_t fUsePars;
+  TList  fExtraLibs;
+  TList  fExtraPars;
+  TList  fExtraSrcs;
 };
 #endif
 //

@@ -70,11 +70,12 @@ struct TrainSetup
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
     fOptions.Add("mc", "Assume MC input");
     fOptions.Add("bare-ps", "Use bare physics selection w/o task");
-    fOptions.Add("verbose", "LEVEL", "Set verbosity level", "0");
-    fOptions.Add("url", "URL", "Job location & input URL", "");
+    fOptions.Add("verbose", "LEVEL", "Set verbosity level", 0);
+    fOptions.Add("url", "URL", "Job location & input URL");
     fOptions.Add("overwrite", "Allow overwrite");
-    fOptions.Add("events", "N", "Number of events to analyse", "-1");
-    fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
+    fOptions.Add("events", "N", "Number of events to analyse", -1);
+    fOptions.Add("type", "ESD|AOD|USER", "Input data stype");
+    fOptions.Add("setup", "Only do the setup");
     fEscapedName = EscapeName(fName, "");
   }
   TrainSetup(const TrainSetup& o) 
@@ -151,7 +152,7 @@ struct TrainSetup
     if (!fHelper->LoadAliROOT()) return false;
 
     // --- Create analysis manager -----------------------------------
-    AliAnalysisManager *mgr  = CreateAnalysisManager(fName);
+    AliAnalysisManager *mgr  = CreateAnalysisManager(fEscapedName);
 
     // In test mode, collect system information on every event 
     // if (oper == kTest)  mgr->SetNSysInfo(1); 
@@ -220,12 +221,18 @@ struct TrainSetup
 
     return true;
   }
-  Bool_t Run(Bool_t doExit=false)
+  Bool_t Run()
   {
     TString cwd = gSystem->WorkingDirectory();
     Bool_t status = false;
     try {
       if (!Init()) throw TString("Failed to intialize the train");
+
+      // Check if we're asked to only do the setup 
+      if (fOptions.Has("setup")) {
+	status = true;
+	throw TString("Only did setup, no running");
+      }
 
       // if (r) SaveSetup(*r, nEvents, asShell);
       
@@ -241,14 +248,12 @@ struct TrainSetup
       status = true;
     }
     catch (TString& e) {
-      Error("Main", e);
-      status = false;
+      if (status) 
+	Warning("Main", e);
+      else 
+	Error("Main", e);
     }
-    if (gApplication && doExit) {
-      gSystem->Sleep(3);
-      gApplication->Terminate(status ? 0 : 1);
-    }
-    return true;
+    return status;
   }
   /** 
    * Get the options 
@@ -280,7 +285,7 @@ struct TrainSetup
     if (!fOptions.Has("help")) return true;
 
     if (asProg) 
-      o << "Usage: runTrain --name=NAME --class=CLASS [OPTIONS]";
+      o << "Usage: runTrain2 --name=NAME --class=CLASS [OPTIONS]";
     else 
       o << "Usage: RunTrain(NAME, CLASS, OPTIONS)";
     
@@ -334,47 +339,53 @@ struct TrainSetup
 		     const TCollection* opts, 
 		     Bool_t asProg=true)
   {
-    if (cls.IsNull()) { 
-      Error("Main", "No class name specified");
-      return false;
-    }
-    if (name.IsNull()) { 
-      Error("Main", "No train name specified");
-      return false;
-    }
-    Int_t error = 0;
-    Int_t r1 = gROOT->LoadMacro(Form("%s.C++g", cls.Data()), &error);
-    if (r1 < 0 || error) { 
-      Error("Main", "Failed to load setup %s: %d", cls.Data(), error);
-      return false;
-    }
+    Bool_t ret = false;
+    try {
+      if (cls.IsNull()) 
+	throw TString("No class name specified");
+      if (name.IsNull()) 
+	throw TString("No train name specified");
 
-    // Make our object using the interpreter 
-    TString create = TString::Format("new %s(\"%s\")", 
-				   cls.Data(), name.Data());
-    gROOT->ProcessLine("gSystem->RedirectOutput(\"/dev/null\",\"w\");");
-    Long_t ret = gROOT->ProcessLine(create, &error);
-    gROOT->ProcessLine("gSystem->RedirectOutput(0);");
-    if (!ret || error) { 
-      Error("Main", "Failed to make object of class %s: 0x%08lx/%d\n\t%s", 
-	    cls.Data(), ret, error, create.Data());
-      return false;
-    }
-    TrainSetup* train = reinterpret_cast<TrainSetup*>(ret);
+      Int_t error = 0;
+      Int_t r1 = gROOT->LoadMacro(Form("%s.C++g", cls.Data()), &error);
+      if (r1 < 0 || error) 
+	throw TString::Format("Failed to load setup %s: %d", cls.Data(), error);
+
+      // Make our object using the interpreter 
+      TString create = TString::Format("new %s(\"%s\")", 
+				       cls.Data(), name.Data());
+      gROOT->ProcessLine("gSystem->RedirectOutput(\"/dev/null\",\"w\");");
+      Long_t retP = gROOT->ProcessLine(create, &error);
+      gROOT->ProcessLine("gSystem->RedirectOutput(0);");
+      if (!retP || error) 
+	throw TString::Format("Failed to make object of class %s: "
+			      "0x%08lx/%d\n\t%s", 
+			      cls.Data(), retP, error, create.Data());
+
+      TrainSetup* train = reinterpret_cast<TrainSetup*>(retP);
     
-    // Now parse the options 
-    if (!train->Options().Parse(opts)) { 
-      Error("Main", "Failed to parse options");
-      return false;
-    }
+      // Now parse the options 
+      if (!train->Options().Parse(opts)) 
+	throw TString("Failed to parse options");
 
-    // Check if we got a help request
-    if (train->Options().Has("help")) { 
-      train->Help(std::cout, asProg);
-      return true;
+      // Check if we got a help request
+      if (train->Options().Has("help")) { 
+	train->Help(std::cout, asProg);
+	ret = true;
+	throw TString("");
+      }
+
+      // return train->Init();
+      ret = train->Run();
     }
-    // return train->Init();
-    return train->Run(asProg);
+    catch (TString& e) { 
+      if (!e.IsNull()) Error("Main", e);
+    }
+    if (gApplication && asProg) {
+      gSystem->Sleep(3);
+      gApplication->Terminate(ret ? 0 : 1);
+    }
+    return ret;
   }
 protected:
   //__________________________________________________________________
@@ -534,6 +545,7 @@ protected:
 				  "%c", // Locale 
 				  "%Ex EX", // Locale 
 				  "%x %X", // Locale 
+				  "%Y%m%d_%H%M", // YYYYMMDD_HHMM
 				  "%F %R", // ISO standard, no seconds 
 				  0 };
 	const char** f = formats;
@@ -549,8 +561,10 @@ protected:
 	  if (strptime(datimeStr.Data(), *f, &t) != 0) found = true;
 	  f++;
 	}
-	if (found) 
+	if (found) {
+	  t.tm_mon += 1; // Return 0-based month
 	  datime.Set(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, 0); 
+	}
       }
       if (datime.GetYear() <= 1995 ||
 	  datime.GetMonth() == 0 || 
@@ -617,10 +631,16 @@ protected:
   virtual void SaveSetup(Bool_t asShellScript)
   {
     OptionList tmp(fOptions);
+    const OptionList* uopts = (fHelper ? &fHelper->Options() : 0);
     if (tmp.Find("overwrite")) tmp.Set("overwrite");
+    if (tmp.Find("date") && fEscapedName.Length() > fName.Length()+1) {
+      Int_t n = fName.Length()+1;
+      tmp.Set("date", fEscapedName(n, fEscapedName.Length()-n));
+    }
     if (asShellScript) 
-      SaveSetupShell("rerun", ClassName(), fName, tmp);
-    SaveSetupROOT("ReRun", ClassName(), fName, tmp);
+      SaveSetupShell("rerun", ClassName(), fName, tmp, uopts);
+    SaveSetupROOT("ReRun", ClassName(), fName, tmp, uopts);
+    if (fHelper) fHelper->AuxSave(fEscapedName, asShellScript);
   }
   /** 
    * Save a setup as a shell script 
@@ -631,7 +651,8 @@ protected:
    * @param opts  Option list
    */
   static void SaveSetupShell(const TString& out, const TString& cls,
-			      const TString& name, const OptionList& opts)
+			     const TString& name, const OptionList& opts,
+			     const OptionList* uopts)
   {
     std::ofstream o(Form("%s.sh", out.Data()));
     o << "#!/bin/bash\n\n"
@@ -640,13 +661,19 @@ protected:
       << "# Available options\n"
       << "# \n";
     opts.Help(o, "#    --");
+    if (uopts) {
+      o << "#\n"
+	<< "# Available URI options\n"
+	<< "# \n";
+      uopts->Help(o, "#      ");
+    }
     o << "#\n"
       << "opts=(--class=$class \\\n"
       << "  --name=$name";
     opts.Store(o, " \\\n  --", "", true);
     o << ")\n\n"
-      << "echo \"Running runTrain ${opts[@]} $@\"\n"
-      << "runTrain \"${opts[@]}\" $@\n\n"
+      << "echo \"Running runTrain2 ${opts[@]} $@\"\n"
+      << "runTrain2 \"${opts[@]}\" $@\n\n"
       << "# EOF" << std::endl;
     o.close();
     gSystem->Exec(Form("chmod a+x %s.sh", out.Data()));
@@ -660,20 +687,28 @@ protected:
    * @param opts  Option list
    */
   static void SaveSetupROOT(const TString& out, const TString& cls,
-			    const TString& name, const OptionList& opts)
+			    const TString& name, const OptionList& opts,
+			    const OptionList* uopts)
   {
     OptionList tmp(opts);
     tmp.Remove("url");
+
     std::ofstream o(Form("%s.C", out.Data()));
-    o << "/* Available options:\n"
-      << " *\n";
-    tmp.Help(o, " *    ");
-    o << " */\n"
-      << "Bool_t " << out << "()\n"
+    o << "// Available options:\n"
+      << "// \n";
+    tmp.Help(o, "//     ");
+    if (uopts) {
+      o << "// \n"
+	<< "// Available URI options\n";
+      uopts->Help(o, "//      ");
+    }
+    o << "//\n"
+      << "Bool_t " << out << "()\n" 
       << "{\n"
       << "  TString name(\"" << name << "\");\n"
       << "  TString cls(\"" << cls << "\");\n"
-      << "  TString uri(\"" << opts.Get("url") << "\");\n"
+      << "  TUrl    uri(\"" << opts.Get("url") << "\");\n"
+      << "  \n"
       << "  TString opts(";
     tmp.Store(o, "\"", ",\"\n               ", false);
     o << ");\n\n"
