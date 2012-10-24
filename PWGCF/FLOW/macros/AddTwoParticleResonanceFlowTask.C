@@ -20,14 +20,14 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
                                        Bool_t EP3sub = 0,
                                        Bool_t VZERO_SP = 0, // use vzero sp method
                                        Float_t centrMin = 20., // centrality selection
-                                       Float_t centrMax = 30.,
-                                       Float_t ITSsigma = 0., // pid mode (see task implementation)
-                                       Float_t ITSrange = 0.,
-                                       Float_t TPCcontrol = 1.,
-                                       Float_t TPCsigma = 3.,
-                                       Float_t TPCrange = 0.,
-                                       Float_t ITScontrol = -1.,
-                                       Float_t Bpurity = 0.3,
+                                       Float_t centrMax = 40.,
+                                       Float_t TPConlyA = 3., 
+                                       Float_t TPCTOFA = 5.,
+                                       Float_t TOFA = 3.,
+                                       Float_t TPConlyB = 3.,
+                                       Float_t TPCTOFB = 5.,
+                                       Float_t TOFB = 3.,
+                                       Float_t Bpurity = 0.9, // set to 0 to disable bayesian PID
                                        TString suffixName = "UniqueID", // unique id for output objects
                                        Bool_t bCentralTrigger = kTRUE, // trigger selection
                                        Float_t EtaGap = 0., // eta gap for SPSUB
@@ -39,18 +39,23 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
                                        Float_t maxMaxx = 1.13, // max mass for flow analysis
                                        Int_t speciesA = 3, // species a
                                        Int_t speciesB = 2, // species b
-                                       Int_t chargeA = -1, // charge a
-                                       Int_t chargeB = 1, // charge b
+                                       Int_t chargeA = 1, // charge a
+                                       Int_t chargeB = -1, // charge b
                                        Float_t massA = 4.93676999999999977e-01, // mass species a
                                        Float_t massB = 1.39570e-01, // mass species b
+                                       Float_t minPtA = 0.15, // min pt for track a
+                                       Float_t maxPtA = 10., // max pt for track a
+                                       Float_t minPtB = 0.15, // min pt for track b
+                                       Float_t maxPtB = 10, // max pt for track b
                                        Bool_t PhiMinusPsiMethod = 0, // use phi minus psi method
                                        Bool_t event_mixing = kTRUE, // use event mixing        
                                        Bool_t highPtMode = kFALSE, // use with caution !!! disables invariant mass fit method
-                                       Float_t deltaPhiMass = 0.0003, // dM in which to look for phi 
-                                       Float_t POIPtMax = 5., // max pt of daughterp particles
-                                       Bool_t shrinkSP = kTRUE, // shrink output
-                                       Bool_t debug = kTRUE) // macro debug mode, for task's debug mode see header
+                                       Float_t mass = 1.092, // mass for high pt analysis
+                                       Float_t deltaMass = 0.0003) // dM in which to look for resonance
 {
+   // removed because CINT cannot cope with more than 40 function arguments
+   Bool_t shrinkSP = kTRUE;
+   Bool_t debug = kFALSE;
    /* some defaults that are used frequently:
     * for phi:
     *  - minMass = 0.99
@@ -62,21 +67,18 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
     * pion mass = 1.39570e-01
     */
    // some defaults that have been removed as function arguments (august 30 2012)
-   Float_t POIPtMin = 0.2;  // pt of daughters
    Float_t deltaDip = 0.;
    Float_t deltaDipMaxPt = 0.;
-   Bool_t TPCStandAloneTracks = kFALSE; // deprecated
-   Bool_t useGlobalRPCuts = kTRUE; // deprecated
    Float_t vertexZ = 10.;
    Float_t POIEtaMin = -0.8;
    Float_t POIEtaMax = 0.8;
    // start of macro
-   Float_t PIDconfig[] = {ITSsigma, ITSrange, TPCcontrol, TPCsigma, TPCrange, ITScontrol, Bpurity};
+   Float_t PIDconfig[] = {TPConlyA, TPCTOFA, TOFA, TPConlyB, TPCTOFB, TOFB, Bpurity};
    // main function, create and add tasks
-   if(debug) cout << " === Adding Task PhiFlow === " << endl;
+   if(debug) cout << " === Adding Task TwoParticleResonanceFlow === " << endl;
    // set up main output container's name
    TString fileName = AliAnalysisManager::GetCommonFileName();
-   fileName += ":PhiReconstruction";
+   fileName += ":Reconstruction";
    suffixName += Form("%.0f", centrMin);
    suffixName += Form("%.0f", centrMax);
    fileName+=suffixName;
@@ -120,8 +122,8 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
          AddTaskVZERO(0,0,0,0);
    }
    // create the main task
-   AliAnalysisTwoParticleResonanceFlowTask *task = new AliAnalysisTwoParticleResonanceFlowTask("TaskPhiFlow");
-   if(debug) cout << " === AliAnalysisTaskPhiFlow === " << task << endl;
+   AliAnalysisTwoParticleResonanceFlowTask *task = new AliAnalysisTwoParticleResonanceFlowTask(suffixName.Data());
+   if(debug) cout << " === AliAnalysisTwoParticleResonanceFlowTask === " << task << endl;
    if(!task) {
        if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
        return 0x0;
@@ -130,14 +132,14 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        cout << " --> Using phi - Psi method <-- ... " << endl;
        Float_t dphibins[] = {0., 0.63, 1.26, 1.89, 2.52, 3.15};
        task->SetdPhiBins(dphibins, (Int_t)(sizeof(dphibins)/sizeof(dphibins[1])-1));
-       event_mixing = kTRUE;
+       event_mixing = kTRUE;// only implemented for event mixing FIXME
    }
-   task->SetupSpeciesA(speciesA, chargeA, massA);
-   task->SetupSpeciesB(speciesB, chargeB, massB);
+   task->SetupSpeciesA(speciesA, chargeA, massA, minPtA, maxPtA);
+   task->SetupSpeciesB(speciesB, chargeB, massB, minPtB, maxPtB);
 
    if(task->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
    if(event_mixing) {
-      if(debug) cout << " --> Enabeling event mixing for phi reconstruction - try at your own risk !!! <-- " << endl;
+      if(debug) cout << " --> Enabeling event mixing for reconstruction - try at your own risk !!! <-- " << endl;
       // set vertex and mixing bins - arrays MUST have length 20!
       Int_t c[] = {0, 2, 4, 6, 8, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101, 0, 0, 0, 0, 0};
       Int_t v[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -159,7 +161,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
        return 0x0;
    }
-   if(useGlobalRPCuts&&(!VZERO_SP)) {
+   if(!VZERO_SP) {
        AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
        cutsRP->SetParamType(rptype);
        cutsRP->SetPtRange(0.2, 5.0);
@@ -196,7 +198,6 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        return 0x0;
    }
    cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
-   cutsPOI->SetPtRange(POIPtMin, POIPtMax); // pt range of DAUGHTERS !!!
    cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
    cutsPOI->SetMaxDCAToVertexZ(0.3);
    if(poi_filter < 9999 ) {
@@ -220,7 +221,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        POIDCA[0] = 1.; POIDCA[1] = 0.0105; POIDCA[2] = 0.0350; POIDCA[3] = 1.1; POIDCA[4] = 2.;
    }
    task->SetPOIDCAXYZ(POIDCA);
-   Float_t AddTaskMacroSummary[] = {(Float_t)0, (Float_t)SP, (Float_t)SPSUB, (Float_t)QC, (Float_t)EP, (Float_t)EP3sub, (Float_t)VZERO_SP, (Float_t)EtaGap, (Float_t)harm, (Float_t)highPtMode, (Float_t)deltaDip, (Float_t)POIPtMax}; 
+   Float_t AddTaskMacroSummary[] = {(Float_t)0, (Float_t)SP, (Float_t)SPSUB, (Float_t)QC, (Float_t)EP, (Float_t)EP3sub, (Float_t)VZERO_SP, (Float_t)EtaGap, (Float_t)harm, (Float_t)highPtMode, (Float_t)deltaDip}; 
    task->SetAddTaskMacroSummary(AddTaskMacroSummary);
 
    if(highPtMode) { // high pt loop - loop will end macro
@@ -230,18 +231,18 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        AliFlowTrackSimpleCuts* HighPtSubEventFilterA = new AliFlowTrackSimpleCuts("HighPtSubEventFilterA"); 
        HighPtSubEventFilterA->SetEtaMin(-0.8);
        HighPtSubEventFilterA->SetEtaMax(0.0);
-       HighPtSubEventFilterA->SetMassMin(1.019445 - deltaPhiMass);
-       HighPtSubEventFilterA->SetMassMax(1.019445 + deltaPhiMass);
+       HighPtSubEventFilterA->SetMassMin(mass - deltaMass);
+       HighPtSubEventFilterA->SetMassMax(mass + deltaMass);
        AliFlowTrackSimpleCuts* HighPtSubEventFilterB = new AliFlowTrackSimpleCuts("HighPtSubEventFilterB"); 
        HighPtSubEventFilterB->SetEtaMin(0.0);
        HighPtSubEventFilterB->SetEtaMax(+0.8);
-       HighPtSubEventFilterB->SetMassMin(1.019445 - deltaPhiMass);
-       HighPtSubEventFilterB->SetMassMax(1.019445 + deltaPhiMass);
+       HighPtSubEventFilterB->SetMassMin(mass - deltaMass);
+       HighPtSubEventFilterB->SetMassMax(mass + deltaMass);
        AliFlowTrackSimpleCuts* HighPtGenericFilter = new AliFlowTrackSimpleCuts("HighPtGenericFilter");
        HighPtGenericFilter->SetEtaMin(-0.8);
        HighPtGenericFilter->SetEtaMax(+0.8);
-       HighPtGenericFilter->SetMassMin(1.019445 - deltaPhiMass);
-       HighPtGenericFilter->SetMassMax(1.019445 + deltaPhiMass);
+       HighPtGenericFilter->SetMassMin(mass - deltaMass);
+       HighPtGenericFilter->SetMassMax(mass + deltaMass);
        if(debug) cout << "    --> Created poi filters " << endl;
        // set pair and event cuts
        if((deltaDip>0.005)&&(deltaDipMaxPt>0.005)) task->SetMaxDeltaDipAngleAndPt(deltaDip, deltaDipMaxPt);
@@ -253,7 +254,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        // specify the PID procedure which will be used
        task->SetPIDConfiguration(PIDconfig);
        AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-       AliAnalysisDataContainer *coutHist = mgr->CreateContainer(Form("PhiV2_%s", OutputName(centrMin, centrMax,PIDconfig, suffixName, bCentralTrigger, EtaGap, POIEtaMin, POIEtaMax, 0., 15., deltaDip, deltaDipMaxPt, DCA, harm, TPCStandAloneTracks, vertexZ, debug, useGlobalRPCuts).Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+       AliAnalysisDataContainer *coutHist = mgr->CreateContainer(Form("%s", TwoParticleResonanceFlow::OutputName(centrMin, centrMax,PIDconfig, suffixName, bCentralTrigger, EtaGap, POIEtaMin, POIEtaMax, deltaDip, deltaDipMaxPt, DCA, harm, vertexZ, debug).Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
        if(debug) cout << "    --> Created IO containers " << cinput << ", " << coutHist << endl;
        mgr->AddTask(task);
        if(debug) cout << " === ADDING MAIN TASK == " << endl;
@@ -269,26 +270,26 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
           if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
           if(debug) cout << "    --> suffixName " << suffixName << endl;
           if (QC) {  // add qc tasks
-             AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, HighPtGenericFilter, debug, 0x0, suffixName.Data());
+              TwoParticleResonanceFlow::AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, HighPtGenericFilter, debug, 0x0, suffixName.Data());
              if(debug) cout << "    --> Hanging QC task ... " << mb << " succes! "<< endl;
           }
           if (SPSUB) {  // add sp subevent tasks
-             AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, HighPtSubEventFilterB, NULL, false, shrinkSP, debug, true, suffixName.Data());
+              TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, HighPtSubEventFilterB, NULL, false, shrinkSP, debug, true, suffixName.Data());
              if(debug) cout << "    --> Hanging SP Qa task " << mb << " succes!" << endl;
-             AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, HighPtSubEventFilterA, NULL, false, shrinkSP, debug, true, suffixName.Data());
+             TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, HighPtSubEventFilterA, NULL, false, shrinkSP, debug, true, suffixName.Data());
              if(debug) cout << "    --> Hanging SP Qb task ..." << mb << " succes!"<< endl;
           }
           if (SP) { // add sp tasks
-             AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, HighPtGenericFilter, NULL, false, shrinkSP, debug, 0x0, suffixName.Data());
+              TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, HighPtGenericFilter, NULL, false, shrinkSP, debug, 0x0, suffixName.Data());
              if(debug) cout << "    --> Hanging SP task ... " << mb << " succes!" << endl;
           }
           if (EP) { // add ep tasks
-             AddSPmethod(Form("EPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, HighPtGenericFilter, NULL, true, shrinkSP, debug, 0x0, suffixName.Data());
+              TwoParticleResonanceFlow::AddSPmethod(Form("EPTPCMBSP_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, HighPtGenericFilter, NULL, true, shrinkSP, debug, 0x0, suffixName.Data());
              if(debug) cout << "    --> Hanging EP task ... " << mb << " succes!" << endl;
           }
        }
        // print summary to screen
-       cout << endl << endl << "       ==== AddTaskPhiFlow launched  ===== " << endl;
+       cout << endl << endl << "       ==== AddTwoParticleResonanceFlowTask launched  ===== " << endl;
        cout << " ************ Configured PID routine ************ " << endl;
        cout << "      0 < " << PIDconfig[1] << " p_t, ITS || TPC with s < " << PIDconfig[0] << endl;
        if(PIDconfig[2] < 0.) cout << "    --> TPC control disabled " << endl;
@@ -301,7 +302,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        cout << "  DCA type: " << DCA;
        if (DCA == "") cout << "default";
        cout << endl << " ************* Task statisti:q!cs ****************** " << endl;
-       cout << "   -> Launched PHI reconstruction " << endl;
+       cout << "   -> Launched resonance reconstruction " << endl;
        if(SP) cout << "   --> Launched QaQb SP filters and corresponding SP task " << endl;
        if(EP) cout << "   --> Launched QaQb QC filters and corresponding EP task " << endl;
        if(SPSUB) cout << "   --> Launched Qa&&Qb SP filters and corresponding SP tasks " << endl;
@@ -317,7 +318,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        cout << " ************************************************ " << endl;
        return task;
    } //  end of high pt loop - high-pt task is ready to go at this point
-   Float_t _pt[] = {0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0};
+   Float_t _pt[] = {0.0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0};
    task->SetPtBins(_pt, (Int_t)(sizeof(_pt)/sizeof(_pt[1]))-1);
    // POI filter cuts, will filter invm mass bands and subevents
    AliFlowTrackSimpleCuts* POIfilterQC[30];
@@ -370,15 +371,9 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
        cout << "    " << PIDconfig[4] << " < 7 p_t, TPC / TOF Bayesian with p < " << PIDconfig[6] << endl;
        cout << " ************************************************ " << endl;
    }
-   if (TPCStandAloneTracks)
-   { // switch to tpc standalone tracks for POI selection
-      if(debug) cout << "    --> Switching to TPC standalone analsis " << endl;
-      task->SetRequireStrictKaonCuts();
-      task->SetRequireTPCStandAloneKaons();
-   }
    // create and configure IO containers
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-   AliAnalysisDataContainer *coutHist = mgr->CreateContainer(Form("PhiV2_%s", OutputName(centrMin, centrMax,PIDconfig, suffixName, bCentralTrigger, EtaGap, POIEtaMin, POIEtaMax, 0., 10., deltaDip, deltaDipMaxPt, DCA, harm, TPCStandAloneTracks, vertexZ, debug, useGlobalRPCuts).Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+   AliAnalysisDataContainer *coutHist = mgr->CreateContainer(Form("%s", TwoParticleResonanceFlow::OutputName(centrMin, centrMax,PIDconfig, suffixName, bCentralTrigger, EtaGap, POIEtaMin, POIEtaMax, deltaDip, deltaDipMaxPt, DCA, harm, vertexZ, debug).Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
    if(debug) cout << "    --> Created IO containers " << cinput << ", " << coutHist << endl;
    mgr->AddTask(task);
    if(debug) cout << " === ADDING MAIN TASK == " << endl;
@@ -394,27 +389,27 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
       if(debug) cout << "    --> suffixName " << suffixName << endl;
       for (int mb = 0; mb != 30; ++mb) {
          if (QC) {  // add qc tasks
-            AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, POIfilterQC[mb], debug, 0x0, suffixName.Data());
+             TwoParticleResonanceFlow::AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, POIfilterQC[mb], debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging QC task ... " << mb << " succes! "<< endl;
          }
          if (SPSUB) {  // add sp subevent tasks
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
+             TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
             if(debug) cout << "    --> Hanging SP Qa task " << mb << " succes!" << endl;
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
+            TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
             if(debug) cout << "    --> Hanging SP Qb task ..." << mb << " succes!"<< endl;
          }
          if (SP) { // add sp tasks
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, false, shrinkSP, debug, 0x0, suffixName.Data());
+             TwoParticleResonanceFlow::AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, false, shrinkSP, debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging SP task ... " << mb << " succes!" << endl;
          }
          if (EP) { // add ep tasks
-            AddSPmethod(Form("EPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, true, shrinkSP, debug, 0x0, suffixName.Data());
+             TwoParticleResonanceFlow::AddSPmethod(Form("EPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, true, shrinkSP, debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging EP task ... " << mb << " succes!" << endl;
          }
       }
    }
    // print summary to screen
-   cout << endl << endl << "       ==== AddTaskPhiFlow launched  ===== " << endl;
+   cout << endl << endl << "       ==== AddTwoParticleResonanceFlowTask launched  ===== " << endl;
    cout << " ************ Configured PID routine ************ " << endl;
    cout << "      0 < " << PIDconfig[1] << " p_t, ITS || TPC with s < " << PIDconfig[0] << endl;
    if(PIDconfig[2] < 0.) cout << "    --> TPC control disabled " << endl;
@@ -427,7 +422,7 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
    cout << "  DCA type: " << DCA;
    if (DCA == "") cout << "default";
    cout << endl << " ************* Task statisti:q!cs ****************** " << endl;
-   cout << "   -> Launched PHI reconstruction " << endl;
+   cout << "   -> Launched resonance reconstruction " << endl;
    if(SP) cout << "   --> Launched 30 QaQb SP filters and corresponding 30 SP tasks " << endl;
    if(EP) cout << "   --> Launched 30 QaQb QC filters and corresponding 30 EP tasks " << endl;
    if(SPSUB) cout << "   --> Launched 30+30 Qa&&Qb SP filters and corresponding 30+30 SP tasks " << endl;
@@ -443,119 +438,108 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
    cout << " ************************************************ " << endl;
    return task;
 }
+namespace TwoParticleResonanceFlow {
 //_____________________________________________________________________________
-void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false, char *suffixName, Bool_t VZERO_SP = kFALSE)
-{
-   // add sp task and invm filter tasks
-   if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
-   TString fileName = AliAnalysisManager::GetCommonFileName();
-   (bEP) ? fileName+=":EP" : fileName+=":SP";
-   fileName+=suffixName;
-   if(etagap) {
-       fileName+="_SUBEVENTS";
-       if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
-   }
-   if(debug) cout << "    --> fileName " << fileName << endl;
-   TString myNameSP;
-   (bEP) ? myNameSP = Form("%sEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
-   if(debug) cout << " Task and filter name: " << myNameSP << endl;
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myNameSP.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
-   AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), cutsRFP, cutsPOI);
-   tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
-   if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
-   mgr->AddTask(tskFilter);
-   mgr->ConnectInput(tskFilter, 0, flowEvent);
-   mgr->ConnectOutput(tskFilter, 1, flowEvent2);
-   AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-   AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
-   tskSP->SetApplyCorrectionForNUA(kTRUE);
-   tskSP->SetHarmonic(harmonic);
-   tskSP->SetTotalQvector(Qvector);
-   if (bEP) tskSP->SetBehaveAsEP();
-   if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
-   mgr->AddTask(tskSP);
-   mgr->ConnectInput(tskSP, 0, flowEvent2);
-   mgr->ConnectOutput(tskSP, 1, outSP);
-}
+    void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false, char *suffixName, Bool_t VZERO_SP = kFALSE)
+    {
+       // add sp task and invm filter tasks
+       if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
+       TString fileName = AliAnalysisManager::GetCommonFileName();
+       (bEP) ? fileName+=":EP" : fileName+=":SP";
+       fileName+=suffixName;
+       if(etagap) {
+           fileName+="_SUBEVENTS";
+           if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
+       }
+       if(debug) cout << "    --> fileName " << fileName << endl;
+       TString myNameSP;
+       (bEP) ? myNameSP = Form("%sSPasEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
+       if(debug) cout << " Task and filter name: " << myNameSP << endl;
+       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+       AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myNameSP.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+       AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), cutsRFP, cutsPOI);
+       tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
+       if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
+       mgr->AddTask(tskFilter);
+       mgr->ConnectInput(tskFilter, 0, flowEvent);
+       mgr->ConnectOutput(tskFilter, 1, flowEvent2);
+       AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+       AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
+       tskSP->SetApplyCorrectionForNUA(kTRUE);
+       tskSP->SetHarmonic(harmonic);
+       tskSP->SetTotalQvector(Qvector);
+       if (bEP) tskSP->SetBehaveAsEP();
+       if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
+       mgr->AddTask(tskSP);
+       mgr->ConnectInput(tskSP, 0, flowEvent2);
+       mgr->ConnectOutput(tskSP, 1, outSP);
+    }
 //_____________________________________________________________________________
-void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, Bool_t debug, AliFlowTrackSimpleCuts *cutsRFP = NULL, char *suffixName)
-{
-   // add qc task and invm filter tasks
-   if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", POI " << cutsPOI << ", IO ****** " << flowEvent << endl;
-   TString fileName = AliAnalysisManager::GetCommonFileName();
-   fileName+=":QC";
-   fileName+=suffixName;
-   if(debug) cout << "    --> Common filename: " << fileName << endl;
-   TString myName = Form("%s", name);
-   if(debug) cout << "    --> myName: " << myName << endl;
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myName.Data()), AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
-   AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myName.Data()), cutsRFP, cutsPOI);
-   mgr->AddTask(tskFilter);
-   mgr->ConnectInput(tskFilter, 0, flowEvent);
-   mgr->ConnectOutput(tskFilter, 1, flowEvent2);
-   AliAnalysisDataContainer *outQC = mgr->CreateContainer(myName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-   AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", myName.Data()), kFALSE);
-   tskQC->SetApplyCorrectionForNUA(kTRUE);
-   tskQC->SetHarmonic(harmonic);
-   tskQC->SetBookOnlyBasicCCH(kTRUE);
-   mgr->AddTask(tskQC);
-   mgr->ConnectInput(tskQC, 0, flowEvent2);
-   mgr->ConnectOutput(tskQC, 1, outQC);
-}
+    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, Bool_t debug, AliFlowTrackSimpleCuts *cutsRFP = NULL, char *suffixName)
+    {
+       // add qc task and invm filter tasks
+       if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", POI " << cutsPOI << ", IO ****** " << flowEvent << endl;
+       TString fileName = AliAnalysisManager::GetCommonFileName();
+       fileName+=":QC";
+       fileName+=suffixName;
+       if(debug) cout << "    --> Common filename: " << fileName << endl;
+       TString myName = Form("%s", name);
+       if(debug) cout << "    --> myName: " << myName << endl;
+       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+       AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myName.Data()), AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+       AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myName.Data()), cutsRFP, cutsPOI);
+       mgr->AddTask(tskFilter);
+       mgr->ConnectInput(tskFilter, 0, flowEvent);
+       mgr->ConnectOutput(tskFilter, 1, flowEvent2);
+       AliAnalysisDataContainer *outQC = mgr->CreateContainer(myName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+       AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", myName.Data()), kFALSE);
+       tskQC->SetApplyCorrectionForNUA(kTRUE);
+       tskQC->SetHarmonic(harmonic);
+       tskQC->SetBookOnlyBasicCCH(kTRUE);
+       mgr->AddTask(tskQC);
+       mgr->ConnectInput(tskQC, 0, flowEvent2);
+       mgr->ConnectOutput(tskQC, 1, outQC);
+    }
 //_____________________________________________________________________________
-TString OutputName( Float_t centrMin,
-                    Float_t centrMax,
-                    Float_t PIDconfig[7],
-                    TString suffixName,
-                    Bool_t bCentralTrigger,
-                    Float_t EtaGap,
-                    Float_t POIEtaMin,
-                    Float_t POIEtaMax,
-                    Float_t POIPtMin,
-                    Float_t POIPtMax,
-                    Float_t deltaDip,
-                    Float_t deltaDipMaxPt,
-                    TString DCA,
-                    Int_t harm,
-                    Bool_t TPCStandAloneTracks,
-                    Float_t vertexZ,
-                    Bool_t debug,
-                    Bool_t useGlobalRPCuts)
-{
-   // generate output name
-   TString centralityName = "";
-   centralityName += suffixName;
-   centralityName += "_DCA";
-   centralityName += DCA;
-   centralityName += Form("_vZ%.f", vertexZ);
-   centralityName += "_";
-   for(Int_t i = 0; i < 7; i++) centralityName += Form("%.1f_", PIDconfig[i]);
-   centralityName += "_POIEta";
-   centralityName += Form("%.1f", POIEtaMin);
-   centralityName += Form("%.1f", POIEtaMax);
-   centralityName += "_gap";
-   centralityName += Form("%.1f", -0.5*EtaGap);
-   centralityName += Form("%.1f", 0.5*EtaGap);
-   centralityName += "_";
-   centralityName += Form("dDip%.2f", deltaDip);
-   centralityName += "-";
-   centralityName += Form("dDipPt%.2f", deltaDipMaxPt);
-   if (TPCStandAloneTracks) {
-      centralityName += "-";
-      centralityName += "TPCStandAloneTracks";
-   }
-   if (bCentralTrigger) {
-      centralityName += "-";
-      centralityName += "kMBkCkSC";
-   }
-   if (!useGlobalRPCuts) {
+    TString OutputName( Float_t centrMin,
+                        Float_t centrMax,
+                        Float_t PIDconfig[7],
+                        TString suffixName,
+                        Bool_t bCentralTrigger,
+                        Float_t EtaGap,
+                        Float_t POIEtaMin,
+                        Float_t POIEtaMax,
+                        Float_t deltaDip,
+                        Float_t deltaDipMaxPt,
+                        TString DCA,
+                        Int_t harm,
+                        Float_t vertexZ,
+                        Bool_t debug)
+    {
+       // generate output name
+       TString centralityName = "";
+       centralityName += suffixName;
+       centralityName += "_DCA";
+       centralityName += DCA;
+       centralityName += Form("_vZ%.f", vertexZ);
+       centralityName += "_";
+       for(Int_t i = 0; i < 7; i++) centralityName += Form("%.1f_", PIDconfig[i]);
+       centralityName += "_POIEta";
+       centralityName += Form("%.1f", POIEtaMin);
+       centralityName += Form("%.1f", POIEtaMax);
+       centralityName += "_gap";
+       centralityName += Form("%.1f", -0.5*EtaGap);
+       centralityName += Form("%.1f", 0.5*EtaGap);
+       centralityName += "_";
+       centralityName += Form("dDip%.2f", deltaDip);
        centralityName += "-";
-       centralityName += "TPCRP";
-   }
-   if(debug) cout << "    --> centralityName " << centralityName << endl;
-   return centralityName;
-}
+       centralityName += Form("dDipPt%.2f", deltaDipMaxPt);
+       if (bCentralTrigger) {
+          centralityName += "-";
+          centralityName += "kMBkCkSC";
+       }
+       if(debug) cout << "    --> centralityName " << centralityName << endl;
+       return centralityName;
+    }
 //_____________________________________________________________________________
-
+} // end of namespace TwoParticleResonanceFlow

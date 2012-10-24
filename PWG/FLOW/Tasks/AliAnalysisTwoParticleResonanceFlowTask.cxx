@@ -63,7 +63,7 @@ using std::endl;
 ClassImp(AliAnalysisTwoParticleResonanceFlowTask)
 
 AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask() : AliAnalysisTaskSE(),
-  fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fDebug(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
+  fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
 {
    // Default constructor
    for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -83,7 +83,7 @@ AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask
    }
 }
 //_____________________________________________________________________________
-AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fDebug(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
+AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
 {
    // Constructor
   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -104,7 +104,6 @@ AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliFlowEventSimple::Class());
-  if(fDebug > 0) cout << " === Created instance of AliAnaysisTaskGenericResonanceFlowAnalysis === " << endl;
 }
 //_____________________________________________________________________________
 AliAnalysisTwoParticleResonanceFlowTask::~AliAnalysisTwoParticleResonanceFlowTask()
@@ -116,7 +115,6 @@ AliAnalysisTwoParticleResonanceFlowTask::~AliAnalysisTwoParticleResonanceFlowTas
    if (fFlowEvent) delete fFlowEvent;
    if (fBayesianResponse) delete fBayesianResponse;
    if (fEventMixing) delete fPoolManager;
-   if (fDebug > 0) cout << " === Deleted instance of AliAnalysisTwoParticleResonanceFlowTask === " << endl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTwoParticleResonanceFlowTask::ForceExit(Int_t type, const char* message)
@@ -130,7 +128,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::ForceExit(Int_t type, const char* 
 TH1F* AliAnalysisTwoParticleResonanceFlowTask::BookHistogram(const char* name)
 {
    // Return a pointer to a TH1 with predefined binning
-   if(fDebug > 0) cout << " *** BookHistogram() *** " << name << endl;
    TH1F *hist = new TH1F(name, Form("M_{INV} (%s)", name), 2*fMassBins, fMinMass, fMaxMass);
    hist->GetXaxis()->SetTitle("M_{INV} (GeV / c^{2})");
    hist->GetYaxis()->SetTitle("No. of pairs");
@@ -143,7 +140,6 @@ TH1F* AliAnalysisTwoParticleResonanceFlowTask::BookHistogram(const char* name)
 TH2F* AliAnalysisTwoParticleResonanceFlowTask::BookPIDHistogram(const char* name, Bool_t TPC)
 {
    // Return a pointer to a TH2 with predefined binning
-   if(fDebug > 0) cout << " *** BookPIDHisotgram() *** " << endl;
    TH2F *hist = 0x0;
    if(TPC) {
        hist = new TH2F(name, Form("PID (%s)", name), 100, 0, 5, 100, 0, 1000);
@@ -161,7 +157,6 @@ TH2F* AliAnalysisTwoParticleResonanceFlowTask::BookPIDHistogram(const char* name
 TH1F* AliAnalysisTwoParticleResonanceFlowTask::InitPtSpectraHistograms(Float_t nmin, Float_t nmax)
 {
    // intialize p_t histograms for each p_t bin
-   if(fDebug > 0) cout << " *** InitPtSpectraHistograms() *** " << endl;
    TH1F* hist = new TH1F(Form("%4.2f p_{t} %4.2f", nmin, nmax), Form("%f p_{t} %f", nmin, nmax), 2*fMassBins, nmin, nmax);
    hist->GetXaxis()->SetTitle("p_{T} GeV / c");
    fOutputList->Add(hist);
@@ -171,7 +166,6 @@ TH1F* AliAnalysisTwoParticleResonanceFlowTask::InitPtSpectraHistograms(Float_t n
 TH1F* AliAnalysisTwoParticleResonanceFlowTask::BookPtHistogram(const char* name)
 {
    // Return a pointer to a p_T spectrum histogram
-   if(fDebug > 0) cout << " *** BookPtHistogram() *** " << endl;
    TH1F* ratio = new TH1F(name, name, 100, 0, 7);
    ratio->GetXaxis()->SetTitle("p_{T} ( GeV / c^{2} )");
    ratio->GetYaxis()->SetTitle("No. of events");
@@ -210,7 +204,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
 {
    // Create user defined output objects
    if(!InitializeAnalysis()) ForceExit(0, " > Couldn't initialize the analysis !!! <");
-   if(fDebug > 0) cout << " *** UserCreateOutputObjects() *** " << endl;
      // Create all output objects and store them to a list
    fOutputList = new TList();
    fOutputList->SetOwner(kTRUE);
@@ -226,10 +219,8 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
        fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
        fOutputList->Add(fCentralityNoPass);
        fNOPID = BookPIDHistogram("TPC signal, all particles", kTRUE);
-       fPIDk = BookPIDHistogram("TPC signal, kaons", kTRUE);
-       fPIDp = BookPIDHistogram("TPC signal, pions", kTRUE);
-       fNOPIDTOF = BookPIDHistogram("TOF signal, all particles", kFALSE);
-       fPIDTOF = BookPIDHistogram("TOF signal, kaons", kFALSE);
+       fPIDk = BookPIDHistogram("TPC signal, Species A", kTRUE);
+       fPIDp = BookPIDHistogram("TPC signal, Species B", kTRUE);
    }
    for(Int_t ptbin(0); ptbin < fNPtBins; ptbin++) {
        if(!fPhiMinusPsiMethod) {
@@ -249,12 +240,10 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
        for(Int_t ptbin(0); ptbin < fNPtBins; ptbin++) fPtSpectra[ptbin] = InitPtSpectraHistograms(fPtBins[ptbin], fPtBins[ptbin+1]);
        fPtP = BookPtHistogram("i^{+}");
        fPtN = BookPtHistogram("i^{-}");
-       fPtKP = BookPtHistogram("K^{+}");
-       fPtKN = BookPtHistogram("K^{-}");
+       fPtSpeciesA = BookPtHistogram("p_{T} spectrum Species A");
+       fPtSpeciesB = BookPtHistogram("p_{T} spectrum Species B");
        fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
        fOutputList->Add(fPhi);
-       fPt = new TH1F("fPt", "p_{T}", 100, 0, 5.5);
-       fOutputList->Add(fPt);
        fEta = new TH1F("fEta", "#eta distribution", 100, -1.1, 1.1);
        fOutputList->Add(fEta);
        fVZEROA = new TH1F("fVZEROA", "VZERO A Multiplicity", 1000, 0, 10000);
@@ -291,17 +280,20 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
                    fOutputList->Add(fV0Data[ptbin][iV0]);
            }
    }
-   fAnalysisSummary = new TH1F("Analysis summary","Analysis summary", 26, 0, 26);
+   TString name = "fAnalysisSummary_";
+   name+=this->GetName();
+   fAnalysisSummary = new TH1F(name.Data(), name.Data(), 34, 0, 34);
    fAnalysisSummary->GetXaxis()->SetBinLabel(1, "fIsMC");
    fAnalysisSummary->GetXaxis()->SetBinLabel(2, "fEventMixing");
    fAnalysisSummary->GetXaxis()->SetBinLabel(3, "fAODAnalysis");
-   fAnalysisSummary->GetXaxis()->SetBinLabel(4, "bayesian purity");
+   if(fPIDConfig[6] > 0) fAnalysisSummary->GetXaxis()->SetBinLabel(4, "bayesian purity");
+   else fAnalysisSummary->GetXaxis()->SetBinLabel(4, "TPC TOF PID");
    fAnalysisSummary->GetXaxis()->SetBinLabel(5, "dca mode");
    fAnalysisSummary->GetXaxis()->SetBinLabel(6, "fVertex");
    fAnalysisSummary->GetXaxis()->SetBinLabel(7, "fCentralityMin");
    fAnalysisSummary->GetXaxis()->SetBinLabel(8, "fCentralityMax");
-   fAnalysisSummary->GetXaxis()->SetBinLabel(9, "V0 centrality");
-   fAnalysisSummary->GetXaxis()->SetBinLabel(10, "TPC centrality");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(9, "centrality");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(10, fkCentralityMethod);
    fAnalysisSummary->GetXaxis()->SetBinLabel(11, "fApplyDeltaDipCut");
    fAnalysisSummary->GetXaxis()->SetBinLabel(12, "POI filterbit");
    fAnalysisSummary->GetXaxis()->SetBinLabel(13, "RP filterbit");
@@ -316,25 +308,37 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
    fAnalysisSummary->GetXaxis()->SetBinLabel(22, "harm");
    fAnalysisSummary->GetXaxis()->SetBinLabel(23, "highPtMode");
    fAnalysisSummary->GetXaxis()->SetBinLabel(24, "deltaDipAngle");
-   fAnalysisSummary->GetXaxis()->SetBinLabel(25, "POImaxPt");
-   fAnalysisSummary->GetXaxis()->SetBinLabel(26, "iterator");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(26, "SpeciesA");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(27, "chargeA");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(28, "fMinPtA");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(29, "fMaxPtA");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(30, "SpeciesB");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(31, "chargeB");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(32, "fMinPtB");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(33, "fMaxPtB");
+   fAnalysisSummary->GetXaxis()->SetBinLabel(34, "iterator");
    fOutputList->Add(fAnalysisSummary);
    fAnalysisSummary->SetBinContent(1, (Float_t)fIsMC);
    fAnalysisSummary->SetBinContent(2, (Float_t)fEventMixing);
    fAnalysisSummary->SetBinContent(3, (Float_t)1);
-   fAnalysisSummary->SetBinContent(4, (Float_t)fPIDConfig[6]);
+   if(fPIDConfig[6] > 0) fAnalysisSummary->SetBinContent(4, (Float_t)fPIDConfig[6]);
    fAnalysisSummary->SetBinContent(5, (Float_t)fDCAConfig[0]);
    fAnalysisSummary->SetBinContent(6, (Float_t)fVertexRange);
    fAnalysisSummary->SetBinContent(7, (Float_t)fCentralityMin);
    fAnalysisSummary->SetBinContent(8, (Float_t)fCentralityMax);
-   const char* v = "V0M";   const char* t = "TRK"; // dont compare string literals
-   if(fkCentralityMethod==v) fAnalysisSummary->SetBinContent(9, (Float_t)1);
-   if(fkCentralityMethod==t) fAnalysisSummary->SetBinContent(10, (Float_t)1);
    fAnalysisSummary->SetBinContent(11, (Float_t)fApplyDeltaDipCut);
    fAnalysisSummary->SetBinContent(12, (Float_t)fPOICuts->GetAODFilterBit());
    fAnalysisSummary->SetBinContent(13, (Float_t)fCutsRP->GetAODFilterBit());
-   for(Int_t i(0); i<12;i++)  fAnalysisSummary->SetBinContent(14+i, fAddTaskMacroSummary[i]);
-   fAnalysisSummary->SetBinContent(26, (Float_t)1);
+   for(Int_t i(0); i<13;i++)  fAnalysisSummary->SetBinContent(14+i, fAddTaskMacroSummary[i]);
+   fAnalysisSummary->SetBinContent(26, (Float_t)fSpeciesA);
+   fAnalysisSummary->SetBinContent(27, (Float_t)fChargeA);
+   fAnalysisSummary->SetBinContent(28, (Float_t)fMinPtA);
+   fAnalysisSummary->SetBinContent(29, (Float_t)fMaxPtA);
+   fAnalysisSummary->SetBinContent(30, (Float_t)fSpeciesB);
+   fAnalysisSummary->SetBinContent(31, (Float_t)fChargeB);
+   fAnalysisSummary->SetBinContent(32, (Float_t)fMinPtB);
+   fAnalysisSummary->SetBinContent(33, (Float_t)fMaxPtB);
+   fAnalysisSummary->SetBinContent(34, (Float_t)1);
    PostData(1, fOutputList);
    // create candidate array
    fCandidates = new TObjArray(1000);
@@ -348,7 +352,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
 AliEventPoolManager* AliAnalysisTwoParticleResonanceFlowTask::InitializeEventMixing()
 {
    // initialize event mixing
-  if(fDebug > 0) cout << " *** InitializeEventMixing() *** " << endl;
   Int_t _c(0), _v(0);
   for(Int_t i(0); i < 19; i++) {
       if (fCentralityMixingBins[i+1] < fCentralityMixingBins[i]) { _c = i; break; }
@@ -358,7 +361,6 @@ AliEventPoolManager* AliAnalysisTwoParticleResonanceFlowTask::InitializeEventMix
       if (fVertexMixingBins[i+1] < fVertexMixingBins[i]) { _v = i; break; }
       else _v = 19;
   }
-  if(fDebug > 0 ) cout << Form("   --> found %d centrality bins for mixing, %d vertex bins for mixing", _c, _v) << endl;
   Float_t centralityBins[_c];
   Float_t vertexBins[_v];
   for(Int_t i(0); i < _c + 1; i++) centralityBins[i] = fCentralityMixingBins[i];
@@ -369,7 +371,6 @@ AliEventPoolManager* AliAnalysisTwoParticleResonanceFlowTask::InitializeEventMix
 template <typename T> Float_t AliAnalysisTwoParticleResonanceFlowTask::InvariantMass(const T* track1, const T* track2) const
 {
    // Return the invariant mass of two tracks
-   if(fDebug > 1) cout << " *** InvariantMass() *** " << endl;
    if ((!track2) || (!track1)) return 0.;
    Float_t pxs = TMath::Power((track1->Px() + track2->Px()), 2);
    Float_t pys = TMath::Power((track1->Py() + track2->Py()), 2);
@@ -384,7 +385,6 @@ template <typename T> Float_t AliAnalysisTwoParticleResonanceFlowTask::Invariant
 template <typename T> Float_t AliAnalysisTwoParticleResonanceFlowTask::DeltaDipAngle(const T* track1, const T* track2) const
 {
    // Calculate the delta dip angle between two particles
-   if(fDebug > 1) cout << " *** DeltaDipAngle() *** " << endl;
    if (track1->P()*track2->P() == 0) return 999;
    return TMath::ACos(((track1->Pt() * track2->Pt()) + (track1->Pz() * track2->Pz())) / (track1->P() * track2->P()));
 }
@@ -392,7 +392,6 @@ template <typename T> Float_t AliAnalysisTwoParticleResonanceFlowTask::DeltaDipA
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckDeltaDipAngle(const T* track1, const T* track2) const
 {
    // Check if pair passes delta dip angle cut within 0 < p_t < fDeltaDipPt
-   if(fDebug > 1) cout << " *** CheckDeltaDipAngle() *** " << endl;
    if ((TMath::Abs(DeltaDipAngle(track1, track2)) < fDeltaDipAngle) && (PairPt(track1, track2) < fDeltaDipPt)) return kFALSE;
    return kTRUE;
 }
@@ -400,7 +399,6 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckDelta
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCandidateEtaPtCut(const T* track1, const T* track2) const
 {
    // Check if pair passes eta and pt cut
-   if(fDebug > 1) cout << " *** CheckCandidateEtaPtCut() *** " << endl;
    if (fCandidateMinPt > PairPt(track1, track2) || fCandidateMaxPt < PairPt(track1, track2)) return kFALSE;
    TVector3 a(track1->Px(), track1->Py(), track1->Pz());
    TVector3 b(track2->Px(), track2->Py(), track2->Pz());
@@ -412,7 +410,6 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCandi
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::EventCut(T* event)
 {
    // Impose event cuts
-   if(fDebug > 0) cout << " *** EventCut() *** " << endl;
    if (!event) return kFALSE;
    if (!CheckVertex(event)) return kFALSE;
    if (!CheckCentrality(event)) return kFALSE;
@@ -423,7 +420,6 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::EventCut(T
 template <typename T> void AliAnalysisTwoParticleResonanceFlowTask::PlotMultiplcities(const T* event) const
 {
    // QA multiplicity plots
-   if(fDebug > 1) cout << " *** PlotMultiplcities() *** " << endl;
    fVZEROA->Fill(event->GetVZEROData()->GetMTotV0A());
    fVZEROC->Fill(event->GetVZEROData()->GetMTotV0C());
    fTPCM->Fill(event->GetNumberOfTracks());
@@ -432,7 +428,6 @@ template <typename T> void AliAnalysisTwoParticleResonanceFlowTask::PlotMultiplc
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckVertex(const T* event)
 {
    // Check if event vertex is within given range
-   if(fDebug > 0) cout << " *** CheckVertex() *** " << endl;
    if (!event->GetPrimaryVertex()) return 0x0;
    fVertex = event->GetPrimaryVertex()->GetZ();
    if (TMath::Abs(fVertex) > fVertexRange) return 0x0;
@@ -442,7 +437,6 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckVerte
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCentrality(T* event)
 {
    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
-   if(fDebug > 0) cout << " *** CheckCentrality() *** " << endl;
    if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
    fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
    if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax)) {
@@ -456,25 +450,19 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCentr
 void AliAnalysisTwoParticleResonanceFlowTask::InitializeBayesianPID(AliAODEvent* event)
 {
    // Initialize the Bayesian PID object for AOD
-   if(fDebug > 0) cout << " *** InitializeBayesianPID() *** " << endl;
    fBayesianResponse->SetDetResponse(event, fCentrality);
 }
 //_____________________________________________________________________________
 template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesTPCbayesianCut(T* track, Int_t species) const
 {
    // Check if the particle passes the TPC TOF bayesian cut.
-   if(fDebug > 1) cout << " *** PassesTPCbayesianCut() *** " << endl;
    fBayesianResponse->ComputeProb(track);
    if (!fBayesianResponse->GetCurrentMask(0)) return kFALSE; // return false if TPC has no response
    Int_t contamination(0); //type of particle we don't want in the sample
    if(species==3)  contamination = 2;  //we want to reject pions when selection kaons
    if(species==2)  contamination = 3; // we want to reject kaons when selecting pions
    Float_t *probabilities = fBayesianResponse->GetProb();
-   if (probabilities[species] > fPIDConfig[6]  && (probabilities[contamination] < probabilities[species])) { // 3 is kaon, 2 is pion
-     if(fQA) {fPhi->Fill(track->Phi()); fPt->Fill(track->Pt()); fEta->Fill(track->Eta());}
-     return kTRUE;
-   }
-   return kFALSE;
+   return (probabilities[species] > fPIDConfig[6]  && (probabilities[contamination] < probabilities[species]));// 3 is kaon, 2 is pion
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesDCACut(AliAODTrack* track) const
@@ -484,7 +472,6 @@ Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesDCACut(AliAODTrack* track)
     // fDCAConfig[0] < -1 no pt dependence
     // fDCAConfig[0] =  0 do nothing
     // fDCAConfig[0] >  1 pt dependent dca cut
-    if(fDebug > 1) cout << " *** PassesDCACut() *** " << endl;
     if(fIsMC) return kTRUE;
     if( (fDCAConfig[0] < 0.1) && (fDCAConfig[0] > -0.1) ) {
         if(fQA) {
@@ -516,14 +503,43 @@ Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesDCACut(AliAODTrack* track)
     return kTRUE;
 }
 //_____________________________________________________________________________
+Bool_t AliAnalysisTwoParticleResonanceFlowTask::DoOwnPID(AliAODTrack* track, Int_t species) const
+{
+    // do custom pid based on tpc and tof response
+   Float_t nSigmasTPC        = (species==fSpeciesA) ? fPIDConfig[0] : fPIDConfig[3]; // number that is used when only tpc is available (5)
+   Float_t nSigmasTPCwithTOF = (species==fSpeciesA) ? fPIDConfig[1] : fPIDConfig[4]; // number that is used for tpc when tof is available (5)
+   Float_t nSigmasTOF        = (species==fSpeciesA) ? fPIDConfig[2] : fPIDConfig[5]; // number that is used for tof (if available) (3)
+   if ((track->GetStatus() & AliESDtrack::kTOFout)&&(track->GetStatus() & AliESDtrack::kTIME)) { // check if the track is matched by tof signal
+       if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)species)) > nSigmasTPCwithTOF) return kFALSE; // reject with tpc
+       if (track->P() < 1.5) return (TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)species)) <= nSigmasTOF);
+       return (TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)species)) <= (nSigmasTOF-.333*nSigmasTOF));      
+   }
+   else { // switch to tpc pid if no tof hit is found
+       if(track->Pt() < .35) return (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)species)) <= nSigmasTPC);
+       else if(track->Pt() < .5) return (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)species)) < (nSigmasTPC-.4*nSigmasTPC));
+       return (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)species)) <= (nSigmasTPC-.6*nSigmasTPC));
+   }
+   return kFALSE;
+}
+//_____________________________________________________________________________
 Bool_t AliAnalysisTwoParticleResonanceFlowTask::AcceptTrack(AliAODTrack* track, Int_t species) const
 {
-   if(fDebug > 1) cout << " *** IsTrack() *** " << endl;
-   if (!PassesDCACut(track)) return kFALSE;
-   if (PassesTPCbayesianCut(track, species)) {
-       if(fQA) if(species==3) fPIDk->Fill(track->P(), track->GetTPCsignal());
-       if(fQA) if(species==2) fPIDp->Fill(track->P(), track->GetTPCsignal());
-       return kTRUE;
+   if(fQA) TrackQA(track, species, kTRUE); // do qa before cuts
+   if(species==fSpeciesA&&((track->Pt()<fMinPtA)||(track->Pt()>fMaxPtA))) return kFALSE; // least expensive check first
+   if(species==fSpeciesB&&((track->Pt()<fMinPtB)||(track->Pt()>fMaxPtB))) return kFALSE;
+   if(!PassesDCACut(track)) return kFALSE;
+   if(fPIDConfig[6] < 0) {
+       if(DoOwnPID(track, species)) {
+           if(fQA) TrackQA(track, species, kFALSE);
+           return kTRUE;
+       }
+       return kFALSE;
+   }
+   else {
+       if (PassesTPCbayesianCut(track, species)) {
+           if(fQA) TrackQA(track, species, kFALSE);
+           return kTRUE;
+       }
    }
    return kFALSE;
 }
@@ -561,10 +577,31 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::QualityChe
    return fPOICuts->IsSelected(track);
 }
 //_____________________________________________________________________________
+void AliAnalysisTwoParticleResonanceFlowTask::TrackQA(AliAODTrack* track, Int_t species, Bool_t allChargedParticles) const
+{
+    // fill qa histo's
+    if(allChargedParticles) { // track didn't pass identification yet
+        fNOPID->Fill(track->P(), track->GetTPCsignal());
+        if(track->Charge() > 0) {fEventStats->Fill(1); fPtP->Fill(track->Pt());}
+        if(track->Charge() < 0) {fEventStats->Fill(2); fPtN->Fill(track->Pt());}
+    }
+    else if(!allChargedParticles) { // track has been identified
+        if(species==fSpeciesA) {
+            fPtSpeciesA->Fill(track->Pt());
+            fPIDk->Fill(track->P(), track->GetTPCsignal());
+        }
+        else if(species==fSpeciesB) {
+            fPtSpeciesB->Fill(track->Pt());
+            fPIDp->Fill(track->P(), track->GetTPCsignal());
+        }
+        fPhi->Fill(track->Phi()); 
+        fEta->Fill(track->Eta());
+    }
+}
+//_____________________________________________________________________________
 template <typename T> void AliAnalysisTwoParticleResonanceFlowTask::SetNullCuts(T* event)
 {
    // Set null cuts
-   if (fDebug > 0) cout << " *** SetNullCuts() *** " << fCutsRP << endl;
    fCutsRP->SetEvent(event, MCEvent());
    fNullCuts->SetParamType(AliFlowTrackCuts::kGlobal);
    fNullCuts->SetPtRange(+1, -1); // select nothing QUICK
@@ -575,7 +612,6 @@ template <typename T> void AliAnalysisTwoParticleResonanceFlowTask::SetNullCuts(
 void AliAnalysisTwoParticleResonanceFlowTask::PrepareFlowEvent(Int_t iMulti)
 {
    // Prepare flow events
-   if (fDebug > 0 ) cout << " *** PrepareFlowEvent() *** " << endl;
    fFlowEvent->ClearFast();
    fFlowEvent->Fill(fCutsRP, fNullCuts);
    fFlowEvent->SetReferenceMultiplicity(iMulti);
@@ -585,9 +621,7 @@ void AliAnalysisTwoParticleResonanceFlowTask::PrepareFlowEvent(Int_t iMulti)
 void AliAnalysisTwoParticleResonanceFlowTask::PhiMinusPsiMethod(TObjArray* MixingCandidates)
 {
     // extract v2 using the phi minus psi method
-    if(fDebug > 0) cout << " ** PhiMinusPsiMethod() *** " << endl;
     if(!AliAnalysisTaskVnV0::IsPsiComputed()) { // AliAnalysisTaskVnV0 must be added to analysis que before this task !!!
-        if(fDebug > 0 ) cout << "Fatal error: unable to retrieve VZERO task output !!! Exiting ..." << endl;
         return;
     }
     // retrieve data
@@ -595,21 +629,16 @@ void AliAnalysisTwoParticleResonanceFlowTask::PhiMinusPsiMethod(TObjArray* Mixin
     fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(abcPsi2[0]-abcPsi2[1]))); // vzeroa - tpc
     fSubEventDPhiv2->Fill(1.5, TMath::Cos(2.*(abcPsi2[0]-abcPsi2[2]))); // vzeroa - vzeroc
     fSubEventDPhiv2->Fill(2.5, TMath::Cos(2.*(abcPsi2[1]-abcPsi2[2]))); // tpc - vzeroc
-//    if(abcPsi2[0] < 0) abcPsi2[0] += TMath::Pi();
-//    if(abcPsi2[2] < 0) abcPsi2[2] += TMath::Pi();
     // if event plane stuff went ok, fill the histograms necessary for flow analysis with phi - psi method
-    if(fDebug > 0) cout << " *** ReconstructionWithEventMixing() *** " << endl;
     AliEventPool* pool = fPoolManager->GetEventPool(fCentrality, fVertex);
     if(!pool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, fVertex));
     if(pool->IsReady() || pool->NTracksInPool() > fMixingParameters[1] / 10 || pool->GetCurrentNEvents() >= fMixingParameters[2]) {
         Int_t nEvents = pool->GetCurrentNEvents();
-        if(fDebug > 0) cout << " --> " << nEvents << " events in mixing buffer ... " << endl;
         for (Int_t iEvent(0); iEvent < nEvents; iEvent++) {
             TObjArray* mixed_candidates = pool->GetEvent(iEvent);
             if(!mixed_candidates) continue; // this should NEVER happen
             Int_t bufferTracks = mixed_candidates->GetEntriesFast(); // buffered candidates
             Int_t candidates = MixingCandidates->GetEntriesFast(); // mixing candidates
-            if(fDebug > 0) cout << Form("   - mixing %d tracks with %d buffered tracks from event %d ... ", candidates, bufferTracks, iEvent) << endl;
             TObjArray* SpeciesA = new TObjArray();
             SpeciesA->SetOwner(kTRUE);
             TObjArray* SpeciesB = new TObjArray();
@@ -636,13 +665,11 @@ void AliAnalysisTwoParticleResonanceFlowTask::PhiMinusPsiMethod(TObjArray* Mixin
         } // end of mixed events loop
     } // end of checking to see whether pool is filled correctly
     pool->UpdatePool(MixingCandidates); // update pool with current mixing candidates (for next event)
-    if(fDebug > 0 ) pool->PrintInfo();
 }
 //_____________________________________________________________________________
 void AliAnalysisTwoParticleResonanceFlowTask::PhiMinusPsiMethodWriteData(Bool_t signal, TObjArray* SpeciesA, TObjArray* SpeciesB, Float_t* abcPsi2)
 {
     // write data for phi minus psi method into correct  histograms
-    if(fDebug > 0 ) cout << " *** PhiMinusPsiMethodWriteData *** " << endl;
     for (Int_t i = 0; i < SpeciesA->GetEntriesFast(); i++) { // create pairs
         for(Int_t j = 0; j < SpeciesB->GetEntriesFast(); j++) { 
             AliResonanceFlowHelperTrack* trackA = (AliResonanceFlowHelperTrack*)(SpeciesA->At(i));
@@ -682,15 +709,12 @@ void AliAnalysisTwoParticleResonanceFlowTask::PhiMinusPsiMethodWriteData(Bool_t 
 void AliAnalysisTwoParticleResonanceFlowTask::VZEROSubEventAnalysis()
 {
     // vzero event plane analysis using three subevents
-    if(fDebug > 0) cout << " ** VZEROSubEventAnalysis() *** " << endl;
     if(!AliAnalysisTaskVnV0::IsPsiComputed()) { // AliAnalysisTaskVnV0 must be added to analysis que before this task !!!
-        if(fDebug > 0 ) cout << "Fatal error: unable to retrieve VZERO task output !!! Exiting ..." << endl;
         return;
     }
     // retrieve data
     Float_t abcPsi2[] = {AliAnalysisTaskVnV0::GetPsi2V0A(), AliAnalysisTaskVnV0::GetPsi2TPC(), AliAnalysisTaskVnV0::GetPsi2V0C()};
     for(Int_t i(0); i < 3; i++) if(abcPsi2[i] == 0)  {
-        if(fDebug > 0) cout << " Warning: I've encountered 0 in one of the symmetry panes (TPC, VZERO) - skipping event !" << endl;
             return;
     }
     // save info for resolution calculations
@@ -710,7 +734,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::VZEROSubEventAnalysis()
     for(Int_t iCand(0); iCand < fCandidates->GetEntriesFast(); iCand++) { // loop over unlike sign tracks
         AliFlowTrackSimple *track = dynamic_cast<AliFlowTrackSimple*>(fCandidates->At(iCand));
         if(!track) {
-            if(fDebug > 1) cout << " --> dynamic_cast returned null-pointer, skipping candidate <-- " << endl;
             continue;
         }
         for(Int_t mb(0); mb < fMassBins; mb++) { // loop over massbands
@@ -734,7 +757,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::VZEROSubEventAnalysis()
 void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
 {
    // UserExec: called for each event. Commented where necessary
-   if(fDebug > 0 ) cout << " *** UserExec() *** " << endl;
    TObjArray* MixingCandidates = 0x0; // init null pointer for event mixing
    if(fEventMixing) {
        MixingCandidates = new TObjArray();
@@ -751,7 +773,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
    ocSpeciesB->SetOwner(kTRUE);
 
    if (!fPIDResponse) { // kill the event if there isn't a pid response
-      if(fDebug > 0 ) cout << " Could not get PID response " << endl;
       return;
    }
 
@@ -768,10 +789,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
       for (Int_t i = 0; i < iTracks; i++) { // select analysis candidates
          AliAODTrack* track = fAOD->GetTrack(i);
          if (!QualityCheck(track)) continue; // reject poor quality tracks
-         if (fQA) { // fill qa histo's
-            if(track->Charge() > 0) {fEventStats->Fill(1); fPtP->Fill(track->Pt());}
-            if(track->Charge() < 0) {fEventStats->Fill(2); fPtN->Fill(track->Pt());}
-         }
          if (track->Charge() == fChargeA && AcceptTrack(track, fSpeciesA)) { // store species a
              SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
                                                            track->Pt(), track->Charge(), fMassA, track->GetID(), fSpeciesA));
@@ -801,10 +818,6 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
                                                                                     track->GetID(), fSpeciesB));
 	 }
       }
-//      cout << SpeciesA->GetEntriesFast() << endl;
-//      cout << SpeciesB->GetEntriesFast() << endl;
-//      cout << ocSpeciesA->GetEntriesFast() << endl;
-//      cout << ocSpeciesB->GetEntriesFast() << endl;
       // do the phi minus psi method if that's specified FIXME currenlty only supports event mixing
       if (fPhiMinusPsiMethod) { // for the phi minus psi method, no need for flow package etc 
           PhiMinusPsiMethod(MixingCandidates); // call the method
@@ -815,31 +828,26 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
       ResonanceSignal(SpeciesA, SpeciesB);
       // 
       if(fV0) VZEROSubEventAnalysis();
-      if (fDebug > 0)  printf("I received %d candidates\n", fCandidates->GetEntriesFast()); // insert candidates into flow events
       for (int iCand = 0; iCand != fCandidates->GetEntriesFast(); ++iCand) {
          AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
          if (!cand) continue;
-         if (fDebug > 1) printf(" --> Checking at candidate %d with %d daughters: mass %f\n", iCand, cand->GetNDaughters(), cand->Mass());
          for (int iDau = 0; iDau != cand->GetNDaughters(); ++iDau) {
-            if (fDebug>1) printf("     *** Daughter %d with fID %d ***", iDau, cand->GetIDDaughter(iDau));
             for (int iRPs = 0; iRPs != fFlowEvent->NumberOfTracks(); ++iRPs) {
                AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack(iRPs));
                if (!iRP) continue;
                if (!iRP->InRPSelection()) continue;
                if (cand->GetIDDaughter(iDau) == iRP->GetID()) {
-                  if (fDebug > 1) printf("      was in RP set");
                   iRP->SetForRPSelection(kFALSE);
                   fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
                }
             }
-            if (fDebug > 1) printf("\n");
          }
          cand->SetForPOISelection(kTRUE);
          fFlowEvent->InsertTrack(((AliFlowTrack*) cand));
       }
       if(!fEventMixing) { // do the combinatorial background
           ResonanceBackground(ocSpeciesA, SpeciesB); // mix opposite charge species A with species B
-          ResonanceBackground(SpeciesA, ocSpeciesB); // mix species A with opposite charge species B
+          if(fSpeciesA!=fSpeciesB) ResonanceBackground(SpeciesA, ocSpeciesB); // mix species A with opposite charge species B
       }
       delete SpeciesA;
       delete SpeciesB;
@@ -896,18 +904,15 @@ void AliAnalysisTwoParticleResonanceFlowTask::ResonanceBackground(TObjArray* Spe
 void AliAnalysisTwoParticleResonanceFlowTask::ReconstructionWithEventMixing(TObjArray* MixingCandidates) const
 {
     // perform reconstruction with event mixing
-    if(fDebug > 0) cout << " *** ReconstructionWithEventMixing() *** " << endl;
     AliEventPool* pool = fPoolManager->GetEventPool(fCentrality, fVertex);
     if(!pool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, fVertex));
     if(pool->IsReady() || pool->NTracksInPool() > fMixingParameters[1] / 10 || pool->GetCurrentNEvents() >= fMixingParameters[2]) {
         Int_t nEvents = pool->GetCurrentNEvents();
-        if(fDebug > 0) cout << " --> " << nEvents << " events in mixing buffer ... " << endl;
         for (Int_t iEvent(0); iEvent < nEvents; iEvent++) {
             TObjArray* mixed_candidates = pool->GetEvent(iEvent);
             if(!mixed_candidates) continue; // this should NEVER happen
             Int_t bufferTracks = mixed_candidates->GetEntriesFast(); // buffered candidates
             Int_t candidates = MixingCandidates->GetEntriesFast(); // mixing candidates
-            if(fDebug > 0) cout << Form("   - mixing %d tracks with %d buffered tracks from event %d ... ", candidates, bufferTracks, iEvent) << endl;
             TObjArray* SpeciesA = new TObjArray();
             SpeciesA->SetOwner(kTRUE);
             TObjArray* SpeciesB = new TObjArray();
@@ -933,19 +938,16 @@ void AliAnalysisTwoParticleResonanceFlowTask::ReconstructionWithEventMixing(TObj
         } // end of mixed events loop
     } // end of checking to see whether pool is filled correctly
     pool->UpdatePool(MixingCandidates); // update pool with current mixing candidates (for next event)
-    if(fDebug > 0 ) pool->PrintInfo();
 }
 //_____________________________________________________________________________
 void AliAnalysisTwoParticleResonanceFlowTask::Terminate(Option_t *)
 {
     // terminate
-    if(fDebug > 0) cout << " *** Terminate() *** " << endl;
 }
 //______________________________________________________________________________
 void  AliAnalysisTwoParticleResonanceFlowTask::MakeTrack(Float_t mass, Float_t pt, Float_t phi, Float_t eta, Int_t nDau, Int_t iID[]) const
 {
    // Construct Flow Candidate Track from two selected candidates
-   if(fDebug > 1 ) cout << " *** MakeTrack() *** " << endl;
    Bool_t overwrite = kTRUE;
    AliFlowCandidateTrack *sTrack = static_cast<AliFlowCandidateTrack*>(fCandidates->At(fCandidates->GetLast() + 1));
    if (!sTrack) {

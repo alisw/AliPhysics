@@ -60,7 +60,6 @@ public:
    virtual ~AliAnalysisTwoParticleResonanceFlowTask();
    // technical aspects of the analysis
    void                                 ForceExit(Int_t type, const char* message);
-   Int_t                                SetDebugLevelResonanceTask(Int_t debug) {fDebug = debug; return fDebug; }
    Bool_t                               SetIsMC(Bool_t ismc) {fIsMC = ismc; return fIsMC; }
    void                                 IsMC();
    Bool_t                               UseEventMixing(Bool_t mix) { fEventMixing = mix; return mix; }
@@ -88,8 +87,8 @@ public:
    void                                 SetAddTaskMacroSummary(Float_t m[12]) {for(Int_t i(0); i < 12; i++) fAddTaskMacroSummary[i] = m[i];}
    void                                 SetPOIDCAXYZ(Float_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
    void                                 SetMixingParameters(Int_t p[3]) { for(Int_t i = 0; i < 3; i++) fMixingParameters[i] = p[i]; }
-   void                                 SetupSpeciesA(Int_t species, Int_t charge, Float_t mass) {fSpeciesA = species; fChargeA = charge; fMassA = mass;}
-   void                                 SetupSpeciesB(Int_t species, Int_t charge, Float_t mass) {fSpeciesB = species; fChargeB = charge; fMassB = mass;}   
+   void                                 SetupSpeciesA(Int_t species, Int_t charge, Float_t mass, Float_t minPtA, Float_t maxPtA) {fSpeciesA = species; fChargeA = charge; fMassA = mass; fMinPtA = minPtA; fMaxPtA = maxPtA;}
+   void                                 SetupSpeciesB(Int_t species, Int_t charge, Float_t mass, Float_t minPtB, Float_t maxPtB) {fSpeciesB = species; fChargeB = charge; fMassB = mass; fMinPtB = minPtB; fMaxPtB = maxPtB;}   
    void                                 SetCandidateEtaAndPt(Float_t mineta, Float_t maxeta, Float_t minpt, Float_t maxpt) { fCandidateMinEta = mineta;
                                                                                                                                  fCandidateMaxEta = maxeta;
                                                                                                                                  fCandidateMinPt = minpt;
@@ -131,10 +130,12 @@ public:
    void                                 InitializeBayesianPID(AliAODEvent* event);
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track, Int_t species) const;
    Bool_t                               PassesDCACut(AliAODTrack* track) const;
+   Bool_t                               DoOwnPID(AliAODTrack* track, Int_t species) const;
    Bool_t                               AcceptTrack(AliAODTrack* track, Int_t species) const;
    template <typename T> Float_t        PairPt(const T* track_1, const T* track_2, Bool_t phi = kFALSE) const;
    template <typename T> Float_t        PtSelector(Int_t _track_type, const T* track_1, const T* track_2, Float_t mass) const;
    template <typename T> Bool_t         QualityCheck(T* track) const;
+   void                                 TrackQA(AliAODTrack* track, Int_t species, Bool_t allChargedParticles) const;
    template <typename T> void           SetNullCuts(T* esd);
    void                                 PrepareFlowEvent(Int_t iMulti);
    void                                 PhiMinusPsiMethod(TObjArray* MixingCandidates);
@@ -154,7 +155,10 @@ private:
    Int_t                fChargeB; // charge for species b
    Float_t              fMassA; // mass for species a
    Float_t              fMassB; // mass  for species b
-   Int_t                fDebug; // debug level (0 none, 1 fcn calls, 2 verbose)
+   Float_t              fMinPtA; // min pt for species a
+   Float_t              fMaxPtA; // max pt for species a
+   Float_t              fMinPtB; // min pt for species b
+   Float_t              fMaxPtB; // max pt for species b
    Bool_t               fIsMC; // use mc mode
    Bool_t               fEventMixing; // use event mixing
    Bool_t               fPhiMinusPsiMethod; //  use phi minus psi method (default is invariant mass fit method)
@@ -194,23 +198,20 @@ private:
    TH2F                 *fNOPID;//! QA histogram of TPC response of all charged particles
    TH2F                 *fPIDk;//! QA histogram of TPC response of kaons
    TH2F                 *fPIDp; //! QA histogram of TPC response of pions
-   TH2F                 *fNOPIDTOF; //! QA histo of TOF repsonse charged particles
-   TH2F                 *fPIDTOF; //! QA histo of TOF response kaons
    TH1F                 *fResonanceSignal[18]; //! signal histograms
    TH1F                 *fResonanceBackground[18]; //! like-sign kaon pairs
    TH1F                 *fPtSpectra[18]; //! pt spectra
    TH1F                 *fPtP; //! QA histogram of p_t distribution of positive particles
    TH1F                 *fPtN; //! QA histogram of p_t distribution of negative particles
-   TH1F                 *fPtKP; //! QA histogram of p_t distribution of positive kaons
-   TH1F                 *fPtKN; //! QA histogram of p_t distribution of negative kaons
+   TH1F                 *fPtSpeciesA; //! QA histogram of p_t distribution of species A
+   TH1F                 *fPtSpeciesB; //! QA histogram of p_t distribution of species B
    Float_t              fCentralityMin; // lower bound of cenrality bin
    Float_t              fCentralityMax; // upper bound of centrality bin
    const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
    Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
-   TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
-   TH1F                 *fPt; //! QA plot of p_t sectrum of tracks used for event plane estimation
-   TH1F                 *fEta; //! QA plot of eta distribution of tracks used for event plane estimation
+   TH1F                 *fPhi; //! QA plot of azimuthal distribution of POI daughters
+   TH1F                 *fEta; //! QA plot of eta distribution of POI daughters
    TH1F                 *fVZEROA; //! QA plot vzeroa multiplicity (all tracks in event)
    TH1F                 *fVZEROC; //! QA plot vzeroc multiplicity (all tracks in event)
    TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
@@ -234,7 +235,7 @@ private:
    AliAnalysisTwoParticleResonanceFlowTask& operator=(const AliAnalysisTwoParticleResonanceFlowTask&); // Not implemented
    void                 MakeTrack(Float_t, Float_t, Float_t, Float_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTwoParticleResonanceFlowTask, 1);
+   ClassDef(AliAnalysisTwoParticleResonanceFlowTask, 2);
 };
 
 #endif
