@@ -327,7 +327,7 @@ void AliHFENonPhotonicElectron::Init()
 }
 
 //_____________________________________________________________________________________________
-void AliHFENonPhotonicElectron::InitRun(const AliVEvent *inputEvent,AliPIDResponse *pidResponse)
+void AliHFENonPhotonicElectron::InitRun(const AliVEvent *inputEvent,const AliPIDResponse *pidResponse)
 {
   //
   // Init run
