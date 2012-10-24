@@ -82,7 +82,9 @@ class AliHFEmcQA: public TObject {
     void GetMesonKine(); // get meson and its decay electron pt spectra
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
     Int_t GetSource(const TParticle * const mcpart); // return source id 
+    Int_t GetElecSource(const AliVParticle * const mctrack);
     Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
+    Int_t GetElecSource(const AliAODMCParticle * const mcpart);
     Int_t GetSource(const AliVParticle * const mcpart); // return electron source id for AOD
     Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
     Int_t GetWeightCentralityBin(const Float_t percentile) const; //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
@@ -309,26 +311,26 @@ class AliHFEmcQA: public TObject {
     Int_t fParentSelect[2][7]; // heavy hadron species
 
     Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
-    Double_t fBinLimit[kBgPtBins+1];      // Electron background bins
+    Double_t fBinLimit[kBgPtBins+1];       // Electron background bins
 
 private:
-    Int_t              fCentrality;  // Centrality
-    Int_t              fPerCentrality; // Centrality percentile
-    Bool_t             fIsPbPb;        // Analysis Type: pp or PbPb
-    Bool_t             fIsppMultiBin;  // pp multiplicity bin analysis
-    Int_t              fContainerStep; // step the weighting factor called
+    Int_t              fCentrality;        // Centrality
+    Int_t              fPerCentrality;     // Centrality percentile
+    Bool_t             fIsPbPb;            // Analysis Type: pp or PbPb
+    Bool_t             fIsppMultiBin;      // pp multiplicity bin analysis
+    Int_t              fContainerStep;     // step the weighting factor called
     Bool_t             fIsDebugStreamerON; // check if the debugstreamer is on
 
-    Double_t           fRecPt;  //reconstructed pt
-    Double_t           fRecEta; //reconstructed eta
-    Double_t           fRecPhi; //reconstructed phi
-    Double_t           fLyrhit; //its layer hit
-    Double_t           fLyrstat; // its layer status
+    Double_t           fRecPt;             //reconstructed pt
+    Double_t           fRecEta;            //reconstructed eta
+    Double_t           fRecPhi;            //reconstructed phi
+    Double_t           fLyrhit;            //its layer hit
+    Double_t           fLyrstat;           //its layer status
 
-    Double_t fHfeImpactR;              // absolute impact parameter R
-    Double_t fHfeImpactnsigmaR;        // absolute impact parameter sigma R 
+    Double_t fHfeImpactR;                  //absolute impact parameter R
+    Double_t fHfeImpactnsigmaR;            //absolute impact parameter sigma R 
  
-    TTreeSRedirector *fTreeStream;        //! TreeStream
+    TTreeSRedirector *fTreeStream;         //! TreeStream
 
   ClassDef(AliHFEmcQA,1);
 };

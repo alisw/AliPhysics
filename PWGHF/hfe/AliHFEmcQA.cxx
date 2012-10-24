@@ -47,29 +47,29 @@
 ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
-    AliHFEmcQA::AliHFEmcQA() :
-         fMCEvent(NULL)
-        ,fMCHeader(NULL)
-        ,fMCArray(NULL)
-        ,fQAhistos(NULL)
-        ,fMCQACollection(NULL)
-        ,fNparents(0)
-        ,fCentrality(0)
-        ,fPerCentrality(-1)
-        ,fIsPbPb(kFALSE)
-        ,fIsppMultiBin(kFALSE)
-        ,fContainerStep(0)
-        ,fIsDebugStreamerON(kFALSE)
-        ,fRecPt(-999)
-        ,fRecEta(-999)
-        ,fRecPhi(-999)
-        ,fLyrhit(0)
-        ,fLyrstat(0)
-        ,fHfeImpactR(-999)
-        ,fHfeImpactnsigmaR(-999)
-        ,fTreeStream(NULL)
+AliHFEmcQA::AliHFEmcQA() :
+fMCEvent(NULL)
+  ,fMCHeader(NULL)
+  ,fMCArray(NULL)
+  ,fQAhistos(NULL)
+  ,fMCQACollection(NULL)
+  ,fNparents(0)
+  ,fCentrality(0)
+  ,fPerCentrality(-1)
+  ,fIsPbPb(kFALSE)
+  ,fIsppMultiBin(kFALSE)
+  ,fContainerStep(0)
+  ,fIsDebugStreamerON(kFALSE)
+  ,fRecPt(-999)
+  ,fRecEta(-999)
+  ,fRecPhi(-999)
+  ,fLyrhit(0)
+  ,fLyrstat(0)
+  ,fHfeImpactR(-999)
+  ,fHfeImpactnsigmaR(-999)
+  ,fTreeStream(NULL)
 {
-        // Default constructor
+  // Default constructor
   for(Int_t mom = 0; mom < 9; mom++){
     fhD[mom] = NULL;
   }
@@ -85,29 +85,29 @@ ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
-TObject(p)
-        ,fMCEvent(NULL)
-        ,fMCHeader(NULL)
-        ,fMCArray(NULL)
-        ,fQAhistos(p.fQAhistos)
-        ,fMCQACollection(p.fMCQACollection)
-        ,fNparents(p.fNparents)
-        ,fCentrality(0)
-        ,fPerCentrality(-1)
-        ,fIsPbPb(kFALSE)
-        ,fIsppMultiBin(kFALSE)
-        ,fContainerStep(0)
-        ,fIsDebugStreamerON(kFALSE)
-        ,fRecPt(-999)
-        ,fRecEta(-999)
-        ,fRecPhi(-999)
-        ,fLyrhit(0)
-        ,fLyrstat(0)
-        ,fHfeImpactR(0)
-        ,fHfeImpactnsigmaR(0)
-        ,fTreeStream(NULL)
+  TObject(p)
+  ,fMCEvent(NULL)
+  ,fMCHeader(NULL)
+  ,fMCArray(NULL)
+  ,fQAhistos(p.fQAhistos)
+  ,fMCQACollection(p.fMCQACollection)
+  ,fNparents(p.fNparents)
+  ,fCentrality(0)
+  ,fPerCentrality(-1)
+  ,fIsPbPb(kFALSE)
+  ,fIsppMultiBin(kFALSE)
+  ,fContainerStep(0)
+  ,fIsDebugStreamerON(kFALSE)
+  ,fRecPt(-999)
+  ,fRecEta(-999)
+  ,fRecPhi(-999)
+  ,fLyrhit(0)
+  ,fLyrstat(0)
+  ,fHfeImpactR(0)
+  ,fHfeImpactnsigmaR(0)
+  ,fTreeStream(NULL)
 {
-        // Copy constructor
+  // Copy constructor
   for(Int_t mom = 0; mom < 9; mom++){
     fhD[mom] = NULL;
   }
@@ -120,13 +120,12 @@ TObject(p)
   memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins * kCentBins * kBgLevels);
   memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
 }
-
 //_______________________________________________________________________________________________
 AliHFEmcQA&
 AliHFEmcQA::operator=(const AliHFEmcQA &)
 {
   // Assignment operator
-
+  
   AliInfo("Not yet implemented.");
   return *this;
 }
@@ -134,31 +133,28 @@ AliHFEmcQA::operator=(const AliHFEmcQA &)
 //_______________________________________________________________________________________________
 AliHFEmcQA::~AliHFEmcQA()
 {
-        // Destructor
-
-        if(fTreeStream && fIsDebugStreamerON) delete fTreeStream;
-        AliInfo("Analysis Done.");
+  // Destructor
+  
+  if(fTreeStream && fIsDebugStreamerON) delete fTreeStream;
+  AliInfo("Analysis Done.");
 }
-
 //_______________________________________________________________________________________________
 void AliHFEmcQA::PostAnalyze() const
 {
-        //
-        // Post analysis
-        //
+  //
+  // Post analysis
+  //
 }
-
 //_______________________________________________________________________________________________
 void AliHFEmcQA::SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit)
 {
-   //
-   // copy background weighting factors into data member
-   //
+  //
+  // copy background weighting factors into data member
+  //
   
   memcpy(fElecBackgroundFactor,elecBackgroundFactor,sizeof(Double_t) * kElecBgSpecies * kBgPtBins * kCentBins * kBgLevels);
   memcpy(fBinLimit,binLimit,sizeof(Double_t) * (kBgPtBins+1));
 }
-
 //__________________________________________
 void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
 {      
@@ -167,15 +163,15 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   //
   
   if(!qaList) return;
-
+  
   fQAhistos = qaList;
   fQAhistos->SetName("MCqa");
-
+  
   CreateHistograms(AliHFEmcQA::kCharm);               // create histograms for charm
   CreateHistograms(AliHFEmcQA::kBeauty);              // create histograms for beauty
   CreateHistograms(AliHFEmcQA::kOthers);              // create histograms for beauty
- 
-// prepare 2D(pt vs Y) histogram for D spectra, we consider following 9 particles
+  
+  // prepare 2D(pt vs Y) histogram for D spectra, we consider following 9 particles
   const Int_t nbspecies = 9;
   TString kDspecies[nbspecies];
   kDspecies[0]="411";   //D+
@@ -1873,6 +1869,269 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
 
    }
    return origin;
+}
+
+//__________________________________________
+Int_t AliHFEmcQA::GetElecSource(const AliVParticle * const mctrack)
+{
+  //
+  // decay particle's origin 
+  //
+
+  if(!mctrack){
+    AliDebug(1, "no mcparticle, return\n");
+    return -1;
+  }
+
+  TClass *type = mctrack->IsA();  
+
+  if(type == AliMCParticle::Class()) {
+    const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
+    if(esdmc){
+      TParticle *mcpart =  esdmc->Particle();
+      return GetElecSource(mcpart);
+    }
+    else return -1;
+  }
+  if(type == AliAODMCParticle::Class()) {
+    const AliAODMCParticle *aodmc = dynamic_cast<const AliAODMCParticle *>(mctrack);
+    if(aodmc){
+      return GetElecSource(aodmc);
+    }
+    else return -1;
+  }
+  return -1;
+}
+//__________________________________________
+Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
+{
+  //
+  // Function for AliAODMCParticle
+  //
+
+  if (!mcpart) return -1;
+  if (!fMCArray) return -1;
+  
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
+
+  Int_t origin = -1;
+  Bool_t isFinalOpenCharm = kFALSE;
+
+  Int_t iLabel = mcpart->GetMother();
+  if ((iLabel<0) || (iLabel>=fMCArray->GetEntriesFast())){
+    AliDebug(1, "label is out of range, return\n");
+    return -1;
+  }
+
+  AliAODMCParticle *mctrack = NULL; // will change all the time
+  Int_t tmpMomLabel=0;
+  if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return -1; 
+  AliAODMCParticle *partMother = mctrack; 
+  AliAODMCParticle *partMotherCopy = mctrack;
+  Int_t maPdgcode = mctrack->GetPdgCode();
+  Int_t grmaPdgcode;
+  Int_t ggrmaPdgcode;
+
+  // if the mother is charmed hadron  
+
+  if(abs(maPdgcode)==443){ 
+    //
+    // J/spi
+    //
+    Int_t jLabel = partMother->GetMother();
+    if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
+      if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
+	Int_t grandMaPDG = mctrack->GetPdgCode();
+	if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) {
+	  return kB2Jpsi;
+	}
+      }
+    }
+    return kJpsi;   
+  } 
+  else if ( (int(abs(maPdgcode)/100.)%10) == kCharm || (int(abs(maPdgcode)/1000.)%10) == kCharm ) {
+    //
+    // charm
+    //
+    for (Int_t i=0; i<fNparents; i++){
+      if (abs(maPdgcode)==fParentSelect[0][i]){
+	isFinalOpenCharm = kTRUE;
+      }
+    }
+    if (!isFinalOpenCharm) {
+      return -1;
+    }
+    
+    // iterate until you find B hadron as a mother or become top ancester 
+    for (Int_t i=1; i<fgkMaxIter; i++){
+      
+      Int_t jLabel = partMother->GetMother();
+      if (jLabel == -1){
+	return kDirectCharm;
+      }
+      if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
+	AliDebug(1, "Stack label is negative, return\n");
+	return -1;
+      }
+      
+      // if there is an ancester
+      if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))) {
+	return -1; 
+      }
+      Int_t grandMaPDG = mctrack->GetPdgCode();
+      for (Int_t j=0; j<fNparents; j++){
+	if (abs(grandMaPDG)==fParentSelect[1][j]){
+	  return kBeautyCharm;
+	}
+      }
+      partMother = mctrack;
+    } // end of iteration 
+
+  } // end of if
+  else if ( (int(abs(maPdgcode)/100.)%10) == kBeauty || (int(abs(maPdgcode)/1000.)%10) == kBeauty ) {
+    //
+    // beauty
+    //
+    for (Int_t i=0; i<fNparents; i++){
+      if (abs(maPdgcode)==fParentSelect[1][i]){
+	return kDirectBeauty;
+      }
+    }
+  } // end of if
+  else if ( abs(maPdgcode) == 22 ) { 
+    //
+    //conversion
+    //
+    tmpMomLabel = partMotherCopy->GetMother();
+    if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
+      return -1;
+    }
+    if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+      return -1;
+    }
+    partMother = mctrack;
+    maPdgcode = partMother->GetPdgCode();
+    
+    // check if the ligth meson is the decay product of heavy mesons
+    tmpMomLabel = partMother->GetMother();
+    if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+      if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	partMother = mctrack;
+	grmaPdgcode = partMother->GetPdgCode();
+	
+	if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) {	 
+	  return kGammaB2M;
+	}
+	if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) {	 
+	  return kGammaD2M;
+	}
+	if ( abs(grmaPdgcode) == 221 ) {	 
+	  return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+	}
+	
+	tmpMomLabel = partMother->GetMother();
+	if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+	  if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	    partMother = mctrack;
+	    ggrmaPdgcode = partMother->GetPdgCode();
+	    
+	    if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+	      return kGammaB2M;
+	    }
+	    if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+	      return kGammaD2M;
+	    }
+	   }
+	}
+      }
+    }
+
+    if ( abs(maPdgcode) == 111 ) {
+      return kGammaPi0;
+    } 
+    else if ( abs(maPdgcode) == 221 ) {
+      return kGammaEta;
+    } 
+    else if ( abs(maPdgcode) == 223 ) {
+      return kGammaOmega;
+    } 
+    else if ( abs(maPdgcode) == 333 ) {
+      return kGammaPhi;
+    }
+    else if ( abs(maPdgcode) == 331 ) {
+      return kGammaEtaPrime; 
+    }
+    else if ( abs(maPdgcode) == 113 ) {
+      return kGammaRho0;
+    }
+    else origin = kElse;
+   
+    return origin;
+    
+  } 
+   else {
+     //
+     // check if the ligth meson is the decay product of heavy mesons
+     //
+     tmpMomLabel = partMotherCopy->GetMother();
+     if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+       if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	 partMother = mctrack;
+	 grmaPdgcode = partMother->GetPdgCode();
+	 
+	 if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+	   return kGammaB2M;
+	 }
+	 if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+	   return kGammaD2M;
+	 }
+	 if ( abs(grmaPdgcode) == 221 ) {
+	   return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+	 }
+	 
+	 tmpMomLabel = partMother->GetMother();
+	 if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {
+	   if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+	     partMother = mctrack;
+	     ggrmaPdgcode = partMother->GetPdgCode();
+	     
+	     if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+	       return kGammaB2M;
+	     }
+	     if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+	       return kGammaD2M;
+	     }
+	   }
+	 }
+       }
+       
+       if ( abs(maPdgcode) == 111 ) {
+	 return kPi0;
+       } 
+       else if ( abs(maPdgcode) == 221 ) {
+	 return kEta;
+       } 
+       else if ( abs(maPdgcode) == 223 ) {
+	 return kOmega;
+       } 
+       else if ( abs(maPdgcode) == 333 ) {
+	 return kPhi;
+       } 
+       else if ( abs(maPdgcode) == 331 ) {
+	 return kEtaPrime;
+       } 
+       else if ( abs(maPdgcode) == 113 ) {
+	 return kRho0;
+       } 
+       else if ( abs(maPdgcode) == 321 || abs(maPdgcode) == 130 ) {
+	 return kKe3;
+       }
+       else{ 
+	 origin = kElse;
+       }
+     }
+   }
+  return origin;
 }
 //__________________________________________
 Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel){

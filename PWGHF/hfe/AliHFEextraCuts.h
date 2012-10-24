@@ -1,3 +1,4 @@
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -46,13 +47,15 @@ class AliHFEextraCuts: public AliCFCutBase{
     typedef enum{
       kFound = 0,
       kFoundIter1 = 1,
-      kCrossedRows = 2
+      kCrossedRows = 2,
+      kFoundAll = 3
     } ETPCclusterDef_t;
     typedef enum{
       kFoundOverFindable = 0,
       kFoundOverFindableIter1 = 1,
       kFoundOverCR = 2,
-      kCROverFindable = 3
+      kCROverFindable = 3,
+      kFoundAllOverFindable = 4,
     } ETPCclrDef_t;
     AliHFEextraCuts(const Char_t *name, const Char_t *title);
     AliHFEextraCuts(const AliHFEextraCuts &c);
@@ -92,9 +95,11 @@ class AliHFEextraCuts: public AliCFCutBase{
     Int_t GetDebugLevel() const { return fDebugLevel; };
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
     void GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]);
+    void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
     Int_t GetITSstatus(const AliVTrack * const track, Int_t layer) const;
     Bool_t CheckITSstatus(Int_t itsStatus) const;
     Bool_t CheckITSpattern(const AliVTrack *const track) const;
+    Bool_t IsKinkDaughter(AliVTrack *track);
 
     void UnSetRejectKinkDaughter() { CLRBIT(fRequirements, kRejectKinkDaughter);}; 
     void UnSetRejectKinkMother() { CLRBIT(fRequirements, kRejectKinkMother);}; 
@@ -112,8 +117,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     // Getter Functions for ESD/AOD compatible mode
     UInt_t GetTPCncls(AliVTrack *track);
     Bool_t GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track);
-    Double_t GetTPCclusterRatio(AliVTrack *track);
-    void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
+    Double_t GetTPCclusterRatio(AliVTrack *track); 
     //void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
     void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
@@ -121,7 +125,6 @@ class AliHFEextraCuts: public AliCFCutBase{
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
     Float_t GetTRDchi(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
-    Bool_t IsKinkDaughter(AliVTrack *track);
     Bool_t IsKinkMother(AliVTrack *track);
 
   private:

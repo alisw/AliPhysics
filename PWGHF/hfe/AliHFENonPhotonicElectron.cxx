@@ -1,0 +1,1084 @@
+/*************************************************************************************
+ *	Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.	*
+ *											*
+ *	Author: The ALICE Off-line Project.						*
+ *	Contributors are mentioned in the code where appropriate.			*
+ *											*
+ *	Permission to use, copy, modify and distribute this software and its		*
+ *	documentation strictly for non-commercial purposes is hereby granted		*
+ *	without fee, provided that the above copyright notice appears in all		*
+ *	copies and that both the copyright notice and this permission notice		*
+ *	appear in the supporting documentation. The authors make no claims		*
+ *	about the suitability of this software for any purpose. It is			*
+ *	provided "as is" without express or implied warranty.				*
+ *											*
+ *************************************************************************************/
+
+/*************************************************************************************
+ *											*
+ *	Class for the Selection of Non-Heavy-Flavour-Electrons trought		*
+ *	the invariant mass method. The selection can be done from two			*
+ *	different algorithms, which can be choosed calling the function		*
+ *		"SetAlgorithm(TString Algorithm)".	  				*
+ *											*
+ *		Authors: R.Bailhache, C.A.Schmidt					*
+ *											*
+ *************************************************************************************/
+
+#include "TVector2.h"
+#include "THnSparse.h"
+#include "TMath.h"
+#include "TLorentzVector.h"
+#include "TParticle.h"
+#include "TList.h"
+#include "TDatabasePDG.h"
+
+#include "AliVEvent.h"
+#include "AliMCEvent.h"
+#include "AliESDEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include "AliVTrack.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliPIDResponse.h"
+
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+
+#include "AliHFEcuts.h"
+#include "AliHFEpid.h"
+#include "AliHFEpidQAmanager.h"
+#include "AliHFEtools.h"
+
+#include "AliHFENonPhotonicElectron.h"
+
+ClassImp(AliHFENonPhotonicElectron)
+//________________________________________________________________________
+AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Char_t *title)
+  :TNamed(name, title)
+  ,fMCEvent(NULL)
+  ,fAODArrayMCInfo(NULL)
+  ,fHFEBackgroundCuts(0)
+  ,fPIDBackground(0x0)
+  ,fPIDBackgroundQA(0)
+  ,fAlgorithmMA(kTRUE)
+  ,fUseFilterAOD(kTRUE)
+  ,fFilter(-1)
+  ,fChi2OverNDFCut(3.0)
+  ,fMaxDCA(3.0)
+  ,fMaxOpeningTheta(0.02)
+  ,fMaxOpeningPhi(0.1)
+  ,fMaxOpening3D(TMath::Pi())
+  ,fMaxInvMass(0.6)
+  ,fSetMassConstraint(kFALSE)
+  ,fArraytrack(NULL)
+  ,fCounterPoolBackground(0)
+  ,fListOutput(NULL)
+  ,fMCSourceee(NULL)
+  ,fUSignee(NULL)
+  ,fLSignee(NULL)
+  ,fUSignAngle(NULL)
+  ,fLSignAngle(NULL)
+{
+  //
+  // Constructor
+  //
+  fPIDBackground = new AliHFEpid("hfePidBackground");
+  fPIDBackgroundQA = new AliHFEpidQAmanager;
+}
+
+//________________________________________________________________________
+AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
+  :TNamed()
+  ,fMCEvent(0)
+  ,fAODArrayMCInfo(NULL)
+  ,fHFEBackgroundCuts(NULL)
+  ,fPIDBackground(0x0)
+  ,fPIDBackgroundQA(0)
+  ,fAlgorithmMA(kTRUE)
+  ,fUseFilterAOD(kTRUE)
+  ,fFilter(-1)
+  ,fChi2OverNDFCut(3.0)
+  ,fMaxDCA(3.0)
+  ,fMaxOpeningTheta(0.02)
+  ,fMaxOpeningPhi(0.1)
+  ,fMaxOpening3D(TMath::TwoPi())
+  ,fMaxInvMass(0.6)
+  ,fSetMassConstraint(kFALSE)
+  ,fArraytrack(NULL)
+  ,fCounterPoolBackground(0)
+  ,fListOutput(NULL)
+  ,fMCSourceee(NULL)
+  ,fUSignee(NULL)
+  ,fLSignee(NULL)
+  ,fUSignAngle(NULL)
+  ,fLSignAngle(NULL)
+{
+  //
+  // Constructor
+  //
+  fPIDBackground   = new AliHFEpid("hfePidBackground");
+  fPIDBackgroundQA = new AliHFEpidQAmanager;
+}
+
+//________________________________________________________________________
+AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref)
+  :TNamed(ref)
+  ,fMCEvent(NULL)
+  ,fAODArrayMCInfo(NULL)
+  ,fHFEBackgroundCuts(ref.fHFEBackgroundCuts)
+  ,fPIDBackground(ref.fPIDBackground)
+  ,fPIDBackgroundQA(ref.fPIDBackgroundQA)
+  ,fAlgorithmMA(ref.fAlgorithmMA)
+  ,fUseFilterAOD(ref.fUseFilterAOD)
+  ,fFilter(ref.fFilter)
+  ,fChi2OverNDFCut(ref.fChi2OverNDFCut)
+  ,fMaxDCA(ref.fMaxDCA)
+  ,fMaxOpeningTheta(ref.fMaxOpeningTheta)
+  ,fMaxOpeningPhi(ref.fMaxOpeningPhi)
+  ,fMaxOpening3D(ref.fMaxOpening3D)
+  ,fMaxInvMass(ref.fMaxInvMass)
+  ,fSetMassConstraint(ref.fSetMassConstraint)
+  ,fArraytrack(NULL)
+  ,fCounterPoolBackground(0)
+  ,fListOutput(ref.fListOutput)
+  ,fMCSourceee(ref.fMCSourceee)
+  ,fUSignee(ref.fUSignee)
+  ,fLSignee(ref.fLSignee)
+  ,fUSignAngle(ref.fUSignAngle)
+  ,fLSignAngle(ref.fLSignAngle)
+{
+  //
+  // Copy Constructor
+  //
+  ref.Copy(*this);
+}
+
+//____________________________________________________________
+AliHFENonPhotonicElectron &AliHFENonPhotonicElectron::operator=(const AliHFENonPhotonicElectron &ref){
+  //
+  // Assignment operator
+  //
+  if(this == &ref) ref.Copy(*this);
+  return *this;
+}
+
+//_________________________________________
+AliHFENonPhotonicElectron::~AliHFENonPhotonicElectron()
+{
+  //
+  // Destructor
+  //
+  if(fArraytrack) delete fArraytrack;
+  if(fHFEBackgroundCuts) delete fHFEBackgroundCuts;
+  if(fPIDBackground) delete fPIDBackground;
+}
+
+//_____________________________________________________________________________________________
+void AliHFENonPhotonicElectron::Init()
+{
+  //
+  // Init
+  //
+
+  if(!fListOutput) fListOutput = new TList;
+  fListOutput->SetName("HFENonPhotonicElectron");
+  fListOutput->SetOwner();
+
+  if(!fHFEBackgroundCuts) fHFEBackgroundCuts = new AliESDtrackCuts();
+
+  // Initialize PID
+  if(!fPIDBackground) fPIDBackground = new AliHFEpid("default pid");
+  if(fMCEvent || fAODArrayMCInfo) fPIDBackground->SetHasMCData(kTRUE);
+  if(!fPIDBackground->GetNumberOfPIDdetectors()) fPIDBackground->AddDetector("TPC", 0);
+  AliInfo("PID Background QA switched on");
+  fPIDBackgroundQA->Initialize(fPIDBackground);
+  fListOutput->Add(fPIDBackgroundQA->MakeList("HFENP_PID_Background"));
+  fPIDBackground->SortDetectors();
+
+  Int_t nBinsPt = 24;
+  Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5., 6.};
+
+  Int_t nBinsC = 11;
+  Double_t minC = 0.0;
+  Double_t maxC = 11.0;
+  Double_t binLimC[nBinsC+1];
+  for(Int_t i=0; i<=nBinsC; i++) binLimC[i]=(Double_t)minC + (maxC-minC)/nBinsC*(Double_t)i ;
+
+  Int_t nBinsSource = 10;
+  Double_t minSource = 0.;
+  Double_t maxSource = 10.;
+  Double_t binLimSource[nBinsSource+1];
+  for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
+
+  Int_t nBinsInvMass = 60;
+  Double_t minInvMass = 0.;
+  Double_t maxInvMass = 0.6;
+  Double_t binLimInvMass[nBinsInvMass+1];
+  for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
+
+  Int_t nBinsPhi = 180;
+  Double_t minPhi = 0.0;
+  Double_t maxPhi = TMath::Pi();
+  Double_t binLimPhi[nBinsPhi+1];
+  for(Int_t i=0; i<=nBinsPhi; i++)
+  {
+    binLimPhi[i]=(Double_t)minPhi + (maxPhi-minPhi)/nBinsPhi*(Double_t)i ;
+    AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
+  }
+
+  Int_t nBinsAngle = 180;
+  Double_t minAngle = 0.0;
+  Double_t maxAngle = TMath::Pi();
+  Double_t binLimAngle[nBinsAngle+1];
+  for(Int_t i=0; i<=nBinsAngle; i++)
+  {
+    binLimAngle[i]=(Double_t)minAngle + (maxAngle-minAngle)/nBinsAngle*(Double_t)i ;
+    AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
+  }
+
+  const Int_t nDimMCSource=3;
+  Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
+  fMCSourceee = new THnSparseF("fMCSourceee","fMCSourceee",nDimMCSource,nBinMCSource);
+  fMCSourceee->SetBinEdges(0,binLimC);
+  fMCSourceee->SetBinEdges(1,binLimPt);
+  fMCSourceee->SetBinEdges(2,binLimSource);
+/*  fMCSourceee->GetAxis(0)->SetTitle("Multiplicity (arb.unit)");
+  fMCSourceee->GetAxis(1)->SetTitle("#it{p}_{mc,T} (GeV/c)");
+  fMCSourceee->GetAxis(2)->SetTitle("MC");*/
+  fMCSourceee->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fMCSourceee");
+
+  // ee invariant mass Unlike Sign
+  const Int_t nDimUSign=6;
+  Int_t nBinUSign[nDimUSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource,nBinsAngle};
+  fUSignee = new THnSparseF("fUSignee","fUSignee",nDimUSign,nBinUSign);
+  fUSignee->SetBinEdges(0,binLimPhi);
+  fUSignee->SetBinEdges(1,binLimC);
+  fUSignee->SetBinEdges(2,binLimPt);
+  fUSignee->SetBinEdges(3,binLimInvMass);
+  fUSignee->SetBinEdges(4,binLimSource);
+  fUSignee->SetBinEdges(5,binLimAngle);
+/*  fUSignee->GetAxis(0)->SetTitle("#Delta #phi");
+  fUSignee->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
+  fUSignee->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
+  fUSignee->GetAxis(3)->SetTitle("m_{e^{#pm}e^{#mp}}} (GeV/#it{c}^{2}");
+  fUSignee->GetAxis(4)->SetTitle("MC");
+  fUSignee->GetAxis(5)->SetTitle("#alpha");*/
+  fUSignee->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fUSignee");
+
+  // ee invariant mass Like Sign
+  const Int_t nDimLSign=6;
+  Int_t nBinLSign[nDimLSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource,nBinsAngle};
+  fLSignee = new THnSparseF("fLSignee","fLSignee",nDimLSign,nBinLSign);
+  fLSignee->SetBinEdges(0,binLimPhi);
+  fLSignee->SetBinEdges(1,binLimC);
+  fLSignee->SetBinEdges(2,binLimPt);
+  fLSignee->SetBinEdges(3,binLimInvMass);
+  fLSignee->SetBinEdges(4,binLimSource);
+  fLSignee->SetBinEdges(5,binLimAngle);
+/*  fLSignee->GetAxis(0)->SetTitle("#Delta #phi");
+  fLSignee->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
+  fLSignee->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
+  fLSignee->GetAxis(3)->SetTitle("m_{e^{#pm}e^{#pm}}} (GeV/#it{c}^{2}");
+  fLSignee->GetAxis(4)->SetTitle("MC");
+  fLSignee->GetAxis(5)->SetTitle("#alpha");*/
+  fLSignee->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fLSignee");
+
+  // ee angle Unlike Sign
+  const Int_t nDimUSignAngle=3;
+  Int_t nBinUSignAngle[nDimUSignAngle] = {nBinsAngle,nBinsC,nBinsSource};
+  fUSignAngle = new THnSparseF("fUSignAngle","fUSignAngle",nDimUSignAngle,nBinUSignAngle);
+  fUSignAngle->SetBinEdges(0,binLimAngle);
+  fUSignAngle->SetBinEdges(1,binLimC);
+  fUSignAngle->SetBinEdges(2,binLimSource);
+/*  fUSignAngle->GetAxis(0)->SetTitle("#alpha");
+  fUSignAngle->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
+  fUSignAngle->GetAxis(2)->SetTitle("MC");*/
+  fUSignAngle->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fUSignAngle");
+
+  // ee angle Like Sign
+  const Int_t nDimLSignAngle=3;
+  Int_t nBinLSignAngle[nDimLSignAngle] = {nBinsAngle,nBinsC,nBinsSource};
+  fLSignAngle = new THnSparseF("fLSignAngle","fLSignAngle",nDimLSignAngle,nBinLSignAngle);
+  fLSignAngle->SetBinEdges(0,binLimAngle);
+  fLSignAngle->SetBinEdges(1,binLimC);
+  fLSignAngle->SetBinEdges(2,binLimSource);
+/*  fLSignAngle->GetAxis(0)->SetTitle("#alpha");
+  fLSignAngle->GetAxis(1)->SetTitle("Multiplicity (arb.unit)");
+  fLSignAngle->GetAxis(2)->SetTitle("MC");*/
+  fLSignAngle->Sumw2();
+  AliDebug(2,"AliHFENonPhotonicElectron: fLSignAngle");
+
+
+  fListOutput->Add(fMCSourceee);
+  fListOutput->Add(fUSignee);
+  fListOutput->Add(fLSignee);
+  fListOutput->Add(fUSignAngle);
+  fListOutput->Add(fLSignAngle);
+
+}
+
+//_____________________________________________________________________________________________
+void AliHFENonPhotonicElectron::InitRun(const AliVEvent *inputEvent,const AliPIDResponse *pidResponse)
+{
+  //
+  // Init run
+  //
+
+  if(!pidResponse)
+  {
+    AliDebug(1, "Using default PID Response");
+    Bool_t hasmc = kFALSE;
+    if(fMCEvent || fAODArrayMCInfo) hasmc=kTRUE;
+    pidResponse = AliHFEtools::GetDefaultPID(hasmc, inputEvent->IsA() == AliESDEvent::Class());
+  }
+
+  if(!fPIDBackground) return;
+  fPIDBackground->SetPIDResponse(pidResponse);
+
+  if(!fPIDBackground->IsInitialized())
+  {
+    // Initialize PID with the given run number
+    fPIDBackground->InitializePID(inputEvent->GetRunNumber());
+  }
+
+}
+
+//_____________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::FillPoolAssociatedTracks(AliVEvent *inputEvent,Int_t binct)
+{
+  //
+  // Fill the pool of associated tracks
+  // Return the number of associated tracks
+  //
+
+  Int_t nbtracks = inputEvent->GetNumberOfTracks();
+
+  if( fArraytrack )
+  {
+    fArraytrack->~TArrayI();
+    new(fArraytrack) TArrayI(nbtracks);
+  }
+  else
+  {
+    fArraytrack = new TArrayI(nbtracks);
+  }
+
+  fCounterPoolBackground = 0;
+
+  for(Int_t k = 0; k < nbtracks; k++)
+  {
+    AliVTrack *track = (AliVTrack *) inputEvent->GetTrack(k);
+    if(!track) continue;
+
+    // Track cuts
+    Bool_t survivedbackground = kTRUE;
+    AliAODEvent *aodeventu = dynamic_cast<AliAODEvent *>(inputEvent);
+
+    if(aodeventu)
+    {
+      // AOD
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+      if(aodtrack)
+      {
+	// filter
+	if(fUseFilterAOD)
+	{
+	  if(!(aodtrack->TestFilterBit(fFilter))) survivedbackground = kFALSE;
+	}
+
+	// additional cuts
+	if(survivedbackground)
+	{
+	  AliESDtrack esdTrack(aodtrack);
+
+	  // set the TPC cluster info
+	  esdTrack.SetTPCClusterMap(aodtrack->GetTPCClusterMap());
+	  esdTrack.SetTPCSharedMap(aodtrack->GetTPCSharedMap());
+	  esdTrack.SetTPCPointsF(aodtrack->GetTPCNclsF());
+	  AliAODVertex *vAOD = aodeventu->GetPrimaryVertex();
+	  Double_t bfield = aodeventu->GetMagneticField();
+	  Double_t pos[3],cov[6];
+	  vAOD->GetXYZ(pos);
+	  vAOD->GetCovarianceMatrix(cov);
+	  const AliESDVertex vESD(pos,cov,100.,100);
+	  esdTrack.RelateToVertex(&vESD,bfield,3.);
+
+	  if(!fHFEBackgroundCuts->IsSelected(&esdTrack))
+	  {
+	    survivedbackground = kFALSE;
+	  }
+	}
+      }
+    }
+    else
+    {
+      // ESD
+      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+      if(esdtrack)
+      {
+	if(!fHFEBackgroundCuts->IsSelected(esdtrack)) survivedbackground = kFALSE;
+      }
+    }
+
+    // PID
+    if(survivedbackground)
+    {
+      // PID track cuts
+      AliHFEpidObject hfetrack2;
+
+      if(!aodeventu) hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+      else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+
+      hfetrack2.SetRecTrack(track);
+      if(binct>-1)
+      {
+	hfetrack2.SetCentrality((Int_t)binct);
+	AliDebug(2,Form("centrality %d and %d",binct,hfetrack2.GetCentrality()));
+	hfetrack2.SetPbPb();
+      }
+
+      if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundQA))
+      {
+	fArraytrack->AddAt(k,fCounterPoolBackground);
+	fCounterPoolBackground++;
+	AliDebug(2,Form("fCounterPoolBackground %d, track %d",fCounterPoolBackground,k));
+      }
+    }
+  } // loop tracks
+
+  //printf(Form("Test pool: nbtrack %d, binct %d \n fCounterPoolBackground %d \n",nbtracks,binct,fCounterPoolBackground));
+
+  return fCounterPoolBackground;
+}
+
+//_____________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight, Int_t binct, Double_t deltaphi, Int_t source, Int_t indexmother)
+{
+  //
+  // Look At Non HFE
+  //
+
+  /***********************************************************************************
+   *											*
+   *	iTrack1:	index of the tagged electrons in AliVEvent			*
+   *	track1:		tagged electron							*
+   *	vEvent:		event								*
+   *	weight:		weight in pt if not realistic					*
+   *	binct:		centrality bin							*
+   *	deltaphi:	phi-phi event plane for v2					*
+   *	source:		MC sources							*
+   *	indexmother:	MC index mother							*
+   *											*
+   *											*
+   *	return -1  if  nothing								*
+   *	return  2  if  opposite		charge		within the mass range		*
+   *	return  4  if      like		charge		within the mass range		*
+   *	return  6  if  opposite & like charge		within the mass range		*
+   *											*
+   ***********************************************************************************/
+
+  AliAODEvent *aodeventu = dynamic_cast<AliAODEvent*>(vEvent);
+  Int_t taggedphotonic = -1;
+
+  AliDebug(2,Form("fCounterPoolBackground %d in LookAtNonHFE!!!",fCounterPoolBackground));
+  if(!fArraytrack) return taggedphotonic;
+  AliDebug(2,Form("process track %d",iTrack1));
+
+  //Set Fill-Arrays for THnSparse
+  Double_t value_MCSource[3] = { binct, track1->Pt(), source};		//Centrality	Pt		Source
+  Double_t valueee[6] = { deltaphi, binct, track1->Pt(), -1, source,-1};	//DeltaPhi	Centrality	Pt	InvariantMass	Source
+  Double_t valueAngle[3] = {	-1,	binct,		source};		//Angle		Centrality	Source
+
+  Bool_t USignPhotonic = kFALSE;
+  Bool_t LSignPhotonic = kFALSE;
+  Bool_t hasdcaT1 = kFALSE;
+  Bool_t hasdcaT2 = kFALSE;
+
+  Int_t pdg1 = CheckPdg(TMath::Abs(track1->GetLabel()));
+  Int_t pdg2 = -100;
+  Int_t numberfound = 0;
+  Int_t iTrack2 = 0;
+  Int_t source2 = 0;
+  Int_t indexmother2 = -1;
+  Int_t fPDGtrack1 = 0;
+  Int_t fPDGtrack2 = 0;
+
+  Double_t eMass = TDatabasePDG::Instance()->GetParticle(11)->Mass(); //Electron mass in GeV
+  Double_t bfield = vEvent->GetMagneticField();
+  Double_t xt1 = 0; //radial position track 1 at the DCA point
+  Double_t xt2 = 0; //radial position track 2 at the DCA point
+  Double_t p1[3] = {0,0,0};
+  Double_t p2[3] = {0,0,0};
+  Double_t dca12 = 0;
+
+  Double_t angleESD = 0;
+  Double_t invmassESD = 0;
+
+  Double_t chi2OverNDF = 0;
+  Double_t width = 0;
+  Double_t angleAOD = 0;
+  Double_t invmassAOD = 0;
+
+  Float_t fCharge1 = 0;
+  Float_t fCharge2 = 0;
+
+  TLorentzVector electron1;
+  TLorentzVector electron2;
+  TLorentzVector mother;
+
+  AliVTrack *track2;
+  AliESDtrack *esdtrack1;
+  AliESDtrack *esdtrack2;
+  AliKFParticle *ktrack1;
+  AliKFParticle *ktrack2;
+  AliKFVertex primV(*(vEvent->GetPrimaryVertex()));
+
+  // FILL MCsource TODO: correct?
+  fMCSourceee->Fill(&value_MCSource[0],weight);
+
+
+  for(Int_t idex = 0; idex < fCounterPoolBackground; idex++)
+  {
+    iTrack2 = fArraytrack->At(idex);
+    AliDebug(2,Form("track %d",iTrack2));
+    track2 = (AliVTrack *)vEvent->GetTrack(iTrack2);
+
+    if(!track2)
+    {
+      printf("ERROR: Could not receive track %d", iTrack2);
+      continue;
+    }
+
+    if(iTrack2==iTrack1) continue;
+    AliDebug(2,"Different");
+
+    fCharge1 = track1->Charge();		//Charge from track1
+    fCharge2 = track2->Charge();		//Charge from track2
+
+    // Reset the MC info
+    valueAngle[2] = source;
+    valueee[4] = source;
+
+    // track cuts and PID already done
+
+    // if MC look
+    if(fMCEvent || fAODArrayMCInfo)
+    {
+      source2	 = FindMother(TMath::Abs(track2->GetLabel()), indexmother2);
+      pdg2	 = CheckPdg(TMath::Abs(track2->GetLabel()));
+
+      if(source2 >=0 )
+      {
+	if((indexmother2 == indexmother) && (source == source2) && ((pdg1*pdg2)<0.0))
+	{
+	  if(source == kElectronfromconversion)
+	  {
+	    valueAngle[2] = kElectronfromconversionboth;
+	    valueee[4] = kElectronfromconversionboth;
+	    numberfound++;
+	  }
+
+	  if(source == kElectronfrompi0)
+	  {
+	    valueAngle[2] = kElectronfrompi0both;
+	    valueee[4] = kElectronfrompi0both;
+	  }
+
+	  if(source == kElectronfrometa)
+	  {
+	    valueAngle[2] = kElectronfrometaboth;
+	    valueee[4] = kElectronfrometaboth;
+	  }
+	}
+      }
+    }
+
+    if(fAlgorithmMA && (!aodeventu)) 
+    {
+      /**				*
+       *	ESD-Analysis		*
+       **				*/
+
+      esdtrack1 = dynamic_cast<AliESDtrack *>(track1);			//ESD-track1
+      esdtrack2 = dynamic_cast<AliESDtrack *>(track2);			//ESD-track2
+      if((!esdtrack1) || (!esdtrack2)) continue;
+
+      dca12 = esdtrack2->GetDCA(esdtrack1,bfield,xt2,xt1);		//DCA track1-track2
+
+      if(dca12 > fMaxDCA) continue;					//! Cut on DCA
+
+      //Momento of the track extrapolated to DCA track-track
+      hasdcaT1 = esdtrack1->GetPxPyPzAt(xt1,bfield,p1);		//Track1
+      hasdcaT2 = esdtrack2->GetPxPyPzAt(xt2,bfield,p2);		//Track2
+      if(!hasdcaT1 || !hasdcaT2) AliWarning("It could be a problem in the extrapolation");
+
+      electron1.SetXYZM(esdtrack1->Px(), esdtrack1->Py(), esdtrack1->Pz(), eMass);
+      electron2.SetXYZM(esdtrack2->Px(), esdtrack2->Py(), esdtrack2->Pz(), eMass);
+
+      mother      = electron1 + electron2;
+      invmassESD  = mother.M();
+      angleESD    = TVector2::Phi_0_2pi(electron1.Angle(electron2.Vect()));
+
+      valueAngle[0] = angleESD;
+      valueee[5] = angleESD;
+
+      if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
+      else				fUSignAngle->Fill(&valueAngle[0],weight);
+
+      if(angleESD > fMaxOpening3D) continue;				 //! Cut on Opening Angle
+      valueee[3] = invmassESD;
+
+      if((fCharge1*fCharge2)>0.0)	fLSignee->Fill(&valueee[0],weight);
+      else				fUSignee->Fill(&valueee[0],weight);
+
+      if(invmassESD > fMaxInvMass) continue;				//! Cut on Invariant Mass
+
+      if((fCharge1*fCharge2)>0.0)	LSignPhotonic=kTRUE;
+      else				USignPhotonic=kTRUE;
+    }
+    else
+    {
+      /**				*
+       *	AliKF-Analysis		*
+       **				*/
+
+      fPDGtrack1 = 11;
+      fPDGtrack2 = 11;
+
+      if(fCharge1>0) fPDGtrack1 = -11;
+      if(fCharge2>0) fPDGtrack2 = -11;
+
+      ktrack1 = new AliKFParticle(*track1, fPDGtrack1);
+      ktrack2 = new AliKFParticle(*track2, fPDGtrack2);
+      AliKFParticle recoGamma(*ktrack1,*ktrack2);
+
+      if(recoGamma.GetNDF()<1) continue;				//! Cut on Reconstruction
+
+      chi2OverNDF = recoGamma.GetChi2()/recoGamma.GetNDF();
+      if(TMath::Sqrt(TMath::Abs(chi2OverNDF))>fChi2OverNDFCut) continue;
+
+      // DCA
+      //Double_t dca12 = ktrack1.GetDistanceFromParticle(ktrack2);
+      //if(dca12 > fMaxDCA) continue;
+
+      // if set mass constraint
+      if(fSetMassConstraint) //&& pVtx)
+      {
+	primV += recoGamma;
+	primV -= *ktrack1;
+	primV -= *ktrack2;
+	recoGamma.SetProductionVertex(primV);
+	recoGamma.SetMassConstraint(0,0.0001);
+      }
+
+      recoGamma.GetMass(invmassAOD,width);
+      angleAOD = ktrack1->GetAngle(*ktrack2);
+
+      valueAngle[0] = angleAOD;
+      valueee[5] = angleAOD;
+
+      if((fCharge1*fCharge2)>0.0)	fLSignAngle->Fill(&valueAngle[0],weight);
+      else				fUSignAngle->Fill(&valueAngle[0],weight);
+
+      if(angleAOD > fMaxOpening3D) continue;				//! Cut on Opening Angle
+
+      valueee[3] = invmassAOD;
+
+      if((fCharge1*fCharge2)>0.0)	fLSignee->Fill(&valueee[0],weight);
+      else				fUSignee->Fill(&valueee[0],weight);
+
+      if(invmassAOD > fMaxInvMass) continue;				//! Cut on Invariant Mass
+
+      if((fCharge1*fCharge2)>0.0)	LSignPhotonic=kTRUE;
+      else				USignPhotonic=kTRUE;
+    }
+  }
+
+  if( USignPhotonic &&  LSignPhotonic) taggedphotonic = 6;
+  if(!USignPhotonic &&  LSignPhotonic) taggedphotonic = 4;
+  if( USignPhotonic && !LSignPhotonic) taggedphotonic = 2;
+
+  return taggedphotonic;
+}
+
+//_________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::FindMother(Int_t tr, Int_t &indexmother){
+  //
+  // Find the mother if MC
+  //
+
+  if(!fMCEvent && !fAODArrayMCInfo) return 0;
+
+  Int_t pdg = CheckPdg(tr);
+  if(TMath::Abs(pdg)!= 11)
+  {
+    indexmother = -1;
+    return kNoElectron;
+  }
+
+  indexmother = IsMotherGamma(tr);
+  if(indexmother > 0) return kElectronfromconversion;
+  indexmother = IsMotherPi0(tr);
+  if(indexmother > 0) return kElectronfrompi0;
+  indexmother = IsMotherC(tr);
+  if(indexmother > 0) return kElectronfromC;
+  indexmother = IsMotherB(tr);
+  if(indexmother > 0) return kElectronfromB;
+  indexmother = IsMotherEta(tr);
+  if(indexmother > 0) return kElectronfrometa;
+
+  return kElectronfromother;
+}
+
+//________________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::CheckPdg(Int_t tr) {
+
+  //
+  // Return the pdg of the particle
+  //
+
+  Int_t pdgcode = -1;
+  if(tr < 0) return pdgcode;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return pdgcode;
+    pdgcode = mctrackesd->PdgCode();
+  }
+
+  if(fAODArrayMCInfo)
+  {
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return pdgcode;
+    pdgcode = mctrackaod->GetPdgCode();
+  }
+
+  return pdgcode;
+}
+
+//_______________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::IsMotherGamma(Int_t tr) {
+
+  //
+  // Return the lab of gamma mother or -1 if not gamma
+  //
+
+  if(tr < 0) return -1;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother();
+    if(imother < 0) return -1;
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+
+    // Check gamma
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 22) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherGamma(imother);
+    }
+
+    return -1;
+  }
+
+  if(fAODArrayMCInfo)
+  {
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return -1;
+
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0 || ((imother+1)>fAODArrayMCInfo->GetEntriesFast())) return -1;
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(TMath::Abs(imother))))) return -1;
+
+    // Check gamma
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 22) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherGamma(imother);
+    }
+
+    return -1;
+  }
+
+  return -1;
+}
+
+//________________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::IsMotherPi0(Int_t tr) {
+
+  //
+  // Return the lab of pi0 mother or -1 if not pi0
+  //
+
+  if(tr < 0) return -1;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother();
+    if(imother < 0) return -1;
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check pi0
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 111) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherPi0(imother);
+    }
+
+    return -1;
+  }
+
+  if(fAODArrayMCInfo)  {
+
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return -1;
+
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0 || ((imother+1)>fAODArrayMCInfo->GetEntriesFast())) return -1;
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(TMath::Abs(imother))))) return -1;
+    // Check pi0
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 111) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherPi0(imother);
+    }
+
+    return -1;
+  }
+
+  return -1;
+}
+//________________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::IsMotherC(Int_t tr) {
+
+  //
+  // Return the lab of signal mother or -1 if not from C
+  //
+
+  if(tr < 0) return -1;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother();
+    if(imother < 0) return -1;
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+
+    // Check C
+    Int_t pdg = mother->GetPdgCode();
+    if((TMath::Abs(pdg)==411) || (TMath::Abs(pdg)==421) || (TMath::Abs(pdg)==431) || (TMath::Abs(pdg)==4122) || (TMath::Abs(pdg)==4132) || (TMath::Abs(pdg)==4232) || (TMath::Abs(pdg)==43320)) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherC(imother);
+    }
+
+    return -1;
+  }
+
+  if(fAODArrayMCInfo)
+  {
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return -1;
+
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0 || ((imother+1)>fAODArrayMCInfo->GetEntriesFast())) return -1;
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(TMath::Abs(imother))))) return -1;
+
+    // Check C
+    Int_t pdg = mothertrack->GetPdgCode();
+    if((TMath::Abs(pdg)==411) || (TMath::Abs(pdg)==421) || (TMath::Abs(pdg)==431) || (TMath::Abs(pdg)==4122) || (TMath::Abs(pdg)==4132) || (TMath::Abs(pdg)==4232) || (TMath::Abs(pdg)==43320)) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherC(imother);
+    }
+
+    return -1;
+  }
+
+  return -1;
+}
+//_______________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::IsMotherB(Int_t tr) {
+
+  //
+  // Return the lab of signal mother or -1 if not B
+  //
+
+  if(tr < 0) return -1;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother();
+    if(imother < 0) return -1;
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+
+    // Check B
+    Int_t pdg = mother->GetPdgCode();
+    if((TMath::Abs(pdg)==511) || (TMath::Abs(pdg)==521) || (TMath::Abs(pdg)==531) || (TMath::Abs(pdg)==5122) || (TMath::Abs(pdg)==5132) || (TMath::Abs(pdg)==5232) || (TMath::Abs(pdg)==53320)) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherB(imother);
+    }
+
+    return -1;
+  }
+
+  if(fAODArrayMCInfo)
+  {
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return -1;
+
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0 || ((imother+1)>fAODArrayMCInfo->GetEntriesFast())) return -1;
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(TMath::Abs(imother))))) return -1;
+    // Check B
+    Int_t pdg = mothertrack->GetPdgCode();
+    if((TMath::Abs(pdg)==511) || (TMath::Abs(pdg)==521) || (TMath::Abs(pdg)==531) || (TMath::Abs(pdg)==5122) || (TMath::Abs(pdg)==5132) || (TMath::Abs(pdg)==5232) || (TMath::Abs(pdg)==53320)) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherB(imother);
+    }
+
+    return -1;
+  }
+
+  return -1;
+}
+
+//_______________________________________________________________________________________________
+Int_t AliHFENonPhotonicElectron::IsMotherEta(Int_t tr) {
+
+  //
+  // Return the lab of eta mother or -1 if not eta
+  //
+
+  if(tr < 0) return -1;
+
+  if(fMCEvent)
+  {
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(!mctrack) return -1;
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother();
+    if(imother < 0) return -1;
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+
+    // Check eta
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 221) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherEta(imother);
+    }
+
+    return -1;
+  }
+
+  if(fAODArrayMCInfo)
+  {
+    if((tr+1)>fAODArrayMCInfo->GetEntriesFast()) return -1;
+    AliAODMCParticle *mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+    if(!mctrackaod) return -1;
+
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0 || ((imother+1)>fAODArrayMCInfo->GetEntriesFast())) return -1;
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(TMath::Abs(imother))))) return -1;
+
+    // Check eta
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 221) return imother;
+    if(TMath::Abs(pdg) == 11)
+    {
+      return IsMotherEta(imother);
+    }
+
+    return -1;
+  }
+
+  return -1;
+}

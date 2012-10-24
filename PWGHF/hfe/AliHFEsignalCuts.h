@@ -28,6 +28,7 @@ class TList;
 class AliMCEvent;
 class AliVParticle;
 class AliHFEmcQA;
+class TClonesArray;
 
 class AliHFEsignalCuts : public AliAnalysisCuts{
   public: 
@@ -50,6 +51,7 @@ class AliHFEsignalCuts : public AliAnalysisCuts{
 
     //void SetMCEvent(AliMCEvent *mc) { fMC = mc; }
     void SetMCEvent(AliMCEvent *mc);
+    void SetMCAODInfo(TClonesArray *mcarray);
   
   protected:
     Int_t GetMotherPDG(const AliVParticle * const track) const;
@@ -57,10 +59,11 @@ class AliHFEsignalCuts : public AliAnalysisCuts{
     Int_t GetElecSource(const AliVParticle * const track) const ;
 
   private:
-    AliMCEvent *fMC;   //! MC event
-    AliHFEmcQA *fMCQA; //! MC QA
+    AliMCEvent *fMC;                   //! MC event
+    TClonesArray *fAODArrayMCInfo;     //! MC info particle AOD
+    AliHFEmcQA *fMCQA;                 //! MC QA
 
-    ClassDef(AliHFEsignalCuts, 2)
+    ClassDef(AliHFEsignalCuts, 3)
 };
 #endif
 

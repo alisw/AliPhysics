@@ -28,11 +28,13 @@
 #include <TString.h>
 #endif
 
+class AliESDtrackCuts;
 class AliHFEcontainer;
 class AliHFEcollection;
 class AliHFEcuts;
 class AliHFEextraCuts;
 class AliHFEelecbackground;
+class AliHFENonPhotonicElectron;
 class AliHFEmcQA;
 class AliHFEpid;
 class AliHFEpidQAmanager;
@@ -63,7 +65,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kIsElecBackGround = 2,
       kPostProcess = 3,
       kDEstep = 4,
-      kTaggedTrackAnalysis = 5
+      kTaggedTrackAnalysis = 5,
+      kNonPhotonicElectron = 6
     };
     enum CreationProcess_t{
       kSignalCharm = 0,
@@ -102,13 +105,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEvarManager *GetVarManager() const { return fVarManager; }
     AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
     AliHFEpid *GetPID() const { return fPID; }
+    AliHFENonPhotonicElectron *GetHFEBackgroundSubtraction() const { return fBackgroundSubtraction; }
 
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetTaggedTrackCuts(AliHFEcuts * const cuts) { fTaggedTrackCuts = cuts; }
     void SetCleanTaggedTrack(Bool_t clean) { fCleanTaggedTrack = clean; };
     void SetVariablesTRDTaggedTrack(Bool_t variablesTRD) { fVariablesTRDTaggedTrack = variablesTRD; };
-    void SetHFECutsPreselect(AliHFEcuts * const cuts) { fCutspreselect = cuts; };
+    void SetHFECutsPreselect(AliESDtrackCuts * const cuts) { fCutspreselect = cuts; };
     void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
+    void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SwitchOnPlugin(Int_t plug);
     void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
@@ -207,12 +212,13 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks
     Bool_t fCleanTaggedTrack;             // Loose cleaning of the V0 tagged tracks electron
     Bool_t fVariablesTRDTaggedTrack;      // Take the variables at the TRD for the V0 tagged tracks electron
-    AliHFEcuts *fCutspreselect;           // Cut Collection for pre-selected tracks
+    AliESDtrackCuts *fCutspreselect;      // Cut Collection for pre-selected tracks
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEelecbackground *fElecBackGround;//! Background analysis
     AliHFEmcQA *fMCQA;                    //! MC QA
     AliHFEtaggedTrackAnalysis *fTaggedTrackAnalysis;     //!Analyse V0-tagged tracks
     AliHFEextraCuts *fExtraCuts;          //! temporary implementation for IP QA
+    AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
 
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts

@@ -43,6 +43,7 @@
 #include <TF1.h>
 #include <TTree.h>
 
+#include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
@@ -70,6 +71,7 @@
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
 #include "AliHFEelecbackground.h"
+#include "AliHFENonPhotonicElectron.h"
 #include "AliHFEmcQA.h"
 #include "AliHFEpairs.h"
 #include "AliHFEpid.h"
@@ -89,7 +91,7 @@ ClassImp(AliAnalysisTaskHFE)
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE():
-  AliAnalysisTaskSE("PID efficiency Analysis")
+AliAnalysisTaskSE("PID efficiency Analysis")
   , fAODMCHeader(NULL)
   , fAODArrayMCInfo(NULL)
   , fQAlevel(0)
@@ -133,6 +135,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fMCQA(NULL)
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
+  , fBackgroundSubtraction(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -199,6 +202,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fMCQA(NULL)
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
+  , fBackgroundSubtraction(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -271,6 +275,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fMCQA(NULL)
   , fTaggedTrackAnalysis(NULL)
   , fExtraCuts(NULL)
+  , fBackgroundSubtraction(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -344,6 +349,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fMCQA = fMCQA;
   target.fTaggedTrackAnalysis = fTaggedTrackAnalysis;
   target.fExtraCuts = fExtraCuts;
+  target.fBackgroundSubtraction = fBackgroundSubtraction;
   target.fQA = fQA;
   target.fOutput = fOutput;
   target.fHistMCQA = fHistMCQA;
@@ -367,6 +373,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   if(fSecVtx) delete fSecVtx;
   if(fMCQA) delete fMCQA;
   if(fElecBackGround) delete fElecBackGround;
+  if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   if(fSpecialTrigger) delete fSpecialTrigger;
   // Delete output objects only if we are not running in PROOF mode because otherwise this produces a crash during merging
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -396,7 +403,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQA->SetOwner();
   if(!fOutput) fOutput = new TList;
   fOutput->SetOwner();
-
+  
   // Automatic determination of the analysis mode
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
@@ -445,6 +452,15 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fQA->Add(fPIDqa->MakeList("HFEpidQA"));
   }
   fPID->SortDetectors();
+
+  // Background subtraction-------------------------------------------------------------------
+  if (GetPlugin(kNonPhotonicElectron)) {
+    if(!fBackgroundSubtraction) fBackgroundSubtraction = new AliHFENonPhotonicElectron();
+    fBackgroundSubtraction->Init();
+    fOutput->Add(fBackgroundSubtraction->GetListOutput());
+  }
+  //------------------------------------------------------------------------------------------
+
 
   // Initialize correction Framework and Cuts
   const Int_t kNcutSteps = AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack + AliHFEcuts::kNcutStepsDETrack + AliHFEcuts::kNcutStepsSecvtxTrack;
@@ -498,7 +514,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fSecVtx->CreateHistograms(fHistSECVTX);
     fOutput->Add(fHistSECVTX);
   }
-  
+
   // background----------------------------------
   if (GetPlugin(kIsElecBackGround)) {
     AliInfo("Electron BackGround Analysis on");
@@ -610,6 +626,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
+    if(GetPlugin(kNonPhotonicElectron) && fBackgroundSubtraction) fBackgroundSubtraction->SetMCEvent(fMCEvent);
   }
 
   if(IsAODanalysis() && HasMCData()){
@@ -631,6 +648,12 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
       //printf("No AOD MC particles");
       return;
     }
+    fSignalCuts->SetMCAODInfo(fAODArrayMCInfo);
+    // Background subtraction-------------------------------------------------------------------
+    if (GetPlugin(kNonPhotonicElectron)) {
+      fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
+    }
+    //------------------------------------------------------------------------------------------
   }
 
   //printf("test2\n");
@@ -652,7 +675,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     fSignalCuts->SetMCEvent(fMCEvent);
     ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
   }
-
+  
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse){
     AliDebug(1, "Using default PID Response");
@@ -660,6 +683,10 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   }
   fPID->SetPIDResponse(pidResponse);
   if(fPIDpreselect) fPIDpreselect->SetPIDResponse(pidResponse);
+
+  // Background subtraction-------------------------------------------------------------------
+  if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->InitRun(fInputEvent,pidResponse);
+  //------------------------------------------------------------------------------------------
 
   // Event loop
   if(IsAODanalysis()){
@@ -676,7 +703,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
         return;
       } else AliDebug(2, "Event Selected");
     } else AliDebug(2, "No Special Trigger requested");
-
+    
     ProcessESD();
   }
   // Done!!!
@@ -950,6 +977,14 @@ void AliAnalysisTaskHFE::ProcessESD(){
     fElecBackGround->Reset();
     
   } // end of electron background analysis
+  
+
+  // Background subtraction-------------------------------------------------------------------
+  if (GetPlugin(kNonPhotonicElectron)) {
+    fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent,fCentralityF);
+  }
+  //------------------------------------------------------------------------------------------
+
   //
   // Loop ESD
   //
@@ -978,8 +1013,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
     //////////////////////////////////////
     // preselect
-    /////////////////////////////////////
-    if(fPIDpreselect && fCutspreselect) {
+    //////////////////////////////////////
+    if(fPIDpreselect || fCutspreselect) {
       if(!PreSelectTrack(track)) continue;
     }
 
@@ -1196,6 +1231,15 @@ void AliAnalysisTaskHFE::ProcessESD(){
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
+    
+    // Background subtraction------------------------------------------------------------------------------------------
+    if (GetPlugin(kNonPhotonicElectron)) {
+      Int_t indexmother = -1;
+      Int_t mcsource = 1;
+      if(HasMCData()) mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1, mcsource, indexmother);
+    }
+    //-----------------------------------------------------------------------------------------------------------------
 
     // Temporary histogram for chi2/ITS cluster
     if(IsPbPb()) {
@@ -1377,6 +1421,17 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
       // Fill Containers for impact parameter analysis
       if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
+      if(signal) {
+        // Apply weight for background contamination after ip cut
+        if(fBackGroundFactorApply) {
+              fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+              if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+              else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+              // weightBackGround as special weight
+              fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
+        }
+      }
+
       if(HasMCData()){
         if(fMCQA && signal) {
           fMCQA->SetContainerStep(1);
@@ -1497,8 +1552,13 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   }
   //printf("Number of kink mother in the events %d\n",numberofmotherkink);
 
+  // Background subtraction-------------------------------------------------------------------
+  if (GetPlugin(kNonPhotonicElectron)) {
+    fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent,fCentralityF);
+  }
+  //------------------------------------------------------------------------------------------
 
-    // Loop over tracks
+  // Loop over tracks
   AliAODTrack *track = NULL;
   AliAODMCParticle *mctrack = NULL;
   Double_t dataE[6]; // [pT, eta, Phi, Charge, type, 'C' or 'B']
@@ -1535,6 +1595,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
         if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
     }
+    
     fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
     
     if(fFillNoCuts) {
@@ -1550,18 +1611,20 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 
       // Reject kink mother
-      Bool_t kinkmotherpass = kTRUE;
-      for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	if(track->GetID() == listofmotherkink[kinkmother]) {
-	  kinkmotherpass = kFALSE;
-	  continue;
+      if(fRejectKinkMother) {
+	Bool_t kinkmotherpass = kTRUE;
+	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	  if(track->GetID() == listofmotherkink[kinkmother]) {
+	    kinkmotherpass = kFALSE;
+	    continue;
+	  }
 	}
+	if(!kinkmotherpass) continue;
       }
-      if(!kinkmotherpass) continue;
       
       // RecPrim
       if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-
+      
       // HFEcuts: ITS layers cuts
       if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
       
@@ -1592,7 +1655,17 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(IsPbPb()) hfetrack.SetPbPb();
     else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
-    if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;    // we will do PID here as soon as possible
+    if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;   
+    // we will do PID here as soon as possible
+
+    // Background subtraction----------------------------------------------------------------------------------------------
+    if (GetPlugin(kNonPhotonicElectron)) {
+      Int_t indexmother = -1;
+      Int_t mcsource = 1;
+      if(HasMCData()) mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1,mcsource, indexmother);
+    }
+    //---------------------------------------------------------------------------------------------------------------------
 
     // end AOD QA
     fQAAODCollection->Fill("Filterend", -1);  
@@ -1738,34 +1811,14 @@ Bool_t AliAnalysisTaskHFE::PreSelectTrack(AliESDtrack *track) const {
   
 
   Bool_t survived = kTRUE;
+
+  if(fCutspreselect) {
+    //printf("test preselect\n");
+    if(!fCutspreselect->IsSelected(track)) survived=kFALSE;
+  }
+  //printf("survived %d\n",(Int_t)survived);
   
-  if(!fCutspreselect->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) {
-    survived = kFALSE;
-    //printf("Did not pass AliHFEcuts::kStepRecKineITSTPC\n");
-  }
-  //else printf("Pass AliHFEcuts::kStepRecKineITSTPC\n");
-  if(!fCutspreselect->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) {
-    survived = kFALSE;
-    //printf("Did not pass AliHFEcuts::kStepRecPrim\n");
-  }
-  //else printf("Pass AliHFEcuts::kStepRecPrim\n");
-  if(!fCutspreselect->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) {
-    survived = kFALSE;
-    //printf("Did not pass AliHFEcuts::kStepHFEcutsITS\n");
-  }
-  //else printf("Pass AliHFEcuts::kStepHFEcutsITS\n");
-  if(!fCutspreselect->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF, track)) {
-    survived = kFALSE;
-    //printf("Did not pass AliHFEcuts::kStepHFEcutsTOF\n");
-  }
-  //else printf("Pass AliHFEcuts::kStepHFEcutsTOF\n");
-  if(!fCutspreselect->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD, track)) {
-    survived = kFALSE;
-    //printf("Did not pass AliHFEcuts::kStepHFEcutsTRD\n");
-  }
-  //else printf("Pass AliHFEcuts::kStepHFEcutsTRD\n");
-  
-  if(survived){
+  if(survived && fPIDpreselect){
     // Apply PID
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
@@ -1824,7 +1877,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   fContainer->CreateContainer("recTrackContReco", "Track Container filled with MC information", AliHFEcuts::kNcutStepsRecTrack + fPID->GetNumberOfPIDdetectors());
   fContainer->CreateContainer("recTrackContMC", "Track Container filled with MC information", AliHFEcuts::kNcutStepsRecTrack + fPID->GetNumberOfPIDdetectors());
   
-  fContainer->CreateContainer("hadronicBackground", "Container for Hadronic Background", 2);
+  fContainer->CreateContainer("hadronicBackground", "Container for Hadronic Background", 3);
   fContainer->CreateContainer("recTrackContDEReco", "Container for displaced electron analysis with Reco information", 1);
   fContainer->CreateContainer("recTrackContDEMC", "Container for displaced electron analysis with MC information", 1);
   fContainer->CreateContainer("recTrackContSecvtxReco", "Container for secondary vertexing analysis with Reco information", 1);
@@ -2072,6 +2125,7 @@ void AliAnalysisTaskHFE::SwitchOnPlugin(Int_t plug){
     case kPostProcess: SETBIT(fPlugins, plug); break;
     case kDEstep: SETBIT(fPlugins, plug); break;
     case kTaggedTrackAnalysis: SETBIT(fPlugins, plug); break;
+    case kNonPhotonicElectron: SETBIT(fPlugins, plug); break; 
     default: AliError("Unknown Plugin");
   };
 }
