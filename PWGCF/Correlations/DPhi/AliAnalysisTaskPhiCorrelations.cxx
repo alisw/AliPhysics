@@ -50,6 +50,8 @@
 
 #include "AliEventPoolManager.h"
 
+#include "AliESDZDC.h"
+
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -541,7 +543,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       }
       fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality);
       fHistos->FillFakePt(fakeParticles, centrality);
-      Printf(">>>>> %d fakes", ((TObjArray*) fakeParticles->At(2))->GetEntriesFast());
+//       Printf(">>>>> %d %d %d fakes", ((TObjArray*) fakeParticles->At(0))->GetEntriesFast(), ((TObjArray*) fakeParticles->At(1))->GetEntriesFast(), ((TObjArray*) fakeParticles->At(2))->GetEntriesFast());
       delete fakeParticles;
     
       // (MC-true all particles)
@@ -674,7 +676,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
     
   // skip not selected events here (the AOD is not updated for those)
-  if (!(fInputHandler->IsEventSelected() & fSelectBit))
+  if (!fSkipTrigger && !(fInputHandler->IsEventSelected() & fSelectBit))
     return;
 
   Double_t centrality = 0;
@@ -682,31 +684,45 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   AliCentrality *centralityObj = 0;
   if (fCentralityMethod.Length() > 0)
   {
-    if (fAOD)
-      centralityObj = fAOD->GetHeader()->GetCentralityP();
-    else if (fESD)
-      centralityObj = fESD->GetCentrality();
-    
-    if (centralityObj)
-      centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
-      //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-    else
-      centrality = -1;
-
-    if (fAOD)
+    if (fCentralityMethod == "ZNA_MANUAL")
     {
-      // remove outliers
-      if (centrality == 0)
+      // code from Chiara O (23.10.12)
+      const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
+      Float_t znacut[3] = {680., 562., 412.};
+
+      if(fZNAtower[0]>znacut[0]) centrality = 1;
+      else if(fZNAtower[0]<=znacut[0] && fZNAtower[0]>znacut[1]) centrality = 21;
+      else if(fZNAtower[0]<=znacut[1] && fZNAtower[0]>znacut[2]) centrality = 41;
+      else if(fZNAtower[0]<=znacut[2]) centrality = 61;
+    }
+    else
+    {
+      if (fAOD)
+	centralityObj = fAOD->GetHeader()->GetCentralityP();
+      else if (fESD)
+	centralityObj = fESD->GetCentrality();
+      
+      if (centralityObj)
+	centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+	//centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+      else
+	centrality = -1;
+
+      if (fAOD)
       {
-	if (fAOD->GetVZEROData())
+	// remove outliers
+	if (centrality == 0)
 	{
-	  Float_t multV0 = 0;
-	  for (Int_t i=0; i<64; i++)
-	    multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
-	  if (multV0 < 19500)
+	  if (fAOD->GetVZEROData())
 	  {
-	    centrality = -1;
-	    AliInfo("Rejecting event due to too small V0 multiplicity");
+	    Float_t multV0 = 0;
+	    for (Int_t i=0; i<64; i++)
+	      multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
+	    if (multV0 < 19500)
+	    {
+	      centrality = -1;
+	      AliInfo("Rejecting event due to too small V0 multiplicity");
+	    }
 	  }
 	}
       }
@@ -728,7 +744,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   fHistos->FillEvent(centrality, AliUEHist::kCFStepAll);
   
   // Trigger selection ************************************************
-  if (!fAnalyseUE->TriggerSelection(fInputHandler)) return;
+  if (!fSkipTrigger && !fAnalyseUE->TriggerSelection(fInputHandler)) return;
   
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
