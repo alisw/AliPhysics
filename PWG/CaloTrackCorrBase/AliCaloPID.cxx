@@ -246,10 +246,10 @@ void AliCaloPID::InitParameters()
   fMassWidthPi0Param[5] = 0.130;  // Mean mass value for NLM=1
   fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
   
-  fM02MinParam[0] = 0.6 ;     // Min for NLM>1 and E < 8 NLM=1
-  fM02MinParam[1] = 1.9 ;     // pol2 param0 for NLM=1 , 8 < E < 18 GeV
-  fM02MinParam[2] =-0.186 ;   // pol2 param1 for NLM=1 , 8 < E < 18 GeV
-  fM02MinParam[3] = 0.0053 ;  // pol2 param2 for NLM=1 , 8 < E < 18 GeV
+  fM02MinParam[0] = 0.6 ;     // Min for NLM > 1 
+  fM02MinParam[1] = 2.3 ;     // pol2 param0 for NLM=1 , E < 16 GeV
+  fM02MinParam[2] =-0.235;    // pol2 param1 for NLM=1 , E < 16 GeV
+  fM02MinParam[3] = 0.0069;   // pol2 param2 for NLM=1 , E < 16 GeV
   fM02MinParam[4] = 0.3;      // absolute minimum in any case
   
   fSplitEFracMin   = 0.85 ;
@@ -307,9 +307,10 @@ Bool_t AliCaloPID::IsInSplitM02Range(const Float_t energy, const Float_t m02,  c
     if     ( nlm > 1 ) minCut = fM02MinParam[0]; // 0.6
     else if( nlm== 1 )
     { 
-      if     (energy < 8 )  minCut = fM02MinParam[0]; // 0.6
-      else if(energy < 20)  minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3]; // (check the range of applicability of the function) 
-      else                  minCut = fM02MinParam[4]; // 0.3
+      //if     (energy < 8 )  minCut = fM02MinParam[0]; // 0.6
+      //else
+      if(energy < 16)  minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3]; // (check the range of applicability of the function) 
+      else             minCut = fM02MinParam[4]; // 0.3
     }
     
     //In any case, the parameter cannot be smaller than this (0.3)
