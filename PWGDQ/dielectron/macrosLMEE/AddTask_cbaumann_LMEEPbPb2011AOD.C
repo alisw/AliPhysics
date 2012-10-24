@@ -15,11 +15,14 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
 
+
   if (getFromAlien &&
-	  (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosJPSI/ConfigLMEEPbPb2011.C ."))
-	 ) {
-	configFile=Form("%s/",gSystem->pwd());
+      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/ConfigLMEEPbPb2011AOD.C .")) &&
+      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/LMEECutLibAOD.C ."))
+     ) {
+        configBasePath=Form("%s/",gSystem->pwd());
   }
+
   TString configFile("ConfigLMEEPbPb2011AOD.C");
   TString configLMEECutLib("LMEECutLibAOD.C");
 
