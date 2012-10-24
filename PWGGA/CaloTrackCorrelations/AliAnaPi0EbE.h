@@ -143,8 +143,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
 
   TH2F         * fhMass  ;                 //! pair mass vs E, for all pairs
+  TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters 
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
-  
+  TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
+
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
   
@@ -169,7 +171,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhDispEtaPhiDiffE ;       //! shower dispersion eta - phi
   TH2F         * fhSphericityE ;           //! shower sphericity in eta vs phi
   TH2F         * fhDispEtaDispPhi[7] ;     //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F         * fhAsymmetryE ;            //! E asymmetry of 2 splitted clusters vs cluster E
   TH2F         * fhAsymmetryLambda0[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhAsymmetryDispEta[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhAsymmetryDispPhi[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins

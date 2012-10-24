@@ -59,7 +59,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
-    fhMass(0),                     fhSelectedMass(0),
+    fhMass(0),                     fhAsymmetry(0), 
+    fhSelectedMass(0),             fhSelectedAsymmetry(0),
     fhPtDecay(0),                  fhEDecay(0),  
     // Shower shape histos
     fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
@@ -68,7 +69,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),
     fhDispEtaE(0),                 fhDispPhiE(0),
     fhSumEtaE(0),                  fhSumPhiE(0),                 fhSumEtaPhiE(0),
-    fhDispEtaPhiDiffE(0),          fhSphericityE(0),             fhAsymmetryE(0), 
+    fhDispEtaPhiDiffE(0),          fhSphericityE(0),           
 
     // MC histos
     fhMCPt(),                      fhMCPhi(),                    fhMCEta(),
@@ -300,7 +301,6 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
     if (fAnaType==kSSCalo)
     {
       // Asymmetry histograms
-      fhAsymmetryE            ->Fill(e  ,asy);
       fhAsymmetryLambda0[ebin]->Fill(l0 ,asy);
       fhAsymmetryDispEta[ebin]->Fill(dEta,asy);
       fhAsymmetryDispPhi[ebin]->Fill(dPhi,asy);
@@ -426,7 +426,6 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
 
       if (fAnaType==kSSCalo)
       {
-        fhMCEAsymmetry            [mcIndex]->Fill(e  ,asy);
         fhMCAsymmetryLambda0[ebin][mcIndex]->Fill(l0 ,asy);
         fhMCAsymmetryDispEta[ebin][mcIndex]->Fill(dEta,asy);
         fhMCAsymmetryDispPhi[ebin][mcIndex]->Fill(dPhi,asy);
@@ -1207,15 +1206,37 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     } //Not MC reader
   }//Histos with MC
   
+  if(fAnaType==kSSCalo)
+  {
+    fhAsymmetry  = new TH2F ("hAsymmetry","A = ( E1 - E2 ) / ( E1 + E2 ) vs E",  
+                              nptbins,ptmin,ptmax, 200, -1,1); 
+    fhAsymmetry->SetXTitle("E (GeV)");
+    fhAsymmetry->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
+    outputContainer->Add(fhAsymmetry);
+    
+    fhSelectedAsymmetry  = new TH2F ("hSelectedAsymmetry","A = ( E1 - E2 ) / ( E1 + E2 ) vs E",  
+                             nptbins,ptmin,ptmax, 200, -1,1); 
+    fhSelectedAsymmetry->SetXTitle("E (GeV)");
+    fhSelectedAsymmetry->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
+    outputContainer->Add(fhSelectedAsymmetry);
+    
+    if(IsDataMC())
+    {
+      for(Int_t i = 0; i< 6; i++)
+      {
+        fhMCEAsymmetry[i]  = new TH2F (Form("hEAsymmetry_MC%s",pname[i].Data()),
+                                       Form("cluster from %s : A = ( E1 - E2 ) / ( E1 + E2 ) vs E",ptype[i].Data()),  
+                                       nptbins,ptmin,ptmax, 200,-1,1); 
+        fhMCEAsymmetry[i]->SetXTitle("E (GeV)");
+        fhMCEAsymmetry[i]->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
+        outputContainer->Add(fhMCEAsymmetry[i]);
+      } 
+    }
+  }
   
   if(fAnaType==kSSCalo && fFillSelectClHisto && !fFillOnlySimpleSSHisto )
   {
     
-    fhAsymmetryE  = new TH2F ("hAsymmetryE","A = ( E1 - E2 ) / ( E1 + E2 ) vs E",  
-                               nptbins,ptmin,ptmax, 200, -1,1); 
-    fhAsymmetryE->SetXTitle("E (GeV)");
-    fhAsymmetryE->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
-    outputContainer->Add(fhAsymmetryE);
     
     for(Int_t i = 0; i< 3; i++)
     {
@@ -1257,13 +1278,6 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     {
       for(Int_t i = 0; i< 6; i++)
       {
-        fhMCEAsymmetry[i]  = new TH2F (Form("hEAsymmetry_MC%s",pname[i].Data()),
-                                       Form("cluster from %s : A = ( E1 - E2 ) / ( E1 + E2 ) vs E",ptype[i].Data()),  
-                                       nptbins,ptmin,ptmax, 200,-1,1); 
-        fhMCEAsymmetry[i]->SetXTitle("E (GeV)");
-        fhMCEAsymmetry[i]->SetYTitle("A = ( E1 - E2 ) / ( E1 + E2 )");
-        outputContainer->Add(fhMCEAsymmetry[i]);
-        
         for(Int_t ie = 0; ie < 7; ie++)
         {
           fhMCAsymmetryLambda0[ie][i] = new TH2F (Form("hMCAsymmetryLambda0_EBin%d_MC%s",ie,pname[i].Data()),
@@ -1947,6 +1961,27 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     //mass of all clusters
     fhMass->Fill(mom.E(),mass);
+
+    // Asymmetry of all clusters
+    Float_t asy =-10;      
+    if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
+    fhAsymmetry->Fill(mom.E(),asy);
+    
+    //Play with the MC stack if available
+    //Check origin of the candidates
+    Int_t tag	= 0 ;
+    if(IsDataMC())
+    {
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),0);
+      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
+      if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
+      
+      // Asymmetry histograms
+      Int_t mcIndex = GetMCIndex(tag);
+      fhMCEAsymmetry[mcIndex]->Fill(mom.E(),asy);
+      
+    }//Work with stack also   
+    
     
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) 
@@ -1966,7 +2001,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
                               mom.Pt(), idPartType);
     
     //Mass of selected pairs
-    fhSelectedMass->Fill(mom.E(),mass);
+    fhSelectedMass     ->Fill(mom.E(),mass);
+    fhSelectedAsymmetry->Fill(mom.E(),asy);
 
     //-----------------------
     //Create AOD for analysis
@@ -1988,22 +2024,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // Add number of local maxima to AOD, method name in AOD to be FIXED
     aodpi0.SetFiducialArea(nMaxima);
     
-    //Play with the MC stack if available
-    //Check origin of the candidates
-    Int_t tag	= 0 ;
-    if(IsDataMC())
-    {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodpi0.GetInputFileIndex());
-      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
-      aodpi0.SetTag(tag);
-      if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",aodpi0.GetTag());
-    }//Work with stack also   
+    aodpi0.SetTag(tag);
     
     //Fill some histograms about shower shape
     if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
     {
-      Float_t asy =-10;      
-      if(e1+e2 > 0 ) asy = (e1-e2) / (e1+e2);
       FillSelectedClusterHistograms(calo, nMaxima, tag, asy);
     }  
     
