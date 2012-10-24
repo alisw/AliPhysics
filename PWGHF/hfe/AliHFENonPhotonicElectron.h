@@ -79,7 +79,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   THnSparseF *GetLSignAngleHisto() const { return fLSignAngle; };
 
   void     Init				();
-  void     InitRun			(const AliVEvent *inputEvent,const  AliPIDResponse *pidResponse);
+  void     InitRun			(const AliVEvent *inputEvent,AliPIDResponse *pidResponse);
   Int_t    FillPoolAssociatedTracks	(AliVEvent *inputEvent,Int_t binct=-1);
   Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent ,Double_t weight=1.,Int_t binct=-1,Double_t deltaphi=-1,Int_t source=-1,Int_t indexmother=-1);
 
