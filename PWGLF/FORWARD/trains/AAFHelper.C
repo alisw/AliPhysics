@@ -82,6 +82,7 @@ struct AAFHelper : public ProofHelper
   {
     fOptions.Add("aliroot", "VERSION", "AliROOT version", "last");
     fOptions.Add("root",    "VERISON", "ROOT version", "last");
+    fOptions.Add("nocache", "Disable tree cache");
   }
   virtual ~AAFHelper() {}
   /** 
@@ -122,7 +123,11 @@ struct AAFHelper : public ProofHelper
     TProof::Mgr(fUrl.GetHost())
       ->SetROOTVersion(Form("VO_ALICE@ROOT::%s", root.Data()));
 
-    return ProofHelper::PreSetup();
+    if (!ProofHelper::PreSetup()) return false;
+
+    if (fOptions.Has("nocache")) 
+      gProof->SetParameter("PROOF_UseTreeCache", 0);
+    return true;
   }
   /** 
    * @return URI help string 

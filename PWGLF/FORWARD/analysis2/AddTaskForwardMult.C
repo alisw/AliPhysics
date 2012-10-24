@@ -40,7 +40,8 @@ AddTaskForwardMult(Bool_t   mc,
 		   UShort_t sys=0, 
 		   UShort_t sNN=0, 
 		   Short_t  field=0, 
-		   const char* config="ForwardAODConfig.C")
+		   const char* config="ForwardAODConfig.C",
+		   const char* corrs=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -59,13 +60,17 @@ AddTaskForwardMult(Bool_t   mc,
   task->Configure(config);
   mgr->AddTask(task);
   
+  // --- Set alternative corrections path ----------------------------
+  AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
+  if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs);
+    
   // --- Do a local initialisation with assumed values ---------------
   if (sys > 0 && sNN > 0) {
     UInt_t what = AliForwardCorrectionManager::kAll;
     what ^= AliForwardCorrectionManager::kDoubleHit;
     what ^= AliForwardCorrectionManager::kVertexBias;
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
-    if (!AliForwardCorrectionManager::Instance().Init(sys,sNN,field,mc,what))
+    if (!cm.Init(sys,sNN,field,mc,what))
       Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
   
