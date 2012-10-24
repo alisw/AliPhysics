@@ -160,8 +160,8 @@ void AliEmcalJetTask::FindJets()
         continue;
       Double_t eta = t->Eta();
       Double_t phi = t->Phi();
-      if ((eta<fEtaMin) && (eta>fEtaMax) &&
-          (phi<fPhiMin) && (phi<fPhiMax))
+      if ((eta<fEtaMin) || (eta>fEtaMax) ||
+          (phi<fPhiMin) || (phi>fPhiMax))
         continue;
 
       // offset of 100 for consistency with cluster ids
@@ -205,8 +205,8 @@ void AliEmcalJetTask::FindJets()
 	continue;
       if (cPt < fMinJetClusPt) 
 	continue;
-      if ((cEta<fEtaMin) && (cEta>fEtaMax) &&
-	  (cPhi<fPhiMin) && (cPhi<fPhiMax))
+      if ((cEta<fEtaMin) || (cEta>fEtaMax) ||
+	  (cPhi<fPhiMin) || (cPhi>fPhiMax))
 	continue;
       // offset of 100 to skip ghost particles uid = -1
       fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);   
