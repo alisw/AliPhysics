@@ -341,7 +341,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event)
 	    "evtTimeStamp="<<timeStamp<<            //  time stamp of event
             "evtNumberInFile="<<eventNumber<<          //  event number	    
 	    "trigger="<<triggerMask<<      //  trigger
-	    "triggerClass="<<&triggerClass<<      //  trigger
+ 	    "triggerClass="<<&triggerClass<<      //  trigger
 	    "Bz="<<magField<<             //  magnetic field
 	    //
 	    "multSPD="<<ntracksSPD<<
@@ -538,12 +538,14 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       // vertex
       // TPC-ITS tracks
       //
+      TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
         "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
+	"triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<
         "vtxESD.="<<vtxESD<<
 	"IRtot="<<ir1<<
@@ -596,6 +598,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       Double_t evtTimeStamp = esdEvent->GetTimeStamp();
       Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
       Double_t bz = esdEvent->GetMagneticField();
+      TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"Laser"<<
@@ -603,6 +606,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
+	"triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<
         "multTPCtracks="<<countLaserTracks<<
         "\n";
@@ -1072,6 +1076,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       if(isOKtpcInnerC  && isOKtrackInnerC) dumpToTree = kTRUE;
       if(fUseESDfriends && isOKtrackInnerC2 && isOKouterITSc) dumpToTree = kTRUE;
       if(fUseMCInfo     && isOKtrackInnerC3) dumpToTree = kTRUE;
+      TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
       //
       if(fTreeSRedirector && dumpToTree) 
@@ -1081,6 +1086,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
           "evtNumberInFile="<<evtNumberInFile<<
+	  "triggerClass="<<&triggerClass<<      //  trigger
           "Bz="<<bz<<
           "vtxESD.="<<vtxESD<<
 	  "IRtot="<<ir1<<
@@ -1262,6 +1268,8 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
+  TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
@@ -1357,6 +1365,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
          if(fTreeSRedirector) {
            (*fTreeSRedirector)<<"MCEffTree"<<
            "fileName.="<<&fileName<<
+           "triggerClass.="<<&triggerClass<<
            "runNumber="<<runNumber<<
            "evtTimeStamp="<<evtTimeStamp<<
            "evtNumberInFile="<<evtNumberInFile<<
@@ -1513,10 +1522,12 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     AliKFParticle kfparticle; //
     Int_t type=GetKFParticle(v0,esdEvent,kfparticle);
     if (type==0) continue;   
+    TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"V0s"<<
       "isDownscaled="<<isDownscaled<<
+      "triggerClass="<<&triggerClass<<      //  trigger
       "Bz="<<bz<<
       "fileName.="<<&fileName<<
       "runNumber="<<run<<
@@ -1633,13 +1644,15 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if(!accCuts->AcceptTrack(track)) continue;
 
       if(!IsHighDeDxParticle(track)) continue;
-      
+      TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dEdx"<<
       "fileName.="<<&fileName<<
       "runNumber="<<runNumber<<
       "evtTimeStamp="<<evtTimeStamp<<
       "evtNumberInFile="<<evtNumberInFile<<
+	"triggerClass="<<&triggerClass<<      //  trigger
       "Bz="<<bz<<
       "vtxESD.="<<vtxESD<<
       "mult="<<mult<<
