@@ -67,7 +67,8 @@ public:
 	void             RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd)  ;
 	Bool_t           Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const Char_t * year = "08", const Char_t * detectors = "ALL") const ; 
 	void             SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
-  void             SetCheckerExternParam(AliQAv1::DETECTORINDEX_t det, TList * parameterList) ;  
+	void             SetActiveOnlineDetectors(TString aDet) { fActiveOnlineDetectors = aDet ;  }
+  void             SetCheckerExternParam(AliQAv1::DETECTORINDEX_t det, TList * parameterList) ;
 	void             SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
 	void             SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
   void             SetEventInfo(AliEventInfo *info) { fEventInfo = info ;} 
@@ -128,8 +129,8 @@ private:
   AliRecoParam::EventSpecie_t fEventSpecie ;                  //! type of event 
   Bool_t                      fPrintImage ;                   //! flag to print the images or not
   Bool_t                      fSaveData ;                     //! flag to sve the QA data or not   
-    
-  ClassDef(AliQAManager, 2)      // class for running the QA makers
+  TString                     fActiveOnlineDetectors;          //! list of active detectors in the DAQ world (i.e. SPD, SDD, SSD and not simply ITS, MUONTRK, MUONTRG and not simply MUON, etc...
+  ClassDef(AliQAManager, 3)      // class for running the QA makers
 };
 
 #endif

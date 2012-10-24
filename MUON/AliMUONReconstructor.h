@@ -96,8 +96,9 @@ private:
   mutable AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
   mutable TObjArray fClusterServers; //!<  Clusterizers (one per event specie)
   mutable TObjArray fTrackers; //!< trackers (one per event specie)
-    
-  ClassDef(AliMUONReconstructor,11) // Implementation of AliReconstructor
+  mutable Bool_t fShouldCalibrate; // whether the fDigitCalibrator should be non-null
+  
+  ClassDef(AliMUONReconstructor,12) // Implementation of AliReconstructor
 };
 
 #endif

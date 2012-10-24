@@ -507,14 +507,25 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       TString temp(smode) ;
       temp.ToLower() ; 
       if (libs.Contains("lib" + detName + smode + ".so") || (gSystem->Load("lib" + detName + temp.Data() + ".so") >= 0)) {
-        pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "()") ;
+        if ( iDet == AliQAv1::kMUON ) {
+          pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "(Bool_t,Bool_t)");
+        } else {
+          pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "()");
+        }
       } else {
-        pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName, qadmName + "()") ;
+        pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName, qadmName + "()");
       }
       pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName) ;
     }
     if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
-      qadm = (AliQADataMaker *) pluginHandler->ExecPlugin(0) ;
+      if ( iDet == AliQAv1::kMUON ) {
+        Bool_t mch = fActiveOnlineDetectors.Contains("MUONTRK");
+        Bool_t mtr = fActiveOnlineDetectors.Contains("MUONTRG");
+        qadm = (AliQADataMaker *) pluginHandler->ExecPlugin(2,mch,mtr);
+      }
+      else {
+        qadm = (AliQADataMaker *) pluginHandler->ExecPlugin(0);
+      }
     }
     if (qadm) {
       qadm->SetName(AliQAv1::GetDetName(iDet));

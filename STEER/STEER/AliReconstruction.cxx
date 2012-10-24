@@ -689,7 +689,9 @@ void AliReconstruction::InitQA()
   }
   
   if (fRunQA) {
-  qam->SetActiveDetectors(fQADetectors) ; 
+  qam->SetActiveDetectors(fQADetectors) ;
+  qam->SetActiveOnlineDetectors(fRunInfo->GetActiveDetectors());
+    
   for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) {
     qam->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
     qam->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
@@ -1123,6 +1125,7 @@ Bool_t AliReconstruction::InitGRP() {
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
+    AliInfo(Form("fQADetectors=%s",fQADetectors.Data()));
     fDeleteRecPoints = MatchDetectorList(fDeleteRecPoints,detMask);
     fDeleteDigits    = MatchDetectorList(fDeleteDigits,detMask);
     fLoadCDB.Form("%s %s %s %s",

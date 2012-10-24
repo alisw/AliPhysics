@@ -140,7 +140,8 @@ fClusterStore(0x0),
 fTriggerProcessor(0x0),
 fTriggerUtilities(0x0),
 fClusterServers(),
-fTrackers()
+fTrackers(),
+fShouldCalibrate(kTRUE)
 {
   /// normal ctor
 
@@ -205,8 +206,12 @@ AliMUONReconstructor::Calibrate(AliMUONVDigitStore& digitStore) const
   {
     CreateCalibrator();
   }
-  AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()),0)
-  fDigitCalibrator->Calibrate(digitStore);      
+    
+  if ( fShouldCalibrate )
+  {
+    AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()),0)
+    fDigitCalibrator->Calibrate(digitStore);
+  }
 }
 
 //_____________________________________________________________________________
@@ -562,7 +567,28 @@ AliMUONReconstructor::CreateCalibrator() const
     AliWarning("NOSTATUSMAP is obsolete");
   }
 
-  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam());
+  Bool_t kTracker(kFALSE);
+    
+  const AliRunInfo* runInfo = GetRunInfo();
+  if (!runInfo)
+  {
+    AliError("Could not get runinfo ?");
+  }
+  else
+  {
+    TString detectors(runInfo->GetActiveDetectors());
+    if (detectors.Contains("MUONTRK")) kTracker=kTRUE;
+  }
+    
+  if ( kTracker )
+  {
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam());
+  }
+  else
+  {
+    AliWarning("Apparently running without MCH so will not instantiante the DigitCalibrator nor read MCH OCDB objects...");
+    fShouldCalibrate=kFALSE;
+  }
 }
 
 //_____________________________________________________________________________
