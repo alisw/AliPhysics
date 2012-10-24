@@ -56,6 +56,7 @@ void redoFinish()
     if (!directory) continue;
 
     TList* listTemp = directory->GetListOfKeys();
+    if(!listTemp) continue;
     for (Int_t icent=0; icent<listTemp->GetEntries(); icent++)
     {
       TList* list = dynamic_cast<TList*>(directory->Get(listTemp->At(icent)->GetName()));
