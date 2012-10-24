@@ -90,10 +90,14 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   if (histogramsStr.Contains("3"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
+  else if (histogramsStr.Contains("4RC"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityCourse");
   else if (histogramsStr.Contains("4R"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality");
   else if (histogramsStr.Contains("4"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityTTR");
+  else if (histogramsStr.Contains("5RC"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtxCourse");
   else if (histogramsStr.Contains("5R"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx");
   else if (histogramsStr.Contains("5"))

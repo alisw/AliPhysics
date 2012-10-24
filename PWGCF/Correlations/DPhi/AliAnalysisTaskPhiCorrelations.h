@@ -67,6 +67,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
     virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02) { fTwoTrackEfficiencyCut = value; }
     virtual	void	SetUseVtxAxis(Bool_t flag) { fUseVtxAxis = flag; }
+    virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
     virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
     virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
     
@@ -116,6 +117,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     Float_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
     Bool_t		fUseVtxAxis;              // use z vtx as axis (needs 7 times more memory!)
+    Bool_t		fCourseCentralityBinning; // less centrality bins
     Bool_t		fSkipTrigger;		  // skip trigger selection
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     
@@ -163,7 +165,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 13); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 14); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
