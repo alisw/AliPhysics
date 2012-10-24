@@ -103,6 +103,7 @@ TGCompositeFrame(p,w,h),
   fContLeft(0x0),
   fContDrawOpt(0x0),
   fChkDrawOptSame(0x0),
+  fChkDrawOptSparse(0x0),
   fComboAddDrawOpt(0x0),
   fContDrawSel(0x0),
   fContDrawSelSubRunTime(0x0),
@@ -215,9 +216,19 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   // draw options
   fContDrawOpt = new TGGroupFrame(fContLeft, "Draw options", kVerticalFrame | kFitWidth | kFitHeight);
   fContLeft->AddFrame(fContDrawOpt, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
-  fChkDrawOptSame = new TGCheckButton(fContDrawOpt, "Same");
-  fContDrawOpt->AddFrame(fChkDrawOptSame, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
+
+  TGCompositeFrame *cfr = new TGCompositeFrame(fContDrawOpt, 200, 23, kHorizontalFrame | kFitWidth | kFixedHeight);
+  fContDrawOpt->AddFrame(cfr, new TGLayoutHints(kLHintsCenterX | kLHintsExpandX , 0, 0, 0, 0));
+  
+  fChkDrawOptSame = new TGCheckButton(cfr, "Same");
+  cfr->AddFrame(fChkDrawOptSame, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
   fChkDrawOptSame->SetToolTipText("Add draw option 'same'");
+
+  fChkDrawOptSparse = new TGCheckButton(cfr, "Sparse");
+  cfr->AddFrame(fChkDrawOptSparse, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
+  fChkDrawOptSparse->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "DoNewSelection()");
+  fChkDrawOptSparse->SetToolTipText("In case of run trending only plot runs with information");
+  
   // additional draw options combo box
   fComboAddDrawOpt = new TGComboBox(fContDrawOpt);
   fComboAddDrawOpt->Resize(0, 22);
@@ -733,13 +744,50 @@ void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph, const Double_
     fRunNumbers.ResizeTo(nrows);
     fTimeStamps.ResizeTo(nrows);
     long long *index=new long long[nrows];
-    TMath::Sort(nrows,fTree->GetV2(),index,kFALSE);
-    for (Long64_t i=0; i<nrows; ++i){
-      fValuesX.GetMatrixArray()[i]=xArr[index[i]];
-      fValuesY.GetMatrixArray()[i]=fTree->GetV3()[index[i]];
-      fRunNumbers.GetMatrixArray()[i]=fTree->GetV1()[index[i]];
-      fTimeStamps.GetMatrixArray()[i]=fTree->GetV2()[index[i]];
+
+    //sort data
+    Int_t nTime0=0;
+    for (Int_t i=0;i<fTree->GetSelectedRows();++i){
+      if (fTree->GetV2()[i]<1) ++nTime0;
     }
+    
+    if (nTime0==fTree->GetSelectedRows()){
+        TMath::Sort(nrows,fTree->GetV1(),index,kFALSE);
+    } else {
+      TMath::Sort(nrows,fTree->GetV2(),index,kFALSE);
+    }
+
+    Double_t lastRun=-1.;
+    Int_t entries=0;
+    const Bool_t drawSparse=(fRadioXrun->GetState()==kButtonDown && fChkDrawOptSparse->GetState()==kButtonDown);
+    for (Long64_t i=0; i<nrows; ++i){
+      // in case of sparse drawing only use the first entry per run
+      Double_t run  = fTree->GetV1()[index[i]];
+      Double_t xval = xArr[index[i]];
+      
+      if (drawSparse){
+        if (TMath::Abs(lastRun-run)<.1) {
+          lastRun=run;
+          continue;
+        }
+        xval=entries+0.5;
+      }
+      fValuesX.GetMatrixArray()[entries]=xval;
+      fValuesY.GetMatrixArray()[entries]=fTree->GetV3()[index[i]];
+      fRunNumbers.GetMatrixArray()[entries]=run;
+      fTimeStamps.GetMatrixArray()[entries]=fTree->GetV2()[index[i]];
+      lastRun=run;
+      ++entries;
+    }
+    
+    if (drawSparse){
+      fValuesX.ResizeTo(entries);
+      fValuesY.ResizeTo(entries);
+      fRunNumbers.ResizeTo(entries);
+      fTimeStamps.ResizeTo(entries);
+      //      printf("entries: %d\n",entries);
+    }
+    
     delete [] index;
   }
 }
@@ -922,10 +970,21 @@ void AliTPCCalibViewerGUItime::DoDraw() {
 //create graph according to selection
   if (drawGraph){
     TGraph *graph=new TGraph(fValuesX,fValuesY);
-    graph->Sort();
+//     graph->Sort();
     TString grDraw="p";
     if (!drawSame) grDraw+="a";
     if (!fIsCustomDraw) grDraw+="l";
+    // sparse drawing, set bin labels
+    if (fRadioXrun->GetState()==kButtonDown && fChkDrawOptSparse->GetState()==kButtonDown){
+      Int_t nrows=fValuesX.GetNrows();
+      Double_t *newBins = new Double_t[nrows+1];
+      for (Int_t ibin=0; ibin<nrows+1; ++ibin) newBins[ibin]=ibin;
+      graph->GetXaxis()->Set(nrows,newBins);
+      graph->GetXaxis()->LabelsOption("v");
+      for (Int_t i=0; i<nrows;++i)
+        graph->GetXaxis()->SetBinLabel(i+1,Form("%.0f",fRunNumbers.GetMatrixArray()[i]));
+      delete [] newBins;
+    }
     graph->Draw(grDraw.Data());
     graph->SetEditable(kFALSE);
     TH1 *hist=graph->GetHistogram();

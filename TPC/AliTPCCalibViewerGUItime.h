@@ -126,6 +126,7 @@ public:
   TGCompositeFrame    *fContLeft;           // container for GUI elements on left side
   TGGroupFrame        *fContDrawOpt;        // Subgroup for draw selection
   TGCheckButton       *fChkDrawOptSame;     // draw option 'same'
+  TGCheckButton       *fChkDrawOptSparse;   // draw option 'sparse'
   TGComboBox          *fComboAddDrawOpt;    // additional draw options combo box
   TGGroupFrame        *fContDrawSel;        // Subgroup for draw selection
   TGCompositeFrame    *fContDrawSelSubRunTime; //Radio button subframe
