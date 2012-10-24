@@ -113,8 +113,8 @@ const Char_t * AliHFEcuts::fgkUndefined = "Undefined";
 AliHFEcuts::AliHFEcuts():
   TNamed(),
   fRequirements(0),
-  fTPCclusterDef(AliHFEextraCuts::kFound),
-  fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
+  fTPCclusterDef(0),
+  fTPCratioDef(0),
   fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
@@ -160,8 +160,8 @@ AliHFEcuts::AliHFEcuts():
 AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   TNamed(name, title),
   fRequirements(0),
-  fTPCclusterDef(AliHFEextraCuts::kFound),
-  fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
+  fTPCclusterDef(0),
+  fTPCratioDef(0),
   fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
@@ -388,7 +388,9 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
     TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
     if(genCuts){
       AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
-      if(myGenCut) myGenCut->SetAODMC(kTRUE);
+      if(myGenCut) {
+	myGenCut->SetAODMC(kTRUE);
+      }
     }
   }
 
@@ -437,6 +439,20 @@ void AliHFEcuts::Initialize(){
   SetHFElectronTPCCuts();
   SetHFElectronTRDCuts();
   SetHFElectronDcaCuts();
+
+  // Publish to the cuts which analysis type they are (ESD Analysis by default)
+  if(IsAOD()){
+    //printf("Initialize AOD\n");
+    //AliInfo("Setting AOD Analysis");
+    TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
+    if(genCuts){
+      AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
+      if(myGenCut) {
+	myGenCut->SetAODMC(kTRUE);
+	//printf("Set AOD MC\n");
+      }
+    }
+  }
 
   // Connect the event cuts
   SetEventCutList(kEventStepGenerated);
@@ -518,9 +534,9 @@ void AliHFEcuts::SetParticleGenCutList(){
     genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
     //}
     //else {
-    // (ONLY PROVISOIRE FOR MC AOD)
-    //genCuts->SetProdVtxRangeX(-TMath::Abs(fProdVtx[1]), TMath::Abs(fProdVtx[1]));
-    //genCuts->SetProdVtxRangeY(-TMath::Abs(fProdVtx[3]), TMath::Abs(fProdVtx[3]));
+      // (ONLY PROVISOIRE FOR MC AOD)
+    // genCuts->SetProdVtxRangeX(-TMath::Abs(fProdVtx[1]), TMath::Abs(fProdVtx[1]));
+    // genCuts->SetProdVtxRangeY(-TMath::Abs(fProdVtx[3]), TMath::Abs(fProdVtx[3]));
     //}
   }
   genCuts->SetRequirePdgCode(11, kTRUE);
@@ -605,9 +621,9 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   hfecuts->SetDebugLevel(fDebugLevel);
   hfecuts->SetMinNbITScls(fMinClustersITS);
   // Set the cut in the TPC number of clusters
-  hfecuts->SetMinNClustersTPC(fMinClustersTPC, fTPCclusterDef);
+  hfecuts->SetMinNClustersTPC(fMinClustersTPC,AliHFEextraCuts::ETPCclusterDef_t(fTPCclusterDef));
   hfecuts->SetMinNClustersTPCPID(fMinClustersTPCPID);
-  hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC, fTPCratioDef);
+  hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC,AliHFEextraCuts::ETPCclrDef_t(fTPCratioDef));
   if(fFractionOfSharedTPCClusters > 0.0) hfecuts->SetFractionOfTPCSharedClusters(fFractionOfSharedTPCClusters); 
   if(fITSpatternCut) hfecuts->SetITSpatternCut();
   
@@ -658,7 +674,7 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsPrimaryCutsextra","Extra cuts from the HFE group");
   hfecuts->SetMaxImpactParameterRpar(fMaxImpactParameterRpar);
   hfecuts->SetRejectKinkDaughter();
-  hfecuts->SetRejectKinkMother();
+  //hfecuts->SetRejectKinkMother();
   if(IsRequireDCAToVertex()){
     hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
     hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
@@ -826,7 +842,7 @@ void AliHFEcuts::SetRecEvent(const AliVEvent *ev){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetMCEvent(const AliMCEvent *ev){
+void AliHFEcuts::SetMCEvent(const AliVEvent *ev){
   //
   // Publish reconstructed event to the cuts
   //

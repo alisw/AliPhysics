@@ -49,7 +49,7 @@
 
 ClassImp(AliHFEextraCuts)
 
-const Int_t AliHFEextraCuts::fgkNQAhistos = 9;
+const Int_t AliHFEextraCuts::fgkNQAhistos = 10;
 
 //______________________________________________________
 AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
@@ -526,6 +526,8 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(7 + when * fgkNQAhistos)))) htmp->Fill(track->GetTPCsignalN());
 
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(8 + when * fgkNQAhistos)))) htmp->Fill(GetTRDchi(track));
+
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(9 + when * fgkNQAhistos)))) htmp->Fill(GetITSNbOfcls(track));
 }
 
 // //______________________________________________________
@@ -579,7 +581,7 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
     fQAlist->AddAt(histo1D, 1 + icond * fgkNQAhistos);
     histo1D->GetXaxis()->SetTitle("Impact Parameter");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    qaList->AddAt((histo1D = new TH1F(Form("%s_tpcClr%s",GetName(),cutstr[icond].Data()), "Cluster Ratio TPC", 100, 0, 1)), 2 + icond * fgkNQAhistos);
+    qaList->AddAt((histo1D = new TH1F(Form("%s_tpcClr%s",GetName(),cutstr[icond].Data()), "Cluster Ratio TPC", 100, 0, 1.3)), 2 + icond * fgkNQAhistos);
     fQAlist->AddAt(histo1D, 2 + icond * fgkNQAhistos);
     histo1D->GetXaxis()->SetTitle("Cluster Ratio TPC");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
@@ -613,6 +615,10 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
     fQAlist->AddAt(histo1D, 8 + icond * fgkNQAhistos);
     histo1D->GetXaxis()->SetTitle("Chi2 per TRD Tracklet");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
+    qaList->AddAt((histo1D = new TH1F(Form("%s_ITScls%s",GetName(),cutstr[icond].Data()), "ITScls", 6, 0, 6)), 9 + icond * fgkNQAhistos);
+    fQAlist->AddAt(histo1D, 9 + icond * fgkNQAhistos);
+    histo1D->GetXaxis()->SetTitle("ITScls");
+    histo1D->GetYaxis()->SetTitle("Number of ITS cls");
 
   }
   // Add cut correlation
@@ -686,13 +692,13 @@ Bool_t AliHFEextraCuts::GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track)
 
 //______________________________________________________
 UInt_t AliHFEextraCuts::GetTPCncls(AliVTrack *track){
-	//
-	// Get Number of findable clusters in the TPC
-	//
-	Int_t nClusters = 0; // in case no Information available consider all clusters findable
+  //
+  // Get Number of findable clusters in the TPC
+  //
+  Int_t nClusters = 0; // in case no Information available consider all clusters findable
   TClass *type = track->IsA();
   if(TESTBIT(fTPCclusterDef, kFoundIter1)){
-		if(type == AliESDtrack::Class()){
+    if(type == AliESDtrack::Class()){
       AliDebug(2, ("Using def kFoundIter1"));
       AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
       nClusters = esdtrack->GetTPCNclsIter1();
@@ -702,11 +708,24 @@ UInt_t AliHFEextraCuts::GetTPCncls(AliVTrack *track){
   } else if(TESTBIT(fTPCclusterDef, kCrossedRows)){
     AliDebug(2, ("Using def kCrossedRows"));
     nClusters = static_cast<UInt_t>(track->GetTPCClusterInfo(2,1));
-  } else{
+  } else if(TESTBIT(fTPCclusterDef, kFound)){
     AliDebug(2, ("Using def kFound"));
-	  nClusters = track->GetTPCNcls();
+    nClusters = track->GetTPCNcls();
   }
-	return nClusters;
+  else {
+    AliDebug(2, ("Using def kFoundAll"));
+    if(type == AliESDtrack::Class()){
+      AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+      const TBits &clusterTPC = esdtrack->GetTPCClusterMap();
+      nClusters = clusterTPC.CountBits();
+    } 
+    else {
+      AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+      const TBits &clusterTPC = aodtrack->GetTPCClusterMap();
+      nClusters = clusterTPC.CountBits();
+    }  
+  }
+  return nClusters;
 }
 
 //______________________________________________________
@@ -721,13 +740,13 @@ Float_t AliHFEextraCuts::GetTPCsharedClustersRatio(AliVTrack *track){
   if(type == AliESDtrack::Class()){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
     nClustersTPCShared = esdtrack->GetTPCnclsS();
-  } else if(type == AliESDtrack::Class()){
+  } else if(type == AliAODTrack::Class()){
     AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
     const TBits &shared = aodtrack->GetTPCSharedMap();
     nClustersTPCShared = shared.CountBits(0) - shared.CountBits(159);
   }
   if (nClustersTPC!=0) {
-	   fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+    fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
   }
   return fracClustersTPCShared;
 }
@@ -755,14 +774,29 @@ Double_t AliHFEextraCuts::GetTPCclusterRatio(AliVTrack *track){
       AliDebug(2, "Cluster ratio after iteration 1 not possible for AOD tracks");
       clusterRatio = 1.;
     }
-  } else {
+  } else if(TESTBIT(fTPCclusterRatioDef, kFoundOverFindable)) {
     AliDebug(2, "Using ratio def kFoundOverFindable");
     clusterRatio = track->GetTPCNclsF() ? static_cast<Double_t>(track->GetTPCNcls())/static_cast<Double_t>(track->GetTPCNclsF()) : 1.; // found/findable
   }
+  else {
+    AliDebug(2, "Using ratio def kFoundAllOverFindable");
+    Int_t allclusters = 0;
+    if(type == AliESDtrack::Class()){
+      AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+      const TBits &clusterTPC = esdtrack->GetTPCClusterMap();
+      allclusters = clusterTPC.CountBits();
+    }
+    else {
+      AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+      const TBits &clusterTPC = aodtrack->GetTPCClusterMap();
+      allclusters = clusterTPC.CountBits();
+    }
+    clusterRatio = track->GetTPCNclsF() ? static_cast<Double_t>(allclusters)/static_cast<Double_t>(track->GetTPCNclsF()) : 1.; // foundall/findable
+  }
   return clusterRatio;
-}
 
-//______________________________________________________
+}
+//___________________________________________________
 void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z){
   //
   // Get impact parameter
@@ -814,8 +848,8 @@ Bool_t AliHFEextraCuts::IsKinkDaughter(AliVTrack *track){
   if(type == AliESDtrack::Class()){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
     if(!esdtrack) return kFALSE;
-    if(esdtrack->GetKinkIndex(0)<=0) return kFALSE;
-    else return kTRUE;
+    if(esdtrack->GetKinkIndex(0)>0) return kTRUE;
+    else return kFALSE;
 
   }
   else if(type == AliAODTrack::Class()){

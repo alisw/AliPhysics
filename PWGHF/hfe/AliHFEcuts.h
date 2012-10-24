@@ -88,7 +88,7 @@ class AliHFEcuts : public TNamed{
     Bool_t CheckParticleCuts(UInt_t step, TObject *o);
     Bool_t CheckEventCuts(const char*namestep, TObject *o);
     void SetRecEvent(const AliVEvent *ev);
-    void SetMCEvent(const AliMCEvent *ev);
+    void SetMCEvent(const AliVEvent *ev);
   
     TList *GetQAhistograms() const { return fHistQA; }
     
@@ -154,7 +154,7 @@ class AliHFEcuts : public TNamed{
     inline void SetSigmaToVertex(Double_t sig);
     inline void SetSigmaToVertexXY(Double_t sig);
     inline void SetSigmaToVertexZ(Double_t sig);
-    void SetTPCmodes(AliHFEextraCuts::ETPCclusterDef_t clusterDef, AliHFEextraCuts::ETPCclrDef_t ratioDef) {
+    void SetTPCmodes(UChar_t clusterDef, UChar_t ratioDef) {
       fTPCclusterDef= clusterDef;
       fTPCratioDef = ratioDef;
     }
@@ -219,8 +219,8 @@ class AliHFEcuts : public TNamed{
     static const Char_t* fgkUndefined;                        // Name for undefined (overflow)
   
     ULong64_t fRequirements;  	  // Bitmap for requirements
-    AliHFEextraCuts::ETPCclusterDef_t fTPCclusterDef;       // TPC cluster definition
-    AliHFEextraCuts::ETPCclrDef_t fTPCratioDef;             // TPC cluster ratio Definition
+    UChar_t   fTPCclusterDef;       // TPC cluster definition
+    UChar_t   fTPCratioDef;             // TPC cluster ratio Definition
     Double_t fEtaRange;               // Eta range
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex

@@ -32,6 +32,7 @@
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliVParticle.h"
+#include "TClonesArray.h"
 
 #include "AliHFEsignalCuts.h"
 #include "AliHFEmcQA.h"
@@ -42,6 +43,7 @@ ClassImp(AliHFEsignalCuts)
 AliHFEsignalCuts::AliHFEsignalCuts():
   AliAnalysisCuts(),
   fMC(NULL),
+  fAODArrayMCInfo(NULL),
   fMCQA(NULL)
 {
   //
@@ -53,6 +55,7 @@ AliHFEsignalCuts::AliHFEsignalCuts():
 AliHFEsignalCuts::AliHFEsignalCuts(const Char_t *name, const Char_t *title):
   AliAnalysisCuts(name, title),
   fMC(NULL),
+  fAODArrayMCInfo(NULL),
   fMCQA(NULL)
 {
   //
@@ -66,6 +69,7 @@ AliHFEsignalCuts::AliHFEsignalCuts(const Char_t *name, const Char_t *title):
 AliHFEsignalCuts::AliHFEsignalCuts(const AliHFEsignalCuts &ref):
   AliAnalysisCuts(ref),
   fMC(ref.fMC),
+  fAODArrayMCInfo(NULL),
   fMCQA(ref.fMCQA)
 {
   //
@@ -79,7 +83,8 @@ AliHFEsignalCuts &AliHFEsignalCuts::operator=(const AliHFEsignalCuts &ref){
   // Assignment operator
   //
   if(this != &ref){
-    fMC = ref.fMC; 
+    //fMC = ref.fMC; 
+    //fAODArrayMCInfo = ref.fAODArrayMCInfo;
     fMCQA = ref.fMCQA; 
   }
   return *this;
@@ -103,7 +108,16 @@ void AliHFEsignalCuts::SetMCEvent(AliMCEvent *mc){
 }
 
 //____________________________________________________________
-Bool_t AliHFEsignalCuts::IsSelected(TObject *o){
+void AliHFEsignalCuts::SetMCAODInfo(TClonesArray *mcarray){ 
+  //
+  // Set mc array info
+  //
+  fAODArrayMCInfo = mcarray; 
+  if(fMCQA) fMCQA->SetMCArray(mcarray);
+}
+
+//____________________________________________________________
+Bool_t AliHFEsignalCuts::IsSelected(TObject *o) {
   //
   // Define signal as electron coming from charm or beauty
   // @TODO: Implement setter so that also either of them can be defined
@@ -270,19 +284,25 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
   //
   // Get Mother Pdg code for reconstructed respectively MC tracks
   // 
-  if(!fMC){
+  TClass *type = track->IsA();  
+  if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
     AliDebug(1, "No MC Event Available\n");
     return 0;
   }
   const AliVParticle *motherParticle = NULL, *mctrack = NULL;
-  TString objectType = track->IsA()->GetName();
-  if(objectType.CompareTo("AliESDtrack") == 0 || objectType.CompareTo("AliAODTrack") == 0){
+  Int_t label = TMath::Abs(track->GetLabel());
+  if(type == AliESDtrack::Class()){
     // Reconstructed track
-    if(track->GetLabel())
-      mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
-  } else {
+    if(label) mctrack = fMC->GetTrack(TMath::Abs(label));
+    
+  } 
+  else if(type == AliAODTrack::Class()) {
     // MCParticle
-    mctrack = track;
+    if(label && label < fAODArrayMCInfo->GetEntriesFast())
+      mctrack = (AliVParticle *) fAODArrayMCInfo->At(label);
+  }
+  else {
+    mctrack=track;
   }
 
   if(!mctrack) return 0;
@@ -299,7 +319,10 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
   } else {
     // case AODMCParticle
     const AliAODMCParticle *aodmctrack = dynamic_cast<const AliAODMCParticle *>(mctrack);
-    if(aodmctrack) motherParticle = fMC->GetTrack(aodmctrack->GetMother());
+    if(aodmctrack) {
+      if(aodmctrack->GetMother() && aodmctrack->GetMother() < fAODArrayMCInfo->GetEntriesFast())
+      motherParticle =  (AliVParticle *) fAODArrayMCInfo->At(aodmctrack->GetMother());
+    }
     if(motherParticle){
       const AliAODMCParticle *aodmcmother = dynamic_cast<const AliAODMCParticle *>(motherParticle);
       if(aodmcmother) motherPDG = TMath::Abs(aodmcmother->GetPdgCode());
@@ -310,39 +333,52 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
 
 //____________________________________________________________
 Int_t AliHFEsignalCuts::GetTrackPDG(const AliVParticle * const track) const {
-	//
-	// Return PDG code of a particle itself
-	//
-  if(!fMC){
+  //
+  // Return PDG code of a particle itself
+  //
+  TClass *type = track->IsA();  
+  if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
     AliDebug(1, "No MC Event Available\n");
     return 0;
   }
-	TString sourcetype = track->IsA()->GetName();
-	const AliVParticle *mctrack = NULL;
-	if(!sourcetype.CompareTo("AliESDtrack") || !sourcetype.CompareTo("AliAODTrack")){
-		mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
-	} else  mctrack = track;
-	if(!mctrack) return 0;
+  const AliVParticle *mctrack = NULL;
+  Int_t label = TMath::Abs(track->GetLabel());
+  if(type == AliESDtrack::Class()){
+    // Reconstructed track
+    if(label) mctrack = fMC->GetTrack(TMath::Abs(label));
+    
+  } 
+  else if(type == AliAODTrack::Class()) {
+    // MCParticle
+    if(label && label < fAODArrayMCInfo->GetEntriesFast())
+      mctrack =  (AliVParticle *) fAODArrayMCInfo->At(label);
+  }
+  else {
+    mctrack=track;
+  }
 
-	TString mctype = mctrack->IsA()->GetName();
-	Int_t trackPdg = 0;
-	if(!mctype.CompareTo("AliMCParticle")){
-		const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
-		if(esdmc) trackPdg = esdmc->Particle()->GetPdgCode();
-	} else {
-		const AliAODMCParticle *aodmc = dynamic_cast< const AliAODMCParticle *>(mctrack);
-		if(aodmc) trackPdg = aodmc->GetPdgCode();
-	}
-	return trackPdg;
+  if(!mctrack) return 0;
+  
+  TString mctype = mctrack->IsA()->GetName();
+  Int_t trackPdg = 0;
+  if(!mctype.CompareTo("AliMCParticle")){
+    const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
+    if(esdmc) trackPdg = esdmc->Particle()->GetPdgCode();
+  } else {
+    const AliAODMCParticle *aodmc = dynamic_cast< const AliAODMCParticle *>(mctrack);
+    if(aodmc) trackPdg = aodmc->GetPdgCode();
+  }
+  return trackPdg;
 }
 
 //____________________________________________________________
 Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
-	//
-	// Return PDG code of a particle itself
-	//
-	
-  if(!fMC){
+  //
+  // Return PDG code of a particle itself
+  //
+  
+  TClass *type = track->IsA();  
+  if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
     AliDebug(1, "No MC Event Available\n");
     return 0;
   }
@@ -355,13 +391,23 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
     return 0;
   }
 
-  TClass *tracktype;
   const AliVParticle *mctrack = NULL;
   TParticle *mcpart = NULL;
+  Int_t label = TMath::Abs(track->GetLabel());
   //AliMCParticle *esdmcmother = NULL;
-  if((tracktype = track->IsA()) == AliESDtrack::Class() || tracktype == AliAODTrack::Class()){
-    mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
-  } else  mctrack = track;
+  if(type == AliESDtrack::Class()){
+    // Reconstructed track
+    if(label) mctrack = fMC->GetTrack(TMath::Abs(label));
+    
+  } 
+  else if(type == AliAODTrack::Class()) {
+    // MCParticle
+    if(label && label < fAODArrayMCInfo->GetEntriesFast())
+      mctrack = (AliVParticle *) fAODArrayMCInfo->At(label);
+  }
+  else {
+    mctrack=track;
+  }
   if(!mctrack) return 0;
 
   Int_t eSource = 0;
@@ -389,7 +435,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
 */
     }
   } else {
-    return -1;
+    eSource=fMCQA->GetElecSource(mctrack);
   }
   return eSource;
 }	

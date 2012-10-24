@@ -462,11 +462,16 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     Double_t chi2PerClusterITS = 0.0;
     if (nclustersITS != 0) chi2PerClusterITS = track->GetITSchi2() / Float_t(nclustersITS);
     // TPC number of clusters (different definitions)
-    UChar_t nclustersTPC = track->GetTPCncls();
+    UChar_t nclustersTPCfit = track->GetTPCNcls();
+    UChar_t nclustersTPCall = 0;
+    const TBits &clusterTPC = track->GetTPCClusterMap();
+    nclustersTPCall = clusterTPC.CountBits();
     UChar_t nclustersTPCPID = track->GetTPCsignalN();
     UChar_t nfindableTPC =  track->GetTPCNclsF();
-    Double_t clusterRatioTPC = 0.0;
-    if((static_cast<Double_t>(nfindableTPC))>0.0) clusterRatioTPC = static_cast<Double_t>(nclustersTPC)/static_cast<Double_t>(nfindableTPC);
+    Double_t clusterRatioTPCfit = 0.0;
+    if((static_cast<Double_t>(nfindableTPC))>0.0) clusterRatioTPCfit = static_cast<Double_t>(nclustersTPCfit)/static_cast<Double_t>(nfindableTPC);
+    Double_t clusterRatioTPCall = 0.0;
+    if((static_cast<Double_t>(nfindableTPC))>0.0) clusterRatioTPCall = static_cast<Double_t>(nclustersTPCall)/static_cast<Double_t>(nfindableTPC);
     UChar_t nclustersTPCshared = 0;
     Float_t ncrossedRowsTPC = track->GetTPCCrossedRows();
     const TBits &sharedTPC = track->GetTPCSharedMap();
@@ -545,11 +550,13 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "eta="                 << eta
                   << "phi="                 << phi
                   << "ntracklets="          << ntrackletsTRDPID
-                  << "nclustersTPC="        << nclustersTPC
+                  << "nclustersTPC="        << nclustersTPCfit
+		  << "nclustersTPCall="     << nclustersTPCall
                   << "nclustersTPCPID="     << nclustersTPCPID
                   << "nclustersTPCshared="  << nclustersTPCshared
                   << "ncrossedRowsTPC="     << ncrossedRowsTPC
-                  << "clusterRatioTPC="     << clusterRatioTPC
+                  << "clusterRatioTPC="     << clusterRatioTPCfit
+                  << "clusterRatioTPCall="  << clusterRatioTPCall
                   << "nclustersITS="        << nclustersITS
                   << "nclusters="           << nclustersTRD
                   << "chi2matching="        << chi2matching

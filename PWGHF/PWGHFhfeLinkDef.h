@@ -71,5 +71,7 @@
 #pragma link C++ class  AliAnalysisTaskHFEFlow+;
 
 #pragma link C++ class  AliSelectNonHFE+;
+#pragma link C++ class  AliHFENonPhotonicElectron+;
+#pragma link C++ class  AliHFEdebugTreeTaskAOD+;
 
 #endif
