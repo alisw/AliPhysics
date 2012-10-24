@@ -362,13 +362,26 @@ TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arr
     Int_t label = partReconstructed->GetLabel();
     if (label == 0)
     {
+      /*
+      Printf(">>> TPC only track:");
+      partReconstructed->Print();
+      partReconstructed->Dump();
+      Printf(">>> Global track:");
+      ((AliESDEvent*) obj)->GetTrack(ipart)->Dump();
+      Printf("Fake (TPC only): eta = %f, phi = %f, pT = %f, ncl = %d, dedx = %f", partReconstructed->Eta(), partReconstructed->Phi(), partReconstructed->Pt(), ((AliESDtrack*) partReconstructed)->GetTPCclusters(0), ((AliESDtrack*) partReconstructed)->GetTPCsignal());
+      Printf("Fake (global  ): eta = %f, phi = %f, pT = %f, ncl = %d, dedx = %f", ((AliESDEvent*) obj)->GetTrack(ipart)->Eta(), ((AliESDEvent*) obj)->GetTrack(ipart)->Phi(), ((AliESDEvent*) obj)->GetTrack(ipart)->Pt(), ((AliESDEvent*) obj)->GetTrack(ipart)->GetTPCclusters(0), ((AliESDEvent*) obj)->GetTrack(ipart)->GetTPCsignal());
+      */
       tracksFake->AddLast(partReconstructed);
       continue;
     }
-    if (hasOwnership)
-      delete partReconstructed;
+
     AliVParticle* partOriginal = ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
-    if (!partOriginal)continue;
+    if (!partOriginal)
+    {
+      if (hasOwnership)
+	delete partReconstructed;
+      continue;
+    }
 
     tracksReconstructed->AddLast(partReconstructed);
     tracksOriginal->AddLast(partOriginal);
