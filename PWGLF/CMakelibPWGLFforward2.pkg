@@ -114,6 +114,7 @@ target_link_libraries(runTrain2
   -lSTEERBase -lESD -lAOD -lOADB -lANALYSIS -lANALYSISalice)
 install(TARGETS runTrain2 
   RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
+add_dependencies(runTrain2 STEERBase ESD AOD OADB ANALYSIS ANALYSISalice)
 
 # --------------------------------------------------------------------
 # Extra targets 
