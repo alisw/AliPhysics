@@ -210,8 +210,6 @@ void AliITSUSimulationPix::DigitiseModule(AliITSUModule *mod,Int_t /*mask*/, Int
 void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
 {
   // Does the charge distributions using Gaussian diffusion charge charing.
-  const Double_t kmictocm = 1.0e-4; // convert microns to cm.
-  const Double_t kcmtomic = 1.e4;
   const Double_t kBunchLenght = 25e-9; // LHC clock
   Int_t nhits = mod->GetNHits();
   if (!nhits) return;
@@ -221,7 +219,7 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
   Float_t x,y,z;  // keep coordinates float (required by AliSegmentation)
   Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
   Double_t t,tp,st,dt=0.2,el,sig,sigx,sigz,fda;
-  Double_t thick = 0.5*kmictocm*fSeg->Dy();  // Half Thickness
+  Double_t thick = 0.5*fSeg->Dy();  // Half Thickness
   fSimuParam->GetPixSigmaDiffusionAsymmetry(fda);
   //
   for (h=0;h<nhits;h++) {
@@ -233,9 +231,9 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
     if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
     st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) {
-      st = (Double_t)((Int_t)(st*kcmtomic)); // number of microns
+      st = (Double_t)((Int_t)(st*1e4)); // number of microns
       if (st<=1.0) st = 1.0;
-      dt = 1.0/st;
+      dt = 1.0/st;               // RS TODO: do we need 1 micron steps?
       for (t=0.0;t<1.0;t+=dt) { // Integrate over t
 	tp  = t+0.5*dt;
 	x   = x0+x1*tp;
@@ -298,7 +296,6 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
   //    none.
   // Return:
   //    none.
-  const Double_t kmictocm = 1.0e-4; // convert microns to cm.
   const Int_t kn10=10;
   const Double_t kti[kn10]={7.443716945e-3,2.166976971e-1,3.397047841e-1,
 			    4.325316833e-1,4.869532643e-1,5.130467358e-1,
@@ -318,7 +315,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
   Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
   Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
   Double_t t,st,el,sig,sigx,sigz,fda,de=0.0,ld=0.0;
-  Double_t thick = 0.5*kmictocm*fSeg->Dy();  // Half thickness
+  Double_t thick = 0.5*fSeg->Dy();  // Half thickness
   fSimuParam->GetPixSigmaDiffusionAsymmetry(fda);
   //
   for (h=0;h<nhits;h++) {
@@ -410,7 +407,6 @@ void AliITSUSimulationPix::SpreadCharge(Double_t x0,Double_t z0,
    //     none.
    const Int_t knx = 3,knz = 2;
    const Double_t kRoot2 = 1.414213562; // Sqrt(2).
-   const Double_t kmictocm = 1.0e-4; // convert microns to cm.
    Int_t ix,iz,ixs,ixe,izs,ize;
    Float_t x,z;  // keep coordinates float (required by AliSegmentation)
    Double_t s,sp,x1,x2,z1,z2; 
@@ -428,8 +424,8 @@ void AliITSUSimulationPix::SpreadCharge(Double_t x0,Double_t z0,
    for (ix=ixs;ix<=ixe;ix++) 
      for (iz=izs;iz<=ize;iz++) {
        fSeg->DetToLocal(ix,iz,x,z); // pixel center
-       double dxi = 0.5*kmictocm*fSeg->Dpx(ix);
-       double dzi = 0.5*kmictocm*fSeg->Dpz(iz);
+       double dxi = 0.5*fSeg->Dpx(ix);
+       double dzi = 0.5*fSeg->Dpz(iz);
        x1  = x;
        z1  = z;
        x2  = x1 + dxi; // Upper
@@ -477,7 +473,6 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
   //     none.
   const Int_t knx = 3,knz = 3; // RS: TO TUNE
   const Double_t kRoot2 = 1.414213562; // Sqrt(2).
-  const Double_t kmictocm = 1.0e-4; // convert microns to cm.
   Int_t ix,iz,ixs,ixe,izs,ize;
   Float_t x,z;   // keep coordinates float (required by AliSegmentation)
   Double_t s,spx,spz,x1,x2,z1,z2; 
@@ -497,8 +492,8 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
   for (ix=ixs;ix<=ixe;ix++) 
     for (iz=izs;iz<=ize;iz++) {
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
-      double dxi = 0.5*kmictocm*fSeg->Dpx(ix);
-      double dzi = 0.5*kmictocm*fSeg->Dpz(iz);
+      double dxi = 0.5*fSeg->Dpx(ix);
+      double dzi = 0.5*fSeg->Dpz(iz);
       x1  = x;
       z1  = z;
       x2  = x1 + dxi; // Upper

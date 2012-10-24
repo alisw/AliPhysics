@@ -59,7 +59,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
   ,fNRow(nrow)
   ,fNCol(ncol)
 {
-  // Default constructor, sizes in microns
+  // Default constructor, sizes in cm
   if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeDetTypeID(id) );
   fChipDZ = (fNColPerChip-2)*fPitchZ + fPitchZLftCol + fPitchZRgtCol;
   SetDetSize( fNRow*fPitchX /*+fGuardTop+fGuardBot*/,
@@ -72,7 +72,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
-  //  expects x, z in microns. RS: TO CHECK: why from 1
+  //  expects x, z in cm. RS: TO CHECK: why from 1
   ix = int(x/fPitchX) + 1;     
   iz = int(Z2Col(z)) + 1;
   //  
@@ -85,7 +85,7 @@ void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) 
 void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 {
   //  local transformation of real local coordinates (x,z)
-  //  expects x, z in microns
+  //  expects x, z in cm
   x /= fPitchX;
   z = Z2Col(z);
   //
@@ -95,7 +95,7 @@ void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
 {
   // Transform from pixel to real local coordinates
-  // returns x, z in microns. RS: TO CHECK if indexing starts from 1 or 0 
+  // returns x, z in cm. RS: TO CHECK if indexing starts from 1 or 0 
   x = (ix>0) ? Float_t((ix-0.5)*fPitchX) : Float_t((ix+0.5)*fPitchX);
   z = Col2Z(iz);
   //
@@ -235,8 +235,8 @@ Bool_t AliITSUSegmentationPix::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &i
   //   kTRUE if point x,z is inside sensitive volume, kFALSE otherwise.
   //   A value of -1 for ix or iz indecates that this point is outside of the
   //   detector segmentation as defined.
-  x = x*kCM2MC+0.5*Dx();
-  z = z*kCM2MC+0.5*Dz();
+  x += 0.5*Dx();
+  z += 0.5*Dz();
   ix = iz = -1;
   if(x<0 || x>Dx()) return kFALSE; // outside x range.
   if(z<0 || z>Dz()) return kFALSE; // outside z range.
@@ -261,13 +261,13 @@ void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
 // If ix and or iz is outside of the segmentation range a value of -0.5*Dx()
 // or -0.5*Dz() is returned.
   //
-  x = -0.5/kCM2MC*Dx(); // default value.
-  z = -0.5/kCM2MC*Dz(); // default value.
+  x = -0.5*Dx(); // default value.
+  z = -0.5*Dz(); // default value.
   // RS: to check: why we don't do strict check for [0:n)
   if(ix<0 || ix>fNRow) return; // outside of detector 
   if(iz<0 || iz>fNCol) return; // outside of detctor
-  x += (ix+0.5)*fPitchX*(1./kCM2MC);       // RS: we go to the center of the pad, i.e. + pitch/2, not to the boundary as in SPD
-  z += Col2Z(iz)*(1./kCM2MC); 
+  x += (ix+0.5)*fPitchX;       // RS: we go to the center of the pad, i.e. + pitch/2, not to the boundary as in SPD
+  z += Col2Z(iz); 
   return; // Found x and z, return.
 }
 
@@ -294,12 +294,12 @@ void AliITSUSegmentationPix::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double
   DetToLocal(ix,iz,x,z);
   //
   if( ix<0 || ix>=fNRow || iz<0 || iz>=fNCol) {
-    xl = xu = -0.5/kCM2MC*Dx(); // default value.
-    zl = zu = -0.5/kCM2MC*Dz(); // default value.
+    xl = xu = -0.5*Dx(); // default value.
+    zl = zu = -0.5*Dz(); // default value.
     return; // outside of detctor
   }
-  float zpitchH = Dpz(iz)/2./kCM2MC;
-  float xpitchH = fPitchX/2./kCM2MC;
+  float zpitchH = Dpz(iz)*0.5;
+  float xpitchH = fPitchX*0.5;
   xl -= xpitchH;
   xu += xpitchH;
   zl -= zpitchH;
@@ -335,8 +335,6 @@ Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, 
 {
   // returns the number of chips containing a road defined by given local coordinate limits
   //
-  const Float_t kconv = 1./kCM2MC; // converts microns to cm.
-  //
   if (zmin>zmax) {
     AliWarning("Bad coordinate limits: zmin>zmax!");
     return -1;
@@ -344,8 +342,8 @@ Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, 
   //
   Int_t nChipInW = 0;
   //
-  Float_t zminDet = -0.5*kconv*Dz();
-  Float_t zmaxDet =  0.5*kconv*Dz();
+  Float_t zminDet = -0.5*Dz();
+  Float_t zmaxDet =  0.5*Dz();
   if(zmin<zminDet) zmin=zminDet;
   if(zmax>zmaxDet) zmax=zmaxDet;
 

@@ -10,7 +10,6 @@
 class AliITSUSegmentationPix :
 public AliITSsegmentation {
  public:
-  enum {kCM2MC=10000};
   AliITSUSegmentationPix(UInt_t id=0, int nchips=0,int ncol=0,int nrow=0,
 			   double pitchX=0,double pitchZ=0,
 			   double thickness=0,
@@ -59,7 +58,7 @@ public AliITSsegmentation {
   virtual Int_t                    GetDetTypeID()              const {return GetUniqueID();}
   //
   Bool_t                           Store(const char* outf);
-  static AliITSUSegmentationPix* LoadWithID(UInt_t id, const char* inpf);
+  static AliITSUSegmentationPix*   LoadWithID(UInt_t id, const char* inpf);
   static void                      LoadSegmentations(TObjArray* dest, const char* inpf);
   //
  protected:

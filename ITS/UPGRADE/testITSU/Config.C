@@ -297,27 +297,27 @@ void Config()
 								5,    // chips per module
 								1500, // ncols (total for module)
 								750,  //835,  // nrows
-								20.,  // default row pitch in microns
-								20.,  // default col pitch in microns
-								300.  // sensor thickness in microns
+								20.e-4,  // default row pitch in cm
+								20.e-4,  // default col pitch in cm
+								300.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
 								5*2,    // chips per module
 								1500, // ncols (total for module)
 								750*2,//835,  // nrows
-								20.,  // default row pitch in microns
-								20.,  // default col pitch in microns
-								300.  // sensor thickness in microns
+								20.e-4,  // default row pitch in cm
+								20.e-4,  // default col pitch in cm
+								300.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
 								5*2,    // chips per module
 								1500, // ncols (total for module)
 								750*2,//835,  // nrows
-								20.,  // default row pitch in microns
-								20.,  // default col pitch in microns
-								300.   // sensor thickness in microns
+								20.e-4,  // default row pitch in cm
+								20.e-4,  // default col pitch in cm
+								300.e-4   // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //
@@ -325,32 +325,31 @@ void Config()
       // sum of insensitive boarder around module (in cm)
       Float_t deadX = 0.1;  // on each side
       Float_t deadZ = 0.01; // on each side
-      const double kUM2CM=1e-4;
       double tilt = 10.;     double thickLr = 0.05;
       //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
       //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
       AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
       nmod = 9;
       nlad = 12;
-      ITS->DefineLayerTurbo(0, 2.2,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(0, 2.2,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 16;
-      ITS->DefineLayerTurbo(1, 2.8,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(1, 2.8,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 20;
-      ITS->DefineLayerTurbo(2, 3.6,  nmod*(seg0->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg0->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg0->Dy()*kUM2CM, seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(2, 3.6,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(3, 20.0, nmod*(seg1->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg1->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(3, 20.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(4, 22.0, nmod*(seg1->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg1->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg1->Dy()*kUM2CM, seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(4, 22.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(5, 40.0, nmod*(seg2->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg2->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg2->Dy()*kUM2CM, seg2->GetDetTypeID()); //41 creates ovl!
+      ITS->DefineLayerTurbo(5, 40.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(6, 43.0, nmod*(seg2->Dz()*kUM2CM+deadZ*2), nlad, nmod, seg2->Dx()*kUM2CM+deadX*2, tilt, thickLr, seg2->Dy()*kUM2CM, seg2->GetDetTypeID()); 
+      ITS->DefineLayerTurbo(6, 43.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
       //
 
     }
