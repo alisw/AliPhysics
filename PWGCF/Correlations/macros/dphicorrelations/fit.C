@@ -972,9 +972,12 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   for (Int_t i=projx3->FindBin(-momentFitLimit); i<=projx3->FindBin(momentFitLimit);i++)
   {
 //    Float_t temp = chi2;
-    chi2 += TMath::Power((projx3->GetBinContent(i)-func4phi->Eval(projx3->GetBinCenter(i)))/projx3->GetBinError(i),2);
-//    cerr << i << "\t" << projx3->GetBinCenter(i) << "\t" << chi2-temp << endl;
-    ndf++;
+    if (projx3->GetBinError(i) > 0)
+    {
+      chi2 += TMath::Power((projx3->GetBinContent(i)-func4phi->Eval(projx3->GetBinCenter(i)))/projx3->GetBinError(i),2);
+      //    cerr << i << "\t" << projx3->GetBinCenter(i) << "\t" << chi2-temp << endl;
+      ndf++;
+    }
   }
   if (!oneGaussian) ndf = ndf - 4;
   else ndf = ndf - 2;
@@ -4114,7 +4117,7 @@ void v2DependencyToy(const char* outputFileName = "hist.root")
       func2->FixParameter(0,func->Eval(-0.9+j*0.06));
       funcArray[j] = func2;
     }
-    Int_t nPart = 100000;
+    Int_t nPart = 10;
     Double_t eta1[nPart];
     Double_t phi1[nPart];
     Double_t phi1m[nPart];
@@ -4611,7 +4614,8 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   {
     for (Int_t y = 0; y<=hist1->GetNbinsY();y++)
     {
-      ratio->SetBinContent(x,y,hist1->GetBinContent(x,y)/hist2->GetBinContent(x,y));
+      if (hist2->GetBinContent(x,y) > 0)
+	ratio->SetBinContent(x,y,hist1->GetBinContent(x,y)/hist2->GetBinContent(x,y));
     }
   }
   c->cd(1);

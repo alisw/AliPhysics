@@ -901,14 +901,32 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     trackMixedAll->GetAxis(2)->SetRange(0, -1);
     TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
     
-    // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi)
+    // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
     Double_t mixedNormError = 0;
-    Double_t mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
-    Int_t nBinsMixedNorm = (tracksMixed->GetNbinsX()) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
-/*    Double_t mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
-    Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);*/
+    Double_t mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetYaxis()->FindBin(-0.01)-1, tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+    Double_t mixedNormError2 = 0;
+    Double_t mixedNorm2 = tracksMixed->IntegralAndError(tracksMixed->GetYaxis()->FindBin(0.01)+1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError2);
+    
+    if (mixedNormError == 0 || mixedNormError2 == 0)
+    {
+      Printf("ERROR: Skipping multiplicity %d because mixed event is empty", multBin);
+      continue;
+    }
+    
+    Int_t nBinsMixedNorm = (tracksMixed->GetYaxis()->FindBin(-0.01) - 1 - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
     mixedNorm /= nBinsMixedNorm;
     mixedNormError /= nBinsMixedNorm;
+
+    Int_t nBinsMixedNorm2 = (tracksMixed->GetNbinsX() - tracksMixed->GetYaxis()->FindBin(0.01) - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+    mixedNorm2 /= nBinsMixedNorm2;
+    mixedNormError2 /= nBinsMixedNorm2;
+
+    mixedNorm = mixedNorm / mixedNormError / mixedNormError + mixedNorm2 / mixedNormError2 / mixedNormError2;
+    mixedNormError = TMath::Sqrt(1.0 / (1.0 / mixedNormError / mixedNormError + 1.0 / mixedNormError2 / mixedNormError2));
+    mixedNorm *= mixedNormError * mixedNormError;
+    
+/*    Double_t mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+    Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);*/
 
     delete tracksMixed;
     
@@ -928,6 +946,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       Printf("ERROR: Skipping multiplicity %d because mixed event is empty at (0,0)", multBin);
       continue;
     }
+    
+//     Printf("Norm: %f +- %f", mixedNorm, mixedNormError);
 
 //     normParameters->Fill(mixedNorm);
       
