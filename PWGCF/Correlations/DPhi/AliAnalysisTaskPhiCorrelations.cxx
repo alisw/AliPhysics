@@ -90,6 +90,7 @@ fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
 fTwoTrackEfficiencyCut(0),
 fUseVtxAxis(kFALSE),
+fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
 // pointers to UE classes
@@ -214,9 +215,11 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   	}
 
   // Initialize class to handle histograms 
-  const char* histType = "4R";
+  TString histType = "4R";
   if (fUseVtxAxis)
     histType = "5R";
+  if (fCourseCentralityBinning)
+    histType += "C";
   fHistos = new AliUEHistograms("AliUEHistogramsSame", histType);
   fHistosMixed = new AliUEHistograms("AliUEHistogramsMixed", histType);
   
@@ -686,14 +689,27 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   {
     if (fCentralityMethod == "ZNA_MANUAL")
     {
-      // code from Chiara O (23.10.12)
-      const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
-      Float_t znacut[3] = {680., 562., 412.};
+      Bool_t zna = kFALSE;
+      for(Int_t j = 0; j < 4; ++j) {
+	if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
+	  zna = kTRUE;
+	}
+      }
 
-      if(fZNAtower[0]>znacut[0]) centrality = 1;
-      else if(fZNAtower[0]<=znacut[0] && fZNAtower[0]>znacut[1]) centrality = 21;
-      else if(fZNAtower[0]<=znacut[1] && fZNAtower[0]>znacut[2]) centrality = 41;
-      else if(fZNAtower[0]<=znacut[2]) centrality = 61;
+//       Printf("%d %f", zna, fZNAtower[0]);
+      if (zna)
+      {
+	// code from Chiara O (23.10.12)
+	const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
+	Float_t znacut[3] = {680., 562., 412.};
+
+	if(fZNAtower[0]>znacut[0]) centrality = 1;
+	else if(fZNAtower[0]<=znacut[0] && fZNAtower[0]>znacut[1]) centrality = 21;
+	else if(fZNAtower[0]<=znacut[1] && fZNAtower[0]>znacut[2]) centrality = 41;
+	else if(fZNAtower[0]<=znacut[2]) centrality = 61;
+      }
+      else
+	centrality = -1;
     }
     else
     {

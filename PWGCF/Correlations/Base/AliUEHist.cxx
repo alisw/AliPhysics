@@ -158,6 +158,9 @@ AliUEHist::AliUEHist(const char* reqHist) :
   const Int_t kNCentralityBins = 5 + 1 + 9;
   Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
   
+  const Int_t kNCentralityBinsCourse = 5;
+  Double_t centralityBinsCourse[] = { 0, 20, 40, 60, 80, 100.1 };
+
   // particle species
   const Int_t kNSpeciesBins = 4; // pi, K, p, rest
   Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
@@ -168,6 +171,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   Bool_t useVtxAxis = kFALSE;
   Bool_t useTTRBinning = kFALSE;
+  Bool_t useCourseCentralityBinning = kFALSE;
   
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
@@ -187,6 +191,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
       useVtxAxis = kTRUE;
     if (TString(reqHist).Contains("TTR"))
       useTTRBinning = kTRUE;
+    if (TString(reqHist).Contains("Course"))
+      useCourseCentralityBinning = kTRUE;
     
     reqHist = "NumberDensityPhiCentrality";
     fHistogramType = reqHist;
@@ -236,8 +242,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     trackBins[2] = leadingpTBins2;
     trackAxisTitle[2] = "leading p_{T} (GeV/c)";
     
-    trackBins[3] = centralityBins;
-    iTrackBin[3] = kNCentralityBins;
+    trackBins[3] = (useCourseCentralityBinning) ? centralityBinsCourse : centralityBins;
+    iTrackBin[3] = (useCourseCentralityBinning) ? kNCentralityBinsCourse : kNCentralityBins;
     trackAxisTitle[3] = "centrality";
   
     iTrackBin[4] = (useTTRBinning) ? kNLeadingPhiBinsTTR : kNLeadingPhiBins;
@@ -927,7 +933,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 4; vertexBin <= 4; vertexBin++)
+//     for (Int_t vertexBin = 3; vertexBin <= 5; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -957,8 +963,34 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 	  
 // 	new TCanvas; tracksSame->DrawClone("SURF1");
 // 	new TCanvas; tracksMixed->DrawClone("SURF1");
+
+	// some code to judge the relative contribution of the different correlation functions to the overall uncertainty
+	Double_t sums[] = { 0, 0, 0 };
+	Double_t errors[] = { 0, 0, 0 };
+
+	for (Int_t x=1; x<=tracksSame->GetNbinsX(); x++)
+	  for (Int_t y=1; y<=tracksSame->GetNbinsY(); y++)
+	  {
+	    sums[0] += tracksSame->GetBinContent(x, y);
+	    errors[0] += tracksSame->GetBinError(x, y);
+	    sums[1] += tracksMixed->GetBinContent(x, y);
+	    errors[1] += tracksMixed->GetBinError(x, y);
+	  }
+
 	tracksSame->Divide(tracksMixed);
 	  
+	for (Int_t x=1; x<=tracksSame->GetNbinsX(); x++)
+	  for (Int_t y=1; y<=tracksSame->GetNbinsY(); y++)
+	  {
+	    sums[2] += tracksSame->GetBinContent(x, y);
+	    errors[2] += tracksSame->GetBinError(x, y);
+	  }
+	  
+	for (Int_t x=0; x<3; x++)
+	  if (sums[x] > 0)
+	    errors[x] /= sums[x];
+	  
+	Printf("The correlation function %d %d has uncertainties %f %f %f (Ratio S/M %f)", multBin, vertexBin, errors[0], errors[1], errors[2], errors[0] / errors[1]);
 	// code to draw contributions
 	/*
 	TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
@@ -985,7 +1017,19 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   }
 
   if (totalTracks) {
-    Printf("Dividing %f tracks by %d events (%d correlation function(s))", totalTracks->Integral(), totalEvents, nCorrelationFunctions);
+    Double_t sums[] = { 0, 0, 0 };
+    Double_t errors[] = { 0, 0, 0 };
+
+    for (Int_t x=1; x<=totalTracks->GetNbinsX(); x++)
+      for (Int_t y=1; y<=totalTracks->GetNbinsY(); y++)
+      {
+	sums[0] += totalTracks->GetBinContent(x, y);
+	errors[0] += totalTracks->GetBinError(x, y);
+      }
+    if (sums[0] > 0)
+      errors[0] /= sums[0];
+    
+    Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
     if (totalEvents > 0)
       totalTracks->Scale(1.0 / totalEvents);
   
@@ -2601,10 +2645,11 @@ THnBase* AliUEHist::ChangeToThn(THnBase* sparse)
   return tmpTHn;
 }
 
-void AliUEHist::CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Float_t targetValue)
+void AliUEHist::CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Float_t targetValue, Float_t from, Float_t to)
 {
   //
   // loops through the histogram and moves all entries to a single point <targetValue> on the axis <axis>
+  // if <from> and <to> are set, then moving only occurs if value on <axis> is betweem <from> and <to>
   //
 
   if (grid->GetNdimensions() > 6)
@@ -2613,13 +2658,23 @@ void AliUEHist::CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Floa
   Int_t targetBin = grid->GetAxis(axis)->FindBin(targetValue);
   AliInfo(Form("Target bin on axis %d with value %f is %d", axis, targetValue, targetBin));
   
+  Int_t fromBin = 1;
+  Int_t toBin = grid->GetAxis(axis)->GetNbins();
+  if (to > from)
+  {
+    fromBin = grid->GetAxis(axis)->FindBin(from);
+    toBin = grid->GetAxis(axis)->FindBin(to);
+    AliInfo(Form("Only condensing between bin %d and %d", fromBin, toBin));
+  }
+  
   Int_t bins[6];
   for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
   {
     Double_t value = grid->GetBinContent(binIdx, bins);
     Double_t error = grid->GetBinError(binIdx);
     
-    bins[axis] = targetBin;
+    if (bins[axis] >= fromBin && bins[axis] <= toBin)
+      bins[axis] = targetBin;
 
     value += target->GetBinContent(bins);
     error = TMath::Sqrt(error * error + target->GetBinError(bins) * target->GetBinError(bins));
@@ -2629,7 +2684,7 @@ void AliUEHist::CondenseBin(THnSparse* grid, THnSparse* target, Int_t axis, Floa
   }
 }
 
-void AliUEHist::CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float_t targetValue, CFStep tmpStep)
+void AliUEHist::CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float_t targetValue, Float_t from, Float_t to, CFStep tmpStep)
 {
   // loops through the histogram at <step> and moves all entries to a single point <targetValue> on the axes 
   // <trackAxis> and <eventAxis>. <tmpStep> is used to temporary store the data
@@ -2661,9 +2716,9 @@ void AliUEHist::CondenseBin(CFStep step, Int_t trackAxis, Int_t eventAxis, Float
     THnSparse* grid = fTrackHist[i]->GetGrid(tmpStep)->GetGrid();
     THnSparse* target = fTrackHist[i]->GetGrid(step)->GetGrid();
     
-    CondenseBin(grid, target, trackAxis, targetValue);
+    CondenseBin(grid, target, trackAxis, targetValue, from, to);
   }
-  CondenseBin(fEventHist->GetGrid(tmpStep)->GetGrid(), fEventHist->GetGrid(step)->GetGrid(), eventAxis, targetValue);
+  CondenseBin(fEventHist->GetGrid(tmpStep)->GetGrid(), fEventHist->GetGrid(step)->GetGrid(), eventAxis, targetValue, from, to);
   
   // reset tmpStep
   fEventHist->GetGrid(tmpStep)->GetGrid()->Reset();
