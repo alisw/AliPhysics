@@ -44,7 +44,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_mccorr.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2");
+    fHelper->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",

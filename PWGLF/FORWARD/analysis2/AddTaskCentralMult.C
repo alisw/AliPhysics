@@ -27,7 +27,8 @@ AddTaskCentralMult(Bool_t      mc=false,
 		   UShort_t    sys=0, 
 		   UShort_t    sNN=0, 
 		   Short_t     field=0, 
-		   const char* config="CentralAODConfig.C")
+		   const char* config="CentralAODConfig.C", 
+		   const char* corrs=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -39,20 +40,28 @@ AddTaskCentralMult(Bool_t      mc=false,
     return NULL;
   }   
 
-  // --- Make the task and add it to the manager ---------------------
+  // --- Make the task -----------------------------------------------
   AliCentralMultiplicityTask* task = 0;
   if (!mc) task = new AliCentralMultiplicityTask("Central");
   else     task = new AliCentralMCMultiplicityTask("Central");
-  if(sys>0 && sNN > 0) {
-    task->GetManager().Init(sys, sNN, field);
-    if (!task->GetManager().HasSecondaryCorrection()) 
-      Fatal("AddTaskCentralMult", "No secondary correction defined!");
-    if (!task->GetManager().HasAcceptanceCorrection()) 
-      Fatal("AddTaskCentralMult", "No acceptance correction defined!");
-  }
   task->Configure(config);
   mgr->AddTask(task);
 
+  // --- Set optional corrections path -------------------------------
+  AliCentralMultiplicityTask::Manager& cm = task->GetManager();
+  if (corrs && corrs[0] != '\0') { 
+    cm->SetAcceptancePath(Form("%s/CentralAcceptance", corrs));
+    cm->SetSecMapPath(Form("%s/CentralSecMap", corrs));
+  }
+
+  // --- Prime the corrections ---------------------------------------
+  if(sys>0 && sNN > 0) {
+    cm.Init(sys, sNN, field);
+    if (!cm.HasSecondaryCorrection()) 
+      Fatal("AddTaskCentralMult", "No secondary correction defined!");
+    if (!cm.HasAcceptanceCorrection()) 
+      Fatal("AddTaskCentralMult", "No acceptance correction defined!");
+  }
 
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();

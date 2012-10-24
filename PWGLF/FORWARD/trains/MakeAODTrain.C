@@ -39,6 +39,7 @@ public:
     fOptions.Add("cent",  "Use centrality");
     fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
+    fOptions.Add("corr", "DIR", "Corrections dir", "");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -75,17 +76,19 @@ protected:
     UShort_t sys = fOptions.AsInt("sys", 0);
     UShort_t sNN = fOptions.AsInt("snn", 0);
     UShort_t fld = fOptions.AsInt("field", 0);
+    TString  cor = "";
+    if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\")", 
-		      mc, sys, sNN, fld, fwdConfig.Data()));
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\",\"%s\")", 
+		      mc, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig));
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,\"%s\")", 
-		      mc, sys, sNN, fld, cenConfig.Data()));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,\"%s\",\"%s\")", 
+		      mc, sys, sNN, fld, cenConfig.Data(), cor.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig));
 
     // --- Add MC particle task --------------------------------------
