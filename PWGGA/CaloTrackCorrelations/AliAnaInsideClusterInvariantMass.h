@@ -59,6 +59,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTMResidualHistograms()        { fFillTMResidualHisto = kTRUE  ; }
   void         SwitchOffFillTMResidualHistograms()       { fFillTMResidualHisto = kFALSE ; }
   
+  void         SwitchOnMCFractionHistograms()            { fFillMCFractionHisto = kTRUE  ; }
+  void         SwitchOffMCFractionHistograms()           { fFillMCFractionHisto = kFALSE ; }
+
+  
   //For histograms
   enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
                  kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6 };
@@ -74,13 +78,26 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillAngleHisto;        // Fill splitted clusters angle histograms
   Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
-  
+  Bool_t       fFillMCFractionHisto ;  // Fill MC energy fraction histos
+
   //Histograms
   
   TH2F       * fhMassNLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
   TH2F       * fhMassNLocMax2[7][2]  ; //! Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
   TH2F       * fhMassNLocMaxN[7][2]  ; //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
 
+  TH2F       * fhAsymNLocMax1[2]     ; //! Asymmetry of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
+  TH2F       * fhAsymNLocMax2[2]     ; //! Asymmetry of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhAsymNLocMaxN[2]     ; //! Asymmetry of >2 cells local maxima vs E, 1-6 for different MC particle types
+  
+  TH2F       * fhMassM02CutNLocMax1  ; //! M02(E) selection, not matched, Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
+  TH2F       * fhMassM02CutNLocMax2  ; //! M02(E) selection, not matched, Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhMassM02CutNLocMaxN  ; //! M02(E) selection, not matched, Mass of >2 cells local maxima vs E, 1-6 for different MC particle types  
+
+  TH2F       * fhMassSplitECutNLocMax1 ; //! 85% of split energy, not matched, Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
+  TH2F       * fhMassSplitECutNLocMax2 ; //! 85% of split energy, not matched, Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhMassSplitECutNLocMaxN ; //! 85% of split energy, not matched, Mass of >2 cells local maxima vs E, 1-6 for different MC particle types    
+  
   TH2F       * fhMassM02NLocMax1[7][2]  ; //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
   TH2F       * fhMassM02NLocMax2[7][2]  ; //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
   TH2F       * fhMassM02NLocMaxN[7][2]  ; //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
@@ -202,10 +219,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhTrackMatchedDEtaLocMaxN[7] ; //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
   TH2F       * fhTrackMatchedDPhiLocMaxN[7] ; //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
   
-  AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
-  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
+  AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
+  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,14)
+  ClassDef(AliAnaInsideClusterInvariantMass,16)
   
 } ;
 
