@@ -37,9 +37,34 @@ ExtractSecMap(const char* fname,
     Error("ExtractSecMap", "Couldn't open %s", fname);
     return;
   }
+  if (sys <= 0 || sys > 3) { 
+    TList* forward = static_cast<TList*>(file->Get("ForwardSums"));
+    if (!forward) { 
+      Error("ExtractSecMap", "Couldn't get forward list from %s", fname);
+      return;
+    }
+    TList* insp = static_cast<TList*>(forward->FindObject("fmdEventInspector"));
+    if (!insp) { 
+      Error("ExtractSecMap", "Couldn't get event inspector list from %s",fname);
+      return;
+    }
+    TObject* oSys = insp->FindObject("sys");
+    TObject* oSNN = insp->FindObject("sNN");
+    TObject* oFld = insp->FindObject("field");
+    if (oSys) sys   = oSys->GetUniqueID();
+    if (oSNN) sNN   = oSNN->GetUniqueID();
+    if (oFld) field = oFld->GetUniqueID();
+  }
+  if (sys <= 0 || sys > 3) {
+    Error("ExtractSecMap", "Couldn't get system type (%d), "
+	  "collision energy (%d), "
+	  "and/or field strength (%d)", sys, sNN, field);
+    return;
+  }
 
   ExtractFMDSecMap(file, sys, sNN, field);
   ExtractSPDSecMap(file, sys, sNN, field);
+  ExtractSPDAcceptance(file, sys, sNN, field);
 }
 
 //____________________________________________________________________
@@ -109,8 +134,44 @@ ExtractSPDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
   AliCentralMultiplicityTask::Manager* mgr = new 
     AliCentralMultiplicityTask::Manager;
   // mgr->Dump();
-  mgr->Print();
+  // mgr->Print();
   mgr->WriteFile(0, sys, sNN, field, spdCorr, false);
+}
+//____________________________________________________________________
+/** 
+ * Extract and copy SPD secondary map to file 
+ * 
+ * @param file  Input file
+ * @param sys   Collision system (1:pp, 2:PbPb)
+ * @param sNN   Center of mass energy (GeV) per nucleon
+ * @param field L3 magnetic field
+ *
+ * @ingroup pwglf_forward_scripts_corr
+ */
+void     
+ExtractSPDAcceptance(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
+{
+  TList* central = static_cast<TList*>(file->Get("CentralResults"));
+  // static_cast<TList*>(file->Get("PWGLFcentralDnDeta/Central"));
+  if (!central) { 
+    Error("ExtractAcceptance", "Couldn't get central list from %s", fname);
+    return;
+  }
+  
+  TString n(AliCentralCorrAcceptance::Class()->GetName());
+  TObject* spdCorr  = central->FindObject(n);
+  if (!spdCorr) { 
+    Error("ExtractAcceptance", "Couldn't get central correction object %s", 
+	  n.Data());
+    return;
+  }
+
+
+  AliCentralMultiplicityTask::Manager* mgr = new 
+    AliCentralMultiplicityTask::Manager;
+  // mgr->Dump();
+  // mgr->Print();
+  mgr->WriteFile(1, sys, sNN, field, spdCorr, false);
 }
     
   
