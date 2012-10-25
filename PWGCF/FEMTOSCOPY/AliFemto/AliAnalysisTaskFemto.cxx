@@ -425,7 +425,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
 
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
-  if(!isSelected) {cout << "AliAnalysisTaskFemto: is not selected" << endl; return;}
+  if(!isSelected) {//cout << "AliAnalysisTaskFemto: is not selected" << endl; 
+    return;}
 
 
 

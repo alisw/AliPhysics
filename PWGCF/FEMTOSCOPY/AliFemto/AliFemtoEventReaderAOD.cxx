@@ -29,7 +29,6 @@
 
 #include "AliAODpidUtil.h"
 
-
 ClassImp(AliFemtoEventReaderAOD)
 
 #if !(ST_NO_NAMESPACES)
@@ -603,6 +602,10 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	}
 
 	double pxyz[3];
+
+	//AliExternalTrackParam *param = new AliExternalTrackParam(*aodtrack->GetInnerParam());
+	trackCopy->SetInnerMomentum(aodtrack->GetTPCmomentum());
+
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
 	// Check the sanity of the tracks - reject zero momentum tracks

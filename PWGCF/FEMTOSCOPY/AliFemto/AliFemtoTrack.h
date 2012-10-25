@@ -50,11 +50,18 @@ public:
   
   AliFemtoThreeVector P() const;
   float Pt() const;
+  float InnerMomentum() const;
+
   const AliFmPhysicalHelixD& Helix() const;
   int TrackId() const;
   long int Flags() const;
   int Label()const;
   float ImpactD()const;
+
+  float ImpactDprim()const;
+  float ImpactDweak()const;
+  float ImpactDmat()const;
+
   float ImpactZ()const;
   float Cdd() const;
   float Cdz() const;
@@ -100,11 +107,17 @@ public:
    
   void SetP(const AliFemtoThreeVector& p);
   void SetPt(const float& x);
+  void SetInnerMomentum(const float& x);
   void SetHelix(const AliFmPhysicalHelixD& h);
   void SetTrackId(const int& s);
   void SetFlags(const long int& i);
   void SetLabel(const int& i);
   void SetImpactD(const float& x);
+
+  void SetImpactDprim(const float& x);
+  void SetImpactDweak(const float& x);
+  void SetImpactDmat(const float& x);
+
   void SetImpactZ(const float& x);
   void SetCdd(const float& x);
   void SetCdz(const float& x);
@@ -189,11 +202,18 @@ public:
 
   AliFemtoThreeVector fP; // track momentum
   float fPt;              // transverse momenta
+  float fInnerMomentum;    // *total* momentum at the *inner* wall of the TPC
+
   AliFmPhysicalHelixD fHelix; // track helix
   //alice stuff
   long int fFlags; //Reconsruction status flags
   int fLabel; //Track label  
   float fImpactD; //impact parameter in xy plane
+
+  float fImpactDprim; //impact parameter in xy plane
+  float fImpactDweak; //impact parameter in xy plane
+  float fImpactDmat; //impact parameter in xy plane
+
   float fImpactZ;//impacct parameter in z
   float fCdd,fCdz,fCzz;//covariance matrix of the impact parameters
   // ITS related track information
@@ -221,8 +241,6 @@ public:
   AliFemtoThreeVector fNominalTpcEntrancePoint; // Nominal track entrance point into TPC
   AliFemtoThreeVector fNominalTpcPoints[9];
   AliFemtoThreeVector fNominalTpcExitPoint;     // Nominal track exit point from TPC
-
-
 
   int   fKinkIndexes[3]; // Kink Index list
 

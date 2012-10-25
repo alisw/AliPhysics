@@ -41,7 +41,8 @@ AliFemtoV0::AliFemtoV0():
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
   fTPCMomentumPos(0), fTPCMomentumNeg(0),
   fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
-  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
+  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0), 
+  fImpactDprimPos(-999), fImpactDweakPos(-999), fImpactDmatPos(-999), fImpactDprimNeg(-999), fImpactDweakNeg(-999), fImpactDmatNeg(-999),
   fHiddenInfo(0)  /***/
 { 
   // Default empty constructor
@@ -92,7 +93,8 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
   fTPCMomentumPos(0), fTPCMomentumNeg(0),
   fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
-  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
+  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0), 
+  fImpactDprimPos(0), fImpactDweakPos(0), fImpactDmatPos(0), fImpactDprimNeg(0), fImpactDweakNeg(0), fImpactDmatNeg(0),
   fHiddenInfo(0)  /***/
 { 
   // copy constructor
@@ -188,6 +190,13 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
       fNominalTpcPointsNeg[i].SetY(v.fNominalTpcPointsNeg[i].y());
       fNominalTpcPointsNeg[i].SetZ(v.fNominalTpcPointsNeg[i].z());
     }
+
+  fImpactDprimPos = v.fImpactDprimPos;
+  fImpactDweakPos = v.fImpactDweakPos;
+  fImpactDmatPos = v.fImpactDmatPos;
+  fImpactDprimNeg = v.fImpactDprimNeg;
+  fImpactDweakNeg = v.fImpactDweakNeg;
+  fImpactDmatNeg = v.fImpactDmatNeg;
 
   fHiddenInfo = v.fHiddenInfo? v.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
   UpdateV0();
@@ -291,6 +300,12 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
       fNominalTpcPointsNeg[i].SetZ(aV0.fNominalTpcPointsNeg[i].z());
     }
 
+  fImpactDprimPos = aV0.fImpactDprimPos;
+  fImpactDweakPos = aV0.fImpactDweakPos;
+  fImpactDmatPos = aV0.fImpactDmatPos;
+  fImpactDprimNeg = aV0.fImpactDprimNeg;
+  fImpactDweakNeg = aV0.fImpactDweakNeg;
+  fImpactDmatNeg = aV0.fImpactDmatNeg;
 
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
