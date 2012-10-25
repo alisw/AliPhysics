@@ -21,6 +21,7 @@
 #include <TBits.h>
 #include <TString.h>
 #include <TArrayI.h>
+#include <TTree.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -59,7 +60,35 @@ AliHFEdebugTreeTaskAOD::AliHFEdebugTreeTaskAOD():
   fNclustersTPCPID(0),
   fNclustersITS(2),
   fFilename("HFEtree.root"),
-  fDebugTree(NULL)
+  fDebugstream(kFALSE),
+  fDebugTree(NULL),
+  fDebugTreee(NULL),
+  fCentrality(-1.),
+  fRun(-1),
+  fDoublec(0),
+  fMomentum(0.),
+  fMomentumTPC(0.),
+  fTransverseMomentum(0.),
+  fEta(0.),
+  fPhi(0.),
+  fCharge(-1),
+  fNClustersTPCall(0),
+  fNClustersTPCPID(0),
+  fNClustersTPCshared(0),
+  fNCrossedRowsTPC(0),
+  fClusterRatioTPCall(0.),
+  fNClustersITS(0),
+  fStatusL0(-1),
+  fStatusL1(-1),
+  fSigmaTOF(0.),
+  fSigmaTPC(0.),
+  fDcaxy(0.),
+  fDcaz(0.),
+  fFilter2(0),
+  fFilter4(0),
+  fSource(-1),
+  fEr(0.0),
+  fSignal(0.)
 {
 
 }
@@ -77,15 +106,45 @@ AliHFEdebugTreeTaskAOD::AliHFEdebugTreeTaskAOD(const char *name):
   fNclustersTPCPID(0),
   fNclustersITS(2),
   fFilename("HFEtree.root"),
-  fDebugTree(NULL)
+  fDebugstream(kFALSE),
+  fDebugTree(NULL),
+  fDebugTreee(NULL),
+  fCentrality(-1.),
+  fRun(-1),
+  fDoublec(0),
+  fMomentum(0.),
+  fMomentumTPC(0.),
+  fTransverseMomentum(0.),
+  fEta(0.),
+  fPhi(0.),
+  fCharge(-1),
+  fNClustersTPCall(0),
+  fNClustersTPCPID(0),
+  fNClustersTPCshared(0),
+  fNCrossedRowsTPC(0),
+  fClusterRatioTPCall(0.),
+  fNClustersITS(0),
+  fStatusL0(-1),
+  fStatusL1(-1),
+  fSigmaTOF(0.),
+  fSigmaTPC(0.),
+  fDcaxy(0.),
+  fDcaz(0.),
+  fFilter2(0),
+  fFilter4(0),
+  fSource(-1),
+  fEr(0.0),
+  fSignal(0.)
 {
   fTPCpid = new AliHFEpidTPC("QAtpcPID");
+  DefineOutput(1, TTree::Class());
 }
 
 AliHFEdebugTreeTaskAOD::~AliHFEdebugTreeTaskAOD(){
 
     if(fDebugTree) delete fDebugTree;
     if(fTPCpid) delete fTPCpid;
+    //if(fDebugTreee) delete fDebugTreee;
 }
 
 void AliHFEdebugTreeTaskAOD::UserCreateOutputObjects(){
@@ -94,9 +153,41 @@ void AliHFEdebugTreeTaskAOD::UserCreateOutputObjects(){
   //
 
   //printf("test\n");
-  fDebugTree = new TTreeSRedirector(fFilename.Data());
+  if(fDebugstream) {
+    fDebugTree = new TTreeSRedirector(fFilename.Data());
+  }
+  else {
+    // other possibility
+    fDebugTreee =  new TTree("PIDdebug","PIDdebug");
+    fDebugTreee->Branch("centrality",&fRun);
+    fDebugTreee->Branch("run",&fDoublec);
+    fDebugTreee->Branch("p",&fMomentum);
+    fDebugTreee->Branch("ptpc",&fMomentumTPC);
+    fDebugTreee->Branch("pt",&fTransverseMomentum);
+    fDebugTreee->Branch("eta",&fEta);
+    fDebugTreee->Branch("phi",&fPhi);
+    fDebugTreee->Branch("charge",&fCharge);
+    fDebugTreee->Branch("nclustersTPCall",&fNClustersTPCall);
+    fDebugTreee->Branch("nclustersTPCPID",&fNClustersTPCPID);
+    fDebugTreee->Branch("nclustersTPCshared",&fNClustersTPCshared);
+    fDebugTreee->Branch("nCrossedRowsTPC",&fNCrossedRowsTPC);
+    fDebugTreee->Branch("clusterRatioTPCall",&fClusterRatioTPCall);
+    fDebugTreee->Branch("nclustersITS",&fNClustersITS);
+    fDebugTreee->Branch("statusL0",&fStatusL0);
+    fDebugTreee->Branch("statusL1",&fStatusL1);
+    fDebugTreee->Branch("sigmaTOF",&fSigmaTOF);
+    fDebugTreee->Branch("sigmaTPC",&fSigmaTPC);
+    fDebugTreee->Branch("dcaxy",&fDcaxy);
+    fDebugTreee->Branch("dcaz",&fDcaz);
+    fDebugTreee->Branch("filter2",&fFilter2);
+    fDebugTreee->Branch("filter4",&fFilter4);
+    fDebugTreee->Branch("source",&fSource);
+    fDebugTreee->Branch("eR",&fEr);
+    fDebugTreee->Branch("signal",&fSignal);
+    PostData(1,fDebugTreee);
+  }
 
-  //printf("testa\n");
+ // printf("testa\n");
   fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
   //printf("testb\n");
   
@@ -129,13 +220,13 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   AliPIDResponse *pid = NULL;
   AliInputEventHandler *handler = dynamic_cast<AliInputEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(handler){
-    //printf("testb\n");
+//    printf("testb\n");
     pid = handler->GetPIDResponse();
   } else {
     AliError("No Handler");
   }
   if(!pid){
-    printf("testc\n");
+ //   printf("testc\n");
     AliError("No PID response");
     return;
   }
@@ -147,19 +238,20 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   // MC info
   Bool_t mcthere = kTRUE;
   AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
-  if(!aodE){ 
+  if(!aodE){
+ //        printf("testd\n");
     AliError("No AOD Event");
     return;
   }
   fAODMCHeader = dynamic_cast<AliAODMCHeader *>(fInputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
   if(!fAODMCHeader){ 
-    mcthere = kFALSE;
-    return;
+      mcthere = kFALSE;
+ //   return;
   }
   fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!fAODArrayMCInfo){ 
-    mcthere = kFALSE;
-    return;
+      mcthere = kFALSE;
+  //  return;
   }
   else {
     fSignalCuts->SetMCAODInfo(fAODArrayMCInfo);
@@ -179,8 +271,8 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   fExtraCuts->SetRecEventInfo(fInputEvent);
 
   // Get run number
-  Int_t run = fInputEvent->GetRunNumber();
-
+  fRun = fInputEvent->GetRunNumber();
+  
   // Derive trigger 
   UInt_t trigger = fInputHandler->IsEventSelected();
   Bool_t isMBTrigger = trigger & AliVEvent::kMB;
@@ -195,9 +287,10 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   Double_t ncontrib = fInputEvent->GetPrimaryVertex()->GetNContributors();
 
   // Get centrality
-  Float_t centrality = -1.;
+  fCentrality = -1.;
   AliCentrality *hicent = fInputEvent->GetCentrality();
-  centrality = hicent->GetCentralityPercentile("V0M");
+  fCentrality = hicent->GetCentralityPercentile("V0M");
+  
 
   // Look for kink mother
   Int_t numberofvertices = aodE->GetNumberOfVertices();
@@ -221,8 +314,8 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   //printf("Number of kink mother in the events %d\n",numberofmotherkink);
   
   // Common variables
-  Double_t charge, eta, phi, momentum, momentumTPC, transversemomentum;
-  
+  //Double_t charge, eta, phi, momentum, momentumTPC, transversemomentum;
+
   //
   // Loop on reconstructed tracks
   //
@@ -236,21 +329,21 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     track = dynamic_cast<AliAODTrack *>(fInputEvent->GetTrack(itrack));
     if(!track) continue;
     // Cut track (Only basic track cuts)
-    //printf("testv\n");
+//    printf("testv\n");
     if(!fTrackCuts->CheckParticleCuts(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     //
     //printf("testu\n");
-    Double_t nSigmaTOF = pid->NumberOfSigmasTOF(track, AliPID::kElectron);
-    Double_t nSigmaTPC = pid->NumberOfSigmasTPC(track, AliPID::kElectron);
+    fSigmaTOF = pid->NumberOfSigmasTOF(track, AliPID::kElectron);
+    fSigmaTPC = pid->NumberOfSigmasTPC(track, AliPID::kElectron);
     Double_t tPCdEdx = track->GetDetPid() ? track->GetDetPid()->GetTPCsignal() : 0.;
    
     // Kinematics
-    charge = track->Charge() > 0 ? 1. : -1.;
-    eta = track->Eta();
-    phi = track->Phi();
-    momentum = track->P() * charge;
-    transversemomentum = track->Pt() * charge;
-    momentumTPC = track->GetDetPid() ? track->GetDetPid()->GetTPCmomentum() : track->P();
+    fCharge = track->Charge() > 0 ? 1. : -1.;
+    fEta = track->Eta();
+    fPhi = track->Phi();
+    fMomentum = track->P() * fCharge;
+    fTransverseMomentum = track->Pt() * fCharge;
+    fMomentumTPC = track->GetDetPid() ? track->GetDetPid()->GetTPCmomentum() : track->P();
   
     // status
     ULong_t status = track->GetStatus();
@@ -260,22 +353,22 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     if((status & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit) tpcrefit = 1;
 
     // ITS number of clusters
-    UChar_t nclustersITS = track->GetITSNcls();
+    fNClustersITS = (Int_t) track->GetITSNcls();
     // TPC number of clusters (different definitions)
     UChar_t nclustersTPCfit = track->GetTPCNcls();
-    UChar_t nclustersTPCall = 0;
+    //UChar_t nclustersTPCall = 0;
     const TBits &clusterTPC = track->GetTPCClusterMap();
-    nclustersTPCall = clusterTPC.CountBits();
-    UChar_t nclustersTPCPID = track->GetTPCsignalN();
+    fNClustersTPCall = (Int_t) clusterTPC.CountBits();
+    fNClustersTPCPID = (Int_t) track->GetTPCsignalN();
     UChar_t nfindableTPC =  track->GetTPCNclsF();
     Double_t clusterRatioTPCfit = 0.0;
     if((static_cast<Double_t>(nfindableTPC))>0.0) clusterRatioTPCfit = static_cast<Double_t>(nclustersTPCfit)/static_cast<Double_t>(nfindableTPC);
-    Double_t clusterRatioTPCall = 0.0;
-    if((static_cast<Double_t>(nfindableTPC))>0.0) clusterRatioTPCall = static_cast<Double_t>(nclustersTPCall)/static_cast<Double_t>(nfindableTPC);
-    UChar_t nclustersTPCshared = 0;
-    Float_t ncrossedRowsTPC = track->GetTPCNCrossedRows();
+    //Double_t clusterRatioTPCall = 0.0;
+    if((static_cast<Double_t>(nfindableTPC))>0.0) fClusterRatioTPCall = static_cast<Float_t>(fNClustersTPCall)/static_cast<Float_t>(nfindableTPC);
+    fNClustersTPCshared = 0;
+    fNCrossedRowsTPC = (Int_t) track->GetTPCNCrossedRows();
     const TBits &sharedTPC = track->GetTPCSharedMap();
-    for(Int_t ibit = 0; ibit < 160; ibit++) if(sharedTPC.TestBitNumber(ibit)) nclustersTPCshared++;
+    for(Int_t ibit = 0; ibit < 160; ibit++) if(sharedTPC.TestBitNumber(ibit)) fNClustersTPCshared++;
     // TRD clusters and tracklets
     UChar_t nclustersTRD = track->GetTRDncls();
     UChar_t ntrackletsTRDPID = track->GetTRDntrackletsPID();
@@ -283,15 +376,15 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     Int_t   chi2TRD = track->GetTRDchi2();
     // ITS and TRD acceptance maps
     UChar_t itsPixel = track->GetITSClusterMap();
-    Bool_t statusL0 = kFALSE;
-    if(TESTBIT(itsPixel, 0)) statusL0 = kTRUE; 
-    Bool_t statusL1 = kFALSE;
-    if(TESTBIT(itsPixel, 1)) statusL1 = kTRUE; 
+    fStatusL0 = 0;
+    if(TESTBIT(itsPixel, 0)) fStatusL0 = 1; 
+    fStatusL1 = 0;
+    if(TESTBIT(itsPixel, 1)) fStatusL1 = 1; 
 
     // HFE DCA
-    Float_t dcaxy = -999.;
-    Float_t dcaz = -999.;
-    fExtraCuts->GetImpactParameters((AliVTrack *)track,dcaxy,dcaz);
+    fDcaxy = -999.;
+    fDcaz = -999.;
+    fExtraCuts->GetImpactParameters((AliVTrack *)track,fDcaxy,fDcaz);
 
     // Kink
     Int_t kink = 0;
@@ -310,10 +403,10 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     Int_t id = track->GetID();
 
     // Double counted
-    Int_t doublec = 0;
+    fDoublec = 0;
     for(Int_t l=0; l < itrack; l++){
       Int_t iTrack2 = arraytrack->At(l);
-      if(iTrack2==id) doublec=1;
+      if(iTrack2==id) fDoublec=1;
     }
     //printf("Doublec %d\n",doublec);
 
@@ -331,9 +424,9 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     }
     Int_t filter0 = filter[0];
     Int_t filter1 = filter[1];
-    Int_t filter2 = filter[2];
+    fFilter2 = filter[2];
     Int_t filter3 = filter[3];
-    Int_t filter4 = filter[4];
+    fFilter4 = filter[4];
     Int_t filter5 = filter[5];
     Int_t filter6 = filter[6];
     Int_t filter7 = filter[7];
@@ -355,20 +448,22 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     //printf("track\n");
 
     // Monte-Carlo info
-    Double_t eR,vx,vy,vz;
+    Double_t vx,vy,vz;
+    fEr = 0.0;
     Double_t chargemc, etamc, phimc, momentummc, transversemomentummc;
-    Int_t source,pdg,signal;
-    signal = 0;
+    Int_t pdg;
+    fSignal = 0;
+    fSource = 0;
     if(mcthere){
       Int_t label = TMath::Abs(track->GetLabel());
       if(label && label < fAODArrayMCInfo->GetEntriesFast())
         mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
       if(!mctrack) continue;
-      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) signal = 1;
+      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) fSignal = 1;
       // Kinematics
       chargemc = mctrack->Charge() > 0. ? 1. : -1.;
-      momentummc = mctrack->P() * charge;
-      transversemomentummc = mctrack->Pt() * charge;
+      momentummc = mctrack->P() * chargemc;
+      transversemomentummc = mctrack->Pt() * chargemc;
       etamc = mctrack->Eta();
       phimc = mctrack->Phi();
       pdg = mctrack->GetPdgCode();
@@ -377,7 +472,7 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
       vx = mctrack->Xv();
       vy = mctrack->Yv(); 
       vz = mctrack->Zv(); 
-      eR = TMath::Sqrt(vx*vx+vy*vy);
+      fEr = TMath::Sqrt(vx*vx+vy*vy);
       
       // Get Mother PDG code of the particle
       Int_t motherPdg = 0;
@@ -388,96 +483,100 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
       }
       
       // derive source
-      source = 5;
-      if(fSignalCuts->IsCharmElectron(mctrack)) source = 0;
-      else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
-      else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
-      else if(fSignalCuts->IsNonHFElectron(mctrack)) source = 3;
-      else if(TMath::Abs(pdg) == 11) source = 4;
-      else source = 5;
+      fSource = 5;
+      if(fSignalCuts->IsCharmElectron(mctrack)) fSource = 0;
+      else if(fSignalCuts->IsBeautyElectron(mctrack)) fSource = 1;
+      else if(fSignalCuts->IsGammaElectron(mctrack)) fSource = 2;
+      else if(fSignalCuts->IsNonHFElectron(mctrack)) fSource = 3;
+      else if(TMath::Abs(pdg) == 11) fSource = 4;
+      else fSource = 5;
       
     }
 
     
     // Fill Tree
     //printf("Fill\n");
-    (*fDebugTree) << "PIDdebug"
-                  << "centrality="          << centrality
-                  << "MBtrigger="           << isMBTrigger 
-                  << "CentralTrigger="      << isCentralTrigger
-                  << "SemicentralTrigger="  << isSemicentralTrigger
-                  << "EMCALtrigger="        << isEMCALTrigger
-		  << "run="                 << run
-		  << "eventnb="             << eventnb
-		  << "vx="                  << vtx[0]
-                  << "vy="                  << vtx[1]
-                  << "vz="                  << vtx[2]
-		  << "ncontrib="            << ncontrib
-		  << "id="                  << id
-		  << "dc="                  << doublec
-                  << "p="                   << momentum
-		  << "ptpc="                << momentumTPC
-		  << "pt="                  << transversemomentum
-		  << "eta="                 << eta
-                  << "phi="                 << phi
-		  << "itsrefit="            << itsrefit
-		  << "tpcrefit="            << tpcrefit
-		  << "nclustersTPC="        << nclustersTPCfit
-		  << "nclustersTPCall="     << nclustersTPCall
-                  << "nclustersTPCPID="     << nclustersTPCPID
-                  << "nclustersTPCshared="  << nclustersTPCshared
-                  << "ncrossedRowsTPC="     << ncrossedRowsTPC
-                  << "clusterRatioTPC="     << clusterRatioTPCfit
-		  << "clusterRatioTPCall="  << clusterRatioTPCall
-                  << "nclustersITS="        << nclustersITS
-	          << "nclustersTRD="        << nclustersTRD
-      	          << "ntrackletsTRD="       << ntrackletsTRDPID
-	          << "nslicesTRD="          << nslicesTRD
-                  << "chi2TRD="             << chi2TRD
-		  << "statusITS0="          << statusL0
-                  << "statusITS1="          << statusL1
- 		  << "TOFsigmaEl="          << nSigmaTOF
-                  << "TPCsigmaEl="          << nSigmaTPC
-                  << "TPCdEdx="             << tPCdEdx
-		  << "dcaR="                << dcaxy
-                  << "dcaZ="                << dcaz
-		  << "kinkdaughter="        << kink
-		  << "kinkmother="          << kinkmotherpass
-		  << "nbofmotherkink="      << numberofmotherkink
-		  << "filter0="             << filter0
-		  << "filter1="             << filter1
-		  << "filter2="             << filter2
-		  << "filter3="             << filter3
-		  << "filter4="             << filter4
-		  << "filter5="             << filter5
-		  << "filter6="             << filter6
-		  << "filter7="             << filter7
-		  << "filter8="             << filter8
-		  << "filter9="             << filter9
-		  << "filter10="            << filter10
-		  << "filter11="            << filter11
-		  << "filter12="            << filter12
-		  << "filter13="            << filter13
-		  << "filter14="            << filter14
-		  << "filter15="            << filter15
-		  << "filter16="            << filter16
-		  << "filter17="            << filter17
-		  << "filter18="            << filter18
-		  << "filter19="            << filter19
-		  << "mcp="                 << momentummc
-                  << "mcpt="                << transversemomentummc
-		  << "mceta="               << etamc
-                  << "mcphi="               << phimc
-                  << "mcpdg="               << pdg
-		  << "source="              << source
-		  << "px="                  << vx
-                  << "py="                  << vy
-                  << "pz="                  << vz
-		  << "eR="                  << eR
-		  << "mccharge="            << chargemc
-		  << "signal="              << signal
-		  << "\n";
-
+    if(fDebugstream) {
+      (*fDebugTree) << "PIDdebug"
+		    << "centrality="          << fCentrality
+		    << "MBtrigger="           << isMBTrigger 
+		    << "CentralTrigger="      << isCentralTrigger
+		    << "SemicentralTrigger="  << isSemicentralTrigger
+		    << "EMCALtrigger="        << isEMCALTrigger
+		    << "run="                 << fRun
+		    << "eventnb="             << eventnb
+		    << "vx="                  << vtx[0]
+		    << "vy="                  << vtx[1]
+		    << "vz="                  << vtx[2]
+		    << "ncontrib="            << ncontrib
+		    << "id="                  << id
+		    << "dc="                  << fDoublec
+		    << "p="                   << fMomentum
+		    << "ptpc="                << fMomentumTPC
+		    << "pt="                  << fTransverseMomentum
+		    << "eta="                 << fEta
+		    << "phi="                 << fPhi
+		    << "charge="              << fCharge
+		    << "itsrefit="            << itsrefit
+		    << "tpcrefit="            << tpcrefit
+		    << "nclustersTPC="        << nclustersTPCfit
+		    << "nclustersTPCall="     << fNClustersTPCall
+		    << "nclustersTPCPID="     << fNClustersTPCPID
+		    << "nclustersTPCshared="  << fNClustersTPCshared
+		    << "ncrossedRowsTPC="     << fNCrossedRowsTPC
+		    << "clusterRatioTPC="     << clusterRatioTPCfit
+		    << "clusterRatioTPCall="  << fClusterRatioTPCall
+		    << "nclustersITS="        << fNClustersITS
+		    << "nclustersTRD="        << nclustersTRD
+		    << "ntrackletsTRD="       << ntrackletsTRDPID
+		    << "nslicesTRD="          << nslicesTRD
+		    << "chi2TRD="             << chi2TRD
+		    << "statusITS0="          << fStatusL0
+		    << "statusITS1="          << fStatusL1
+		    << "TOFsigmaEl="          << fSigmaTOF
+		    << "TPCsigmaEl="          << fSigmaTPC
+		    << "TPCdEdx="             << tPCdEdx
+		    << "dcaR="                << fDcaxy
+		    << "dcaZ="                << fDcaz
+		    << "kinkdaughter="        << kink
+		    << "kinkmother="          << kinkmotherpass
+		    << "nbofmotherkink="      << numberofmotherkink
+		    << "filter0="             << filter0
+		    << "filter1="             << filter1
+		    << "filter2="             << fFilter2
+		    << "filter3="             << filter3
+		    << "filter4="             << fFilter4
+		    << "filter5="             << filter5
+		    << "filter6="             << filter6
+		    << "filter7="             << filter7
+		    << "filter8="             << filter8
+		    << "filter9="             << filter9
+		    << "filter10="            << filter10
+		    << "filter11="            << filter11
+		    << "filter12="            << filter12
+		    << "filter13="            << filter13
+		    << "filter14="            << filter14
+		    << "filter15="            << filter15
+		    << "filter16="            << filter16
+		    << "filter17="            << filter17
+		    << "filter18="            << filter18
+		    << "filter19="            << filter19
+		    << "mcp="                 << momentummc
+		    << "mcpt="                << transversemomentummc
+		    << "mceta="               << etamc
+		    << "mcphi="               << phimc
+		    << "mcpdg="               << pdg
+		    << "source="              << fSource
+		    << "px="                  << vx
+		    << "py="                  << vy
+		    << "pz="                  << vz
+		    << "eR="                  << fEr
+		    << "mccharge="            << chargemc
+		    << "signal="              << fSignal
+		    << "\n";
+    } else {
+      if((fFilter2==1) || (fFilter4==1)) fDebugTreee->Fill();
+    }
  
     //printf("after\n");
 
@@ -485,6 +584,8 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   
   arraytrack->~TArrayI();
   fEventNumber++;
+
+  if(!fDebugstream) PostData(1,fDebugTreee);
 
 
 }
