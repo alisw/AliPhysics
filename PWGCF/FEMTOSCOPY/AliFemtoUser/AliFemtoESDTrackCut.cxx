@@ -135,6 +135,8 @@ AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
 //------------------------------
 bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 {
+
+
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
@@ -324,6 +326,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     }
 
   if (fMostProbable) {
+  
     int imost=0;
     tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
     tMost[1] = 0.0;
@@ -337,22 +340,27 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	if(fPIDMethod==0){
 	  // Looking for pions
 	  if (fMostProbable == 2) {
-	    if (IsPionNSigma(track->Pt(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
 	      imost = 2;
 
 	  }
 	  else if (fMostProbable == 3) { 
-	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+
+    
+          if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	    	    
 	      imost = 3;
 	    }
   
 	  }
 	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting
-	    if (IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
 	      imost = 4;
 	  }
 
 	}
+	
+	
 
     //****Contour Method****
 	if(fPIDMethod==1){
@@ -835,7 +843,7 @@ bool AliFemtoESDTrackCut::IsProtonTOFTime(float mom, float ttof)
 
 bool AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 {
-  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
+//  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
 
 
   if(mom<0.35 && TMath::Abs(nsigmaK)<5.0)return true;
@@ -845,16 +853,16 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
   return false;
 }
 
-
 bool AliFemtoESDTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 {
-  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
+//  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
   //fan
   //  if(mom<1.5 && TMath::Abs(nsigmaK)<3.0)return true;
   if(mom>=1.5 && TMath::Abs(nsigmaK)<2.0)return true; 
   return false;
 }
 
+/*
 bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
 
@@ -886,12 +894,15 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
     
 //   if(mom>1.5 || mom<0.15)return false;
     
-   return false;
+
 }
 
-/* orig
+*/
+
+//old
 bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
+
   if(mom<0.4)
     {
       if(nsigmaTOFK<-999.)
@@ -916,7 +927,7 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
 
   return false;
 }
-*/
+
 
 
 bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
