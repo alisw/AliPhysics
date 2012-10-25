@@ -107,6 +107,7 @@ ClassImp(AliAnalysisTaskMinijet)
     fMapPair[i]               =  0;
     fMapEvent[i]              =  0;
     fMapAll[i]                =  0;
+    fMapThree[i]              =  0;
 
     fVertexZ[i]               =  0;
     
@@ -142,6 +143,7 @@ ClassImp(AliAnalysisTaskMinijet)
     fNchTracklet[i]           =  0;
     fPNch07Tracklet[i]        =  0;
     fDPhiEventAxis[i]         =  0;
+    fDPhi1DPhi2[i]            =  0;
   }
   DefineOutput(1, TList::Class());
 }
@@ -227,14 +229,19 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
    
 
   //4 dim matrix
-  Int_t binsEvent[4]   = {   150,        20,   50,  nPtBins };
+  Int_t binsEvent[4]   = {   100,        20,   50,  nPtBins };
   Double_t minEvent[4] = {  -0.5,       -10,    0,    ptMin };
-  Double_t maxEvent[4] = { 149.5,        10,   10,    ptMax };
+  Double_t maxEvent[4] = {  99.5,        10,   10,    ptMax };
 
   //3 dim matrix
-  Int_t binsAll[3]   = {Int_t(fEtaCut*20),  nPtBins,       150   };
+  Int_t binsAll[3]   = {Int_t(fEtaCut*20),  nPtBins,       100 };
   Double_t minAll[3] = {-fEtaCut,           ptMin,        -0.5 };
-  Double_t maxAll[3] = {fEtaCut,            ptMax,        149.5 };
+  Double_t maxAll[3] = {fEtaCut,            ptMax,        99.5 };
+
+  //3 dim matrix
+  Int_t binsThree[3]   = {              90,               90,    100};
+  Double_t minThree[3] = {-0.5*TMath::Pi(), -0.5*TMath::Pi(),   -0.5};
+  Double_t maxThree[3] = { 1.5*TMath::Pi(),  1.5*TMath::Pi(),   99.5};
 
   //--------------------
   TString dataType[2] ={"ESD", "AOD"};
@@ -287,6 +294,14 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fMapAll[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
     fMapAll[i]->GetAxis(2)->SetTitle("N_{rec}");
     fMapAll[i]->Sumw2(); 
+
+
+    fMapThree[i] = new THnSparseD(Form("fMapThree%s", labels[i].Data()),"dphi1:dphi2:Nrec",
+				  3,binsThree,minThree,maxThree);
+    fMapThree[i]->GetAxis(0)->SetTitle("#Delta#varphi_{1}");
+    fMapThree[i]->GetAxis(1)->SetTitle("#Delta#varphi_{2}");
+    fMapThree[i]->GetAxis(2)->SetTitle("N_{rec}");
+    fMapThree[i]->Sumw2(); 
 
   
     fVertexZ[i]                  = new TH1F(Form("fVertexZ%s",labels[i].Data()),
@@ -367,7 +382,10 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 					  Form("fDPhiEventAxis%s",
 					       labels[i].Data()) ,  
 					  180, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-    
+    fDPhi1DPhi2[i] = new TH2F(Form("fDPhi1DPhi2%s",labels[i].Data()),
+			      Form("fDPhi1DPhi2%s",labels[i].Data()),
+			      180, -0.5* TMath::Pi(), 1.5*TMath::Pi(), 
+			      180, -0.5* TMath::Pi(), 1.5*TMath::Pi());   
   }
 
   fHists = new TList();
@@ -395,12 +413,13 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   fHists->Add(fChargedPi0);
   fHists->Add(fVertexCheck);
   fHists->Add(fPropagateDca);
-  
+   
   for(Int_t i=0;i<8;i++){
     fHists->Add(fMapSingleTrig[i]);
     fHists->Add(fMapPair[i]);
     fHists->Add(fMapEvent[i]);
     fHists->Add(fMapAll[i]);
+    fHists->Add(fMapThree[i]);
     fHists->Add(fVertexZ[i]);
     fHists->Add(fPt[i]);
     fHists->Add(fNcharge[i]);
@@ -426,6 +445,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHists->Add(fNchTracklet[i]);
     fHists->Add(fPNch07Tracklet[i]);
     fHists->Add(fDPhiEventAxis[i]);
+    fHists->Add(fDPhi1DPhi2[i]);
   }
 
   PostData(1, fHists);
@@ -1681,6 +1701,31 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
 	Double_t prop6[6] = {ptEventAxis,ptOthers,dEta,dPhi,ntracksCharged, isLikeSign }; 
 	fMapPair[step]->Fill(prop6, strangeWeightEventAxis*strangeWeightOthers);
   
+	//thrid track loop (Andreas: three particle auto-correlations)
+	for (Int_t third = iTrack+1; third < nAll; third++) {
+	  if(pt[pindexInnerEta[iTrack]]<fTriggerPtCut) continue;
+	  if(pt[pindexInnerEta[third]]<fTriggerPtCut) continue;
+	  
+	  //dphi1
+	  Float_t dPhi1 = phiEventAxis - phiOthers;
+	  if(dPhi1>1.5*TMath::Pi()) dPhi1 = dPhi1-2*TMath::Pi();
+	  else if(dPhi1<-0.5*TMath::Pi())dPhi1=dPhi1+2*TMath::Pi();
+
+	  Float_t phiThird = phi[pindexInnerEta[third]];
+	  Float_t strangeWeightThird = strangeWeight[pindexInnerEta[third]];
+
+	  //dphi2
+	  Float_t dPhi2 = phiEventAxis - phiThird;
+	  if(dPhi2>1.5*TMath::Pi()) dPhi2 = dPhi2-2*TMath::Pi();
+	  else if(dPhi2<-0.5*TMath::Pi())dPhi2=dPhi2+2*TMath::Pi();
+	  
+	  fDPhi1DPhi2[step]-> Fill(dPhi1, dPhi2, strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird);
+	  Double_t propThree[3] = {dPhi1,dPhi2,ntracksCharged}; 
+	  fMapThree[step]->Fill(propThree,strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird );
+
+	  
+	}// end of three particle correlation loop
+
       }// end of inner track loop
          
     } //end of outer track loop
