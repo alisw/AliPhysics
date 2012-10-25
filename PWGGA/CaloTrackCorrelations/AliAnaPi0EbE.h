@@ -46,7 +46,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
-  void           FillPileUpHistograms(Float_t energy, Float_t time) ;
+  void           FillPileUpHistograms(const Float_t energy, const Float_t time) ;
+  
+  void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag);
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, 
                                                const Int_t nLocMax,
@@ -142,6 +144,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta 
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
 
+  TH1F         * fhPtReject  ;             //! Number of rejected as  pi0/eta vs pT
+  TH1F         * fhEReject   ;             //! Number of rejected as  pi0/eta vs E
+  TH2F         * fhEEtaReject  ;           //! E vs eta of rejected as  pi0/eta 
+  TH2F         * fhEPhiReject  ;           //! E vs phi of rejected as  pi0/eta 
+  TH2F         * fhEtaPhiReject  ;         //! eta vs phi of rejected as  pi0/eta 
+  
   TH2F         * fhMass  ;                 //! pair mass vs E, for all pairs
   TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters 
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
@@ -197,9 +205,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMCAsymmetryDispEta[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhMCAsymmetryDispPhi[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   
-  TH1F         * fhMCPt[6];                   //! Number of identified as pi0, coming from X
+  TH1F         * fhMCE[6];                    //! Number of identified as pi0 vs E coming from X
+  TH1F         * fhMCPt[6];                   //! Number of identified as pi0 vs Pt coming from X
   TH2F         * fhMCPhi[6];                  //! Phi of identified as pi0, coming from X
   TH2F         * fhMCEta[6];                  //! eta of identified as pi0, coming from X
+  TH1F         * fhMCEReject[6];              //! Number of rejected as pi0 vs E coming from X
+  TH1F         * fhMCPtReject[6];             //! Number of rejected as pi0 vs Pt coming from X
 
   TH2F         * fhMCPi0PtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, pi0 primary, pt vs E prim pi0 / E reco
   TH2F         * fhMCEtaPtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, eta primary, pt vs E prim eta / E reco  

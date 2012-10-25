@@ -59,6 +59,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // Histograms
     fhPt(0),                       fhE(0),                    
     fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
+    fhPtReject(0),                 fhEReject(0),                    
+    fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
     fhMass(0),                     fhAsymmetry(0), 
     fhSelectedMass(0),             fhSelectedAsymmetry(0),
     fhPtDecay(0),                  fhEDecay(0),  
@@ -72,7 +74,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhDispEtaPhiDiffE(0),          fhSphericityE(0),           
 
     // MC histos
-    fhMCPt(),                      fhMCPhi(),                    fhMCEta(),
+    fhMCE(),                       fhMCPt(),        
+    fhMCPhi(),                     fhMCEta(),
+    fhMCEReject(),                 fhMCPtReject(),       
     fhMCPi0PtGenRecoFraction(0),   fhMCEtaPtGenRecoFraction(0),
     fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),      
     fhMCEtaDecayPt(0),             fhMCEtaDecayPtFraction(0),
@@ -97,6 +101,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   
   for(Int_t i = 0; i < 6; i++)
   {
+    fhMCE              [i] = 0;
     fhMCPt             [i] = 0;
     fhMCPhi            [i] = 0;                   
     fhMCEta            [i] = 0;
@@ -160,8 +165,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   
 }
 
-//___________________________________________________________________
-void AliAnaPi0EbE::FillPileUpHistograms(Float_t energy, Float_t time) 
+//_______________________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t time) 
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -231,6 +236,33 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t energy, Float_t time)
     fhTimePileUpMainVertexZDiamond ->Fill(time,diamZ);
     
   }// loop
+}
+
+
+//___________________________________________________________________________________________
+void AliAnaPi0EbE::FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag)
+{
+ // Fill histograms that do not pass the identification (SS case only)
+  
+  Float_t ener  = mom.E();
+  Float_t pt    = mom.Pt();
+  Float_t phi   = mom.Phi();
+  if(phi < 0) phi+=TMath::TwoPi();
+  Float_t eta = mom.Eta();
+  
+  fhPtReject     ->Fill(pt);
+  fhEReject      ->Fill(ener);
+  
+  fhEEtaReject   ->Fill(ener,eta);
+  fhEPhiReject   ->Fill(ener,phi);
+  fhEtaPhiReject ->Fill(eta,phi);
+  
+  if(IsDataMC())
+  {
+    Int_t mcIndex = GetMCIndex(mctag);
+    fhMCEReject  [mcIndex] ->Fill(ener);
+    fhMCPtReject [mcIndex] ->Fill(pt);
+  }    
 }
 
 //_____________________________________________________________________________________
@@ -622,6 +654,37 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEtaPhi->SetYTitle("#phi (rad)");
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ; 
+  
+  if(fAnaType == kSSCalo)
+  {
+    fhPtReject  = new TH1F("hPtReject","Number of rejected as #pi^{0} (#eta) decay",nptbins,ptmin,ptmax); 
+    fhPtReject->SetYTitle("N");
+    fhPtReject->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtReject) ; 
+    
+    fhEReject  = new TH1F("hEReject","Number of rejected as  #pi^{0} (#eta) decay pairs",nptbins,ptmin,ptmax); 
+    fhEReject->SetYTitle("N");
+    fhEReject->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEReject) ; 
+    
+    fhEPhiReject  = new TH2F
+    ("hEPhiReject","Rejected #pi^{0} (#eta) cluster: E vs #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhEPhiReject->SetYTitle("#phi (rad)");
+    fhEPhiReject->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEPhiReject) ; 
+    
+    fhEEtaReject  = new TH2F
+    ("hEEtaReject","Rejected #pi^{0} (#eta) cluster: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    fhEEtaReject->SetYTitle("#eta");
+    fhEEtaReject->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEEtaReject) ; 
+    
+    fhEtaPhiReject  = new TH2F
+    ("hEtaPhiReject","Rejected #pi^{0} (#eta) cluster: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
+    fhEtaPhiReject->SetYTitle("#phi (rad)");
+    fhEtaPhiReject->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiReject) ; 
+  }
   
   fhMass  = new TH2F
   ("hMass","all pairs mass: E vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax); 
@@ -1064,6 +1127,15 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       for(Int_t i = 0; i < 6; i++)
       { 
         
+        fhMCE[i]  = new TH1F
+        (Form("hE_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",
+              ptype[i].Data()),
+         nptbins,ptmin,ptmax); 
+        fhMCE[i]->SetYTitle("N");
+        fhMCE[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCE[i]) ; 
+        
         fhMCPt[i]  = new TH1F
         (Form("hPt_MC%s",pname[i].Data()),
          Form("Identified as #pi^{0} (#eta), cluster from %s",
@@ -1072,6 +1144,27 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCPt[i]->SetYTitle("N");
         fhMCPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCPt[i]) ; 
+        
+        if(fAnaType == kSSCalo)
+        {
+          fhMCEReject[i]  = new TH1F
+          (Form("hEReject_MC%s",pname[i].Data()),
+           Form("Rejected as #pi^{0} (#eta), cluster from %s",
+                ptype[i].Data()),
+           nptbins,ptmin,ptmax); 
+          fhMCEReject[i]->SetYTitle("N");
+          fhMCEReject[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEReject[i]) ; 
+          
+          fhMCPtReject[i]  = new TH1F
+          (Form("hPtReject_MC%s",pname[i].Data()),
+           Form("Rejected as #pi^{0} (#eta), cluster from %s",
+                ptype[i].Data()),
+           nptbins,ptmin,ptmax); 
+          fhMCPtReject[i]->SetYTitle("N");
+          fhMCPtReject[i]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhMCPtReject[i]) ;           
+        }
         
         fhMCPhi[i]  = new TH2F
         (Form("hPhi_MC%s",pname[i].Data()),
@@ -1938,9 +2031,23 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Double_t tof = calo->GetTOF()*1e9;
     if(tof < fTimeCutMin || tof > fTimeCutMax) continue ;
     
+    //Play with the MC stack if available
+    //Check origin of the candidates
+    Int_t tag	= 0 ;
+    if(IsDataMC())
+    {
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),0);
+      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
+      if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
+    }      
+    
     //Skip matched clusters with tracks
-    if(IsTrackMatched(calo, GetReader()->GetInputEvent())) continue ;
-
+    if(IsTrackMatched(calo, GetReader()->GetInputEvent())) 
+    {
+      FillRejectedClusterHistograms(mom,tag);
+      continue ;
+    }
+        
     
     //Check PID
     //PID selection or bit setting
@@ -1952,10 +2059,15 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
                                                                                    mass,angle,e1,e2) ;   
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
-    
+  
+        
     //Skip events with too few or too many  NLM
-    if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) continue ;
-
+    if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) 
+    {
+      FillRejectedClusterHistograms(mom,tag);
+      continue ;
+    }
+    
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
     
@@ -1967,32 +2079,24 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
     fhAsymmetry->Fill(mom.E(),asy);
     
-    //Play with the MC stack if available
-    //Check origin of the candidates
-    Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),0);
-      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
-      if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
-      
-      // Asymmetry histograms
       Int_t mcIndex = GetMCIndex(tag);
       fhMCEAsymmetry[mcIndex]->Fill(mom.E(),asy);
-      
-    }//Work with stack also   
-    
+    }  
     
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0) 
     { 
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Pi0\n");
+      FillRejectedClusterHistograms(mom,tag);
       continue ;
     }	
     
     else if(GetOutputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta)     
     { 
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Eta\n");
+      FillRejectedClusterHistograms(mom,tag);
       continue ;
     }	
     
@@ -2085,6 +2189,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       Int_t tag     = pi0->GetTag();
       Int_t mcIndex = GetMCIndex(tag);
 
+      fhMCE  [mcIndex] ->Fill(ener);
       fhMCPt [mcIndex] ->Fill(pt);
       fhMCPhi[mcIndex] ->Fill(pt,phi);
       fhMCEta[mcIndex] ->Fill(pt,eta);
