@@ -56,6 +56,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, AliStack *stack, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent);
   double GetMCweight(double mcPi0pT);
+  double GetMCweightEta(double mcEtapT);
   void FindTriggerClusters();
  private:
   
@@ -99,6 +100,14 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   THnSparseD		*fInvmassULS;		//! Inv mass of ULS (e,e)
   THnSparseD		*fInvmassLSmc;		//! Inv mass of LS (e,e)
   THnSparseD		*fInvmassULSmc;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassLSmc0;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassLSmc1;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassLSmc2;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassLSmc3;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassULSmc0;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassULSmc1;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassULSmc2;		//! Inv mass of ULS (e,e)
+  TH2D		*fInvmassULSmc3;		//! Inv mass of ULS (e,e)
   TH1F			*fOpeningAngleLS;	//! opening angle for LS pairs
   TH1F			*fOpeningAngleULS;	//! opening angle for ULS pairs
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
@@ -143,11 +152,15 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fIncpTMCM20pho_pi0e;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMCM20_pi0e;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20_pi0e;	        //! Same inclusive ele pt
+ THnSparseD 		*fIncpTMCM20pho_eta;	//! MC HFE pid electron vs centrality
+ THnSparseD 		*fPhoElecPtMCM20_eta;	        //! Pho inclusive ele pt
+ THnSparseD 		*fSameElecPtMCM20_eta;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
  TH2D                   *Hpi0pTcheck; 
  TH2D                   *HETApTcheck; 
  TH2D                   *HphopTcheck; 
+ TH1D                   *fpTCheck; 
  TH2D                   *fMomDtoE; 
  
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
