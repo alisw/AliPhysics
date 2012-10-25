@@ -88,7 +88,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1) 
+  ,fqahist(0) 
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -195,7 +195,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1)
+  ,fqahist(0)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -845,16 +845,16 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t maxpho[9] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5,  50};   
 
   fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
-  fOutputList->Add(fInvmassLS);
+  if(fqahist==1)fOutputList->Add(fInvmassLS);
   
   fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
-  fOutputList->Add(fInvmassULS);
+  if(fqahist==1)fOutputList->Add(fInvmassULS);
   
   fInvmassLSmc = new THnSparseD("fInvmassLSmc", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
-  fOutputList->Add(fInvmassLSmc);
+  if(fqahist==1)fOutputList->Add(fInvmassLSmc);
   
   fInvmassULSmc = new THnSparseD("fInvmassULSmc", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
-  fOutputList->Add(fInvmassULSmc);
+  if(fqahist==1)fOutputList->Add(fInvmassULSmc);
 
   fInvmassLSmc0 = new TH2D("fInvmassLSmc0", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
   fInvmassLSmc0->Sumw2();
