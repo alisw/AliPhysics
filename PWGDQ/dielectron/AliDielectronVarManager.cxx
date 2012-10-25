@@ -59,6 +59,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TPCclsDiff",
   "TPCclsSegments",
   "TrackStatus",
+  "FilterBit",
     
   "NclsTRD",
   "TRDntracklets",
@@ -66,6 +67,10 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TRDchi2",
   "TRDpidProb_Electrons",
   "TRDpidProb_Pions",
+  "TRDpidProb1D_Electrons",
+  "TRDpidProb1D_Pions",
+  "TRDpidProb2D_Electrons",
+  "TRDpidProb2D_Pions",
   "TRDphi",
   "TRDpidEffLeg",
 
@@ -357,3 +362,15 @@ AliDielectronVarManager::~AliDielectronVarManager()
       if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j]; 
 }
 
+//________________________________________________________________
+UInt_t AliDielectronVarManager::GetValueType(const char* valname) {
+  //
+  // Get value type by value name
+  //
+
+  TString name(valname);
+  for(UInt_t i=0; i<AliDielectronVarManager::kNMaxValues; i++) {
+    if(!name.CompareTo(fgkParticleNames[i])) return i;
+  }
+  return -1;
+}

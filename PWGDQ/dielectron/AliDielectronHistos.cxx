@@ -46,6 +46,7 @@
 #include <TVectorD.h>
 
 #include "AliDielectronHelper.h"
+#include "AliDielectronVarManager.h"
 #include "AliDielectronHistos.h"
 
 
@@ -211,6 +212,13 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   isOk&=(binsX!=0x0);
   TH1 *hist=0x0;
   
+  // set axis titles if not specified 
+  if(!strlen(title)) title=Form(";%s;%s",
+				AliDielectronVarManager::GetValueName(valTypeX),
+				(valTypeP!=999?
+				 Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)):
+				 Form("#%ss",histClass)));
+
   if (isOk){
     if(valTypeP==999)
       hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
@@ -260,6 +268,12 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   isOk&=(binsX!=0x0);
   isOk&=(binsY!=0x0);
   TH1 *hist=0x0;
+
+  // set axis titles if not specified 
+  if(!strlen(title)) title=Form(";%s;%s;%s",
+				AliDielectronVarManager::GetValueName(valTypeX),
+				AliDielectronVarManager::GetValueName(valTypeY),
+				(valTypeP!=999?Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)):""));
 
   if (isOk){
     if(valTypeP==999) {
@@ -320,7 +334,13 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   isOk&=(binsY!=0x0);
   isOk&=(binsZ!=0x0);
   TH1 *hist=0x0;
-  
+
+  // set axis titles if not specified 
+  if(!strlen(title)) title=Form(";%s;%s;%s",
+				AliDielectronVarManager::GetValueName(valTypeX),
+				AliDielectronVarManager::GetValueName(valTypeY),
+				AliDielectronVarManager::GetValueName(valTypeZ));
+
   if (isOk){
     if(valTypeP==999)
       hist=new TH3F(name,title,

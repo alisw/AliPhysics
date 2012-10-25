@@ -103,13 +103,18 @@ public:
     kTPCclsDiff,             // TPC cluster difference
     kTPCclsSegments,         // TPC cluster segments
     kTrackStatus,            // track status bits
-    
+    kFilterBit,              // AOD filter bits
+
     kNclsTRD,                // number of clusters assigned in the TRD
     kTRDntracklets,          // number of TRD tracklets used for tracking/PID TODO: correct getter
     kTRDpidQuality,          // number of TRD tracklets used for PID
     kTRDchi2,                // chi2 in TRD
     kTRDprobEle,             // TRD electron pid probability
     kTRDprobPio,             // TRD electron pid probability
+    kTRDprob1DEle,           // TRD electron pid probability 1D LQ
+    kTRDprob1DPio,           // TRD electron pid probability 1D LQ
+    kTRDprob2DEle,           // TRD electron pid probability 2D LQ 
+    kTRDprob2DPio,           // TRD electron pid probability 2D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
       
@@ -367,7 +372,7 @@ public:
   static const AliKFVertex* GetKFVertex() {return fgKFVertex;}
   
   static const char* GetValueName(Int_t i) { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i]:""; }
-
+  static UInt_t GetValueType(const char* valname);
   static const Double_t* GetData() {return fgData;}
 
   static Double_t GetValue(ValueTypes var) {return fgData[var];}
@@ -521,7 +526,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
     if(n>=threshold) values[AliDielectronVarManager::kTPCclsSegments] += 1.0;
   }
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
-  
+  values[AliDielectronVarManager::kFilterBit]     = 0;
   
   values[AliDielectronVarManager::kTPCchi2Cl] = -1;
   if (tpcNcls>0) values[AliDielectronVarManager::kTPCchi2Cl] = particle->GetTPCchi2() / tpcNcls;
@@ -707,9 +712,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   
-  values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:999.;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
+  values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:-1.;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
-  
+  values[AliDielectronVarManager::kFilterBit]     = (Double_t)particle->GetFilterMap();
+
   //TRD pidProbs
   //TODO: set correctly
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
@@ -778,6 +784,12 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
     values[AliDielectronVarManager::kTRDprobEle]    = prob[AliPID::kElectron];
     values[AliDielectronVarManager::kTRDprobPio]    = prob[AliPID::kPion];
+    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ1D);
+    values[AliDielectronVarManager::kTRDprob1DEle]    = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprob1DPio]    = prob[AliPID::kPion];
+    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
+    values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
 
     values[AliDielectronVarManager::kTOFsignal]=pid->GetTOFsignal();
     Double32_t expt[5];
@@ -829,7 +841,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kPdgCodeMother]=-1;
   values[AliDielectronVarManager::kPdgCodeGrandMother]=-1;
   
-  values[AliDielectronVarManager::kNumberOfDaughters]=-999;
+  values[AliDielectronVarManager::kNumberOfDaughters]=-1;
   
   AliDielectronMC *mc=AliDielectronMC::Instance();
   
@@ -860,8 +872,8 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kITSchi2Cl]     = 0;
   values[AliDielectronVarManager::kNclsTPC]       = 0;
-  values[AliDielectronVarManager::kNclsSTPC]       = 0;
-  values[AliDielectronVarManager::kNclsSFracTPC]       = 0;
+  values[AliDielectronVarManager::kNclsSTPC]      = 0;
+  values[AliDielectronVarManager::kNclsSFracTPC]  = 0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = 0; 
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
   values[AliDielectronVarManager::kNFclsTPCr]     = 0;
@@ -871,6 +883,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
   values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kFilterBit]     = 0;
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
@@ -933,6 +946,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
   values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kFilterBit]     = 0;
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
@@ -1029,6 +1043,7 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
   values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kFilterBit]     = 0;
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
@@ -1354,6 +1369,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
   values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kFilterBit]     = 0;
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
@@ -1425,11 +1441,13 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   //  values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event, 1.0);
   //  values[AliDielectronVarManager::kNaccTrckltsCorr] = AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts], values[AliDielectronVarManager::kZvPrim]);
 
-  // TPC event plane (corrected)
 
-  // VZERO event plane quantities from the AliEPSelectionTask
+  // event plane quantities from the AliEPSelectionTask
+  for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0ACrpH2FlowV2;   ivar++) values[ivar] = 0.0; // v0  variables
+  for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
+  AliEventplane *ep = new AliEventplane();
+  // VZERO
   Double_t qx = 0, qy = 0;
-  AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
   values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event,10, 2, qx, qy));
   values[AliDielectronVarManager::kv0ACxH2]   = qx;
   values[AliDielectronVarManager::kv0ACyH2]   = qy;
@@ -1449,6 +1467,31 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kv0ACrpH2FlowV2]  = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2]) );
   values[AliDielectronVarManager::kv0ArpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
   values[AliDielectronVarManager::kv0CrpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
+
+  // TPC event plane quantities (uncorrected)  
+  ep = const_cast<AliVEvent*>(event)->GetEventplane();
+  if(ep) {
+    TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
+    TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
+    TVector2 *qsub2 = ep->GetQsub2();
+    if(qstd && qsub1 && qsub2) {
+      values[AliDielectronVarManager::kTPCxH2uc]   = qstd->X();
+      values[AliDielectronVarManager::kTPCyH2uc]   = qstd->Y();
+      values[AliDielectronVarManager::kTPCrpH2uc]  = ((TMath::Abs(qstd->X())>1.0e-10) ? TMath::ATan2(qstd->Y(),qstd->X())/2.0 : 0.0);
+      values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
+      values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
+      values[AliDielectronVarManager::kTPCsub1rpH2uc]  = ((TMath::Abs(qsub1->X())>1.0e-10) ? TMath::ATan2(qsub1->Y(),qsub1->X())/2.0 : 0.0);
+      values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
+      values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
+      values[AliDielectronVarManager::kTPCsub2rpH2uc]  = ((TMath::Abs(qsub2->X())>1.0e-10) ? TMath::ATan2(qsub2->Y(),qsub2->X())/2.0 : 0.0);
+
+      values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
+									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
+    }
+    // TPC event plane quantities (corrected)
+    if(fgTPCEventPlane) 
+      FillVarTPCEventPlane(fgTPCEventPlane, values);
+  } //if: eventplane
 
   // ESD VZERO information
   AliVVZERO* vzeroData = event->GetVZEROData();
@@ -1493,33 +1536,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
   values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
 
-  // TPC event plane quantities (uncorrected)
-  AliEventplane *evplane = const_cast<AliVEvent*>(event)->GetEventplane();
-  TVector2 *qstd  = evplane->GetQVector();  // This is the "standard" Q-Vector
-  TVector2 *qsub1 = evplane->GetQsub1();
-  TVector2 *qsub2 = evplane->GetQsub2();
-  if(!qstd || !qsub1 || !qsub2)  return;
-     
-  values[AliDielectronVarManager::kTPCxH2uc]   = qstd->X();
-  values[AliDielectronVarManager::kTPCyH2uc]   = qstd->Y();
-  values[AliDielectronVarManager::kTPCrpH2uc]  = ((TMath::Abs(qstd->X())>1.0e-10) ? TMath::ATan2(qstd->Y(),qstd->X())/2.0 : 0.0);
 
-  values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
-  values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
-  values[AliDielectronVarManager::kTPCsub1rpH2uc]  = ((TMath::Abs(qsub1->X())>1.0e-10) ? TMath::ATan2(qsub1->Y(),qsub1->X())/2.0 : 0.0);
-
-  values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
-  values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
-  values[AliDielectronVarManager::kTPCsub2rpH2uc]  = ((TMath::Abs(qsub2->X())>1.0e-10) ? TMath::ATan2(qsub2->Y(),qsub2->X())/2.0 : 0.0);
-
-  values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] - 
-								       values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
-  
-  // TPC event plane quantities (corrected)
-  if(fgTPCEventPlane) 
-    FillVarTPCEventPlane(fgTPCEventPlane, values);
-
-  // using corrected tpc quantities
+  // event plane differences used for EP resolution calculation
   values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] - 
 								     values[AliDielectronVarManager::kTPCrpH2]) ); 
   
@@ -1651,28 +1669,30 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
   //
   // Fill TPC event plane information after correction
   //
-  if(!evplane) return;
-  TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
-  TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
-  TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
-  if(!qcorr || !qcsub1 || !qcsub2) return;
+  if(evplane) {
+    TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
+    TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
+    TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
+    if(!qcorr && !qcsub1 && !qcsub2) {
 
-  values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
-  values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
-  values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
+      values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
+      values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
+      values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
 
-  values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
-  values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
-  values[AliDielectronVarManager::kTPCsub1rpH2]  = ((TMath::Abs(qcsub1->X())>1.0e-10) ? TMath::ATan2(qcsub1->Y(),qcsub1->X())/2.0 : 0.0);
+      values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
+      values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
+      values[AliDielectronVarManager::kTPCsub1rpH2]  = ((TMath::Abs(qcsub1->X())>1.0e-10) ? TMath::ATan2(qcsub1->Y(),qcsub1->X())/2.0 : 0.0);
 
-  values[AliDielectronVarManager::kTPCsub2xH2]   = qcsub2->X();
-  values[AliDielectronVarManager::kTPCsub2yH2]   = qcsub2->Y();
-  values[AliDielectronVarManager::kTPCsub2rpH2]  = ((TMath::Abs(qcsub2->X())>1.0e-10) ? TMath::ATan2(qcsub2->Y(),qcsub2->X())/2.0 : 0.0);
+      values[AliDielectronVarManager::kTPCsub2xH2]   = qcsub2->X();
+      values[AliDielectronVarManager::kTPCsub2yH2]   = qcsub2->Y();
+      values[AliDielectronVarManager::kTPCsub2rpH2]  = ((TMath::Abs(qcsub2->X())>1.0e-10) ? TMath::ATan2(qcsub2->Y(),qcsub2->X())/2.0 : 0.0);
 
-  values[AliDielectronVarManager::kTPCsub12DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] - 
-								     values[AliDielectronVarManager::kTPCsub2rpH2]) );
-  values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] - 
-									values[AliDielectronVarManager::kTPCsub2rpH2]) );
+      values[AliDielectronVarManager::kTPCsub12DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
+									 values[AliDielectronVarManager::kTPCsub2rpH2]) );
+      values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
+									    values[AliDielectronVarManager::kTPCsub2rpH2]) );
+    }
+  }
 }
 
 inline void AliDielectronVarManager::InitESDpid(Int_t type)
