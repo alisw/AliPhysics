@@ -50,7 +50,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
   void SetNSigmaMaxCdd(Float_t f)                    {fNSigmaMaxCdd        = f;}
   void SetNSigmaMaxCzz(Float_t f)                    {fNSigmaMaxCzz        = f;}
 
-  void SetParticleSpecies(AliPID::EParticleType pid) {fParticleSpecies     = pid;}
+  void SetParticleSpecies(AliPID::EParticleType pid);
   void SetControlParticleSpecies(Int_t pdgCode, Bool_t isNeutral, TString name) {
     fControlParticleCode = pdgCode;
     fControlParticleIsNeutral = isNeutral;
@@ -68,6 +68,11 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
   
   AliPID::EParticleType GetParticleSpecies(){return fParticleSpecies;}
+  TString  GetParticleName(Int_t idxPart);
+  TString  GetParticleTitle(Int_t idxPart);
+  TString  GetParticleTitleLatex(Int_t idxPart);
+  TString  GetControlParticleName(Int_t idxPart);
+  TString  GetControlParticleTitle(Int_t idxPart);
 
   TH1F*    GetHEventStat0()                  {return fHEventStat0;}
   TH1F*    GetHEventStat1()                  {return fHEventStat1;}
@@ -226,6 +231,9 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Float_t               fNSigmaMaxCzz;             //  N Sigma for dcaz / sqrt(czz) - turn off with 0.
   // -----------------------------------------------------------------------
   AliPID::EParticleType fParticleSpecies;          //  Particle species on basis of AliPID
+  TString               fPartName[2];              //  Particle name (short) - particle/antiparticle 
+  TString               fPartTitle[2];             //  Particle name (long)  - particle/antiparticle 
+  TString               fPartTitleLatex[2];        //  Particle name (LATEX) - particle/antiparticle 
   Int_t                 fControlParticleCode;      //  PDG code control particle
   Bool_t                fControlParticleIsNeutral; //  Is control particle neutral
   TString               fControlParticleName;      //  Name of control particle

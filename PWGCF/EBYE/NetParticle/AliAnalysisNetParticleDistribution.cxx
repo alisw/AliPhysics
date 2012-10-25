@@ -573,13 +573,12 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackControlParticles() {
 //________________________________________________________________________
 void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const Char_t *title)  {
   // -- Add histogram sets for particle and anti-particle
-  
-  const Char_t* aPartNames[]             = {"pbar",          "p"};
-  const Char_t* aPartTitles[]            = {"Anti-Proton",   "Proton"};
-  const Char_t* aPartAxisTitles[]        = {"#bar{p}",       "p"};
 
-  const Char_t* aControlPartNames[]      = {"lambdabar",     "lambda"};
-  const Char_t* aControlPartTitles[]     = {"Anti-Lambda",   "Lambda"};
+  Int_t pid = fHelper->GetParticleSpecies();
+  if( pid < 0 || pid > AliPID::kSPECIES){
+    AliError("Particle ID not in AliPID::kSPECIES");
+    return;
+  }
 
   fOutList->Add(new TList);
   TList *list = static_cast<TList*>(fOutList->Last());
@@ -593,44 +592,44 @@ void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const C
     sPtTitle += Form("#it{p}_{T} [%.1f,%.1f]", fPtRange[0], fPtRange[1]);
   
   for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
-    list->Add(new TH2F(Form("%s%s", name, aPartNames[idxPart]), 
-		       Form("%s %s Dist %s;Centrality;N_{%s}", title, aPartTitles[idxPart], sPtTitle.Data(), aPartAxisTitles[idxPart]), 
+    list->Add(new TH2F(Form("%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
+		       Form("%s %s Dist %s;Centrality;N_{%s}", title, fHelper->GetParticleTitle(idxPart).Data(), sPtTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()), 
 		       24, -0.5, 11.5, 501, -0.5, 500.49));
   } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
    
-  list->Add(new TH2F(Form("%sNet%s", name, aPartNames[1]), 
-		     Form("%s Net %s Dist %s;Centrality;N_{p} - N_{#bar{p}}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5, 201, -100.5, 100.49));
+  list->Add(new TH2F(Form("%sNet%s", name, fHelper->GetParticleName(1).Data()), 
+		     Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5, 201, -100.5, 100.49));
 
-  list->Add(new TProfile(Form("%sNet%sM", name, aPartNames[1]), 
-			 Form("%s Net %s Dist %s;Centrality;N_{p} - N_{#bar{p}}", title, aPartTitles[1], sPtTitle.Data()),  24, -0.5, 11.5));
-  list->Add(new TProfile(Form("%sNet%s2M", name, aPartNames[1]), 
-			 Form("%s (Net %s)^{2} Dist %s;Centrality;(N_{p} - N_{#bar{p}})^{2}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5));
-  list->Add(new TProfile(Form("%sNet%s3M", name, aPartNames[1]), 
-			 Form("%s (Net %s)^{3} Dist %s;Centrality;(N_{p} - N_{#bar{p}})^{3}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5));
-  list->Add(new TProfile(Form("%sNet%s4M", name, aPartNames[1]), 
-			 Form("%s (Net %s)^{4} Dist %s;Centrality;(N_{p} - N_{#bar{p}})^{4}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5));
-  list->Add(new TProfile(Form("%sNet%s5M", name, aPartNames[1]), 
-			 Form("%s (Net %s)^{5} Dist %s;Centrality;(N_{p} - N_{#bar{p}})^{5}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5));
-  list->Add(new TProfile(Form("%sNet%s6M", name, aPartNames[1]), 
-			 Form("%s (Net %s)^{6} Dist %s;Centrality;(N_{p} - N_{#bar{p}})^{6}", title, aPartTitles[1], sPtTitle.Data()), 24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%sM", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()),  24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%s2M", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s (Net %s)^{2} Dist %s;Centrality;(N_{%s} - N_{%s})^{2}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%s3M", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s (Net %s)^{3} Dist %s;Centrality;(N_{%s} - N_{%s})^{3}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%s4M", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s (Net %s)^{4} Dist %s;Centrality;(N_{%s} - N_{%s})^{4}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%s5M", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s (Net %s)^{5} Dist %s;Centrality;(N_{%s} - N_{%s})^{5}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+  list->Add(new TProfile(Form("%sNet%s6M", name, fHelper->GetParticleName(1).Data()), 
+			 Form("%s (Net %s)^{6} Dist %s;Centrality;(N_{%s} - N_{%s})^{6}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
 		         
-  list->Add(new TH2F(Form("%sNet%sOverSum", name, aPartNames[1]), 
-		     Form("%s (Net %s)/ Sum Dist %s;Centrality;(N_{p} - N_{#bar{p}})/(N_{p} + N_{#bar{p}})", title, aPartTitles[1], sPtTitle.Data()), 
+  list->Add(new TH2F(Form("%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()), 
+		     Form("%s (Net %s)/ Sum Dist %s;Centrality;(N_{%s} - N_{%s})/(N_{%s} + N_{%s})", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 
 		     24, -0.5, 11.5, 801, -50.5, 50.49));
 
   if (sName.Contains("fHControlMC")) {
     for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
-      list->Add(new TH2F(Form("%s%sOver%s", name, aPartNames[idxPart], aControlPartNames[idxPart]), 
+      list->Add(new TH2F(Form("%s%sOver%s", name, fHelper->GetParticleName(idxPart).Data(), fHelper->GetControlParticleName(idxPart).Data()), 
 			 Form("%s %s / %s Dist %s;Centrality;N_{%s}/N_{Tracks}", 
-			      title, aPartTitles[idxPart], aControlPartTitles[idxPart], sPtTitle.Data(), aPartAxisTitles[idxPart]), 
+			      title, fHelper->GetParticleTitle(idxPart).Data(), fHelper->GetControlParticleTitle(idxPart).Data(), sPtTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()), 
 			 24, -0.5, 11.5, 101, 0., 1.));
     } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
   }
  
   //  if (sName.Contains("fHDist")) {
-  //    list->Add(new TH3F(Form("%sNet%s_RecVsMC", name, aPartNames[1]), 
-  //		       Form("%s Net %s Dist - Rec Vs MC - %s;Centrality;(N_{p} - N_{#bar{p}})_{rec};(N_{p} - N_{#bar{p}})_{MC}", 
-  //			    title, aPartTitles[1], sPtTitle.Data()), 
+  //    list->Add(new TH3F(Form("%sNet%s_RecVsMC", name, fHelper->GetParticleName(1).Data()), 
+  //		       Form("%s Net %s Dist - Rec Vs MC - %s;Centrality;(N_{%s} - N_{%s})_{rec};(N_{%s} - N_{%s})_{MC}", 
+  //			    title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 
   //		       24, -0.5, 11.5, 201, -100.5, 100.49, 201, -100.5, 100.49));
   //  }
   
@@ -641,33 +640,39 @@ void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const C
 void AliAnalysisNetParticleDistribution::FillHistSet(const Char_t *name, Float_t *np, Int_t controlIdx)  {
   // -- Add histogram sets for particle and anti-particle
 
+  Int_t pid = fHelper->GetParticleSpecies();
+  if( pid < 0 || pid > AliPID::kSPECIES){
+    AliError("Particle ID not in AliPID::kSPECIES");
+    return;
+  }
+
   TList *list = static_cast<TList*>(fOutList->FindObject(name));
 
   Float_t centralityBin = fHelper->GetCentralityBin();
 
-  (static_cast<TH2F*>(list->FindObject(Form("%spbar", name))))->Fill(centralityBin, np[0]);
-  (static_cast<TH2F*>(list->FindObject(Form("%sp",    name))))->Fill(centralityBin, np[1]);
+  (static_cast<TH2F*>(list->FindObject(Form("%s%s", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[0]);
+  (static_cast<TH2F*>(list->FindObject(Form("%s%s", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[1]);
 
   Float_t sumNp    = np[1]+np[0];
   Float_t deltaNp  = np[1]-np[0];
   Float_t deltaNp2 = deltaNp * deltaNp;
   Float_t deltaNp3 = deltaNp2 * deltaNp;
 
-  (static_cast<TH2F*>(list->FindObject(Form("%sNetp",  name))))->Fill(centralityBin, deltaNp);
+  (static_cast<TH2F*>(list->FindObject(Form("%sNet%s",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp);
 
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetpM",  name))))->Fill(centralityBin, deltaNp);
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetp2M", name))))->Fill(centralityBin, deltaNp2);
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetp3M", name))))->Fill(centralityBin, deltaNp2*deltaNp);
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetp4M", name))))->Fill(centralityBin, deltaNp2*deltaNp2);
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetp5M", name))))->Fill(centralityBin, deltaNp3*deltaNp2);
-  (static_cast<TProfile*>(list->FindObject(Form("%sNetp6M", name))))->Fill(centralityBin, deltaNp3*deltaNp3);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%sM",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%s2M", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp2);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%s3M", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp2*deltaNp);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%s4M", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp2*deltaNp2);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%s5M", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp3*deltaNp2);
+  (static_cast<TProfile*>(list->FindObject(Form("%sNet%s6M", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp3*deltaNp3);
 
-  (static_cast<TH2F*>(list->FindObject(Form("%sNetpOverSum", name))))->Fill(centralityBin, deltaNp/sumNp);
+  (static_cast<TH2F*>(list->FindObject(Form("%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp/sumNp);
 
   TString sName(name);
   if (sName.Contains("fHControlMC") && controlIdx >= 0) {
-    (static_cast<TH2F*>(list->FindObject(Form("%spbarOverlambdabar", name))))->Fill(centralityBin, np[0]/fControlMCNp[controlIdx][0]);
-    (static_cast<TH2F*>(list->FindObject(Form("%spOverlambda",       name))))->Fill(centralityBin, np[1]/fControlMCNp[controlIdx][1]);
+    (static_cast<TH2F*>(list->FindObject(Form("%s%sOverlambdabar", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[0]/fControlMCNp[controlIdx][0]);
+    (static_cast<TH2F*>(list->FindObject(Form("%s%sOverlambda", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[1]/fControlMCNp[controlIdx][1]);
   }
 
   //  if (sName.Contains("fHDist")) {

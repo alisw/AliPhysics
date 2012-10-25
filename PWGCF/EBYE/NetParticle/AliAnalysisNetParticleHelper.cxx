@@ -30,6 +30,39 @@ ClassImp(AliAnalysisNetParticleHelper)
 
 /*
  * ---------------------------------------------------------------------------------
+ *                            particle names 
+ * ---------------------------------------------------------------------------------
+ */
+
+  const Char_t* aPartNames[AliPID::kSPECIES][2]             = {
+    {"ele",     "posi"},
+    {"mubar",   "mu"},
+    {"pibar",   "pi"},
+    {"kbar",    "k"},
+    {"pbar",    "p"}
+  };
+
+  const Char_t* aPartTitles[AliPID::kSPECIES][2]            = {
+    {"Electron",    "Positron"},
+    {"Anti-Muon",   "Muon"},
+    {"Anti-Pion",   "Proton"},
+    {"Anti-Kaon",   "Kaon"},
+    {"Anti-Proton", "Proton"}
+  };
+
+  const Char_t* aPartTitlesLatex[AliPID::kSPECIES][2]        = {
+    {"e^{-}",   "e^{+}" },
+    {"#mu^{-}", "#mu^{+}" },
+    {"#pi^{-}", "#pi^{+}" },
+    {"K^{-}",   "K^{+}" },
+    {"#bar{p}", "p"}
+  };
+
+  const Char_t* aControlPartNames[2]      = {"lambdabar",     "lambda"};
+  const Char_t* aControlPartTitles[2]     = {"Anti-Lambda",   "Lambda"};
+
+/*
+ * ---------------------------------------------------------------------------------
  *                            Constructor / Destructor
  * ---------------------------------------------------------------------------------
  */
@@ -97,6 +130,97 @@ AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
 
 /*
  * ---------------------------------------------------------------------------------
+ *                                    Setter
+ * ---------------------------------------------------------------------------------
+ */
+
+//________________________________________________________________________
+void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid) {
+  // -- Set particle species (ID, Name, Title, Title LATEX)
+
+  if( (Int_t)pid < 0 || (Int_t)pid > AliPID::kSPECIES){
+    AliWarning("Particle ID not in AliPID::kSPECIES --> Set to protons");
+    pid = AliPID::kProton;
+  }  
+
+  fParticleSpecies     = pid;
+
+  for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
+    fPartName[idxPart]       = aPartNames[fParticleSpecies][idxPart];
+    fPartTitle[idxPart]      = aPartTitles[fParticleSpecies][idxPart];
+    fPartTitleLatex[idxPart] = aPartTitlesLatex[fParticleSpecies][idxPart];
+  }
+}
+
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                    Getter
+ * ---------------------------------------------------------------------------------
+ */
+
+//________________________________________________________________________
+TString AliAnalysisNetParticleHelper::GetParticleName(Int_t idxPart) {
+  // -- Get particle Name
+
+  if( idxPart != 0 && idxPart != 1){
+    AliWarning("Particle type not known --> Set to antiparticles");
+    idxPart = 0;
+  }
+
+  return fPartName[idxPart];
+}
+
+//________________________________________________________________________
+TString AliAnalysisNetParticleHelper::GetParticleTitle(Int_t idxPart) {
+  // -- Get particle Title
+
+  if( idxPart != 0 && idxPart != 1){
+    AliWarning("Particle type not known --> Set to antiparticles");
+    idxPart = 0;
+  }
+
+  return fPartTitle[idxPart];
+}
+
+//________________________________________________________________________
+TString AliAnalysisNetParticleHelper::GetParticleTitleLatex(Int_t idxPart) {
+  // -- Get particle Title LATEX
+
+  if( idxPart != 0 && idxPart != 1){
+    AliWarning("Particle type not known --> Set to antiparticles");
+    idxPart = 0;
+  }
+
+  return fPartTitleLatex[idxPart];
+}
+
+//________________________________________________________________________
+TString AliAnalysisNetParticleHelper::GetControlParticleName(Int_t idxPart) {
+  // -- Get particle Title LATEX
+
+  if( idxPart != 0 && idxPart != 1){
+    AliWarning("Particle type not known --> Set to antiparticles");
+    idxPart = 0;
+  }
+
+  return aControlPartNames[idxPart];
+}
+
+//________________________________________________________________________
+TString AliAnalysisNetParticleHelper::GetControlParticleTitle(Int_t idxPart) {
+  // -- Get particle Title LATEX
+
+  if( idxPart != 0 && idxPart != 1){
+    AliWarning("Particle type not known --> Set to antiparticles");
+    idxPart = 0;
+  }
+
+  return aControlPartTitles[idxPart];
+}
+
+/*
+ * ---------------------------------------------------------------------------------
  *                                 Public Methods
  * ---------------------------------------------------------------------------------
  */
@@ -119,7 +243,7 @@ Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC) {
   // -- Load Eta correction function 
   iResult = InitializeEtaCorrection(isMC);
 
-  // -- Load Eta correction function 
+  // -- Load track by track correction function 
   iResult = InitializeTrackbyTrackCorrection();
 
   return iResult;
@@ -701,8 +825,12 @@ Int_t AliAnalysisNetParticleHelper::InitializeEtaCorrection(Bool_t isMC) {
 Int_t AliAnalysisNetParticleHelper::InitializeTrackbyTrackCorrection() {
   // -- Initialize track by track correction matrices
 
-  AliInfo("TODO ... get the correct name from particle"); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+  if( fParticleSpecies != AliPID::kProton){
+    AliWarning("Only proton corrections (preliminary available) --> Will correct with these");
+  }
+  
+  // In future --> !!!!!!!!!!!!!!!!!!!!!!!
+  //TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrection.root");
   TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrectionProton.root");
   if (!corrFile) {
     AliError("Track-by-track correction file can not be opened!");
@@ -715,6 +843,10 @@ Int_t AliAnalysisNetParticleHelper::InitializeTrackbyTrackCorrection() {
   fCorr0[1] = new THnSparseF*[fCentralityBinMax];
 
   for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
+
+    // In future --> !!!!!!!!!!!!!!!!!!!!!!!
+    // THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr0_Cent_%d", fPartName[0].Data(), idxCent)));
+    // THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr0_Cent_%d", fPartName[1].Data(), idxCent)));
     THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("pbar_Corr0_Cent_%d", idxCent)));
     THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("p_Corr0_Cent_%d", idxCent)));
 
@@ -733,6 +865,10 @@ Int_t AliAnalysisNetParticleHelper::InitializeTrackbyTrackCorrection() {
   fCorr1[1] = new THnSparseF*[fCentralityBinMax];
 
   for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
+
+    // In future --> !!!!!!!!!!!!!!!!!!!!!!!
+    //THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr1_Cent_%d", fPartName[0].Data(), idxCent)));
+    //THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr1_Cent_%d", fPartName[1].Data(), idxCent)));
     THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("pbar_Corr1_Cent_%d", idxCent)));
     THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("p_Corr1_Cent_%d", idxCent)));
 
