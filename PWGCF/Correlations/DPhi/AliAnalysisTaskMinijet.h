@@ -141,6 +141,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   THnSparse  *fMapPair[8];                  //! multi-dim histo for pair properties
   THnSparse  *fMapEvent[8];                 //! multi-dim histo for event properties
   THnSparse  *fMapAll[8];                   //! multi-dim histo for properties of all analysed tracks
+  THnSparse  *fMapThree[8];                 //! multi-dim histo for properties of three particle correlations
   
   TH1F       * fVertexZ[8];                 // z of vertex
   TH1F       * fNcharge[8];                 // pt
@@ -174,6 +175,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TProfile   * fPNch07Tracklet[8];           // nCharged with pT>fTriggerPtCut vs nTracklet
 
   TH1F       * fDPhiEventAxis[8];           // delta phi of associate tracks to event axis
+  TH2F       * fDPhi1DPhi2[8];              // dPhi1 versus dPhi2: three particle correlation test
  
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
