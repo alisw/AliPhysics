@@ -391,6 +391,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // count all events
   fHistos->FillEvent(centrality, -1);
   
+  if (centrality < 0)
+    return;
+
   // Only consider MC events within the vtx-z region used also as cut on the reconstructed vertex
   TObject* vertexSupplier = fMcEvent;
   if (fAOD) // AOD
@@ -682,6 +685,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!fSkipTrigger && !(fInputHandler->IsEventSelected() & fSelectBit))
     return;
 
+  // Support for ESD and AOD based analysis
+  AliVEvent* inputEvent = fAOD;
+  if (!inputEvent)
+    inputEvent = fESD;
+
   Double_t centrality = 0;
   
   AliCentrality *centralityObj = 0;
@@ -701,15 +709,26 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       {
 	// code from Chiara O (23.10.12)
 	const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
-	Float_t znacut[3] = {680., 562., 412.};
-
+	Float_t znacut[4] = {681., 563., 413., 191.};
+	
 	if(fZNAtower[0]>znacut[0]) centrality = 1;
-	else if(fZNAtower[0]<=znacut[0] && fZNAtower[0]>znacut[1]) centrality = 21;
-	else if(fZNAtower[0]<=znacut[1] && fZNAtower[0]>znacut[2]) centrality = 41;
-	else if(fZNAtower[0]<=znacut[2]) centrality = 61;
+	else if(fZNAtower[0]>znacut[1]) centrality = 21;
+	else if(fZNAtower[0]>znacut[2]) centrality = 41;
+	else if(fZNAtower[0]>znacut[3]) centrality = 61;
+	else centrality = 81;
       }
       else
 	centrality = -1;
+    }
+    else if (fCentralityMethod == "TRACKS_MANUAL")
+    {
+      // for pp
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      if (centrality > 40)
+	centrality = 41;
+//       Printf("%d %f", tracks->GetEntriesFast(), centrality);
+      delete tracks;
     }
     else
     {
@@ -747,11 +766,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     AliInfo(Form("Centrality is %f", centrality));
   }
   
-  // Support for ESD and AOD based analysis
-  AliVEvent* inputEvent = fAOD;
-  if (!inputEvent)
-    inputEvent = fESD;
-
   Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
 
   fHistos->SetRunNumber(inputEvent->GetRunNumber());
