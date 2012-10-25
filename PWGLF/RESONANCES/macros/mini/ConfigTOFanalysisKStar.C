@@ -117,21 +117,20 @@ Bool_t ConfigTOFanalysisKStar
   if (isMC){   
    // create output
     AliRsnMiniOutput *outm = task->CreateOutput(Form("kstar_Mother%s", suffix), "SPARSE", "MOTHER");
-   // selection settings
    outm->SetDaughter(0, AliRsnDaughter::kKaon);
    outm->SetDaughter(1, AliRsnDaughter::kPion);
-   outm->SetMotherPDG(313);
+   outm->SetMotherPDG(signedPdg);
    outm->SetMotherMass(0.89594);
    // pair cuts
    outm->SetPairCuts(cutsPair);
    // binnings
    outm->AddAxis(imID, 90, 0.6, 1.5);
    outm->AddAxis(ptID, 100, 0.0, 10.0);
-   
-   if (!isPP)
+   if (!isPP){
      outm->AddAxis(centID, 100, 0.0, 100.0);
-   else 
+   }   else    { 
      outm->AddAxis(centID, 400, 0.0, 400.0);
+   }
   }
   return kTRUE;
 }
