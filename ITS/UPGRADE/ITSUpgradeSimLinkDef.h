@@ -13,8 +13,8 @@
 
 // ITS upgrade classes
 //v0 part >>>. obsolete?
-#pragma link C++ class  AliITSupgrade+;
-#pragma link C++ class  AliITSupgradeDigitizer+;
+//#pragma link C++ class  AliITSupgrade+;
+//#pragma link C++ class  AliITSupgradeDigitizer+;
 //v0 part <<<
 // 
 #pragma link C++ class  AliITSU+;

@@ -62,14 +62,14 @@ void readHit(){
 	int lr = gm->GetLayer(id);
 	int ld = gm->GetLadder(id);
 	//
-	if(pHit->GetParticle()->IsPrimary()){
-	  Double_t xg,yg,zg=0.;
-	  pHit->GetPositionG(xg,yg,zg);
-	  xyGlob->Fill(xg,yg);
-	  zGlob->Fill(zg);
-	  printf("Module %d | Lr:%d Ladder: %d\n",id,lr,ld);
-	  hDeLoss[lr]->Fill(pHit->GetIonization());
-	} // is primary
+	//	if(pHit->GetParticle()->IsPrimary()){
+	Double_t xg,yg,zg=0.;
+	pHit->GetPositionG(xg,yg,zg);
+	xyGlob->Fill(xg,yg);
+	zGlob->Fill(zg);
+	printf("Module %d | Lr:%d Ladder: %d, X:%+.3e Y:%+.3e Z:%+.3e TrackID: %d\n",id,lr,ld,xg,yg,zg,pHit->GetTrack());
+	hDeLoss[lr]->Fill(pHit->GetIonization());
+	//	} // is primary
       }//loop hit 
     }//entryloopHitList
 	

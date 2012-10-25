@@ -32,7 +32,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  EveDet/EveDetLinkDef.h)
 
-set ( EINCLUDE  RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO EVE/EveDet ANALYSIS STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RAW EMCAL ITS ITS/UPGRADE TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO EVE/EveDet ANALYSIS STEER/STEER STEER/ESD STEER/STEERBase)
 
 set ( ELIBS -L/usr/X11/lib -lGL -lGLU )
 
@@ -44,6 +44,7 @@ set ( EXPORT
   EveDet/AliEveFMDLoader.h
   EveDet/AliEveITSDigitsInfo.h
   EveDet/AliEveITSModule.h
+  EveDet/AliEveITSUModule.h
   EveDet/AliEveITSModuleStepper.h
   EveDet/AliEveITSScaledModule.h
   EveDet/AliEveListAnalyser.h

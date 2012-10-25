@@ -1,5 +1,7 @@
 void rec() {
-  //AliLog::SetClassDebugLevel("AliITStrackerUpgrade",5);
+  
+  //  AliLog::SetClassDebugLevel("AliReconstruction",1);
+  AliLog::SetClassDebugLevel("AliITSUReconstructor",1);
 
   TDatime t;
 
@@ -7,22 +9,27 @@ void rec() {
   gSystem->Load("libITSUpgradeRec.so");
 
   gSystem->Exec("rm -rf *RecPoints* AliESD*");
-  AliITSRecoParam *p = AliITSRecoParam::GetLowFluxParam();
-  p->SetTrackerSAOnly();
-  p->SetInwardFindingSA();
 
+  // Set ITS upgrade reconstructor
+  gPluginMgr->AddHandler("AliReconstructor", "*",
+			 "AliITSUReconstructor","ITS", "AliITSUReconstructor()");
+  
   AliReconstruction rec;
-  rec.SetRecoParam("ITS",p);
-  rec.SetRunReconstruction("ITS");
-  rec.SetUpgradeModule("ITS");
-  rec.SetRunVertexFinder(kFALSE);
-  rec.SetRunTracking("ITS");
-  rec.SetFillESD("ITS");
-  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  rec.SetRunMultFinder(kFALSE);
+
+  rec.SetRunReconstruction("ITS"); // run cluster finder
+  rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
+
+  rec.SetRunVertexFinder(kFALSE); // to be implemented - CreateVertexer
+  rec.SetRunMultFinder(kFALSE);   // to be implemented - CreateMultFinder
+  rec.SetRunPlaneEff(kFALSE);     // to be implemented - CreateTrackleter
+
+  //  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   rec.SetSpecificStorage("GRP/GRP/Data",
 			 Form("local://%s",gSystem->pwd()));
-  rec.SetRunPlaneEff(kFALSE);
+  rec.SetSpecificStorage("ITS/Align/Data",
+			 Form("local://%s",gSystem->pwd()));
+  
+
   rec.SetRunQA(":");
   rec.SetRunGlobalQA(0);
   AliLog::Flush();

@@ -26,8 +26,8 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  	
-v0/AliITSupgrade.cxx 
-v0/AliITSupgradeDigitizer.cxx 
+#v0/AliITSupgrade.cxx 
+#v0/AliITSupgradeDigitizer.cxx 
 #
 AliITSU.cxx 
 AliITSUv11.cxx 
@@ -45,4 +45,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeSimLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase )
+#set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase )
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase )

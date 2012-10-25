@@ -1,4 +1,4 @@
-void sim(Int_t nev=2) {
+void sim(Int_t nev=3) {
 
   gSystem->Exec(" rm *.root ");
   AliSimulation simulator;

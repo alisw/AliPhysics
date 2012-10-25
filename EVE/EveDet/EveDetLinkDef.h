@@ -28,6 +28,7 @@
 #pragma link C++ class AliEveITSModuleSelection+;
 #pragma link C++ class AliEveITSDigitsInfo+;
 #pragma link C++ class AliEveITSModule+;
+#pragma link C++ class AliEveITSUModule+;
 #pragma link C++ class AliEveDigitScaleInfo+;
 #pragma link C++ class AliEveITSScaledModule+;
 #pragma link C++ class AliEveITSScaledModuleEditor+;

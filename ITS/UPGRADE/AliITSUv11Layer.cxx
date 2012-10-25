@@ -469,11 +469,12 @@ TGeoVolume* AliITSUv11Layer::CreateModule(const Double_t xlad,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+  //  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern() ,fLayerNumber);
-  TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
+  //  TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
+  TGeoVolume *modVol = new TGeoVolume(volname, module, medSi);
   modVol->SetVisibility(kFALSE);
   modVol->SetLineColor(1);
 

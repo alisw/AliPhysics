@@ -14,9 +14,13 @@
 // ITS upgrade classes 
  
 #pragma link C++ class AliITSURecoParam+;
+#pragma link C++ class AliITSUReconstructor+;
+#pragma link C++ class AliITSUClusterizer+;
+
 //
-//
-#pragma link C++ class AliITSlayerUpgrade+;
+
+// old v0
+/*#pragma link C++ class AliITSlayerUpgrade+;
 #pragma link C++ class AliITStrackerUpgrade+;
 #pragma link C++ class AliITStrackU+;
 #pragma link C++ class AliITStrackerU+;
@@ -25,5 +29,6 @@
 #pragma link C++ class AliITSUpgradeClusterListNode+;
 #pragma link C++ class AliITSUPixelModule+;
 #pragma link C++ class AliITSUpgradeClusterFinder+;
+*/
 
 #endif

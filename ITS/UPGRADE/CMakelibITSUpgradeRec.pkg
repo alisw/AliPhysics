@@ -26,18 +26,20 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  
+set ( SRCS
     AliITSURecoParam.cxx
+    AliITSUReconstructor.cxx
+    AliITSUClusterizer.cxx
 #
-    v0/AliITSlayerUpgrade.cxx 
-    v0/AliITStrackerUpgrade.cxx 
-    v0/AliITStrackU.cxx 
-    v0/AliITStrackerU.cxx 
-    v0/AliITSUpgradeReconstructor.cxx 
-    v0/AliITSUpgradeClusterList.cxx 
-    v0/AliITSUpgradeClusterListNode.cxx 
-    v0/AliITSUPixelModule.cxx 
-    v0/AliITSUpgradeClusterFinder.cxx 
+#    v0/AliITSlayerUpgrade.cxx 
+#    v0/AliITStrackerUpgrade.cxx 
+#    v0/AliITStrackU.cxx 
+#    v0/AliITStrackerU.cxx 
+#    v0/AliITSUpgradeReconstructor.cxx 
+#    v0/AliITSUpgradeClusterList.cxx 
+#    v0/AliITSUpgradeClusterListNode.cxx 
+#    v0/AliITSUPixelModule.cxx 
+#    v0/AliITSUpgradeClusterFinder.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
