@@ -218,9 +218,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   //   binsPt2 = CreateLogAxis(nPtBins2,ptMin2,ptMax2);
   
   //3 dim matrix
-  Int_t binsEffHisto[3]   = {Int_t(fEtaCut*20),  nPtBins,    150   };
+  Int_t binsEffHisto[3]   = {Int_t(fEtaCut*20),  nPtBins,       100 };
   Double_t minEffHisto[3] = {-fEtaCut,           ptMin,        -0.5 };
-  Double_t maxEffHisto[3] = {fEtaCut,            ptMax,        149.5 };
+  Double_t maxEffHisto[3] = {fEtaCut,            ptMax,        99.5 };
   
   //5 dim matrix
   Int_t binsEffHisto5[6]   = {  nPtBins,   nPtBins,    1,                              90,         100 ,      2 };
