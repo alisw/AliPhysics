@@ -584,7 +584,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  if (fReadInner == true) {
 	  
 	    if (esdtrack->GetTPCInnerParam()) {
-	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetInnerParam());
+	      //trackCopy->SetInnerMomentum(param->P());
+	      trackCopy->SetInnerMomentum(esdtrack->GetTPCmomentum());
 	      param->GetXYZ(rxyz);
 	      //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
 	      param->GetPxPyPz(pxyz);//reading noconstarined momentum
@@ -725,11 +727,11 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   if (fEstEventMult == kGlobalCount) 
     hbtEvent->SetNormalizedMult(tNormMult);
   else if (fEstEventMult == kReferenceITSTPC)
-    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSTPC,0.8));
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSTPC,1.0));
   else if(fEstEventMult == kReferenceITSSA)
-    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSSA,0.8));
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSSA,1.0));
   else if(fEstEventMult == kReferenceTracklets)
-    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTracklets,0.8));
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTracklets,1.0));
   else if (fEstEventMult == kTracklet)
     hbtEvent->SetNormalizedMult(tTracklet);
   else if (fEstEventMult == kITSTPC)
@@ -936,12 +938,12 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
       float globalPositionsAtRadiiPos[9][3];
       GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos,bfield,globalPositionsAtRadiiPos);
       double tpcEntrancePos[3]={globalPositionsAtRadiiPos[0][0],globalPositionsAtRadiiPos[0][1],globalPositionsAtRadiiPos[0][2]};
-      double tpcExitPos[3]={globalPositionsAtRadiiPos[8][0],globalPositionsAtRadiiPos[8][1],globalPositionsAtRadiiPos[8][2]};
+      double tpcExitPos[3]={globalPositionsAtRadiiPos[7][0],globalPositionsAtRadiiPos[7][1],globalPositionsAtRadiiPos[7][2]};
 
       float globalPositionsAtRadiiNeg[9][3];
       GetGlobalPositionAtGlobalRadiiThroughTPC(trackneg,bfield,globalPositionsAtRadiiNeg);
       double tpcEntranceNeg[3]={globalPositionsAtRadiiNeg[0][0],globalPositionsAtRadiiNeg[0][1],globalPositionsAtRadiiNeg[0][2]};
-      double tpcExitNeg[3]={globalPositionsAtRadiiNeg[8][0],globalPositionsAtRadiiNeg[8][1],globalPositionsAtRadiiNeg[8][2]};
+      double tpcExitNeg[3]={globalPositionsAtRadiiNeg[7][0],globalPositionsAtRadiiNeg[7][1],globalPositionsAtRadiiNeg[7][2]};
 
       AliFemtoThreeVector tmpVec;
       tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetX(tpcEntrancePos[1]); tmpVec.SetX(tpcEntrancePos[2]);

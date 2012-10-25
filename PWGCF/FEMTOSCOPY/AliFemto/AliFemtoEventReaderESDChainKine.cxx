@@ -541,6 +541,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	  
 	    if (esdtrack->GetTPCInnerParam()) {
 	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	      trackCopy->SetInnerMomentum(esdtrack->GetTPCmomentum());
 	      param->GetXYZ(rxyz);
 	      //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
 	      param->GetPxPyPz(pxyz);//reading noconstarined momentum
@@ -681,6 +682,25 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	fpz *= 1e13;
 	fpt *= 1e13;
 	
+	// fillDCA
+
+	if (TMath::Abs(impact[0]) > 0.001) {
+	  if (fStack->IsPhysicalPrimary(TMath::Abs(esdtrack->GetLabel()))){
+	    trackCopy->SetImpactDprim(impact[0]);
+	    //cout << "prim" << endl;
+
+	  }
+	  else if (fStack->IsSecondaryFromWeakDecay(TMath::Abs(esdtrack->GetLabel()))) {
+	    trackCopy->SetImpactDweak(impact[0]);
+	    //cout << "wea" << endl;
+	  }
+	  else if (fStack->IsSecondaryFromMaterial(TMath::Abs(esdtrack->GetLabel()))) {
+	    trackCopy->SetImpactDmat(impact[0]);
+	    //cout << "mat" << endl;
+	  }
+	}
+	//  end fillDCA 
+
 	//      cout << "Looking for mother ids " << endl;
 	if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
 	  //	cout << "Got mother id" << endl;
@@ -787,6 +807,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
   if (fEstEventMult == kGlobalCount) 
     hbtEvent->SetNormalizedMult(tNormMult);
+  else if (fEstEventMult == kReferenceITSTPC)
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSTPC,1.2));
+  else if(fEstEventMult == kReferenceITSSA)
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSSA,1.2));
+  else if(fEstEventMult == kReferenceTracklets)
+    hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTracklets,1.2));
   else if (fEstEventMult == kTracklet)
     hbtEvent->SetNormalizedMult(tTracklet);
   else if (fEstEventMult == kITSTPC)
@@ -1096,53 +1122,101 @@ void AliFemtoEventReaderESDChainKine::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemt
 	  }
 	}
 
-      cout<<"tESDv0->GetPdgCode(): "<<tESDv0->GetPdgCode()<<endl;
+      if ((TMath::Abs(trackpos->GetLabel()) < fStack->GetNtrack()) && (TMath::Abs(trackneg->GetLabel()) < fStack->GetNtrack())) {
+  
+	//cout<<"tESDv0->GetPdgCode(): "<<tESDv0->GetPdgCode()<<endl;
+	// cout<<"Labels: "<<trackpos->GetLabel()<<" "<<trackneg->GetLabel()<<endl;
+	  AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	  //TParticle *tPart = fStack->Particle(tESDv0->GetLabel()); //zle
+
+	  int labelpos = TMath::Abs(trackpos->GetLabel());
+	  int labelneg = TMath::Abs(trackneg->GetLabel());
+	  TParticle *tPartPos = fStack->Particle(labelpos);
+	  TParticle *tPartNeg = fStack->Particle(labelneg);
+
+
+	  double impactpos[2];
+	  double impactneg[2];
+	  double covimpact[3];
       
-      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      //TParticle *tPart = fStack->Particle(tESDv0->GetLabel()); //zle
-      TParticle *tPartPos = fStack->Particle(trackpos->GetLabel());
-      TParticle *tPartNeg = fStack->Particle(trackneg->GetLabel());
+	  AliExternalTrackParam *parampos = new AliExternalTrackParam(*trackpos->GetTPCInnerParam());
+	  parampos->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impactpos, covimpact);
+	  AliExternalTrackParam *paramneg = new AliExternalTrackParam(*trackneg->GetTPCInnerParam());
+	  paramneg->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impactneg, covimpact);
 
-      //tInfo->SetPDGPid();
-      //tInfo->SetMass();
-      //tInfo->SetTrueMomentum();
-      //tInfo->SetEmissionPoint();
 
-      // Freeze-out coordinates
-      double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+	  // fillDCA
+	  if (TMath::Abs(impactpos[0]) > 0.001) {
+	    if (fStack->IsPhysicalPrimary(labelpos)){
+	      tFemtoV0->SetImpactDprimPos(impactpos[0]);
+	    }
+	    else if (fStack->IsSecondaryFromWeakDecay(labelpos)) {
+	      tFemtoV0->SetImpactDweakPos(impactpos[0]);
+	      //cout << "wea" << endl;
+	    }
+	    else if (fStack->IsSecondaryFromMaterial(labelpos)) {
+	      tFemtoV0->SetImpactDmatPos(impactpos[0]);
+	      //cout << "mat" << endl;
+	    }
+	  }
+	  if (TMath::Abs(impactneg[0]) > 0.001) {
+	    if (fStack->IsPhysicalPrimary(labelneg)){
+	      tFemtoV0->SetImpactDprimNeg(impactneg[0]);
+	      //cout << "prim" << endl;
+	    }
+	    else if (fStack->IsSecondaryFromWeakDecay(labelneg)) {
+	      tFemtoV0->SetImpactDweakNeg(impactneg[0]);
+	      //cout << "wea" << endl;
+	    }
+	    else if (fStack->IsSecondaryFromMaterial(labelneg)) {
+	      tFemtoV0->SetImpactDmatNeg(impactneg[0]);
+	      //cout << "mat" << endl;
+	    }
 
-      fpx = tPartPos->Vx() - fPrimaryVtxPosition[0];
-      fpy = tPartPos->Vy() - fPrimaryVtxPosition[1];
-      fpz = tPartPos->Vz() - fPrimaryVtxPosition[2];
-      fpt = tPartPos->T();
+	  }
+	  //  end fillDCA 
+      
+
+	  //tInfo->SetPDGPid();
+	  //tInfo->SetMass();
+	  //tInfo->SetTrueMomentum();
+	  //tInfo->SetEmissionPoint();
+
+	  // Freeze-out coordinates
+	  double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+
+	  fpx = tPartPos->Vx() - fPrimaryVtxPosition[0];
+	  fpy = tPartPos->Vy() - fPrimaryVtxPosition[1];
+	  fpz = tPartPos->Vz() - fPrimaryVtxPosition[2];
+	  fpt = tPartPos->T();
 	
-      fpx *= 1e13;
-      fpy *= 1e13;
-      fpz *= 1e13;
-      fpt *= 1e13;
+	  fpx *= 1e13;
+	  fpy *= 1e13;
+	  fpz *= 1e13;
+	  fpt *= 1e13;
 
-      tInfo->SetPDGPidPos(tPartPos->GetPdgCode());
-      tInfo->SetMassPos(tPartPos->GetMass());
-      tInfo->SetTrueMomentumPos(tPartPos->Px(),tPartPos->Py(),tPartPos->Pz());
-      tInfo->SetEmissionPointPos(fpx,fpy,fpz,fpt);
+	  tInfo->SetPDGPidPos(tPartPos->GetPdgCode());
+	  tInfo->SetMassPos(tPartPos->GetMass());
+	  tInfo->SetTrueMomentumPos(tPartPos->Px(),tPartPos->Py(),tPartPos->Pz());
+	  tInfo->SetEmissionPointPos(fpx,fpy,fpz,fpt);
 
-      fpx = tPartNeg->Vx() - fPrimaryVtxPosition[0];
-      fpy = tPartNeg->Vy() - fPrimaryVtxPosition[1];
-      fpz = tPartNeg->Vz() - fPrimaryVtxPosition[2];
-      fpt = tPartNeg->T();
+	  fpx = tPartNeg->Vx() - fPrimaryVtxPosition[0];
+	  fpy = tPartNeg->Vy() - fPrimaryVtxPosition[1];
+	  fpz = tPartNeg->Vz() - fPrimaryVtxPosition[2];
+	  fpt = tPartNeg->T();
 	
-      fpx *= 1e13;
-      fpy *= 1e13;
-      fpz *= 1e13;
-      fpt *= 1e13;
+	  fpx *= 1e13;
+	  fpy *= 1e13;
+	  fpz *= 1e13;
+	  fpt *= 1e13;
 
-      tInfo->SetPDGPidNeg(tPartNeg->GetPdgCode());
-      tInfo->SetMassNeg(tPartNeg->GetMass());
-      tInfo->SetTrueMomentumNeg(tPartNeg->Px(),tPartNeg->Py(),tPartNeg->Pz());
-      tInfo->SetEmissionPointNeg(fpx,fpy,fpz,fpt);
+	  tInfo->SetPDGPidNeg(tPartNeg->GetPdgCode());
+	  tInfo->SetMassNeg(tPartNeg->GetMass());
+	  tInfo->SetTrueMomentumNeg(tPartNeg->Px(),tPartNeg->Py(),tPartNeg->Pz());
+	  tInfo->SetEmissionPointNeg(fpx,fpy,fpz,fpt);
 
-      tFemtoV0->SetHiddenInfo(tInfo);
-
+	  tFemtoV0->SetHiddenInfo(tInfo);
+      }
     }
   else
     {
@@ -1229,3 +1303,4 @@ void AliFemtoEventReaderESDChainKine::GetGlobalPositionAtGlobalRadiiThroughTPC(A
     }
   }
 }
+

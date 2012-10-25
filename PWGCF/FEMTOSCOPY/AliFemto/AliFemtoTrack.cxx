@@ -35,10 +35,14 @@ AliFemtoTrack::AliFemtoTrack():
   fTofProtonTime(-100000.0),
   fP(0,0,0),
   fPt(0),
+  fInnerMomentum(0),
   fHelix(),
   fFlags(0),
   fLabel(0),
   fImpactD(0),
+  fImpactDprim(-10000.0),
+  fImpactDweak(-10000.0),
+  fImpactDmat(-10000.0),
   fImpactZ(0),
   fCdd(0),
   fCdz(0),
@@ -97,10 +101,14 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTofProtonTime(-100000.0),
   fP(0,0,0),
   fPt(0),
+  fInnerMomentum(0),
   fHelix(),
   fFlags(0),
   fLabel(0),
   fImpactD(0),
+  fImpactDprim(-10000.0),
+  fImpactDweak(-10000.0),
+  fImpactDmat(-10000.0),
   fImpactZ(0),
   fCdd(0),
   fCdz(0),
@@ -142,11 +150,15 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTofProtonTime=t.fTofProtonTime;
   fP = t.fP;
   fPt = t.fPt;
+  fInnerMomentum = t.fInnerMomentum;
   fHelix = t.fHelix;
   fTrackId = t.fTrackId;
   fFlags=t.fFlags;
   fLabel=t.fLabel;
   fImpactD=t.fImpactD;
+  fImpactDprim=t.fImpactDprim;
+  fImpactDweak=t.fImpactDweak;
+  fImpactDmat=t.fImpactDmat;
   fImpactZ=t.fImpactZ;
   fCdd=t.fCdd;
   fCdz=t.fCdz;
@@ -205,11 +217,15 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTofProtonTime=aTrack.fTofProtonTime;
   fP = aTrack.fP;
   fPt = aTrack.fPt;
+  fInnerMomentum = aTrack.fInnerMomentum;
   fHelix = aTrack.fHelix;
   fTrackId = aTrack.fTrackId;
   fFlags=aTrack.fFlags;
   fLabel=aTrack.fLabel;
   fImpactD=aTrack.fImpactD;
+  fImpactDprim=aTrack.fImpactDprim;
+  fImpactDweak=aTrack.fImpactDweak;
+  fImpactDmat=aTrack.fImpactDmat;
   fImpactZ=aTrack.fImpactZ;
   fCdd=aTrack.fCdd;
   fCdz=aTrack.fCdz;
@@ -265,11 +281,17 @@ void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, cons
  
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;} 
+void AliFemtoTrack::SetInnerMomentum(const float& x){fInnerMomentum = x;} 
 void AliFemtoTrack::SetHelix(const AliFmPhysicalHelixD& h){fHelix = h;}
 void AliFemtoTrack::SetTrackId(const int & id) { fTrackId=id;}
 void AliFemtoTrack::SetFlags(const long int &flags) {fFlags=flags;}
 void AliFemtoTrack::SetLabel(const int &label) {fLabel=label;}
 void AliFemtoTrack::SetImpactD(const float& aImpactD){fImpactD=aImpactD;}
+
+void AliFemtoTrack::SetImpactDprim(const float& aImpactDprim){fImpactDprim=aImpactDprim;}
+void AliFemtoTrack::SetImpactDweak(const float& aImpactDweak){fImpactDweak=aImpactDweak;}
+void AliFemtoTrack::SetImpactDmat(const float& aImpactDmat){fImpactDmat=aImpactDmat;}
+
 void AliFemtoTrack::SetImpactZ(const float& aImpactZ){fImpactZ=aImpactZ;}
 void AliFemtoTrack::SetCdd(const float& aCdd){fCdd=aCdd;}
 void AliFemtoTrack::SetCdz(const float& aCdz){fCdz=aCdz;}
@@ -298,12 +320,18 @@ void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 
 short AliFemtoTrack::Charge() const {return fCharge;}  
 AliFemtoThreeVector AliFemtoTrack::P() const {return fP;}
-float AliFemtoTrack::Pt() const {return fPt;}              
+float AliFemtoTrack::Pt() const {return fPt;}            
+float AliFemtoTrack::InnerMomentum() const {return fInnerMomentum;}   
 const AliFmPhysicalHelixD& AliFemtoTrack::Helix() const {return fHelix;}
 int AliFemtoTrack::TrackId() const { return fTrackId; }
 long int AliFemtoTrack::Flags() const {return fFlags;}
 int AliFemtoTrack::Label()const {return fLabel;}
 float AliFemtoTrack::ImpactD()const{return fImpactD;}
+
+float AliFemtoTrack::ImpactDprim()const{return fImpactDprim;}
+float AliFemtoTrack::ImpactDweak()const{return fImpactDweak;}
+float AliFemtoTrack::ImpactDmat()const{return fImpactDmat;}
+
 float AliFemtoTrack::ImpactZ()const{return fImpactZ;}
 float AliFemtoTrack::Cdd() const{return fCdd;}
 float AliFemtoTrack::Cdz() const{return fCdz;}

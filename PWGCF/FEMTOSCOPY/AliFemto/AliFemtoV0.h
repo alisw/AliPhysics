@@ -64,7 +64,7 @@ public:
   int NdofNeg() const;
   unsigned long StatusPos() const;
   unsigned long StatusNeg() const;
-  
+
   
   int   TpcHitsPos() const;          // Number of TPC hits on pos. daughter				 
   int   TpcHitsNeg() const;          // Number of TPC hits on neg. daughter				 
@@ -279,6 +279,18 @@ public:
   double TOFPionTimeNeg() const;
   double TOFKaonTimeNeg() const;
 
+  void SetImpactDprimPos(const float& x);
+  void SetImpactDweakPos(const float& x);
+  void SetImpactDmatPos(const float& x);
+  float ImpactDprimPos()const;
+  float ImpactDweakPos()const;
+  float ImpactDmatPos()const;
+  void SetImpactDprimNeg(const float& x);
+  void SetImpactDweakNeg(const float& x);
+  void SetImpactDmatNeg(const float& x);
+  float ImpactDprimNeg()const;
+  float ImpactDweakNeg()const;
+  float ImpactDmatNeg()const;
 
   void SetprimaryVertex(const AliFemtoThreeVector v);//Gael 24 Sept 02
   /* Th stuff */
@@ -400,6 +412,14 @@ protected:
   double fTOFProtonTimeNeg;
   double fTOFPionTimeNeg;
   double fTOFKaonTimeNeg;
+
+
+  float fImpactDprimPos; //impact parameter in xy plane
+  float fImpactDweakPos; //impact parameter in xy plane
+  float fImpactDmatPos; //impact parameter in xy plane
+  float fImpactDprimNeg; //impact parameter in xy plane
+  float fImpactDweakNeg; //impact parameter in xy plane
+  float fImpactDmatNeg; //impact parameter in xy plane
 
   /* Th stuff */			    
   // Fab private : add mutable		    
@@ -623,6 +643,20 @@ inline void AliFemtoV0::SetTOFKaonTimeNeg(double x) {fTOFKaonTimeNeg = x;}
 inline double AliFemtoV0::TOFProtonTimeNeg() const {return fTOFProtonTimeNeg;}
 inline double AliFemtoV0::TOFPionTimeNeg() const {return fTOFPionTimeNeg;}
 inline double AliFemtoV0::TOFKaonTimeNeg() const {return fTOFKaonTimeNeg;}
+
+inline void AliFemtoV0::SetImpactDprimPos(const float& x) {fImpactDprimPos = x;}
+inline void AliFemtoV0::SetImpactDweakPos(const float& x) {fImpactDweakPos = x;}
+inline void AliFemtoV0::SetImpactDmatPos(const float& x) {fImpactDmatPos = x;}
+inline float AliFemtoV0::ImpactDprimPos() const {return fImpactDprimPos;}
+inline float AliFemtoV0::ImpactDweakPos() const {return fImpactDweakPos;}
+inline float AliFemtoV0::ImpactDmatPos() const {return fImpactDmatPos;}
+
+inline void AliFemtoV0::SetImpactDprimNeg(const float& x) {fImpactDprimNeg = x;}
+inline void AliFemtoV0::SetImpactDweakNeg(const float& x) {fImpactDweakNeg = x;}
+inline void AliFemtoV0::SetImpactDmatNeg(const float& x) {fImpactDmatNeg = x;}
+inline float AliFemtoV0::ImpactDprimNeg() const {return fImpactDprimNeg;}
+inline float AliFemtoV0::ImpactDweakNeg() const {return fImpactDweakNeg;}
+inline float AliFemtoV0::ImpactDmatNeg() const {return fImpactDmatNeg;}
 
 #endif
 
