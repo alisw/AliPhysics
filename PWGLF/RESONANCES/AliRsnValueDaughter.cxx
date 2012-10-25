@@ -106,6 +106,7 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kPt:          return "SingleTrackPt";
       case kPtpc:        return "SingleTrackPtpc";
       case kEta:         return "SingleTrackEta";
+      case kMass:        return "SingleTrackMass";
       case kITSsignal:   return "SingleTrackITSsignal";
       case kTPCsignal:   return "SingleTrackTPCsignal";
       case kTOFsignal:   return "SingleTrackTOFsignal";
@@ -162,6 +163,9 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          return kTRUE;
       case kEta:
          fComputedValue = (fUseMCInfo ? refMC->Eta() : ref->Eta());
+         return kTRUE;
+      case kMass:
+	 fComputedValue = (fUseMCInfo ? refMC->M() : ref->M());
          return kTRUE;
       case kPtpc:
          if (track) {
