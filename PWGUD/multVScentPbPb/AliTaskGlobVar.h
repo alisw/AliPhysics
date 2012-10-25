@@ -20,6 +20,8 @@ typedef struct {
   Float_t zdcPA;
   Float_t zdcNC;
   Float_t zdcPC;
+  Float_t zdcNAC;//common PM
+  Float_t zdcNCC;//common PM
   Float_t zem1;
   Float_t zem2;
   //
