@@ -36,7 +36,7 @@
 #include "AliGenEventHeader.h"
 #include "AliLog.h"
 #include "AliPhysicsSelection.h"
-#include "AliESDCentrality.h" 
+#include "AliCentrality.h" 
 #include "AliESDtrackCuts.h"
 #include "AliTaskGlobVar.h"
 #include "AliGenEventHeader.h"
@@ -85,7 +85,7 @@ void AliTaskGlobVar::UserCreateOutputObjects()
   fOutput->SetOwner(); 
   //
   fOutTree = new TTree("globTree","globTree");
-  fOutTree->Branch("g",&fGlobVars,"runID/I:timeStamp/i:zdcNA/F:zdcPA/F:zdcNC/F:zdcPC/F:zem1/F:zem2/F:zvSPD/F:zvTPC/F:chunk/S:flags/S"
+  fOutTree->Branch("g",&fGlobVars,"runID/I:timeStamp/i:zdcNA/F:zdcPA/F:zdcNC/F:zdcPC/F:zdcNAC/F:zdcNCC/F:zem1/F:zem2/F:zvSPD/F:zvTPC/F:chunk/S:flags/S"
 		   ":spd1/S:spd2/S:ncontSPDV/S:ncontTPCV/S:nTrTPC/S:nTrTPCITS/S:nTracklets/S:v0A/S:v0C/S:v0Corr/S", 16777216);
 
   if (fUseMC) {
@@ -164,7 +164,7 @@ void AliTaskGlobVar::UserExec(Option_t *)
   //
   float v0Corr,v0CorrR;
   //  v0Corr = GetCorrV0(esd,v0CorrR); MF: Deprecated: V0corr isnot needed any more
-  v0corr = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
+  v0Corr = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
   fGlobVars.v0Corr = (Short_t)v0Corr;
   //  fGlobVars.v0CorrResc = (Short_t)v0CorrR;
 
@@ -187,12 +187,26 @@ void AliTaskGlobVar::UserExec(Option_t *)
   if ( tdc[11] ) fGlobVars.flags |= GloVars_t::kTDCPC; //  Bool_t zdcPC = tdc[11];
   if ( vtxOK   ) fGlobVars.flags |= GloVars_t::kSPDVTXOK;
   //
-  fGlobVars.zdcNC = (Float_t) (esdZDC->GetZDCN1Energy()) /8.;
-  fGlobVars.zdcPC = (Float_t) (esdZDC->GetZDCP1Energy()) /8.;
-  fGlobVars.zdcNA = (Float_t) (esdZDC->GetZDCN2Energy()) /8.;
-  fGlobVars.zdcPA = (Float_t) (esdZDC->GetZDCP2Energy()) /8.;
+  
+  const Double_t * towZNC = esdZDC->GetZN1TowerEnergy();
+  const Double_t * towZPC = esdZDC->GetZP1TowerEnergy();
+  const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
+  const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
+
+  fGlobVars.zdcNC = (Float_t) (esdZDC->GetZDCN1Energy());
+  fGlobVars.zdcPC = (Float_t) (esdZDC->GetZDCP1Energy());
+  fGlobVars.zdcNA = (Float_t) (esdZDC->GetZDCN2Energy());
+  fGlobVars.zdcPA = (Float_t) (esdZDC->GetZDCP2Energy());
+
+  fGlobVars.zdcNCC = (Float_t) (towZNC[0]);
+  fGlobVars.zdcNAC = (Float_t) (towZNA[0]);
+
+
   fGlobVars.zem1  = (Float_t) (esdZDC->GetZDCEMEnergy(0)) /8.;
   fGlobVars.zem2  = (Float_t) (esdZDC->GetZDCEMEnergy(1)) /8.;
+
+
+
   //-----------------------------------------------
   //
   // ---------------------- MC ONLY -------------------------------
