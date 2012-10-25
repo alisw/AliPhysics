@@ -58,7 +58,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   // int runmults[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
   // int multbins[11] = {30, 70, 150, 310, 590, 990, 1570, 2370, 2370, 2370, 6500};
 
-  int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  int runmults[10] = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
   int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
   int runch[2] = {1, 1};
@@ -87,7 +87,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
 
   if (runshlcms) shqmaxSH = 0.25;
-  shqmax = 0.5;
+  shqmax = 0.9;
   
 
   // AliFemtoEventReaderESDChain* Reader=new AliFemtoEventReaderESDChain();
@@ -111,7 +111,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
-    Reader->SetCentralityPreSelection(0, 900);
+    Reader->SetCentralityPreSelection(0, 200);
     
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -158,7 +158,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  aniter = ichg*10+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(10);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
@@ -173,9 +173,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
 	  
-//	  cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-//	  cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
-//	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvVetaphitpc[aniter], cutFailEvVetaphitpc[aniter]);
+	  cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
+	  cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
+	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvVetaphitpc[aniter], cutFailEvVetaphitpc[aniter]);
 	  
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  //     dtc1etaphitpc[aniter]->SetPidProbPion(0.0,1.001);
@@ -187,7 +187,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  else if (ichg == 1)
 	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
 	    
-	  dtc1etaphitpc[aniter]->SetPt(0.15,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
@@ -243,7 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 
 	  
-/*
+
 	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult), 0.493677);
 	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[ichg], imult), 0.493677);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
@@ -251,7 +251,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),0);
 	  cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),0);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
-*/
+
 	  
 	 // sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	//  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
@@ -302,7 +302,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 	  else if (runtype == 2) {
             sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
-	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
+	    sqpcetaphitpc[aniter]->SetShareQualityMax(0.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	    // sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);
@@ -348,23 +348,23 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //////  	      cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 /////   	      anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 	      
-//	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
-	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,0.5);
+              cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+//	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,0.5);
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-//	      cqinvsqtpc[ktm] = new AliFemtoShareQualityCorrFctn(Form("cqinvsq%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
-//	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-//	      anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
+	      cqinvsqtpc[ktm] = new AliFemtoShareQualityCorrFctn(Form("cqinvsq%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
 
-//	      cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
-//	      cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-//	      cqinvinnertpc[ktm]->SetRadius(1.2);
-//	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
+	      cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+	      cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      cqinvinnertpc[ktm]->SetRadius(1.2);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
 
 	      if (run3d) {
-//Adam		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
-		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
+		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
+//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }
