@@ -61,6 +61,7 @@ public:
    virtual void     SetBranchNames(const TString &branch1, const TString &branch2);
    virtual void     SetBackgroundBranch(TString &branch) { fBackgroundBranch = branch;}
    virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
+   virtual void     SetDebugLevel(Int_t cucu){fDebug=cucu;}  
    virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
    virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
    virtual void     SetVtxZMin(Float_t z) { fVtxZMin = z; }
@@ -115,6 +116,7 @@ private:
    TString       fNonStdFile; // name of delta aod file to catch the extension
    // event selection
    Bool_t fIsPbPb;         // is Pb-Pb (fast embedding) or p-p (detector response)
+   Int_t fDebug;           //debug level
    AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
    Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
    Float_t fVtxZMin;	  // lower bound on vertex z

@@ -67,6 +67,7 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
+fDebug(0), 
 fOfflineTrgMask(AliVEvent::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
@@ -184,6 +185,7 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
+fDebug(0),
 fOfflineTrgMask(AliVEvent::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
@@ -406,10 +408,10 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
     fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
     fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
-    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,35,100,0.,100.);
-    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,35,100,0.,100.); 
-    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,35,50,0.,50.); 
-    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,35,50,0.,50.);  
+    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,3.5,100,0.,100.);
+    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,3.5,100,0.,100.); 
+    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,3.5,50,0.,50.); 
+    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,3.5,50,0.,50.);  
     fh3spectriggeredC10 = new TH3F("Triggered spectrumC10","",100,0.,1.,140,-80.,200.,50,0.,50.);
     fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",100,0.,1.,140,-80.,200.,50,0.,50.);
     fh3spectriggeredC3060 = new TH3F("Triggered spectrumC3060","",100,0.,1.,140,-80.,200.,10,0.,50.);

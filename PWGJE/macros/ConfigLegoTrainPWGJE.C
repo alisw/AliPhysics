@@ -83,16 +83,19 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
   }
   else{
     // catch all
+    AliAnalysisManager::SetGlobalStr("kJetRunPeriod","LHCXX");
     AliAnalysisManager::SetGlobalInt("kGridRunRangeLo",110000);
-    AliAnalysisManager::SetGlobalInt("kGridRunRangeUp",160000);
+    AliAnalysisManager::SetGlobalInt("kGridRunRangeUp",200000);
 
 
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
-    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB);
-    AliAnalysisManager::SetGlobalInt("kNTrigger",1);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB);    
-    AliAnalysisManager::SetGlobalStr("kTriggerName0","kMB");    
+    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kAny);
+    AliAnalysisManager::SetGlobalInt("kNTrigger",2);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::Any);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliVEvent::kMB);    
+    AliAnalysisManager::SetGlobalStr("kTriggerName0","kAny");    
+    AliAnalysisManager::SetGlobalStr("kTriggerName1","kMB");    
 
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
