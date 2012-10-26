@@ -4,6 +4,8 @@
 // #include "TROOT.h"
 // #include "AliMagF.h"
 
+enum {kNoOption, kResonanceOnly, kCharmOnly, kBeautyOnly, kBackground1mu, kBackground2mu, kNoResonances};
+
 //=============================================================================================================================================================
 
 void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                       // the directory with the MuonGlobalTracks.root and geometry.root files
