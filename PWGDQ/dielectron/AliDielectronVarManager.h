@@ -111,8 +111,6 @@ public:
     kTRDchi2,                // chi2 in TRD
     kTRDprobEle,             // TRD electron pid probability
     kTRDprobPio,             // TRD electron pid probability
-    kTRDprob1DEle,           // TRD electron pid probability 1D LQ
-    kTRDprob1DPio,           // TRD electron pid probability 1D LQ
     kTRDprob2DEle,           // TRD electron pid probability 2D LQ 
     kTRDprob2DPio,           // TRD electron pid probability 2D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
@@ -784,12 +782,9 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
     values[AliDielectronVarManager::kTRDprobEle]    = prob[AliPID::kElectron];
     values[AliDielectronVarManager::kTRDprobPio]    = prob[AliPID::kPion];
-    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ1D);
-    values[AliDielectronVarManager::kTRDprob1DEle]    = prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprob1DPio]    = prob[AliPID::kPion];
-    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
-    values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
+    //    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
+    values[AliDielectronVarManager::kTRDprob2DEle]    = 0.0;//prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprob2DPio]    = 0.0;//prob[AliPID::kPion];
 
     values[AliDielectronVarManager::kTOFsignal]=pid->GetTOFsignal();
     Double32_t expt[5];
