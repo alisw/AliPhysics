@@ -51,6 +51,7 @@
 #include "AliEventPoolManager.h"
 
 #include "AliESDZDC.h"
+#include "AliESDtrackCuts.h"
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -216,8 +217,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // Initialize class to handle histograms 
   TString histType = "4R";
-  if (fUseVtxAxis)
+  if (fUseVtxAxis == 1)
     histType = "5R";
+  else if (fUseVtxAxis == 2)
+    histType = "6R";
   if (fCourseCentralityBinning)
     histType += "C";
   fHistos = new AliUEHistograms("AliUEHistogramsSame", histType);
@@ -250,6 +253,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
+  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 400));
   
   PostData(0,fListOfHistos);
   
@@ -816,7 +820,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
+  
+  // reference multiplicity
+  Int_t referenceMultiplicity = -1;
+  if (fESD)
+    referenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(fESD);
 
+  ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
   
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);

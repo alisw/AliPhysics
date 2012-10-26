@@ -102,6 +102,12 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx");
   else if (histogramsStr.Contains("5"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtxTTR");
+  else if (histogramsStr.Contains("6RC"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10Course");
+  else if (histogramsStr.Contains("6R"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10");
+  else if (histogramsStr.Contains("6"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10TTR");
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();

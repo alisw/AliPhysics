@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE, Bool_t zVtxAxis = kFALSE, const char* containerName = "histosPhiCorrelations", const char* folderName = "PWG4_PhiCorrelations")
+AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE, Int_t zVtxAxis = 0, const char* containerName = "histosPhiCorrelations", const char* folderName = "PWG4_PhiCorrelations")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -30,16 +30,18 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using bit %d ++++++++++++\n\n\n", bit);
   
-  ana->SetTrackEtaCut(1.0);
-//   ana->SetTrackEtaCut(0.8);
-  ana->SetPtMin(0.15);
-//   ana->SetPtMin(1.0);
+  ana->SetTrackEtaCut(0.9);
+
+  ana->SetPtMin(0.5);
+
   //ana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
   ana->SetReduceMemoryFootprint(kTRUE);
   //ana->SetSelectCharge(2);
   
   ana->SetEventMixing(eventMixing);
   ana->SetUseVtxAxis(zVtxAxis);
+  
+  ana->SetZVertex(10);
   
 //   ana->SetSkipTrigger(kTRUE);
 //   ana->SetTriggerRestrictEta(0.5);
@@ -51,6 +53,18 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
 //   ana->SetTwoTrackEfficiencyCut(kTRUE);
   
 //   ana->SetFillpT(kTRUE);
+  
+//   ana->SetInjectedSignals(kTRUE);
+//   ana->SetRejectCentralityOutliers();
+  
+  //pA
+/*  ana->SetEventSelectionBit(AliVEvent::kCINT5);
+  ana->SetTwoTrackEfficiencyCut();
+  ana->SetStepsFillSkip(kFALSE, kTRUE);*/
+//   ana->SetCentralityMethod("ZNA_MANUAL");
+//   ana->SetCentralityMethod("TRACKS_MANUAL");
+//   ana->SetCourseCentralityBinning(kTRUE);  
+//   ana->SetMixingTracks(1);
   
   if (0)
   {
