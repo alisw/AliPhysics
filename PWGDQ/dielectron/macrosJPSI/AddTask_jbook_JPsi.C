@@ -96,19 +96,19 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   */
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("jbook_QA"),
+    mgr->CreateContainer(Form("jbook_QA_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("jbook_CF"),
+    mgr->CreateContainer(Form("jbook_CF_%s",triggerNames[j]),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("jbook_EventStat"),
+    mgr->CreateContainer(Form("jbook_EventStat_%s",triggerNames[j]),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("jbook_%s.root",triggerNames[j]));
