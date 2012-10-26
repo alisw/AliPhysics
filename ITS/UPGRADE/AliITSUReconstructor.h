@@ -30,6 +30,8 @@ public:
   virtual AliTrackleter* CreateMultFinder() const;
   virtual AliTracker*    CreateTrackleter() const;
 
+  virtual const char*    GetDetectorName() const {return "ITS";}
+
   static const AliITSURecoParam* GetRecoParam() { 
     return dynamic_cast<const AliITSURecoParam*>(AliReconstructor::GetRecoParam(0)); }
 

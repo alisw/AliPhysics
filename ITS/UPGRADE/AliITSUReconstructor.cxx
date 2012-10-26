@@ -78,7 +78,6 @@ AliITSUReconstructor::~AliITSUReconstructor()
 //______________________________________________________________________
 void AliITSUReconstructor::Init() 
 {
-  // 
   // Initalize this constructor 
   if (fGM) AliFatal("was already done, something is wrong...");
   //
