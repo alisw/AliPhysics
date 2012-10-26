@@ -28,8 +28,10 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
 				  Bool_t useMC,
 				  TString appendix,
 				  Int_t aodfilter=-1,
+				  Int_t clusterdef=AliHFEextraCuts::kFound, Int_t clusterrdef=AliHFEextraCuts::kFoundOverFindable, 
 				  UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				  Double_t TPCclRatio = 0.6, Double_t TPCclshared = 1.1,
+				  Bool_t rejectkinkmother = kFALSE,
 				  UChar_t ITScl=3,  Double_t ITSchi2perclusters=99999999.,
 				  Int_t itspixelcut=AliHFEextraCuts::kBoth,
                                   Double_t dcaxy=1.0, Double_t dcaz=2.0,
@@ -38,7 +40,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
 				  Bool_t etacor=kFALSE,TString listname="",
 				  Double_t* tpcdEdxcutlow=NULL,Double_t* tpcdEdxcuthigh=NULL,
 				  Float_t prodlow=0., Float_t prodhigh=100., 
-				  Bool_t kMCQA = kFALSE,
+				  Bool_t kNoPhotonic = kFALSE,
 				  Int_t nondefaultcentr=0, Float_t* arraycentr=NULL,
 				  Int_t ptbin=0){
   //
@@ -56,7 +58,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
   hfecuts->SetMinNClustersTPC(TPCcl);
   hfecuts->SetMinNClustersTPCPID(TPCclPID);
   hfecuts->SetMinRatioTPCclusters(TPCclRatio);
-  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+  hfecuts->SetTPCmodes(clusterdef, clusterrdef);
   hfecuts->SetFractionOfSharedTPCClusters(TPCclshared);
 
   hfecuts->SetMinNClustersITS(ITScl);
@@ -79,10 +81,32 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
   //hfecuts->SetTPCPIDCleanUpStep(kTRUE);
   hfecuts->SetQAOn();
 
+  // Background Subtraction
+  AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(appendix,"Background subtraction");
+  AliESDtrackCuts *hfeBackgroundCuts = new AliESDtrackCuts();
+  hfeBackgroundCuts->SetName("backgroundcuts");
+  //hfeBackgroundCuts->SetAcceptKinkDaughters(kFALSE);
+  hfeBackgroundCuts->SetRequireTPCRefit(kTRUE);
+  hfeBackgroundCuts->SetRequireITSRefit(kTRUE);
+  hfeBackgroundCuts->SetMinNClustersITS(2);
+  hfeBackgroundCuts->SetEtaRange(-0.8,0.8);
+  hfeBackgroundCuts->SetRequireSigmaToVertex(kTRUE);
+  hfeBackgroundCuts->SetMaxChi2PerClusterTPC(3.5);
+  hfeBackgroundCuts->SetMinNClustersTPC(100);
+  hfeBackgroundCuts->SetPtRange(0.3,1e10);
+  AliHFEpid *pidbackground = backe->GetPIDBackground();
+  if(useMC) pidbackground->SetHasMCData(kTRUE);
+  pidbackground->AddDetector("TPC", 1);
+  pidbackground->ConfigureTPCasymmetric(0.0,9999.,-3.,3.);
+  backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
+
+  // task
   AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
   task->SetHFECuts(hfecuts);
+  task->SetHFEBackgroundSubtraction(backe);
   task->SetPbPbAnalysis(kTRUE);
   task->SetRemovePileUp(kFALSE);
+  task->SetRejectKinkMother(rejectkinkmother);
   task->GetPIDQAManager()->SetHighResolutionHistos();
   if(useMC) task->SetHasMCData(kTRUE); // necessary for AOD
   printf("AOD filter %d On/OFF?\n",aodfilter);
@@ -90,6 +114,9 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
     printf("ON AOD filter %d\n",aodfilter);
     task->SetUseFilterAOD(kTRUE);
     task->SetFilter(aodfilter);
+  }
+  else {
+    task->SetUseFilterAOD(kFALSE);
   }
  
   
@@ -191,7 +218,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
   // QA
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   //task->SetFillSignalOnly(kFALSE);    // for DE pluging for MC
-  if(kMCQA) task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
+  if(kNoPhotonic) task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectron);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);

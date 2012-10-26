@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=-1, Int_t tpcCls=120,  Int_t tpcClsPID = 80, Double_t tpcClsRatio = 0.6, Double_t tpcClShared = 1.1, Int_t itsCls=4,Double_t itsChi2PerClusters=36.,Int_t itspixelcut=AliHFEextraCuts::kBoth, Double_t dcaxy=1.0, Double_t dcaz=2.0, Bool_t usetof=kFALSE, Double_t tofs=3.,Bool_t etacor=kFALSE,TString listname="",Double_t tpceff=0.5, Float_t prodlow=0., Float_t prodhigh=100.,Bool_t kMCQA = kFALSE){
+AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=16,Int_t clusterdef=AliHFEextraCuts::kFoundAll, Int_t clusterrdef=AliHFEextraCuts::kFoundAllOverFindable,Int_t tpcCls=130,  Int_t tpcClsPID = 80, Double_t tpcClsRatio = 0.6, Double_t tpcClShared = 1.1, Bool_t rejectkinkmother = kFALSE, Int_t itsCls=4,Double_t itsChi2PerClusters=-1,Int_t itspixelcut=AliHFEextraCuts::kBoth, Double_t dcaxy=1.0, Double_t dcaz=2.0, Bool_t usetof=kTRUE, Double_t tofs=3.,Bool_t etacor=kFALSE,TString listname="",Double_t tpceff=0.5, Float_t prodlow=0., Float_t prodhigh=3.,Bool_t kNoPhotonic = kTRUE){
 
   // libraries in case
   gSystem->Load("libANALYSIS.so");
@@ -6,8 +6,8 @@ AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=
 
 
   //set config file name
-  //TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
-  TString configFile("/d/alice12/bailhache/AliRootInstallations/07_10_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
+  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
+  //TString configFile("/d/alice12/bailhache/AliRootInstallations/07_10_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
   TString checkconfig="ConfigHFEpbpb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
@@ -23,14 +23,16 @@ AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=
   Int_t iprodlow = (Int_t) (prodlow*10);
   Int_t iprodhigh = (Int_t) (prodhigh*10);
   Int_t itof = 0;
-  Int_t iMCQA = 0;
+  Int_t iNoPhotonic = 0;
   Int_t ietacor = 0;
   Int_t itpceff = (Int_t) (tpceff*10);
+  Int_t irejectkinkmother = 0;
   if(usetof) itof=kTRUE;
-  if(kMCQA) iMCQA = 1;
+  if(kNoPhotonic) iNoPhotonic = 1;
   if(etacor) ietacor = 1;
+  if(rejectkinkmother) irejectkinkmother = 1;
   
-  TString appendix(TString::Format("f%dt%dtp%dtr%dts%di%dic%di%ddcaxy%dz%dtof%dts%de%dtpc%dprodlow%dhigh%dmc%d",aodfilter,tpcCls,tpcClsPID,itpcClsRatio,itpcClShared,itsCls,iitsChi2PerClusters,itspixelcut,idcaxy,idcaz,itof,itofs,ietacor,itpceff,iprodlow,iprodhigh,iMCQA));
+  TString appendix(TString::Format("f%dcd%dcr%dt%dtp%dtr%dts%dkm%di%dic%di%ddcaxy%dz%dtof%dts%de%dtpc%dprodlow%dhigh%dnhfe%d",aodfilter,clusterdef,clusterrdef,tpcCls,tpcClsPID,itpcClsRatio,itpcClShared,irejectkinkmother,itsCls,iitsChi2PerClusters,itspixelcut,idcaxy,idcaz,itof,itofs,ietacor,itpceff,iprodlow,iprodhigh,iNoPhotonic));
   printf("appendix %s\n", appendix.Data());
   
 
@@ -45,7 +47,7 @@ AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=
   if (inputDataType == "AOD") isaod = kTRUE;
 
   
-  // TPC cut
+  // TPC cut 2010
   // 0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100,one more per history
   // http://www.physi.uni-heidelberg.de/~pachmay/projects/hfe/pid/tpc/
   // without eta correction 50%
@@ -57,7 +59,7 @@ AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=
 
   // Task
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFE *task = ConfigHFEpbpb(isaod,isMC,appendix,aodfilter,tpcCls,tpcClsPID,tpcClsRatio,tpcClShared,itsCls,itsChi2PerClusters,itspixelcut,dcaxy,dcaz,usetof,tofs,etacor,listname,tpcdEdxcutlow,tpcdEdxcuthigh,prodlow,prodhigh,kMCQA);  
+  AliAnalysisTaskHFE *task = ConfigHFEpbpb(isaod,isMC,appendix,aodfilter,clusterdef,clusterrdef,tpcCls,tpcClsPID,tpcClsRatio,tpcClShared,irejectkinkmother,itsCls,itsChi2PerClusters,itspixelcut,dcaxy,dcaz,usetof,tofs,etacor,listname,tpcdEdxcutlow,tpcdEdxcuthigh,prodlow,prodhigh,kNoPhotonic);  
 
   mgr->AddTask(task);
 
