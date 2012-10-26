@@ -182,14 +182,14 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
 
   // -----------------------------------------------------------------------
 
-  THnSparseF         *fHnQA;                   //  THnSparseF : tracks for QA
+  THnSparseF         *fHnQA;                   //!  THnSparseF : tracks for QA
   Float_t             fUseQATHnSparse;         //  Usage of THnSparse for QA
   
   // -----------------------------------------------------------------------
 
   Float_t             fEtaMax;                 //  Max, absolut eta 
-  Float_t            *fPtRange;                //  Array of pt [min,max]
-  Float_t            *fPtRangeEff;             //  Array of pt [min,max] for efficiency
+  Float_t            *fPtRange;                //!  Array of pt [min,max]
+  Float_t            *fPtRangeEff;             //!  Array of pt [min,max] for efficiency
 
   Int_t               fAODtrackCutBit;         //  Track filter bit for AOD tracks
 

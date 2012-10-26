@@ -132,6 +132,9 @@ AliAnalysisTaskNetParticle::~AliAnalysisTaskNetParticle() {
 void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // Create histograms
 
+  //Have to do this for grid analysis????
+  Initialize();
+
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
