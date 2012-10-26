@@ -54,12 +54,12 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     // this task is also needed to set the MCEventHandler
     // to the AODHandler, this will not be needed when
     // AODHandler goes to ANALYSISalice
-    AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Filter");
-    if (bKineFilter) mgr->AddTask(kinefilter);
     
     // Barrel Tracks
     AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
     mgr->AddTask(filter);
+    AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Filter");
+    if (bKineFilter) mgr->AddTask(kinefilter);
     // Muons
     AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
     mgr->AddTask(esdmuonfilter);
