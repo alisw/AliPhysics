@@ -37,10 +37,10 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   axisTPCchi2->SetBins(0.0, 10.0, 0.1);
   //DCA xy
   AliRsnValueDaughter *axisDCAxy = new AliRsnValueDaughter("DCAxy", AliRsnValueDaughter::kDCAXY);
-  axisDCAxy->SetBins(0.0, 10.0, 0.1);
+  axisDCAxy->SetBins(-10.0, 10.0, 0.1);
   //DCA z
   AliRsnValueDaughter *axisDCAz = new AliRsnValueDaughter("DCAz", AliRsnValueDaughter::kDCAZ);
-  axisDCAxy->SetBins(0.0, 10.0, 0.1);
+  axisDCAxy->SetBins(-10.0, 10.0, 0.1);
 
   /* dEdx tpc */
   AliRsnValueDaughter *axisSigTPC = new AliRsnValueDaughter("sTPC", AliRsnValueDaughter::kTPCsignal);
