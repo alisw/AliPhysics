@@ -148,6 +148,7 @@ public:
   virtual Float_t GetTOFTimeResolution() const {return 0.;}
   virtual Double32_t GetT0TOF(Int_t icase) const {return 0.0*icase;}
   virtual const Double32_t * GetT0TOF() const {return NULL;}
+  virtual Float_t GetT0spread(Int_t /*i*/) const {return 0.;}
 
   // Calorimeter Clusters/Cells
   virtual AliVCluster *GetCaloCluster(Int_t)   const {return 0;}

@@ -68,6 +68,9 @@ fRecoPass(0),
 fRecoPassUser(-1),
 fRun(0),
 fOldRun(0),
+fResT0A(75.),
+fResT0C(65.),
+fResT0AC(55.),
 fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
@@ -121,6 +124,9 @@ fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
 fRun(0),
 fOldRun(0),
+fResT0A(75.),
+fResT0C(65.),
+fResT0AC(55.),
 fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
@@ -165,6 +171,9 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fRecoPassUser=other.fRecoPassUser;
     fRun=0;
     fOldRun=0;
+    fResT0A=75.;
+    fResT0C=65.;
+    fResT0AC=55.;
     fArrPidResponseMaster=NULL;
     fResolutionCorrection=NULL;
     fOADBvoltageMaps=NULL;
@@ -713,6 +722,7 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   //
   fRecoPass=pass;
   
+
   fCurrentEvent=NULL;
   if (!event) return;
   fCurrentEvent=event;
@@ -1165,6 +1175,24 @@ void AliPIDResponse::InitializeTOFResponse(){
   }
   fTOFResponse.SetTimeResolution(fTOFPIDParams->GetTOFresolution());
 
+  AliInfo("TZERO resolution loaded from ESDrun/AODheader");
+  Float_t t0Spread[4];
+  for (Int_t i=0;i<4;i++) t0Spread[i]=fCurrentEvent->GetT0spread(i);
+  AliInfo(Form("  TZERO spreads from data: (A+C)/2 %f A %f C %f (A'-C')/2: %f",t0Spread[0],t0Spread[1],t0Spread[2],t0Spread[3]));
+  Float_t a = t0Spread[1]*t0Spread[1]-t0Spread[0]*t0Spread[0]+t0Spread[3]*t0Spread[3];
+  Float_t c = t0Spread[2]*t0Spread[2]-t0Spread[0]*t0Spread[0]+t0Spread[3]*t0Spread[3];
+  if ( (t0Spread[0] > 50. && t0Spread[0] < 400.) && (a > 0.) && (c>0.)) {
+    fResT0AC=t0Spread[3];
+    fResT0A=TMath::Sqrt(a);
+    fResT0C=TMath::Sqrt(c);
+  } else {
+    AliInfo("  TZERO spreads not present or inconsistent, loading default");
+    fResT0A=75.;
+    fResT0C=65.;
+    fResT0AC=55.;
+  }
+  AliInfo(Form("  TZERO resolution set to: T0A: %f [ps] T0C: %f [ps] T0AC %f [ps]",fResT0A,fResT0C,fResT0AC));
+
 }
 
 
@@ -1298,7 +1326,9 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
       startTimeMask[i] = 0;
     }
 
-    Float_t resT0A=75,resT0C=65,resT0AC=55;
+    Float_t resT0A=fResT0A;
+    Float_t resT0C=fResT0C;
+    Float_t resT0AC=fResT0AC;
     if(vevent->GetT0TOF()){ // check if T0 detector information is available
 	flagT0T0=kTRUE;
     }

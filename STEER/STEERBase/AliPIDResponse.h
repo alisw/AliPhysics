@@ -156,6 +156,9 @@ private:
   Int_t   fRecoPassUser;               //  reconstruction pass explicitly set by the user
   Int_t   fRun;                        //! current run number
   Int_t   fOldRun;                     //! current run number
+  Float_t fResT0A;                     //! T0A resolution in current run
+  Float_t fResT0C;                     //! T0C resolution in current run
+  Float_t fResT0AC;                    //! T0A.and.T0C resolution in current run
   
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
@@ -204,7 +207,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse, 9);  //PID response handling
+  ClassDef(AliPIDResponse, 10);  //PID response handling
 };
 
 #endif

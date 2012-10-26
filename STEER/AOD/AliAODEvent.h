@@ -135,6 +135,7 @@ class AliAODEvent : public AliVEvent {
   const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
+  Float_t GetT0spread(Int_t i) const {return fHeader->GetT0spread(i);}
 
 
   // -- Tracks
