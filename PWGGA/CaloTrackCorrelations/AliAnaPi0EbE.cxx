@@ -50,8 +50,9 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() : 
     AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	
-    fNLMCutMin(-1),                fNLMCutMax(10),   
-    fTimeCutMin(-10000),           fTimeCutMax(10000),      
+    fNLMCutMin(-1),                fNLMCutMax(10), 
+    fSplitAsyCut(2.),
+    fTimeCutMin(-10000),           fTimeCutMax(10000),
     fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
     fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),
@@ -1899,7 +1900,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       }
       
       //Mass of selected pairs
-      fhSelectedMass->Fill(epair,(mom1+mom2).M());
+      fhMass->Fill(epair,(mom1+mom2).M());
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
@@ -2104,9 +2105,17 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
                               mom.Pt(), idPartType);
     
+    fhSelectedAsymmetry->Fill(mom.E(),asy);
+
+    if(nMaxima > 1 &&  TMath::Abs(asy) > fSplitAsyCut )
+    {
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Too large asymmetry\n");
+      FillRejectedClusterHistograms(mom,tag);
+      continue ;
+    }
+    
     //Mass of selected pairs
     fhSelectedMass     ->Fill(mom.E(),mass);
-    fhSelectedAsymmetry->Fill(mom.E(),asy);
 
     //-----------------------
     //Create AOD for analysis
