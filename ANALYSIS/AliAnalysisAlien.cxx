@@ -2500,7 +2500,7 @@ void AliAnalysisAlien::SetDefaults()
    fMaxMergeFiles              = 100;
    fRunNumbers                 = "";
    fExecutable                 = "analysis.sh";
-   fExecutableCommand          = "root -b -q";
+   fExecutableCommand          = "root -b -q -x";
    fArguments                  = "";
    fExecutableArgs             = "";
    fAnalysisMacro              = "myAnalysis.C";
@@ -4477,6 +4477,10 @@ Bool_t AliAnalysisAlien::SetupPar(const char *package)
 void AliAnalysisAlien::WriteExecutable()
 {
 // Generate the alien executable script.
+   // Patch executable with -x to catch error code
+   if (fExecutableCommand.Contains("root") && 
+       fExecutableCommand.Contains("-q") && 
+       !fExecutableCommand.Contains("-x")) fExecutableCommand += " -x";
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       ofstream out;
       out.open(fExecutable.Data(), ios::out);
