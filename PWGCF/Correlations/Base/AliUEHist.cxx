@@ -121,8 +121,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
     leadingpTBins[i] = 0.5 * i;
   
   // pT,lead binning 2
-  const Int_t kNLeadingpTBins2 = 9;
-  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
+  const Int_t kNLeadingpTBins2 = 8;
+  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
   
   // phi,lead; this binning starts at -pi/2 and is modulo 3
   const Int_t kNLeadingPhiSpacing = 72;
@@ -168,8 +168,10 @@ AliUEHist::AliUEHist(const char* reqHist) :
   // vtx-z axis
   const Int_t kNVertexBins = 7;
   Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
+  const Int_t kNVertexBins2 = 10;
+  Double_t vertexBins2[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10 };
   
-  Bool_t useVtxAxis = kFALSE;
+  Int_t useVtxAxis = 0;
   Bool_t useTTRBinning = kFALSE;
   Bool_t useCourseCentralityBinning = kFALSE;
   
@@ -188,7 +190,9 @@ AliUEHist::AliUEHist(const char* reqHist) :
   else if (TString(reqHist).BeginsWith("NumberDensityPhiCentrality"))
   {
     if (TString(reqHist).Contains("Vtx"))
-      useVtxAxis = kTRUE;
+      useVtxAxis = 1;
+    if (TString(reqHist).Contains("Vtx10"))
+      useVtxAxis = 2;
     if (TString(reqHist).Contains("TTR"))
       useTTRBinning = kTRUE;
     if (TString(reqHist).Contains("Course"))
@@ -250,11 +254,11 @@ AliUEHist::AliUEHist(const char* reqHist) :
     trackBins[4] = (useTTRBinning) ? leadingPhiBinsTTR : leadingPhiBins;
     trackAxisTitle[4] = "#Delta#varphi (rad.)";
 
-    if (useVtxAxis)
+    if (useVtxAxis > 0)
     {
       nTrackVars = 6;
-      iTrackBin[5] = kNVertexBins;
-      trackBins[5] = vertexBins;
+      iTrackBin[5] = (useVtxAxis == 1) ? kNVertexBins : kNVertexBins2;
+      trackBins[5] = (useVtxAxis == 1) ? vertexBins : vertexBins2;
       trackAxisTitle[5] = "z-vtx (cm)";
     }
   }
@@ -1346,7 +1350,7 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
   
   MultiplyHistograms(grid, target, trackCorrection, var1, var2);
   
-  Printf("AliUEHist::CorrectTracks: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", entriesBefore, target->GetEntries(), (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
+  Printf("AliUEHist::CorrectTracks: Corrected from %f (step %d) to %f (step %d) entries. Correction histogram: %f entries (integral: %f)", entriesBefore, step1, target->GetEntries(), step2, (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
@@ -1364,7 +1368,7 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, 
 
   MultiplyHistograms(grid->GetGrid(), target->GetGrid(), eventCorrection, var1, var2);
 
-  Printf("AliUEHist::CorrectEvents: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", entriesBefore, target->GetEntries(), (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
+  Printf("AliUEHist::CorrectEvents: Corrected from %f (step %d) to %f (step %d) entries. Correction histogram: %f entries (integral: %f)", entriesBefore, step1, target->GetEntries(), step2, (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
 }
 
 //____________________________________________________________________
@@ -1527,10 +1531,12 @@ void AliUEHist::Correct(AliUEHist* corrections)
     if (fTrackHist[0]->GetNVar() <= 5)
     {
       // do corrections copying between steps
+      CFStep step = kCFStepReconstructed;
+//       CFStep step = kCFStepBiasStudy;
       
       // copy 
-      CorrectTracks(kCFStepReconstructed, kCFStepTracked, 0, -1);
-      CorrectEvents(kCFStepReconstructed, kCFStepTracked, 0, -1);
+      CorrectTracks(step, kCFStepTracked, 0, -1);
+      CorrectEvents(step, kCFStepTracked, 0, -1);
       
       // Dont use eta in the following, because it is a Delta-eta axis
       
@@ -1571,7 +1577,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
 	  }
       }
       
-      new TCanvas; correlatedContamination->DrawCopy("COLZ");
+//       new TCanvas; correlatedContamination->DrawCopy("COLZ");
   //     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
       Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
       
@@ -1586,7 +1592,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
       
       // in bins of pT and centrality
       TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
-      new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
+//       new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
       // use kCFStepAnaTopology as a temporary step 
       CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 1, 3);
       delete efficiencyCorrection;
@@ -1618,7 +1624,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
       // in bins of p,T
       TH1* contamination = corrections->GetTrackingContamination(1);
       
-      if (1)
+      if (0)
       {
 	Printf("Applying contamination enhancement");
 	
@@ -2437,9 +2443,19 @@ void AliUEHist::DeepCopy(AliUEHist* from)
   
   for (Int_t step=0; step<fEventHist->GetNStep(); step++)
   {
-    Printf("Copying step %d", step);
+    Printf("Ev: Copying step %d", step);
     THnSparse* target = fEventHist->GetGrid(step)->GetGrid();
     THnSparse* source = from->fEventHist->GetGrid(step)->GetGrid();
+
+    target->Reset();
+    target->RebinnedAdd(source);
+  }
+  
+  for (Int_t step=0; step<fTrackHistEfficiency->GetNStep(); step++)
+  {
+    Printf("Eff: Copying step %d", step);
+    THnSparse* target = fTrackHistEfficiency->GetGrid(step)->GetGrid();
+    THnSparse* source = from->fTrackHistEfficiency->GetGrid(step)->GetGrid();
 
     target->Reset();
     target->RebinnedAdd(source);
