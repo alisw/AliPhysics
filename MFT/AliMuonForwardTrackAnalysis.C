@@ -1,6 +1,8 @@
-enum {kNoOption, kResonanceOnly};
-
-const Double_t mJpsi = TDatabasePDG::Instance()->GetParticle("J/psi")->Mass();
+// #include "AliMuonForwardTrackAnalysis.h"
+// #include "TDatabasePDG.h"
+// #include "TGeoGlobalMagField.h"
+// #include "TROOT.h"
+// #include "AliMagF.h"
 
 //=============================================================================================================================================================
 
@@ -24,12 +26,17 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 				 Int_t lastEvent = -1, 
 				 Int_t myRandom = 0,                               // number which will tag the name of the output file
 				 Double_t ptMinSingleMuons = 0.0,                  // lower limit for the cut on the single muon pt
-				 Double_t trueMass = mJpsi,                        // used to evaluate the pseudo proper decay length, usually for J/psi only
-				 Bool_t evalDimuonVtxResolution=kFALSE) {          // to be set true only if prompt dimuon sources are analyzed
+				 Double_t trueMass = 0.0,                          // used to evaluate the pseudo proper decay length, usually for J/psi only
+				 Bool_t evalDimuonVtxResolution=kFALSE,            // to be set true only if prompt dimuon sources are analyzed
+				 Int_t nEventsToMix = 0) {                         // if <1 or >100, mixing is not performed
   
+  const Double_t mJpsi = TDatabasePDG::Instance()->GetParticle("J/psi")->Mass();
+
+  if (trueMass<0) trueMass = mJpsi;
+ 
   gROOT -> LoadMacro("./AliMuonForwardTrackAnalysis.cxx+");
   //  AliLog::SetClassDebugLevel("AliMuonForwardTrackPair", 1);
-  //  AliLog::SetClassDebugLevel("AliMuonForwardTrackAnalysis", 1);
+  //  AliLog::SetClassDebugLevel("AliMuonForwardTrackAnalysis", 2);
 
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
   
@@ -58,11 +65,12 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 
   myAnalysis->EvalDimuonVtxResolution(evalDimuonVtxResolution);    // it should be true only with prompt dimuon sources
 
-  myAnalysis->Init("MuonGlobalTracks.root");
+  myAnalysis->SetNEventsToMix(nEventsToMix);
 
-  while (myAnalysis->LoadNextEvent()) continue;
-
-  myAnalysis->Terminate(Form("outFiles/outFile.%d.%d.%d.root", myAnalysis->GetFirstEvent(), myAnalysis->GetLastEvent(), myRandom));
+  if (myAnalysis->Init("MuonGlobalTracks.root")) {
+    while (myAnalysis->LoadNextEvent()) continue;
+    myAnalysis->Terminate(Form("outFiles/outFile.%d.%d.%d.root", myAnalysis->GetFirstEvent(), myAnalysis->GetLastEvent(), myRandom));
+  }
 
 }
 

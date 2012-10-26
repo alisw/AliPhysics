@@ -24,6 +24,7 @@
 #include "TDatabasePDG.h"
 #include "TGraph.h"
 #include "AliMuonForwardTrackAnalysis.h"
+#include "TSystem.h"
 
 ClassImp(AliMuonForwardTrackAnalysis)
 
@@ -36,8 +37,10 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fInputTreeWithBranson(0x0),
   fInputTreeWithoutBranson(0x0),
   fMuonForwardTracksWithBranson(0),
+  fMuonForwardTracksWithBransonMix(0),
   fMuonForwardTrackPairsWithBranson(0),
   fMuonForwardTracksWithoutBranson(0),
+  fMuonForwardTracksWithoutBransonMix(0),
   fMuonForwardTrackPairsWithoutBranson(0),
   fMFTTrackWithBranson(0),
   fMFTTrackWithoutBranson(0),
@@ -56,29 +59,23 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fNPairsAnalyzedOfEvent(0),
   fNTracksAnalyzedOfEventAfterCut(0),
   fNPairsAnalyzedOfEventAfterCut(0),
-  fHistOffsetSingleMuonsX(0x0),
-  fHistOffsetSingleMuonsY(0x0),
-  fHistOffsetSingleMuons(0x0),
-  fHistWOffsetSingleMuons(0x0),
-  fHistErrorSingleMuonsX(0x0),
-  fHistErrorSingleMuonsY(0x0),
+  fHistXOffsetSingleMuonsVsP(0x0),
+  fHistYOffsetSingleMuonsVsP(0x0),
+  fHistOffsetSingleMuonsVsP(0x0),
+  fHistWOffsetSingleMuonsVsP(0x0),
+  fHistXOffsetSingleMuonsVsPt(0x0),
+  fHistYOffsetSingleMuonsVsPt(0x0),
+  fHistOffsetSingleMuonsVsPt(0x0),
+  fHistWOffsetSingleMuonsVsPt(0x0),
+  fHistXErrorSingleMuonsVsP(0x0),
+  fHistYErrorSingleMuonsVsP(0x0),
+  fHistXErrorSingleMuonsVsPt(0x0),
+  fHistYErrorSingleMuonsVsPt(0x0),
   fHistZOriginSingleMuonsMC(0x0),
   fHistZROriginSingleMuonsMC(0x0), 
   fHistSingleMuonsPtRapidity(0x0), 
   fHistSingleMuonsOffsetChi2(0x0),
-  fHistRapidityPtMuonPairs(0x0),
   fHistMassMuonPairsMCVsPt(0x0),
-  fHistMassMuonPairsVsPt(0x0),
-  fHistMassMuonPairsWithoutMFTVsPt(0x0),
-  fHistMassMuonPairsVsPtLSp(0x0),
-  fHistMassMuonPairsWithoutMFTVsPtLSp(0x0),
-  fHistMassMuonPairsVsPtLSm(0x0),
-  fHistMassMuonPairsWithoutMFTVsPtLSm(0x0),
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt(0x0),
-  fHistWOffsetMuonPairsAtPCAVsPt(0x0),
-  fHistDistancePrimaryVtxPCAVsPt(0x0),
-  fHistPCAQualityVsPt(0x0),
-  fHistPseudoProperDecayLengthVsPt(0x0),
   fHistDimuonVtxResolutionXVsPt(0x0),
   fHistDimuonVtxResolutionYVsPt(0x0),
   fHistDimuonVtxResolutionZVsPt(0x0),
@@ -96,7 +93,7 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fPrimaryVtxY(0.),
   fPrimaryVtxZ(0.),
   fMaxNWrongClustersMC(999),
-  fPtMinSingleMuons(0),
+  fMinPtSingleMuons(0),
   fUseBransonForCut(kFALSE),
   fUseBransonForKinematics(kFALSE),
   fCorrelateCutOnOffsetChi2(kFALSE),
@@ -105,10 +102,27 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fMaxWOffsetMuonPairsAtPrimaryVtx(1.e9), 
   fMaxWOffsetMuonPairsAtPCA(1.e9), 
   fMaxDistancePrimaryVtxPCA(1.e9), 
-  fMinPCAQuality(0.)
+  fMinPCAQuality(0.),
+  fMixing(kFALSE),
+  fNEventsToMix(10)
 {
 
   // default constructor
+
+  for (Int_t i=0; i<2; i++) {
+    fHistRapidityPtMuonPairs[i]              = 0;
+    fHistMassMuonPairsVsPt[i]                = 0;
+    fHistMassMuonPairsWithoutMFTVsPt[i]      = 0;
+    fHistMassMuonPairsVsPtLSp[i]             = 0;
+    fHistMassMuonPairsWithoutMFTVsPtLSp[i]   = 0;
+    fHistMassMuonPairsVsPtLSm[i]             = 0;
+    fHistMassMuonPairsWithoutMFTVsPtLSm[i]   = 0;
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[i] = 0;
+    fHistWOffsetMuonPairsAtPCAVsPt[i]        = 0;
+    fHistDistancePrimaryVtxPCAVsPt[i]        = 0;
+    fHistPCAQualityVsPt[i]                   = 0;
+    fHistPseudoProperDecayLengthVsPt[i]      = 0;
+  }
 
 }
 
@@ -117,23 +131,25 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
 Bool_t AliMuonForwardTrackAnalysis::Init(Char_t *inputFileName) {
 
   BookHistos();
-
+  
   TFile *inputFile = new TFile(Form("%s/%s",fInputDir.Data(),inputFileName));
   if (!inputFile || !inputFile->IsOpen()) {
     AliError(Form("Error opening file %s", inputFileName));
     return kFALSE;
   }
-  fInputTreeWithBranson = (TTree*) inputFile->Get("AliMuonForwardTracksWithBranson");
+  
+  fInputTreeWithBranson    = (TTree*) inputFile->Get("AliMuonForwardTracksWithBranson");
   if (!fInputTreeWithBranson) {
     AliError("Error reading input tree");
     return kFALSE;
   }
-  fInputTreeWithoutBranson = (TTree*) inputFile->Get("AliMuonForwardTracksWithoutBranson");
+  
+  fInputTreeWithoutBranson    = (TTree*) inputFile->Get("AliMuonForwardTracksWithoutBranson");
   if (!fInputTreeWithoutBranson) {
     AliError("Error reading input tree");
     return kFALSE;
   }
-
+  
   if (fFirstEvent>=fInputTreeWithBranson->GetEntriesFast()) return kFALSE;
   else if (fFirstEvent<0 || fLastEvent<0 || fFirstEvent>fLastEvent || fFirstEvent>=fInputTreeWithBranson->GetEntriesFast()) {
     fFirstEvent = 0;
@@ -142,38 +158,42 @@ Bool_t AliMuonForwardTrackAnalysis::Init(Char_t *inputFileName) {
   else {
     fLastEvent = TMath::Min(fLastEvent, Int_t(fInputTreeWithBranson->GetEntriesFast()-1));
   }
-
+  
   AliInfo(Form("Analysing events %d to %d", fFirstEvent, fLastEvent));
-
+  
   fMuonForwardTracksWithBranson = new TClonesArray("AliMuonForwardTrack",30);
   fInputTreeWithBranson->SetBranchAddress("tracks", &fMuonForwardTracksWithBranson);  
-
+  
   fMuonForwardTracksWithoutBranson = new TClonesArray("AliMuonForwardTrack",30);
   fInputTreeWithoutBranson->SetBranchAddress("tracks", &fMuonForwardTracksWithoutBranson);  
-
+  
   TGeoManager::Import(Form("%s/geometry.root",fInputDir.Data()));
-
+  
   AliMUONTrackExtrap::SetField();
-
+  
   fMuonForwardTrackPairsWithBranson    = new TClonesArray("AliMuonForwardTrackPair",10);
   fMuonForwardTrackPairsWithoutBranson = new TClonesArray("AliMuonForwardTrackPair",10);
   fMuonForwardTrackPairsWithBranson    -> SetOwner(kTRUE);
   fMuonForwardTrackPairsWithoutBranson -> SetOwner(kTRUE);
   
   return kTRUE;
-
+  
 }
-
+  
 //====================================================================================================================================================
 
 Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
 
   if (fEv>fLastEvent) return kFALSE;
   if (fEv<fFirstEvent) { fEv++; return kTRUE; }
-  fMuonForwardTracksWithBranson -> Clear("");
-  fMuonForwardTracksWithoutBranson -> Clear("");
-  fInputTreeWithBranson->GetEvent(fEv);
-  fInputTreeWithoutBranson->GetEvent(fEv);
+
+  fMuonForwardTracksWithBranson    -> Clear("C");
+  fMuonForwardTracksWithoutBranson -> Clear("C");
+  fMuonForwardTracksWithBranson    -> Delete();
+  fMuonForwardTracksWithoutBranson -> Delete();
+  fInputTreeWithBranson    -> GetEvent(fEv);
+  fInputTreeWithoutBranson -> GetEvent(fEv);
+
   AliDebug(2,Form("**** analyzing event # %4d (%3d tracks) ****", fEv, fMuonForwardTracksWithBranson->GetEntriesFast()));
 
   AliInfo(Form("**** analyzing event # %6d of %6d ****", fEv, fLastEvent));
@@ -190,19 +210,72 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
   }
   
   if (fMuonPairAnalysis) {
-    if (fMuonForwardTrackPairsWithBranson) {
-      fMuonForwardTrackPairsWithBranson->Clear("C");
-      fMuonForwardTrackPairsWithoutBranson->Clear("C");
+    if (fMuonForwardTrackPairsWithBranson || fMuonForwardTrackPairsWithoutBranson) {
+      fMuonForwardTrackPairsWithBranson    -> Clear("C");
+      fMuonForwardTrackPairsWithoutBranson -> Clear("C");
+      fMuonForwardTrackPairsWithBranson    -> Delete();
+      fMuonForwardTrackPairsWithoutBranson -> Delete();
     }
     BuildMuonPairs();
     fNPairsAnalyzedOfEvent = 0;
     fNPairsAnalyzedOfEventAfterCut = 0;
     fNPairsOfEvent = fMuonForwardTrackPairsWithBranson->GetEntriesFast();
-    while (AnalyzeMuonPair()) continue;
+    while (AnalyzeMuonPair(kSingleEvent)) continue;
   }
 
   AliDebug(2,Form("**** analyzed  event # %4d (%3d tracks and %3d pairs analyzed) ****", fEv, fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut));
+  
+  if (fMuonPairAnalysis && fMixing) {
+    for (fEvMix=fEv+1; fEvMix<=fEv+fNEventsToMix; fEvMix++) {
+      if (fEvMix<=fLastEvent) {
 
+	if (fMuonForwardTracksWithBransonMix || fMuonForwardTracksWithoutBransonMix) {
+	  fMuonForwardTracksWithBransonMix    -> Delete();
+	  fMuonForwardTracksWithoutBransonMix -> Delete();
+	  delete fMuonForwardTracksWithBransonMix;
+	  delete fMuonForwardTracksWithoutBransonMix;
+	}
+
+	fMuonForwardTracksWithBranson    -> Clear("C");
+	fMuonForwardTracksWithoutBranson -> Clear("C");
+	fMuonForwardTracksWithBranson    -> Delete();
+	fMuonForwardTracksWithoutBranson -> Delete();
+	fInputTreeWithBranson    -> GetEvent(fEvMix);
+	fInputTreeWithoutBranson -> GetEvent(fEvMix);
+
+	fMuonForwardTracksWithBransonMix    = new TClonesArray(*fMuonForwardTracksWithBranson);
+	fMuonForwardTracksWithoutBransonMix = new TClonesArray(*fMuonForwardTracksWithoutBranson);
+
+	fMuonForwardTracksWithBranson    -> Clear("C");
+	fMuonForwardTracksWithoutBranson -> Clear("C");
+	fMuonForwardTracksWithBranson    -> Delete();
+	fMuonForwardTracksWithoutBranson -> Delete();
+	fInputTreeWithBranson    -> GetEvent(fEv);
+	fInputTreeWithoutBranson -> GetEvent(fEv);
+
+	AliDebug(2,Form("**** mixing event # %4d (%3d tracks) with event # %4d (%3d tracks) ****", 
+			fEv,    fMuonForwardTracksWithBranson->GetEntriesFast(),
+			fEvMix, fMuonForwardTracksWithBransonMix ->GetEntriesFast()));	  
+	if (fMuonForwardTrackPairsWithBranson || fMuonForwardTrackPairsWithoutBranson) {
+	  fMuonForwardTrackPairsWithBranson    -> Clear("C");
+	  fMuonForwardTrackPairsWithoutBranson -> Clear("C");
+	  fMuonForwardTrackPairsWithBranson    -> Delete();
+	  fMuonForwardTrackPairsWithoutBranson -> Delete();
+	}
+	BuildMuonPairsMix();
+	fNPairsAnalyzedOfEvent = 0;
+	fNPairsAnalyzedOfEventAfterCut = 0;
+	fNPairsOfEvent = fMuonForwardTrackPairsWithBranson->GetEntriesFast();
+	while (AnalyzeMuonPair(kMixedEvent)) continue;
+	AliDebug(2,Form("**** analyzed  mixed event pair (%4d ; %4d) : %3d pairs analyzed ****", fEv, fEvMix, fNPairsAnalyzedOfEventAfterCut));
+	
+	// delete fMuonForwardTracksWithBransonMix;
+	// delete fMuonForwardTracksWithoutBransonMix;
+
+      }
+    }
+  }
+    
   fEv++;
   
   return kTRUE;
@@ -251,8 +324,10 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
   TMatrixD cov(5,5);
   cov = param->GetCovariances();
 
-  fHistErrorSingleMuonsX -> Fill(1.e4*TMath::Sqrt(cov(0,0)));
-  fHistErrorSingleMuonsY -> Fill(1.e4*TMath::Sqrt(cov(2,2)));
+  fHistXErrorSingleMuonsVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.P());
+  fHistYErrorSingleMuonsVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.P());
+  fHistXErrorSingleMuonsVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Pt());
+  fHistYErrorSingleMuonsVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Pt());
 
   Double_t dX = fMFTTrack->GetOffsetX(fPrimaryVtxX, fPrimaryVtxZ);
   Double_t dY = fMFTTrack->GetOffsetY(fPrimaryVtxY, fPrimaryVtxZ);
@@ -262,12 +337,16 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   //  AliDebug(2, Form("pdg code = %d\n", fMCRefTrack->GetPdgCode()));
 
-  fHistOffsetSingleMuonsX -> Fill(1.e4*dX);
-  fHistOffsetSingleMuonsY -> Fill(1.e4*dY);
+  fHistXOffsetSingleMuonsVsP  -> Fill(1.e4*dX,        pMu.P());
+  fHistYOffsetSingleMuonsVsP  -> Fill(1.e4*dY,        pMu.P());
+  fHistOffsetSingleMuonsVsP   -> Fill(1.e4*offset,    pMu.P());
+  fHistWOffsetSingleMuonsVsP  -> Fill(weightedOffset, pMu.P());
+  fHistXOffsetSingleMuonsVsPt -> Fill(1.e4*dX,        pMu.Pt());
+  fHistYOffsetSingleMuonsVsPt -> Fill(1.e4*dY,        pMu.Pt());
+  fHistOffsetSingleMuonsVsPt  -> Fill(1.e4*offset,    pMu.Pt());
+  fHistWOffsetSingleMuonsVsPt -> Fill(weightedOffset, pMu.Pt());
 
   fHistSingleMuonsPtRapidity -> Fill(pMu.Rapidity(), pMu.Pt());
-  fHistOffsetSingleMuons     -> Fill(1.e4*offset);
-  fHistWOffsetSingleMuons    -> Fill(weightedOffset);
   Double_t chi2OverNdf = fMFTTrack->GetGlobalChi2()/Double_t(fMFTTrack->GetNMFTClusters()+fMFTTrack->GetNMUONClusters());
   fHistSingleMuonsOffsetChi2  -> Fill(1.e4*offset, chi2OverNdf);
 
@@ -280,7 +359,7 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
 //====================================================================================================================================================
 
-Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
+Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair(Int_t opt) {
 
   if (fNPairsAnalyzedOfEvent>=fNPairsOfEvent) return kFALSE;
 
@@ -315,28 +394,28 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
   // --------------- Filling dimuon histograms --------------------------------
 
   if (fMFTTrackPair->GetCharge() == 0) {
-    if (fOption==kResonanceOnly) fHistMassMuonPairsMCVsPt -> Fill(fMFTTrackPair->GetMassMC(), fMFTTrackPair->GetPt());
-    fHistMassMuonPairsVsPt                -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
-    fHistMassMuonPairsWithoutMFTVsPt      -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
-    fHistWOffsetMuonPairsAtPrimaryVtxVsPt -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
-    fHistWOffsetMuonPairsAtPCAVsPt        -> Fill(fMFTTrackPair->GetWeightedOffsetAtPCA(), fMFTTrackPair->GetPt());
-    fHistDistancePrimaryVtxPCAVsPt        -> Fill(distancePrimaryVtxPCA*1.e4, fMFTTrackPair->GetPt());
-    fHistPCAQualityVsPt                   -> Fill(fMFTTrackPair->GetPCAQuality(), fMFTTrackPair->GetPt());
-    if (fOption==kResonanceOnly) fHistPseudoProperDecayLengthVsPt->Fill(GetPseudoProperDecayLength(fMFTTrackPair, fTrueMass), fMFTTrackPair->GetPt());
-    if (fEvalDimuonVtxResolution) {
+    if (fOption==kResonanceOnly && opt==kSingleEvent) fHistMassMuonPairsMCVsPt -> Fill(fMFTTrackPair->GetMassMC(), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsVsPt[opt]                -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsWithoutMFTVsPt[opt]      -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[opt] -> Fill(fMFTTrackPair->GetWeightedOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
+    fHistWOffsetMuonPairsAtPCAVsPt[opt]        -> Fill(fMFTTrackPair->GetWeightedOffsetAtPCA(), fMFTTrackPair->GetPt());
+    fHistDistancePrimaryVtxPCAVsPt[opt]        -> Fill(distancePrimaryVtxPCA*1.e4, fMFTTrackPair->GetPt());
+    fHistPCAQualityVsPt[opt]                   -> Fill(fMFTTrackPair->GetPCAQuality(), fMFTTrackPair->GetPt());
+    fHistPseudoProperDecayLengthVsPt[opt]      -> Fill(GetPseudoProperDecayLength(fMFTTrackPair, fTrueMass), fMFTTrackPair->GetPt());
+    if (fEvalDimuonVtxResolution && opt==kSingleEvent) {
       fHistDimuonVtxResolutionXVsPt->Fill(pca[0]*1.e4, fMFTTrackPair->GetPt());
       fHistDimuonVtxResolutionYVsPt->Fill(pca[1]*1.e4, fMFTTrackPair->GetPt());
       fHistDimuonVtxResolutionZVsPt->Fill(pca[2]*1.e4, fMFTTrackPair->GetPt());
     }
-    fHistRapidityPtMuonPairs -> Fill(fMFTTrackPair->GetRapidity(), fMFTTrackPair->GetPt());
+    fHistRapidityPtMuonPairs[opt] -> Fill(fMFTTrackPair->GetRapidity(), fMFTTrackPair->GetPt());
   } 
   else if (fMFTTrackPair->GetCharge() == -2) {
-    fHistMassMuonPairsVsPtLSm           -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
-    fHistMassMuonPairsWithoutMFTVsPtLSm -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsVsPtLSm[opt]           -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsWithoutMFTVsPtLSm[opt] -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
   } 
   else if (fMFTTrackPair->GetCharge() == 2) {
-    fHistMassMuonPairsVsPtLSp           -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
-    fHistMassMuonPairsWithoutMFTVsPtLSp -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsVsPtLSp[opt]           -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
+    fHistMassMuonPairsWithoutMFTVsPtLSp[opt] -> Fill(fMFTTrackPair->GetMassWithoutMFT(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ), fMFTTrackPair->GetPt());
   }
   
   AliDebug(1, Form("mass = %f   MC = %f", fMFTTrackPair->GetMass(), fMFTTrackPair->GetMassMC()));
@@ -364,11 +443,77 @@ void AliMuonForwardTrackAnalysis::BuildMuonPairs() {
 
       if (track0_WithBranson->GetMatchTrigger()<fTriggerLevel || track1_WithBranson->GetMatchTrigger()<fTriggerLevel) continue;
 
+      // Resonance   = both mu from the same resonance
+      // Open Charm  = both mu from charmed mesons
+      // Open Beauty = both mu from beauty mesons
+      // Background1mu  = at least one mu from background
+      // Background2mu  = both mu from background
+
+      AliMuonForwardTrackPair *trackPairWithBranson = new AliMuonForwardTrackPair(track0_WithBranson, track1_WithBranson);
+
+      if (fOption==kResonanceOnly && !trackPairWithBranson->IsResonance()) { delete trackPairWithBranson; continue; }
+      if (fOption==kNoResonances  &&  trackPairWithBranson->IsResonance()) { delete trackPairWithBranson; continue; }
+      
+      if (fOption==kCharmOnly  && (!track0_WithBranson->IsFromCharm()  || !track1_WithBranson->IsFromCharm()))  { delete trackPairWithBranson; continue; }
+
+      if (fOption==kBeautyOnly && (!track0_WithBranson->IsFromBeauty() || !track1_WithBranson->IsFromBeauty())) { delete trackPairWithBranson; continue; }
+
+      if (fOption==kBackground1mu && (!track0_WithBranson->IsFromBackground() && !track1_WithBranson->IsFromBackground())) { delete trackPairWithBranson; continue; }
+      if (fOption==kBackground2mu && (!track0_WithBranson->IsFromBackground() || !track1_WithBranson->IsFromBackground())) { delete trackPairWithBranson; continue; }
+
+      delete trackPairWithBranson;
+      
       new ((*fMuonForwardTrackPairsWithBranson)[nMuonPairs]) AliMuonForwardTrackPair(track0_WithBranson, track1_WithBranson);
       new ((*fMuonForwardTrackPairsWithoutBranson)[nMuonPairs]) AliMuonForwardTrackPair(track0_WithoutBranson, track1_WithoutBranson);
+
+      nMuonPairs++;
       
-      AliMuonForwardTrackPair *trackPairWithBranson = (AliMuonForwardTrackPair*) fMuonForwardTrackPairsWithBranson->At(nMuonPairs);
-      if (!(fOption==kResonanceOnly && !trackPairWithBranson->IsResonance())) nMuonPairs++;
+    }
+  }
+
+}
+
+//====================================================================================================================================================
+
+void AliMuonForwardTrackAnalysis::BuildMuonPairsMix() {
+
+  Int_t nMuonPairs = 0;
+
+  for (Int_t iTrack=0; iTrack<fMuonForwardTracksWithBranson->GetEntriesFast(); iTrack++) {
+    for (Int_t jTrack=0; jTrack<fMuonForwardTracksWithBransonMix->GetEntriesFast(); jTrack++) {
+      
+      AliMuonForwardTrack *track0_WithBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithBranson -> At(iTrack);
+      AliMuonForwardTrack *track1_WithBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithBransonMix  -> At(jTrack);
+      
+      AliMuonForwardTrack *track0_WithoutBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithoutBranson -> At(iTrack);
+      AliMuonForwardTrack *track1_WithoutBranson = (AliMuonForwardTrack*) fMuonForwardTracksWithoutBransonMix  -> At(jTrack);
+
+      if (track0_WithBranson->GetMatchTrigger()<fTriggerLevel || track1_WithBranson->GetMatchTrigger()<fTriggerLevel) continue;
+
+      // Resonance   = both mu from the same resonance
+      // Open Charm  = both mu from charmed mesons
+      // Open Beauty = both mu from beauty mesons
+      // Background1mu  = at least one mu from background
+      // Background2mu  = both mu from background
+
+      AliMuonForwardTrackPair *trackPairWithBranson = new AliMuonForwardTrackPair(track0_WithBranson, track1_WithBranson);
+
+      if (fOption==kResonanceOnly && !trackPairWithBranson->IsResonance()) { delete trackPairWithBranson; continue; }
+      if (fOption==kNoResonances  &&  trackPairWithBranson->IsResonance()) { delete trackPairWithBranson; continue; }
+      
+      if (fOption==kCharmOnly  && (!track0_WithBranson->IsFromCharm()  || !track1_WithBranson->IsFromCharm()))  { delete trackPairWithBranson; continue; }
+
+      if (fOption==kBeautyOnly && (!track0_WithBranson->IsFromBeauty() || !track1_WithBranson->IsFromBeauty())) { delete trackPairWithBranson; continue; }
+
+      if (fOption==kBackground1mu && (!track0_WithBranson->IsFromBackground() && !track1_WithBranson->IsFromBackground())) { delete trackPairWithBranson; continue; }
+      if (fOption==kBackground2mu && (!track0_WithBranson->IsFromBackground() || !track1_WithBranson->IsFromBackground())) { delete trackPairWithBranson; continue; }
+
+      delete trackPairWithBranson;
+
+      new ((*fMuonForwardTrackPairsWithBranson)[nMuonPairs])    AliMuonForwardTrackPair(track0_WithBranson,    track1_WithBranson);
+      new ((*fMuonForwardTrackPairsWithoutBranson)[nMuonPairs]) AliMuonForwardTrackPair(track0_WithoutBranson, track1_WithoutBranson);
+      
+      nMuonPairs++;
       
     }
   }
@@ -382,7 +527,7 @@ Bool_t AliMuonForwardTrackAnalysis::PassedCutSingleMuon(AliMuonForwardTrack *tra
   AliMUONTrackParam *param = track->GetTrackParamAtMFTCluster(0);
   AliMUONTrackExtrap::ExtrapToZCov(param, fPrimaryVtxZ);
 
-  if (track->Pt()<fPtMinSingleMuons) return kFALSE;
+  if (track->Pt()<fMinPtSingleMuons) return kFALSE;
   
   Double_t offset = 1.e4*track->GetOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ);
   Double_t chi2OverNdf = track->GetGlobalChi2() / Double_t(track->GetNMFTClusters()+track->GetNMUONClusters()); 
@@ -433,9 +578,9 @@ Double_t AliMuonForwardTrackAnalysis::GetPseudoProperDecayLength(AliMuonForwardT
 
   TVector2 vecVertexPCA(pca[0]-fPrimaryVtxX, pca[1]-fPrimaryVtxY);
   TVector2 dimuonPt(pair->GetPx(), pair->GetPy());
-  dimuonPt.Unit();
+  TVector2 dimuonPtUnit = dimuonPt.Unit();
   
-  Double_t l_xy = vecVertexPCA*dimuonPt;
+  Double_t l_xy = vecVertexPCA*dimuonPtUnit;
   Double_t pseudoProperDecayLength = (l_xy * trueMass / pair->GetPt()) * 1.e4 ; // in micron
 
   return pseudoProperDecayLength;
@@ -450,36 +595,63 @@ void AliMuonForwardTrackAnalysis::Terminate(Char_t *outputFileName) {
 
   printf("Writing output objects to file %s\n", fileOut->GetName());
 
-  fHistOffsetSingleMuonsX  -> Write();
-  fHistOffsetSingleMuonsY  -> Write();
-  fHistErrorSingleMuonsX   -> Write();
-  fHistErrorSingleMuonsY   -> Write();
-  fHistOffsetSingleMuons   -> Write();
-  fHistWOffsetSingleMuons  -> Write();
+  // single muons
 
-  fHistSingleMuonsPtRapidity -> Write();
-  fHistSingleMuonsOffsetChi2 -> Write();
-  fHistZOriginSingleMuonsMC  -> Write();
-  fHistZROriginSingleMuonsMC -> Write();
+  fHistXOffsetSingleMuonsVsP  -> Write();
+  fHistYOffsetSingleMuonsVsP  -> Write();
+  fHistXOffsetSingleMuonsVsPt -> Write();
+  fHistYOffsetSingleMuonsVsPt -> Write();
 
-  fHistMassMuonPairsVsPt                -> Write();
-  fHistMassMuonPairsWithoutMFTVsPt      -> Write();
-  fHistMassMuonPairsVsPtLSp             -> Write();
-  fHistMassMuonPairsWithoutMFTVsPtLSp   -> Write();
-  fHistMassMuonPairsVsPtLSm             -> Write();
-  fHistMassMuonPairsWithoutMFTVsPtLSm   -> Write();
-  fHistMassMuonPairsMCVsPt              -> Write();
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt -> Write();
-  fHistWOffsetMuonPairsAtPCAVsPt        -> Write();
-  fHistDistancePrimaryVtxPCAVsPt        -> Write();
-  fHistPCAQualityVsPt                   -> Write();
-  if (fOption==kResonanceOnly) fHistPseudoProperDecayLengthVsPt->Write();
+  fHistXErrorSingleMuonsVsP   -> Write();
+  fHistYErrorSingleMuonsVsP   -> Write();
+  fHistXErrorSingleMuonsVsPt  -> Write();
+  fHistYErrorSingleMuonsVsPt  -> Write();
+
+  fHistOffsetSingleMuonsVsP   -> Write();
+  fHistOffsetSingleMuonsVsPt  -> Write();
+  fHistWOffsetSingleMuonsVsP  -> Write();
+  fHistWOffsetSingleMuonsVsPt -> Write();
+
+  fHistSingleMuonsPtRapidity  -> Write();
+  fHistSingleMuonsOffsetChi2  -> Write();
+  fHistZOriginSingleMuonsMC   -> Write();
+  fHistZROriginSingleMuonsMC  -> Write();
+
+  // dimuons
+
+  fHistMassMuonPairsVsPt[kSingleEvent]                -> Write();
+  fHistMassMuonPairsWithoutMFTVsPt[kSingleEvent]      -> Write();
+  fHistMassMuonPairsVsPtLSp[kSingleEvent]             -> Write();
+  fHistMassMuonPairsWithoutMFTVsPtLSp[kSingleEvent]   -> Write();
+  fHistMassMuonPairsVsPtLSm[kSingleEvent]             -> Write();
+  fHistMassMuonPairsWithoutMFTVsPtLSm[kSingleEvent]   -> Write();
+  fHistWOffsetMuonPairsAtPrimaryVtxVsPt[kSingleEvent] -> Write();
+  fHistWOffsetMuonPairsAtPCAVsPt[kSingleEvent]        -> Write();
+  fHistDistancePrimaryVtxPCAVsPt[kSingleEvent]        -> Write();
+  fHistPCAQualityVsPt[kSingleEvent]                   -> Write();
+  fHistPseudoProperDecayLengthVsPt[kSingleEvent]      -> Write();
+  fHistRapidityPtMuonPairs[kSingleEvent]              -> Write();
+  fHistMassMuonPairsMCVsPt                            -> Write();
   if (fEvalDimuonVtxResolution) {
     fHistDimuonVtxResolutionXVsPt -> Write();
     fHistDimuonVtxResolutionYVsPt -> Write();
     fHistDimuonVtxResolutionZVsPt -> Write();
   }
-  fHistRapidityPtMuonPairs -> Write();
+
+  if (fMixing) {
+    fHistMassMuonPairsVsPt[kMixedEvent]                -> Write();
+    fHistMassMuonPairsWithoutMFTVsPt[kMixedEvent]      -> Write();
+    fHistMassMuonPairsVsPtLSp[kMixedEvent]             -> Write();
+    fHistMassMuonPairsWithoutMFTVsPtLSp[kMixedEvent]   -> Write();
+    fHistMassMuonPairsVsPtLSm[kMixedEvent]             -> Write();
+    fHistMassMuonPairsWithoutMFTVsPtLSm[kMixedEvent]   -> Write();
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[kMixedEvent] -> Write();
+    fHistWOffsetMuonPairsAtPCAVsPt[kMixedEvent]        -> Write();
+    fHistDistancePrimaryVtxPCAVsPt[kMixedEvent]        -> Write();
+    fHistPCAQualityVsPt[kMixedEvent]                   -> Write();
+    fHistPseudoProperDecayLengthVsPt[kMixedEvent]      -> Write();
+    fHistRapidityPtMuonPairs[kMixedEvent]              -> Write();
+  }
 
   fileOut -> Close();
 
@@ -491,24 +663,57 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   // -------------------- single muons
 
-  fHistOffsetSingleMuonsX = new TH1D("fHistOffsetSingleMuonsX", "Offset for single muons along X",  200, -1000, 1000);
-  fHistOffsetSingleMuonsY = new TH1D("fHistOffsetSingleMuonsY", "Offset for single muons along Y",  200, -1000, 1000);
-  fHistErrorSingleMuonsX  = new TH1D("fHistErrorSingleMuonsX",  "Coordinate Error for single muons along X",  200, 0, 1000);
-  fHistErrorSingleMuonsY  = new TH1D("fHistErrorSingleMuonsY",  "Coordinate Error for single muons along Y",  200, 0, 1000);
-  fHistOffsetSingleMuons  = new TH1D("fHistOffsetSingleMuons",  "Offset for single muons",          200, 0, 2000);
-  fHistWOffsetSingleMuons = new TH1D("fHistWOffsetSingleMuons", "Weighted Offset for single muons", 300, 0, 15);  
+  fHistXOffsetSingleMuonsVsP  = new TH2D("fHistXOffsetSingleMuonsVsP",  "Offset for single muons along X vs P",      200, -1000, 1000, 100, 0, 100);
+  fHistYOffsetSingleMuonsVsP  = new TH2D("fHistYOffsetSingleMuonsVsP",  "Offset for single muons along Y vs P",      200, -1000, 1000, 100, 0, 100);
+  fHistXOffsetSingleMuonsVsPt = new TH2D("fHistXOffsetSingleMuonsVsPt", "Offset for single muons along X vs p_{T}",  200, -1000, 1000, 100, 0,  10);
+  fHistYOffsetSingleMuonsVsPt = new TH2D("fHistYOffsetSingleMuonsVsPt", "Offset for single muons along Y vs p_{T}",  200, -1000, 1000, 100, 0,  10);
+
+  fHistXErrorSingleMuonsVsP   = new TH2D("fHistXErrorSingleMuonsVsP",   "Coordinate Error for single muons along X vs P",      200, 0, 1000, 100, 0, 100);
+  fHistYErrorSingleMuonsVsP   = new TH2D("fHistYErrorSingleMuonsVsP",   "Coordinate Error for single muons along Y vs P",      200, 0, 1000, 100, 0, 100);
+  fHistXErrorSingleMuonsVsPt  = new TH2D("fHistXErrorSingleMuonsVsPt",  "Coordinate Error for single muons along X vs p_{T}",  200, 0, 1000, 100, 0,  10);
+  fHistYErrorSingleMuonsVsPt  = new TH2D("fHistYErrorSingleMuonsVsPt",  "Coordinate Error for single muons along Y vs p_{T}",  200, 0, 1000, 100, 0,  10);
+
+  fHistOffsetSingleMuonsVsP   = new TH2D("fHistOffsetSingleMuonsVsP",   "Offset for single muons vs P",              200, 0, 2000, 100, 0, 100);
+  fHistOffsetSingleMuonsVsPt  = new TH2D("fHistOffsetSingleMuonsVsPt",  "Offset for single muons vs p_{T}",          200, 0, 2000, 100, 0,  10);
+  fHistWOffsetSingleMuonsVsP  = new TH2D("fHistWOffsetSingleMuonsVsP",  "Weighted Offset for single muons vs P",     300, 0,   15, 100, 0, 100);  
+  fHistWOffsetSingleMuonsVsPt = new TH2D("fHistWOffsetSingleMuonsVsPt", "Weighted Offset for single muons vs p_{T}", 300, 0,   15, 100, 0,  10);  
 
   fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 100, -4.5, -2., 100, 0., 10.);
   fHistSingleMuonsOffsetChi2 = new TH2D("fHistSingleMuonsOffsetChi2", "Offset vs #chi^{2}/ndf for single muons", 400, 0, 4000, 200, 0, 10);
   fHistZOriginSingleMuonsMC  = new TH1D("fHistZOriginSingleMuonsMC",  "Z origin for single muons (from MC)",   1000, 0., 500.);
   fHistZROriginSingleMuonsMC = new TH2D("fHistZROriginSingleMuonsMC", "Z-R origin for single muons (from MC)", 1000, 0., 500., 1000, 0., 100.);
 
-  fHistOffsetSingleMuonsX -> SetXTitle("Offset(X)  [#mum]");
-  fHistOffsetSingleMuonsY -> SetXTitle("Offset(Y)  [#mum]");
-  fHistErrorSingleMuonsX  -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
-  fHistErrorSingleMuonsY  -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
-  fHistOffsetSingleMuons  -> SetXTitle("Offset  [#mum]");
-  fHistWOffsetSingleMuons -> SetXTitle("Weighted Offset");
+  //
+
+  fHistXOffsetSingleMuonsVsP  -> SetXTitle("Offset(X)  [#mum]");
+  fHistYOffsetSingleMuonsVsP  -> SetXTitle("Offset(Y)  [#mum]");
+  fHistXOffsetSingleMuonsVsPt -> SetXTitle("Offset(X)  [#mum]");
+  fHistYOffsetSingleMuonsVsPt -> SetXTitle("Offset(Y)  [#mum]");
+
+  fHistXErrorSingleMuonsVsP   -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
+  fHistYErrorSingleMuonsVsP   -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
+  fHistXErrorSingleMuonsVsPt  -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
+  fHistYErrorSingleMuonsVsPt  -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
+
+  fHistOffsetSingleMuonsVsP   -> SetXTitle("Offset  [#mum]");
+  fHistOffsetSingleMuonsVsPt  -> SetXTitle("Offset  [#mum]");
+  fHistWOffsetSingleMuonsVsP  -> SetXTitle("Weighted Offset");
+  fHistWOffsetSingleMuonsVsPt -> SetXTitle("Weighted Offset");    
+
+  fHistXOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
+  fHistYOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
+  fHistXOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");
+  fHistYOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");
+
+  fHistXErrorSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
+  fHistYErrorSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
+  fHistXErrorSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
+  fHistYErrorSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
+
+  fHistOffsetSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
+  fHistOffsetSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
+  fHistWOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
+  fHistWOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");    
 
   fHistSingleMuonsPtRapidity -> SetXTitle("y^{#mu}");
   fHistSingleMuonsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
@@ -519,90 +724,124 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
   fHistZROriginSingleMuonsMC -> SetXTitle("Z  [cm]");
   fHistZROriginSingleMuonsMC -> SetXTitle("R  [cm]");
 
-  fHistOffsetSingleMuonsX -> Sumw2();
-  fHistOffsetSingleMuonsY -> Sumw2();
-  fHistErrorSingleMuonsX  -> Sumw2();
-  fHistErrorSingleMuonsY  -> Sumw2();
-  fHistOffsetSingleMuons  -> Sumw2();
-  fHistWOffsetSingleMuons -> Sumw2();
+  //
 
-  fHistSingleMuonsPtRapidity -> Sumw2();
-  fHistSingleMuonsOffsetChi2 -> Sumw2();
-  fHistZOriginSingleMuonsMC  -> Sumw2();
-  fHistZROriginSingleMuonsMC -> Sumw2();
+  fHistXOffsetSingleMuonsVsP  -> Sumw2();
+  fHistYOffsetSingleMuonsVsP  -> Sumw2();
+  fHistXOffsetSingleMuonsVsPt -> Sumw2();
+  fHistYOffsetSingleMuonsVsPt -> Sumw2();
+
+  fHistXErrorSingleMuonsVsP   -> Sumw2();
+  fHistYErrorSingleMuonsVsP   -> Sumw2();
+  fHistXErrorSingleMuonsVsPt  -> Sumw2();
+  fHistYErrorSingleMuonsVsPt  -> Sumw2();
+
+  fHistOffsetSingleMuonsVsP   -> Sumw2();
+  fHistOffsetSingleMuonsVsPt  -> Sumw2();
+  fHistWOffsetSingleMuonsVsP  -> Sumw2();
+  fHistWOffsetSingleMuonsVsPt -> Sumw2();
+
+  fHistSingleMuonsPtRapidity  -> Sumw2();
+  fHistSingleMuonsOffsetChi2  -> Sumw2();
+  fHistZOriginSingleMuonsMC   -> Sumw2();
+  fHistZROriginSingleMuonsMC  -> Sumw2();
 
   // -------------------- muon pairs
 
   Int_t nBinsPt = 20; Double_t ptMin = 0., ptMax = 10.;   // dimuon pt
 
-  fHistMassMuonPairsVsPt	        = new TH2D("fHistMassMuonPairsVsPt", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax);
-  fHistMassMuonPairsWithoutMFTVsPt      = new TH2D("fHistMassMuonPairsWithoutMFTVsPt", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
-  fHistMassMuonPairsVsPtLSp	        = new TH2D("fHistMassMuonPairsVsPtLSp", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax);
-  fHistMassMuonPairsWithoutMFTVsPtLSp   = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSp", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
-  fHistMassMuonPairsVsPtLSm	        = new TH2D("fHistMassMuonPairsVsPtLSm", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax);
-  fHistMassMuonPairsWithoutMFTVsPtLSm   = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSm", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
-  fHistMassMuonPairsMCVsPt              = new TH2D("fHistMassMuonPairsMCVsPt", "Dimuon Mass (MC) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt = new TH2D("fHistWOffsetMuonPairsAtPrimaryVtxVsPt", "Weighted Offset for Muon Pairs at Primary Vertex vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
-  fHistWOffsetMuonPairsAtPCAVsPt        = new TH2D("fHistWOffsetMuonPairsAtPCAVsPt", "Weighted Offset for Muon Pairs at PCA vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
-  fHistDistancePrimaryVtxPCAVsPt        = new TH2D("fHistDistancePrimaryVtxPCA_%d", "Distance between PCA and primary vertex vs p_{T}^{#mu#mu}", 1000, 0, 50000, nBinsPt, ptMin, ptMax);
-  fHistPCAQualityVsPt                   = new TH2D("fHistPCAQualityVsPt", "PCA Quality vs p_{T}^{#mu#mu}", 200, 0, 1, nBinsPt, ptMin, ptMax);
-  fHistPseudoProperDecayLengthVsPt      = new TH2D("fHistPseudoProperDecayLengthVsPt", "Pseudo proper decay length vs p_{T}^{#mu#mu}", 1000, -5000, 5000, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsVsPt[kSingleEvent]	              = new TH2D("fHistMassMuonPairsVsPt", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPt[kSingleEvent]      = new TH2D("fHistMassMuonPairsWithoutMFTVsPt", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistMassMuonPairsVsPtLSp[kSingleEvent]	      = new TH2D("fHistMassMuonPairsVsPtLSp", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPtLSp[kSingleEvent]   = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSp", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistMassMuonPairsVsPtLSm[kSingleEvent]	      = new TH2D("fHistMassMuonPairsVsPtLSm", "Dimuon Mass (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPtLSm[kSingleEvent]   = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSm", "Dimuon Mass (MUON only) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistWOffsetMuonPairsAtPrimaryVtxVsPt[kSingleEvent] = new TH2D("fHistWOffsetMuonPairsAtPrimaryVtxVsPt", "Weighted Offset for Muon Pairs at Primary Vertex vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
+  fHistWOffsetMuonPairsAtPCAVsPt[kSingleEvent]        = new TH2D("fHistWOffsetMuonPairsAtPCAVsPt", "Weighted Offset for Muon Pairs at PCA vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
+  fHistDistancePrimaryVtxPCAVsPt[kSingleEvent]        = new TH2D("fHistDistancePrimaryVtxPCAVsPt", "Distance between PCA and primary vertex vs p_{T}^{#mu#mu}", 1000, 0, 50000, nBinsPt, ptMin, ptMax);
+  fHistPCAQualityVsPt[kSingleEvent]                   = new TH2D("fHistPCAQualityVsPt", "PCA Quality vs p_{T}^{#mu#mu}", 200, 0, 1, nBinsPt, ptMin, ptMax);
+  fHistPseudoProperDecayLengthVsPt[kSingleEvent]      = new TH2D("fHistPseudoProperDecayLengthVsPt", "Pseudo proper decay length vs p_{T}^{#mu#mu}", 1000, -5000, 5000, nBinsPt, ptMin, ptMax);
+
+  fHistMassMuonPairsVsPt[kMixedEvent]	              = new TH2D("fHistMassMuonPairsVsPtMix", "Dimuon Mass Mix (MUON+MFT) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPt[kMixedEvent]       = new TH2D("fHistMassMuonPairsWithoutMFTVsPtMix", "Dimuon Mass Mix (MUON only) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistMassMuonPairsVsPtLSp[kMixedEvent]	      = new TH2D("fHistMassMuonPairsVsPtLSpMix", "Dimuon Mass Mix (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPtLSp[kMixedEvent]    = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSpMix", "Dimuon Mass Mix (MUON only) vs p_{T}^{#mu#mu} Like-Sign ++", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistMassMuonPairsVsPtLSm[kMixedEvent]	      = new TH2D("fHistMassMuonPairsVsPtLSmMix", "Dimuon Mass Mix (MUON+MFT) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax);
+  fHistMassMuonPairsWithoutMFTVsPtLSm[kMixedEvent]    = new TH2D("fHistMassMuonPairsWithoutMFTVsPtLSmMix", "Dimuon Mass Mix (MUON only) vs p_{T}^{#mu#mu} Like-Sign --", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
+  fHistWOffsetMuonPairsAtPrimaryVtxVsPt[kMixedEvent]  = new TH2D("fHistWOffsetMuonPairsAtPrimaryVtxVsPtMix", "Weighted Offset for Muon Pairs Mix at Primary Vertex vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
+  fHistWOffsetMuonPairsAtPCAVsPt[kMixedEvent]         = new TH2D("fHistWOffsetMuonPairsAtPCAVsPtMix", "Weighted Offset for Muon Pairs Mix at PCA vs p_{T}^{#mu#mu}", 300, 0, 60, nBinsPt, ptMin, ptMax);
+  fHistDistancePrimaryVtxPCAVsPt[kMixedEvent]         = new TH2D("fHistDistancePrimaryVtxPCAVsPtMix", "Distance between PCA and primary vertex Mix vs p_{T}^{#mu#mu}", 1000, 0, 50000, nBinsPt, ptMin, ptMax);
+  fHistPCAQualityVsPt[kMixedEvent]                    = new TH2D("fHistPCAQualityVsPtMix", "PCA Quality Mix vs p_{T}^{#mu#mu}", 200, 0, 1, nBinsPt, ptMin, ptMax);
+  fHistPseudoProperDecayLengthVsPt[kMixedEvent]       = new TH2D("fHistPseudoProperDecayLengthVsPtMix", "Pseudo proper decay length Mix vs p_{T}^{#mu#mu}", 1000, -5000, 5000, nBinsPt, ptMin, ptMax);
+
+  fHistMassMuonPairsMCVsPt      = new TH2D("fHistMassMuonPairsMCVsPt", "Dimuon Mass (MC) vs p_{T}^{#mu#mu}", 1000, 0, 10, nBinsPt, ptMin, ptMax); 
   fHistDimuonVtxResolutionXVsPt = new TH2D("fHistDimuonVtxResolutionXVsPt", "Dimuon Vtx offset along X w.r.t. true Vtx vs p_{T}^{#mu#mu}", 2000, -1000, 1000, nBinsPt, ptMin, ptMax);
   fHistDimuonVtxResolutionYVsPt = new TH2D("fHistDimuonVtxResolutionYVsPt", "Dimuon Vtx offset along Y w.r.t. true Vtx vs p_{T}^{#mu#mu}", 2000, -1000, 1000, nBinsPt, ptMin, ptMax);
   fHistDimuonVtxResolutionZVsPt = new TH2D("fHistDimuonVtxResolutionZVsPt", "Dimuon Vtx offset along Z w.r.t. true Vtx vs p_{T}^{#mu#mu}", 2000, -1000, 1000, nBinsPt, ptMin, ptMax);
     
-  fHistMassMuonPairsVsPt                -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsWithoutMFTVsPt      -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsVsPtLSp             -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsWithoutMFTVsPtLSp   -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsVsPtLSm             -> SetXTitle("Mass  [GeV/c^{2}]");
-  fHistMassMuonPairsWithoutMFTVsPtLSm   -> SetXTitle("Mass  [GeV/c^{2}]");
+  for (Int_t i=0; i<2; i++) {
+    fHistMassMuonPairsVsPt[i]                -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsWithoutMFTVsPt[i]      -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsVsPtLSp[i]             -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsWithoutMFTVsPtLSp[i]   -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsVsPtLSm[i]             -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistMassMuonPairsWithoutMFTVsPtLSm[i]   -> SetXTitle("Mass  [GeV/c^{2}]");
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[i] -> SetXTitle("Weighted Offset at Primary Vtx");
+    fHistWOffsetMuonPairsAtPCAVsPt[i]        -> SetXTitle("Weighted Offset at PCA");
+    fHistDistancePrimaryVtxPCAVsPt[i]        -> SetXTitle("PCA - Primary Vtx [#mum]");
+    fHistPCAQualityVsPt[i]                   -> SetXTitle("PCA Quality");
+    fHistPseudoProperDecayLengthVsPt[i]      -> SetXTitle("l_{xy}  [#mum]");
+  }
   fHistMassMuonPairsMCVsPt              -> SetXTitle("Mass  [GeV/c^{2}]");    
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt -> SetXTitle("Weighted Offset at Primary Vtx");
-  fHistWOffsetMuonPairsAtPCAVsPt        -> SetXTitle("Weighted Offset at PCA");
-  fHistDistancePrimaryVtxPCAVsPt        -> SetXTitle("PCA - Primary Vtx [#mum]");
-  fHistPCAQualityVsPt                   -> SetXTitle("PCA Quality");
-  fHistPseudoProperDecayLengthVsPt      -> SetXTitle("l_{xy}  [#mum]");
   fHistDimuonVtxResolutionXVsPt         -> SetXTitle("Offset  [#mum]");
   fHistDimuonVtxResolutionYVsPt         -> SetXTitle("Offset  [#mum]");
   fHistDimuonVtxResolutionZVsPt         -> SetXTitle("Offset  [#mum]");
 
-  fHistMassMuonPairsVsPt                -> SetYTitle("p_{T}  [GeV/c]");
-  fHistMassMuonPairsWithoutMFTVsPt      -> SetYTitle("p_{T}  [GeV/c]");
-  fHistMassMuonPairsVsPtLSp             -> SetYTitle("p_{T}  [GeV/c]");
-  fHistMassMuonPairsWithoutMFTVsPtLSp   -> SetYTitle("p_{T}  [GeV/c]");
-  fHistMassMuonPairsVsPtLSm             -> SetYTitle("p_{T}  [GeV/c]");
-  fHistMassMuonPairsWithoutMFTVsPtLSm   -> SetYTitle("p_{T}  [GeV/c]");
+  for (Int_t i=0; i<2; i++) {
+    fHistMassMuonPairsVsPt[i]                -> SetYTitle("p_{T}  [GeV/c]");
+    fHistMassMuonPairsWithoutMFTVsPt[i]      -> SetYTitle("p_{T}  [GeV/c]");
+    fHistMassMuonPairsVsPtLSp[i]             -> SetYTitle("p_{T}  [GeV/c]");
+    fHistMassMuonPairsWithoutMFTVsPtLSp[i]   -> SetYTitle("p_{T}  [GeV/c]");
+    fHistMassMuonPairsVsPtLSm[i]             -> SetYTitle("p_{T}  [GeV/c]");
+    fHistMassMuonPairsWithoutMFTVsPtLSm[i]   -> SetYTitle("p_{T}  [GeV/c]");
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[i] -> SetYTitle("p_{T}  [GeV/c]");
+    fHistWOffsetMuonPairsAtPCAVsPt[i]        -> SetYTitle("p_{T}  [GeV/c]");
+    fHistDistancePrimaryVtxPCAVsPt[i]        -> SetYTitle("p_{T}  [GeV/c]");  
+    fHistPCAQualityVsPt[i]                   -> SetYTitle("p_{T}  [GeV/c]");
+    fHistPseudoProperDecayLengthVsPt[i]      -> SetYTitle("p_{T}  [GeV/c]");
+  }
   fHistMassMuonPairsMCVsPt              -> SetYTitle("p_{T}  [GeV/c]");
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt -> SetYTitle("p_{T}  [GeV/c]");
-  fHistWOffsetMuonPairsAtPCAVsPt        -> SetYTitle("p_{T}  [GeV/c]");
-  fHistDistancePrimaryVtxPCAVsPt        -> SetYTitle("p_{T}  [GeV/c]");  
-  fHistPCAQualityVsPt                   -> SetYTitle("p_{T}  [GeV/c]");
-  fHistPseudoProperDecayLengthVsPt      -> SetYTitle("p_{T}  [GeV/c]");
   fHistDimuonVtxResolutionXVsPt         -> SetYTitle("p_{T}  [GeV/c]");
   fHistDimuonVtxResolutionYVsPt         -> SetYTitle("p_{T}  [GeV/c]");
   fHistDimuonVtxResolutionZVsPt         -> SetYTitle("p_{T}  [GeV/c]");
 
-  fHistMassMuonPairsVsPt                -> Sumw2();
-  fHistMassMuonPairsWithoutMFTVsPt      -> Sumw2();
-  fHistMassMuonPairsVsPtLSp             -> Sumw2();
-  fHistMassMuonPairsWithoutMFTVsPtLSp   -> Sumw2();
-  fHistMassMuonPairsVsPtLSm             -> Sumw2();
-  fHistMassMuonPairsWithoutMFTVsPtLSm   -> Sumw2();
+  for (Int_t i=0; i<2; i++) {
+    fHistMassMuonPairsVsPt[i]                -> Sumw2();
+    fHistMassMuonPairsWithoutMFTVsPt[i]      -> Sumw2();
+    fHistMassMuonPairsVsPtLSp[i]             -> Sumw2();
+    fHistMassMuonPairsWithoutMFTVsPtLSp[i]   -> Sumw2();
+    fHistMassMuonPairsVsPtLSm[i]             -> Sumw2();
+    fHistMassMuonPairsWithoutMFTVsPtLSm[i]   -> Sumw2();
+    fHistWOffsetMuonPairsAtPrimaryVtxVsPt[i] -> Sumw2();
+    fHistWOffsetMuonPairsAtPCAVsPt[i]        -> Sumw2();
+    fHistDistancePrimaryVtxPCAVsPt[i]        -> Sumw2();
+    fHistPCAQualityVsPt[i]                   -> Sumw2();
+    fHistPseudoProperDecayLengthVsPt[i]      -> Sumw2();
+  }
   fHistMassMuonPairsMCVsPt              -> Sumw2();    
-  fHistWOffsetMuonPairsAtPrimaryVtxVsPt -> Sumw2();
-  fHistWOffsetMuonPairsAtPCAVsPt        -> Sumw2();
-  fHistDistancePrimaryVtxPCAVsPt        -> Sumw2();
-  fHistPCAQualityVsPt                   -> Sumw2();
-  fHistPseudoProperDecayLengthVsPt      -> Sumw2();
   fHistDimuonVtxResolutionXVsPt         -> Sumw2();
   fHistDimuonVtxResolutionYVsPt         -> Sumw2();
   fHistDimuonVtxResolutionZVsPt         -> Sumw2();
 
-  fHistRapidityPtMuonPairs = new TH2D("fHistRapidityPtMuonPairs", "Dimuon Phase Space (rec)", 20, -4.5, -2., 20, 0., 10.); 
-  fHistRapidityPtMuonPairs -> SetXTitle("Rapidity");
-  fHistRapidityPtMuonPairs -> SetYTitle("p_{T}  [GeV/c]");
-  fHistRapidityPtMuonPairs -> Sumw2();
+  fHistRapidityPtMuonPairs[kSingleEvent] = new TH2D("fHistRapidityPtMuonPairs", "Dimuon Phase Space (rec)", 20, -4.5, -2., 20, 0., 10.); 
+  fHistRapidityPtMuonPairs[kSingleEvent] -> SetXTitle("Rapidity");
+  fHistRapidityPtMuonPairs[kSingleEvent] -> SetYTitle("p_{T}  [GeV/c]");
+  fHistRapidityPtMuonPairs[kSingleEvent] -> Sumw2();
+
+  fHistRapidityPtMuonPairs[kMixedEvent] = new TH2D("fHistRapidityPtMuonPairsMix", "Dimuon Phase Space (rec)", 20, -4.5, -2., 20, 0., 10.); 
+  fHistRapidityPtMuonPairs[kMixedEvent] -> SetXTitle("Rapidity");
+  fHistRapidityPtMuonPairs[kMixedEvent] -> SetYTitle("p_{T}  [GeV/c]");
+  fHistRapidityPtMuonPairs[kMixedEvent] -> Sumw2();
 
 }
 
