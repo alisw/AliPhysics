@@ -74,6 +74,9 @@
 #include "AliCentrality.h"
 #include "AliEventplane.h"
 #include "AliAnalysisTaskHFEFlow.h"
+#include "AliAODMCHeader.h"
+#include "TClonesArray.h"
+#include "AliHFENonPhotonicElectron.h"
 
 
 //____________________________________________________________________
@@ -81,9 +84,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   AliAnalysisTaskSE(),
   fListHist(0x0), 
   fAODAnalysis(kFALSE),
-  fUseFlagAOD(kFALSE),
+  fUseFilterAOD(kFALSE),
   fApplyCut(kTRUE),
-  fFlags(1<<4),
+  fFilter(1<<4),
+  fAODMCHeader(NULL),
+  fAODArrayMCInfo(NULL),
+  fBackgroundSubtraction(NULL),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -122,6 +128,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
+  fRejectKinkMother(kFALSE),
   fPID(0),
   fPIDTOFOnly(0),
   fPIDqa(0),
@@ -133,7 +140,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fArraytrack(NULL),
   fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
-  fMultEv(0),
+  fHistEV(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -159,11 +166,11 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fDeltaPhiMapsContamination(0x0),
   fCosPhiMaps(0x0),
   fProfileCosPhiMaps(0x0),
-  //fDeltaPhiMapsTaggedPhotonic(0x0),
+  fDeltaPhiMapsTaggedPhotonic(0x0),
   //fCosPhiMapsTaggedPhotonic(0x0),
-  //fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  fDeltaPhiMapsTaggedNonPhotonic(0x0),
   //fCosPhiMapsTaggedNonPhotonic(0x0),
-  //fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  fDeltaPhiMapsTaggedPhotonicLS(0x0),
   //fCosPhiMapsTaggedPhotonicLS(0x0),
   fMCSourceDeltaPhiMaps(0x0),
   fOppSignDeltaPhiMaps(0x0),
@@ -187,9 +194,12 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   AliAnalysisTaskSE(name),
   fListHist(0x0),
   fAODAnalysis(kFALSE),
-  fUseFlagAOD(kFALSE),
+  fUseFilterAOD(kFALSE),
   fApplyCut(kTRUE),
-  fFlags(1<<4), 
+  fFilter(1<<4), 
+  fAODMCHeader(NULL),
+  fAODArrayMCInfo(NULL),
+  fBackgroundSubtraction(NULL),
   fVZEROEventPlane(kFALSE),
   fVZEROEventPlaneA(kFALSE),
   fVZEROEventPlaneC(kFALSE),
@@ -228,6 +238,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
+  fRejectKinkMother(kFALSE),
   fPID(0),
   fPIDTOFOnly(0),
   fPIDqa(0),
@@ -239,7 +250,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fArraytrack(NULL),
   fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
-  fMultEv(0),
+  fHistEV(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -265,11 +276,11 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fDeltaPhiMapsContamination(0x0),
   fCosPhiMaps(0x0),
   fProfileCosPhiMaps(0x0),
-  //fDeltaPhiMapsTaggedPhotonic(0x0),
+  fDeltaPhiMapsTaggedPhotonic(0x0),
   //fCosPhiMapsTaggedPhotonic(0x0),
-  //fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  fDeltaPhiMapsTaggedNonPhotonic(0x0),
   //fCosPhiMapsTaggedNonPhotonic(0x0),
-  //fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  fDeltaPhiMapsTaggedPhotonicLS(0x0),
   //fCosPhiMapsTaggedPhotonicLS(0x0),
   fMCSourceDeltaPhiMaps(0x0),
   fOppSignDeltaPhiMaps(0x0),
@@ -315,9 +326,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   AliAnalysisTaskSE(ref),
   fListHist(NULL),
   fAODAnalysis(ref.fAODAnalysis), 
-  fUseFlagAOD(ref.fUseFlagAOD),
+  fUseFilterAOD(ref.fUseFilterAOD),
   fApplyCut(ref.fApplyCut),
-  fFlags(ref.fFlags),
+  fFilter(ref.fFilter),
+  fAODMCHeader(ref.fAODMCHeader),
+  fAODArrayMCInfo(ref.fAODArrayMCInfo),
+  fBackgroundSubtraction(ref.fBackgroundSubtraction),
   fVZEROEventPlane(ref.fVZEROEventPlane),
   fVZEROEventPlaneA(ref.fVZEROEventPlaneA),
   fVZEROEventPlaneC(ref.fVZEROEventPlaneC),
@@ -356,6 +370,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fcutsRP(NULL),
   fcutsPOI(NULL),
   fHFECuts(NULL),
+  fRejectKinkMother(ref.fRejectKinkMother),
   fPID(NULL),
   fPIDTOFOnly(NULL),
   fPIDqa(NULL),
@@ -367,7 +382,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fArraytrack(NULL),
   fCounterPoolBackground(ref.fCounterPoolBackground),
   fHFEVZEROEventPlane(NULL),
-  fMultEv(NULL),
+  fHistEV(NULL),
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
@@ -393,11 +408,11 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fDeltaPhiMapsContamination(NULL),
   fCosPhiMaps(NULL),
   fProfileCosPhiMaps(NULL),
-  //fDeltaPhiMapsTaggedPhotonic(NULL),
+  fDeltaPhiMapsTaggedPhotonic(NULL),
   //fCosPhiMapsTaggedPhotonic(NULL),
-  //fDeltaPhiMapsTaggedNonPhotonic(NULL),
+  fDeltaPhiMapsTaggedNonPhotonic(NULL),
   //fCosPhiMapsTaggedNonPhotonic(NULL),
-  //fDeltaPhiMapsTaggedPhotonicLS(NULL),
+  fDeltaPhiMapsTaggedPhotonicLS(NULL),
   //fCosPhiMapsTaggedPhotonicLS(NULL),
   fMCSourceDeltaPhiMaps(NULL),
   fOppSignDeltaPhiMaps(NULL),
@@ -428,9 +443,12 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   //
   AliAnalysisTaskHFEFlow &target = dynamic_cast<AliAnalysisTaskHFEFlow &>(o);
   target.fAODAnalysis = fAODAnalysis;
-  target.fUseFlagAOD = fUseFlagAOD;
+  target.fUseFilterAOD = fUseFilterAOD;
   target.fApplyCut = fApplyCut;
-  target.fFlags = fFlags;
+  target.fFilter = fFilter;
+  target.fAODMCHeader = fAODMCHeader;
+  target.fAODArrayMCInfo = fAODArrayMCInfo;
+  target.fBackgroundSubtraction = fBackgroundSubtraction;
   target.fVZEROEventPlane = fVZEROEventPlane;
   target.fVZEROEventPlaneA = fVZEROEventPlaneA;
   target.fVZEROEventPlaneC = fVZEROEventPlaneC;
@@ -471,6 +489,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fcutsRP = fcutsRP;
   target.fcutsPOI = fcutsPOI;
   target.fHFECuts = fHFECuts;
+  target.fRejectKinkMother = fRejectKinkMother;
   target.fPID = fPID;
   target.fPIDqa = fPIDqa;
   target.fHFEVZEROEventPlane = fHFEVZEROEventPlane;
@@ -496,6 +515,7 @@ AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
   if(fflowEvent) delete fflowEvent;
   if(fHFEBackgroundCuts) delete fHFEBackgroundCuts;
   if(fPIDBackground) delete fPIDBackground;
+  if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   //if(fPIDBackgroundqa) delete fPIDBackgroundqa;
   //if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
  
@@ -643,6 +663,11 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fPIDBackground->SortDetectors();
 
   AliDebug(2,"AliAnalysisTaskHFEFlow: pid background");
+
+  if (fMonitorPhotonic) {
+    if(!fBackgroundSubtraction) fBackgroundSubtraction = new AliHFENonPhotonicElectron();
+    fBackgroundSubtraction->Init();
+  }
   
 
 
@@ -660,9 +685,10 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
   */
 
-  Int_t nBinsPt = 20;
-  Double_t binLimPt[21] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
-			   1.3, 1.4, 1.5, 2., 2.5, 3., 4., 6.};
+  Int_t nBinsPt = 24;
+  Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+			   1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5.,
+			   6.};
 
 
   Int_t nBinsPtPlus = fNbBinsPtQCumulant;
@@ -771,7 +797,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Minimum histos
 
   // Histos
-  fMultEv = new TH1D("fMultEv", "", 5000, 0, 10000.);
+  fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
   
   AliDebug(2,"AliAnalysisTaskHFEFlow: histev");
 
@@ -1016,7 +1042,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   //
 
   if(fMonitorPhotonic) {
-    /*
+    
     const Int_t nDimgbp=3;
     Int_t nBingbp[nDimgbp] = {nBinsPhi,nBinsC,nBinsPt};
     
@@ -1041,6 +1067,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
     AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapstaggedphotonicls");    
 
+    /*
     const Int_t nDimhbp=3;
     Int_t nBinhbp[nDimhbp] = {nBinsCos,nBinsC,nBinsPt};
     
@@ -1124,7 +1151,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Add to the list
   //******************************
 
-  fListHist->Add(fMultEv);
+  fListHist->Add(fHistEV);
   fListHist->Add(fEventPlane);
   fListHist->Add(fFractionContamination);
   fListHist->Add(fCosRes);
@@ -1171,17 +1198,18 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
 
   if(fMonitorPhotonic) {
   fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
-  //fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
+  fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
   //fListHist->Add(fCosPhiMapsTaggedPhotonic);
-  //fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
+  fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
   //fListHist->Add(fCosPhiMapsTaggedNonPhotonic);
-  //fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
+  fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
   //fListHist->Add(fCosPhiMapsTaggedPhotonicLS);
   fListHist->Add(fMCSourceDeltaPhiMaps);
   fListHist->Add(fOppSignDeltaPhiMaps);
   fListHist->Add(fSameSignDeltaPhiMaps);
   fListHist->Add(fSameSignAngle);
   fListHist->Add(fOppSignAngle);
+  fListHist->Add(fBackgroundSubtraction->GetListOutput());
   }
 
   AliDebug(2,"AliAnalysisTaskHFEFlow: add photonic");
@@ -1235,6 +1263,37 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
    
   AliMCEvent *mcEvent = MCEvent();
   AliMCParticle *mctrack = NULL;
+
+  // MC info
+  Bool_t mcthere = kTRUE;
+  if(fAODAnalysis) {
+    AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(aodE){
+      //        printf("testd\n");
+      AliError("No AOD Event");
+      return;
+    }
+    fAODMCHeader = dynamic_cast<AliAODMCHeader *>(fInputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!fAODMCHeader){ 
+      mcthere = kFALSE;
+    }
+    fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fAODArrayMCInfo){ 
+      mcthere = kFALSE;
+    }
+    else {
+      fHFECuts->SetMCEvent(aodE);
+      if(fMonitorPhotonic) fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
+    }
+  }
+  else {
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH) mcthere = kFALSE;
+    else {
+      if(fMonitorPhotonic) fBackgroundSubtraction->SetMCEvent(fMCEvent);
+    }
+  }
+
     
   /////////////////
   // centrality
@@ -1342,9 +1401,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   fPID->SetPIDResponse(pidResponse);
   fPIDTOFOnly->SetPIDResponse(pidResponse);
   fPIDBackground->SetPIDResponse(pidResponse);
+  if(fMonitorPhotonic) fBackgroundSubtraction->InitRun(fInputEvent,pidResponse);
 
-  //fMultEv->Fill(binctt,0.0);
- 
+  fHistEV->Fill(binctt,0.0);
 
   //////////////////
   // Event cut
@@ -1355,7 +1414,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     return;
   }
 
-  //fMultEv->Fill(binctt,1.0);
+  fHistEV->Fill(binctt,1.0);
 
   ////////////////////////////////////  
   // First method event plane
@@ -1536,7 +1595,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   if(eventplanedefined) {
     
-    //fMultEv->Fill(binctt,2.0);
+    fHistEV->Fill(binctt,2.0);
     
     // Fill
     valuensparsea[0] = eventPlaneV0A;
@@ -1584,7 +1643,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // Loop to determine pool background
   /////////////////////////////////////////
   if(fMonitorPhotonic) {
-  
+
+    fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent,binct);
+    
     if(  fArraytrack ){ 
       fArraytrack->~TArrayI();
       new(fArraytrack) TArrayI(nbtracks);
@@ -1683,7 +1744,6 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //////////////////////////
   // Loop over track
   //////////////////////////
-  Double_t nboftrackTPCcut = 0.0;
   
   for(Int_t k = 0; k < nbtracks; k++){
       
@@ -1697,8 +1757,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	continue;
       }  
       AliDebug(2,"Find AOD track on");
-      if(fUseFlagAOD){
-	if(aodtrack->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
+      if(fUseFilterAOD){
+	if(!(aodtrack->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
       }
     }
     
@@ -1710,26 +1770,27 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       // RecKine: ITSTPC cuts  
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
-      nboftrackTPCcut++;
       
       // Reject kink mother
-      if(fAODAnalysis) {
-	Bool_t kinkmotherpass = kTRUE;
-	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	  if(track->GetID() == listofmotherkink[kinkmother]) {
-	    kinkmotherpass = kFALSE;
-	    continue;
+      if(fRejectKinkMother) {
+	if(fAODAnalysis) {
+	  Bool_t kinkmotherpass = kTRUE;
+	  for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	    if(track->GetID() == listofmotherkink[kinkmother]) {
+	      kinkmotherpass = kFALSE;
+	      continue;
+	    }
 	  }
+	  if(!kinkmotherpass) continue;
 	}
-	if(!kinkmotherpass) continue;
-      }
-      else {
-	AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-	if(esdtrack){  
-	  if(esdtrack->GetKinkIndex(0) != 0) continue; 
-	} // Quick and dirty fix to reject both kink mothers and daughters
-      }
-      
+	else {
+	  AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+	  if(esdtrack){  
+	    if(esdtrack->GetKinkIndex(0) != 0) continue; 
+	  } // Quick and dirty fix to reject both kink mothers and daughters
+	}
+      }      
+
       valuetrackingcuts[1] = 1; 
       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       // RecPrim
@@ -1976,6 +2037,10 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  fFractionContamination->Fill(&valuefractioncont[0],weight);
 	  if(fv2contamination[((Int_t)valuefractioncont[1])]){
 	    Double_t v2 =  fv2contamination[((Int_t)valuefractioncont[1])]->Eval(track->Pt());
+	    printf("value v2 %f, contamination %f and pt %f centrality %d\n",v2,weight,track->Pt(),(Int_t)valuefractioncont[1]);
+	    printf("Check for centrality 3: value v2 %f, contamination %f\n",fv2contamination[3]->Eval(track->Pt()),fContamination[3]->Eval(track->P()));
+	    printf("Check for centrality 4: value v2 %f, contamination %f\n",fv2contamination[4]->Eval(track->Pt()),fContamination[4]->Eval(track->P()));
+	    printf("Check for centrality 5: value v2 %f, contamination %f\n",fv2contamination[5]->Eval(track->Pt()),fContamination[5]->Eval(track->P()));
 	    fContaminationv2->Fill(valuefractioncont[1],valuefractioncont[0],v2,weight);
 	  }
 	}     
@@ -1986,33 +2051,38 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     }
     
     if(fMonitorPhotonic) {
-      // background
-      Int_t source = 0;
       Int_t indexmother = -1;
-      source = FindMother(TMath::Abs(track->GetLabel()),mcEvent, indexmother);
-      valuensparseMCSourceDeltaPhiMaps[2] = source;
-      if(mcEvent) fMCSourceDeltaPhiMaps->Fill(&valuensparseMCSourceDeltaPhiMaps[0]);
-      LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
-      //Int_t taggedvalue = LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
-      /*
-      if(fillEventPlane) {
-	// No opposite charge partner found in the invariant mass choosen
-	if((taggedvalue!=2) && (taggedvalue!=6)) {
-	  fDeltaPhiMapsTaggedNonPhotonic->Fill(&valuensparseg[0]);
-	  fCosPhiMapsTaggedNonPhotonic->Fill(&valuensparseh[0]);
-	}
-	// One opposite charge partner found in the invariant mass choosen
-	if((taggedvalue==2) || (taggedvalue==6)) {
-	  fDeltaPhiMapsTaggedPhotonic->Fill(&valuensparseg[0]);
-	  fCosPhiMapsTaggedPhotonic->Fill(&valuensparseh[0]);
-	}
-	// One same charge partner found in the invariant mass choosen
-	if((taggedvalue==4) || (taggedvalue==6)) {
-	  fDeltaPhiMapsTaggedPhotonicLS->Fill(&valuensparseg[0]);
-	  fCosPhiMapsTaggedPhotonicLS->Fill(&valuensparseh[0]);
+      Int_t source = 1;
+      if(mcthere) source = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      fBackgroundSubtraction->LookAtNonHFE(k, track, fInputEvent, 1, binct, deltaphi, source, indexmother);
+      
+      if((!fAODAnalysis && mcthere) || !mcthere) {
+	// background
+	source = 0;
+	indexmother = -1;
+	source = FindMother(TMath::Abs(track->GetLabel()),mcEvent, indexmother);
+	valuensparseMCSourceDeltaPhiMaps[2] = source;
+	if(mcEvent) fMCSourceDeltaPhiMaps->Fill(&valuensparseMCSourceDeltaPhiMaps[0]);
+	//LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+	Int_t taggedvalue = LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+	if(fMonitorPhotonic) {
+	  // No opposite charge partner found in the invariant mass choosen
+	  if((taggedvalue!=2) && (taggedvalue!=6)) {
+	    //fDeltaPhiMapsTaggedNonPhotonic->Fill(&valuensparseg[0]);
+	    //fCosPhiMapsTaggedNonPhotonic->Fill(&valuensparseh[0]);
+	  }
+	  // One opposite charge partner found in the invariant mass choosen
+	  if((taggedvalue==2) || (taggedvalue==6)) {
+	    fDeltaPhiMapsTaggedPhotonic->Fill(&valuensparseg[0]);
+	    //fCosPhiMapsTaggedPhotonic->Fill(&valuensparseh[0]);
+	  }
+	  // One same charge partner found in the invariant mass choosen
+	  if((taggedvalue==4) || (taggedvalue==6)) {
+	    fDeltaPhiMapsTaggedPhotonicLS->Fill(&valuensparseg[0]);
+	    //fCosPhiMapsTaggedPhotonicLS->Fill(&valuensparseh[0]);
+	  }
 	}
       }
-      */
     }
     
   }
@@ -2038,8 +2108,6 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       fArraytrack = NULL;
     }
   }
-
-  if((cntr>20) && (cntr<40)) fMultEv->Fill(nboftrackTPCcut);
   
   PostData(1, fListHist);
 

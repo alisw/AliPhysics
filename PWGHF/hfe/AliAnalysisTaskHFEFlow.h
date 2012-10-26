@@ -45,6 +45,9 @@ class AliFlowEvent;
 class AliESDtrackCuts;
 class AliHFEVZEROEventPlane;
 class TArrayI;
+class AliAODMCHeader;
+class TClonesArray;
+class AliHFENonPhotonicElectron;
 
 class AliAnalysisTaskHFEFlow: public AliAnalysisTaskSE {
   
@@ -81,21 +84,24 @@ public:
   virtual void  UserExec(Option_t */*option*/);
   virtual void  UserCreateOutputObjects();
 
-  void SetAODAnalysis(Bool_t aodAnalysis) { fAODAnalysis = aodAnalysis; };
-  void SetUseFlagAOD(Bool_t useFlagAOD) { fUseFlagAOD = useFlagAOD; }
-  void SetApplyCut(Bool_t applyCut) { fApplyCut = applyCut; }
-  void SetFlags(ULong_t flags)          { fFlags = flags; }
+  void SetAODAnalysis(Bool_t aodAnalysis)   { fAODAnalysis = aodAnalysis; };
+  void SetUseFilterAOD(Bool_t useFilterAOD) { fUseFilterAOD = useFilterAOD; }
+  void SetApplyCut(Bool_t applyCut)         { fApplyCut = applyCut; }
+  void SetFilter(ULong_t filter)            { fFilter = filter; }
   
   AliHFEpid *GetPID() const { return fPID; }
   AliHFEpid *GetPIDTOFOnly() const { return fPIDTOFOnly; }
   AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
   AliHFEpid *GetPIDBackground() const { return fPIDBackground; }
   AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
+  AliHFENonPhotonicElectron *GetHFEBackgroundSubtraction() const { return fBackgroundSubtraction; }
 
 
   void SetContamination(TF1 * const function,Int_t k) { fContamination[k] = function; };
   void SetV2Contamination(TF1 * const function,Int_t k) { fv2contamination[k] = function; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
+  void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
+  void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
   void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
   void SetEtaGap(Double_t  etaGap) { fEtaGap = etaGap; };
@@ -145,9 +151,12 @@ public:
 private:
   TList     *fListHist;         //! TH list
   Bool_t    fAODAnalysis;       // AOD analysis
-  Bool_t    fUseFlagAOD;        // Use the preselected AOD track
+  Bool_t    fUseFilterAOD;     // Use the preselected AOD track
   Bool_t    fApplyCut;       // Apply the analysis cut for AOD tracks
-  ULong_t   fFlags;             // reconstruction AOD status flags 
+  ULong_t   fFilter;             // reconstruction AOD status flags 
+  AliAODMCHeader *fAODMCHeader;         // ! MC info AOD
+  TClonesArray *fAODArrayMCInfo;        // ! MC info particle AOD
+  AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
   
   Bool_t    fVZEROEventPlane;  // Use Event Planes from VZERO
   Bool_t    fVZEROEventPlaneA; // Use Event Planes from VZERO A
@@ -198,6 +207,7 @@ private:
   
   // Cuts for HFE
   AliHFEcuts *fHFECuts;           // HFE cuts
+  Bool_t fRejectKinkMother;       // Reject Kink Mother 
   AliHFEpid  *fPID;               // PID cuts 
   AliHFEpid  *fPIDTOFOnly;        // PID cuts TOF only
   AliHFEpidQAmanager *fPIDqa;     // QA Manager
@@ -221,7 +231,7 @@ private:
   AliHFEVZEROEventPlane *fHFEVZEROEventPlane; // VZERO event plane calibrated
   
   // Histos
-  TH1D *fMultEv;               //! Multiplicity in the event
+  TH2D *fHistEV;               //! Number of events
   
   // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
   // a V0A, b V0C, c TPC,
@@ -274,11 +284,11 @@ private:
   TProfile2D *fProfileCosPhiMaps;  //! Profile Cos
 
   // Background study: not statistic but tagged 
-  //THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
+  THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
   //THnSparseF *fCosPhiMapsTaggedPhotonic; //! Cos
-  //THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
+  THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
   //THnSparseF *fCosPhiMapsTaggedNonPhotonic; //! Cos
-  //THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
+  THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
   //THnSparseF *fCosPhiMapsTaggedPhotonicLS; //! Cos
 
   // Background study: centrality, pt, source
