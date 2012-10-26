@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=5,Double_t etarange=80,Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE){
+AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Bool_t rejectkinkmother, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=5,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
 
   //
   // Define TPC cut for 2011 data
@@ -62,22 +62,21 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   }
 
   // Name
-  TString appendixx(TString::Format("TPC%dr%dp%ds%dITS%dC%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%de%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)(etarange*0.1)));
-  //printf("appendixx %s\n", appendixx.Data());
-
+  TString appendixx(TString::Format("t%df%dTPC%dr%dp%ds%dkm%dITS%dC%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%der%di%dt%dt%d",(Int_t)trigger,aodfilter,tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,(Int_t)rejectkinkmother,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)(etarange*0.1),(Int_t)ITSclustersback,(Int_t)(minTPCback*10.0),(Int_t)(maxTPCback*10.0)));
   //TString appendixx("tpctofv2");
   
 
   //set config file name
   TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
-  //TString configFile("/d/alice12/bailhache/AliRootInstallations/07_06_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
+  //TString configFile("/d/alice12/bailhache/AliRootInstallations/07_10_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   TString checkconfig="ConfigHFE_FLOW_TOFTPC";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFEFlow *task =  ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction, itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,algorithmMA,massconstraint);
+  AliAnalysisTaskHFEFlow *task = ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,trigger,aodfilter,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction,rejectkinkmother,itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,kFALSE,ITSclustersback,minTPCback,maxTPCback);  
+
   
   task->SetNbBinsCentralityQCumulant(4);
   //task->SetBinCentralityLess(0,0.0);
@@ -91,7 +90,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
 
   task->SetHFEVZEROEventPlane(0x0);
   task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
-  AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);
+  //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);
   
   mgr->AddTask(task);
 
