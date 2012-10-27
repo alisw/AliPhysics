@@ -323,7 +323,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
   
   if(clusterID < 0 ) 
   {
-    printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(), ID of cluster = %d, not possible! ", clusterID);
+    printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(), ID of cluster = %d, not possible! \n", clusterID);
     return;
   }
   
@@ -1654,7 +1654,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   for(Int_t iaod = 0; iaod < naod; iaod++)
   {
     AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
+   
     //If too small or too large pt, skip
     if(aodinput->Pt() < GetMinPt() || aodinput->Pt() > GetMaxPt() ) continue ; 
     
