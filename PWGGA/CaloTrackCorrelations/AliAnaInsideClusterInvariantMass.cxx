@@ -382,14 +382,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhAsymNLocMax1[i][j]  = new TH2F(Form("hAsymNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                     Form("Asymmetry of NLM=1  vs cluster Energy, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                     nptbins,ptmin,ptmax,200,-1,1); 
-      fhAsymNLocMax1[i][j]->SetYTitle("#alpha (rad)");
+      fhAsymNLocMax1[i][j]->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
       fhAsymNLocMax1[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhAsymNLocMax1[i][j]) ;   
       
       fhAsymNLocMax2[i][j]  = new TH2F(Form("hAsymNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
                                     Form("Asymmetry of NLM=2  vs cluster Energy, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                     nptbins,ptmin,ptmax,200,-1,1); 
-      fhAsymNLocMax2[i][j]->SetYTitle("#alpha (rad)");
+      fhAsymNLocMax2[i][j]->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
       fhAsymNLocMax2[i][j]->SetXTitle("E (GeV)");
       outputContainer->Add(fhAsymNLocMax2[i][j]) ;   
       

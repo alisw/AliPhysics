@@ -99,7 +99,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fhTimeENoCut(0),                      fhTimeESPD(0),        fhTimeESPDMulti(0),
     fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
     fhTimeNPileUpVertContributors(0),
-    fhTimePileUpMainVertexZDistance(0),   fhTimePileUpMainVertexZDiamond(0)
+    fhTimePileUpMainVertexZDistance(0),   fhTimePileUpMainVertexZDiamond(0),
+    fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp()
  {
   //default ctor
   
@@ -164,7 +165,7 @@ AliAnaPhoton::AliAnaPhoton() :
   
    for(Int_t i = 0; i < 5; i++) 
    {
-     fhClusterCuts[i]        = 0;
+     fhClusterCuts[i] = 0;
    }
   
    // Track matching residuals
@@ -178,6 +179,12 @@ AliAnaPhoton::AliAnaPhoton() :
      fhTrackMatchedMCParticle[i] = 0;          fhTrackMatchedMCParticle[i] = 0;   
      fhdEdx[i] = 0;                            fhEOverP[i] = 0;
      fhEOverPTRD[i] = 0;
+   }
+   
+   for(Int_t i = 0; i < 4; i++) 
+   {
+     fhClusterMultSPDPileUp[i] = 0;
+     fhClusterMultNoPileUp [i] = 0;
    }
    
   //Initialize parameters
@@ -581,7 +588,72 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 }
 
 //___________________________________________________________________
-void AliAnaPhoton::FillPileUpHistograms(Float_t energy, Float_t time) 
+void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters) 
+{
+  // Fill some histograms per event to understand pile-up
+  if(!fFillPileUpHistograms) return;
+    
+  // Loop on clusters, get the maximum energy cluster as reference
+  Int_t nclusters = clusters->GetEntriesFast();
+  Int_t   idMax = 0; 
+  Float_t  eMax = 0;
+  Float_t  tMax = 0;
+  for(Int_t iclus = 0; iclus < nclusters ; iclus++)
+  {
+	  AliVCluster * clus =  (AliVCluster*) (clusters->At(iclus));	
+    if(clus->E() > eMax)
+    {
+      eMax  = clus->E();
+      tMax  = clus->GetTOF()*1e9;
+      idMax = iclus;
+    }
+  }
+
+  if(eMax < 3) return;
+  
+  // Loop again on clusters to compare this max cluster t and the rest of the clusters, if E > 0.3
+  Int_t n20  = 0;
+  Int_t n40  = 0;
+  Int_t n    = 0;
+  Int_t nOK  = 0;
+
+  for(Int_t iclus = 0; iclus < nclusters ; iclus++)
+  {
+	  AliVCluster * clus =  (AliVCluster*) (clusters->At(iclus));	
+    
+    if(clus->E() < 0.3 || iclus==idMax) continue;
+    
+    Float_t tdiff = TMath::Abs(tMax-clus->GetTOF()*1e9);
+    n++;
+    if(tdiff < 20) nOK++;
+    else
+    {
+      n20++;
+      if(tdiff > 40 ) n40++;
+    }
+  }
+  
+  // Check pile-up and fill histograms depending on the different cluster multiplicities
+  if(GetReader()->IsPileUpFromSPD())
+  {    
+    fhClusterMultSPDPileUp[0]->Fill(eMax,n  );
+    fhClusterMultSPDPileUp[1]->Fill(eMax,nOK);
+    fhClusterMultSPDPileUp[2]->Fill(eMax,n20);
+    fhClusterMultSPDPileUp[3]->Fill(eMax,n40);
+  }
+  else 
+  {
+    fhClusterMultNoPileUp[0]->Fill(eMax,n  );
+    fhClusterMultNoPileUp[1]->Fill(eMax,nOK);
+    fhClusterMultNoPileUp[2]->Fill(eMax,n20);
+    fhClusterMultNoPileUp[3]->Fill(eMax,n40);    
+  }  
+  
+}
+
+
+//___________________________________________________________________
+void AliAnaPhoton::FillPileUpHistograms(const Float_t energy, const Float_t time) 
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -1769,7 +1841,26 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50); 
     fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
     fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
-    outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
+    outputContainer->Add(fhTimePileUpMainVertexZDiamond); 
+    
+    TString title[] = {"no |t diff| cut","|t diff|<20 ns","|t diff|>20 ns","|t diff|>40 ns"};
+    TString name [] = {"TDiffNoCut","TDiffSmaller20ns","TDiffLarger20ns","TDiffLarger40ns"};
+    for(Int_t i = 0; i < 4; i++) 
+    {      
+      fhClusterMultSPDPileUp[i] = new TH2F(Form("fhClusterMultSPDPileUp_%s", name[i].Data()),
+                                           Form("Number of clusters per pile up event with E > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
+                                           nptbins,ptmin,ptmax,100,0,100); 
+      fhClusterMultSPDPileUp[i]->SetYTitle("n clusters ");
+      fhClusterMultSPDPileUp[i]->SetXTitle("E_{cluster max} (GeV)");
+      outputContainer->Add(fhClusterMultSPDPileUp[i]) ;   
+      
+      fhClusterMultNoPileUp[i] = new TH2F(Form("fhClusterMultNoPileUp_%s", name[i].Data()),
+                                          Form("Number of clusters per non pile up event with E > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
+                                          nptbins,ptmin,ptmax,100,0,100); 
+      fhClusterMultNoPileUp[i]->SetYTitle("n clusters ");
+      fhClusterMultNoPileUp[i]->SetXTitle("E_{cluster max} (GeV)");
+      outputContainer->Add(fhClusterMultNoPileUp[i]) ;         
+    }
     
   }
   
@@ -2227,6 +2318,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
     return;
   }
+  
+  FillPileUpHistogramsPerEvent(pl); 
   
   // Loop on raw clusters before filtering in the reader and fill control histogram
   if((GetReader()->GetEMCALClusterListName()=="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS")
