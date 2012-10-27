@@ -98,7 +98,7 @@ fInjectedSignals(kFALSE),
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
-fkTrackingEfficiency(0x0),
+fEfficiencyCorrection(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -244,6 +244,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetPairCuts(fCutConversions, fCutResonances);
   fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
   
+  fHistos->SetEfficiencyCorrection(fEfficiencyCorrection);
+  fHistosMixed->SetEfficiencyCorrection(fEfficiencyCorrection);
+  
   // add histograms to list
   fListOfHistos->Add(fHistos);
   fListOfHistos->Add(fHistosMixed);
@@ -335,7 +338,6 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
   settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
-  settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
   settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");

@@ -72,7 +72,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
     
     // histogram settings
-    void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
+    void SetEfficiencyCorrection(TH3F* hist) { fEfficiencyCorrection = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -126,7 +126,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    const TH1D* fkTrackingEfficiency;       // used for study of bias by tracking 
+    TH3F* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
 
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -165,7 +165,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 15); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 16); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

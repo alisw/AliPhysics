@@ -57,6 +57,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCentralityDistribution(0),
   fCentralityCorrelation(0),
   fITSClusterMap(0),
+  fEfficiencyCorrection(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
@@ -180,6 +181,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCentralityDistribution(0),
   fCentralityCorrelation(0),
   fITSClusterMap(0),
+  fEfficiencyCorrection(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
@@ -305,13 +307,19 @@ void AliUEHistograms::DeleteContainers()
     delete fITSClusterMap;
     fITSClusterMap = 0;
   }
-
+  
   for (Int_t i=0; i<2; i++)
     if (fTwoTrackDistancePt[i])
     {
       delete fTwoTrackDistancePt[i];
       fTwoTrackDistancePt[i] = 0;
     }
+    
+  if (fEfficiencyCorrection)
+  {
+    delete fEfficiencyCorrection;
+    fEfficiencyCorrection = 0;
+  }
 }
 
 AliUEHist* AliUEHistograms::GetUEHist(Int_t id)
@@ -647,9 +655,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	
 	if (fillpT)
 	  weight = particle->Pt();
+	
+	Double_t useWeight = weight;
+	if (fEfficiencyCorrection)
+	  useWeight *= fEfficiencyCorrection->GetBinContent(fEfficiencyCorrection->GetXaxis()->FindBin(eta[j]), fEfficiencyCorrection->GetYaxis()->FindBin(vars[1]), fEfficiencyCorrection->GetZaxis()->FindBin(centrality));
     
         // fill all in toward region and do not use the other regions
-        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, weight);
+        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, useWeight);
 	
 // 	Printf("%.2f %.2f --> %.2f", triggerEta, eta[j], vars[0]);
       }
@@ -880,11 +892,14 @@ void AliUEHistograms::Copy(TObject& c) const
 
   if (fITSClusterMap)
     target.fITSClusterMap = dynamic_cast<TH3F*> (fITSClusterMap->Clone());
-    
+  
   for (Int_t i=0; i<2; i++)
     if (fTwoTrackDistancePt[i])
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
+  if (fEfficiencyCorrection)
+    target.fEfficiencyCorrection = dynamic_cast<TH3F*> (fEfficiencyCorrection->Clone());
+    
   target.fSelectCharge = fSelectCharge;
   target.fTriggerSelectCharge = fTriggerSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
