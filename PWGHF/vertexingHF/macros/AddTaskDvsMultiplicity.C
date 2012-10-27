@@ -5,7 +5,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 TString finDirname="Loose",
 							 TString filename="",
 							 TString finAnObjname="AnalysisCuts", 
-							 TString estimatorFilename="")
+							 TString estimatorFilename="",
+							 Double_t refMult=9.26)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -91,6 +92,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     dMultTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
     dMultTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
     dMultTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+    dMultTask->SetReferenceMultiplcity(refMult);
   }
   mgr->AddTask(dMultTask);
   
