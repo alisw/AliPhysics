@@ -68,8 +68,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
 
-  void         FillPileUpHistograms(Float_t energy, Float_t time) ;
-  
+  void         FillPileUpHistograms(const Float_t energy, const Float_t time) ;
+  void         FillPileUpHistogramsPerEvent(TObjArray * clusters) ;
+
   void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms = kFALSE ; }    
   
@@ -285,7 +286,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTimeNPileUpVertContributors;         //! time of cluster vs n pile-up vertex from SPD contributors
   TH2F * fhTimePileUpMainVertexZDistance;       //! time of cluster vs difference of z main vertex and pile-up vertex 
   TH2F * fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
-
+  TH2F * fhClusterMultSPDPileUp[4];             //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, pile up event
+  TH2F * fhClusterMultNoPileUp[4];              //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, not pile up event
   
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
