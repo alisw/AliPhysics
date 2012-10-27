@@ -354,7 +354,8 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
       Double_t enIn=gSignal[ipt]->GetErrorY(0);
       Double_t enOut=gSignal[ipt]->GetErrorY(1);
       Double_t anis=(nIn-nOut)/(nIn+nOut);
-      Double_t eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
+      //      Double_t eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
+      Double_t eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
       Double_t v2=anis*TMath::Pi()/4./resol;
       Double_t ev2=eAnis*TMath::Pi()/4./resol;
       gv2->SetPoint(ipt,averagePt[ipt],v2);
@@ -362,10 +363,11 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
 
       nIn=yfs[0];
       nOut=yfs[1];
-      enIn=gSignal[ipt]->GetErrorY(0);
-      enOut=gSignal[ipt]->GetErrorY(1);
+      enIn=gSignalfs[ipt]->GetErrorY(0);
+      enOut=gSignalfs[ipt]->GetErrorY(1);
       anis=(nIn-nOut)/(nIn+nOut);
-      eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
+      //     eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
+      eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
       v2=anis*TMath::Pi()/4./resol;
       ev2=eAnis*TMath::Pi()/4./resol;
       gv2fs->SetPoint(ipt,averagePt[ipt],v2);
