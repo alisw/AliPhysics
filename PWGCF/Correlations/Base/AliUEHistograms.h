@@ -50,6 +50,8 @@ class AliUEHistograms : public TNamed
   
   void SetRunNumber(Long64_t runNumber) { fRunNumber = runNumber; }
   
+  void SetEfficiencyCorrection(TH3F* hist) { fEfficiencyCorrection = hist; }
+  
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
   TH2F* GetCorrelationPhi() { return fCorrelationPhi; }
@@ -121,6 +123,8 @@ protected:
   
   TH3F* fTwoTrackDistancePt[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
   
+  TH3F* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
+  
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Int_t fTriggerSelectCharge;    // select charge of trigger particle
   Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
@@ -133,7 +137,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 17)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 18)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
