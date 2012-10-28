@@ -591,6 +591,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters) 
 {
   // Fill some histograms per event to understand pile-up
+  // Open the time cut in the reader to be more meaningful
+  
   if(!fFillPileUpHistograms) return;
     
   // Loop on clusters, get the maximum energy cluster as reference
@@ -601,7 +603,7 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters)
   for(Int_t iclus = 0; iclus < nclusters ; iclus++)
   {
 	  AliVCluster * clus =  (AliVCluster*) (clusters->At(iclus));	
-    if(clus->E() > eMax)
+    if(clus->E() > eMax && TMath::Abs(clus->GetTOF()*1e9) < 20)
     {
       eMax  = clus->E();
       tMax  = clus->GetTOF()*1e9;
@@ -609,7 +611,7 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters)
     }
   }
 
-  if(eMax < 3) return;
+  if(eMax < 5) return;
   
   // Loop again on clusters to compare this max cluster t and the rest of the clusters, if E > 0.3
   Int_t n20  = 0;
