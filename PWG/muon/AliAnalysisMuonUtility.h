@@ -53,6 +53,7 @@ class AliAnalysisMuonUtility : public TObject {
   static Double_t GetZatDCA ( const AliVParticle* track ) { return GetZatVertex(track); }
   static UInt_t GetMUONTrigHitsMapTrk ( const AliVParticle* track );
   static UInt_t GetMUONTrigHitsMapTrg ( const AliVParticle* track );
+  static Int_t GetLoCircuit ( const AliVParticle* track );
   static TLorentzVector GetTrackPair ( const AliVParticle* track1, const AliVParticle* track2 );
 
   
