@@ -51,7 +51,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, const TLorentzVector mom, const Int_t nlm) ;
   
   void         FillAcceptanceHistograms();
 
@@ -92,6 +92,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
   
+  void           SetNLMCut(Int_t min, Int_t max)             { fNLMCutMin = min; 
+    fNLMCutMax = max                ; }
+  Int_t          GetNLMCutMin()                        const { return fNLMCutMin               ; }
+  Int_t          GetNLMCutMax()                        const { return fNLMCutMax               ; }	
+  
+  
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
@@ -125,6 +131,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Double_t fTimeCutMin  ;                // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
+  Int_t    fNLMCutMin  ;                 // Remove clusters/cells with number of local maxima smaller than this value
+  Int_t    fNLMCutMax  ;                 // Remove clusters/cells with number of local maxima larger than this value
   Bool_t   fFillSSHistograms ;           // Fill shower shape histograms
   Bool_t   fFillOnlySimpleSSHisto;       // Fill selected cluster histograms, selected SS histograms
   Int_t    fNOriginHistograms;           // Fill only NOriginHistograms of the 14 defined types
@@ -132,7 +140,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillPileUpHistograms;        // Fill pile-up related histograms
   
   //Histograms 
-  TH1F * fhClusterCuts[9];               //! control histogram on the different photon selection cuts
+  TH1F * fhClusterCuts[10];              //! control histogram on the different photon selection cuts
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
   TH2F * fhCellsE;                       //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
@@ -146,7 +154,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhi05Photon  ;             //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5
   
   //Shower shape
-  
+  TH2F * fhNLocMax;                       //! number of maxima in selected clusters
+
   TH2F * fhDispE;                         //! cluster dispersion vs E
   TH2F * fhLam0E;                         //! cluster lambda0 vs  E
   TH2F * fhLam1E;                         //! cluster lambda1 vs  E  
@@ -292,7 +301,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,27)
+  ClassDef(AliAnaPhoton,28)
 
 } ;
  

@@ -58,7 +58,9 @@ AliAnaPhoton::AliAnaPhoton() :
     fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.), 
     fRejectTrackMatch(0),         fFillTMHisto(kFALSE),
     fTimeCutMin(-10000),          fTimeCutMax(10000),         
-    fNCellsCut(0),                fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),   
+    fNCellsCut(0),                
+    fNLMCutMin(-1),               fNLMCutMax(10), 
+    fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),   
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
     fFillPileUpHistograms(0),
     // Histograms
@@ -69,6 +71,7 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
 
     // Shower shape histograms
+    fhNLocMax(0),
     fhDispE(0),                   fhLam0E(0),                   fhLam1E(0), 
     fhDispETRD(0),                fhLam0ETRD(0),                fhLam1ETRD(0),
     fhDispETM(0),                 fhLam0ETM(0),                 fhLam1ETM(0), 
@@ -192,8 +195,8 @@ AliAnaPhoton::AliAnaPhoton() :
 
 }
 
-//__________________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom) 
+//_____________________________________________________________________________________________________
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mom, const Int_t nMaxima) 
 {
   //Select clusters if they pass different cuts
   if(GetDebug() > 2) 
@@ -227,6 +230,11 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   
   fhClusterCuts[4]->Fill(calo->E());
 
+  if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
+  if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
+
+  fhClusterCuts[5]->Fill(calo->E());
+
   //.......................................
   //Check acceptance selection
   if(IsFiducialCutOn())
@@ -237,7 +245,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   
   if(GetDebug() > 2) printf("Fiducial cut passed \n");
   
-  fhClusterCuts[5]->Fill(calo->E());
+  fhClusterCuts[6]->Fill(calo->E());
 
   //.......................................
   //Skip matched clusters with tracks
@@ -256,7 +264,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
       if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
   }// reject matched clusters
   
-  fhClusterCuts[6]->Fill(calo->E());
+  fhClusterCuts[7]->Fill(calo->E());
 
   //.......................................
   //Check Distance to Bad channel, set bit.
@@ -268,7 +276,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   }
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
   
-  fhClusterCuts[7]->Fill(calo->E());
+  fhClusterCuts[8]->Fill(calo->E());
   
   if(GetDebug() > 0) 
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
@@ -1234,8 +1242,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
-  TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
-  for (Int_t i = 0; i < 9 ;  i++) 
+  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID"};
+  for (Int_t i = 0; i < 10 ;  i++) 
   {
     fhClusterCuts[i] = new TH1F(Form("hCut_%d_%s", i, cut[i].Data()),
                                 Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
@@ -1301,6 +1309,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhi05Photon->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhi05Photon) ;
   }
+  
+  fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
+                       nptbins,ptmin,ptmax,10,0,10); 
+  fhNLocMax ->SetYTitle("N maxima");
+  fhNLocMax ->SetXTitle("E (GeV)");
+  outputContainer->Add(fhNLocMax) ;  
   
   //Shower shape
   if(fFillSSHistograms)
@@ -2390,8 +2404,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //--------------------------------------
     // Cluster selection
     //--------------------------------------
-    if(!ClusterSelected(calo,mom)) continue;
-    
+    Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
+    if(!ClusterSelected(calo,mom,nMaxima)) continue;
+
     //----------------------------
     //Create AOD for analysis
     //----------------------------
@@ -2471,8 +2486,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
                               aodph.Pt(), aodph.GetIdentifiedParticleType());
     
-    fhClusterCuts[8]->Fill(calo->E());
-    
+    fhClusterCuts[9]->Fill(calo->E());
+
+    fhNLocMax->Fill(calo->E(),nMaxima);
+
     // Matching after cuts
     if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,1);
     
@@ -2481,8 +2498,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     FillPileUpHistograms(calo->E(),calo->GetTOF()*1e9);    
     
     // Add number of local maxima to AOD, method name in AOD to be FIXED
-    
-    aodph.SetFiducialArea(GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells));
+    aodph.SetFiducialArea(nMaxima);
     
 
     //Add AOD with photon object to aod branch
