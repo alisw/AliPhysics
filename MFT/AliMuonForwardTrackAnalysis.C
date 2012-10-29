@@ -28,7 +28,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 				 Int_t lastEvent = -1, 
 				 Int_t myRandom = 0,                               // number which will tag the name of the output file
 				 Double_t ptMinSingleMuons = 0.0,                  // lower limit for the cut on the single muon pt
-				 Double_t trueMass = 0.0,                          // used to evaluate the pseudo proper decay length, usually for J/psi only
+				 Double_t trueMass = 3.097,                        // used to evaluate the pseudo proper decay length, usually for J/psi only
 				 Bool_t evalDimuonVtxResolution=kFALSE,            // to be set true only if prompt dimuon sources are analyzed
 				 Int_t nEventsToMix = 0) {                         // if <1 or >100, mixing is not performed
   
