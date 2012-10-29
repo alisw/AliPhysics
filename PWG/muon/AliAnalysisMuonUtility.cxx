@@ -184,6 +184,20 @@ UInt_t AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg ( const AliVParticle* track
 }
 
 //________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetLoCircuit ( const AliVParticle* track )
+{
+  /// Get local board
+  Int_t loCircuit = 0;
+  if ( IsAODTrack (track) ) {
+    UInt_t pattern = const_cast<AliAODTrack*>(static_cast<const AliAODTrack*>(track))->GetMUONTrigHitsMapTrg();
+    loCircuit = AliESDMuonTrack::GetCrossedBoard(pattern);
+  }
+  else loCircuit = static_cast<const AliESDMuonTrack*>(track)->LoCircuit();
+  
+  return loCircuit;
+}
+
+//________________________________________________________________________
 TString AliAnalysisMuonUtility::GetFiredTriggerClasses ( const AliVEvent* event )
 {
   /// Check if track is from ESD or AOD
