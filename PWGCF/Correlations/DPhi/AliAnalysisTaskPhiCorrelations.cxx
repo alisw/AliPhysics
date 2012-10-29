@@ -256,7 +256,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
-  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 400));
+  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   
   PostData(0,fListOfHistos);
   

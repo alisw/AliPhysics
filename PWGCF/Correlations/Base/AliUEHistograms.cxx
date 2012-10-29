@@ -114,7 +114,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5"))
+  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
   {
     fCorrelationpT  = new TH2F("fCorrelationpT", ";p_{T,lead} (MC);p_{T,lead} (RECO)", 200, 0, 50, 200, 0, 50);
     fCorrelationEta = new TH2F("fCorrelationEta", ";#eta_{lead} (MC);#eta_{T,lead} (RECO)", 200, -1, 1, 200, -1, 1);
@@ -132,7 +132,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
   fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 100, -1, 1);
 
-  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5"))
+  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
   {
     fEventCount = new TH2F("fEventCount", ";step;event type;count", AliUEHist::fgkCFSteps+2, -2.5, -0.5 + AliUEHist::fgkCFSteps, 3, -0.5, 2.5);
     fEventCount->GetYaxis()->SetBinLabel(1, "ND");
