@@ -544,6 +544,10 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     ana->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
     // restrict to less than 100 ns when time calibration is on 
     ana->SetMinDistanceToBadChannel(2, 4, 6); 
+    
+    // NLM cut, used in all, exclude clusters with more than 2 maxima
+    // Not needed if M02 cut is already strong or clusterizer V2
+    ana->SetNLMCut(1, 2) ;
   }
   
   if(kTM)
