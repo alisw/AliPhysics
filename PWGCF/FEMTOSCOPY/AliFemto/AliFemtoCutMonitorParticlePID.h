@@ -49,7 +49,9 @@ private:
   TH2D *fTPCdEdx;     // TPC dEdx information
   Int_t fTOFParticle; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
   TH2D *fTOFTime;     // TOF time
-  TH2D* ftofHist;     // TOF hist with vp
+    TH2D *fTOFNSigma;   // TOF NSigma values
+    TH2D *fTPCNSigma;   // TPC NSigma values
+    TH2D *fTPCTOFNSigma;   // TPC & TOF NSigma values
 
 };
 

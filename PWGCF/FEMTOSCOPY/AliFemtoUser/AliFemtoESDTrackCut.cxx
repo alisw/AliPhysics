@@ -354,7 +354,8 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
   
 	  }
 	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting
-	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
+            )
 	      imost = 4;
 	  }
 
@@ -956,20 +957,14 @@ bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigm
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  if(mom<0.8)
-    {
-      if(nsigmaTOFP<-999.)
-	{
-	  if(TMath::Abs(nsigmaTPCP)<3.0) return true;
-	  else return false;
+    if (mom > 0.8) {
+        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
+            return true;
 	}
-      else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
+    else {
+        if (TMath::Abs(nsigmaTPCP) < 3.0)
+            return true;
     }
-  else if(nsigmaTOFP<-999.)
-    {
-      return false;
-    } 
-  else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
 
   return false;
 }

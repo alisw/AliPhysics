@@ -44,6 +44,8 @@ private:
   TH1D *fDenLongP;    // Denominator for pair with positive k*long
   TH1D *fDenLongN;    // Denominator for pair with negative k*long
 
+    TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
+
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnNonIdDR, 1)
 #endif
