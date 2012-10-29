@@ -159,8 +159,9 @@ void AliHFEdebugTreeTaskAOD::UserCreateOutputObjects(){
   else {
     // other possibility
     fDebugTreee =  new TTree("PIDdebug","PIDdebug");
-    fDebugTreee->Branch("centrality",&fRun);
-    fDebugTreee->Branch("run",&fDoublec);
+    fDebugTreee->Branch("centrality",&fCentrality);
+    fDebugTreee->Branch("run",&fRun);
+    fDebugTreee->Branch("doublec",&fDoublec);
     fDebugTreee->Branch("p",&fMomentum);
     fDebugTreee->Branch("ptpc",&fMomentumTPC);
     fDebugTreee->Branch("pt",&fTransverseMomentum);
