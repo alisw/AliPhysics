@@ -980,7 +980,6 @@ void AliAnalysisTaskEMCALClusterize::Init()
   
   //Centrality
   if(fCentralityClass  == "") fCentralityClass  = "V0M";
-  fCentralityBin[0] = fCentralityBin[1]=-1;
   
   if (fOCDBpath            == "") fOCDBpath            = "raw://" ;
   if (fOutputAODBranchName == "") fOutputAODBranchName = "newEMCALClusters" ;
@@ -1487,6 +1486,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //-------
   // Step 1
   
+
   //Remove the contents of AOD branch output list set in the previous event 
   fOutputAODBranch->Clear("C");
 
@@ -1499,7 +1499,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     Float_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return ; //reject events out of bin.
   }  
-  
+    
   // intermediate array with new clusters : init the array only once or clear from previous event
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?

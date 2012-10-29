@@ -66,6 +66,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
 
+  // Centrality range
+  clusterize->SetCentralityBin(minCen, maxCen); 
+  
   // Some general settings to create AOD file in case we want to keep it
   clusterize->SwitchOffFillAODCaloCells();
   clusterize->SwitchOffFillAODHeader();
