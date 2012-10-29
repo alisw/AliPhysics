@@ -197,9 +197,10 @@ public:
   void         SetStopOnResourcesExcess(int vRSS=3000,int vVMEM=4000);
   //
   //
-protected:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
+
+protected:
   // Functions needed to select events for which we store the ESD friends
   Bool_t IsHighPt() const;
   Bool_t IsCosmicOrCalibSpecie() const;
