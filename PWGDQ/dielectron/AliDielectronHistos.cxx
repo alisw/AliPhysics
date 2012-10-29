@@ -207,17 +207,22 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
 
+  // set automatic histo name if needed
+  if(!strlen(name)) name=Form("%s%s%s", (strcmp(histClass,"Pair")==0?"p":""), AliDielectronVarManager::GetValueName(valTypeX),
+			      (valTypeP!=999? Form("-%s%s",(option.Contains("s",TString::kIgnoreCase)?"rms":"avg"),AliDielectronVarManager::GetValueName(valTypeP)) : "") );
+  
   Bool_t isOk=kTRUE;
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
   TH1 *hist=0x0;
   
   // set axis titles if not specified 
-  if(!strlen(title)) title=Form(";%s;%s",
-				AliDielectronVarManager::GetValueName(valTypeX),
-				(valTypeP!=999?
-				 Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)):
-				 Form("#%ss",histClass)));
+  if(!strlen(title)) title=Form(";%s;%s", AliDielectronVarManager::GetValueName(valTypeX),
+				(valTypeP!=999 ?
+				 (option.Contains("s",TString::kIgnoreCase) ?
+				  Form("RMS(%s)",AliDielectronVarManager::GetValueName(valTypeP)) :
+				  Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)) ) :
+				 Form("#%ss",histClass)) );
 
   if (isOk){
     if(valTypeP==999)
@@ -263,6 +268,11 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
 
+  // set automatic histo name if needed
+    if(!strlen(name)) name=Form("%s%s_%s%s", (strcmp(histClass,"Pair")==0?"p":""), AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY),
+			      (valTypeP!=999? Form("-%s%s",(option.Contains("s",TString::kIgnoreCase)?"rms":"avg"),AliDielectronVarManager::GetValueName(valTypeP)) : "") );
+
+
   Bool_t isOk=kTRUE;
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
@@ -270,10 +280,12 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   // set axis titles if not specified 
-  if(!strlen(title)) title=Form(";%s;%s;%s",
-				AliDielectronVarManager::GetValueName(valTypeX),
-				AliDielectronVarManager::GetValueName(valTypeY),
-				(valTypeP!=999?Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)):""));
+  if(!strlen(title)) title=Form(";%s;%s;%s", AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY),
+				(valTypeP!=999 ?
+				 (option.Contains("s",TString::kIgnoreCase) ?
+				  Form("RMS(%s)",AliDielectronVarManager::GetValueName(valTypeP)) :
+				  Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)) ) :
+				 Form("#%ss",histClass)) );
 
   if (isOk){
     if(valTypeP==999) {
@@ -328,6 +340,11 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
 
+  // set automatic histo name if needed
+  if(!strlen(name)) name=Form("%s%s_%s_%s%s", (strcmp(histClass,"Pair")==0?"p":""), AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY), AliDielectronVarManager::GetValueName(valTypeZ),
+			      (valTypeP!=999? Form("-%s%s",(option.Contains("s",TString::kIgnoreCase)?"rms":"avg"),AliDielectronVarManager::GetValueName(valTypeP)) : "") );
+
+
   Bool_t isOk=kTRUE;
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
@@ -335,11 +352,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   isOk&=(binsZ!=0x0);
   TH1 *hist=0x0;
 
-  // set axis titles if not specified 
-  if(!strlen(title)) title=Form(";%s;%s;%s",
-				AliDielectronVarManager::GetValueName(valTypeX),
-				AliDielectronVarManager::GetValueName(valTypeY),
-				AliDielectronVarManager::GetValueName(valTypeZ));
+  // set axis titles if not specified
+  if(!strlen(title)) title=Form(";%s;%s;%s", AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY), AliDielectronVarManager::GetValueName(valTypeZ));
 
   if (isOk){
     if(valTypeP==999)
