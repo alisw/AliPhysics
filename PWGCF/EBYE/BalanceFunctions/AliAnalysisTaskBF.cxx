@@ -161,6 +161,12 @@ AliAnalysisTaskBF::~AliAnalysisTaskBF() {
 void AliAnalysisTaskBF::UserCreateOutputObjects() {
   // Create histograms
   // Called once
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   if(!fBalance) {
     fBalance = new AliBalance();
     fBalance->SetAnalysisLevel("ESD");
@@ -374,6 +380,9 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
   if(fUsePID) PostData(4, fHistListPIDQA);       //PID
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //________________________________________________________________________

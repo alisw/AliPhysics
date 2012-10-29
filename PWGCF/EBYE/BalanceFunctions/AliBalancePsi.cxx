@@ -113,6 +113,12 @@ AliBalancePsi::~AliBalancePsi() {
 //____________________________________________________________________//
 void AliBalancePsi::InitHistograms() {
   // single particle histograms
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   Int_t anaSteps   = 1;       // analysis steps
   Int_t iBinSingle[kTrackVariablesSingle];        // binning for track variables
   Double_t* dBinsSingle[kTrackVariablesSingle];   // bins for track variables  
@@ -249,6 +255,9 @@ void AliBalancePsi::InitHistograms() {
   fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,2.*TMath::Pi());
   fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,2.*TMath::Pi());
   fHistPsiMinusPhi     = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //____________________________________________________________________//

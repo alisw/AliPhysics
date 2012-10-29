@@ -203,6 +203,12 @@ void AliBalance::SetInterval(Int_t iAnalysisType,
 //____________________________________________________________________//
 void AliBalance::InitHistograms() {
   //Initialize the histograms
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
     histName = "fHistP"; histName += kBFAnalysisType[iAnalysisType]; 
@@ -241,6 +247,8 @@ void AliBalance::InitHistograms() {
   fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,200);
   fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,200);
   fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,200);
+
+  TH1::AddDirectory(oldStatus);
 
 }
 

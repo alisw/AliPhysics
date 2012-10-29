@@ -154,6 +154,12 @@ AliAnalysisTaskTriggeredBF::~AliAnalysisTaskTriggeredBF() {
 void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   // Create histograms
   // Called once
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   if(!fBalance) {
     fBalance = new AliBalanceTriggered();
     fBalance->SetAnalysisLevel("AOD");
@@ -464,6 +470,9 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   if(fRunShuffling) PostData(3, fListTriggeredBFS);
   if(fRunMixing) PostData(4, fListTriggeredBFM);
   if(fRunV0) PostData(5,fHistListV0);
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //________________________________________________________________________

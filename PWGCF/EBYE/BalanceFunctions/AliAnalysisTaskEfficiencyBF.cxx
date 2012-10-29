@@ -73,6 +73,11 @@ void AliAnalysisTaskEfficiencyBF::UserCreateOutputObjects() {
   // Create histograms
   // Called once
 
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   fQAList = new TList();
   fQAList->SetName("QAList");
   fQAList->SetOwner();
@@ -291,6 +296,9 @@ void AliAnalysisTaskEfficiencyBF::UserCreateOutputObjects() {
 
   PostData(1, fQAList);
   PostData(2, fOutputList);
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //________________________________________________________________________
