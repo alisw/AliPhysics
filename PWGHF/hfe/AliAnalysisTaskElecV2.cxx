@@ -335,9 +335,8 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
-    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., wclsE = -999., wEovP = -999.;
-    
-    
+    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., wclsE = -999., wEovP = -999.;//, m02= -999., m20= -999.;
+   
     pt = track->Pt();
     if(pt<2) continue;
     fTrkpt->Fill(pt);
@@ -351,8 +350,6 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
 // 	m02 = cluster->M02();
       }
     }
-
-
     
     p = track->P();
     phi = track->Phi();
@@ -362,38 +359,85 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
     fdEdxBef->Fill(p,dEdx);
     fTPCnsigma->Fill(p,fTPCnSigma);
-       
+
+    //Remove electron candidate from the event plane
+    Double_t evPlaneCorrTPC = -999.;
+    if(dEdx>70 && dEdx<90){
+      Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
+      Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
+      TVector2 newQVectorfortrack;
+      newQVectorfortrack.Set(qX,qY);
+      evPlaneCorrTPC = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
+    }
+
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagPhotonicElecBCG = kFALSE;
             
     SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG);
            
-    Double_t corr[10]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG};
+    Double_t corr[10]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG};
     fCorr->Fill(corr);
     
-      if(fIsMC && fMC && stack){
+    
+    Int_t whichFirstMother = 0, whichSecondMother = 0, whichThirdMother = 0; 
+    Int_t IsElec = 0;
+    Int_t partPDG = -99, motherPDG = -99, secondMotherPDG = -99, thirdMotherPDG = -99;
+    Double_t partPt = -99. , motherPt = -99., secondMotherPt = -99.,thirdMotherPt = -99.; 
+    Bool_t MChijing; 
+    
+    if(fIsMC && fMC && stack){
       Int_t label = track->GetLabel();
       if(label>0){
 	TParticle *particle = stack->Particle(label);
 	if(particle){
-	    Int_t partPDG = particle->GetPdgCode();
-	    Double_t partPt = particle->Pt();
-	    Int_t IsElec = 0;
+	    partPDG = particle->GetPdgCode();
+	    partPt = particle->Pt();
+	    
 	    if (TMath::Abs(partPDG)==11) IsElec = 1;
+	    
+	    MChijing = fMC->IsFromBGEvent(label);
 	  
+            int iHijing = 1;
+	    if(!MChijing) iHijing = 0; // 0 if enhanced sample
+	    	  
 	    Int_t idMother = particle->GetFirstMother();
 	    if (idMother>0){
-	    TParticle *mother = stack->Particle(idMother);
-	    Int_t motherPDG = mother->GetPdgCode();
-	    
-	    Double_t mc[8]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt};
-	    
-	    if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
+	      TParticle *mother = stack->Particle(idMother);
+	      motherPt = mother->Pt();
+	      motherPDG = mother->GetPdgCode();
+	      
+	      
+	      
+	      if (motherPDG==22) whichFirstMother = 3; //gamma
+	      if (motherPDG==111) whichFirstMother = 2; //pi0
+	      if (motherPDG==221) whichFirstMother = 1; //eta
+
+	      Int_t idSecondMother = particle->GetSecondMother();
+	      if (idSecondMother>0){
+		TParticle *secondMother = stack->Particle(idSecondMother);
+		secondMotherPt = secondMother->Pt();
+		secondMotherPDG = secondMother->GetPdgCode();
+
+		if (secondMotherPDG==111) whichSecondMother = 2; //pi0
+		if (secondMotherPDG==221) whichSecondMother = 1; //eta
+		
+		Int_t idThirdMother = secondMother->GetFirstMother();
+		if (idThirdMother>0){
+		  TParticle *thirdMother = stack->Particle(idThirdMother);
+		  thirdMotherPt = thirdMother->Pt();
+		  thirdMotherPDG = thirdMother->GetPdgCode();
+		  
+		  if (thirdMotherPDG==221) whichThirdMother = 1; //eta
+		}
+	      }
+	      
+	      Double_t mc[15]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt,whichFirstMother,whichSecondMother,whichThirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt};
+	      
+	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
 	  }
 	}
       }
     }
-
     
        
     if(fTPCnSigma >= 1.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
@@ -410,28 +454,13 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fChargPartV2->Fill(corrV2); 
 
     if(fTPCnSigma >= -0.5){
-      	Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
-	Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
-	TVector2 newQVectorfortrack;
-	newQVectorfortrack.Set(qX,qY);
-	Double_t corrV2TPC = -999.;
-	corrV2TPC = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
-
-	Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,corrV2TPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
-
+      	Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
 	feTPCV2->Fill(correctedV2);
     }
     
     if(pidpassed==0) continue;
     
-    Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
-    Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
-    TVector2 newQVectorfortrack;
-    newQVectorfortrack.Set(qX,qY);
-    Double_t corrV2TPC = -999.;
-    corrV2TPC = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
-        
-    Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,corrV2TPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
+    Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
     
     feV2->Fill(correctedV2);
     
@@ -585,11 +614,11 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
-  //EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt};
-  Int_t binsv7[8]={100,100,100,3,3,3,90,100}; 
-  Double_t xminv7[8]={0,-3.5,0,-1,-1,-1,0,0};
-  Double_t xmaxv7[8]={3,3.5,50,2,2,2,90,50}; 
-  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",8,binsv7,xminv7,xmaxv7);
+  //EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt,firstMother,secondMother,thirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt
+  Int_t binsv7[15]={100,100,100,3,3,3,90,100,5,5,5,3,100,100,100}; 
+  Double_t xminv7[15]={0,-3.5,0,-1,-1,-1,0,0,-1,-1,-1,-1,0,0,0};
+  Double_t xmaxv7[15]={3,3.5,50,2,2,2,90,50,4,4,4,2,50,50,50}; 
+  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",15,binsv7,xminv7,xmaxv7);
   fOutputList->Add(fMCphotoElecPt);
    
   PostData(1,fOutputList);
