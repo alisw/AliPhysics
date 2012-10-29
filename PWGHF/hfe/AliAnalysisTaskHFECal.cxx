@@ -886,7 +886,6 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fInvmassULSmc3 = new TH2D("fInvmassULSmc3", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2)",20,0,20,500,0,0.5 );
   fInvmassULSmc3->Sumw2();
-  fOutputList->Add(fInvmassULSmc2);
   fOutputList->Add(fInvmassULSmc3);
 
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
