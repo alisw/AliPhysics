@@ -89,8 +89,12 @@ AliBalanceTriggered::~AliBalanceTriggered() {
 
 //____________________________________________________________________//
 void AliBalanceTriggered::InitHistograms() {
-
   //Initialize the histograms
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
   TString title    = "";      // histogram title
   Int_t anaSteps   = 1;       // analysis steps
@@ -241,6 +245,7 @@ void AliBalanceTriggered::InitHistograms() {
   //-----------------------------------------------------------
   //-----------------------------------------------------------
 
+  TH1::AddDirectory(oldStatus);
 
 }
 

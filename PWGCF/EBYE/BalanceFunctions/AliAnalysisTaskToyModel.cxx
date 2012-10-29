@@ -177,6 +177,12 @@ void AliAnalysisTaskToyModel::Init() {
 void AliAnalysisTaskToyModel::CreateOutputObjects() {
   // Create histograms
   // Called once
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   if(!fBalance) {
     fBalance = new AliBalance();
     fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
@@ -299,6 +305,9 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   //PostData(1, fList);
   //PostData(2, fListBF);
   //if(fRunShuffling) PostData(3, fListBFS);
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //________________________________________________________________________

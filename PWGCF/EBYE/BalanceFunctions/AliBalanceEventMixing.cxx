@@ -193,6 +193,12 @@ void AliBalanceEventMixing::SetInterval(Int_t iAnalysisType,
 //____________________________________________________________________//
 void AliBalanceEventMixing::InitHistograms() {
   //Initialize the histograms
+
+  // global switch disabling the reference 
+  // (to avoid "Replacing existing TH1" if several wagons are created in train)
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
     histName = "fHistP"; histName += kBFAnalysisType[iAnalysisType]; 
@@ -225,6 +231,9 @@ void AliBalanceEventMixing::InitHistograms() {
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
   }
+
+  TH1::AddDirectory(oldStatus);
+
 }
 
 //____________________________________________________________________//

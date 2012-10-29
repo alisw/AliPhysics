@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 10;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2"};
+const Int_t numberOfCentralityBins = 11;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2","0-100"};
 
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
 			    Int_t gCentrality = 1,
@@ -87,7 +87,8 @@ TList *GetListOfObjects(const char* filename,
     listBFName += "_"; listBFName += gCentralityEstimator;}
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   cout<<"======================================================="<<endl;
-  cout<<"List name: "<<listBF->GetName()<<endl;
+  cout<<"List name: "<<listBFName<<endl;
+  cout<<"List name (check): "<<listBF->GetName()<<endl;
   listBF->ls();
 
   //Get the histograms
