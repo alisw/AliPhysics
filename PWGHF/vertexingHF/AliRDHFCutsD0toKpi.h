@@ -53,6 +53,8 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
   void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
   void SetMaximumPtSpecialCuts(Double_t pt) { fPtMaxSpecialCuts=pt; }
+  void SetMaximumPforPID(Double_t p){fmaxPtrackForPID=p;}
+  Double_t GetMaximumPforPID(){return fmaxPtrackForPID;}
   Double_t GetMaximumPtSpecialCuts() const { return fPtMaxSpecialCuts; }
   void SetLowPt(Bool_t lowpt,Double_t ptlow=2.) {fLowPt=lowpt;fPtLowPID=ptlow;}
   Bool_t GetUseSpecialCuts() const {return fUseSpecialCuts;}
@@ -73,8 +75,9 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Double_t fPtLowPID;      // transverse momentum below which the strong PID is applied
   Double_t fPtMaxSpecialCuts; // transverse momentum below which the special cuts are applied
                               //  if set to zero, used for all pt
+  Double_t  fmaxPtrackForPID; // max momentum for applying PID
 
-  ClassDef(AliRDHFCutsD0toKpi,7);  // class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpi,8);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif

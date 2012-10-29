@@ -48,7 +48,8 @@ fLowPt(kTRUE),
 fDefaultPID(kFALSE),
 fUseKF(kFALSE),
 fPtLowPID(2.),
-fPtMaxSpecialCuts(9999.)
+fPtMaxSpecialCuts(9999.),
+fmaxPtrackForPID(9999)
 {
   //
   // Default Constructor
@@ -102,7 +103,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   fDefaultPID(source.fDefaultPID),
   fUseKF(source.fUseKF),
   fPtLowPID(source.fPtLowPID),
-  fPtMaxSpecialCuts(source.fPtMaxSpecialCuts)
+  fPtMaxSpecialCuts(source.fPtMaxSpecialCuts),
+  fmaxPtrackForPID(source.fmaxPtrackForPID)
 {
   //
   // Copy constructor
@@ -124,7 +126,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fUseKF=source.fUseKF;
   fPtLowPID=source.fPtLowPID;
   fPtMaxSpecialCuts=source.fPtMaxSpecialCuts;
-
+  fmaxPtrackForPID=source.fmaxPtrackForPID;
   return *this;
 }
 
@@ -702,21 +704,23 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       checkPIDInfo[daught]=kFALSE; 
       continue;
     }
+    Double_t pProng=aodtrack->P();
 
     // identify kaon
-    combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
-
+    if(pProng<fmaxPtrackForPID){
+      combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
+    }
     // identify pion
-
-    if(!(fPidHF->CheckStatus(aodtrack,"TPC"))) {
-     combinedPID[daught][1]=0;
-    }else{
-      fPidHF->SetTOF(kFALSE);
-      combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
-      fPidHF->SetTOF(kTRUE);
-      fPidHF->SetCompat(kTRUE);
-     }
-
+    if(pProng<fmaxPtrackForPID){
+      if(!(fPidHF->CheckStatus(aodtrack,"TPC"))) {
+	combinedPID[daught][1]=0;
+      }else{
+	fPidHF->SetTOF(kFALSE);
+	combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
+	fPidHF->SetTOF(kTRUE);
+	fPidHF->SetCompat(kTRUE);
+      }
+    }
 
     if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
       isD0D0barPID[0]=0;
@@ -746,9 +750,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
     // identify kaon
     combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
 
-    Double_t ptProng=aodtrack->P();
-
-    if(ptProng<0.6){
+    if(pProng<0.6){
      fPidHF->SetCompat(kFALSE);
      combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
      fPidHF->SetCompat(kTRUE);
@@ -762,7 +764,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       fPidHF->SetSigmaForTPC(sigmaTPCpi);
       combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
       fPidHF->SetTOF(kTRUE);
-       if(ptProng<0.8){
+       if(pProng<0.8){
         Bool_t isTPCpion=fPidHF->IsPionRaw(aodtrack,"TPC");
         if(isTPCpion){
          combinedPID[daught][1]=1;
