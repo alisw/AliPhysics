@@ -28,7 +28,9 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, 
   fDenSideP(0), 
   fDenSideN(0), 
   fDenLongP(0), 
-  fDenLongN(0)
+    fDenLongN(0),
+    fkTMonitor(0)
+
 {
   // Default constructor
   // set up numerators
@@ -60,6 +62,10 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, 
   snprintf(bufname, 200, "DenLongN%s", title);
   fDenLongN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
 
+    char tTitkT[101] = "kTDep";
+    strncat(tTitkT,title, 100);
+    fkTMonitor = new TH1D(tTitkT,title,250,0.0,5.0);
+
   // to enable error bar calculation...
   fNumOutP->Sumw2(); 
   fNumOutN->Sumw2();  
@@ -73,6 +79,8 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, 
   fDenSideN->Sumw2(); 
   fDenLongP->Sumw2(); 
   fDenLongN->Sumw2();
+
+    fkTMonitor->Sumw2();
 }
 
 //____________________________
@@ -89,7 +97,8 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& 
   fDenSideP(0), 
   fDenSideN(0), 
   fDenLongP(0), 
-  fDenLongN(0)
+    fDenLongN(0),
+    fkTMonitor(0)
 {
   // copy constructor
   if (aCorrFctn.fNumOutP)
@@ -117,7 +126,11 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& 
     fDenLongP = new TH1D(*aCorrFctn.fDenLongP);
   if (aCorrFctn.fDenLongN)
     fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
+
+    if (aCorrFctn.fkTMonitor)
+        fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
 }
+
 //____________________________
 AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR(){
   delete fNumOutP; 
@@ -132,7 +145,9 @@ AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR(){
   delete fDenSideN; 
   delete fDenLongP; 
   delete fDenLongN;
+    delete fkTMonitor;
 }
+
 //_________________________
 AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFctnNonIdDR& aCorrFctn)
 {
@@ -166,6 +181,9 @@ AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFc
   if (aCorrFctn.fDenLongN)
     fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
 
+    if (aCorrFctn.fkTMonitor)
+        fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+
   return *this;
 }
 
@@ -198,6 +216,10 @@ AliFemtoString AliFemtoCorrFctnNonIdDR::Report(){
 //____________________________
 void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair){
   // add true pair
+
+    if (fPairCut)
+        if (!fPairCut->Pass(pair)) return;
+
   double tKStar = pair->KStar();
   if (pair->KOut()>0.0)
     fNumOutP->Fill(tKStar);
@@ -214,10 +236,16 @@ void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair){
   else
     fNumLongN->Fill(tKStar);
 
+    fkTMonitor->Fill(pair->KT());
+
 }
 //____________________________
 void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair){
   // add mixed (background) pair
+
+    if (fPairCut)
+        if (!fPairCut->Pass(pair)) return;
+
   double tKStar = pair->KStar();
   if (pair->KOut()>0.0)
     fDenOutP->Fill(tKStar);
@@ -248,6 +276,7 @@ void AliFemtoCorrFctnNonIdDR::Write(){
   fDenSideN->Write(); 
   fDenLongP->Write(); 
   fDenLongN->Write();
+    fkTMonitor->Write();
 }
 
 TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
@@ -267,6 +296,7 @@ TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
   tOutputList->Add(fDenSideN); 
   tOutputList->Add(fDenLongP); 
   tOutputList->Add(fDenLongN);
+    tOutputList->Add(fkTMonitor);
 
   return tOutputList;
 }

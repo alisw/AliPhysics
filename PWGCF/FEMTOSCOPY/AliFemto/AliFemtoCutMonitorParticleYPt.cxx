@@ -24,16 +24,16 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fMass(0.13957)
 {
   // Default constructor
-  fYPt = new TH2D("YPt", "Rapidity vs Pt",              140, -1.4, 1.4, 100, 0.0, 2.0);
+    fYPt = new TH2D("YPt", "Rapidity vs Pt",              140, -1.4, 1.4, 100, 0.0, 5.0);
   fYPhi = new TH2D("YPhi", "Rapidity vs Phi",           140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-  fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.0, 2.0, 100, -TMath::Pi(), TMath::Pi());
+    fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.0, 5.0, 100, -TMath::Pi(), TMath::Pi());
   fEtaPhi = new TH2D("EtaPhi", "Pseudorapidity vs Phi", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-  fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 2.0);
+    fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 5.0);
   // fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-  // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0)
+    // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 5.0)
     ;
-  fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
-  fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
+    fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+    fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, float aMass):
@@ -52,23 +52,23 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   // Normal constructor
   char name[200];
   snprintf(name, 200, "YPt%s", aName);
-  fYPt = new TH2D(name, "Rapdity vs Pt", 140, -1.4, 1.4, 100, 0.0, 2.0);
+    fYPt = new TH2D(name, "Rapdity vs Pt", 140, -1.4, 1.4, 100, 0.0, 5.0);
   snprintf(name, 200, "YPhi%s", aName);
   fYPhi = new TH2D(name, "Rapidity vs Phi",           140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "PtPhi%s", aName);
-  fPtPhi = new TH2D(name, "Pt vs Phi",               100,  0.0, 2.0, 100, -TMath::Pi(), TMath::Pi());
+    fPtPhi = new TH2D(name, "Pt vs Phi",               100,  0.0, 5.0, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPhi%s", aName);
   fEtaPhi = new TH2D(name, "Pseudorapidity vs Phi", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPt%s", aName);
-  fEtaPt = new TH2D(name, "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 2.0);
+    fEtaPt = new TH2D(name, "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 5.0);
   // snprintf(name, 200, "EtaPhiW%s", aName);
   // fEtaPhiW = new TH2D(name, "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   // snprintf(name, 200, "EtaPtW%s", aName);
   // fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0);
   snprintf(name, 200, "DCARPt%s", aName);
-  fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
+    fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
   snprintf(name, 200, "DCAZPt%s", aName);
-  fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
+    fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMonitorParticleYPt &aCut):
@@ -192,8 +192,8 @@ void AliFemtoCutMonitorParticleYPt::Write()
 TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
 {
   TList *tOutputList = new TList();
-  tOutputList->Add(fYPt);
-  tOutputList->Add(fYPhi);
+    // tOutputList->Add(fYPt);
+    // tOutputList->Add(fYPhi);
   tOutputList->Add(fPtPhi);
   tOutputList->Add(fEtaPhi);
   tOutputList->Add(fEtaPt);

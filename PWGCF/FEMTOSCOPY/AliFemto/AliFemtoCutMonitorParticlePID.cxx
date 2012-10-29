@@ -15,12 +15,17 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
   fTPCdEdx(0),
   fTOFParticle(0),
   fTOFTime(0x0),
-  ftofHist(0)
+    fTOFNSigma(0),
+    fTPCNSigma(0),
+    fTPCTOFNSigma(0)
 {
   // Default constructor
-  fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
-  fTOFTime = new TH2D("TOFTime", "TOF Time vs. momentum", 190, 0.1, 2.0, 400, -4000.0, 4000.0);
-  ftofHist=new TH2D("TOFHist","TOF momentum vs v",100,0.,1.1,100,0.,3.0);
+    fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. transverse momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
+    fTOFTime = new TH2D("TOFTime", "TOF Time vs. transverse momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+    fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle):
@@ -28,18 +33,27 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   fTPCdEdx(0),
   fTOFParticle(aTOFParticle),
   fTOFTime(0x0),
-  ftofHist(0)
+    fTOFNSigma(0),
+    fTPCNSigma(0),
+    fTPCTOFNSigma(0)
 {
   // Normal constructor
   char name[200];
   snprintf(name, 200, "TPCdEdx%s", aName);
-  fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
+    fTPCdEdx = new TH2D(name, "TPC dEdx vs. transverse momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
 
   snprintf(name, 200, "TOFTime%s", aName);
-  fTOFTime = new TH2D(name, "TOF Time vs. momentum", 190, 0.1, 2.0, 400, -4000.0, 4000.0);
+    fTOFTime = new TH2D(name, "TOF Time vs. transverse momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
 
-  snprintf(name, 200, "TOFHist%s", aName);
-  ftofHist=new TH2D(name,"TOF momentum vs v",100,0.,1.1,100,0.,3.0);
+    snprintf(name, 200, "TOFNSigma%s", aName);
+    fTOFNSigma = new TH2D(name,"TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+
+    snprintf(name, 200, "TPCNSigma%s", aName);
+    fTPCNSigma = new TH2D(name,"TPC NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+
+    snprintf(name, 200, "TPCTOFNSigma%s", aName);
+    fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. transverse momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut):
@@ -47,7 +61,10 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   fTPCdEdx(0),
   fTOFParticle(0),
   fTOFTime(0x0),
-  ftofHist(0)
+    fTOFNSigma(0),
+    fTPCNSigma(0),
+    fTPCTOFNSigma(0)
+
 {
   // copy constructor
   if (fTPCdEdx) delete fTPCdEdx;
@@ -56,8 +73,14 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   if (fTOFTime) delete fTOFTime;
   fTOFTime = new TH2D(*aCut.fTOFTime);
 
-  if (ftofHist) delete ftofHist; 
-  ftofHist= new TH2D(*aCut.ftofHist);
+    if (fTOFNSigma) delete fTOFNSigma;
+    fTOFNSigma= new TH2D(*aCut.fTOFNSigma);
+
+    if (fTPCNSigma) delete fTPCNSigma;
+    fTPCNSigma= new TH2D(*aCut.fTPCNSigma);
+
+    if (fTPCTOFNSigma) delete fTPCTOFNSigma;
+    fTPCTOFNSigma= new TH2D(*aCut.fTPCTOFNSigma);
 }
 
 AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
@@ -65,7 +88,10 @@ AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
   // Destructor
   delete fTPCdEdx;
   delete fTOFTime;
-  delete ftofHist;
+    delete fTOFNSigma;
+    delete fTPCNSigma;
+    delete fTPCTOFNSigma;
+
 }
 
 AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const AliFemtoCutMonitorParticlePID& aCut)
@@ -80,8 +106,15 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
   if (fTOFTime) delete fTOFTime;
   fTOFTime = new TH2D(*aCut.fTOFTime);
   
-  if(ftofHist) delete ftofHist;
-  ftofHist = new TH2D(*aCut.ftofHist);
+    if(fTOFNSigma) delete fTOFNSigma;
+    fTOFNSigma = new TH2D(*aCut.fTOFNSigma);
+
+    if(fTPCNSigma) delete fTPCNSigma;
+    fTPCNSigma = new TH2D(*aCut.fTPCNSigma);
+
+    if(fTPCTOFNSigma) delete fTPCTOFNSigma;
+    fTPCTOFNSigma = new TH2D(*aCut.fTPCTOFNSigma);
+
   return *this;
 }
 
@@ -107,7 +140,23 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   fTOFTime->Fill(tMom, tTOF);
 
   float vp= aTrack->VTOF();
-  ftofHist->Fill(vp,tMom);
+    if (vp > 0.) {
+        fTOFTime->Fill(tMom, tTOF);
+
+        if (fTOFParticle == 0) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFPi());
+        if (fTOFParticle == 1) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFK());
+        if (fTOFParticle == 2) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFP());
+
+}
+
+    if (fTOFParticle == 0) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCPi());
+    if (fTOFParticle == 1) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCK());
+    if (fTOFParticle == 2) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCP());
+
+    if (fTOFParticle == 0) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi() )/TMath::Sqrt(2) );
+    if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() )/TMath::Sqrt(2) );
+    if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() )/TMath::Sqrt(2) );
+
 }
 
 void AliFemtoCutMonitorParticlePID::Write()
@@ -115,7 +164,10 @@ void AliFemtoCutMonitorParticlePID::Write()
   // Write out the relevant histograms
   fTPCdEdx->Write();
   fTOFTime->Write();
-  ftofHist->Write();
+    fTOFNSigma->Write();
+    fTPCNSigma->Write();
+    fTPCTOFNSigma->Write();
+
 }
 
 TList *AliFemtoCutMonitorParticlePID::GetOutputList()
@@ -123,6 +175,9 @@ TList *AliFemtoCutMonitorParticlePID::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fTPCdEdx);
   tOutputList->Add(fTOFTime);
-  tOutputList->Add(ftofHist);
+    tOutputList->Add(fTOFNSigma);
+    tOutputList->Add(fTPCNSigma);
+    tOutputList->Add(fTPCTOFNSigma);
+
   return tOutputList;
 }
