@@ -122,6 +122,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistChi2PerClsITSInAccB; //! output hist
   TH1F         *fHistPtTPC; //! output hist
   TH1F         *fHistPtTPCInAcc; //! output hist
+  TH1F         *fHistPtTPCInAccTOFbc0; //! output hist
   TH1F         *fHistPtTPCInAccMCtwoSPD; //! output hist
   TH1F         *fHistPtTPCInAccMConeSPD; //! output hist
   TH2F         *fHistdEdxVSPtTPCInAcc; //! output hist
@@ -153,6 +154,13 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPtITSMI6InAcc; //! output hist
   TH1F         *fHistPtITSMISPDInAcc; //! output hist
   TH1F         *fHistPtITSMIoneSPDInAcc; //! output hist
+  TH1F         *fHistPtITSMI2InAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMI3InAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMI4InAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMI5InAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMI6InAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMISPDInAccTOFbc0; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccTOFbc0; //! output hist
   TH1F         *fHistPtITSMIoneSPDInAccShared; //! output hist
   TH1F         *fHistPtITSMIoneSPDInAccSharedSPD; //! output hist
   TH1F         *fHistPtITSMISPD1InAccShared; //! output hist
@@ -182,6 +190,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPtITSMIoneSPDInAccFake; //! output hist
   TH1F         *fHistPtITSMIoneSPDthreeSDDSSDInAcc; //! output hist
   TH1F         *fHistPtITSTPCsel; //! output hist
+  TH1F         *fHistPtITSTPCselTOFbc0; //! output hist
   TH1F         *fHistPtITSTPCselP; //! output hist
   TH1F         *fHistPtITSTPCselS; //! output hist
   TH1F         *fHistPtITSTPCselFake; //! output hist
@@ -299,7 +308,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t IsSelectedCentrality() const;
   void FillNClustersModuleMap();
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,13); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,14); // ITS tracks analysis
 };
 
 #endif

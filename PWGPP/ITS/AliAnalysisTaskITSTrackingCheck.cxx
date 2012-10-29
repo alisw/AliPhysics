@@ -140,6 +140,7 @@ fHistChi2PerClsITSInAccA(0),
 fHistChi2PerClsITSInAccB(0),
 fHistPtTPC(0),
 fHistPtTPCInAcc(0),
+fHistPtTPCInAccTOFbc0(0),
 fHistPtTPCInAccMCtwoSPD(0),
 fHistPtTPCInAccMConeSPD(0),
 fHistdEdxVSPtTPCInAcc(0),
@@ -171,6 +172,13 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMI2InAccTOFbc0(0),
+fHistPtITSMI3InAccTOFbc0(0),
+fHistPtITSMI4InAccTOFbc0(0),
+fHistPtITSMI5InAccTOFbc0(0),
+fHistPtITSMI6InAccTOFbc0(0),
+fHistPtITSMISPDInAccTOFbc0(0),
+fHistPtITSMIoneSPDInAccTOFbc0(0),
 fHistPtITSMIoneSPDInAccShared(0),
 fHistPtITSMIoneSPDInAccSharedSPD(0),
 fHistPtITSMISPD1InAccShared(0),
@@ -200,6 +208,7 @@ fHistPtITSMISPDInAccFake(0),
 fHistPtITSMIoneSPDInAccFake(0),
 fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
+fHistPtITSTPCselTOFbc0(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
 fHistPtITSTPCselFake(0),
@@ -388,6 +397,7 @@ fHistChi2PerClsITSInAccA(0),
 fHistChi2PerClsITSInAccB(0),
 fHistPtTPC(0),
 fHistPtTPCInAcc(0),
+fHistPtTPCInAccTOFbc0(0),
 fHistPtTPCInAccMCtwoSPD(0),
 fHistPtTPCInAccMConeSPD(0),
 fHistdEdxVSPtTPCInAcc(0),
@@ -419,6 +429,13 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMI2InAccTOFbc0(0),
+fHistPtITSMI3InAccTOFbc0(0),
+fHistPtITSMI4InAccTOFbc0(0),
+fHistPtITSMI5InAccTOFbc0(0),
+fHistPtITSMI6InAccTOFbc0(0),
+fHistPtITSMISPDInAccTOFbc0(0),
+fHistPtITSMIoneSPDInAccTOFbc0(0),
 fHistPtITSMIoneSPDInAccShared(0),
 fHistPtITSMIoneSPDInAccSharedSPD(0),
 fHistPtITSMISPD1InAccShared(0),
@@ -448,6 +465,7 @@ fHistPtITSMISPDInAccFake(0),
 fHistPtITSMIoneSPDInAccFake(0),
 fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
+fHistPtITSTPCselTOFbc0(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
 fHistPtITSTPCselFake(0),
@@ -963,6 +981,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtTPCInAcc->Sumw2();
   fHistPtTPCInAcc->SetMinimum(0);
   fOutput->Add(fHistPtTPCInAcc);
+
+  fHistPtTPCInAccTOFbc0 = new TH1F("fHistPtTPCInAccTOFbc0","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtTPCInAccTOFbc0->Sumw2();
+  fHistPtTPCInAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtTPCInAccTOFbc0);
   
   fHistPtTPCInAccMCtwoSPD = new TH1F("fHistPtTPCInAccMCtwoSPD","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtTPCInAccMCtwoSPD->Sumw2();
@@ -1047,6 +1070,41 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtITSMIoneSPDInAcc->Sumw2();
   fHistPtITSMIoneSPDInAcc->SetMinimum(0);
   fOutput->Add(fHistPtITSMIoneSPDInAcc);
+
+  fHistPtITSMI6InAccTOFbc0 = new TH1F("fHistPtITSMI6InAccTOFbc0","pt distribution of ITSMI6 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI6InAccTOFbc0->Sumw2();
+  fHistPtITSMI6InAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI6InAccTOFbc0);
+  
+  fHistPtITSMI5InAccTOFbc0 = new TH1F("fHistPtITSMI5InAccTOFbc0","pt distribution of ITSMI5 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI5InAccTOFbc0->Sumw2();
+  fHistPtITSMI5InAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI5InAccTOFbc0);
+  
+  fHistPtITSMI4InAccTOFbc0 = new TH1F("fHistPtITSMI4InAccTOFbc0","pt distribution of ITSMI4 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI4InAccTOFbc0->Sumw2();
+  fHistPtITSMI4InAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI4InAccTOFbc0);
+  
+  fHistPtITSMI3InAccTOFbc0 = new TH1F("fHistPtITSMI3InAccTOFbc0","pt distribution of ITSMI3 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI3InAccTOFbc0->Sumw2();
+  fHistPtITSMI3InAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI3InAccTOFbc0);
+  
+  fHistPtITSMI2InAccTOFbc0 = new TH1F("fHistPtITSMI2InAccTOFbc0","pt distribution of ITSMI2 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI2InAccTOFbc0->Sumw2();
+  fHistPtITSMI2InAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI2InAccTOFbc0);
+  
+  fHistPtITSMISPDInAccTOFbc0 = new TH1F("fHistPtITSMISPDInAccTOFbc0","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMISPDInAccTOFbc0->Sumw2();
+  fHistPtITSMISPDInAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMISPDInAccTOFbc0);
+  
+  fHistPtITSMIoneSPDInAccTOFbc0 = new TH1F("fHistPtITSMIoneSPDInAccTOFbc0","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIoneSPDInAccTOFbc0->Sumw2();
+  fHistPtITSMIoneSPDInAccTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIoneSPDInAccTOFbc0);
 
   fHistPtITSMIoneSPDInAccShared = new TH1F("fHistPtITSMIoneSPDInAccShared","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMIoneSPDInAccShared->Sumw2();
@@ -1193,6 +1251,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtITSTPCsel->Sumw2();
   fHistPtITSTPCsel->SetMinimum(0);
   fOutput->Add(fHistPtITSTPCsel);
+
+  fHistPtITSTPCselTOFbc0 = new TH1F("fHistPtITSTPCselTOFbc0","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSTPCselTOFbc0->Sumw2();
+  fHistPtITSTPCselTOFbc0->SetMinimum(0);
+  fOutput->Add(fHistPtITSTPCselTOFbc0);
 
   fHistPtITSTPCselP = new TH1F("fHistPtITSTPCselP","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSTPCselP->Sumw2();
@@ -1874,10 +1937,16 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
 
+
     // remove tracks not reco in ITS or TPC
     if (!(track->GetStatus() & AliESDtrack::kITSin) &&
 	!(track->GetStatus() & AliESDtrack::kTPCin)) continue;
 
+    // check if tracks if flagged as from bc0 by TOF
+    Bool_t isTOFbc0 = kFALSE;
+    if(track->GetTOFBunchCrossing(fESD->GetMagneticField())/2==0) isTOFbc0=kTRUE;
+
+    //
     Bool_t isPrimary=kTRUE,isFromMat=kFALSE,isFromStrange=kFALSE;
     Double_t rProdVtx=0,zProdVtx=0;
     Int_t pdgTrk=0,pdgMoth=0;
@@ -2130,6 +2199,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  itsfindableAcc=kTRUE; 
 	  fHistdEdxVSPtTPCInAcc->Fill(track->Pt(),track->GetTPCsignal());
 	  fHistPtTPCInAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtTPCInAccTOFbc0->Fill(track->Pt());
 	  fHistTPCclsVSPtTPCInAcc->Fill(trackTPC->Pt(),trackTPC->GetNcls(1));
 	  fHistPtVSphiTPCInAcc->Fill(track->Phi(),track->Pt());
 	  if(!(track->GetStatus()&AliESDtrack::kTRDout)) fHistPtTPCInAccNoTRDout->Fill(track->Pt()); 
@@ -2205,6 +2275,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if(itsfindableAcc) {
 	if(nclsITS==6) {
 	  fHistPtITSMI6InAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMI6InAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMI6InAcc->Fill(track->Phi());
 	    fHistEtaITSMI6InAcc->Fill(track->Eta());
@@ -2214,6 +2285,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(nclsITS==5) {
 	  fHistPtITSMI5InAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMI5InAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMI5InAcc->Fill(track->Phi());
 	    fHistEtaITSMI5InAcc->Fill(track->Eta());
@@ -2223,6 +2295,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(nclsITS==4) {
 	  fHistPtITSMI4InAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMI4InAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMI4InAcc->Fill(track->Phi());
 	    fHistEtaITSMI4InAcc->Fill(track->Eta());
@@ -2232,6 +2305,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(nclsITS==3) {
 	  fHistPtITSMI3InAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMI3InAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMI3InAcc->Fill(track->Phi());
 	    fHistEtaITSMI3InAcc->Fill(track->Eta());
@@ -2241,6 +2315,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(nclsITS==2) {
 	  fHistPtITSMI2InAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMI2InAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMI2InAcc->Fill(track->Phi());
 	    fHistEtaITSMI2InAcc->Fill(track->Eta());
@@ -2250,6 +2325,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMISPDInAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMISPDInAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMISPDInAcc->Fill(track->Phi());
 	    fHistEtaITSMISPDInAcc->Fill(track->Eta());
@@ -2259,6 +2335,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMIoneSPDInAcc->Fill(track->Pt());
+	  if(isTOFbc0) fHistPtITSMIoneSPDInAccTOFbc0->Fill(track->Pt());
 	  if(track->Pt()>1) {
 	    fHistPhiITSMIoneSPDInAcc->Fill(track->Phi());
 	    fHistEtaITSMIoneSPDInAcc->Fill(track->Eta());
@@ -2332,6 +2409,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     // track that passes final ITS+TPC cuts
     if(itsfindableAcc && fESDtrackCutsITSTPC->AcceptTrack(track)) {
       fHistPtITSTPCsel->Fill(track->Pt());
+      if(isTOFbc0) fHistPtITSTPCselTOFbc0->Fill(track->Pt());
       if(isFake) fHistPtITSTPCselFake->Fill(track->Pt());
       fHistdEdxVSPtITSTPCsel->Fill(track->Pt(),track->GetITSsignal());
       if(isPrimary) {
