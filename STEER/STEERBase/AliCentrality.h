@@ -33,6 +33,7 @@ class AliCentrality : public TNamed
   void SetCentralityCL1(Float_t cent) {fCentralityCL1 = cent;}
   void SetCentralityCND(Float_t cent) {fCentralityCND = cent;}
   void SetCentralityNPA(Float_t cent) {fCentralityNPA = cent;}
+  void SetCentralityZNA(Float_t cent) {fCentralityZNA = cent;}
   void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
   void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
   void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
@@ -63,10 +64,11 @@ class AliCentrality : public TNamed
   Float_t fCentralityCL1;   // Centrality from Clusters in layer 1
   Float_t fCentralityCND;   // Centrality from tracks (candle condition)
   Float_t fCentralityNPA;   // Centrality from Npart (MC)
+  Float_t fCentralityZNA;   // Centrality from ZNA)
   Float_t fCentralityV0MvsFMD;   // Centrality from V0 vs FMD
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
   Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC
 
-  ClassDef(AliCentrality, 4)
+  ClassDef(AliCentrality, 5)
 };
 #endif //ALICENTRALITY_H
