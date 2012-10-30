@@ -22,6 +22,7 @@
 #include <TMath.h>
 #include <TTree.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TRandom.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
@@ -245,7 +246,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
   
   fHistos->SetEfficiencyCorrection(fEfficiencyCorrection);
-  fHistosMixed->SetEfficiencyCorrection(fEfficiencyCorrection);
+  fHistosMixed->SetEfficiencyCorrection((TH3F*) fEfficiencyCorrection->Clone());
   
   // add histograms to list
   fListOfHistos->Add(fHistos);
