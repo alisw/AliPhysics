@@ -57,6 +57,7 @@ class AliOADBCentrality : public TNamed {
   TH1F*   CNDhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultCND_percentile")));}
   TH1F*   SPDhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultCL1_percentile")));}
   TH1F*   NPAhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultNPA_percentile")));}
+  TH1F*   ZNAhist()        const  {return ((TH1F*) (Hists1D()->FindObject("hZNA")));}
   TH2F*   ZEMvsZDChist()   const  {return ((TH2F*) (Hists2D()->FindObject("fHOutMultZEMvsZDC")));}
   TList*  Hists1D()        const  {return f1DHistos;}
   TList*  Hists2D()        const  {return f2DHistos;}
