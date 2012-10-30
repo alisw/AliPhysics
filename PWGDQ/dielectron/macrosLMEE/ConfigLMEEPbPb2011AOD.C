@@ -117,7 +117,7 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   InitHistograms(die,cutDefinition);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-  InitCF(die,cutDefinition);
+//  InitCF(die,cutDefinition);
 
   return die;
 }

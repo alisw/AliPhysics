@@ -48,7 +48,7 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
 		  //           eventCuts->SetCentralityRange(0.0,80.0);
 		  eventCuts->SetRequireVertex();
 		  eventCuts->SetMinVtxContributors(1);
