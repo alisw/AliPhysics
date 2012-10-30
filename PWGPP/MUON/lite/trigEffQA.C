@@ -575,8 +575,8 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   outCanName.ReplaceAll(".root",".pdf");
   for ( Int_t ican=0; ican<outCanList.GetEntries(); ican++ ) {
     TString canName = outCanName;
-    if ( ican == 0 ) canName.Append("["); // open pdf file
-    else if ( ican == outCanList.GetEntries()-1 ) canName.Append("]"); // close pdf file
+    if ( ican == 0 ) canName.Append("("); // open pdf file
+    else if ( ican == outCanList.GetEntries()-1 ) canName.Append(")"); // close pdf file
     static_cast<TCanvas*>(outCanList.At(ican))->Print(canName.Data());
   }
   // There is a bug when creating a pdf
