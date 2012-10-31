@@ -24,14 +24,15 @@
  * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
-AddTaskMCTruthdNdeta(const char* trig     = "INEL", 
-		     Double_t    vzMin    = -10, 
-		     Double_t    vzMax    = +10, 
-		     Bool_t      useCent  = false,
-		     const char* scheme   = 0,
-		     Bool_t      cutEdges = false,
-		     Double_t    trigEff  = 1, 
-		     Double_t    trigEff0 = 1)
+AddTaskMCTruthdNdeta(const char* trig      = "INEL", 
+		     Double_t    vzMin     = -10, 
+		     Double_t    vzMax     = +10, 
+		     Bool_t      useCent   = false,
+		     const char* scheme    = 0,
+		     Bool_t      cutEdges  = false,
+		     Double_t    trigEff   = 1, 
+		     Double_t    trigEff0  = 1,
+		     Bool_t      corrEmpty = false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -51,7 +52,7 @@ AddTaskMCTruthdNdeta(const char* trig     = "INEL",
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
   // Whether to correct for empty bins when projecting 
-  task->SetCorrEmpty(true);
+  task->SetCorrEmpty(corrEmpty);
   // Whether to use TH2::ProjectionX 
   task->SetUseROOTProjectX(false);
   // Bit mask of 
