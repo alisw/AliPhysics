@@ -407,6 +407,8 @@ struct GridHelper : public PluginHelper
 			     listOfAODs.Data(), nReplica));
     if (listOfAODs.IsNull() && listOfHists.IsNull()) 
       Fatal("PostSetup", "No outputs defined");
+    // Disabled for now 
+    // plugin->SetOutputArchive(outArchive);
     
     return true;
   };
@@ -430,9 +432,9 @@ struct GridHelper : public PluginHelper
    * 
    * @return true on success
    */
-  virtual Bool_t AuxFile(const TString& name)
+  virtual Bool_t AuxFile(const TString& name, bool copy=false)
   {
-    if (!Helper::AuxFile(name)) return false;
+    if (!Helper::AuxFile(name, copy)) return false;
     // We need to add this file as an additional 'library', so that the 
     // file is uploaded to the users Grid working directory. 
     fHandler->AddAdditionalLibrary(gSystem->BaseName(name.Data()));
@@ -673,7 +675,7 @@ struct GridHelper : public PluginHelper
       << "  TString src(gSystem->ConcatFileName(base,dir));\n"
       << "  src = gSystem->ConcatFileName(src,\"root_archive.zip\");\n"
       << "  TString dest;\n"
-      << "  dest.Form(\"root_archive_%s.zip\",dir.Data()));\n\n"
+      << "  dest.Form(\"root_archive_%s.zip\",dir.Data());\n\n"
       << "  if (!TFile::Cp(src, dest)) {\n"
       << "    Error(\"GetOne\",\"Failed to download %s -> %s\",\n"
       << "          src.Data(), dest.Data());\n"
@@ -683,6 +685,10 @@ struct GridHelper : public PluginHelper
       << "}\n\n"
       << "void Download()\n"
       << "{\n"
+      << "  if (!TGrid::Connect(\"alien://\")) {\n"
+      << "    Error(\"Download\",\"Failed to connect to AliEn\");\n"
+      << "    return;\n"
+      << "  }\n\n"
       << "  TString base(\"" << fUrl.GetProtocol() << "://" 
       << OutputPath() << "\");\n\n";
     TString format(fOptions.Has("mc") ? "%d" : "%09d");
@@ -702,7 +708,7 @@ struct GridHelper : public PluginHelper
 	  << "\",\n                         ";
       d << "0 };\n"
 	<< "  const char** run    = runs;\n"
-	<< "  while (*run) { GetOne(base, *run); run++ }\n";
+	<< "  while (*run) { GetOne(base, *run); run++; }\n";
     }
     d << "}\n"
       << std::endl;

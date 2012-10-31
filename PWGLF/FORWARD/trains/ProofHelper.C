@@ -160,9 +160,9 @@ struct ProofHelper : public Helper
    * 
    * @return true on success
    */
-  virtual Bool_t LoadSource(const TString& name)
+  virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
-    if (!Helper::LoadSource(name)) return false;
+    if (!Helper::LoadSource(name, copy)) return false;
     fExtraSrcs.Append(Form(":%s", gSystem->BaseName(name.Data())));
     return true;
   }
