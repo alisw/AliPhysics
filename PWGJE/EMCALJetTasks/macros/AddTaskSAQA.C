@@ -1,4 +1,4 @@
-// $Id: AddTaskSAQA.C 56113 2012-05-01 21:39:27Z loizides $
+// $Id$
 
 AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *ntracks            = "Tracks",
