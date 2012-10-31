@@ -15,7 +15,8 @@
 
 //____________________________________________________________________
 AliMCTruthdNdetaTask::AliMCTruthdNdetaTask()
-  : AliBasedNdetaTask()
+  : AliBasedNdetaTask(),
+    fHasData(true)
 {
   //
   // Constructor 
@@ -24,7 +25,8 @@ AliMCTruthdNdetaTask::AliMCTruthdNdetaTask()
 
 //____________________________________________________________________
 AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const char* /* name */)
-  : AliBasedNdetaTask("MCTruth")
+  : AliBasedNdetaTask("MCTruth"), 
+    fHasData(true)
 {
   // 
   // Constructor
@@ -35,7 +37,8 @@ AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const char* /* name */)
 
 //____________________________________________________________________
 AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const AliMCTruthdNdetaTask& o)
-  : AliBasedNdetaTask(o)
+  : AliBasedNdetaTask(o), 
+    fHasData(o.fHasData)
 {
   // 
   // Copy constructor
@@ -75,10 +78,14 @@ AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
   // Return:
   //    Retrieved histogram or null
   //
+  if (!fHasData) return 0;
   if (mc) return 0;
   TObject* obj = aod->FindListObject("primary");
   // We should have a forward object at least 
-  if (!obj) return 0;
+  if (!obj) {
+    fHasData = false;
+    return 0;
+  }
   TH2D* ret = static_cast<TH2D*>(obj);
   // Need to fill underflow bin with 1's 
   for (Int_t i = 1; i <= ret->GetNbinsX(); i++)  
@@ -97,6 +104,10 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
   // 
   // Parameters:
   //    option Not used 
+  if (!fHasData) {
+    AliInfo("The MC truth dN/deta task didn't get any data");
+    return;
+  }
   AliBasedNdetaTask::Terminate(option);
 
   THStack* truth      = new THStack("dndetaTruth", "dN/d#eta MC Truth");
