@@ -1,4 +1,4 @@
-// $Id: AddTaskRhoFlow.C  $
+// $Id$
 
 AliAnalysisTaskRhoFlow* AddTaskRhoFlow(
    const char    *nJets       = "Jets",

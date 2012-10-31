@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-06-27 18:50:07Z mconnors $
+// $Id$
 
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *outfilename    = "AnalysisOutput.root",
