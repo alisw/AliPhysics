@@ -41,7 +41,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask()
   // 
   // Default constructor
   //
-  DGUARD(fDebug,0,"Default CTOR of AliFMDEventPlaneTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliFMDEventPlaneTask");
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name) 
@@ -64,7 +64,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name)
   // Parameters:
   //  name: Name of task
   //
-  DGUARD(fDebug,0,"Named CTOR of AliFMDEventPlaneTask: %s", name);
+  DGUARD(fDebug, 3,"Named CTOR of AliFMDEventPlaneTask: %s", name);
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -90,7 +90,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask(const AliFMDEventPlaneTask& o)
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug,0,"Copy CTOR of AliFMDEventPlaneTask");
+  DGUARD(fDebug, 3,"Copy CTOR of AliFMDEventPlaneTask");
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask&

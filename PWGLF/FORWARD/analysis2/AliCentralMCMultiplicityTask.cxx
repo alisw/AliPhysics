@@ -44,7 +44,8 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const char* name)
   // 
   // Constructor 
   //   
-  DGUARD(fDebug,0,"Named CTOR of AliCentralMCMultiplicityTask: %s", name);
+  DGUARD(fDebug,3,"Named CTOR of AliCentralMCMultiplicityTask: %s", 
+	 name);
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
     "SPDVertex.,PrimaryVertex.";
@@ -58,7 +59,7 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask()
   // 
   // Constructor 
   // 
-  DGUARD(fDebug,0,"Default CTOR of AliCentralMCMultiplicityTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliCentralMCMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const AliCentralMCMultiplicityTask& o)
@@ -69,7 +70,7 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const AliCentralMCMul
   //
   // Copy constructor 
   // 
-  DGUARD(fDebug,0,"COPY CTOR of AliCentralMCMultiplicityTask");
+  DGUARD(fDebug, 3,"COPY CTOR of AliCentralMCMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask&
