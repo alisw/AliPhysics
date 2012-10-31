@@ -1618,10 +1618,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(splitFrac > 0.85 && !matched)
       {
         fhMassSplitECutNLocMax1->Fill(en,mass ); 
-        if(GetCaloPID()->IsInSplitM02Range(en,l0,nMax))
+        if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMax1->Fill(en,mass);
-          if(TMath::Abs(asym) < 0.8) fhMassAsyCutNLocMax1->Fill(en,mass);
+          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax1->Fill(en,mass);
         }
       }
       
@@ -1644,10 +1644,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(splitFrac > 0.85 && !matched)
       {
         fhMassSplitECutNLocMax2->Fill(en,mass); 
-        if(GetCaloPID()->IsInSplitM02Range(en,l0,nMax))
+        if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMax2->Fill(en,mass);
-          if(TMath::Abs(asym) < 0.8) fhMassAsyCutNLocMax2->Fill(en,mass);
+          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax2->Fill(en,mass);
         }
       }
       
@@ -1670,10 +1670,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(splitFrac > 0.85 && !matched)
       {
         fhMassSplitECutNLocMaxN->Fill(en,mass ); 
-        if(GetCaloPID()->IsInSplitM02Range(en,l0,nMax))
+        if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMaxN->Fill(en,mass);
-          if(TMath::Abs(asym) < 0.8) fhMassAsyCutNLocMaxN->Fill(en,mass);
+          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMaxN->Fill(en,mass);
         }
       }
       

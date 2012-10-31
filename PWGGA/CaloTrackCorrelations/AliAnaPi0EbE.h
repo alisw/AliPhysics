@@ -88,15 +88,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Int_t          GetNLMCutMin()                        const { return fNLMCutMin               ; }
   Int_t          GetNLMCutMax()                        const { return fNLMCutMax               ; }	
   
-  void           SetSplitAsymmetryCut(Float_t cut)           { fSplitAsyCut = cut              ; }
-  Float_t        GetSplitAsymmetryCut()                const { return fSplitAsyCut             ; }
-
-  
   void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min; 
                                                                fTimeCutMax = max               ; }
   Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
   Double_t       GetTimeCutMax()                       const { return fTimeCutMax              ; }	
   
+  void           SwitchOnSplitAsymmetryCut()                 { fUseSplitAsyCut        = kTRUE  ; }
+  void           SwitchOffSplitAsymmetryCut()                { fUseSplitAsyCut        = kFALSE ; }    
  
   void           SwitchOnFillPileUpHistograms()              { fFillPileUpHistograms  = kTRUE  ; }
   void           SwitchOffFillPileUpHistograms()             { fFillPileUpHistograms  = kFALSE ; }    
@@ -129,7 +127,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
   Int_t          fNLMCutMin  ;             // Remove clusters/cells with number of local maxima smaller than this value
   Int_t          fNLMCutMax  ;             // Remove clusters/cells with number of local maxima larger than this value
-  Float_t        fSplitAsyCut ;            // Remove splitted clusters with too large asymmetry and NLM>1
+  Bool_t         fUseSplitAsyCut ;         // Remove splitted clusters with too large asymmetry, range defined in AliCaloPID
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   
