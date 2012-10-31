@@ -145,6 +145,7 @@ struct dNdetaDrawer
    * @{ 
    * @name Set parameters 
    */
+  void SetOld(Bool_t use=true) { fOld = use; }
   /** 
    * Show other (UA5, CMS, ...) data 
    * 
@@ -354,12 +355,11 @@ struct dNdetaDrawer
     if (!fEmpirical.IsNull()) {
       TFile* empirical = TFile::Open(fEmpirical, "READ");
       if (!empirical) { 
-	// Notice the spelling error!
 	empirical = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
-				     "Emperical/%s", fEmpirical.Data()));
+				     "Empirical/%s", fEmpirical.Data()));
       }
       if (empirical) { 
-	empCorr = static_cast<TGraphErrors*>(empirical->Get("average"));
+	empCorr = static_cast<TGraphErrors*>(empirical->Get("fmdfull/average"));
 	if (!empCorr) 
 	  Warning("Open", "couldn't get the empirical correction");
       }
@@ -380,7 +380,9 @@ struct dNdetaDrawer
     // --- Get trigger information -----------------------------------
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
     if (sums) {
-      TList* all = static_cast<TList*>(sums->FindObject("all"));
+      TList* all = 0;
+      if (fOld) all = sums;
+      else      all = static_cast<TList*>(sums->FindObject("all"));
       if (all) {
 	fTriggers = FetchResult(all, "triggers");
 	if (!fTriggers) all->ls();
@@ -697,7 +699,9 @@ struct dNdetaDrawer
 		Double_t&     amax,
 		TH1*&         truth)
   {
-    TList* folder = static_cast<TList*>(list->FindObject(folderName));
+    TList* folder = 0;
+    if (fOld) folder = const_cast<TList*>(list); 
+    else      folder = static_cast<TList*>(list->FindObject(folderName));
     if (!folder) {
       Error("FetchResults", "Couldn't find list '%s' in %s", 
 	    folderName, list->GetName());
@@ -2196,6 +2200,7 @@ struct dNdetaDrawer
   TH1*         fTruth;        // Pointer to truth 
   /* @} */
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
+  Bool_t       fOld;
 };
 
 //____________________________________________________________________
@@ -2387,6 +2392,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetFinalMC(flags & 0x200 ? "forward_dndetamc.root" : "");
   d.SetEmpirical(flags & 0x400 ? "EmpiricalCorrection.root" : "");
   d.SetExport(flags & 0x800);
+  d.SetOld(flags & 0x1000);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
