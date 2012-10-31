@@ -236,14 +236,15 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   ret->SetFillColor(kRed+1);
   ret->SetFillStyle(3001);
   ret->GetXaxis()->SetBinLabel(kBinAll,         "All events");
-  ret->GetXaxis()->SetBinLabel(kBinB,           Form("B%s", andSel.Data()));
+  ret->GetXaxis()->SetBinLabel(kBinB,           Form("B (Coll.)%s", 
+						     andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinA,           Form("A%s", andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinC,           Form("C%s", andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinE,           Form("E%s", andSel.Data()));
-  ret->GetXaxis()->SetBinLabel(kBinInel,        "B & INEL");
-  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "B & INEL>0");
-  ret->GetXaxis()->SetBinLabel(kBinNSD,         "B & NSD");
-  ret->GetXaxis()->SetBinLabel(kBinV0AND,       "B & V0AND");
+  ret->GetXaxis()->SetBinLabel(kBinInel,        "Coll. & INEL");
+  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "Coll. & INEL>0");
+  ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & NSD");
+  ret->GetXaxis()->SetBinLabel(kBinV0AND,       "Coll. & V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
