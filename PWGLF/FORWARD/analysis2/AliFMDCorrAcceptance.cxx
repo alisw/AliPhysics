@@ -11,7 +11,9 @@
 //____________________________________________________________________
 AliFMDCorrAcceptance::AliFMDCorrAcceptance()
   : fRingArray(), 
-    fVertexAxis(0,0,0)
+    fCache(0),
+    fVertexAxis(0,0,0),
+    fHasOverflow(false)
 {
   // 
   // Default constructor 
@@ -27,8 +29,10 @@ AliFMDCorrAcceptance::AliFMDCorrAcceptance(const
 					       AliFMDCorrAcceptance& o)
   : TObject(o), 
     fRingArray(o.fRingArray), 
+    fCache(o.fCache),
     fVertexAxis(o.fVertexAxis.GetNbins(), o.fVertexAxis.GetXmin(), 
-		o.fVertexAxis.GetXmax())
+		o.fVertexAxis.GetXmax()),
+    fHasOverflow(o.fHasOverflow)
 {
   // 
   // Copy constructor 
@@ -47,6 +51,7 @@ AliFMDCorrAcceptance::~AliFMDCorrAcceptance()
   // 
   //
   fRingArray.Clear();
+  if (fCache) fCache->Clear();
 }
 //____________________________________________________________________
 AliFMDCorrAcceptance&
@@ -62,6 +67,8 @@ AliFMDCorrAcceptance::operator=(const AliFMDCorrAcceptance& o)
   //    Reference to this object 
   //
   fRingArray        = o.fRingArray;
+  fCache            = o.fCache;
+  fHasOverflow      = o.fHasOverflow;
   SetVertexAxis(o.fVertexAxis);
 
   return *this;
@@ -101,22 +108,46 @@ AliFMDCorrAcceptance::GetCorrection(UShort_t d, Char_t r, UShort_t b) const
   // Return:
   //    The correction @f$ a_{r,v}@f$ 
   //
-  TObjArray* ringArray = GetRingArray(d, r);
-  if (!ringArray) return 0;
-
-  if (b <= 0 || b > ringArray->GetEntriesFast()) {
-    AliWarning(Form("vertex bin %d out of range [1,%d]", 
-		    b, ringArray->GetEntriesFast()));
-    return 0;
-  }
-
-  TObject* o = ringArray->At(b-1);
-  if (!o) { 
-    AliWarning(Form("No dead channels map found for FMD%d%c in vertex bin %d",
-		    d,r,b));
-    return 0;
-  }
-  return static_cast<TH2D*>(o);
+  return static_cast<TH2D*>(GetObject(fRingArray, d, r, b));
+}
+//____________________________________________________________________
+TH1D*
+AliFMDCorrAcceptance::GetPhiAcceptance(UShort_t d, Char_t r, Double_t v) const
+{
+  // 
+  // Get the acceptance correction @f$ a_{r,v}@f$ 
+  // 
+  // Parameters:
+  //    d  Detector number (1-3)
+  //    r  Ring identifier (I or O)
+  //    v  Primary interaction point @f$z@f$ coordinate
+  // 
+  // Return:
+  //    The correction @f$ a_{r,v}@f$ 
+  //
+  Int_t b = FindVertexBin(v);
+  if (b <= 0) return 0;
+  return GetPhiAcceptance(d, r, UShort_t(b));
+}
+//____________________________________________________________________
+TH1D*
+AliFMDCorrAcceptance::GetPhiAcceptance(UShort_t d, Char_t r, UShort_t b) const
+{
+  // 
+  // Get the acceptance correction @f$ a_{r,v}@f$ 
+  // 
+  // Parameters:
+  //    d  Detector number (1-3)
+  //    r  Ring identifier (I or O)
+  //    b  Bin corresponding to the primary interaction point 
+  //           @f$z@f$ coordinate (1 based)
+  // 
+  // Return:
+  //    The correction @f$ a_{r,v}@f$ 
+  //
+  if (!fHasOverflow) return 0;
+  if (!fCache) FillCache();
+  return static_cast<TH1D*>(GetObject(*fCache, d, r, b));
 }
   
 //____________________________________________________________________
@@ -149,7 +180,6 @@ AliFMDCorrAcceptance::FindVertexBin(Double_t v) const
 Int_t
 AliFMDCorrAcceptance::GetRingIndex(UShort_t d, Char_t r) const
 {
-  // 
   // Get the index corresponding to the given ring 
   // 
   // Parameters:
@@ -163,13 +193,49 @@ AliFMDCorrAcceptance::GetRingIndex(UShort_t d, Char_t r) const
   case 1:  return 0;
   case 2:  return (r == 'I' || r == 'i' ? 1 : 2); break;  
   case 3:  return (r == 'I' || r == 'i' ? 3 : 4); break;  
+
   }
   AliWarning(Form("Index for FMD%d%c not found", d, r));
   return -1;
 }
 //____________________________________________________________________
+TObject*
+AliFMDCorrAcceptance::GetObject(const TObjArray& m, UShort_t d, 
+				Char_t r, UShort_t b) const
+{
+  // 
+  // Get the object @f$ a_{r,v}@f$ 
+  // 
+  // Parameters:
+  //    m  Mother list
+  //    d  Detector number (1-3)
+  //    r  Ring identifier (I or O)
+  //    b  Bin corresponding to the primary interaction point 
+  //           @f$z@f$ coordinate (1 based)
+  // 
+  // Return:
+  //    The correction @f$ a_{r,v}@f$ 
+  //
+  TObjArray* ringArray = GetRingArray(m, d, r);
+  if (!ringArray) return 0;
+
+  if (b <= 0 || b > ringArray->GetEntriesFast()) {
+    AliWarning(Form("vertex bin %d out of range [1,%d]", 
+		    b, ringArray->GetEntriesFast()));
+    return 0;
+  }
+
+  TObject* o = ringArray->At(b-1);
+  if (o) return o;
+
+  AliWarning(Form("No dead channels map found for FMD%d%c in vertex bin %d",
+		    d,r,b));
+  return 0;
+}
+//____________________________________________________________________
 TObjArray*
-AliFMDCorrAcceptance::GetRingArray(UShort_t d, Char_t r) const
+AliFMDCorrAcceptance::GetRingArray(const TObjArray& m, 
+				   UShort_t d, Char_t r) const
 {
   // 
   // Get the ring array corresponding to the specified ring
@@ -184,7 +250,7 @@ AliFMDCorrAcceptance::GetRingArray(UShort_t d, Char_t r) const
   Int_t idx = GetRingIndex(d,r);
   if (idx < 0) return 0;
   
-  TObject* o = fRingArray.At(idx);
+  TObject* o = m.At(idx);
   if (!o) { 
     AliWarning(Form("No array found for FMD%d%c", d, r));
     return 0;
@@ -194,7 +260,8 @@ AliFMDCorrAcceptance::GetRingArray(UShort_t d, Char_t r) const
 }
 //____________________________________________________________________
 TObjArray*
-AliFMDCorrAcceptance::GetOrMakeRingArray(UShort_t d, Char_t r)
+AliFMDCorrAcceptance::GetOrMakeRingArray(TObjArray& m, 
+					 UShort_t d, Char_t r) const
 {
   // 
   // Get the ring array corresponding to the specified ring
@@ -209,16 +276,16 @@ AliFMDCorrAcceptance::GetOrMakeRingArray(UShort_t d, Char_t r)
   Int_t idx = GetRingIndex(d,r);
   if (idx < 0) return 0;
   
-  TObject* o = fRingArray.At(idx);
+  TObject* o = m.At(idx);
   if (!o) { 
     TObjArray* a = new TObjArray(fVertexAxis.GetNbins());
     a->SetName(Form("FMD%d%c", d, r));
     a->SetOwner(kTRUE);
-    fRingArray.AddAtAndExpand(a, idx);
+    m.AddAtAndExpand(a, idx);
     return a;
   }
 
-  return static_cast<TObjArray*>(fRingArray.At(idx));
+  return static_cast<TObjArray*>(m.At(idx));
 }
 
 //____________________________________________________________________
@@ -240,7 +307,7 @@ AliFMDCorrAcceptance::SetCorrection(UShort_t d, Char_t r,
   // Return:
   //    true if operation succeeded 
   //
-  TObjArray* ringArray = GetOrMakeRingArray(d, r);
+  TObjArray* ringArray = GetOrMakeRingArray(fRingArray, d, r);
   if (!ringArray) return false;
   
   if (b <= 0 || b > fVertexAxis.GetNbins()) { 
@@ -254,7 +321,7 @@ AliFMDCorrAcceptance::SetCorrection(UShort_t d, Char_t r,
 		   d, r, b, fVertexAxis.GetBinLowEdge(b), 
 		   fVertexAxis.GetBinUpEdge(b)));
   h->SetXTitle("#eta");
-  h->SetYTitle("dN_{ch}/d#eta / sum_i N_{ch,i}");
+  h->SetYTitle("N_{strips,OK}/N_{strips}");
   h->SetFillStyle(3001);
   h->SetDirectory(0);
   h->SetStats(0);
@@ -287,6 +354,58 @@ AliFMDCorrAcceptance::SetCorrection(UShort_t d, Char_t r,
   }
   return SetCorrection(d, r, UShort_t(b), h);
 }
+
+//____________________________________________________________________
+void
+AliFMDCorrAcceptance::FillCache() const
+{
+  if (fCache) return;
+
+  fCache = new TObjArray;
+  fCache->SetOwner(kTRUE);
+  fCache->SetName("cache");
+
+  Int_t nV = fVertexAxis.GetNbins();
+  for (UShort_t v = 1; v <= nV; v++) {
+    for(UShort_t d = 1; d <= 3;d++) { 
+      UShort_t nR = (d == 1 ? 1 : 2);
+      for (UShort_t q = 0; q < nR; q++) { 
+	Char_t   r  = (q == 0 ? 'I' : 'O');
+
+	TObjArray* a = GetOrMakeRingArray(*fCache, d, r);
+
+	TH2D* corr = GetCorrection(d, r, v);
+	if (!corr) continue;
+
+	Int_t nY = corr->GetNbinsY();
+	TH1D* h  = corr->ProjectionX("tmp", nY+1, nY+1, "");
+	h->SetName(Form("FMD%d%c_vtxbin%03d", d, r, v));
+	h->SetTitle(Form("#phi acceptance correction for FMD%d%c "
+			   "in vertex bin %d [%+8.4f,%+8.4f]", 
+			   d, r, v, fVertexAxis.GetBinLowEdge(v), 
+			   fVertexAxis.GetBinUpEdge(v)));
+	h->SetXTitle("#eta");
+	h->SetYTitle("N_{strips}/N_{strips,OK}");
+	h->SetFillStyle(3001);
+	h->SetDirectory(0);
+	h->SetStats(0);
+	a->AddAtAndExpand(h,v-1);
+
+	if (fHasOverflow) continue;
+
+	// Construct the overflow bin from 
+	Int_t nX = corr->GetNbinsX();
+	for (Int_t eta = 1; eta <= nX; eta++) { 
+	  Double_t sum = 0;
+	  for (Int_t phi = 1; phi <= nY; phi++) 
+	    sum += corr->GetBinContent(eta, phi);
+	  if (nY <= 0) continue;
+	  h->SetBinContent(eta, nY/sum);
+	} // for eta 
+      } // for q 
+    } // for d 
+  } // for v 
+}
 //____________________________________________________________________
 void
 AliFMDCorrAcceptance::Browse(TBrowser* b)
@@ -298,6 +417,7 @@ AliFMDCorrAcceptance::Browse(TBrowser* b)
   //    b 
   //
   b->Add(&fRingArray);
+  if (fCache) b->Add(fCache);
   b->Add(&fVertexAxis);
 }
 //____________________________________________________________________
