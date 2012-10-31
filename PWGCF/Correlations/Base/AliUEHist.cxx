@@ -39,7 +39,7 @@
 
 ClassImp(AliUEHist)
 
-const Int_t AliUEHist::fgkCFSteps = 10;
+const Int_t AliUEHist::fgkCFSteps = 11;
 
 AliUEHist::AliUEHist(const char* reqHist) : 
   TObject(),
@@ -84,12 +84,14 @@ AliUEHist::AliUEHist(const char* reqHist) :
   const char* trackAxisTitle[6];
   
   // eta
-  iTrackBin[0] = 20;
+  const Int_t kNEtaBins = 20;
   Double_t etaBins[20+1];
   for (Int_t i=0; i<=iTrackBin[0]; i++)
     etaBins[i] = -1.0 + 0.1 * i;
+  const char* etaTitle = "#eta";
+  iTrackBin[0] = kNEtaBins;
   trackBins[0] = etaBins;
-  trackAxisTitle[0] = "#eta";
+  trackAxisTitle[0] = etaTitle;
   
   // delta eta
   const Int_t kNDeltaEtaBins = 50;
@@ -109,8 +111,10 @@ AliUEHist::AliUEHist(const char* reqHist) :
 						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
 
   // pT
-  iTrackBin[1] = 20;
-  Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+  //iTrackBin[1] = 20;
+  //Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+  iTrackBin[1] = 8;
+  Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
@@ -121,8 +125,10 @@ AliUEHist::AliUEHist(const char* reqHist) :
     leadingpTBins[i] = 0.5 * i;
   
   // pT,lead binning 2
-  const Int_t kNLeadingpTBins2 = 8;
-  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
+  //const Int_t kNLeadingpTBins2 = 8;
+  //Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
+  const Int_t kNLeadingpTBins2 = 6;
+  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
   
   // phi,lead; this binning starts at -pi/2 and is modulo 3
   const Int_t kNLeadingPhiSpacing = 72;
@@ -166,6 +172,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
   
   // vtx-z axis
+  const char* vertexTitle = "z-vtx (cm)";
   const Int_t kNVertexBins = 7;
   Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
   const Int_t kNVertexBins2 = 10;
@@ -259,7 +266,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
       nTrackVars = 6;
       iTrackBin[5] = (useVtxAxis == 1) ? kNVertexBins : kNVertexBins2;
       trackBins[5] = (useVtxAxis == 1) ? vertexBins : vertexBins2;
-      trackAxisTitle[5] = "z-vtx (cm)";
+      trackAxisTitle[5] = vertexTitle;
     }
   }
     
@@ -311,8 +318,9 @@ AliUEHist::AliUEHist(const char* reqHist) :
   SetStepNames(fEventHist);
   
   iTrackBin[2] = kNSpeciesBins;
+  iTrackBin[4] = kNVertexBins2;
 
-  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 4, iTrackBin);
+  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 5, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
   fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
   fTrackHistEfficiency->SetBinLimits(1, trackBins[1]);
@@ -321,6 +329,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fTrackHistEfficiency->SetVarTitle(2, "particle species");
   fTrackHistEfficiency->SetBinLimits(3, trackBins[3]);
   fTrackHistEfficiency->SetVarTitle(3, trackAxisTitle[3]);
+  fTrackHistEfficiency->SetBinLimits(4, vertexBins2);
+  fTrackHistEfficiency->SetVarTitle(4, vertexTitle);
 
   fFakePt = new TH3F("fFakePt","fFakePt;p_{T,rec};p_{T};centrality", 200, 0, 20, 200, 0, 20, 20, 0, 100);
 }
@@ -1531,8 +1541,8 @@ void AliUEHist::Correct(AliUEHist* corrections)
     if (fTrackHist[0]->GetNVar() <= 5)
     {
       // do corrections copying between steps
-      CFStep step = kCFStepReconstructed;
-//       CFStep step = kCFStepBiasStudy;
+//       CFStep step = kCFStepReconstructed;
+      CFStep step = kCFStepBiasStudy;
       
       // copy 
       CorrectTracks(step, kCFStepTracked, 0, -1);
@@ -1578,8 +1588,8 @@ void AliUEHist::Correct(AliUEHist* corrections)
       }
       
 //       new TCanvas; correlatedContamination->DrawCopy("COLZ");
-  //     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
-      Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
+      CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
+//       Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
       
       delete correlatedContamination;
       
@@ -1699,6 +1709,43 @@ void AliUEHist::Correct(AliUEHist* corrections)
 }
 
 //____________________________________________________________________
+THnBase* AliUEHist::GetTrackEfficiencyND(CFStep step1, CFStep step2)
+{
+  // creates a track-level efficiency by dividing step2 by step1
+  // in all dimensions but the particle species one
+  
+  AliCFContainer* sourceContainer = fTrackHistEfficiency;
+  // step offset because we start with kCFStepAnaTopology
+  step1 = (CFStep) ((Int_t) step1 - (Int_t) kCFStepAnaTopology);
+  step2 = (CFStep) ((Int_t) step2 - (Int_t) kCFStepAnaTopology);
+  
+  ResetBinLimits(sourceContainer->GetGrid(step1));
+  ResetBinLimits(sourceContainer->GetGrid(step2));
+
+  if (fEtaMax > fEtaMin)
+  {
+    Printf("Restricted eta-range to %f %f", fEtaMin, fEtaMax);
+    sourceContainer->GetGrid(step1)->SetRangeUser(0, fEtaMin, fEtaMax);
+    sourceContainer->GetGrid(step2)->SetRangeUser(0, fEtaMin, fEtaMax);
+  }
+  
+  Int_t dimensions[] = { 0, 1, 3, 4 };
+  THnBase* generated = sourceContainer->GetGrid(step1)->GetGrid()->ProjectionND(4, dimensions);
+  THnBase* measured = sourceContainer->GetGrid(step2)->GetGrid()->ProjectionND(4, dimensions);
+  
+//   Printf("%d %d %f %f", step1, step2, generated->GetEntries(), measured->GetEntries());
+  
+  ResetBinLimits(sourceContainer->GetGrid(step1));
+  ResetBinLimits(sourceContainer->GetGrid(step2));
+
+  measured->Divide(measured, generated, 1, 1, "B");
+  
+  delete generated;
+  
+  return measured;
+}
+
+//____________________________________________________________________
 TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2, Int_t source, Int_t axis3)
 {
   // creates a track-level efficiency by dividing step2 by step1
@@ -1743,13 +1790,21 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
   }
   if (fPtMax > fPtMin && axis1 != 1 && axis2 != 1 && axis3 != 1)
   {
+    Printf("Restricted pt-range to %f %f", fPtMin, fPtMax);
     sourceContainer->GetGrid(step1)->SetRangeUser(1, fPtMin, fPtMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(1, fPtMin, fPtMax);
   }
   if (fCentralityMax > fCentralityMin && axis1 != 3 && axis2 != 3 && axis3 != 3)
   {
+    Printf("Restricted centrality range to %f %f", fCentralityMin, fCentralityMax);
     sourceContainer->GetGrid(step1)->SetRangeUser(3, fCentralityMin, fCentralityMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(3, fCentralityMin, fCentralityMax);
+  }
+  if (fZVtxMax > fZVtxMin && axis1 != 4 && axis2 != 4 && axis3 != 4)
+  {
+    Printf("Restricted z-vtx range to %f %f", fZVtxMin, fZVtxMax);
+    sourceContainer->GetGrid(step1)->SetRangeUser(4, fZVtxMin, fZVtxMax);
+    sourceContainer->GetGrid(step2)->SetRangeUser(4, fZVtxMin, fZVtxMax);
   }
   
   TH1* measured = 0;
@@ -2393,6 +2448,8 @@ const char* AliUEHist::GetStepTitle(CFStep step)
       return "Bias study applying tracking efficiency";
     case kCFStepBiasStudy2:
       return "Bias study applying tracking efficiency in two steps";
+    case kCFStepCorrected:
+      return "Corrected for efficiency on-the-fly";
   }
   
   return 0;
@@ -2451,8 +2508,11 @@ void AliUEHist::DeepCopy(AliUEHist* from)
     target->RebinnedAdd(source);
   }
   
-  for (Int_t step=0; step<fTrackHistEfficiency->GetNStep(); step++)
+  for (Int_t step=0; step<TMath::Min(fTrackHistEfficiency->GetNStep(), from->fTrackHistEfficiency->GetNStep()); step++)
   {
+    if (!from->fTrackHistEfficiency->GetGrid(step))
+      continue;
+    
     Printf("Eff: Copying step %d", step);
     THnSparse* target = fTrackHistEfficiency->GetGrid(step)->GetGrid();
     THnSparse* source = from->fTrackHistEfficiency->GetGrid(step)->GetGrid();

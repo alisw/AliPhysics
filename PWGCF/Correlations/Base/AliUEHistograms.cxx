@@ -463,7 +463,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -657,8 +657,18 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  weight = particle->Pt();
 	
 	Double_t useWeight = weight;
-	if (fEfficiencyCorrection)
-	  useWeight *= fEfficiencyCorrection->GetBinContent(fEfficiencyCorrection->GetXaxis()->FindBin(eta[j]), fEfficiencyCorrection->GetYaxis()->FindBin(vars[1]), fEfficiencyCorrection->GetZaxis()->FindBin(centrality));
+	if (fEfficiencyCorrection && applyEfficiency)
+	{
+	  Int_t effVars[4];
+	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(eta[j]);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]);
+	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]);
+	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]);
+	  
+// 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrection->GetBinContent(effVars));
+	  
+	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	}
     
         // fill all in toward region and do not use the other regions
         fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, useWeight);
@@ -684,7 +694,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 }
   
 //____________________________________________________________________
-void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality)
+void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality, Double_t zVtx)
 {
   // fills the tracking efficiency objects
   //
@@ -709,11 +719,12 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
     for (Int_t i=0; i<list->GetEntriesFast(); i++)
     {
       AliVParticle* particle = (AliVParticle*) list->At(i);
-      Double_t vars[4];
+      Double_t vars[5];
       vars[0] = particle->Eta();
       vars[1] = particle->Pt();
       vars[2] = particleType;
       vars[3] = centrality;
+      vars[4] = zVtx;
       
       for (Int_t j=0; j<fgkUEHists; j++)
         if (GetUEHist(j))
@@ -898,7 +909,7 @@ void AliUEHistograms::Copy(TObject& c) const
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
   if (fEfficiencyCorrection)
-    target.fEfficiencyCorrection = dynamic_cast<TH3F*> (fEfficiencyCorrection->Clone());
+    target.fEfficiencyCorrection = dynamic_cast<THnF*> (fEfficiencyCorrection->Clone());
     
   target.fSelectCharge = fSelectCharge;
   target.fTriggerSelectCharge = fTriggerSelectCharge;

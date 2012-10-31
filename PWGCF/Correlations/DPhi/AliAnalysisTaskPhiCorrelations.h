@@ -31,6 +31,7 @@
 #include "TString.h"
 #include "AliVParticle.h"
 #include "AliLog.h"
+#include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
 class AliAODEvent;
 class AliAnalyseLeadingTrackUE;
@@ -43,6 +44,7 @@ class TH1D;
 class TObjArray;
 class AliEventPoolManager;
 class AliESDEvent;
+
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
   {
@@ -72,7 +74,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
     
     // histogram settings
-    void SetEfficiencyCorrection(TH3F* hist) { fEfficiencyCorrection = hist; }
+    void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -126,7 +128,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    TH3F* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
+    THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
 
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -165,7 +167,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 16); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 17); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
