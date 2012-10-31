@@ -30,10 +30,14 @@ void Draw(const char* name, const char* options = "", double yFrom=0., double yT
     hist->Fit("pol0", "Q");
   
   canv->cd(1);
+  if( TString(name).Contains("grChi2RP") )
+    gPad->SetLogy();
   hist->GetXaxis()->SetRange(1,kFirstBinTo);
   hist->DrawCopy(options);
 
   canv->cd(2);
+  if( TString(name).Contains("grChi2RP") )
+    gPad->SetLogy();
   hist->GetXaxis()->SetRange(85,200);
   hist->DrawCopy(options);
 
@@ -283,6 +287,13 @@ void DrawQA()
   Draw("grMPi0", "LINFIT", 0.13, 0.15 );
   Draw("grWPi0", "LINFIT");
   Draw("grNPi0", "LINFIT");
+
+  // Draw("grChi2RPV0A");
+  // Draw("grChi2RPV0C");
+  // Draw("grChi2RPTPC");
+  // Draw("grChi2RPV0Aflat");
+  // Draw("grChi2RPV0Cflat");
+  // Draw("grChi2RPTPCflat");
 
   file->Close();
 }
