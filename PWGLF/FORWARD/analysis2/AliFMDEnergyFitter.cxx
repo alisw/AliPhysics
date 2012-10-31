@@ -501,7 +501,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos()
   // 
   // Default CTOR
   //
-  DGUARD(fDebug, 0, "Default CTOR AliFMDEnergyFitter::RingHistos");
+  DGUARD(fDebug, 3, "Default CTOR AliFMDEnergyFitter::RingHistos");
 }
 
 //____________________________________________________________________
@@ -521,7 +521,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    d detector
   //    r ring 
   //
-  DGUARD(fDebug, 0, "Named CTOR AliFMDEnergyFitter::RingHistos: FMD%d%c",
+  DGUARD(fDebug, 3, "Named CTOR AliFMDEnergyFitter::RingHistos: FMD%d%c",
 	 d, r);
 }
 //____________________________________________________________________
@@ -540,7 +540,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug, 0, "Copy CTOR AliFMDEnergyFitter::RingHistos");
+  DGUARD(fDebug, 3, "Copy CTOR AliFMDEnergyFitter::RingHistos");
   fFits.Clear();
   if (o.fEtaEDists) {
     fEtaEDists = new TList;
