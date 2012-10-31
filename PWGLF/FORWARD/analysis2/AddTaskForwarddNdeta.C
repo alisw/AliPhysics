@@ -33,6 +33,7 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 		     Bool_t      cutEdges = false,
 		     Double_t    trigEff  = 1, 
 		     Double_t    trigEff0 = 1,
+		     Bool_t      corrEmpty= false,
 		     const char* mcanalysisfilename = "none")
 {
   // --- Load libraries ----------------------------------------------
@@ -65,7 +66,8 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
   // Whether to correct for empty bins when projecting 
-  task->SetCorrEmpty(true);
+  // task->SetCorrEmpty(true);
+  task->SetCorrEmpty(corrEmpty);
   // Whether to use TH2::ProjectionX 
   task->SetUseROOTProjectX(false);
   // Bit mask of 
