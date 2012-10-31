@@ -78,7 +78,7 @@ class TH1I;
  *   }
  * 
  *   // Get acceptance normalisation from underflow bins 
- *   TH1D* norm   = sum->Projection("norm", 0, 1, "");
+ *   TH1D* norm   = sum->ProjectionX("norm", 0, 1, "");
  *   // Project onto eta axis - _ignoring_underflow_bins_!
  *   TH1D* dndeta = sum->Projection("dndeta", 1, -1, "e");
  *   // Normalize to the acceptance 
