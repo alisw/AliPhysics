@@ -68,8 +68,8 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
   AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
-  AliESDtrackCuts *fEsdTrackCutsSPD;    // set of cuts when reading ESD
-  AliESDtrackCuts *fEsdTrackCutsSDD;    // set of cuts when reading ESD
+  AliESDtrackCuts *fEsdTrackCutsExtra1;    // set of cuts when reading ESD
+  AliESDtrackCuts *fEsdTrackCutsExtra2;    // set of cuts when reading ESD
   ClassDef(AliAnalyseLeadingTrackUE,0)
 };
 #endif
