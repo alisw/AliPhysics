@@ -20,7 +20,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask()
   //
   // Constructor 
   // 
-  DGUARD(fDebug, 0, "Default CTOR of AliForwarddNdetaTask");
+  DGUARD(fDebug, 3, "Default CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
@@ -33,7 +33,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
   // Paramters
   //   name    Name of task 
   SetTitle("FMD");
-  DGUARD(fDebug, 0, "Named CTOR of AliForwarddNdetaTask");
+  DGUARD(fDebug, 3, "Named CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
@@ -43,7 +43,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
   // 
   // Copy constructor
   // 
-  DGUARD(fDebug, 0, "Copy CTOR of AliForwarddNdetaTask");
+  DGUARD(fDebug, 3, "Copy CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
