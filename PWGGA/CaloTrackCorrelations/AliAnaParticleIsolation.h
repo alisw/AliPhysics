@@ -137,14 +137,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   //Histograms  
   
-  TH1F *   fhEIso ;                               //! Number of isolated particles
-  TH1F *   fhPtIso ;                              //! Number of isolated particles
+  TH1F *   fhEIso ;                               //! Number of isolated particles vs energy
+  TH1F *   fhPtIso ;                              //! Number of isolated particles vs pT
   TH2F *   fhPtNLocMaxIso ;                       //! Number of isolated particles vs NLM in cluster
   TH2F *   fhPhiIso ;                             //! Phi of isolated particles
   TH2F *   fhEtaIso ;                             //! eta of isolated particles
   TH2F *   fhEtaPhiIso ;                          //! eta vs phi of isolated particles
   TH2F *   fhEtaPhiNoIso ;                        //! eta vs phi of not isolated leading particles
-  TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles
+  TH1F *   fhENoIso ;                             //! Number of not isolated leading particles vs Energy
+  TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles vs pT
   TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
   TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
   TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
@@ -287,6 +288,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda1LocMaxN[2] ;                 //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
   
   // Pile-up
+  TH1F *   fhEIsoPileUp ;                         //! Number of isolated particles
+  TH1F *   fhPtIsoPileUp ;                        //! Number of isolated particles
+  TH1F *   fhENoIsoPileUp ;                       //! Number of not isolated particles
+  TH1F *   fhPtNoIsoPileUp ;                      //! Number of not isolated particles
   TH2F *   fhTimeENoCut;                          //! time of cluster vs E, no cut 
   TH2F *   fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
   TH2F *   fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
@@ -307,7 +312,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,18)
+  ClassDef(AliAnaParticleIsolation,19)
 } ;
 
 
