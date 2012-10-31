@@ -58,7 +58,6 @@ void AliJetEmbeddingFromGenTask::ExecOnce()
 {
   // Exec only once.
 
-  cout << "afjalfja " <<endl;
   if (!gAlice) {
     new AliRun("gAlice","The ALICE Off-line Simulation Framework");
     delete gRandom;
@@ -76,6 +75,7 @@ void AliJetEmbeddingFromGenTask::ExecOnce()
   if (InputEvent()->FindListObject(fTracksName) == 0) {
     fOutTracks = new TClonesArray("AliPicoTrack", 1000);
     fOutTracks->SetName(fTracksName);
+    InputEvent()->AddObject(fOutTracks);
     fNTracks = 0;
   }
 }
