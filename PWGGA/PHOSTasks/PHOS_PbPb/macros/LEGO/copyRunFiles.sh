@@ -6,9 +6,9 @@
 RUNLISTFULL=runlistLHC11h.txt
 AFILENAME=AnalysisResults.root
 GRID_PATH=/alice/data/2011/LHC11h_2
-GRID_FILE_PATERN=ESDs/pass2/AOD095/PWGGA/GA_PbPb/7_20121008-1935/$AFILENAME
+GRID_FILE_PATERN=ESDs/pass2/AOD095/PWGGA/GA_PbPb/8_20121027-1426/$AFILENAME
 # Where to store:
-LOCAL_DIR=$(pwd)/GA_PbPb_output_7
+LOCAL_DIR=$(pwd)/GA_PbPb_output_8
 FIND_RESULTS_FILE=$LOCAL_DIR/find_results.txt
 RUNFILE=$LOCAL_DIR/runFile.txt
 
@@ -17,6 +17,7 @@ RUNFILE=$LOCAL_DIR/runFile.txt
 if [ -f "$FIND_RESULTS_FILE" ]; then
     echo using $FIND_RESULTS_FILE
 else
+    mkdir -p $LOCAL_DIR
     echo Doing alien_find $GRID_PATH $GRID_FILE_PATERN, 
     echo may take some time ...
     alien_find $GRID_PATH $GRID_FILE_PATERN >> $FIND_RESULTS_FILE
