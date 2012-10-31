@@ -227,7 +227,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 # Install corrections 
 install ( DIRECTORY FORWARD/corrections/DoubleHit
 	            FORWARD/corrections/ELossFits
-		    FORWARD/corrections/Emperical
+		    FORWARD/corrections/Empirical
 		    FORWARD/corrections/MergingEfficiency
 		    FORWARD/corrections/SecondaryMap
 		    FORWARD/corrections/VertexBias
