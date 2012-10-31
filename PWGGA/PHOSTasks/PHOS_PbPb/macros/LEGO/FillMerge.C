@@ -13,8 +13,7 @@ void makeFillMap()
 {
 }
 
-void FillMerge(const TString filelist="filelist.txt",
-	       const TString runlist="runlist.txt",
+void FillMerge(const TString runFile="runFile.txt",
 	       const TString runFillFile = "run_fill.txt")
 {
   // Use to merge run files to fill files
@@ -42,20 +41,16 @@ void FillMerge(const TString filelist="filelist.txt",
 
   // Make FillMergers and add run files to them.
   std::ifstream in;
-  in.open(filelist.Data());
-  std::ifstream inRuns;
-  inRuns.open(runlist.Data());
+  in.open(runFile.Data());
   char rootFileName[256];
   Int_t runNumber=0;
   while (1) {
-    in >> rootFileName;
+    in >> runNumber >> rootFileName;
     if (!in.good()) break;
-    inRuns >> runNumber;
-    if (!inRuns.good()) break;
-    
-    if(169094 == runNumber ) 
-      continue;
 
+    if(169553 == runNumber ) //169094 
+      continue;
+    
     if( ! runToFill.count(runNumber) ) {
       Printf("can't map run %d to fill, not in file %s", runNumber, runFillFile.Data());
       continue;
@@ -72,8 +67,7 @@ void FillMerge(const TString filelist="filelist.txt",
     fillToMerger[fill]->AddFile(rootFileName);
   }
 
-  std::ofstream fls("fillList.txt");
-  std::ofstream ffls("fillFileList.txt");
+  std::ofstream out("fillFile.txt");
 
   
   // Merge:
@@ -82,8 +76,7 @@ void FillMerge(const TString filelist="filelist.txt",
     TFileMerger* fm = (*it).second;
     Printf("merging %s", fm->GetOutputFileName());
     fm->Merge();
-    fls << (*it).first << std::endl;
-    ffls << fm->GetOutputFileName() << std::endl;
+    out << (*it).first << " " << fm->GetOutputFileName() << std::endl;
     delete fm;
   }
 

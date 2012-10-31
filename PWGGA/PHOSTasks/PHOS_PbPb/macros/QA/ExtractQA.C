@@ -63,6 +63,7 @@ Double_t nCluEvent[500], eCluEvent[500];
 Double_t cluEnergy[500], ecluEnergy[500];
 Double_t nPhotPID[kNCents][kNPID][500], enPhotPID[kNCents][kNPID][500];
 Double_t mEnPID[kNCents][kNPID][500],   emEnPID[kNCents][kNPID][500];
+const float highPt = 1.;
 Double_t nPhotPIDHigh[kNCents][kNPID][500], enPhotPIDHigh[kNCents][kNPID][500];
 Double_t mEnPIDHigh[kNCents][kNPID][500],   emEnPIDHigh[kNCents][kNPID][500];
 
@@ -77,32 +78,27 @@ Double_t nPi0Event[500], ePi0Event[500];
 
 
 //-----------------------------------------------------------------------------
-void ExtractQA(const TString filelist="filelist.txt",
-	       const TString runlist="runlist.txt",
-	       const TString outputFileName = "outputQA.root")
+void ExtractQA(const TString runFile="runFile.txt",
+	       const TString outputFileName = "outputQA.root"
+	       )
 {
   // Loop over per-run root files and run various QA functions
 
   //TGrid::Connect("alien://");
 
   ifstream in;
-  in.open(filelist.Data());
+  in.open(runFile.Data());
 
-  ifstream inRuns;
-  inRuns.open(runlist.Data());
-
-  char rootFileName[256];
   TFile *rootFile;
 
-  Int_t runNumber=0;
   runIndex = 0;
   while (1) {
-    in >> rootFileName;
+    char rootFileName[256];
+    Int_t runNumber=0;
+    in >> runNumber >> rootFileName;
     if (!in.good()) break;
-    inRuns >> runNumber;
-    if (!inRuns.good()) break;
     
-    if(169094 == runNumber )
+    if(169553 == runNumber ) //169094 
       continue;
     
     runNum[runIndex] = runNumber;
@@ -113,7 +109,6 @@ void ExtractQA(const TString filelist="filelist.txt",
     listHist = (TList*)rootFile->Get("PHOSPi0Flow/PHOSPi0FlowCoutput1");
 
     run[runIndex]            = runIndex+1;
-
     QAFillEventSelection();
     QAFillOccupancy();
     QAFillClusters();
@@ -213,7 +208,7 @@ void QAFillClusters()
       mEnPID   [cent][ipid][runIndex] = hPhot->GetMean();
       emEnPID  [cent][ipid][runIndex] = hPhot->GetMeanError();
 
-      hPhot->SetAxisRange(1., 100.);
+      hPhot->SetAxisRange(highPt, 100.);
       double nPhotHigh = hPhot->Integral() /nEvents4;
       nPhotPIDHigh [cent][ipid][runIndex] = nPhotHigh;
       enPhotPIDHigh[cent][ipid][runIndex] = TMath::Sqrt( nPhotHigh /nEvents4 );
@@ -468,17 +463,22 @@ void QAWriteClusters()
   grNCluster ->SetMarkerStyle(33);
   grNCluster ->Write();
 
+  TString name, title;
   for(int cent=0; cent<kNCents; ++cent) {
     for(int ipid = 0; ipid < kNPID; ++ipid) {
       TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
-      AddWriteTH1F(Form("grNPhot%s_cen%d", kPIDNames[ipid], cent), Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
-		   nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
-      AddWriteTH1F(Form("grEn%s_cen%d", kPIDNames[ipid], cent), Form("#LTE_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
-		   mEnPID[cent][ipid], emEnPID[cent][ipid]);
-      AddWriteTH1F(Form("grNPhot%sHigh_cen%d", kPIDNames[ipid], cent), Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
-		   nPhotPIDHigh[cent][ipid], enPhotPIDHigh[cent][ipid]);
-      AddWriteTH1F(Form("grEn%sHigh_cen%d", kPIDNames[ipid], cent), Form("#LTE_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent),
-		   mEnPIDHigh[cent][ipid], emEnPIDHigh[cent][ipid]);
+      name = Form("grNPhot%s_cen%d", kPIDNames[ipid], cent);
+      title = Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent);
+      AddWriteTH1F(name, title, nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
+      name = Form("grEn%s_cen%d", kPIDNames[ipid], cent);
+      title = Form("#LTE_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent);
+      AddWriteTH1F(name , title, mEnPID[cent][ipid], emEnPID[cent][ipid]);
+      name = Form("grNPhot%sHigh_cen%d", kPIDNames[ipid], cent);
+      title = Form("#LTN_{clusters}^{%s}#GT, c.bin=%d, p_T>%f", kPIDNames[ipid], cent, highPt);
+      AddWriteTH1F(name, title, nPhotPIDHigh[cent][ipid], enPhotPIDHigh[cent][ipid]);
+      name = Form("grEn%sHigh_cen%d", kPIDNames[ipid], cent);
+      title = Form("#LTE_{clusters}^{%s}#GT, c.bin=%d, p_T>%f", kPIDNames[ipid], cent, highPt);
+      AddWriteTH1F(name, title, mEnPIDHigh[cent][ipid], emEnPIDHigh[cent][ipid]);
     }
   }
 }
