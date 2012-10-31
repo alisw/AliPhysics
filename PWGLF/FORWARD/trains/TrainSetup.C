@@ -23,6 +23,7 @@
 # include <TUrl.h>
 # include <TString.h>
 # include <TApplication.h>
+# include <TStopwatch.h>
 # include <AliAnalysisManager.h>
 # include <AliVEventHandler.h>
 # include <AliPhysicsSelection.h>
@@ -39,6 +40,7 @@ struct OptionList;
 class TDatime;
 class TUrl;
 class TString;
+class TStopwatch;
 class AliVEventHandler;
 class AliAnalysisManager;
 class AliInputEventHandler;
@@ -46,7 +48,7 @@ class AliInputEventHandler;
 
 //====================================================================
 /** 
- * Generic set-up of an analysis train using the grid-handler (AliEn plugin). 
+ * Generic set-up of an analysis train 
  *
  * See also @ref train_setup_doc
  *
@@ -216,18 +218,38 @@ struct TrainSetup
     // --- Save setup to disk ----------------------------------------
     SaveSetup(true);
 
-    // Some information
+    // --- Some information ------------------------------------------
     mgr->PrintStatus();
-
+    if (fHelper->Mode() != Helper::kLocal) {
+      TIter next(mgr->GetTasks());
+      AliAnalysisTask* sub = 0;
+      while ((sub = static_cast<AliAnalysisTask*>(next()))) { 
+	sub->Print();
+      }
+    }
     return true;
   }
+  void PrintTimer(TStopwatch& timer, const char* where)
+  {
+    timer.Stop();
+    Double_t t = timer.RealTime();
+    Int_t    h = Int_t(t / 3600); t -= h * 3600;
+    Int_t    m = Int_t(t /   60); t -= m *   60;
+    if (t < 0) t = 0;
+    Info(where, "took %4d:%02d:%06.3f", h, m, t);
+  }
+    
   Bool_t Run()
   {
     TString cwd = gSystem->WorkingDirectory();
     Bool_t status = false;
+    TStopwatch timer;
+    timer.Start();
     try {
       if (!Init()) throw TString("Failed to intialize the train");
-
+      PrintTimer(timer, "Initialization");
+      timer.Continue();
+      
       // Check if we're asked to only do the setup 
       if (fOptions.Has("setup")) {
 	status = true;
@@ -238,6 +260,8 @@ struct TrainSetup
       
       Long64_t nEvents = fOptions.AsLong("events", -1);
       Long64_t ret     = fHelper->Run(nEvents);
+      PrintTimer(timer, "Processing");
+      timer.Continue();
       
       // Make sure we go back 
       gSystem->ChangeDirectory(cwd.Data());
@@ -248,11 +272,17 @@ struct TrainSetup
       status = true;
     }
     catch (TString& e) {
-      if (status) 
-	Warning("Main", e);
-      else 
-	Error("Main", e);
+      if (status) Warning("Run", e);
+      else    	  Error("Run", e);
     }
+    if (fOptions.Has("date")) {
+      TString escaped = EscapeName(fName, "");
+      gSystem->Exec(Form("rm -f last_%s", escaped.Data()));
+      gSystem->Exec(Form("ln -sf %s last_%s", 
+			 fEscapedName.Data(), escaped.Data()));
+    }
+    PrintTimer(timer, "Finish");
+    timer.Continue();
     return status;
   }
   /** 

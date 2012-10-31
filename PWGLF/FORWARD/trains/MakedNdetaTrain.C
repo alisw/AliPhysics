@@ -38,6 +38,7 @@ public:
     fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
     fOptions.Add("cent",     "Use centrality");
     fOptions.Add("cut-edges", "Cut acceptance edges");
+    fOptions.Add("corr-empty", "Correct for empty bins (deprecated)");
   }
 protected:
   /** 
@@ -66,19 +67,17 @@ protected:
     Double_t effT0  = fOptions.AsDouble("trigEff0", 1);
     Bool_t   cent   = fOptions.Has("cent");
     Bool_t   edges  = fOptions.Has("cut-edges");
+    Bool_t   corrEm = fOptions.Has("corr-empty");
 
+    // --- Form arguments --------------------------------------------
+    TString args;
+    args.Form("\"%s\",%f,%f,%d,\"%s\",%d,%g,%g,%d",
+	      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
+	      edges, effT, effT0, corrEm);
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwarddNdeta.C(\"%s\",%f,%f,%d,\"%s\",%d,%g,%g)",
-		      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
-		      edges, effT, effT0));
-
-    gROOT->Macro(Form("AddTaskCentraldNdeta.C(\"%s\",%f,%f,%d,\"%s\",%d,%g,%g)",
-		      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
-		      edges, effT, effT0));
-
-    gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(\"%s\",%f,%f,%d,\"%s\",%d,%g,%g)",
-		      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
-		      edges, effT, effT0));
+    gROOT->Macro(Form("AddTaskForwarddNdeta.C(%s);", args.Data()));
+    gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", args.Data()));
+    gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(%s);", args.Data()));
   }
   //__________________________________________________________________
   /** 

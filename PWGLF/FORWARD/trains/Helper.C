@@ -27,6 +27,7 @@
 # include <TROOT.h>
 # include <TError.h>
 # include <TObjArray.h>
+# include <TFile.h>
 # include <AliAnalysisManager.h>
 # include <iostream>
 #else 
@@ -121,12 +122,13 @@ struct Helper
    * Load a source file, and compile it 
    * 
    * @param name Name of the source file 
+   * @param copy Copy rather than link 
    * 
    * @return true on success
    */
-  virtual Bool_t LoadSource(const TString& name)
+  virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
-    if (!AuxFile(name)) return false;
+    if (!AuxFile(name, copy)) return false;
     TString base(gSystem->BaseName(name));
     gROOT->LoadMacro(Form("%s++g", base.Data()));
     return true;
@@ -136,12 +138,13 @@ struct Helper
    * working directory
    * 
    * @param name Extra file name 
+   * @param copy Copy rather than link 
    *
    * @return true on success 
    */
-  virtual Bool_t LoadAux(const TString& name)
+  virtual Bool_t LoadAux(const TString& name, Bool_t copy=false)
   {
-    if (!AuxFile(name)) return false;
+    if (!AuxFile(name, copy)) return false;
     return true;
   }
 
@@ -408,10 +411,11 @@ protected:
    * Link an auxilary file to working directory 
    * 
    * @param name Name of the file
-   * 
+   * @param bool Copy rather than link
+   *
    * @return true on success
    */
-  virtual Bool_t AuxFile(const TString& name)
+  virtual Bool_t AuxFile(const TString& name, bool copy=false)
   {
     TString path(gSystem->ExpandPathName(name.Data()));
     // If not absolute, prepend up-one
@@ -429,7 +433,10 @@ protected:
 	return false;
       }
     }
-    gSystem->Exec(Form("ln -s %s .", path.Data()));
+    if (copy) 
+      TFile::Cp(path, base);
+    else 
+      gSystem->Exec(Form("ln -s %s .", path.Data()));
     return true;
   }
   /** 

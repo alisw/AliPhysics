@@ -157,10 +157,10 @@ struct PluginHelper : public Helper
    * 
    * @return true on success
    */
-  virtual Bool_t LoadSource(const TString& name)
+  virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
     static TString s;
-    if (!Helper::LoadSource(name)) return false;
+    if (!Helper::LoadSource(name, copy)) return false;
     s.Append(Form(" %s", gSystem->BaseName(name.Data())));
     fHandler->SetAnalysisSource(s);
     fExtraSrcs.Add(new TObjString(name));
