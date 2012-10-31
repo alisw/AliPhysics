@@ -559,7 +559,8 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
 	//	iotrack.SetTPCpid(pt->fTPCr);
-	//iotrack.SetTPCindex(i);
+	//iotrack.SetTPCindex(i); 
+	MakeESDBitmaps(pt, &iotrack);
 	fEvent->AddTrack(&iotrack);
 	continue;
       }
@@ -571,6 +572,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	//iotrack.SetTPCindex(i);
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
+	MakeESDBitmaps(pt, &iotrack);
 	//	iotrack.SetTPCpid(pt->fTPCr);
 	fEvent->AddTrack(&iotrack);
 	continue;
@@ -588,6 +590,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	  iotrack.SetV0Indexes(pt->GetV0Indexes());
+	  MakeESDBitmaps(pt, &iotrack);
 	  //iotrack.SetTPCpid(pt->fTPCr);
 	  fEvent->AddTrack(&iotrack);
 	  continue;
@@ -605,6 +608,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
+	MakeESDBitmaps(pt, &iotrack);
 	//iotrack.SetTPCpid(pt->fTPCr);
 	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
@@ -621,6 +625,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	  iotrack.SetV0Indexes(pt->GetV0Indexes());
+	  MakeESDBitmaps(pt, &iotrack);
 	  //iotrack.SetTPCpid(pt->fTPCr);	
 	  //iotrack.SetTPCindex(i);
 	  fEvent->AddTrack(&iotrack);
@@ -641,6 +646,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
+	MakeESDBitmaps(pt, &iotrack);
 	//	iotrack.SetTPCpid(pt->fTPCr);
 	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
@@ -6705,7 +6711,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
       MarkSeedFree( fSeeds->RemoveAt(i) );
       continue;
     } 
-    CookLabel(pt,0.1); 
+    CookLabel(pt,0.1);
     if (pt->GetRemoval()==10) {
       if (pt->GetDensityFirst(20)>0.8 || pt->GetDensityFirst(30)>0.8 || pt->GetDensityFirst(40)>0.7)
 	pt->Desactivate(10);  // make track again active  // MvL: should be 0 ?
