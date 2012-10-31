@@ -77,8 +77,8 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fEsdTrackCuts(0x0), 
-  fEsdTrackCutsSPD(0x0), 
-  fEsdTrackCutsSDD(0x0) 
+  fEsdTrackCutsExtra1(0x0), 
+  fEsdTrackCutsExtra2(0x0) 
 {
   // constructor
 }
@@ -107,7 +107,7 @@ Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
   
   // select track according to set of cuts
   if (!fEsdTrackCuts->IsSelected(track) )return kFALSE;
-  if (fEsdTrackCutsSPD && fEsdTrackCutsSDD && !fEsdTrackCutsSPD->IsSelected(track) && fEsdTrackCutsSDD->IsSelected(track)) return kFALSE;
+  if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra2 && !fEsdTrackCutsExtra1->IsSelected(track) && !fEsdTrackCutsExtra2->IsSelected(track)) return kFALSE;
 
   return kTRUE;
 }
@@ -152,18 +152,39 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCuts->SetMinNCrossedRowsTPC(70);
     fEsdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   }
+  else if (filterbit == 2048) // mimic hybrid tracks
+  {
+    // correspond to esdTrackCutsHTG, but WITHOUT spd constraint. this is checked with the next object
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    fEsdTrackCuts->SetName("Global Hybrid tracks, loose DCA");
+    fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+    fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+
+    // Add SPD requirement 
+    fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+    fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra1 corresponds to esdTrackCutsHTG
+
+    // empty object
+    fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_SPD", "Reject tracks with cluster in SPD");
+    fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
+  }
   else
   {
     fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-    fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+    fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
     // Add SPD requirement 
-    fEsdTrackCutsSPD = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
-    fEsdTrackCutsSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+    fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 
     // Add SDD requirement 
-    fEsdTrackCutsSDD = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
-    fEsdTrackCutsSDD->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
+    fEsdTrackCutsExtra2 = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
+    fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
   }
 }
 
@@ -293,7 +314,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   
   // for TPC only tracks
   Bool_t hasOwnership = kFALSE;
-  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024) && obj->InheritsFrom("AliESDEvent"))
+  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024 || fFilterBit == 2048) && obj->InheritsFrom("AliESDEvent"))
     hasOwnership = kTRUE;
   
   if (!arrayMC)
@@ -340,7 +361,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arr
 
   // for TPC only tracks
   Bool_t hasOwnership = kFALSE;
-  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024) && obj->InheritsFrom("AliESDEvent"))
+  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024 || fFilterBit == 2048) && obj->InheritsFrom("AliESDEvent"))
     hasOwnership = kTRUE;
 
   tracksReconstructed->SetOwner(hasOwnership);
@@ -655,6 +676,25 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  }
 	  
 	  part = track;
+	}
+	else if (fFilterBit == 2048)
+	{
+	  // hybrid tracks
+	  
+	  // clone
+	  AliESDtrack* esdTrack = new AliESDtrack(*((AliESDtrack*) part));
+// 	  Printf("%d %d %d %d %d", fEsdTrackCuts->IsSelected(esdTrack), fEsdTrackCutsExtra1->IsSelected(esdTrack), fEsdTrackCutsExtra2->IsSelected(esdTrack), esdTrack->HasPointOnITSLayer(0), esdTrack->HasPointOnITSLayer(1));
+	  
+	  if (fEsdTrackCutsExtra2->IsSelected(esdTrack))
+	  {
+// 	    Float_t ptBefore = esdTrack->Pt();
+	    // set constrained pT as default pT
+	    if (!esdTrack->GetConstrainedParam())
+	      return 0;
+	    esdTrack->CopyFromVTrack(esdTrack->GetConstrainedParam());
+// 	    Printf("%f %f", ptBefore, esdTrack->Pt());
+	  }
+	  part = esdTrack;
 	}
 	
 	// eventually only hadrons
