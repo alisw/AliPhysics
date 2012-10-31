@@ -33,7 +33,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
-  fJetAreaCut(0.4),
+  fJetAreaCut(-1),
   fPercAreaCut(-1),
   fAreaEmcCut(0),
   fJetMinEta(-0.9),
@@ -59,7 +59,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
-  fJetAreaCut(0.4),
+  fJetAreaCut(-1),
   fPercAreaCut(-1),
   fAreaEmcCut(0),
   fJetMinEta(-0.9),
@@ -179,6 +179,8 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
       AliInfo(Form("%s: jet area cut will be calculated as a percentage of the average area, given value will be overwritten", GetName()));
     fJetAreaCut = fPercAreaCut * fJetRadius * fJetRadius * TMath::Pi();
   }
+  if (fJetAreaCut < 0)
+    fJetAreaCut = 0;
 
   if (fAnaType == kTPC) {
     SetJetEtaLimits(-0.5, 0.5);

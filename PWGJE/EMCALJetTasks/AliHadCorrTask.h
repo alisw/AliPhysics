@@ -32,11 +32,13 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   Double_t               ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Double_t hadCorr);
   Double_t               ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Double_t hadCorr);
   void                   DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches);
+  void                   DoTrackLoop();
   Double_t               GetEtaSigma(Int_t pbin)                   const;
   Int_t                  GetMomBin(Double_t pt)                    const;
   Double_t               GetPhiMean(Int_t pbin, Int_t centbin)     const;
   Double_t               GetPhiSigma(Int_t pbin, Int_t centbin)    const;
   virtual Bool_t         Run()                                          ;
+  virtual void           ExecOnce()                                     ;
 
   TString                fOutCaloName;               // name of output clusters
   Double_t               fPhiMatch;                  // phi match value (pp=0.050)
@@ -44,11 +46,12 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   Int_t                  fDoTrackClus;               // loop over tracks first
   Double_t               fHadCorr;                   // hadronic correction (fraction)
   Double_t               fEexclCell;                 // energy/cell that we cannot subtract from the clusters
+  Bool_t                 fEsdMode;                   //!ESD/AOD mode
   TClonesArray          *fOutClusters;               //!output cluster collection
   TH2F                  *fHistMatchEtaPhi[8][9][2];  //!output histograms
   TH2F                  *fHistMatchEvsP[4];          //!output histograms
   TH2F                  *fHistNMatchEnergy[4];       //!output histograms
-  TH2F                  *fHistNCellsEnergy[8][4];    //!output histograms
+  TH2F                  *fHistNCellsEnergy[4][4];    //!output histograms
   TH2F                  *fHistMatchdRvsEP[4];        //!output histograms
   TH1F                  *fHistNclusvsCent;           //!output histograms
   TH1F                  *fHistNclusMatchvsCent;      //!output histograms
@@ -56,9 +59,9 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH1F                  *fHistEafter;                //!output histograms
   TH2F                  *fHistEoPCent;               //!output histograms
   TH2F                  *fHistNMatchCent;            //!output histograms
+  TH2F                  *fHistNClusMatchCent;        //!output histograms
   TH1F                  *fHistEsubPch[8];            //!output histograms
   TH2F                  *fHistEsubPchRat[8];         //!output histograms
-  TH1F                  *fHistCentrality;            //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
