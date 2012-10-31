@@ -16,9 +16,9 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   virtual ~AliJetEmbeddingFromGenTask();
 
   void           SetGen(AliGenerator *gen) { fGen = gen; }
-  void           UserExec(Option_t* /*option*/);
 
  protected:
+  void           ExecOnce();
   void           Run();
 
   AliGenerator  *fGen;    //generator
