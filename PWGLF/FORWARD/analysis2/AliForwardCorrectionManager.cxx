@@ -961,23 +961,25 @@ AliForwardCorrectionManager::WriteFile(ECorrection what,
     AliError(Form("Failed to write %s to disk (%d)", ofName.Data(), ret));
     return false;
   }
-  output->ls();
+  // output->ls();
   output->Close();
   
+#if 0
   TString cName(obj->IsA()->GetName());
   AliInfo(Form("Wrote %s object %s to %s",
 	       cName.Data(), oName.Data(), ofName.Data()));
   if (!full) { 
     TString dName(GetFileDir(what));
-    AliInfo(Form("%s should be copied to %s"
-		 "Do for example\n\n\t"
-		 "aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
-		 "MoveCorrections.C\\(%d\\)\nor\n\t"
-		 "cp %s %s/\n", 
-		 ofName.Data(),dName.Data(),
-		 what, ofName.Data(), 
-		 gSystem->ExpandPathName(dName.Data())));
+    AliInfoF("\n  %s should be copied to %s"
+	     "Do for example\n\n\t"
+	     "aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
+	     "MoveCorrections.C\\(%d\\)\nor\n\t"
+	     "cp %s %s/\n", 
+	     ofName.Data(),dName.Data(),
+	     what, ofName.Data(), 
+	     gSystem->ExpandPathName(dName.Data()));
   }
+#endif
   return true;
 }
 

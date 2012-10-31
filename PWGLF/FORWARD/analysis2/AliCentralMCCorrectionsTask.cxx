@@ -65,7 +65,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
   // Parameters:
   //    name Name of task 
   //
-  DGUARD(fDebug,0,"Default construction of AliCentralMCCorrectionsTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliCentralMCCorrectionsTask");
 }
 
 //____________________________________________________________________
@@ -90,7 +90,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
-  DGUARD(fDebug,0,"Named construction of AliCentralMCCorrectionsTask: %s",name);
+  DGUARD(fDebug, 3,"Named CTOR of AliCentralMCCorrectionsTask: %s",name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   fBranchNames = 
@@ -120,7 +120,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const AliCentralMCCorre
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug,0,"Copy construction of AliCentralMCCorrectionsTask");
+  DGUARD(fDebug, 3,"Copy CTOR of AliCentralMCCorrectionsTask");
 }
 
 //____________________________________________________________________
@@ -381,7 +381,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   UInt_t   triggers  = 0;    // Trigger bits
   Bool_t   lowFlux   = true; // Low flux flag
   UShort_t iVz       = 0;    // Vertex bin from ESD
-  Double_t vZ        = 1000; // Z coordinate from ESD
+  TVector3 ip;               // Z coordinate from ESD
   Double_t cent      = -1;   // Centrality 
   UShort_t iVzMc     = 0;    // Vertex bin from MC
   Double_t vZMc      = 1000; // Z coordinate of IP vertex from MC
@@ -392,7 +392,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   Double_t phiR      = 1000; // Reaction plane from MC
   UShort_t nClusters = 0;    // Number of SPD clusters 
   // Process the data 
-  UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, 
+  UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, ip, 
 				     cent, nClusters);
   fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
 		       b, cMC, nPart, nBin, phiR);

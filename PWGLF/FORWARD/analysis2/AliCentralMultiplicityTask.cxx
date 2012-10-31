@@ -51,7 +51,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   // 
   // Constructor 
   //   
-  DGUARD(fDebug,0,"Named CTOR of AliCentralMultiplicityTask: %s", name);
+  DGUARD(fDebug, 3,"Named CTOR of AliCentralMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
@@ -80,7 +80,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
   // 
   // Constructor 
   // 
-  DGUARD(fDebug,0,"Default CTOR of AliCentralMultiplicityTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliCentralMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
@@ -105,7 +105,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
   //
   // Copy constructor 
   // 
-  DGUARD(fDebug,0,"COPY CTOR of AliCentralMultiplicityTask");
+  DGUARD(fDebug, 3,"COPY CTOR of AliCentralMultiplicityTask");
 
 }
 //____________________________________________________________________
@@ -419,11 +419,11 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
-  Double_t vz        = 0;
+  TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
   UInt_t   found     = fInspector.Process(esd, triggers, lowFlux, 
-					  ivz, vz, cent, nClusters);
+					  ivz, ip, cent, nClusters);
 
   // No event or no trigger 
   if (found & AliFMDEventInspector::kNoEvent)    return;
@@ -497,36 +497,37 @@ AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
   if (!hAcceptance) AliFatal("No acceptance!");
     
   if (fUseSecondary && hSecMap) aodHist.Divide(hSecMap);
-  
-  for(Int_t nx = 1; nx <= aodHist.GetNbinsX(); nx++) {
-    Float_t accCor = hAcceptance->GetBinContent(nx);
-    Float_t accErr = hAcceptance->GetBinError(nx);
+
+  Int_t nY = aodHist.GetNbinsY();
+  for(Int_t ix = 1; ix <= aodHist.GetNbinsX(); ix++) {
+    Float_t accCor = hAcceptance->GetBinContent(ix);
+    Float_t accErr = hAcceptance->GetBinError(ix);
 
     Bool_t fiducial = true;
-    if (nx < fEtaMin[vtxbin-1] || nx > fEtaMax[vtxbin-1]) 
+    if (ix < fEtaMin[vtxbin-1] || ix > fEtaMax[vtxbin-1]) 
       fiducial = false;
     //  Bool_t etabinSeen = kFALSE;  
-    for(Int_t ny = 1; ny <= aodHist.GetNbinsY(); ny++) {
+    for(Int_t iy = 1; iy <= nY; iy++) {
 #if 1
       if (!fiducial) { 
-	aodHist.SetBinContent(nx, ny, 0);
-	aodHist.SetBinError(nx, ny, 0);
+	aodHist.SetBinContent(ix, iy, 0);
+	aodHist.SetBinError(ix, iy, 0);
 	continue;
       }
 #endif	
       // Get currrent value 
-      Float_t aodValue = aodHist.GetBinContent(nx,ny);
-      Float_t aodErr   = aodHist.GetBinError(nx,ny);
+      Float_t aodValue = aodHist.GetBinContent(ix,iy);
+      Float_t aodErr   = aodHist.GetBinError(ix,iy);
 
 #if 0 // This is done once in the FindEtaBins function
       // Set underflow bin
       Float_t secCor   = 0;
-      if(hSecMap)       secCor     = hSecMap->GetBinContent(nx,ny);
+      if(hSecMap)       secCor     = hSecMap->GetBinContent(ix,iy);
       if (secCor > 0.5) etabinSeen = kTRUE;
 #endif
       if (aodValue < 0.000001) { 
-	aodHist.SetBinContent(nx,ny, 0); 
-	aodHist.SetBinError(nx,ny, 0); 
+	aodHist.SetBinContent(ix,iy, 0); 
+	aodHist.SetBinError(ix,iy, 0); 
 	continue; 
       }
       if (!fUseAcceptance) continue; 
@@ -536,14 +537,17 @@ AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
       Float_t aodNew   = aodValue / accCor ;
       Float_t error    = aodNew*TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
 					    TMath::Power(accErr/accCor,2) );
-      aodHist.SetBinContent(nx,ny, aodNew);
+      aodHist.SetBinContent(ix,iy, aodNew);
       //test
-      aodHist.SetBinError(nx,ny,error);
-      aodHist.SetBinError(nx,ny,aodErr);
+      aodHist.SetBinError(ix,iy,error);
+      aodHist.SetBinError(ix,iy,aodErr);
     }
     //Filling underflow bin if we eta bin is in range
-    if (fiducial) aodHist.SetBinContent(nx,0, 1.);
-    // if (etabinSeen) aodHist.SetBinContent(nx,0, 1.);
+    if (fiducial) {
+      aodHist.SetBinContent(ix,0, 1.);
+      aodHist.SetBinContent(ix,nY+1, 1.);
+    }
+    // if (etabinSeen) aodHist.SetBinContent(ix,0, 1.);
   }  
 }
 
@@ -587,9 +591,13 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
     for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
       std::cout << "   " << std::setw(2) << v << "  " 
 		<< std::setw(5) << vaxis.GetBinLowEdge(v) << "-"
-		<< std::setw(5) << vaxis.GetBinUpEdge(v) << " | "
-		<< std::setw(3) << fEtaMin[v-1] << "-" 
-		<< std::setw(3) << fEtaMax[v-1] << std::endl;
+		<< std::setw(5) << vaxis.GetBinUpEdge(v) << " | ";
+      if (fEtaMin.GetSize() <= 0) 
+	std::cout << " ? -   ?";
+      else 
+	std::cout << std::setw(3) << fEtaMin[v-1] << "-" 
+		  << std::setw(3) << fEtaMax[v-1];
+      std::cout << std::endl;
     }
   }
 
@@ -836,9 +844,10 @@ AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what,
 		    Form("Failed to write %s to disk (%d)", ofName.Data(),ret));
     return false;
   }
-  output->ls();
+  // output->ls();
   output->Close();
   
+#if 0
   TString cName(obj->IsA()->GetName());
   AliInfoGeneral("Manager",
 		 Form("Wrote %s object %s to %s\n",
@@ -846,7 +855,7 @@ AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what,
   if (!full) { 
     TString dName(GetFileDir(what));
     AliInfoGeneral("Manager",
-		   Form("%s should be copied to %s\n"
+		   Form("\n  %s should be copied to %s\n"
 			"Do for example\n\t"
 			"aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
 			"MoveCorrections.C\\(%d\\)\nor\n\t"
@@ -857,6 +866,7 @@ AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what,
 
 
   }
+#endif
   return true;
 }
 

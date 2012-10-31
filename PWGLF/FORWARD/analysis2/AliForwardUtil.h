@@ -154,13 +154,36 @@ public:
    */
   static Short_t ParseMagneticField(Float_t field);
   /** 
+   * Get the radius of a strip. 
+   * 
+   * @param ring  Ring identifier 'I' or 'O'
+   * @param strip Strip number 
+   * 
+   * @return Radial distance from beam of the strip 
+   */
+  static Double_t GetStripR(Char_t ring, UShort_t strip);
+  /** 
    * Get eta from strip
    * 
    * @param det, ring, sec, strip, zvtx
    * 
    * @return eta
    */
-  static Double_t GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx) ;
+  static Double_t GetEtaFromStrip(UShort_t det, Char_t ring, 
+				  UShort_t sec, UShort_t strip, Double_t zvtx);
+  /** 
+   * Get the azimuthal angle of a strip
+   * 
+   * @param ring  Ring identifier 'I' or 'O'
+   * @param strip Strip number 
+   * @param phi   Straight forward strip phi
+   * @param xvtx  Ip X coordinate 
+   * @param yvtx  Ip Y coordinate 
+   * 
+   * @return The phi angle correctef for (X,Y) off set. 
+   */  
+  static Double_t GetPhiFromStrip(Char_t ring, UShort_t strip, 
+				  Double_t phi, Double_t xvtx, Double_t yvtx);
   /** 
    * Get a string representation of the magnetic field
    * 

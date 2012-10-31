@@ -296,6 +296,22 @@ protected:
    */
   virtual void MarkEventForStore() const;
   /** 
+   * Calculate a simple dN/deta from all accepted events 
+   * 
+   * @param input  Input list
+   * @param output Output list
+   * @param nTr    On return, number of triggers
+   * @param nTrVtx On return, number of trigger+vertex events
+   * @param nAcc   On return, number of accepted events
+   * 
+   * @return true on success 
+   */
+  virtual Bool_t MakeSimpledNdeta(const TList* input, 
+				  TList*       output,
+				  Double_t&    nTr, 
+				  Double_t&    nTrVtx, 
+				  Double_t&    nAcc);
+  /** 
    * Make Ring @f$ dN/d\eta @f$ histogram and a stack 
    * 
    * @param input      List with summed signals 

@@ -35,7 +35,7 @@ AliFMDCorrector::AliFMDCorrector()
     fDebug(0)
 {
   // Constructor
-  DGUARD(fDebug, 0, "Default CTOR of AliFMDCorrector");
+  DGUARD(fDebug, 3, "Default CTOR of AliFMDCorrector");
 }
 
 //____________________________________________________________________
@@ -52,7 +52,7 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
   // 
   // Parameters: 
   //   title   Title
-  DGUARD(fDebug, 0, "Named CTOR of AliFMDCorrector: %s", title);
+  DGUARD(fDebug, 3, "Named CTOR of AliFMDCorrector: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
@@ -75,7 +75,7 @@ AliFMDCorrector::AliFMDCorrector(const AliFMDCorrector& o)
   // 
   // Parameters: 
   //  o  Object to copy from 
-  DGUARD(fDebug, 0, "Copy CTOR of AliFMDCorrector");
+  DGUARD(fDebug, 3, "Copy CTOR of AliFMDCorrector");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -160,6 +160,43 @@ AliFMDCorrector::GetRingHistos(UShort_t d, Char_t r) const
 }
     
 //____________________________________________________________________
+void
+AliFMDCorrector::DivideMap(TH2* num, const TH2* denom,
+			   Bool_t alsoUnderOver) const
+{
+  // 
+  // Implement TH1::Divide but 
+  // - Assume compatible histograms 
+  // - Unless third argument is true, do not divide over/under flow bins
+  // 
+  if (!num || !denom) return;
+
+  Int_t first = (alsoUnderOver ? 0 : 1);
+  Int_t lastX = num->GetNbinsX() + (alsoUnderOver ? 1 : 0);
+  Int_t lastY = num->GetNbinsY() + (alsoUnderOver ? 1 : 0);
+  
+  for (Int_t ix = first; ix <= lastX; ix++) {
+    for (Int_t iy = first; iy <= lastY; iy++) { 
+      Int_t    bin = num->GetBin(ix,iy);
+      Double_t c0  = num->GetBinContent(bin);
+      Double_t c1  = denom->GetBinContent(bin);
+      if (!c1) { 
+	num->SetBinContent(bin,0);
+	num->SetBinError(bin, 0);
+	continue;
+      }
+      Double_t w   = c0 / c1;
+      Double_t e0  = num->GetBinError(bin);
+      Double_t e1  = denom->GetBinError(bin);
+      Double_t c12 = c1*c1;
+      Double_t e2  = (e0*e0*c1*c1 + e1*e1*c0*c0)/(c12*c12);
+      
+      num->SetBinContent(bin, w);
+      num->SetBinError(bin, TMath::Sqrt(e2));
+    }
+  }
+}
+//____________________________________________________________________
 Bool_t
 AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 			 UShort_t                vtxbin)
@@ -192,7 +229,7 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
           continue;
         }
         // Divide by primary/total ratio
-        h->Divide(bg);
+	DivideMap(h, bg, false);
       }
       if (fUseVertexBias) {
         TH2D*  ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
@@ -202,7 +239,7 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
           continue;
         }
         // Divide by the event selection efficiency
-        h->Divide(ef);
+	DivideMap(h, ef, false);
       }
       if (fUseAcceptance) {
         TH2D*  ac = fcm.GetAcceptance()->GetCorrection(d, r, uvb);
@@ -211,8 +248,12 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 			  "vertex bin %d", d, r, uvb));
           continue;
         }
-        // Divide by the acceptance correction
-        h->Divide(ac);
+	// Fill overflow bin with ones 
+	for (Int_t i = 1; i <= h->GetNbinsX(); i++) 
+	  h->SetBinContent(i, h->GetNbinsY()+1, 1);
+
+        // Divide by the acceptance correction - 
+	DivideMap(h, ac, fcm.GetAcceptance()->HasOverflow());
       }
 
       if (fUseMergingEfficiency) {
@@ -231,10 +272,14 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 	for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) {
 	  Float_t c  = sf->GetBinContent(ieta);
 	  Float_t ec = sf->GetBinError(ieta);
-	  
-	  if (c == 0) continue;
-	  
+	  	  
 	  for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
+	    if (c == 0) {
+	      h->SetBinContent(ieta,iphi,0);
+	      h->SetBinError(ieta,iphi,0);
+	      continue;
+	    }
+
 	    Double_t m  = h->GetBinContent(ieta, iphi) / c;
 	    Double_t em = h->GetBinError(ieta, iphi);
 	  
@@ -245,49 +290,6 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 	  }
 	}
       }
-      //HHD
-      /*
-      TH2D*  bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
-      TH2D   hRing("hring","hring",bg->GetNbinsX(),
-		   bg->GetXaxis()->GetXmin(),
-		   bg->GetXaxis()->GetXmax(),
-		   bg->GetNbinsY(),
-		   bg->GetYaxis()->GetXmin(),
-		   bg->GetYaxis()->GetXmax());
-      
-      Int_t edgebin[4] = {0,0,0,0};
-      for(Int_t ii = 1; ii <=bg->GetNbinsX(); ii++) {
-	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
-	  Float_t bgcor = bg->GetBinContent(ii,jj);
-	  if(bgcor<0.1) continue;
-	  if(edgebin[0] == 0) edgebin[0] = ii;
-	  if(edgebin[0] == ii) continue;
-	  if(edgebin[0] > 0 && edgebin[1] == 0) edgebin[1] = ii;
-	  if(edgebin[0]>0 && edgebin[1]>0) break; 
-	}
-      }
-      for(Int_t ii = bg->GetNbinsX(); ii >= 1;  ii--) {
-	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
-	  Float_t bgcor = bg->GetBinContent(ii,jj);
-	  if(bgcor<0.1) continue;
-	  if(edgebin[2] == 0) edgebin[2] = ii;
-	  if(edgebin[2] == ii) continue;
-	  if(edgebin[2] > 0 && edgebin[3] == 0) edgebin[3] = ii;
-	  if(edgebin[2]>0 && edgebin[3]>0) break; 
-	}
-      }
-      for(Int_t ii = 1; ii <=bg->GetNbinsX(); ii++) {
-	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
-	  Float_t data = h->GetBinContent(ii,jj);
-	  if(data <0.000001) continue;
-	  if(edgebin[0] == ii || edgebin[1] == ii || edgebin[2] == ii || edgebin[3] == ii) continue;
-	  hRing.SetBinContent(ii,jj,data);
-	  hRing.SetBinError(ii,jj,h->GetBinError(ii,jj));
-	}
-      }
-      
-      //std::cout<<edgebin[0]<<"  "<<edgebin[1]<<"  "<<edgebin[2]<<"   "<<edgebin[3]<<std::endl;
-      */
       
       rh->fDensity->Add(h);
     }

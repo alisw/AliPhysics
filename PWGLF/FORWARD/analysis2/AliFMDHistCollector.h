@@ -77,7 +77,11 @@ public:
      *          c_2 & \mbox{otherwise}\end{array}\right.
      * @f]
      */
-    kLeastError
+    kLeastError,
+    /** 
+     * Just sum the signals 
+     */
+    kSum
   };
   /**
    * How to obtain the fiducial cuts 

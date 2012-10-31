@@ -48,7 +48,7 @@ AliFMDHistCollector::AliFMDHistCollector()
     fSkipFMDRings(0),
     fBgAndHitMaps(false)
 {
-  DGUARD(fDebug, 0, "Default CTOR of AliFMDHistCollector");
+  DGUARD(fDebug, 3, "Default CTOR of AliFMDHistCollector");
 }
 
 //____________________________________________________________________
@@ -67,7 +67,7 @@ AliFMDHistCollector::AliFMDHistCollector(const char* title)
     fSkipFMDRings(0),
     fBgAndHitMaps(false)
 {
-  DGUARD(fDebug, 0, "Named CTOR of AliFMDHistCollector: %s", title);
+  DGUARD(fDebug, 3, "Named CTOR of AliFMDHistCollector: %s", title);
 }
 //____________________________________________________________________
 AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
@@ -85,7 +85,7 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
     fSkipFMDRings(o.fSkipFMDRings),
     fBgAndHitMaps(o.fBgAndHitMaps)
 {
-  DGUARD(fDebug, 0, "Copy CTOR of AliFMDHistCollector");
+  DGUARD(fDebug, 3, "Copy CTOR of AliFMDHistCollector");
 }
 
 //____________________________________________________________________
@@ -555,6 +555,10 @@ AliFMDHistCollector::MergeBins(Double_t c,   Double_t e,
       re = oe;
     }
     break;
+  case kSum:
+    rc = c + oc;
+    re = TMath::Sqrt(oe * oe + e * e);//Add in quadarature 
+    break;
   default:
     AliError("No method for defining content of overlapping bins defined");
     return;
@@ -613,7 +617,8 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       GetFirstAndLast(d, r, vtxbin, first, last);
       
       // Zero outside valid range 
-      for (Int_t iPhi = 0; iPhi <= t->GetNbinsY()+1; iPhi++) { 
+      Int_t nY = t->GetNbinsY();
+      for (Int_t iPhi = 0; iPhi <= nY+1; iPhi++) { 
 	// Lower range 
 	for (Int_t iEta = 1; iEta < first; iEta++) { 
 	  t->SetBinContent(iEta,iPhi,0);
@@ -624,27 +629,43 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 	  t->SetBinError(iEta,iPhi,0);
 	}
       }
-      for (Int_t iEta = first; iEta <= last; iEta++)
+      for (Int_t iEta = first; iEta <= last; iEta++) {
+	// Double_t phiAcc = t->GetBinContent(iEta, nY+1);
+	// if (phiAcc > 1e-12 && phiAcc < 1)
+	//   Info("", "FMD%d%c %3d phi acceptance: %f",d,r,iEta,phiAcc);
 	t->SetBinContent(iEta,0,1);
+      }
       // Add to our per-ring sum 
       o->Add(t);
       
       // Outer rings have better phi segmentation - rebin to same as inner. 
       if (q == 1) t->RebinY(2);
 
+      nY = t->GetNbinsY();
       // Now update profile output 
       for (Int_t iEta = first; iEta <= last; iEta++) { 
 
 	// Get the possibly overlapping histogram 
 	Int_t overlap = GetOverlap(d,r,iEta,vtxbin);
 
-	// Fill eta acceptance for this event into the phi underlow bin
+	// Get factor 
+	Float_t fac      = (fMergeMethod != kSum && overlap >= 0 ? .5 : 1); 
+
+	// Fill eta acceptance for this event into the phi underflow bin
 	Float_t ooc      = out.GetBinContent(iEta,0);
-	Float_t noc      = overlap >= 0? 0.5 : 1;
-	out.SetBinContent(iEta, 0, ooc + noc);
+	out.SetBinContent(iEta, 0, ooc + fac);
+
+	// Fill phi acceptance for this event into the phi overflow bin
+	Float_t oop      = out.GetBinContent(iEta,nY+1);
+	Float_t nop      = t->GetBinContent(iEta,nY+1);
+#if 0
+	Info("", "etaBin=%3d Setting phi acceptance to %f(%f+%f)=%f", 
+	     iEta, fac, oop, nop, fac*(oop+nop));
+#endif
+	out.SetBinContent(iEta, nY+1, fac * nop + oop);
 
 	// Should we loop over h or t Y bins - I think it's t
-	for (Int_t iPhi = 1; iPhi <= t->GetNbinsY(); iPhi++) { 
+	for (Int_t iPhi = 1; iPhi <= nY; iPhi++) { 
 	  Double_t c  = t->GetBinContent(iEta,iPhi);
 	  Double_t e  = t->GetBinError(iEta,iPhi);
 	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
@@ -700,13 +721,16 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " # of cut bins:          " << fNCutBins << '\n'
-	    << ind << " Correction cut:         " << fCorrectionCut << '\n'
+	    << ind << " Fiducal method:         " 
+	    << (fFiducialMethod == kByCut ? "cut" : "distance") << "\n"
+	    << ind << " Fiducial cut:           " << fCorrectionCut << "\n"
 	    << ind << " Merge method:           ";
   switch (fMergeMethod) {
   case kStraightMean:       std::cout << "straight mean\n"; break;
   case kStraightMeanNoZero: std::cout << "straight mean (no zeros)\n"; break;
   case kWeightedMean:       std::cout << "weighted mean\n"; break;
   case kLeastError:         std::cout << "least error\n"; break;
+  case kSum:                std::cout << "straight sum\n"; break;
   }
     
   std::cout << ind << " Bin ranges:\n" << ind << "  rings  ";

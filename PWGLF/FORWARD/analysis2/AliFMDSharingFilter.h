@@ -220,6 +220,10 @@ public:
    * @param c Cuts object
    */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
+
+  void AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t);
+  void AddDeadRegion(UShort_t d, Char_t r, UShort_t s1, UShort_t s2, 
+		     UShort_t t1, UShort_t t2);
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -368,7 +372,8 @@ protected:
    * @param nextStatus Next status
    * 
    * @return The filtered signal in the strip
-   */  Double_t MultiplicityOfStrip(Double_t thisE,
+   */
+  Double_t MultiplicityOfStrip(Double_t thisE,
 			       Double_t prevE,
 			       Double_t nextE,
 			       Double_t eta,
@@ -426,6 +431,7 @@ protected:
    */
   virtual Double_t GetLowCut(UShort_t d, Char_t r, Double_t eta) const;
 
+  virtual Bool_t IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const;
   TList    fRingHistos;    // List of histogram containers
   // Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
@@ -440,7 +446,8 @@ protected:
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
-  ClassDef(AliFMDSharingFilter,4); //
+  TArrayI  fExtraDead;      // List of extra dead channels
+  ClassDef(AliFMDSharingFilter,5); //
 };
 
 #endif

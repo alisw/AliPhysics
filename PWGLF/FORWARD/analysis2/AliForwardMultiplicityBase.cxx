@@ -40,7 +40,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fFirstEvent(true),
     fCorrManager(0)
 {
-  DGUARD(0,0,"Named Construction of AliForwardMultiplicityBase %s",name);
+  DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
   // Set our persistent pointer 
   fCorrManager = &AliForwardCorrectionManager::Instance();
   fBranchNames = 
@@ -252,6 +252,94 @@ AliForwardMultiplicityBase::MarkEventForStore() const
 }
 
 //____________________________________________________________________
+Bool_t
+AliForwardMultiplicityBase::MakeSimpledNdeta(const TList* input, 
+					     TList*       output,
+					     Double_t&    nTr, 
+					     Double_t&    nTrVtx, 
+					     Double_t&    nAcc)
+{
+  // Get our histograms from the container 
+  TH1I* hEventsTr    = 0;
+  TH1I* hEventsTrVtx = 0;
+  TH1I* hEventsAcc   = 0;
+  TH1I* hTriggers    = 0;
+  if (!GetEventInspector().FetchHistograms(input, 
+					   hEventsTr, 
+					   hEventsTrVtx, 
+					   hEventsAcc,
+					   hTriggers)) { 
+    AliError(Form("Didn't get histograms from event selector "
+		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p,hTriggers=%p)", 
+		  hEventsTr, hEventsTrVtx, hEventsAcc, hTriggers));
+    input->ls();
+    return false;
+  }
+  nTr             = hEventsTr->Integral();
+  nTrVtx          = hEventsTrVtx->Integral();
+  nAcc            = hEventsAcc->Integral();
+  Double_t vtxEff = nTrVtx / nTr;
+  TH2D*   hData   = static_cast<TH2D*>(input->FindObject("d2Ndetadphi"));
+  if (!hData) { 
+    AliError(Form("Couldn't get our summed histogram from output "
+		  "list %s (d2Ndetadphi=%p)", input->GetName(), hData));
+    input->ls();
+    return false;
+  }
+
+  Int_t nY      = hData->GetNbinsY();
+  TH1D* dNdeta  = hData->ProjectionX("dNdeta",  1,     nY, "e");
+  TH1D* dNdeta_ = hData->ProjectionX("dNdeta_", 1,     nY, "e");
+  TH1D* norm    = hData->ProjectionX("norm",    0,     0,  "");
+  TH1D* phi     = hData->ProjectionX("phi",     nY+1,  nY+1,  "");
+  dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta->SetMarkerColor(kRed+1);
+  dNdeta->SetMarkerStyle(20);
+  dNdeta->SetDirectory(0);
+
+  dNdeta_->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta_->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta_->SetMarkerColor(kMagenta+1);
+  dNdeta_->SetMarkerStyle(21);
+  dNdeta_->SetDirectory(0);
+
+  norm->SetTitle("Normalization to #eta coverage");
+  norm->SetYTitle("#eta coverage");
+  norm->SetMarkerColor(kBlue+1);
+  norm->SetMarkerStyle(21);
+  norm->SetFillColor(kBlue+1);
+  norm->SetFillStyle(3005);
+  norm->SetDirectory(0);
+
+  phi->SetTitle("Normalization to #phi acceptance");
+  phi->SetYTitle("#phi acceptance");
+  phi->SetMarkerColor(kGreen+1);
+  phi->SetMarkerStyle(20);
+  phi->SetFillColor(kGreen+1);
+  phi->SetFillStyle(3004);
+  // phi->Scale(1. / nAcc);
+  phi->SetDirectory(0);
+
+  // dNdeta->Divide(norm);
+  dNdeta->Divide(phi);
+  dNdeta->SetStats(0);
+  dNdeta->Scale(vtxEff,	"width");
+
+  dNdeta_->Divide(norm);
+  dNdeta_->SetStats(0);
+  dNdeta_->Scale(vtxEff, "width");
+
+  output->Add(dNdeta);
+  output->Add(dNdeta_);
+  output->Add(norm);
+  output->Add(phi);
+
+  return true;
+}
+
+					     
+//____________________________________________________________________
 void
 AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input, 
 					   const char*  inName,
@@ -295,46 +383,71 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
       ptr++;
       continue;
     }
-    TH2D* copy = static_cast<TH2D*>(h->Clone("sum"));
-    copy->SetDirectory(0);
-    thisList->Add(copy);
+    TH2D* sumPhi = static_cast<TH2D*>(h->Clone("sum_phi"));
+    sumPhi->SetDirectory(0);
+    thisList->Add(sumPhi);
+
+    TH2D* sumEta = static_cast<TH2D*>(h->Clone("sum_eta"));
+    sumEta->SetDirectory(0);
+    thisList->Add(sumEta);
     
-    TH1D* norm =static_cast<TH1D*>(h->ProjectionX("norm", 0, 0, ""));
-    for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
-      for (Int_t j = 1; j <= copy->GetNbinsY(); j++) { 
-	Double_t c = copy->GetBinContent(i, j);
-	Double_t e = copy->GetBinError(i, j);
-	Double_t a = norm->GetBinContent(i);
-	copy->SetBinContent(i, j, a <= 0 ? 0 : c / a);
-	copy->SetBinError(i, j, a <= 0 ? 0 : e / a);
+    Int_t nY   = sumEta->GetNbinsY();
+    TH1D* etaCov =static_cast<TH1D*>(h->ProjectionX("etaCov", 0,    0,    ""));
+    TH1D* phiAcc =static_cast<TH1D*>(h->ProjectionX("phiAcc", nY+1, nY+1, ""));
+
+    etaCov->SetTitle("Normalization to #eta coverage");
+    etaCov->SetYTitle("#eta coverage");
+    etaCov->SetMarkerColor(kBlue+1);
+    etaCov->SetFillColor(kBlue+1);
+    etaCov->SetFillStyle(3005);
+    etaCov->SetDirectory(0);
+    
+    phiAcc->SetTitle("Normalization to #phi acceptance");
+    phiAcc->SetYTitle("#phi acceptance");
+    phiAcc->SetMarkerColor(kGreen+1);
+    phiAcc->SetFillColor(kGreen+1);
+    phiAcc->SetFillStyle(3004);
+    // phiAcc->Scale(1. / nAcc);
+    phiAcc->SetDirectory(0);
+
+    // Double_t s = (etaCov->GetMaximum() > 0 ? 1. / etaCov->GetMaximum() : 1);
+    for (Int_t i = 1; i <= sumEta->GetNbinsX(); i++) { 
+      for (Int_t j = 1; j <= nY; j++) { 
+	Double_t c = sumEta->GetBinContent(i, j);
+	Double_t e = sumEta->GetBinError(i, j);
+	Double_t a = etaCov->GetBinContent(i);
+	Double_t p = phiAcc->GetBinContent(i);
+	// Double_t t = p; // * a
+	sumEta->SetBinContent(i, j, a <= 0 ? 0 : c / a);
+	sumEta->SetBinError(  i, j, a <= 0 ? 0 : e / a);
+	sumPhi->SetBinContent(i, j, p <= 0 ? 0 : c / p);
+	sumPhi->SetBinError(  i, j, p <= 0 ? 0 : e / p);
       }
     }
+    // etaCov->Scale(s);
+    // phiAcc->Scale(s);
 
-    TH1D* res  =static_cast<TH1D*>(copy->ProjectionX("dndeta",1,
-						     h->GetNbinsY(),"e"));
-    TH1D* proj =static_cast<TH1D*>(h->ProjectionX("proj",1,h->GetNbinsY(),"e"));
-    res->SetTitle(*ptr);
-    res->Scale(1., "width");
-    copy->Scale(1., "width");
-    
-    if(norm->GetMaximum() > 0) {
-      proj->Scale(1. / norm->GetMaximum(), "width");
-      norm->Scale(1. / norm->GetMaximum());
-    }
-    
-    res->SetMarkerStyle(style);
-    norm->SetDirectory(0);
-    res->SetDirectory(0);
-    proj->SetDirectory(0);
-    thisList->Add(norm);
-    thisList->Add(res);
-    thisList->Add(proj);
-    dndetaRings->Add(res);
+    TH1D* resPhi  =static_cast<TH1D*>(sumPhi->ProjectionX("dndeta_phi",
+							  1,nY,"e"));
+    resPhi->SetMarkerStyle(style);
+    resPhi->SetDirectory(0);
+    resPhi->Scale(1, "width");
+
+    TH1D* resEta  =static_cast<TH1D*>(sumEta->ProjectionX("dndeta_eta",
+							  1,nY,"e"));
+    resEta->SetMarkerStyle(style);
+    resEta->SetDirectory(0);
+    resEta->Scale(1, "width");
+
+    thisList->Add(resEta);
+    thisList->Add(etaCov);
+    thisList->Add(resPhi);
+    thisList->Add(phiAcc);
+    dndetaRings->Add(resPhi);
     ptr++;
   }
   out->Add(dndetaRings);
 }
-
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::Print(Option_t* option) const

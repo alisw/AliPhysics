@@ -319,31 +319,40 @@ void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
 }
   
 //_____________________________________________________________________
-Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx)
+Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 {
-  //Calculate eta from strip with vertex (redundant with AliESDFMD::Eta but support displaced vertices)
+  //Get max R of ring
+  const Double_t iMinR = 4.5213;
+  const Double_t iMaxR = 17.2;
+  const Double_t oMinR = 15.4;
+  const Double_t oMaxR = 28.0;
+  
+  Double_t   minR    = (ring == 'I' || ring == 'i') ? iMinR : oMinR;
+  Double_t   maxR    = (ring == 'I' || ring == 'i') ? iMaxR : oMaxR;
+  Double_t   nStrips = (ring == 'I' || ring == 'i') ? 512   : 256;
+  Double_t   rad     =  maxR - minR;
+  Double_t   segment = rad / nStrips;
+  Double_t   r       =  minR + segment*strip;
+
+  return r;
+}
+
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
+					 UShort_t sec, UShort_t strip, 
+					 Double_t zvtx)
+{
+  // Calculate eta from strip with vertex (redundant with
+  // AliESDFMD::Eta but support displaced vertices)
   
   //Get max R of ring
-  Double_t maxR = 0;
-  Double_t minR = 0;
-  Bool_t inner = false;
-  switch (ring) { 
-  case 'i': case 'I': maxR = 17.2; minR =  4.5213; inner = true;  break;
-  case 'o': case 'O': maxR = 28.0; minR = 15.4;    inner = false; break;
-  default: 
-    return -99999;
-  }
-
-  Double_t   rad       =  maxR- minR;
-  Double_t   nStrips   = (ring == 'I' ? 512 : 256);
-  Double_t   segment   = rad / nStrips;
-  Double_t   r         =  minR + segment*strip;
-  Int_t hybrid = sec / 2;
-  
-  Double_t z = 0;
+  Double_t   r         = GetStripR(ring, strip);
+  Int_t      hybrid    = sec / 2;
+  Bool_t     inner     = (ring == 'I' || ring == 'i');
+  Double_t   z         = 0;
   switch (det) { 
-  case 1: z = 320.266; break;
-  case 2: z = (inner ? 83.666 : 74.966); break;
+  case 1: z = 320.266;                     break;
+  case 2: z = (inner ?  83.666 :  74.966); break;
   case 3: z = (inner ? -63.066 : -74.966); break; 
   default: return -999999;
   }
@@ -355,6 +364,27 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec
   return eta;
 }
 
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip, 
+					 Double_t phi,
+					 Double_t xvtx, Double_t yvtx)
+{
+  // Calculate eta from strip with vertex (redundant with
+  // AliESDFMD::Eta but support displaced vertices)
+
+  // Unknown x,y -> no change
+  if (yvtx > 999 || xvtx > 999) return phi;
+  
+  //Get max R of ring
+  Double_t r   = GetStripR(ring, strip);
+  Double_t amp = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx) / r;
+  Double_t pha = (TMath::Abs(yvtx) < 1e-12  ? 0 : TMath::ATan2(xvtx, yvtx));
+  Double_t cha = amp * TMath::Cos(phi+pha);
+  phi += cha;
+  if (phi < 0)              phi += TMath::TwoPi();
+  if (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
+  return phi;
+}
 
 //====================================================================
 Int_t    AliForwardUtil::fgConvolutionSteps  = 100;

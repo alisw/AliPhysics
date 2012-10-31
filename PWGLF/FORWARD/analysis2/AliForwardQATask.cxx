@@ -352,11 +352,11 @@ AliForwardQATask::UserExec(Option_t*)
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
-  Double_t vz        = 0;
+  TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
-					       ivz, vz, cent, nClusters);
+					       ivz, ip, cent, nClusters);
   
   Bool_t ok = true;
   if (found & AliFMDEventInspector::kNoEvent)    ok = false;
@@ -371,7 +371,8 @@ AliForwardQATask::UserExec(Option_t*)
 	 AliFMDEventInspector::CodeString(found));
     return;
   }
-  DMSG(fDebug,2,"Event triggers: %s", AliAODForwardMult::GetTriggerString(triggers));
+  DMSG(fDebug,2,"Event triggers: %s", 
+       AliAODForwardMult::GetTriggerString(triggers));
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
@@ -387,7 +388,7 @@ AliForwardQATask::UserExec(Option_t*)
   }
   
   //  // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
+  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
     return;
   }
@@ -426,12 +427,16 @@ AliForwardQATask::Terminate(Option_t*)
   // Get our histograms from the container 
   TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
   TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
+  TH1I* hEventsAcc   = 0;
   TH1I* hTriggers    = 0;
-  if (!fEventInspector.FetchHistograms(list, hEventsTr, 
-				       hEventsTrVtx, hTriggers)) { 
+  if (!fEventInspector.FetchHistograms(list, 
+				       hEventsTr, 
+				       hEventsTrVtx, 
+				       hEventsAcc,
+				       hTriggers)) { 
     AliError(Form("Didn't get histograms from event selector "
-		  "(hEventsTr=%p,hEventsTrVtx=%p)", 
-		  hEventsTr, hEventsTrVtx));
+		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p)", 
+		  hEventsTr, hEventsTrVtx,hEventsAcc));
     return;
   }
 

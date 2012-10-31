@@ -22,14 +22,14 @@ ClassImp(AliCentraldNdetaTask)
 AliCentraldNdetaTask::AliCentraldNdetaTask()
   : AliBasedNdetaTask() 
 { 
-  DGUARD(fDebug,0,"Default construction of AliCentraldNdetaTask");
+  DGUARD(fDebug,3,"Default CTOR of AliCentraldNdetaTask");
 }
 
 //____________________________________________________________________
 AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
   : AliBasedNdetaTask("Central") 
 { 
-  DGUARD(fDebug,0,"Named construction of AliCentraldNdetaTask");
+  DGUARD(fDebug,3,"Named CTOR of AliCentraldNdetaTask");
   fSymmetrice = false; 
   fCorrEmpty  = false;
   SetTitle("Central");

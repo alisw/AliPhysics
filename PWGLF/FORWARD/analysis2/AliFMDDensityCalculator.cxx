@@ -14,6 +14,7 @@
 #include <TProfile.h>
 #include <THStack.h>
 #include <TROOT.h>
+#include <TVector3.h>
 #include <iostream>
 #include <iomanip>
 
@@ -21,6 +22,9 @@ ClassImp(AliFMDDensityCalculator)
 #if 0
 ; // For Emacs
 #endif 
+
+//____________________________________________________________________
+const char* AliFMDDensityCalculator::fgkFolderName = "fmdDensityCalculator";
 
 //____________________________________________________________________
 AliFMDDensityCalculator::AliFMDDensityCalculator()
@@ -45,17 +49,18 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fPhiLumping(4),    
     fDebug(0),
     fCuts(),
-    fRecalculateEta(false)
+    fRecalculateEta(false),
+    fRecalculatePhi(false)
 {
   // 
   // Constructor 
   //
-  DGUARD(fDebug, 0, "Default CTOR of FMD density calculator");
+  DGUARD(fDebug, 3, "Default CTOR of FMD density calculator");
 }
 
 //____________________________________________________________________
 AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
-  : TNamed("fmdDensityCalculator", title), 
+  : TNamed(fgkFolderName, title), 
     fRingHistos(), 
     fSumOfWeights(0),
     fWeightedSum(0),
@@ -76,7 +81,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fPhiLumping(4),
     fDebug(0),
     fCuts(),
-    fRecalculateEta(false)
+    fRecalculateEta(false),
+    fRecalculatePhi(false)
 {
   // 
   // Constructor 
@@ -84,7 +90,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   // Parameters:
   //    name Name of object
   //
-  DGUARD(fDebug, 0, "Named CTOR of FMD density calculator: %s", title);
+  DGUARD(fDebug, 3, "Named CTOR of FMD density calculator: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -143,7 +149,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug),
     fCuts(o.fCuts),
-    fRecalculateEta(o.fRecalculateEta)
+    fRecalculateEta(o.fRecalculateEta),
+    fRecalculatePhi(o.fRecalculatePhi)
 {
   // 
   // Copy constructor 
@@ -151,7 +158,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug, 0, "Copy CTOR of FMD density calculator");
+  DGUARD(fDebug, 3, "Copy CTOR of FMD density calculator");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -201,6 +208,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fPhiLumping         = o.fPhiLumping;
   fCuts               = o.fCuts;
   fRecalculateEta     = o.fRecalculateEta;
+  fRecalculatePhi     = o.fRecalculatePhi;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -217,7 +225,7 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   // Intialize this sub-algorithm 
   //
   // Parameters:
-  //   etaAxis   Not used
+  //   etaAxis   Eta axis
   DGUARD(fDebug, 1, "Initialize FMD density calculator");
   CacheMaxWeights(axis);
  
@@ -294,10 +302,9 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
 Bool_t
 AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
-				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux,
 				   Double_t                /*cent*/, 
-				   Double_t                zvtx)
+				   const TVector3&         ip)
 {
   // 
   // Do the calculations 
@@ -311,7 +318,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   // Return:
   //    true on successs 
   DGUARD(fDebug, 1, "Calculate density in FMD density calculator");
-  
+
+  // --- Loop over detectors -----------------------------------------
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -327,57 +335,90 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       }
       // rh->fPoisson.SetObject(d,r,vtxbin,cent);
       rh->fPoisson.Reset(0);
+      rh->fTotal->Reset();
+      rh->fGood->Reset();
       // rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
+      // --- Loop over sectors and strips ----------------------------
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
 	  
-	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
-	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
-	  Float_t  eta  = fmd.Eta(d,r,s,t);
-	 
-	  
-	  if(fRecalculateEta)  
-	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
-	  
+	  Float_t  mult   = fmd.Multiplicity(d,r,s,t);
+	  Float_t  phi    = fmd.Phi(d,r,s,t) * TMath::DegToRad();
+	  Float_t  eta    = fmd.Eta(d,r,s,t);
+	  Double_t oldPhi = phi;
+
+	  // --- Re-calculate eta - needed for satelittes ------------
+	  if( fRecalculateEta)  
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,ip.Z());
+
+	  // --- Check this strip ------------------------------------
+	  rh->fTotal->Fill(eta);
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
-	    rh->fPoisson.Fill(t , s, false);
-	    rh->fEvsM->Fill(mult,0);
+	    // Do not count invalid stuff
+	    // rh->fPoisson.Fill(t , s, false);
+	    rh->fEvsN->Fill(mult,-1);
+	    rh->fEvsM->Fill(mult,-1);
 	    continue;
 	  }
+	  // --- Automatic calculation of acceptance -----------------
+	  rh->fGood->Fill(eta);
+
+	  // --- If we asked to re-calculate phi for (x,y) IP --------
+	  if (fRecalculatePhi) {
+	    oldPhi = phi;
+	    phi = AliForwardUtil::GetPhiFromStrip(r, t, phi, ip.X(), ip.Y());
+	  }
+
+	  // --- Apply phi corner correction to eloss ----------------
 	  if (fUsePhiAcceptance == kPhiCorrectELoss) 
 	    mult *= AcceptanceCorrection(r,t);
 
+	  // --- Get the low multiplicity cut ------------------------
 	  Double_t cut  = 1024;
 	  if (eta != AliESDFMD::kInvalidEta) cut = GetMultCut(d, r, eta,false);
 
+	  // --- Now caluculate Nch for this strip using fits --------
 	  Double_t n   = 0;
-	  if (cut > 0 && mult > cut) 
-	    n = NParticles(mult,d,r,s,t,vtxbin,eta,lowFlux);
-	  
+	  if (cut > 0 && mult > cut) n = NParticles(mult,d,r,eta,lowFlux);
 	  rh->fELoss->Fill(mult);
 	  rh->fEvsN->Fill(mult,n);
 	  rh->fEtaVsN->Fill(eta, n);
 	  
-	  Double_t c = Correction(d,r,s,t,vtxbin,eta,lowFlux);
+	  // --- Calculate correction if needed ----------------------
+	  Double_t c = Correction(d,r,t,eta,lowFlux);
 	  fCorrections->Fill(c);
 	  if (c > 0) n /= c;
 	  rh->fEvsM->Fill(mult,n);
 	  rh->fEtaVsM->Fill(eta, n);
 	  rh->fCorr->Fill(eta, c);
 
+	  // --- Accumulate Poisson statistics -----------------------
 	  Bool_t hit = (n > 0.9 && c > 0);
-	  if (hit) rh->fELossUsed->Fill(mult);
+	  if (hit) {
+	    rh->fELossUsed->Fill(mult);
+	    if (fRecalculatePhi) {
+	      rh->fPhiBefore->Fill(oldPhi);
+	      rh->fPhiAfter->Fill(phi);
+	    }
+	  }
 	  rh->fPoisson.Fill(t,s,hit,1./c);
 	  h->Fill(eta,phi,n);
+
+	  // --- If we use ELoss fits, apply now ---------------------
 	  if (!fUsePoisson) rh->fDensity->Fill(eta,phi,n);
 	} // for t
       } // for s 
-      
+
+      // --- Automatic acceptance - Calculate as an efficiency -------
+      rh->fGood->Divide(rh->fGood, rh->fTotal, 1, 1, "B");
+
+      // --- Make a copy and reset as needed -------------------------
       TH2D* hclone = static_cast<TH2D*>(h->Clone("hclone"));
       if (!fUsePoisson) hclone->Reset();
       if ( fUsePoisson) h->Reset();
       
+      // --- Store Poisson result ------------------------------------
       TH2D* poisson = rh->fPoisson.Result();
       for (Int_t t=0; t < poisson->GetNbinsX(); t++) { 
 	for (Int_t s=0; s < poisson->GetNbinsY(); s++) { 
@@ -386,7 +427,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Double_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Double_t  eta  = fmd.Eta(d,r,s,t);
 	  if(fRecalculateEta)  
-	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,ip.Z());
 	  if (fUsePoisson)
 	    h->Fill(eta,phi,poissonV);
 	  else
@@ -395,8 +436,23 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	}
       }
       
+      // --- Make diagnostics - eloss vs poisson ---------------------
+      Int_t nY = h->GetNbinsY();
       for (Int_t ieta=1; ieta <= h->GetNbinsX(); ieta++) { 
-	for (Int_t iphi=1; iphi<= h->GetNbinsY(); iphi++) { 
+	// Set the overflow bin to contain the phi acceptance 
+	Double_t phiAcc  = rh->fGood->GetBinContent(ieta);
+	Double_t phiAccE = rh->fGood->GetBinError(ieta);
+	h->SetBinContent(ieta, nY+1, phiAcc);
+	h->SetBinError(ieta, nY+1, phiAccE);
+	Double_t eta     = h->GetXaxis()->GetBinCenter(ieta);
+	rh->fPhiAcc->Fill(eta, ip.Z(), phiAcc);
+#if 0
+	if (phiAcc > 1e-12) {
+	  Info("", "FMD%d%c, eta=%3d phi acceptance: %f (%f)", 
+	       d, r, ieta, phiAcc, h->GetBinContent(ieta, nY+1));
+	}
+#endif
+	for (Int_t iphi=1; iphi<= nY; iphi++) { 
 	  
 	  Double_t poissonV =  0; //h->GetBinContent(,s+1);
 	  Double_t eLossV =  0;
@@ -410,6 +466,9 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  }
 	  
 	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
+	  rh->fDiffELossPoisson->Fill(poissonV < 1e-12 ? 0 : 
+				      (eLossV - poissonV) / poissonV);
+				      
 	}
       }
       delete hclone;
@@ -575,9 +634,6 @@ Float_t
 AliFMDDensityCalculator::NParticles(Float_t  mult, 
 				    UShort_t d, 
 				    Char_t   r, 
-				    UShort_t /*s*/, 
-				    UShort_t /*t*/, 
-				    UShort_t /*v*/, 
 				    Float_t  eta,
 				    Bool_t   lowFlux) const
 {
@@ -631,9 +687,7 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
 Float_t 
 AliFMDDensityCalculator::Correction(UShort_t d, 
 				    Char_t   r, 
-				    UShort_t /*s*/, 
 				    UShort_t t, 
-				    UShort_t /*v*/, 
 				    Float_t  eta,
 				    Bool_t   lowFlux) const
 {
@@ -832,33 +886,25 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 
   // TNamed* sigma  = new TNamed("sigma",
   // (fIncludeSigma ? "included" : "excluded"));
-#if 0
-  TNamed* maxP   = new TNamed("maxParticle", Form("%d", fMaxParticles));
-  TNamed* method = new TNamed("method", 
-			      (fUsePoisson ? "Poisson" : "Energy loss"));
-  TNamed* phiA   = new TNamed("phiAcceptance", 
-			      (fUsePhiAcceptance == 0 ? "disabled" : 
-			       fUsePhiAcceptance == 1 ? "particles" :
-			       "energy loss"));
-  TNamed* etaL   = new TNamed("etaLumping", Form("%d", fEtaLumping));
-  TNamed* phiL   = new TNamed("phiLumping", Form("%d", fPhiLumping));
-  // TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
-#else
   TObject* maxP   = AliForwardUtil::MakeParameter("maxParticle", fMaxParticles);
   TObject* method = AliForwardUtil::MakeParameter("method", fUsePoisson);
   TObject* phiA   = AliForwardUtil::MakeParameter("phiAcceptance", 
 						  fUsePhiAcceptance);
   TObject* etaL   = AliForwardUtil::MakeParameter("etaLumping", fEtaLumping);
   TObject* phiL   = AliForwardUtil::MakeParameter("phiLumping", fPhiLumping);
-#endif
+  TObject* reEt   = AliForwardUtil::MakeParameter("recalcEta", fRecalculateEta);
+  TObject* rePh   = AliForwardUtil::MakeParameter("recalcPhi", fRecalculatePhi);
+
   // d->Add(sigma);
   d->Add(maxP);
   d->Add(method);
   d->Add(phiA);
   d->Add(etaL);
   d->Add(phiL);
+  d->Add(reEt);
+  d->Add(rePh);
   // d->Add(nxi);
-  fCuts.Output(d,0);
+  fCuts.Output(d,"lCuts");
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -884,11 +930,18 @@ AliFMDDensityCalculator::Print(Option_t* option) const
 	    << std::boolalpha 
 	    << ind << " Max(particles):         " << fMaxParticles << '\n'
 	    << ind << " Poisson method:         " << fUsePoisson << '\n'
-	    << ind << " Use phi acceptance:     " << fUsePhiAcceptance << '\n'
 	    << ind << " Eta lumping:            " << fEtaLumping << '\n'
 	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
+	    << ind << " Recalculate eta:        " << fRecalculateEta << '\n'
+	    << ind << " Recalculate phi:        " << fRecalculatePhi << '\n'
+	    << ind << " Use phi acceptance:     "
 	    << std::noboolalpha
 	    << std::flush;
+  switch (fUsePhiAcceptance) { 
+  case kPhiNoCorrect:    std::cout << "none\n"; break;
+  case kPhiCorrectNch:   std::cout << "correct Nch\n"; break;
+  case kPhiCorrectELoss: std::cout << "correct energy loss\n"; break;
+  }
   std::cout << ind << " Lower cut:" << std::endl;
   fCuts.Print();
   TString opt(option);
@@ -925,6 +978,7 @@ AliFMDDensityCalculator::Print(Option_t* option) const
 //====================================================================
 AliFMDDensityCalculator::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(),
+    fList(0),
     fEvsN(0), 
     fEvsM(0), 
     fEtaVsN(0),
@@ -932,10 +986,16 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
+    fDiffELossPoisson(0),
     fPoisson(),
     fELoss(0),
     fELossUsed(0),
-    fMultCut(0)
+    fMultCut(0), 
+    fTotal(0),
+    fGood(0),
+    fPhiAcc(0), 
+    fPhiBefore(0),
+    fPhiAfter(0)
 {
   // 
   // Default CTOR
@@ -945,6 +1005,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r),
+    fList(0),
     fEvsN(0), 
     fEvsM(0),
     fEtaVsN(0),
@@ -952,10 +1013,16 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
+    fDiffELossPoisson(0),
     fPoisson("ignored"),
     fELoss(0),
     fELossUsed(0),
-    fMultCut(0)
+    fMultCut(0), 
+    fTotal(0),
+    fGood(0),
+    fPhiAcc(0), 
+    fPhiBefore(0),
+    fPhiAfter(0)
 {
   // 
   // Constructor
@@ -966,7 +1033,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   //
   fEvsN = new TH2D("elossVsNnocorr", 
 		   "#Delta E/#Delta E_{mip} vs uncorrected inclusive N_{ch}",
-		   250, -.5, 24.5, 250, -.5, 24.5);
+		   250, -.5, 24.5, 251, -1.5, 24.5);
   fEvsN->SetXTitle("#Delta E/#Delta E_{mip}");
   fEvsN->SetYTitle("Inclusive N_{ch} (uncorrected)");
   fEvsN->Sumw2();
@@ -1002,8 +1069,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
 		      0, 2*TMath::Pi());
   fDensity->SetDirectory(0);
-  fDensity->Sumw2();
-  fDensity->SetMarkerColor(Color());
+  fDensity->Sumw2();  fDensity->SetMarkerColor(Color());
   fDensity->SetXTitle("#eta");
   fDensity->SetYTitle("#phi [radians]");
   fDensity->SetZTitle("Inclusive N_{ch} density");
@@ -1016,6 +1082,16 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fELossVsPoisson->SetYTitle("N_{ch} from Poisson");
   fELossVsPoisson->SetZTitle("Correlation");
 
+  fDiffELossPoisson = new TH1D("diffElossPoisson",
+			       "(N_{ch,#DeltaE}-N_{ch,Poisson})/N_{ch,Poisson}",
+			       100, -1, 1);
+  fDiffELossPoisson->SetDirectory(0);
+  fDiffELossPoisson->SetXTitle(fDiffELossPoisson->GetTitle());
+  fDiffELossPoisson->SetYTitle("Frequency");
+  fDiffELossPoisson->SetMarkerColor(Color());
+  fDiffELossPoisson->SetFillColor(Color());
+  fDiffELossPoisson->Sumw2();
+			       
   fELoss = new TH1D("eloss", "#Delta/#Delta_{mip} in all strips", 
 		    600, 0, 15);
   fELoss->SetXTitle("#Delta/#Delta_{mip} (selected)");
@@ -1032,11 +1108,26 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fELossUsed->SetFillStyle(3002);
   fELossUsed->SetLineStyle(1);
   fELossUsed->SetDirectory(0);
+
+  fPhiBefore = new TH1D("phiBefore", "#phi distribution (before recalc)",
+			(r == 'I' || r == 'i' ? 20 : 40), 0, 2*TMath::Pi());
+  fPhiBefore->SetDirectory(0);
+  fPhiBefore->SetXTitle("#phi");
+  fPhiBefore->SetYTitle("Events");
+  fPhiBefore->SetMarkerColor(Color());
+  fPhiBefore->SetLineColor(Color());
+  fPhiBefore->SetFillColor(Color());
+  fPhiBefore->SetMarkerStyle(20);
+
+  fPhiAfter = static_cast<TH1D*>(fPhiBefore->Clone("phiAfter"));
+  fPhiAfter->SetTitle("#phi distribution (after re-calc)");
+  fPhiAfter->SetDirectory(0);
   
 }
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
-  : AliForwardUtil::RingHistos(o), 
+  : AliForwardUtil::RingHistos(o),
+    fList(o.fList), 
     fEvsN(o.fEvsN), 
     fEvsM(o.fEvsM),
     fEtaVsN(o.fEtaVsN),
@@ -1044,10 +1135,16 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fCorr(o.fCorr),
     fDensity(o.fDensity),
     fELossVsPoisson(o.fELossVsPoisson),
+    fDiffELossPoisson(o.fDiffELossPoisson),
     fPoisson(o.fPoisson),
     fELoss(o.fELoss),
     fELossUsed(o.fELossUsed),
-    fMultCut(o.fMultCut)
+    fMultCut(o.fMultCut), 
+    fTotal(o.fTotal),
+    fGood(o.fGood),
+    fPhiAcc(o.fPhiAcc), 
+    fPhiBefore(o.fPhiBefore),
+    fPhiAfter(o.fPhiAfter)
 {
   // 
   // Copy constructor 
@@ -1073,25 +1170,36 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
-  if (fEvsN)           delete fEvsN;
-  if (fEvsM)           delete fEvsM;
-  if (fEtaVsN)         delete fEtaVsN;
-  if (fEtaVsM)         delete fEtaVsM;
-  if (fCorr)           delete fCorr;
-  if (fDensity)        delete fDensity;
-  if (fELossVsPoisson) delete fELossVsPoisson;
-  
-  fEvsN           = static_cast<TH2D*>(o.fEvsN->Clone());
-  fEvsM           = static_cast<TH2D*>(o.fEvsM->Clone());
-  fEtaVsN         = static_cast<TProfile*>(o.fEtaVsN->Clone());
-  fEtaVsM         = static_cast<TProfile*>(o.fEtaVsM->Clone());
-  fCorr           = static_cast<TProfile*>(o.fCorr->Clone());
-  fDensity        = static_cast<TH2D*>(o.fDensity->Clone());
-  fELossVsPoisson = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
-  fPoisson        = o.fPoisson;
-  fELoss          = static_cast<TH1D*>(o.fELoss->Clone());
-  fELossUsed      = static_cast<TH1D*>(o.fELossUsed->Clone());
-  
+  if (fEvsN)             delete fEvsN;
+  if (fEvsM)             delete fEvsM;
+  if (fEtaVsN)           delete fEtaVsN;
+  if (fEtaVsM)           delete fEtaVsM;
+  if (fCorr)             delete fCorr;
+  if (fDensity)          delete fDensity;
+  if (fELossVsPoisson)   delete fELossVsPoisson;
+  if (fDiffELossPoisson) delete fDiffELossPoisson;
+  if (fTotal)            delete fTotal;
+  if (fGood)             delete fGood;
+  if (fPhiAcc)           delete fPhiAcc;
+  if (fPhiBefore)        delete fPhiBefore;
+  if (fPhiAfter)         delete fPhiAfter;
+
+  fEvsN             = static_cast<TH2D*>(o.fEvsN->Clone());
+  fEvsM             = static_cast<TH2D*>(o.fEvsM->Clone());
+  fEtaVsN           = static_cast<TProfile*>(o.fEtaVsN->Clone());
+  fEtaVsM           = static_cast<TProfile*>(o.fEtaVsM->Clone());
+  fCorr             = static_cast<TProfile*>(o.fCorr->Clone());
+  fDensity          = static_cast<TH2D*>(o.fDensity->Clone());
+  fELossVsPoisson   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
+  fDiffELossPoisson = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
+  fPoisson          = o.fPoisson;
+  fELoss            = static_cast<TH1D*>(o.fELoss->Clone());
+  fELossUsed        = static_cast<TH1D*>(o.fELossUsed->Clone());
+  fTotal            = static_cast<TH1D*>(o.fTotal->Clone());
+  fGood             = static_cast<TH1D*>(o.fGood->Clone());
+  fPhiAcc           = static_cast<TH2D*>(o.fPhiAcc->Clone());
+  fPhiBefore        = static_cast<TH1D*>(o.fPhiBefore->Clone());
+  fPhiAfter         = static_cast<TH1D*>(o.fPhiAfter->Clone());
   return *this;
 }
 //____________________________________________________________________
@@ -1105,9 +1213,29 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
+AliFMDDensityCalculator::RingHistos::Init(const TAxis& eAxis)
 {
+  // Initialize 
+  // This is called on first event 
   fPoisson.Init(-1,-1);
+  fTotal = new TH1D("total", "Total # of strips per #eta",
+		    eAxis.GetNbins(), eAxis.GetXmin(), eAxis.GetXmax());
+  fTotal->SetDirectory(0);
+  fTotal->SetXTitle("#eta");
+  fTotal->SetYTitle("# of strips");
+  fGood = static_cast<TH1D*>(fTotal->Clone("good"));
+  fGood->SetTitle("# of good strips per #eta");
+  fGood->SetDirectory(0);
+  
+  fPhiAcc = new TH2D("phiAcc", "#phi acceptance vs Ip_{z}", 
+		     eAxis.GetNbins(), eAxis.GetXmin(), eAxis.GetXmax(),
+		     10, -10, 10);
+  fPhiAcc->SetXTitle("#eta");
+  fPhiAcc->SetYTitle("v_{z} [cm]");
+  fPhiAcc->SetZTitle("#phi acceptance");
+  fPhiAcc->SetDirectory(0);
+
+  if (fList) fList->Add(fPhiAcc);
 }
 
 //____________________________________________________________________
@@ -1115,7 +1243,7 @@ void
 AliFMDDensityCalculator::RingHistos::Output(TList* dir)
 {
   // 
-  // Make output 
+  // Make output.  This is called as part of SlaveBegin
   // 
   // Parameters:
   //    dir Where to put it 
@@ -1128,12 +1256,15 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   d->Add(fCorr);
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
+  d->Add(fDiffELossPoisson);
   fPoisson.Output(d);
   fPoisson.GetOccupancy()->SetFillColor(Color());
   fPoisson.GetMean()->SetFillColor(Color());
   fPoisson.GetOccupancy()->SetFillColor(Color());
   d->Add(fELoss);
   d->Add(fELossUsed);
+  d->Add(fPhiBefore);
+  d->Add(fPhiAfter);
 
   Bool_t inner = (fRing == 'I' || fRing == 'i');
   Int_t nStr = inner ? 512 : 256;
@@ -1145,6 +1276,7 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   fPoisson.Define(x, y);
 
   d->Add(AliForwardUtil::MakeParameter("cut", fMultCut));
+  fList = d;
 }
 
 //____________________________________________________________________
