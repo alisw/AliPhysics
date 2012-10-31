@@ -11,6 +11,8 @@
 #include "TNamed.h"
 #include "AliUEHist.h"
 #include "TMath.h"
+#include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
+
 
 class AliVParticle;
 
@@ -28,11 +30,11 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackEfficiencyCut = kFALSE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = 0.02);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackEfficiencyCut = kFALSE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = 0.02, Bool_t applyEfficiency = kFALSE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
-  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality = 0);
+  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality = 0, Double_t zVtx = 0);
   void FillFakePt(TObjArray* fake, Double_t centrality);
  
   void CopyReconstructedData(AliUEHistograms* from);
@@ -50,7 +52,7 @@ class AliUEHistograms : public TNamed
   
   void SetRunNumber(Long64_t runNumber) { fRunNumber = runNumber; }
   
-  void SetEfficiencyCorrection(TH3F* hist) { fEfficiencyCorrection = hist; }
+  void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
   
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
@@ -123,7 +125,7 @@ protected:
   
   TH3F* fTwoTrackDistancePt[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
   
-  TH3F* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
+  THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Int_t fTriggerSelectCharge;    // select charge of trigger particle
@@ -137,7 +139,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 18)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 19)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

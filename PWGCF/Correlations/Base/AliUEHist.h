@@ -34,7 +34,7 @@ class AliUEHist : public TObject
   enum Region { kToward = 0, kAway, kMin, kMax };
   
   static const Int_t fgkCFSteps;
-  enum CFStep { kCFStepAll = 0, kCFStepTriggered, kCFStepVertex, kCFStepAnaTopology, kCFStepTrackedOnlyPrim, kCFStepTracked, kCFStepReconstructed, kCFStepRealLeading, kCFStepBiasStudy, kCFStepBiasStudy2 };
+  enum CFStep { kCFStepAll = 0, kCFStepTriggered, kCFStepVertex, kCFStepAnaTopology, kCFStepTrackedOnlyPrim, kCFStepTracked, kCFStepReconstructed, kCFStepRealLeading, kCFStepBiasStudy, kCFStepBiasStudy2, kCFStepCorrected };
   
   const char* GetRegionTitle(Region region);
   const char* GetStepTitle(CFStep step);
@@ -61,6 +61,7 @@ class AliUEHist : public TObject
   TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd);
 
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1, Int_t axis3 = -1);
+  THnBase* GetTrackEfficiencyND(CFStep step1, CFStep step2);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
   TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = -1, Int_t weighting = 0);
   
