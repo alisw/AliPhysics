@@ -76,7 +76,7 @@ DrawCorrAcc2(const char* fname, const char* option="colz")
   gStyle->SetTitleColor(0);
   gStyle->SetTitleStyle(0);
   gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleX(.1);
+  gStyle->SetTitleX(.5);
   gStyle->SetTitleY(1);
   gStyle->SetTitleW(.8);
   gStyle->SetTitleH(.09);
@@ -114,10 +114,14 @@ DrawCorrAcc2(const char* fname, const char* option="colz")
 	  Warning("DrawCorrAcc", "No correction for r=%c, v=%d", r, v);
 	  continue;
 	}
-	TH1* hh = h1->ProjectionX(Form("FMD%d%c", d, r));
-	hh->Scale(1. / h1->GetNbinsY());
+	Int_t nY = h1->GetNbinsY();
+	TH1* hh = h1->ProjectionX(Form("FMD%d%c", d, r), 1, nY);
+	hh->Scale(1. / nY);
 	hh->SetDirectory(0);
 	hh->SetMarkerColor(AliForwardUtil::RingColor(d, r));
+	hh->SetLineColor(AliForwardUtil::RingColor(d, r));
+	hh->SetFillColor(AliForwardUtil::RingColor(d, r));
+	hh->SetFillStyle(3004);
 
 	stack->Add(hh);
       }
