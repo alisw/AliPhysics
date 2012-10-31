@@ -20,12 +20,14 @@ using namespace std;
 void QAFillEventSelection();
 void QAFillOccupancy();
 void QAFillClusters();
+void QAFillRP();
 void QAFillTracks();
 void QAFillNPi0();
 
 void QAWriteEventSelection();
 void QAWriteOccupancy();
 void QAWriteClusters();
+void QAWriteRP();
 void QAWriteTracks();
 void QAWriteNPi0();
 
@@ -43,6 +45,7 @@ Double_t bgP2     (Double_t *x, Double_t *par);
 
 //-----------------------------------------------------------------------------
 // Global variabes
+const Int_t kNEventsBin = 4;
 const Int_t kNCents = 1;
 const Int_t kNPID = 8+4;
 const char* kPIDNames[kNPID] = {"All", "Allwou", "Disp", "Disp2", "Dispwou", "CPV", "CPV2", "Both",
@@ -66,8 +69,11 @@ Double_t mEnPID[kNCents][kNPID][500],   emEnPID[kNCents][kNPID][500];
 const float highPt = 1.;
 Double_t nPhotPIDHigh[kNCents][kNPID][500], enPhotPIDHigh[kNCents][kNPID][500];
 Double_t mEnPIDHigh[kNCents][kNPID][500],   emEnPIDHigh[kNCents][kNPID][500];
-
-
+// Reaction Plane
+const int nRPD = 3;// Reaction Plane Detector
+enum RPD { V0A=0, V0C=1, TPC=2};
+const char* rpdNames[nRPD] = {"V0A", "V0C", "TPC" };
+Double_t constRPChi2[nRPD][2][500][2];// [rpd][flat][run][chi val/err]
 // Tracks:
 Double_t nTracks0[500], eTracks0[500];
 Double_t nTracks1[500], eTracks1[500];
@@ -79,7 +85,8 @@ Double_t nPi0Event[500], ePi0Event[500];
 
 //-----------------------------------------------------------------------------
 void ExtractQA(const TString runFile="runFile.txt",
-	       const TString outputFileName = "outputQA.root"
+	       const TString outputFileName = "outputQA.root",
+	       const TString fullMerge = "AnalysisResults.root"
 	       )
 {
   // Loop over per-run root files and run various QA functions
@@ -97,10 +104,7 @@ void ExtractQA(const TString runFile="runFile.txt",
     Int_t runNumber=0;
     in >> runNumber >> rootFileName;
     if (!in.good()) break;
-    
-    if(169553 == runNumber ) //169094 
-      continue;
-    
+
     runNum[runIndex] = runNumber;
 
     printf("root file is %s, run # = %d\n",rootFileName,runNumber);
@@ -112,6 +116,7 @@ void ExtractQA(const TString runFile="runFile.txt",
     QAFillEventSelection();
     QAFillOccupancy();
     QAFillClusters();
+    QAFillRP();
     QAFillTracks();
     QAFillNPi0();
 
@@ -120,11 +125,12 @@ void ExtractQA(const TString runFile="runFile.txt",
     runIndex++;
   }
 
-  
+
   TFile *fileQA = TFile::Open(outputFileName.Data(), "recreate");
   QAWriteEventSelection();
   QAWriteOccupancy();
   QAWriteClusters();
+  QAWriteRP();
   QAWriteTracks();
   QAWriteNPi0();
   fileQA         ->Close();
@@ -135,27 +141,27 @@ void ExtractQA(const TString runFile="runFile.txt",
 void QAFillEventSelection()
 {
   TH1F *hSelEvents = (TH1F*)listHist->FindObject("hTotSelEvents");
-  
+
   Double_t nTotal      = hSelEvents->GetBinContent(1);
   Int_t nVtx           = hSelEvents->GetBinContent(2);
   Int_t nVtxZ10        = hSelEvents->GetBinContent(3);
   Int_t nVtxZ10Cent    = hSelEvents->GetBinContent(4);
-  
+
   if( ! nTotal )
     return;
-  
+
   nTotal4[runIndex] = hSelEvents->GetBinContent(4);
-  
+
   rVtx[runIndex]           = nVtx          /nTotal;
   rVtxZ10[runIndex]        = nVtxZ10       /nTotal;
   rVtxZ10Cent[runIndex]    = nVtxZ10Cent   /nTotal;
-  
-  
+
+
   //Change in logic (plus clarification through rewriting): t(1+p)/n/n -> p(1-p)/n:
-  eVtx[runIndex]           = TMath::Sqrt(       rVtx[runIndex] * (1 - rVtx[runIndex])        /nTotal); 
+  eVtx[runIndex]           = TMath::Sqrt(       rVtx[runIndex] * (1 - rVtx[runIndex])        /nTotal);
   eVtxZ10[runIndex]        = TMath::Sqrt(    rVtxZ10[runIndex] * (1 - rVtxZ10[runIndex])     /nTotal);
   eVtxZ10Cent[runIndex]    = TMath::Sqrt(rVtxZ10Cent[runIndex] * (1 - rVtxZ10Cent[runIndex]) /nTotal);
-  
+
 }
 
 //-----------------------------------------------------------------------------
@@ -164,9 +170,9 @@ void QAFillOccupancy()
   TH2D *hCellNXZM1 = (TH2D*)listHist->FindObject("hCellNXZM1");
   TH2D *hCellNXZM2 = (TH2D*)listHist->FindObject("hCellNXZM2");
   TH2D *hCellNXZM3 = (TH2D*)listHist->FindObject("hCellNXZM3");
-  
+
   // Count cells in each module
-  
+
   Int_t nCells1=0, nCells2=0, nCells3=0;
   for (Int_t cellX=1; cellX<=64; cellX++) {
     for (Int_t cellZ=1; cellZ<=56; cellZ++) {
@@ -192,7 +198,7 @@ void QAFillClusters()
 
   cluEnergy[runIndex]  = hClusterE->GetMean();
   ecluEnergy[runIndex] = hClusterE->GetMeanError();
-  
+
   nCluEvent[runIndex]  = hClusterE->Integral() / nEvents4;
   eCluEvent[runIndex]  = TMath::Sqrt( hClusterE->Integral() )/nEvents4;
 
@@ -220,6 +226,50 @@ void QAFillClusters()
 }
 
 //-----------------------------------------------------------------------------
+void QAFillRP()
+{
+  //TH1F *hev         = (TH1F*)listHist->FindObject("hTotSelEvents") ;
+  TH2F* phiRP       = (TH2F*)listHist->FindObject("phiRP");
+  TH2F* phiRPV0A    = (TH2F*)listHist->FindObject("phiRPV0A");
+  TH2F* phiRPV0C    = (TH2F*)listHist->FindObject("phiRPV0C");
+  TH2F* phiRPV0Aflat= (TH2F*)listHist->FindObject("phiRPV0Aflat");
+  TH2F* phiRPV0Cflat= (TH2F*)listHist->FindObject("phiRPV0Cflat");
+  TH2F* phiRPflat   = (TH2F*)listHist->FindObject("phiRPflat");
+
+  //int nEvents = hev->GetBinContent(kNEventsBin);
+
+  TH1* phiRP1[nRPD][2] = {0};
+  phiRP1[V0A][0] = phiRPV0A->ProjectionX();
+  phiRP1[V0C][0] = phiRPV0C->ProjectionX();
+  phiRP1[TPC][0] = phiRP->ProjectionX();
+  phiRP1[V0A][1] = phiRPV0Aflat->ProjectionX();
+  phiRP1[V0C][1] = phiRPV0Cflat->ProjectionX();
+  phiRP1[TPC][1] = phiRPflat->ProjectionX();
+
+
+  for(int rpd=0; rpd<nRPD; ++rpd) {
+    for(int flat=0; flat<2; ++flat) {
+      TH1* hist = phiRP1[rpd][flat];
+      const int nEntries = hist->GetEntries();
+      const int nBins = hist->GetNbinsX();
+      if ( nEntries < 1000 ) {
+	//Printf("skipping RP: %s, very low number of entries", hist->GetName());
+	continue;
+      }
+
+      TFitResultPtr result = hist->Fit("pol0", "NS");
+      if( result.Get() ) {
+	int ndf = result->Ndf();
+	constRPChi2[rpd][flat][runIndex][0] = result->Chi2()/ndf;
+	constRPChi2[rpd][flat][runIndex][1] = TMath::Sqrt(2*ndf)/ndf;
+      } else {
+	constRPChi2[rpd][flat][runIndex][0] = 0;
+	constRPChi2[rpd][flat][runIndex][1] = 0;
+      }
+    }
+  }
+}
+//-----------------------------------------------------------------------------
 void QAFillTracks()
 {
   TH2F *hCenTrack = (TH2F*)listHist->FindObject("hCenTrack");
@@ -227,14 +277,14 @@ void QAFillTracks()
 
   nTracks0[runIndex] = hTrackMult->GetMean();
   eTracks0[runIndex] = hTrackMult->GetMeanError();
-  
-//   hTrackMult->DrawCopy();
-//  hTrackMult->SetAxisRange(5., hTrackMult->GetXaxis()->GetXmax());
-//   new TCanvas;
-//   hTrackMult->DrawCopy();
 
-//   nTracks1[runIndex] = hTrackMult->GetMean();
-//   eTracks1[runIndex] = hTrackMult->GetMeanError();
+  //   hTrackMult->DrawCopy();
+  //  hTrackMult->SetAxisRange(5., hTrackMult->GetXaxis()->GetXmax());
+  //   new TCanvas;
+  //   hTrackMult->DrawCopy();
+
+  //   nTracks1[runIndex] = hTrackMult->GetMean();
+  //   eTracks1[runIndex] = hTrackMult->GetMeanError();
 }
 
 //-----------------------------------------------------------------------------
@@ -247,12 +297,12 @@ void QAFillNPi0()
     Printf(" -> skipping due to small number of selected events: %d", nEvents4);
     return;
   }
-  
-  
+
+
   TCanvas* canv = new TCanvas;
   canv->Divide(3,3);
   canv->cd(1);
-  
+
   TH2F *hReMassPt = (TH2F*)listHist->FindObject("hPi0All_cen0");
   TH2 *hMiMassPt = (TH2*)listHist->FindObject("hMiPi0All_cen0");
   TH1* hReMass = Pi0InvMass(hReMassPt,2.,10.);
@@ -261,21 +311,21 @@ void QAFillNPi0()
   hMiMass->Rebin(2);
   hReMass->SetAxisRange(0.,0.3);
   hMiMass->SetAxisRange(0.,0.3);
-  
+
   // Draw
   hReMassPt->DrawCopy("colz");
   canv->cd(2);
   //hReMass->SetAxisRange(0.1, 0.2);
   hReMass->DrawCopy("E");
   canv->cd(3);
-  
-  
+
+
   TH1* hReMiRatio = (TH1*)hReMass->Clone("hReMiRatio");
   TH1* hPi0SubBG  = (TH1*)hReMass->Clone("hPi0SubBG");
   hReMiRatio->Divide(hMiMass);
   hReMiRatio->DrawCopy("E");
   canv->cd(4);
-  
+
 
   TF1 * fitM = new TF1("fitM",pi0massP2,0.,1.,6) ;
   fitM->SetLineColor(kRed);
@@ -317,7 +367,7 @@ void QAFillNPi0()
     Printf("Warning: failure of 'improve result' of fit of fitM to hReMiRatio");
   fitBG->SetParameters(fitM->GetParameter(3),
 		       fitM->GetParameter(4),
-		       fitM->GetParameter(5)); 
+		       fitM->GetParameter(5));
   hReMiRatio->SetAxisRange(rangeMin, rangeMax);
   hReMiRatio->DrawCopy();
   canv->cd(5);
@@ -349,12 +399,12 @@ void QAFillNPi0()
   Int_t iMax = hPi0SubBG->FindBin(pi0Peak + 3*pi0Sigma);
 
   Double_t nPi0,ePi0;
-  
-  
+
+
   nPi0 = hPi0SubBG->IntegralAndError(iMin, iMax, ePi0);
   //ePi0 = TMath::Sqrt(nPi0);
-  // Fit1Pi0(hMass,2,0.05,0.20,nPi0,ePi0); 
-  
+  // Fit1Pi0(hMass,2,0.05,0.20,nPi0,ePi0);
+
   mPi0     [runIndex] = pi0Peak;
   emPi0    [runIndex] = epi0Peak;
   wPi0     [runIndex] = pi0Sigma;
@@ -422,7 +472,7 @@ void QAWriteOccupancy()
     grNCellsM1          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
     grNCellsM2          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
     grNCellsM3          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
-    
+
     grNCellsM1->GetYaxis()->SetTitle("N_{cells}");
     grNCellsM2->GetYaxis()->SetTitle("N_{cells}");
     grNCellsM3->GetYaxis()->SetTitle("N_{cells}");
@@ -483,6 +533,35 @@ void QAWriteClusters()
   }
 }
 
+void QAWriteRP()
+{
+  for(int rpd=0; rpd<nRPD; ++rpd) {
+    for(int flat=0; flat<2; ++flat) {
+      TString name;
+      TString title;
+      if( flat ) {
+	name = Form("grChi2RP%sflat", rpdNames[rpd]);
+	title = Form("#Chi^2 / ndf to fit of pol0 of flattened RP of %s", rpdNames[rpd]);
+      } else {
+	name = Form("grChi2RP%s", rpdNames[rpd]);
+	title = Form("#Chi^2 / ndf to fit of pol0 of raw RP of %s", rpdNames[rpd]);
+      }
+      TH1F* grHist = new TH1F(name, title, runIndex, 0, runIndex);
+      Printf(name.Data());
+      for (Int_t i=0; i<runIndex; i++) {
+	//Printf("  %d chi2/ndf: %f, \terror:%f", i, constRPChi2[rpd][flat][i][0],constRPChi2[rpd][flat][i][1]);
+	grHist          ->SetBinContent(i+1,  constRPChi2[rpd][flat][i][0]);
+	grHist          ->SetBinError(i+1, constRPChi2[rpd][flat][i][1]);
+	grHist          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
+      }
+      grHist->GetYaxis()->SetTitle("#Chi^2 / ndf");
+      grHist->LabelsOption("v");
+      grHist->SetMarkerStyle(33);
+      grHist->Write();
+    }
+  }
+}
+
 //-----------------------------------------------------------------------------
 void QAWriteTracks()
 {
@@ -496,15 +575,15 @@ void QAWriteTracks()
   grNTracks0 ->SetMarkerStyle(33);
   grNTracks0 ->Write();
 
-//   TH1F *grNTracks1 = new TH1F("grNTracks1","#LTN_{tracks}#GT, N #geq 5",runIndex,0,runIndex);
-//   for (Int_t i=0; i<runIndex; i++) {
-//     grNTracks1          ->SetBinContent(i+1,nTracks0[i]);
-//     grNTracks1          ->SetBinError(i+1,eTracks0[i]);
-//     grNTracks1          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
-//   }
-//   grNTracks1 ->LabelsOption("v");
-//   grNTracks1 ->SetMarkerStyle(33);
-//   grNTracks1 ->Write();
+  //   TH1F *grNTracks1 = new TH1F("grNTracks1","#LTN_{tracks}#GT, N #geq 5",runIndex,0,runIndex);
+  //   for (Int_t i=0; i<runIndex; i++) {
+  //     grNTracks1          ->SetBinContent(i+1,nTracks0[i]);
+  //     grNTracks1          ->SetBinError(i+1,eTracks0[i]);
+  //     grNTracks1          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
+  //   }
+  //   grNTracks1 ->LabelsOption("v");
+  //   grNTracks1 ->SetMarkerStyle(33);
+  //   grNTracks1 ->Write();
 }
 
 //-----------------------------------------------------------------------------
@@ -549,14 +628,14 @@ TH1D * Pi0InvMass(TH2 *hMassPt, Float_t ptmin, Float_t ptmax)
 {
   Int_t bmin = hMassPt->GetYaxis()->FindBin(ptmin);
   Int_t bmax = hMassPt->GetYaxis()->FindBin(ptmax);
-  
+
   TString name = hMassPt->GetName();
   name += "_M";
   TH1D* hMass = hMassPt->ProjectionX(name,bmin,bmax);
   char htitle[64];
   sprintf(htitle,"%.1f<p_{T}<%.1f GeV/c",ptmin,ptmax);
   hMass->SetTitle(htitle);
-  
+
   hMass->Sumw2();
 
   return hMass;
@@ -616,7 +695,7 @@ void Fit1Pi0(TH1D *hMass,
   fitfun->SetParName(4,"a_{1}");
   if (polN == 2)
     fitfun->SetParName(5,"a_{2}");
-  
+
   fitfun->SetParLimits(0,  1.000,1.e+5);
   fitfun->SetParLimits(1,  0.09,0.18);
   fitfun->SetParLimits(2,  0.003,0.020);
