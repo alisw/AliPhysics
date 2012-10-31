@@ -1,6 +1,5 @@
-void ExtractQAFill(const TString fillFileList="fillFileList.txt",
-	       const TString fillList="fillList.txt")
+void ExtractQAFill(const TString fillFile="fillFile.txt")
 {
   gROOT->LoadMacro("ExtractQA.C");
-  ExtractQA(fillFileList, fillList, "outputQAFill.root");
+  ExtractQA(fillFile, "outputQAFill.root");
 }
