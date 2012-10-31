@@ -18,6 +18,7 @@
 #include "AliPicoTrack.h"
 #include "AliVEventHandler.h"
 #include "AliEmcalParticle.h"
+#include "AliEMCALGeometry.h"
 
 #include "AliHadCorrTask.h"
 
@@ -32,6 +33,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fDoTrackClus(0),
   fHadCorr(0),
   fEexclCell(0),
+  fEsdMode(kTRUE),
   fOutClusters(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
@@ -39,7 +41,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fHistEafter(0),
   fHistEoPCent(0),
   fHistNMatchCent(0),
-  fHistCentrality(0)
+  fHistNClusMatchCent(0)
 {
   // Default constructor.
 
@@ -71,6 +73,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fDoTrackClus(1),
   fHadCorr(0),
   fEexclCell(0),
+  fEsdMode(kTRUE),
   fOutClusters(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
@@ -78,11 +81,11 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fHistEafter(0),
   fHistEoPCent(0),
   fHistNMatchCent(0),
-  fHistCentrality(0)
+  fHistNClusMatchCent(0)
 {
   // Standard constructor.
 
-   for(Int_t i=0; i<8; i++) {
+  for(Int_t i=0; i<8; i++) {
     if (i<4) {
       fHistMatchEvsP[i]   = 0;
       fHistMatchdRvsEP[i] = 0;
@@ -98,6 +101,8 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
       }
     }
   } 
+  
+  SetMakeGeneralHistograms(histo);
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
@@ -346,28 +351,10 @@ void AliHadCorrTask::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!handler) {
-    AliError(Form("%s: Input handler not available!", GetName()));
-    return;
-  }
- 
-  if (handler->InheritsFrom("AliESDInputHandler")) {
-    fOutClusters = new TClonesArray("AliESDCaloCluster");
-  } else if (handler->InheritsFrom("AliAODInputHandler")) {
-    fOutClusters = new TClonesArray("AliAODCaloCluster");
-  } else {
-    AliError(Form("%s: Input handler not recognized!", GetName()));
-    return;
-  }
-  fOutClusters->SetName(fOutCaloName);
-
   if (!fCreateHisto)
     return;
 
-  OpenFile(1);
-  fOutput = new TList();
-  fOutput->SetOwner();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   TString name;
 
@@ -380,12 +367,6 @@ void AliHadCorrTask::UserCreateOutputObjects()
       }
     }
 
-    for(Int_t itrk=0; itrk<4; ++itrk) {
-      name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
-      fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
-      fOutput->Add(fHistNCellsEnergy[icent][itrk]);
-    }    
-  
     name = Form("fHistEsubPch_%i",icent);
     fHistEsubPch[icent]=new TH1F(name, name, 400, 0., 100.);
     fOutput->Add(fHistEsubPch[icent]);
@@ -395,6 +376,12 @@ void AliHadCorrTask::UserCreateOutputObjects()
     fOutput->Add(fHistEsubPchRat[icent]);
     
     if (icent<4) {
+      for(Int_t itrk=0; itrk<4; ++itrk) {
+	name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
+	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
+	fOutput->Add(fHistNCellsEnergy[icent][itrk]);
+      }
+
       name = Form("fHistMatchEvsP_%i",icent);
       fHistMatchEvsP[icent] = new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
       fOutput->Add(fHistMatchEvsP[icent]);
@@ -409,13 +396,13 @@ void AliHadCorrTask::UserCreateOutputObjects()
     }
   }
 
-  fHistCentrality       = new TH1F("fHistCentrality",  "Centrality",       100, 0, 100);
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
   fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
   fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5, 10.5);
+  fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent", 100, 0, 100, 11, -0.5, 10.5);
 
   fOutput->Add(fHistNclusMatchvsCent);
   fOutput->Add(fHistNclusvsCent);
@@ -423,9 +410,94 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fOutput->Add(fHistEafter);
   fOutput->Add(fHistEoPCent);
   fOutput->Add(fHistNMatchCent);
-  fOutput->Add(fHistCentrality);
+  fOutput->Add(fHistNClusMatchCent);
 
   PostData(1, fOutput);
+}
+
+//________________________________________________________________________
+void AliHadCorrTask::ExecOnce() 
+{
+  // Init the analysis.
+
+  if (dynamic_cast<AliAODEvent*>(InputEvent()))
+    fEsdMode = kFALSE;
+
+  if (fEsdMode) { // optimization in case autobranch loading is off
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    if (fCaloName == "CaloClusters")
+      am->LoadBranch("CaloClusters");
+    if (fTracksName == "Tracks")
+      am->LoadBranch("Tracks");
+    am->LoadBranch("Centrality.");      
+  }
+
+  if (fEsdMode) 
+    fOutClusters = new TClonesArray("AliESDCaloCluster");
+  else 
+    fOutClusters = new TClonesArray("AliAODCaloCluster");
+
+  fOutClusters->SetName(fOutCaloName);
+
+  // post output in event if not yet present
+  if (!(InputEvent()->FindListObject(fOutCaloName))) {
+    InputEvent()->AddObject(fOutClusters);
+  }
+  else {
+    AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
+    return;
+  }
+
+  AliAnalysisTaskEmcal::ExecOnce();
+}
+
+//________________________________________________________________________
+void AliHadCorrTask::DoTrackLoop() 
+{
+  const Int_t Ntracks = fTracks->GetEntries();
+  for (Int_t iTrk = 0; iTrk < Ntracks; ++iTrk) {
+    Int_t NmatchClus = 0;
+
+    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrk));
+    if (!emctrack)
+      continue;
+    if (!emctrack->IsEMCAL())
+      continue;
+
+    AliVTrack *track = emctrack->GetTrack();
+    if (!track)
+      continue;
+    if (!AcceptTrack(track))
+      continue;
+    
+    if (track->GetTrackEtaOnEMCal() < fGeom->GetArm1EtaMin() + fEtaMatch ||
+	track->GetTrackEtaOnEMCal() > fGeom->GetArm1EtaMax() - fEtaMatch || 
+	track->GetTrackPhiOnEMCal() < fGeom->GetArm1PhiMin() * TMath::DegToRad() + fPhiMatch || 
+	track->GetTrackPhiOnEMCal() > fGeom->GetArm1PhiMax() * TMath::DegToRad() - fPhiMatch)
+      continue;
+    
+    Int_t Nclus = emctrack->GetNumberOfMatchedObj();
+
+    for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
+      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
+      if (!emccluster)
+	continue;
+
+      AliVCluster *cluster = emccluster->GetCluster();
+      if (!cluster)
+	continue;
+      if (!AcceptCluster(cluster))
+	continue;
+
+      Double_t etadiff = 999;
+      Double_t phidiff = 999;
+      AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
+
+      if (TMath::Abs(phidiff) < fPhiMatch && TMath::Abs(etadiff) < fEtaMatch) 
+	NmatchClus++;
+    }
+    fHistNClusMatchCent->Fill(fCent, NmatchClus);
+  }
 }
 
 //________________________________________________________________________
@@ -507,32 +579,12 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
 Bool_t AliHadCorrTask::Run() 
 {
   // Run the hadronic correction
-
-  // post output in event if not yet present
-  fOutClusters->Delete();
-  if (!(InputEvent()->FindListObject(fOutCaloName)))
-    InputEvent()->AddObject(fOutClusters);
   
+  if (fCreateHisto)
+    DoTrackLoop();
+
   // delete output
   fOutClusters->Delete();
-
-  // esd or aod mode
-  Bool_t esdMode = kTRUE;
-  if (dynamic_cast<AliAODEvent*>(InputEvent()))
-      esdMode = kFALSE;
-
-  if (esdMode) { // optimization in case autobranch loading is off
-    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-    if (fCaloName == "CaloClusters")
-      am->LoadBranch("CaloClusters");
-    if (fTracksName == "Tracks")
-      am->LoadBranch("Tracks");
-    am->LoadBranch("Centrality.");      
-  }
-
-  if (fCreateHisto) {
-    fHistCentrality->Fill(fCent);
-  }
 
    // loop over all clusters
   const Int_t Nclus = fCaloClusters->GetEntries();
@@ -566,7 +618,7 @@ Bool_t AliHadCorrTask::Run()
 
     if (energyclus > 0) { // create corrected cluster
       AliVCluster *oc;
-      if (esdMode) {
+      if (fEsdMode) {
         AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(cluster);
         if (!ec)
           continue;
@@ -685,44 +737,35 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   // do the loop over the matched tracks and get the number of matches and the total momentum
   DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches);
 
-  if(fCreateHisto && Nmatches == 0) {
-    fHistNclusvsCent->Fill(fCent);
-    fHistNCellsEnergy[fCentBin][0]->Fill(energyclus, cNcells);
-  }
-
-  if (totalTrkP <= 0)
-    return energyclus;
-
   Double_t Esub = hadCorr * totalTrkP;
-
-  Double_t clusEexcl = fEexclCell * cNcells;
-
-  if (energyclus < clusEexcl) 
-    clusEexcl = energyclus;
 	
   if (Esub > energyclus) 
     Esub = energyclus;
 	
   // applying Peter's proposed algorithm
   // never subtract the full energy of the cluster 
+  Double_t clusEexcl = fEexclCell * cNcells;
+  if (energyclus < clusEexcl) 
+    clusEexcl = energyclus;
   if ((energyclus - Esub) < clusEexcl) 
     Esub = (energyclus - clusEexcl);
 
-  Double_t EoP = energyclus / totalTrkP;
+  Double_t EoP = 0;
+  if (totalTrkP>0)
+    EoP = energyclus / totalTrkP;
 
   // plot some histograms if switched on
   if (fCreateHisto) {
+    fHistNclusvsCent->Fill(fCent);
     fHistNMatchCent->Fill(fCent, Nmatches);
     fHistNMatchEnergy[fCentBin]->Fill(energyclus, Nmatches);
     
     if(Nmatches > 0) 
       fHistNclusMatchvsCent->Fill(fCent);
-      
-    if(Nmatches == 1)
-      fHistNCellsEnergy[fCentBin][1]->Fill(energyclus, cNcells);	
-    else if(Nmatches == 2)
-      fHistNCellsEnergy[fCentBin][2]->Fill(energyclus, cNcells);
-    else if(Nmatches > 2)
+
+    if(Nmatches < 3)  
+      fHistNCellsEnergy[fCentBin][Nmatches]->Fill(energyclus, cNcells);
+    else
       fHistNCellsEnergy[fCentBin][3]->Fill(energyclus, cNcells);
 
     if (EoP > 0) {
@@ -730,7 +773,7 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       fHistMatchEvsP[fCentBin]->Fill(energyclus, EoP);
     }
 
-    if (Nmatches == 1) {
+    if (Nmatches == 1 && totalTrkP > 0) {
       Int_t iMin = emccluster->GetMatchedObjId();
       AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
       AliVTrack *track = emctrack->GetTrack();
