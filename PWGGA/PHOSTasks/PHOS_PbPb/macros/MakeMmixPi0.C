@@ -6,16 +6,7 @@
 
 const Int_t nPadX = 8, nPadY = 6;
 const Int_t nPtBins= 8*6;
-Double_t ptBinEdges[nPtBins+1] = {0};
-void MakePtBins() {
-  for(int idx = 0; idx <= nPtBins; ++idx) {
-    double value = 1. + 0.5 * idx;
-    if( 10. >= value )
-      ptBinEdges[idx] = value;
-    else
-      ptBinEdges[idx] = 10. + (value - 10.)*2;
-  }
-}
+Double_t ptBinEdges[nPtBins+1] = {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 35., 40., 45., 50., 55., 60., 65., 70., 80., 100.};
 
 const int kNCentralityBins = 3;
 
@@ -32,7 +23,6 @@ void MakeMmixPi0(const TString filename,
 		 const char* pid="CPV",
 		 const char* saveToDir="")
 {
-  MakePtBins();
   Printf("\nMakeMmixPi0(%s, %s, %i, %s, %s)", filename.Data(), listPath.Data(), centrality, pid, saveToDir);
 
   if( TString(saveToDir).Length() )
@@ -164,14 +154,21 @@ void MakeMmixPi0(const TString filename,
     hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
     hPi0ProjMix->SetXTitle("M_{#gamma#gamma}^{Mix} (GeV/c^{2})");
     
-    if(ptBin<=17){
+    if( hPi0Proj->GetEntries() < 1000. ) {
+      Printf("skipping this bin as n. entries is to low");
+      Printf("entries: %.0f, mixed: %.0f", hPi0Proj->GetEntries(), hPi0ProjMix->GetEntries());
+      continue;
+    }
+      
+
+    // if(ptBin<=17){
       hPi0Proj ->Rebin(4) ;
       hPi0ProjMix->Rebin(4) ;
-    }
-    else{
-      hPi0Proj ->Rebin(5) ;
-      hPi0ProjMix->Rebin(5) ;
-    }
+    // }
+    // else{
+    //   hPi0Proj ->Rebin(5) ;
+    //   hPi0ProjMix->Rebin(5) ;
+    // }
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0Proj ->GetBinContent(ib)==0)hPi0Proj ->SetBinError(ib,1.);}
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0ProjMix->GetBinContent(ib)==0)hPi0ProjMix->SetBinError(ib,1.);}
     TH1D * hPi0Proj2    = (TH1D*)hPi0Proj ->Clone(Form("rawPi0Signal2_ptBin%d",ptBin)) ;
@@ -514,19 +511,21 @@ PPRstyle()
 // For different tasks (e.g. triggers)
 void MakeMmixPi0()
 {
+  // Take care when uncommenting, seems to leak memory consumption.
+
   // // All Centrality
-  MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", -1, "CPV", "out/kCentral/");
+  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", -1, "CPV", "out/kCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_SemiCentral/PHOSPi0Flow_SemiCentralCoutput1", -1, "CPV", "out/kSemiCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", -1, "CPV", "out/kMB/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", -1, "CPV", "out/kPHOSPb/");
   
   // 0-10%
-  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", 0, "CPV", "out/kCentral/");
+  MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", 0, "CPV", "out/kCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", 0, "CPV", "out/kMB/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", 0, "CPV", "out/kPHOSPb/");
 
   // // 10-40%
-  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_SemiCentral/PHOSPi0Flow_SemiCentralCoutput1", 1, "CPV", "out/kSemCentral/");
+  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_SemiCentral/PHOSPi0Flow_SemiCentralCoutput1", 1, "CPV", "out/kSemiCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", 1, "CPV", "out/kMB/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", 1, "CPV", "out/kPHOSPb/");
 
