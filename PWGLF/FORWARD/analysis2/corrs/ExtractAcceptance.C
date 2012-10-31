@@ -47,7 +47,9 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
       // Check if this is a dead channel or not 
       Bool_t isDead = pars->IsDead(d, r, s, t);
 
-      // Special check for FMD2i
+      // Special check for FMD2i - upper part of sectors 16/17 have 
+      // have anomalous gains and/or noise - common sources are 
+      // power regulartors for bias currents and the like 
       Int_t VA = t/128;
       if(d==2 && r=='I' && VA>1 && (s==16 || s==17)) isDead =true;
 
@@ -74,11 +76,20 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
   // nOK/nAll Strips for a given eta bin. 
   hOK->Divide(hOK,hAll,1,1,"B");
 
+  // Invert overflow bin
+  for (Int_t etaBin = 1; etaBin <= hOK->GetNbinsX(); etaBin++) { 
+    Double_t ovr    = hOK->GetBinContent(etaBin, nPhi+1);
+    Double_t novr   = (ovr < 1e-12 ? 0 : 1./ovr);
+    hOK->SetBinContent(etaBin, nPhi+1, novr);
+    if (ovr > 0 && ovr != 1)
+      Info("", "Setting overflow bin (%3d,%3d) to 1/%f=%f", etaBin, nPhi+1, 
+	   ovr, hOK->GetBinContent(etaBin, nPhi+1));
+  }
   // Clean up
   delete hAll;
 
   Info("ExtractAcceptances","Made correction for FMD%d%c at vz=%f - "
-       "%d strips out of %d OK", d, r, vz, nOK, nAll);
+       "%d strips out of %d OK (w/overflow)", d, r, vz, nOK, nAll);
 
   // Return result 
   return hOK;
@@ -191,12 +202,12 @@ void ExtractAcceptance(Int_t   runNo=121526,
     << "      return;\n"
     << "    }\n"
     << "  }\n\n";
-
-  mgr.SetPrefix("");
-  TString fef(mgr.GetFileName(AliForwardCorrectionManager::kAcceptance, 
-			      sys, sNN, field, false));
-  TString fep(mgr.GetFilePath(AliForwardCorrectionManager::kAcceptance, 
-			      sys, sNN, field, false));
+  
+  cm.SetPrefix("");
+  TString fef(cm.GetFileName(AliForwardCorrectionManager::kAcceptance, 
+			      system, energy, field, false));
+  TString fep(cm.GetFilePath(AliForwardCorrectionManager::kAcceptance, 
+			     system, energy, field, false));
   f << "  TString src  = \"" << fef << "\";\n"
     << "  TString dest = \"" << fep << "\";\n"
     << "  TString out; out.Form(\"%s%s\",url.GetUrl(),dest.Data());\n\n"

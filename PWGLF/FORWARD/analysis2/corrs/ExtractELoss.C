@@ -103,13 +103,11 @@ ExtractELoss(const char* fname="forward_eloss.root", Bool_t mc=false,
     << "      return;\n"
     << "    }\n"
     << "  }\n\n";
-  
-  AliForwardCorrectionManager& fcm = 
-    AliForwardCorrectionManager::Instance();
-  fcm.SetPrefix("");
-  TString fef(fcm.GetFileName(AliForwardCorrectionManager::kELossFits, 
+
+  mgr.SetPrefix("");
+  TString fef(mgr.GetFileName(AliForwardCorrectionManager::kELossFits, 
 			      sys, sNN, field, mc));
-  TString fep(fcm.GetFilePath(AliForwardCorrectionManager::kELossFits, 
+  TString fep(mgr.GetFilePath(AliForwardCorrectionManager::kELossFits, 
 			      sys, sNN, field, mc));
   f << "  TString src  = \"" << fef << "\";\n"
     << "  TString dest = \"" << fep << "\";\n"
