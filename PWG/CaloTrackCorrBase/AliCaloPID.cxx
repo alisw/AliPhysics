@@ -252,8 +252,32 @@ void AliCaloPID::InitParameters()
   fM02MinParam[3] = 0.0069;   // pol2 param2 for NLM=1 , E < 16 GeV
   fM02MinParam[4] = 0.3;      // absolute minimum in any case
   
+  fAsyMinParam[0] = 0.08 ;    // pol2 param0 for NLM=2 , E < 11 GeV
+  fAsyMinParam[1] = 0.127;    // pol2 param1 for NLM=2 , E < 11 GeV
+  fAsyMinParam[2] =-0.0049;   // pol2 param2 for NLM=2 , E < 11 GeV
+  
+  
   fSplitEFracMin   = 0.85 ;
   fSplitWidthSigma = 2.5  ;
+  
+}
+
+
+//_____________________________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_t asy, const Int_t nlm)
+{
+  // Select the appropriate mass range for pi0 selection in splitting method
+  // No used yet in splitting ID decision
+  
+  Float_t abasy = TMath::Abs(asy);
+
+  // Get the parametrized min cut of asymmetry for NLM=2 up to 11 GeV
+  Float_t cut = fAsyMinParam[0]+energy*fAsyMinParam[1]+energy*energy*fAsyMinParam[2];  
+  
+  if(nlm != 2 || energy > 11 ) cut = 0.95;
+  
+  if(abasy < cut) return kTRUE;
+  else            return kFALSE;
   
 }
 
@@ -290,12 +314,11 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   
   if(mass < maxMass && mass > minMass) return kTRUE;
   else                                 return kFALSE;
-
   
 }
 
 //_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInSplitM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+Bool_t AliCaloPID::IsInMergedM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
 {
   // Select the appropriate m02 range in splitting method
   // Min value between 0.3 and 0.6
@@ -595,7 +618,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
   
   //If too small or big M02 low number of cells, skip it
-  if (!IsInSplitM02Range(eClus,m02,nMax))  return kNeutralUnknown ; 
+  if (!IsInMergedM02Range(eClus,m02,nMax))  return kNeutralUnknown ; 
   
   if(fDebug > 0) printf("\t pass M02 cut\n");
   
