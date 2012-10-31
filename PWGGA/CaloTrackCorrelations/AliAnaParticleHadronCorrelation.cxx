@@ -72,10 +72,12 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fNAssocPtBins(0),               fAssocPtBinLimit(),
     fCorrelVzBin(0),
     fListMixTrackEvents(),          fListMixCaloEvents(),  fUseMixStoredInReader(0),
-    fM02MaxCut(0),                  fM02MinCut(0),       
+    fM02MaxCut(0),                  fM02MinCut(0),  
+    fFillPileUpHistograms(0),
     //Histograms
     fhPtInput(0),                   fhPtFidCut(0),
-    fhPtLeading(0),                 fhPtLeadingVzBin(0),   fhPtLeadingBin(0),                 
+    fhPtLeading(0),                 fhPtLeadingPileUp(0),              
+    fhPtLeadingVzBin(0),            fhPtLeadingBin(0),                 
     fhPhiLeading(0),                fhEtaLeading(0),   
     fhPtLeadingMC(),
     fhPtLeadingCentrality(0),       fhPtLeadingEventPlane(0), 
@@ -93,7 +95,16 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhZTCharged(0),                 fhZTUeCharged(0),
     fhZTPosCharged(0),              fhZTNegCharged(0),
     fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
-    fhXEChargedMC(),  
+    fhXEChargedMC(),                fhDeltaPhiChargedMC(),  
+    fhDeltaPhiDeltaEtaChargedPtA3GeV(0),
+    fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
+    //Pile-Up
+    fhDeltaPhiChargedPileUp(0),     fhDeltaEtaChargedPileUp(0),
+    fhXEChargedPileUp(0),           fhXEUeChargedPileUp(0),      
+    fhZTChargedPileUp(0),           fhZTUeChargedPileUp(0), 
+    fhPtTrigChargedPileUp(0),
+    fhDeltaPhiChargedPtA3GeVPileUp(0), fhDeltaEtaChargedPtA3GeVPileUp(0),
+
     fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
     fhDeltaPhiUeLeftUpCharged(0),   fhDeltaPhiUeRightUpCharged(0),
     fhDeltaPhiUeLeftDownCharged(0), fhDeltaPhiUeRightDownCharged(0),
@@ -158,10 +169,11 @@ ClassImp(AliAnaParticleHadronCorrelation)
   //Initialize parameters
   InitParameters();
   
-  for(Int_t i = 0; i < 6; i++)
+  for(Int_t i = 0; i < 7; i++)
   { 
     fhPtLeadingMC[i] = 0;
     fhXEChargedMC[i] = 0;
+    fhDeltaPhiChargedMC[i] = 0;
   }
   
 }
@@ -216,7 +228,8 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   bin,
                                                                               const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
                                                                               const Float_t etaAssoc, const Float_t etaTrig,  
-                                                                              const Bool_t  decay,    const Float_t hmpidSignal, const Int_t nTracks)
+                                                                              const Bool_t  decay,    const Float_t hmpidSignal, const Int_t nTracks,
+                                                                              const Int_t   mcTag)
 {
   // Fill angular correlation related histograms
   
@@ -227,12 +240,37 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
   if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
   if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
   
-  fhEtaCharged     ->Fill(ptAssoc,etaAssoc);
-  fhPhiCharged     ->Fill(ptAssoc,phiAssoc);
-  fhDeltaEtaCharged->Fill(ptTrig ,deltaEta);
-  fhDeltaPhiCharged->Fill(ptTrig ,deltaPhi);
+  fhEtaCharged       ->Fill(ptAssoc,etaAssoc);
+  fhPhiCharged       ->Fill(ptAssoc,phiAssoc);
+  fhDeltaEtaCharged  ->Fill(ptTrig ,deltaEta);
+  fhDeltaPhiCharged  ->Fill(ptTrig ,deltaPhi);
+  fhDeltaPhiChargedPt->Fill(ptAssoc, deltaPhi);
+  fhDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
   
-  if(ptAssoc > 2 )           fhDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
+  if(ptAssoc > 3 )
+  {
+    fhDeltaEtaChargedPtA3GeV        ->Fill(ptTrig  ,deltaEta);
+    fhDeltaPhiChargedPtA3GeV        ->Fill(ptTrig  ,deltaPhi);
+    fhDeltaPhiDeltaEtaChargedPtA3GeV->Fill(deltaPhi, deltaEta);    
+  }   
+  
+  // Pile up studies
+  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  {
+    fhDeltaEtaChargedPileUp->Fill(ptTrig ,deltaEta);
+    fhDeltaPhiChargedPileUp->Fill(ptTrig ,deltaPhi);
+    if(ptAssoc > 3 )
+    {
+      fhDeltaEtaChargedPtA3GeVPileUp->Fill(ptTrig  ,deltaEta);
+      fhDeltaPhiChargedPtA3GeVPileUp->Fill(ptTrig  ,deltaPhi);
+    }
+  }
+  
+  if(IsDataMC())
+  {
+    Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
+    fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi);
+  }  
   
   if(fDecayTrigger && decay) fhDeltaPhiDecayCharged   ->Fill(ptTrig  , deltaPhi);      
   
@@ -384,7 +422,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(const
 void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
                                                                              const Float_t xE,       const Float_t hbpXE, 
                                                                              const Float_t zT,       const Float_t hbpZT, 
-                                                                             const Float_t pout,     const Float_t deltaPhi,
+                                                                             const Float_t pout,
                                                                              const Int_t   nTracks,  const Int_t   charge,
                                                                              const Int_t   bin,      const Bool_t  decay,
                                                                              const Int_t   mcTag)
@@ -392,7 +430,6 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
 {
   // Fill mostly momentum imbalance related histograms
   
-  fhDeltaPhiChargedPt ->Fill(ptAssoc, deltaPhi);
   fhXECharged         ->Fill(ptTrig , xE); 
   fhPtHbpXECharged    ->Fill(ptTrig , hbpXE);
   fhZTCharged         ->Fill(ptTrig , zT); 
@@ -400,15 +437,18 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
   fhPtTrigPout        ->Fill(ptTrig , pout) ;
   fhPtTrigCharged     ->Fill(ptTrig , ptAssoc) ;
   
+  // Pile up studies
+  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  {
+    fhXEChargedPileUp    ->Fill(ptTrig , xE); 
+    fhZTChargedPileUp    ->Fill(ptTrig , zT); 
+    fhPtTrigChargedPileUp->Fill(ptTrig , ptAssoc) ;
+  }
+  
   if(IsDataMC())
   {
-    if     ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
-             GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) fhXEChargedMC[0]->Fill(ptTrig , xE);
-    else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           fhXEChargedMC[1]->Fill(ptTrig , xE);
-    else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhXEChargedMC[2]->Fill(ptTrig , xE);
-    else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhXEChargedMC[3]->Fill(ptTrig , xE);
-    else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhXEChargedMC[4]->Fill(ptTrig , xE);
-    else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))      fhXEChargedMC[5]->Fill(ptTrig , xE);
+    Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
+    fhXEChargedMC      [mcIndex]->Fill(ptTrig , xE      ); 
   }  
   
   if(fDecayTrigger && decay)
@@ -473,6 +513,13 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   
   fhZTUeCharged->Fill(ptTrig,uezT);
   if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
+  
+  // Pile up studies
+  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  {
+    fhXEUeChargedPileUp->Fill(ptTrig,uexE);
+    fhZTUeChargedPileUp->Fill(ptTrig,uezT);
+  }    
   
   if(DoEventSelect())
   {
@@ -931,8 +978,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
-  TString nameMC[] = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Hadron"};
-
+  TString nameMC[] = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"};
   
   // For vz dependent histograms, if option ON
   Int_t   nz  = 1  ;
@@ -954,7 +1000,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 
   if(IsDataMC())
   {
-    for(Int_t i=0; i < 6; i++)
+    for(Int_t i=0; i < 7; i++)
     {
       fhPtLeadingMC[i]  = new TH1F(Form("hPtLeading_MC%s",nameMC[i].Data()),
                                    Form("p_{T} distribution of leading particles, trigger origin is %s",nameMC[i].Data()), 
@@ -1009,6 +1055,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
     fhDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
     
+    fhDeltaPhiDeltaEtaChargedPtA3GeV  = new TH2F
+    ("hDeltaPhiDeltaEtaChargedPtA3GeV","#eta_{trigger} - #eta_{h^{#pm}} vs #phi_{trigger} - #phi_{h^{#pm}, p_{TA}>3 GeV/c}",
+     ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins,deltaetamin,deltaetamax); 
+    fhDeltaPhiDeltaEtaChargedPtA3GeV->SetXTitle("#Delta #phi");
+    fhDeltaPhiDeltaEtaChargedPtA3GeV->SetYTitle("#Delta #eta");    
+        
     fhPhiCharged  = new TH2F
     ("hPhiCharged","#phi_{h^{#pm}}  vs p_{T #pm}",
      nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
@@ -1027,6 +1079,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhDeltaPhiCharged->SetYTitle("#Delta #phi");
     fhDeltaPhiCharged->SetXTitle("p_{T trigger} (GeV/c)");
     
+    fhDeltaPhiChargedPtA3GeV  = new TH2F
+    ("hDeltaPhiChargedPtA3GeV","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c",
+     nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+    fhDeltaPhiChargedPtA3GeV->SetYTitle("#Delta #phi");
+    fhDeltaPhiChargedPtA3GeV->SetXTitle("p_{T trigger} (GeV/c)");
+    
+
     fhDeltaPhiChargedPt  = new TH2F
     ("hDeltaPhiChargedPt","#phi_{trigger} - #phi_{#h^{#pm}} vs p_{T h^{#pm}}",
      nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
@@ -1050,6 +1109,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
      nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
     fhDeltaEtaCharged->SetYTitle("#Delta #eta");
     fhDeltaEtaCharged->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhDeltaEtaChargedPtA3GeV  = new TH2F
+    ("hDeltaEtaChargedPtA3GeV","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c",
+     nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
+    fhDeltaEtaChargedPtA3GeV->SetYTitle("#Delta #eta");
+    fhDeltaEtaChargedPtA3GeV->SetXTitle("p_{T trigger} (GeV/c)");    
     
     fhXECharged  = 
     new TH2F("hXECharged","x_{E} for charged tracks",
@@ -1130,16 +1195,19 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhPtTrigPout->SetXTitle("p_{T trigger} (GeV/c)"); 
     
     fhPtTrigCharged  = 
-    new TH2F("hPtTrigCharged","trgger and charged tracks pt distribution",
+    new TH2F("hPtTrigCharged","trigger and charged tracks pt distribution",
              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
     fhPtTrigCharged->SetYTitle("p_{T h^{#pm}} (GeV/c)");
     fhPtTrigCharged->SetXTitle("p_{T trigger} (GeV/c)");    
 	  
     outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
+    outputContainer->Add(fhDeltaPhiDeltaEtaChargedPtA3GeV);
     outputContainer->Add(fhPhiCharged) ;
     outputContainer->Add(fhEtaCharged) ;
     outputContainer->Add(fhDeltaPhiCharged) ; 
+    outputContainer->Add(fhDeltaPhiChargedPtA3GeV) ; 
     outputContainer->Add(fhDeltaEtaCharged) ;
+    outputContainer->Add(fhDeltaEtaChargedPtA3GeV) ;
     outputContainer->Add(fhDeltaPhiChargedPt) ;
     outputContainer->Add(fhDeltaPhiUeChargedPt) ;
     outputContainer->Add(fhUePart);
@@ -1148,8 +1216,16 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     if(IsDataMC())
     {
-      for(Int_t i=0; i < 6; i++)
+      for(Int_t i=0; i < 7; i++)
       {
+        
+        fhDeltaPhiChargedMC[i]  = new TH2F(Form("hDeltaPhiCharged_MC%s",nameMC[i].Data()),
+                                     Form("#Delta #phi for charged tracks, trigger origin is %s",nameMC[i].Data()),
+                                     nptbins,ptmin,ptmax,ndeltaphibins ,deltaphimin,deltaphimax); 
+        fhDeltaPhiChargedMC[i]->SetYTitle("x_{E}");
+        fhDeltaPhiChargedMC[i]->SetXTitle("p_{T trigger}");
+        outputContainer->Add(fhDeltaPhiChargedMC[i]) ;
+        
         fhXEChargedMC[i]  = new TH2F(Form("hXECharged_MC%s",nameMC[i].Data()),
                                      Form("x_{E} for charged tracks, trigger origin is %s",nameMC[i].Data()),
          nptbins,ptmin,ptmax,200,0.,2.); 
@@ -1174,6 +1250,78 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     outputContainer->Add(fhPtTrigPout) ;
     outputContainer->Add(fhPtTrigCharged) ;
+    
+    
+    if(fFillPileUpHistograms)
+    {
+      fhPtLeadingPileUp  = new TH1F("hPtLeadingPileUp","p_{T} distribution of leading particles, SPD Pile-Up event", nptbins,ptmin,ptmax); 
+      fhPtLeadingPileUp->SetXTitle("p_{T}^{trig} (GeV/c)");
+      outputContainer->Add(fhPtLeadingPileUp);
+      
+      fhDeltaPhiChargedPileUp  = new TH2F
+      ("hDeltaPhiChargedPileUp","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, SPD Pile-Up event",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPileUp->SetYTitle("#Delta #phi");
+      fhDeltaPhiChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiChargedPileUp) ;
+      
+      fhDeltaPhiChargedPtA3GeVPileUp  = new TH2F
+      ("hDeltaPhiChargedPtA3GeVPileUp","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, SPD Pile-Up event",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPtA3GeVPileUp->SetYTitle("#Delta #phi");
+      fhDeltaPhiChargedPtA3GeVPileUp->SetXTitle("p_{T trigger} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiChargedPtA3GeVPileUp) ;
+
+      fhDeltaEtaChargedPileUp  = new TH2F
+      ("hDeltaEtaChargedPileUp","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, SPD Pile-Up event",
+       nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
+      fhDeltaEtaChargedPileUp->SetYTitle("#Delta #eta");
+      fhDeltaEtaChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");
+      outputContainer->Add(fhDeltaEtaChargedPileUp) ;
+
+      fhDeltaEtaChargedPtA3GeVPileUp  = new TH2F
+      ("hDeltaEtaChargedPtA3GeVPileUp","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, SPD Pile-Up event",
+       nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
+      fhDeltaEtaChargedPtA3GeVPileUp->SetYTitle("#Delta #eta");
+      fhDeltaEtaChargedPtA3GeVPileUp->SetXTitle("p_{T trigger} (GeV/c)");    
+      outputContainer->Add(fhDeltaEtaChargedPtA3GeVPileUp) ;
+
+      fhXEChargedPileUp  = 
+      new TH2F("hXEChargedPileUp","x_{E} for charged tracks, SPD Pile-Up event",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEChargedPileUp->SetYTitle("x_{E}");
+      fhXEChargedPileUp->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEChargedPileUp) ;
+
+      fhXEUeChargedPileUp  = 
+      new TH2F("hXEUeChargedPileUp","x_{E} for Underlying Event, SPD Pile-Up event",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEUeChargedPileUp->SetYTitle("x_{E}");
+      fhXEUeChargedPileUp->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEUeChargedPileUp) ;
+      
+      fhZTChargedPileUp  = 
+      new TH2F("hZTChargedPileUp","z_{T} for charged tracks, SPD Pile-Up event",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhZTChargedPileUp->SetYTitle("z_{T}");
+      fhZTChargedPileUp->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhZTChargedPileUp) ;
+
+      fhZTUeChargedPileUp  = 
+      new TH2F("hZTUeChargedPileUp","z_{T} for Underlying Event, SPD Pile-Up event",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhZTUeChargedPileUp->SetYTitle("z_{T}");
+      fhZTUeChargedPileUp->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhZTUeChargedPileUp) ;
+
+      fhPtTrigChargedPileUp  = 
+      new TH2F("hPtTrigChargedPileUp","trigger and charged tracks pt distribution, SPD Pile-Up event",
+               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+      fhPtTrigChargedPileUp->SetYTitle("p_{T h^{#pm}} (GeV/c)");
+      fhPtTrigChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");    
+      outputContainer->Add(fhPtTrigChargedPileUp) ;
+
+    }
     
     if(DoEventSelect())
     { 
@@ -2129,6 +2277,22 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(const AliAODPWG4P
   
 } 
 
+//_____________________________________________________________
+Int_t AliAnaParticleHadronCorrelation::GetMCTagHistogramIndex(const Int_t mcTag)
+{
+  // Index of MC histograms depending on MC origin
+  
+  if     ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
+           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) return 0;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           return 1;    
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      return 2;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      return 3;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    return 4;
+  else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))      return 5;
+  else                                                                                    return 6;
+  
+}
+
 //____________________________________________________
 void AliAnaParticleHadronCorrelation::InitParameters()
 {
@@ -2392,6 +2556,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       fhPtLeading->Fill(pt);
       fhPtLeadingBin->Fill(pt,GetEventMixBin());
       if(fCorrelVzBin) fhPtLeadingVzBin->Fill(pt,GetEventVzBin());
+      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) 
+        fhPtLeadingPileUp->Fill(pt);
 
       Float_t phi = particle->Phi();
       if(phi<0)phi+=TMath::TwoPi();
@@ -2402,14 +2568,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       
       if(IsDataMC())
       {
-        Int_t mcTag = particle->GetTag();
-        if     ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
-                 GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) fhPtLeadingMC[0]->Fill(pt);
-        else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           fhPtLeadingMC[1]->Fill(pt);
-        else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtLeadingMC[2]->Fill(pt);
-        else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtLeadingMC[3]->Fill(pt);
-        else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtLeadingMC[4]->Fill(pt);
-        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))      fhPtLeadingMC[5]->Fill(pt);
+        Int_t mcIndex = GetMCTagHistogramIndex(particle->GetTag());
+        fhPtLeadingMC[mcIndex]->Fill(pt);
       }        
       
       Float_t cen = GetEventCentrality();
@@ -2440,7 +2600,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   Float_t etaTrig = aodParticle->Eta();
   Float_t ptTrig  = aodParticle->Pt();  
   Bool_t   decay  = aodParticle->IsTagged();
-
+  Int_t    mcTag  = aodParticle->GetTag();
+  
   Float_t pt       = -100. ;
   Float_t zT       = -100. ; 
   Float_t xE       = -100. ; 
@@ -2556,7 +2717,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       // Azimuthal Angle
       // calculate deltaPhi for later, shift when needed
       FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                              eta, etaTrig, decay, track->GetHMPIDsignal(),nTracks);
+                                              eta, etaTrig, decay, track->GetHMPIDsignal(),nTracks,mcTag);
       
       // Imbalance zT/xE/pOut
       zT = pt/ptTrig ;
@@ -2574,8 +2735,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       if      ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   ) 
       {
         
-        FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, deltaPhi, 
-                                               nTracks, track->Charge(), bin, decay,aodParticle->GetTag());
+        FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, 
+                                               nTracks, track->Charge(), bin, decay,mcTag);
         
       } 
       if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) ) 

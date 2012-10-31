@@ -61,7 +61,7 @@ fPtFractions(),                   fSumPtThresholds(),
 fhEIso(0),                        fhPtIso(0),                      fhPtNLocMaxIso(0),                       
 fhPhiIso(0),                      fhEtaIso(0),                     fhEtaPhiIso(0), 
 fhEtaPhiNoIso(0), 
-fhPtNoIso(0),                     fhPtNLocMaxNoIso(0),                     
+fhENoIso(0),                      fhPtNoIso(0),                    fhPtNLocMaxNoIso(0),                     
 fhPtDecayIso(0),                  fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
 fhConeSumPt(0),                   fhPtInCone(0),                   
@@ -114,6 +114,8 @@ fhELambda0LocMax1(),              fhELambda1LocMax1(),
 fhELambda0LocMax2(),              fhELambda1LocMax2(),
 fhELambda0LocMaxN(),              fhELambda1LocMaxN(),
 // PileUp
+fhEIsoPileUp(0),                  fhPtIsoPileUp(0),
+fhENoIsoPileUp(0),                fhPtNoIsoPileUp(0),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
@@ -1066,6 +1068,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   // Not Isolated histograms, reference histograms
   
+  fhENoIso  = new TH1F("hENoIso",
+                        Form("Number of not isolated leading particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
+                        nptbins,ptmin,ptmax); 
+  fhENoIso->SetYTitle("N");
+  fhENoIso->SetXTitle("p_{T}(GeV/c)");
+  outputContainer->Add(fhENoIso) ;
+  
   fhPtNoIso  = new TH1F("hPtNoIso",
                         Form("Number of not isolated leading particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
                         nptbins,ptmin,ptmax); 
@@ -1520,6 +1529,35 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
+    
+    fhEIsoPileUp   = new TH1F("hEPileUp",
+                        Form("Number of isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by SDD",r,ptthre,ptfrac),
+                        nptbins,ptmin,ptmax); 
+    fhEIsoPileUp->SetYTitle("dN / dE");
+    fhEIsoPileUp->SetXTitle("E (GeV/c)");
+    outputContainer->Add(fhEIsoPileUp) ; 
+    
+    fhPtIsoPileUp  = new TH1F("hPtPileUp",
+                        Form("Number of isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}, pile-up event by SDD = %2.2f",r,ptthre,ptfrac),
+                        nptbins,ptmin,ptmax); 
+    fhPtIsoPileUp->SetYTitle("dN / p_{T}");
+    fhPtIsoPileUp->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtIsoPileUp) ; 
+    
+    fhENoIsoPileUp   = new TH1F("hENoIsoPileUp",
+                              Form("Number of not isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by SDD",r,ptthre,ptfrac),
+                              nptbins,ptmin,ptmax); 
+    fhENoIsoPileUp->SetYTitle("dN / dE");
+    fhENoIsoPileUp->SetXTitle("E (GeV/c)");
+    outputContainer->Add(fhENoIsoPileUp) ; 
+    
+    fhPtNoIsoPileUp  = new TH1F("hPtNoIsoPileUp",
+                              Form("Number of not isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}, pile-up event by SDD = %2.2f",r,ptthre,ptfrac),
+                              nptbins,ptmin,ptmax); 
+    fhPtNoIsoPileUp->SetYTitle("dN / p_{T}");
+    fhPtNoIsoPileUp->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNoIsoPileUp) ;     
+    
     fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeENoCut->SetXTitle("E (GeV)");
     fhTimeENoCut->SetYTitle("time (ns)");
@@ -1917,6 +1955,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         fhEtaPhiDecayIso->Fill(eta,phi);
       }
       
+      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      {
+        fhEIsoPileUp ->Fill(energy);
+        fhPtIsoPileUp->Fill(pt);
+      }      
+      
       if(IsDataMC())
       {
         
@@ -1980,10 +2024,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d NOT ISOLATED, fill histograms\n", iaod);
       
-      fhPtNoIso    ->Fill(pt);
-      fhEtaPhiNoIso->Fill(eta,phi);
+      fhENoIso        ->Fill(energy);
+      fhPtNoIso       ->Fill(pt);
+      fhEtaPhiNoIso   ->Fill(eta,phi);
       fhPtNLocMaxNoIso->Fill(pt,nlm);
 
+      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      {
+        fhENoIsoPileUp ->Fill(energy);
+        fhPtNoIsoPileUp->Fill(pt);
+      }
+      
       if(decay) 
       {
         fhPtDecayNoIso    ->Fill(pt);
