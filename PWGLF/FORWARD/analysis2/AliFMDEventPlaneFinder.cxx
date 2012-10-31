@@ -59,7 +59,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder()
   // 
   // Constructor 
   //
-  DGUARD(fDebug,0,"Default CTOR of AliFMDEventPlaneFinder");
+  DGUARD(fDebug, 3,"Default CTOR of AliFMDEventPlaneFinder");
    
 }
 
@@ -99,7 +99,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const char* title)
   // Parameters:
   //    name Name of object
   //
-  DGUARD(fDebug,0,"Named CTOR of AliFMDEventPlaneFinder: %s", title);
+  DGUARD(fDebug, 3,"Named CTOR of AliFMDEventPlaneFinder: %s", title);
 }
 
 //____________________________________________________________________
@@ -139,7 +139,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug,0,"Copy CTOR of AliFMDEventPlaneFinder");
+  DGUARD(fDebug, 3,"Copy CTOR of AliFMDEventPlaneFinder");
 }
 
 //____________________________________________________________________
