@@ -47,7 +47,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
   // 
   // Constructor
   //
-  DGUARD(0,0,"Default construction of AliForwardMultiplicityTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliForwardMultiplicityTask");
 }
 
 //____________________________________________________________________
@@ -73,7 +73,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
-  DGUARD(0,0,"named construction of AliForwardMultiplicityTask: %s", name);
+  DGUARD(fDebug, 3,"named CTOR of AliForwardMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
 }
 
@@ -100,7 +100,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(0,0,"Copy construction of AliForwardMultiplicityTask");
+  DGUARD(fDebug, 3,"Copy CTOR of AliForwardMultiplicityTask");
   DefineOutput(1, TList::Class());
 }
 
@@ -265,11 +265,11 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
-  Double_t vz        = 0;
+  TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
-					       ivz, vz, cent, nClusters);
+					       ivz, ip, cent, nClusters);
   
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
@@ -288,7 +288,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   
   if (triggers & AliAODForwardMult::kPileUp) return;
   
-  fAODFMD.SetIpZ(vz);
+  fAODFMD.SetIpZ(ip.Z());
 
   if (found & AliFMDEventInspector::kBadVertex) return;
 
@@ -298,20 +298,21 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   //  // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
+  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
     return;
   }
   
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent,vz)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
   }
 
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
-    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, &(fAODFMD.GetHistogram()), &fHistos))
+    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, 
+					  &(fAODFMD.GetHistogram()), &fHistos))
       AliWarning("Eventplane finder failed!");
   }
   
@@ -364,45 +365,14 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
     if (GetOutputData(1)) GetOutputData(1)->Print();
     return;
   }
-  
-  // Get our histograms from the container 
-  TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
-  TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
-  TH1I* hTriggers    = 0;
-  if (!fEventInspector.FetchHistograms(list, hEventsTr, 
-				       hEventsTrVtx, hTriggers)) { 
-    AliError(Form("Didn't get histograms from event selector "
-		  "(hEventsTr=%p,hEventsTrVtx=%p)", 
-		  hEventsTr, hEventsTrVtx));
-    list->ls();
-    return;
-  }
 
-  TH2D* hData        = static_cast<TH2D*>(list->FindObject("d2Ndetadphi"));
-  if (!hData) { 
-    AliError(Form("Couldn't get our summed histogram from output "
-		  "list %s (d2Ndetadphi=%p)", list->GetName(), hData));
-    list->ls();
-    return;
-  }
-  
-  // TH1D* dNdeta = fHData->ProjectionX("dNdeta", 0, -1, "e");
-  TH1D* dNdeta = hData->ProjectionX("dNdeta", 1, -1, "e");
-  TH1D* norm   = hData->ProjectionX("norm",   0,  0,  "");
-  dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
-  dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
-  dNdeta->Divide(norm);
-  dNdeta->SetStats(0);
-  dNdeta->Scale(Double_t(hEventsTrVtx->GetEntries())/hEventsTr->GetEntries(),
-		"width");
-  list->Add(dNdeta);
-  list->Add(norm);
-
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, list, nTr, nTrVtx, nAcc);
   MakeRingdNdeta(list, "ringSums", list, "ringResults");
 
-  fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
-  fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
-  fCorrections.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
+  fSharingFilter.ScaleHistograms(list,Int_t(nTr));
+  fDensityCalculator.ScaleHistograms(list,Int_t(nTrVtx));
+  fCorrections.ScaleHistograms(list,Int_t(nTrVtx));
 }
 
 //

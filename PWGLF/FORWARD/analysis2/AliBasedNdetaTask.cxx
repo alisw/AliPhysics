@@ -43,7 +43,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
   // 
   // Constructor
   // 
-  DGUARD(0,0,"Default construction of AliBasedNdetaTask");
+  DGUARD(fDebug,3,"Default CTOR of AliBasedNdetaTask");
 }
 
 //____________________________________________________________________
@@ -75,7 +75,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
   // 
   // Constructor
   // 
-  DGUARD(0,0,"Named construction of AliBasedNdetaTask: %s", name);
+  DGUARD(fDebug, 3,"Named CTOR of AliBasedNdetaTask: %s", name);
   fListOfCentralities = new TObjArray(1);
   
   // Set the normalisation scheme 
@@ -115,7 +115,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fTriggerString(o.fTriggerString),
     fFinalMCCorrFile(o.fFinalMCCorrFile)
 {
-  DGUARD(0,0,"Copy construction of AliBasedNdetaTask");
+  DGUARD(fDebug, 3,"Copy CTOR of AliBasedNdetaTask");
 }
 
 //____________________________________________________________________
@@ -496,6 +496,25 @@ AliBasedNdetaTask::ScaleToCoverage(TH2D* copy, const TH1D* norm)
     }
   }
 }
+//________________________________________________________________________
+void
+AliBasedNdetaTask::ScaleToCoverage(TH1D* copy, const TH1D* norm) 
+{
+  // Normalize to the acceptance -
+  // dndeta->Divide(accNorm);
+  for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
+    Double_t a = norm->GetBinContent(i);
+    if (a <= 0) { 
+      copy->SetBinContent(i,0);
+      copy->SetBinError(i,0);
+      continue;
+    }
+    Double_t c = copy->GetBinContent(i);
+    Double_t e = copy->GetBinError(i);
+    copy->SetBinContent(i, c / a);
+    copy->SetBinError(i, e / a);
+  }
+}
 
 //________________________________________________________________________
 TH1D*
@@ -535,10 +554,10 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 
   Int_t first = firstbin; 
   Int_t last  = lastbin;
-  if (first < 0)                         first = 0;
-  else if (first >= yaxis->GetNbins()+1) first = yaxis->GetNbins();
+  if      (first < 0)                    first = 1;
+  else if (first >= yaxis->GetNbins()+2) first = yaxis->GetNbins()+1;
   if      (last  < 0)                    last  = yaxis->GetNbins();
-  else if (last  >  yaxis->GetNbins()+1) last  = yaxis->GetNbins();
+  else if (last  >= yaxis->GetNbins()+2) last  = yaxis->GetNbins()+1;
   if (last-first < 0) { 
     AliWarningGeneral("AliBasedNdetaTask", 
 		      Form("Nothing to project [%d,%d]", first, last));
@@ -1182,9 +1201,11 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   retCopy->SetMarkerStyle(marker);
   retCopy->SetDirectory(0);
 
-  TH1D* norm    = ProjectX(fSum,  "norm",    0, 0, rootProj, corrEmpty, false);
-  TH1D* norm0   = ProjectX(fSum0, "norm0",   0, 0, rootProj, corrEmpty, false);
-  TH1D* normAll = ProjectX(ret,   "normAll", 0, 0, rootProj, corrEmpty, false);
+  Int_t nY      = fSum->GetNbinsY();
+  Int_t o       = 0; // nY+1;
+  TH1D* norm    = ProjectX(fSum,  "norm",    o, o, rootProj, corrEmpty, false);
+  TH1D* norm0   = ProjectX(fSum0, "norm0",   o, o, rootProj, corrEmpty, false);
+  TH1D* normAll = ProjectX(ret,   "normAll", o, o, rootProj, corrEmpty, false);
   norm->SetDirectory(0);
   norm0->SetDirectory(0);
   normAll->SetDirectory(0);
@@ -1193,13 +1214,19 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   ScaleToCoverage(sum0Copy, norm0);
   ScaleToCoverage(retCopy, normAll);
 
-  Int_t nY = fSum->GetNbinsY();
   TH1D* sumCopyPx  = ProjectX(sumCopy,  "average",    1, nY,rootProj,corrEmpty);
   TH1D* sum0CopyPx = ProjectX(sum0Copy, "average0",   1, nY,rootProj,corrEmpty);
   TH1D* retCopyPx  = ProjectX(retCopy,  "averageAll", 1, nY,rootProj,corrEmpty);
   sumCopyPx->SetDirectory(0);
   sum0CopyPx->SetDirectory(0);
   retCopyPx->SetDirectory(0);
+
+  TH1D* phi    = ProjectX(fSum,  "phi",    nY+1, nY+1,rootProj,corrEmpty);
+  TH1D* phi0   = ProjectX(fSum0, "phi0",   nY+1, nY+1,rootProj,corrEmpty);
+  TH1D* phiAll = ProjectX(ret,   "phiAll", nY+1, nY+1,rootProj,corrEmpty);
+  phi->SetDirectory(0);
+  phi0->SetDirectory(0);
+  phiAll->SetDirectory(0);
 
   // Scale our 1D histograms
   sumCopyPx->Scale(1., "width");
@@ -1223,6 +1250,9 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   out->Add(norm);
   out->Add(norm0);
   out->Add(normAll);
+  out->Add(phi);
+  out->Add(phi0);
+  out->Add(phiAll);
 
   AliInfoF("Returning  (1/%f * %s + 1/%f * %s), "
 	   "1/%f * %d + 1/%f * %d = %d", 
@@ -1255,7 +1285,7 @@ AliBasedNdetaTask::CentralityBin::CentralityBin()
   // 
   // Constructor 
   //
-  DGUARD(0,0,"Centrality bin default construction");
+  DGUARD(fDebug,3,"Default CTOR of AliBasedNdeta::CentralityBin");
 }
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name, 
@@ -1279,7 +1309,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
   //    low  Lower centrality cut in percent 
   //    high Upper centrality cut in percent 
   //
-  DGUARD(0,0,"Named Centrality bin construction: %s [%3d,%3d]",name,low,high);
+  DGUARD(fDebug,3,"Named CTOR of AliBasedNdeta::CentralityBin: %s [%3d,%3d]",
+	 name,low,high);
   if (low <= 0 && high <= 0) { 
     fLow  = 0; 
     fHigh = 0;
@@ -1310,7 +1341,7 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
   // Parameters:
   //    other Object to copy from 
   //
-  DGUARD(0,0,"Copy Centrality bin construction");
+  DGUARD(fDebug,3,"Copy CTOR of AliBasedNdeta::CentralityBin");
 }
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin::~CentralityBin()
@@ -1318,9 +1349,10 @@ AliBasedNdetaTask::CentralityBin::~CentralityBin()
   // 
   // Destructor 
   //
-  DGUARD(fDebug,3,"Centrality bin desctruction");
-  if (fSums) fSums->Delete();
-  if (fOutput) fOutput->Delete();
+  DGUARD(fDebug,3,"DTOR of AliBasedNdeta::CentralityBin");
+
+  // if (fSums) fSums->Delete();
+  // if (fOutput) fOutput->Delete();
 }
 
 //____________________________________________________________________
@@ -1731,7 +1763,9 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   DGUARD(fDebug,1,"Make centrality bin result from %s", sum->GetName());
   TH2D* copy    = static_cast<TH2D*>(sum->Clone(Form("d2Ndetadphi%s%s", 
 						     GetName(), postfix)));
-  TH1D* accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), 0, 0, 
+  Int_t nY      = sum->GetNbinsY();
+  Int_t o       = (corrEmpty ? 0 : nY+1);
+  TH1D* accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), o, o, 
 			   rootProj, corrEmpty, false);
   accNorm->SetDirectory(0);
 
@@ -1740,16 +1774,21 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   else AliInfo("No shape correction specified, or disabled");
   
   // --- Normalize to the coverage -----------------------------------
-  ScaleToCoverage(copy, accNorm);
-
-  // --- Event-level normalization -----------------------------------
-  copy->Scale(scaler);
+  if (corrEmpty) {
+    ScaleToCoverage(copy, accNorm);
+    // --- Event-level normalization ---------------------------------
+    copy->Scale(scaler);
+  }
 
   // --- Project on X axis -------------------------------------------
   TH1D* dndeta = ProjectX(copy, Form("dndeta%s%s",GetName(), postfix), 
-			  1, sum->GetNbinsY(), rootProj, corrEmpty);
+			  1, nY, rootProj, corrEmpty);
   dndeta->SetDirectory(0);
   // Event-level normalization 
+  if (!corrEmpty) {
+    ScaleToCoverage(dndeta, accNorm);
+    dndeta->Scale(scaler);
+  }
   dndeta->Scale(1., "width");
   copy->Scale(1., "width");
   

@@ -31,7 +31,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
     fDebug(false)
 {
   // Default constructor 
-  DGUARD(0,0,"MC track density default construction");
+  DGUARD(fDebug, 3,"Default CTOR of AliBasMCTrackDensity");
 }
 
 //____________________________________________________________________
@@ -50,7 +50,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
     fDebug(false)
 {
   // Normal constructor constructor 
-  DGUARD(0,0,"MC track density named construction: %s", name);
+  DGUARD(fDebug, 3,"Named CTOR of AliBasMCTrackDensity: %s", name);
 }
 
 //____________________________________________________________________
@@ -69,7 +69,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
     fDebug(o.fDebug)
 {
   // Normal constructor constructor 
-  DGUARD(0,0,"MC track density copy construction");
+  DGUARD(fDebug, 3,"Copy CTOR of AliBasMCTrackDensity");
 }
 
 //____________________________________________________________________

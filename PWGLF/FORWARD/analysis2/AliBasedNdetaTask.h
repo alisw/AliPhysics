@@ -315,6 +315,13 @@ public:
    */
   static void ScaleToCoverage(TH2D* copy, const TH1D* norm);
   /** 
+   * Scale the copy of the 1D histogram by coverage in supplied 1D histogram
+   *  
+   * @param copy Data to scale 
+   * @param norm Coverage histogram 
+   */
+  static void ScaleToCoverage(TH1D* copy, const TH1D* norm);
+  /** 
    * Set histogram graphical options, etc. 
    * 
    * @param h       Histogram to modify

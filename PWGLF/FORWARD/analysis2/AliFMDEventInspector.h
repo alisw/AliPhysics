@@ -26,6 +26,7 @@ class TH1F;
 class TH2F;
 class TH2I;
 class TAxis;
+class TVector3;
 // class TList;
 
 /** 
@@ -95,6 +96,10 @@ public:
     kPbPb
   };
   /** 
+   * Folder name 
+   */
+  static const char* fgkFolderName;
+  /** 
    * Constructor 
    */
   AliFMDEventInspector();
@@ -138,7 +143,9 @@ public:
    *                  event (according to the setting of fLowFluxCut) 
    * @param ivz       On return, the found vertex bin (1-based).  A zero
    *                  means outside of the defined vertex range
-   * @param vz        On return, the z position of the interaction
+   * @param vx        On return, the x position of the interaction point
+   * @param vy        On return, the y position of the interaction point
+   * @param vz        On return, the z position of the interaction point
    * @param cent      On return, the centrality (in percent) or < 0 
    *                  if not found
    * @param nClusters On return, number of SPD clusters in @f$ |\eta|<1@f$ 
@@ -149,7 +156,7 @@ public:
 		 UInt_t&            triggers,
 		 Bool_t&            lowFlux,
 		 UShort_t&          ivz, 
-		 Double_t&          vz,
+		 TVector3&          ip,
 		 Double_t&          cent,
 		 UShort_t&          nClusters);
   /** 
@@ -225,6 +232,7 @@ public:
    * @param d             Input
    * @param hEventsTr     On return, pointer to histogram, or null
    * @param hEventsTrVtx  On return, pointer to histogram, or null
+   * @param hEventsAcc    On return, pointer to histogram, or null
    * @param hTriggers     On return, pointer to histogram, or null
    * 
    * @return true on success, false otherwise 
@@ -232,6 +240,7 @@ public:
   Bool_t FetchHistograms(const TList* d, 
 			 TH1I*& hEventsTr, 
 			 TH1I*& hEventsTrVtx, 
+			 TH1I*& hEventsAcc,
 			 TH1I*& hTriggers) const;
   /** 
    * Read the collision system, collision energy, and L3 field setting
@@ -381,16 +390,11 @@ protected:
    * Read the vertex information from the ESD event 
    * 
    * @param esd  ESD event 
-   * @param vz   On return, the vertex Z position 
-   * @param vx   On return, the vertex X position 
-   * @param vy   On return, the vertex Y position 
+   * @param ip   On return, the coordinates of the IP
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadVertex(const AliESDEvent& esd, 
-		    Double_t& vz, 
-		    Double_t& vx, 
-		    Double_t& vy);
+  Bool_t ReadVertex(const AliESDEvent& esd, TVector3& ip);
   /** 
    * Check the vertex using the method used in PWG-UD.  That is 
    *
@@ -400,16 +404,12 @@ protected:
    *   - Check that the dispersion and resolution is OK 
    * 
    * @param esd Data 
-   * @param vz  On return, the Z coordinate of the IP
-   * @param vx  On return, possibly the X coordinate of the IP
-   * @param vy  On return, possibly the Y coordinate of the IP 
+   * @param ip  On return, the coordinates of the IP
    * 
    * @return true if the vertex was found and met the requirements
    */
   virtual Bool_t CheckPWGUDVertex(const AliESDEvent& esd, 
-				  Double_t& vz, 
-				  Double_t& vx, 
-				  Double_t& vy) const;
+				  TVector3& ip) const;
   /** 
    * Check the vertex. That is
    *
@@ -418,16 +418,11 @@ protected:
    * - Check that the reslution is OK 
    * 
    * @param esd Data 
-   * @param vz  On return, the Z coordinate of the IP
-   * @param vx  On return, possibly the X coordinate of the IP
-   * @param vy  On return, possibly the Y coordinate of the IP 
+   * @param ip  On return, the coordinates of the IP
    * 
    * @return true if the vertex was found and met the requirements
    */
-  virtual Bool_t CheckVertex(const AliESDEvent& esd, 
-				  Double_t& vz, 
-				  Double_t& vx, 
-				  Double_t& vy) const;
+  virtual Bool_t CheckVertex(const AliESDEvent& esd, TVector3& ip) const;
   /** 
    * Read centrality from event 
    * 

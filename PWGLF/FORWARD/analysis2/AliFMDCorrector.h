@@ -17,7 +17,7 @@
 #include <TList.h>
 #include "AliForwardUtil.h"
 class TH2D;
-
+class TH2;
 /** 
  * @defgroup pwglf_forward_algo Algorithms 
  *
@@ -230,7 +230,16 @@ protected:
    * @return Ring histogram container 
    */
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
-
+  /** 
+   * Divide a map with another map.  This is a reimplementation of
+   * TH1::Divide, but we assume compatible histograms, and the under-
+   * and overflow bins are only divided if the third argument is true.
+   * 
+   * @param num             Numerator. On return contains the result 
+   * @param denom           Denominator
+   * @param alsoUnderOver   If true, also divide under/overflow bins
+   */
+  void DivideMap(TH2* num, const TH2* denom, Bool_t alsoUnderOver=false) const;
   TList    fRingHistos;           // List of histogram containers
   Bool_t   fUseSecondaryMap;      // Whether to do correction for secondaries
   Bool_t   fUseVertexBias;        // Whether to do correction for vertex bias
@@ -238,7 +247,7 @@ protected:
   Bool_t   fUseMergingEfficiency; // Whether to use the merging efficiency
   Int_t    fDebug;                //  Debug level 
 
-  ClassDef(AliFMDCorrector,2); // Correct the inclusive d2N/detadphi
+  ClassDef(AliFMDCorrector,3); // Correct the inclusive d2N/detadphi
 };
 
 #endif

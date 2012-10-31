@@ -44,7 +44,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
   // 
   // Constructor
   //
-  DGUARD(fDebug,0,"Default CTOR of AliFMDEnergyFitterTask");
+  DGUARD(fDebug, 3,"Default CTOR of AliFMDEnergyFitterTask");
 }
 
 //____________________________________________________________________
@@ -63,7 +63,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
-  DGUARD(fDebug,0,"Named CTOR of AliFMDEnergyFitterTask: %s", name);
+  DGUARD(fDebug, 3,"Named CTOR of AliFMDEnergyFitterTask: %s", name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   fBranchNames = 
@@ -87,7 +87,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug,0,"COPY CTOR of AliFMDEnergyFitterTask");
+  DGUARD(fDebug, 3,"COPY CTOR of AliFMDEnergyFitterTask");
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -250,11 +250,11 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
-  Double_t vz        = 0;
+  TVector3 ip;
   Double_t cent      = 0;
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
-					       ivz, vz, cent, nClusters);
+					       ivz, ip, cent, nClusters);
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
   if (found & AliFMDEventInspector::kNoSPD)     return;

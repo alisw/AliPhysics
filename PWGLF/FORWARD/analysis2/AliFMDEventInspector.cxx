@@ -41,6 +41,9 @@
 #include "AliVVZERO.h"
 
 //====================================================================
+const char* AliFMDEventInspector::fgkFolderName = "fmdEventInspector";
+
+//____________________________________________________________________
 AliFMDEventInspector::AliFMDEventInspector()
   : TNamed(),
     fHEventsTr(0), 
@@ -50,23 +53,23 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHTriggers(0),
     fHTriggerCorr(0),
     fHType(0),
-  fHWords(0),
-  fHCent(0),
-  fHCentVsQual(0),
-  fHStatus(0),
-  fLowFluxCut(1000),
-  fMaxVzErr(0.2),
-  fList(0),
-  fEnergy(0),
+    fHWords(0),
+    fHCent(0),
+    fHCentVsQual(0),
+    fHStatus(0),
+    fLowFluxCut(1000),
+    fMaxVzErr(0.2),
+    fList(0),
+    fEnergy(0),
     fField(999), 
-  fCollisionSystem(kUnknown),
+    fCollisionSystem(kUnknown),
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-  fUseFirstPhysicsVertex(true),
-  fUseV0AND(false),
-  fMinPileupContrib(3), 
-    fMinPileupDistance(0.8),
+    fUseFirstPhysicsVertex(false),
+    fUseV0AND(false),
+    fMinPileupContrib(3), 
+  fMinPileupDistance(0.8),
     fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
@@ -80,7 +83,7 @@ AliFMDEventInspector::AliFMDEventInspector()
 
 //____________________________________________________________________
 AliFMDEventInspector::AliFMDEventInspector(const char* name)
-  : TNamed("fmdEventInspector", name),
+  : TNamed(fgkFolderName, name),
     fHEventsTr(0), 
     fHEventsTrVtx(0), 
     fHEventsAccepted(0),
@@ -101,7 +104,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(true),
+    fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
@@ -232,6 +235,7 @@ Bool_t
 AliFMDEventInspector::FetchHistograms(const TList* d, 
 				      TH1I*& hEventsTr, 
 				      TH1I*& hEventsTrVtx, 
+				      TH1I*& hEventsAcc,
 				      TH1I*& hTriggers) const
 {
   // 
@@ -249,15 +253,20 @@ AliFMDEventInspector::FetchHistograms(const TList* d,
   DGUARD(fDebug,3,"Fetch histograms in AliFMDEventInspector");
   hEventsTr    = 0;
   hEventsTrVtx = 0;
-  hTriggers    = 0;
+  hEventsAcc   = 0;
+  hTriggers    = 0;  
   TList* dd    = dynamic_cast<TList*>(d->FindObject(GetName()));
   if (!dd) return kFALSE;
   
   hEventsTr    = dynamic_cast<TH1I*>(dd->FindObject("nEventsTr"));
   hEventsTrVtx = dynamic_cast<TH1I*>(dd->FindObject("nEventsTrVtx"));
+  hEventsAcc   = dynamic_cast<TH1I*>(dd->FindObject("nEventsAccepted"));
   hTriggers    = dynamic_cast<TH1I*>(dd->FindObject("triggers"));
 
-  if (!hEventsTr || !hEventsTrVtx || !hTriggers) return kFALSE;
+  if (!hEventsTr    || 
+      !hEventsTrVtx || 
+      !hEventsAcc   ||
+      !hTriggers) return kFALSE;
   return kTRUE;
 }
 //____________________________________________________________________
@@ -559,7 +568,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 			      UInt_t&            triggers,
 			      Bool_t&            lowFlux,
 			      UShort_t&          ivz, 
-			      Double_t&          vz,
+			      TVector3&          ip,
 			      Double_t&          cent,
 			      UShort_t&          nClusters)
 {
@@ -627,35 +636,30 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
       if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
   }
 
-  // --- Get the vertex information ----------------------------------
-  Double_t vx = 0;
-  Double_t vy = 0;
-  vz          = 0;
-  
-  Bool_t vzOk = ReadVertex(*event, vz,vx,vy);
-
-  fHEventsTr->Fill(vz);
+  // --- Get the interaction point -----------------------------------
+  Bool_t vzOk = ReadVertex(*event, ip);
+  fHEventsTr->Fill(ip.Z());
   if (!vzOk) { 
     if (fDebug > 3) {
       AliWarning("Failed to read vertex from ESD"); }
     fHStatus->Fill(6);
     return kNoVertex;
   }
-  fHEventsTrVtx->Fill(vz);
+  fHEventsTrVtx->Fill(ip.Z());
   
   // --- Get the vertex bin ------------------------------------------
-  ivz = fVtxAxis.FindBin(vz);
+  ivz = fVtxAxis.FindBin(ip.Z());
   if (ivz <= 0 || ivz > fVtxAxis.GetNbins()) { 
     if (fDebug > 3) {
       AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
-		      vz, fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); 
+		      ip.Z(), fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); 
     }
     ivz = 0;
     fHStatus->Fill(7);
     return kBadVertex;
   }
-  fHEventsAccepted->Fill(vz);
-  fHEventsAcceptedXY->Fill(vx,vy);
+  fHEventsAccepted->Fill(ip.Z());
+  fHEventsAcceptedXY->Fill(ip.X(),ip.Y());
   
   // --- Check the FMD ESD data --------------------------------------
   if (!event->GetFMDData()) { 
@@ -999,10 +1003,7 @@ AliFMDEventInspector::CheckWords(const AliESDEvent& esd, UInt_t& triggers) const
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, 
-				 Double_t& vz, 
-				 Double_t& vx, 
-				 Double_t& vy)
+AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, TVector3& ip)
 {
   // 
   // Read the vertex information from the ESD event 
@@ -1015,32 +1016,28 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent& esd,
   //    @c true on success, @c false otherwise 
   //
   DGUARD(fDebug,2,"Read the vertex in AliFMDEventInspector");
-  vz = 0;
-  vx = 1024;
-  vy = 1024;
+  ip.SetXYZ(1024, 1024, 0);
   
   if(fUseDisplacedVertices) {
     Double_t zvtx = fDisplacedVertex.GetVertexZ();
       
     if(TMath::Abs(zvtx) < 999) {
-      vz = zvtx;
+      ip.SetZ(zvtx);
       return true;
     }
     return false;
   }
 
-  if(fUseFirstPhysicsVertex) return CheckPWGUDVertex(esd, vz, vx, vy);
+  if(fUseFirstPhysicsVertex) return CheckPWGUDVertex(esd, ip);
   
   
-  return CheckVertex(esd, vz, vx, vy);
+  return CheckVertex(esd, ip);
 }
 
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd, 
-				       Double_t& vz, 
-				       Double_t& vx, 
-				       Double_t& vy) const
+				       TVector3& ip)  const
 {
   // This is the code used by the 1st physics people 
   const AliESDVertex* vertex    = esd.GetPrimaryVertex();
@@ -1066,20 +1063,18 @@ AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd,
       return false;
     }
   }
-  vz = vertex->GetZ();
+  ip.SetZ(vertex->GetZ());
   
   if(!vertex->IsFromVertexerZ()) {
-    vx = vertex->GetX();
-    vy = vertex->GetY();
+    ip.SetX(vertex->GetX());
+    ip.SetY(vertex->GetY());
   }
   return true;
 }
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::CheckVertex(const AliESDEvent& esd, 
-				  Double_t& vz, 
-				  Double_t& vx, 
-				  Double_t& vy) const
+				  TVector3& ip) const
 {
   // Use standard SPD vertex (perhaps preferable for Pb+Pb)
   // Get the vertex 
@@ -1094,7 +1089,7 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
   if(vertex->GetNContributors() <= 0) {
     DMSG(fDebug,2,"Number of contributors to vertex is %d<=0",
 	 vertex->GetNContributors());
-    vz = 0;
+    ip.SetZ(0);
     return false;
   } 
   // Check that the uncertainty isn't too large 
@@ -1105,12 +1100,13 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
   }
     
   // Get the z coordiante 
-  vz = vertex->GetZ();
+  ip.SetZ(vertex->GetZ());
   const AliESDVertex* vertexXY = esd.GetPrimaryVertex();
     
+  
   if(!vertexXY->IsFromVertexerZ()) {
-    vx = vertexXY->GetX();
-    vy = vertexXY->GetY();
+    ip.SetX(vertexXY->GetX());
+    ip.SetY(vertexXY->GetY());
   }
   return true;
 }

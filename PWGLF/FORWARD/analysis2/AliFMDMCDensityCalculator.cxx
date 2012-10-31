@@ -133,7 +133,7 @@ AliFMDMCDensityCalculator::CalculateMC(const AliESDFMD&        fmd,
 	  Float_t phi = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t eta = fmd.Eta(d,r,s,t);
 
-	  Float_t corr = Correction(d, r, s, t, 0, eta, false);
+	  Float_t corr = Correction(d, r, t, eta, false);
 	  Float_t sig  = (corr <= 0 ? 0 : mult / corr);
 	  h->Fill(eta,phi,sig);
 	}

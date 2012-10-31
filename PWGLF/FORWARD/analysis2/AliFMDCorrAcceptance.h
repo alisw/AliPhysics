@@ -18,6 +18,7 @@
 #include <TObjArray.h>
 #include <TAxis.h>
 class TH2D;
+class TH1D;
 
 /**
  * This class contains the acceptance correction due to dead channels
@@ -78,11 +79,36 @@ public:
    */
   TH2D* GetCorrection(UShort_t d, Char_t r, UShort_t b) const;
   /** 
+   * Get the phi acceptance 
+   * 
+   * @param d 
+   * @param r 
+   * @param v 
+   * 
+   * @return 
+   */  
+  TH1D* GetPhiAcceptance(UShort_t d, Char_t r, Double_t v) const;
+  /** 
+   * Get the phi acceptance 
+   * 
+   * @param d 
+   * @param r 
+   * @param v 
+   * 
+   * @return 
+   */  
+  TH1D* GetPhiAcceptance(UShort_t d, Char_t r, UShort_t b) const;
+  /** 
    * Get the vertex axis used 
    * 
    * @return vertex axis 
    */
   const TAxis& GetVertexAxis() const { return fVertexAxis; }
+  /** 
+   * @return true if the overflow bins along eta are set to the ratio
+   * of OK strips to all strips for a given eta bin.
+   */
+  Bool_t HasOverflow() const { return fHasOverflow; }
   /* @} */
 
   /** 
@@ -128,6 +154,12 @@ public:
    * @param max     Maximum
    */
   void SetVertexAxis(Int_t nBins, Double_t min, Double_t max);
+  /** 
+   * Set that we have (or not) the overflow bin present 
+   * 
+   * @param present If true, assume the overflow bins are filled
+   */
+  void SetHasOverflow(Bool_t present=true) { fHasOverflow = present; }
   /* @} */
 
   /** 
@@ -180,7 +212,7 @@ protected:
    * 
    * @return Pointer to ring array, or null in case of problems
    */
-  TObjArray* GetRingArray(UShort_t d, Char_t r) const;
+  TObjArray* GetRingArray(const TObjArray& m, UShort_t d, Char_t r) const;
   /** 
    * Get the ring array corresponding to the specified ring
    * 
@@ -189,11 +221,17 @@ protected:
    * 
    * @return Pointer to ring array, or newly created container 
    */
-  TObjArray* GetOrMakeRingArray(UShort_t d, Char_t r);
+  TObjArray* GetOrMakeRingArray(TObjArray& m, UShort_t d, Char_t r) const;
+  TObject* GetObject(const TObjArray& m, UShort_t d, 
+		     Char_t r, UShort_t b) const;
 
-  TObjArray fRingArray;      // Array of per-ring, per-vertex 2nd map
+  void FillCache() const;
+
+  TObjArray fRingArray;      // Array of per-ring, per-vertex 2d map
+  mutable TObjArray* fCache;  //! Array of per-ring, per-vertex 1d factors
   TAxis     fVertexAxis;     // The vertex axis 
-  ClassDef(AliFMDCorrAcceptance,1); // Acceptance correction due to dead areas
+  Bool_t    fHasOverflow;    // Whether we have the overflow bin set
+  ClassDef(AliFMDCorrAcceptance,2); // Acceptance correction due to dead areas
 };
 
 //____________________________________________________________________

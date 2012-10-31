@@ -16,6 +16,7 @@
 #include <TNamed.h>
 #include <TList.h>
 #include <TArrayI.h>
+#include <TVector3.h>
 #include "AliForwardUtil.h"
 #include "AliFMDMultCuts.h"
 #include "AliPoissonCalculator.h"
@@ -61,6 +62,10 @@ public:
     kPhiCorrectELoss
   };
   /** 
+   * Folder name 
+   */
+  static const char* fgkFolderName;
+  /** 
    * Constructor 
    */
   AliFMDDensityCalculator();
@@ -99,7 +104,6 @@ public:
    * 
    * @param fmd      AliESDFMD object (possibly) corrected for sharing
    * @param hists    Histogram cache
-   * @param vtxBin   Vertex bin 
    * @param lowFlux  Low flux flag. 
    * @param cent     Centrality 
    * @param vz       Vertex Z position
@@ -108,10 +112,9 @@ public:
    */
   virtual Bool_t Calculate(const AliESDFMD&        fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   UShort_t 		   vtxBin, 
 			   Bool_t   		   lowFlux, 
 			   Double_t  		   cent=-1, 
-			   Double_t  		   vz=0);
+			   const TVector3&         ip=TVector3(1024,1024,0));
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -159,6 +162,13 @@ public:
    * 
    */
   void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  /** 
+   * In case of a displaced vertices recalculate eta and angle correction
+   * 
+   * @param use recalculate or not
+   * 
+   */
+  void SetRecalculatePhi(Bool_t use) { fRecalculatePhi = use; }
   /** 
    * Set whether to use the phi acceptance correction. 
    * 
@@ -277,17 +287,16 @@ protected:
    * @param mult     Signal
    * @param d        Detector
    * @param r        Ring 
-   * @param s        Sector 
-   * @param t        Strip (not used)
-   * @param v        Vertex bin 
    * @param eta      Pseudo-rapidity 
    * @param lowFlux  Low-flux flag 
    * 
    * @return The number of particles 
    */
-  virtual Float_t NParticles(Float_t mult, 
-			     UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-			     UShort_t v, Float_t eta, Bool_t lowFlux) const;
+  virtual Float_t NParticles(Float_t  mult, 
+			     UShort_t d, 
+			     Char_t   r, 
+			     Float_t  eta, 
+			     Bool_t   lowFlux) const;
   /** 
    * Get the inverse correction factor.  This consist of
    * 
@@ -305,8 +314,8 @@ protected:
    * 
    * @return 
    */
-  virtual Float_t Correction(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-			     UShort_t v, Float_t eta, Bool_t lowFlux) const;
+  virtual Float_t Correction(UShort_t d, Char_t r, UShort_t t, 
+			     Float_t eta, Bool_t lowFlux) const;
   /** 
    * Get the acceptance correction for strip @a t in an ring of type @a r
    * 
@@ -377,6 +386,7 @@ protected:
      * @param nEvents Number of events 
      */
     void ScaleHistograms(TList* dir, Int_t nEvents);
+    TList*    fList;
     TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
     TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
@@ -384,12 +394,17 @@ protected:
     TProfile* fCorr;           // Average correction vs eta
     TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
+    TH1D*     fDiffELossPoisson;// Relative difference to Poisson
     AliPoissonCalculator fPoisson; // Calculate density using Poisson method
     TH1D*     fELoss;          // Energy loss as seen by this 
     TH1D*     fELossUsed;      // Energy loss in strips with signal 
     Double_t  fMultCut;        // If set, use this
-    
-    ClassDef(RingHistos,6);
+    TH1D*     fTotal;          // Total number of strips per eta
+    TH1D*     fGood;           // Number of good strips per eta
+    TH2D*     fPhiAcc;         // Phi acceptance vs IpZ
+    TH1D*     fPhiBefore;      // Phi before re-calce 
+    TH1D*     fPhiAfter;       // Phi after re-calc
+    ClassDef(RingHistos,8);
   };
   /** 
    * Get the ring histogram container 
@@ -420,7 +435,8 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts;    // Cuts
-  Bool_t fRecalculateEta;  //  //Whether to recalculate eta and angle correction (disp vtx)
+  Bool_t fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
+  Bool_t fRecalculatePhi;  // Whether to correct for (X,Y) offset
 
   ClassDef(AliFMDDensityCalculator,7); // Calculate Nch density 
 };

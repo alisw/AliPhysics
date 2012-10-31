@@ -173,7 +173,7 @@ protected:
      * @return Reference to this object 
      */
     State& operator=(const State& o);
-  } fState; // State 
+  } fState; //! State 
   
     
   UShort_t   fMaxConsequtiveStrips; // Max 'cluster' size
@@ -183,7 +183,7 @@ protected:
   TH2D*      fNcr;                  // Number of clusters per track
   AliESDFMD* fOutput;               //! Output ESD object
 
-  ClassDef(AliFMDMCTrackDensity,3); // Calculate track-ref density
+  ClassDef(AliFMDMCTrackDensity,4); // Calculate track-ref density
 };
 
 #endif

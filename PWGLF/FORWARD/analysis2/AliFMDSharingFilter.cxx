@@ -22,6 +22,7 @@
 //
 //
 #include "AliFMDSharingFilter.h"
+#include "AliFMDStripIndex.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -63,7 +64,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fHCuts(),
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
-    fRecalculateEta(false)
+    fRecalculateEta(false),
+    fExtraDead(0)
 {
   // 
   // Default Constructor - do not use 
@@ -86,7 +88,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fHCuts(),
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
-    fRecalculateEta(false)
+    fRecalculateEta(false), 
+    fExtraDead(51200)
 {
   // 
   // Constructor 
@@ -107,6 +110,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fHCuts.SetNXi(1);
   fHCuts.SetIncludeSigma(1);
   fLCuts.SetMultCuts(.15);
+
+  fExtraDead.Reset(-1);
 }
 
 //____________________________________________________________________
@@ -124,7 +129,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fHCuts(o.fHCuts),
     fUseSimpleMerging(o.fUseSimpleMerging),
     fThreeStripSharing(o.fThreeStripSharing),
-    fRecalculateEta(o.fRecalculateEta)
+    fRecalculateEta(o.fRecalculateEta), 
+    fExtraDead(o.fExtraDead)
 {
   // 
   // Copy constructor 
@@ -211,6 +217,69 @@ AliFMDSharingFilter::GetRingHistos(UShort_t d, Char_t r) const
   return static_cast<RingHistos*>(fRingHistos.At(idx));
 }
 
+//____________________________________________________________________
+void
+AliFMDSharingFilter::AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t)
+{
+  if (d < 1 || d > 3) {
+    Warning("AddDead", "Invalid detector FMD%d", d);
+    return;
+  }
+  Bool_t inner = (r == 'I' || r == 'i');
+  if (d == 1 && !inner) { 
+    Warning("AddDead", "Invalid ring FMD%d%c", d, r);
+    return;
+  }
+  if ((inner && s >= 20) || (!inner && s >= 40)) { 
+    Warning("AddDead", "Invalid sector FMD%d%c[%02d]", d, r, s);
+    return;
+  }
+  if ((inner && t >= 512) || (!inner && t >= 256)) { 
+    Warning("AddDead", "Invalid strip FMD%d%c[%02d,%03d]", d, r, s, t);
+    return;
+  }
+    
+  Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
+  Int_t i  = 0;
+  for (i = 0; i < fExtraDead.GetSize(); i++) {
+    Int_t j = fExtraDead.At(i);
+    if (j == id) return; // Already there 
+    if (j <  0) break; // Free slot 
+  }
+  if (i >= fExtraDead.GetSize()) { 
+    Warning("AddDead", "No free slot to add FMD%d%c[%02d,%03d] at", 
+	    d, r, s, t);
+    return;
+  }
+  fExtraDead[i] = id;
+}
+//____________________________________________________________________
+void
+AliFMDSharingFilter::AddDeadRegion(UShort_t d,  Char_t r, 
+				   UShort_t s1, UShort_t s2, 
+				   UShort_t t1, UShort_t t2)
+{
+  // Add a dead region spanning from FMD<d><r>[<s1>,<t1>] to 
+  // FMD<d><r>[<s2>,<t2>] (both inclusive)
+  for (Int_t s = s1; s <= s2; s++) 
+    for (Int_t t = t1; t <= t2; t++) 
+      AddDead(d, r, s, t);
+}
+//____________________________________________________________________
+Bool_t
+AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
+{
+  Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
+  for (Int_t i = 0; i < fExtraDead.GetSize(); i++) {
+    Int_t j = fExtraDead.At(i);
+    if (j == id) {
+      //Info("IsDead", "FMD%d%c[%02d,%03d] marked as dead here", d, r, s, t);
+      return true;
+    }
+    if (j < 0) break; // High water mark 
+  }
+  return false;
+}
 //____________________________________________________________________
 void
 AliFMDSharingFilter::Init(const TAxis& axis)
@@ -320,10 +389,6 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	
 	for (UShort_t t = 0; t < nstr; t++) status[t] = kCandidate;
 	
-#ifdef USE_OLDER_MERGING
-	Bool_t usedThis   = kFALSE;
-	Bool_t usedPrev   = kFALSE;
-#endif	
 	//For simple merging
 	Bool_t   used            = kFALSE;
 	Double_t eTotal          = -1;
@@ -363,7 +428,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  }
 	  
 	  // Keep dead-channel information. 
-	  if(mult == AliESDFMD::kInvalidMult)
+	  if(mult == AliESDFMD::kInvalidMult || IsDead(d,r,s,t))
 	    output.SetMultiplicity(d,r,s,t,AliESDFMD::kInvalidMult);
 	  
 	  // If no signal or dead strip, go on. 
@@ -462,24 +527,15 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    }
 	    if (t != 0) histos->fNeighborsBefore->Fill(prevE, mult);
 	    
-#ifdef USE_OLDER_MERGING
-	    /*Double_t*/ mergedEnergy = MultiplicityOfStrip(mult,eta,prevE,nextE,
-							lowFlux,d,r,s,t, 
-							usedPrev,usedThis);
-	    status[t] = (usedPrev ? kMergedWithOther : kNone);
-	    if (t != nstr - 1) status[t] = (usedThis ? kMergedWithOther : kNone);
-#else 
-	    /*Double_t*/ mergedEnergy = MultiplicityOfStrip(mult, prevE, nextE, 
-							eta, lowFlux, 
-							d, r, s, t, 
-							prevStatus, 
-							thisStatus, 
-							nextStatus);
+	    mergedEnergy = MultiplicityOfStrip(mult, prevE, nextE, 
+					       eta, lowFlux, 
+					       d, r, s, t, 
+					       prevStatus, 
+					       thisStatus, 
+					       nextStatus);
 	    if (t != 0)      status[t-1] = prevStatus;
 	    if (t != nstr-1) status[t+1] = nextStatus;
-	    status[t] = thisStatus;
-	    
-#endif
+	    status[t] = thisStatus;	    
 	    // If we're processing on non-angle corrected data, we
 	    // should do the angle correction here
 	  } // End of non-simple
@@ -956,6 +1012,20 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("lowSignal", 
 				       fZeroSharedHitsBelowThreshold));
   d->Add(AliForwardUtil::MakeParameter("simple", fUseSimpleMerging));
+  
+  TObjArray* extraDead = new TObjArray;
+  extraDead->SetOwner();
+  extraDead->SetName("extraDead");
+  for (Int_t i = 0; i < fExtraDead.GetSize(); i++) { 
+    if (fExtraDead.At(i) < 0) break;
+    UShort_t dd, s, t;
+    Char_t  r;
+    Int_t   id = fExtraDead.At(i);
+    AliFMDStripIndex::Unpack(id, dd, r, s, t);
+    extraDead->Add(AliForwardUtil::MakeParameter(Form("FMD%d%c[%02d,%03d]",
+						      dd, r, s, t), id));
+  }
+  d->Add(extraDead);
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
 
