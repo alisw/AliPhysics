@@ -272,9 +272,9 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 
   // TPC event plane correction
   AliEventplane *cevplane = new AliEventplane();
-  if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0)) 
+  if (ev1 && cevplane && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0)) 
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1, cevplane);
-  
+
   if (!fNoPairing){
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
@@ -300,7 +300,9 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   //in case there is a histogram manager, fill the QA histograms
+  if (fHistos) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
+
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
@@ -1044,4 +1046,45 @@ void AliDielectron::AddSignalMC(AliDielectronSignalMC* signal) {
     fSignalsMC->SetOwner();
   }
   fSignalsMC->Add(signal);
+}
+//________________________________________________________________
+void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
+  //
+  // fill QA MC histograms for pairs and legs of all added mc signals
+  //
+
+  TString className,className2;
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+  AliDielectronVarManager::Fill(ev, values); // get event informations
+  //loop over all added mc signals
+  for(Int_t isig=0; isig<fSignalsMC->GetEntries(); isig++) {
+
+    className.Form("Pair_%s",fSignalsMC->At(isig)->GetName());
+    className2.Form("Track_Legs_%s",fSignalsMC->At(isig)->GetName());
+    Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
+    Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
+    if(!pairClass && !legClass) return;
+
+    Int_t ntracks=PairArray(AliDielectron::kEv1PM)->GetEntriesFast(); // only SE +-
+    for (Int_t ipair=0; ipair<ntracks; ++ipair){
+      AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PM)->UncheckedAt(ipair));
+
+      Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+      if(isMCtruth) {
+	//fill pair information
+	if (pairClass){
+	  AliDielectronVarManager::Fill(pair, values);
+	  fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+	}
+	//fill leg information, both + and - in the same histo
+	if (legClass){
+	  AliDielectronVarManager::Fill(pair->GetFirstDaughter(),values);
+	  fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+	  AliDielectronVarManager::Fill(pair->GetSecondDaughter(),values);
+	  fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+	}
+      } //is signal
+    } //loop: pairs
+  } //loop: MCsignals
+
 }
