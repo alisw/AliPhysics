@@ -1,12 +1,73 @@
 /* $Id$ */
 
+#include "TFile.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TSystem.h"
+#include "TStyle.h"
+#include "TCanvas.h"
+#include "TMath.h"
+
+void PPRstyle();
+
+Double_t PeakPosition(Double_t pt);
+Double_t PeakWidth(Double_t pt);
+Double_t CB(Double_t * x, Double_t * par);
+Double_t CB2(Double_t * x, Double_t * par);
+Double_t CBs(Double_t * x, Double_t * par);
+Double_t BG1(Double_t * x, Double_t * par);
+Double_t BG2(Double_t * x, Double_t * par);
+
+
 // const Int_t nPadX = 3, nPadY = 2;
 // const Int_t nPtBins=6 ;
 // const Double_t ptBinEdges[21]={1., 2., 3., 4., 5., 7., 10.} ;
 
-const Int_t nPadX = 8, nPadY = 6;
-const Int_t nPtBins= 8*6;
-Double_t ptBinEdges[nPtBins+1] = {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 35., 40., 45., 50., 55., 60., 65., 70., 80., 100.};
+const Int_t nPadX = 6, nPadY = 4;
+Int_t nPtBins=0;
+Double_t ptBinEdges[1000] = {0};
+double GetPtBin(int bin){
+  if( bin==0 )
+    return 1.;
+
+  // return GetPtBin(bin-1) * 1.1;
+  
+  // if ( bin % 2 )
+  //   return GetPtBin(bin-1) + 0.4;
+  // else
+  //   return GetPtBin(bin-1) + 0.2;
+  
+  double previousBin = GetPtBin(bin-1);
+  double linInc = 0.2;
+  double threshold = 5.;
+  double logFact = 1 + linInc/threshold;
+  if ( previousBin < threshold ) // linear
+    return previousBin + linInc;
+  else { // logarithmic
+    return previousBin * logFact;
+  }
+}
+void MakePtBins() {
+  int bin = -1;
+  do {
+    ++bin;
+    ptBinEdges[bin] = GetPtBin(bin);
+  } while(ptBinEdges[bin] < 40.);
+  nPtBins = bin -2;
+
+  for(int b=0; b < nPtBins+1; ++b)
+    printf("%.1f, ", ptBinEdges[b]);
+  printf("\n N. Bins: %d\n", nPtBins);
+  
+
+  // for(int bin = 0; bin <= nPtBins; ++bin){
+  //   ptBinEdges[bin] = GetPtBin(bin);
+  //   printf("%.1f, ", ptBinEdges[bin]);
+  // }
+  // printf("\n");
+}
+
 
 const int kNCentralityBins = 3;
 
@@ -23,6 +84,7 @@ void MakeMmixPi0(const TString filename,
 		 const char* pid="CPV",
 		 const char* saveToDir="")
 {
+  MakePtBins();
   Printf("\nMakeMmixPi0(%s, %s, %i, %s, %s)", filename.Data(), listPath.Data(), centrality, pid, saveToDir);
 
   if( TString(saveToDir).Length() )
