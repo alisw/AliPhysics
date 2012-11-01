@@ -850,6 +850,37 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::PropagateParamOnlyTo(Double_t xk, Double_t b) {
+  //----------------------------------------------------------------
+  // Propagate this track to the plane X=xk (cm) in the field "b" (kG)
+  // Only parameters are propagated, not the matrix. To be used for small 
+  // distances only (<mm, i.e. misalignment)
+  //----------------------------------------------------------------
+  Double_t dx=xk-fX;
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
+
+  Double_t crv=GetC(b);
+  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
+
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(fP[4])< kAlmost0) return kFALSE;
+
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  if (TMath::Abs(r1)<kAlmost0)  return kFALSE;
+  if (TMath::Abs(r2)<kAlmost0)  return kFALSE;
+
+  fX=xk;
+  double dy2dx = (f1+f2)/(r1+r2);
+  fP[0] += dx*dy2dx;
+  fP[1] += dx*(r2 + f2*dy2dx)*fP[3];  // Many thanks to P.Hristov !
+  fP[2] += x2r;
+
+  return kTRUE;
+}
+
 Bool_t 
 AliExternalTrackParam::Propagate(Double_t alpha, Double_t x, Double_t b) {
   //------------------------------------------------------------------
@@ -1240,7 +1271,7 @@ Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
 
   fC33-=k30*c03+k31*c13;
   fC43-=k30*c04+k31*c14; 
-
+  
   fC44-=k40*c04+k41*c14; 
 
   CheckCovariance();
