@@ -211,6 +211,8 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
 		FORWARD/analysis2/AddTaskMCParticleFilter.C
 		FORWARD/analysis2/DrawdNdeta.C
+		FORWARD/analysis2/DrawdNdetaSummary.C
+		FORWARD/analysis2/DrawAODSummary.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C
                 FORWARD/analysis2/MakeAOD.C
