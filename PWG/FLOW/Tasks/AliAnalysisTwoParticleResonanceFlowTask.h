@@ -87,6 +87,7 @@ public:
    void                                 SetAddTaskMacroSummary(Float_t m[12]) {for(Int_t i(0); i < 12; i++) fAddTaskMacroSummary[i] = m[i];}
    void                                 SetPOIDCAXYZ(Float_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
    void                                 SetMixingParameters(Int_t p[3]) { for(Int_t i = 0; i < 3; i++) fMixingParameters[i] = p[i]; }
+   void                                 SetPermissiveMixing(Bool_t p) { fPermissiveMixing = p; }
    void                                 SetupSpeciesA(Int_t species, Int_t charge, Float_t mass, Float_t minPtA, Float_t maxPtA) {fSpeciesA = species; fChargeA = charge; fMassA = mass; fMinPtA = minPtA; fMaxPtA = maxPtA;}
    void                                 SetupSpeciesB(Int_t species, Int_t charge, Float_t mass, Float_t minPtB, Float_t maxPtB) {fSpeciesB = species; fChargeB = charge; fMassB = mass; fMinPtB = minPtB; fMaxPtB = maxPtB;}   
    void                                 SetCandidateEtaAndPt(Float_t mineta, Float_t maxeta, Float_t minpt, Float_t maxpt) { fCandidateMinEta = mineta;
@@ -181,6 +182,7 @@ private:
    Float_t              fPIDConfig[7]; // configure pid routine
    Float_t              fDCAConfig[5]; // configure dca routine
    Int_t                fMixingParameters[3]; // mixing: poolsize, mixing tracks, pool buffer
+   Bool_t               fPermissiveMixing; // skip event when pool manager fails - use with caution
    Int_t                fCentralityMixingBins[20]; // configure centrality bins for event mixing
    Int_t                fVertexMixingBins[20]; // configure vertex bins for event mixing
    Float_t              fPtBins[19]; // pt bin borders
@@ -235,7 +237,7 @@ private:
    AliAnalysisTwoParticleResonanceFlowTask& operator=(const AliAnalysisTwoParticleResonanceFlowTask&); // Not implemented
    void                 MakeTrack(Float_t, Float_t, Float_t, Float_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTwoParticleResonanceFlowTask, 2);
+   ClassDef(AliAnalysisTwoParticleResonanceFlowTask, 3);
 };
 
 #endif
