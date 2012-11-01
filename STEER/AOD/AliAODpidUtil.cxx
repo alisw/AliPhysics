@@ -117,7 +117,7 @@ Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EPa
   if (track->GetDetectorPID()){
     return track->GetDetectorPID()->GetNumberOfSigmas(kTOF, type);
   }  
-  
+  if ( !(track->GetStatus() & AliVTrack::kTOFout) || !(track->GetStatus() & AliVTrack::kTIME) ) return -999.;
   Bool_t oldAod=kTRUE;
   Double_t sigTOF;
   AliAODPid *pidObj = track->GetDetPid();

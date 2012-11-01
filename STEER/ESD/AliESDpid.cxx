@@ -419,7 +419,7 @@ Float_t AliESDpid::NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticl
   if (vtrack->GetDetectorPID()){
     return vtrack->GetDetectorPID()->GetNumberOfSigmas(kTOF, type);
   }
-  
+  if ( !(vtrack->GetStatus() & AliVTrack::kTOFout) || !(vtrack->GetStatus() & AliVTrack::kTIME) ) return -999.;
   Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
   return (vtrack->GetTOFsignal() - fTOFResponse.GetStartTime(vtrack->P()) - expTime)/fTOFResponse.GetExpectedSigma(vtrack->P(),expTime,AliPID::ParticleMassZ(type));
 }
