@@ -41,7 +41,7 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    TList *listRsn = new TList();
    listRsn->Add(new TNamed(rsnPart.Data(),rsnCut.Data()));
 
-   if (!RsnLoadMacro("RsnConfig.C")) return kFALSE;
+   if (!RsnLoadMacroTask("RsnConfig.C")) return 0;
    if (!RsnConfig(task,rsnIH,listRsn)) {
       Printf("Error in RsnConfig.C");
       return 0;
@@ -78,4 +78,27 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    mgr->ConnectOutput(task, 1, output);
 
    return task;
+}
+
+Bool_t RsnLoadMacroTask(TString macro,TString path="") {
+
+   Bool_t valid;
+   TString lego_path = AliAnalysisManager::GetGlobalStr("RsnLegoTrainPath",valid);
+   if (!valid) lego_path = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
+
+   if (!gSystem->AccessPathName(macro.Data())) {
+      gROOT->LoadMacro(macro.Data());
+      Printf("Macro loaded from %s/%s ...",gSystem->pwd(),macro.Data());
+      return kTRUE;
+   }
+
+   if (!gSystem->AccessPathName(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())))) {
+      gROOT->LoadMacro(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      Printf("Macro loaded from %s ...",gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      return kTRUE;
+   }
+
+   Printf("Error loading %s",macro.Data());
+
+   return kFALSE;
 }

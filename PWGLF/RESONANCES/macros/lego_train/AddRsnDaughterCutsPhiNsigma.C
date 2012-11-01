@@ -7,8 +7,9 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    if (!rsnIH) return 0;
 
    Bool_t valid = kTRUE;
-   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
+//   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useCommonQualityCut = AliRsnTrainManager::GetGlobalInt("RsnCommonQualityCut",valid);
+   TString rsnQualityCut = AliRsnTrainManager::GetGlobalStr("RsnQualityCut",valid);
    Int_t isMC = AliRsnTrainManager::GetGlobalInt("IsMC",valid);
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
    Int_t isMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
@@ -99,11 +100,17 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
 
    TString scheme="";
    AliRsnCutTrackQuality *qualityCut = new AliRsnCutTrackQuality("cutQualityK");
-   if (useCommonQualityCut>=0) {
-      qualityCut->SetAODTestFilterBit(useCommonQualityCut);
+   if (!rsnQualityCut.IsNull()) {
+      AliESDtrackCuts *esdTK = RsnQualityCut(rsnQualityCut.Data());
+      qualityCut->SetESDtrackCuts(esdTK);
    } else {
-      qualityCut->SetDefaults2010();
+      if (useCommonQualityCut>=0) {
+         qualityCut->SetAODTestFilterBit(useCommonQualityCut);
+      } else {
+         qualityCut->SetDefaults2010();
+      }
    }
+
    cuts->AddCut(qualityCut);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCut->GetName();

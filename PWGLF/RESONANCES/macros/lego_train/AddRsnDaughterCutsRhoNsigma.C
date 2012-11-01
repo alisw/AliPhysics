@@ -72,21 +72,21 @@ Int_t AddRsnDaughterCutsRhoNsigma(AliPID::EParticleType type1,AliPID::EParticleT
 
    AliRsnCutTrackQuality *qualityCut = new AliRsnCutTrackQuality("cutQuatityPi");
    //qualityCut->SetDefaults2010();
-		
-	qualityCut->SetDCAZmax(0.2);
-	qualityCut->SetDCARmax(0.02);
-	qualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
-	qualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-	qualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
-	
-	qualityCut->SetPtRange(0.2, 1E+20);
-	qualityCut->SetEtaRange(-0.8, 0.8);
-	qualityCut->SetSPDminNClusters(0);
-	qualityCut->SetITSminNClusters(0);
-	qualityCut->SetITSmaxChi2(1E+20);
-	qualityCut->SetTPCminNClusters(70);
-	qualityCut->SetTPCmaxChi2(4.0);
-	qualityCut->SetRejectKinkDaughters();
+
+   qualityCut->SetDCAZmax(0.2);
+   qualityCut->SetDCARmax(0.02);
+   qualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
+   qualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
+   qualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+
+   qualityCut->SetPtRange(0.2, 1E+20);
+   qualityCut->SetEtaRange(-0.8, 0.8);
+   qualityCut->SetSPDminNClusters(0);
+   qualityCut->SetITSminNClusters(0);
+   qualityCut->SetITSmaxChi2(1E+20);
+   qualityCut->SetTPCminNClusters(70);
+   qualityCut->SetTPCmaxChi2(4.0);
+   qualityCut->SetRejectKinkDaughters();
 
    cuts->AddCut(qualityCut);
    if (!scheme.IsNull()) scheme += "&";

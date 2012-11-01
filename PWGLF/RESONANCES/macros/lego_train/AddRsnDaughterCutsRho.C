@@ -50,15 +50,15 @@ Int_t AddRsnDaughterCutsRho(AliPID::EParticleType type1,AliPID::EParticleType ty
 
    Bool_t usetof = kFALSE;
    if(opt.Contains("tof")) {
-     Printf("Using tof PID range (%.2f,%.2f)",0.0,1E+20);
-     usetof = kTRUE;
+      Printf("Using tof PID range (%.2f,%.2f)",0.0,1E+20);
+      usetof = kTRUE;
    }
 
    Bool_t usetpc = kFALSE;
    if(opt.Contains("tpc")) {
-     Printf("Using tpc PID range (%.2f,%.2f)",0.0,1E+20);
-     usetpc = kTRUE;
-     }
+      Printf("Using tpc PID range (%.2f,%.2f)",0.0,1E+20);
+      usetpc = kTRUE;
+   }
 
 //---------------------------------------------
 //  Combine cuts
@@ -93,23 +93,23 @@ Int_t AddRsnDaughterCutsRho(AliPID::EParticleType type1,AliPID::EParticleType ty
    cuts->AddCut(qualityCut);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCut->GetName();
-   
+
    if (usetpc) {
-     AliRsnCutPIDNSigma *cutPiTPC = new AliRsnCutPIDNSigma("cutPIDNSigmaTPC",AliPID::kPion,AliRsnCutPIDNSigma::kTPC);
-     cutPiTPC->SinglePIDRange(nSigmaTPC);
-     //cutPiTPC->AddPIDRange(nSigmaTPC,0.0,0.7);
-     cuts->AddCut(cutPiTPC);
-     if (!scheme.IsNull()) scheme += "&";
-     scheme += cutPiTPC->GetName();
-  }
+      AliRsnCutPIDNSigma *cutPiTPC = new AliRsnCutPIDNSigma("cutPIDNSigmaTPC",AliPID::kPion,AliRsnCutPIDNSigma::kTPC);
+      cutPiTPC->SinglePIDRange(nSigmaTPC);
+      //cutPiTPC->AddPIDRange(nSigmaTPC,0.0,0.7);
+      cuts->AddCut(cutPiTPC);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutPiTPC->GetName();
+   }
 
    if(usetof) {
-       AliRsnCutPIDNSigma *cutPiTOF = new AliRsnCutPIDNSigma("cutPIDNSigmaTOF",AliPID::kPion,AliRsnCutPIDNSigma::kTOF);
-       cutPiTOF->SinglePIDRange(nSigmaTOF);
-       //cutPiTOF->AddPIDRange(nSigmaTOF,0.7,1e20);
-       cuts->AddCut(cutPiTOF);
-       if (!scheme.IsNull()) scheme += "&";
-       scheme += cutPiTOF->GetName();
+      AliRsnCutPIDNSigma *cutPiTOF = new AliRsnCutPIDNSigma("cutPIDNSigmaTOF",AliPID::kPion,AliRsnCutPIDNSigma::kTOF);
+      cutPiTOF->SinglePIDRange(nSigmaTOF);
+      //cutPiTOF->AddPIDRange(nSigmaTOF,0.7,1e20);
+      cuts->AddCut(cutPiTOF);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutPiTOF->GetName();
    }
 
    if (useEta) {
