@@ -2,6 +2,8 @@
 // Uses files produced by MakeMmixPi0.C
 // author: Yuri Kharlov <Yuri.Kharlov@cern.ch>
 
+const char *centrality[] = {"0-10%","10-40%","40-80%"};
+
 DrawPi0Spectrum()
 {
   PPRstyle();
@@ -13,6 +15,9 @@ DrawPi0Spectrum()
   DrawPi0SpectrumCentral();
   DrawPi0SpectrumSemiCentral(1);
   // DrawPi0SpectrumSemiCentral(2);
+
+  // DrawPi0SpectrumCentralTrigger();
+  // DrawPi0SpectrumSemiCentralTrigger(2);
 }
 
 //-----------------------------------------------------------------------------
@@ -56,13 +61,13 @@ DrawPi0SpectrumCentral()
   effCPV->SetYTitle("PID/no PID");
   effCPV->SetMarkerColor(kBlue);
   effCPV->SetLineColor(kBlue);
-  
+
   TH1D *effDisp = (TH1D*)h3->Clone("effDisp");
   effDisp->Divide(h3,h1,1.,1.,"B");
   effDisp->SetYTitle("PID/no PID");
   effDisp->SetMarkerColor(kGreen+2);
   effDisp->SetLineColor(kGreen+2);
-  
+
   TCanvas *c11 = new TCanvas("c11","c11");
   gPad->SetGridx();
   gPad->SetGridy();
@@ -78,7 +83,7 @@ DrawPi0SpectrumCentral()
   l11->AddEntry(h3,"PID=Disp","lp");
   l11->Draw();
   c11->Print(Form("LHC11h_pi0Spectrum_PIDspectra.eps"));
-  
+
   TCanvas *c12 = new TCanvas("c12","c12");
   gPad->SetGridx();
   gPad->SetGridy();
@@ -95,7 +100,7 @@ DrawPi0SpectrumCentral()
 }
 
 //-----------------------------------------------------------------------------
-DrawPi0SpectrumSemiCentral(const Int_t cent=1)
+void DrawPi0SpectrumSemiCentral(const Int_t cent=1)
 {
   f1=new TFile("LHC11h_calo_Pi0_FitResult_kPHOSPb_v2.root");
   f3=new TFile("LHC11h_calo_Pi0_FitResult_kSemiCentral_v2.root");
@@ -103,7 +108,6 @@ DrawPi0SpectrumSemiCentral(const Int_t cent=1)
   h1 = (TH1D*)f1->Get(Form("MixDisp10_cent%d_yr2int",cent));
   h3 = (TH1D*)f3->Get(Form("MixDisp10_cent%d_yr2",cent));
 
-  const char *centrality[] = {"0-20%","20-40%","40-60%"};
   TPaveText *txt = new TPaveText(0.6,0.9,0.8,0.99,"NDC");
   txt->SetFillColor(kWhite);
   txt->SetBorderSize(1);
@@ -157,6 +161,199 @@ DrawPi0SpectrumSemiCentral(const Int_t cent=1)
   ratioSemiCent->DrawClone();
   txt->Draw();
   c22->Print(Form("LHC11h_pi0Ratio_SemiCent%d.eps",cent));
+}
+
+DrawPi0SpectrumCentralTrigger()
+{
+  f1=new TFile("out/kCentral/Pi0_FitResult_0.root");
+  f2=new TFile("out/kMB/Pi0_FitResult_0.root");
+  f3=new TFile("out/kPHOSPb/Pi0_FitResult_0.root");
+
+  h1 = (TH1D*)f1->Get("MixCPV_cent0_yr2int");
+  h2 = (TH1D*)f2->Get("MixCPV_cent0_yr2int");
+  h3 = (TH1D*)f3->Get("MixCPV_cent0_yr2int");
+
+  Int_t nPt = h1->GetNbinsX();
+  for (Int_t iPt=1; iPt<=nPt; iPt++) {
+    Double_t binWidth = h1->GetBinWidth(iPt);
+    h1->SetBinContent(iPt,h1->GetBinContent(iPt)/binWidth);
+    h1->SetBinError  (iPt,h1->GetBinError  (iPt)/binWidth);
+    h2->SetBinContent(iPt,h2->GetBinContent(iPt)/binWidth);
+    h2->SetBinError  (iPt,h2->GetBinError  (iPt)/binWidth);
+    h3->SetBinContent(iPt,h3->GetBinContent(iPt)/binWidth);
+    h3->SetBinError  (iPt,h3->GetBinError  (iPt)/binWidth);
+  }
+
+  h1->GetYaxis()->SetRangeUser(10.e**-8, 0.2);
+  h1->SetXTitle("p_{T} (GeV/c)");
+  h2->SetXTitle("p_{T} (GeV/c)");
+  h3->SetXTitle("p_{T} (GeV/c)");
+  h1->SetTitle("Raw production, PID=CPV, centrality: 0-10%");
+  h1->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h2->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h3->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h1->SetMarkerStyle(20);
+  h2->SetMarkerStyle(21);
+  h3->SetMarkerStyle(22);
+  h1->SetMarkerColor(kRed);
+  h2->SetMarkerColor(kBlue);
+  h3->SetMarkerColor(kGreen+2);
+  h1->SetLineColor(kRed);
+  h2->SetLineColor(kBlue);
+  h3->SetLineColor(kGreen+2);
+
+  TH1D *effCPV = (TH1D*)h2->Clone("effCPV");
+  effCPV->Divide(h2,h1,1.,1.,"B");
+  effCPV->SetYTitle("PID/no PID");
+  effCPV->SetMarkerColor(kBlue);
+  effCPV->SetLineColor(kBlue);
+
+  TH1D *effDisp = (TH1D*)h3->Clone("effDisp");
+  effDisp->Divide(h3,h1,1.,1.,"B");
+  effDisp->SetYTitle("PID/no PID");
+  effDisp->SetMarkerColor(kGreen+2);
+  effDisp->SetLineColor(kGreen+2);
+
+  TCanvas *c11 = new TCanvas("c11","c11");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  gPad->SetLogy();
+
+  // TF1* func = new TF1("func", "exp([0]+[1]*x)/x**4", 2, 30);
+  // func->SetLineColor(kRed);
+  // //h1->Fit(func, "", "", 2, 10);
+  // //h1->Fit(func, "+", "", 8, 20);
+  // h1->Fit(func, "+", "", 5, 30);
+
+  // func->SetLineColor(kBlue);
+  // h2->Fit(func, "", "", 2, 13);
+
+  // func->SetLineColor(kGreen+2);
+  // h3->Fit(func, "", "", 10, 25);
+
+
+  h1->Draw();
+  h2->Draw("same");
+  h3->Draw("same");
+  l11 = new TLegend(0.6,0.75,0.89,0.89);
+  l11->SetFillColor(kWhite);
+  l11->SetBorderSize(1);
+  l11->AddEntry(h1,"kCentral","lp");
+  l11->AddEntry(h2,"kMB","lp");
+  l11->AddEntry(h3,"kPHOSPb","lp");
+  l11->Draw();
+  c11->Print(Form("LHC11h_pi0Spectrum_PIDspectra.eps"));
+
+  TCanvas *c12 = new TCanvas("c12","c12");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  effCPV ->SetAxisRange(0.,1.09,"Y");
+  effCPV ->Draw();
+  effDisp->Draw("same");
+  l12 = new TLegend(0.75,0.80,0.94,0.94);
+  l12->SetFillColor(kWhite);
+  l12->SetBorderSize(1);
+  l12->AddEntry(effCPV ,"PID=CPV","lp");
+  l12->AddEntry(effDisp,"PID=Disp","lp");
+  l12->Draw();
+  c12->Print(Form("LHC11h_pi0Spectrum_PIDeffi.eps"));
+}
+
+
+void DrawPi0SpectrumSemiCentralTrigger(int cent = 1)
+{
+  f1=new TFile(Form("out/kSemiCentral/Pi0_FitResult_%d.root", cent));
+  f2=new TFile(Form("out/kMB/Pi0_FitResult_%d.root", cent));
+  f3=new TFile(Form("out/kPHOSPb/Pi0_FitResult_%d.root", cent));
+
+  h1 = (TH1D*)f1->Get(Form("MixCPV_cent%d_yr2int", cent));
+  h2 = (TH1D*)f2->Get(Form("MixCPV_cent%d_yr2int", cent));
+  h3 = (TH1D*)f3->Get(Form("MixCPV_cent%d_yr2int", cent));
+
+  Int_t nPt = h1->GetNbinsX();
+  for (Int_t iPt=1; iPt<=nPt; iPt++) {
+    Double_t binWidth = h1->GetBinWidth(iPt);
+    h1->SetBinContent(iPt,h1->GetBinContent(iPt)/binWidth);
+    h1->SetBinError  (iPt,h1->GetBinError  (iPt)/binWidth);
+    h2->SetBinContent(iPt,h2->GetBinContent(iPt)/binWidth);
+    h2->SetBinError  (iPt,h2->GetBinError  (iPt)/binWidth);
+    h3->SetBinContent(iPt,h3->GetBinContent(iPt)/binWidth);
+    h3->SetBinError  (iPt,h3->GetBinError  (iPt)/binWidth);
+  }
+
+  h1->GetYaxis()->SetRangeUser(10.e**-8, 0.2);
+  h1->SetXTitle("p_{T} (GeV/c)");
+  h2->SetXTitle("p_{T} (GeV/c)");
+  h3->SetXTitle("p_{T} (GeV/c)");
+  h1->SetTitle(Form("Raw production, PID=CPV, centrality: %s", centrality[cent]));
+  h1->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h2->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h3->SetYTitle("(1/N_{AA}) dN/dp_{T} (GeV/c)^{-1}");
+  h1->SetMarkerStyle(20);
+  h2->SetMarkerStyle(21);
+  h3->SetMarkerStyle(22);
+  h1->SetMarkerColor(kRed);
+  h2->SetMarkerColor(kBlue);
+  h3->SetMarkerColor(kGreen+2);
+  h1->SetLineColor(kRed);
+  h2->SetLineColor(kBlue);
+  h3->SetLineColor(kGreen+2);
+
+  TH1D *effCPV = (TH1D*)h2->Clone("effCPV");
+  effCPV->Divide(h2,h1,1.,1.,"B");
+  effCPV->SetYTitle("PID/no PID");
+  effCPV->SetMarkerColor(kBlue);
+  effCPV->SetLineColor(kBlue);
+
+  TH1D *effDisp = (TH1D*)h3->Clone("effDisp");
+  effDisp->Divide(h3,h1,1.,1.,"B");
+  effDisp->SetYTitle("PID/no PID");
+  effDisp->SetMarkerColor(kGreen+2);
+  effDisp->SetLineColor(kGreen+2);
+
+  TCanvas *c11 = new TCanvas("c11","c11");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  gPad->SetLogy();
+
+  // TF1* func = new TF1("func", "exp([0]+[1]*x)/x**4", 2, 30);
+  // func->SetLineColor(kRed);
+  // //h1->Fit(func, "", "", 2, 10);
+  // //h1->Fit(func, "+", "", 8, 20);
+  // h1->Fit(func, "+", "", 5, 30);
+
+  // func->SetLineColor(kBlue);
+  // h2->Fit(func, "", "", 2, 13);
+
+  // func->SetLineColor(kGreen+2);
+  // h3->Fit(func, "", "", 10, 25);
+
+
+  h1->Draw();
+  h2->Draw("same");
+  h3->Draw("same");
+  l11 = new TLegend(0.6,0.75,0.89,0.89);
+  l11->SetFillColor(kWhite);
+  l11->SetBorderSize(1);
+  l11->AddEntry(h1,"kSemiCentral","lp");
+  l11->AddEntry(h2,"kMB","lp");
+  l11->AddEntry(h3,"kPHOSPb","lp");
+  l11->Draw();
+  c11->Print(Form("LHC11h_pi0Spectrum_PIDspectra.eps"));
+
+  TCanvas *c12 = new TCanvas("c12","c12");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  effCPV ->SetAxisRange(0.,1.09,"Y");
+  effCPV ->Draw();
+  effDisp->Draw("same");
+  l12 = new TLegend(0.75,0.80,0.94,0.94);
+  l12->SetFillColor(kWhite);
+  l12->SetBorderSize(1);
+  l12->AddEntry(effCPV ,"PID=CPV","lp");
+  l12->AddEntry(effDisp,"PID=Disp","lp");
+  l12->Draw();
+  c12->Print(Form("LHC11h_pi0Spectrum_PIDeffi.eps"));
 }
 
 //-----------------------------------------------------------------------------
