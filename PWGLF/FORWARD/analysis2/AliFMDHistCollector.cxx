@@ -168,6 +168,14 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
   fFirstBins.Set(5*nVz);
   fLastBins.Set(5*nVz);
 
+  // --- Add parameters to output ------------------------------------
+  fList->Add(AliForwardUtil::MakeParameter("nCutBins",fNCutBins));
+  fList->Add(AliForwardUtil::MakeParameter("skipRings",fSkipFMDRings));
+  fList->Add(AliForwardUtil::MakeParameter("bgAndHits",fBgAndHitMaps));
+  fList->Add(AliForwardUtil::MakeParameter("fiducial",Int_t(fFiducialMethod)));
+  fList->Add(AliForwardUtil::MakeParameter("fiducialCut",fCorrectionCut));
+  fList->Add(AliForwardUtil::MakeParameter("merge",Int_t(fMergeMethod)));
+
   // Find the eta bin ranges 
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
     
