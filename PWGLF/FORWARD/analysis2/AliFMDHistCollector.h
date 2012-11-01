@@ -196,7 +196,8 @@ public:
    */
   void SetCorrectionCut(Float_t cut=0.5) { fCorrectionCut = cut; }
   /** 
-   * Set FMD rings to skip. Argument should be kFirstRingToSkip|kSecondRingToSkip...   
+   * Set FMD rings to skip. Argument should be
+   * kFirstRingToSkip|kSecondRingToSkip...
    * 
    * @param mask bit pattern
    */
