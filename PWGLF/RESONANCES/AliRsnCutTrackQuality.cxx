@@ -48,6 +48,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
    fAODTestFilterBit(-1),
+   fCheckOnlyFilterBit(kTRUE),
    fESDtrackCuts(0x0)
 {
 //
@@ -78,6 +79,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
    fAODTestFilterBit(copy.fAODTestFilterBit),
+   fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit),
    fESDtrackCuts(copy.fESDtrackCuts)
 {
 //
@@ -115,6 +117,7 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fAODTestFilterBit = copy.fAODTestFilterBit;
+   fCheckOnlyFilterBit = copy.fCheckOnlyFilterBit;
    fESDtrackCuts = copy.fESDtrackCuts;
    SetPtRange(copy.fPt[0], copy.fPt[1]);
    SetEtaRange(copy.fEta[0], copy.fEta[1]);
@@ -274,7 +277,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       else {
          if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) return kFALSE;
          if (track->Eta() < fEta[0] || track->Eta() > fEta[1]) return kFALSE;
-         return kTRUE;
+         if (fCheckOnlyFilterBit) return kTRUE;
       }
    }
 
@@ -343,9 +346,9 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
    // if the DCA cut is not fixed, compute current value
    if (!fDCARfixed) {
-      static TString str(fDCARptFormula);
+      TString str(fDCARptFormula);
       str.ReplaceAll("pt", "x");
-      static const TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
+      TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
       fDCARmax = dcaXY.Eval(track->Pt());
    }
    // check the cut
@@ -358,9 +361,9 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    // the DCA has already been computed above
    // if the DCA cut is not fixed, compute current value
    if (!fDCAZfixed) {
-      static TString str(fDCAZptFormula);
+      TString str(fDCAZptFormula);
       str.ReplaceAll("pt", "x");
-      static const TFormula dcaZ(Form("%s_dcaXY", GetName()), str.Data());
+      TFormula dcaZ(Form("%s_dcaXY", GetName()), str.Data());
       fDCAZmax = dcaZ.Eval(track->Pt());
    }
    // check the cut
@@ -409,6 +412,9 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
    } else {
       AliInfo(Form("DCA z cut formula       : %s", fDCAZptFormula.Data()));
    }
+
+   AliInfo(Form("fAODTestFilterBit       : filter bit %i",fAODTestFilterBit));
+   AliInfo(Form("fCheckOnlyFilterBit     : %i",((int) fCheckOnlyFilterBit)));
 }
 //__________________________________________________________________________________________________
 void AliRsnCutTrackQuality::SetDefaults2010()

@@ -52,6 +52,7 @@ public:
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
 
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
+   void      SetCheckOnlyFilterBit(Bool_t on=kTRUE)    {fCheckOnlyFilterBit=on;}
 
    void      SetDefaults2010();
    void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
@@ -89,6 +90,7 @@ protected:
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
    Float_t    fCutMaxChi2TPCConstrainedVsGlobal;  // max chi2 TPC track constrained with vtx vs. global track
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
+   Bool_t     fCheckOnlyFilterBit;     // check only the filter bit
    AliESDtrackCuts *fESDtrackCuts;     // pointer to AliESDtrackCuts object
 
    ClassDef(AliRsnCutTrackQuality, 2)
