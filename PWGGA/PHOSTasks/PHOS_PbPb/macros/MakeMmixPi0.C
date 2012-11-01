@@ -107,7 +107,7 @@ void MakeMmixPi0(const TString filename,
   TH2F *hPi0 = FindPi0(histoList, false, pid, centrality);
   TH2F *hPi0Mix = FindPi0(histoList, true, pid, centrality);
   if( !hPi0 || !hPi0Mix || hPi0->GetEntries() < 10000) {
-    Printf(Form("no histogram(0x%x, 0x%x) or to low number of entries(%d) in hPi0, skipping this cent", hPi0, hPi0Mix, hPi0->GetEntries()));
+    Printf(Form("no histogram(0x%p, 0x%p) or to low number of entries(%.1f) in hPi0, skipping this cent", hPi0, hPi0Mix, hPi0->GetEntries()));
     file->Close();
     delete file;
     return;
@@ -200,10 +200,9 @@ void MakeMmixPi0(const TString filename,
   rawCanvas->Divide(nPadX, nPadY);
 
   TAxis * pta=hPi0->GetYaxis() ;
-  TAxis * ma=hPi0->GetXaxis() ;
+  //TAxis * ma=hPi0->GetXaxis() ;
   for(Int_t ptBin=1; ptBin<=nPtBins; ptBin++){
     c1->cd(ptBin) ;
-    printf("\n\t%.1f<pt<%.1f GeV/c\n",ptBinEdges[ptBin-1],ptBinEdges[ptBin]);
     Int_t imin=pta->FindBin(ptBinEdges[ptBin-1]+0.0001);
     Int_t imax=pta->FindBin(ptBinEdges[ptBin]-0.0001) ;
     Double_t pt=(ptBinEdges[ptBin]+ptBinEdges[ptBin-1])/2. ;
@@ -215,22 +214,26 @@ void MakeMmixPi0(const TString filename,
     hPi0Proj->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
     hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
     hPi0ProjMix->SetXTitle("M_{#gamma#gamma}^{Mix} (GeV/c^{2})");
-    
-    if( hPi0Proj->GetEntries() < 1000. ) {
+
+
+    Printf("\n\t%.1f<pt<%.1f GeV/c, entries: %.0f",ptBinEdges[ptBin-1],ptBinEdges[ptBin],  hPi0Proj->GetEntries());
+    if( hPi0Proj->GetEntries() < 100. ) {
       Printf("skipping this bin as n. entries is to low");
-      Printf("entries: %.0f, mixed: %.0f", hPi0Proj->GetEntries(), hPi0ProjMix->GetEntries());
       continue;
     }
       
 
     // if(ptBin<=17){
-      hPi0Proj ->Rebin(4) ;
-      hPi0ProjMix->Rebin(4) ;
+    hPi0Proj ->Rebin(4) ;
+    hPi0ProjMix->Rebin(4) ;
     // }
     // else{
     //   hPi0Proj ->Rebin(5) ;
     //   hPi0ProjMix->Rebin(5) ;
     // }
+    hPi0Proj->SetName(Form("%s_rebin", hPi0Proj->GetName()));
+    hPi0ProjMix->SetName(Form("%s_rebin", hPi0ProjMix->GetName()));
+
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0Proj ->GetBinContent(ib)==0)hPi0Proj ->SetBinError(ib,1.);}
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0ProjMix->GetBinContent(ib)==0)hPi0ProjMix->SetBinError(ib,1.);}
     TH1D * hPi0Proj2    = (TH1D*)hPi0Proj ->Clone(Form("rawPi0Signal2_ptBin%d",ptBin)) ;
@@ -310,7 +313,7 @@ void MakeMmixPi0(const TString filename,
     Double_t errStat     = hPi0ProjMix->Integral(intBinMin,intBinMax); 
     
     rawCanvas->cd(ptBin);
-    hpmScaled->Scale(fbg1(0.1349));
+    hpmScaled->Scale(fbg1->Eval(0.1349));
     hPi0Proj->SetLineColor(kBlack);
     hPi0Proj->SetAxisRange(0.0, 0.3);
     hPi0Proj->DrawCopy();
@@ -432,7 +435,6 @@ void MakeMmixPi0(const TString filename,
     Printf("WARNING: non positive nEvents in centrality range, cMin:%d, cMax:%d, nEvents:%f", cMin, cMax, nevents );
     
   }
-  hPi0Proj2->Write(0,TObject::kOverwrite) ;
 
   mr1->Write(0,TObject::kOverwrite) ;
   sr1->Write(0,TObject::kOverwrite) ;
@@ -512,7 +514,7 @@ Double_t BG2(Double_t * x, Double_t * par){
 
 
 //-----------------------------------------------------------------------------
-PPRstyle()
+void PPRstyle()
 {
 
   //////////////////////////////////////////////////////////////////////
@@ -583,7 +585,7 @@ void MakeMmixPi0()
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", -1, "CPV", "out/kPHOSPb/");
   
   // 0-10%
-  MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", 0, "CPV", "out/kCentral/");
+  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", 0, "CPV", "out/kCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", 0, "CPV", "out/kMB/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", 0, "CPV", "out/kPHOSPb/");
 
@@ -595,7 +597,7 @@ void MakeMmixPi0()
   // // 40-80%
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_SemiCentral/PHOSPi0Flow_SemiCentralCoutput1", 2, "CPV", "out/kSemiCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", 2, "CPV", "out/kMB/");
-  // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", 2, "CPV", "out/kPHOSPb/");
+  MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", 2, "CPV", "out/kPHOSPb/");
 }
 
 
@@ -628,6 +630,8 @@ TH2F* FindPi0(TList *histoList, bool mix, const char* pid, int centrality)
     }
     return histMerge;
   }
-  else // case not defined
+  else { // case not defined
     Printf("ERROR: Centrality must be in range: [%d,%d]", -1, kNCentralityBins - 1 );
+    return 0;
+  }
 }
