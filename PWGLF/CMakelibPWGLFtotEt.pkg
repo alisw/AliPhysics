@@ -47,7 +47,9 @@ set ( SRCS
     totEt/AliAnalysisHadEtReconstructed.cxx 
     totEt/AliAnalysisTaskHadEt.cxx 
     totEt/AliAnalysisHadEtCorrections.cxx 
-    totEt/AliAnalysisTaskTransverseEnergy.cxx 
+    totEt/AliAnalysisTaskTransverseEnergy.cxx
+    totEt/AliAnalysisEtRecEffCorrection.cxx
+    totEt/AliAnalysisEtTrackMatchCorrections.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
