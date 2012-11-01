@@ -24,14 +24,6 @@ public:
 
     void CreateHistograms();
 
-    virtual Double_t GetChargedContribution(Int_t clusterMultiplicity);
-
-    virtual Double_t GetNeutralContribution(Int_t clusterMultiplicity);
-
-    virtual Double_t GetGammaContribution(Int_t clusterMultiplicity);
-    
-    virtual Double_t GetSecondaryContribution(Int_t clusterMultiplicity);
-
     void SetChargedContributionParameters(Double_t par[3])
     {
         fChargedContributionCorrectionParameters[0] = par[0];

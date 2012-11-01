@@ -12,9 +12,12 @@
 #include "THnSparse.h"
 #include "AliESDCaloCluster.h"
 #include "AliAnalysisEtCuts.h"
+#include "AliAnalysisEtTrackMatchCorrections.h"
 #include <vector>
 #include "Rtypes.h"
 
+class AliAnalysisEtRecEffCorrection;
+class AliAnalysisEtTrackMatchCorrections;
 class AliAnalysisEtSelector;
 class AliCentrality;
 class TString;
@@ -95,23 +98,23 @@ public:
     }
 
     /** Get contribution from non-removed charged particles */
-    virtual Double_t GetChargedContribution(Int_t /*clusterMultiplicity*/) {
-        return 0;
+    Double_t GetChargedContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->ChargedContr(clusterMultiplicity);
     }
 
     /** Get contribution from non-removed neutral particles */
-    virtual Double_t GetNeutralContribution(Int_t /*clusterMultiplicity*/) {
-        return 0;
+    Double_t GetNeutralContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->NeutralContr(clusterMultiplicity);
     }
 
     /** Get contribution from removed gammas */
-    virtual Double_t GetGammaContribution(Int_t /*clusterMultiplicity*/) {
-        return 0;
+    Double_t GetGammaContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->GammaContr(clusterMultiplicity);
     }
 
     /** Get contribution from secondaries */
-    virtual Double_t GetSecondaryContribution(Int_t /*clusterMultiplicity*/) {
-        return 0;
+    Double_t GetSecondaryContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->SecondaryContr(clusterMultiplicity);
     }
 
     void MakeSparseHistograms() {
@@ -119,11 +122,24 @@ public:
     }
     
     AliAnalysisEtCuts * GetCuts() const { return fCuts; }
+    
+
+    // Read in corrections
+    Int_t ReadCorrections(TString filename);  // Read in corrections
+    
 
 protected:
 
     //AliAnalysisEtCuts *fCuts; // keeper of basic cuts
-    Double_t CalculateTransverseEnergy(AliESDCaloCluster *cluster);
+    
+    // Return corrected cluster E_T
+    Double_t CalculateTransverseEnergy(const AliESDCaloCluster &cluster);
+    
+    // Track matching (hadrdonic contamination) corrections
+    AliAnalysisEtTrackMatchCorrections *fTmCorrections;
+    
+    // Reconstruction efficiency corrections
+    AliAnalysisEtRecEffCorrection *fReCorrections;
     
     TTree *fEventSummaryTree; // Contains event level information
 
@@ -290,6 +306,9 @@ protected:
     AliAnalysisEtSelector *fSelector; // Selector class
 
 private:
+   
+  
+    
     //Declare private to avoid compilation warning
     AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
     AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor

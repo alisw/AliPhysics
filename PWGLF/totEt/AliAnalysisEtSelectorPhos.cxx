@@ -82,11 +82,14 @@ Int_t AliAnalysisEtSelectorPhos::Init(const AliESDEvent* event)
 
 Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const AliESDCaloCluster& cluster) const
 {
+  
+//    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
   return cluster.E() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
 Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const TParticle& part) const
 {
+//    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
     return part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
@@ -104,6 +107,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluste
     TVector3 glVec(gPos);
     fGeoUtils->GlobalPos2RelId(glVec, relId);
 
+    //std::cout << "In phos distance to bad channel cut!" << std::endl;
     TVector3 locVec;
     fGeoUtils->Global2Local(locVec, glVec, relId[0]);
 //    std::cout << fGeoUtils << std::endl;
@@ -207,7 +211,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& clus
   // cluster->GetTrackDx(), cluster->GetTrackDz(), event->GetTrack(trackMatchedIndex)->Pt(), event->GetTrack(trackMatchedIndex)->Charge(), ev
   
   Int_t nTracksMatched = cluster.GetNTracksMatched();
-  if(nTracksMatched == 0) return kFALSE;
+  if(nTracksMatched == 0) return kTRUE;
   
   Int_t trackMatchedIndex = cluster.GetTrackMatchedIndex();
   if(trackMatchedIndex < 0) return kTRUE;
@@ -310,3 +314,4 @@ Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& trac
            track.Phi() > fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180. &&
            track.Phi() < fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
+

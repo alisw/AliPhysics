@@ -9,6 +9,7 @@
 //_________________________________________________________________________
 
 #include "TNamed.h"
+#include <iostream>
 
 class AliAnalysisEtCuts : public TNamed
 {
@@ -91,6 +92,10 @@ class AliAnalysisEtCuts : public TNamed
   
   Short_t GetDetectorPhos() const { return fgkDetectorPhos; }
   Short_t GetDetectorEmcal() const { return fgkDetectorEmcal; }
+  
+  Double_t GetPrimaryVertexCutXY() const { return fPrimaryVertexCutXY; }
+  Double_t GetPrimaryVertexCutZ() const { return fPrimaryVertexCutZ; }
+  
 
   // Setters
   // Common
@@ -124,7 +129,7 @@ class AliAnalysisEtCuts : public TNamed
   void SetPhosTrackDistanceCut(const Double_t val) { fPhosTrackDistanceCut = val; }
   void SetPhosTrackDxCut(const Double_t val) { fPhosTrackDxCut = val; }
   void SetPhosTrackDzCut(const Double_t val) { fPhosTrackDzCut = val; }
-  void SetPhosTrackRCut(const Double_t val) { fPhosTrackRCut = val; }
+  void SetPhosTrackRCut(const Double_t val) { std::cout << "Setting: " << val << std::endl; fPhosTrackRCut = val; }
   
   void SetPhosBadDistanceCut(const Double_t val) { fPhosBadDistanceCut = val; }
   
@@ -156,7 +161,11 @@ class AliAnalysisEtCuts : public TNamed
   void SetHistMinParticlePt(const Double_t val) { fHistMinParticlePt = val; }
   void SetHistMaxParticlePt(const Double_t val) { fHistMaxParticlePt = val; }
 
-
+  void SetPrimaryVertexCutXY(const Double_t val) { fPrimaryVertexCutXY = val; }
+  void SetPrimaryVertexCutZ(const Double_t val) { fPrimaryVertexCutZ = val; }
+  
+  
+  
  protected:
 
   // Common   
@@ -240,6 +249,10 @@ class AliAnalysisEtCuts : public TNamed
 // Detector definition
   static const Short_t fgkDetectorPhos = -1; // PHOS 
   static const Short_t fgkDetectorEmcal = 1; // EMCAL 
+  
+  Double_t fPrimaryVertexCutXY; // Cut to decide if particle is from primary vertex
+  Double_t fPrimaryVertexCutZ; // Cut to decide if particle is from primary vertex
+  
 
 private:
   //Declare private to avoid compilation warning

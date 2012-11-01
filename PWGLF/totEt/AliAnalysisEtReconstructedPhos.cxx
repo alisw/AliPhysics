@@ -32,10 +32,10 @@ const Double_t kMEANNEUTRAL = 0.3356;
 const Double_t kMEANGAMMA = 0.374;
 */
 // Simulated case:
-//corrEnergy =cluster->E()/(0.51 + 0.02*cluster->E());
-const Double_t kMEANCHARGED = 0.307/(0.51 + 0.02*0.307);
-const Double_t kMEANNEUTRAL = 0.407/(0.51 + 0.02*0.407);
-const Double_t kMEANGAMMA = 0.374/(0.51 + 0.02*0.374);
+//corrEnergy =cluster->E()/(0.31 + 0.02*cluster->E());
+const Double_t kMEANCHARGED = 0.48/(0.31 + 0.00*0.48);
+const Double_t kMEANNEUTRAL = 0.53/(0.31 + 0.00*0.53);
+const Double_t kMEANGAMMA = 0.51/(0.31 + 0.00*0.31);
 
 
 AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
@@ -54,21 +54,21 @@ AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
 //     fRemovedGammaContributionCorrectionParameters[1] = 0.37e-5;
 //     fRemovedGammaContributionCorrectionParameters[2] = 0.0003;
 
-    fChargedContributionCorrectionParameters[0] = -0.0231864;
-    fChargedContributionCorrectionParameters[1] = 0.112661;
-    fChargedContributionCorrectionParameters[2] = 9.2836e-05;
+    fChargedContributionCorrectionParameters[0] = -0.06;
+    fChargedContributionCorrectionParameters[1] = 0.316;
+    fChargedContributionCorrectionParameters[2] = 0.0022;
 
-    fNeutralContributionCorrectionParameters[0] = -9.18740e-03;
-    fNeutralContributionCorrectionParameters[1] = 3.58584e-02;
-    fNeutralContributionCorrectionParameters[2] = 9.48208e-04;
+    fNeutralContributionCorrectionParameters[0] = -0.003;
+    fNeutralContributionCorrectionParameters[1] = 0.232;
+    fNeutralContributionCorrectionParameters[2] = 0.002;
 
-    fRemovedGammaContributionCorrectionParameters[0] = -2.74323e-03;
-    fRemovedGammaContributionCorrectionParameters[1] = 2.71104e-03;
-    fRemovedGammaContributionCorrectionParameters[2] = 3.52758e-04;
+    fRemovedGammaContributionCorrectionParameters[0] = 0.001;
+    fRemovedGammaContributionCorrectionParameters[1] = 0.009;
+    fRemovedGammaContributionCorrectionParameters[2] = 0.0;
 
-    fSecondaryContributionCorrectionParameters[0] = 0.075;
-    fSecondaryContributionCorrectionParameters[1] = 0.150187;
-    fSecondaryContributionCorrectionParameters[2] = 0.00329361;
+    fSecondaryContributionCorrectionParameters[0] = -0.03;
+    fSecondaryContributionCorrectionParameters[1] = 0.221;
+    fSecondaryContributionCorrectionParameters[2] = 0.002;
 
 }
 
@@ -91,57 +91,6 @@ bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, D
 { 
     return  AliAnalysisEtReconstructed::TrackHitsCalorimeter(track, magField);
 }
-
-Double_t AliAnalysisEtReconstructedPhos::GetChargedContribution(Int_t clusterMult)
-{ // Charged contrib
-    if (clusterMult > 0)
-    {
-        Double_t nPart = fChargedContributionCorrectionParameters[0] + fChargedContributionCorrectionParameters[1]*clusterMult + fChargedContributionCorrectionParameters[2]*clusterMult*clusterMult;
-
-        Double_t contr = nPart*kMEANCHARGED;
-
-        return contr;
-    }
-    return 0;
-
-}
-
-Double_t AliAnalysisEtReconstructedPhos::GetNeutralContribution(Int_t clusterMult)
-{ // Neutral contrib
-    if (clusterMult > 0)
-    {
-        Double_t nPart = fNeutralContributionCorrectionParameters[0] + fNeutralContributionCorrectionParameters[1]*clusterMult + fNeutralContributionCorrectionParameters[2]*clusterMult*clusterMult;
-
-        Double_t contr = nPart*kMEANNEUTRAL;
-
-        return contr;
-    }
-    return 0;
-}
-
-Double_t AliAnalysisEtReconstructedPhos::GetGammaContribution(Int_t clusterMult)
-{ // Gamma contrib
-    if (clusterMult > 0)
-    {
-        Double_t nPart = fRemovedGammaContributionCorrectionParameters[0] + fRemovedGammaContributionCorrectionParameters[1]*clusterMult + fRemovedGammaContributionCorrectionParameters[2]*clusterMult*clusterMult;
-
-        Double_t contr = nPart*kMEANGAMMA;
-
-        return contr;
-    }
-    return 0;
-}
-
-Double_t AliAnalysisEtReconstructedPhos::GetSecondaryContribution(Int_t clusterMultiplicity)
-{ // Secondary contrib
-  if(clusterMultiplicity > 0)
-  {
-    return fSecondaryContributionCorrectionParameters[0] + fSecondaryContributionCorrectionParameters[1]*clusterMultiplicity + fSecondaryContributionCorrectionParameters[2]*clusterMultiplicity*clusterMultiplicity;
-  }
-  
-  return 0;
-}
-
 
 
 

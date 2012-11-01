@@ -23,8 +23,10 @@
 #include "TString.h"
 #include "AliCentrality.h"
 #include "AliAnalysisEtSelector.h"
-
-	       //#include "THnSparse.h"
+#include "AliAnalysisEtTrackMatchCorrections.h"
+#include "AliAnalysisEtRecEffCorrection.h"
+#include "TFile.h"
+#include "TVector3.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
@@ -56,6 +58,8 @@ Float_t AliAnalysisEt::fgRAxis[48]={-2.,-1.,0.,0.0005,0.001,0.0015,0.002,0.0025,
 
 
 AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
+			       ,fTmCorrections(0)
+			       ,fReCorrections(0)
 			       ,fEventSummaryTree(0)
 			       ,fAcceptedTree(0)
 			       ,fDepositTree(0)
@@ -205,6 +209,11 @@ void AliAnalysisEt::FillOutputList(TList *list)
 void AliAnalysisEt::Init()
 {// clear variables, set up cuts and PDG info
   AliAnalysisEtCommon::Init();
+  if(ReadCorrections("calocorrections.root") != 0)
+  {
+    // Shouldn't do this, why oh why are exceptions not allowed?
+    exit(-1);
+  }
   ResetEventValues();
 }
 
@@ -658,24 +667,44 @@ void AliAnalysisEt::ResetEventValues()
   return;
 }
 
-Double_t AliAnalysisEt::CalculateTransverseEnergy(AliESDCaloCluster* cluster)
-{ // based on cluster energy and cluster pos
-  
-  Float_t pos[3];
-  cluster->GetPosition(pos);
-  TVector3 cp(pos);
-  Double_t corrEnergy = 0;
-  
-  if(cluster->E() < 1.5)
+Int_t AliAnalysisEt::ReadCorrections(TString filename)
+{
+  TFile *f = TFile::Open(filename, "READ");
+  if(f)
   {
-    corrEnergy =cluster->E()/(0.51 + 0.02*cluster->E());
-  }    
-  else
-  {
-    corrEnergy =cluster->E()/(0.51 + 0.02*1.5);
+    TString det = "Phos";
+    if(fHistogramNameSuffix.Contains("Emcal"))
+    {
+      det = "Emcal";
+    }
+    TString name = "TmCorrections" + det;
+    std::cout << name << std::endl;
+    fTmCorrections = dynamic_cast<AliAnalysisEtTrackMatchCorrections*>(f->Get(name));
+    if(!fTmCorrections)
+    {
+      Printf("Could not load TM corrections");
+      return -1;
+    }
+    name = "ReCorrections" + det;
+    fReCorrections = dynamic_cast<AliAnalysisEtRecEffCorrection*>(f->Get(name));
+    if(!fReCorrections)
+    {
+      Printf("Could not load rec eff corrections");
+      return -1;
+    }
+    return 0;
   }
-  //std::cout << "Original energy: " << cluster->E() << ", corrected energy: " << corrEnergy << std::endl;
+ return -1; 
+}
+
+Double_t AliAnalysisEt::CalculateTransverseEnergy(const AliESDCaloCluster& cluster)
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E());
   
-  return corrEnergy * TMath::Sin(cp.Theta());
+//   std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
+  return TMath::Sin(cp.Theta())*corrEnergy;
 }
 

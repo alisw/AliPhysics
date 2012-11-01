@@ -39,21 +39,23 @@ public:
 protected:
 
     virtual bool TrackHitsCalorimeter(TParticle *part, Double_t magField=0.5);
-    
-    
+
+
     Int_t GetPrimMother(Int_t partIdx, AliStack *stack);
-    
+
     Int_t GetK0InFamily(Int_t partIdx, AliStack *stack);
-    
+
     Int_t PrintFamilyTree(Int_t partIdx, AliStack *stack);
     Int_t PrintMothers(Int_t partIdx, AliStack *stack, Int_t gen);
-    
+
+
+
 protected:
 
     Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
     Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
     Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
-    
+
     TTree *fPrimaryTree; // Tree holding info on primaries
 
     Double_t fTotEtWithSecondaryRemoved; // enter comment here
@@ -75,15 +77,28 @@ protected:
     Double_t fPrimaryVz; // enter comment here
     
     Bool_t fPrimaryAccepted; // enter comment here
-    Int_t fDepositedCode; // enter comment here
-    Double_t fDepositedEt; // enter comment here
+    Bool_t fPrimaryMatched;
+    Int_t fDepositedCode; // enter comment here Double_t fDepositedEt; // enter comment here
+    Double_t fDepositedE;
+    Double_t fDepositedEt;
     Int_t fDepositedCharge; // enter comment here
 
     Double_t fDepositedVx; // enter comment here
     Double_t fDepositedVy; // enter comment here
     Double_t fDepositedVz; // enter comment here
+
+    Bool_t fSecondary;
+
+    Double_t fReconstructedE;
+    Double_t fReconstructedEt;
     
+    Double_t fTotPx;
+    Double_t fTotPy;
+    Double_t fTotPz;
     
+
+    Int_t fClusterMult;
+
     TH3F *fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
     TH3F *fHistDecayVertexRemovedCharged; // Decay vertex for non-removed charged particles
     TH3F *fHistDecayVertexNonRemovedNeutral; // Decay vertex for non-removed charged particles
@@ -220,7 +235,7 @@ protected:
     Int_t fMultRemovedKaonMinus; // enter comment here
     Int_t fMultRemovedK0s; // enter comment here
     Int_t fMultRemovedK0L; // enter comment here
-    
+
     Int_t fMultRemovedLambdas; // enter comment here
     Int_t fMultRemovedElectrons; // enter comment here
     Int_t fMultRemovedPositrons; // enter comment here
@@ -247,9 +262,8 @@ protected:
     TH1F *fHistPiMinusMultAcc; // enter comment here
     TH1F *fHistPiZeroMultAcc; // enter comment here
 
-    // DS: pi+- mult already defined in base class..
-    Int_t fPiPlusMult; // enter comment here
-    Int_t fPiMinusMult; // enter comment here
+   // Int_t fPiPlusMult; // enter comment here
+   // Int_t fPiMinusMult; // enter comment here
     
     Int_t fPiZeroMult; // enter comment here
 
@@ -262,16 +276,24 @@ protected:
     Int_t fChargedRemoved; // number of charged particles that where removed by track matching
     Int_t fChargedNotRemoved; // number of charged particles that were not removed
     Int_t fNeutralNotRemoved; // number of neutral particles that were not removed
+    Int_t fGammaRemoved; // number of gammas removed
+
+    Int_t fSecondaryNotRemoved;
 
     Double_t fEnergyNeutralRemoved; // energy of neutral particles that where removed by track matching
     Double_t fEnergyChargedRemoved; // energy of charged particles that where removed by track matching
     Double_t fEnergyChargedNotRemoved; // energy of charged particles that were not removed
     Double_t fEnergyNeutralNotRemoved; // energy of neutral particles that were not removed
+    Double_t fEnergyGammaRemoved; // energy of gammas that were removed
 
     Int_t fNClusters; // Number of clusters in event
 
     Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
+    TH1F *fHistGammasFound;
+    TH1F *fHistGammasGenerated;
+
+
 private:
 
     //Declare it private to avoid compilation warning

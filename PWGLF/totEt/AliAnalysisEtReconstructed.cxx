@@ -51,7 +51,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         ,fHistMuonEnergyDeposit(0)
         ,fHistRemovedEnergy(0)
         ,fGeomCorrection(1.0)
-        ,fEMinCorrection(1.0/0.89)
+        ,fEMinCorrection(1.0/0.687)
 	,fRecEffCorrection(1.0)
 	,fClusterPosition(0)
 	,fHistChargedEnergyRemoved(0)
@@ -228,7 +228,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    
 	    fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
 
-	    fTotNeutralEt += CalculateTransverseEnergy(cluster);
+	    fTotNeutralEt += CalculateTransverseEnergy(*cluster);
             fNeutralMultiplicity++;
         }
         fMultiplicity++;
@@ -242,14 +242,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
     fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
 
-    Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) - GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
+    Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) + GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
     FillHistograms();
-   // std::cout << "fTotNeutralEt: " << fTotNeutralEt << ", Contribution from non-removed charged: " << GetChargedContribution(fNeutralMultiplicity) << ", neutral: " << GetNeutralContribution(fNeutralMultiplicity) << ", gammas: " << GetGammaContribution(fNeutralMultiplicity) << ", multiplicity: " << fNeutralMultiplicity<< std::endl;
+    //std::cout << "fTotNeutralEt: " << fTotNeutralEt << ", Contribution from non-removed charged: " << GetChargedContribution(fNeutralMultiplicity) << ", neutral: " << GetNeutralContribution(fNeutralMultiplicity) << ", gammas: " << GetGammaContribution(fNeutralMultiplicity) << ", multiplicity: " << fNeutralMultiplicity<< std::endl;
     return 0;
 }
 

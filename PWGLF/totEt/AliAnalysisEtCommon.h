@@ -81,8 +81,9 @@ protected:
     static Int_t fgAntiProtonCode;//pdg antiproton code
     static Int_t fgLambdaCode;// pdg lambda code
     static Int_t fgAntiLambdaCode;//pdg antilambda code
-    static Int_t fgK0SCode;//pdg k0 short code
     static Int_t fgOmegaCode;//pdg omega code
+    static Int_t fgK0SCode;//pdg k0 short code
+    static Int_t fgK0Code;//pdg k0 code
     static Int_t fgAntiOmegaCode;//pdg anti-omega code
     static Int_t fgXi0Code;//pdg xi-0 code
     static Int_t fgAntiXi0Code;//pdg anti-xi0 code
