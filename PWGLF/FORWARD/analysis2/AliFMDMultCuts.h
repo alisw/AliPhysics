@@ -128,13 +128,13 @@ public:
    * 
    * @return method number
    */
-  UShort_t GetMehod() const;
+  UShort_t GetMethod() const;
   /** 
    * Get a string descriping the method used
    * 
    * @return String 
    */
-  const char* GetMehodString() const;
+  const char* GetMethodString() const;
 protected:
   Double_t fMultCuts[5];   // Fixed cuts
   Double_t fMPVFraction;   // Most probably value fraction
