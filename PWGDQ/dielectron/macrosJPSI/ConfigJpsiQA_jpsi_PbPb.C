@@ -3,6 +3,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 
+void AddMCSignals(AliDielectron *die);
+
 void SetEtaCorrection();
 TVectorD *GetRunNumbers();
 
@@ -13,7 +15,7 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
 Bool_t  isESD = kTRUE;
-Bool_t  hasMC = kFALSE;
+Bool_t  hasMC = kTRUE;
 TString list  = gSystem->Getenv("LIST");
 
 
@@ -52,6 +54,11 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="")
 
   printf(" Adding %s %s config %s for %s \n",(isESD?"ESD":"AOD"),(hasMC?"MC":""),name.Data(),list.Data());
 
+  // MC signals
+  if(hasMC) {
+    AddMCSignals(die);
+    printf(" Add %d MC signals \n",die->GetMCSignals()->GetEntriesFast());
+  }
   // histogram setup
   InitHistograms(die,cutDefinition);
   printf(" Add %d classes to the manager \n",die->GetHistogramList()->GetEntries());
@@ -83,7 +90,7 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="")
   */
 
   // prefilter settings
-  die->SetNoPairing();
+  //  die->SetNoPairing();
   //die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
 
@@ -174,6 +181,15 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   ////////////////////////////////// MC
   if(hasMC) {
 
+    // TPC
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,   -4.,4.0);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -100.,4.0,0.,0.,kTRUE);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,   -100.,3.5,0.,0.,kTRUE);
+
+    // TOF
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-5,5.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
+
+    /*
     // electron
     Double_t nSigmaPi = 3.5; Double_t nSigmaP = 3.5;
     Double_t resolution=0.0549;
@@ -253,6 +269,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
       nSigmaCorrection->SetPoint(1, 139510., -0.50-(0.28));
       pid->SetCorrGraph(nSigmaCorrection);
     }
+    */
 
   } //hasMC
 
@@ -309,7 +326,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   // booleans for histo selection
   Bool_t bHistEvtQA=kFALSE, bHistTrackQA=kFALSE, bHistPairQA = kFALSE;
   switch (cutDefinition) {
-  case kQA:       bHistEvtQA=kTRUE; bHistTrackQA=kTRUE; break;
+  case kQA:       bHistEvtQA=kTRUE; bHistTrackQA=kTRUE; bHistPairQA=kTRUE; break;
   }
 
 
@@ -322,7 +339,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
     //add histograms to event class
     histos->AddClass("Event");
-
+    histos->UserHistogram("Event","","", 80,0.,80., AliDielectronVarManager::kCentrality);
+    histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(80,0.,80.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality);
     histos->UserProfile("Event","","", AliDielectronVarManager::kCentrality,    GetRunNumbers(), AliDielectronVarManager::kRunNumber);
@@ -332,6 +350,19 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,	AliDielectronHelper::MakeLinBinning(80,0.,80.), AliDielectronVarManager::kCentrality);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(150,-15.,15.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kZvPrim);
+    histos->UserHistogram("Event","","", 80.,0.,80., 150,-15.,15.,
+			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kZvPrim);
+
+    histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(250,0.,25000.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kMultV0);
+    histos->UserHistogram("Event","","", 80.,0.,80., 250,0.,25000.,
+			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kMultV0);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        80.,0.,80., AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        80.,0.,80., AliDielectronVarManager::kCentralitySPD);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+
+    histos->UserHistogram("Event","","", 80.,0.,80., 80.,0.,80., AliDielectronVarManager::kCentrality, AliDielectronVarManager::kCentralitySPD);
+
 
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kv0ArpH2);
@@ -342,12 +373,40 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   }
 
-  ////// EVENT HISTOS /////
+  ////// PAIR HISTOS /////
+  if(bHistPairQA) {
+
+    //add histograms to track class
+    histos->SetReservedWords("Pair");
+    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(AliDielectron::kEv1PM)));
+
+    //add MC signal histograms to track class
+    for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
+      histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
+
+    histos->UserHistogram("Pair","","",  20, 0.,10.,           AliDielectronVarManager::kPt);
+    histos->UserHistogram("Pair","","", 200,-1.,+1.,           AliDielectronVarManager::kEta);
+    histos->UserHistogram("Pair","","", 180, 0.,TMath::TwoPi(),AliDielectronVarManager::kPhi);
+    histos->UserHistogram("Pair","","", 180, 0.,TMath::Pi(),   AliDielectronVarManager::kOpeningAngle);
+    histos->UserHistogram("Pair","","", 300, 0.,300*0.04,      AliDielectronVarManager::kM);
+
+    histos->UserProfile("Pair","","",  AliDielectronVarManager::kPt,  GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Pair","","",  AliDielectronVarManager::kEta, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Pair","","",  AliDielectronVarManager::kPhi, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Pair","","",  AliDielectronVarManager::kOpeningAngle, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Pair","","",  AliDielectronVarManager::kM,   GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+  }
+
+  ////// TRACK HISTOS /////
   if(bHistTrackQA) {
 
     //add histograms to track class
     histos->SetReservedWords("Track");
     for (Int_t i=0; i<2; ++i) histos->AddClass(Form("Track_%s",AliDielectron::TrackClassName(i)));
+
+    //add MC signal histograms to track class
+    for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
+      histos->AddClass(Form("Track_Legs_%s",die->GetMCSignals()->At(i)->GetName()));
 
     histos->UserHistogram("Track","","", 400, 0.,20., AliDielectronVarManager::kPt);
     histos->UserHistogram("Track","","", 200,-1.,+1., AliDielectronVarManager::kEta);
@@ -355,6 +414,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Track","","", AliDielectronVarManager::kPt,  GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserProfile("Track","","", AliDielectronVarManager::kEta, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserProfile("Track","","", AliDielectronVarManager::kPhi, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kPt,  80,0.,80., AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kEta, 80,0.,80., AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kPhi, 80,0.,80., AliDielectronVarManager::kCentrality);
 
     histos->UserHistogram("Track","","", 400,-1.,+1., AliDielectronVarManager::kImpactParXY);
     histos->UserHistogram("Track","","", 600,-3.,+3., AliDielectronVarManager::kImpactParZ);
@@ -397,6 +459,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
     // TOF PID
     histos->UserHistogram("Track","", "", 100,-10.,+10., AliDielectronVarManager::kTOFnSigmaEle);
+    histos->UserHistogram("Track","", "", 250,0.0,5., 100,-10.,+10., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTOFnSigmaEle);
     histos->UserProfile("Track","","", AliDielectronVarManager::kTOFnSigmaEle, GetRunNumbers(), AliDielectronVarManager::kRunNumber, "h;-10;+10");
     histos->UserProfile("Track","","", AliDielectronVarManager::kTOFnSigmaEle, 
 			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(16, 0.,80.), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality,"h;-10;+10");
@@ -408,6 +471,90 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   die->SetHistogramManager(histos);
 }
+
+void AddMCSignals(AliDielectron *die){
+  //Do we have an MC handler?
+  if (!hasMC) return;
+  
+  AliDielectronSignalMC* inclusiveJpsi = new AliDielectronSignalMC("inclusiveJpsi","Inclusive J/psi");
+  inclusiveJpsi->SetLegPDGs(11,-11);
+  inclusiveJpsi->SetMotherPDGs(443,443);
+  inclusiveJpsi->SetMothersRelation(AliDielectronSignalMC::kSame);
+  inclusiveJpsi->SetFillPureMCStep(kTRUE);
+  inclusiveJpsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  inclusiveJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  die->AddSignalMC(inclusiveJpsi);
+  
+  AliDielectronSignalMC* promptJpsi = new AliDielectronSignalMC("promptJpsi","Prompt J/psi");   // prompt J/psi (not from beauty decays)
+  promptJpsi->SetLegPDGs(11,-11);
+  promptJpsi->SetMotherPDGs(443,443);
+  promptJpsi->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+  promptJpsi->SetMothersRelation(AliDielectronSignalMC::kSame);
+  promptJpsi->SetFillPureMCStep(kTRUE);
+  promptJpsi->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  promptJpsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  promptJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  promptJpsi->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  die->AddSignalMC(promptJpsi);
+  
+  AliDielectronSignalMC* beautyJpsi = new AliDielectronSignalMC("beautyJpsi","Beauty J/psi");
+  beautyJpsi->SetLegPDGs(11,-11);
+  beautyJpsi->SetMotherPDGs(443,443);
+  beautyJpsi->SetMothersRelation(AliDielectronSignalMC::kSame);
+  beautyJpsi->SetGrandMotherPDGs(500,500);
+  beautyJpsi->SetFillPureMCStep(kTRUE);
+  beautyJpsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  beautyJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  beautyJpsi->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  die->AddSignalMC(beautyJpsi);
+  
+  AliDielectronSignalMC* directJpsi = new AliDielectronSignalMC("directJpsi","Direct J/psi");   // embedded J/psi
+  directJpsi->SetLegPDGs(11,-11);
+  directJpsi->SetMotherPDGs(443,443);
+  directJpsi->SetMothersRelation(AliDielectronSignalMC::kSame);
+  directJpsi->SetFillPureMCStep(kTRUE);
+  directJpsi->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  directJpsi->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);
+  directJpsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  directJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  die->AddSignalMC(directJpsi);
+  
+  AliDielectronSignalMC* conversionElePairs = new AliDielectronSignalMC("conversionElePairs","conversion electron pairs");  // pairs made from conversion (may be also from 2 different conversions)
+  conversionElePairs->SetLegPDGs(11,-11);
+  conversionElePairs->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  conversionElePairs->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  conversionElePairs->SetMotherPDGs(22,22);
+  //   die->AddSignalMC(conversionElePairs);
+
+  // prompt J/psi radiative channel
+  AliDielectronSignalMC* promptJpsiRad = new AliDielectronSignalMC("promptJpsiRad","Prompt J/psi Radiative");   // prompt J/psi (not from beauty decays)
+  promptJpsiRad->SetLegPDGs(11,-11);
+  promptJpsiRad->SetMotherPDGs(443,443);
+  promptJpsiRad->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+  promptJpsiRad->SetMothersRelation(AliDielectronSignalMC::kSame);
+  promptJpsiRad->SetFillPureMCStep(kTRUE);
+  promptJpsiRad->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  promptJpsiRad->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  promptJpsiRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  promptJpsiRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  promptJpsiRad->SetJpsiRadiative(AliDielectronSignalMC::kIsRadiative);
+  die->AddSignalMC(promptJpsiRad);
+
+  // prompt J/psi Non radiative channel
+  AliDielectronSignalMC* promptJpsiNonRad = new AliDielectronSignalMC("promptJpsiNonRad","Prompt J/psi non-Radiative");   // prompt J/psi (not from beauty decays)
+  promptJpsiNonRad->SetLegPDGs(11,-11);
+  promptJpsiNonRad->SetMotherPDGs(443,443);
+  promptJpsiNonRad->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+  promptJpsiNonRad->SetMothersRelation(AliDielectronSignalMC::kSame);
+  promptJpsiNonRad->SetFillPureMCStep(kTRUE);
+  promptJpsiNonRad->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  promptJpsiNonRad->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  promptJpsiNonRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  promptJpsiNonRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  promptJpsiNonRad->SetJpsiRadiative(AliDielectronSignalMC::kIsNotRadiative);
+  die->AddSignalMC(promptJpsiNonRad);
+}
+
 
 void SetEtaCorrection()
 {
