@@ -17,8 +17,10 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    TString rsnStr="Phi";
    // Rsn Cut
    TString rsnCutStr="PhiNsigma:KTPCnsig30";
-   
-   
+   // Rsn Quality Cut
+   TString rsnQualityCutStr = "";
+   // rsnQualityCutStr = "pp_LHC11_p4_120";
+
    input.ToLower();
    inputMC.ToLower();
    Bool_t useMC = !inputMC.CompareTo("mc");

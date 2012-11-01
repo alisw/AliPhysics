@@ -1,4 +1,4 @@
-AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const char *rsnCutStr) {
+AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const char *rsnCutStr,TString rsnQualityCutStr="") {
    // rsnStr -> <Name>
    // rsnCutStr -> <CutName>
    // This will use AddRsnPairs<Name>.C
@@ -20,6 +20,12 @@ AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const 
 
    // Creating Rsn Train Manager
    AliRsnTrainManager *rsnMgr = new AliRsnTrainManager();
+
+   // Rsn Quality Cuts
+   if (!RsnLoadMacroTrain("RsnQualityCut.C")) return kFALSE;
+   if (!rsnQualityCutStr.IsNull()) AliRsnTrainManager::SetGlobalStr("RsnQualityCut",rsnQualityCutStr.Data());
+   //pp_LHC11_p4_120
+
 
    if (!RsnLoadMacroTrain("RsnTrainCommonSettings.C")) return kFALSE;
    RsnTrainCommonSettings(commonStr);
