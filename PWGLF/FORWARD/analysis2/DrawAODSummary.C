@@ -19,7 +19,7 @@
  */
 TObject* GetObject(const TCollection* parent, const TString& name)
 {
-  Info("GetObject", "Getting object %s from %p", name.Data(), parent);
+  // Info("GetObject", "Getting object %s from %p", name.Data(), parent);
   // --- Check parent ------------------------------------------------
   if (!parent) {
     Warning("GetObject", "No parent list");
@@ -50,7 +50,7 @@ TObject* GetObject(const TCollection* parent, const TString& name)
  */
 TObject* GetObject(const TDirectory* parent, const TString& name)
 {
-  Info("GetObject", "Getting object %s from %p", name.Data(), parent);
+  // Info("GetObject", "Getting object %s from %p", name.Data(), parent);
   // --- Check parent ------------------------------------------------
   if (!parent) {
     Warning("GetObject", "No parent directory");
@@ -83,7 +83,7 @@ TObject* GetObject(const TDirectory* parent, const TString& name)
  */
 Bool_t CheckType(const TObject* o, const TClass* cl, const TString& src)
 {
-  Info("CheckType", "Checking type of %s vs %s", o->GetName(), cl->GetName());
+  // Info("CheckType", "Checking type of %s vs %s", o->GetName(), cl->GetName());
   if (!o->IsA()->InheritsFrom(cl)) { 
     Warning("CheckType", "Object \"%s\" retrieved from \"%s\" is not a "
 	    "%s but a %s", o->GetName(), src.Data(), cl->GetName(), 
@@ -96,7 +96,7 @@ Bool_t CheckType(const TObject* o, const TClass* cl, const TString& src)
 //_____________________________________________________________________
 void GetParameter(const TCollection* c, const TString& name, UShort_t& value)
 {
-  Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
+  // Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
   TObject* o = GetObject(c, name);
   if (!o) return;
   value = o->GetUniqueID();
@@ -104,7 +104,7 @@ void GetParameter(const TCollection* c, const TString& name, UShort_t& value)
 //_____________________________________________________________________
 void GetParameter(const TCollection* c, const TString& name, Int_t& value)
 {
-  Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
+  // Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
   TObject* o = GetObject(c, name);
   if (!o) return;
   value = o->GetUniqueID();
@@ -112,7 +112,7 @@ void GetParameter(const TCollection* c, const TString& name, Int_t& value)
 //_____________________________________________________________________
 void GetParameter(const TCollection* c, const TString& name, Double_t& value)
 {
-  Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
+  // Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
   TObject* o = GetObject(c, name);
   if (!o) return;
   UInt_t  i = o->GetUniqueID();
@@ -122,7 +122,7 @@ void GetParameter(const TCollection* c, const TString& name, Double_t& value)
 //_____________________________________________________________________
 void GetParameter(const TCollection* c, const TString& name, Bool_t& value)
 {
-  Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
+  // Info("GetParameter", "Getting parameter of %s from %p", name.Data(), c);
   TObject* o = GetObject(c, name);
   if (!o) return;
   value = o->GetUniqueID();
@@ -139,7 +139,7 @@ void GetParameter(const TCollection* c, const TString& name, Bool_t& value)
  */
 TCollection* GetCollection(const TCollection* parent, const TString& name)
 {
-  Info("GetCollection", "Getting collection of %s from %p", name.Data(), c);
+  // Info("GetCollection", "Getting collection of %s from %p", name.Data(), c);
   // --- Find the object ---------------------------------------------
   TObject* o = GetObject(parent, name);
   if (!o) return 0;
@@ -162,8 +162,8 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  */
 TCollection* GetCollection(const TDirectory* parent, const TString& name)
 {
-  Info("GetCollection", "Getting collection of %s from %p", 
-       name.Data(), parent);
+  // Info("GetCollection", "Getting collection of %s from %p", 
+  //       name.Data(), parent);
   // --- Find the object ---------------------------------------------
   TObject* o = GetObject(parent, name);
   if (!o) return 0;
@@ -186,7 +186,7 @@ TCollection* GetCollection(const TDirectory* parent, const TString& name)
  */
 TH1* GetH1(const TCollection* parent, const TString& name)
 {
-  Info("GetH1", "Getting 1D histogram of %s from %p", name.Data(), c);
+  // Info("GetH1", "Getting 1D histogram of %s from %p", name.Data(), c);
   // --- Find the object ---------------------------------------------
   TObject* o = GetObject(parent, name);
   if (!o) return 0;
@@ -208,7 +208,7 @@ TH1* GetH1(const TCollection* parent, const TString& name)
  */
 TH2* GetH2(const TCollection* parent, const TString& name)
 {
-  Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
+  // Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
   // --- Find the object ---------------------------------------------
   TObject* o = GetObject(parent, name);
   if (!o) return 0;
@@ -231,7 +231,7 @@ TH2* GetH2(const TCollection* parent, const TString& name)
 THStack* GetStack(const TCollection* parent, const TString& name,
 		  const char* sub=0)
 {
-  Info("GetStack", "Getting histogram stack %s from %p", name.Data(), parent);
+  // Info("GetStack", "Getting histogram stack %s from %p", name.Data(), parent);
   // --- Find the object ---------------------------------------------
   TObject* o = GetObject(parent, name);
   if (!o) return 0;
@@ -282,7 +282,7 @@ void Pause()
 void
 ClearCanvas(TCanvas* c)
 {
-  Info("ClearCanvas", "Clearing canvas");
+  // Info("ClearCanvas", "Clearing canvas");
   c->SetLeftMargin(.1);
   c->SetRightMargin(.05);
   c->SetBottomMargin(.1);
@@ -319,7 +319,7 @@ ClearCanvas(TCanvas* c)
  */
 TCanvas* CreateCanvas(const TString& pname)
 {
-  Info("CreateCanvas", "Creating canvas");
+  // Info("CreateCanvas", "Creating canvas");
   Int_t size = 1000;
   TCanvas* c = new TCanvas("c", pname.Data(), size / TMath::Sqrt(2), size);
   c->SetFillColor(0);
@@ -353,7 +353,7 @@ TCanvas* CreateCanvas(const TString& pname)
  */
 void CloseCanvas(TCanvas* c)
 {
-  Info("CloseCanvas", "Closing canvas");
+  // Info("CloseCanvas", "Closing canvas");
   ClearCanvas(c);
   c->Print(Form("%s]", c->GetTitle()));
 }
@@ -368,7 +368,7 @@ void CloseCanvas(TCanvas* c)
 void PrintCanvas(TCanvas* c, const TString& title, 
 		 Float_t size=.7, Bool_t pause=false)
 {
-  Info("PrintCanvas", "Printing page %s", title.Data());
+  // Info("PrintCanvas", "Printing page %s", title.Data());
   TString tit;
   tit.Form("Title:%s", title.Data());
 
@@ -384,7 +384,9 @@ void PrintCanvas(TCanvas* c, const TString& title,
   c->Modified();
   c->Update();
   c->cd();
+  gSystem->RedirectOutput("/dev/null");
   c->Print(c->GetTitle(), tit);
+  gSystem->RedirectOutput(0);
   
   // std::cin.peek();
   if (pause) Pause();
@@ -402,7 +404,7 @@ void MakeChapter(TCanvas* c, const TString& title)
 {
   c->cd(2);
   
-  Info("MakeChapter", "Making chapter %s", title.Data());
+  // Info("MakeChapter", "Making chapter %s", title.Data());
   TLatex* ltx = new TLatex(.5, .5, title);
   ltx->SetNDC();
   ltx->SetTextAlign(22);
@@ -414,8 +416,8 @@ void MakeChapter(TCanvas* c, const TString& title)
 void DrawInPad(TVirtualPad* c, Int_t padNo, TObject* h, Option_t* opts="",
 	       UShort_t flags=0x0)
 {
-  Info("DrawInPad", "Drawing %p in pad # %d of %p w/options %s, flags 0x%x", 
-       h, padNo, c, opts, flags);
+  // Info("DrawInPad", "Drawing %p in pad # %d of %p w/options %s, flags 0x%x", 
+  //      h, padNo, c, opts, flags);
   TVirtualPad* p = c->cd(padNo);
   if (!p) { 
     Warning("DrawInPad", "Pad # %d not found in %s", padNo, c->GetName());
@@ -499,7 +501,7 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
   GetParameter(c, "fpVtx",   fpVtx);
   GetParameter(c, "v0and",   v0and);
   GetParameter(c, "nPileUp", nPileUp);
-  GetParameter(c, "dPileUp", dPileUp);
+  GetParameter(c, "dPileup", dPileUp);
 
   DrawParameter(name, value, y, "System", (sys == 1 ? "pp" : 
 					   sys == 2 ? "PbPb" : 
@@ -516,35 +518,28 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
 		Form("%fcm", dPileUp));
 
   PrintCanvas(can, "Event Inspector");
+
   TVirtualPad* body = can->cd(2);
   body->Divide(2,4);
-  TH1*    nEventsTr          = GetH1(c, "nEventsTr");
-  TH1*    nEventsTrVtx       = GetH1(c, "nEventsTrVtx");
-  TH1*    nEventsAccepted    = GetH1(c, "nEventsAccepted");
-  TH2*    nEventsAcceptedXY  = GetH2(c, "nEventsAcceptedXY");
-  TH1*    triggers           = GetH1(c, "triggers");
-  TH2*    triggerCorr        = GetH2(c, "triggerCorr");
-  TH1*    type               = GetH1(c, "type");
-  TH1*    cent               = GetH1(c, "cent");
-  TH2*    centVsQuality      = GetH2(c, "centVsQuality");
-  TH1*    status             = GetH1(c, "status");
 
-  THStack* sEvents = new THStack;
-  if (nEventsTr)       { nEventsTr->Rebin(2);    sEvents->Add(nEventsTr); }
-  if (nEventsTrVtx)    { nEventsTrVtx->Rebin(2); sEvents->Add(nEventsTrVtx); }
-  if (nEventsAccepted) { sEvents->Add(nEventsAccepted); }
-  DrawInPad(body, 1, sEvents, "nostack", 0x10);
+  TH1*    nEventsTr    = GetH1(c, "nEventsTr");
+  TH1*    nEventsTrVtx = GetH1(c, "nEventsTrVtx");
+  if (nEventsTr)    nEventsTr->Rebin(2);
+  if (nEventsTrVtx) nEventsTrVtx->Rebin(2);
+  DrawInPad(body, 1, nEventsTr);
+  DrawInPad(body, 1, nEventsTrVtx, "same"); 
+  DrawInPad(body, 1, GetH1(c, "nEventsAccepted"), "same", 0x10);
 
 
-  DrawInPad(body, 2, nEventsAcceptedXY, "colz", 0x4);
-  DrawInPad(body, 3, triggers);
-  DrawInPad(body, 4, triggerCorr, "colz", 0x4);
-  DrawInPad(body, 5, status);
-  DrawInPad(body, 6, type);
-  DrawInPad(body, 7, cent);
-  DrawInPad(body, 8, centVsQuality, "colz", 0x4);
+  DrawInPad(body, 2, GetH2(c, "nEventsAcceptedXY"), "colz", 0x4);
+  DrawInPad(body, 3, GetH1(c, "triggers"),          "hist text");
+  DrawInPad(body, 4, GetH2(c, "triggerCorr"),       "colz", 0x4);
+  DrawInPad(body, 5, GetH1(c, "status"),            "hist text");
+  DrawInPad(body, 6, GetH1(c, "type"),              "hist text");
+  DrawInPad(body, 7, GetH1(c, "cent"));
+  DrawInPad(body, 8, GetH2(c, "centVsQuality"), "colz", 0x4);
 
-  PrintCanvas(can, "EventInspector - Histos");  
+  PrintCanvas(can, "EventInspector - Histograms");  
 }
 
 //____________________________________________________________________
@@ -630,7 +625,7 @@ void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
   Int_t maxParticles, phiAcceptance, etaLumping, phiLumping;
   Bool_t method, recalcEta, recalcPhi;
   
-  GetParameter(c, "maxParticles",    maxParticles);
+  GetParameter(c, "maxParticle",     maxParticles);
   GetParameter(c, "phiAcceptance",   phiAcceptance);
   GetParameter(c, "etaLumping",      etaLumping);
   GetParameter(c, "phiLumping",      phiLumping);
@@ -726,11 +721,46 @@ void DrawHistCollector(const TCollection* forward, TCanvas* can)
   if (!c) return;
 
   TVirtualPad* body = can->cd(2);
-  body->Divide(1, 2);
+  body->Divide(1, 3);
   body->cd(1);
 
-  DrawInPad(body, 1, GetH2(c, "sumRings"), "colz"); 
-  DrawInPad(body, 2, GetH2(c, "coverage"), "colz");
+  TLatex*  name;
+  TLatex*  value;
+  Double_t y = .8;
+  CreateTemplates(name, value, .05);
+  
+  Int_t nCutBins, fiducial, merge, skipRings;
+  Float_t fiducialCut;
+  Bool_t  bgAndHits;
+
+  GetParameter(c, "nCutBins",       nCutBins);
+  GetParameter(c, "skipRings",      skipRings);
+  GetParameter(c, "bgAndHits",      bgAndHits);
+  GetParameter(c, "merge",          merge);
+  GetParameter(c, "fiducial",       fiducial);
+  GetParameter(c, "correctionCut",  fiducialCut);
+
+  DrawParameter(name, value, y, "# of bins to cut",      Form("%d", nCutBins));
+  DrawParameter(name, value, y, "Bg & hit maps stored.", bgAndHits?"yes":"no");
+  DrawParameter(name, value, y, "Fiducial method.", 
+		fiducial == 0 ? "cut" : "distance");
+  DrawParameter(name, value, y, "Fiducial cut.", Form("%f", fiducialCut));
+  DrawParameter(name, value, y, "Merge method", 
+		(merge == 0 ? "straight mean" :
+		 merge == 1 ? "straight mean, no zeroes" : 
+		 merge == 2 ? "weighted mean" : 
+		 merge == 3 ? "least error" : 
+		 merge == 4 ? "sum" : "unknown"));
+  TString skipped;
+  if (skipRings & 0x11) skipped.Append("FMD1i ");
+  if (skipRings & 0x21) skipped.Append("FMD2i ");
+  if (skipRings & 0x22) skipped.Append("FMD2o ");
+  if (skipRings & 0x31) skipped.Append("FMD3i ");
+  if (skipRings & 0x32) skipped.Append("FMD3o ");
+  DrawParameter(name, value, y, "Skipped rings", skipped);
+		 
+  DrawInPad(body, 2, GetH2(c, "sumRings"), "colz"); 
+  DrawInPad(body, 3, GetH2(c, "coverage"), "colz");
   
   PrintCanvas(can, "Histogram collector");
 }
