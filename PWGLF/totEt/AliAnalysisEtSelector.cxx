@@ -19,8 +19,8 @@ ClassImp(AliAnalysisEtSelector);
 
 AliAnalysisEtSelector::AliAnalysisEtSelector(AliAnalysisEtCuts *cuts) : AliAnalysisEtCommon()
 ,fEvent(0)
-,fCuts(cuts)
 ,fClusterArray(0)
+,fCuts(cuts)
 ,fRunNumber(0)
 {
 }
@@ -70,21 +70,11 @@ Int_t AliAnalysisEtSelector::GetPrimary(const Int_t partIdx, AliStack& stack) co
 }
 Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, AliStack &stack) const
 {
-  if(0)
-  {
-  // Let's ignore the gamma<->e+/- channel
-  UInt_t pdgCode = TMath::Abs(stack.Particle(part.GetFirstMother())->GetPdgCode());
-  
-  if(pdgCode == fgGammaCode || fgEMinusCode)
-  {
-      std::cout << "EM channel" << std::endl;
-  }
-  }
-  Bool_t partVtxSecondary = (
-			      TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) > fCuts->GetPrimaryVertexCutXY() 
-			      || TMath::Abs(part.Vz()) > fCuts->GetPrimaryVertexCutZ()
-			    )
-			    && TMath::Sqrt(part.Vx()*part.Vx()+part.Vy()*part.Vy() + part.Vz()*part.Vz())<(fCuts->GetGeometryPhosDetectorRadius()-10);
+//   Bool_t partVtxSecondary = (
+// 			      TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) > fCuts->GetPrimaryVertexCutXY() 
+// 			      || TMath::Abs(part.Vz()) > fCuts->GetPrimaryVertexCutZ()
+// 			    )
+// 			    && TMath::Sqrt(part.Vx()*part.Vx()+part.Vy()*part.Vy() + part.Vz()*part.Vz())<(fCuts->GetGeometryPhosDetectorRadius()-10);
   
   //Let's find suspect decay (typical for secondary interaction)...
   
@@ -95,7 +85,7 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
   
 }
 
-Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const Int_t suspectMotherPdg, const Int_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
+Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
 {
   UInt_t partPdg = TMath::Abs(part.GetPdgCode());
   if(part.GetFirstMother() == -1)

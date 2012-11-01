@@ -201,7 +201,8 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
   Float_t pos[3] = {0};
   TVector3 caloPos(0,0,0);
   TVector3 trackPos(0,0,0);
-  Double_t res=0, delta_eta=0, delta_phi=0, maxPid=-99;
+//   Double_t res=0, delta_eta=0, delta_phi=0, maxPid=-99;
+  Double_t res=0, maxPid=-99;
   Double_t xCluster[4]={0}, xCharged[7]={0};
 	
   AliESDtrack *track = 0;
@@ -220,8 +221,8 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
       // *********************
       // tender's matching
-      delta_eta = caloCluster->GetTrackDz(); 
-      delta_phi = caloCluster->GetTrackDx(); 
+//       delta_eta = caloCluster->GetTrackDz(); 
+//       delta_phi = caloCluster->GetTrackDx(); 
 
       if (caloCluster->GetTrackMatchedIndex() > 0) // tender's matching
           track = fESD->GetTrack(caloCluster->GetTrackMatchedIndex());
