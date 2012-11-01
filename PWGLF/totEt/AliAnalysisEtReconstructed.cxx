@@ -97,7 +97,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fSelector->SetEvent(event);
     
     Int_t cent = -1;
-    if (fCentrality)
+    if (fCentrality && cent)
     {
         cent = fCentrality->GetCentralityClass10("V0M");
         fCentClass = fCentrality->GetCentralityClass10("V0M");
@@ -125,11 +125,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         cluster->GetPosition(pos);
         TVector3 cp(pos);
 	
-	Double_t distance = cluster->GetEmcCpvDistance();
+ 	Double_t distance = cluster->GetEmcCpvDistance();
         Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();
-        if ( cluster->IsEMCAL() ) {
+        if ( cluster->IsEMCAL() && distance) {
             distance = CalcTrackClusterDistance(pos, &trackMatchedIndex, event);
         }
+        
 
         Bool_t matched = false;
 

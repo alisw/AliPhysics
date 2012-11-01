@@ -581,7 +581,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         fNClusters++;
         const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
-	const UInt_t childPart = iPart;
         TParticle *part  =  stack->Particle(iPart);
 
         if (!part)
