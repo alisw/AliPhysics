@@ -48,8 +48,8 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-		  //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
-		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
+		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+		  //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
 		  //           eventCuts->SetCentralityRange(0.0,80.0);
 		  eventCuts->SetRequireVertex();
 		  eventCuts->SetMinVtxContributors(1);
@@ -383,7 +383,7 @@ class LMEECutLib {
 			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);
 			//-AOD-trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 			trackCutsDiel->SetTPCNclFRobust(110);
-			trackCutsDiel->SetMinNCrossedRowsOverFindable(0.7);
+			trackCutsDiel->SetMinNCrossedRowsOverFindable(0.8);
 			trackCuts->AddCut(trackCutsDiel);
 			trackCuts->AddCut(trackCutsAOD);
 		  break;
