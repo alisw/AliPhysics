@@ -256,6 +256,7 @@ void AliGenPileup::Generate()
   fHeader->CalcNProduced();
 
   if (fContainer) {
+    fHeader->SetName(fName);
     fContainer->AddHeader(fHeader);
   } else {
     gAlice->SetGenEventHeader(fHeader);	
