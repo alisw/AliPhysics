@@ -9,6 +9,12 @@
 class AliFMDMultCuts : public TObject 
 {
 public:
+  enum { 
+    kFixed, 
+    kMPVFraction, 
+    kFitRange, 
+    kLandauWidth 
+  };
   /** 
    * CTOR
    */
@@ -117,13 +123,25 @@ public:
    * @return Fixed cut value 
    */
   Double_t GetFixedCut(UShort_t d, Char_t r) const;
+  /** 
+   * Return methid Id
+   * 
+   * @return method number
+   */
+  UShort_t GetMehod() const;
+  /** 
+   * Get a string descriping the method used
+   * 
+   * @return String 
+   */
+  const char* GetMehodString() const;
 protected:
   Double_t fMultCuts[5];   // Fixed cuts
   Double_t fMPVFraction;   // Most probably value fraction
   Double_t fNXi;           // Times of Landau width
   Bool_t   fIncludeSigma;  // Include Gaussian variance 
    
-  ClassDef(AliFMDMultCuts,1); // Cuts on ESD Mult 
+  ClassDef(AliFMDMultCuts,2); // Cuts on ESD Mult 
 };
 
 #endif

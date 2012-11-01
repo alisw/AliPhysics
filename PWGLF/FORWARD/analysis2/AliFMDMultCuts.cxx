@@ -119,6 +119,28 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   return GetMultCut(d, r, iEta, errors);
 }
 //____________________________________________________________________
+UShort_t
+AliFMDMultCuts::GetMethod() const
+{
+  return (fMultCuts[0] >= 0 ? kFixed : // Fixed
+	  fMPVFraction >  0 ? kMPVFraction : // Fraction MPV
+	  fNXi         <  0 ? kFitRange : // Fit range
+	  kLandauWidth);
+}
+//____________________________________________________________________
+const char*
+AliFMDMultCuts::GetMethodString() const
+{
+  switch (GetMethod()) {
+  case kFixed:       return "fixed value";
+  case kMPVFraction: return "fraction of MPV";
+  case kFitRange:    return "fit range";
+  case kLandauWidth: return "landau width";
+  }
+  return "unknown";
+} 
+
+//____________________________________________________________________
 void
 AliFMDMultCuts::Output(TList* l, const char* name) const
 {
@@ -130,9 +152,11 @@ AliFMDMultCuts::Output(TList* l, const char* name) const
     l->Add(ll);
   }
     
+
   ll->Add(AliForwardUtil::MakeParameter("nXi", fNXi));
   ll->Add(AliForwardUtil::MakeParameter("frac", fMPVFraction));
   ll->Add(AliForwardUtil::MakeParameter("sigma", fIncludeSigma));
+  ll->Add(AliForwardUtil::MakeParameter("method", GetMethod()));
 }
 //____________________________________________________________________
 Bool_t
@@ -164,11 +188,7 @@ AliFMDMultCuts::Print(Option_t*) const
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << std::boolalpha 
-	    << ind << "  Method used:           " 
-	    << (fMultCuts[0] >= 0 ? "fixed value" : 
-		fMPVFraction > 0 ? "fraction of MPV" : 
-		fNXi < 0 ? "fit range" : 
-		"landau width") << '\n'
+	    << ind << "  Method used:           " << GetMethodString() << '\n'
 	    << ind << "  Fixed cuts:            "
 	    << "FMD1i=" << GetFixedCut(1,'I') << " "
 	    << "FMD2i=" << GetFixedCut(2,'I') << " "
