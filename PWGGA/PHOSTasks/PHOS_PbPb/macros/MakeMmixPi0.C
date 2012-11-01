@@ -52,7 +52,7 @@ void MakeMmixPi0(const TString filename,
   }
   
 
-  TFile* outFile = new TFile(Form("%sPi0_FitResult_%d.root", saveToDir, centrality),"recreate");
+  TFile* outFile = new TFile(Form("%sPi0_FitResult_%d.root", saveToDir, centrality),"update");
 
   PPRstyle();
   gStyle->SetPadLeftMargin(0.14);
@@ -183,7 +183,7 @@ void MakeMmixPi0(const TString filename,
     fit1->SetParameters(0.001,0.136,0.0055,0.0002,-0.002,0.0) ;
     fit1->SetParLimits(0,0.000,1.000) ;
     fit1->SetParLimits(1,0.120,0.145) ;
-    fit1->SetParLimits(2,0.005,0.012) ;
+    fit1->SetParLimits(2,0.004,0.012) ;
 
     Double_t rangeMin=0.05 ;
     Double_t rangeMax=0.3 ;
@@ -211,8 +211,8 @@ void MakeMmixPi0(const TString filename,
 
     fit2->SetParameters(fit1->GetParameters()) ;
     fit2->SetParLimits(0,0.000,1.000) ;
-    fit2->SetParLimits(1,0.120,0.145) ;
-    fit2->SetParLimits(2,0.005,0.012) ;
+    fit2->SetParLimits(1,0.110,0.145) ;
+    fit2->SetParLimits(2,0.004,0.012) ;
 
     error = hpcopy->Fit(fit2,"+NQ","",rangeMin,rangeMax) ;
     if( error )  {
@@ -266,10 +266,11 @@ void MakeMmixPi0(const TString filename,
 
     c3->cd(ptBin) ;
 
-    Int_t binPi0 = hPi0Proj->FindBin(kMean);
-    fgs->SetParameters(hPi0Proj->Integral(binPi0-1,binPi0+1)/3.,fit1->GetParameter(1),fit1->GetParameter(2)) ;
+    Int_t binPi0 = hPi0Proj->FindBin(fit1->GetParameter(1));
+    Int_t nWidPi0 = 2 * (Int_t) (fit1->GetParameter(2)/hPi0Proj->GetBinWidth(1));
+    fgs->SetParameters(hPi0Proj->Integral(binPi0-nWidPi0,binPi0+nWidPi0)/5., fit1->GetParameter(1), fit1->GetParameter(2)) ;
     fgs->SetParLimits(0,0.000,1.e+5) ;
-    fgs->SetParLimits(1,0.120,0.145) ;
+    fgs->SetParLimits(1,0.110,0.145) ;
     fgs->SetParLimits(2,0.004,0.02) ;
     error = hPi0Proj->Fit(fgs,"Q","",rangeMin,rangeMax) ;   
     if( error ) {
