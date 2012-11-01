@@ -50,6 +50,7 @@ ClassImp(AliITSUv11Layer)
 AliITSUv11Layer::AliITSUv11Layer(): 
   AliITSv11Geometry(),
   fLayerNumber(0),
+  fPhi0(0),
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
@@ -70,6 +71,7 @@ AliITSUv11Layer::AliITSUv11Layer():
 AliITSUv11Layer::AliITSUv11Layer(Int_t debug): 
   AliITSv11Geometry(debug),
   fLayerNumber(0),
+  fPhi0(0),
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
@@ -90,6 +92,7 @@ AliITSUv11Layer::AliITSUv11Layer(Int_t debug):
 AliITSUv11Layer::AliITSUv11Layer(Int_t lay, Int_t debug): 
   AliITSv11Geometry(debug),
   fLayerNumber(lay),
+  fPhi0(0),
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
@@ -110,6 +113,7 @@ AliITSUv11Layer::AliITSUv11Layer(Int_t lay, Int_t debug):
 AliITSUv11Layer::AliITSUv11Layer(Int_t lay, Bool_t turbo, Int_t debug): 
   AliITSv11Geometry(debug),
   fLayerNumber(lay),
+  fPhi0(0),
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
@@ -131,6 +135,7 @@ AliITSUv11Layer::AliITSUv11Layer(Int_t lay, Bool_t turbo, Int_t debug):
 AliITSUv11Layer::AliITSUv11Layer(const AliITSUv11Layer &s):
   AliITSv11Geometry(s.GetDebug()),
   fLayerNumber(s.fLayerNumber),
+  fPhi0(s.fPhi0),
   fLayRadius(s.fLayRadius),
   fZLength(s.fZLength),
   fSensorThick(s.fSensorThick),
@@ -156,6 +161,7 @@ AliITSUv11Layer& AliITSUv11Layer::operator=(const AliITSUv11Layer &s)
   if(&s == this) return *this;
 
   fLayerNumber = s.fLayerNumber;
+  fPhi0        = s.fPhi0;
   fLayRadius   = s.fLayRadius;
   fZLength     = s.fZLength;
   fSensorThick = s.fSensorThick;
@@ -177,8 +183,7 @@ AliITSUv11Layer::~AliITSUv11Layer() {
 }
 
 //________________________________________________________________________
-void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,
-				     const TGeoManager *mgr){
+void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,const TGeoManager *mgr){
 //
 // Creates the actual Layer and places inside its mother volume
 //
@@ -193,8 +198,6 @@ void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,
 // Created:      17 Jun 2011  Mario Sitta
 // Updated:      08 Jul 2011  Mario Sitta
 //
-
-
   // Local variables
   char volname[30];
   Double_t rmin, rmax;
@@ -264,12 +267,13 @@ void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,
   alpha = 360./fNLadders;
   Double_t r = fLayRadius + ((TGeoBBox*)laddVol->GetShape())->GetDY();
   for (Int_t j=0; j<fNLadders; j++) {
-    Double_t theta = j*alpha;
-    xpos = r*SinD(theta);
-    ypos = r*CosD(theta);
+    Double_t phi = j*alpha + fPhi0;
+    xpos = r*CosD(phi);// r*SinD(-phi);
+    ypos = r*SinD(phi);// r*CosD(-phi);
     zpos = 0.;
+    phi += 90;
     layVol->AddNode(laddVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
-				  new TGeoRotation("",-theta,0,0)));
+						    new TGeoRotation("",phi,0,0)));
   }
 
 
@@ -354,15 +358,16 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
 
 
   // Now build up the layer
-  alpha = 360./fNLadders;
+  alpha = 360/fNLadders;
   Double_t r = fLayRadius + ((TGeoBBox*)laddVol->GetShape())->GetDY();
   for (Int_t j=0; j<fNLadders; j++) {
-    Double_t theta = j*alpha;
-    xpos = r*SinD(theta);
-    ypos = r*CosD(theta);
+    Double_t phi = j*alpha + fPhi0;
+    xpos = r*CosD(phi);// r*SinD(-phi);
+    ypos = r*SinD(phi);// r*CosD(-phi);
     zpos = 0.;
+    phi += 90;
     layVol->AddNode(laddVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
-				 new TGeoRotation("",-theta+fLadderTilt,0,0)));
+						    new TGeoRotation("", phi-fLadderTilt,0,0)));
   }
 
 
@@ -536,7 +541,8 @@ Double_t AliITSUv11Layer::RadiusOfTurboContainer(){
 }
 
 //________________________________________________________________________
-void AliITSUv11Layer::SetLadderTilt(const Double_t t){
+void AliITSUv11Layer::SetLadderTilt(const Double_t t)
+{
 //
 // Sets the Ladder tilt angle (for turbo layers only)
 //

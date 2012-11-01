@@ -59,6 +59,7 @@ ClassImp(AliITSUv11)
 //______________________________________________________________________
 AliITSUv11::AliITSUv11()
 :  fLayTurbo(0)
+  ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
   ,fLaddPerLay(0)
@@ -83,6 +84,7 @@ AliITSUv11::AliITSUv11()
 AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
   :AliITSU(title,nlay)
   ,fLayTurbo(0)
+  ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
   ,fLaddPerLay(0)
@@ -105,6 +107,7 @@ AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
   for (Int_t j=0; j<fNLayers; j++) fLayerName[j].Form("%s%d",AliITSUGeomTGeo::GetITSSensorPattern(),j); // See AliITSUv11Layer
   //
   fLayTurbo   = new Bool_t[fNLayers];
+  fLayPhi0    = new Double_t[fNLayers];
   fLayRadii   = new Double_t[fNLayers];
   fLayZLength = new Double_t[fNLayers];
   fLaddPerLay = new Int_t[fNLayers];
@@ -119,6 +122,7 @@ AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
   
   if (fNLayers > 0) { // if not, we'll Fatal-ize in CreateGeometry
     for (Int_t j=0; j<fNLayers; j++) {
+      fLayPhi0[j] = 0;
       fLayRadii[j] = 0.;
       fLayZLength[j] = 0.;
       fLaddPerLay[j] = 0;
@@ -141,6 +145,7 @@ AliITSUv11::~AliITSUv11() {
   // Return:
   //   none.
   delete [] fLayTurbo;
+  delete [] fLayPhi0;
   delete [] fLayRadii;
   delete [] fLayZLength;
   delete [] fLaddPerLay;
@@ -317,6 +322,7 @@ void AliITSUv11::CreateGeometry() {
     }
     else fUpGeom[j] = new AliITSUv11Layer(j,kFALSE);
     //
+    fUpGeom[j]->SetPhi0(fLayPhi0[j]);
     fUpGeom[j]->SetRadius(fLayRadii[j]);
     fUpGeom[j]->SetZLength(fLayZLength[j]);
     fUpGeom[j]->SetNLadders(fLaddPerLay[j]);
@@ -388,7 +394,7 @@ void AliITSUv11::CreateMaterials() {
 }
 
 //______________________________________________________________________
-void AliITSUv11::DefineLayer(const Int_t nlay, const Double_t r,
+void AliITSUv11::DefineLayer(const Int_t nlay, const double phi0, const Double_t r,
 				 const Double_t zlen, const Int_t nladd,
 				 const Int_t nmod, const Double_t lthick,
 				 const Double_t dthick, const UInt_t dettypeID)
@@ -396,6 +402,7 @@ void AliITSUv11::DefineLayer(const Int_t nlay, const Double_t r,
   //     Sets the layer parameters
   // Inputs:
   //          nlay    layer number
+  //          phi0    layer phi0
   //          r       layer radius
   //          zlen    layer length
   //          nladd   number of ladders
@@ -413,6 +420,7 @@ void AliITSUv11::DefineLayer(const Int_t nlay, const Double_t r,
   }
   
   fLayTurbo[nlay] = kFALSE;
+  fLayPhi0[nlay] = phi0;
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
   fLaddPerLay[nlay] = nladd;
@@ -424,18 +432,16 @@ void AliITSUv11::DefineLayer(const Int_t nlay, const Double_t r,
 }
 
 //______________________________________________________________________
-void AliITSUv11::DefineLayerTurbo(const Int_t nlay, const Double_t r,
-				      const Double_t zlen, const Int_t nladd,
-				      const Int_t nmod, const Double_t width,
-				      const Double_t tilt,
-				      const Double_t lthick,
-				      const Double_t dthick,
-				      const UInt_t dettypeID)
+void AliITSUv11::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t zlen, Int_t nladd,
+				  Int_t nmod, Double_t width, Double_t tilt,
+				  Double_t lthick,Double_t dthick,
+				  UInt_t dettypeID)
 {
   //     Sets the layer parameters for a "turbo" layer
   //     (i.e. a layer whose ladders overlap in phi)
   // Inputs:
   //          nlay    layer number
+  //          phi0    phi of 1st ladder
   //          r       layer radius
   //          zlen    layer length
   //          nladd   number of ladders
@@ -455,6 +461,7 @@ void AliITSUv11::DefineLayerTurbo(const Int_t nlay, const Double_t r,
   }
 
   fLayTurbo[nlay] = kTRUE;
+  fLayPhi0[nlay] = phi0;
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
   fLaddPerLay[nlay] = nladd;
@@ -468,15 +475,17 @@ void AliITSUv11::DefineLayerTurbo(const Int_t nlay, const Double_t r,
 }
 
 //______________________________________________________________________
-void AliITSUv11::GetLayerParameters(const Int_t nlay,
-					Double_t &r, Double_t &zlen,
-					Int_t &nladd, Int_t &nmod,
-					Double_t &width, Double_t &tilt,
-					Double_t &lthick, Double_t &dthick){
+void AliITSUv11::GetLayerParameters(Int_t nlay, Double_t &phi0,
+				    Double_t &r, Double_t &zlen,
+				    Int_t &nladd, Int_t &nmod,
+				    Double_t &width, Double_t &tilt,
+				    Double_t &lthick, Double_t &dthick) const
+{
   //     Gets the layer parameters
   // Inputs:
   //          nlay    layer number
   // Outputs:
+  //          phi0    phi of 1st ladder
   //          r       layer radius
   //          zlen    layer length
   //          nladd   number of ladders
@@ -492,13 +501,14 @@ void AliITSUv11::GetLayerParameters(const Int_t nlay,
     AliError(Form("Wrong layer number (%d)",nlay));
     return;
   }
-
-  r = fLayRadii[nlay];
-  zlen = fLayZLength[nlay];
-  nladd = fLaddPerLay[nlay];
-  nmod = fModPerLadd[nlay];
-  width = fLadWidth[nlay];
-  tilt = fLadTilt[nlay];
+  
+  phi0   = fLayPhi0[nlay];
+  r      = fLayRadii[nlay];
+  zlen   = fLayZLength[nlay];
+  nladd  = fLaddPerLay[nlay];
+  nmod   = fModPerLadd[nlay];
+  width  = fLadWidth[nlay];
+  tilt   = fLadTilt[nlay];
   lthick = fLadThick[nlay];
   dthick = fDetThick[nlay];
 }
@@ -513,7 +523,7 @@ void AliITSUv11::Init()
 }
 
 //______________________________________________________________________
-Bool_t AliITSUv11::IsLayerTurbo(const Int_t nlay)
+Bool_t AliITSUv11::IsLayerTurbo(Int_t nlay)
 {
   //     Returns true if the layer is a "turbo" layer
   if ( nlay < 0 || nlay > fNLayers ) {

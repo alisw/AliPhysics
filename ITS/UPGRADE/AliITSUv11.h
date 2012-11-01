@@ -31,26 +31,18 @@ class AliITSUv11 : public AliITSU {
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
-  virtual void   DefineLayer(const Int_t nlay, const Double_t r,
-			     const Double_t zlen, const Int_t nladd,
-			     const Int_t nmod, const Double_t lthick = 0.,
-			     const Double_t dthick = 0.,
-			     const UInt_t detType=0);
-  virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,
-				  const Double_t zlen, const Int_t nladd,
-				  const Int_t nmod, const Double_t width,
-				  const Double_t tilt,
-				  const Double_t lthick = 0.,
-				  const Double_t dthick = 0.,
-				  const UInt_t detType=0);
-  virtual void   GetLayerParameters(const Int_t nlay,
-				    Double_t &r, Double_t &zlen,
+  virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nladd,
+			     Int_t nmod, Double_t lthick=0.,Double_t dthick=0.,UInt_t detType=0);
+  virtual void   DefineLayerTurbo(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nladd,
+				  Int_t nmod,Double_t width,Double_t tilt,
+				  Double_t lthick = 0.,Double_t dthick = 0.,UInt_t detType=0);
+  virtual void   GetLayerParameters(Int_t nlay, Double_t &phi0,Double_t &r, Double_t &zlen,
 				    Int_t &nladd, Int_t &nmod,
 				    Double_t &width, Double_t &tilt,
-				    Double_t &lthick, Double_t &mthick);
+				    Double_t &lthick, Double_t &mthick) const;
   virtual void   Init(); 
-  virtual Bool_t IsLayerTurbo(const Int_t nlay);
-  virtual Int_t  IsVersion() const { return 20;}  // vUpgrade ? do we need this
+  virtual Bool_t IsLayerTurbo(Int_t nlay);
+  virtual Int_t  IsVersion()                 const { return 20;}  // vUpgrade ? do we need this
   virtual void   SetDefaults();
   virtual void   StepManager();
   virtual void   SetLayerDetTypeID(Int_t lr, UInt_t id);
@@ -64,6 +56,7 @@ class AliITSUv11 : public AliITSU {
   AliITSUv11& operator=(const AliITSUv11 &source); // assignment operator
   //
   Bool_t   *fLayTurbo;       // True for "turbo" layers
+  Double_t *fLayPhi0;        // Vector of layer's 1st ladder phi in lab
   Double_t *fLayRadii;       // Vector of layer radii
   Double_t *fLayZLength;     // Vector of layer length along Z
   Int_t    *fLaddPerLay;     // Vector of number of ladders per layer

@@ -331,25 +331,25 @@ void Config()
       AliITSUv11 *ITS  = new AliITSUv11("ITS Upgrade",7);
       nmod = 9;
       nlad = 12;
-      ITS->DefineLayerTurbo(0, 2.2,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(0,0., 2.2,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 16;
-      ITS->DefineLayerTurbo(1, 2.8,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(1,0., 2.8,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 9;
       nlad = 20;
-      ITS->DefineLayerTurbo(2, 3.6,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
+      ITS->DefineLayerTurbo(2,0., 3.6,  nmod*(seg0->Dz()+deadZ*2), nlad, nmod, seg0->Dx()+deadX*2, tilt, thickLr, seg0->Dy(), seg0->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(3, 20.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(3,0., 20.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 29;
       nlad = 48;
-      ITS->DefineLayerTurbo(4, 22.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
+      ITS->DefineLayerTurbo(4,0., 22.0, nmod*(seg1->Dz()+deadZ*2), nlad, nmod, seg1->Dx()+deadX*2, tilt, thickLr, seg1->Dy(), seg1->GetDetTypeID());
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(5, 40.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
+      ITS->DefineLayerTurbo(5,0., 40.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); //41 creates ovl!
       nmod = 50;
       nlad = 94;
-      ITS->DefineLayerTurbo(6, 43.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
+      ITS->DefineLayerTurbo(6,0., 43.0, nmod*(seg2->Dz()+deadZ*2), nlad, nmod, seg2->Dx()+deadX*2, tilt, thickLr, seg2->Dy(), seg2->GetDetTypeID()); 
       //
 
     }

@@ -36,46 +36,45 @@ class AliITSUv11Layer : public AliITSv11Geometry {
     //
     Bool_t    IsTurbo() {return fIsTurbo;};
 
-    Double_t  GetLadderThick() {return fLadderThick;};
-    Double_t  GetLadderTilt()  {return fLadderTilt;};
-    Double_t  GetLadderWidth() {return fLadderWidth;};
-    Double_t  GetSensorThick() {return fSensorThick;};
-    Double_t  GetNLadders()    {return fNLadders;};
-    Double_t  GetNModules()    {return fNModules;};
-    Double_t  GetRadius()      {return fLayRadius;};
-    Double_t  GetZLength()     {return fZLength;};
-    Int_t     GetDetType() const {return fDetTypeID;}
+    Double_t  GetLadderThick() const {return fLadderThick;};
+    Double_t  GetLadderTilt()  const {return fLadderTilt;};
+    Double_t  GetLadderWidth() const {return fLadderWidth;};
+    Double_t  GetSensorThick() const {return fSensorThick;};
+    Double_t  GetNLadders()    const {return fNLadders;};
+    Double_t  GetNModules()    const {return fNModules;};
+    Double_t  GetRadius()      const {return fLayRadius;};
+    Double_t  GetPhi0()        const {return fPhi0;};
+    Double_t  GetZLength()     const {return fZLength;};
+    Int_t     GetDetType()     const {return fDetTypeID;}
     //
-    void      SetLadderThick(const Double_t t) {fLadderThick = t;};
-    void      SetLadderTilt(const Double_t t);
-    void      SetLadderWidth(const Double_t w);
-    void      SetSensorThick(const Double_t t) {fSensorThick = t;};
-    void      SetNLadders(const Int_t n) {fNLadders = n;};
-    void      SetNModules(const Int_t m) {fNModules = m;};
-    void      SetRadius(const Double_t r) {fLayRadius = r;};
-    void      SetZLength(const Double_t z) {fZLength   = z;};
-    void      SetDetType(Int_t tp) {fDetTypeID = tp;}
-    virtual void CreateLayer(TGeoVolume *moth,
-		       const TGeoManager *mgr=gGeoManager);
+    void      SetLadderThick(Double_t t)    {fLadderThick = t;};
+    void      SetLadderTilt(Double_t t);
+    void      SetLadderWidth(Double_t w);
+    void      SetSensorThick(Double_t t)    {fSensorThick = t;};
+    void      SetNLadders(Int_t n)          {fNLadders = n;};
+    void      SetNModules(Int_t m)          {fNModules = m;};
+    void      SetRadius(Double_t r)         {fLayRadius = r;};
+    void      SetPhi0(Double_t phi)         {fPhi0 = phi;}
+    void      SetZLength(Double_t z)        {fZLength   = z;};
+    void      SetDetType(Int_t tp)          {fDetTypeID = tp;}
+    virtual void CreateLayer(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
 
   private:
-    void CreateLayerTurbo(TGeoVolume *moth,
-		    const TGeoManager *mgr=gGeoManager);
+    void CreateLayerTurbo(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
 
     Double_t RadiusOfTurboContainer();
 
     TGeoVolume* CreateLadder(const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateModule(const Double_t x, const Double_t y,
-			     const Double_t z,
-			     const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateModule(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
 
     Int_t     fLayerNumber; // Current layer number
+    Double_t  fPhi0;        // lab phi of 1st ladder, in degrees!!!
     Double_t  fLayRadius;   // Inner radius of this layer
     Double_t  fZLength;     // Z length of this layer
     Double_t  fSensorThick; // Sensor thickness
     Double_t  fLadderThick; // Ladder thickness
     Double_t  fLadderWidth; // Ladder width (for turbo layers only)
-    Double_t  fLadderTilt;  // Ladder tilt angle (for turbo layers only)
+    Double_t  fLadderTilt;  // Ladder tilt angle (for turbo layers only) in degrees
     Int_t     fNLadders;    // Number of ladders in this layer
     Int_t     fNModules;    // Number of modules per ladder in this layer
     UInt_t    fDetTypeID;   // detector type id
