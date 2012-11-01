@@ -188,6 +188,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fCalibRaw(0),
   fDataQA(0),
   fALTROConfigData(0),
+  fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
   fTemperature(0),
@@ -242,6 +243,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fCalibRaw(0),
   fDataQA(0),
   fALTROConfigData(0),
+  fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
   fTemperature(0),
@@ -451,6 +453,14 @@ void AliTPCcalibDB::Update(){
     fPulserData=(TObjArray*)(entry->GetObject());
   }
   
+   //Calibration ION tail data
+ //  entry          = GetCDBEntry("TPC/Calib/IonTail");
+//   if (entry){
+//     entry->SetOwner(kTRUE);
+//     fIonTailArray=(TObjArray*)(entry->GetObject());
+//   }
+
+
   //CE data
   entry          = GetCDBEntry("TPC/Calib/CE");
   if (entry){

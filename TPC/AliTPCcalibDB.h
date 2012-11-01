@@ -89,6 +89,7 @@ class AliTPCcalibDB : public TObject
   Bool_t IsTrgL0();
   Bool_t IsTrgL1();
     
+  TObjArray*    GetIonTailArray()  const {return fIonTailArray;}
     
   //Pulser data
   TObjArray*    GetPulserData()  const {return fPulserData;}
@@ -109,6 +110,7 @@ class AliTPCcalibDB : public TObject
   static Float_t GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
   //Raw calibration
   AliTPCCalibRaw* GetCalibRaw() const {return fCalibRaw;}
+
   //QA object
   AliTPCdataQA*   GetDataQA() const {return fDataQA;}
   //
@@ -197,6 +199,7 @@ protected:
   AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry
   AliTPCdataQA  *fDataQA;         // qa object
   TObjArray *fALTROConfigData;    // ALTRO configuration data
+  TObjArray * fIonTailArray;      // array of graphs with the ion tail 
   TObjArray *fPulserData;         // Calibration Pulser data
   TObjArray *fCEData;             // CE data
   //
