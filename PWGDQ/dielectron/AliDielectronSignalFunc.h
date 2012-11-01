@@ -82,15 +82,13 @@ public:
   virtual ~AliDielectronSignalFunc();
 
   virtual void Process(TObjArray * const arrhist);
-  void ProcessFitIKF(TObjArray * const arrhist);      // fit the SE +- distribution with mc shape and best chi2/dof
-  void FitOneMinv(TH1F *hMinv, TH1F *hSim, Int_t pod); // fit procedure for one single minv spectrum
-    
   void ProcessFit(TObjArray * const arrhist);      // fit the SE +- distribution
   void ProcessLS(TObjArray * const arrhist);       // substract the fitted SE like-sign background
   void ProcessEM(TObjArray * const arrhist);       // substract the fitted SE+ME like-sign background
-  
+
   void SetUseIntegral(Bool_t flag=kTRUE) {fUseIntegral = flag;};
   void SetFunctions(TF1 * const combined, TF1 * const sig=0, TF1 * const back=0, Int_t parM=1, Int_t parMres=2);
+  void CombineFunc(TF1 * const peak=0, TF1 * const bgnd=0);
   void SetFitOption(const char* opt) {
     fFitOpt=opt; 
     fFitOpt.ToLower(); 
@@ -103,20 +101,22 @@ public:
   TF1*  GetCombinedFunction()   const { return fFuncSigBack;       }
   
   Int_t GetPolDeg()             const { return fPolDeg;            }
+  Int_t GetDof()                const { return fDof;            }
   Double_t GetChi2Dof()         const { return fChi2Dof;           }
   
   virtual void Draw(const Option_t* option = "");
   
 private:
-  
-  static Double_t BgndFun(const Double_t *x, const Double_t *par); // polynomial fit function
-  static Double_t PeakFun(const Double_t *x, const Double_t *par); // create peak function from mc shape
-  static Double_t MinvFun(const Double_t *x, const Double_t *par); // combined function of BgndFun + PeakFun
-  static Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function for background-subtracted peak fit
-  
 
-  TF1 *fFuncSignal;                // Function for the signal description
-  TF1 *fFuncBackground;            // Function for the background description
+  // peak functions
+  static Double_t PeakFunMC(const Double_t *x, const Double_t *par); // peak function from a mc histo
+  static Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
+  static Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
+
+  static Double_t PeakBgndFun(const Double_t *x, const Double_t *par); // combine any bgrd and any peak function
+
+  static TF1 *fFuncSignal;                // Function for the signal description
+  static TF1 *fFuncBackground;            // Function for the background description
   TF1 *fFuncSigBack;               // Combined function signal plus background
   Int_t fParMass;                  // the index of the parameter corresponding to the resonance mass
   Int_t fParMassWidth;             // the index of the parameter corresponding to the resonance mass width
@@ -125,7 +125,12 @@ private:
   Bool_t fUseIntegral;         // use the integral of the fitted functions to extract signal and background
 
   Int_t    fPolDeg;                // polynomial degree of the background function
+  Int_t    fDof;                   // degrees of freedom
   Double_t fChi2Dof;               // chi2/dof of the fitted inv mass spectra
+  
+  static Int_t    fNparPeak;              // number of parameters for peak function
+  static Int_t    fNparBgnd;              // number of parameters for background function
+
   static TH1F* fgHistSimPM;         // simulated peak shape 
   
   ClassDef(AliDielectronSignalFunc,2)         // Dielectron SignalFunc
