@@ -72,6 +72,8 @@ public:
     // Cut on geometrical acceptance 
     virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) const { return true; }
     
+    // From secondary vertex?
+    virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
     
 protected:
   
@@ -80,8 +82,10 @@ protected:
     TRefArray *fClusterArray; // Array of clusters
 
     AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
-
-    Int_t fRunNumber; // run number
+    
+    Bool_t SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
+    
+    Int_t fRunNumber;
     
 
     

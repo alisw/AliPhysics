@@ -30,7 +30,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fPhosTrackDistanceCut(10.0)  
   ,fPhosTrackDxCut(8.0)
   ,fPhosTrackDzCut(3.0)
-  ,fPhosTrackRCut(2.0)
+  ,fPhosTrackRCut(5.0)
   ,fPhosBadDistanceCut(3.0)
   
   ,fGeometryPhosEtaAccCut(0.12)
@@ -53,7 +53,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedPidCut(0.0)
 				    //
   ,fReconstructedPhosClusterType(-1)
-  ,fReconstructedPhosClusterEnergyCut(0.15)
+  ,fReconstructedPhosClusterEnergyCut(0.25)
   ,fReconstructedPhosSingleCellEnergyCut(0.5)
   ,fReconstructedPhosTrackDistanceTightCut(3.0)
   ,fReconstructedPhosTrackDistanceMediumCut(5.0)
@@ -83,6 +83,9 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fHistNbinsParticlePt(200) 
   ,fHistMinParticlePt(0)
   ,fHistMaxParticlePt(20)
+  
+  ,fPrimaryVertexCutXY(4.0)
+  ,fPrimaryVertexCutZ(20.0)
 { // ctor
 }
 

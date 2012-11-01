@@ -44,6 +44,7 @@ Int_t AliAnalysisEtCommon::fgProtonCode = 2212;
 Int_t AliAnalysisEtCommon::fgAntiProtonCode = -2212;
 Int_t AliAnalysisEtCommon::fgLambdaCode = 3122;
 Int_t AliAnalysisEtCommon::fgAntiLambdaCode = -3122;
+Int_t AliAnalysisEtCommon::fgK0Code = 311;
 Int_t AliAnalysisEtCommon::fgK0SCode = 310;
 Int_t AliAnalysisEtCommon::fgOmegaCode = 3334;
 Int_t AliAnalysisEtCommon::fgAntiOmegaCode = -3334;
