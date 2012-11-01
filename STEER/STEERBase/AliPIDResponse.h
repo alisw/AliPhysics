@@ -24,12 +24,12 @@
 #include "TNamed.h"
 
 class TF1;
-class AliOADBContainer;
 class TObjArray;
 
 class AliVEvent;
 class AliTRDPIDResponseObject;
 class AliTOFPIDParams;
+class AliOADBContainer;
 
 class AliPIDResponse : public TNamed {
 public:
@@ -66,13 +66,14 @@ public:
     kDetPidOk=1,
     kDetMismatch=2
   };
-
+  
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
   AliEMCALPIDResponse &GetEMCALResponse() {return fEMCALResponse;}
-
+  
+  //buffered PID calculation
   Float_t NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t NumberOfSigmas(EDetCode  detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   
@@ -80,21 +81,21 @@ public:
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource);
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
-  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const = 0;
+  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
-  virtual Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
 
   EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
-  EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
-  EDetPidStatus ComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus ComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus ComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  virtual EDetPidStatus ComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  virtual EDetPidStatus ComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
 
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
@@ -108,6 +109,9 @@ public:
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
 
   // cache PID in the track
+  void SetCachePID(Bool_t cache)    { fCachePID=cache;  }
+  Bool_t GetCachePID() const { return fCachePID; }
+  void FillTrackDetectorPID(const AliVTrack *track, EDetector detector) const;
   void FillTrackDetectorPID();
 
   AliVEvent * GetCurrentEvent() const {return fCurrentEvent;}
@@ -141,8 +145,13 @@ protected:
   Float_t           fRange;          // nSigma max in likelihood
   ITSPIDmethod      fITSPIDmethod;   // 0 = trunc mean; 1 = likelihood
 
+  //unbuffered PID calculation
+  virtual Float_t GetNumberOfSigmasTOF  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
+  EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  
 private:
   Bool_t fIsMC;                        //  If we run on MC data
+  Bool_t fCachePID;
 
   TString fOADBPath;                   // OADB path to use
   TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
@@ -163,7 +172,7 @@ private:
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
   AliOADBContainer* fOADBvoltageMaps;  //! container with the voltage maps
-
+  
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
@@ -206,6 +215,21 @@ private:
 
   //
   void SetRecoInfo();
+
+  //unbuffered PID calculation
+  Float_t GetNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetNumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetNumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
+  Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
+
+  EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
   ClassDef(AliPIDResponse, 10);  //PID response handling
 };

@@ -57,6 +57,7 @@ fEMCALResponse(),
 fRange(5.),
 fITSPIDmethod(kITSTruncMean),
 fIsMC(isMC),
+fCachePID(kTRUE),
 fOADBPath(),
 fCustomTPCpidResponse(),
 fBeamType("PP"),
@@ -113,6 +114,7 @@ fEMCALResponse(other.fEMCALResponse),
 fRange(other.fRange),
 fITSPIDmethod(other.fITSPIDmethod),
 fIsMC(other.fIsMC),
+fCachePID(other.fCachePID),
 fOADBPath(other.fOADBPath),
 fCustomTPCpidResponse(other.fCustomTPCpidResponse),
 fBeamType("PP"),
@@ -162,6 +164,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fOADBPath=other.fOADBPath;
     fCustomTPCpidResponse=other.fCustomTPCpidResponse;
     fIsMC=other.fIsMC;
+    fCachePID=other.fCachePID;
     fBeamType="PP";
     fLHCperiod="";
     fMCperiodTPC="";
@@ -214,6 +217,10 @@ Float_t AliPIDResponse::NumberOfSigmas(EDetector detCode, const AliVParticle *tr
 }
 
 //______________________________________________________________________________
+// public buffered versions of the PID calculation
+//
+
+//______________________________________________________________________________
 Float_t AliPIDResponse::NumberOfSigmasITS(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
   //
@@ -223,29 +230,18 @@ Float_t AliPIDResponse::NumberOfSigmasITS(const AliVParticle *vtrack, AliPID::EP
   AliVTrack *track=(AliVTrack*)vtrack;
   
   // look for cached value first
-  // only the non SA tracks are cached
-  if ( track->GetDetectorPID() ){
-    return track->GetDetectorPID()->GetNumberOfSigmas(kITS, type);
-  }
-  
-  Float_t dEdx=track->GetITSsignal();
-  if (dEdx<=0) return -999.;
-  
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  Float_t mom=track->P();
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kITS;
 
-  //check for ITS standalone tracks
-  Bool_t isSA=kTRUE;
-  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
-  
-  //TODO: in case of the electron, use the SA parametrisation,
-  //      this needs to be changed if ITS provides a parametrisation
-  //      for electrons also for ITS+TPC tracks
-  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
+  if ( detPID && detPID->HasNumberOfSigmas(detector)){
+    return detPID->GetNumberOfSigmas(detector, type);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetNumberOfSigmas(detector, type);
+  }
+
+  return GetNumberOfSigmasITS(track, type);
 }
 
 //______________________________________________________________________________
@@ -258,19 +254,18 @@ Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EP
   AliVTrack *track=(AliVTrack*)vtrack;
   
   // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetNumberOfSigmas(kTPC, type);
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kTPC;
+  
+  if ( detPID && detPID->HasNumberOfSigmas(detector)){
+    return detPID->GetNumberOfSigmas(detector, type);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetNumberOfSigmas(detector, type);
   }
   
-  Double_t mom  = track->GetTPCmomentum();
-  Double_t sig  = track->GetTPCsignal();
-  if(fTuneMConData) sig = this->GetTPCsignalTunedOnData(track);
-  UInt_t   sigN = track->GetTPCsignalN();
-  
-  Double_t nSigma = -999.;
-  if (sigN>0) nSigma=fTPCResponse.GetNumberOfSigmas(mom,sig,sigN,type);
-  
-  return nSigma;
+  return GetNumberOfSigmasTPC(track, type);
 }
 
 //______________________________________________________________________________
@@ -287,6 +282,30 @@ Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack,
 }
 
 //______________________________________________________________________________
+Float_t AliPIDResponse::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the TOF
+  //
+  
+  AliVTrack *track=(AliVTrack*)vtrack;
+  
+  // look for cached value first
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kTOF;
+  
+  if ( detPID && detPID->HasNumberOfSigmas(detector)){
+    return detPID->GetNumberOfSigmas(detector, type);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetNumberOfSigmas(detector, type);
+  }
+  
+  return GetNumberOfSigmasTOF(track, type);
+}
+
+//______________________________________________________________________________
 Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
   //
@@ -296,52 +315,26 @@ Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::
   AliVTrack *track=(AliVTrack*)vtrack;
 
   // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetNumberOfSigmas(kEMCAL, type);
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kEMCAL;
+  
+  if ( detPID && detPID->HasNumberOfSigmas(detector)){
+    return detPID->GetNumberOfSigmas(detector, type);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetNumberOfSigmas(detector, type);
   }
   
-  AliVCluster *matchedClus = NULL;
-
-  Double_t mom     = -1.; 
-  Double_t pt      = -1.; 
-  Double_t EovP    = -1.;
-  Double_t fClsE   = -1.;
-  
-  Int_t nMatchClus = -1;
-  Int_t charge     = 0;
-  
-  // Track matching
-  nMatchClus = track->GetEMCALcluster();
-  if(nMatchClus > -1){
-    
-    mom    = track->P();
-    pt     = track->Pt();
-    charge = track->Charge();
-    
-    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
-    
-    if(matchedClus){
-      
-      // matched cluster is EMCAL
-      if(matchedClus->IsEMCAL()){
-	
-	fClsE       = matchedClus->E();
-	EovP        = fClsE/mom;
-	
-	
-	// NSigma value really meaningful only for electrons!
-	return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
-      }
-    }
-  }
-  
-  return -999;
-  
+  return GetNumberOfSigmasEMCAL(track, type);
 }
 
 //______________________________________________________________________________
-Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const {
-
+Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4])  const
+{
+  //
+  // emcal nsigma with eop and showershape
+  //
   AliVTrack *track=(AliVTrack*)vtrack;
   
   AliVCluster *matchedClus = NULL;
@@ -384,9 +377,21 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
 	showershape[1] = matchedClus->GetM02(); // long axis
 	showershape[2] = matchedClus->GetM20(); // short axis
 	showershape[3] = matchedClus->GetDispersion(); // dispersion
-	
-	// NSigma value really meaningful only for electrons!
-	return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
+
+        // look for cached value first
+        const AliDetectorPID *detPID=track->GetDetectorPID();
+        const EDetector detector=kEMCAL;
+        
+        if ( detPID && detPID->HasNumberOfSigmas(detector)){
+          return detPID->GetNumberOfSigmas(detector, type);
+        } else if (fCachePID) {
+          FillTrackDetectorPID(track, detector);
+          detPID=track->GetDetectorPID();
+          return detPID->GetNumberOfSigmas(detector, type);
+        }
+        
+        // NSigma value really meaningful only for electrons!
+        return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge);
       }
     }
   }
@@ -395,7 +400,7 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID:
 
 
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetCode detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetCode detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[])  const
 {
   //
   // Compute PID response of 'detCode'
@@ -431,63 +436,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeITSProbability  (const AliV
   //
 
   // look for cached value first
-  // only the non SA tracks are cached
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kITS, p, nSpecies);
-  }
-
-  // set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-
-  if ((track->GetStatus()&AliVTrack::kITSin)==0 &&
-    (track->GetStatus()&AliVTrack::kITSout)==0) return kDetNoSignal;
-
-  //check for ITS standalone tracks
-  Bool_t isSA=kTRUE;
-  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kITS;
   
-  Double_t mom=track->P();
-  Double_t dedx=track->GetITSsignal();
-  Double_t momITS=mom;
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
   
-  if(nPointsForPid<3) { // track not to be used for combined PID purposes
-    //       track->ResetStatus(AliVTrack::kITSpid);
-    return kDetNoSignal;
-  }
-
-  Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
-  for (Int_t j=0; j<AliPID::kSPECIES; j++) {
-    Double_t mass=AliPID::ParticleMassZ(j);//GeV/c^2
-    const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
-    Double_t bethe=fITSResponse.Bethe(momITS,mass)*chargeFactor;
-    //TODO: in case of the electron, use the SA parametrisation,
-    //      this needs to be changed if ITS provides a parametrisation
-    //      for electrons also for ITS+TPC tracks
-    Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA || (j==(Int_t)AliPID::kElectron));
-    if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-    } else {
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
-      mismatch=kFALSE;
-    }
-
-    // Check for particles heavier than (AliPID::kSPECIES - 1)
-    //       if (dedx < (bethe + fRange*sigma)) heavy=kFALSE;
-
-  }
-
-  if (mismatch){
-    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
-    return kDetNoSignal;
-  }
-
-    
-  return kDetPidOk;
+  return GetComputeITSProbability(track, nSpecies, p);
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
@@ -497,41 +457,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTPCProbability  (const AliV
   //
   
   // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kTPC, p, nSpecies);
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kTPC;
+  
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
   
-  // set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-
-  // check quality of the track
-  if ( (track->GetStatus()&AliVTrack::kTPCin )==0 && (track->GetStatus()&AliVTrack::kTPCout)==0 ) return kDetNoSignal;
-
-  Double_t mom = track->GetTPCmomentum();
-
-  Double_t dedx=track->GetTPCsignal();
-  Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
-
-  if(fTuneMConData) dedx = this->GetTPCsignalTunedOnData(track);
-
-  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
-    AliPID::EParticleType type=AliPID::EParticleType(j);
-    Double_t bethe=fTPCResponse.GetExpectedSignal(mom,type);
-    Double_t sigma=fTPCResponse.GetExpectedSigma(mom,track->GetTPCsignalN(),type);
-    if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-    } else {
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
-      mismatch=kFALSE;
-    }
-  }
-
-  if (mismatch){
-    for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-    return kDetNoSignal;
-  }
-
-  return kDetPidOk;
+  return GetComputeTPCProbability(track, nSpecies, p);
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
@@ -540,82 +477,41 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   // Compute PID response for the
   //
   
-  // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kTOF, p, nSpecies);
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kTOF;
+  
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
   
-  Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
-
-  // set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  
-  if ((track->GetStatus()&AliVTrack::kTOFout)==0) return kDetNoSignal;
-  if ((track->GetStatus()&AliVTrack::kTIME)==0) return kDetNoSignal;
-  
-  Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
-  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
-    AliPID::EParticleType type=AliPID::EParticleType(j);
-    Double_t nsigmas=NumberOfSigmasTOF(track,type) + meanCorrFactor;
-
-    Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
-    Double_t sig = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
-    if (TMath::Abs(nsigmas) > (fRange+2)) {
-      if(nsigmas < fTOFtail)
-	p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
-      else
-	p[j] = TMath::Exp(-(fRange+2 - fTOFtail*0.5)*fTOFtail)/sig;
-    } else{
-      if(nsigmas < fTOFtail)
-	p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
-      else
-	p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
-    }
-
-    if (TMath::Abs(nsigmas)<5.){
-      Double_t nsigmasTPC=NumberOfSigmasTPC(track,type);
-      if (TMath::Abs(nsigmasTPC)<5.) mismatch=kFALSE;
-    }
-  }
-
-  if (mismatch){
-    return kDetMismatch;    
-  }
-
-    // TODO: Light nuclei
-    
-  return kDetPidOk;
+  return GetComputeTOFProbability(track, nSpecies, p);
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
 {
   //
   // Compute PID response for the
-    //
-  // look for cached value first
-    if (track->GetDetectorPID()&&PIDmethod==AliTRDPIDResponse::kLQ1D){
-      AliDebug(3,"Return Cached Value");
-      return track->GetDetectorPID()->GetRawProbability(kTRD, p, nSpecies);
+  //
+  
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kTRD;
+
+  // chacke only for the default method (1d at the moment)
+  if (PIDmethod!=AliTRDPIDResponse::kLQ1D) return GetComputeTRDProbability(track, nSpecies, p, PIDmethod);
+  
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
   
-    UInt_t TRDslicesForPID[2];
-    SetTRDSlices(TRDslicesForPID,PIDmethod);
-  // set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  if((track->GetStatus()&AliVTrack::kTRDout)==0) return kDetNoSignal;
-
-  Float_t mom[6]={0.};
-  Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
-  Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
-  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
-  for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
-    mom[ilayer] = track->GetTRDmomentum(ilayer);
-    for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
-      dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
-    }
-  }
-  fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
-  return kDetPidOk;
+  return GetComputeTRDProbability(track, nSpecies, p);
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
@@ -624,57 +520,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability  (const Al
   // Compute PID response for the EMCAL
   //
   
-  // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kEMCAL, p, nSpecies);
-  }
-
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-
-  AliVCluster *matchedClus = NULL;
-
-  Double_t mom     = -1.; 
-  Double_t pt      = -1.; 
-  Double_t EovP    = -1.;
-  Double_t fClsE   = -1.;
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kEMCAL;
   
-  Int_t nMatchClus = -1;
-  Int_t charge     = 0;
-  
-  // Track matching
-  nMatchClus = track->GetEMCALcluster();
-
-  if(nMatchClus > -1){
-    
-    mom    = track->P();
-    pt     = track->Pt();
-    charge = track->Charge();
-    
-    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
-    
-    if(matchedClus){    
-      
-      // matched cluster is EMCAL
-      if(matchedClus->IsEMCAL()){
-      
-      fClsE       = matchedClus->E();
-      EovP        = fClsE/mom;
-      
-      
-      // compute the probabilities 
-        if(fEMCALResponse.ComputeEMCALProbability(nSpecies,pt,EovP,charge,p)){	
-          
-          // in case everything is OK
-	      return kDetPidOk;
-        }
-      }
-    }
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
   
-  // in all other cases set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j] = 1./nSpecies;
-  return kDetNoSignal;
-  
+  return GetComputeEMCALProbability(track, nSpecies, p);
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePHOSProbability (const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
@@ -699,19 +556,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeHMPIDProbability(const AliV
   // Compute PID response for the HMPID
   //
 
+  const AliDetectorPID *detPID=track->GetDetectorPID();
+  const EDetector detector=kHMPID;
 
-  // look for cached value first
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kHMPID, p, nSpecies);
+  if ( detPID && detPID->HasRawProbabilitiy(detector)){
+    return detPID->GetRawProbability(detector, p, nSpecies);
+  } else if (fCachePID) {
+    FillTrackDetectorPID(track, detector);
+    detPID=track->GetDetectorPID();
+    return detPID->GetRawProbability(detector, p, nSpecies);
   }
-  
-  // set flat distribution (no decision)
-  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  if((track->GetStatus()&AliVTrack::kHMPIDpid)==0) return kDetNoSignal;
 
-  track->GetHMPIDpid(p);
-  
-  return kDetPidOk;
+  return GetComputeHMPIDProbability(track, nSpecies, p);
 }
 
 //______________________________________________________________________________
@@ -779,7 +635,7 @@ void AliPIDResponse::ExecNewRun()
   if (fCurrentEvent) fTPCResponse.SetMagField(fCurrentEvent->GetMagneticField());
 }
 
-//_____________________________________________________
+//______________________________________________________________________________
 Double_t AliPIDResponse::GetTPCMultiplicityBin(const AliVEvent * const event)
 {
   //
@@ -1091,19 +947,6 @@ void AliPIDResponse::SetTRDPidResponseMaster()
       AliError(Form("TRD Response not found in run %d", fRun));
     }
   }
-  /*
-  AliOADBContainer contRefs("contRefs");
-  Int_t statusRefs = contRefs.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
-  if(statusRefs){
-    AliInfo("Failed Loading References for TRD");
-  } else {
-    AliInfo(Form("Loading TRD References from %s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()));
-    fTRDPIDReference = dynamic_cast<AliTRDPIDReference *>(contRefs.GetObject(fRun));
-    if(!fTRDPIDReference){
-      AliError(Form("TRD References not found in OADB Container for run %d", fRun));
-    }
-    }
-    */
 }
 
 //______________________________________________________________________________
@@ -1196,7 +1039,7 @@ void AliPIDResponse::InitializeTOFResponse(){
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
   //
   // Check whether track is identified as electron under a given electron efficiency hypothesis
@@ -1266,7 +1109,40 @@ void AliPIDResponse::InitializeEMCALResponse(){
 
 }
 
-//_____________________________________________________
+//______________________________________________________________________________
+void AliPIDResponse::FillTrackDetectorPID(const AliVTrack *track, EDetector detector) const
+{
+  //
+  // create detector PID information and setup the transient pointer in the track
+  //
+  
+  // check if detector number is inside accepted range
+  if (detector == kNdetectors) return;
+  
+  // get detector pid
+  AliDetectorPID *detPID=const_cast<AliDetectorPID*>(track->GetDetectorPID());
+  if (!detPID) {
+    detPID=new AliDetectorPID;
+    (const_cast<AliVTrack*>(track))->SetDetectorPID(detPID);
+  }
+  
+  //check if values exist
+  if (detPID->HasRawProbabilitiy(detector) && detPID->HasNumberOfSigmas(detector)) return;
+  
+  //TODO: which particles to include? See also the loops below...
+  Double_t values[AliPID::kSPECIESC]={0};
+
+  //nsigmas
+  for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart)
+    values[ipart]=GetNumberOfSigmas(detector,track,(AliPID::EParticleType)ipart);
+  detPID->SetNumberOfSigmas(detector, values, (Int_t)AliPID::kSPECIESC);
+  
+  //probabilities
+  EDetPidStatus status=GetComputePIDProbability(detector,track,AliPID::kSPECIESC,values);
+  detPID->SetRawProbability(detector, values, (Int_t)AliPID::kSPECIESC, status);
+}
+
+//______________________________________________________________________________
 void AliPIDResponse::FillTrackDetectorPID()
 {
   //
@@ -1275,31 +1151,17 @@ void AliPIDResponse::FillTrackDetectorPID()
 
   if (!fCurrentEvent) return;
   
-  //TODO: which particles to include? See also the loops below...
-  Double_t values[AliPID::kSPECIESC]={0};
-  
   for (Int_t itrack=0; itrack<fCurrentEvent->GetNumberOfTracks(); ++itrack){
     AliVTrack *track=dynamic_cast<AliVTrack*>(fCurrentEvent->GetTrack(itrack));
     if (!track) continue;
 
-    AliDetectorPID *detPID=new AliDetectorPID;
     for (Int_t idet=0; idet<kNdetectors; ++idet){
-
-      //nsigmas
-      for (Int_t ipart=0; ipart<AliPID::kSPECIESC; ++ipart)
-        values[ipart]=NumberOfSigmas((EDetector)idet,track,(AliPID::EParticleType)ipart);
-      detPID->SetNumberOfSigmas((EDetector)idet, values, (Int_t)AliPID::kSPECIESC);
-
-      //probabilities
-      EDetPidStatus status=ComputePIDProbability((EDetector)idet,track,AliPID::kSPECIESC,values);
-      detPID->SetRawProbability((EDetector)idet, values, (Int_t)AliPID::kSPECIESC, status);
+      FillTrackDetectorPID(track, (EDetector)idet);
     }
-
-    track->SetDetectorPID(detPID);
   }
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
   //
   // Set TOF response function
@@ -1509,4 +1371,404 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     delete [] startTimeMask;
     delete [] estimatedT0event;
     delete [] estimatedT0resolution;
+}
+
+//______________________________________________________________________________
+// private non cached versions of the PID calculation
+//
+
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const
+{
+  //
+  // NumberOfSigmas for 'detCode'
+  //
+  
+  switch (detCode){
+    case kITS:   return GetNumberOfSigmasITS(track, type); break;
+    case kTPC:   return GetNumberOfSigmasTPC(track, type); break;
+    case kTOF:   return GetNumberOfSigmasTOF(track, type); break;
+    case kEMCAL: return GetNumberOfSigmasEMCAL(track, type); break;
+    default: return -999.;
+  }
+  
+}
+
+
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetNumberOfSigmasITS(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the ITS
+  //
+  
+  AliVTrack *track=(AliVTrack*)vtrack;
+  
+  Float_t dEdx=track->GetITSsignal();
+  if (dEdx<=0) return -999.;
+  
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  Float_t mom=track->P();
+  
+  //check for ITS standalone tracks
+  Bool_t isSA=kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+  
+  //TODO: in case of the electron, use the SA parametrisation,
+  //      this needs to be changed if ITS provides a parametrisation
+  //      for electrons also for ITS+TPC tracks
+  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the TPC
+  //
+  
+  AliVTrack *track=(AliVTrack*)vtrack;
+  
+  Double_t mom  = track->GetTPCmomentum();
+  Double_t sig  = track->GetTPCsignal();
+  UInt_t   sigN = track->GetTPCsignalN();
+  
+  Double_t nSigma = -999.;
+  if (sigN>0) nSigma=fTPCResponse.GetNumberOfSigmas(mom,sig,sigN,type);
+  
+  return nSigma;
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetNumberOfSigmasEMCAL(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the EMCAL
+  //
+  
+  AliVTrack *track=(AliVTrack*)vtrack;
+  
+  AliVCluster *matchedClus = NULL;
+  
+  Double_t mom     = -1.;
+  Double_t pt      = -1.;
+  Double_t EovP    = -1.;
+  Double_t fClsE   = -1.;
+  
+  Int_t nMatchClus = -1;
+  Int_t charge     = 0;
+  
+  // Track matching
+  nMatchClus = track->GetEMCALcluster();
+  if(nMatchClus > -1){
+    
+    mom    = track->P();
+    pt     = track->Pt();
+    charge = track->Charge();
+    
+    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
+    
+    if(matchedClus){
+      
+      // matched cluster is EMCAL
+      if(matchedClus->IsEMCAL()){
+        
+        fClsE       = matchedClus->E();
+        EovP        = fClsE/mom;
+        
+        
+        // NSigma value really meaningful only for electrons!
+        return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge);
+      }
+    }
+  }
+  
+  return -999;
+  
+}
+
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response of 'detCode'
+  //
+
+  switch (detCode){
+    case kITS: return GetComputeITSProbability(track, nSpecies, p); break;
+    case kTPC: return GetComputeTPCProbability(track, nSpecies, p); break;
+    case kTRD: return GetComputeTRDProbability(track, nSpecies, p); break;
+    case kTOF: return GetComputeTOFProbability(track, nSpecies, p); break;
+    case kPHOS: return GetComputePHOSProbability(track, nSpecies, p); break;
+    case kEMCAL: return GetComputeEMCALProbability(track, nSpecies, p); break;
+    case kHMPID: return GetComputeHMPIDProbability(track, nSpecies, p); break;
+    default: return kDetNoSignal;
+  }
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the ITS
+  //
+  
+  // look for cached value first
+  // only the non SA tracks are cached
+  if (track->GetDetectorPID()){
+    return track->GetDetectorPID()->GetRawProbability(kITS, p, nSpecies);
+  }
+  
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  
+  if ((track->GetStatus()&AliVTrack::kITSin)==0 &&
+    (track->GetStatus()&AliVTrack::kITSout)==0) return kDetNoSignal;
+  
+  //check for ITS standalone tracks
+  Bool_t isSA=kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+
+  Double_t mom=track->P();
+  Double_t dedx=track->GetITSsignal();
+  Double_t momITS=mom;
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+
+  if(nPointsForPid<3) { // track not to be used for combined PID purposes
+    //       track->ResetStatus(AliVTrack::kITSpid);
+    return kDetNoSignal;
+  }
+
+  Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
+  for (Int_t j=0; j<AliPID::kSPECIES; j++) {
+    Double_t mass=AliPID::ParticleMassZ(j);//GeV/c^2
+    const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
+    Double_t bethe=fITSResponse.Bethe(momITS,mass)*chargeFactor;
+    //TODO: in case of the electron, use the SA parametrisation,
+    //      this needs to be changed if ITS provides a parametrisation
+    //      for electrons also for ITS+TPC tracks
+    Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA || (j==(Int_t)AliPID::kElectron));
+    if (TMath::Abs(dedx-bethe) > fRange*sigma) {
+      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
+    } else {
+      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+      mismatch=kFALSE;
+    }
+
+    // Check for particles heavier than (AliPID::kSPECIES - 1)
+    //       if (dedx < (bethe + fRange*sigma)) heavy=kFALSE;
+
+  }
+
+  if (mismatch){
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
+    return kDetNoSignal;
+  }
+
+
+  return kDetPidOk;
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the TPC
+  //
+  
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  
+  // check quality of the track
+  if ( (track->GetStatus()&AliVTrack::kTPCin )==0 && (track->GetStatus()&AliVTrack::kTPCout)==0 ) return kDetNoSignal;
+  
+  Double_t mom = track->GetTPCmomentum();
+  
+  Double_t dedx=track->GetTPCsignal();
+  Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
+  
+  if(fTuneMConData) dedx = this->GetTPCsignalTunedOnData(track);
+  
+  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
+    AliPID::EParticleType type=AliPID::EParticleType(j);
+    Double_t bethe=fTPCResponse.GetExpectedSignal(mom,type);
+    Double_t sigma=fTPCResponse.GetExpectedSigma(mom,track->GetTPCsignalN(),type);
+    if (TMath::Abs(dedx-bethe) > fRange*sigma) {
+      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
+    } else {
+      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+      mismatch=kFALSE;
+    }
+  }
+  
+  if (mismatch){
+    for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+    return kDetNoSignal;
+  }
+  
+  return kDetPidOk;
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the
+  //
+  
+  Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
+  
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  
+  if ((track->GetStatus()&AliVTrack::kTOFout)==0) return kDetNoSignal;
+  if ((track->GetStatus()&AliVTrack::kTIME)==0) return kDetNoSignal;
+  
+  Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
+  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
+    AliPID::EParticleType type=AliPID::EParticleType(j);
+    Double_t nsigmas=GetNumberOfSigmasTOF(track,type) + meanCorrFactor;
+    
+    Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
+    Double_t sig = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
+    if (TMath::Abs(nsigmas) > (fRange+2)) {
+      if(nsigmas < fTOFtail)
+        p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
+      else
+        p[j] = TMath::Exp(-(fRange+2 - fTOFtail*0.5)*fTOFtail)/sig;
+    } else{
+      if(nsigmas < fTOFtail)
+        p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
+      else
+        p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
+    }
+    
+    if (TMath::Abs(nsigmas)<5.){
+      Double_t nsigmasTPC=GetNumberOfSigmasTPC(track,type);
+      if (TMath::Abs(nsigmasTPC)<5.) mismatch=kFALSE;
+    }
+  }
+  
+  if (mismatch){
+    return kDetMismatch;
+  }
+  
+  // TODO: Light nuclei
+  
+  return kDetPidOk;
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod/*=AliTRDPIDResponse::kLQ1D*/) const
+{
+  //
+  // Compute PID response for the
+  //
+  
+  UInt_t TRDslicesForPID[2];
+  SetTRDSlices(TRDslicesForPID,PIDmethod);
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  if((track->GetStatus()&AliVTrack::kTRDout)==0) return kDetNoSignal;
+  
+  Float_t mom[6]={0.};
+  Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
+  Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
+  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
+  for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
+    mom[ilayer] = track->GetTRDmomentum(ilayer);
+    for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
+      dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
+    }
+  }
+  fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+  return kDetPidOk;
+  
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeEMCALProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the EMCAL
+  //
+  
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  
+  AliVCluster *matchedClus = NULL;
+  
+  Double_t mom     = -1.;
+  Double_t pt      = -1.;
+  Double_t EovP    = -1.;
+  Double_t fClsE   = -1.;
+  
+  Int_t nMatchClus = -1;
+  Int_t charge     = 0;
+  
+  // Track matching
+  nMatchClus = track->GetEMCALcluster();
+  
+  if(nMatchClus > -1){
+    
+    mom    = track->P();
+    pt     = track->Pt();
+    charge = track->Charge();
+    
+    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
+    
+    if(matchedClus){
+      
+      // matched cluster is EMCAL
+      if(matchedClus->IsEMCAL()){
+        
+        fClsE       = matchedClus->E();
+        EovP        = fClsE/mom;
+        
+        
+        // compute the probabilities
+        if(fEMCALResponse.ComputeEMCALProbability(nSpecies,pt,EovP,charge,p)){
+          
+          // in case everything is OK
+          return kDetPidOk;
+        }
+      }
+    }
+  }
+  
+  // in all other cases set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j] = 1./nSpecies;
+  return kDetNoSignal;
+  
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputePHOSProbability (const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the PHOS
+  //
+  
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  return kDetNoSignal;
+}
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+{
+  //
+  // Compute PID response for the HMPID
+  //
+  // set flat distribution (no decision)
+  for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
+  if((track->GetStatus()&AliVTrack::kHMPIDpid)==0) return kDetNoSignal;
+  
+  track->GetHMPIDpid(p);
+  
+  return kDetPidOk;
 }

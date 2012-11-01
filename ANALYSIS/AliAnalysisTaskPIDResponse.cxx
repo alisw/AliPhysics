@@ -98,7 +98,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   if (!fPIDResponse) AliFatal("PIDResponse object was not created");
 
   fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
-//   fPIDResponse->SetCachePID(fCachePID);
+  fPIDResponse->SetCachePID(fCachePID);
   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
   if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
@@ -113,6 +113,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
         AliInfo(Form("Setting custom TPC response file: '%s'",resp.Data()));
       }
     }
+    delete arr;
   }
 }
 
@@ -136,9 +137,9 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
       pidresp->SetEventHandler(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   }
   //create and attach transient PID object
-  if (fCachePID) {
-    fPIDResponse->FillTrackDetectorPID();
-  }
+//   if (fCachePID) {
+//     fPIDResponse->FillTrackDetectorPID();
+//   }
 }
 
 //______________________________________________________________________________

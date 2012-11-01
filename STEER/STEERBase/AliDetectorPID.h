@@ -32,6 +32,9 @@ public:
   
   Double_t GetRawProbability(AliPIDResponse::EDetector det, AliPID::EParticleType type) const;
   Double_t GetNumberOfSigmas(AliPIDResponse::EDetector det, AliPID::EParticleType type) const;
+
+  Bool_t HasRawProbabilitiy(AliPIDResponse::EDetector det) const { return fArrRawProbabilities.UncheckedAt((Int_t)det)!=0x0; }
+  Bool_t HasNumberOfSigmas (AliPIDResponse::EDetector det) const { return fArrNsigmas.UncheckedAt((Int_t)det)!=0x0;          }
 private:
   TClonesArray fArrNsigmas;          // array to store nsigma values of all detectors
   TClonesArray fArrRawProbabilities; // array to strore raw probabilities of all detectors
