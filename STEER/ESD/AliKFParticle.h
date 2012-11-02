@@ -23,6 +23,7 @@
 
 class AliVTrack;
 class AliVVertex;
+class AliExternalTrackParam;
 
 class AliKFParticle :public AliKFParticleBase
 {
@@ -59,10 +60,12 @@ class AliKFParticle :public AliKFParticleBase
  //* Parameters, covariance matrix, charge and PID hypothesis should be provided 
 
   void Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID );
+  void Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, const Double_t Mass );
 
  //* Initialisation from ALICE track, PID hypothesis shoould be provided 
 
   AliKFParticle( const AliVTrack &track, Int_t PID );
+  AliKFParticle( const AliExternalTrackParam &track, const Double_t Mass, Int_t Charge );
 
   //* Initialisation from VVertex 
 

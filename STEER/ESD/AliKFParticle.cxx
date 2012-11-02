@@ -22,6 +22,8 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
+#include "AliExternalTrackParam.h"
+
 ClassImp(AliKFParticle)
 
 Double_t AliKFParticle::fgBz = -5.;  //* Bz compoment of the magnetic field
@@ -59,6 +61,25 @@ void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t 
   AliKFParticleBase::Initialize( Param, C, Charge, mass );
 }
 
+void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, const Double_t Mass )
+{
+  // Constructor from "cartesian" track, PID hypothesis should be provided
+  //
+  // Param[6] = { X, Y, Z, Px, Py, Pz } - position and momentum
+  // Cov [21] = lower-triangular part of the covariance matrix:
+  //
+  //                (  0  .  .  .  .  . )
+  //                (  1  2  .  .  .  . )
+  //  Cov. matrix = (  3  4  5  .  .  . ) - numbering of covariance elements in Cov[]
+  //                (  6  7  8  9  .  . )
+  //                ( 10 11 12 13 14  . )
+  //                ( 15 16 17 18 19 20 )
+  Double_t C[21];
+  for( int i=0; i<21; i++ ) C[i] = Cov[i];
+
+  AliKFParticleBase::Initialize( Param, C, Charge, Mass );
+}
+
 AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
 {
   // Constructor from ALICE track, PID hypothesis should be provided
@@ -68,6 +89,57 @@ AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
   fQ = track.Charge();
   track.GetCovarianceXYZPxPyPz( fC );
   Create(fP,fC,fQ,PID);
+}
+
+AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, const Double_t Mass, Int_t Charge )
+{
+  // Constructor from ALICE track, Mass and Charge hypothesis should be provided
+
+  track.GetXYZ(fP);
+  track.PxPyPz(fP+3);
+  fQ = track.Charge()*TMath::Abs(Charge);
+  fP[3] *= TMath::Abs(Charge);
+  fP[4] *= TMath::Abs(Charge);
+  fP[5] *= TMath::Abs(Charge);
+
+  Double_t pt=1./TMath::Abs(track.GetParameter()[4]) * TMath::Abs(Charge);
+  Double_t cs=TMath::Cos(track.GetAlpha()), sn=TMath::Sin(track.GetAlpha());
+  Double_t r=TMath::Sqrt((1.-track.GetParameter()[2])*(1.+track.GetParameter()[2]));
+
+  Double_t m00=-sn, m10=cs;
+  Double_t m23=-pt*(sn + track.GetParameter()[2]*cs/r), m43=-pt*pt*(r*cs - track.GetParameter()[2]*sn);
+  Double_t m24= pt*(cs - track.GetParameter()[2]*sn/r), m44=-pt*pt*(r*sn + track.GetParameter()[2]*cs);
+  Double_t m35=pt, m45=-pt*pt*track.GetParameter()[3];
+
+  m43*=track.GetSign();
+  m44*=track.GetSign();
+  m45*=track.GetSign();
+
+  const Double_t *cTr = track.GetCovariance();
+
+  fC[0 ] = cTr[0]*m00*m00;
+  fC[1 ] = cTr[0]*m00*m10; 
+  fC[2 ] = cTr[0]*m10*m10;
+  fC[3 ] = cTr[1]*m00; 
+  fC[4 ] = cTr[1]*m10; 
+  fC[5 ] = cTr[2];
+  fC[6 ] = m00*(cTr[3]*m23 + cTr[10]*m43); 
+  fC[7 ] = m10*(cTr[3]*m23 + cTr[10]*m43); 
+  fC[8 ] = cTr[4]*m23 + cTr[11]*m43; 
+  fC[9 ] = m23*(cTr[5]*m23 + cTr[12]*m43)  +  m43*(cTr[12]*m23 + cTr[14]*m43);
+  fC[10] = m00*(cTr[3]*m24 + cTr[10]*m44); 
+  fC[11] = m10*(cTr[3]*m24 + cTr[10]*m44); 
+  fC[12] = cTr[4]*m24 + cTr[11]*m44; 
+  fC[13] = m23*(cTr[5]*m24 + cTr[12]*m44)  +  m43*(cTr[12]*m24 + cTr[14]*m44);
+  fC[14] = m24*(cTr[5]*m24 + cTr[12]*m44)  +  m44*(cTr[12]*m24 + cTr[14]*m44);
+  fC[15] = m00*(cTr[6]*m35 + cTr[10]*m45); 
+  fC[16] = m10*(cTr[6]*m35 + cTr[10]*m45); 
+  fC[17] = cTr[7]*m35 + cTr[11]*m45; 
+  fC[18] = m23*(cTr[8]*m35 + cTr[12]*m45)  +  m43*(cTr[13]*m35 + cTr[14]*m45);
+  fC[19] = m24*(cTr[8]*m35 + cTr[12]*m45)  +  m44*(cTr[13]*m35 + cTr[14]*m45); 
+  fC[20] = m35*(cTr[9]*m35 + cTr[13]*m45)  +  m45*(cTr[13]*m35 + cTr[14]*m45);
+
+  Create(fP,fC,fQ,Mass);
 }
 
 AliKFParticle::AliKFParticle( const AliVVertex &vertex )
