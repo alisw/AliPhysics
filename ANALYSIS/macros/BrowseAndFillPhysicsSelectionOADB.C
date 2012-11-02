@@ -241,7 +241,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   triggerCount++;  
   oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kMuonUnlikeLowPt0,"+C0MUL-[SA|SC]-NOPF-MUON","B",     triggerCount);
   oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"1");
-  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"");
+  oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"1");
 
   oadbContPS->AddDefaultObject(oadbDefaultPP);
   triggerCount = 0;
