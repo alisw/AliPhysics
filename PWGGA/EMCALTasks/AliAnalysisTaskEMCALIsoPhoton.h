@@ -37,6 +37,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
   void                   FillClusHists();
   void                   FillMcHists();
+  Float_t                   GetClusSource(const AliVCluster *cluster);
+  void                   FollowGamma();
+  void                   GetDaughtersInfo(const int firstd, const int lastd, const int selfid, const char *indputindent);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -47,6 +50,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetMcMode(Bool_t mc)                   { fIsMc               = mc;      }
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
   void                   SetPathStringSelect(char *p)           { fPathStrOpt         = p;       }
+  void                   SetEtCut(Double_t ec)                  { fECut               = ec;      }
   
  protected:
   TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
@@ -67,6 +71,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNDimensions;           // variable to set the number of dimensions of n-sparse
   Double_t               fECut;                  // variable to set the minimum E of a cluster
   Int_t                  fTrackMult;             // global variable with the event multiplicity        
+  TString                fMcIdFamily;            // string that holds the ids of all particles originated from the prompt photon
+  Int_t                  fNClusForDirPho;        // number of clusters from prompt photon per event
+  Float_t                fDirPhoPt;              // prompt photon pt (assumes only one per event)
 
   
  private:
@@ -79,10 +86,15 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEvtSel;                  //!evt selection counter: 0=all trg, 1=pv cut 
   TH1F        *fNClusEt10;               //!number of clusters w/ Et>10 in the event
   TH1F        *fPVtxZ;                   //!primary vertex Z before cut
+  TH1F        *fTrMultDist;              //!track multiplicity distribution
   TH3F        *fMCDirPhotonPtEtaPhi;     //!direct produced photon pt
   TH1F        *fDecayPhotonPtMC;         //!decay photon pt
   TH2F        *fCellAbsIdVsAmpl;         //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;          //!total number of clusters vs. highest clus energy in the event
+  TH2F        *fClusEtMcPt;              //!cluster et x mc-pt
+  TH2F        *fClusMcDetaDphi;          //!delta-eta x delta-phi(reco-mc)
+  TH2F        *fNClusPerPho;             //!delta-eta x delta-phi(reco-mc)
+  TH2F        *fMCDirPhotonPtEtaNoClus;  //!eta x phi for prompt photons that didn't produce clusters
   THnSparse   *fHnOutput;                //!Output matrix with 7 dimensions
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
