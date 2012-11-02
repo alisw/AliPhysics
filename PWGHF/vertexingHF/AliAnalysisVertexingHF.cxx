@@ -44,6 +44,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
+#include "AliPIDResponse.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
@@ -88,6 +89,10 @@ fCascades(kTRUE),
 fLikeSign(kFALSE),
 fLikeSign3prong(kFALSE),
 fMixEvent(kFALSE),
+fPidResponse(0x0),
+fUseKaonPIDfor3Prong(kFALSE),
+fnSigmaTOFKaonLow(5.),
+fnSigmaTOFKaonHi(5.),
 fMaxCentPercentileForTightCuts(-9999),
 fTrackFilter(0x0),
 fTrackFilter2prongCentral(0x0),
@@ -156,6 +161,10 @@ fCascades(source.fCascades),
 fLikeSign(source.fLikeSign),
 fLikeSign3prong(source.fLikeSign3prong),
 fMixEvent(source.fMixEvent),
+fPidResponse(source.fPidResponse),
+fUseKaonPIDfor3Prong(source.fUseKaonPIDfor3Prong),
+fnSigmaTOFKaonLow(source.fnSigmaTOFKaonLow),
+fnSigmaTOFKaonHi(source.fnSigmaTOFKaonHi),
 fMaxCentPercentileForTightCuts(source.fMaxCentPercentileForTightCuts),
 fTrackFilter(source.fTrackFilter),
 fTrackFilter2prongCentral(source.fTrackFilter2prongCentral),
@@ -221,6 +230,10 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fLikeSign = source.fLikeSign;
   fLikeSign3prong = source.fLikeSign3prong;
   fMixEvent = source.fMixEvent;
+  fPidResponse = source.fPidResponse;
+  fUseKaonPIDfor3Prong = source.fUseKaonPIDfor3Prong;
+  fnSigmaTOFKaonLow = source.fnSigmaTOFKaonLow;
+  fnSigmaTOFKaonHi = source.fnSigmaTOFKaonHi;
   fMaxCentPercentileForTightCuts = source.fMaxCentPercentileForTightCuts;
   fTrackFilter = source.fTrackFilter;
   fTrackFilter2prongCentral = source.fTrackFilter2prongCentral;
@@ -489,8 +502,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     return;
   }
 
-  // event selection
+  // event selection + PID configuration
   if(!fCutsD0toKpi->IsEventSelected(event)) return;
+  if(fCutsJpsitoee) fCutsJpsitoee->SetupPID(event);
+  if(fCutsDplustoKpipi) fCutsDplustoKpipi->SetupPID(event);
+  if(fCutsDstoKKpi) fCutsDstoKKpi->SetupPID(event);
+  if(fCutsLctopKpi) fCutsLctopKpi->SetupPID(event);
+  if(fCutsLctoV0) fCutsLctoV0->SetupPID(event);
+  if(fCutsD0toKpipipi) fCutsD0toKpipipi->SetupPID(event);
+  if(fCutsDStartoKpipi) fCutsDStartoKpipi->SetupPID(event);
 
   // call function that applies sigle-track selection,
   // for displaced tracks and soft pions (both charges) for D*,
@@ -927,6 +947,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  }
 	}
 
+	if(fUseKaonPIDfor3Prong){
+	  Double_t nsigmatofK= fPidResponse->NumberOfSigmasTOF(negtrack1,AliPID::kKaon);
+	  if(nsigmatofK>-990. && (nsigmatofK<-fnSigmaTOFKaonLow || nsigmatofK>fnSigmaTOFKaonHi)) continue;
+	}
 	// back to primary vertex
 	//	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	//	postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -1151,6 +1175,11 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  }
 	} else { // normal triplet (-+-)
 	  isLikeSign3Prong=kFALSE;
+	}
+
+	if(fUseKaonPIDfor3Prong){
+	  Double_t nsigmatofK= fPidResponse->NumberOfSigmasTOF(postrack1,AliPID::kKaon);
+	  if(nsigmatofK>-990. && (nsigmatofK<-fnSigmaTOFKaonLow || nsigmatofK>fnSigmaTOFKaonHi)) continue;
 	}
 
 	// back to primary vertex

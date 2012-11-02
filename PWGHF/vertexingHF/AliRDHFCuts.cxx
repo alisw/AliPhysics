@@ -370,6 +370,46 @@ Bool_t AliRDHFCuts::IsEventSelectedForCentrFlattening(Float_t centvalue){
 
 }
 //---------------------------------------------------------------------------
+void AliRDHFCuts::SetupPID(AliVEvent *event) {
+  // Set the PID response object in the AliAODPidHF
+  // in case of old PID sets the TPC dE/dx BB parameterization
+
+  if(fPidHF){
+    if(fPidHF->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidHF->SetPidResponse(pidResp);
+    }
+    if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
+    if(fPidHF->GetOldPid()) {
+
+      Bool_t isMC=kFALSE;
+      TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+      if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
+
+      // pp, from LHC10d onwards
+      if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
+	 event->GetRunNumber()>139517) fPidHF->SetOnePad(kTRUE);
+      // pp, 2011 low energy run
+      if((event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860)){
+	fPidHF->SetppLowEn2011(kTRUE);
+	fPidHF->SetOnePad(kFALSE);
+      }
+      // PbPb LHC10h
+      if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) fPidHF->SetPbPb(kTRUE);
+      // MC
+      if(isMC) fPidHF->SetMC(kTRUE);
+      if(isMC && (event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860))
+	fPidHF->SetMClowenpp2011(kTRUE);
+      fPidHF->SetBetheBloch();
+    }else{
+      // check that AliPIDResponse object was properly set in case of using OADB
+      if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
+    }
+  }
+}
+//---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //
   // Event selection
@@ -395,37 +435,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
-  // settings for the TPC dE/dx BB parameterization
-  if(fPidHF){
-    if(fPidHF->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-      fPidHF->SetPidResponse(pidResp);
-    }
-      if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
-    if(fPidHF->GetOldPid()) {
-      // pp, from LHC10d onwards
-      if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
-	 event->GetRunNumber()>139517) fPidHF->SetOnePad(kTRUE);
-      // pp, 2011 low energy run
-      if((event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860)){
-	fPidHF->SetppLowEn2011(kTRUE);
-	fPidHF->SetOnePad(kFALSE);
-      }
-      // PbPb LHC10h
-      if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) fPidHF->SetPbPb(kTRUE);
-      // MC
-      if(isMC) fPidHF->SetMC(kTRUE);
-      if(isMC && (event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860))
-	fPidHF->SetMClowenpp2011(kTRUE);
-      fPidHF->SetBetheBloch();
-    }else{
-      // check that AliPIDResponse object was properly set in case of using OADB
-      if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
-    }
-  }
 
+  SetupPID(event);
 
   // trigger class
   TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
