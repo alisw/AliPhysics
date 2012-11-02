@@ -1258,9 +1258,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0AC= vevent->GetT0TOF()[0];
 	    t0A= vevent->GetT0TOF()[1];
 	    t0C= vevent->GetT0TOF()[2];
+	    //	    t0AC= vevent->GetT0TOF()[0];
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -1330,9 +1333,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0AC= vevent->GetT0TOF()[0];
 	    t0A= vevent->GetT0TOF()[1];
 	    t0C= vevent->GetT0TOF()[2];
+	    //	    t0AC= vevent->GetT0TOF()[0];
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
@@ -1437,6 +1443,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   
   Double_t mom  = track->GetTPCmomentum();
   Double_t sig  = track->GetTPCsignal();
+  if(fTuneMConData) sig = this->GetTPCsignalTunedOnData(track);
   UInt_t   sigN = track->GetTPCsignalN();
   
   Double_t nSigma = -999.;
