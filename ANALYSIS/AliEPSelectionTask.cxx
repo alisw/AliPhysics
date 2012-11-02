@@ -531,6 +531,33 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
         }
       }
     }
+  } else if (fSplitMethod == AliEPSelectionTask::kCharge) {
+     
+    for (Int_t i = 0; i < nt; i++) {
+      weight = 1;
+      track = dynamic_cast<AliVTrack*> (tracklist->At(i));
+      if (!track) continue;
+      weight = GetWeight(track);
+      Short_t cha = track->Charge();
+      idtemp = track->GetID(); 
+      if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
+
+      if (cha > 0) {  
+        mQx1 += (weight*cos(2*track->Phi()));
+        mQy1 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
+      } else if (cha < 0) {
+        mQx2 += (weight*cos(2*track->Phi()));
+        mQy2 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
+      }
+    }
   } else {
     printf("plane resolution determination method not available!\n\n ");
     return;

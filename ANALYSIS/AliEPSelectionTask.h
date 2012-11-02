@@ -30,7 +30,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
 
  public:
   
-  enum ResoMethod{kRandom,kEta};
+  enum ResoMethod{kRandom,kEta,kCharge};
 
   AliEPSelectionTask();
   AliEPSelectionTask(const char *name);
