@@ -53,17 +53,25 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNDimensions(7),
   fECut(3.),
   fTrackMult(0),        
+  fMcIdFamily(""),
+  fNClusForDirPho(0),
+  fDirPhoPt(0),
   fESD(0),
   fMCEvent(0),
   fStack(0),
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
-  fPVtxZ(0),  
+  fPVtxZ(0),
+  fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
+  fClusEtMcPt(0),
+  fClusMcDetaDphi(0),
+  fNClusPerPho(0),
+  fMCDirPhotonPtEtaNoClus(0),
   fHnOutput(0)
 {
   // Default constructor.
@@ -90,6 +98,9 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNDimensions(7),
   fECut(3.),
   fTrackMult(0),        
+  fMcIdFamily(""),
+  fNClusForDirPho(0),
+  fDirPhoPt(0),
   fESD(0),
   fMCEvent(0),
   fStack(0),
@@ -97,10 +108,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEvtSel(0),
   fNClusEt10(0),
   fPVtxZ(0),            
+  fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
+  fClusEtMcPt(0),
+  fClusMcDetaDphi(0),
+  fNClusPerPho(0),
+  fMCDirPhotonPtEtaNoClus(0),
   fHnOutput(0)
 {
   // Constructor
@@ -125,7 +141,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
   
-  fGeom = AliEMCALGeometry::GetInstance(fGeoName);
+  fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
@@ -135,6 +151,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   
   fPVtxZ = new TH1F("hPVtxZ","primary vertex Z before cut;prim-vz(cm) ;",200,-100,100);
   fOutputList->Add(fPVtxZ);
+
+  fTrMultDist = new TH1F("fTrMultDist","track multiplicity;tracks/event;#events",200,0.5,200.5);
+  fOutputList->Add(fTrMultDist);
 
   fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
   fMCDirPhotonPtEtaPhi->Sumw2();
@@ -150,13 +169,25 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fNClusHighClusE = new TH2F("hNClusHighClusE","total number of clusters vs. highest clus energy in the event;E (GeV);NClus",200,0,100,301,-0.5,300.5);
   fOutputList->Add(fNClusHighClusE);
 
-  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=20;
-  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult};
+  fClusEtMcPt = new TH2F("hClusEtMcPt","E_{T}^{clus} vs. p_{T}^{mc}; p_{T}^{mc};E_{T}^{clus}",500,0,100,500,0,100);
+  fOutputList->Add(fClusEtMcPt);
+
+  fClusMcDetaDphi = new TH2F("hClusMcDetaDphi","#Delta#phi vs. #Delta#eta (reco-mc);#Delta#eta;#Delta#phi",100,-.7,.7,100,-.7,.7);
+  fOutputList->Add(fClusMcDetaDphi);
+
+  fNClusPerPho = new TH2F("hNClusPerPho","Number of clusters per prompt photon;p_{T}^{MC};N_{clus}",500,0,100,11,-0.5,10.5);
+  fOutputList->Add(fNClusPerPho);
+
+  fMCDirPhotonPtEtaNoClus = new TH2F("hMCDirPhotonPtEtaNoClus","#eta vs. #phi prompt photons with no reco clusters;#phi;#eta",154,-0.77,0.77,130,1.38,3.20);
+  fOutputList->Add(fMCDirPhotonPtEtaNoClus);
+
+  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=101;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
-  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5};
-  Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5};
-  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult", ndims, bins, xmin, xmax);
+  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,-1.5};
+  Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,99.5};
+  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
 
@@ -181,7 +212,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(fTrigBit.Contains("kEMC"))
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
     else
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+      if(fTrigBit.Contains("kMB"))
+	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      else
+	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
   }
   if(fIsMc)
     isSelected = kTRUE;
@@ -244,18 +278,13 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     }
   }
   AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
-  fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5);  
+  fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
+  fTrMultDist->Fill(fTrackMult);
 
   fESD->GetEMCALClusters(fCaloClusters);
   fEMCalCells = fESD->GetEMCALCells();
   
     
-  FillClusHists(); 
-  if(fDebug)
-    printf("passed calling of FillClusHists\n");
-
-  fCaloClusters->Clear();
-  fSelPrimTracks->Clear();
 
   fMCEvent = MCEvent();
   if(fMCEvent){
@@ -267,10 +296,19 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(fDebug)
       std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
+  FollowGamma();
+  if(fDebug)
+    printf("passed calling of FollowGamma\n");
+  FillClusHists(); 
+  if(fDebug)
+    printf("passed calling of FillClusHists\n");
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
 
+  fCaloClusters->Clear();
+  fSelPrimTracks->Clear();
+  fNClusForDirPho = 0;
 
   PostData(1, fOutputList);
 }      
@@ -289,6 +327,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     printf("Inside FillClusHists and there are %d clusters\n",nclus);
   Double_t maxE = 0;
   Int_t nclus10 = 0;
+  Double_t ptmc=-1;
   for(Int_t ic=0;ic<nclus;ic++){
     maxE=0;
     AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
@@ -307,6 +346,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+    if(fDebug)
+      printf("\tcluster eta=%1.1f,phi=%1.1f,E=%1.1f\n",clsVec.Eta(),clsVec.Phi(),c->E());
     if(Et>10)
       nclus10++;
     Float_t ceiso, cephiband, cecore;
@@ -324,6 +365,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
+    ptmc = GetClusSource(c);
     outputValues[0] = Et;
     outputValues[1] = c->GetM02();
     outputValues[2] = ceiso-cecore-ceisoue;
@@ -337,12 +379,14 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[10] = clsVec.Phi();
     outputValues[11] = fEMCalCells->GetCellTime(id);
     outputValues[12] = fTrackMult;
+    outputValues[13] = ptmc;
     fHnOutput->Fill(outputValues);
     if(c->E()>maxE)
       maxE = c->E();
   }
   fNClusHighClusE->Fill(maxE,nclus);
   fNClusEt10->Fill(nclus10);
+  fNClusPerPho->Fill(fDirPhoPt,fNClusForDirPho);
 } 
 
 //________________________________________________________________________
@@ -528,6 +572,8 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     Int_t pdgMom = mcmom->GetPdgCode();
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+      if(fNClusForDirPho==0)
+	fMCDirPhotonPtEtaNoClus->Fill(mcp->Eta(),mcp->Phi());
       if(fDebug){
 	printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
 	printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
@@ -537,6 +583,114 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
       if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
 	fDecayPhotonPtMC->Fill(mcp->Pt());
     }
+  }
+}
+//________________________________________________________________________
+Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
+{
+  if(!c)
+    return -1;
+  if(!fStack)
+    return -1;
+  Int_t nmcp = fStack->GetNtrack();
+  Int_t clabel = c->GetLabel();
+  if(fDebug && fMcIdFamily.Contains(Form("%d",clabel)))
+    printf("\n\t ==== Label %d is a descendent of the prompt photon ====\n\n",clabel);
+  if(!fMcIdFamily.Contains(Form("%d",clabel)))
+    return -1;
+  fNClusForDirPho++;
+  TString partonposstr = (TSubString)fMcIdFamily.operator()(0,1);
+  Int_t partonpos = partonposstr.Atoi();
+  if(fDebug)
+    printf("\t^^^^ parton position = %d ^^^^\n",partonpos);
+  if(clabel<0 || clabel>nmcp)
+    return 0;
+  Float_t clsPos[3] = {0,0,0};
+  c->GetPosition(clsPos);
+  TVector3 clsVec(clsPos);
+  Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+  TParticle *mcp = static_cast<TParticle*>(fStack->Particle(partonpos));
+  if(!mcp)
+    return -1;
+  if(fDebug){
+    printf("\tclus mc truth eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, stackpos=%d\n",mcp->Eta(),mcp->Phi(),mcp->Energy(),mcp->GetPdgCode(),clabel);
+  }
+  Int_t lab1 =  mcp->GetFirstDaughter();
+  if(lab1<0 || lab1>nmcp)
+    return -1;
+  TParticle *mcd = static_cast<TParticle*>(fStack->Particle(lab1));
+  if(!mcd)
+    return -1;
+  if(fDebug)
+    printf("\t\tmom mc truth eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, stackpos=%d\n",mcd->Eta(),mcd->Phi(),mcd->Energy(),mcd->GetPdgCode(),lab1);
+  if(mcd->GetPdgCode()==22){
+    fClusEtMcPt->Fill(mcd->Pt(), Et);
+    fClusMcDetaDphi->Fill(clsVec.Eta() - mcd->Eta(), clsVec.Phi() - mcd->Phi());
+  }
+  else{
+    printf("Warning: daughter of photon parton is not a photon\n");
+    return -1;
+  }
+  return fDirPhoPt;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
+{
+  if(!fStack)
+    return;
+  Int_t selfid = 6;
+  TParticle *mcp = static_cast<TParticle*>(fStack->Particle(selfid));
+  if(!mcp)
+    return;
+  if(mcp->GetPdgCode()!=22){
+    mcp = static_cast<TParticle*>(fStack->Particle(++selfid));
+    if(!mcp)
+      return;
+  }  
+  Int_t daug0f =  mcp->GetFirstDaughter();
+  Int_t daug0l =  mcp->GetLastDaughter();
+  Int_t nd0 = daug0l - daug0f;
+  if(fDebug)
+    printf("\n\tGenerated gamma (%d) eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, n-daug=%d\n",selfid,mcp->Eta(),mcp->Phi(),mcp->Energy(),mcp->GetPdgCode(),nd0+1);
+  fMcIdFamily = Form("%d,",selfid);
+  GetDaughtersInfo(daug0f,daug0l, selfid,"");
+  if(fDebug){
+    printf("\t---- end of the prompt  gamma's family tree ----\n\n");
+    printf("Family id string = %s,\n\n",fMcIdFamily.Data());
+  }
+  TParticle *md = static_cast<TParticle*>(fStack->Particle(daug0f));
+  if(!md)
+    return;
+  fDirPhoPt = md->Pt();
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::GetDaughtersInfo(const int firstd, const int lastd, const int selfid, const char *inputind)
+{
+  int nmcp = fStack->GetNtrack();
+  if(firstd<0 || firstd>nmcp)
+    return;
+  if(lastd<0 || lastd>nmcp)
+    return;
+  if(firstd>lastd){
+    printf("WARNING: First daughter > last (%d,%d)\n",firstd,lastd);
+    return;
+  }
+  TString indenter = Form("\t%s",inputind);
+  TParticle *dp = 0x0;
+  if(fDebug)
+    printf("\t%s--- Daughters of particle %d ---\n", indenter.Data(), selfid);
+  for(int id=firstd; id<lastd+1; id++){
+    dp =  static_cast<TParticle*>(fStack->Particle(id));
+    if(!dp)
+      continue;
+    Int_t dfd = dp->GetFirstDaughter(); 
+    Int_t dld = dp->GetLastDaughter();
+    Int_t dnd =  dld - dfd + 1;
+    Float_t vr = TMath::Sqrt(dp->Vx()*dp->Vx()+dp->Vy()*dp->Vy());
+    if(fDebug)
+      printf("\t%sParticle daughter(%d) eta=%1.1f,phi=%1.1f,E=%1.1f, vR=%1.1f, pdgcode=%d, n-daug=%d(%d,%d)\n", indenter.Data(),id, dp->Eta(), dp->Phi(), dp->Energy(), vr, dp->GetPdgCode(), dnd, dfd, dld);
+    fMcIdFamily += Form("%d,",id);
+    GetDaughtersInfo(dfd,dld,id,indenter.Data());
   }
 }
 //________________________________________________________________________
