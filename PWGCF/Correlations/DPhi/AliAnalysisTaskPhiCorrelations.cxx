@@ -274,13 +274,15 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
-  Int_t nZvtxBins  = 7+(1+7)*4;
+  const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm
-  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7, 
-			    93, 95, 97, 99, 101, 103, 105, 107,
-			    193, 195, 197, 199, 201, 203, 205, 207,
-			    293, 295, 297, 299, 301, 303, 305, 307,
-			    393, 395, 397, 399, 401, 403, 405, 407 };
+  Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
+				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
+				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 
+				      290, 292, 294, 296, 298, 300, 302, 304, 306, 308, 310, 
+				      390, 392, 394, 396, 398, 400, 402, 404, 406, 408, 410 };
+
+  Int_t nZvtxBins  = kNZvtxBins;
   Double_t* zvtxbin = vertexBins;
 
   if (fMode == 0 && fHistos->GetUEHist(2)->GetEventHist()->GetNVar() > 2)

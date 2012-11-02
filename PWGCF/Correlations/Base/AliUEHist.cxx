@@ -86,7 +86,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   // eta
   const Int_t kNEtaBins = 20;
   Double_t etaBins[20+1];
-  for (Int_t i=0; i<=iTrackBin[0]; i++)
+  for (Int_t i=0; i<=kNEtaBins; i++)
     etaBins[i] = -1.0 + 0.1 * i;
   const char* etaTitle = "#eta";
   iTrackBin[0] = kNEtaBins;
@@ -113,8 +113,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   // pT
   //iTrackBin[1] = 20;
   //Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
-  iTrackBin[1] = 8;
-  Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
+  iTrackBin[1] = 9;
+  Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0 };
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
@@ -967,7 +967,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 3; vertexBin <= 5; vertexBin++)
+//     for (Int_t vertexBin = 4; vertexBin <= 4; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -1024,7 +1024,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 	  if (sums[x] > 0)
 	    errors[x] /= sums[x];
 	  
-	Printf("The correlation function %d %d has uncertainties %f %f %f (Ratio S/M %f)", multBin, vertexBin, errors[0], errors[1], errors[2], errors[0] / errors[1]);
+	Printf("The correlation function %d %d has uncertainties %f %f %f (Ratio S/M %f)", multBin, vertexBin, errors[0], errors[1], errors[2], (errors[1] > 0) ? errors[0] / errors[1] : -1);
 	// code to draw contributions
 	/*
 	TH1* proj = tracksSame->ProjectionX("projx", tracksSame->GetYaxis()->FindBin(-1.59), tracksSame->GetYaxis()->FindBin(1.59));
