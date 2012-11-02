@@ -48,8 +48,8 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
-		  //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
+		  //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
 		  //           eventCuts->SetCentralityRange(0.0,80.0);
 		  eventCuts->SetRequireVertex();
 		  eventCuts->SetMinVtxContributors(1);
@@ -373,11 +373,12 @@ class LMEECutLib {
 			trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
 			AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+			trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
 			trackCutsDiel->SetRequireITSRefit(kTRUE);
 			trackCutsDiel->SetRequireTPCRefit(kTRUE);
 			//-AOD-trackCuts->SetMinNClustersITS(3);
-/*			trackCutsDiel->SetITSclusterCut(AliDielectronTrackCuts::kAtLeast,7); //>=3
-			*/
+			//trackCutsDiel->SetITSclusterCut(AliDielectronTrackCuts::kAtLeast,7); //>=3
+			
 			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
 			// trackCutsAOD->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
 			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);

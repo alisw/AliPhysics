@@ -220,6 +220,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigmaPro_P","TOF number of sigmas Protons;P [GeV];TOF number of sigmas Protons;#tracks",
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
 
+  histos->UserHistogram("Track","TOFbeta","TOF beta;P [GeV];TOF beta;#tracks",
+	  400,0.0,20.,100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta,kTRUE);
+
+
   histos->UserHistogram("Track","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
 	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
