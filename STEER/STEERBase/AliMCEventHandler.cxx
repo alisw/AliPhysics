@@ -194,9 +194,9 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
     
   Int_t inew  = iev / fEventsPerFile;
   Bool_t firsttree = (fTreeK==0) ? kTRUE : kFALSE;
-  Bool_t newtree = firsttree;
+//  Bool_t newtree = firsttree;
   if (inew != fFileNumber) {
-    newtree = kTRUE;
+//    newtree = kTRUE;
     fFileNumber = inew;
     if (!OpenFile(fFileNumber)){
       return kFALSE;
@@ -241,32 +241,30 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
   }
   // Now setup the caches if not yet done
   if (fCacheSize) {
-    if (firsttree) {
-      fTreeK->SetCacheSize(fCacheSize);
-      fCacheTK = (TTreeCache*) fFileK->GetCacheRead(fTreeK);
+    fTreeK->SetCacheSize(fCacheSize);
+    fCacheTK = (TTreeCache*) fFileK->GetCacheRead(fTreeK);
+    TTreeCache::SetLearnEntries(1);
+    fTreeK->AddBranchToCache("*",kTRUE);
+    if (firsttree) Info("LoadEvent","Read cache enabled %lld bytes for TreeK",fCacheSize);
+    if (fTreeTR) {
+      fTreeTR->SetCacheSize(fCacheSize);
+      fCacheTR = (TTreeCache*) fFileTR->GetCacheRead(fTreeTR);
       TTreeCache::SetLearnEntries(1);
-      fTreeK->AddBranchToCache("*",kTRUE);
-      Info("LoadEvent","Read cache enabled %lld bytes for TreeK",fCacheSize);
-      if (fTreeTR) {
-        fTreeTR->SetCacheSize(fCacheSize);
-        fCacheTR = (TTreeCache*) fFileTR->GetCacheRead(fTreeTR);
-        TTreeCache::SetLearnEntries(1);
-        fTreeTR->AddBranchToCache("*",kTRUE);
-        Info("LoadEvent","Read cache enabled %lld bytes for TreeTR",fCacheSize);
-      } 
-    } else {
+      fTreeTR->AddBranchToCache("*",kTRUE);
+      if (firsttree) Info("LoadEvent","Read cache enabled %lld bytes for TreeTR",fCacheSize);
+    } 
+//    } else {
       // We need to reuse the previous caches and every new event is a new tree
-      if (fCacheTK) {
-         fCacheTK->ResetCache();
-         if (fFileK) fFileK->SetCacheRead(fCacheTK, fTreeK);
-         fCacheTK->UpdateBranches(fTreeK);
-      }
-      if (fCacheTR) {
-         fCacheTR->ResetCache();
-         if (fFileTR) fFileTR->SetCacheRead(fCacheTR, fTreeTR);
-         fCacheTR->UpdateBranches(fTreeTR);
-      }   
-    }
+//      if (fCacheTK) {
+//         fCacheTK->ResetCache();
+//         if (fFileK) fFileK->SetCacheRead(fCacheTK, fTreeK);
+//         fCacheTK->UpdateBranches(fTreeK);
+//      }
+//      if (fCacheTR) {
+//         fCacheTR->ResetCache();
+//         if (fFileTR) fFileTR->SetCacheRead(fCacheTR, fTreeTR);
+//         fCacheTR->UpdateBranches(fTreeTR);
+//      }   
   }  
   return kTRUE;
 }
@@ -534,8 +532,16 @@ void AliMCEventHandler::ResetIO()
 Bool_t AliMCEventHandler::FinishEvent()
 {
     // Clean-up after each event
-   if (fFileK && fCacheTK) fFileK->SetCacheRead(0, fTreeK);
-   if (fFileTR && fCacheTR) fFileTR->SetCacheRead(0, fTreeTR);
+   if (fFileK && fCacheTK) {
+      fTreeK->SetCacheSize(0);
+      fCacheTK = 0;  
+      fFileK->SetCacheRead(0, fTreeK);
+   }   
+   if (fFileTR && fCacheTR) {
+      fTreeTR->SetCacheSize(0);
+      fCacheTR = 0;
+      fFileTR->SetCacheRead(0, fTreeTR);
+   }
    delete fDirTR;  fDirTR = 0;
    delete fDirK;   fDirK  = 0;    
     if (fInitOk) fMCEvent->FinishEvent();
