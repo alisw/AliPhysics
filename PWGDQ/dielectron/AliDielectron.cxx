@@ -300,7 +300,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   //in case there is a histogram manager, fill the QA histograms
-  if (fHistos) FillMCHistograms(ev1);
+  if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
 
 
