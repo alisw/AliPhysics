@@ -191,6 +191,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
+  void SetupPID(AliVEvent *event);
 
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* /*aod*/)

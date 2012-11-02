@@ -41,6 +41,8 @@
 #include "AliESDUtils.h"
 #include "AliAODHFUtil.h"
 
+#include "AliInputEventHandler.h"
+#include "AliPIDResponse.h"
 
 ClassImp(AliAnalysisTaskSEVertexingHF)
 
@@ -226,6 +228,11 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
      AliAODHandler *aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
      if (aodhandler) aodhandler->SetFillExtension(kTRUE);
   }   
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+  fVHF->SetPidResponse(pidResp);
 
   // heavy flavor vertexing
   fVHF->FindCandidates(event,

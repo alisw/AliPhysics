@@ -19,6 +19,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
 
+class AliPIDResponse;
 class AliESDVertex;
 class AliAODRecoDecay;
 class AliAODRecoDecayHF;
@@ -157,6 +158,10 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; } 
 
   void SetMasses();
+  void SetUseKaonPIDfor3Prong(Bool_t opt=kTRUE){fUseKaonPIDfor3Prong=opt;}
+  void SetnSigmaTOFforKaonSel(Double_t nsl, Double_t nsh){
+    fnSigmaTOFKaonLow=nsl; fnSigmaTOFKaonHi=nsh;}
+  void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
 
   //
  private:
@@ -189,6 +194,11 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fLikeSign;  // Like-sign pairs
   Bool_t fLikeSign3prong;  // Like-sign triplets
   Bool_t fMixEvent; // event mixing
+
+  AliPIDResponse* fPidResponse; // PID response
+  Bool_t fUseKaonPIDfor3Prong;  // Kaon PID usage flag
+  Double_t fnSigmaTOFKaonLow;   //Low cut value on number of sigmas for TOF PID
+  Double_t fnSigmaTOFKaonHi;    //High cut value on number of sigmas for TOF PID
 
   Float_t fMaxCentPercentileForTightCuts; //max. centrality percentile for using tight cuts
 
@@ -297,7 +307,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,20);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,21);  // Reconstruction of HF decay candidates
 };
 
 
