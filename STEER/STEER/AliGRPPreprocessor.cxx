@@ -33,6 +33,7 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TPRegexp.h>
+#include <Bytes.h>
 
 #include <float.h>
 
@@ -1577,6 +1578,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	
 	TChain *fRawTagChain = new TChain("T");
 	Int_t nFiles=0;
+	Int_t nCorruptedFiles=0;
 	TIterator* iter = list->MakeIterator();
 	TObject* obj = 0;
 	while ((obj = iter->Next())) {
@@ -1598,9 +1600,14 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 				}
 				TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());
 				if (fileName.Length() > 0) {
-					Log(Form("Adding file in the chain: %s",fileName.Data()));
-					fRawTagChain->Add(fileName.Data());
-					nFiles++;
+					if(!CheckFileRecords(fileName.Data())){
+						Log(Form("The file records for \"%s\" are corrupted! The chain is skipping it.",fileName.Data()));
+						nCorruptedFiles++;
+					}else{
+						Log(Form("Adding file in the chain: %s",fileName.Data()));
+						fRawTagChain->Add(fileName.Data());
+						nFiles++;
+					}
 				} else {
 					Log(Form("Could not retrieve file with id %s from source %s: "
 						 "connection problems with DAQ FXS!",
@@ -1627,7 +1634,10 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	}
 	
 	TString fRawDataFileName = "GRP_Merged.tag.root";
-	Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
+	if(nCorruptedFiles!=0)
+		Log(Form("Merging %d raw data tags into file: %s. %d corrupted files skipped", nFiles, fRawDataFileName.Data(), nCorruptedFiles));
+	else
+		Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
 	
 	if (fRawTagChain->Merge(fRawDataFileName) < 1 ) {
 		Log(Form("Error merging %d raw data files!!!",nFiles));
@@ -3368,3 +3378,101 @@ TString AliGRPPreprocessor::ParseBeamTypeString(TString beamType, Int_t iBeamTyp
 
 }
 	    
+//------------------------------------------------------------------------------------------------------
+Bool_t AliGRPPreprocessor::CheckFileRecords(const char* fileName) const
+{
+    // Check file logical records as in TFile::Map()
+    // returning false in case the position of the final record is bigger than the file size
+    // It should allow to mark as bad all and only raw tag files which would crash the chaining
+    // done in ProcessDaqFxs
+    //
+    TFile *f = TFile::Open(fileName);
+    if(!f){
+	Printf("could not open file \"%s\"",fileName);
+	return kFALSE;
+    }
+
+    Short_t  keylen,cycle;
+    UInt_t   datime;
+    Int_t    nbytes,date,time,objlen,nwheader;
+    date = 0;
+    time = 0;
+    Long64_t seekkey,seekpdir;
+    char    *buffer;
+    char     nwhc;
+    const Int_t kBEGIN = 100;
+    Long64_t fBEGIN = (Long64_t)kBEGIN;    //First used word in file following the file header
+    Long64_t idcur = fBEGIN;
+    Long64_t fEND = f->GetEND();            //Last used byte in file
+
+    nwheader = 64;
+    Int_t nread = nwheader;
+
+    char header[kBEGIN];
+    char classname[512];
+
+    while (idcur < fEND) {
+	f->Seek(idcur);
+	if (idcur+nread >= fEND) nread = fEND-idcur-1;
+	if (f->ReadBuffer(header, nread)) {
+	    // ReadBuffer returns kTRUE in case of failure.
+	    Printf("%s: failed to read the key data from disk at %lld.",f->GetName(),idcur);
+	    break;
+	}
+
+	buffer=header;
+	frombuf(buffer, &nbytes);
+	if (!nbytes) {
+	    Printf("Address = %lld\tNbytes = %d\t=====E R R O R=======", idcur, nbytes);
+	    date = 0; time = 0;
+	    break;
+	}
+	if (nbytes < 0) {
+	    Printf("Address = %lld\tNbytes = %d\t=====G A P===========", idcur, nbytes);
+	    idcur -= nbytes;
+	    f->Seek(idcur);
+	    continue;
+	    //return kFALSE; // these gaps are not always critical
+	}
+	Version_t versionkey;
+	frombuf(buffer, &versionkey);
+	frombuf(buffer, &objlen);
+	frombuf(buffer, &datime);
+	frombuf(buffer, &keylen);
+	frombuf(buffer, &cycle);
+	if (versionkey > 1000) {
+	    frombuf(buffer, &seekkey);
+	    frombuf(buffer, &seekpdir);
+	} else {
+	    Int_t skey,sdir;
+	    frombuf(buffer, &skey);  seekkey  = (Long64_t)skey;
+	    frombuf(buffer, &sdir);  seekpdir = (Long64_t)sdir;
+	}
+	frombuf(buffer, &nwhc);
+	for (int i = 0;i < nwhc; i++) frombuf(buffer, &classname[i]);
+	classname[(int)nwhc] = '\0'; //cast to avoid warning with gcc3.4
+	Long64_t fSeekFree = f->GetSeekFree();
+	Long64_t fSeekInfo = f->GetSeekInfo();
+	Long64_t fSeekKeys = f->GetSeekKeys();
+	if (idcur == fSeekFree) strlcpy(classname,"FreeSegments",512);
+	if (idcur == fSeekInfo) strlcpy(classname,"StreamerInfo",512);
+	if (idcur == fSeekKeys) strlcpy(classname,"KeysList",512);
+	TDatime::GetDateTime(datime, date, time);
+	/*
+	if (objlen != nbytes-keylen) {
+	    Float_t cx = Float_t(objlen+keylen)/Float_t(nbytes);
+	    Printf("%d/%06d  At:%lld  N=%-8d  %-14s CX = %5.2f",date,time,idcur,nbytes,classname,cx);
+	} else {
+	    Printf("%d/%06d  At:%lld  N=%-8d  %-14s",date,time,idcur,nbytes,classname);
+	}
+	*/
+	idcur += nbytes;
+    }
+    //Printf("%d/%06d  At:%lld  N=%-8d  %-14s",date,time,idcur,1,"END");
+    if(idcur > f->GetSize()){
+	AliWarning("Bad file: final record position bigger than file size");
+	return kFALSE;
+    }
+    return kTRUE;
+}
+

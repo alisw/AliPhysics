@@ -110,6 +110,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
    AliLHCClockPhase* ProcessLHCClockPhase(TObjArray *beam1phase,TObjArray *beam2phase,
 					  Double_t timeEnd);
    TString ParseBeamTypeString(TString beamType, Int_t iBeamType);
+   Bool_t CheckFileRecords (const char* fileName) const;
    
  private:
  
