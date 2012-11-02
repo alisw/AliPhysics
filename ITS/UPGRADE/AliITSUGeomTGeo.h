@@ -1,5 +1,6 @@
 #ifndef ALIITSUGEOMTGEO_H
 #define ALIITSUGEOMTGEO_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -35,6 +36,7 @@
 #include <TObject.h>
 #include <TGeoMatrix.h>
 #include <TString.h>
+#include <TObjArray.h>
 
 class TGeoPNEntry;
 class TDatime;

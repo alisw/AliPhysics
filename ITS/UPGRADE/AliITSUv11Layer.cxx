@@ -38,6 +38,7 @@
 #include <TGeoMatrix.h>
 #include "AliITSUv11Layer.h"
 #include "AliITSUGeomTGeo.h"
+using namespace TMath;
 
 const Double_t AliITSUv11Layer::fgkDefaultSensorThick = 300*fgkmicron;
 const Double_t AliITSUv11Layer::fgkDefaultLadderThick =   1*fgkcm;
@@ -238,12 +239,12 @@ void AliITSUv11Layer::CreateLayer(TGeoVolume *moth,const TGeoManager *mgr){
 
 
   // First create the ladder container
-  alpha = (360./(2*fNLadders))*TMath::DegToRad();
+  alpha = (360./(2*fNLadders))*DegToRad();
 
-  //  fLadderWidth = fLayRadius*TMath::Tan(alpha);
+  //  fLadderWidth = fLayRadius*Tan(alpha);
 
   rmin = 0.98*fLayRadius;
-  rmax = 1.02*TMath::Sqrt( fLadderWidth*fLadderWidth +
+  rmax = 1.02*Sqrt( fLadderWidth*fLadderWidth +
 			  (rmin+fLadderThick)*(rmin+fLadderThick) );
 
   TGeoTube *layer = new TGeoTube(rmin, rmax, 0.5*fZLength);
@@ -317,7 +318,7 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
   // Check if the user set the proper (remaining) parameters
   if (fLadderWidth <= 0)
     AliFatal(Form("Wrong ladder width (%f)",fLadderWidth));
-  if (TMath::Abs(fLadderTilt) > 45)
+  if (Abs(fLadderTilt) > 45)
     AliWarning(Form("Ladder tilt angle (%f) greater than 45deg",fLadderTilt));
 
 
@@ -325,8 +326,8 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
   // d is half the diagonal of the ladder section
   // rladd is the radius at the ladder's center-of-gravity
   // alpha here is the angle between the diagonal and rladd
-  d = 0.5*TMath::Sqrt(fLadderThick*fLadderThick + fLadderWidth*fLadderWidth);
-  alpha = TMath::ACos(0.5*fLadderThick/d)*TMath::RadToDeg();
+  d = 0.5*Sqrt(fLadderThick*fLadderThick + fLadderWidth*fLadderWidth);
+  alpha = ACos(0.5*fLadderThick/d)*RadToDeg();
   gamma = alpha - fLadderTilt;
   rladd = fLayRadius + 0.5*fLadderThick;
 
@@ -336,9 +337,9 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
   if (rcont > 0)
     rmin = 0.98*rcont;
   else
-    rmin = 0.98*TMath::Sqrt( rladd*rladd + d*d - 2*rladd*d*CosD(gamma) );
+    rmin = 0.98*Sqrt( rladd*rladd + d*d - 2*rladd*d*CosD(gamma) );
   
-  rmax = 1.02*TMath::Sqrt( rladd*rladd + d*d + 2*rladd*d*CosD(gamma) );
+  rmax = 1.02*Sqrt( rladd*rladd + d*d + 2*rladd*d*CosD(gamma) );
   
   TGeoTube *layer = new TGeoTube(rmin, rmax, 0.5*fZLength);
 
@@ -399,10 +400,10 @@ TGeoVolume* AliITSUv11Layer::CreateLadder(const TGeoManager *mgr){
 
 
   // First create all needed shapes
-  alpha = (360./(2*fNLadders))*TMath::DegToRad();
+  alpha = (360./(2*fNLadders))*DegToRad();
 
   // The ladder
-  xlen = fLayRadius*TMath::Tan(alpha);
+  xlen = fLayRadius*Tan(alpha);
   if (fIsTurbo) xlen = 0.5*fLadderWidth;
   ylen = 0.5*fLadderThick;
   zlen = 0.5*fZLength;

@@ -39,6 +39,7 @@
 
 using std::cout;
 using std::endl;
+using namespace TMath;
 
 ClassImp(AliITSUSimulationPix)
 ////////////////////////////////////////////////////////////////////////
@@ -140,7 +141,7 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) AliFatal("The field is not initialized");
   Double_t bz = fld->SolenoidField();
-  fTanLorAng = TMath::Tan(weightHole*fSimuParam->LorentzAngleHole(bz) +
+  fTanLorAng = Tan(weightHole*fSimuParam->LorentzAngleHole(bz) +
 			  weightEle*fSimuParam->LorentzAngleElectron(bz));
   return kTRUE;
 }
@@ -229,7 +230,7 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
 	) continue;
     //
     if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
-    st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
+    st = Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) {
       st = (Double_t)((Int_t)(st*1e4)); // number of microns
       if (st<=1.0) st = 1.0;
@@ -242,7 +243,7 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
 	el  = dt * de / fSimuParam->GetGeVToCharge();
 	//
-	sig = fSimuParam->SigmaDiffusion1D(TMath::Abs(thick + y)); 
+	sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y)); 
 	sigx=sig;
 	sigz=sig*fda;
 	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
@@ -254,7 +255,7 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
-      sig = fSimuParam->SigmaDiffusion1D(TMath::Abs(thick + y));
+      sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
       sigx = sig;
       sigz = sig*fda;
       if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
@@ -326,7 +327,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 	) continue;
     //
     if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
-    st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
+    st = Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) 
       for (i=0;i<kn10;i++) { // Integrate over t
 	t   = kti[i];
@@ -335,7 +336,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 	z   = z0+z1*t;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
 	el  = kwi[i]*de/fSimuParam->GetGeVToCharge();
-	sig = fSimuParam->SigmaDiffusion1D(TMath::Abs(thick + y));
+	sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
 	sigx=sig;
 	sigz=sig*fda;
 	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
@@ -347,7 +348,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
-      sig = fSimuParam->SigmaDiffusion1D(TMath::Abs(thick + y));
+      sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
       sigx=sig;
       sigz=sig*fda;
       if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
@@ -417,10 +418,10 @@ void AliITSUSimulationPix::SpreadCharge(Double_t x0,Double_t z0,
      return;
    } // end if
    sp = 1.0/(sig*kRoot2);
-   ixs = TMath::Max(-knx+ix0,0);
-   ixe = TMath::Min(knx+ix0,fSeg->Npx()-1);
-   izs = TMath::Max(-knz+iz0,0);
-   ize = TMath::Min(knz+iz0,fSeg->Npz()-1);
+   ixs = Max(-knx+ix0,0);
+   ixe = Min(knx+ix0,fSeg->Npx()-1);
+   izs = Max(-knz+iz0,0);
+   ize = Min(knz+iz0,fSeg->Npz()-1);
    for (ix=ixs;ix<=ixe;ix++) 
      for (iz=izs;iz<=ize;iz++) {
        fSeg->DetToLocal(ix,iz,x,z); // pixel center
@@ -485,10 +486,10 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
   } // end if
   spx = 1.0/(sigx*kRoot2);     
   spz = 1.0/(sigz*kRoot2);
-  ixs = TMath::Max(-knx+ix0,0);
-  ixe = TMath::Min(knx+ix0,fSeg->Npx()-1);
-  izs = TMath::Max(-knz+iz0,0);
-  ize = TMath::Min(knz+iz0,fSeg->Npz()-1);
+  ixs = Max(-knx+ix0,0);
+  ixe = Min(knx+ix0,fSeg->Npx()-1);
+  izs = Max(-knz+iz0,0);
+  ize = Min(knz+iz0,fSeg->Npz()-1);
   for (ix=ixs;ix<=ixe;ix++) 
     for (iz=izs;iz<=ize;iz++) {
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
@@ -596,7 +597,7 @@ void AliITSUSimulationPix::FrompListToDigits()
     }
     //
     if ((sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(fModule)) continue;
-    if (TMath::Abs(sig)>2147483647.0) { //RS?
+    if (Abs(sig)>2147483647.0) { //RS?
       //PH 2147483647 is the max. integer
       //PH This apparently is a problem which needs investigation
       AliWarning(Form("Too big or too small signal value %f",sig));

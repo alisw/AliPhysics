@@ -48,6 +48,7 @@ $Id: AliITSUInitGeometry.cxx $
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUInitGeometry.h"
 #include <TDatime.h>
+using namespace TMath;
 
 ClassImp(AliITSUInitGeometry)
 
@@ -445,18 +446,18 @@ Bool_t AliITSUInitGeometry::GetShape(const TString &volumePath,
 	npar = 11;
 	par.Set(npar);
 	TGeoTrap *trap = (TGeoTrap*)shape;
-	Double_t tth = TMath::Tan(trap->GetTheta()*TMath::DegToRad());
+	Double_t tth = Tan(trap->GetTheta()*DegToRad());
 	par.AddAt(trap->GetDz(),0);
-	par.AddAt(tth*TMath::Cos(trap->GetPhi()*TMath::DegToRad()),1);
-	par.AddAt(tth*TMath::Sin(trap->GetPhi()*TMath::DegToRad()),2);
+	par.AddAt(tth*Cos(trap->GetPhi()*DegToRad()),1);
+	par.AddAt(tth*Sin(trap->GetPhi()*DegToRad()),2);
 	par.AddAt(trap->GetH1(),3);
 	par.AddAt(trap->GetBl1(),4);
 	par.AddAt(trap->GetTl1(),5);
-	par.AddAt(TMath::Tan(trap->GetAlpha1()*TMath::DegToRad()),6);
+	par.AddAt(Tan(trap->GetAlpha1()*DegToRad()),6);
 	par.AddAt(trap->GetH2(),7);
 	par.AddAt(trap->GetBl2(),8);
 	par.AddAt(trap->GetTl2(),9);
-	par.AddAt(TMath::Tan(trap->GetAlpha2()*TMath::DegToRad()),10);
+	par.AddAt(Tan(trap->GetAlpha2()*DegToRad()),10);
 	return kTRUE;
     } // end if
     if (classType==TGeoTube::Class()) {
@@ -589,8 +590,8 @@ Bool_t AliITSUInitGeometry::GetShape(const TString &volumePath,
 	npar = 5;
 	par.Set(npar);
 	TGeoHype *hype = (TGeoHype*)shape;
-	par.AddAt(TMath::Sqrt(hype->RadiusHypeSq(0.,kTRUE)),0);
-	par.AddAt(TMath::Sqrt(hype->RadiusHypeSq(0.,kFALSE)),1);
+	par.AddAt(Sqrt(hype->RadiusHypeSq(0.,kTRUE)),0);
+	par.AddAt(Sqrt(hype->RadiusHypeSq(0.,kFALSE)),1);
 	par.AddAt(hype->GetDZ(),2);
 	par.AddAt(hype->GetStIn(),3);
 	par.AddAt(hype->GetStOut(),4);
@@ -601,18 +602,18 @@ Bool_t AliITSUInitGeometry::GetShape(const TString &volumePath,
 	npar = 12;
 	par.Set(npar);
 	TGeoGtra *trap = (TGeoGtra*)shape;
-	Double_t tth = TMath::Tan(trap->GetTheta()*TMath::DegToRad());
+	Double_t tth = Tan(trap->GetTheta()*DegToRad());
 	par.AddAt(trap->GetDz(),0);
-	par.AddAt(tth*TMath::Cos(trap->GetPhi()*TMath::DegToRad()),1);
-	par.AddAt(tth*TMath::Sin(trap->GetPhi()*TMath::DegToRad()),2);
+	par.AddAt(tth*Cos(trap->GetPhi()*DegToRad()),1);
+	par.AddAt(tth*Sin(trap->GetPhi()*DegToRad()),2);
 	par.AddAt(trap->GetH1(),3);
 	par.AddAt(trap->GetBl1(),4);
 	par.AddAt(trap->GetTl1(),5);
-	par.AddAt(TMath::Tan(trap->GetAlpha1()*TMath::DegToRad()),6);
+	par.AddAt(Tan(trap->GetAlpha1()*DegToRad()),6);
 	par.AddAt(trap->GetH2(),7);
 	par.AddAt(trap->GetBl2(),8);
 	par.AddAt(trap->GetTl2(),9);
-	par.AddAt(TMath::Tan(trap->GetAlpha2()*TMath::DegToRad()),10);
+	par.AddAt(Tan(trap->GetAlpha2()*DegToRad()),10);
 	par.AddAt(trap->GetTwistAngle(),11);
 	return kTRUE;
     } // end if
@@ -1012,8 +1013,8 @@ Bool_t AliITSUInitGeometry::WriteVersionString(Char_t *str,Int_t length,
     cvsDateLength = (Int_t)strlen(cvslikedate);
     cvsRevisionLength = (Int_t)strlen(cvsRevision);
     i = (Int_t)maj;
-    n = 50+(Int_t)(TMath::Log10(TMath::Abs((Double_t)i)))+1+
-        (Int_t)(TMath::Log10(TMath::Abs((Double_t)min)))+1
+    n = 50+(Int_t)(Log10(Abs((Double_t)i)))+1+
+        (Int_t)(Log10(Abs((Double_t)min)))+1
         +cvsDateLength-6+cvsRevisionLength-10;
     if(GetDebug()>1) printf("AliITSUInitGeometry::WriteVersionString:"
                         "length=%d major=%d minor=%d cvsDate=%s[%d] "

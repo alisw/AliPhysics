@@ -52,6 +52,7 @@
 #include "AliITSUv11.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliGeomManager.h"
+using namespace TMath;
 
 
 ClassImp(AliITSUv11)
@@ -173,8 +174,8 @@ void AliITSUv11::SetT2Lmatrix(Int_t uid, Double_t yShift,
   TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
   Double_t *gtrans = globMatrix->GetTranslation(), rotMatrix[9];
   memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
-  Double_t al = TMath::ATan2(rotMatrix[1], yRot180 ? -rotMatrix[0] : rotMatrix[0]);
-  Double_t xShift = gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al);
+  Double_t al = ATan2(rotMatrix[1], yRot180 ? -rotMatrix[0] : rotMatrix[0]);
+  Double_t xShift = gtrans[0]*Cos(al)+gtrans[1]*Sin(al);
   Double_t zShift = -gtrans[2];
   TGeoHMatrix *matLtoT = new TGeoHMatrix;
   matLtoT->SetDx( xShift ); // translation

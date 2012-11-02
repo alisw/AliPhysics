@@ -16,6 +16,9 @@
 #pragma link C++ class AliITSURecoParam+;
 #pragma link C++ class AliITSUReconstructor+;
 #pragma link C++ class AliITSUClusterizer+;
+#pragma link C++ class AliITSURecoSens+;
+#pragma link C++ class AliITSURecoLayer+;
+#pragma link C++ class AliITSURecoDet+;
 
 //
 

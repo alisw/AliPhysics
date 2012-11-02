@@ -23,6 +23,7 @@
 #include "AliITS.h"
 #include "AliITSUModule.h"
 #include "AliITSUGeomTGeo.h"
+using namespace TMath;
 
 ClassImp(AliITSUModule)
 
@@ -95,9 +96,9 @@ Double_t AliITSUModule::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *i
   itsHit1->GetPositionG(x1g,y1g,z1g);
   itsHit2->GetPositionG(x2g,y2g,z2g);
   //
-  s = TMath::Sqrt( ((Double_t)(x2g-x1g)*(Double_t)(x2g-x1g)) +
-		   ((Double_t)(y2g-y1g)*(Double_t)(y2g-y1g)) +
-		   ((Double_t)(z2g-z1g)*(Double_t)(z2g-z1g))  );
+  s = Sqrt( ((Double_t)(x2g-x1g)*(Double_t)(x2g-x1g)) +
+	    ((Double_t)(y2g-y1g)*(Double_t)(y2g-y1g)) +
+	    ((Double_t)(z2g-z1g)*(Double_t)(z2g-z1g)) );
    return s;
 }
 

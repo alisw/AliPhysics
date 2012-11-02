@@ -22,6 +22,7 @@
 #include "TSeqCollection.h"
 #include "AliITSUSimulation.h"
 #include "AliITSUSDigit.h"
+using namespace TMath;
 
 ClassImp(AliITSUSimulation)
 
@@ -161,6 +162,6 @@ Int_t AliITSUSimulation::GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,
       for (int j=i;j--;) if (valA[j]==valA[i]) {rep=kTRUE;break;}
     } while(rep);
   }
-  TMath::Sort((int)ngen,valA,indA,kFALSE);
+  Sort((int)ngen,valA,indA,kFALSE);
   return ngen;
 }

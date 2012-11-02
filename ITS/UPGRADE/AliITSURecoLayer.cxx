@@ -1,0 +1,267 @@
+#include "AliITSURecoLayer.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliITSsegmentation.h"
+#include "AliITSURecoSens.h"
+#include "AliITSUAux.h"
+
+using namespace AliITSUAux;
+using namespace TMath;
+
+ClassImp(AliITSURecoLayer)
+
+
+//______________________________________________________
+AliITSURecoLayer::AliITSURecoLayer(const char* name)
+  :fActiveID(-1)
+  ,fNSensors(0)
+  ,fNSensInLadder(0)
+  ,fNLadders(0)
+  ,fR(0)
+  ,fRMax(0)
+  ,fRMin(0)
+  ,fZMax(0)
+  ,fZMin(0)
+  ,fPhiLadMax(0)
+  ,fPhiLadMin(0)
+  ,fPhiOffs(0)
+  ,fSensDZInv(0)
+  ,fDPhiLadInv(0)
+  ,fSensors(0)
+  ,fITSGeom(0)
+  ,fkSegm(0)
+{
+  // def. c-tor
+  SetNameTitle(name,name);
+  fSensors.SetOwner(kTRUE);
+}
+
+//______________________________________________________
+AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, AliITSUGeomTGeo* gm,const AliITSsegmentation* segm)
+  :fActiveID(activeID)
+  ,fNSensors(0)
+  ,fNSensInLadder(0)
+  ,fNLadders(0)
+  ,fR(0)
+  ,fRMax(0)
+  ,fRMin(0)
+  ,fZMax(0)
+  ,fZMin(0)
+  ,fPhiLadMax(0)
+  ,fPhiLadMin(0)
+  ,fPhiOffs(0)
+  ,fSensDZInv(0)
+  ,fDPhiLadInv(0)
+  ,fSensors(nsens)
+  ,fITSGeom(gm)
+  ,fkSegm(segm)
+{
+  // def. c-tor
+  SetNameTitle(name,name);
+  fSensors.SetOwner(kTRUE);
+}
+
+//______________________________________________________
+AliITSURecoLayer::~AliITSURecoLayer()
+{
+  // def. d-tor
+}
+
+//______________________________________________________
+void AliITSURecoLayer::Print(Option_t* opt) const			      
+{
+  //print 
+  printf("Layer %s %d (active:%+d), NSensors: %d\n",GetName(),GetID(),GetActiveID(),GetNSensors());
+  TString opts = opt; opts.ToLower();
+  if (opts.Contains("sn")) for (int i=0;i<GetNSensors();i++) GetSensor(i)->Print(opt);
+}
+
+//______________________________________________________
+Bool_t AliITSURecoLayer::Build()
+{
+  // build internal structures
+  fNLadders = fITSGeom->GetNLadders(fActiveID);
+  fNSensInLadder = fITSGeom->GetNDetectors(fActiveID);
+  //
+  // name layer according its active id, detector type and segmentation tyoe
+  TGeoHMatrix mmod;
+  const TGeoHMatrix* mt2l;
+  fRMin=fZMin=1e9;
+  fRMax=fZMax=-1e9;
+  double phiTF,rTF, loc[3]={0,0,0},glo[3];
+  fNSensors = 0;
+  fPhiLadMin = new Double_t[fNLadders];
+  fPhiLadMax = new Double_t[fNLadders];
+  fSensDZInv = 0;
+  //
+  for (int ild=0;ild<fNLadders;ild++) {
+    fPhiLadMin[ild] = 1e9;
+    fPhiLadMax[ild] = -1e9;
+    //
+    for (int idt=0;idt<fNSensInLadder;idt++) {
+      AliITSURecoSens* sens = new AliITSURecoSens(fNSensors++);
+      fSensors.AddLast(sens);
+      //
+      double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
+      mmod = *fITSGeom->GetMatrix(fActiveID,ild,idt);
+      for (int ix=0;ix<2;ix++) {
+	loc[0] = (ix-0.5)*fkSegm->Dx(); // +-DX/2
+	for (int iy=0;iy<2;iy++) {
+	  loc[1] = (iy-0.5)*fkSegm->Dy(); // +-DY/2
+	  for (int iz=0;iz<2;iz++) {
+	    loc[2] = (iz-0.5)*fkSegm->Dz(); // +-DZ/2
+	    //
+	    mmod.LocalToMaster(loc,glo);
+	    double phi = ATan2(glo[1],glo[0]);
+	    double r   = glo[0]*glo[0] + glo[1]*glo[1];
+	    if (fRMin>r) fRMin = r;
+	    if (fRMax<r) fRMax = r;
+	    BringTo02Pi(phi);
+	    if      (phiMin>1e8) phiMin=phi; 
+	    else if (!OKforPhiMin(phiMin,phi)) phiMin=phi;
+	    if      (phiMax<-1e8) phiMax=phi;
+	    else if (!OKforPhiMax(phiMax,phi)) phiMax=phi;	      
+	    if (glo[2]>zMax) zMax=glo[2]; else if (glo[2]<zMin) zMin=glo[2];
+	  }
+	}
+      }
+      printf("%d %d (%d)  %f %f\n",ild,idt, ild*fNSensInLadder+idt,phiMin,phiMax);
+
+      sens->SetBoundaries(phiMin,phiMax,zMin,zMax);
+      mt2l = fITSGeom->GetMatrixT2L(fActiveID,ild,idt);
+      mmod.Multiply(mt2l);	
+      loc[0]=loc[1]=loc[2]=0;
+      mmod.LocalToMaster(loc,glo);
+      rTF   = Sqrt(glo[0]*glo[0] + glo[1]*glo[1]);  //  tracking params (misaligned)
+      phiTF = ATan2(glo[1],glo[0]);
+      BringTo02Pi(phiTF);
+      //
+      sens->SetXTF(rTF);
+      sens->SetPhiTF(phiTF);
+      //
+      if      (fPhiLadMin[ild]>1e8)  fPhiLadMin[ild] = phiMin;
+      else if (!OKforPhiMin(fPhiLadMin[ild],phiMin)) fPhiLadMin[ild] = phiMin;
+      if      (fPhiLadMax[ild]<-1e8) fPhiLadMax[ild] = phiMax;
+      else if (!OKforPhiMax(fPhiLadMax[ild],phiMax)) fPhiLadMax[ild] = phiMax;
+      if (fZMin>zMin) fZMin = zMin;
+      if (fZMax<zMax) fZMax = zMax;
+      //
+      if (idt>0) fSensDZInv += zMax - GetSensor(fNSensors-2)->GetZMax(); // z interval to previoud
+    }
+  }
+  //
+  fRMin = Sqrt(fRMin);
+  fRMax = Sqrt(fRMax);
+  fR = 0.5*(fRMin+fRMax);
+  double dz = fNSensInLadder>0 ? fSensDZInv/(fNSensInLadder-1)/fNLadders : fZMax-fZMin;
+  fSensDZInv = 1./dz;
+
+  const int kNBId[3][3] = { 
+    {AliITSURecoSens::kNghbBL,AliITSURecoSens::kNghbB,AliITSURecoSens::kNghbBR},
+    {AliITSURecoSens::kNghbL,          -1            ,AliITSURecoSens::kNghbR },
+    {AliITSURecoSens::kNghbTL,AliITSURecoSens::kNghbT,AliITSURecoSens::kNghbTR}
+  };
+
+  // add neighbours info
+  double zTol = 0.45*dz, phiTol = 0.45*TwoPi()/fNLadders;
+  for (int ild=0;ild<fNLadders;ild++) {
+    for (int idt=0;idt<fNSensInLadder;idt++) {
+      AliITSURecoSens* sens = GetSensor(ild,idt);
+      //
+      for (int ils=-1;ils<=1;ils++) {
+	int ildN = ild+ils;  // ladders of neighbouring sensors
+	if (ildN<0) ildN = fNLadders-1; else if (ildN==fNLadders) ildN = 0;
+	for (int ids=-1;ids<=1;ids++) {
+	  int idtN = idt+ids;
+	  if (idtN<0 || idtN==fNSensInLadder || (ids==0&&ils==0)) continue;
+	  AliITSURecoSens* sensN = GetSensor(ildN,idtN); // potential neighbor
+	  int neighbID = ildN*fNSensInLadder+idtN;
+	  //	  
+	  int zType = 1;  // side
+	  if (sens->GetZMin()-zTol>sensN->GetZMax()) continue; // too large distance
+	  if (sensN->GetZMin()-zTol>sens->GetZMax()) continue; // too large distance
+	  if      (sens->GetZMin()-zTol>sensN->GetZMin()) zType =  0;     // bottom
+	  else if (sensN->GetZMin()-zTol>sens->GetZMin()) zType =  2;     // top
+	  //
+	  int phiType = 1;
+	  double phiTstMn = sensN->GetPhiMin()-phiTol;
+	  BringTo02Pi(phiTstMn);
+	  if (!OKforPhiMax(sens->GetPhiMax(),phiTstMn)) continue; // too large angle	  
+	  double phiTstMx = sensN->GetPhiMax()+phiTol;	  
+	  BringTo02Pi(phiTstMx);
+	  if (!OKforPhiMin(sens->GetPhiMin(),phiTstMx)) continue; // too large angle
+	  //
+	  phiTstMn = sensN->GetPhiMin()+phiTol;
+	  BringTo02Pi(phiTstMn);
+	  phiTstMx = sensN->GetPhiMax()-phiTol;	  
+	  BringTo02Pi(phiTstMx);
+	  if      (!OKforPhiMax(sens->GetPhiMax(),phiTstMx)) phiType = 0; // left
+	  else if (!OKforPhiMin(sens->GetPhiMin(),phiTstMn)) phiType = 2; // right
+	  //
+	  sens->SetNeighborID(kNBId[zType][phiType], neighbID);
+	} // phi scan
+      } // z scan
+    } // sensors
+  } // ladders
+  //
+  //
+  return kTRUE;
+}
+
+//______________________________________________________
+void AliITSURecoLayer::AddSensor(const AliITSURecoSens* mod)
+{
+  //add new module
+  fSensors.AddLast((TObject*)mod);
+  fNSensors++;
+}
+
+//______________________________________________________
+Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens **sensors)
+{
+  // find sensors having intersection with track
+  // impPar contains: lab phi of track, dphi, labZ, dz
+  double z = impPar[2];
+  if (z>fZMax+impPar[3]) return -1; // outside of Z coverage
+  z -= fZMin;
+  if (z<-impPar[3]) return -1; // outside of Z coverage
+  int sensInLad = int(z*fSensDZInv);
+  //
+  double phi = impPar[0] - fPhiOffs;
+  BringTo02Pi(phi);
+  int ladID = int(phi*fDPhiLadInv);  // ladder id
+  int nsens = 0;
+  //
+  AliITSURecoSens* sensN,*sens = GetSensor(ladID*fNSensInLadder+sensInLad);
+  sensors[nsens++] = sens;
+  // check neighbours
+  double zMn=impPar[2]-impPar[3], zMx=impPar[2]+impPar[3], phiMn=impPar[0]-impPar[1], phiMx=impPar[0]+impPar[1];
+  BringTo02Pi(phiMn);
+  BringTo02Pi(phiMx);
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbR)); // neighbor on the right
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin())) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTR)); // neighbor on the top right
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbT)); // neighbor on the top
+  if (sensN && sensN->GetZMin()>zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTL)); // neighbor on the top left
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbL)); // neighbor on the left
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax())) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBL)); // neighbor on the bottom left
+  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbB));  // neighbor on the bottom
+  if (sensN && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBR)); // neighbor on the bottom right
+  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
+  //
+  return nsens;
+}
+

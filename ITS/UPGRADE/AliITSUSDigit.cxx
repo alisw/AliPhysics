@@ -19,6 +19,7 @@ ClassImp(AliITSUSDigit)
 
 using std::istream;
 using std::swap;
+using namespace TMath;
 
 // Addapted from ITS/AliITSpListItem, ruben.shahoyan@cern.ch
 
@@ -119,11 +120,11 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
   Int_t    i,j;
   Bool_t   flg=kFALSE;
   //
-  if (TMath::Abs(signal)>2147483647.0) {
+  if (Abs(signal)>2147483647.0) {
     //PH 2147483647 is the max. integer
     //PH This apparently is a problem which needs investigation
     AliWarning(Form("Too big or too small signal value %f",signal));
-    signal = TMath::Sign((Double_t)2147483647,signal);
+    signal = Sign((Double_t)2147483647,signal);
   }
   //
   fTsignal += signal; // Keep track of sum signal.

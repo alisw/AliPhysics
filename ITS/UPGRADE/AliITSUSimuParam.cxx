@@ -24,6 +24,7 @@
 ///////////////////////////////////////////////////////////////////
 #include "AliITSUSimuParam.h"
 #include "AliLog.h"
+using namespace TMath;
 
 
 const Double_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
@@ -384,11 +385,11 @@ Double_t AliITSUSimuParam::LorentzAngleHole(Double_t B) const
   const Double_t keT2 = 0.52;       // Power of Temp. for vsat
   Double_t tT = fT;
   Double_t eE= 1./fDOverV;
-  Double_t muLow=kmulow0*TMath::Power(tT/kT0,keT0);
-  Double_t beta=beta0*TMath::Power(tT/kT0,keT1);
-  Double_t vsat=kvsat0*TMath::Power(tT/kT0,keT2);
-  Double_t mu=muLow/TMath::Power(1+TMath::Power(muLow*eE/vsat,beta),1/beta);
-  Double_t angle=TMath::ATan(krH*mu*B*1.E-05); // Conversion Factor
+  Double_t muLow=kmulow0*Power(tT/kT0,keT0);
+  Double_t beta=beta0*Power(tT/kT0,keT1);
+  Double_t vsat=kvsat0*Power(tT/kT0,keT2);
+  Double_t mu=muLow/Power(1+Power(muLow*eE/vsat,beta),1/beta);
+  Double_t angle=ATan(krH*mu*B*1.E-05); // Conversion Factor
   return angle;
 }
 
@@ -411,11 +412,11 @@ Double_t AliITSUSimuParam::LorentzAngleElectron(Double_t B) const
   const Double_t keT2 = 0.87;       // Power of Temp. for vsat
   Double_t tT = fT;
   Double_t eE= 1./fDOverV;
-  Double_t muLow=kmulow0*TMath::Power(tT/kT0,keT0);
-  Double_t beta=beta0*TMath::Power(tT/kT0,keT1);
-  Double_t vsat=kvsat0*TMath::Power(tT/kT0,keT2);
-  Double_t mu=muLow/TMath::Power(1+TMath::Power(muLow*eE/vsat,beta),1/beta);
-  Double_t angle=TMath::ATan(krH*mu*B*1.E-05);
+  Double_t muLow=kmulow0*Power(tT/kT0,keT0);
+  Double_t beta=beta0*Power(tT/kT0,keT1);
+  Double_t vsat=kvsat0*Power(tT/kT0,keT2);
+  Double_t mu=muLow/Power(1+Power(muLow*eE/vsat,beta),1/beta);
+  Double_t angle=ATan(krH*mu*B*1.E-05);
   return angle;
 }
 
@@ -439,7 +440,7 @@ Double_t AliITSUSimuParam::SigmaDiffusion3D(Double_t l) const
   // Return:
   //    The Sigma due to the diffution of electrons. [cm]
   const Double_t kcon = 5.17040258E-04; // == 6k/e [J/col or volts]  
-  return TMath::Sqrt(kcon*fT*fDOverV*l);  // [cm]
+  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
 }
 
 //______________________________________________________________________
@@ -462,7 +463,7 @@ Double_t AliITSUSimuParam::SigmaDiffusion2D(Double_t l) const
   // Return:
   //    The Sigma due to the diffution of electrons. [cm]
   const Double_t kcon = 3.446935053E-04; // == 4k/e [J/col or volts]
-  return TMath::Sqrt(kcon*fT*fDOverV*l);  // [cm]
+  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
 }
 
 //______________________________________________________________________
@@ -485,5 +486,5 @@ Double_t AliITSUSimuParam::SigmaDiffusion1D(Double_t l) const
   // Return:
   //    The Sigma due to the diffution of electrons. [cm]
   const Double_t kcon = 1.723467527E-04; // == 2k/e [J/col or volts]
-  return TMath::Sqrt(kcon*fT*fDOverV*l);  // [cm]
+  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
 }

@@ -23,6 +23,7 @@
 #include <TFile.h>
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
+using namespace TMath;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Segmentation class for pixels                                                                          //
@@ -354,8 +355,8 @@ Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, 
   Int_t n2 = GetChipFromLocal(0,zmax);
 
   if(n2!=n1){
-    Int_t imin=TMath::Min(n1,n2);
-    Int_t imax=TMath::Max(n1,n2);
+    Int_t imin=Min(n1,n2);
+    Int_t imax=Max(n1,n2);
     for(Int_t ichip=imin; ichip<=imax; ichip++){
       if(ichip==n1) continue;
       array[nChipInW]=ichip;
