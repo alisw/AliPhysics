@@ -161,49 +161,69 @@ AliITSUv11::~AliITSUv11() {
 }
 
 //______________________________________________________________________
-void AliITSUv11::SetT2Lmatrix(Int_t uid, Double_t yShift, 
-				  Bool_t yFlip, Bool_t yRot180) const {
-
+void AliITSUv11::SetT2Lmatrix(Int_t lay,Int_t lad,Int_t detInLad) const
+{
   //
-  // Creates the TGeo Local to Tracking transformation matrix
+  // Creates the TGeo Local (sensor!) to Tracking transformation matrix
   // and sends it to the corresponding TGeoPNEntry 
   //
   // This function is used in AddAlignableVolumes()
+  const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
+  const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
+			      ,AliITSUGeomTGeo::GetITSLayerPattern()
+			      ,AliITSUGeomTGeo::GetITSLadderPattern()
+			      ,AliITSUGeomTGeo::GetITSModulePattern()
+			      ,AliITSUGeomTGeo::GetITSSensorPattern());  
+  //  
+  TString path;
+  path.Form(kNames.Data(),kPathBase.Data(),lay,lay,lad,lay,detInLad,lay,1);
+  gGeoManager->PushPath();
+  if (!gGeoManager->cd(path.Data())) {
+    gGeoManager->PopPath();
+    AliError(Form("Error in cd-ing to %s",path.Data()));
+    return;
+  } // end if !gGeoManager
+  TGeoHMatrix* matSens = gGeoManager->GetCurrentMatrix();
+  // Retstore the modeler state.
+  gGeoManager->PopPath();
+  //
+  Double_t *gtrans = matSens->GetTranslation(), rotMatrix[9];
+  memcpy(&rotMatrix[0], matSens->GetRotationMatrix(), 9*sizeof(Double_t));
+  Double_t al = -TMath::ATan2(rotMatrix[1],rotMatrix[0]);
+  Double_t rSens = TMath::Sqrt(gtrans[0]*gtrans[0] + gtrans[1]*gtrans[1]);
 
-  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(uid);
-  TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
-  Double_t *gtrans = globMatrix->GetTranslation(), rotMatrix[9];
-  memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
-  Double_t al = ATan2(rotMatrix[1], yRot180 ? -rotMatrix[0] : rotMatrix[0]);
-  Double_t xShift = gtrans[0]*Cos(al)+gtrans[1]*Sin(al);
+  Double_t tanAl = TMath::ATan2(gtrans[1],gtrans[0]) -TMath::Pi()/2; //angle of tangente
+
+  //  if (tanAl<TMath::Pi()) 
+  Double_t alTr = tanAl - al;
+  Double_t rTr = rSens*TMath::Cos(alTr);
+
+  // Transformation matrix
+  Double_t xShift = rTr;
+  Double_t yShift = rSens*TMath::Sin(alTr);
   Double_t zShift = -gtrans[2];
   TGeoHMatrix *matLtoT = new TGeoHMatrix;
   matLtoT->SetDx( xShift ); // translation
   matLtoT->SetDy( yShift );
   matLtoT->SetDz( zShift );
+
+  // Rotation matrix
   rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
   rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
   rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
-  if (yFlip) rotMatrix[3] = rotMatrix[1] = -1;  // flipping in y
-  //
-  if (yRot180) { // rotation of pi around the axis perpendicular to the wafer
-    if (yFlip) matLtoT->SetDx( -xShift ); // flipping in y  (for SPD1)
-    matLtoT->SetDy( -yShift );
-    matLtoT->SetDz( -zShift );
-    rotMatrix[8]=1;
-    rotMatrix[3] = -1;
-    if (yFlip) rotMatrix[3] = 1;  // flipping in y  (for SPD1)
-  }
-  //  printf("UID:%d xS:%f ZS:%f\n",uid,xShift,zShift);
-  //  globMatrix->Print();
-
 
   TGeoRotation rot;
   rot.SetMatrix(rotMatrix);
   matLtoT->MultiplyLeft(&rot);
+
+  // Inverse transformation Matrix
   TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
   delete matLtoT;
+  //
+  path = AliITSUGeomTGeo::ComposeSymNameModule(lay,lad,detInLad);
+  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(path.Data());
   alignableEntry->SetMatrix(matTtoL);
+  //
 }
 
 //______________________________________________________________________
@@ -258,13 +278,7 @@ void AliITSUv11::AddAlignableVolumes() const{
 	// 
 	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameModule(lr,ld,md),pthM.Data(),modUID);
 	//
-	double yshift = -(fUpGeom[lr]->GetSensorThick()-fUpGeom[lr]->GetLadderThick())/2;
-	//	SetT2Lmatrix(modUID,yshift, kTRUE,kTRUE); // RS: do we need here special matrix, ask MS
-	//	SetT2Lmatrix(modUID,yshift, kTRUE,kFALSE); // RS: do we need here special matrix, ask MS
-	//
-	// RS: to clarify: in order to get reasonable tracking frame X,phi with STANDARD SetT2Lmatrix
-	// the yRot180 must be true. 
-	SetT2Lmatrix(modUID,yshift, kTRUE,kTRUE); // RS: do we need here special matrix, ask MS 
+	SetT2Lmatrix(lr,ld,md);
 	//
       }
     }
