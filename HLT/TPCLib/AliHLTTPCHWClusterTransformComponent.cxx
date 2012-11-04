@@ -125,11 +125,11 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
   }
   calib->SetRun(GetRunNo());
   calib->UpdateRunInformations(GetRunNo());
-
+  
   int err = fTransform.Init( GetBz(), GetTimeStamp() );
 
   if( err!=0 ){
-    HLTError("Cannot retrieve offline transform from AliTPCcalibDB");
+    HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
     return -ENOENT;
   }
 
@@ -161,7 +161,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 					          AliHLTUInt32_t& size, 
 					          vector<AliHLTComponentBlockData>& outputBlocks ){
   // see header file for class documentation
-   
+ 
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;

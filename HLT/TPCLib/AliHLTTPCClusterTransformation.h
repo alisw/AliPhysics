@@ -23,7 +23,7 @@
 #include"Rtypes.h"
 
 class AliTPCParam;
-class AliTPCTransform;
+class AliRecoParam;
 
 /**
  * @class AliHLTTPCClusterTransformation
@@ -56,6 +56,7 @@ class AliHLTTPCClusterTransformation{
  protected:
 
   AliTPCParam     * fOfflineTPCParam;                                 //! transient
+  AliRecoParam    * fOfflineRecoParam;  //! transient
   Int_t fLastSector; // last sector
   Double_t fAliT[3]; // alignment - translation
   Double_t fAliR[9]; // alignment - rotation

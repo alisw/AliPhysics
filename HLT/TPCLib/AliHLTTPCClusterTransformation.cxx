@@ -29,11 +29,16 @@
 
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
 #include "AliGeomManager.h"
+#include "AliRunInfo.h"
+#include "AliEventInfo.h"
+#include "AliRawEventHeaderBase.h"
 #include <iostream>
 #include <iomanip>
 
@@ -44,6 +49,7 @@ ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of 
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fOfflineTPCParam( NULL ),
+  fOfflineRecoParam( NULL), 
   fLastSector(-1)
 {
   // see header file for class documentation
@@ -59,45 +65,98 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
-  AliHLTTPCFastTransform::Terminate();
 }
 
 
 int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 {
   // Initialisation
-
   fOfflineTPCParam = 0;
-
+  fLastSector = -1;
+  fAliT[0] = 0.;
+  fAliT[1] = 0.;
+  fAliT[2] = 0.;
+  
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
 
   if(!pCalib ) return -1;
 
   pCalib->SetExBField(FieldBz);
-  
   if(!AliGeomManager::GetGeometry()){
-     AliGeomManager::LoadGeometry();
+    AliGeomManager::LoadGeometry();
   }
 
   if( !pCalib->GetTransform() ) return -2; 
+  pCalib->GetTransform()->SetCurrentRecoParam(NULL);
+  
+  delete fOfflineRecoParam;
+  fOfflineRecoParam = new AliRecoParam;
+  if( !fOfflineRecoParam ) return -3;
+  
+  
+  AliCDBEntry *entry=AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
+  if(!entry) return -4;
+  TObject *recoParamObj = entry->GetObject();
+  if(!recoParamObj) return -5;
+  if (dynamic_cast<TObjArray*>(recoParamObj)) {
+    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: TObjArray found \n"<<endl;
+    fOfflineRecoParam->AddDetRecoParamArray(1,dynamic_cast<TObjArray*>(recoParamObj));
+  }
+  else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: AliDetectorRecoParam found \n"<<endl;
+    fOfflineRecoParam->AddDetRecoParam(1,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+  }
+  
+  // -- Get AliRunInfo variables  
 
-  AliCDBPath cdbPath("TPC/Calib/RecoParam");
-  AliTPCRecoParam* recParam = (AliTPCRecoParam*)AliCDBManager::Instance()->Get(cdbPath);
-  if(!recParam) return -3;
+  AliGRPObject tmpGRP, *pGRP=0;
+
+  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+
+  if(!entry) return -6;
+
+  {
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+
+    if (m) {
+      //cout<<"Found a TMap in GRP/GRP/Data, converting it into an AliGRPObject"<<endl;
+      m->Print();
+      pGRP = &tmpGRP;
+      pGRP->ReadValuesFromMap(m);
+    }
+    else {
+      //cout<<"Found an AliGRPObject in GRP/GRP/Data, reading it"<<endl;
+      pGRP = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+    }
+  }
+  
+  
+  if( !pGRP ){
+    return -7;
+  }
+
+  AliRunInfo runInfo(pGRP->GetLHCState(),pGRP->GetBeamType(),pGRP->GetBeamEnergy(),pGRP->GetRunType(),pGRP->GetDetectorMask());
+  AliEventInfo evInfo;
+  evInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
+  
+  fOfflineRecoParam->SetEventSpecie(&runInfo, evInfo, 0);    
+ 
+  AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam->GetDetRecoParam(1);
+
+  // 
+ 
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
-  fOfflineTPCParam = pCalib->GetParameters(); 
-  if( !fOfflineTPCParam ) return -4;
+  fOfflineTPCParam = pCalib->GetParameters();
+  if( !fOfflineTPCParam ) return -8;
 
   fOfflineTPCParam->Update();
   fOfflineTPCParam->ReadGeoMatrices();  
 
-  fLastSector = -1;
-
-  fAliT[0] = 0.;
-  fAliT[1] = 0.;
-  fAliT[2] = 0.;
   SetRotationMatrix();
+
+  // set current time stamp and initialize the fast transformation instance, if necessary
+
   SetCurrentTimeStamp( TimeStamp );
   return 0;
 }
@@ -105,7 +164,7 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 
 void AliHLTTPCClusterTransformation::SetCurrentTimeStamp( UInt_t TimeStamp )
 {
-  // Set the current time stamp
+  // Set the current time stamp  
   AliHLTTPCFastTransform::Instance()->SetCurrentTimeStamp( TimeStamp );
 }
 
