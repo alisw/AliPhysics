@@ -286,6 +286,34 @@ const char* AliITSUGeomTGeo::GetSymName(Int_t index)  const
 }
 
 //______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameITS()
+{
+  // sym name of the layer
+  return "ITS";
+}
+
+//______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameLayer(Int_t lr)
+{
+  // sym name of the layer
+  return Form("%s/%s%d",ComposeSymNameITS(),GetITSLayerPattern(),lr);
+}
+
+//______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameLadder(Int_t lr, Int_t ladder)
+{
+  // sym name of the ladder at given layer
+  return Form("%s/%s%d",ComposeSymNameLayer(lr),GetITSLadderPattern(),ladder);
+}
+
+//______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameModule(Int_t lr, Int_t lad, int det)
+{
+  // sym name of the module
+  return Form("%s/%s%d",ComposeSymNameLadder(lr,lad),GetITSModulePattern(),det);
+}
+
+//______________________________________________________________________
 TGeoHMatrix* AliITSUGeomTGeo::GetMatrix(Int_t index)  const
 {
   // Get the transformation matrix for a given module 'index'

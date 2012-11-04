@@ -117,6 +117,11 @@ class AliITSUGeomTGeo : public TObject {
   static void        SetITSsegmentationFileName(const char* nm)         {fgITSsegmFileName = nm;}
   static UInt_t      ComposeDetTypeID(UInt_t segmId);
   //
+  static const char *ComposeSymNameITS();
+  static const char *ComposeSymNameLayer(Int_t lr);
+  static const char *ComposeSymNameLadder(Int_t lr, Int_t lad);
+  static const char *ComposeSymNameModule(Int_t lr, Int_t lad, int det);
+  //
   // hack to avoid using AliGeomManager
   Int_t              LayerToVolUID(Int_t lay,int detInLay)        const {return GetModuleIndex(lay,detInLay);}
   static Int_t       ModuleVolUID(Int_t mod)                            {return mod;}

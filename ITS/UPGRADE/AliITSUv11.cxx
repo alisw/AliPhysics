@@ -226,11 +226,11 @@ void AliITSUv11::AddAlignableVolumes() const{
   AliInfo("Add ITS alignable volumes");
 
   if (!gGeoManager) { AliFatal("TGeoManager doesn't exist !"); return;  }
-  TString pth,snm;
+  TString pth;
   //
   pth = Form("ALIC_1/%s_2",AliITSUGeomTGeo::GetITSVolPattern());
   // RS: to be checked with MS
-  if( !gGeoManager->SetAlignableEntry("ITS",pth.Data()) )
+  if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameITS(),pth.Data()) )
     AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
   //
   int modNum = 0;
@@ -238,28 +238,25 @@ void AliITSUv11::AddAlignableVolumes() const{
   for (int lr=0; lr<fNLayers; lr++) {
     //
     pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
-    snm = Form("ITS/%s%d",AliITSUGeomTGeo::GetITSLayerPattern(),lr);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
-    gGeoManager->SetAlignableEntry(snm.Data(),pth.Data());
+    gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data());
     //
     for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
       //
       TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),lr,ld);
-      TString snmL = Form("%s/%s%d",snm.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),ld);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
-      gGeoManager->SetAlignableEntry(snmL.Data(),pthL.Data());
+      gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLadder(lr,ld),pthL.Data());
       //
       for (int md=0; md<fModPerLadd[lr]; md++) {
 	//
 	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr,md);
-	TString snmM = Form("%s/%s%d",snmL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),md);
 	//
 	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU modules w/o
 	// conflicts with TPC. For this reason we define the UID of the module to be simply its ID
 	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++); // here modNum would be module within the layer
 	int modUID = AliITSUGeomTGeo::ModuleVolUID( modNum++ );
 	// 
-	gGeoManager->SetAlignableEntry(snmM.Data(),pthM.Data(),modUID);
+	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameModule(lr,ld,md),pthM.Data(),modUID);
 	//
 	double yshift = -(fUpGeom[lr]->GetSensorThick()-fUpGeom[lr]->GetLadderThick())/2;
 	//	SetT2Lmatrix(modUID,yshift, kTRUE,kTRUE); // RS: do we need here special matrix, ask MS
