@@ -157,7 +157,8 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 
   // set current time stamp and initialize the fast transformation instance, if necessary
 
-  SetCurrentTimeStamp( TimeStamp );
+  if( !AliHLTTPCFastTransform::Instance()->IsInitialised() ) AliHLTTPCFastTransform::Instance()->Init( pCalib->GetTransform(), TimeStamp );
+  else SetCurrentTimeStamp( TimeStamp );
   return 0;
 }
 
