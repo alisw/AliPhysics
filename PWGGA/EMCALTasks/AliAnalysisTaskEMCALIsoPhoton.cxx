@@ -71,7 +71,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
-  fMCDirPhotonPtEtaNoClus(0),
+  fMCDirPhotonPtEtaPhiNoClus(0),
   fHnOutput(0)
 {
   // Default constructor.
@@ -116,7 +116,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
-  fMCDirPhotonPtEtaNoClus(0),
+  fMCDirPhotonPtEtaPhiNoClus(0),
   fHnOutput(0)
 {
   // Constructor
@@ -178,8 +178,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fNClusPerPho = new TH2F("hNClusPerPho","Number of clusters per prompt photon;p_{T}^{MC};N_{clus}",500,0,100,11,-0.5,10.5);
   fOutputList->Add(fNClusPerPho);
 
-  fMCDirPhotonPtEtaNoClus = new TH2F("hMCDirPhotonPtEtaNoClus","#eta vs. #phi prompt photons with no reco clusters;#phi;#eta",154,-0.77,0.77,130,1.38,3.20);
-  fOutputList->Add(fMCDirPhotonPtEtaNoClus);
+  fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
+  fOutputList->Add(fMCDirPhotonPtEtaPhiNoClus);
 
   Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=101;
   Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
@@ -573,7 +573,7 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fNClusForDirPho==0)
-	fMCDirPhotonPtEtaNoClus->Fill(mcp->Eta(),mcp->Phi());
+	fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug){
 	printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
 	printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
