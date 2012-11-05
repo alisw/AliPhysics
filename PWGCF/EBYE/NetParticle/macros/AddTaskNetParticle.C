@@ -86,7 +86,8 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   else if (sName.Contains("Kaon")) {
     task->SetParticleSpecies(AliPID::kKaon);
     task->SetControlParticleSpecies(3122, kTRUE, "Lambda");  /// maybe something else ...
-    minPt    = 0.4;    maxPt    = 0.8;
+    //minPt    = 0.4;    maxPt    = 0.8; // GRID test 1
+    minPt    = 0.5;    maxPt    = 0.8; // GRID test 2
     minPtEff = 0.1;    maxPtEff = 2.5;
     minPtForTOF = 0.5;
   }
@@ -127,8 +128,10 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   task->SetNSigmaMaxCdd(3.); 
   task->SetNSigmaMaxCzz(3.); 
 
-  task->SetNSigmaMaxTPC(3);
-  task->SetNSigmaMaxTOF(3);
+  //task->SetNSigmaMaxTPC(3); // GRID test 1
+  //task->SetNSigmaMaxTOF(3); // GRID test 1
+  task->SetNSigmaMaxTPC(2); // GRID test 2
+  task->SetNSigmaMaxTOF(2); // GRID test 2
   task->SetMinPtForTOFRequired(minPtForTOF);
 
   // -- Set analysis ranges

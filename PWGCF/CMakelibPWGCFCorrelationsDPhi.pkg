@@ -37,6 +37,7 @@ set ( SRCS
     Correlations/DPhi/AliAnalysisTaskDiHadronPID.cxx 
     Correlations/DPhi/FourierDecomposition/AliPool.cxx
     Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
+    Correlations/DPhi/AliLeadingV0Correlation.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
