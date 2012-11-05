@@ -1,4 +1,4 @@
-void AddTaskFilteredTree()
+AliAnalysisTaskFilteredTree* AddTaskFilteredTree(TString outputFile="")
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -105,18 +105,23 @@ void AddTaskFilteredTree()
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("filtered1", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  if (outputFile.IsNull())
+    outputFile=Form("%s", AliAnalysisManager::GetCommonFileName());
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("filtered1", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 1, coutput1);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("filtered2", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("filtered2", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 2, coutput2);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("filtered3", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("filtered3", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 3, coutput3);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("filtered4", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("filtered4", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 4, coutput4);
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("filtered5", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("filtered5", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 5, coutput5);
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("filtered6", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("filtered6", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 6, coutput6);
+
+  return task;
 }
 
 AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
