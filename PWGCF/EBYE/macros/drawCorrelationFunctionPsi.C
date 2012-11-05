@@ -52,9 +52,7 @@ TList *GetListOfObjects(const char* filename,
 			const char *gCentralityEstimator,
 			Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
-  TList *listQA = 0x0;
   TList *listBF = 0x0;
-  TList *listBFShuffling = 0x0;
   
   //Open the file
   TFile *f = TFile::Open(filename,"UPDATE");
@@ -89,95 +87,107 @@ TList *GetListOfObjects(const char* filename,
     listBFName += "_Bit"; listBFName += gBit; }
   if(gCentralityEstimator) {
     listBFName += "_"; listBFName += gCentralityEstimator;}
-  listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
-  cout<<"======================================================="<<endl;
-  cout<<"List name: "<<listBF->GetName()<<endl;
-  //listBF->ls();
 
-  //Get the histograms
-  TString histoName;
-  if(kData == 0)
-    histoName = "fHistPV0M";
-  else if(kData == 1)
-    histoName = "fHistP_shuffleV0M";
-  else if(kData == 2)
-    histoName = "fHistPV0M";
-  AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
-  if(!fHistP) {
-    Printf("fHistP %s not found!!!",histoName.Data());
-    break;
+  // histograms were already retrieved (in first iteration)
+  if(dir->Get(Form("%s_histograms",listBFName.Data()))){
+    listBF = dynamic_cast<TList *>(dir->Get(Form("%s_histograms",listBFName.Data())));
   }
-  fHistP->FillParent(); fHistP->DeleteContainers();
 
-  if(kData == 0)
-    histoName = "fHistNV0M";
-  if(kData == 1)
-    histoName = "fHistN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNV0M";
-  AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistN) {
-    Printf("fHistN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistN->FillParent(); fHistN->DeleteContainers();
+  // histograms were not yet retrieved (this is the first iteration)
+  else{
+
+    listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
+    cout<<"======================================================="<<endl;
+    cout<<"List name: "<<listBF->GetName()<<endl;
+    //listBF->ls();
     
-  if(kData == 0)
-    histoName = "fHistPNV0M";
-  if(kData == 1)
-    histoName = "fHistPN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistPNV0M";
-  AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistPN) {
-    Printf("fHistPN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistPN->FillParent(); fHistPN->DeleteContainers();
+    //Get the histograms
+    TString histoName;
+    if(kData == 0)
+      histoName = "fHistPV0M";
+    else if(kData == 1)
+      histoName = "fHistP_shuffleV0M";
+    else if(kData == 2)
+      histoName = "fHistPV0M";
+    AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
+    if(!fHistP) {
+      Printf("fHistP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistP->FillParent(); fHistP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNV0M";
+    if(kData == 1)
+      histoName = "fHistN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNV0M";
+    AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistN) {
+      Printf("fHistN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistN->FillParent(); fHistN->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistPNV0M";
+    if(kData == 1)
+      histoName = "fHistPN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistPNV0M";
+    AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistPN) {
+      Printf("fHistPN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistPN->FillParent(); fHistPN->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNPV0M";
+    if(kData == 1)
+      histoName = "fHistNP_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNPV0M";
+    AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistNP) {
+      Printf("fHistNP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistNP->FillParent(); fHistNP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistPPV0M";
+    if(kData == 1)
+      histoName = "fHistPP_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistPPV0M";
+    AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistPP) {
+      Printf("fHistPP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistPP->FillParent(); fHistPP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNNV0M";
+    if(kData == 1)
+      histoName = "fHistNN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNNV0M";
+    AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistNN) {
+      Printf("fHistNN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistNN->FillParent(); fHistNN->DeleteContainers();
+    
+    dir->cd();
+    listBF->Write(Form("%s_histograms",listBFName.Data()), TObject::kSingleKey);
+    
+  }// first iteration
   
-  if(kData == 0)
-    histoName = "fHistNPV0M";
-  if(kData == 1)
-    histoName = "fHistNP_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNPV0M";
-  AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistNP) {
-    Printf("fHistNP %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistNP->FillParent(); fHistNP->DeleteContainers();
-
-  if(kData == 0)
-    histoName = "fHistPPV0M";
-  if(kData == 1)
-    histoName = "fHistPP_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistPPV0M";
-  AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistPP) {
-    Printf("fHistPP %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistPP->FillParent(); fHistPP->DeleteContainers();
-
-  if(kData == 0)
-    histoName = "fHistNNV0M";
-  if(kData == 1)
-    histoName = "fHistNN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNNV0M";
-  AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistNN) {
-    Printf("fHistNN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistNN->FillParent(); fHistNN->DeleteContainers();
-
-  dir->cd();
-  listBF->Write(Form("%s_new",listBFName.Data()), TObject::kSingleKey);
   f->Close();
-
+  
   return listBF;
 }
 
