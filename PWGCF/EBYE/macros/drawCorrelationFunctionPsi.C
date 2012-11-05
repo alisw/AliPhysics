@@ -57,7 +57,7 @@ TList *GetListOfObjects(const char* filename,
   TList *listBFShuffling = 0x0;
   
   //Open the file
-  TFile *f = TFile::Open(filename);
+  TFile *f = TFile::Open(filename,"UPDATE");
   if((!f)||(!f->IsOpen())) {
     Printf("The file %s is not found. Aborting...",filename);
     return listBF;
@@ -173,7 +173,11 @@ TList *GetListOfObjects(const char* filename,
     break;
   }
   fHistNN->FillParent(); fHistNN->DeleteContainers();
-  
+
+  dir->cd();
+  listBF->Write(Form("%s_new",listBFName.Data()), TObject::kSingleKey);
+  f->Close();
+
   return listBF;
 }
 
