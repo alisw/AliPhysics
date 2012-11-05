@@ -373,7 +373,8 @@ class LMEECutLib {
 			trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
 			AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-			trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+			//trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+			trackCutsDiel->SetAODFilterBit(1<<4);
 			trackCutsDiel->SetRequireITSRefit(kTRUE);
 			trackCutsDiel->SetRequireTPCRefit(kTRUE);
 			//-AOD-trackCuts->SetMinNClustersITS(3);
