@@ -68,6 +68,7 @@ set ( SRCS
     AliMUONContourMakerTest.cxx 
     AliMUONContourHandler.cxx
     AliMUONAlignmentCompareDialog.cxx
+    AliMUONTrackerHV.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

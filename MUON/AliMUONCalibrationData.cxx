@@ -307,6 +307,7 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   Int_t nEndRD(0);
   Int_t nTripRD(0);
   Int_t nFluct(0);
+  UInt_t tripTime(0);
   
   while ( ( p = static_cast<AliMpIntPair*>(nextGroup()) ) )
   {
@@ -358,6 +359,8 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
       if ( d->GetFloat() < AliMpDCSNamer::TrackerHVOFF() )
       {
         ++nTripRD;
+        AliDCSValue* tripStart = static_cast<AliDCSValue*>(values.At(p->GetFirst()));
+        tripTime = tripStart->GetTimeStamp();
       }
     }
     else
@@ -555,6 +558,11 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   
   internalMsg += Form("CASE:%s",hvCase.Data());
  
+  if ( tripTime > 0 )
+  {
+    internalMsg += Form(" TS:%u",tripTime);
+  }
+  
   if (msg) *msg = internalMsg.Data();
   
   return hvCase=="OTHER" ? kFALSE : kTRUE;
