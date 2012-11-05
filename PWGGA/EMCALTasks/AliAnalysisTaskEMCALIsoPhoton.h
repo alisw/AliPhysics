@@ -83,19 +83,19 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
 
   TList       *fOutputList; //! Output list
   //histograms for events with 1+ track pt>1
-  TH1F        *fEvtSel;                  //!evt selection counter: 0=all trg, 1=pv cut 
-  TH1F        *fNClusEt10;               //!number of clusters w/ Et>10 in the event
-  TH1F        *fPVtxZ;                   //!primary vertex Z before cut
-  TH1F        *fTrMultDist;              //!track multiplicity distribution
-  TH3F        *fMCDirPhotonPtEtaPhi;     //!direct produced photon pt
-  TH1F        *fDecayPhotonPtMC;         //!decay photon pt
-  TH2F        *fCellAbsIdVsAmpl;         //!cell abs id vs cell amplitude (energy)
-  TH2F        *fNClusHighClusE;          //!total number of clusters vs. highest clus energy in the event
-  TH2F        *fClusEtMcPt;              //!cluster et x mc-pt
-  TH2F        *fClusMcDetaDphi;          //!delta-eta x delta-phi(reco-mc)
-  TH2F        *fNClusPerPho;             //!delta-eta x delta-phi(reco-mc)
-  TH2F        *fMCDirPhotonPtEtaNoClus;  //!eta x phi for prompt photons that didn't produce clusters
-  THnSparse   *fHnOutput;                //!Output matrix with 7 dimensions
+  TH1F        *fEvtSel;                    //!evt selection counter: 0=all trg, 1=pv cut 
+  TH1F        *fNClusEt10;                 //!number of clusters w/ Et>10 in the event
+  TH1F        *fPVtxZ;                     //!primary vertex Z before cut
+  TH1F        *fTrMultDist;                //!track multiplicity distribution
+  TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt
+  TH1F        *fDecayPhotonPtMC;           //!decay photon pt
+  TH2F        *fCellAbsIdVsAmpl;           //!cell abs id vs cell amplitude (energy)
+  TH2F        *fNClusHighClusE;            //!total number of clusters vs. highest clus energy in the event
+  TH2F        *fClusEtMcPt;                //!cluster et x mc-pt
+  TH2F        *fClusMcDetaDphi;            //!delta-eta x delta-phi(reco-mc)
+  TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
+  TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
+  THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
