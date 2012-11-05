@@ -200,7 +200,7 @@ AliMUONTrackerHV::ShowValues(TMap* m, const char* name)
 
 //______________________________________________________________________________
 void
-AliMUONTrackerHV::ScanHV(Int_t verbose)
+AliMUONTrackerHV::Scan(Int_t verbose)
 {
   /// Retrieve HV values from OCDB for a given run list, and check whether
   /// we have some issues with them...

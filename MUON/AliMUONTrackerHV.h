@@ -35,6 +35,8 @@ public:
   
   void ReportTrips();
   
+  void Scan(Int_t verbose=0);
+  
 private:
 
   void ReadIntegers(const char* filename, std::vector<int>& integers);
@@ -42,8 +44,6 @@ private:
   TGraph* ShowValues(TMap* m, const char* name);
   
   Int_t CheckMap(TMap* hvMap, Int_t runNumber, Bool_t verbose);
-  
-  void ScanHV(Int_t verbose=0);
   
   void TimeAxis(TMultiGraph* g);
   
