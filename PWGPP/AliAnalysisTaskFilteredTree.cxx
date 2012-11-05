@@ -106,7 +106,15 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
 //_____________________________________________________________________________
 AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 {
-  if(fOutput) delete fOutput;  fOutput =0; 
+  Bool_t weOwnTheOutput=kTRUE;
+  if ((AliAnalysisManager::GetAnalysisManager()))
+  {
+    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
+             AliAnalysisManager::kProofAnalysis)
+      weOwnTheOutput=kFALSE;
+  }
+  if (weOwnTheOutput) delete fOutput;
+
   if(fTreeSRedirector) delete fTreeSRedirector;  fTreeSRedirector =0; 
 
   if(fFilteredTreeEventCuts) delete fFilteredTreeEventCuts; fFilteredTreeEventCuts=NULL; 
