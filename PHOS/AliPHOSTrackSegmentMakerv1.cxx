@@ -149,7 +149,7 @@ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() :
   fNTrackSegments(0),
   fRcpv(0.f),
   fRtpc(0.f),
-  fVtx(0.f), 
+  fVtx(0.f,0.f,0.f), 
   fLinkUpArray(0),
   fEmcFirst(0),
   fEmcLast(0),
