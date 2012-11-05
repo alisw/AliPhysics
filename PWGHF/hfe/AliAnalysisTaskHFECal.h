@@ -54,7 +54,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, AliStack *stack, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent);
+  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent);
+  void FindMother(TParticle* part, int &label, int &pid);
   double GetMCweight(double mcPi0pT);
   double GetMCweightEta(double mcEtapT);
   void FindTriggerClusters();
@@ -64,6 +65,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   
   AliESDEvent 		*fESD;			//!ESD object
   AliMCEvent 		*fMC;			//!MC object
+  AliStack 		*stack;			//!MC object
   AliEMCALGeometry  	*fGeom; 		// emcal geometry 
     
   TList       		*fOutputList;		//! output list

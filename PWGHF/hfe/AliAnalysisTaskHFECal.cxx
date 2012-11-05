@@ -86,6 +86,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   : AliAnalysisTaskSE(name)
   ,fESD(0)
   ,fMC(0)
+  ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
   ,fqahist(0) 
@@ -193,6 +194,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskHFECal")
   ,fESD(0)
   ,fMC(0)
+  ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
   ,fqahist(0)
@@ -335,7 +337,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   }
  
   if(fmcData)fMC = MCEvent();
-  AliStack* stack = NULL;
+  //AliStack* stack = NULL;
   if(fmcData && fMC)stack = fMC->Stack();
 
   Float_t cent = -1.;
@@ -445,6 +447,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       continue;
     }
    
+    int parentlabel = 99999;
+    int parentPID = 99999;
+    int grand_parentlabel = 99999;
+    int grand_parentPID = 99999;
     Bool_t mcPho = kFALSE;
     Bool_t mcDtoE= kFALSE;
     Bool_t mcBtoE= kFALSE;
@@ -471,9 +477,11 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        //printf("MCpid = %d",mcpid);
        if(particle->GetFirstMother()>-1)
          {
-          int parentlabel = particle->GetFirstMother();
-          int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
-          mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
+          //int parentlabel = particle->GetFirstMother();
+          //int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
+          //mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
+          FindMother(particle, parentlabel, parentPID);
+          mcMompT = stack->Particle(parentlabel)->Pt();
           if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
           if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
           if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
@@ -481,35 +489,54 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           // make D->e pT correlation
           if(mcDtoE)fMomDtoE->Fill(mcpT,mcMompT); 
 
+           //cout << "check PID = " << parentPID << endl;
+           //cout << "check pho = " << mcPho << endl;
+           //cout << "check D or B = " << mcDtoE << endl;
           // pi->e (Dalitz)
           if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
               {
+               //cout << "find pi0->e " <<  endl;
                mcOrgPi0 = kTRUE;
                mcWeight = GetMCweight(mcMompT); 
               }
           // eta->e (Dalitz)
           if(parentPID==221 && fabs(mcpid)==11 && mcMompT>0.0)
               {
+               //cout << "find Eta->e " <<  endl;
                mcOrgEta = kTRUE;
                mcWeight = GetMCweightEta(mcMompT); 
               }
-
 
           // access grand parent pi0->g->e
           TParticle* particle_parent = stack->Particle(parentlabel); // get parent pointer
           if(particle_parent->GetFirstMother()>-1 && parentPID==22 && fabs(mcpid)==11) // get grand parent g->e
             {
-             int grand_parentPID = stack->Particle(particle_parent->GetFirstMother())->GetPdgCode();
-             double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
-             if(grand_parentPID==111 && pTtmp>0.0)
+             //int grand_parentPID = stack->Particle(particle_parent->GetFirstMother())->GetPdgCode();
+             //double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
+             FindMother(particle_parent, grand_parentlabel, grand_parentPID);
+             double mcGrandpT = stack->Particle(grand_parentlabel)->Pt();
+             if(grand_parentPID==111 && mcGrandpT>0.0)
                 {
-                   mcOrgPi0 = kTRUE;
-                   mcWeight = GetMCweight(pTtmp); 
+                  // check eta->pi0 decay !
+                   int grand2_parentlabel = 99999; int grand2_parentPID = 99999;
+                   TParticle* particle_grand = stack->Particle(grand_parentlabel); // get parent pointer
+                   FindMother(particle_grand, grand2_parentlabel, grand2_parentPID);
+                   if(grand2_parentPID==221)
+                     {
+                      double mcGrandpT2 = stack->Particle(grand2_parentlabel)->Pt();
+                      mcOrgEta = kTRUE;
+                      mcWeight = GetMCweight(mcGrandpT2);  
+                     }
+                   else
+                     {
+                      mcOrgPi0 = kTRUE;
+                      mcWeight = GetMCweight(mcGrandpT);  
+                     }
                 }
-             if(grand_parentPID==221 && pTtmp>0.0)
+             if(grand_parentPID==221 && mcGrandpT>0.0)
                 {
                    mcOrgEta = kTRUE;
-                   mcWeight = GetMCweightEta(pTtmp); 
+                   mcWeight = GetMCweightEta(mcGrandpT); 
                 }
             }
          } 
@@ -591,7 +618,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		if(fTPCnSigma>-1.5 && fTPCnSigma<3.0)
 		{
-		  SelectPhotonicElectron(iTracks,cent,track,stack,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing);
+		  SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele,mcWeight,iHijing);
 		}
 		if(fFlagPhotonicElec)oppstatus = 1.0;
 		if(fFlagConvinatElec)oppstatus = 2.0;
@@ -1069,7 +1096,7 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 //_________________________________________
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
-void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, AliStack *stack ,Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent)
+void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
@@ -1243,7 +1270,20 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   
 }
 //-------------------------------------------
-//void AliAnalysisTaskHFECal::GetMCweight(double mcPi0pT)
+
+void AliAnalysisTaskHFECal::FindMother(TParticle* part, int &label, int &pid)
+{
+ //int label = 99999;
+ //int pid = 99999;
+
+ if(part->GetFirstMother()>-1)
+   {
+    label = part->GetFirstMother();
+    pid = stack->Particle(label)->GetPdgCode();
+   }
+   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
+}
+
 double AliAnalysisTaskHFECal::GetMCweight(double mcPi0pT)
 {
         double weight = 1.0;
