@@ -32,8 +32,13 @@ AliAnalysisEtSelector::~AliAnalysisEtSelector()
     delete fClusterArray;
   }
 }
+void AliAnalysisEtSelector::SetEvent(const AliESDEvent* event)
+{
+    fEvent = event;
+    if(!fInitialized) Init(event);
+}
 
-Bool_t AliAnalysisEtSelector::CutNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const
+Bool_t AliAnalysisEtSelector::IsNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const
 {
   return s.IsPhysicalPrimary(pIdx) &&(TMath::Abs(TMath::Abs(pdg.Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3);
 }

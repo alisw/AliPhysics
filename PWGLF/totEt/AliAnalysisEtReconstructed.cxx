@@ -113,11 +113,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
         int x = 0;
 	fCutFlow->Fill(x++);
-	if(cluster->IsEMCAL()) continue;
+	if(!fSelector->IsDetectorCluster(*cluster)) continue;
 	fCutFlow->Fill(x++);
-	if(!fSelector->CutMinEnergy(*cluster)) continue;
+	if(!fSelector->PassMinEnergyCut(*cluster)) continue;
 	fCutFlow->Fill(x++);
-        if (!fSelector->CutDistanceToBadChannel(*cluster)) continue;
+        if (!fSelector->PassDistanceToBadChannelCut(*cluster)) continue;
 	fCutFlow->Fill(x++);
 
         Float_t pos[3];
@@ -135,7 +135,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         Bool_t matched = false;
 
 	
-	matched = !fSelector->CutTrackMatching(*cluster);
+	matched = !fSelector->PassTrackMatchingCut(*cluster);
 
         if (matched)
         {

@@ -56,22 +56,22 @@ TRefArray* AliAnalysisEtSelectorEmcal::GetClusters()
   return fClusterArray;
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutMinEnergy(const AliESDCaloCluster& cl) const
+Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(const AliESDCaloCluster& cl) const
 {
   return cl.E() > fCuts->GetReconstructedEmcalClusterEnergyCut();
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutMinEnergy(const TParticle& p) const
+Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(const TParticle& p) const
 {
     return p.Energy() > fCuts->GetReconstructedEmcalClusterEnergyCut();
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutDistanceToBadChannel(const AliESDCaloCluster& ) const
+Bool_t AliAnalysisEtSelectorEmcal::PassDistanceToBadChannelCut(const AliESDCaloCluster& ) const
 {
     return kTRUE;
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutTrackMatching(const AliESDCaloCluster& ) const
+Bool_t AliAnalysisEtSelectorEmcal::PassTrackMatchingCut(const AliESDCaloCluster& ) const
 {
     return kTRUE;
 }

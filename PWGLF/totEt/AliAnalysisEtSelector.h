@@ -43,19 +43,19 @@ public:
     virtual TRefArray* GetClusters() { return 0; }
     
     // Return true if cluster has energy > cut
-    virtual Bool_t CutMinEnergy(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Return true if cluster has energy > cut
-    virtual Bool_t CutMinEnergy(const TParticle &/*part*/) const { return true; }
+    virtual Bool_t PassMinEnergyCut(const TParticle &/*part*/) const { return true; }
     
     // Cut on distance to bad channel
-    virtual Bool_t CutDistanceToBadChannel(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Cut on track matching
-    virtual Bool_t CutTrackMatching(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Cut on neutral monte carlo particle
-    virtual Bool_t CutNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
+    virtual Bool_t IsNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
     
     // Is it an EM E_T particle
     virtual Bool_t IsEmEtParticle(const Int_t pdgCode) const;
