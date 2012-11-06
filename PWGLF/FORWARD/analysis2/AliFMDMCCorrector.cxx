@@ -122,7 +122,7 @@ AliFMDMCCorrector::CorrectMC(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDMCCorrector::Init(const TAxis& eAxis)
+AliFMDMCCorrector::SetupForData(const TAxis& eAxis)
 {
   // 
   // Initialize this object 
@@ -130,7 +130,7 @@ AliFMDMCCorrector::Init(const TAxis& eAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
-  AliFMDCorrector::Init(eAxis);
+  AliFMDCorrector::SetupForData(eAxis);
 
   fFMD1i = Make(1,'I',eAxis);
   fFMD2i = Make(2,'I',eAxis);
@@ -236,7 +236,7 @@ AliFMDMCCorrector::CompareResults(AliForwardUtil::Histos& esd,
 
 //____________________________________________________________________
 void
-AliFMDMCCorrector::DefineOutput(TList* dir)
+AliFMDMCCorrector::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 
@@ -244,7 +244,7 @@ AliFMDMCCorrector::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
-  AliFMDCorrector::DefineOutput(dir);
+  AliFMDCorrector::CreateOutputObjects(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 
   fComps = new TList;

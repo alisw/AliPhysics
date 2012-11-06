@@ -218,7 +218,7 @@ protected:
      * 
      * @param list List to put output in 
      */
-    void DefineOutput(TList* list);
+    void CreateOutputObjects(TList* list);
     /** 
      * End of job process 
      * 
@@ -229,7 +229,7 @@ protected:
      * @param acorr Acceptance correction 
      * @param map Correctons map 
      */
-    void Finish(const TList* i, 
+    void Terminate(const TList* i, 
 		TList* o,
 		UShort_t iVz, 
 		Bool_t effective,
@@ -241,7 +241,7 @@ protected:
     TH2D* fPrimary;  // Cache or primary 
     TH1D* fCounts;   // Event count 
 
-    ClassDef(VtxBin,2); // Vertex bin 
+    ClassDef(VtxBin,3); // Vertex bin 
   };
   /** 
    * Define our vertex bins 
@@ -263,7 +263,7 @@ protected:
   TList*     fList;          // Output list 
   UShort_t   fNPhiBins;      // Nunber of phi bins
   Bool_t     fEffectiveCorr; // Whether to make effective corrections
-  ClassDef(AliCentralMCCorrectionsTask,1) // Central corrections class
+  ClassDef(AliCentralMCCorrectionsTask,2) // Central corrections class
 };
 
 #endif

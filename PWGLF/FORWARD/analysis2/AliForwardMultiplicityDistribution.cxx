@@ -78,7 +78,7 @@ void AliForwardMultiplicityDistribution::UserCreateOutputObjects()
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
-    bin->DefineOutputs(fOutput, fNBins);
+    bin->CreateOutputObjectss(fOutput, fNBins);
   }
   //fOutput->ls();
   PostData(1, fOutput);
@@ -260,7 +260,7 @@ AliForwardMultiplicityDistribution::Bin::Bin(Double_t etaLow, Double_t etaHigh)
 
 }
 //_____________________________________________________________________
-void AliForwardMultiplicityDistribution::Bin::DefineOutputs(TList* cont,  Int_t max)
+void AliForwardMultiplicityDistribution::Bin::CreateOutputObjectss(TList* cont,  Int_t max)
 {
   //
   // Define eta bin output histograms

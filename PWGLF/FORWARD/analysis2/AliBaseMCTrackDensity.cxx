@@ -96,7 +96,7 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
 
 //____________________________________________________________________
 void
-AliBaseMCTrackDensity::DefineOutput(TList* l)
+AliBaseMCTrackDensity::CreateOutputObjects(TList* l)
 {
   DGUARD(fDebug,1,"MC track defines output");
   TList* ll = new TList;

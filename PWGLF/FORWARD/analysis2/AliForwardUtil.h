@@ -644,7 +644,7 @@ public:
     TH2D* fFMD3i; // Histogram for FMD3i
     TH2D* fFMD3o; // Histogram for FMD3o
 
-    ClassDef(Histos,1) 
+    ClassDef(Histos,2) 
   };
 
   //__________________________________________________________________

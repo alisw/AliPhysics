@@ -207,26 +207,29 @@ AliForwardMultiplicityBase::GetESDEvent()
     return 0;
   }
 
+  // --- Load the data -----------------------------------------------
+  LoadBranches();
+
   // On the first event, initialize the parameters
   if (fFirstEvent && esd->GetESDRun()) {
     GetEventInspector().ReadRunDetails(esd);
-
+    
     AliInfo(Form("Initializing with parameters from the ESD:\n"
-                 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-                 "         AliESDEvent::GetBeamType()     ->%s\n"
-                 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-                 "         AliESDEvent::GetMagneticField()->%f\n"
-                 "         AliESDEvent::GetRunNumber()    ->%d",
-                 esd->GetBeamEnergy(),
-                 esd->GetBeamType(),
-                 esd->GetCurrentL3(),
-                 esd->GetMagneticField(),
-                 esd->GetRunNumber()));
-
+		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
+		 "         AliESDEvent::GetBeamType()     ->%s\n"
+		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
+		 "         AliESDEvent::GetMagneticField()->%f\n"
+		 "         AliESDEvent::GetRunNumber()    ->%d",
+		 esd->GetBeamEnergy(),
+		 esd->GetBeamType(),
+		 esd->GetCurrentL3(),
+		 esd->GetMagneticField(),
+		 esd->GetRunNumber()));
+    
     fFirstEvent = false;
-
+    
     GetEventPlaneFinder().SetRunNumber(esd->GetRunNumber());
-    if (!InitializeSubs()) { 
+    if (!SetupForData()) { 
       AliError("Failed to initialize sub-algorithms, making this a zombie");
       esd = 0; // Make sure we do nothing on this event
       Info("GetESDEvent", "ESD event pointer %p", esd);

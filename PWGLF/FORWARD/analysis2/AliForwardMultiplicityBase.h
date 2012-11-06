@@ -289,7 +289,7 @@ protected:
    *
    * @return false on errors 
    */
-  virtual Bool_t InitializeSubs() = 0;
+  virtual Bool_t SetupForData() = 0;
   /**
    * Mark this event as one to store in the AOD 
    * 
@@ -337,7 +337,7 @@ private:
    */
   AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
 
-  ClassDef(AliForwardMultiplicityBase,2) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,3) // Forward multiplicity class
 };
 
 #endif

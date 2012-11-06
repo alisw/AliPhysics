@@ -181,7 +181,7 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   fList = new TList();
   fList->SetOwner();
 
-  fInspector.DefineOutput(fList);
+  fInspector.CreateOutputObjects(fList);
 
   PostData(1,fList);  
 }
@@ -200,7 +200,10 @@ AliCentralMultiplicityTask::GetESDEvent()
     AliWarning("No ESD event found for input event");
     return 0;
   }
-  
+
+  // Load in the data needed
+  LoadBranches();
+
   // IF we've read the first event already, just return the event 
   if (fFirstEventSeen) return esd;
   
@@ -269,7 +272,7 @@ AliCentralMultiplicityTask::GetESDEvent()
   fNTracklet->Sumw2();
 
   // Initialize the inspecto 
-  fInspector.Init(vaxis);
+  fInspector.SetupForData(vaxis);
   fFirstEventSeen = kTRUE;
 
   // Print some information 

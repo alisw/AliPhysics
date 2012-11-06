@@ -32,34 +32,17 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
-  Bool_t mc = false;
-  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) 
-    mc = true;
-  
-#if 0
-  if (mc) {
-    AliForwardMCMultiplicityTask* mcTask = 
-      static_cast<AliForwardMCMultiplicityTask*>(task);
-    mcTask->SetOnlyPrimary(true);
-  }
-#endif
-
+  Bool_t   mc  = (task->IsA() == AliForwardMCMultiplicityTask::Class());
   Double_t nXi = mc ? 2 : 2;   //HHD test
   Bool_t   includeSigma = false; //true;
 
+  // Sharing cut
   AliFMDMultCuts cSharing;
-  //c.SetNXi(mc ? 1 : 1);
-  //c.SetIncludeSigma(true);
-  //c.SetMPVFraction(0.5);
   Double_t factor = 1.;
-  //if(mc) factor = 1.15;
   cSharing.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
  
+  // Density cut
   AliFMDMultCuts cDensity;
-  //c2.SetNXi(mc ? 1 : 1);
-  //  c2.SetIncludeSigma(false);
-  //c2.SetMPVFraction(0.5);
-  //Double_t factor = 1.2;
   cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
   
   
@@ -76,15 +59,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // V0-AND triggered events flagged as NSD 
   task->GetEventInspector().SetUseV0AndForNSD(false);
   // Use primary vertex selection from 1st physics WG
-  // task->GetEventInspector().SetUseFirstPhysicsVtx(true);
+  task->GetEventInspector().SetUseFirstPhysicsVtx(false);
   // Use satellite collisions
-  // task->GetEventInspector().SetUseDisplacedVertices(true);
+  task->GetEventInspector().SetUseDisplacedVertices(false);
+  // Which centrality estimator to use 
+  task->GetEventInspector().SetCentralityMethod("V0M");
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
-  //  Float_t factor = 1.;
-  //if(mc) factor = 1.2;
-  //task->GetSharingFilter().SetLowCut(0.3*factor);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
   // Disable use of angle corrected signals in the algorithm 
@@ -101,15 +83,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetLCuts(cSharing);
-  
+  // Dead region in FMD2i
+  task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
    
   // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
-  // Set to use the running average in Poisson 
-  // task->GetDensityCalculator().SetUseRunningAverage(false);
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
   // Set lumping (nEta,nPhi)
@@ -127,7 +108,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to use the vertex bias correction
   task->GetCorrections().SetUseVertexBias(false);
   // Whether to use the vertex bias correction
-  task->GetCorrections().SetUseAcceptance(true);
+  task->GetCorrections().SetUseAcceptance(false);
   // Whether to use the merging efficiency correction 
   task->GetCorrections().SetUseMergingEfficiency(false);
 

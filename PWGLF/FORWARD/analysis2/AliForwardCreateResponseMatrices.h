@@ -73,7 +73,7 @@ public:
     /**
      * Define outputs of a single eta bin
      */
-    virtual void DefineOutputs(TList* cont,  Int_t max);
+    virtual void CreateOutputObjectss(TList* cont,  Int_t max);
     /**
      * Process a single eta bin
      */    
@@ -97,7 +97,7 @@ public:
     TH1D*    fMCNSD;                   //number of events found as NSD by the MC truth vs. multiplicity
     TH1D*    fMCESDNSD;                //number of events found as NSD by both analysis and MC truth vs. multiplicity
     TH1D*    fTriggerBias;             // histogram for trigger vertex bias correction
-   ClassDef(Bin,1); // Manager of data 
+   ClassDef(Bin,2); // Manager of data 
   };
   /**
    * Create Output Objects
@@ -129,7 +129,7 @@ public:
   TH1I* fTrigger;  //Trigger histogram
   TList  fBins;    // List of eta bins
   TList*  fOutput; // Output list
-  ClassDef(AliForwardCreateResponseMatrices, 1); 
+  ClassDef(AliForwardCreateResponseMatrices, 2); 
 };
 
 #endif

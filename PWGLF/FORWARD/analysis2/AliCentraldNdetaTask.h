@@ -66,7 +66,7 @@ protected:
    */
   virtual Int_t GetMarker() const { return GetMarkerStyle(kSquare); }
 
-  ClassDef(AliCentraldNdetaTask,1); // Determine multiplicity in central area
+  ClassDef(AliCentraldNdetaTask,2); // Determine multiplicity in central area
 };
 
 #endif

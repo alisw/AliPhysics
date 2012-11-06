@@ -220,7 +220,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::Init(const TAxis& axis)
+AliFMDDensityCalculator::SetupForData(const TAxis& axis)
 {
   // Intialize this sub-algorithm 
   //
@@ -232,7 +232,7 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->Init(axis);
+    o->SetupForData(axis);
     // o->fMultCut = fCuts.GetFixedCut(o->fDet, o->fRing);
     // o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
   }
@@ -831,7 +831,8 @@ AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
+AliFMDDensityCalculator::Terminate(const TList* dir, TList* output, 
+				   Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -845,11 +846,19 @@ AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
 
+  TList* out = new TList;
+  out->SetName(d->GetName());
+  out->SetOwner();
+  
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "sums of ring signals");
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->ScaleHistograms(d, nEvents);
+    o->Terminate(d, nEvents);
+    if (!o->fDensity) { 
+      Warning("Terminate", "No density in %s", o->GetName());
+      continue;
+    }
     TH1D* sum = o->fDensity->ProjectionX(o->GetName(), 1, 
 					 o->fDensity->GetNbinsY(),"e");
     sum->Scale(1., "width");
@@ -858,12 +867,13 @@ AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
     sum->SetYTitle("#sum N_{ch,incl}");
     sums->Add(sum);
   }
-  d->Add(sums);
+  out->Add(sums);
+  output->Add(out);
 }
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::DefineOutput(TList* dir)
+AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 
@@ -910,7 +920,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
     o->fPoisson.SetLumping(fEtaLumping, fPhiLumping);
-    o->Output(d);
+    o->CreateOutputObjects(d);
   }
 }
 //____________________________________________________________________
@@ -1213,7 +1223,7 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::Init(const TAxis& eAxis)
+AliFMDDensityCalculator::RingHistos::SetupForData(const TAxis& eAxis)
 {
   // Initialize 
   // This is called on first event 
@@ -1240,7 +1250,7 @@ AliFMDDensityCalculator::RingHistos::Init(const TAxis& eAxis)
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::Output(TList* dir)
+AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
 {
   // 
   // Make output.  This is called as part of SlaveBegin
@@ -1281,7 +1291,7 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDDensityCalculator::RingHistos::Terminate(TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -1293,8 +1303,9 @@ AliFMDDensityCalculator::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
-  TH1* density = GetOutputHist(l,"inclDensity");
+  TH2D* density = static_cast<TH2D*>(GetOutputHist(l,"inclDensity"));
   if (density) density->Scale(1./nEvents);
+  fDensity = density;
 }
 
 //____________________________________________________________________

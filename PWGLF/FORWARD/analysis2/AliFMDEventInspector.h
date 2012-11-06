@@ -88,6 +88,26 @@ public:
     kOffline
   };
   /** 
+   * Centrality methods 
+   */
+  enum ECentMethod { 
+    kV0Multiplicity, 
+    kV0Amplitude, 
+    kV0Charge, 
+    kFMDRough, 
+    kNTracks, 
+    kLTracks, 
+    kCL0, 
+    kCL1, 
+    kCND, 
+    kNParticles,
+    kNeutrons,
+    kV0vsFMD, 
+    kV0vsNTracks, 
+    kZEMvsZDC
+  };
+
+  /** 
    * Collision systems
    */
   enum ECollisionSystem { 
@@ -133,7 +153,7 @@ public:
    * 
    * @param vtxAxis Vertex axis in use 
    */
-  virtual void Init(const TAxis& vtxAxis);
+  virtual void SetupForData(const TAxis& vtxAxis);
   /** 
    * Process the event 
    * 
@@ -166,7 +186,7 @@ public:
    * 
    * @param dir Directory to add to 
    */
-  void DefineOutput(TList* dir);
+  void CreateOutputObjects(TList* dir);
   /** 
    * Set the number of SPD tracklets for which we consider the event a
    * low-flux event or not .
@@ -219,7 +239,28 @@ public:
   {
     fUseDisplacedVertices = use;
   }  
-  
+  /** 
+   * Set the centrality method to use.  Possible values are 
+   *
+   * - VOM      - VZERO multiplicity 
+   * - V0A      - VZERO amplitude
+   * - V0C      - VZERO charge
+   * - FMD      - FMD scaled energy loss
+   * - TRK      - Number of tracks
+   * - TKL      - Number of tracks
+   * - CL0      - 
+   * - CL1      - 
+   * - CND      - 
+   * - NPA      - Neutral particles 
+   * - ZNA      - ZDC neutron amplitude 
+   * - V0MvsFMD - VZERO versus FMD 
+   * - TKLvsVOM - Tracks versus VZERO 
+   * - ZEMvsZDC - ZDC 
+   * 
+   * @param m 
+   */
+  void SetCentralityMethod(const TString& m) { fCentMethod = m; }
+  void SetCentralityMethod(ECentMethod m);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -465,7 +506,8 @@ protected:
   AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
   TList    fCollWords;     //! Configured collision words 
   TList    fBgWords;       //! Configured background words 
-  ClassDef(AliFMDEventInspector,5); // Inspect the event 
+  TString  fCentMethod;
+  ClassDef(AliFMDEventInspector,7); // Inspect the event 
 };
 
 #endif

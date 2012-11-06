@@ -27,7 +27,9 @@ public:
    */
   AliCopyHeaderTask(const char* name="header") 
     : AliAnalysisTaskSE(name)
-  {}
+  {
+    fBranchNames = "ESD:AliESDHeader.;AliESDRun.";
+  }
   /** 
    * Copy constructor 
    * 

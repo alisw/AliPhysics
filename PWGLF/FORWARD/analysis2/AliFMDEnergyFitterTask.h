@@ -151,7 +151,7 @@ protected:
    * Initialise the sub objects and stuff.  Called on first event 
    * 
    */
-  virtual void   InitializeSubs();
+  virtual void   SetupForData();
 
   Bool_t               fFirstEvent;     // Whether the event is the first seen 
   AliFMDEventInspector fEventInspector; // Algorithm
@@ -160,7 +160,7 @@ protected:
   Float_t              fbLow;           // What's this?
   Float_t              fbHigh;          // What's this? 
   
-  ClassDef(AliFMDEnergyFitterTask,1) // Forward multiplicity class
+  ClassDef(AliFMDEnergyFitterTask,2) // Forward multiplicity class
 };
 
 #endif

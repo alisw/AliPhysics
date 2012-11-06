@@ -98,7 +98,7 @@ public:
    * 
    * @param etaAxis Not used 
    */
-  virtual void Init(const TAxis& etaAxis);
+  virtual void SetupForData(const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
@@ -121,13 +121,13 @@ public:
    * @param dir     where to put the output
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
+  virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
    * @param dir List to write in
    */  
-  virtual void DefineOutput(TList* dir);
+  virtual void CreateOutputObjects(TList* dir);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -372,20 +372,20 @@ protected:
      * 
      * @param eAxis 
      */
-    void Init(const TAxis& eAxis);
+    void SetupForData(const TAxis& eAxis);
     /** 
      * Make output 
      * 
      * @param dir Where to put it 
      */
-    void Output(TList* dir);
+    void CreateOutputObjects(TList* dir);
     /** 
      * Scale the histograms to the total number of events 
      * 
      * @param dir     Where the output is 
      * @param nEvents Number of events 
      */
-    void ScaleHistograms(TList* dir, Int_t nEvents);
+    void Terminate(TList* dir, Int_t nEvents);
     TList*    fList;
     TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
@@ -404,7 +404,7 @@ protected:
     TH2D*     fPhiAcc;         // Phi acceptance vs IpZ
     TH1D*     fPhiBefore;      // Phi before re-calce 
     TH1D*     fPhiAfter;       // Phi after re-calc
-    ClassDef(RingHistos,8);
+    ClassDef(RingHistos,9);
   };
   /** 
    * Get the ring histogram container 
@@ -438,7 +438,7 @@ protected:
   Bool_t fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
   Bool_t fRecalculatePhi;  // Whether to correct for (X,Y) offset
 
-  ClassDef(AliFMDDensityCalculator,7); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,9); // Calculate Nch density 
 };
 
 #endif

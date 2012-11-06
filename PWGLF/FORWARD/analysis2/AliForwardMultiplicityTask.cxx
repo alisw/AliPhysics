@@ -75,6 +75,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   //
   DGUARD(fDebug, 3,"named CTOR of AliForwardMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -102,6 +103,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
   //
   DGUARD(fDebug, 3,"Copy CTOR of AliForwardMultiplicityTask");
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -157,7 +159,7 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
 
 //____________________________________________________________________
 Bool_t
-AliForwardMultiplicityTask::InitializeSubs()
+AliForwardMultiplicityTask::SetupForData()
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
@@ -195,12 +197,12 @@ AliForwardMultiplicityTask::InitializeSubs()
   fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
-  fEventInspector.Init(*pv);
-  fSharingFilter.Init(*pe);
-  fDensityCalculator.Init(*pe);
-  fCorrections.Init(*pe);
-  fHistCollector.Init(*pv,*pe);
-  fEventPlaneFinder.Init(*pe);
+  fEventInspector.SetupForData(*pv);
+  fSharingFilter.SetupForData(*pe);
+  fDensityCalculator.SetupForData(*pe);
+  fCorrections.SetupForData(*pe);
+  fHistCollector.SetupForData(*pv,*pe);
+  fEventPlaneFinder.SetupForData(*pe);
 
   this->Print();
   return true;
@@ -229,12 +231,12 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   TObject* epobj = &fAODEP;
   ah->AddBranch("AliAODForwardEP", &epobj);
 
-  fEventInspector.DefineOutput(fList);
-  fSharingFilter.DefineOutput(fList);
-  fDensityCalculator.DefineOutput(fList);
-  fCorrections.DefineOutput(fList);
-  fHistCollector.DefineOutput(fList);
-  fEventPlaneFinder.DefineOutput(fList);
+  fEventInspector.CreateOutputObjects(fList);
+  fSharingFilter.CreateOutputObjects(fList);
+  fDensityCalculator.CreateOutputObjects(fList);
+  fCorrections.CreateOutputObjects(fList);
+  fHistCollector.CreateOutputObjects(fList);
+  fEventPlaneFinder.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -366,13 +368,19 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
     return;
   }
 
-  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
-  MakeSimpledNdeta(list, list, nTr, nTrVtx, nAcc);
-  MakeRingdNdeta(list, "ringSums", list, "ringResults");
+  TList* output = new TList;
+  output->SetName(Form("%sResults", GetName()));
+  output->SetOwner();
 
-  fSharingFilter.ScaleHistograms(list,Int_t(nTr));
-  fDensityCalculator.ScaleHistograms(list,Int_t(nTrVtx));
-  fCorrections.ScaleHistograms(list,Int_t(nTrVtx));
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  MakeRingdNdeta(list, "ringSums", output, "ringResults");
+
+  fSharingFilter.Terminate(list,output,Int_t(nTr));
+  fDensityCalculator.Terminate(list,output,Int_t(nTrVtx));
+  fCorrections.Terminate(list,output,Int_t(nTrVtx));
+
+  PostData(2, output);
 }
 
 //

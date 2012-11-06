@@ -21,6 +21,7 @@ ClassImp(AliCopyHeaderTask)
 ; // for emacs - do not remove 
 #endif
 
+
 void
 AliCopyHeaderTask::UserExec(Option_t*)
 {
@@ -40,7 +41,9 @@ AliCopyHeaderTask::UserExec(Option_t*)
     AliWarning("Missing AOD event");
     return;
   }
-  
+
+  LoadBranches();
+
   AliAODHeader* aodHeader = aod->GetHeader();
   if (!aodHeader) { 
     AliWarning("Missing AOD header");

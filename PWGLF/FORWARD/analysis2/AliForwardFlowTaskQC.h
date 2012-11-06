@@ -255,7 +255,7 @@ public:
     TH2F*          fOutliers;      // Sigma <M> histogram 
     UShort_t       fDebug;         // Debug flag
 
-    ClassDef(VertexBin, 1); // object for cumulants ananlysis in FMD
+    ClassDef(VertexBin, 2); // object for cumulants ananlysis in FMD
   };
 
   static Bool_t fgDispVtx;         // static flag for disp vtx
@@ -373,7 +373,7 @@ protected:
   TH1D*          fHistCent;         //  Diagnostics hist for centrality
   TH1D*          fHistVertexSel;    //  Diagnostics hist for selected vertices
 
-  ClassDef(AliForwardFlowTaskQC, 1); // Analysis task for FMD analysis
+  ClassDef(AliForwardFlowTaskQC, 2); // Analysis task for FMD analysis
 };
 
 #endif

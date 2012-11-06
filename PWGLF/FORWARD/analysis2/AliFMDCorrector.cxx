@@ -118,7 +118,7 @@ AliFMDCorrector::operator=(const AliFMDCorrector& o)
 
 //____________________________________________________________________
 void
-AliFMDCorrector::Init(const TAxis&)
+AliFMDCorrector::SetupForData(const TAxis&)
 {
   //
   // Initialize this object
@@ -300,7 +300,7 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
+AliFMDCorrector::Terminate(const TList* dir, TList* output, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -313,11 +313,19 @@ AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
 
+  TList* out = new TList;
+  out->SetName(d->GetName());
+  out->SetOwner();
+
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "Sums of ring results");
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->ScaleHistograms(d, nEvents);
+    o->Terminate(d, nEvents);
+    if (!o->fDensity) { 
+      Warning("Terminate", "No density from %s", o->GetName());
+      continue;
+    }
     TH1D* sum = o->fDensity->ProjectionX(o->GetName(), 1, 
 					 o->fDensity->GetNbinsY(),"e");
     sum->Scale(1., "width");
@@ -326,12 +334,12 @@ AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
     sum->SetYTitle("#sum N_{ch,primary}");
     sums->Add(sum);
   }
-  d->Add(sums);
-
+  out->Add(sums);
+  output->Add(out);
 }
 //____________________________________________________________________
 void
-AliFMDCorrector::DefineOutput(TList* dir)
+AliFMDCorrector::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 
@@ -353,7 +361,7 @@ AliFMDCorrector::DefineOutput(TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->Output(d);
+    o->CreateOutputObjects(d);
   }
 }
 
@@ -454,7 +462,7 @@ AliFMDCorrector::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDCorrector::RingHistos::Output(TList* dir)
+AliFMDCorrector::RingHistos::CreateOutputObjects(TList* dir)
 {
   // 
   // Make output 
@@ -467,7 +475,7 @@ AliFMDCorrector::RingHistos::Output(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDCorrector::RingHistos::Terminate(TList* dir, Int_t nEvents)
 { 
   // 
   // Scale the histograms to the total number of events 
@@ -478,8 +486,9 @@ AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
-  TH1* density = GetOutputHist(l,"primaryDensity");
+  TH2D* density = static_cast<TH2D*>(GetOutputHist(l,"primaryDensity"));
   if (density) density->Scale(1./nEvents);
+  fDensity = density;
 }
 
 //____________________________________________________________________
