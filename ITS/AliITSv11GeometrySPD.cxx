@@ -79,6 +79,7 @@
 #include <TGeoVolume.h>
 #include <TGeoXtru.h>
 #include <TGeoPcon.h>
+#include <TGeoPgon.h>
 #include <TGeoArb8.h>
 
 // AliRoot includes
@@ -608,7 +609,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     Double_t  xpp2[ksecNPoints], ypp2[ksecNPoints];
     Double_t *xp[ksecNRadii],   *xp2[ksecNRadii];
     Double_t *yp[ksecNRadii],   *yp2[ksecNRadii];
-    TGeoXtru *sA0,  *sA1, *sB0, *sB1,*sB2;
+    TGeoXtru *sA0,  *sA1, *sB0, *sB1;
+    TGeoCompositeShape *sB2;
     TGeoBBox *sB3;
     TGeoEltu *sTA0, *sTA1;
     TGeoTube *sTB0, *sTB1; //,*sM0;
@@ -844,7 +846,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     SPDsectorShape(ksecNRadii,secX2,secY2,secR2,secAngleStart2,secAngleEnd2,
                    ksecNPointsPerRadii, m, xp, yp);
     sB0 = new TGeoXtru(2);
-    sB0->SetName("ITS SPD Carbon fiber support Sector End B0");
+    sB0->SetName("EndB0");
     sB0->DefinePolygon(m, xpp, ypp);
     sB0->DefineSection(0, ksecDz);
     sB0->DefineSection(1, ksecDz + ksecZEndLen);
@@ -880,43 +882,34 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     InsidePoint(xpp[m-2],ypp[m-2],xpp[m-1],ypp[m-1],xpp[0],ypp[0],
                 ksecCthick2,xpp2[i2],ypp2[i2]);
     sB1 = new TGeoXtru(2);
-    sB1->SetName("ITS SPD Carbon fiber support Sector Air End B1");
+    sB1->SetName("EndB1");
     sB1->DefinePolygon(i2+1, xpp2, ypp2);
-    sB1->DefineSection(0,sB0->GetZ(0));
-    sB1->DefineSection(1,sB0->GetZ(1)-ksecCthick2);
-    const Double_t kspdEndHoleRadius1=5.698*fgkmm;
-    const Double_t kspdEndHoleRadius2=2.336*fgkmm;
-    const Double_t kspdEndHoleDisplacement=6.29*fgkmm;
-    k = (m-1)/4;
-    for(i=0;i<=k;i++){
-        t= ((Double_t)i)/((Double_t)(k));
-        if(!CFHolePoints(t,kspdEndHoleRadius1,kspdEndHoleRadius2,
-                         kspdEndHoleDisplacement,xpp2[i],ypp2[i])){
-            Warning("CarbonFiberSector","CFHolePoints failed "
-                    "i=%d m=%d k=%d t=%e",i,m,k,t);
-        } // end if
-        // simitry in each quadrant.
-        xpp2[2*k-i] = -xpp2[i];
-        ypp2[2*k-i] =  ypp2[i];
-        xpp2[2*k+i] = -xpp2[i];
-        ypp2[2*k+i] = -ypp2[i];
-        xpp2[4*k-i] =  xpp2[i];
-        ypp2[4*k-i] = -ypp2[i];
-    }// end for i
-    //xpp2[m-1] = xpp2[0]; // begining point in
-    //ypp2[m-1] = ypp2[0]; // comment with end point
-    sB2 = new TGeoXtru(2);
-    sB2->SetName("ITS SPD Hole in Carbon fiber support End plate");
-    sB2->DefinePolygon(4*k, xpp2, ypp2);
-    sB2->DefineSection(0,sB1->GetZ(1));
-    sB2->DefineSection(1,sB0->GetZ(1));
+    sB1->DefineSection(0,sB0->GetZ(0)-ksecCthick2);
+    sB1->DefineSection(1,sB0->GetZ(1)+ksecCthick2);
+
+    sB2 = new TGeoCompositeShape("ITS SPD Carbon fiber support Sector End B0",
+				 "EndB0-EndB1");
     // SPD sector mount blocks
     const Double_t kMountBlock[3] = {0.5*(1.8-0.2)*fgkmm,0.5*22.0*fgkmm,
                                      0.5*45.0*fgkmm};
     sB3 = new TGeoBBox((Double_t*)kMountBlock);
+    // SPD sector mount block screws and nuts (M.S. - 27 oct 2012)
+    const Double_t kMountBlockM3ScrewR = 0.5*3.0*fgkmm; // Metric screw
+    const Double_t kMountBlockHead1R   = 0.5*8.0*fgkmm;
+    const Double_t kMountBlockHead1H   = 1.0*fgkmm;
+    const Double_t kMountBlockHead2R   = 0.5*6.0*fgkmm;
+    const Double_t kMountBlockHead2H   = 2.7*fgkmm;
+    const Double_t kMountBlockM3NutR   = 1.8*kMountBlockM3ScrewR; // Metric nut
+    const Double_t kMountBlockM3NutH   = kMountBlockM3NutR; // Metric nut
+    TGeoTube *sM3 = new TGeoTube(0, kMountBlockM3ScrewR, sB3->GetDX());
+    TGeoTube *sD1 = new TGeoTube(0, kMountBlockHead1R,kMountBlockHead1H/2);
+    TGeoTube *sD2 = new TGeoTube(0, kMountBlockHead2R,kMountBlockHead2H/2);
+    TGeoPgon *sN3 = new TGeoPgon(0, 360, 6, 2);
+    sN3->DefineSection(0,-kMountBlockM3NutH/2, 0, kMountBlockM3NutR);
+    sN3->DefineSection(1, kMountBlockM3NutH/2, 0, kMountBlockM3NutR);
     // SPD sector cooling tubes
     sTB0 = new TGeoTube("ITS SPD Cooling Tube End TB0", 0.0,
-                   0.5*ksecCoolTubeROuter,0.5*(sB1->GetZ(1)-sB1->GetZ(0)));
+                   0.5*ksecCoolTubeROuter,0.5*(sB0->GetZ(1)-sB0->GetZ(0)));
     sTB1 = new TGeoTube("ITS SPD Cooling Tube End coolant TB0", 0.0,
                         sTB0->GetRmax() - ksecCoolTubeThick,sTB0->GetDz());
     //
@@ -965,33 +958,47 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     vTA1->SetFillColor(vTA1->GetLineColor());
     vTA1->SetFillStyle(4000); // 0% transparent
     TGeoVolume *vB0 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorEndB0",
-                                     sB0, medSPDcf);
+                                     sB2, medSPDcf);
     vB0->SetVisibility(kTRUE);
     vB0->SetLineColor(1); // Black
     vB0->SetLineWidth(1);
     vB0->SetFillColor(vB0->GetLineColor());
     vB0->SetFillStyle(4000); // 0% transparent
-    TGeoVolume *vB1 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorEndAirB1",
-                                     sB1, medSPDair);
-    vB1->SetVisibility(kTRUE);
-    vB1->SetLineColor(0); // white
-    vB1->SetLineWidth(1);
-    vB1->SetFillColor(vB1->GetLineColor());
-    vB1->SetFillStyle(4100); // 100% transparent
-    TGeoVolume *vB2 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorEndAirB2",
-                                     sB2, medSPDair);
-    vB2->SetVisibility(kTRUE);
-    vB2->SetLineColor(0); // white
-    vB2->SetLineWidth(1);
-    vB2->SetFillColor(vB2->GetLineColor());
-    vB2->SetFillStyle(4100); // 100% transparent
     TGeoVolume *vB3 = new TGeoVolume(
         "ITSSPDCarbonFiberSupportSectorMountBlockB3",sB3, medSPDcf);
     vB3->SetVisibility(kTRUE);
-    vB3->SetLineColor(1); // Black
+    vB3->SetLineColor(26); // Brown shade
     vB3->SetLineWidth(1);
     vB3->SetFillColor(vB3->GetLineColor());
     vB3->SetFillStyle(4000); // 0% transparent
+    TGeoVolume *vM3 = new TGeoVolume(
+        "ITSSPDCarbonFiberSupportSectorMountBlockScrewM3",sM3, medSPDss);
+    vM3->SetVisibility(kTRUE);
+    vM3->SetLineColor(kGray); // Gray
+    vM3->SetLineWidth(1);
+    vM3->SetFillColor(vM3->GetLineColor());
+    vM3->SetFillStyle(4000); // 0% transparent
+    TGeoVolume *vD1 = new TGeoVolume(
+        "ITSSPDCarbonFiberSupportSectorMountBlockScrewHead1",sD1, medSPDss);
+    vD1->SetVisibility(kTRUE);
+    vD1->SetLineColor(kGray); // Gray
+    vD1->SetLineWidth(1);
+    vD1->SetFillColor(vD1->GetLineColor());
+    vD1->SetFillStyle(4000); // 0% transparent
+    TGeoVolume *vD2 = new TGeoVolume(
+        "ITSSPDCarbonFiberSupportSectorMountBlockScrewHead2",sD2, medSPDss);
+    vD2->SetVisibility(kTRUE);
+    vD2->SetLineColor(kGray); // Gray
+    vD2->SetLineWidth(1);
+    vD2->SetFillColor(vD2->GetLineColor());
+    vD2->SetFillStyle(4000); // 0% transparent
+    TGeoVolume *vN3 = new TGeoVolume(
+        "ITSSPDCarbonFiberSupportSectorMountBlockScrewNut",sN3, medSPDss);
+    vN3->SetVisibility(kTRUE);
+    vN3->SetLineColor(kGray); // Gray
+    vN3->SetLineWidth(1);
+    vN3->SetFillColor(vN3->GetLineColor());
+    vN3->SetFillStyle(4000); // 0% transparent
     TGeoVolume *vTB0 = new TGeoVolume("ITSSPDCoolingTubeEndTB0",sTB0,medSPDss);
     vTB0->SetVisibility(kTRUE);
     vTB0->SetLineColor(15); // gray
@@ -1009,8 +1016,6 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     // add volumes to mother container passed as argument of this method
     moth->AddNode(vM0,1,0); // Add virtual volume to mother
     vA0->AddNode(vA1,1,0); // Put air inside carbon fiber.
-    vB0->AddNode(vB1,1,0); // Put air inside carbon fiber ends.
-    vB0->AddNode(vB2,1,0); // Put air wholes inside carbon fiber ends
     vTA0->AddNode(vTA1,1,0); // Put cooling liquid indide tube middel.
     vTB0->AddNode(vTB1,1,0); // Put cooling liquid inside tube end.
     Double_t tubeEndLocal[3]={0.0,0.0,sTA0->GetDz()};
@@ -1018,10 +1023,13 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
         x0 = secX3[ksecDipIndex[i]];
         y0 = secY3[ksecDipIndex[i]];
         t = 90.0 - secAngleTurbo[i];
-        trans = new TGeoTranslation("",x0,y0,0.5*(sB1->GetZ(0)+sB1->GetZ(1)));
-        vB1->AddNode(vTB0, i+1, trans);
+	z0 = 0.5*(sB1->GetZ(0)+sB1->GetZ(1));
+        trans = new TGeoTranslation("",x0,y0,z0);
+        vM0->AddNode(vTB0, i+1, trans);
         // Find location of tube ends for later use.
         trans->LocalToMaster(tubeEndLocal,fTubeEndSector[0][0][i]);
+        trans = new TGeoTranslation("",x0,y0,-z0);
+        vM0->AddNode(vTB0, i+1+ksecNCoolingTubeDips, trans);
         rot = new TGeoRotation("", 0.0, 0.0, t);
         rotrans = new TGeoCombiTrans("", x0, y0, 0.0, rot);
         vM0->AddNode(vTA0, i+1, rotrans);
@@ -1034,6 +1042,22 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     // Find location of tube ends for later use.
     for(i=0;i<ksecNCoolingTubeDips;i++) rot->LocalToMaster(
                             fTubeEndSector[0][0][i],fTubeEndSector[0][1][i]);
+    // Put screws inside the mounting block
+    const Double_t kMountingBlockScrew1ZPos =  0.7 *fgkcm;
+    const Double_t kMountingBlockScrew2ZPos =  2.01*fgkcm;
+    const Double_t kMountingBlockScrew34Pos =  0.51*fgkcm;
+    vB3->AddNode(vM3, 1, new TGeoCombiTrans(0, 0,
+				 (sB3->GetDZ()-kMountingBlockScrew1ZPos),
+					    new TGeoRotation("",90,90,90)));
+    vB3->AddNode(vM3, 2, new TGeoCombiTrans(0, 0,
+				 (sB3->GetDZ()-kMountingBlockScrew2ZPos),
+					    new TGeoRotation("",90,90,90)));
+    vB3->AddNode(vM3, 3, new TGeoCombiTrans(0,-kMountingBlockScrew34Pos,
+				-(sB3->GetDZ()-kMountingBlockScrew34Pos),
+					    new TGeoRotation("",90,90,90)));
+    vB3->AddNode(vM3, 4, new TGeoCombiTrans(0, kMountingBlockScrew34Pos,
+				-(sB3->GetDZ()-kMountingBlockScrew34Pos),
+					    new TGeoRotation("",90,90,90)));
     // left side
     t = -TMath::RadToDeg()*TMath::ATan2(
                                    sB0->GetX(0)-sB0->GetX(sB0->GetNvert()-1),
@@ -1046,26 +1070,121 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     z0 = sB0->GetZ(0)+sB3->GetDZ();
     rotrans = new TGeoCombiTrans("",x0,y0,z0,rot);
     vM0->AddNode(vB3,1,rotrans); // Put Mounting bracket on sector
+    // the screw heads and nuts
+    Double_t h = sM3->GetDz() + sD1->GetDz();
+    Double_t zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
+    vM0->AddNode(vD1, 1, new TGeoCombiTrans(x0+h*CosD(180+t), y0+h*SinD(180+t),
+					    z0+zt,
+					    new TGeoRotation("",90+t,90,90)));
+    h = sM3->GetDz() + sD2->GetDz() + ksecCthick2 + 0.06;
+    zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
+    vM0->AddNode(vD2, 1, new TGeoCombiTrans(x0+h*CosD(180+t), y0+h*SinD(180+t),
+					    z0+zt,
+					    new TGeoRotation("",90+t,90,90)));
+    Double_t loc[3],mas[3];
+    loc[0]=0;
+    loc[1]=-kMountingBlockScrew34Pos;
+    loc[2]=-(sB3->GetDZ()-kMountingBlockScrew34Pos);
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vD2, 2, new TGeoCombiTrans(mas[0]+h*CosD(180+t),
+					    mas[1]+h*SinD(180+t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vD2, 3, new TGeoCombiTrans(mas[0]+h*CosD(180+t),
+					    mas[1]+h*SinD(180+t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+
+    rot = new TGeoRotation("",t,180.0,0.0);// z & x axis rotation
     rotrans = new TGeoCombiTrans("",x0,y0,-z0,rot);
     vM0->AddNode(vB3,2,rotrans); // Put Mounting bracket on sector
+    h = sM3->GetDz() + sN3->GetZ(1);
+    zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
+    vM0->AddNode(vN3, 1, new TGeoCombiTrans(x0+h*CosD(180+t), y0+h*SinD(180+t),
+					   -z0-zt,
+					    new TGeoRotation("",90+t,90,90)));
+    h += ksecCthick2 + 0.06;
+    zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
+    vM0->AddNode(vN3, 2, new TGeoCombiTrans(x0+h*CosD(180+t), y0+h*SinD(180+t),
+					   -z0-zt,
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=-kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vN3, 3, new TGeoCombiTrans(mas[0]+h*CosD(180+t),
+					    mas[1]+h*SinD(180+t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vN3, 4, new TGeoCombiTrans(mas[0]+h*CosD(180+t),
+					    mas[1]+h*SinD(180+t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+
     t *= -1.0;
     rot = new TGeoRotation("",t,0.0,0.0); // z axis rotation
-  
     x0 = -0.5*(sB0->GetX(0)+sB0->GetX(sB0->GetNvert()-1))-3.5*
         sB3->GetDX()*TMath::Cos(t*TMath::DegToRad());
     y0 = 0.5*(sB0->GetY(0)+sB0->GetY(sB0->GetNvert()-1))-3.5*
         sB3->GetDX()*TMath::Sin(t*TMath::DegToRad());
     rotrans = new TGeoCombiTrans("",1.01*x0,y0,z0,rot);
     vM0->AddNode(vB3,3,rotrans); // Put Mounting bracket on sector
+    h = sM3->GetDz() + sN3->GetZ(1);
+    zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
+    vM0->AddNode(vN3, 5, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
+					    z0+zt,
+					    new TGeoRotation("",90+t,90,90)));
+    h += ksecCthick2 + 0.02;
+    zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
+    vM0->AddNode(vN3, 6, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
+					    z0+zt,
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=-kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vN3, 7, new TGeoCombiTrans(mas[0]-h*CosD(180-t),
+					    mas[1]+h*SinD(180-t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vN3, 8, new TGeoCombiTrans(mas[0]-h*CosD(180-t),
+					    mas[1]+h*SinD(180-t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+
+    rot = new TGeoRotation("",t,180.0,0.0); // z & x axis rotation
     rotrans = new TGeoCombiTrans("",1.01*x0,y0,-z0,rot);
     vM0->AddNode(vB3,4,rotrans); // Put Mounting bracket on sector
+    h = sM3->GetDz() + sD1->GetDz();
+    zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
+    vM0->AddNode(vD1, 2, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
+					   -z0-zt,
+					    new TGeoRotation("",90+t,90,90)));
+    h = sM3->GetDz() + sD2->GetDz() + ksecCthick2 + 0.02;
+    zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
+    vM0->AddNode(vD2, 4, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
+					   -z0-zt,
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=-kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vD2, 5, new TGeoCombiTrans(mas[0]-h*CosD(180-t),
+					    mas[1]+h*SinD(180-t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+    loc[1]=kMountingBlockScrew34Pos;
+    rotrans->LocalToMaster(loc,mas);
+    vM0->AddNode(vD2, 6, new TGeoCombiTrans(mas[0]-h*CosD(180-t),
+					    mas[1]+h*SinD(180-t),
+					    mas[2],
+					    new TGeoRotation("",90+t,90,90)));
+
     if(GetDebug(3)){
         vM0->PrintNodes();
         vA0->PrintNodes();
         vA1->PrintNodes();
         vB0->PrintNodes();
-        vB1->PrintNodes();
-        vB2->PrintNodes();
         vB3->PrintNodes();
         vTA0->PrintNodes();
         vTA1->PrintNodes();
@@ -3485,7 +3604,8 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
     coolmanifC->AddNode(setpinhead, 1, new TGeoCombiTrans( 0, ypos,-zpos,
 					  new TGeoRotation("",0,-90,0)));
 
-    ypos = tmp;
+    ypos = tmp - 8.e-5; // Avoid microscopic overlap
+    tmp = ypos;
     coolmanifA->AddNode(sectclip, 1, new TGeoTranslation( 0, ypos,-zpos));
     coolmanifC->AddNode(sectclip, 1, new TGeoCombiTrans ( 0, ypos,-zpos,
 					  new TGeoRotation("",-90,180,90)));
@@ -3608,7 +3728,7 @@ void AliITSv11GeometrySPD::CreateServices(TGeoVolume *moth) const
 
 
     // Finally put everything in the mother volume
-    radius = kCoolManifRPos;
+    radius = kCoolManifRPos + 1.e-5; // Avoid microscopic overlap
     zpos = kCoolManifZPos + manifblksh->GetDZ();
     for (Int_t i=0; i<10; i++) {
       theta = 36.*i;

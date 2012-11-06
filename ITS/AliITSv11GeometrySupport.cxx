@@ -1012,12 +1012,12 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   zpos = kHalfLengthCentral+kHalfLengthEndCap;
   vM->AddNode(endcapshield,1,
 	      new TGeoTranslation(0,0, zpos-kLittleZTrans));
-  vM->AddNode(endcapshield,2,
-	      new TGeoTranslation(0,0,-zpos-kLittleZTrans));
+  vM->AddNode(endcapshield,2,new TGeoCombiTrans(
+              0, 0,-zpos-kLittleZTrans, new TGeoRotation("",  0,180,0) ) );
   vM->AddNode(endcapshield,3,new TGeoCombiTrans(
-              0, 0, zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
+              0, 0, zpos-kLittleZTrans, new TGeoRotation("",180,  0,0) ) );
   vM->AddNode(endcapshield,4,new TGeoCombiTrans(
-              0, 0,-zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
+              0, 0,-zpos-kLittleZTrans, new TGeoRotation("",180,180,0) ) );
 
   xpos = omgendcapshape->GetX(13) + fillbarshape->GetDX();
   ypos = omgendcapshape->GetY(13) + fillbarshape->GetDY();
@@ -1025,7 +1025,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   vM->AddNode(fillerbar, 1, new TGeoTranslation( xpos, ypos, zpos));
   vM->AddNode(fillerbar, 2, new TGeoTranslation(-xpos, ypos, zpos));
   vM->AddNode(fillerbar, 3, new TGeoTranslation( xpos,-ypos, zpos));
-  vM->AddNode(fillerbar, 3, new TGeoTranslation(-xpos,-ypos, zpos));
+  vM->AddNode(fillerbar, 4, new TGeoTranslation(-xpos,-ypos, zpos));
   vM->AddNode(fillerbar, 5, new TGeoTranslation( xpos, ypos,-zpos));
   vM->AddNode(fillerbar, 6, new TGeoTranslation(-xpos, ypos,-zpos));
   vM->AddNode(fillerbar, 7, new TGeoTranslation( xpos,-ypos,-zpos));
