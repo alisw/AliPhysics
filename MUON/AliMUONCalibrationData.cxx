@@ -660,7 +660,7 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
         
         if ( messages ) 
         {
-          messages->Add(new TObjString(Form("%s:%s",hvChannelName->String().Data(),msg.Data())));
+          messages->Add(new TObjString(Form("%s %s",hvChannelName->String().Data(),msg.Data())));
         }
         
         if (!ok)

@@ -28,11 +28,13 @@ public:
 
   Bool_t SetDetector(const char* detName);
   
-  const char* DCSChannelNameFromAlias(const char* dcsAliasName) const;
+  TString DCSNameFromAlias(const char* dcsAlias) const;
 
-  const char* DCSAliasName(Int_t detElemId, Int_t sector=0, Int_t dcsMeasure=0) const;
+  TString DCSAliasFromName(const char* dcsName) const;
 
-  const char* DCSSwitchAliasName(Int_t detElemId, Int_t pcbNumber) const;
+  TString DCSAliasName(Int_t detElemId, Int_t sector=0, Int_t dcsMeasure=0) const;
+
+  TString DCSSwitchAliasName(Int_t detElemId, Int_t pcbNumber) const;
 
   Int_t DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const;
   
@@ -85,6 +87,9 @@ private:
     
   static const char* fgkDCSChannelSt345Pattern[]; ///< DCS Tracker Channel name template
   static const char* fgkDCSChannelSt12Pattern[]; ///< DCS Tracker Channel name template
+  static const char* fgkDCSQuadrantPattern[]; ///< DCS Tracker quadrant name template
+  static const char* fgkDCSChamberPattern[]; ///< DCS Tracker chamber name template
+  
   static const char* fgkDCSSwitchSt345Pattern; ///< DCS Tracker Switch name template
   static const char* fgkDCSSideTrackerName[]; ///< DCS Tracker Name of the side written in DCS
 

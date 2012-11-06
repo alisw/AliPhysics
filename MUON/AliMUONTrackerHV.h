@@ -16,6 +16,7 @@
 class TMultiGraph;
 class TMap;
 class TGraph;
+class AliMpDCSNamer;
 
 class AliMUONTrackerHV : public TObject
 {
@@ -32,8 +33,10 @@ public:
   void HVoff(const char* logfile="lhc11de.log", const char* outputBaseName="hvoff");
 
   void Plot(const char* dcsname=0x0, Bool_t withPatch=kFALSE);
-  
-  void ReportTrips();
+
+  void Print(Option_t* dcsname="") const;
+
+  void ReportTrips(Bool_t includeLowOnes=kFALSE);
   
   void Scan(Int_t verbose=0);
   
@@ -41,19 +44,22 @@ private:
 
   void ReadIntegers(const char* filename, std::vector<int>& integers);
 
-  TGraph* ShowValues(TMap* m, const char* name);
+  TGraph* GraphValues(TMap* m, const char* name);
   
   Int_t CheckMap(TMap* hvMap, Int_t runNumber, Bool_t verbose);
   
   void TimeAxis(TMultiGraph* g);
   
-  TMultiGraph* ShowHV(TMap* m, const char* dcsname);
+  TMultiGraph* GraphHV(TMap* m, const char* dcsname);
   
+  AliMpDCSNamer* DCSNamer() const;
+
 private:
   std::vector<int> fRunList; // input run list
   TString fOCDBPath; // ocdb path (raw:// by default)
+  mutable AliMpDCSNamer* fDCSNamer; // helper to name things
   
-  ClassDef(AliMUONTrackerHV,1) // Utility class to inspect MUON Tracker HV values
+  ClassDef(AliMUONTrackerHV,2) // Utility class to inspect MUON Tracker HV values
 };
 
 #endif
