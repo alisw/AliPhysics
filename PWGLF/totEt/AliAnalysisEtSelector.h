@@ -75,6 +75,9 @@ public:
     // From secondary vertex?
     virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
     
+    // Cluster is in correct detector
+    virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;
+    
 protected:
   
     const AliVEvent *fEvent; // Pointer to current event
