@@ -416,12 +416,11 @@ AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
         // check for approx. eta and phi range before we propagate..
         // TBD
 
-        AliEMCALTrack *emctrack = new AliEMCALTrack(*track);
-        if (!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) ) {
+        AliEMCALTrack emctrack(*track);
+        if (!emctrack.PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) ) {
             continue;
         }
-        emctrack->GetXYZ(trkPos);
-        delete emctrack;
+        emctrack.GetXYZ(trkPos);
 
         distX = clsPos[0]-trkPos[0];
         distY = clsPos[1]-trkPos[1];
