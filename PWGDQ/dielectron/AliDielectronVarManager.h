@@ -97,6 +97,7 @@ public:
     kNFclsTPCr,              // number of findable clusters in the TPC with more robust definition
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
+    kNcrossRowsTPC,          // number of crossed rows in the TPC
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -507,6 +508,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNFclsTPCr]      = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac]  = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
+  values[AliDielectronVarManager::kNcrossRowsTPC] = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kTPCsignalN]    = tpcSignalN;
   values[AliDielectronVarManager::kTPCsignalNfrac]= tpcNcls>0?tpcSignalN/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
@@ -706,10 +708,20 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
+  values[AliDielectronVarManager::kNcrossRowsTPC] = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
-  
+  values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
+  const UChar_t threshold = 5;
+  TBits tpcClusterMap = particle->GetTPCClusterMap();
+  UChar_t n=0; UChar_t j=0;
+  for(UChar_t i=0; i<8; ++i) {
+    n=0;
+    for(j=i*20; j<(i+1)*20 && j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
+    if(n>=threshold) values[AliDielectronVarManager::kTPCclsSegments] += 1.0;
+  }
+
   values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:-1.;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   values[AliDielectronVarManager::kFilterBit]     = (Double_t)particle->GetFilterMap();
