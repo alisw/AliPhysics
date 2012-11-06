@@ -276,12 +276,20 @@ void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* effi
     fgEntropyAPriori = new TVectorD(fgMaxParams);
   if (!fgEfficiency)
     fgEfficiency = new TVectorD(fgMaxParams);
-  if (!fgUnfoldedAxis)
+  if (fgUnfoldedAxis)
+  {
     delete fgUnfoldedAxis;
-  fgUnfoldedAxis = new TAxis(*(correlation->GetXaxis()));
-  if (!fgMeasuredAxis)
+    fgUnfoldedAxis = 0;
+  }
+  if (!fgUnfoldedAxis) 
+    fgUnfoldedAxis = new TAxis(*(correlation->GetXaxis()));
+  if (fgMeasuredAxis)
+  {
     delete fgMeasuredAxis;
-  fgMeasuredAxis = new TAxis(*(correlation->GetYaxis()));    
+    fgMeasuredAxis = 0;
+  }
+  if (!fgMeasuredAxis) 
+    fgMeasuredAxis = new TAxis(*(correlation->GetYaxis()));
 
   fgCorrelationMatrix->Zero();
   fgCorrelationCovarianceMatrix->Zero();
