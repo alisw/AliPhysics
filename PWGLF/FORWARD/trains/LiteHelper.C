@@ -81,7 +81,6 @@ struct LiteHelper : public ProofHelper
   LiteHelper(const TUrl& url, Int_t verbose)
     : ProofHelper(url, verbose), fChain(0)
   {
-    fOptions.Add("mc",       "Scan for MC files (galice,kinematics,trackrefs)");
     fOptions.Add("recursive","Recursive scan");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
     fOptions.Remove("dsname");
