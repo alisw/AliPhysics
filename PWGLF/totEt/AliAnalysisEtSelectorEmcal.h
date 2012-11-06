@@ -36,6 +36,8 @@ public:
 private:
   
     
+    Double_t CalcTrackClusterDistance(const Float_t clsPos[3], Int_t* trkMatchId) const;
+    
     AliAnalysisEtSelectorEmcal(); // Prohibited
     AliAnalysisEtSelectorEmcal(const AliAnalysisEtSelectorEmcal& other); // Prohibited
     AliAnalysisEtSelectorEmcal& operator=(const AliAnalysisEtSelectorEmcal& other); // Prohibited
