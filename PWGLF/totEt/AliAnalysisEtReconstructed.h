@@ -60,7 +60,6 @@ protected:
     Double_t fEMinCorrection; // Emin correction
     
     Double_t fRecEffCorrection; // Eff correction
-    Double_t CalcTrackClusterDistance(const Float_t pos[3],Int_t *trkMatchId, const AliESDEvent *event);
     
     TH2D *fClusterPosition; // Position of clusters
     

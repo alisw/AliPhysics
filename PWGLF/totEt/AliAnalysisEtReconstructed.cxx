@@ -125,12 +125,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         cluster->GetPosition(pos);
         TVector3 cp(pos);
 	
- 	Double_t distance = cluster->GetEmcCpvDistance();
         Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();
-        if ( cluster->IsEMCAL() && distance) {
-            distance = CalcTrackClusterDistance(pos, &trackMatchedIndex, event);
-        }
-        
 
         Bool_t matched = false;
 
@@ -390,50 +385,4 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistGammaEnergyAdded = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
 
 
-}
-
-Double_t
-AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
-        Int_t *trkMatchId,
-        const AliESDEvent *event)
-{ // calculate distance between cluster and closest track
-
-    Double_t trkPos[3] = {0,0,0};
-
-    Int_t bestTrkMatchId = -1;
-    Double_t distance = 9999; // init to a big number
-
-    Double_t dist = 0;
-    Double_t distX = 0, distY = 0, distZ = 0;
-
-    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
-        AliESDtrack *track = event->GetTrack(iTrack);
-        if (!track) {
-            AliError(Form("ERROR: Could not get track %d", iTrack));
-            continue;
-        }
-
-        // check for approx. eta and phi range before we propagate..
-        // TBD
-
-        AliEMCALTrack emctrack(*track);
-        if (!emctrack.PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) ) {
-            continue;
-        }
-        emctrack.GetXYZ(trkPos);
-
-        distX = clsPos[0]-trkPos[0];
-        distY = clsPos[1]-trkPos[1];
-        distZ = clsPos[2]-trkPos[2];
-        dist = TMath::Sqrt(distX*distX + distY*distY + distZ*distZ);
-
-        if (dist < distance) {
-            distance = dist;
-            bestTrkMatchId = iTrack;
-        }
-    } // iTrack
-
-    // printf("CalcTrackClusterDistance: bestTrkMatch %d origTrkMatch %d distance %f\n", bestTrkMatchId, *trkMatchId, distance);
-    *trkMatchId = bestTrkMatchId;
-    return distance;
 }
