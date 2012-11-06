@@ -9,14 +9,8 @@
 #include "AliAnalysisEtSelectorEmcal.h"
 #include "AliAnalysisEtCuts.h"
 #include "TParticle.h"
-void AliAnalysisEtSelectorEmcal::SetEvent(const AliESDEvent* event)
-{
-    fEvent = event;
-    if(!fInitialized) Init(event);
-}
 
 AliAnalysisEtSelectorEmcal::AliAnalysisEtSelectorEmcal(AliAnalysisEtCuts* cuts):AliAnalysisEtSelector(cuts)
-,fInitialized(kFALSE)
 {
 
 }
