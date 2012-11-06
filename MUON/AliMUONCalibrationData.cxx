@@ -237,7 +237,8 @@ Bool_t AliMUONCalibrationData::CheckHVGroup(TObjArray& values, Int_t first, Int_
 
 //______________________________________________________________________________
 Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
-                                             TString* msg)
+                                             TString* msg,
+                                             Bool_t dryRun)
 {
   /// We do here a little bit of massaging of the HV values, if needed.
   ///
@@ -247,6 +248,8 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   ///
   /// This is to avoid both the "ramp-down-before-end-of-run" and the
   /// "ramp-up-after-start-of-run" syndroms...
+  ///
+  /// Use dryRun = kTRUE to fill the messages *without* altering the values
   ///
   /// Return kFALSE is the kind of HV (trouble) case we have here
   /// has not been identified...
@@ -307,7 +310,8 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   Int_t nEndRD(0);
   Int_t nTripRD(0);
   Int_t nFluct(0);
-  UInt_t tripTime(0);
+  TObjArray trips;
+  trips.SetOwner(kTRUE);
   
   while ( ( p = static_cast<AliMpIntPair*>(nextGroup()) ) )
   {
@@ -359,8 +363,8 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
       if ( d->GetFloat() < AliMpDCSNamer::TrackerHVOFF() )
       {
         ++nTripRD;
-        AliDCSValue* tripStart = static_cast<AliDCSValue*>(values.At(p->GetFirst()));
-        tripTime = tripStart->GetTimeStamp();
+        AliDCSValue* tripStart = static_cast<AliDCSValue*>(values.At(p->GetFirst()));        
+        trips.Add(new AliMpIntPair(tripStart->GetTimeStamp(),TMath::Nint(tripStart->GetFloat())));
       }
     }
     else
@@ -442,6 +446,11 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   }
   else if ( nTripRD > 0 )
   {
+    const Double_t HVLOWTRIP(600); // a trip below this value is considered a "low trip"
+    // i.e. one starting for a non-operational voltage
+    
+    internalMsg += Form("NT:%d ",nTripRD);
+    
     if ( nRU > 0 && nRD > 0 )
     {
       hvCase = "F";
@@ -450,56 +459,90 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
     {
       hvCase = "E";
     }
-    internalMsg += "TRIP ";
-    MarkForDeletion(indices,0,values.GetLast());
-    values.Add(new AliDCSValue(static_cast<Float_t>(0),meanTimeStamp));
+    
+    for ( Int_t iTrip = 0; iTrip <= trips.GetLast(); ++iTrip )
+    {
+      AliMpIntPair* tripPair = static_cast<AliMpIntPair*>(trips.At(iTrip));
+      TString tripType("TRIP");
+      if ( tripPair->GetSecond() < HVLOWTRIP)
+      {
+        tripType = "LOWTRIP";
+      }
+
+      internalMsg += Form("%s SV:%d TS:%d ",tripType.Data(),tripPair->GetSecond(),tripPair->GetFirst());
+    }
+    
+    // we put here the TRIP value as SV:value
+    // for cases where there's a drop in voltage but the starting point was
+    // below operational voltage, so strictly speaking it's *not* a trip, but
+    // more a big fluctuation
+    if ( !dryRun )
+    {
+      MarkForDeletion(indices,0,values.GetLast());
+      values.Add(new AliDCSValue(static_cast<Float_t>(0),meanTimeStamp));
+    }
   }
   else if ( nStartRU > 0 && nRU == 0 && nRD == 0 && nEndRD == 0 )
   {
     hvCase = "C";
-    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
-    MarkForDeletion(indices,a,b);
+    if (!dryRun)
+    {
+      sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+      MarkForDeletion(indices,a,b);
+    }
   }
   else if ( nStartRU > 0 && nEndRD > 0 && nRD == 0 && nRU == 0 )
   {
     hvCase = "D";
-    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
-    MarkForDeletion(indices,a,b-1);
-    Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
-    sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
-           "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
-    MarkForDeletion(indices,a+1,b);
+    if (!dryRun)
+    {
+      sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+      MarkForDeletion(indices,a,b-1);
+      Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
+      sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
+             "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+      MarkForDeletion(indices,a+1,b);
+    }
   }
   else if ( nEndRD > 0 && nStartRU == 0 && nRU == 0 && nRD == 0 )
   {
     hvCase = "B";
-    Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
-    sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
-           "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
-    MarkForDeletion(indices,a,b);
+    if  (!dryRun)
+    {
+      Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
+      sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
+             "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+      MarkForDeletion(indices,a,b);
+    }
   }
   else if ( nFluct > 0 )
   {
     hvCase = "G";
-    TObjArray* af = internalMsg.Tokenize(" ");
-    TIter next(af);
-    TObjString* str;
-    while ( ( str = static_cast<TObjString*>(next()) ) )
+    if (!dryRun)
     {
-      TString s(str->String());
-      if ( s.BeginsWith("FLUCT") )
+      TObjArray* af = internalMsg.Tokenize(" ");
+      TIter next(af);
+      TObjString* str;
+      while ( ( str = static_cast<TObjString*>(next()) ) )
       {
-        sscanf(s.Data(),"FLUCT%d[%d:%d]",&dummy,&a,&b);
-        MarkForDeletion(indices,a,b);
+        TString s(str->String());
+        if ( s.BeginsWith("FLUCT") )
+        {
+          sscanf(s.Data(),"FLUCT%d[%d:%d]",&dummy,&a,&b);
+          MarkForDeletion(indices,a,b);
+        }
       }
+      delete af;
     }
-    delete af;
   }
   else if ( nEndAndShortRU > 0 && nStartRU == 0 && nRU == 0 && nRD == 0 && nEndRD == 0 )
   {
     hvCase = "H";
-    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
-    MarkForDeletion(indices,a,b);
+    if (!dryRun)
+    {
+      sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+      MarkForDeletion(indices,a,b);
+    }
   }
   else
   {
@@ -513,19 +556,25 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
     {
       hvCase = "Z";
     }
-    MarkForDeletion(indices,1,nvalues-1);
-  }
-  
-  for ( Int_t i = 0; i < nvalues; ++i ) 
-  {
-    if ( indices[i] )
+    if (!dryRun)
     {
-      values.RemoveAt(i);
+      MarkForDeletion(indices,1,nvalues-1);
     }
   }
   
-  values.Compress();
-
+  if (!dryRun)
+  {
+    for ( Int_t i = 0; i < nvalues; ++i )
+    {
+      if ( indices[i] )
+      {
+        values.RemoveAt(i);
+      }
+    }
+  
+    values.Compress();
+  }
+  
   delete[] indices;
   
   if ( !values.GetEntries() )
@@ -535,22 +584,25 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
     hvCase = "OTHER";
   }
 
-  // take the max of the remaining values
-  TIter nextA(&values);
-  AliDCSValue* val;
-  Float_t maxval(-9999);
-  
-  while ( ( val = static_cast<AliDCSValue*>(nextA()) ) )
+  if (!dryRun)
   {
-    if ( val->GetFloat() > maxval )
+    // take the max of the remaining values
+    TIter nextA(&values);
+    AliDCSValue* val;
+    Float_t maxval(-9999);
+  
+    while ( ( val = static_cast<AliDCSValue*>(nextA()) ) )
     {
-      maxval = val->GetFloat();
+      if ( val->GetFloat() > maxval )
+      {
+        maxval = val->GetFloat();
+      }
     }
+  
+    values.Clear();
+  
+    values.Add(new AliDCSValue(maxval,meanTimeStamp));
   }
-  
-  values.Clear();
-  
-  values.Add(new AliDCSValue(maxval,meanTimeStamp));
   
   // once the case is inferred, add a "CASE:%10d",hvCase.Data()
   // to the msg
@@ -558,11 +610,6 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   
   internalMsg += Form("CASE:%s",hvCase.Data());
  
-  if ( tripTime > 0 )
-  {
-    internalMsg += Form(" TS:%u",tripTime);
-  }
-  
   if (msg) *msg = internalMsg.Data();
   
   return hvCase=="OTHER" ? kFALSE : kTRUE;
@@ -573,9 +620,16 @@ TMap*
 AliMUONCalibrationData::CreateHV(Int_t runNumber, 
                                  Int_t* startOfValidity, 
                                  Bool_t patched,
-                                 TList* messages)
+                                 TList* messages,
+                                 Bool_t dryRun)
 {
   /// Create a new HV map from the OCDB for a given run
+  ///
+  /// dryRun is only usefull with patched=kTRUE and non-empty messages) :
+  /// it allow to get the list of messages without altering the values at all
+  /// (A patch without a patch, so to speak...)
+  ///
+  
   TMap* hvMap = dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
 
   if (!hvMap) return 0x0;
@@ -602,7 +656,7 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
         TString msg;
         
         AliDebugClass(1,Form("channel %s",name.Data()));
-        Bool_t ok = PatchHVValues(*values,&msg);
+        Bool_t ok = PatchHVValues(*values,&msg,dryRun);
         
         if ( messages ) 
         {

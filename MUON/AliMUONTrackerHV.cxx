@@ -36,6 +36,8 @@
 #include "TCanvas.h"
 #include "AliMUONCalibrationData.h"
 #include "AliGRPObject.h"
+#include <map>
+#include <algorithm>
 
 ClassImp(AliMUONTrackerHV)
 
@@ -489,13 +491,21 @@ AliMUONTrackerHV::ReportTrips()
     AliInfo(Form("RUN %09d - %d trip%c",runNumber,ntrips,(ntrips>1 ? 's':' ')));
     
     next.Reset();
+    std::map<int,std::string> report;
     
     while ( ( msg = static_cast<TObjString*>(next())) )
     {
       if ( msg->String().Contains("TRIP") )
       {
-        AliInfo(msg->String().Data());        
+          Int_t index = msg->String().Index("TS:");
+          UInt_t timeStamp = TString(msg->String()(index+strlen("TS:"),msg->String().Length()-index)).Atoi();
+        report[timeStamp] = msg->String().Data();
       }
+    }
+
+    for ( std::map<int,std::string>::const_iterator it = report.begin(); it != report.end(); ++it )
+    {
+      AliInfo(Form("%s %s",TTimeStamp(it->first).AsString("s"),it->second.c_str()));
     }
   }
 }
