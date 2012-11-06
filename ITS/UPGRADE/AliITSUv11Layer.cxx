@@ -359,7 +359,7 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
 
 
   // Now build up the layer
-  alpha = 360/fNLadders;
+  alpha = 360./fNLadders;
   Double_t r = fLayRadius + ((TGeoBBox*)laddVol->GetShape())->GetDY();
   for (Int_t j=0; j<fNLadders; j++) {
     Double_t phi = j*alpha + fPhi0;
