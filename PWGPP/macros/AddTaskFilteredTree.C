@@ -1,4 +1,4 @@
-AliAnalysisTaskFilteredTree* AddTaskFilteredTree(TString outputFile="")
+AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
