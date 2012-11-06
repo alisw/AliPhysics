@@ -99,5 +99,8 @@ DrawEmpirical(const char* corrs="EmpiricalCorrection.root")
   g->SetMarkerSize(1.1);
   // DrawMG(orfmdfmd);
   // DrawMG(orfmdfull);
+
+  c->SaveAs("EmpericalCorrection.png"); 
+
 }
 
