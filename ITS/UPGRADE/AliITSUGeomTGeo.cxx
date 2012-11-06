@@ -655,7 +655,7 @@ void AliITSUGeomTGeo::CreateT2LMatrices()
     matSens->LocalToMaster(loc,glo);
     rotm = matSens->GetRotationMatrix();
     Double_t al = -ATan2(rotm[1],rotm[0]);
-    double sn=Sin(al), cs=Cos(al), r=glo[0]*sn-glo[1]*cs, x=r*sn, y=r*cs; // sensor plane PCA to origin
+    double sn=Sin(al), cs=Cos(al), r=glo[0]*sn-glo[1]*cs, x=r*sn, y=-r*cs; // sensor plane PCA to origin
     TGeoHMatrix* t2l = new TGeoHMatrix();
     t2l->RotateZ(ATan2(y,x)*RadToDeg()); // rotate in direction of normal to the sensor plane
     t2l->SetDx(x);
