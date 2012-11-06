@@ -1232,6 +1232,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(const TObjArray *arr)
   delete clrow;
   LoadOuterSectors();
   LoadInnerSectors();
+  ApllyTailCancellation();
   return 0;
 }
 
@@ -1462,6 +1463,58 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
     cluster->SetZ(posC[2]);
   }
 }
+
+void  AliTPCtrackerMI::ApllyTailCancellation(){
+  //
+  // Correct the cluster charge for the tail from the previous clusters
+  // The TimeResponse function accessed via  AliTPCcalibDB (TPC/Calib/IonTail)
+  //
+  //
+
+  for (Int_t secType=0; secType<2; secType++){  //loop inner or outer sector
+    //
+    //
+    for (Int_t sec = 0;sec<fkNOS;sec++){        //loop overs sectors
+      //
+      //
+      AliTPCtrackerSector &sector= (secType==0)?fInnerSec[sec]:fOuterSec[sec];
+      //
+      Int_t nrows = sector.GetNRows();      
+      for (Int_t row = 0;row<nrows;row++){      //loop over rows
+	AliTPCtrackerRow&  tpcrow = sector[row];            
+	Int_t ncl = tpcrow.GetN1();
+	//
+	for (Int_t icl0=0; icl0<ncl;icl0++){  // first loop over clusters
+	  AliTPCclusterMI *cl0= (tpcrow.GetCluster1(icl0));	  
+	  if (!icl0) continue;
+	  for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters
+	    AliTPCclusterMI *cl1= (tpcrow.GetCluster1(icl1));
+	    if (!icl1) continue;
+	    if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>2) continue; // no contribution if far away in pad direction
+	    if (cl1->GetTimeBin()> cl0->GetTimeBin()) continue;  // no contibution to the tail if later
+	    Double_t ionTailMax=0; // 
+	    Double_t ionTailTotal=0; // 
+	    //ionTail=????'
+	    cl0->SetQ(cl0->GetQ()+ionTailTotal);
+	    cl0->SetMax(cl0->GetMax()+ionTailMax);
+	    if (AliTPCReconstructor::StreamLevel()>5) {
+	      TTreeSRedirector &cstream = *fDebugStreamer;
+	      cstream<<"IonTail"<<
+		"cl0.="<<cl0<<      // cluster 0 (to be corrected)
+		"cl1.="<<cl1<<      // cluster 1 (previous cluster)
+		"ionTailTotal="<<ionTailTotal<< // ion Tail from cluster 1 contribution to cluster0
+		"ionTailMax="<<ionTailMax<< // ion Tail from cluster 1 contribution to cluster0
+		"\n";
+	    }// dump the results to the debug streamer if in debug mode
+	  }//end of secon loop over clusters
+	}//end of first loop over cluster
+      }//end of loop over rows
+    }//end of loop over sectors
+  }//end of loop over IROC/OROC
+}
+
+
+
 
 //_____________________________________________________________________________
 Int_t AliTPCtrackerMI::LoadOuterSectors() {

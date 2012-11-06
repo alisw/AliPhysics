@@ -55,6 +55,7 @@ public:
   Int_t LoadOuterSectors();
   virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
+  void ApllyTailCancellation();
   //
   void FillESD(const TObjArray* arr);
   void DeleteSeeds();
