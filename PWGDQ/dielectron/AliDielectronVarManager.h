@@ -94,10 +94,9 @@ public:
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
-    kNFclsTPCr,              // number of findable clusters in the TPC with more robust definition
+    kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
-    kNcrossRowsTPC,          // number of crossed rows in the TPC
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -508,7 +507,6 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNFclsTPCr]      = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac]  = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
-  values[AliDielectronVarManager::kNcrossRowsTPC] = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kTPCsignalN]    = tpcSignalN;
   values[AliDielectronVarManager::kTPCsignalNfrac]= tpcNcls>0?tpcSignalN/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
@@ -708,7 +706,6 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
-  values[AliDielectronVarManager::kNcrossRowsTPC] = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
