@@ -38,7 +38,7 @@ void drawLr(int layMin=1,int layMax=1)
   //
   double rmax = 0;
   TGeoHMatrix *msens=0, *mttr=0;
-  double  loc[3]={0,0,0},glo[3],glo1[3],glo2[3],trk[3];
+  double  loc[3]={0,0,0},gloC[3],glo[3],glo1[3],glo2[3],trk[3];
   //
   Int_t mod=0;
 
@@ -57,12 +57,15 @@ void drawLr(int layMin=1,int layMax=1)
       mttr->Print();
       //
       loc[0]=loc[1]=loc[2] = 0;
-      msens->LocalToMaster(loc,glo);
+      msens->LocalToMaster(loc,gloC);
       mttr->MasterToLocal(loc,trk);  
       printf("SensorCenter in Lab: ");
-      for (int i=0;i<3;i++) printf("%+9.4f ",glo[i]); printf("\n");
+      for (int i=0;i<3;i++) printf("%+9.4f ",gloC[i]); printf("\n");
       printf("SensorCenter in TRK: ");
       for (int i=0;i<3;i++) printf("%+9.4f ",trk[i]); printf("\n");
+      //
+      double r = TMath::Sqrt(gloC[0]*gloC[0]+gloC[1]*gloC[1]);
+      if (rmax<r) rmax = r;
       //
       loc[0]=-segm->Dx()/2;
       msens->LocalToMaster(loc,glo);
@@ -71,24 +74,19 @@ void drawLr(int layMin=1,int layMax=1)
       TArrow* linS = new TArrow(glo[0],glo[1],glo1[0],glo1[1],0.012);  // sensor with pos local X direction 
       linS->SetLineColor((ild+1)%4+1); linS->Draw(); 
       //
-      for (int j=3;j--;) glo[j] = 0.5*(glo[j]+glo1[j]);
-      //
-      double r = TMath::Sqrt(glo[0]*glo[0]+glo[1]*glo[1]);
-      if (rmax<r) rmax = r;
-
       loc[0]=0;
       loc[1]=rmax*0.1;
       msens->LocalToMaster(loc,glo2);
-
+      //
       //lin->Print(); 
-      linS = new TArrow(glo[0],glo[1],glo2[0],glo2[1],0.012);  // pos local Y axis
+      linS = new TArrow(gloC[0],gloC[1],glo2[0],glo2[1],0.012);  // pos local Y axis
       linS->SetLineColor((ild+1)%4+1); linS->Draw(); 
       //
-      TMarker* mrk = new TMarker(glo[0],glo[1],31);
+      TMarker* mrk = new TMarker(gloC[0],gloC[1],31);
       mrk->SetMarkerColor((ild+1)%4+1);
       mrk->Draw();
       //
-      TLatex *latx = new TLatex( (glo[0])*1.2,(glo[1])*1.2,Form("%d",ild));
+      TLatex *latx = new TLatex( gloC[0]*1.2,gloC[1]*1.2,Form("%d",ild));
       latx->SetTextColor((ild+1)%4+1);
       latx->SetTextSize(0.02);
       latx->Draw();
@@ -110,7 +108,14 @@ void drawLr(int layMin=1,int layMax=1)
       linN->SetLineColor((ild+1)%4+1); 
       linN->Draw(); 
       //
-      // direction of X axis of the tracking plane
+      // connect tracking and local frame
+      TLine* linNP = new TLine(gloC[0],gloC[1],glo1[0],glo1[1]); 
+      linNP->SetLineWidth(1);
+      linNP->SetLineStyle(2);
+      linNP->SetLineColor((ild+1)%4+1); 
+      linNP->Draw(); 
+      //
+       // direction of X axis of the tracking plane
       trk[0]=rmax*0.1;
       mttr->LocalToMaster(trk,loc); 
       msens->LocalToMaster(loc,glo); 
