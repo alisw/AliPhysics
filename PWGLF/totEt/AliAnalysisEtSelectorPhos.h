@@ -23,16 +23,16 @@ public:
     virtual ~AliAnalysisEtSelectorPhos();
     
     virtual TRefArray* GetClusters();
-    virtual Bool_t CutMinEnergy(const AliESDCaloCluster& cluster) const;
-    virtual Bool_t CutMinEnergy(const TParticle& part) const;
-    virtual Bool_t CutDistanceToBadChannel(const AliESDCaloCluster& cluster) const;
-    virtual Bool_t CutTrackMatching(const AliESDCaloCluster& cluster) const;
+    virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster& cluster) const;
+    virtual Bool_t PassMinEnergyCut(const TParticle& part) const;
+    virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const;
+    virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t CutGeometricalAcceptance(const TParticle& part) const;    
     virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part) const;    
     virtual void Init() {}
     virtual Int_t Init(const AliESDEvent *ev);
 
-    virtual void SetEvent(const AliESDEvent* event);
+    virtual Bool_t IsDetectorCluster(const AliESDCaloCluster& cluster) const {return cluster.IsPHOS();}
     
 private:
 

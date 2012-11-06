@@ -393,7 +393,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	}
 	
         // Check for reasonable (for now neutral and singly charged) charge on the particle
-        if (fSelector->CutNeutralMcParticle(iPart,*stack,*pdg))
+        if (fSelector->IsNeutralMcParticle(iPart,*stack,*pdg))
         {
 
             fMultiplicity++;
@@ -478,7 +478,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     {
                         fNeutralMultiplicity++;
                         fTotNeutralEt += et;
-                        if(fSelector->CutMinEnergy(*part))
+                        if(fSelector->PassMinEnergyCut(*part))
                         {
                             fTotNeutralEtAfterMinEnergyCut += et;
                         }
@@ -620,7 +620,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	{
 	  
 	 
-	  if(fSelector->CutDistanceToBadChannel(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
+	  if(fSelector->PassDistanceToBadChannelCut(*caloCluster))//&&fSelector->CutGeometricalAcceptance(*(stack->Particle(primIdx))))
 	  {
 //	    std::cout << "Gamma primary: " << primIdx << std::endl;
 	    foundGammas.push_back(primIdx); 
@@ -628,10 +628,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  
 	}
         fCutFlow->Fill(cf++);
-        if(!fSelector->CutDistanceToBadChannel(*caloCluster)) continue;
+        if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
         Double_t clEt = CalculateTransverseEnergy(*caloCluster);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
-        if(!fSelector->CutMinEnergy(*caloCluster)) continue;
+        if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
         fCutFlow->Fill(cf++);
         Float_t pos[3];
 	//PrintFamilyTree(
@@ -679,7 +679,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	pdg = primPart->GetPDG(0);
 	code = primPart->GetPdgCode();
         //if (TMath::Abs(caloCluster->GetTrackDx()) < 5 && TMath::Abs(caloCluster->GetTrackDz()) < 5)
-        if(!fSelector->CutTrackMatching(*caloCluster))
+        if(!fSelector->PassTrackMatchingCut(*caloCluster))
         {
 	    fPrimaryMatched = true;
             if (pdg->Charge() != 0)

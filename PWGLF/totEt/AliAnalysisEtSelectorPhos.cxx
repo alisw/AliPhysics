@@ -80,21 +80,21 @@ Int_t AliAnalysisEtSelectorPhos::Init(const AliESDEvent* event)
   return 0;
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const AliESDCaloCluster& cluster) const
+Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(const AliESDCaloCluster& cluster) const
 {
   
 //    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
   return cluster.E() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const TParticle& part) const
+Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(const TParticle& part) const
 {
 //    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
     return part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
 
-Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluster& cluster) const
+Bool_t AliAnalysisEtSelectorPhos::PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const
 { // cut distance to bad channel
   if(!fMatrixInitialized)
   {
@@ -199,7 +199,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluste
 
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& cluster) const
+Bool_t AliAnalysisEtSelectorPhos::PassTrackMatchingCut(const AliESDCaloCluster& cluster) const
 { // cut track matching
 
   if(!fMatrixInitialized)
