@@ -196,10 +196,10 @@ protected:
 		     TList*      truthlist);
   protected: 
     TH2D*           fSumTruth;    //  Sum of primary histograms
-    ClassDef(CentralityBin,1); // A centrality bin     
+    ClassDef(CentralityBin,2); // A centrality bin     
   };
   Bool_t fHasData; // whether we actually have data or not 
-  ClassDef(AliMCTruthdNdetaTask,1); // Determine multiplicity in forward region
+  ClassDef(AliMCTruthdNdetaTask,2); // Determine multiplicity in forward region
 };
 
 #endif

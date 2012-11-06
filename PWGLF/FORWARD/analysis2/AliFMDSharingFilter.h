@@ -46,7 +46,7 @@ class AliFMDFloatMap;
  *    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
  *      signals before and after the filter.  
  *    - For each ring (see above), an array of distributions of number of 
- *      hit strips for each vertex bin (if enabled - see Init method)
+ *      hit strips for each vertex bin (if enabled - see SetupForData method)
  * 
  *
  * @ingroup pwglf_forward_algo 
@@ -100,7 +100,7 @@ public:
    * 
    * @param axis Default eta axis from parent task 
    */
-  void Init(const TAxis& axis);
+  void SetupForData(const TAxis& axis);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -167,7 +167,7 @@ public:
    * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
+  virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);
   
   /** 
    * Define the output histograms.  These are put in a sub list of the
@@ -176,7 +176,7 @@ public:
    * 
    * @param dir Directory to add to 
    */
-  virtual void DefineOutput(TList* dir);
+  virtual void CreateOutputObjects(TList* dir);
   /** 
    * Print information
    * 
@@ -278,14 +278,14 @@ protected:
      * 
      * @param dir where to store 
      */
-    void Output(TList* dir);
+    void CreateOutputObjects(TList* dir);
     /** 
      * Scale the histograms to the total number of events 
      * 
      * @param nEvents Number of events 
      * @param dir     Where the output is 
      */
-    void ScaleHistograms(const TList* dir, Int_t nEvents);
+    void Terminate(const TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter
     TH1D*     fAfter;        // Distribution of signals after filter
     TH1D*     fSingle;       // Distribution of 1 signal after filter
@@ -300,7 +300,7 @@ protected:
     TH2D*     fSum;          // Summed signal 
     TH1D*     fHits;         // Distribution of hit strips. 
     Int_t     fNHits;        // Number of hit strips per event
-    ClassDef(RingHistos,1);
+    ClassDef(RingHistos,2);
   };
   /** 
    * Get the ring histogram container 
@@ -447,7 +447,7 @@ protected:
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
   TArrayI  fExtraDead;      // List of extra dead channels
-  ClassDef(AliFMDSharingFilter,5); //
+  ClassDef(AliFMDSharingFilter,6); //
 };
 
 #endif

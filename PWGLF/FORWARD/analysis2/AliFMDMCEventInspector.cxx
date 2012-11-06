@@ -127,7 +127,7 @@ AliFMDMCEventInspector::operator=(const AliFMDMCEventInspector& o)
 
 //____________________________________________________________________
 void
-AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
+AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
 {
   // 
   // Initialize the object 
@@ -135,7 +135,7 @@ AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
-  AliFMDEventInspector::Init(vtxAxis);
+  AliFMDEventInspector::SetupForData(vtxAxis);
 
   Int_t    maxPart = 450;
   Int_t    maxBin  = 225;

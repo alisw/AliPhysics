@@ -161,10 +161,10 @@ protected:
 		     TList*      mclist,
 		     TList*      truthlist);
   protected: 
-    ClassDef(CentralityBin,2); // A centrality bin     
+    ClassDef(CentralityBin,3); // A centrality bin     
   };
 
-  ClassDef(AliForwarddNdetaTask,2); // Determine multiplicity in forward region
+  ClassDef(AliForwarddNdetaTask,3); // Determine multiplicity in forward region
 };
 
 #endif

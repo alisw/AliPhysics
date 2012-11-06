@@ -205,7 +205,7 @@ protected:
      * 
      * @param list List to put output in 
      */
-    void DefineOutput(TList* list);
+    void CreateOutputObjects(TList* list);
     /** 
      * Calculate the background correction
      * 
@@ -223,7 +223,7 @@ protected:
      * @param iVz Vertex bin
      * @param map Corrections map 
      */
-    void Finish(const TList*            i, 
+    void Terminate(const TList*            i, 
 		TList*                  o,
 		UShort_t                iVz, 
 		AliFMDCorrSecondaryMap* map);
@@ -232,7 +232,7 @@ protected:
     TH2D*                  fPrimary;  // Cache or primary 
     TH1D*                  fCounts;   // Event count 
 
-    ClassDef(VtxBin,1); // Vertex bin 
+    ClassDef(VtxBin,2); // Vertex bin 
   };
   /** 
    * Define our vertex bins 
@@ -254,7 +254,7 @@ protected:
   TAxis      fEtaAxis;      // Eta axis 
   TList*     fList;         // Output list 
 
-  ClassDef(AliForwardMCCorrectionsTask,1) // Forward corrections class
+  ClassDef(AliForwardMCCorrectionsTask,2) // Forward corrections class
 };
 
 #endif

@@ -70,10 +70,11 @@ AliFMDEventInspector::AliFMDEventInspector()
     fUseV0AND(false),
     fMinPileupContrib(3), 
   fMinPileupDistance(0.8),
-    fUseDisplacedVertices(false),
+  fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
-  fBgWords()
+  fBgWords(),
+  fCentMethod("V0M")
 {
   // 
   // Constructor 
@@ -111,7 +112,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
-  fBgWords()
+  fBgWords(),
+  fCentMethod("V0M")
 {
   // 
   // Constructor 
@@ -152,7 +154,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fUseDisplacedVertices(o.fUseDisplacedVertices),
     fDisplacedVertex(o.fDisplacedVertex),
   fCollWords(),
-  fBgWords()
+  fBgWords(),
+  fCentMethod(o.fCentMethod)
 {
   // 
   // Copy constructor 
@@ -215,6 +218,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fMinPileupDistance     = o.fMinPileupDistance;
   fUseDisplacedVertices  = o.fUseDisplacedVertices;
   fDisplacedVertex       = o.fDisplacedVertex;
+  fCentMethod            = o.fCentMethod;
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -228,6 +232,29 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHStatus)      fList->Add(fHStatus);
   }
   return *this;
+}
+
+//____________________________________________________________________
+void 
+AliFMDEventInspector::SetCentralityMethod(ECentMethod m)
+{
+  switch (m) { 
+  case kV0Multiplicity: fCentMethod = "VOM"; break; // VZERO multiplicity 
+  case kV0Amplitude:	fCentMethod = "V0A"; break; // VZERO amplitude    
+  case kV0Charge: 	fCentMethod = "V0C"; break; // VZERO charge	     
+  case kFMDRough: 	fCentMethod = "FMD"; break; // FMD scaled energy l
+  case kNTracks: 	fCentMethod = "TRK"; break; // Number of tracks   
+  case kLTracks: 	fCentMethod = "TKL"; break; // Number of tracks   
+  case kCL0: 		fCentMethod = "CL0"; break; // 		     
+  case kCL1: 		fCentMethod = "CL1"; break; // 		     
+  case kCND: 		fCentMethod = "CND"; break; // 		     
+  case kNParticles:     fCentMethod = "NPA"; break; // Neutral particles  
+  case kNeutrons:       fCentMethod = "ZNA"; break; // ZDC neutron amplitu
+  case kV0vsFMD: 	fCentMethod = "V0MvsFMD"; break; // VZERO versus FMD   
+  case kV0vsNTracks: 	fCentMethod = "TKLvsVOM"; break; // Tracks versus VZERO
+  case kZEMvsZDC:	fCentMethod = "ZEMvsZDC"; break; // ZDC		     
+  default:              fCentMethod = "V0M"; break;
+  }
 }
 
 //____________________________________________________________________
@@ -316,7 +343,7 @@ AliFMDEventInspector::CacheConfiguredTriggerClasses(TList& cache,
 
 //____________________________________________________________________
 void
-AliFMDEventInspector::Init(const TAxis& vtxAxis)
+AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
 {
   // 
   // Initialize the object - this is called on the first seen event. 
@@ -546,7 +573,7 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
 
 //____________________________________________________________________
 void
-AliFMDEventInspector::DefineOutput(TList* dir)
+AliFMDEventInspector::CreateOutputObjects(TList* dir)
 {
   // 
   // Define the output histograms.  These are put in a sub list of the
@@ -706,7 +733,7 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
   AliCentrality* centObj = const_cast<AliESDEvent&>(esd).GetCentrality();
   if (!centObj)  return true;
 
-  cent = centObj->GetCentralityPercentile("V0M");  
+  cent = centObj->GetCentralityPercentile(fCentMethod);  
   qual = centObj->GetQuality();
 
   return true;
@@ -1202,8 +1229,9 @@ AliFMDEventInspector::Print(Option_t*) const
 	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
 	    << ind << " CMS energy per nucleon: " << sNN << '\n'
 	    << ind << " Field:                  " <<  field << '\n'
-	    << ind << " Satellite events:       " << fUseDisplacedVertices 
-	    << "\n" << std::noboolalpha;
+	    << ind << " Satellite events:       " << fUseDisplacedVertices<<'\n'
+	    << ind << " Centrality method:      " << fCentMethod << '\n'
+	    << std::noboolalpha;
   if (!fCentAxis) { std::cout << std::flush; return; }
   Int_t nBin = fCentAxis->GetNbins();
   std::cout << ind << " Centrality axis:        " << nBin << " bins"

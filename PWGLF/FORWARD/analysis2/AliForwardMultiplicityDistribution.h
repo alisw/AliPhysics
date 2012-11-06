@@ -66,7 +66,7 @@ public:
     /**
      *  Define outputs of a single eta bin
      */
-    virtual void DefineOutputs(TList* cont,  Int_t max);
+    virtual void CreateOutputObjectss(TList* cont,  Int_t max);
     /**
      * Process a single eta bin
      */
@@ -86,7 +86,7 @@ public:
                                 // BinContent of 1 shows a hole, and BinContent of 10 shows data coverage
     TH2D*    fVtxZvsNdataBins;  // VtxZ vs. number of data acceptance bins (normalised to the eta range) 
     
-    ClassDef(Bin,1);  // Manager of data 
+    ClassDef(Bin,2);  // Manager of data 
   };
   /**
    * Create Output Objects
@@ -132,7 +132,7 @@ protected:
   Int_t  fHighCent;  // upper centrality limit
   Int_t  fNBins;     // multiplicity axis' runs from 0 to fNbins
   TH1D*  fCent;      // centrality
-  ClassDef(AliForwardMultiplicityDistribution, 1); 
+  ClassDef(AliForwardMultiplicityDistribution, 2); 
 };
 
 #endif

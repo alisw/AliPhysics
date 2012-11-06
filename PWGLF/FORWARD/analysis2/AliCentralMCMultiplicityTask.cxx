@@ -106,7 +106,7 @@ void AliCentralMCMultiplicityTask::UserCreateOutputObjects()
   ah->AddBranch("AliAODCentralMult", &obj);
 
   
-  fTrackDensity.DefineOutput(fList);
+  fTrackDensity.CreateOutputObjects(fList);
 
 }
 //____________________________________________________________________

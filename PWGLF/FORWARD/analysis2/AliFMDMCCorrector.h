@@ -116,7 +116,7 @@ public:
    * 
    * @param etaAxis Eta axis to use 
    */
-  void Init(const TAxis& etaAxis);
+  void SetupForData(const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
@@ -143,7 +143,7 @@ public:
    * 
    * @param dir List to write in
    */  
-  void DefineOutput(TList* dir);
+  void CreateOutputObjects(TList* dir);
 
   /**
    * Print information
@@ -180,7 +180,7 @@ protected:
   TList*      fComps; // List of comparisons 
   Bool_t      fSecondaryForMC;  // Whether to correct MC data 
 
-  ClassDef(AliFMDMCCorrector,1); // Calculate Nch density 
+  ClassDef(AliFMDMCCorrector,2); // Calculate Nch density 
 };
 
 #endif

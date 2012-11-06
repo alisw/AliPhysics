@@ -56,7 +56,7 @@ AliFMDMCDensityCalculator::operator=(const AliFMDMCDensityCalculator& o)
 
 //____________________________________________________________________
 void
-AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
+AliFMDMCDensityCalculator::SetupForData(const TAxis& eAxis)
 {
   // 
   // Initialize this object 
@@ -64,7 +64,7 @@ AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
-  AliFMDDensityCalculator::Init(eAxis);
+  AliFMDDensityCalculator::SetupForData(eAxis);
   fFMD1i  = Make(1,'I',eAxis);
   fFMD2i  = Make(2,'I',eAxis);
   fFMD2o  = Make(2,'O',eAxis);
@@ -298,7 +298,7 @@ AliFMDMCDensityCalculator::CompareResults(AliForwardUtil::Histos& esd,
 
 //____________________________________________________________________
 void
-AliFMDMCDensityCalculator::DefineOutput(TList* dir)
+AliFMDMCDensityCalculator::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 
@@ -306,7 +306,7 @@ AliFMDMCDensityCalculator::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
-  AliFMDDensityCalculator::DefineOutput(dir);
+  AliFMDDensityCalculator::CreateOutputObjects(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 
   fComps = new TList;

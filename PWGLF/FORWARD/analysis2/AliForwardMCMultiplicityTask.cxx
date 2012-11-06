@@ -84,6 +84,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
   //    name Name of task 
   //
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -115,6 +116,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMul
   //    o Object to copy from 
   //
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -180,7 +182,7 @@ AliForwardMCMultiplicityTask::SetOnlyPrimary(Bool_t use)
 
 //____________________________________________________________________
 Bool_t
-AliForwardMCMultiplicityTask::InitializeSubs()
+AliForwardMCMultiplicityTask::SetupForData()
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
@@ -237,12 +239,12 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fMCRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fMCRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
-  fEventInspector.Init(*pv);
-  fSharingFilter.Init(*pe);
-  fDensityCalculator.Init(*pe);
-  fCorrections.Init(*pe);
-  fHistCollector.Init(*pv,*pe);
-  fEventPlaneFinder.Init(*pe);
+  fEventInspector.SetupForData(*pv);
+  fSharingFilter.SetupForData(*pe);
+  fDensityCalculator.SetupForData(*pe);
+  fCorrections.SetupForData(*pe);
+  fHistCollector.SetupForData(*pv,*pe);
+  fEventPlaneFinder.SetupForData(*pe);
 
   this->Print();
 
@@ -285,12 +287,12 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fPrimary->SetDirectory(0);
   ah->AddBranch("TH2D", &fPrimary);
 
-  fEventInspector.DefineOutput(fList);
-  fSharingFilter.DefineOutput(fList);
-  fDensityCalculator.DefineOutput(fList);
-  fCorrections.DefineOutput(fList);
-  fHistCollector.DefineOutput(fList);
-  fEventPlaneFinder.DefineOutput(fList);
+  fEventInspector.CreateOutputObjects(fList);
+  fSharingFilter.CreateOutputObjects(fList);
+  fDensityCalculator.CreateOutputObjects(fList);
+  fCorrections.CreateOutputObjects(fList);
+  fHistCollector.CreateOutputObjects(fList);
+  fEventPlaneFinder.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -404,7 +406,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip.Z())) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     AliWarning("Density calculator failed!");
     return;
   }
@@ -464,14 +466,21 @@ AliForwardMCMultiplicityTask::Terminate(Option_t*)
     return;
   }
 
-  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
-  MakeSimpledNdeta(list, list, nTr, nTrVtx, nAcc);
-  MakeRingdNdeta(list, "ringSums", list, "ringResults");
-  MakeRingdNdeta(list, "mcRingSums", list, "mcRingResults", 24);
+  // Output list 
+  TList* output = new TList;
+  output->SetOwner();
+  output->SetName(Form("%sResults", GetName()));
 
-  fSharingFilter.ScaleHistograms(list,Int_t(nTr));
-  fDensityCalculator.ScaleHistograms(list,Int_t(nTrVtx));
-  fCorrections.ScaleHistograms(list,Int_t(nTrVtx));
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  MakeRingdNdeta(list, "ringSums", output, "ringResults");
+  MakeRingdNdeta(list, "mcRingSums", output, "mcRingResults", 24);
+
+  fSharingFilter.Terminate(list,output,Int_t(nTr));
+  fDensityCalculator.Terminate(list,output,Int_t(nTrVtx));
+  fCorrections.Terminate(list,output,Int_t(nTrVtx));
+
+  PostData(2, output);
 }
 
 

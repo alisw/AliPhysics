@@ -155,7 +155,7 @@ protected:
   Int_t         fAddType;           //  Add flow type #
   Int_t         fAddOrder;          //  Add flow order
 
-  ClassDef(AliForwardMCFlowTaskQC, 2); // FMD MC analysis task 
+  ClassDef(AliForwardMCFlowTaskQC, 3); // FMD MC analysis task 
 };
  
 #endif

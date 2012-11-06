@@ -106,9 +106,9 @@ AliFMDMCTrackDensity::operator=(const AliFMDMCTrackDensity& o)
 
 //____________________________________________________________________
 void
-AliFMDMCTrackDensity::DefineOutput(TList* l)
+AliFMDMCTrackDensity::CreateOutputObjects(TList* l)
 {
-  AliBaseMCTrackDensity::DefineOutput(l);
+  AliBaseMCTrackDensity::CreateOutputObjects(l);
   TList* ll = static_cast<TList*>(l->FindObject(GetTitle()));
   if (!ll) ll = l;
 

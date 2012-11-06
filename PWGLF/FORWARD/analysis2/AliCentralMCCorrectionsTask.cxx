@@ -255,7 +255,7 @@ AliCentralMCCorrectionsTask::DefineBins(TList* l)
     Double_t high = fVtxAxis.GetBinUpEdge(i);
     VtxBin*  bin  = new VtxBin(low, high, fEtaAxis, fNPhiBins);
     fVtxBins->AddAt(bin, i);
-    bin->DefineOutput(l);
+    bin->CreateOutputObjects(l);
   }
 }
 
@@ -324,8 +324,8 @@ AliCentralMCCorrectionsTask::UserCreateOutputObjects()
 
   AliInfo(Form("Initialising sub-routines: %p, %p", 
 	       &fInspector, &fTrackDensity));
-  fInspector.DefineOutput(fList);
-  fTrackDensity.DefineOutput(fList);
+  fInspector.CreateOutputObjects(fList);
+  fTrackDensity.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -371,7 +371,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
 		 esd->GetMagneticField(),
 		 esd->GetRunNumber()));
 
-    fInspector.Init(fVtxAxis);
+    fInspector.SetupForData(fVtxAxis);
 
     Print();
     fFirstEvent = false;
@@ -472,7 +472,7 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
   VtxBin*   bin = 0;
   UShort_t  iVz = 1;
   while ((bin = static_cast<VtxBin*>(next()))) 
-    bin->Finish(fList, output, iVz++, fEffectiveCorr, corr,acorr);
+    bin->Terminate(fList, output, iVz++, fEffectiveCorr, corr,acorr);
 
   output->Add(corr);
   output->Add(acorr);
@@ -612,7 +612,7 @@ AliCentralMCCorrectionsTask::VtxBin::operator=(const VtxBin& o)
 
 //____________________________________________________________________
 void
-AliCentralMCCorrectionsTask::VtxBin::DefineOutput(TList* l)
+AliCentralMCCorrectionsTask::VtxBin::CreateOutputObjects(TList* l)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -626,7 +626,7 @@ AliCentralMCCorrectionsTask::VtxBin::DefineOutput(TList* l)
 }
 //____________________________________________________________________
 void
-AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input, 
+AliCentralMCCorrectionsTask::VtxBin::Terminate(const TList* input, 
 					    TList* output, 
 					    UShort_t iVz, 
 					    Bool_t effectiveCorr,

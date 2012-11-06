@@ -32,7 +32,7 @@ AliDisplacedVertexSelection::operator=(const AliDisplacedVertexSelection& o)
 
 //____________________________________________________________________
 void
-AliDisplacedVertexSelection::Output(TList* /*l*/, const char* /* name*/) const
+AliDisplacedVertexSelection::CreateOutputObjects(TList* /*l*/, const char* /* name*/) const
 {
 }
   

@@ -320,7 +320,7 @@ public:
     TString                     fSecMapName;     // Secindary name
     Bool_t                      fIsInit;         // Are we init
 
-    ClassDef(Manager,1); // Manager of data 
+    ClassDef(Manager,2); // Manager of data 
   };
   /** 
    * Get the ESD event and initialise manager on first event if not
@@ -379,7 +379,7 @@ protected:
   TH1D*                  fNTracklet;        //! number of tracklets 
   TArrayI                fEtaMin;           // Least eta bin to use
   TArrayI                fEtaMax;           // Largest eta bin to use
-  ClassDef(AliCentralMultiplicityTask,3)    // Forward multiplicity class
+  ClassDef(AliCentralMultiplicityTask,4)    // Forward multiplicity class
 };
 
 #endif

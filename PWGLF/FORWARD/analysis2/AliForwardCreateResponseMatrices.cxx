@@ -76,7 +76,7 @@ void AliForwardCreateResponseMatrices::UserCreateOutputObjects()
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
-    bin->DefineOutputs(fOutput, 400);
+    bin->CreateOutputObjectss(fOutput, 400);
   }
  
   PostData(1, fOutput);
@@ -270,7 +270,7 @@ AliForwardCreateResponseMatrices::Bin::Bin()
   //
 }
 //_____________________________________________________________________
-void AliForwardCreateResponseMatrices::Bin::DefineOutputs(TList* cont,  Int_t max)
+void AliForwardCreateResponseMatrices::Bin::CreateOutputObjectss(TList* cont,  Int_t max)
 {
   //
   // Define eta bin output histos

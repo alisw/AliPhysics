@@ -75,7 +75,7 @@ public:
    * 
    * @param vtxAxis Vertex axis in use 
    */
-  void Init(const TAxis& vtxAxis);
+  void SetupForData(const TAxis& vtxAxis);
   /** 
    * Process MC truth event.  Note, returned values are the MC truth
    * values
@@ -162,7 +162,7 @@ protected:
   TH2F* fHCentVsPart; // Centrality versus # participants 
   TH2F* fHCentVsBin;  // Centrality versus # binary collisions 
   TString fProduction; // Production information 
-  ClassDef(AliFMDMCEventInspector,3); // Inspect the event 
+  ClassDef(AliFMDMCEventInspector,4); // Inspect the event 
 };
 
 #endif

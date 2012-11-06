@@ -175,7 +175,7 @@ protected:
   TGraph* fV2B;      // Contribution from v2 as a function of b
   TGraph* fV2C;      // Contribution from v2 as a function of centrality
     
-  ClassDef(AliForwardFlowWeights,1);
+  ClassDef(AliForwardFlowWeights,2);
 };
 
 #endif

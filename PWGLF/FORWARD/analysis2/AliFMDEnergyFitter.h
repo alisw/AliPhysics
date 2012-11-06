@@ -92,7 +92,7 @@ public:
    * has already been set (using SetEtaAxis), then this parameter will be 
    * ignored
    */
-  void Init(const TAxis& etaAxis);
+  void SetupForData(const TAxis& etaAxis);
   /** 
    * Set the eta axis to use.  This will force the code to use this
    * eta axis definition - irrespective of whatever axis is passed to
@@ -236,7 +236,7 @@ public:
    * 
    * @param dir Directory to add to 
    */
-  void DefineOutput(TList* dir);
+  void CreateOutputObjects(TList* dir);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -289,7 +289,7 @@ protected:
      * 
      * @param dir 
      */
-    void Output(TList* dir);
+    void CreateOutputObjects(TList* dir);
     /** 
      * Initialise object 
      * 
@@ -299,7 +299,7 @@ protected:
      * @param nDEbins    Number of bins 
      * @param useIncrBin Whether to use an increasing bin size 
      */
-    void Init(const TAxis& eAxis, 
+    void SetupForData(const TAxis& eAxis, 
 	      const TAxis& cAxis,
 	      Double_t     maxDE=10, 
 	      Int_t        nDEbins=300, 
@@ -481,7 +481,7 @@ protected:
     TList*       fList;
     TClonesArray fFits;
     Int_t        fDebug;
-    ClassDef(RingHistos,2);
+    ClassDef(RingHistos,3);
   };
   /** 
    * Get the ring histogram container 
@@ -511,7 +511,7 @@ protected:
   Int_t    fDebug;         // Debug level 
   
 
-  ClassDef(AliFMDEnergyFitter,3); //
+  ClassDef(AliFMDEnergyFitter,4); //
 };
 
 #endif

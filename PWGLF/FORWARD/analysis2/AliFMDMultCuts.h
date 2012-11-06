@@ -141,7 +141,7 @@ protected:
   Double_t fNXi;           // Times of Landau width
   Bool_t   fIncludeSigma;  // Include Gaussian variance 
    
-  ClassDef(AliFMDMultCuts,2); // Cuts on ESD Mult 
+  ClassDef(AliFMDMultCuts,3); // Cuts on ESD Mult 
 };
 
 #endif
