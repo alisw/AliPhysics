@@ -368,7 +368,10 @@ AliReducedCaloCluster::AliReducedCaloCluster() :
  fType(kUndefined),
  fEnergy(-999.),
  fTrackDx(-999.),
- fTrackDz(-999.)
+ fTrackDz(-999.),
+ fM20(-999.),
+ fM02(-999.),
+ fDispersion(-999.)
 {
   //
   // default constructor

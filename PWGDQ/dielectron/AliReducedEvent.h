@@ -76,16 +76,18 @@ class AliReducedTrack : public TObject {
     
   Float_t  BayesPID(Int_t specie) const {return (specie>=0 && specie<=2 ? fBayesPID[specie] : -999.);}
   
-  Bool_t UsedForQvector()             const {return fFlags&(1<<0);}
-  Bool_t TestFlag(UShort_t iflag)     const {return (iflag<sizeof(UShort_t) ? fFlags&(1<<iflag) : kFALSE);}
-  Bool_t SetFlag(UShort_t iflag)            {if (iflag>=sizeof(UShort_t)) return kFALSE; fFlags|=(1<<iflag); return kTRUE;}
-  Bool_t IsGammaLeg()                 const {return fFlags&(1<<1);}
-  Bool_t IsK0sLeg()                   const {return fFlags&(1<<2);}
-  Bool_t IsLambdaLeg()                const {return fFlags&(1<<3);}
-  Bool_t IsALambdaLeg()               const {return fFlags&(1<<4);}
-  Bool_t IsKink(Int_t i=0)            const {return (i>=0 && i<3 ? fFlags&(1<<(5+i)) : kFALSE);}
-  Bool_t TestFlagMore(UShort_t iflag) const {return (iflag<sizeof(ULong_t) ? fMoreFlags&(1<<iflag) : kFALSE);}
-  Bool_t SetFlagMore(UShort_t iflag)        {if(iflag>=sizeof(ULong_t)) return kFALSE; fMoreFlags|=(1<<iflag); return kTRUE;}
+  Bool_t UsedForQvector()             const {return fFlags&(UShort_t(1)<<0);}
+  Bool_t TestFlag(UShort_t iflag)     const {return (iflag<8*sizeof(UShort_t) ? fFlags&(UShort_t(1)<<iflag) : kFALSE);}
+  Bool_t SetFlag(UShort_t iflag)            {if (iflag>=8*sizeof(UShort_t)) return kFALSE; fFlags|=(UShort_t(1)<<iflag); return kTRUE;}
+  Bool_t IsGammaLeg()                 const {return fFlags&(UShort_t(1)<<1);}
+  Bool_t IsK0sLeg()                   const {return fFlags&(UShort_t(1)<<2);}
+  Bool_t IsLambdaLeg()                const {return fFlags&(UShort_t(1)<<3);}
+  Bool_t IsALambdaLeg()               const {return fFlags&(UShort_t(1)<<4);}
+  Bool_t IsKink(Int_t i=0)            const {return (i>=0 && i<3 ? fFlags&(UShort_t(1)<<(5+i)) : kFALSE);}
+  Bool_t TestFlagMore(UShort_t iflag) const {return (iflag<8*sizeof(ULong_t) ? fMoreFlags&(ULong_t(1)<<iflag) : kFALSE);}
+  Bool_t SetFlagMore(UShort_t iflag)        {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fMoreFlags|=(ULong_t(1)<<iflag); return kTRUE;}
+  Bool_t UnsetFlagMore(UShort_t iflag)      {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fMoreFlags^=(ULong_t(1)<<iflag); return kTRUE;}
+  ULong_t GetFlagsMore()               const {return fMoreFlags;}
   
  private:
   UShort_t fTrackId;            // track id 
@@ -183,6 +185,10 @@ class AliReducedPair : public TObject {
   Float_t  LxyErr()              const {return fLxyErr;}
   Float_t  PointingAngle()       const {return fPointingAngle;}
   Bool_t   IsOnTheFly()          const {return fPairType;}
+  Bool_t   IsPureV0K0s()         const {return (fMCid&(UInt_t(1)<<1));}
+  Bool_t   IsPureV0Lambda()      const {return (fMCid&(UInt_t(1)<<2));}
+  Bool_t   IsPureV0ALambda()     const {return (fMCid&(UInt_t(1)<<3));}
+  Bool_t   IsPureV0Gamma()       const {return (fMCid&(UInt_t(1)<<4));}
   UInt_t   MCid()                const {return fMCid;}
   Bool_t   CheckMC(const Int_t flag) const {return (flag<32 ? (fMCid&(1<<flag)) : kFALSE);}
   
@@ -286,11 +292,14 @@ class AliReducedCaloCluster : public TObject {
   Float_t fEnergy;       // cluster energy
   Float_t fTrackDx;      // distance to closest track in phi
   Float_t fTrackDz;      // distance to closest track in z
+  Float_t fM20;          // short axis
+  Float_t fM02;          // long axis
+  Float_t fDispersion;   // dispersion
   
   AliReducedCaloCluster(const AliReducedCaloCluster &c);
   AliReducedCaloCluster& operator= (const AliReducedCaloCluster &c);
 
-  ClassDef(AliReducedCaloCluster, 1);
+  ClassDef(AliReducedCaloCluster, 2);
 };
 
 
