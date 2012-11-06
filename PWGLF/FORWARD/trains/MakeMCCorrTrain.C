@@ -90,6 +90,11 @@ protected:
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
   }
+  //__________________________________________________________________
+  /** 
+   * @return 0 - AOD disabled 
+   */
+  virtual AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   /** 
    * Do not the centrality selection
    */

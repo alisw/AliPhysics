@@ -70,7 +70,6 @@ struct TrainSetup
   {
     fOptions.Add("help", "Show help");
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
-    fOptions.Add("mc", "Assume MC input");
     fOptions.Add("bare-ps", "Use bare physics selection w/o task");
     fOptions.Add("verbose", "LEVEL", "Set verbosity level", 0);
     fOptions.Add("url", "URL", "Job location & input URL");
@@ -78,6 +77,7 @@ struct TrainSetup
     fOptions.Add("events", "N", "Number of events to analyse", -1);
     fOptions.Add("type", "ESD|AOD|USER", "Input data stype");
     fOptions.Add("setup", "Only do the setup");
+    fOptions.Add("branches", "Load only requested branches");
     fEscapedName = EscapeName(fName, "");
   }
   TrainSetup(const TrainSetup& o) 
@@ -116,7 +116,6 @@ struct TrainSetup
     // --- Create the helper -----------------------------------------
     TString  url     = fOptions.Get("url");
     Int_t    verbose = fOptions.AsInt("verbose");
-    Bool_t   mc      = fOptions.AsBool("mc");
 
     fHelper = Helper::Create(url.Data(), verbose);
     if (!fHelper) { 
@@ -126,6 +125,7 @@ struct TrainSetup
 
     // --- Check the type, if possible -------------------------------
     UShort_t type    = fHelper->InputType();
+    Bool_t   mc      = fHelper->IsMC();
     if (fOptions.Has("type")) { 
       const TString& it = fOptions.Get("type");
       if      (it.EqualTo("ESD",TString::kIgnoreCase)) type = Helper::kESD;
@@ -159,6 +159,7 @@ struct TrainSetup
     // In test mode, collect system information on every event 
     // if (oper == kTest)  mgr->SetNSysInfo(1); 
     if (verbose  >  0)      mgr->SetDebugLevel(verbose);
+    mgr->SetAutoBranchLoading(!fOptions.Has("branches"));
     if (fHelper->Mode() == Helper::kLocal) 
       mgr->SetUseProgressBar(kTRUE, 100);
    
@@ -272,8 +273,8 @@ struct TrainSetup
       status = true;
     }
     catch (TString& e) {
-      if (status) Warning("Run", e);
-      else    	  Error("Run", e);
+      if (status) Warning("Run", "%s", e.Data());
+      else    	  Error("Run", "%s", e.Data());
     }
     if (fOptions.Has("date")) {
       TString escaped = EscapeName(fName, "");
@@ -409,7 +410,7 @@ struct TrainSetup
       ret = train->Run();
     }
     catch (TString& e) { 
-      if (!e.IsNull()) Error("Main", e);
+      if (!e.IsNull()) Error("Main", "%s", e.Data());
     }
     if (gApplication && asProg) {
       gSystem->Sleep(3);
