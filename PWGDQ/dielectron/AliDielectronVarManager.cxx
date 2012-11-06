@@ -53,7 +53,6 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NFclsTPCrobust",
   "NFclsTPCrobustFraction",
   "NFclsTPCfracCrossedRows",
-  "NcrossRowsTPC",
   "TPCsignalN",
   "TPCsignalNfrac",
   "TPCchi2PerCluster",
