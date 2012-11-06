@@ -46,7 +46,6 @@ private:
     TH2I *fBadMapM3; // Bad map
     TH2I *fBadMapM4; // Bad map
 
-    Bool_t fInitialized; // matrix initialized
     Bool_t fMatrixInitialized; // matrix initialized
     
     AliAnalysisEtSelectorPhos();

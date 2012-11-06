@@ -22,6 +22,7 @@ AliAnalysisEtSelector::AliAnalysisEtSelector(AliAnalysisEtCuts *cuts) : AliAnaly
 ,fClusterArray(0)
 ,fCuts(cuts)
 ,fRunNumber(0)
+,fInitialized(kFALSE)
 {
 }
 

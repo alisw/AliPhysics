@@ -26,7 +26,6 @@ AliAnalysisEtSelectorPhos::AliAnalysisEtSelectorPhos(AliAnalysisEtCuts* cuts): A
 ,fBadMapM2(0)
 ,fBadMapM3(0)
 ,fBadMapM4(0)
-,fInitialized(kFALSE)
 ,fMatrixInitialized(kFALSE)
 {
   
@@ -294,12 +293,6 @@ TFile *f = TFile::Open("badchannels.root", "READ");
     
 }
 
-void AliAnalysisEtSelectorPhos::SetEvent(const AliESDEvent* event)
-{ // set event
-    //AliAnalysisEtSelector::SetEvent(event);
-    fEvent = event;
-    if(!fInitialized) Init(event);
-}
 
 Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part) const
 {

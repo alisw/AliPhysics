@@ -31,7 +31,7 @@ public:
     virtual ~AliAnalysisEtSelector();
     
     // Set the current event
-    virtual void SetEvent(const AliESDEvent *event) = 0;// { fEvent = event; }
+    virtual void SetEvent(const AliESDEvent *event);
     
     // Init
     virtual void Init() {} 
@@ -86,8 +86,8 @@ protected:
     Bool_t SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     
     Int_t fRunNumber;
-    
 
+    Bool_t fInitialized; // matrix initialized
     
 private:
 
