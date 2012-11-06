@@ -20,6 +20,7 @@
 
 
 class TObjArray;
+class TMap;
 
 class AliDielectronEvent : public TNamed {
 public:
@@ -38,8 +39,7 @@ public:
   
   const TClonesArray* GetTrackArrayP() const { return &fArrTrackP; }
   const TClonesArray* GetTrackArrayN() const { return &fArrTrackN; }
-  const TClonesArray* GetVertexArrayP() const { return &fArrVertexP; }
-  const TClonesArray* GetVertexArrayN() const { return &fArrVertexN; }
+  const TClonesArray* GetVertexArray() const { return &fArrVertex; }
 
   Int_t GetNTracksP() const { return fNTracksP; }
   Int_t GetNTracksN() const { return fNTracksN; }
@@ -50,11 +50,12 @@ virtual void Clear(Option_t *opt="C");
 private:
   TClonesArray fArrTrackP;      //positive tracks
   TClonesArray fArrTrackN;      //negative tracks
-  TClonesArray fArrVertexP;      //positive tracks vertex
-  TClonesArray fArrVertexN;      //negative tracks vertex
+  TClonesArray fArrVertex;      //track vertices
 
   TClonesArray fArrPairs;       //Pair array
 
+  TMap *fMapStoredVertices;//! already buffered vertices in AOD
+  
   Int_t fNTracksP;              //number of positive tracks
   Int_t fNTracksN;              //number of negative tracks
 

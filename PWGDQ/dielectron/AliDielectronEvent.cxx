@@ -26,6 +26,7 @@ Detailed description
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TObjArray.h>
+#include <TMap.h>
 
 #include <AliVTrack.h>
 #include <AliESDtrack.h>
@@ -39,9 +40,9 @@ AliDielectronEvent::AliDielectronEvent() :
   TNamed(),
   fArrTrackP(),
   fArrTrackN(),
-  fArrVertexP("AliAODVertex",1000),
-  fArrVertexN("AliAODVertex",1000),
+  fArrVertex("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
+  fMapStoredVertices(0x0),
   fNTracksP(0),
   fNTracksN(0),
   fIsAOD(kFALSE),
@@ -58,9 +59,9 @@ AliDielectronEvent::AliDielectronEvent(const char* name, const char* title) :
   TNamed(name, title),
   fArrTrackP(),
   fArrTrackN(),
-  fArrVertexP("AliAODVertex",1000),
-  fArrVertexN("AliAODVertex",1000),
+  fArrVertex("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
+  fMapStoredVertices(0x0),
   fNTracksP(0),
   fNTracksN(0),
   fIsAOD(kFALSE),
@@ -79,9 +80,10 @@ AliDielectronEvent::~AliDielectronEvent()
   //
   fArrTrackP.Delete();
   fArrTrackN.Delete();
-  fArrVertexP.Delete();
-  fArrVertexN.Delete();
+  fArrVertex.Delete();
   fArrPairs.Delete();
+
+  delete fMapStoredVertices;
 }
 
 //______________________________________________
@@ -101,11 +103,9 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
   //check size of the arrays
   if (fArrTrackP.GetSize()<arrP.GetSize()) {
     fArrTrackP.Expand(arrP.GetSize());
-    fArrVertexP.Expand(arrP.GetSize());
   }
   if (fArrTrackN.GetSize()<arrN.GetSize()) {
     fArrTrackN.Expand(arrN.GetSize());
-    fArrVertexN.Expand(arrN.GetSize());
   }
 
   // fill particles
@@ -120,8 +120,23 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
       AliAODTrack *track=dynamic_cast<AliAODTrack*>(arrP.At(itrack));
       if (!track) continue;
 
-      new (fArrTrackP[tracks]) AliAODTrack(*track);
-      new (fArrVertexP[tracks]) AliAODVertex(*(track->GetProdVertex()));
+      // buffer track
+      AliAODTrack   *ctrack = new (fArrTrackP[tracks]) AliAODTrack(*track);
+
+      // buffer vertex, don't duplicate
+      // most particles will be assiciated to the primary vertex ...
+      AliAODVertex *vtx=track->GetProdVertex();
+      AliAODVertex *cvertex = 0x0;
+      if (fMapStoredVertices->FindObject(vtx)) {
+        cvertex = (AliAODVertex*)fMapStoredVertices->GetValue(vtx);
+      } else {
+        if (fArrVertex.GetSize()<=fArrVertex.GetEntriesFast()) fArrVertex.Expand(2*fArrVertex.GetSize());
+        if (vtx){
+          cvertex = new (fArrVertex[fArrVertex.GetEntriesFast()]) AliAODVertex(*vtx);
+          fMapStoredVertices->Add(vtx,cvertex);
+        }
+      }
+      ctrack->SetProdVertex(cvertex);
       ++tracks;
     }
   }
@@ -137,9 +152,24 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
     } else {
       AliAODTrack *track=dynamic_cast<AliAODTrack*>(arrN.At(itrack));
       if (!track) continue;
+
+      //buffer track
+      AliAODTrack   *ctrack = new (fArrTrackN[tracks]) AliAODTrack(*track);
       
-      new (fArrTrackN[tracks]) AliAODTrack(*track);
-      new (fArrVertexN[tracks]) AliAODVertex(*(track->GetProdVertex()));
+      // buffer vertex, don't duplicate
+      // most particles will be assiciated to the primary vertex ...
+      AliAODVertex *vtx=track->GetProdVertex();
+      AliAODVertex *cvertex = 0x0;
+      if (fMapStoredVertices->FindObject(vtx)) {
+        cvertex = (AliAODVertex*)fMapStoredVertices->GetValue(vtx);
+      } else {
+        if (fArrVertex.GetSize()<=fArrVertex.GetEntriesFast()) fArrVertex.Expand(2*fArrVertex.GetSize());
+        if (vtx) {
+          cvertex = new (fArrVertex[fArrVertex.GetEntriesFast()]) AliAODVertex(*vtx);
+          fMapStoredVertices->Add(vtx,cvertex);
+        }
+      }
+      ctrack->SetProdVertex(cvertex);
       ++tracks;
     }
   }
@@ -159,15 +189,19 @@ void AliDielectronEvent::Clear(Option_t *opt)
 
   for (Int_t i=fArrTrackP.GetEntriesFast()-1; i>=0; --i){
     delete fArrTrackP.RemoveAt(i);
-    delete fArrVertexP.RemoveAt(i);
   }
   
   for (Int_t i=fArrTrackN.GetEntriesFast()-1; i>=0; --i){
     delete fArrTrackN.RemoveAt(i);
-    delete fArrVertexN.RemoveAt(i);
+  }
+
+  for (Int_t i=0; i<fArrVertex.GetEntriesFast(); ++i){
+    delete fArrVertex.RemoveAt(i);
   }
   
   fArrPairs.Clear(opt);
+  
+  if (fMapStoredVertices) fMapStoredVertices->Clear();
   
 }
 
@@ -180,6 +214,7 @@ void AliDielectronEvent::SetAOD()
   fArrTrackP.SetClass("AliAODTrack",1000);
   fArrTrackN.SetClass("AliAODTrack",1000);
   fIsAOD=kTRUE;
+  if (!fMapStoredVertices) fMapStoredVertices=new TMap;
 }
 
 //______________________________________________

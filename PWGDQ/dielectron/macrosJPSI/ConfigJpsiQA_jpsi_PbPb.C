@@ -15,7 +15,7 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
 Bool_t  isESD = kTRUE;
-Bool_t  hasMC = kTRUE;
+Bool_t  hasMC = kFALSE;
 TString list  = gSystem->Getenv("LIST");
 
 
@@ -348,6 +348,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,        GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,	GetRunNumbers(), AliDielectronVarManager::kRunNumber, "s;-10;10");
     histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,	AliDielectronHelper::MakeLinBinning(80,0.,80.), AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,        250,0.,25000.,   AliDielectronVarManager::kMultV0A);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kZvPrim,        250,0.,25000.,   AliDielectronVarManager::kMultV0C);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(150,-15.,15.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kZvPrim);
     histos->UserHistogram("Event","","", 80.,0.,80., 150,-15.,15.,
@@ -360,6 +362,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        80.,0.,80., AliDielectronVarManager::kCentrality);
     histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        80.,0.,80., AliDielectronVarManager::kCentralitySPD);
     histos->UserProfile("Event","","", AliDielectronVarManager::kMultV0,        GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserHistogram("Event","","", 250,0.,25000., AliDielectronVarManager::kMultV0);
+    histos->UserHistogram("Event","","", 250,0.,25000., AliDielectronVarManager::kMultV0A);
+    histos->UserHistogram("Event","","", 250,0.,25000., AliDielectronVarManager::kMultV0C);
+    histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0 );
+    histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0A);
+    histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0C);
 
     histos->UserHistogram("Event","","", 80.,0.,80., 80.,0.,80., AliDielectronVarManager::kCentrality, AliDielectronVarManager::kCentralitySPD);
 
@@ -381,8 +389,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(AliDielectron::kEv1PM)));
 
     //add MC signal histograms to track class
-    for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
-      histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
+    if(die->GetMCSignals()) {
+      for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
+	histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
+    }
 
     histos->UserHistogram("Pair","","",  20, 0.,10.,           AliDielectronVarManager::kPt);
     histos->UserHistogram("Pair","","", 200,-1.,+1.,           AliDielectronVarManager::kEta);
@@ -405,8 +415,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     for (Int_t i=0; i<2; ++i) histos->AddClass(Form("Track_%s",AliDielectron::TrackClassName(i)));
 
     //add MC signal histograms to track class
-    for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
-      histos->AddClass(Form("Track_Legs_%s",die->GetMCSignals()->At(i)->GetName()));
+    if(die->GetMCSignals()) {
+      for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i)
+	histos->AddClass(Form("Track_Legs_%s",die->GetMCSignals()->At(i)->GetName()));
+    }
 
     histos->UserHistogram("Track","","", 400, 0.,20., AliDielectronVarManager::kPt);
     histos->UserHistogram("Track","","", 200,-1.,+1., AliDielectronVarManager::kEta);
@@ -440,7 +452,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Track","","", AliDielectronVarManager::kTPCclsSegments, 80, 0.,80.,      AliDielectronVarManager::kCentrality);
     histos->UserProfile("Track","", "", AliDielectronVarManager::kTPCclsSegments,
 			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
-    
+
+    histos->UserHistogram("Track","","", 160,0.,160., AliDielectronVarManager::kNcrossRowsTPC);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kNcrossRowsTPC, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kNcrossRowsTPC, 80, 0.,80.,      AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","", "", AliDielectronVarManager::kNcrossRowsTPC,
+			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
+
     // ITS
     histos->UserHistogram("Track","","", 7,0.,7., AliDielectronVarManager::kNclsITS);
     histos->UserProfile("Track","","", AliDielectronVarManager::kNclsITS, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
@@ -622,7 +640,7 @@ TVectorD *GetRunNumbers() {
 
   TVectorD *vec = new TVectorD(2);
   (*vec)[0] = 0;
-  (*vec)[0] = 1;
+  (*vec)[1] = 1;
   return vec;
      
 }

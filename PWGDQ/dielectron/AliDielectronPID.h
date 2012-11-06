@@ -78,7 +78,7 @@ public:
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
 
-  static Double_t GetEtaCorr(AliVTrack *track);
+  static Double_t GetEtaCorr(const AliVTrack *track);
 
 private:
   enum {kNmaxPID=30};

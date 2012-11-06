@@ -33,8 +33,6 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
     configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsiQA_jpsi_PbPb.C";   // gsi config
   else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C ."))
     configFile=Form("%s/ConfigJpsiQA_jpsi_PbPb.C",gSystem->pwd());                        // alien config
-  else
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C"; // aliroot config
 
   if(!gridconf)
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C"; // forced aliroot config

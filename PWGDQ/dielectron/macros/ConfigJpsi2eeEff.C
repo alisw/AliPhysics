@@ -147,11 +147,18 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   
   //add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
+  histos->UserHistogram("Track","Eta","Eta;Eta;#tracks",400,-2.0,-2.0,AliDielectronVarManager::kEta);
+  histos->UserHistogram("Track","Phi","Phi;Phi;#tracks",650,0,6.5,AliDielectronVarManager::kPhi);
+  histos->UserHistogram("Track","Theta","Theta;Theta;#tracks",350,0,3.5,AliDielectronVarManager::kTheta);
   histos->UserHistogram("Track","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
-                        400,1e-2,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
+                        400,0.2,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
+  histos->UserHistogram("Track","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
+                        400,0.2,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+  histos->UserHistogram("Track","TPCnSigmaPio_P","TPC number of sigmas Pions;P [GeV];TPC number of sigmas Pions;#tracks",
+                        400,0.2,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
+  histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
   histos->UserHistogram("Track","TPCnSigma_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
                         400,1e-2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
-  histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
   
   //add histograms to Pair classes
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
@@ -162,10 +169,19 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   histos->UserHistogram("Pair","InvMass_OpeningAngle","Opening angle:Inv.Mass;Inv. Mass [GeV];angle",
                         100,0.,4.,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+  histos->UserHistogram("Pair","ThetaHE","Theta (helicity system);#theta [rad.]",
+                        500,0.,1.0,AliDielectronVarManager::kThetaHE);
+  histos->UserHistogram("Pair","PhiHE","Phi (helicity system);#varphi [rad.]",
+                        500,-6.5,6.5,AliDielectronVarManager::kPhiHE);
+  histos->UserHistogram("Pair","ThetaCS","Theta (Collins-Soper system);#theta [rad.]",
+                        500,0.0,1.0,AliDielectronVarManager::kThetaCS);
+  histos->UserHistogram("Pair","PhiCS","Phi (Collins-Soper system);#varphi [rad.]",
+                        500,-6.5,6.5,AliDielectronVarManager::kPhiCS);
   
   die->SetHistogramManager(histos);
 }
 
+//______________________________________________________________________________________
 void InitCF(AliDielectron* die, Int_t cutDefinition)
 {
   //

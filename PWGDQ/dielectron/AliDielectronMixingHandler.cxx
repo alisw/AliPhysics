@@ -254,34 +254,6 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
         ev2P.Reset();
         ev2N.Reset();
       }
-      
-      // set the vertex to the track in case (AOD only)
-      if ( ev1->IsAOD() && ev2->IsAOD() ) {
-	Int_t idx = 0;
-  
-	while ( (o=ev1N()) ) {
-	  idx = ev1->GetTrackArrayN()->IndexOf(o);
-	  ((AliAODTrack *)o)->SetProdVertex(ev1->GetVertexArrayN()->At(idx));
-	}
-	while ( (o=ev1P()) ) {
-	  idx = ev1->GetTrackArrayP()->IndexOf(o);
-	  ((AliAODTrack *)o)->SetProdVertex(ev1->GetVertexArrayP()->At(idx));
-	}
-	while ( (o=ev2N()) ) {
-	  idx = ev2->GetTrackArrayN()->IndexOf(o);
-	  ((AliAODTrack *)o)->SetProdVertex(ev2->GetVertexArrayN()->At(idx));
-	}
-	while ( (o=ev2P()) ) {
-	  idx = ev2->GetTrackArrayP()->IndexOf(o);
-	  ((AliAODTrack *)o)->SetProdVertex(ev2->GetVertexArrayP()->At(idx));
-	}
-
-	// reset the iterators
-        ev1N.Reset();
-        ev1P.Reset();
-        ev2N.Reset();
-        ev2P.Reset();
-      }
 
       //mixing of ev1- ev2+ (pair type4). This is common for all mixing types
       while ( (o=ev1N()) ) diele->fTracks[1].Add(o); 

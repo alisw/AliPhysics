@@ -52,9 +52,9 @@ AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, TString prod="")
       //            case knoPID:     return 0x0;
       //            case kTPC:       return 0x0;
       //            case kTOF:       return 0x0;
-    case kTRD:       return 0x0;
-    case kTOFTRD:    return 0x0;
-      //    case kTOFTRD2D:  return 0x0;
+      //            case kTRD:       return 0x0;
+      //            case kTOFTRD:    return 0x0;
+    case kTOFTRD2D:  return 0x0;
     case kTRDeff:    return 0x0;
     case kEleMC:     return 0x0;
     case kEleJPsiMC: return 0x0;
