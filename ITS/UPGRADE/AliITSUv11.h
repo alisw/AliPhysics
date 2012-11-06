@@ -48,9 +48,6 @@ class AliITSUv11 : public AliITSU {
   virtual void   SetLayerDetTypeID(Int_t lr, UInt_t id);
   virtual Int_t  GetLayerDetTypeID(Int_t lr);
   //
- protected:
-  void SetT2Lmatrix(Int_t lr,Int_t ld,Int_t modInLd) const; // Set T2L matrix in TGeoPNEntries
-  
  private:
   AliITSUv11(const AliITSUv11 &source); // copy constructor
   AliITSUv11& operator=(const AliITSUv11 &source); // assignment operator

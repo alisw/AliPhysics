@@ -128,6 +128,7 @@ class AliITSUGeomTGeo : public TObject {
   //
  protected:
   void         FetchMatrices();
+  void         CreateT2LMatrices();
   TGeoHMatrix* ExtractMatrixT2L(Int_t index)                      const;
   TGeoHMatrix* ExtractMatrixSens(Int_t index)                     const;
   Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2)     const;
@@ -139,11 +140,11 @@ class AliITSUGeomTGeo : public TObject {
   void         BuildITS();
   //
  private:
-//
+  //
   //
   Int_t  fVersion;             // ITS Version 
   Int_t  fNLayers;             // number of layers
-  Int_t  fNModules;            //[fNLayers] The total number of modules
+  Int_t  fNModules;            // The total number of modules
   Int_t *fNLadders;            //[fNLayers] Array of the number of ladders/layer(layer)
   Int_t *fLrDetType;           //[fNLayers] Array of layer detector types
   Int_t *fNDetectors;          //[fNLayers] Array of the number of detector/ladder(layer)

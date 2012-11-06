@@ -32,10 +32,12 @@
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TDatime.h>
+#include <TMath.h>
 
 #include "AliITSUGeomTGeo.h"
 #include "AliLog.h"
 #include "AliAlignObj.h"
+using namespace TMath;
 
 ClassImp(AliITSUGeomTGeo)
 
@@ -634,10 +636,64 @@ void AliITSUGeomTGeo::FetchMatrices()
   if (!gGeoManager) AliFatal("Geometry is not loaded");
   fMatSens = new TObjArray(fNModules);
   fMatSens->SetOwner(kTRUE);
+  for (int i=0;i<fNModules;i++) fMatSens->AddAt(new TGeoHMatrix(*ExtractMatrixSens(i)),i);
+  CreateT2LMatrices();
+}
+
+//______________________________________________________________________
+void AliITSUGeomTGeo::CreateT2LMatrices()
+{
+  // create tracking to local (Sensor!) matrices
   fMatT2L  = new TObjArray(fNModules);  
   fMatT2L->SetOwner(kTRUE);
-  for (int i=0;i<fNModules;i++) {
-    fMatSens->AddAt(new TGeoHMatrix(*ExtractMatrixSens(i)),i);
-    fMatT2L->AddAt(new TGeoHMatrix(*ExtractMatrixT2L(i)),i);
+  TGeoHMatrix matLtoT;
+  double loc[3]={0,0,0},glo[3];
+  const double *rotm;
+  for (int isn=0;isn<fNModules;isn++) {
+    const TGeoHMatrix* matSens = GetMatrixSens(isn);
+    if (!matSens) {AliFatal(Form("Failed to get matrix for sensor %d",isn)); return;}
+    matSens->LocalToMaster(loc,glo);
+    rotm = matSens->GetRotationMatrix();
+    Double_t al = -ATan2(rotm[1],rotm[0]);
+    double sn=Sin(al), cs=Cos(al), r=glo[0]*sn-glo[1]*cs, x=r*sn, y=r*cs; // sensor plane PCA to origin
+    TGeoHMatrix* t2l = new TGeoHMatrix();
+    t2l->RotateZ(ATan2(y,x)*RadToDeg()); // rotate in direction of normal to the sensor plane
+    t2l->SetDx(x);
+    t2l->SetDy(y);
+    t2l->MultiplyLeft(&matSens->Inverse());
+    fMatT2L->AddAt(t2l,isn);
+    /*
+    const double *gtrans = matSens->GetTranslation();
+    memcpy(&rotMatrix[0], matSens->GetRotationMatrix(), 9*sizeof(Double_t));
+    Double_t al = -ATan2(rotMatrix[1],rotMatrix[0]);
+    Double_t rSens = Sqrt(gtrans[0]*gtrans[0] + gtrans[1]*gtrans[1]);
+    Double_t tanAl = ATan2(gtrans[1],gtrans[0]) - Pi()/2; //angle of tangent
+    Double_t alTr = tanAl - al;
+    //
+    // The X axis of tracking frame must always look outward
+    loc[1] = rSens/2;
+    matSens->LocalToMaster(loc,glo);
+    double rPos = Sqrt(glo[0]*glo[0] + glo[1]*glo[1]);
+    Bool_t rotOutward = rPos>rSens ? kFALSE : kTRUE;
+    //
+    // Transformation matrix
+    matLtoT.Clear();
+    matLtoT.SetDx(-rSens*Sin(alTr)); // translation
+    matLtoT.SetDy(0.);
+    matLtoT.SetDz(gtrans[2]);
+    // Rotation matrix
+    rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+    rotMatrix[3]=-1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
+    rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]= 1;
+    //
+    TGeoRotation rot;
+    rot.SetMatrix(rotMatrix);
+    matLtoT.MultiplyLeft(&rot);
+    if (rotOutward) matLtoT.RotateZ(180.);
+    // Inverse transformation Matrix
+    fMatT2L->AddAt(new TGeoHMatrix(matLtoT.Inverse()),isn);
+    */
   }
+  //
 }
+
