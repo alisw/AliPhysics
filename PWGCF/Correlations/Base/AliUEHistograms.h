@@ -98,7 +98,7 @@ protected:
   void FillRegion(AliUEHist::Region region, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
   Int_t CountParticles(TList* list, Float_t ptMin);
   void DeleteContainers();
-  Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0);
+  Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
   inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
   
   static const Int_t fgkUEHists; // number of histograms
@@ -125,6 +125,7 @@ protected:
   TH3F* fITSClusterMap;          // its cluster map vs centrality vs pT
   
   TH3F* fTwoTrackDistancePt[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
+  TH2F* fControlConvResoncances; // control histograms for cuts on conversions and resonances
   
   THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
   
@@ -140,7 +141,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 19)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 20)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
