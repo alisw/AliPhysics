@@ -74,6 +74,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TString                fMcIdFamily;            // string that holds the ids of all particles originated from the prompt photon
   Int_t                  fNClusForDirPho;        // number of clusters from prompt photon per event
   Float_t                fDirPhoPt;              // prompt photon pt (assumes only one per event)
+  Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
 
   
  private:
@@ -91,6 +92,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fDecayPhotonPtMC;           //!decay photon pt
   TH2F        *fCellAbsIdVsAmpl;           //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;            //!total number of clusters vs. highest clus energy in the event
+  TH2F        *fHigherPtConeM02;           //!M02 vs. the higher pt of a track inside the cone
   TH2F        *fClusEtMcPt;                //!cluster et x mc-pt
   TH2F        *fClusMcDetaDphi;            //!delta-eta x delta-phi(reco-mc)
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
