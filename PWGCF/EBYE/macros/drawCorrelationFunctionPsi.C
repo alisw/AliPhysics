@@ -45,8 +45,8 @@ void drawCorrelationFunctionsAllPtCombinations(const char* lhcPeriod = "LHC11h",
 
   cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
 
-  for(Int_t iTrig = 0; iTrig < 2/*kNPtBins*/; iTrig++){
-    for(Int_t iAssoc = 0; iAssoc < 2/*kNPtBins*/; iAssoc++){
+  for(Int_t iTrig = 0; iTrig < kNPtBins; iTrig++){
+    for(Int_t iAssoc = 0; iAssoc < kNPtBins; iAssoc++){
       cout<<"================================================================="<<endl;
       cout<<"FIT NOW: "<<endl; 
       cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
