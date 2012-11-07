@@ -678,21 +678,21 @@ void AliPIDResponse::SetRecoInfo()
   else if (fRun>=127710&&fRun<=130850) { fLHCperiod="LHC10E"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=133004&&fRun<=135029) { fLHCperiod="LHC10F"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=135654&&fRun<=136377) { fLHCperiod="LHC10G"; fMCperiodTPC="LHC10F6A"; }
-  else if (fRun>=136851&&fRun<=139517) {
+  else if (fRun>=136851&&fRun<=139846) {
     fLHCperiod="LHC10H";
     fMCperiodTPC="LHC10H8";
     if (reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11A10";
     fBeamType="PBPB";
   }
-  else if (fRun>=139699&&fRun<=146860) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
-  //TODO: periods 11B, 11C are not yet treated assume 11d for the moment
-  else if (fRun>=148531&&fRun<=155384) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
-  else if (fRun>=156477&&fRun<=159635) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
-  // also for 11e,f use 11d
-  else if (fRun>=160676&&fRun<=162740) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
-  else if (fRun>=162933&&fRun<=165746) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
+  else if (fRun>=139847&&fRun<=146974) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
+  //TODO: periods 11B (146975-150721), 11C (150722-155837) are not yet treated assume 11d for the moment
+  else if (fRun>=146975&&fRun<=155837) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
+  else if (fRun>=155838&&fRun<=159649) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
+  // also for 11e (159650-162750),f(162751-165771) use 11d
+  else if (fRun>=159650&&fRun<=162750) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
+  else if (fRun>=162751&&fRun<=165771) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
   
-  else if (fRun>=166529 && fRun<=170718) {
+  else if (fRun>=165772 && fRun<=170718) {
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
     fBeamType="PBPB";
@@ -778,8 +778,13 @@ void AliPIDResponse::SetTPCParametrisation()
   // Change BB parametrisation for current run
   //
   
+  //
+  //reset old splines
+  //
+  fTPCResponse.ResetSplines();
+  
   if (fLHCperiod.IsNull()) {
-    AliFatal("No period set, not changing parametrisation");
+    AliError("No period set, not changing parametrisation");
     return;
   }
   
@@ -795,11 +800,6 @@ void AliPIDResponse::SetTPCParametrisation()
       fRecoPass=1;
   }
   
-  //
-  //reset old splines
-  //
-  fTPCResponse.ResetSplines();
-
   // period
   TString period=fLHCperiod;
   if (fIsMC && !fTuneMConData) period=fMCperiodTPC;
@@ -910,7 +910,8 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
 
   //read in the voltage map
-  TVectorF* gsm = dynamic_cast<TVectorF*>(fOADBvoltageMaps->GetObject(fRun));
+  TVectorF* gsm = 0x0;
+  if (fOADBvoltageMaps) gsm=dynamic_cast<TVectorF*>(fOADBvoltageMaps->GetObject(fRun));
   if (gsm) 
   {
     fTPCResponse.SetVoltageMap(*gsm);
