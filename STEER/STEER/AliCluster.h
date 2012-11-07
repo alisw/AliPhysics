@@ -73,8 +73,8 @@ class AliCluster : public TObject {
 
  protected:
 
-  const TGeoHMatrix*   GetTracking2LocalMatrix() const;
-  TGeoHMatrix*         GetMatrix(Bool_t original = kFALSE) const;
+  virtual const TGeoHMatrix*   GetTracking2LocalMatrix() const;
+  virtual TGeoHMatrix*         GetMatrix(Bool_t original = kFALSE) const;
 
  private:
 
