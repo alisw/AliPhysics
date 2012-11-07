@@ -16,6 +16,7 @@
 #include "AliFlowVZEROQA.h"
 
 class TH2F;
+class AliESDtrackCuts;
 
 class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
  public:
@@ -35,6 +36,8 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
   virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
   virtual void  SetMinPt(Double_t value) {fMinPt = value;}   
+  virtual void  SetMinDistV0(Double_t value){fMinDistV0=value;}
+  virtual void  SetMaxDistV0(Double_t value){fMaxDistV0=value;}
   virtual void SetV2(Bool_t val){fV2 = val;};
   virtual void SetV3(Bool_t val){fV3 = val;};
 
@@ -47,6 +50,7 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   void SetModulationDEDx(Bool_t flag=kTRUE){fModulationDEDx=flag;};
 
+  void SetTPCclusterN(Int_t ncl){fNcluster=ncl;};
   static Bool_t IsPsiComputed(){return fgIsPsiComputed;};
   static Float_t GetPsi2V0A(){return fgPsi2v0a;};
   static Float_t GetPsi2V0C(){return fgPsi2v0c;};
@@ -54,13 +58,23 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   static Float_t GetPsi3V0A(){return fgPsi3v0a;};
   static Float_t GetPsi3V0C(){return fgPsi3v0c;};
   static Float_t GetPsi3TPC(){return fgPsi3tpc;};
+  static Float_t GetPsi2V0AMC(){return fgPsi2v0aMC;};
+  static Float_t GetPsi2V0CMC(){return fgPsi2v0cMC;};
+  static Float_t GetPsi2TPCMC(){return fgPsi2tpcMC;};
+  static Float_t GetPsi3V0AMC(){return fgPsi3v0aMC;};
+  static Float_t GetPsi3V0CMC(){return fgPsi3v0cMC;};
+  static Float_t GetPsi3TPCMC(){return fgPsi3tpcMC;};
 
  private:
   AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &old); 
   AliAnalysisTaskVnV0& operator=(const AliAnalysisTaskVnV0 &source); 
+ 
+  Int_t PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t specie);
 
   static Bool_t fgIsPsiComputed; // flag which return if event was processed
   static Float_t fgPsi2v0a,fgPsi2v0c,fgPsi2tpc; // current Psi2
+  static Float_t fgPsi2v0aMC,fgPsi2v0cMC,fgPsi2tpcMC; // current Psi2
+  static Float_t fgPsi3v0aMC,fgPsi3v0cMC,fgPsi3tpcMC; // current Psi3
   static Float_t fgPsi3v0a,fgPsi3v0c,fgPsi3tpc; // current Psi3
 
   virtual Float_t GetVertex(AliAODEvent* aod) const;
@@ -69,6 +83,8 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
   Double_t     fMinPt;              // Min pt - for histogram limits
+  Double_t     fMinDistV0;          // Minimal distance for V0s
+  Double_t     fMaxDistV0;          // Maximal distance for V0s
 
   Bool_t fV2; // switch to set the armonics
   Bool_t fV3; // switch to set the armonics
@@ -83,6 +99,7 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   Int_t fRun;                       //! current run checked to load VZERO calibrations
 
+  Int_t fNcluster;           // Numer of TPC cluster required
   TList *fList;              //! List for output objects
   TList *fList2;             //! List for output objects
   TList *fList3;             //! List for output objects
@@ -152,7 +169,8 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   Bool_t fModulationDEDx; //add a modulation on the dE/dx response w.r.t. EP (kFALSE default)
 
-  ClassDef(AliAnalysisTaskVnV0, 6);    //Analysis task v2 and v3 analysis on AOD
+  AliESDtrackCuts *fCutsDaughter;
+  ClassDef(AliAnalysisTaskVnV0, 7);    //Analysis task v2 and v3 analysis on AOD
 };
 
 #endif
