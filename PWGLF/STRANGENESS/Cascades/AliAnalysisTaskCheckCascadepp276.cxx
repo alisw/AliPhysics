@@ -95,6 +95,9 @@ class AliAODv0;
 
 #include "AliAnalysisTaskCheckCascadepp276.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskCheckCascadepp276)
 
 
