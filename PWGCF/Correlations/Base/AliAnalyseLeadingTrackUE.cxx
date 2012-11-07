@@ -168,7 +168,6 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra1 corresponds to esdTrackCutsHTG
 
-    // empty object
     fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_SPD", "Reject tracks with cluster in SPD");
     fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
@@ -660,6 +659,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, ipart);
 	  if(!track) return 0;
     
+// 	  Printf(">%f %f %f", track->Eta(), track->Phi(), track->Pt());
+	  
 	  if(track->Pt()>0.){
 	    // only constrain tracks above threshold
 	    AliExternalTrackParam exParam;
@@ -675,6 +676,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
 	  }
 	  
+// 	  Printf(">%f %f %f\n", track->Eta(), track->Phi(), track->Pt());
+
 	  part = track;
 	}
 	else if (fFilterBit == 2048)
