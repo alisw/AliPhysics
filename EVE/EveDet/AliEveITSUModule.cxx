@@ -20,7 +20,7 @@
 //#include "UPGRADE/AliITSUDigitPix.h"
 
 #include <AliITSUGeomTGeo.h>
-#include <AliITSUSegmentationPix.h>
+#include <AliITSsegmentation.h>
 #include <AliITSUDigitPix.h>
 //______________________________________________________________________________
 //
@@ -35,7 +35,7 @@ TEveFrameBox*    AliEveITSUModule::fgITSUFrameBoxDead = 0;
 TEveRGBAPalette* AliEveITSUModule::fgITSUPalette  = 0;
 
 AliITSUGeomTGeo* fGM                 = 0;
-AliITSUSegmentationPix * fSegm       = 0;
+const AliITSsegmentation* fSegm      = 0;
 
 /******************************************************************************/
 
@@ -65,23 +65,13 @@ AliEveITSUModule::AliEveITSUModule(AliITSUGeomTGeo *gm, Int_t id, Int_t layer, I
   // 
   // constructor
   //
-
   fGM = gm; // ITSU Geometry Manager
-
   fgStaticInitDone = kFALSE; 
-
-  TObjArray segmArr;
-  AliITSUSegmentationPix::LoadSegmentations(&segmArr, AliITSUGeomTGeo::GetITSsegmentationFileName());
- 
-  int detType = fGM->GetModuleDetTypeID(id);
-  fSegm = (AliITSUSegmentationPix*)segmArr.At(detType);
-  
-  fDpx = fSegm->Dpx();  // pixel pitch in x
-  fDpz = fSegm->Dpz(0); // pixel pitch in z
-
+  fSegm = fGM->GetSegmentation(layer);
+  fDpx = fSegm->Dpx(0);  // pixel pitch in x
+  fDpz = fSegm->Dpz(0);  // pixel pitch in z
   SetID(id);
-  
-
+  //
 }
 
 AliEveITSUModule::~AliEveITSUModule()
@@ -103,8 +93,8 @@ void AliEveITSUModule::InitStatics()
   if (fgStaticInitDone) return;
   fgStaticInitDone = kTRUE;
 
-  Float_t dx =  fSegm->Dpx() * fSegm->GetNRow(); // dimension in x in cm
-  Float_t dz =  fSegm->Dpz(0)* fSegm->GetNCol(); // dimension in y in cm
+  Float_t dx =  fSegm->Dx(); // dimension in x in cm
+  Float_t dz =  fSegm->Dz(); // dimension in y in cm
   Float_t dy =  0;// ? eventuelly a few 100 micron, right?
 
   {

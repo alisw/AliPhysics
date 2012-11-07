@@ -28,7 +28,6 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name)
   ,fDPhiLadInv(0)
   ,fSensors(0)
   ,fITSGeom(0)
-  ,fkSegm(0)
 {
   // def. c-tor
   SetNameTitle(name,name);
@@ -36,7 +35,7 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name)
 }
 
 //______________________________________________________
-AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, AliITSUGeomTGeo* gm,const AliITSsegmentation* segm)
+AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, AliITSUGeomTGeo* gm)
   :fActiveID(activeID)
   ,fNSensors(0)
   ,fNSensInLadder(0)
@@ -53,7 +52,6 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, 
   ,fDPhiLadInv(0)
   ,fSensors(nsens)
   ,fITSGeom(gm)
-  ,fkSegm(segm)
 {
   // def. c-tor
   SetNameTitle(name,name);
@@ -81,6 +79,7 @@ Bool_t AliITSURecoLayer::Build()
   // build internal structures
   fNLadders = fITSGeom->GetNLadders(fActiveID);
   fNSensInLadder = fITSGeom->GetNDetectors(fActiveID);
+  const AliITSsegmentation* kSegm = fITSGeom->GetSegmentation(fActiveID);
   //
   // name layer according its active id, detector type and segmentation tyoe
   TGeoHMatrix mmod;
@@ -104,11 +103,11 @@ Bool_t AliITSURecoLayer::Build()
       double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
       mmod = *fITSGeom->GetMatrix(fActiveID,ild,idt);
       for (int ix=0;ix<2;ix++) {
-	loc[0] = (ix-0.5)*fkSegm->Dx(); // +-DX/2
+	loc[0] = (ix-0.5)*kSegm->Dx(); // +-DX/2
 	for (int iy=0;iy<2;iy++) {
-	  loc[1] = (iy-0.5)*fkSegm->Dy(); // +-DY/2
+	  loc[1] = (iy-0.5)*kSegm->Dy(); // +-DY/2
 	  for (int iz=0;iz<2;iz++) {
-	    loc[2] = (iz-0.5)*fkSegm->Dz(); // +-DZ/2
+	    loc[2] = (iz-0.5)*kSegm->Dz(); // +-DZ/2
 	    //
 	    mmod.LocalToMaster(loc,glo);
 	    double phi = ATan2(glo[1],glo[0]);

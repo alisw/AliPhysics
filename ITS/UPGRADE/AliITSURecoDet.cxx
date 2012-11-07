@@ -13,14 +13,12 @@ AliITSURecoDet::AliITSURecoDet(const char* name)
   ,fRMin(-1)
   ,fLayers(0)
   ,fLayersActive(0)
-  ,fSegmentations(0)
   ,fITSGeom(0)
 {
   // def. c-tor
   SetNameTitle(name,name);
   fLayers.SetOwner(kTRUE);        // layers belong to this array
   fLayersActive.SetOwner(kFALSE); // this one just points on active layers in fLayers
-  fSegmentations.SetOwner(kTRUE); // segmentations are owned by the detector
 }
 
 //______________________________________________________
@@ -29,7 +27,6 @@ AliITSURecoDet::~AliITSURecoDet()
   // def. d-tor
   fLayersActive.Clear(); 
   fLayers.Clear();         // owned!
-  fSegmentations.Clear();  // owned!
   delete fITSGeom;
 }
 
@@ -59,11 +56,9 @@ Bool_t AliITSURecoDet::Build()
 {
   // build detector from TGeo
   //
-  fITSGeom = new AliITSUGeomTGeo(kTRUE);
+  fITSGeom = new AliITSUGeomTGeo(kTRUE,kTRUE);
   int nlr = fITSGeom->GetNLayers();
   if (!nlr) AliFatal("No geometry loaded");
-  AliITSUSegmentationPix::LoadSegmentations(&fSegmentations, fITSGeom->GetITSsegmentationFileName());
-  if (!fSegmentations.GetEntriesFast()) AliFatal(Form("Segmentations from %s are not loaded",fITSGeom->GetITSsegmentationFileName()));
   //
   // build active ITS layers
   for (int ilr=0;ilr<nlr;ilr++) {
@@ -71,11 +66,9 @@ Bool_t AliITSURecoDet::Build()
     int nLad = fITSGeom->GetNLadders(ilr);
     int nDet = fITSGeom->GetNDetectors(ilr);
     // name layer according its active id, detector type and segmentation tyoe
-    AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)fSegmentations.At(lrTyp);
-    if (!segm) { AliFatal(Form("Did not find segmentation type %d",lrTyp)); continue; }
     AliITSURecoLayer* lra = new AliITSURecoLayer( Form("Lr%d%s%d",ilr,fITSGeom->GetDetTypeName(lrTyp),
 						       lrTyp%AliITSUGeomTGeo::kMaxSegmPerDetType),
-						  ilr,nLad*nDet,fITSGeom,segm);
+						  ilr,nLad*nDet,fITSGeom);
     lra->Build();
     AddLayer(lra);
   }

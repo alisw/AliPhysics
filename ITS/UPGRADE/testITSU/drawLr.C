@@ -22,10 +22,8 @@ void drawLr(int layMin=1,int layMax=1)
   AliGeomManager::ApplyAlignObjsToGeom(*array);
   gGeoManager->LockGeometry();
 
-  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  TObjArray segmArr;
-  AliITSUSegmentationPix::LoadSegmentations(&segmArr, AliITSUGeomTGeo::GetITSsegmentationFileName());
-  
+  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
+  TObjArray* segmArr = gm->GetSegmentations();  
   //
   int nlr = gm->GetNLayers();
   if (layMin<0) layMin = 0;
@@ -44,7 +42,7 @@ void drawLr(int layMin=1,int layMax=1)
 
   for (Int_t lay=layMin;lay<=layMax;lay++) {
     //
-    AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)segmArr.At(gm->GetLayerDetTypeID(lay));
+    AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)segmArr->At(gm->GetLayerDetTypeID(lay));
     for (int ild=0;ild<gm->GetNLadders(lay);ild++) {
     
       // Sensor Matrices

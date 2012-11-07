@@ -40,6 +40,7 @@
 
 class TGeoPNEntry;
 class TDatime;
+class AliITSsegmentation;
 
 class AliITSUGeomTGeo : public TObject {
 
@@ -47,7 +48,7 @@ class AliITSUGeomTGeo : public TObject {
   enum {kITSVNA, kITSVUpg}; // ITS version
   enum {kDetTypePix=0, kNDetTypes, kMaxSegmPerDetType=10}; // defined detector types (each one can have different segmentations)
   //
-  AliITSUGeomTGeo(Bool_t build = kFALSE);
+  AliITSUGeomTGeo(Bool_t build = kFALSE, Bool_t loadSegmentations = kTRUE);
   virtual ~AliITSUGeomTGeo(); 
   AliITSUGeomTGeo(const AliITSUGeomTGeo &src);
   AliITSUGeomTGeo& operator=(const AliITSUGeomTGeo &geom);
@@ -105,6 +106,9 @@ class AliITSUGeomTGeo : public TObject {
   Int_t  GetLayerDetTypeID(Int_t lr)                                         const;
   Int_t  GetModuleDetTypeID(Int_t id)                                        const;
   //
+  const AliITSsegmentation* GetSegmentationByID(Int_t id)                    const;
+  const AliITSsegmentation* GetSegmentation(Int_t lr)                        const;
+  TObjArray*          GetSegmentations()                                     const {return (TObjArray*)fSegm;}
   virtual void Print(Option_t *opt="")  const;
 
   static const char* GetITSVolPattern()                                 {return fgkITSVolName;}
@@ -137,9 +141,9 @@ class AliITSUGeomTGeo : public TObject {
   Int_t        ExtractNumberOfLadders(Int_t lay)                  const;
   Int_t        ExtractLayerDetType(Int_t lay)                     const;
   Int_t        ExtractNumberOfLayers()                            const;
-  void         BuildITS();
+  void         BuildITS(Bool_t loadSegm);
   //
- private:
+ protected:
   //
   //
   Int_t  fVersion;             // ITS Version 
@@ -152,6 +156,7 @@ class AliITSUGeomTGeo : public TObject {
   //
   TObjArray* fMatSens;         // Sensor's matrices pointers in the geometry
   TObjArray* fMatT2L;          // Tracking to Local matrices pointers in the geometry
+  TObjArray* fSegm;            // segmentations
   //
   static const char*  fgkITSVolName;             // ITS mother volume name
   static const char*  fgkITSLrName;              // ITS Layer name
@@ -298,6 +303,20 @@ inline const char* AliITSUGeomTGeo::GetDetTypeName(Int_t i)
 {
   if (i>=kNDetTypes) i/=kMaxSegmPerDetType; // full type is provided
   return fgkITSDetTypeName[i];
+}
+
+//_____________________________________________________________________________________________
+inline const AliITSsegmentation* AliITSUGeomTGeo::GetSegmentationByID(Int_t id) const 
+{
+  // get segmentation by ID
+  return fSegm ? (AliITSsegmentation*)fSegm->At(id) : 0;
+}
+
+//_____________________________________________________________________________________________
+inline const AliITSsegmentation* AliITSUGeomTGeo::GetSegmentation(Int_t lr) const 
+{
+  // get segmentation of layer
+  return fSegm ? (AliITSsegmentation*)fSegm->At( GetLayerDetTypeID(lr) ) : 0;
 }
 
 #endif

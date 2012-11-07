@@ -41,7 +41,6 @@ ClassImp(AliITSUReconstructor)
 AliITSUReconstructor::AliITSUReconstructor() 
 :  AliReconstructor()
   ,fGM(0)
-  ,fSegmArr(0)
   ,fClusterFinders(0)
   ,fRecPoints(0)
 {
@@ -72,7 +71,6 @@ AliITSUReconstructor::~AliITSUReconstructor()
   }
   //
   delete fGM;
-  fSegmArr.Delete();
 } 
 
 //______________________________________________________________________
@@ -81,15 +79,13 @@ void AliITSUReconstructor::Init()
   // Initalize this constructor 
   if (fGM) AliFatal("was already done, something is wrong...");
   //
-  fGM = new AliITSUGeomTGeo(kTRUE);
-  AliITSUSegmentationPix::LoadSegmentations(&fSegmArr, AliITSUGeomTGeo::GetITSsegmentationFileName());
+  fGM = new AliITSUGeomTGeo(kTRUE,kTRUE);
   //  
   AliITSUClusterizer* clusPIX = 0;
   TClonesArray* rpArrayPix = 0;
   //
   for (int ilr=fGM->GetNLayers();ilr--;) {
-    int tp = fGM->GetLayerDetTypeID(ilr);
-    int tpDet = tp/AliITSUGeomTGeo::kMaxSegmPerDetType;
+    int tpDet = fGM->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
     if (tpDet == AliITSUGeomTGeo::kDetTypePix) {
       if (!clusPIX)    clusPIX    = new AliITSUClusterizer();
       if (!rpArrayPix) rpArrayPix = new TClonesArray(AliCluster::Class());
@@ -97,8 +93,8 @@ void AliITSUReconstructor::Init()
       fClusterFinders.AddAtAndExpand(clusPIX, ilr);
       fRecPoints.AddAtAndExpand(rpArrayPix, ilr);
       //
-      AliITSUSegmentationPix* sg = (AliITSUSegmentationPix*)fSegmArr.At(tp);
-      clusPIX->SetSegmentation(sg); // to expand the buffers to max.size
+      // to expand the buffers to max.size
+      clusPIX->SetSegmentation((AliITSUSegmentationPix*)fGM->GetSegmentation(ilr)); 
       continue;
     }
     else {
@@ -140,11 +136,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   //
   for (int ilr=0;ilr<fGM->GetNLayers();ilr++) {
     //
-    int tp = fGM->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
-    AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)fSegmArr.At(tp);
-    //
     clFinder = (AliITSUClusterizer*)fClusterFinders[ilr];
-    clFinder->SetSegmentation(segm);
+    clFinder->SetSegmentation((AliITSUSegmentationPix*)fGM->GetSegmentation(ilr));
     clFinder->SetClusters(rpClones[ilr]);
     //
     int modF=fGM->GetFirstModIndex(ilr);

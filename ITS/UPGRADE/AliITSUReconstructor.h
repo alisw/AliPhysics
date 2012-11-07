@@ -39,8 +39,7 @@ private:
   AliITSUReconstructor(const AliITSUReconstructor &); //Not implemented
   AliITSUReconstructor& operator=(const AliITSUReconstructor &); //Not implemented
 
-  AliITSUGeomTGeo* fGM;   // geometry wrapper
-  TObjArray        fSegmArr;     // Array of different pixel segmentations
+  AliITSUGeomTGeo* fGM;          // geometry wrapper
   TObjArray        fClusterFinders; // array of clusterfinders per layer
   TObjArray        fRecPoints;      // container for recpoints TClonesArrays
   //

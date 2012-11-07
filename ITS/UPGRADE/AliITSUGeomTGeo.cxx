@@ -33,10 +33,13 @@
 #include <TGeoPhysicalNode.h>
 #include <TDatime.h>
 #include <TMath.h>
+#include <TSystem.h>
 
 #include "AliITSUGeomTGeo.h"
 #include "AliLog.h"
 #include "AliAlignObj.h"
+#include "AliITSsegmentation.h"
+#include "AliITSUSegmentationPix.h"
 using namespace TMath;
 
 ClassImp(AliITSUGeomTGeo)
@@ -52,7 +55,7 @@ const char* AliITSUGeomTGeo::fgkITSDetTypeName[AliITSUGeomTGeo::kNDetTypes] = {"
 TString     AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
 
 //______________________________________________________________________
-AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build)
+AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build, Bool_t loadSegm)
   :fVersion(kITSVNA)
   ,fNLayers(0)
   ,fNModules(0)
@@ -62,9 +65,10 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build)
   ,fLastModIndex(0)
   ,fMatSens(0)
   ,fMatT2L(0)
+  ,fSegm(0)
 {
   // default c-tor
-  if (build) BuildITS();
+  if (build) BuildITS(loadSegm);
 }
 
 //______________________________________________________________________
@@ -79,6 +83,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   ,fLastModIndex(0)
   ,fMatSens(0)
   ,fMatT2L(0)
+  ,fSegm(0)
 {
   // copy c-tor
   if (fNLayers) {
@@ -105,7 +110,17 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
       fMatT2L->SetOwner(kTRUE);
       for (int i=0;i<fNModules;i++) {
 	const TGeoHMatrix* mat =(TGeoHMatrix*) src.fMatT2L->At(i);
-	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
+	fMatT2L->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
+    if (src.fSegm) {
+      int sz = src.fSegm->GetEntriesFast();
+      fSegm = new TObjArray(sz);
+      fSegm->SetOwner(kTRUE);
+      for (int i=0;i<sz;i++) {
+	AliITSsegmentation* sg = (AliITSsegmentation*)src.fSegm->UncheckedAt(i);
+	if (!sg) continue;
+	fSegm->AddAt(sg->Clone(),i);
       }
     }
   }
@@ -121,6 +136,7 @@ AliITSUGeomTGeo::~AliITSUGeomTGeo()
   delete[] fLastModIndex;
   delete fMatT2L;
   delete fMatSens;
+  delete fSegm;
 }
 
 
@@ -153,6 +169,16 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
       for (int i=0;i<fNModules;i++) {
 	const TGeoHMatrix* mat = (TGeoHMatrix*) src.fMatT2L->At(i);
 	fMatT2L->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
+    if (src.fSegm) {
+      int sz = src.fSegm->GetEntriesFast();
+      fSegm = new TObjArray(sz);
+      fSegm->SetOwner(kTRUE);
+      for (int i=0;i<sz;i++) {
+	AliITSsegmentation* sg = (AliITSsegmentation*)src.fSegm->UncheckedAt(i);
+	if (!sg) continue;
+	fSegm->AddAt(sg->Clone(),i);
       }
     }
     //
@@ -500,7 +526,7 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
 }
 
 //______________________________________________________________________
-void AliITSUGeomTGeo::BuildITS()
+void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
 {
   // exract upg ITS parameters from TGeo
   if (fVersion!=kITSVNA) {AliWarning("Already built"); return; // already initialized}
@@ -524,6 +550,11 @@ void AliITSUGeomTGeo::BuildITS()
   //
   FetchMatrices();
   fVersion = kITSVUpg;
+  //
+  if (loadSegm) {  // fetch segmentations
+    fSegm = new TObjArray();
+    AliITSUSegmentationPix::LoadSegmentations(fSegm,GetITSsegmentationFileName());
+  }
   //
 }
 

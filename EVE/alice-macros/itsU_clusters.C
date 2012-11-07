@@ -38,9 +38,7 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
   rl->LoadRecPoints("ITS");
 
   gGeoManager = gEve->GetGeometry("geometry.root");
-  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  TObjArray segmArr;
-  AliITSUSegmentationPix::LoadSegmentations(&segmArr, AliITSUGeomTGeo::GetITSsegmentationFileName());
+  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
 
   TTree *cTree = rl->GetTreeR("ITS", false);
   if (cTree == 0)
@@ -67,13 +65,11 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
   for (int ilr=0;ilr<nlr;ilr++) {
     TClonesArray* clr = (TClonesArray*)layerClus.At(ilr);
     int ncl = clr->GetEntries();
-
+    //      AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)fGM->GetSegmentation(ilr);
     Float_t maxRsqr = maxR*maxR;
     for (Int_t icl = 0; icl < ncl; ++icl) {
       AliCluster *c = (AliCluster*) clr->UncheckedAt(icl);
       Int_t mod = c->GetVolumeId();
-      //      int detType = gm->GetModuleDetTypeID(mod);
-      //      AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)segmArr.At(detType);
       int lay,lad,det;
       gm->GetModuleId(mod, lay,lad,det);
       

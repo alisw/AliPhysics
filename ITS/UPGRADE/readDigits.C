@@ -17,9 +17,7 @@ void readDigits(){
   runLoader->LoadDigits();
 
   AliGeomManager::LoadGeometry("geometry.root");
-  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  TObjArray segmArr;
-  AliITSUSegmentationPix::LoadSegmentations(&segmArr, AliITSUGeomTGeo::GetITSsegmentationFileName());
+  AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
   //
   Int_t nLayers = gm->GetNLayers();
   Int_t nModules = gm->GetNModules();
@@ -64,7 +62,7 @@ void readDigits(){
       sDigTree->GetEntry(imod);
       digTree->GetEntry(imod);      
       int detType = gm->GetModuleDetTypeID(imod);
-      AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)segmArr.At(detType);
+      AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
       int lay,lad,det;
       int nsdig = sDigArr->GetEntries();
       int ndig  = digArr->GetEntries();

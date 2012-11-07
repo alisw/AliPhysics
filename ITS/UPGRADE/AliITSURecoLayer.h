@@ -21,7 +21,7 @@ class AliITSURecoLayer : public TNamed
   //
   enum {kPassive=BIT(14)};
   AliITSURecoLayer(const char* name);
-  AliITSURecoLayer(const char* name, Int_t activeID,Int_t nsens,AliITSUGeomTGeo* gm,const AliITSsegmentation* segm);
+  AliITSURecoLayer(const char* name, Int_t activeID,Int_t nsens,AliITSUGeomTGeo* gm);
   virtual ~AliITSURecoLayer();
   //
   Bool_t             Build();
@@ -68,7 +68,6 @@ class AliITSURecoLayer : public TNamed
   Double_t           fDPhiLadInv;// inverse mean ladder dphi
   TObjArray          fSensors;   // sensors
   AliITSUGeomTGeo*   fITSGeom;   // geometry interface
-  const AliITSsegmentation* fkSegm;     // layer segmentation
   //
  private:
   AliITSURecoLayer(const AliITSURecoLayer &source); 

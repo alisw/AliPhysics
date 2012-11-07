@@ -5,7 +5,6 @@
 #include <TObjArray.h>
 #include "AliITSURecoLayer.h"
 class AliITSUGeomTGeo;
-class AliITSsegmentation;
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
@@ -30,7 +29,6 @@ class AliITSURecoDet : public TNamed
   AliITSURecoLayer*  GetLayer(Int_t i)             const;
   AliITSURecoLayer*  GetLayerActive(Int_t i)       const;
   AliITSUGeomTGeo*   GetGeom()                     const {return fITSGeom;}
-  TObjArray*         GetSegmentations()            const {return (TObjArray*)&fSegmentations;}
   //
   void               SetRMin(Double_t r)                 {fRMin = r;}
   void               SetRMax(Double_t r)                 {fRMax = r;}
@@ -47,8 +45,6 @@ class AliITSURecoDet : public TNamed
   Double_t           fRMin;           // min  R
   TObjArray          fLayers;         // layers
   TObjArray          fLayersActive;   // active layers
-  //
-  TObjArray          fSegmentations;
   AliITSUGeomTGeo*   fITSGeom;        // ITS geometry
   //
  private:
