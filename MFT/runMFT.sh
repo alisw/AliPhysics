@@ -19,6 +19,7 @@ cp $ALICE_ROOT/MFT/.rootrc \
    $ALICE_ROOT/MFT/runReconstruction.C \
    $ALICE_ROOT/MFT/runSimulation.C \
    $ALICE_ROOT/MFT/AliMuonForwardTrackFinder.C \
+   $ALICE_ROOT/MFT/FilterMuonGlobalTracks.C \
    $ALICE_ROOT/MFT/AliMFTClusterQA.C \
    $ALICE_ROOT/MFT/AliMFTGeometry.root \
    $OUTDIR 
