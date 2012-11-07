@@ -56,6 +56,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMcIdFamily(""),
   fNClusForDirPho(0),
   fDirPhoPt(0),
+  fHigherPtCone(0),
   fESD(0),
   fMCEvent(0),
   fStack(0),
@@ -68,6 +69,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
+  fHigherPtConeM02(0),
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
@@ -101,6 +103,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMcIdFamily(""),
   fNClusForDirPho(0),
   fDirPhoPt(0),
+  fHigherPtCone(0),
   fESD(0),
   fMCEvent(0),
   fStack(0),
@@ -113,6 +116,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
+  fHigherPtConeM02(0),
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
@@ -168,6 +172,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   fNClusHighClusE = new TH2F("hNClusHighClusE","total number of clusters vs. highest clus energy in the event;E (GeV);NClus",200,0,100,301,-0.5,300.5);
   fOutputList->Add(fNClusHighClusE);
+
+  fHigherPtConeM02 = new TH2F("hHigherPtConeM02","#lambda_{0}^{2} vs. in-cone-p_{T}^{max};p_{T}^{max} (GeV/c, in the cone);#lambda_{0}^{2}",1000,0,100,400,0,4);
+  fOutputList->Add(fHigherPtConeM02);
 
   fClusEtMcPt = new TH2F("hClusEtMcPt","E_{T}^{clus} vs. p_{T}^{mc}; p_{T}^{mc};E_{T}^{clus}",500,0,100,500,0,100);
   fOutputList->Add(fClusEtMcPt);
@@ -357,6 +364,12 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
     GetCeIso(clsVec, ceiso, cephiband, cecore);
     GetTrIso(clsVec, triso, trphiband, trcore);
+    Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
+    if(Et>10 && Et<15 && dr>0.025){
+      fHigherPtConeM02->Fill(fHigherPtCone,c->GetM02());
+      if(fDebug)
+	printf("\t\tHigher track pt inside the cone: %1.1f GeV/c; M02=%1.2f\n",fHigherPtCone,c->GetM02());
+    }
     alliso = ceiso + triso;
     allphiband = cephiband + trphiband;
     allcore = cecore + trcore;
@@ -441,6 +454,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
 
   if(!fSelPrimTracks)
     return;
+  fHigherPtCone = 0;
   const Int_t ntracks = fSelPrimTracks->GetEntries();
   Double_t totiso=0;
   Double_t totband=0;
@@ -457,6 +471,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
     Double_t deta = TMath::Abs(track->Eta()-etacl);
     Double_t R = TMath::Sqrt(deta*deta + dphi*dphi);
     Double_t pt = track->Pt();
+    if(pt>fHigherPtCone)
+      fHigherPtCone = pt;
     if(R<fIsoConeR){
       totiso += track->Pt();
       if(R<0.04)
