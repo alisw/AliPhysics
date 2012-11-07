@@ -2,6 +2,63 @@ const Int_t numberOfCentralityBins = 8;
 TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
 const Int_t gRebin = 1;
+
+//____________________________________________________________//
+void drawCorrelationFunctionPsiAllPtCombinations(const char* filename = "AnalysisResults.root", 
+						 Int_t gCentrality = 1,
+						 Int_t gBit = -1,
+						 const char* gCentralityEstimator = 0x0,
+						 Bool_t kShowShuffled = kFALSE, 
+						 Bool_t kShowMixed = kTRUE, 
+						 Double_t psiMin = -0.5, 
+						 Double_t psiMax = 3.5){
+
+  // this could also be retrieved directly from AliBalancePsi
+  const Int_t kNPtBins = 16;
+  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+
+  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
+
+  for(Int_t iTrig = 0; iTrig < 2/*kNPtBins*/; iTrig++){
+    for(Int_t iAssoc = 0; iAssoc < 2/*kNPtBins*/; iAssoc++){
+      cout<<"================================================================="<<endl;
+      cout<<"PROCESS NOW: "<<endl; 
+      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
+      drawCorrelationFunctionPsi(filename,gCentrality,gBit,gCentralityEstimator,kShowShuffled,kShowMixed,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
+      cout<<"================================================================="<<endl;
+      cout<<endl;
+    }
+  }
+
+}
+
+//____________________________________________________________//
+void drawCorrelationFunctionsAllPtCombinations(const char* lhcPeriod = "LHC11h",
+					       Int_t gTrainID = 171,			      
+					       Int_t gCentrality = 1,
+					       Double_t psiMin = -0.5, Double_t psiMax = 3.5) 
+{
+
+ // this could also be retrieved directly from AliBalancePsi
+  const Int_t kNPtBins = 16;
+  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+
+  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
+
+  for(Int_t iTrig = 0; iTrig < 2/*kNPtBins*/; iTrig++){
+    for(Int_t iAssoc = 0; iAssoc < 2/*kNPtBins*/; iAssoc++){
+      cout<<"================================================================="<<endl;
+      cout<<"FIT NOW: "<<endl; 
+      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
+      drawCorrelationFunctions(lhcPeriod,gTrainID,gCentrality,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
+      cout<<"================================================================="<<endl;
+      cout<<endl;
+    }
+  }  
+
+}
+
+
 void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root", 
 				Int_t gCentrality = 1,
 				Int_t gBit = -1,
@@ -788,10 +845,50 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     gHistNN[3]->SetName("gHistNNCorrelationFunctions"); gHistNN[3]->Write();
   }
   newFile->Close();
+
+  // some cleaning
+  for(Int_t i = 0; i < 4; i++){
+
+    if(!listBFShuffled && i == 1) continue;
+    if(!listBFMixed && (i == 2 || i == 3)) continue;
+
+    if(gHistPP[i]) delete gHistPP[i];
+    if(gHistPN[i]) delete gHistPN[i];
+    if(gHistNP[i]) delete gHistNP[i];
+    if(gHistNN[i]) delete gHistNN[i];
+    
+    if(cPN[i]) delete cPN[i];
+    if(cNP[i]) delete cNP[i];
+    if(cPP[i]) delete cPP[i];
+    if(cNN[i]) delete cNN[i];
+  }
+
+  delete hP;
+  delete hN;
+  delete hPP;
+  delete hPN;
+  delete hNP;
+  delete hNN;
+
+  delete hPMixed;
+  delete hNMixed;
+  delete hPPMixed;
+  delete hPNMixed;
+  delete hNPMixed;
+  delete hNNMixed;
+
+  delete hPShuffled;
+  delete hNShuffled;
+  delete hPPShuffled;
+  delete hPNShuffled;
+  delete hNPShuffled;
+  delete hNNShuffled;
+
 }
 
 //____________________________________________________________//
 void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
+			      Int_t gTrainID = 171,			      
 			      Int_t gCentrality = 1,
 			      Double_t psiMin = -0.5, Double_t psiMax = 3.5,
 			      Double_t ptTriggerMin = -1.,
@@ -806,7 +903,8 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
 
   //Get the input file
   TString filename = "PbPb/"; filename += lhcPeriod; 
-  filename +="/Train208/Centrality"; filename += gCentrality;
+  filename +="/Train"; filename += gTrainID;
+  filename +="/Centrality"; filename += gCentrality;
   filename += "/correlationFunction.Centrality";
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
@@ -1025,6 +1123,9 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
 			     Double_t ptAssociatedMin = -1.,
 			     Double_t ptAssociatedMax = -1.,
 			     TH2D *gHist) {
+
+  cout<<"FITTING FUNCTION"<<endl;
+
   //near side peak: [1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))
   //away side ridge: [5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))
   //longitudinal ridge: [8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))
