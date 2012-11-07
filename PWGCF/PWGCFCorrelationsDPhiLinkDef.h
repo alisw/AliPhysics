@@ -19,4 +19,6 @@
 #pragma link C++ class AliDhcTask+;
 #pragma link C++ class AliLeadingV0Correlation+;
 #pragma link C++ class AliLeadingBasicParticle+;
+#pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
+#pragma link C++ class LRCParticle;
 #endif
