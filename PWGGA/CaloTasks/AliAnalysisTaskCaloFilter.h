@@ -86,6 +86,9 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   //void    SwitchOffLoadOwnPHOSGeometryMatrices()              { fLoadPHOSMatrices = kFALSE ; }
   //void    SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i)  { fPHOSMatrix[i]    = m      ; }
     
+  void    SwitchOnCheckEventPrimaryVertex()       { fCheckEventVertex = kTRUE   ; }
+  void    SwitchOffCheckEventPrimaryVertex()      { fCheckEventVertex = kFALSE  ; }
+
   void    SwitchOnFillAODFile()                   { fFillAODFile = kTRUE        ; }
   void    SwitchOffFillAODFile()                  { fFillAODFile = kFALSE       ; }
 
@@ -188,6 +191,8 @@ private:
   
   Float_t             fVzCut;             //  At least events with vertex within cut
   
+  Bool_t              fCheckEventVertex;  // Check the primary vertex of the event or not
+
   AliVEvent*          fEvent;             //! event pointer
   AliESDEvent*        fESDEvent;          //! ESD event pointer
   AliAODEvent*        fAODEvent;          //! AOD event pointer
