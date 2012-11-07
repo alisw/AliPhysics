@@ -95,6 +95,7 @@ public:
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
    virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
+   virtual void        SetDropToShell(Bool_t drop=true)                  {fDropToShell = drop;}
 
    TGridJDL           *GetGridJDL() const {return fGridJDL;}
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
@@ -147,6 +148,8 @@ public:
    virtual void        SetNproofWorkersPerSlave(Int_t nworkers)          {fNproofWorkersPerSlave = nworkers;}
    virtual void        SetRootVersionForProof(const char *version)       {fRootVersionForProof = version;}
    virtual void        SetAliRootMode(const char *mode)                  {fAliRootMode = mode;}
+   virtual void        SetProofProcessOpt(const char *proofOpt="")       {fProofProcessOpt = proofOpt;}
+   virtual TString     GetProofProcessOpt()                              {return fProofProcessOpt;}
    // .txt file containing the list of files to be chained in test mode
    virtual void        SetFileForTestMode(const char *filename)          {fFileForTestMode = filename;}
    virtual TChain     *GetChainForTestMode(const char *treeName) const;
@@ -228,12 +231,14 @@ private:
    TString          fFileForTestMode; // .txt file for the chain to be used in PROOF test mode
    TString          fRootVersionForProof; // ROOT version to be used in PROOF mode. The default one taken if empty.
    TString          fAliRootMode;     // AliRoot mode among the list supported by the proof cluster
+   TString          fProofProcessOpt; // Option passed to proof process
    TString          fMergeDirName;    // Name of the directory that should be added to the output directory
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
    TMap             fProofParam;      // Key-value pairs for proof mode
+   Bool_t           fDropToShell;     // If true, execute aliensh on start
    
-   ClassDef(AliAnalysisAlien, 20)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 21)   // Class providing some AliEn utilities
 };
 #endif

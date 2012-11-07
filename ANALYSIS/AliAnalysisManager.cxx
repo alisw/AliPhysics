@@ -1947,6 +1947,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    }   
    fMode = kProofAnalysis;
    TString line;
+   TString proofProcessOpt;
    SetEventLoop(kTRUE);
    // Set the dataset flag
    TObject::SetBit(kUseDataSet);
@@ -1963,6 +1964,8 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       } else {
          dataset = fGridHandler->GetProofDataSet();
       }
+
+      proofProcessOpt = fGridHandler->GetProofProcessOpt();
    }   
 
    if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
@@ -1976,8 +1979,8 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    line = Form("gProof->AddInput((TObject*)%p);", this);
    gROOT->ProcessLine(line);
    Long_t retv;
-   line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
-               dataset, nentries, firstentry);
+   line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"%s\", %lld, %lld);",
+               dataset,proofProcessOpt.Data(), nentries, firstentry);
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
    retv = (Long_t)gROOT->ProcessLine(line);
    return retv;

@@ -133,11 +133,13 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fFileForTestMode(),
                   fRootVersionForProof(),
                   fAliRootMode(),
+                  fProofProcessOpt(),
                   fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0),
                   fModules(0),
-                  fProofParam()
+                  fProofParam(),
+                  fDropToShell(true)
 {
 // Dummy ctor.
    SetDefaults();
@@ -206,11 +208,13 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fFileForTestMode(),
                   fRootVersionForProof(),
                   fAliRootMode(),
+                  fProofProcessOpt(),
                   fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0),
                   fModules(0),
-                  fProofParam()
+                  fProofParam(),
+                  fDropToShell(true)
 {
 // Default ctor.
    SetDefaults();
@@ -279,11 +283,13 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fFileForTestMode(other.fFileForTestMode),
                   fRootVersionForProof(other.fRootVersionForProof),
                   fAliRootMode(other.fAliRootMode),
+                  fProofProcessOpt(other.fProofProcessOpt),
                   fMergeDirName(other.fMergeDirName),
                   fInputFiles(0),
                   fPackages(0),
                   fModules(0),
-                  fProofParam()
+                  fProofParam(),
+                  fDropToShell(other.fDropToShell)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -394,7 +400,9 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fFileForTestMode         = other.fFileForTestMode;
       fRootVersionForProof     = other.fRootVersionForProof;
       fAliRootMode             = other.fAliRootMode;
+      fProofProcessOpt         = other.fProofProcessOpt;
       fMergeDirName            = other.fMergeDirName;
+      fDropToShell             = other.fDropToShell;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -3450,10 +3458,16 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       if (!Submit()) return kFALSE;
    }   
          
-   Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
-   \n You may exit at any time and terminate the job later using the option <terminate> \
-   \n ##################################################################################", jobID.Data());
-   gSystem->Exec("aliensh");
+   if (fDropToShell) {
+      Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
+      \n You may exit at any time and terminate the job later using the option <terminate> \
+      \n ##################################################################################", jobID.Data());
+      gSystem->Exec("aliensh");
+   } else {
+      Info("StartAnalysis", "\n#### SUBMITTED JOB %s TO ALIEN QUEUE #### \
+      \n Remember to terminate the job later using the option <terminate> \
+      \n ##################################################################################", jobID.Data());
+   }   
    return kTRUE;
 }
 
@@ -3621,12 +3635,20 @@ Bool_t AliAnalysisAlien::SubmitMerging()
       if (!fRunNumbers.Length() && !fRunRange[0]) break;
    }
    if (!ntosubmit) return kTRUE;
-   Info("StartAnalysis", "\n #### STARTING AN ALIEN SHELL FOR YOU. You can exit any time or inspect your jobs in a different shell.##########\
-                          \n Make sure your jobs are in a final state (you can resubmit failed ones via 'masterjob <id> resubmit ERROR_ALL')\
-                          \n Rerun in 'terminate' mode to submit all merging stages, each AFTER the previous one completed. The final merged \
-                          \n output will be written to your alien output directory, while separate stages in <Stage_n>. \
-                          \n ################################################################################################################");
-   gSystem->Exec("aliensh");
+   if (fDropToShell) {
+      Info("StartAnalysis", "\n #### STARTING AN ALIEN SHELL FOR YOU. You can exit any time or inspect your jobs in a different shell.##########\
+                             \n Make sure your jobs are in a final state (you can resubmit failed ones via 'masterjob <id> resubmit ERROR_ALL')\
+                             \n Rerun in 'terminate' mode to submit all merging stages, each AFTER the previous one completed. The final merged \
+                             \n output will be written to your alien output directory, while separate stages in <Stage_n>. \
+                             \n ################################################################################################################");
+      gSystem->Exec("aliensh");
+   } else {
+      Info("StartAnalysis", "\n #### STARTED MERGING JOBS FOR YOU #### \
+                             \n Make sure your jobs are in a final state (you can resubmit failed ones via 'masterjob <id> resubmit ERROR_ALL') \
+                             \n Rerun in 'terminate' mode to submit all merging stages, each AFTER the previous one completed. The final merged \
+                             \n output will be written to your alien output directory, while separate stages in <Stage_n>. \
+                             \n ################################################################################################################");   
+   }   
    return kTRUE;
 }
 

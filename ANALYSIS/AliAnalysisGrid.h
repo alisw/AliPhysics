@@ -139,6 +139,8 @@ enum EPluginBits {
    virtual void        SetNproofWorkersPerSlave(Int_t nworkers)          = 0;
    virtual void        SetRootVersionForProof(const char *version)       = 0;
    virtual void        SetAliRootMode(const char *mode)                  = 0;
+   virtual void        SetProofProcessOpt(const char *proofOpt="")       = 0;
+   virtual TString     GetProofProcessOpt()                              = 0;
    // .txt file containing the list of files to be chained in test mode
    virtual void        SetFileForTestMode(const char *filename)          = 0;
    virtual TChain     *GetChainForTestMode(const char *treeName) const   = 0;
