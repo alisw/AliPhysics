@@ -40,8 +40,9 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput();
   
-  // Setters
+  // Setters/Getters
   
+  AliAnaCaloTrackCorrMaker* GetAnalysisMaker()    { return fAna          ; }
   void         SetAnalysisMaker(AliAnaCaloTrackCorrMaker * const maker) 
                                                   { fAna = maker         ; } 
   

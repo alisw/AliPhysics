@@ -34,21 +34,22 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    AddAnalysis(TObject* ana, Int_t n) ;
 
+  TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
   TList * GetListOfAnalysisCuts();
   TList * GetOutputContainer() ;
-
+  
   TList * FillAndGetAODBranchList();
   
-  Int_t   GetAnaDebug()        const  { return fAnaDebug    ; }
-  void    SetAnaDebug(Int_t d)        { fAnaDebug = d       ; }
+  Int_t   GetAnaDebug()           const { return fAnaDebug    ; }
+  void    SetAnaDebug(Int_t d)          { fAnaDebug = d       ; }
 	
-  Bool_t  AreHistogramsMade()   const { return fMakeHisto   ; }
-  void    SwitchOnHistogramsMaker()   { fMakeHisto = kTRUE  ; }
-  void    SwitchOffHistogramsMaker()  { fMakeHisto = kFALSE ; }
+  Bool_t  AreHistogramsMade()     const { return fMakeHisto   ; }
+  void    SwitchOnHistogramsMaker()     { fMakeHisto = kTRUE  ; }
+  void    SwitchOffHistogramsMaker()    { fMakeHisto = kFALSE ; }
  
-  Bool_t  AreAODsMade()         const { return fMakeAOD     ; }
-  void    SwitchOnAODsMaker()         { fMakeAOD = kTRUE    ; }
-  void    SwitchOffAODsMaker()        { fMakeAOD = kFALSE   ; }
+  Bool_t  AreAODsMade()           const { return fMakeAOD     ; }
+  void    SwitchOnAODsMaker()           { fMakeAOD = kTRUE    ; }
+  void    SwitchOffAODsMaker()          { fMakeAOD = kFALSE   ; }
   	
 
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
