@@ -76,6 +76,7 @@ class AliUEHistograms : public TNamed
   void SetZVtxRange(Float_t min, Float_t max);
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
+  void SetTrackEtaCut(Float_t value);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   void SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }

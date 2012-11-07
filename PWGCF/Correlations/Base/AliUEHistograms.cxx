@@ -660,13 +660,20 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	if (fEfficiencyCorrection && applyEfficiency)
 	{
 	  Int_t effVars[4];
+	  
+	  // associated particle
 	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(eta[j]);
-	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]);
-	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]);
-	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]); //pt
+	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]); //centrality
+	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]); //zVtx
 	  
 // 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrection->GetBinContent(effVars));
 	  
+	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	  
+	  // trigger particle
+	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[2]); //pt
 	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
 	}
     
@@ -683,7 +690,21 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         vars[0] = triggerParticle->Pt();
         vars[1] = centrality;
 	vars[2] = zVtx;
-        fNumberDensityPhi->GetEventHist()->Fill(vars, step);
+
+	Double_t useWeight = 1;
+	if (fEfficiencyCorrection && applyEfficiency)
+	{
+	  Int_t effVars[4];
+	  
+	  // trigger particle
+	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[0]); //pt
+	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[1]); //centrality
+	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[2]); //zVtx
+	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	}
+	
+        fNumberDensityPhi->GetEventHist()->Fill(vars, step, useWeight);
       }
     }
   }
@@ -824,6 +845,16 @@ void AliUEHistograms::SetCombineMinMax(Bool_t flag)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->SetCombineMinMax(flag);
+}
+
+//____________________________________________________________________
+void AliUEHistograms::SetTrackEtaCut(Float_t value)
+{
+  // sets track eta cut for all contained AliUEHist classes
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetTrackEtaCut(value);
 }
 
 //____________________________________________________________________

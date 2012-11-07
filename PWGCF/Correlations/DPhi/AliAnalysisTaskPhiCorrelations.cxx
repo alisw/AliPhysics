@@ -245,6 +245,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetPairCuts(fCutConversions, fCutResonances);
   fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
   
+  fHistos->SetTrackEtaCut(fTrackEtaCut);
+  fHistosMixed->SetTrackEtaCut(fTrackEtaCut);
+  
   if (fEfficiencyCorrection)
   {
     fHistos->SetEfficiencyCorrection(fEfficiencyCorrection);
