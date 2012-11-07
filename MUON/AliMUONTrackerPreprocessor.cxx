@@ -48,7 +48,7 @@ AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shut
 : AliMUONPreprocessor("MCH",shuttle),
 fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
 fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
-fHVSubprocessor(new AliMUONHVSubprocessor(this)),
+fHVSubprocessor(new AliMUONHVSubprocessor(this,kTRUE)),
 fGainSubprocessor(new AliMUONGainSubprocessor(this)),
 fOccupancySubprocessor(new AliMUONOccupancySubprocessor(this))
 {
@@ -106,6 +106,10 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     Add(fHVSubprocessor,useDCS); // to be called only for physics runs
     Add(fOccupancySubprocessor);
     Log("INFO-Will run HV subprocessor");
+    if ( fHVSubprocessor->IncludeHVCurrent() )
+    {
+      Log("INFO-HV subprocessor will store HV currents in addition to the voltages");
+    }
     Log("INFO-Will run Occupancy subprocessor");
   }
   else

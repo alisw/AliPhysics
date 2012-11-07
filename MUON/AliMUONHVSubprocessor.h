@@ -19,18 +19,22 @@
 class AliMUONHVSubprocessor : public AliMUONVSubprocessor
 {
 public:
-  AliMUONHVSubprocessor(AliMUONPreprocessor* master);
+  AliMUONHVSubprocessor(AliMUONPreprocessor* master, Bool_t includeHVcurrents=kFALSE);
   virtual ~AliMUONHVSubprocessor();
   
   virtual UInt_t Process(TMap* dcsAliasMap);
 
+  Bool_t IncludeHVCurrent() const { return fIncludeHVCurrents; }
+  
 private:
   /// Not implemented
   AliMUONHVSubprocessor(const AliMUONHVSubprocessor&);
   /// Not implemented
   AliMUONHVSubprocessor& operator=(const AliMUONHVSubprocessor&);
   
-  ClassDef(AliMUONHVSubprocessor,1) // Shuttle Subprocessor for MUON TRK HV
+  Bool_t fIncludeHVCurrents; // whether or not to transfer also HV current (in addition to HV voltages)
+  
+  ClassDef(AliMUONHVSubprocessor,2) // Shuttle Subprocessor for MUON TRK HV
 };
 
 #endif

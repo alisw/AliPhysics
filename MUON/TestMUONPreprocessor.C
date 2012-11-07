@@ -41,7 +41,7 @@
 /// correctly :
 ///
 /// <pre>
-/// cd $ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB
+/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Calib
 /// cd MUON/Calib
 /// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData .
@@ -50,7 +50,7 @@
 /// and Align/Baseline if you'd like to test GMS subprocessor :
 ///
 /// <pre>
-/// cd $ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB
+/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Align
 /// cd MUON/Align
 /// ln -si $ALICE_ROOT/OCDB/MUON/Align/Baseline .
@@ -165,8 +165,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
 
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
-  const char* inputCDB = "local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB";
-  //const char* inputCDB = "alien://folder=/alice/testdata/2008/TS08a/OCDB";
+  const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
   
   AliTestShuttle::SetMainCDB(inputCDB);
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
@@ -177,8 +176,6 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   if ( rt.Contains("PHYSICS") )
   {
     // Create DCS aliases
-    UInt_t startTime, endTime;
-    
     TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB, runNumber);
 
     if ( dcsAliasMap ) 
@@ -394,8 +391,16 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
         {
           Float_t value = 0;
           if(sDetName.Contains("TRACKER")){
-            value = random.Gaus(1750,62.5);
-            if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
+            if ( aliasName.Contains("vMon"))
+            {
+              value = random.Gaus(1750,62.5);
+              if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
+            }
+            else
+            {
+              value = random.Gaus(10,2);
+              if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.iMon") value = 50;
+            }
           }
           else if(aliasName.Contains("iMon")){
             value = random.Gaus(2.,0.4);

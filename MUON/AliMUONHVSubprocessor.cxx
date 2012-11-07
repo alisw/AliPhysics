@@ -45,10 +45,10 @@ ClassImp(AliMUONHVSubprocessor)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONHVSubprocessor::AliMUONHVSubprocessor(AliMUONPreprocessor* master)
+AliMUONHVSubprocessor::AliMUONHVSubprocessor(AliMUONPreprocessor* master, Bool_t includeHVcurrents)
 : AliMUONVSubprocessor(master,
                        "HV",
-                       "Get MUON Tracker HV values from DCS")
+                       "Get MUON Tracker HV values from DCS"), fIncludeHVCurrents(includeHVcurrents)
 {
   /// ctor
 }
@@ -90,12 +90,20 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
         for ( int i = 0; i <3; ++i)
         {
           aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId,i)));
+          if ( fIncludeHVCurrents )
+          {
+            aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId,i,AliMpDCSNamer::kDCSI)));
+          }
         }
       }
       break;
       case AliMp::kStation345:
       {
         aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId)));
+        if ( fIncludeHVCurrents )
+        {
+          aliases.Add(new TObjString(hvNamer.DCSAliasName(detElemId,0,AliMpDCSNamer::kDCSI)));
+        }
         for ( int i = 0; i < hvNamer.NumberOfPCBs(detElemId); ++i)
         {
           aliases.Add(new TObjString(hvNamer.DCSSwitchAliasName(detElemId,i)));
@@ -133,8 +141,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
       }
       else
       {
-	RemoveValuesOutsideRun(values);
-
+        RemoveValuesOutsideRun(values);
         hv.Add(new TObjString(aliasName.Data()),values);
       }
     }

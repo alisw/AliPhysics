@@ -644,7 +644,9 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
       TString name(hvChannelName->String());
       
       if ( name.Contains("sw") ) continue; // skip switches
-      
+
+      if ( name.Contains("iMon") ) continue; // skip HV currents
+
       TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(name.Data()));
       TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
       if (!values)

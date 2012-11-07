@@ -725,59 +725,61 @@ AliMpDCSNamer::GenerateAliases() const
   
   TObjArray* aliases = new TObjArray;
   aliases->SetOwner(kTRUE);
-
+  
   Int_t nMeasures = (fDetector == kTriggerDet) ? kNDCSMeas : 1;
   
   for(Int_t iMeas=0; iMeas<nMeasures; iMeas++){
-
+    
     AliMpDEIterator it;
-  
+    
     it.First();
-  
+    
     while (!it.IsDone())
     {
       Int_t detElemId = it.CurrentDEId();
       switch (fDetector){
-      case kTrackerDet:
-      {
-	switch ( AliMpDEManager::GetStationType(detElemId) )
-	{
-	case AliMp::kStation12:
-	  for ( int sector = 0; sector < 3; ++sector)
-	  {
-	    aliases->Add(new TObjString(DCSAliasName(detElemId,sector)));
-	  }
-	  break;
-	case AliMp::kStation345:
-	  aliases->Add(new TObjString(DCSAliasName(detElemId)));
-	  for ( Int_t i = 0; i < NumberOfPCBs(detElemId); ++i )
-	  {
-	    aliases->Add(new TObjString(DCSSwitchAliasName(detElemId,i)));
-	  }
-	  break;
-	default:
-	  break;
-	}
-      }
-      break;
-      case kTriggerDet:
-      {
-	switch ( AliMpDEManager::GetStationType(detElemId) )
-	{
-	case AliMp::kStationTrigger:
-	  AliDebug(10,Form("Current DetElemId %i",detElemId));
-	  aliases->Add(new TObjString(DCSAliasName(detElemId,0,iMeas)));
-	  break;
-	default:
-	  break;
-	}
-      }
-      break;
+        case kTrackerDet:
+        {
+          switch ( AliMpDEManager::GetStationType(detElemId) )
+          {
+            case AliMp::kStation12:
+              for ( int sector = 0; sector < 3; ++sector)
+              {
+                aliases->Add(new TObjString(DCSAliasName(detElemId,sector)));
+                aliases->Add(new TObjString(DCSAliasName(detElemId,sector,AliMpDCSNamer::kDCSI)));
+              }
+              break;
+            case AliMp::kStation345:
+              aliases->Add(new TObjString(DCSAliasName(detElemId)));
+              aliases->Add(new TObjString(DCSAliasName(detElemId,0,AliMpDCSNamer::kDCSI)));
+              for ( Int_t i = 0; i < NumberOfPCBs(detElemId); ++i )
+              {
+                aliases->Add(new TObjString(DCSSwitchAliasName(detElemId,i)));
+              }
+              break;
+            default:
+              break;
+          }
+        }
+          break;
+        case kTriggerDet:
+        {
+          switch ( AliMpDEManager::GetStationType(detElemId) )
+          {
+            case AliMp::kStationTrigger:
+              AliDebug(10,Form("Current DetElemId %i",detElemId));
+              aliases->Add(new TObjString(DCSAliasName(detElemId,0,iMeas)));
+              break;
+            default:
+              break;
+          }
+        }
+          break;
       }
       it.Next();
     } // loop on detElemId
   } // Loop on measurement type
-
+  
   return aliases;
 }
 
