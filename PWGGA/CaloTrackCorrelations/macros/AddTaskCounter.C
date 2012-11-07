@@ -9,7 +9,13 @@ AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "MB")
   //if     (kCollision=="pp"  )   counter->SetZVertexCut(10.);  //Open cut
   //else if(kCollision=="PbPb")   counter->SetZVertexCut(10.);  //Centrality defined in this range.
   
-  if(trigger=="EMC7")
+
+  if(trigger=="EMC8")
+  {
+    printf("counter trigger EMC8\n");
+    counter->SelectCollisionCandidates(AliVEvent::kEMC8);
+  }
+  else if(trigger=="EMC7")
   {
     printf("counter trigger EMC7\n");
     counter->SelectCollisionCandidates(AliVEvent::kEMC7);
