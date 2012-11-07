@@ -302,6 +302,64 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
 }
 
 //-------------------------------------------------------------------
+void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcObj)
+{
+  // remove particles from weak decays
+  // <tracks> can be the following cases:
+  // a. tracks: in this case the label is taken and then case b.
+  // b. particles: it is checked if IsSecondaryFromWeakDecay is true
+  // <mcObj> can be AOD (TClonesArray) or ESD (AliMCEvent)
+  
+  TClonesArray* arrayMC = 0;
+  AliMCEvent* mcEvent = 0;
+  if (mcObj->InheritsFrom("AliMCEvent"))
+    mcEvent = static_cast<AliMCEvent*>(mcObj);
+  else if (mcObj->InheritsFrom("TClonesArray"))
+    arrayMC = static_cast<TClonesArray*>(mcObj);
+  else
+  {
+    arrayMC->Dump();
+    AliFatal("Invalid object passed");
+  }
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) 
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+    
+    if (part->InheritsFrom("AliESDtrack") || part->InheritsFrom("AliAODTrack"))
+      part = ((mcEvent) ? mcEvent->GetTrack(TMath::Abs(part->GetLabel())) : (AliVParticle*)arrayMC->At(TMath::Abs(part->GetLabel())));
+    
+    if (part->InheritsFrom("AliAODMCParticle"))
+    {
+      if (!((AliAODMCParticle*) part)->IsSecondaryFromWeakDecay())
+	continue;
+    }
+    else if (part->InheritsFrom("AliMCParticle") && mcEvent)
+    {
+      if (!(mcEvent->Stack()->IsSecondaryFromWeakDecay(((AliMCParticle*) part)->Label())))
+	continue;
+    }
+    else
+    {
+      part->Dump();
+      AliFatal("Unknown particle");
+    }
+    
+//     Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+    TObject* object = tracks->RemoveAt(i);
+    if (tracks->IsOwner())
+      delete object;
+  }
+ 
+  tracks->Compress();
+  
+  if (before > tracks->GetEntriesFast())
+    AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
+}
+
+//-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
@@ -479,7 +537,6 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
   
   return nTracks;
 }
-
 
 //-------------------------------------------------------------------
 AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies)

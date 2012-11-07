@@ -130,6 +130,7 @@ fCutResonances(kFALSE),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
+fRemoveWeakDecays(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -355,6 +356,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
   settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
+  settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
@@ -482,6 +484,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
   if (fInjectedSignals)
     fAnalyseUE->RemoveInjectedSignals(tmpList, mc, skipParticlesAbove);
+  if (fRemoveWeakDecays)
+    fAnalyseUE->RemoveWeakDecays(tmpList, mc);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
@@ -551,6 +555,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	  fAnalyseUE->RemoveInjectedSignals(primRecoTracksMatched, mc, skipParticlesAbove);
 	  fAnalyseUE->RemoveInjectedSignals(allRecoTracksMatched, mc, skipParticlesAbove);
 	}
+	
+	if (fRemoveWeakDecays)
+	{
+	  fAnalyseUE->RemoveWeakDecays(primMCParticles, mc);
+	  fAnalyseUE->RemoveWeakDecays(primRecoTracksMatched, mc);
+	  fAnalyseUE->RemoveWeakDecays(allRecoTracksMatched, mc);
+	}
       
         fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, particleSpecies, centrality, zVtx);
         
@@ -565,6 +576,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	fAnalyseUE->RemoveInjectedSignals((TObjArray*) fakeParticles->At(0), mc, skipParticlesAbove);
 	fAnalyseUE->RemoveInjectedSignals((TObjArray*) fakeParticles->At(1), mc, skipParticlesAbove);
+      }
+      if (fRemoveWeakDecays)
+      {
+	fAnalyseUE->RemoveWeakDecays((TObjArray*) fakeParticles->At(0), mc);
+	fAnalyseUE->RemoveWeakDecays((TObjArray*) fakeParticles->At(1), mc);
       }
       fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality, zVtx);
       fHistos->FillFakePt(fakeParticles, centrality);
@@ -582,6 +598,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE);
       if (fInjectedSignals)
 	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedPrim, mc, skipParticlesAbove);
+      if (fRemoveWeakDecays)
+	fAnalyseUE->RemoveWeakDecays(tracksRecoMatchedPrim, mc);
       
       // (RECO-matched (quantities from MC particle) primary particles)
       // STEP 4
@@ -602,7 +620,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, -1, kTRUE);
       if (fInjectedSignals)
 	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedAll, mc, skipParticlesAbove);
-      
+      if (fRemoveWeakDecays)
+	fAnalyseUE->RemoveWeakDecays(tracksRecoMatchedAll, mc);
+     
       // (RECO-matched (quantities from MC particle) all particles)
       // STEP 5
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll, 0, weight);
@@ -622,6 +642,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       if (fInjectedSignals)
 	fAnalyseUE->RemoveInjectedSignals(tracks, mc, skipParticlesAbove);
+      if (fRemoveWeakDecays)
+	fAnalyseUE->RemoveWeakDecays(tracks, mc);
      
       // (RECO all tracks)
       // STEP 6
