@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1)
+AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1, TString trackName="PicoTrack")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -48,6 +48,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1)
 
  AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
  taskMB->SetEventMethod(EvtMthod);
+ taskMB->SetTracksName(trackName.Data());
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_pi0v2CalSemiCentral";
