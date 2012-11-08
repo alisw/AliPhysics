@@ -338,7 +338,7 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
     }
     else if (part->InheritsFrom("AliMCParticle") && mcEvent)
     {
-      if (!(mcEvent->Stack()->IsSecondaryFromWeakDecay(((AliMCParticle*) part)->Label())))
+      if (!(mcEvent->Stack()->IsSecondaryFromWeakDecay(part->GetLabel())))
 	continue;
     }
     else

@@ -112,13 +112,19 @@ AliUEHist::AliUEHist(const char* reqHist) :
 						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
 
   // pT
-  //iTrackBin[1] = 20;
-  //Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
   iTrackBin[1] = 9;
   Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0 };
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
+  // pT, fine
+  const Int_t kNpTBinsFine = 22;
+  Double_t pTBinsFine[kNpTBinsFine+1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0};
+
+  // pT, wide range
+  //const Int_t kNpTBinsWideRange = 20;
+  //Double_t pTBinsWideRange[kNpTBinsWideRange+1] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+
   // pT,lead binning 1
   const Int_t kNLeadingpTBins = 100;
   Double_t leadingpTBins[kNLeadingpTBins+1];
@@ -127,7 +133,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   // pT,lead binning 2
   //const Int_t kNLeadingpTBins2 = 8;
-  //Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
+//   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
   const Int_t kNLeadingpTBins2 = 6;
   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
   
@@ -318,13 +324,14 @@ AliUEHist::AliUEHist(const char* reqHist) :
 
   SetStepNames(fEventHist);
   
+  iTrackBin[1] = kNpTBinsFine;
   iTrackBin[2] = kNSpeciesBins;
   iTrackBin[4] = kNVertexBins2;
 
   fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 5, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
   fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
-  fTrackHistEfficiency->SetBinLimits(1, trackBins[1]);
+  fTrackHistEfficiency->SetBinLimits(1, pTBinsFine);
   fTrackHistEfficiency->SetVarTitle(1, trackAxisTitle[1]);
   fTrackHistEfficiency->SetBinLimits(2, speciesBins);
   fTrackHistEfficiency->SetVarTitle(2, "particle species");
