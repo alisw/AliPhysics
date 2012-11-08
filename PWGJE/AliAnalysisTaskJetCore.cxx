@@ -537,12 +537,12 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 	 std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
-   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
-      if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
-      fHistEvtSelection->Fill(2);
-      PostData(1, fOutputList);
-      return;
-   }
+	   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
+	 if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
+	 fHistEvtSelection->Fill(2);
+	   PostData(1, fOutputList);
+	   return;
+	    }
 
    // vertex selection
    if(!aod){
@@ -620,6 +620,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
      if(externalBackground)rho = externalBackground->GetBackground(0);}
    if(fFlagRandom==1){
       if(externalBackground)rho = externalBackground->GetBackground(2);}
+   if(fFlagRandom==2){
+      if(externalBackground)rho = externalBackground->GetBackground(3);}
 
    // fetch jets
    TClonesArray *aodJets[2];
