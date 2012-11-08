@@ -408,12 +408,12 @@ void AliMUONRecoCheck::MakeTriggeredTracks()
 }
 
 //_____________________________________________________________________________
-void AliMUONRecoCheck::TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack)
+Bool_t AliMUONRecoCheck::TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack)
 {
   /// Make trigger track from local trigger info
-  if ( ! InitCircuit() ) return;
+  if ( ! InitCircuit() ) return kFALSE;
   AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
-  tracker->TriggerToTrack(*fTriggerCircuit, locTrg, triggerTrack);
+  return tracker->TriggerToTrack(*fTriggerCircuit, locTrg, triggerTrack);
 }
 
 

@@ -1297,15 +1297,15 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
     if ( locTrg->IsTrigX() && locTrg->IsTrigY() ) 
     { // make Trigger Track if trigger in X and Y
       
-      TriggerToTrack(circuit, *locTrg, triggerTrack, gloTrigPat);
+      if (TriggerToTrack(circuit, *locTrg, triggerTrack, gloTrigPat))
+	triggerTrackStore.Add(triggerTrack);
 
-      triggerTrackStore.Add(triggerTrack);
     } // board is fired 
   } // end of loop on Local Trigger
 }
 
 //__________________________________________________________________________
-void AliMUONVTrackReconstructor::TriggerToTrack(const AliMUONTriggerCircuit& circuit,
+Bool_t AliMUONVTrackReconstructor::TriggerToTrack(const AliMUONTriggerCircuit& circuit,
                                                 const AliMUONLocalTrigger& locTrg,
                                                 AliMUONTriggerTrack& triggerTrack,
                                                 UChar_t globalTriggerPattern)
@@ -1332,6 +1332,8 @@ void AliMUONVTrackReconstructor::TriggerToTrack(const AliMUONTriggerCircuit& cir
   AliDebug(1, Form(" MakeTriggerTrack %3d %2d %2d %2d (%f %f %f) (%f %f)\n",locTrg.LoCircuit(),
                    locTrg.LoStripX(),locTrg.LoStripX()+deviation+1,locTrg.LoStripY(),x11, y11, z11, y21, z21));
       
+  if (TMath::Abs(z11) < 0.00001) return kFALSE;
+
   Double_t deltaZ = z11 - z21;
       
   Float_t slopeX = x11/z11;
@@ -1358,4 +1360,7 @@ void AliMUONVTrackReconstructor::TriggerToTrack(const AliMUONTriggerCircuit& cir
   triggerTrack.SetLoTrgNum(localBoardId);
   triggerTrack.SetCovariances(trigCov);
   triggerTrack.SetUniqueID(locTrg.GetUniqueID());
+
+  return kTRUE;
+
 }

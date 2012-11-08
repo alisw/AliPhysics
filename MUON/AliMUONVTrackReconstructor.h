@@ -55,10 +55,10 @@ class AliMUONVTrackReconstructor : public TObject {
   /// Re-fit the given track
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
   
-  void TriggerToTrack(const AliMUONTriggerCircuit& circuit,
-                      const AliMUONLocalTrigger& locTrg,
-                      AliMUONTriggerTrack& triggerTrack,
-                      UChar_t globalTriggerPattern = 0);
+  Bool_t TriggerToTrack(const AliMUONTriggerCircuit& circuit,
+			const AliMUONLocalTrigger& locTrg,
+			AliMUONTriggerTrack& triggerTrack,
+			UChar_t globalTriggerPattern = 0);
   
   
   

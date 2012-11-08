@@ -41,7 +41,7 @@ public:
   /// Return the list of reconstructed trigger tracks
   AliMUONVTriggerTrackStore* TriggeredTracks(Int_t event);
 
-  void TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack);
+  Bool_t TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack);
 	
   /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
