@@ -53,19 +53,23 @@ public:
 
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
+  virtual void     GetITSdEdxSamples(Double_t s[4]) const {for (int i=4;i--;) s[i]=0;};
   virtual const TBits* GetTPCClusterMapPtr() const {return NULL;}
+  virtual const TBits* GetTPCFitMapPtr()     const {return NULL;}
+  virtual const TBits* GetTPCSharedMapPtr()  const {return NULL;}
   virtual Float_t  GetTPCClusterInfo(Int_t /*nNeighbours*/, Int_t /*type*/, Int_t /*row0*/=0, Int_t /*row1*/=159, Int_t /*type*/= 0) const {return 0.;}
   virtual AliTPCdEdxInfo * GetTPCdEdxInfo() const {return 0x0;}
   virtual UShort_t GetTPCNcls() const { return 0;}
   virtual UShort_t GetTPCNclsF() const { return 0;}
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
   virtual Int_t    GetNumberOfTRDslices() const { return 0; }
+  virtual UChar_t  GetTRDncls() const {return 0;}
   virtual UChar_t  GetTRDntrackletsPID() const { return 0;}
   virtual void     SetDetectorPID(const AliDetectorPID */*pid*/) {;}
   virtual const    AliDetectorPID* GetDetectorPID() const { return 0x0; }
   virtual Double_t GetTRDchi2()          const { return -1;}
   
-  virtual Int_t GetEMCALcluster()     const {return -1;}
+  virtual Int_t GetEMCALcluster()     const {return kEMCALNoMatch;}
   virtual void SetEMCALcluster(Int_t)       {;}
   virtual Bool_t IsEMCAL()            const {return kFALSE;}
 

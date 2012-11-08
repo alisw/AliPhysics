@@ -539,14 +539,51 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
 
   // Set TPC ncls 
   fTPCncls=track->GetTPCNcls();
-
-
+  fTPCnclsF=track->GetTPCNclsF();
+  // TPC cluster maps
+  const TBits* bmap = track->GetTPCClusterMapPtr();
+  if (bmap) SetTPCClusterMap(*bmap);
+  bmap = GetTPCFitMapPtr();
+  if (bmap) SetTPCFitMap(*bmap);
+  bmap = GetTPCSharedMapPtr();
+  if (bmap) SetTPCSharedMap(*bmap);
+  //
   // Set the combined PID
   const Double_t *pid = track->PID();
-  if(pid){
-    for (i=0; i<AliPID::kSPECIES; i++) fR[i]=pid[i];
-  }
+  if(pid) for (i=0; i<AliPID::kSPECIES; i++) fR[i]=pid[i];
+  //
+  // calo matched cluster id
+  SetEMCALcluster(track->GetEMCALcluster());
   // AliESD track label
+  //
+  // PID info
+  fITSsignal = track->GetITSsignal();
+  double itsdEdx[4];
+  track->GetITSdEdxSamples(itsdEdx);
+  SetITSdEdxSamples(itsdEdx);
+  //
+  SetTPCsignal(track->GetTPCsignal(),fTPCsignalS,track->GetTPCsignalN()); // No signalS in AODPid
+  SetTPCdEdxInfo(track->GetTPCdEdxInfo());
+  //
+  fTRDnSlices = track->GetNumberOfTRDslices();
+  if (fTRDnSlices>0) {
+    fTRDslices = new Double32_t[fTRDnSlices*6];
+    for (int isl=fTRDnSlices;isl--;) 
+      for (int ipl=6;ipl--;) 
+	SetTRDslice(track->GetTRDslice(ipl,isl),ipl,isl);
+  }
+  //
+  fTRDncls = track->GetTRDncls();
+  fTRDntracklets &= 0xff & track->GetTRDntrackletsPID();
+  fTRDchi2 = track->GetTRDchi2();
+  //
+  SetTOFsignal(track->GetTOFsignal());
+  Double_t expt[AliPID::kSPECIES];
+  track->GetIntegratedTimes(expt);
+  SetIntegratedTimes(expt);
+  //
+  SetTrackPhiEtaOnEMCal(track->GetTrackPhiOnEMCal(),track->GetTrackEtaOnEMCal());
+  //
   SetLabel(track->GetLabel());
   // Set the status
   SetStatus(track->GetStatus());
@@ -2534,7 +2571,7 @@ void AliESDtrack::SetITSdEdxSamples(const Double_t s[4]) {
 }
 
 //_______________________________________________________________________
-void AliESDtrack::GetITSdEdxSamples(Double_t *s) const {
+void AliESDtrack::GetITSdEdxSamples(Double_t s[4]) const {
   //
   // Get the dE/dx samples measured by the two SSD and two SDD layers.  
   // These samples are corrected for the track segment length.

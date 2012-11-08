@@ -246,9 +246,11 @@ class AliAODTrack : public AliVTrack {
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
+  const TBits* GetTPCFitMapPtr() const {return &fTPCFitMap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t /*type*/=0) const;
   
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
+  const TBits* GetTPCSharedMapPtr() const {return &fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
   void    SetTPCFitMap(const TBits amap) {fTPCFitMap = amap;}
@@ -274,6 +276,7 @@ class AliAODTrack : public AliVTrack {
 
   //pid signal interface
   Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
+  void      GetITSdEdxSamples(Double_t s[4]) const;
   Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
   Double_t  GetTPCsignalTunedOnData() const { return fTPCsignalTuned;}
   void      SetTPCsignalTunedOnData(Double_t signal) {fTPCsignalTuned = signal;}
@@ -287,7 +290,8 @@ class AliAODTrack : public AliVTrack {
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
   Double_t  GetTRDchi2()                 const {return fDetPid ? fDetPid->GetTRDChi2() : -1;}
-  UChar_t   GetTRDncls(Int_t layer = -1) const;
+  UChar_t   GetTRDncls(Int_t layer)      const;
+  UChar_t   GetTRDncls()                 const {return GetTRDncls(-1);}
   UChar_t   GetTRDntrackletsPID() const;
   Int_t     GetNumberOfTRDslices() const { return fDetPid?fDetPid->GetTRDnSlices():0; }
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object

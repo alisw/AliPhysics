@@ -169,7 +169,7 @@ public:
 
   Double_t GetITSsignal() const {return fITSsignal;}
   void    SetITSdEdxSamples(const Double_t s[4]);
-  void    GetITSdEdxSamples(Double_t *s) const;
+  void    GetITSdEdxSamples(Double_t s[4]) const;
 
   Double_t GetITSchi2() const {return fITSchi2;}
   Double_t GetITSchi2Std(Int_t step) const {return (step>-1&&step<kNITSchi2Std) ? fITSchi2Std[step] : -1;}
@@ -237,9 +237,11 @@ public:
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCFitMap() const {return fTPCFitMap;}
+  const TBits* GetTPCFitMapPtr() const {return &fTPCFitMap;}
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
+  const TBits* GetTPCSharedMapPtr() const {return &fTPCSharedMap;}
   void    SetTPCFitMap(const TBits &amap) {fTPCFitMap = amap;}
   void    SetTPCClusterMap(const TBits &amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits &amap) {fTPCSharedMap = amap;}

@@ -868,4 +868,10 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 }
 
 
-
+//_______________________________________________________
+void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
+{
+  // get ITS dedx samples
+  if (!fDetPid) for (int i=4;i--;) s[i]=0;
+  else          for (int i=4;i--;) s[i] = fDetPid->GetITSdEdxSample(i);
+}
