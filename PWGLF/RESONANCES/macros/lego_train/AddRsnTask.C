@@ -21,15 +21,17 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
 
    if (isRsnMini) {
       postfix.Prepend("Mini");
-      AliRsnMiniAnalysisTask *taskRsnMini = new AliRsnMiniAnalysisTask(Form("Rsn%s",postfix.Data()),useMC);
+      AliRsnMiniAnalysisTask *taskRsnMini = new AliRsnMiniAnalysisTask(TString::Format("Rsn%s",postfix.Data()).Data(),useMC);
       Int_t refreshPrint = AliRsnTrainManager::GetGlobalInt("RsnMixPrintRefresh",valid);
       if (valid) taskRsnMini->SetMixPrintRefresh(refreshPrint);
       task = (AliAnalysisTaskSE *) taskRsnMini;
    }
    else {
-      AliRsnAnalysisTask *taskRsn = new AliRsnAnalysisTask(Form("Rsn%s",postfix.Data()));
+      AliRsnAnalysisTask *taskRsn = new AliRsnAnalysisTask(TString::Format("Rsn%s",postfix.Data()).Data());
       task = (AliAnalysisTaskSE *) taskRsn;
    }
+   
+   postfix.Append(TString::Format("_%s_%s",rsnPart.Data(),rsnCut.Data()).Data());
 
    if (physSelBit>=0) task->SelectCollisionCandidates((AliVEvent::EOfflineTriggerTypes)physSelBit);
 
