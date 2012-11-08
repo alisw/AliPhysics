@@ -1462,15 +1462,17 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(0,x,y);
-      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
-      if ((time-timeStamp)<5*60) val=y;
+      const Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
+      const Int_t dtime=time-timeStamp;
+      if ( (dtime>0) && (dtime<5*60) ) val=y;
     }
     //last point
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(gr->GetN()-1,x,y);
-      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
-      if ((timeStamp-time)<5*60) val=y;
+      const Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
+      const Int_t dtime=timeStamp-time;
+      if ( (dtime>0) && (dtime<5*60) ) val=y;
     }
   } else {
     val=sensor->GetValue(timeStamp);
