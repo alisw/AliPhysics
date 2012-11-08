@@ -31,9 +31,9 @@ class AliAODPid : public TObject {
   void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=(UChar_t)((tpcN<160)?tpcN:160);}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
   void      SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo);
-  inline void  SetTRDsignal(Int_t nslices, const Double_t * const trdslices);  
+  void      SetTRDsignal(Int_t nslices, const Double_t * const trdslices);  
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
-  inline void  SetTRDncls(UChar_t ncls, Int_t layer = -1);
+  void      SetTRDncls(UChar_t ncls, Int_t layer = -1);
   void      SetTRDntrackletsPID(UChar_t ntls) {fTRDntls = ntls;}
   void      SetTRDChi2(Double_t chi2)          {fTRDChi2 = chi2;}
   void      SetTOFsignal(Double_t tof)                         {fTOFesdsignal=tof;}
@@ -56,7 +56,7 @@ class AliAODPid : public TObject {
   Double_t  GetTRDChi2()         const {return fTRDChi2;}
   const Double_t*  GetTRDmomentum() const {return  fTRDmomentum;}
   UChar_t   GetTRDncls(UChar_t layer) const { if(layer > 5) return 0; return fTRDncls[layer];}
-  inline UChar_t GetTRDncls() const;
+  UChar_t   GetTRDncls() const;
   UChar_t   GetTRDntrackletsPID() const {return fTRDntls;}
   Double_t  GetTOFsignal()       const {return  fTOFesdsignal;}
 
@@ -88,7 +88,7 @@ class AliAODPid : public TObject {
 };
 
 //_____________________________________________________________
-void AliAODPid::SetTRDsignal(Int_t nslices, const Double_t * const trdslices) {
+inline void AliAODPid::SetTRDsignal(Int_t nslices, const Double_t * const trdslices) {
   //
   // Set TRD dE/dx slices and the number of dE/dx slices per track
   //
@@ -101,7 +101,7 @@ void AliAODPid::SetTRDsignal(Int_t nslices, const Double_t * const trdslices) {
 }
 
 //_____________________________________________________________
-void AliAODPid::SetTRDncls(UChar_t ncls, Int_t layer) { 
+inline void AliAODPid::SetTRDncls(UChar_t ncls, Int_t layer) { 
   //
   // Set the number of clusters / tracklet
   // If no layer is specified the full number of clusters will be put in layer 0
@@ -112,7 +112,7 @@ void AliAODPid::SetTRDncls(UChar_t ncls, Int_t layer) {
 }
 
 //_____________________________________________________________
-UChar_t AliAODPid::GetTRDncls() const{
+inline UChar_t AliAODPid::GetTRDncls() const {
   //
   // Get number of clusters per track
   // Calculated as sum of the number of clusters per tracklet
