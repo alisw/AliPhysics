@@ -174,7 +174,7 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
   }
   else
   {
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
     fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
     // Add SPD requirement 
