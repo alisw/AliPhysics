@@ -34,7 +34,7 @@ void drawCorrelationFunctionPsiAllPtCombinations(const char* filename = "Analysi
 
 //____________________________________________________________//
 void drawCorrelationFunctionsAllPtCombinations(const char* lhcPeriod = "LHC11h",
-					       Int_t gTrainID = 171,			      
+					       Int_t gTrainID = 208,			      
 					       Int_t gCentrality = 1,
 					       Double_t psiMin = -0.5, Double_t psiMax = 3.5) 
 {
@@ -888,7 +888,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
 //____________________________________________________________//
 void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
-			      Int_t gTrainID = 171,			      
+			      Int_t gTrainID = 208,			      
 			      Int_t gCentrality = 1,
 			      Double_t psiMin = -0.5, Double_t psiMax = 3.5,
 			      Double_t ptTriggerMin = -1.,
@@ -1193,6 +1193,7 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   newFileName += Form("%.1f",ptAssociatedMax); 
   newFileName += ".root";
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+  gHist->Write();
   gHistFit->Write();
   gHistResidual->Write();
   gFitFunction->Write();
