@@ -1507,11 +1507,19 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t sigma2=0.;
      Double_t meanarea2=0.;
 
+     Double_t bkg4=0;
+     Double_t sigma4=0.;
+     Double_t meanarea4=0.;
+
      clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
      fAODJetBackgroundOut->SetBackground(0,bkg1,sigma1,meanarea1);
 
      //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
-     //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));    
+     //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));      
+       clustSeq.get_median_rho_and_sigma(sortedJets, range, true, bkg4, sigma4, meanarea4, true);
+     fAODJetBackgroundOut->SetBackground(3,bkg4,sigma4,meanarea4);
+
+     //////////////////////
      
      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
      fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
