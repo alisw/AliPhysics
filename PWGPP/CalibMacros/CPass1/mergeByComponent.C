@@ -18,7 +18,7 @@ void mergeByComponent(TString       component,
   //   to connect in case alien_xx utilities are not available 
   //   liek on the alien nodes
   /* load libs */
-  printf("Executing MergeByComponent.C\n");
+  printf("Executing mergeByComponent.C\n");
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   TH1::AddDirectory(0);
 
@@ -51,9 +51,14 @@ void mergeByComponent(TString       component,
 
 void MergeCPass(const Char_t *list, TString component, TString outputFileName="CalibObjects.root")
 {
+  //AliTPCcalibTimeGain::SetMergeEntriesCut(2000000);
+  //AliTPCcalibGainMult::SetMergeEntriesCut(2000000);
+  //AliTPCcalibAlign::SetMergeEntriesCut(10000000);
+  //AliTPCcalibTracks::SetMergeEntriesCut(10000000);
+  //AliTPCcalibTime::SetResHistoMergeCut(10000000);
   AliFileMerger merger;
-  merger.SetNoTrees(kFALSE);
   /* select what to merge */
+  merger.SetNoTrees(kFALSE);
   if (component == "ALL")
     merger.AddReject("esdFriend");
   else
