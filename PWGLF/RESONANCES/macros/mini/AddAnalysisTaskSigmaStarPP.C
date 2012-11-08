@@ -106,7 +106,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(-0.8, 0.8);
+   cutY->SetRangeD(-0.5, 0.5);
    
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
