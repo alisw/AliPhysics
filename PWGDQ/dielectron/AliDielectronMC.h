@@ -95,6 +95,7 @@ public:
   void GetDaughters(const TObject *mother, AliVParticle* &d1, AliVParticle* &d2);
   Int_t IsJpsiPrimary(const AliDielectronPair * pair);
   Int_t IsJpsiPrimary(const AliVParticle * pair);
+  Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
 
   AliMCEvent* GetMCEvent() { return fMCEvent; }         // return the AliMCEvent
   
@@ -119,7 +120,6 @@ private:
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
-  Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
   Bool_t CheckIsRadiative(Int_t label) const;
   Bool_t CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const;
 

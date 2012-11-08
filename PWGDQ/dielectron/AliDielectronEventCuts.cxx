@@ -38,6 +38,8 @@ Detailed description
 
 ClassImp(AliDielectronEventCuts)
 
+const char* AliDielectronEventCuts::fgkVtxNames[AliDielectronEventCuts::kVtxTracksOrSPD+1] = {"Tracks", "SPD", "TPC", "Any", "TracksOrSPD"};
+
 AliDielectronEventCuts::AliDielectronEventCuts() :
   AliAnalysisCuts(),
   fVtxZmin(0.),
@@ -255,5 +257,31 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   */
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
+{
+  //
+  // Print cuts and the range
+  //
+  printf("cut ranges for '%s'\n",GetTitle());
+  printf("All Cuts have to be fulfilled\n");
+
+  Int_t iCut=0;
+  if(fRequireVtx) {
+    printf("Cut %02d: vertex required \n",iCut);                                   iCut++; }
+  printf("Cut %02d: vertex type: %s \n", iCut, fgkVtxNames[fVtxType]);             iCut++;
+  if(fMinVtxContributors) {
+    printf("Cut %02d: vertex contributors >= %d \n", iCut, fMinVtxContributors);   iCut++; }
+  if(fVtxZmin<fVtxZmax) {
+    printf("Cut %02d: %f < %s < %f\n",     iCut, fVtxZmin, "Zvtx", fVtxZmax);      iCut++;}
+  if(fCentMin<fCentMax) {
+    printf("Cut %02d: %f < %s < %f\n",   iCut, fCentMin, "V0centrality", fCentMax);iCut++; }
+  if(fMultITSTPC) {
+    printf("Cut %02d: cut on multiplcity ITS vs. TPC \n", iCut);                   iCut++; }
+  if(fRequireV0and) {
+    printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
+
 }
 
