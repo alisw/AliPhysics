@@ -73,26 +73,10 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   for (Int_t i=0; i<6; ++i) { //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
-    if (jpsi ) printf("add: %s\n",jpsi->GetName());
+    if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
 
-  //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
-  task->SetEventFilter(eventCuts);
-
   //create output container
-  /*  AliAnalysisDataContainer *coutput1 =
-      mgr->CreateContainer("jbook_tree",
-      TTree::Class(),
-      AliAnalysisManager::kExchangeContainer,
-      "jbook_default");
-  */
-
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer(Form("jbook_QA_%s",triggerNames[j]),
 			 TList::Class(),
