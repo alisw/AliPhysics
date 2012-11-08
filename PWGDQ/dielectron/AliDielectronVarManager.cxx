@@ -79,6 +79,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "PdgCode",
   "PdgCodeMother",
   "PdgCodeGrandMother",
+  "HasCocktailMother",
+  "HasCocktailGrandMother",
+
   "NumberOfDaughters",
   "HaveSameMother",
   "IsJpsiPrimary",

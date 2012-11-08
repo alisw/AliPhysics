@@ -49,10 +49,11 @@ public:
   Bool_t IsSelectedESD(TObject* event);
   Bool_t IsSelectedAOD(TObject* event);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
-  
+
+  void Print(const Option_t* option = "") const;
 
 private:
-
+  static const char* fgkVtxNames[AliDielectronEventCuts::kVtxTracksOrSPD+1];  //vertex names
   Double_t fVtxZmin;                // minimum z vertex position
   Double_t fVtxZmax;                // maximum z vertex position
   Bool_t   fRequireVtx;             // require a vertex

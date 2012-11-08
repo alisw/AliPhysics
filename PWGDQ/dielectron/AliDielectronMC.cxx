@@ -664,10 +664,12 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
   if(daughterLabel<0) return -1;
   if (fAnaType==kAOD) {
     if(!fMcArray) return -1;
-    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
+    if(GetMCTrackFromMCEvent(daughterLabel))
+      return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return -1;
-    return (static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
+    if(GetMCTrackFromMCEvent(daughterLabel))
+      return (static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
   }
   return -1;
 }
