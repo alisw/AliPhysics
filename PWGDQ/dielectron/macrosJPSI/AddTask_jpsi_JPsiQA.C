@@ -60,7 +60,6 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
   task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
   task->SetTriggerMask(triggers);
   //task->SetTriggerMask(AliVEvent::kMB);
-
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
 
@@ -75,15 +74,6 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
-
-  //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","|vtxZ|<10 && ncontrib>0 && centrality<80%");
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
-  task->SetEventFilter(eventCuts);
 
   //create output container
   AliAnalysisDataContainer *cOutputHist1 =
