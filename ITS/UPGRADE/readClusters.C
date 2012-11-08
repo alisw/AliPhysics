@@ -19,6 +19,7 @@ void readClusters(){
   AliGeomManager::LoadGeometry("geometry.root");
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
   Int_t nLayers = gm->GetNLayers();
+  AliITSUClusterPix::SetGeom(gm);
 
   TH2F *xyGlob = new TH2F("xyGlob"," X - Y Global coordinates ",500,-50,50,500,-50,50);
   xyGlob->SetXTitle("cm"); 
@@ -60,6 +61,7 @@ void readClusters(){
 	Double_t loc[3]={cl->GetX(),cl->GetY(),cl->GetZ()}; 
 	Double_t glob[3]; 
 	gm->LocalToGlobal(cl->GetVolumeId(),loc,glob);
+	cl->Print();
 	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
 	       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
 

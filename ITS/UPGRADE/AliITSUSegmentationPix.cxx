@@ -96,8 +96,8 @@ void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
 {
   // Transform from pixel to real local coordinates
-  // returns x, z in cm. RS: TO CHECK if indexing starts from 1 or 0 
-  x = (ix>0) ? Float_t((ix-0.5)*fPitchX) : Float_t((ix+0.5)*fPitchX);
+  // returns x, z in cm. 
+  x = Float_t((ix+0.5)*fPitchX);
   z = Col2Z(iz);
   //
 }

@@ -1,5 +1,14 @@
+#include <TTree.h>
+#include <TObjArray.h>
+#include <TMath.h>
+#include <AliITSUSegmentationPix.h>
 #include "AliITSUClusterizer.h"
-
+#include "AliITSUClusterPix.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliITSUSegmentationPix.h"
+#include "AliITSdigit.h"
+#include "AliITSURecoParam.h"
+using namespace TMath;
 
 ClassImp(AliITSUClusterizer)
 
@@ -7,6 +16,7 @@ ClassImp(AliITSUClusterizer)
 AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow) 
 :  fVolID(-1)
   ,fSegm(0)
+  ,fRecoParam(0)
   ,fInputDigits(0)
   ,fInputDigitsReadIndex(0)
   ,fOutputClusters(0)
@@ -130,28 +140,47 @@ void AliITSUClusterizer::MergeCands(AliITSUClusterizerClusterCand *a,AliITSUClus
 }
 
 //______________________________________________________________________________
-void AliITSUClusterizer::Transform(AliCluster *cluster,AliITSUClusterizerClusterCand *cand) 
+void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizerClusterCand *cand) 
 {
-  // convert set of digits to clusted data
-  Double_t su=0.,sv=0.;
+  // convert set of digits to cluster data in LOCAL frame
+  const double k1to12 = 1./12;
+  //
   Int_t n=0;
   cand->fLastDigit->fNext=0;
+  double x=0,z=0,xmn=1e9,xmx=-1e9,zmn=1e9,zmx=-1e9,px=0,pz=0;
+  float  cx,cz;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-    su+=idigit->fU;
-    sv+=idigit->fV;
+    fSegm->GetPadCxz(idigit->fV,idigit->fU,cx,cz);
+    x += cx;
+    z += cz;
+    if (cx<xmn) xmn=cx;
+    if (cx>xmx) xmx=cx;
+    if (cz<zmn) zmn=cz;
+    if (cz>zmx) zmx=cz;
+    px += fSegm->Dpx(idigit->fV);
+    pz += fSegm->Dpz(idigit->fU);
     ++n;
   }
-  Double_t fac=1./n; // Todo: weighting by signal
-  Double_t detX = fac*sv, detZ = fac*su;
-  
-  // Set local coordinates
-  Float_t x = detX, z = detZ;
-  if (fSegm) { // local coordinates in cm
-    x = (-0.5*fSegm->Dx() + detX*fSegm->Dpx() + 0.5*fSegm->Dpx());
-    z = (-0.5*fSegm->Dz() + detZ*fSegm->Dpz(0)+ 0.5*fSegm->Dpz(0));
+  UChar_t nx=1,nz=1;
+  double dx = xmx-xmn, dz = zmx-zmn;
+  if (n>1) {
+    double fac=1./n;
+    x  *= fac;  // mean coordinates
+    z  *= fac;
+    px *= fac;  // mean pitch
+    pz *= fac; 
+    nx = 1+Nint(dx/px);
+    nz = 1+Nint(dz/pz);
   }
   cluster->SetX(x);
   cluster->SetZ(z);
+  cluster->SetY(0);
+  cluster->SetSigmaZ2(dz*dz*k1to12);
+  cluster->SetSigmaY2(dx*dx*k1to12);
+  cluster->SetSigmaYZ(0);
+  cluster->SetFrameLoc();
+  cluster->SetNxNz(nx,nz);
+  //
   // Set Volume id
   cluster->SetVolumeId(fVolID);
   //    printf("mod %d: (%.4lf,%.4lf)cm\n",fVolID,x,z);
@@ -161,7 +190,7 @@ void AliITSUClusterizer::Transform(AliCluster *cluster,AliITSUClusterizerCluster
 void AliITSUClusterizer::CloseCand(AliITSUClusterizerClusterCand *cand) 
 {
   // finish cluster
-  AliCluster *cluster=NextCluster();
+  AliITSUClusterPix *cluster = (AliITSUClusterPix*)NextCluster();
   Transform(cluster,cand);
   DeallocDigits(cand->fFirstDigit,cand->fLastDigit);
   DeallocCand(cand);

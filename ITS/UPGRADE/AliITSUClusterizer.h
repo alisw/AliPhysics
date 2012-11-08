@@ -1,12 +1,14 @@
 #ifndef ALIITSUCLUSTERIZER_H
 #define ALIITSUCLUSTERIZER_H
 
-#include <AliCluster.h>
-#include <AliITSdigit.h>
-#include <TTree.h>
-#include <TObjArray.h>
 #include <TClonesArray.h>
-#include <AliITSUSegmentationPix.h>
+class TTree;
+class TObjAray;
+class AliITSUSegmentationPix;
+class AliITSdigit;
+class AliCluster;
+class AliITSUClusterPix;
+class AliITSURecoParam;
 
 class AliITSUClusterizer : public TObject 
 {
@@ -18,6 +20,7 @@ class AliITSUClusterizer : public TObject
   virtual ~AliITSUClusterizer();
   void Clusterize();
   void SetSegmentation(const AliITSUSegmentationPix *segm);
+  void SetRecoParam(const AliITSURecoParam* param)     {fRecoParam = param;}
   void SetVolID(Int_t id)                              {fVolID = id;}
   void SetNRow(Int_t nrow);
   // interface methods
@@ -25,7 +28,7 @@ class AliITSUClusterizer : public TObject
   void SetRecPointTreeAddress(TTree */*treeR*/)        {};
   void DigitsToRecPoints(const TObjArray */*digList*/) {};
   
-  void SetDigits(TClonesArray *digits)             {fInputDigits=digits;fInputDigitsReadIndex=0;}
+  void SetDigits(const TClonesArray *digits)       {fInputDigits=digits;fInputDigitsReadIndex=0;}
   void SetClusters(TClonesArray *clusters)         {fOutputClusters=clusters;}
 
  protected: // transient data types
@@ -69,15 +72,14 @@ class AliITSUClusterizer : public TObject
   // input "iterator"
   AliITSUClusterizerClusterDigit* NextDigit();
   // output "iterator"
-  AliCluster*                     NextCluster() {return new( (*fOutputClusters)[fOutputClusters->GetEntries()] ) AliCluster();}
+  AliCluster*                     NextCluster() {return (AliCluster*)fOutputClusters->New(fOutputClusters->GetEntriesFast());}
   
   // modifiers
   void AttachDigitToCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterDigit *digit);
   void AttachPartToCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterPart *part);
   void DetachPartFromCand(AliITSUClusterizerClusterCand *cand,AliITSUClusterizerClusterPart *part);
   void MergeCands(AliITSUClusterizerClusterCand *a,AliITSUClusterizerClusterCand *b);
-
-  void Transform(AliCluster *cluster,AliITSUClusterizerClusterCand *cand);
+  void Transform(AliITSUClusterPix *cluster, AliITSUClusterizerClusterCand *cand);
   void CloseCand(AliITSUClusterizerClusterCand *cand);
   void ClosePart(AliITSUClusterizerClusterPart *part);
 
@@ -87,21 +89,22 @@ class AliITSUClusterizer : public TObject
   //
   Int_t fVolID;                             // Volume id (module index)
   const AliITSUSegmentationPix* fSegm;      // Segmentation or local coord calc.
+  const AliITSURecoParam*       fRecoParam; // reco params
   //
   // Digit Input
-  TClonesArray *fInputDigits;
-  Int_t         fInputDigitsReadIndex;
+  const TClonesArray *fInputDigits;         // supplied digits
+  Int_t         fInputDigitsReadIndex;      // digits counter
   // Cluster Output
-  TClonesArray *fOutputClusters;
-    
+  TClonesArray *fOutputClusters;            // external container to store clusters
+  //
   // temporary variables
-  AliITSUClusterizerClusterDigit *fDigitFreelist    ; //! 
-  AliITSUClusterizerClusterPart  *fPartFreelist     ; //!
-  AliITSUClusterizerClusterCand  *fCandFreelist     ; //!
-  AliITSUClusterizerClusterDigit *fDigitFreelistBptrFirst; //!
-  AliITSUClusterizerClusterDigit *fDigitFreelistBptrLast ; //!
-  AliITSUClusterizerClusterPart  *fPartFreelistBptr ; //!
-  AliITSUClusterizerClusterCand  *fCandFreelistBptr ; //!
+  AliITSUClusterizerClusterDigit *fDigitFreelist    ; //! pool of local digits
+  AliITSUClusterizerClusterPart  *fPartFreelist     ; //! pool of unfinished clusters
+  AliITSUClusterizerClusterCand  *fCandFreelist     ; //! pool of clusters
+  AliITSUClusterizerClusterDigit *fDigitFreelistBptrFirst; //! pointer in the pool
+  AliITSUClusterizerClusterDigit *fDigitFreelistBptrLast ; //! pointer in the pool
+  AliITSUClusterizerClusterPart  *fPartFreelistBptr ; //! pointer in the pool
+  AliITSUClusterizerClusterCand  *fCandFreelistBptr ; //!pointer in the pool
   //
  private:
   AliITSUClusterizer(const AliITSUClusterizer&); //Not implemented

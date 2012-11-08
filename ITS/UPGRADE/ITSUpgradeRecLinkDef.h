@@ -19,6 +19,7 @@
 #pragma link C++ class AliITSURecoSens+;
 #pragma link C++ class AliITSURecoLayer+;
 #pragma link C++ class AliITSURecoDet+;
+#pragma link C++ class AliITSUClusterPix+;
 
 //
 

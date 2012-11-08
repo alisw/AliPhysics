@@ -34,6 +34,7 @@
 #include "AliITSUSegmentationPix.h"
 #include "AliITSUDigitPix.h"
 #include "AliITSUClusterizer.h"
+#include "AliITSUClusterPix.h"
 
 ClassImp(AliITSUReconstructor)
 
@@ -80,6 +81,7 @@ void AliITSUReconstructor::Init()
   if (fGM) AliFatal("was already done, something is wrong...");
   //
   fGM = new AliITSUGeomTGeo(kTRUE,kTRUE);
+  AliITSUClusterPix::SetGeom(fGM);
   //  
   AliITSUClusterizer* clusPIX = 0;
   TClonesArray* rpArrayPix = 0;
@@ -88,7 +90,7 @@ void AliITSUReconstructor::Init()
     int tpDet = fGM->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
     if (tpDet == AliITSUGeomTGeo::kDetTypePix) {
       if (!clusPIX)    clusPIX    = new AliITSUClusterizer();
-      if (!rpArrayPix) rpArrayPix = new TClonesArray(AliCluster::Class());
+      if (!rpArrayPix) rpArrayPix = new TClonesArray(AliITSUClusterPix::Class());
       //
       fClusterFinders.AddAtAndExpand(clusPIX, ilr);
       fRecPoints.AddAtAndExpand(rpArrayPix, ilr);
@@ -136,9 +138,11 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   //
   for (int ilr=0;ilr<fGM->GetNLayers();ilr++) {
     //
+    rpClones[ilr]->Clear();
     clFinder = (AliITSUClusterizer*)fClusterFinders[ilr];
     clFinder->SetSegmentation((AliITSUSegmentationPix*)fGM->GetSegmentation(ilr));
     clFinder->SetClusters(rpClones[ilr]);
+    clFinder->SetRecoParam(GetRecoParam()); // RS: Do we need to set it for every event?
     //
     int modF=fGM->GetFirstModIndex(ilr);
     int modL=fGM->GetLastModIndex(ilr)+1;
@@ -151,9 +155,10 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
       clFinder->Clusterize();
     }
     //
+    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeTrkID());
+    rpClones[ilr]->Sort();
     AliDebug(1,Form(" -> Lr%d : %d Cluster",ilr,rpClones[ilr]->GetEntries()));
     lrBranch[ilr]->Fill();
-    rpClones[ilr]->Clear();
   }
   clustersTree->SetEntries();
   //
