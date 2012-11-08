@@ -98,6 +98,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
     void   SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
     void   SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
+    void   SetRemoveDuplicates(Bool_t flag = kTRUE) { fRemoveDuplicates = flag; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -108,6 +109,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void            AnalyseDataMode();                                  // main algorithm to get raw distributions
     void            Initialize(); 			                // initialize some common pointer
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
+    void RemoveDuplicates(TObjArray* tracks);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -166,10 +168,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fSkipStep6;		   // skip step 6 when filling
     Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
     Bool_t fRemoveWeakDecays;	   // remove secondaries from weak decays from tracks and particles
+    Bool_t fRemoveDuplicates;      // remove particles with the same label (double reconstruction)
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 18); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 19); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

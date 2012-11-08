@@ -131,6 +131,7 @@ fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
 fRemoveWeakDecays(kFALSE),
+fRemoveDuplicates(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -357,6 +358,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
+  settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
@@ -600,6 +602,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedPrim, mc, skipParticlesAbove);
       if (fRemoveWeakDecays)
 	fAnalyseUE->RemoveWeakDecays(tracksRecoMatchedPrim, mc);
+      if (fRemoveDuplicates)
+	RemoveDuplicates(tracksRecoMatchedPrim);
       
       // (RECO-matched (quantities from MC particle) primary particles)
       // STEP 4
@@ -622,6 +626,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedAll, mc, skipParticlesAbove);
       if (fRemoveWeakDecays)
 	fAnalyseUE->RemoveWeakDecays(tracksRecoMatchedAll, mc);
+      if (fRemoveDuplicates)
+	RemoveDuplicates(tracksRecoMatchedAll);
      
       // (RECO-matched (quantities from MC particle) all particles)
       // STEP 5
@@ -1029,4 +1035,36 @@ void  AliAnalysisTaskPhiCorrelations::Initialize()
          ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   // MC handler
   fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+}
+
+//____________________________________________________________________
+void AliAnalysisTaskPhiCorrelations::RemoveDuplicates(TObjArray* tracks)
+{
+  // remove particles with the same label
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) 
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+    
+    for (Int_t j=i+1; j<before; ++j) 
+    {
+      AliVParticle* part2 = (AliVParticle*) tracks->At(j);
+      
+      if (part->GetLabel() == part2->GetLabel())
+      {
+	Printf("Removing %d with label %d (duplicated in %d)", i, part->GetLabel(), j); part->Dump(); part2->Dump();
+	TObject* object = tracks->RemoveAt(i);
+	if (tracks->IsOwner())
+	  delete object;
+	break;
+      }
+    }
+  }
+ 
+  tracks->Compress();
+  
+  if (before > tracks->GetEntriesFast())
+    AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
