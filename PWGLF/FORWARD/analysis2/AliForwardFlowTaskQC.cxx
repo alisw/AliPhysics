@@ -15,9 +15,10 @@
 #include <TList.h>
 #include <iostream>
 #include <TMath.h>
-#include "TH3D.h"
-#include "TProfile2D.h"
-#include "TGraph.h"
+#include <TH3D.h>
+#include <TProfile2D.h>
+#include <TParameter.h>
+#include <TGraph.h>
 #include "AliLog.h"
 #include "AliForwardFlowTaskQC.h"
 #include "AliAnalysisManager.h"
@@ -26,6 +27,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
+#include "AliForwardUtil.h"
 
 ClassImp(AliForwardFlowTaskQC)
 #if 0
@@ -37,11 +39,14 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC()
     fVtxAxis(),         // Axis to contorl vertex binning
     fFMDCut(-1),        // FMD sigma cut
     fSPDCut(-1),        // SPD sigma cut
+    fFlowFlags(kSymEta),// Flow flags
+    fEtaGap(2.),        // Eta gap value
     fBinsFMD(),         // List with FMD flow histos
     fBinsSPD(),         // List with SPD flow histos
     fSumList(0),	// Event sum list
     fOutputList(0),	// Result output list
     fAOD(0),		// AOD input event
+    fV(),               // Flow moments
     fVtx(1111),	        // Z vertex coordinate
     fCent(-1),		// Centrality
     fHistCent(),        // Histo for centrality
@@ -50,7 +55,6 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC()
   // 
   // Default constructor
   //
-  for (Int_t n = 0; n <= 6; n++) fv[n] = kTRUE;
 }
 //_____________________________________________________________________
 AliForwardFlowTaskQC::AliForwardFlowTaskQC(const char* name) 
@@ -58,11 +62,14 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC(const char* name)
     fVtxAxis(),         // Axis to contorl vertex binning
     fFMDCut(-1),        // FMD sigma cut
     fSPDCut(-1),        // SPD sigma cut
+    fFlowFlags(kSymEta),// Flow flags
+    fEtaGap(2.),        // Eta gap value
     fBinsFMD(),         // List with FMD flow histos
     fBinsSPD(),         // List with SPD flow histos
     fSumList(0),        // Event sum list           
     fOutputList(0),     // Result output list       
     fAOD(0),	        // AOD input event          
+    fV(),               // Flow moments
     fVtx(1111),         // Z vertex coordinate      
     fCent(-1),          // Centrality               
     fHistCent(),        // Histo for centrality
@@ -74,24 +81,23 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC(const char* name)
   // Parameters:
   //  name: Name of task
   //
-  for (Int_t n = 0; n <= 6; n++) fv[n] = kTRUE;
-
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
-//_____________________________________________________________________
-Bool_t AliForwardFlowTaskQC::fgDispVtx = kFALSE;
 //_____________________________________________________________________
 AliForwardFlowTaskQC::AliForwardFlowTaskQC(const AliForwardFlowTaskQC& o)
   : AliAnalysisTaskSE(o),
     fVtxAxis(o.fVtxAxis),              // Axis to contorl vertex binning
     fFMDCut(o.fFMDCut),                // FMD sigma cut
     fSPDCut(o.fSPDCut),                // SPD sigma cut
+    fFlowFlags(o.fFlowFlags),          // Flow flags
+    fEtaGap(o.fEtaGap),                // Eta gap value
     fBinsFMD(),                        // List with FMD flow histos
     fBinsSPD(),                        // List with SPD flow histos
     fSumList(o.fSumList),              // Event sum list           
     fOutputList(o.fOutputList),        // Result output list       
     fAOD(o.fAOD),	               // AOD input event          
+    fV(o.fV),                          // Flow moments
     fVtx(o.fVtx),                      // Z vertex coordinate      
     fCent(o.fCent),	               // Centrality
     fHistCent(o.fHistCent),            // Histo for centrality
@@ -103,7 +109,6 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC(const AliForwardFlowTaskQC& o)
   // Parameters:
   //    o Object to copy from 
   //
-  for (Int_t n = 0; n <= 6; n++) fv[n] = o.fv[n];
 }
 //_____________________________________________________________________
 AliForwardFlowTaskQC&
@@ -116,15 +121,17 @@ AliForwardFlowTaskQC::operator=(const AliForwardFlowTaskQC& o)
   fVtxAxis       = o.fVtxAxis;
   fFMDCut        = o.fFMDCut;
   fSPDCut        = o.fSPDCut;
+  fFlowFlags     = o.fFlowFlags;
+  fEtaGap        = o.fEtaGap;
   fSumList       = o.fSumList;
   fOutputList    = o.fOutputList;
   fAOD           = o.fAOD;
+  fV             = o.fV;
   fVtx           = o.fVtx;
   fCent          = o.fCent;
   fHistCent      = o.fHistCent;
   fHistVertexSel = o.fHistVertexSel;
 
-  for (Int_t n = 0; n <= 6; n++) fv[n] = o.fv[n];
   return *this;
 }
 //_____________________________________________________________________
@@ -147,17 +154,16 @@ void AliForwardFlowTaskQC::InitVertexBins()
   // 
   // Init vertexbin objects for FMD and SPD, and add them to the lists
   //
-  for(UShort_t n = 2; n <= 6; n++) {
-    if (!fv[n]) continue;
+  Int_t moment = 0;
+  for(UShort_t n = 0; n < fV.GetSize(); n++) {
+    moment = fV.At(n);
     for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
       Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
       Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
-      fBinsFMD.Add(new VertexBin(vL, vH, n, "FMD", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
-//      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kFALSE, fSPDCut));
-      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kTRUE, fSPDCut));
+      fBinsFMD.Add(new VertexBin(vL, vH, moment, "FMD", fFlowFlags, fFMDCut, fEtaGap));
+      fBinsSPD.Add(new VertexBin(vL, vH, moment, "SPD", fFlowFlags, fSPDCut, fEtaGap));
     }
   }
-
 }
 //_____________________________________________________________________
 void AliForwardFlowTaskQC::InitHists()
@@ -165,6 +171,7 @@ void AliForwardFlowTaskQC::InitHists()
   //
   // Init histograms and add vertex bin histograms to the sum list
   //
+  
   if (!fSumList)
     fSumList = new TList();
   fSumList->SetName("Sums");
@@ -177,7 +184,7 @@ void AliForwardFlowTaskQC::InitHists()
 
   TList* dList = new TList();
   dList->SetName("Diagnostics");
-  dList->Add(fVtxAxis);
+//  dList->Add(fVtxAxis);
   dList->Add(fHistCent);
   dList->Add(fHistVertexSel);
   fSumList->Add(dList);
@@ -221,7 +228,8 @@ Bool_t AliForwardFlowTaskQC::Analyze()
   fVtx = 1111;
 
   // Get input event
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+//  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  fAOD = dynamic_cast<AliAODEvent*>(AliForwardUtil::GetAODEvent(this));
   if (!fAOD) return kFALSE;
 
   const AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
@@ -234,11 +242,19 @@ Bool_t AliForwardFlowTaskQC::Analyze()
 
   // If everything is OK: get histos and run analysis
   const TH2D& fmddNdetadphi = aodfmult->GetHistogram();
-  FillVtxBinList(fBinsFMD, fmddNdetadphi, vtx);
+  if ((fFlowFlags & kEtaGap)) {
+    FillVtxBinListEtaGap(fBinsFMD, fmddNdetadphi, fmddNdetadphi, vtx);
+  } else {
+    FillVtxBinList(fBinsFMD, fmddNdetadphi, vtx);
+  }
 
   if (aodcmult) {
     const TH2D& spddNdetadphi = aodcmult->GetHistogram();
-    FillVtxBinList(fBinsSPD, spddNdetadphi, vtx);
+    if ((fFlowFlags & kEtaGap)) {
+      FillVtxBinListEtaGap(fBinsSPD, fmddNdetadphi, spddNdetadphi, vtx);
+    } else {
+      FillVtxBinList(fBinsSPD, spddNdetadphi, vtx);
+    }
   }
 
   return kTRUE;
@@ -262,7 +278,35 @@ Bool_t AliForwardFlowTaskQC::FillVtxBinList(const TList& list, const TH2D& h, In
   Int_t nVtxBins = fVtxAxis->GetNbins();
 
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
-    if (!bin->FillHists(h, fCent)) return kFALSE;
+    Bool_t skipFourP = !bin->FillHists(h, fCent, kFillBoth);
+    bin->CumulantsAccumulate(fCent, skipFourP);
+    i++;
+  }
+
+  return kTRUE;
+}
+//_____________________________________________________________________
+Bool_t AliForwardFlowTaskQC::FillVtxBinListEtaGap(const TList& list, const TH2D& href, 
+                                                  const TH2D& hdiff, Int_t vtx) const
+{
+  //
+  // Loops over list of VtxBins, fills hists of bins for current vertex
+  // and runs analysis on those bins
+  //
+  // Parameters:
+  //  list: list of VtxBins
+  //  h:    dN/detadphi histogram
+  //  vBin: current vertex bin
+  //
+  // return true on success
+  //
+  VertexBin* bin = 0;
+  Int_t i = 0;
+  Int_t nVtxBins = fVtxAxis->GetNbins();
+
+  while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
+    bin->FillHists(href, fCent, kFillRef);
+    bin->FillHists(hdiff, fCent, kFillDiff);
     bin->CumulantsAccumulate(fCent);
     i++;
   }
@@ -285,16 +329,20 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
     AliError("Could not retrieve TList fSumList"); 
     return; 
   }
-
-  if (!fOutputList) 
+  if (!fOutputList)
     fOutputList = new TList();
   fOutputList->SetName("Results");
   fOutputList->SetOwner();
 
+  if ((fFlowFlags & kEtaGap)) {
+    TParameter<Double_t>* etaGap = new TParameter<Double_t>("EtaGap", fEtaGap);
+    fOutputList->Add(etaGap);
+  }
+
+  // We make summary histograms of accepted events.
   TList* list = 0;
   TH3D* hist = 0;
   TH1D* cent = 0;
-  // We make summary histograms of accepted events.
   for (Int_t i = 1; i < fSumList->GetEntries(); i++) {
     list = dynamic_cast<TList*>(fSumList->At(i));
     if (!list) continue;
@@ -306,9 +354,11 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
       if (histname[j] == 'v') break;
       name += histname[j];
     }
+    if ((fFlowFlags & kEtaGap)) name += "_etaGap";
     cent = (TH1D*)fOutputList->FindObject(name.Data());
     if (!cent) {
       cent = new TH1D(name.Data(), name.Data(), hist->GetNbinsY(), hist->GetYaxis()->GetXmin(), hist->GetYaxis()->GetXmax());
+      cent->GetXaxis()->Set(hist->GetNbinsY(), hist->GetYaxis()->GetXbins()->GetArray());
       fOutputList->Add(cent);
     }
     for (Int_t k = 1; k <= hist->GetNbinsY(); k++) {
@@ -329,6 +379,16 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
   PostData(2, fOutputList);
 
   return;
+}
+//_____________________________________________________________________
+void AliForwardFlowTaskQC::AddFlowMoment(Short_t n)
+{
+    //
+    // Add a flow moment to be calculated
+    //
+    Int_t size = fV.GetSize();
+    fV.Set(size+1);
+    fV.AddAt(n, size);
 }
 //_____________________________________________________________________
 void AliForwardFlowTaskQC::Finalize()
@@ -381,30 +441,19 @@ void AliForwardFlowTaskQC::MakeCentralityHists(TList* list)
   while ((helper = dynamic_cast<TObject*>(nextProfile()))) {
     if (!(hist2D = dynamic_cast<TProfile2D*>(helper))) continue;
     for (Int_t cBin = 1; cBin <= hist2D->GetNbinsY(); cBin++) {
-      Int_t cRat = 100/hist2D->GetNbinsY();
-      Int_t cMin = cBin - 1;
-      Int_t cMax = (cMin == 60/cRat ? cMin + 20/cRat : ((cMin < 20/cRat || cMin >= 90/cRat) ? cMin + 5/cRat : cMin + 10/cRat));
-      if (fgDispVtx) {
-        cRat = 1;
-	cMin = Int_t(hist2D->GetYaxis()->GetBinLowEdge(cBin));
-        cMax = Int_t(hist2D->GetYaxis()->GetBinUpEdge(cBin));
-      }
-      TString name = Form("cent_%d-%d", cMin*cRat, cMax*cRat);
+      Int_t cMin = Int_t(hist2D->GetYaxis()->GetBinLowEdge(cBin));
+      Int_t cMax = Int_t(hist2D->GetYaxis()->GetBinUpEdge(cBin));
+      TString name = Form("cent_%d-%d", cMin, cMax);
       centList = (TList*)list->FindObject(name.Data());
       if (!centList) { 
 	centList = new TList();
 	centList->SetName(name.Data());
 	list->Add(centList);
       }
-      if (!fgDispVtx) hist1D = hist2D->ProjectionX(Form("%s_%s", hist2D->GetName(), name.Data()), 
-				   cMin+1, cMax, "E");
-      else if ( fgDispVtx) hist1D = hist2D->ProjectionX(Form("%s_%s", hist2D->GetName(), name.Data()), 
+      hist1D = hist2D->ProjectionX(Form("%s_%s", hist2D->GetName(), name.Data()), 
                                          cBin, cBin, "E");
       hist1D->SetTitle(hist1D->GetName());
-      if (!fgDispVtx) hist1D->Scale(1./(cMax-cMin));
       centList->Add(hist1D);
-
-      if (!fgDispVtx) cBin = cMax;
     }
   }
 }
@@ -491,8 +540,9 @@ AliForwardFlowTaskQC::VertexBin::VertexBin()
     fVzMin(0),       // Vertex z-coordinate min
     fVzMax(0),       // Vertex z-coordinate max
     fType(),         // Data type name e.g., FMD/SPD/FMDTR/SPDTR/MC
-    fSymEta(1),      // Use forward-backward symmetry, if detector allows it
+    fFlags(0),       // Use forward-backward symmetry, if detector allows it
     fSigmaCut(-1),   // Sigma cut to remove outlier events
+    fEtaGap(2.),     // Eta gap value
     fCumuRef(),      // Histogram for reference flow
     fCumuDiff(),     // Histogram for differential flow
     fCumuHist(),     // Sum histogram for cumulants
@@ -507,14 +557,16 @@ AliForwardFlowTaskQC::VertexBin::VertexBin()
 //_____________________________________________________________________
 AliForwardFlowTaskQC::VertexBin::VertexBin(Int_t vLow, Int_t vHigh, 
                                            UShort_t moment, TString name,
-                                           Bool_t sym, Double_t cut)
+                                           UShort_t flags, Double_t cut,
+                                           Double_t etaGap)
   : TNamed("", ""),
     fMoment(moment),  // Flow moment for this vertexbin
     fVzMin(vLow),     // Vertex z-coordinate min
     fVzMax(vHigh),    // Vertex z-coordinate max
     fType(name),      // Data type name e.g., FMD/SPD/FMDTR/SPDTR/MC
-    fSymEta(sym),     // Use forward-backward symmetry, if detector allows it
+    fFlags(flags),    // Use forward-backward symmetry, if detector allows it
     fSigmaCut(cut),   // Sigma cut to remove outlier events
+    fEtaGap(etaGap),  // Eta gap value
     fCumuRef(),       // Histogram for reference flow
     fCumuDiff(),      // Histogram for differential flow
     fCumuHist(),      // Sum histogram for cumulants
@@ -534,8 +586,8 @@ AliForwardFlowTaskQC::VertexBin::VertexBin(Int_t vLow, Int_t vHigh,
   //
   fType.ToUpper();
 
-  SetName(Form("%svertexBin%d_%d_%d", fType.Data(), moment, vLow, vHigh));
-  SetTitle(Form("%svertexBin%d_%d_%d", fType.Data(), moment, vLow, vHigh));
+  SetName(Form("%svertexBin%d_%d_%d%s", fType.Data(), moment, vLow, vHigh, ((fFlags & kEtaGap) ? "_etaGap" : "")));
+  SetTitle(Form("%svertexBin%d_%d_%d%s", fType.Data(), moment, vLow, vHigh, ((fFlags & kEtaGap) ? "_etaGap" : "")));
 
   fDebug = AliAnalysisManager::GetAnalysisManager()->GetDebugLevel();
 
@@ -572,63 +624,32 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist)
   //
 
   // First we try to find an outputlist for this vertexbin
-  TList* list = (TList*)outputlist->FindObject(Form("%svertex_%d_%d", fType.Data(), fVzMin, fVzMax));
+  TList* list = (TList*)outputlist->FindObject(Form("%svertex_%d_%d%s", fType.Data(), fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")));
 
   // If it doesn't exist we make one
   if (!list) {
     list = new TList();
-    list->SetName(Form("%svertex_%d_%d", fType.Data(), fVzMin, fVzMax));
+    list->SetName(Form("%svertex_%d_%d%s", fType.Data(), fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")));
     outputlist->Add(list);
   }
 
-  // We initiate the reference histogram according to an acceptance correction map,
-  // so we don't shift the SPD coverage within a reference bin
-  // We start with many bins, to avoid memory problems. After checking for acc maps we
-  // rebin so those with full coverage only have 2 bins.
-  fCumuRef = new TH2D(Form("%s_v%d_%d_%d_ref", fType.Data(), fMoment, fVzMin, fVzMax),
-                        Form("%s_v%d_%d_%d_ref", fType.Data(), fMoment, fVzMin, fVzMax),
-                        48, -6., 6., 5, 0.5, 5.5);
-/*  TFile* acc = TFile::Open("$ALICE_ROOT/PWGLF/FORWARD/corrections/FlowCorrections/FlowAccMap.root", "READ");
-  TH1D* accMap = 0;
-  if (acc) accMap = (TH1D*)acc->Get(Form("%saccVertex_%d_%d", fType.Data(), fVzMin, fVzMax));
-  if (accMap && !fType.EqualTo("FMD")) {
-    Int_t nBins = accMap->GetNbinsX();
-    Double_t eta[48] = { 0. };
-    Int_t n = 0;
-//    Double_t newOcc[48] = { 0. };
-    Double_t prev = -1;
-    for (Int_t i = 0; i < nBins; i++) {
-      Double_t occ = accMap->GetBinContent(i+1);
-      if (prev != occ && (((occ > 0.6 || occ == 0) && i*0.25-6 < 4) || ((occ == 0) && i*0.25-6 >= 4))) {
-        eta[n] = i*0.25-6.;
-//        newOcc[n] = occ;
-        n++;
-        if (fDebug > 5) AliInfo(Form("eta: %f \t occ: %f \t Vertex: %d \n", eta[n-1], occ, fVzMin));
-      }
-      prev = occ;
-    }
-    eta[n] = 6.;
-    fCumuRef->GetXaxis()->Set(n, eta);
-  } else {*/
-    fCumuRef->RebinX(24);
- /* }
-  acc->Close();
-  delete acc;
- */
-
+  // We initiate the reference histogram
+  fCumuRef = new TH2D(Form("%s_v%d_%d_%d%s_ref", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                        Form("%s_v%d_%d_%d%s_ref", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                        2, -6., 6., 5, 0.5, 5.5);
   fCumuRef->Sumw2();
   //list->Add(fCumuRef);
 
   // We initiate the differential histogram
-  fCumuDiff = new TH2D(Form("%s_v%d_%d_%d_diff", fType.Data(), fMoment, fVzMin, fVzMax),
-                       Form("%s_v%d_%d_%d_diff", fType.Data(), fMoment, fVzMin, fVzMax),
+  fCumuDiff = new TH2D(Form("%s_v%d_%d_%d%s_diff", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                       Form("%s_v%d_%d_%d%s_diff", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
                        48, -6., 6., 5, 0.5, 5.5);
   fCumuDiff->Sumw2();
   //list->Add(fCumuDiff);
 
   // Initiate the cumulant sum histogram
-  fCumuHist = new TH3D(Form("%sv%d_vertex_%d_%d_cumu", fType.Data(), fMoment, fVzMin, fVzMax),
-                       Form("%sv%d_vertex_%d_%d_cumu", fType.Data(), fMoment, fVzMin, fVzMax),
+  fCumuHist = new TH3D(Form("%sv%d_vertex_%d_%d%s_cumu", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                       Form("%sv%d_vertex_%d_%d%s_cumu", fType.Data(), fMoment, fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")),
                        48, -6., 6., 20, 0., 100., 26, 0.5, 26.5);
   fCumuHist->Sumw2();
   SetupCentAxis(fCumuHist->GetYaxis());
@@ -641,30 +662,26 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist)
   if (!dList) AliFatal("No diagnostics list found, what kind of game are you running here?!?!");
 
   // Acceptance hists are shared over all moments
-  fdNdedpAcc = (TH2F*)dList->FindObject(Form("h%sdNdedpAcc_%d_%d", fType.Data(), fVzMin, fVzMax));
+  fdNdedpAcc = (TH2F*)dList->FindObject(Form("h%sdNdedpAcc_%d_%d%s", fType.Data(), fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")));
   if (!fdNdedpAcc) {
-    fdNdedpAcc = new TH2F(Form("h%sdNdedpAcc_%d_%d", fType.Data(), fVzMin, fVzMax), 
+    fdNdedpAcc = new TH2F(Form("h%sdNdedpAcc_%d_%d%s", fType.Data(), fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")), 
                           Form("%s acceptance map for %d cm < v_{z} < %d cm", fType.Data(), fVzMin, fVzMax),
                           48, -6, 6, 20, 0, TMath::TwoPi());
     fdNdedpAcc->Sumw2();
     dList->Add(fdNdedpAcc);
   }
-  TAxis* axis = (TAxis*)dList->FindObject(Form("axis%s_%d_%d", fType.Data(), fVzMin, fVzMax));
-  if (!axis) {
-    axis = fCumuRef->GetXaxis();
-    axis->SetName(Form("axis%s_%d_%d", fType.Data(), fVzMin, fVzMax));
-//    dList->Add(fCumuRef);
-  }
 
-  fOutliers = new TH2F(Form("hOutliers_%s_v%d_%d_%d", fType.Data(), fMoment, fVzMin, fVzMax),
-                       Form("Maximum #sigma from mean N_{ch} pr. bin - %s v_{%d}, %d < v_{z} < %d",
-                       fType.Data(), fMoment, fVzMin, fVzMax), 
-                       20, 0., 100., 500, 0., (fType.Contains("MC") ? 15. : 5.));
-  dList->Add(fOutliers);
+  if (!(fFlags & kEtaGap)) {
+    fOutliers = new TH2F(Form("hOutliers_%s_v%d_%d_%d", fType.Data(), fMoment, fVzMin, fVzMax),
+			Form("Maximum #sigma from mean N_{ch} pr. bin - %s v_{%d}, %d < v_{z} < %d",
+			fType.Data(), fMoment, fVzMin, fVzMax), 
+			20, 0., 100., 500, 0., (fType.Contains("MC") ? 15. : 5.));
+    dList->Add(fOutliers);
+  }
 
 }
 //_____________________________________________________________________
-Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double_t cent) 
+Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double_t cent, EFillFlow mode) 
 {
   // 
   // Fill reference and differential eta-histograms
@@ -675,9 +692,11 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
 
   if (!fCumuRef) AliFatal("You have not called AddOutput() - Terminating!");
 
+  Bool_t useEvent = kTRUE;
+
   // Fist we reset histograms
-  fCumuRef->Reset();
-  fCumuDiff->Reset();
+  if ((mode & kFillRef))  fCumuRef->Reset();
+  if ((mode & kFillDiff)) fCumuDiff->Reset();
 
   // Numbers to cut away bad events and acceptance.
   Double_t runAvg = 0;
@@ -700,36 +719,39 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
     nCurRefBin = fCumuRef->GetXaxis()->FindBin(eta);
     // If we have moved to a new bin in the flow hist, and less than half the eta
     // region has been covered by it we cut it away.
-    if (!nPrevBin == 0) nPrevBin = nCurBin;
-    if (!nPrevRefBin == 0) nPrevRefBin = nCurRefBin;
+    if (nPrevBin == 0) nPrevBin = nCurBin;
+    if (nPrevRefBin == 0) nPrevRefBin = nCurRefBin;
     if (nCurBin != nPrevBin) {
-      if (nCurRefBin != nPrevRefBin) {
-	if (nInBin <= nBins/2) {
-	  for (Int_t qBin = 1; qBin <= fCumuDiff->GetNbinsY(); qBin++) {
-	    Double_t removeContent = fCumuDiff->GetBinContent(nPrevBin, qBin);
-	    Double_t removeEta = fCumuDiff->GetXaxis()->GetBinCenter(nPrevBin);
-	    fCumuRef->Fill(removeEta, qBin, -removeContent);
-	    if (fSymEta) fCumuRef->Fill(-1.*removeEta, qBin, -removeContent);
-	    fCumuDiff->SetBinContent(nPrevBin, qBin, 0);
-	    fCumuDiff->SetBinError(nPrevBin, qBin, 0);
+      if (nInBin <= nBins/2) {
+	for (Int_t qBin = 1; qBin <= fCumuDiff->GetNbinsY(); qBin++) {
+	  Double_t removeContent = fCumuDiff->GetBinContent(nPrevBin, qBin);
+	  Double_t removeEta = fCumuDiff->GetXaxis()->GetBinCenter(nPrevBin);
+    	  if (nCurRefBin != nPrevRefBin) {
+	    if (!(fFlags & kEtaGap)) fCumuRef->Fill(removeEta, qBin, -removeContent);
+	    if ((fFlags & kSymEta)) fCumuRef->Fill(-1.*removeEta, qBin, -removeContent);
 	  }
+	  fCumuDiff->SetBinContent(nPrevBin, qBin, 0);
+	  fCumuDiff->SetBinError(nPrevBin, qBin, 0);
 	}
-	nPrevRefBin = nCurRefBin;
       }
       nInBin = 0;
       nPrevBin = nCurBin;
+      if (nCurRefBin != nPrevRefBin)  nPrevRefBin = nCurRefBin;
     }
+    
     Bool_t data = kFALSE;
     for (Int_t phiBin = 0; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       if (phiBin == 0) {
 	if (dNdetadphi.GetBinContent(etaBin, phiBin) == 0) break;
+	if ((fFlags & kEtaGap) && (mode & kFillRef) && TMath::Abs(eta) < fEtaGap) break;
 	else data = kTRUE;
 	continue;
       }
-      if (!AliForwardFlowTaskQC::fgDispVtx && (nCurBin == 34 || nCurBin == 35) && (phiBin == 17 || phiBin == 18)) continue;
-      if ( AliForwardFlowTaskQC::fgDispVtx && eta < 0 && (phiBin == 17 || phiBin == 18)) continue;
+      if (!(fFlags & kSatVtx) && (nCurBin == 34 || nCurBin == 35) && (phiBin == 17 || phiBin == 18)) continue;
+      if ( (fFlags & kSatVtx) && eta < 0 && (phiBin == 17 || phiBin == 18)) continue;
       phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = dNdetadphi.GetBinContent(etaBin, phiBin);
+
       // We calculate the average Nch per. bin
       avgSqr += weight*weight;
       runAvg += weight;
@@ -742,43 +764,57 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
       dQ2nRe = weight*TMath::Cos(2.*fMoment*phi);
       dQ2nIm = weight*TMath::Sin(2.*fMoment*phi);
 
-      fCumuRef->Fill(eta, kHmult, weight);
-      fCumuRef->Fill(eta, kHQnRe, dQnRe);
-      fCumuRef->Fill(eta, kHQnIm, dQnIm);
-      fCumuRef->Fill(eta, kHQ2nRe, dQ2nRe);
-      fCumuRef->Fill(eta, kHQ2nIm, dQ2nIm);
+      // if we do not have an eta gap we fill the ref sums in eta
+      if (!(fFlags & kEtaGap)) {
+	if ((mode & kFillRef)){
+	  fCumuRef->Fill(eta, kHmult, weight);
+	  fCumuRef->Fill(eta, kHQnRe, dQnRe);
+	  fCumuRef->Fill(eta, kHQnIm, dQnIm);
+	  
+	  fCumuRef->Fill(eta, kHQ2nRe, dQ2nRe);
+	  fCumuRef->Fill(eta, kHQ2nIm, dQ2nIm);
+	}
+      }
+      // if we have an eta gap or we symmetrize around eta = 0
+      // we fill in -eta
+      if ((fFlags & kEtaGap) || (fFlags & kSymEta)){
+	if ((mode & kFillRef)){
+	  fCumuRef->Fill(-eta, kHmult, weight);
+	  fCumuRef->Fill(-eta, kHQnRe, dQnRe);
+	  fCumuRef->Fill(-eta, kHQnIm, dQnIm);
+	  
+	  fCumuRef->Fill(-eta, kHQ2nRe, dQ2nRe);
+	  fCumuRef->Fill(-eta, kHQ2nIm, dQ2nIm);
+	}
+      }
 
-      fCumuDiff->Fill(eta, kHmult, weight);
-      fCumuDiff->Fill(eta, kHQnRe, dQnRe);
-      fCumuDiff->Fill(eta, kHQnIm, dQnIm);
-      fCumuDiff->Fill(eta, kHQ2nRe, dQ2nRe);
-      fCumuDiff->Fill(eta, kHQ2nIm, dQ2nIm);
+      // If we fill diff flow, we always fill it in eta
+      if ((mode & kFillDiff)) {
+	fCumuDiff->Fill(eta, kHmult, weight);
+	fCumuDiff->Fill(eta, kHQnRe, dQnRe);
+	fCumuDiff->Fill(eta, kHQnIm, dQnIm);
+	fCumuDiff->Fill(eta, kHQ2nRe, dQ2nRe);
+	fCumuDiff->Fill(eta, kHQ2nIm, dQ2nIm);
+      }
 
       // Fill acc. map
       fdNdedpAcc->Fill(eta, phi, weight);
-
-      if (!fSymEta) continue;
-
-      fCumuRef->Fill(-eta, kHmult, weight);
-      fCumuRef->Fill(-eta, kHQnRe, dQnRe);
-      fCumuRef->Fill(-eta, kHQnIm, dQnIm);
-      fCumuRef->Fill(-eta, kHQ2nRe, dQ2nRe);
-      fCumuRef->Fill(-eta, kHQ2nIm, dQ2nIm);
-
     }
     if (data) {
       nInBin++;
     }
-    if (nInAvg > 3) {
+    // Outlier cut calculations
+    if (nInAvg > 3 && !(fFlags & kEtaGap)) {
       runAvg /= nInAvg;
       avgSqr /= nInAvg;
       Double_t stdev = TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg);
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
       if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent <= 60) nBadBins++;
-//      if (fSigmaCut > 0. && nSigma >= fSigmaCut) nBadBins++;
       else nBadBins = 0;
       fOutliers->Fill(cent, nSigma);
-      if (nBadBins > 3) return kFALSE;
+      // We still finish the loop, for fOutliers to make sense, 
+      // but we do no keep the event for analysis
+      if (nBadBins > 3) useEvent = kFALSE;
     }
     runAvg = 0;
     avgSqr = 0;
@@ -786,10 +822,10 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
     max = 0;
   }
 
-  return kTRUE;
+  return useEvent;
 }
 //_____________________________________________________________________
-void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent) 
+void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent, Bool_t skipFourP) 
 {
   // 
   // Calculate the Q cumulant of order fMoment
@@ -809,7 +845,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
   Double_t cosPsi1Phi2 = 0, cosPsi1Phi2Phi3m = 0, cosPsi1Phi2Phi3p = 0;
   Double_t sinPsi1Phi2 = 0, sinPsi1Phi2Phi3m = 0, sinPsi1Phi2Phi3p = 0;
   Double_t eta = 0;
-  Double_t multi = 0, multp = 0, mp = 0, mq = 0;
+  Double_t mp = 0, mq = 0;
   Double_t w2 = 0, w4 = 0, w2p = 0, w4p = 0;
   Int_t refEtaBin = 0;
 
@@ -818,40 +854,43 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
     eta = fCumuDiff->GetXaxis()->GetBinCenter(etaBin);
     refEtaBin = fCumuRef->GetXaxis()->FindBin(eta);
     // The values for each individual etaBin bins are reset
+    mult = 0;
+    dQnRe = 0;
+    dQnIm = 0;
+    dQ2nRe = 0;
+    dQ2nIm = 0;
+    
     mp = 0;
     pnRe = 0;
     p2nRe = 0;
     pnIm = 0;
     p2nIm = 0;
 
-    mult = 0;
-    dQnRe = 0;
-    dQnIm = 0;
-    dQ2nRe = 0;
-    dQ2nIm = 0;
+    mq = 0;
+    qnRe = 0;
+    qnIm = 0;
+    q2nRe = 0;
+    q2nIm = 0;
 
     // Reference flow
-    multi = fCumuRef->GetBinContent(refEtaBin, kHmult);
-    dQnRe = fCumuRef->GetBinContent(refEtaBin, kHQnRe);
-    dQnIm = fCumuRef->GetBinContent(refEtaBin, kHQnIm);
+    mult   = fCumuRef->GetBinContent(refEtaBin, kHmult);
+    dQnRe  = fCumuRef->GetBinContent(refEtaBin, kHQnRe);
+    dQnIm  = fCumuRef->GetBinContent(refEtaBin, kHQnIm);
     dQ2nRe = fCumuRef->GetBinContent(refEtaBin, kHQ2nRe);
     dQ2nIm = fCumuRef->GetBinContent(refEtaBin, kHQ2nIm);
-    mult += multi;
     
     // For each etaBin bin the necessary values for differential flow
-    // is calculated. Here is the loop over the phi's.
-    multp = fCumuDiff->GetBinContent(etaBin, kHmult);
+    // is calculated. .
+    mp = fCumuDiff->GetBinContent(etaBin, kHmult);
     pnRe = fCumuDiff->GetBinContent(etaBin, kHQnRe);
     pnIm = fCumuDiff->GetBinContent(etaBin, kHQnIm);
     p2nRe = fCumuDiff->GetBinContent(etaBin, kHQ2nRe);
     p2nIm = fCumuDiff->GetBinContent(etaBin, kHQ2nIm);
-    mp += multp;
     
     if (mult <= 3) continue; 
 
     if (mp == 0) continue; 
     // The reference flow is calculated 
-    
     // 2-particle
     w2 = mult * (mult - 1.);
     two = dQnRe*dQnRe + dQnIm*dQnIm - mult;
@@ -862,7 +901,29 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
     fCumuHist->Fill(eta, cent, kQnRe, dQnRe);
     fCumuHist->Fill(eta, cent, kQnIm, dQnIm);
     fCumuHist->Fill(eta, cent, kM, mult);
+
+    // Differential flow calculations for each eta bin bin is done:
+    // 2-particle differential flow
+    if (!(fFlags & kEtaGap)) {
+      mq = mp;
+      qnRe = pnRe;
+      qnIm = pnIm;
+      q2nRe = p2nRe;
+      q2nIm = p2nIm;
+    }
+
+    w2p = mp * mult - mq;
+    twoPrime = pnRe*dQnRe + pnIm*dQnIm - mq;
     
+    fCumuHist->Fill(eta, cent, kw2two, twoPrime);
+    fCumuHist->Fill(eta, cent, kw2, w2p);
+
+    fCumuHist->Fill(eta, cent, kpnRe, pnRe);
+    fCumuHist->Fill(eta, cent, kpnIm, pnIm);
+    fCumuHist->Fill(eta, cent, kmp, mp);
+
+    if ((fFlags & kEtaGap) || skipFourP) continue;
+    // The reference flow is calculated 
     // 4-particle
     w4 = mult * (mult - 1.) * (mult - 2.) * (mult - 3.);
   
@@ -888,23 +949,6 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
     fCumuHist->Fill(eta, cent, kMm1m2, mult*(mult-1.)*(mult-2.));
 
     // Differential flow calculations for each eta bin bin is done:
-    mq = mp;
-    qnRe = pnRe;
-    qnIm = pnIm;
-    q2nRe = p2nRe;
-    q2nIm = p2nIm;
-
-    // 2-particle differential flow
-    w2p = mp * mult - mq;
-    twoPrime = pnRe*dQnRe + pnIm*dQnIm - mq;
-    
-    fCumuHist->Fill(eta, cent, kw2two, twoPrime);
-    fCumuHist->Fill(eta, cent, kw2, w2p);
-
-    fCumuHist->Fill(eta, cent, kpnRe, pnRe);
-    fCumuHist->Fill(eta, cent, kpnIm, pnIm);
-    fCumuHist->Fill(eta, cent, kmp, mp);
-
     // 4-particle differential flow
     w4p = (mp * mult - 3.*mq)*(mult - 1.)*(mult - 2.);
  
@@ -968,8 +1012,9 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 
   // Re-find cumulants hist if Terminate is called separately
   if (!fCumuHist) {
-    TList* list = (TList*)inlist->FindObject(Form("%svertex_%d_%d", fType.Data(), fVzMin, fVzMax));
-    fCumuHist = (TH3D*)list->FindObject(Form("%sv%d_vertex_%d_%d_cumu", fType.Data(), fMoment, fVzMin, fVzMax));
+    TList* list = (TList*)inlist->FindObject(Form("%svertex_%d_%d%s", fType.Data(), fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")));
+    fCumuHist = (TH3D*)list->FindObject(Form("%sv%d_vertex_%d_%d%s_cumu", fType.Data(), fMoment, 
+                                        fVzMin, fVzMax, ((fFlags & kEtaGap) ? "_etaGap" : "")));
   }
 
   // Create result profiles
@@ -979,9 +1024,10 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
     vtxList->SetName("vtxList");
     outlist->Add(vtxList);
   }
-  TH1I* quality = (TH1I*)outlist->FindObject(Form("hQCquality%s", fType.Data()));
+  TH1I* quality = (TH1I*)outlist->FindObject(Form("hQCquality%s%s", fType.Data(), ((fFlags & kEtaGap) ? "_etaGap" : "")));
   if (!quality) {
-    quality = new TH1I(Form("hQCquality%s", fType.Data()), Form("hQCquality%s", fType.Data()),
+    quality = new TH1I(Form("hQCquality%s%s", fType.Data(), ((fFlags & kEtaGap) ? "_etaGap" : "")), 
+                       Form("hQCquality%s%s", fType.Data(), ((fFlags & kEtaGap) ? "_etaGap" : "")),
                        40, 1, 41);
     quality->GetXaxis()->SetBinLabel( 1, "QC_{2}{2} > 0");
     quality->GetXaxis()->SetBinLabel( 2, "QC_{2}{2} <= 0");
@@ -999,14 +1045,14 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
     quality->GetXaxis()->SetBinLabel(14, "QC_{3}{4} >= 0");
     quality->GetXaxis()->SetBinLabel(15, "QC'_{3}{4} < 0");
     quality->GetXaxis()->SetBinLabel(16, "QC'_{3}{4} >= 0");
-    quality->GetXaxis()->SetBinLabel(17, "QC_{4G}{2} > 0");
-    quality->GetXaxis()->SetBinLabel(18, "QC_{4G}{2} <= 0");
-    quality->GetXaxis()->SetBinLabel(19, "QC'_{4G}{2} > 0");
-    quality->GetXaxis()->SetBinLabel(20, "QC'_{4G}{2} <= 0");
-    quality->GetXaxis()->SetBinLabel(21, "QC_{4G}{4} < 0");
-    quality->GetXaxis()->SetBinLabel(22, "QC_{4G}{4} >= 0");
-    quality->GetXaxis()->SetBinLabel(23, "QC'_{3}{4} < 0");
-    quality->GetXaxis()->SetBinLabel(24, "QC'_{4G}{4} >= 0");
+    quality->GetXaxis()->SetBinLabel(17, "QC_{4}{2} > 0");
+    quality->GetXaxis()->SetBinLabel(18, "QC_{4}{2} <= 0");
+    quality->GetXaxis()->SetBinLabel(19, "QC'_{4}{2} > 0");
+    quality->GetXaxis()->SetBinLabel(20, "QC'_{4}{2} <= 0");
+    quality->GetXaxis()->SetBinLabel(21, "QC_{4}{4} < 0");
+    quality->GetXaxis()->SetBinLabel(22, "QC_{4}{4} >= 0");
+    quality->GetXaxis()->SetBinLabel(23, "QC'_{4}{4} < 0");
+    quality->GetXaxis()->SetBinLabel(24, "QC'_{4}{4} >= 0");
     quality->GetXaxis()->SetBinLabel(25, "QC_{5}{2} > 0");
     quality->GetXaxis()->SetBinLabel(26, "QC_{5}{2} <= 0");
     quality->GetXaxis()->SetBinLabel(27, "QC'_{5}{2} > 0");
@@ -1026,40 +1072,44 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
     outlist->Add(quality);
   }
 
-  TProfile2D* cumu2Sum = (TProfile2D*)outlist->FindObject(Form("%sQC2_v%d_unCorr", fType.Data(), fMoment)); 
-  TProfile2D* cumu4Sum = (TProfile2D*)outlist->FindObject(Form("%sQC4_v%d_unCorr", fType.Data(), fMoment)); 
+  TProfile2D* cumu2Sum = (TProfile2D*)outlist->FindObject(Form("%sQC2_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : ""))); 
+  TProfile2D* cumu4Sum = (TProfile2D*)outlist->FindObject(Form("%sQC4_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : ""))); 
   if (!cumu2Sum) {
-    cumu2Sum = new TProfile2D(Form("%sQC2_v%d_unCorr", fType.Data(), fMoment),
-                           Form("%sQC2_v%d_unCorr", fType.Data(), fMoment),
+    cumu2Sum = new TProfile2D(Form("%sQC2_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                           Form("%sQC2_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : "")),
 	      fCumuHist->GetNbinsX(), fCumuHist->GetXaxis()->GetXmin(), fCumuHist->GetXaxis()->GetXmax(), 
 	      fCumuHist->GetNbinsY(), fCumuHist->GetYaxis()->GetXmin(), fCumuHist->GetYaxis()->GetXmax());
     SetupCentAxis(cumu2Sum->GetYaxis());
     outlist->Add(cumu2Sum);
   }
-  if (!cumu4Sum) {
-    cumu4Sum = new TProfile2D(Form("%sQC4_v%d_unCorr", fType.Data(), fMoment),
-                           Form("%sQC4_v%d_unCorr", fType.Data(), fMoment),
+  if (!cumu4Sum && !(fFlags & kEtaGap)) {
+    cumu4Sum = new TProfile2D(Form("%sQC4_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : "")),
+                           Form("%sQC4_v%d_unCorr%s", fType.Data(), fMoment, ((fFlags & kEtaGap) ? "_etaGap" : "")),
 	      fCumuHist->GetNbinsX(), fCumuHist->GetXaxis()->GetXmin(), fCumuHist->GetXaxis()->GetXmax(), 
 	      fCumuHist->GetNbinsY(), fCumuHist->GetYaxis()->GetXmin(), fCumuHist->GetYaxis()->GetXmax());
     SetupCentAxis(cumu4Sum->GetYaxis());
     outlist->Add(cumu4Sum);
   }
  
-  TProfile2D* cumu2 = new TProfile2D(Form("%sQC2_v%d_unCorr_vtx%3.1f", fType.Data(), fMoment, (fVzMin+fVzMax)/2.),
-			 Form("%sQC2_v%d_unCorr_vtx%3.1f", fType.Data(), fMoment, (fVzMin+fVzMax)/2.),
+  TProfile2D* cumu2 = new TProfile2D(Form("%sQC2_v%d_unCorr%s_vtx%3.1f", fType.Data(), fMoment, 
+                         ((fFlags & kEtaGap) ? "_etaGap" : ""), (fVzMin+fVzMax)/2.),
+			 Form("%sQC2_v%d_unCorr%s_vtx%3.1f", fType.Data(), fMoment,
+			 ((fFlags & kEtaGap) ? "_etaGap" : ""), (fVzMin+fVzMax)/2.),
 	    fCumuHist->GetNbinsX(), fCumuHist->GetXaxis()->GetXmin(), fCumuHist->GetXaxis()->GetXmax(), 
 	    fCumuHist->GetNbinsY(), fCumuHist->GetYaxis()->GetXmin(), fCumuHist->GetYaxis()->GetXmax());
   SetupCentAxis(cumu2->GetYaxis());
   vtxList->Add(cumu2);
-  TProfile2D* cumu4 = new TProfile2D(Form("%sQC4_v%d_unCorr_vtx%3.1f", fType.Data(), fMoment, (fVzMin+fVzMax)/2.),
-			 Form("%sQC4_v%d_unCorr_vtx%3.1f", fType.Data(), fMoment, (fVzMin+fVzMax)/2.),
-	    fCumuHist->GetNbinsX(), fCumuHist->GetXaxis()->GetXmin(), fCumuHist->GetXaxis()->GetXmax(), 
-	    fCumuHist->GetNbinsY(), fCumuHist->GetYaxis()->GetXmin(), fCumuHist->GetYaxis()->GetXmax());
-  SetupCentAxis(cumu4->GetYaxis());
-  vtxList->Add(cumu4);
-
-  TH1D* hCent = (TH1D*)outlist->FindObject(fType.Data());
-  if (!hCent) AliFatal(Form("No cent hist found for %s", fType.Data()));
+  TProfile2D* cumu4 = 0;
+  if (!(fFlags & kEtaGap)) { 
+    cumu4 = new TProfile2D(Form("%sQC4_v%d_unCorr%s_vtx%3.1f", fType.Data(), fMoment, 
+      			    ((fFlags & kEtaGap) ? "_etaGap" : ""), (fVzMin+fVzMax)/2.),
+     			    Form("%sQC4_v%d_unCorr%s_vtx%3.1f", fType.Data(), fMoment, 
+   			    ((fFlags & kEtaGap) ? "_etaGap" : ""), (fVzMin+fVzMax)/2.),
+  	      fCumuHist->GetNbinsX(), fCumuHist->GetXaxis()->GetXmin(), fCumuHist->GetXaxis()->GetXmax(), 
+  	      fCumuHist->GetNbinsY(), fCumuHist->GetYaxis()->GetXmin(), fCumuHist->GetYaxis()->GetXmax());
+    SetupCentAxis(cumu4->GetYaxis());
+    vtxList->Add(cumu4);
+  }
 
   // For flow calculations
   Double_t two = 0, qc2 = 0, vnTwo = 0, four = 0, qc4 = 0, vnFour = 0; 
@@ -1076,14 +1126,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
   // Centrality loop
   for (Int_t cBin = 1; cBin <= fCumuHist->GetNbinsY(); cBin++) {
     // for weighted avg.
-    /*
-    Double_t totalEvents = hCent->GetBinContent(cBin);
-    Double_t theseEvents = fCumuHist->GetBinContent(0, cBin, 0);
-    Double_t weight = 1;
-    if (totalEvents != 0) weight = theseEvents / totalEvents;
-    */
     Double_t cent = fCumuHist->GetYaxis()->GetBinCenter(cBin);
-//    Double_t nEv = 0;
     if (fDebug > 0) AliInfo(Form("%s - v_%d: centrality %3.1f:..", fType.Data(), fMoment, cent));
     // Eta loop
     for (Int_t etaBin = 1; etaBin <= fCumuHist->GetNbinsX(); etaBin++) {
@@ -1125,7 +1168,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 
       vnTwoDiff = qc2Prime / TMath::Sqrt(qc2);
       if (!TMath::IsNaN(vnTwoDiff*mp)) {
-	cumu2->Fill(eta, cent, vnTwoDiff/*, weight*/);
+	cumu2->Fill(eta, cent, vnTwoDiff);
 	quality->Fill((fMoment-2)*8+3);
       }
       else 
@@ -1133,6 +1176,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 
       if (fDebug > 1) AliInfo(Form("%s: v_%d{2} = %1.3f for eta = %1.2f and centrality %3.1f", fType.Data(), fMoment, vnTwoDiff, eta, cent));
 
+      if ((fFlags & kEtaGap)) continue;
       // 4-particle reference flow
       w4Four = fCumuHist->GetBinContent(etaBin, cBin, kW4Four);
       w4 = fCumuHist->GetBinContent(etaBin, cBin, kW4);
@@ -1209,7 +1253,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 
       vnFourDiff = - qc4Prime / TMath::Power(-qc4, 0.75);
       if (!TMath::IsNaN(vnFourDiff*mp) && vnFourDiff > 0) {
-	cumu4->Fill(eta, cent, vnFourDiff/*, weight*/);
+	cumu4->Fill(eta, cent, vnFourDiff);
 	quality->Fill((fMoment-2)*8+7);
       }
       else 
@@ -1220,7 +1264,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
   } // End of centrality loop
  
   cumu2Sum->Add(cumu2);
-  cumu4Sum->Add(cumu4);
+  if (!(fFlags & kEtaGap)) cumu4Sum->Add(cumu4);
 
   return;
 }
@@ -1237,18 +1281,13 @@ void AliForwardFlowTaskQC::VertexBin::SetupCentAxis(TAxis* axis)
     AliError("Null pointer passed for axis");
     return;
   }
-//  Double_t cent[11] = {0, 5, 10, 15, 20, 30, 40, 50, 60, 80, 100 };
-//  axis->Set(10, cent);
 
-  if (AliForwardFlowTaskQC::fgDispVtx) {
+  if ((fFlags & kSatVtx)) {
     Double_t cent[3] = {0, 40, 100};
     axis->Set(2, cent);
   } else {
-    Double_t cent[21] = { 0. };
-    for (Int_t i = 0; i <= 20; i++) {
-      cent[i] = i*5;
-    }
-    axis->Set(20, cent);
+    Double_t cent[13] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100 };
+    axis->Set(12, cent);
   }
 
   return;
@@ -1260,15 +1299,19 @@ void AliForwardFlowTaskQC::PrintFlowSetup() const
   // Print the setup of the flow task
   //
   Printf("AliForwardFlowTaskQC::Print");
-  Printf("Number of bins in vertex axis:\t%d", fVtxAxis->GetNbins());
-  Printf("Range of vertex axis         :\t[%3.1f,%3.1f]", 
+  Printf("Number of bins in vertex axis   :\t%d", fVtxAxis->GetNbins());
+  Printf("Range of vertex axis            :\t[%3.1f,%3.1f]", 
 			  fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
-  printf("Doing flow analysis for      :\t");
-  for (Int_t n  = 2; n <= 6; n++) if (fv[n]) printf("v%d ", n);
+  printf("Doing flow analysis for         :\t");
+  for (Int_t n  = 0; n < fV.GetSize(); n++) printf("v%d ", fV.At(n));
   printf("\n");
-  Printf("Displaced vertex flag        :\t%s", (fgDispVtx ? "true" : "false"));
-  Printf("FMD sigma cut:               :\t%f", fFMDCut);
-  Printf("SPD sigma cut:               :\t%f", fSPDCut);
+  Printf("Satellite vertex flag           :\t%s", ((fFlowFlags & kSatVtx) ? "true" : "false"));
+  Printf("Symmetrize ref. flow wrt eta = 0:\t%s", ((fFlowFlags & kSymEta) ? "true" : "false"));
+  Printf("Use an eta-gap for ref. flow    :\t%s", ((fFlowFlags & kEtaGap) ? "true" : "false"));
+  Printf("FMD sigma cut:                  :\t%f", fFMDCut);
+  Printf("SPD sigma cut:                  :\t%f", fSPDCut);
+  if ((fFlowFlags & kEtaGap)) 
+    Printf("Eta gap:                        :\t%f", fEtaGap);
 
 }
 //_____________________________________________________________________
