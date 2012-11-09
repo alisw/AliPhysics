@@ -76,7 +76,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fFillPileUpHistograms(0),
     //Histograms
     fhPtInput(0),                   fhPtFidCut(0),
-    fhPtLeading(0),                 fhPtLeadingPileUp(0),              
+    fhPtLeading(0),                 fhPtLeadingPileUp(),              
     fhPtLeadingVzBin(0),            fhPtLeadingBin(0),                 
     fhPhiLeading(0),                fhEtaLeading(0),   
     fhPtLeadingMC(),
@@ -99,11 +99,11 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiDeltaEtaChargedPtA3GeV(0),
     fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
     //Pile-Up
-    fhDeltaPhiChargedPileUp(0),     fhDeltaEtaChargedPileUp(0),
-    fhXEChargedPileUp(0),           fhXEUeChargedPileUp(0),      
-    fhZTChargedPileUp(0),           fhZTUeChargedPileUp(0), 
-    fhPtTrigChargedPileUp(0),
-    fhDeltaPhiChargedPtA3GeVPileUp(0), fhDeltaEtaChargedPtA3GeVPileUp(0),
+    fhDeltaPhiChargedPileUp(),      fhDeltaEtaChargedPileUp(),
+    fhXEChargedPileUp(),            fhXEUeChargedPileUp(),      
+    fhZTChargedPileUp(),            fhZTUeChargedPileUp(), 
+    fhPtTrigChargedPileUp(),
+    fhDeltaPhiChargedPtA3GeVPileUp(), fhDeltaEtaChargedPtA3GeVPileUp(),
 
     fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
     fhDeltaPhiUeLeftUpCharged(0),   fhDeltaPhiUeRightUpCharged(0),
@@ -174,6 +174,17 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtLeadingMC[i] = 0;
     fhXEChargedMC[i] = 0;
     fhDeltaPhiChargedMC[i] = 0;
+  }
+  
+  for(Int_t i = 0; i < 7; i++)
+  {
+    fhPtLeadingPileUp             [i] = 0 ;
+    fhDeltaPhiChargedPileUp       [i] = 0 ; fhDeltaEtaChargedPileUp       [i] = 0 ;
+    fhXEChargedPileUp             [i] = 0 ; fhXEUeChargedPileUp           [i] = 0 ;
+    fhZTChargedPileUp             [i] = 0 ; fhZTUeChargedPileUp           [i] = 0 ;
+    fhPtTrigChargedPileUp         [i] = 0 ;
+    fhDeltaPhiChargedPtA3GeVPileUp[i] = 0 ; fhDeltaEtaChargedPtA3GeVPileUp[i] = 0 ;
+
   }
   
 }
@@ -255,14 +266,28 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
   }   
   
   // Pile up studies
-  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  
+  if(fFillPileUpHistograms)
   {
-    fhDeltaEtaChargedPileUp->Fill(ptTrig ,deltaEta);
-    fhDeltaPhiChargedPileUp->Fill(ptTrig ,deltaPhi);
+    if(GetReader()->IsPileUpFromSPD())               { fhDeltaEtaChargedPileUp[0]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[0]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromEMCal())             { fhDeltaEtaChargedPileUp[1]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[1]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhDeltaEtaChargedPileUp[2]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[2]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhDeltaEtaChargedPileUp[3]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[3]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhDeltaEtaChargedPileUp[4]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[4]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhDeltaEtaChargedPileUp[5]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[5]->Fill(ptTrig ,deltaPhi) ; }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhDeltaEtaChargedPileUp[6]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[6]->Fill(ptTrig ,deltaPhi) ; }
+    
+
+    
     if(ptAssoc > 3 )
     {
-      fhDeltaEtaChargedPtA3GeVPileUp->Fill(ptTrig  ,deltaEta);
-      fhDeltaPhiChargedPtA3GeVPileUp->Fill(ptTrig  ,deltaPhi);
+      if(GetReader()->IsPileUpFromSPD())               { fhDeltaEtaChargedPtA3GeVPileUp[0]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[0]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromEMCal())             { fhDeltaEtaChargedPtA3GeVPileUp[1]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[1]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhDeltaEtaChargedPtA3GeVPileUp[2]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[2]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhDeltaEtaChargedPtA3GeVPileUp[3]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[3]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhDeltaEtaChargedPtA3GeVPileUp[4]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[4]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhDeltaEtaChargedPtA3GeVPileUp[5]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[5]->Fill(ptTrig ,deltaPhi) ; }
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhDeltaEtaChargedPtA3GeVPileUp[6]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPtA3GeVPileUp[6]->Fill(ptTrig ,deltaPhi) ; }
     }
   }
   
@@ -438,11 +463,15 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
   fhPtTrigCharged     ->Fill(ptTrig , ptAssoc) ;
   
   // Pile up studies
-  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  if(fFillPileUpHistograms) 
   {
-    fhXEChargedPileUp    ->Fill(ptTrig , xE); 
-    fhZTChargedPileUp    ->Fill(ptTrig , zT); 
-    fhPtTrigChargedPileUp->Fill(ptTrig , ptAssoc) ;
+    if(GetReader()->IsPileUpFromSPD())                { fhXEChargedPileUp[0]->Fill(ptTrig ,xE); fhZTChargedPileUp[0]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromEMCal())              { fhXEChargedPileUp[1]->Fill(ptTrig ,xE); fhZTChargedPileUp[1]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[1]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhXEChargedPileUp[2]->Fill(ptTrig ,xE); fhZTChargedPileUp[2]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[2]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhXEChargedPileUp[3]->Fill(ptTrig ,xE); fhZTChargedPileUp[3]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[3]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhXEChargedPileUp[4]->Fill(ptTrig ,xE); fhZTChargedPileUp[4]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig ,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig ,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
   }
   
   if(IsDataMC())
@@ -515,11 +544,17 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
   
   // Pile up studies
-  if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+  
+  if(fFillPileUpHistograms)
   {
-    fhXEUeChargedPileUp->Fill(ptTrig,uexE);
-    fhZTUeChargedPileUp->Fill(ptTrig,uezT);
-  }    
+    if(GetReader()->IsPileUpFromSPD())               { fhXEUeChargedPileUp[0]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[0]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromEMCal())             { fhXEUeChargedPileUp[1]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[1]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhXEUeChargedPileUp[2]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[2]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhXEUeChargedPileUp[3]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[3]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhXEUeChargedPileUp[4]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[4]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhXEUeChargedPileUp[5]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[5]->Fill(ptTrig,uezT);}
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhXEUeChargedPileUp[6]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[6]->Fill(ptTrig,uezT);}
+  }
   
   if(DoEventSelect())
   {
@@ -978,8 +1013,9 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
-  TString nameMC[] = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"};
-  
+  TString nameMC[]     = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"};
+  TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+
   // For vz dependent histograms, if option ON
   Int_t   nz  = 1  ;
   if(fCorrelVzBin) nz = GetNZvertBin();
@@ -1254,73 +1290,76 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     if(fFillPileUpHistograms)
     {
-      fhPtLeadingPileUp  = new TH1F("hPtLeadingPileUp","p_{T} distribution of leading particles, SPD Pile-Up event", nptbins,ptmin,ptmax); 
-      fhPtLeadingPileUp->SetXTitle("p_{T}^{trig} (GeV/c)");
-      outputContainer->Add(fhPtLeadingPileUp);
-      
-      fhDeltaPhiChargedPileUp  = new TH2F
-      ("hDeltaPhiChargedPileUp","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, SPD Pile-Up event",
-       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-      fhDeltaPhiChargedPileUp->SetYTitle("#Delta #phi");
-      fhDeltaPhiChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");
-      outputContainer->Add(fhDeltaPhiChargedPileUp) ;
-      
-      fhDeltaPhiChargedPtA3GeVPileUp  = new TH2F
-      ("hDeltaPhiChargedPtA3GeVPileUp","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, SPD Pile-Up event",
-       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-      fhDeltaPhiChargedPtA3GeVPileUp->SetYTitle("#Delta #phi");
-      fhDeltaPhiChargedPtA3GeVPileUp->SetXTitle("p_{T trigger} (GeV/c)");
-      outputContainer->Add(fhDeltaPhiChargedPtA3GeVPileUp) ;
-
-      fhDeltaEtaChargedPileUp  = new TH2F
-      ("hDeltaEtaChargedPileUp","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, SPD Pile-Up event",
-       nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
-      fhDeltaEtaChargedPileUp->SetYTitle("#Delta #eta");
-      fhDeltaEtaChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");
-      outputContainer->Add(fhDeltaEtaChargedPileUp) ;
-
-      fhDeltaEtaChargedPtA3GeVPileUp  = new TH2F
-      ("hDeltaEtaChargedPtA3GeVPileUp","#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, SPD Pile-Up event",
-       nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
-      fhDeltaEtaChargedPtA3GeVPileUp->SetYTitle("#Delta #eta");
-      fhDeltaEtaChargedPtA3GeVPileUp->SetXTitle("p_{T trigger} (GeV/c)");    
-      outputContainer->Add(fhDeltaEtaChargedPtA3GeVPileUp) ;
-
-      fhXEChargedPileUp  = 
-      new TH2F("hXEChargedPileUp","x_{E} for charged tracks, SPD Pile-Up event",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhXEChargedPileUp->SetYTitle("x_{E}");
-      fhXEChargedPileUp->SetXTitle("p_{T trigger}");
-      outputContainer->Add(fhXEChargedPileUp) ;
-
-      fhXEUeChargedPileUp  = 
-      new TH2F("hXEUeChargedPileUp","x_{E} for Underlying Event, SPD Pile-Up event",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhXEUeChargedPileUp->SetYTitle("x_{E}");
-      fhXEUeChargedPileUp->SetXTitle("p_{T trigger}");
-      outputContainer->Add(fhXEUeChargedPileUp) ;
-      
-      fhZTChargedPileUp  = 
-      new TH2F("hZTChargedPileUp","z_{T} for charged tracks, SPD Pile-Up event",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhZTChargedPileUp->SetYTitle("z_{T}");
-      fhZTChargedPileUp->SetXTitle("p_{T trigger}");
-      outputContainer->Add(fhZTChargedPileUp) ;
-
-      fhZTUeChargedPileUp  = 
-      new TH2F("hZTUeChargedPileUp","z_{T} for Underlying Event, SPD Pile-Up event",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhZTUeChargedPileUp->SetYTitle("z_{T}");
-      fhZTUeChargedPileUp->SetXTitle("p_{T trigger}");
-      outputContainer->Add(fhZTUeChargedPileUp) ;
-
-      fhPtTrigChargedPileUp  = 
-      new TH2F("hPtTrigChargedPileUp","trigger and charged tracks pt distribution, SPD Pile-Up event",
-               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
-      fhPtTrigChargedPileUp->SetYTitle("p_{T h^{#pm}} (GeV/c)");
-      fhPtTrigChargedPileUp->SetXTitle("p_{T trigger} (GeV/c)");    
-      outputContainer->Add(fhPtTrigChargedPileUp) ;
-
+      for(Int_t i = 0 ; i < 7 ; i++)
+      {
+        fhPtLeadingPileUp[i]  = new TH1F(Form("hPtLeadingPileUp%s",pileUpName[i].Data()),
+                                         Form("p_{T} distribution of leading particles, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+        fhPtLeadingPileUp[i]->SetXTitle("p_{T}^{trig} (GeV/c)");
+        outputContainer->Add(fhPtLeadingPileUp[i]);
+        
+        fhDeltaPhiChargedPileUp[i]  = new TH2F(Form("hDeltaPhiChargedPileUp%s",pileUpName[i].Data()),
+                                                    Form("#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, %s Pile-Up event",pileUpName[i].Data()),
+         nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+        fhDeltaPhiChargedPileUp[i]->SetYTitle("#Delta #phi");
+        fhDeltaPhiChargedPileUp[i]->SetXTitle("p_{T trigger} (GeV/c)");
+        outputContainer->Add(fhDeltaPhiChargedPileUp[i]) ;
+        
+        fhDeltaPhiChargedPtA3GeVPileUp[i]  = new TH2F(Form("hDeltaPhiChargedPtA3GeVPileUp%s",pileUpName[i].Data()),
+                                                           Form("#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, %s Pile-Up event",pileUpName[i].Data()),
+         nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+        fhDeltaPhiChargedPtA3GeVPileUp[i]->SetYTitle("#Delta #phi");
+        fhDeltaPhiChargedPtA3GeVPileUp[i]->SetXTitle("p_{T trigger} (GeV/c)");
+        outputContainer->Add(fhDeltaPhiChargedPtA3GeVPileUp[i]) ;
+        
+        fhDeltaEtaChargedPileUp[i]  = new TH2F(Form("hDeltaEtaChargedPileUp%s",pileUpName[i].Data()),
+                                                    Form("#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, %s Pile-Up event",pileUpName[i].Data()),
+         nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
+        fhDeltaEtaChargedPileUp[i]->SetYTitle("#Delta #eta");
+        fhDeltaEtaChargedPileUp[i]->SetXTitle("p_{T trigger} (GeV/c)");
+        outputContainer->Add(fhDeltaEtaChargedPileUp[i]) ;
+        
+        fhDeltaEtaChargedPtA3GeVPileUp[i]  = new TH2F(Form("hDeltaEtaChargedPtA3GeVPileUp%s",pileUpName[i].Data()),
+                                                           Form("#eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, %s Pile-Up event",pileUpName[i].Data()),
+         nptbins,ptmin,ptmax,ndeltaetabins,deltaetamin,deltaetamax);  
+        fhDeltaEtaChargedPtA3GeVPileUp[i]->SetYTitle("#Delta #eta");
+        fhDeltaEtaChargedPtA3GeVPileUp[i]->SetXTitle("p_{T trigger} (GeV/c)");    
+        outputContainer->Add(fhDeltaEtaChargedPtA3GeVPileUp[i]) ;
+        
+        fhXEChargedPileUp[i]  = new TH2F(Form("hXEChargedPileUp%s",pileUpName[i].Data()),
+                                              Form("x_{E} for charged tracks, %s Pile-Up event",pileUpName[i].Data()),
+                 nptbins,ptmin,ptmax,200,0.,2.); 
+        fhXEChargedPileUp[i]->SetYTitle("x_{E}");
+        fhXEChargedPileUp[i]->SetXTitle("p_{T trigger}");
+        outputContainer->Add(fhXEChargedPileUp[i]) ;
+        
+        fhXEUeChargedPileUp[i]  = new TH2F(Form("hXEUeChargedPileUp%s",pileUpName[i].Data()),
+                                                Form("x_{E} for Underlying Event, %s Pile-Up event",pileUpName[i].Data()),
+                 nptbins,ptmin,ptmax,200,0.,2.); 
+        fhXEUeChargedPileUp[i]->SetYTitle("x_{E}");
+        fhXEUeChargedPileUp[i]->SetXTitle("p_{T trigger}");
+        outputContainer->Add(fhXEUeChargedPileUp[i]) ;
+        
+        fhZTChargedPileUp[i]  = new TH2F(Form("hZTChargedPileUp%s",pileUpName[i].Data()),
+                                              Form("z_{T} for charged tracks, %s Pile-Up event",pileUpName[i].Data()),
+                 nptbins,ptmin,ptmax,200,0.,2.); 
+        fhZTChargedPileUp[i]->SetYTitle("z_{T}");
+        fhZTChargedPileUp[i]->SetXTitle("p_{T trigger}");
+        outputContainer->Add(fhZTChargedPileUp[i]) ;
+        
+        fhZTUeChargedPileUp[i]  = new TH2F(Form("hZTUeChargedPileUp%s",pileUpName[i].Data()),
+                                                Form("z_{T} for Underlying Event, %s Pile-Up event",pileUpName[i].Data()),
+                 nptbins,ptmin,ptmax,200,0.,2.); 
+        fhZTUeChargedPileUp[i]->SetYTitle("z_{T}");
+        fhZTUeChargedPileUp[i]->SetXTitle("p_{T trigger}");
+        outputContainer->Add(fhZTUeChargedPileUp[i]) ;
+        
+        fhPtTrigChargedPileUp[i]  = new TH2F(Form("hPtTrigChargedPileUp%s",pileUpName[i].Data()),
+                                                  Form("trigger and charged tracks pt distribution, %s Pile-Up event",pileUpName[i].Data()),
+                 nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+        fhPtTrigChargedPileUp[i]->SetYTitle("p_{T h^{#pm}} (GeV/c)");
+        fhPtTrigChargedPileUp[i]->SetXTitle("p_{T trigger} (GeV/c)");    
+        outputContainer->Add(fhPtTrigChargedPileUp[i]) ;
+      }
     }
     
     if(DoEventSelect())
@@ -2556,9 +2595,18 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       fhPtLeading->Fill(pt);
       fhPtLeadingBin->Fill(pt,GetEventMixBin());
       if(fCorrelVzBin) fhPtLeadingVzBin->Fill(pt,GetEventVzBin());
-      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) 
-        fhPtLeadingPileUp->Fill(pt);
-
+ 
+      if(fFillPileUpHistograms)
+      {
+        if(GetReader()->IsPileUpFromSPD())               fhPtLeadingPileUp[0]->Fill(pt);
+        if(GetReader()->IsPileUpFromEMCal())             fhPtLeadingPileUp[1]->Fill(pt);
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtLeadingPileUp[2]->Fill(pt);
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtLeadingPileUp[3]->Fill(pt);
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtLeadingPileUp[4]->Fill(pt);
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtLeadingPileUp[5]->Fill(pt);
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtLeadingPileUp[6]->Fill(pt);
+      }
+      
       Float_t phi = particle->Phi();
       if(phi<0)phi+=TMath::TwoPi();
       fhPhiLeading->Fill(pt, phi);
