@@ -202,10 +202,6 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
   
-  fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
-  fhZVertex->SetXTitle("v_{z} (cm)");
-  fOutputContainer->Add(fhZVertex);
-  
   fhTrackMult    = new TH1I("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
@@ -491,7 +487,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);
-  
+    
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
 	
