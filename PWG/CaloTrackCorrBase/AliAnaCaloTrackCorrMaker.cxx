@@ -49,8 +49,10 @@ fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fhNEvents(0),                 fhNPileUpEvents(0),
 fhZVertex(0),                 
-fhTrackMult(0),               fhCentrality(0),
-fhEventPlaneAngle(0),
+fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
+fh2PileUpClusterMult(0),      fh2PileUpClusterMultAndSPDPileUp(0),
+fhTrackMult(0),
+fhCentrality(0),              fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0)
 {
   //Default Ctor
@@ -72,6 +74,10 @@ fScaleFactor(maker.fScaleFactor),
 fhNEvents(maker.fhNEvents), 
 fhNPileUpEvents(maker.fhNPileUpEvents),
 fhZVertex(maker.fhZVertex),    
+fhPileUpClusterMult(maker.fhPileUpClusterMult),
+fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
+fh2PileUpClusterMult(maker.fh2PileUpClusterMult),
+fh2PileUpClusterMultAndSPDPileUp(maker.fh2PileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
@@ -179,11 +185,22 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhNPileUpEvents      = new TH1I("hNPileUpEvents",   "Number of events considered as pile-up", 2 , 0 , 2  ) ;
+  fhNPileUpEvents      = new TH1I("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(3 ,"EMCal");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
+  fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
+
   fOutputContainer->Add(fhNPileUpEvents);
+  
+  fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
+  fhZVertex->SetXTitle("v_{z} (cm)");
+  fOutputContainer->Add(fhZVertex);
   
   fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
@@ -192,6 +209,24 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhTrackMult    = new TH1I("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
+  
+  fhPileUpClusterMult    = new TH1I("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
+  fhPileUpClusterMult->SetXTitle("# clusters");
+  fOutputContainer->Add(fhPileUpClusterMult);
+  
+  fhPileUpClusterMultAndSPDPileUp = new TH1I("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
+  fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
+  fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
+  
+  fh2PileUpClusterMult = new TH2I("h2PileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100 , 100 , 0 , 100 ) ;
+  fh2PileUpClusterMult->SetXTitle("# clusters (large t)");
+  fh2PileUpClusterMult->SetYTitle("# clusters (small t)");
+  fOutputContainer->Add(fh2PileUpClusterMult);
+  
+  fh2PileUpClusterMultAndSPDPileUp = new TH2I("h2PileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 , 100 , 0 , 100) ;
+  fh2PileUpClusterMultAndSPDPileUp->SetXTitle("# clusters (large t)");
+  fh2PileUpClusterMultAndSPDPileUp->SetYTitle("# clusters (small t)");
+  fOutputContainer->Add(fh2PileUpClusterMultAndSPDPileUp);
   
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
   fhCentrality->SetXTitle("Centrality bin");
@@ -424,13 +459,34 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   // Event control histograms
  
   fhNEvents        ->Fill(0); // Number of events analyzed
-  if(fReader->IsPileUpFromSPD()) 
+  
+  if( fReader->IsPileUpFromSPD()) 
     fhNPileUpEvents->Fill(0.5);
-  if(fReader->GetInputEvent()->IsPileupFromSPDInMultBins()) 
+  if( fReader->GetInputEvent()->IsPileupFromSPDInMultBins()) 
     fhNPileUpEvents->Fill(1.5);
-  fhTrackMult      ->Fill(fReader->GetTrackMultiplicity()); 
-  fhCentrality     ->Fill(fReader->GetEventCentrality  ());
-  fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
+  if( fReader->IsPileUpFromEMCal())
+    fhNPileUpEvents->Fill(2.5);
+  if( fReader->IsPileUpFromSPDOrEMCal() )
+    fhNPileUpEvents->Fill(3.5);
+  if( fReader->IsPileUpFromSPDAndEMCal() )
+    fhNPileUpEvents->Fill(4.5);
+  if( fReader->IsPileUpFromSPDAndNotEMCal() )
+    fhNPileUpEvents->Fill(5.5);
+  if( fReader->IsPileUpFromEMCalAndNotSPD() )
+    fhNPileUpEvents->Fill(6.5);
+  if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
+    fhNPileUpEvents->Fill(7.5);
+  
+  if(fReader->IsPileUpFromSPD())
+  {
+    fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
+    fh2PileUpClusterMultAndSPDPileUp->Fill(fReader->GetNPileUpClusters(),fReader->GetNNonPileUpClusters());
+  }
+  fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
+  fh2PileUpClusterMult->Fill(fReader->GetNPileUpClusters  (),fReader->GetNNonPileUpClusters());
+  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
+  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
+  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
 
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
