@@ -605,8 +605,6 @@ void AliMFT::Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t
 
 void AliMFT::MakeBranch(Option_t *option) {
 
-  printf("AliMFT::MakeBranch(...)\n");
-
   // Create Tree branches 
   AliDebug(1, Form("Start with option= %s.",option));
   
@@ -688,7 +686,7 @@ void AliMFT::SetTreeAddress() {
 
 void AliMFT::SetGeometry() {
 
-  printf("AliMFT::SetGeometry\n");
+  AliInfo("AliMFT::SetGeometry\n");
 
   fSegmentation = new AliMFTSegmentation(fNameGeomFile.Data());
 

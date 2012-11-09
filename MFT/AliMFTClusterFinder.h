@@ -30,7 +30,7 @@ public:
 
   AliMFTClusterFinder();
   ~AliMFTClusterFinder();
-
+  virtual void Clear(const Option_t* /*opt*/);
   void Init(const Char_t *nameGeomFile);
   
   void MakeClusterBranch(TTree *treeCluster);

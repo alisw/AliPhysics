@@ -45,11 +45,13 @@ AliMFTSegmentation::AliMFTSegmentation():
 
 AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile): 
   TObject(),
-  fMFTPlanes(new TClonesArray("AliMFTPlane", fNMaxPlanes))
+  fMFTPlanes(0x0)
 { 
-
+  
   // constructor
-
+  
+  fMFTPlanes = new TClonesArray("AliMFTPlane", fNMaxPlanes);
+  fMFTPlanes -> SetOwner(kTRUE);
   Float_t zCenter, rMin, rMax, pixelSizeX, pixelSizeY, thicknessActive, thicknessSupport, thicknessReadout;
   Float_t equivalentSilicon, equivalentSiliconBeforeFront, equivalentSiliconBeforeBack, hasPixelRectangularPatternAlongY;
 
@@ -78,7 +80,7 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
 
     // Create new plane
 
-    printf("Setting segmentation for MFT plane #%02d\n", iPlane);
+    AliInfo(Form("Setting segmentation for MFT plane #%02d\n", iPlane));
 
     geomNtuple -> GetEntry(iPlane);
     zCenter = TMath::Abs(zCenter);
@@ -102,13 +104,33 @@ AliMFTSegmentation::AliMFTSegmentation(const Char_t *nameGeomFile):
     plane -> CreateStructure();
     
     new ((*fMFTPlanes)[fMFTPlanes->GetEntries()]) AliMFTPlane(*plane);
-
+    delete plane;
+    
   }
   
   delete geomFile;
 
-  printf("MFT segmentation set!\n");
+  AliInfo("MFT segmentation set!\n");
 
+}
+
+//====================================================================================================================================================
+
+AliMFTSegmentation::~AliMFTSegmentation() {
+
+  if (fMFTPlanes) fMFTPlanes->Delete();
+  delete fMFTPlanes; 
+  
+}
+
+//====================================================================================================================================================
+
+void AliMFTSegmentation::Clear(const Option_t* /*opt*/) {
+
+  if (fMFTPlanes) fMFTPlanes->Delete();
+  delete fMFTPlanes; 
+  fMFTPlanes = NULL;
+  
 }
 
 //====================================================================================================================================================

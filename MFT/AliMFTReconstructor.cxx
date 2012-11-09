@@ -44,16 +44,36 @@ AliMFTReconstructor::AliMFTReconstructor():
 
 //====================================================================================================================================================
 
-AliMFTReconstructor::~AliMFTReconstructor(){
-
+AliMFTReconstructor::~AliMFTReconstructor() {
+  
   // destructor
-
+  
   if (fDigits) {
+    for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
+      if (fDigits->At(iPlane)) fDigits->At(iPlane)->Delete();
+    }
     fDigits->Delete();
     delete fDigits;
     fDigits=0;
   }
+  
+}
 
+//====================================================================================================================================================
+
+void AliMFTReconstructor::Clear(const Option_t* /*opt*/) {
+	
+  // Clear arrays
+  
+  if (fDigits) {
+    for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
+      if (fDigits->At(iPlane)) ((TClonesArray*)fDigits->At(iPlane))->Delete();
+    }
+    fDigits->Delete();
+    delete fDigits;
+    fDigits = NULL;
+  }
+  
 }
 
 //====================================================================================================================================================
@@ -66,10 +86,13 @@ void AliMFTReconstructor::Init() {
 
   fDigits = new TObjArray(fNPlanes);
   fDigits->SetOwner(kTRUE);
-  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) fDigits->AddAt(new TClonesArray("AliMFTDigit"),iPlane);
-
+  for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
+    fDigits->AddAt(new TClonesArray("AliMFTDigit"),iPlane);
+    ((TClonesArray*)fDigits->At(iPlane))->SetOwner(kTRUE);
+  }
+  
   AliInfo("    ************* Using the MFT reconstructor! ****** ");
-
+  
   return;
 
 }
@@ -130,7 +153,7 @@ void AliMFTReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
     AliDebug(1, Form("fDigits->At(%d)->Clear()",iPlane));
-    fDigits->At(iPlane)->Clear();
+    ((TClonesArray*)fDigits->At(iPlane))->Delete();
   }
 
 }

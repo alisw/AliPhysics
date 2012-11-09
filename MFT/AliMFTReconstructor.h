@@ -28,11 +28,12 @@ public:
 
   AliMFTReconstructor();
   virtual ~AliMFTReconstructor();
+  virtual void Clear(const Option_t* /*opt*/);
   virtual void Init();
-
+  
   virtual void ResetDigits(); 
   virtual void ResetDigits(Int_t plane);
-
+  
   virtual void  Reconstruct(TTree *digitsTree, TTree *clustersTree) const; 
   virtual void  Reconstruct(AliRawReader* /*rawdata*/, TTree* /*clustersTree*/) const { AliInfo("Not implemented"); } 
 

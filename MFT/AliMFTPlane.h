@@ -33,9 +33,10 @@ public:
   AliMFTPlane(const Char_t *name, const Char_t *title);
   AliMFTPlane(const AliMFTPlane& pt);
   AliMFTPlane& operator=(const AliMFTPlane &source);
-
-  virtual ~AliMFTPlane() {};  // destructor
-
+  
+  virtual ~AliMFTPlane();  // destructor
+  virtual void Clear(const Option_t* /*opt*/);
+  
   Bool_t Init(Int_t    planeNumber,
 	      Double_t zCenter, 
 	      Double_t rMin, 

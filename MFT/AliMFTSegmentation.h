@@ -28,8 +28,9 @@ public:
   
   AliMFTSegmentation();
   AliMFTSegmentation(const Char_t *nameGeomFile);
-
-  virtual ~AliMFTSegmentation() {}
+  
+  virtual ~AliMFTSegmentation();
+  virtual void Clear(const Option_t* /*opt*/);
 
   THnSparseC* GetDetElem(Int_t detElemID) const;
 

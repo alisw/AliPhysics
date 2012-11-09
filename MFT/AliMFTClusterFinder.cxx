@@ -53,19 +53,40 @@ AliMFTClusterFinder::AliMFTClusterFinder() :
   
   for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) fClustersPerPlane[iPlane] = NULL;
   fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
+  fDigitsInCluster -> SetOwner(kTRUE);
 
 }
 
 //====================================================================================================================================================
 
 AliMFTClusterFinder::~AliMFTClusterFinder() {
-
+  
   AliDebug(1, "Deleting AliMFTClusterFinder...");
-
-  for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) delete fClustersPerPlane[iPlane];
-
+  
+  for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) {
+    if (fClustersPerPlane[iPlane]) fClustersPerPlane[iPlane]->Delete(); delete fClustersPerPlane[iPlane]; fClustersPerPlane[iPlane] = 0x0;
+  }
+  if (fDigitsInCluster) fDigitsInCluster->Delete(); delete fDigitsInCluster; fDigitsInCluster = NULL;
+  delete fSegmentation; fSegmentation=NULL;
+  
   AliDebug(1, "... done!");
+  
+}
 
+//====================================================================================================================================================
+
+void AliMFTClusterFinder::Clear(const Option_t* /*opt*/) {
+  
+  AliDebug(1, "Clearing AliMFTClusterFinder...");
+  
+  for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) {
+    if(fClustersPerPlane[iPlane]) fClustersPerPlane[iPlane]->Clear("C"); 
+  }
+  if(fDigitsInCluster) fDigitsInCluster->Clear("C");	
+  fSegmentation->Clear("C"); 
+  
+  AliDebug(1, "... done!");
+  
 }
 
 //====================================================================================================================================================
@@ -148,6 +169,7 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
 	  myDigitList->Compress();
 	  iDig--;
 	  new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
+		delete newCluster;
 	}
 
       }   // end of cycle over the digits
@@ -222,6 +244,8 @@ void AliMFTClusterFinder::CreateClusters() {
   for(Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
     AliDebug(1, Form("plane %02d", iPlane));
     fClustersPerPlane[iPlane] = new TClonesArray("AliMFTCluster");
+    fClustersPerPlane[iPlane] -> SetOwner(kTRUE);
+
   }
 
 }

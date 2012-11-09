@@ -90,14 +90,20 @@ AliMFTPlane::AliMFTPlane(const Char_t *name, const Char_t *title):
   fEquivalentSilicon(0),
   fEquivalentSiliconBeforeFront(0),
   fEquivalentSiliconBeforeBack(0),
-  fActiveElements(new TClonesArray("THnSparseC")),
-  fReadoutElements(new TClonesArray("THnSparseC")),
-  fSupportElements(new TClonesArray("THnSparseC")),
+  fActiveElements(0),
+  fReadoutElements(0),
+  fSupportElements(0),
   fHasPixelRectangularPatternAlongY(kFALSE)
 {
 
   // constructor
-
+  fActiveElements  = new TClonesArray("THnSparseC");
+  fReadoutElements = new TClonesArray("THnSparseC");
+  fSupportElements = new TClonesArray("THnSparseC");
+  fActiveElements->SetOwner(kTRUE);
+  fReadoutElements->SetOwner(kTRUE);
+  fSupportElements->SetOwner(kTRUE);
+  
 }
 
 //====================================================================================================================================================
@@ -119,18 +125,49 @@ AliMFTPlane::AliMFTPlane(const AliMFTPlane& plane):
   fEquivalentSilicon(plane.fEquivalentSilicon),
   fEquivalentSiliconBeforeFront(plane.fEquivalentSiliconBeforeFront),
   fEquivalentSiliconBeforeBack(plane.fEquivalentSiliconBeforeBack),
-  fActiveElements(new TClonesArray("THnSparseC")),
-  fReadoutElements(new TClonesArray("THnSparseC")),
-  fSupportElements(new TClonesArray("THnSparseC")),
-  fHasPixelRectangularPatternAlongY(plane.fHasPixelRectangularPatternAlongY)
+fActiveElements(0),
+fReadoutElements(0),
+fSupportElements(0),
+fHasPixelRectangularPatternAlongY(plane.fHasPixelRectangularPatternAlongY)
 {
 
   // copy constructor
+  fActiveElements  = new TClonesArray(*(plane.fActiveElements));
+  fActiveElements  -> SetOwner(kTRUE);
+  fReadoutElements = new TClonesArray(*(plane.fReadoutElements));
+  fReadoutElements -> SetOwner(kTRUE);
+  fSupportElements = new TClonesArray(*(plane.fSupportElements));
+  fSupportElements -> SetOwner(kTRUE);
 
-  *fActiveElements  = *plane.fActiveElements;
-  *fReadoutElements = *plane.fReadoutElements;
-  *fSupportElements = *plane.fSupportElements;
-  
+	
+}
+
+//====================================================================================================================================================
+
+AliMFTPlane::~AliMFTPlane() {
+
+  AliInfo("Delete AliMFTPlane");
+  if(fActiveElements) fActiveElements->Delete();
+  delete fActiveElements; 
+  if(fReadoutElements) fReadoutElements->Delete();
+  delete fReadoutElements; 
+  if(fSupportElements) fSupportElements->Delete();
+  delete fSupportElements; 
+
+}
+
+//====================================================================================================================================================
+
+void AliMFTPlane::Clear(const Option_t* /*opt*/) {
+
+  AliInfo("Clear AliMFTPlane");
+  if(fActiveElements) fActiveElements->Delete();
+  delete fActiveElements; fActiveElements=NULL;
+  if(fReadoutElements) fReadoutElements->Delete();
+  delete fReadoutElements;  fReadoutElements=NULL; 
+  if(fSupportElements) fSupportElements->Delete();
+  delete fSupportElements;   fSupportElements=NULL;
+
 }
 
 //====================================================================================================================================================
@@ -138,12 +175,15 @@ AliMFTPlane::AliMFTPlane(const AliMFTPlane& plane):
 AliMFTPlane& AliMFTPlane::operator=(const AliMFTPlane& plane) {
 
   // Assignment operator
-
+  
   // check assignement to self
   if (this != &plane) {
-
+    
     // base class assignement
     TNamed::operator=(plane);
+    
+    // clear memory
+    Clear("");
     
     fPlaneNumber                      = plane.fPlaneNumber;
     fZCenter                          = plane.fZCenter; 
@@ -160,12 +200,16 @@ AliMFTPlane& AliMFTPlane::operator=(const AliMFTPlane& plane) {
     fEquivalentSilicon                = plane.fEquivalentSilicon;
     fEquivalentSiliconBeforeFront     = plane.fEquivalentSiliconBeforeFront;
     fEquivalentSiliconBeforeBack      = plane.fEquivalentSiliconBeforeBack;
-    *fActiveElements                  = *plane.fActiveElements;
-    *fReadoutElements                 = *plane.fReadoutElements;
-    *fSupportElements                 = *plane.fSupportElements;
+    fActiveElements = new TClonesArray(*(plane.fActiveElements));
+    fActiveElements -> SetOwner(kTRUE);
+    fReadoutElements = new TClonesArray(*(plane.fReadoutElements));
+    fReadoutElements -> SetOwner(kTRUE);
+    fSupportElements = new TClonesArray(*(plane.fSupportElements));
+    fSupportElements -> SetOwner(kTRUE);
     fHasPixelRectangularPatternAlongY = plane.fHasPixelRectangularPatternAlongY;
-  }
 
+  }
+  
   return *this;
   
 }
