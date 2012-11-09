@@ -123,6 +123,8 @@ public:
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
 
+  Bool_t           IsInTimeWindow(const Double_t tof, const Float_t energy)  const ;
+  
   void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a ; 
                                                              fEMCALTimeCutMax = b          ; } // ns
   
@@ -242,9 +244,21 @@ public:
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
   
-  Bool_t           IsPileUpFromSPD() const ;    
-  void             SetPileUpParam(Int_t i, Double_t param) { fPileUpParam[i] = param   ; }
+  Bool_t           IsPileUpFromSPD()               const ;
+  Bool_t           IsPileUpFromEMCal()             const ;
+  Bool_t           IsPileUpFromSPDAndEMCal()       const ;
+  Bool_t           IsPileUpFromSPDOrEMCal()        const ;
+  Bool_t           IsPileUpFromSPDAndNotEMCal()    const ;
+  Bool_t           IsPileUpFromEMCalAndNotSPD()    const ;
+  Bool_t           IsPileUpFromNotSPDAndNotEMCal() const ;
+
+  void             SetPileUpParamForSPD  (Int_t i, Double_t param)
+                                                           { fPileUpParamSPD[i]  = param ; }
+  void             SetPileUpParamForEMCal(Int_t param)     { fNPileUpClustersCut = param ; }
   
+  Int_t            GetNPileUpClusters()                    { return  fNPileUpClusters    ; }
+  Int_t            GetNNonPileUpClusters()                 { return  fNNonPileUpClusters ; }
+
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus       ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit        ; }		
@@ -502,11 +516,16 @@ public:
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
-  Double_t         fPileUpParam[5];              // Parameters to pass to method IsPileupFromSPD: Int_t minContributors, 
+  Double_t         fPileUpParamSPD[5];           // Parameters to pass to method IsPileupFromSPD: Int_t minContributors,
                                                  // Double_t minZdist, 
                                                  // Double_t nSigmaZdist, 
                                                  // Double_t nSigmaDiamXY, 
                                                  // Double_t nSigmaDiamZ)
+  // Pile-up in EMCal
+  Int_t            fNPileUpClusters;             // Number of clusters with time avobe 20 ns
+  Int_t            fNNonPileUpClusters;          // Number of clusters with time below 20 ns
+  Int_t            fNPileUpClustersCut;          // Cut to select event as pile-up
+
   //Centrality/Event plane
   TString          fCentralityClass;        // Name of selected centrality class     
   Int_t            fCentralityOpt;          // Option for the returned value of the centrality, possible options 5, 10, 100
@@ -516,10 +535,11 @@ public:
   Bool_t           fImportGeometryFromFile; // Import geometry settings in geometry.root file
   TString          fImportGeometryFilePath; // path fo geometry.root file
 
+  
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,45)
+  ClassDef(AliCaloTrackReader,46)
   
 } ;
 

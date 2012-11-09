@@ -91,7 +91,8 @@ fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(k
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (0x0), 
+fTriggerAnalysis (0x0),
+fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
@@ -435,8 +436,8 @@ void AliCaloTrackReader::InitParameters()
 
   fImportGeometryFromFile = kFALSE;
   
-  fPileUpParam[0] = 3   ; fPileUpParam[1] = 0.8 ;
-  fPileUpParam[2] = 3.0 ; fPileUpParam[3] = 2.0 ; fPileUpParam[4] = 5.0;
+  fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
+  fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
   
   // Parametrized time cut (LHC11d)
   fEMCALParamTimeCutMin[0] =-5; fEMCALParamTimeCutMin[1] =-1 ; fEMCALParamTimeCutMin[2] = 3.5 ; fEMCALParamTimeCutMin[3] = 1.  ;   
@@ -447,16 +448,83 @@ void AliCaloTrackReader::InitParameters()
   //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;   
 }
 
+//___________________________________________________________
+Bool_t AliCaloTrackReader::IsInTimeWindow(const Double_t tof, const Float_t energy) const
+{
+  // Cluster time selection window
+  
+  // Parametrized cut depending on E
+  if(fUseParamTimeCut)
+  {
+    Float_t minCut= fEMCALParamTimeCutMin[0]+fEMCALParamTimeCutMin[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMin[2])/fEMCALParamTimeCutMin[3]);
+    Float_t maxCut= fEMCALParamTimeCutMax[0]+fEMCALParamTimeCutMax[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMax[2])/fEMCALParamTimeCutMax[3]);
+    //printf("tof %f, minCut %f, maxCut %f\n",tof,minCut,maxCut);
+    if( tof < minCut || tof > maxCut )  return kFALSE ;
+  }
+  
+  //In any case, the time should to be larger than the fixed window ...
+  if( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )  return kFALSE ;
+  
+  return kTRUE ;
+}
 
 //________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromSPD() const
 {
   // Check if event is from pile-up determined by SPD
   // Default values: (3, 0.8, 3., 2., 5.)
-  return fInputEvent->IsPileupFromSPD((Int_t) fPileUpParam[0] , fPileUpParam[1] , 
-                                              fPileUpParam[2] , fPileUpParam[3] , fPileUpParam[4] ); 
-  //printf("Param : %d, %2.2f, %2.2f, %2.2f, %2.2f\n",(Int_t) fPileUpParam[0], fPileUpParam[1], fPileUpParam[2], fPileUpParam[3], fPileUpParam[4]);
+  return fInputEvent->IsPileupFromSPD((Int_t) fPileUpParamSPD[0] , fPileUpParamSPD[1] , 
+                                              fPileUpParamSPD[2] , fPileUpParamSPD[3] , fPileUpParamSPD[4] ); 
+  //printf("Param : %d, %2.2f, %2.2f, %2.2f, %2.2f\n",(Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
 
+}
+
+//__________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromEMCal() const
+{
+  // Check if event is from pile-up determined by EMCal
+  if(fNPileUpClusters > fNPileUpClustersCut) return kTRUE ;
+  else                                       return kFALSE;
+}
+
+//________________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromSPDAndEMCal() const
+{
+  // Check if event is from pile-up determined by SPD and EMCal
+  if( IsPileUpFromSPD() && IsPileUpFromEMCal()) return kTRUE ;
+  else                                          return kFALSE;
+}
+
+//_______________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromSPDOrEMCal() const
+{
+  // Check if event is from pile-up determined by SPD or EMCal
+  if( IsPileUpFromSPD() || IsPileUpFromEMCal()) return kTRUE ;
+  else                                          return kFALSE;
+}
+
+//___________________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromSPDAndNotEMCal() const
+{
+  // Check if event is from pile-up determined by SPD and not by EMCal
+  if( IsPileUpFromSPD() && !IsPileUpFromEMCal()) return kTRUE ;
+  else                                          return kFALSE;
+}
+
+//___________________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromEMCalAndNotSPD() const
+{
+  // Check if event is from pile-up determined by EMCal, not by SPD
+  if( !IsPileUpFromSPD() && IsPileUpFromEMCal()) return kTRUE ;
+  else                                           return kFALSE;
+}
+
+//______________________________________________________________
+Bool_t AliCaloTrackReader::IsPileUpFromNotSPDAndNotEMCal() const
+{
+  // Check if event not from pile-up determined neither by SPD nor by EMCal
+  if( !IsPileUpFromSPD() && !IsPileUpFromEMCal()) return kTRUE ;
+  else                                            return kFALSE;
 }
 
 //________________________________________________________
@@ -630,7 +698,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
       // Do not analyze events with pileup
       Bool_t bPileup = IsPileUpFromSPD();
       //IsPileupFromSPDInMultBins() // method to try
-      //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParam[0], fPileUpParam[1], fPileUpParam[2], fPileUpParam[3], fPileUpParam[4]);
+      //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
       if(bPileup) return kFALSE;
       
       if(fDoV0ANDEventSelection)
@@ -1153,17 +1221,13 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   
   Double_t tof = clus->GetTOF()*1e9;
 
-  if(!fUseParamTimeCut)
+  if(!IsInTimeWindow(tof,momentum.E()))
   {
-    if( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )            return ;
+    fNPileUpClusters++ ;
+    return ;
   }
-  else 
-  {
-    Float_t minCut= fEMCALParamTimeCutMin[0]+fEMCALParamTimeCutMin[1]*TMath::Exp(-(momentum.E()-fEMCALParamTimeCutMin[2])/fEMCALParamTimeCutMin[3]);
-    Float_t maxCut= fEMCALParamTimeCutMax[0]+fEMCALParamTimeCutMax[1]*TMath::Exp(-(momentum.E()-fEMCALParamTimeCutMax[2])/fEMCALParamTimeCutMax[3]);
-    //printf("tof %f, minCut %f, maxCut %f\n",tof,minCut,maxCut);
-    if( tof < minCut || tof > maxCut )  return ;
-  }
+  else
+    fNNonPileUpClusters++;
 
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
@@ -1188,6 +1252,9 @@ void AliCaloTrackReader::FillInputEMCAL()
   //    GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCells(GetCaloUtils()->GetEMCALGeometry(), 
   //                                                          GetEMCALCells(), 
   //                                                          fInputEvent->GetBunchCrossNumber());
+  
+  fNPileUpClusters    = 0; // Init counter
+  fNNonPileUpClusters = 0; // Init counter
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   if(fEMCALClustersListName=="")
@@ -1248,8 +1315,8 @@ void AliCaloTrackReader::FillInputEMCAL()
     GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent,clusterList);
     
   }
-  
-  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d\n",  fEMCALClusters->GetEntriesFast());
+    
+  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d, n pile-up clusters %d, n non pile-up %d \n",  fEMCALClusters->GetEntriesFast(),fNPileUpClusters,fNNonPileUpClusters);
   
 }
 
