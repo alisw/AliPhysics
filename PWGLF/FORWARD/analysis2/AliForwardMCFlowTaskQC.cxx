@@ -57,9 +57,6 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name)
   // Parameters:
   //  name: Name of task
   //
-  fdNdedpMC = TH2D("fdNdedpMC", "fdNdedpMC", 
-		   48, -6., 6., 200, 0., 2.*TMath::Pi());
-  fdNdedpMC.Sumw2();
   
   //  Double_t impactParam[] = {0.,1.75,4.225,5.965,7.765,9.215,10.46,
   //                            11.565,12.575,13.515,16.679};
@@ -118,14 +115,15 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
   //
   AliForwardFlowTaskQC::InitVertexBins();
 
-  for(UShort_t n = 2; n <= 6; n++) {
-    if (!fv[n]) continue;
-      for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
+  Int_t moment = 0;
+  for(UShort_t n = 0; n < fV.GetSize(); n++) {
+    moment = fV.At(n);
+    for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
       Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
       Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
-      fBinsFMDTR.Add(new VertexBin(vL, vH, n, "FMDTR", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
-      fBinsSPDTR.Add(new VertexBin(vL, vH, n, "SPDTR", kTRUE, fSPDCut));
-      fBinsMC.Add(new VertexBin(vL, vH, n, "MC", kTRUE));
+      fBinsFMDTR.Add(new VertexBin(vL, vH, moment, "FMDTR", fFlowFlags, fFMDCut, fEtaGap));
+      fBinsSPDTR.Add(new VertexBin(vL, vH, moment, "SPDTR", fFlowFlags, fSPDCut, fEtaGap));
+      fBinsMC.Add(new VertexBin(vL, vH, moment, "MC", fFlowFlags, -1, fEtaGap));
     }
   }
 }
@@ -136,6 +134,11 @@ void AliForwardMCFlowTaskQC::InitHists()
   // Initiate diagnostics hists and add to outputlist
   //
   AliForwardFlowTaskQC::InitHists();
+
+  fdNdedpMC = TH2D(Form("fdNdedpMC%s", ((fFlowFlags & kEtaGap) ? "_etaGap" : "")),
+		   Form("fdNdedpMC%s", ((fFlowFlags & kEtaGap) ? "_etaGap" : "")),
+		   48, -6., 6., 200, 0., 2.*TMath::Pi());
+  fdNdedpMC.Sumw2();
 
   TIter nextFMDTR(&fBinsFMDTR);
   VertexBin* bin = 0;
@@ -176,16 +179,28 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   // if objects are present, get histograms
   if (aodfmult) {
     const TH2D& fmdTRdNdetadphi = aodfmult->GetHistogram();
-    FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx);
-  }
-  if (aodcmult) {
-    const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
-    FillVtxBinList(fBinsSPDTR, spdTRdNdetadphi, vtx);
+    if ((fFlowFlags & kEtaGap)) {
+      FillVtxBinListEtaGap(fBinsFMDTR, fmdTRdNdetadphi, fmdTRdNdetadphi, vtx);
+    } else {
+      FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx);
+    }
+    if (aodcmult) {
+      const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
+      if ((fFlowFlags & kEtaGap)) {
+	FillVtxBinListEtaGap(fBinsSPDTR, fmdTRdNdetadphi, spdTRdNdetadphi, vtx);
+      } else {
+	FillVtxBinList(fBinsSPDTR, spdTRdNdetadphi, vtx);
+      }
+    }
   }
 
   // Run analysis on MC branch
   if (!LoopAODMC()) return kFALSE;
-  FillVtxBinList(fBinsMC, fdNdedpMC, vtx);
+  if ((fFlowFlags & kEtaGap)) {
+    FillVtxBinListEtaGap(fBinsMC, fdNdedpMC, fdNdedpMC, vtx);
+  } else {
+    FillVtxBinList(fBinsMC, fdNdedpMC, vtx);
+  }
 
   return kTRUE;
 }
@@ -230,7 +245,6 @@ Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
   //
   if (fUseImpactPar) {
     fCent = GetCentFromB();
-//    if (fCent >  30) fCent = 42;
     if (fCent != -1) return kTRUE;
   }
   return AliForwardFlowTaskQC::GetCentrality(aodfm);
@@ -241,6 +255,7 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
   // 
   // Loop over AliAODParticle branch and fill d^2N/detadphi-histograms.
   // Add flow if set to do so in AddTask function
+  //
   fdNdedpMC.Reset();
 
   //retreive MC particles from event
@@ -284,19 +299,20 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     }
     if (!particle->IsPhysicalPrimary()) continue;
     if (particle->Charge() == 0) continue;
-    Double_t pT = particle->Pt();
+    //Double_t pT = particle->Pt();
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
     if (eta > -4. && eta < 5.) {
       // Add flow if it is in the argument
-      if (flowFlags != 0) 
-/*	weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(), 
-				     rp, fCent, fAddType, fAddOrder, 
-				     flowFlags) + 1;*/
+      /* FLOW WEIGHTS DISABLED IN THE VERSION - COMING BACK SOON
+      if (flowFlags != 0) { 
+//	weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(), 
+//				     rp, fCent, fAddType, fAddOrder, 
+//				     flowFlags) + 1;
         weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(),
                                     rp, b); 
-
-//        Printf("%f", weight);
+//      Printf("%f", weight);
+      }*/
         fdNdedpMC.Fill(eta, phi, weight);
     }
   }
@@ -335,11 +351,15 @@ void AliForwardMCFlowTaskQC::PrintFlowSetup() const
   Printf("Range of vertex axis         :\t[%3.1f,%3.1f]", 
 			  fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
   printf("Doing flow analysis for      :\t");
-  for (Int_t n  = 2; n <= 6; n++) if (fv[n]) printf("v%d ", n);
+  for (Int_t n  = 0; n < fV.GetSize(); n++) printf("v%d ", fV.At(n));
   printf("\n");
-  Printf("Displaced vertex flag:       :\t%s", (fgDispVtx ? "true" : "false"));
+  Printf("Satellite vertex flag           :\t%s", ((fFlowFlags & kSatVtx) ? "true" : "false"));
+  Printf("Symmetrize ref. flow wrt eta = 0:\t%s", ((fFlowFlags & kSymEta) ? "true" : "false"));
+  Printf("Use an eta-gap for ref. flow    :\t%s", ((fFlowFlags & kEtaGap) ? "true" : "false"));
   Printf("FMD sigma cut:               :\t%f", fFMDCut);
   Printf("SPD sigma cut:               :\t%f", fSPDCut);
+  if ((fFlowFlags & kEtaGap)) 
+    Printf("Eta gap:                     :\t%f", fEtaGap);
 }
 //_____________________________________________________________________
 //

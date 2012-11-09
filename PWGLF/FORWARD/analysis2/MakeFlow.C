@@ -29,15 +29,24 @@
  *
  * @ingroup pwglf_forward_flow
  */
-void MakeFlow(TString name = "flow", 
-	      TString options = "help", 
-	      TString runs = "", 
-	      Int_t   nEvents   = -1)
+void MakeFlow(TString name    = "flow", 
+	      TString options = "help",
+	      TString mode    = "lite",
+	      TString datadir = "/mnt/Disk2/LHC10h_pass2_flowNoSecCorr/",
+	      TString urlOpts = "workers=10&recursive") 
 {
   if (name.IsNull()) Fatal("MakeFlow", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/trains/RunTrain.C");
 
-  RunTrain("MakeFlowTrain", name, options, runs, nEvents);
+  if (!datadir.EndsWith("/")) datadir.Append("/");
+  
+  TUrl url(datadir.Data());
+  url.SetProtocol(mode.Data());
+  url.SetAnchor("aodTree");
+  url.SetOptions(urlOpts.Data());
+
+  RunTrain(name, "MakeFlowTrain", url, options);
 }
 //--------------------------------------------------------------------
 //
