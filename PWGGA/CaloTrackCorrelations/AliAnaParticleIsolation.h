@@ -153,7 +153,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiDecayNoIso ;                   //! eta vs phi of not isolated leading Pi0 decay particles
   TH2F *   fhConeSumPt ;                          //! Sum Pt in the cone
   TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
-  TH2F *   fhPtInConePileUp[4] ;                  //! Particle Pt in the cone, if event is from pile-up (SPD method)
+  TH2F *   fhPtInConePileUp[7] ;                  //! Particle Pt in the cone, if event is from pile-up (SPD method)
   TH2F *   fhPtInConeCent ;                       //! Particle Pt in the cone versus centrality
   TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
   TH2F *   fhPtInFRCone ;                         //! Particle Pt in the forward region cone (phi +90 ) 
@@ -288,10 +288,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda1LocMaxN[2] ;                 //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
   
   // Pile-up
-  TH1F *   fhEIsoPileUp[4] ;                      //! Number of isolated particles
-  TH1F *   fhPtIsoPileUp[4] ;                     //! Number of isolated particles
-  TH1F *   fhENoIsoPileUp[4] ;                    //! Number of not isolated particles
-  TH1F *   fhPtNoIsoPileUp[4] ;                   //! Number of not isolated particles
+  TH1F *   fhEIsoPileUp[7] ;                      //! Number of isolated particles
+  TH1F *   fhPtIsoPileUp[7] ;                     //! Number of isolated particles
+  TH1F *   fhENoIsoPileUp[7] ;                    //! Number of not isolated particles
+  TH1F *   fhPtNoIsoPileUp[7] ;                   //! Number of not isolated particles
   TH2F *   fhTimeENoCut;                          //! time of cluster vs E, no cut 
   TH2F *   fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
   TH2F *   fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
