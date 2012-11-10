@@ -149,9 +149,10 @@ private:
   AliHLTTPCHWClusterTransformComponent& operator=(const AliHLTTPCHWClusterTransformComponent&);
 
   static const char* fgkOCDBEntryHWTransform; //!transient
-  
+  static AliHLTTPCClusterTransformation fgTransform;
+  static Bool_t fgTimeInitialisedFromEvent;
+
   Bool_t fDataId;
-  AliHLTTPCClusterTransformation fTransform;
   Bool_t fPublishRawClusters; // publish raw clusters in addition
   AliHLTTPCHWCFData* fpDecoder; // decoder
 

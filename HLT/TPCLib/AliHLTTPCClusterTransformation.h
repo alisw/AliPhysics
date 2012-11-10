@@ -20,7 +20,10 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include"Rtypes.h"
+#include "Rtypes.h"
+#include "TString.h"
+#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCFastTransform.h"
 
 class AliTPCParam;
 class AliRecoParam;
@@ -43,24 +46,32 @@ class AliHLTTPCClusterTransformation{
   /** destructor */
   virtual ~AliHLTTPCClusterTransformation();
 
-  int  Init( double FieldBz, UInt_t TimeStamp );
-  void SetCurrentTimeStamp( UInt_t TimeStamp );
-  int  Transform( int Slice, int Row, float Pad, float Time, float XYZ[] );
+  /** Initialisation  */
+  Int_t  Init( double FieldBz, Long_t TimeStamp );
 
+  /** Initialised flag */
+   Bool_t IsInitialised() const;
+
+  /** Deinitialisation  */
+   void DeInit();
+
+  /** Setting the current time stamp  */
+  Int_t SetCurrentTimeStamp( Long_t TimeStamp );
+ 
+  /** Returns the current time stamp  */
+  Long_t GetCurrentTimeStamp() const { return fFastTransform.GetCurrentTimeStamp(); }
+
+  /** Transformation: calibration and alignment*/
+  Int_t  Transform( int Slice, int Row, float Pad, float Time, float XYZ[] );
+
+  /** Applying reverse alignment */
   int  ReverseAlignment( float XYZ[], int slice, int padrow);
-  void SetRotationMatrix(const Double_t *rot=NULL, bool bCalcAdjugate=false);
-  bool CalcAdjugateRotation(bool bCheck=false);
 
+  /** Last error message */
+  const char* GetLastError() const { return fError.Data(); }
+
+  /** Printout */
   void Print(const char* option=NULL) const;
-
- protected:
-
-  AliTPCParam     * fOfflineTPCParam;                                 //! transient
-  AliRecoParam    * fOfflineRecoParam;  //! transient
-  Int_t fLastSector; // last sector
-  Double_t fAliT[3]; // alignment - translation
-  Double_t fAliR[9]; // alignment - rotation
-  Double_t fAdjR[9]; // alignment - inverse rotation (adjugate)
 
  private:
 
@@ -69,7 +80,42 @@ class AliHLTTPCClusterTransformation{
   /** assignment operator prohibited */
   AliHLTTPCClusterTransformation& operator=(const AliHLTTPCClusterTransformation&);
 
+ /** Set error string */
+  Int_t Error(Int_t code, const char *msg);
+
+  static AliRecoParam    fOfflineRecoParam;  //! static container for TPC Reco Param
+
+  TString fError; // Last error message
+
+  AliHLTTPCFastTransform fFastTransform;// fast transformation object
+
   ClassDef(AliHLTTPCClusterTransformation, 1)
 };
 
+inline Int_t AliHLTTPCClusterTransformation::Error(Int_t code, const char *msg)
+{
+  // Set error 
+  fError = msg;
+  return code;
+}
+
+inline Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, float Time, float XYZ[] )
+{
+  // Convert row, pad, time to X Y Z   	   
+  Int_t sector=-99, thisrow=-99;  
+  AliHLTTPCTransform::Slice2Sector( Slice, Row, sector, thisrow);
+  int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
+  if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+  return 0;
+}
+
+inline Int_t  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int slice, int padrow)
+{
+  // reverse the alignment correction
+  Int_t sector=-99, thisrow=-99;
+  AliHLTTPCTransform::Slice2Sector( slice, padrow, sector, thisrow);
+  int err = fFastTransform.ReverseAlignment(sector, XYZ);
+  if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::ReverseAlignment: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+  return 0;
+}
 #endif

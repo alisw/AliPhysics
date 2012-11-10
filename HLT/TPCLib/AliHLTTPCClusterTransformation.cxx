@@ -46,74 +46,51 @@ using namespace std;
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
 
+AliRecoParam AliHLTTPCClusterTransformation::fOfflineRecoParam;
+
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
-  fOfflineTPCParam( NULL ),
-  fOfflineRecoParam( NULL), 
-  fLastSector(-1)
+  fError(),
+  fFastTransform()  
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
-  fAliT[0] = 0.;
-  fAliT[1] = 0.;
-  fAliT[2] = 0.;
-  SetRotationMatrix();
 }
+
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
 }
 
 
-int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
+int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
 {
   // Initialisation
-  fOfflineTPCParam = 0;
-  fLastSector = -1;
-  fAliT[0] = 0.;
-  fAliT[1] = 0.;
-  fAliT[2] = 0.;
   
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
-
-  if(!pCalib ) return -1;
-
-  pCalib->SetExBField(FieldBz);
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
   }
 
-  if( !pCalib->GetTransform() ) return -2; 
-  pCalib->GetTransform()->SetCurrentRecoParam(NULL);
+  if(!AliGeomManager::GetGeometry()) return Error(-1,"AliHLTTPCClusterTransformation::Init: Can not initialise geometry");
   
-  delete fOfflineRecoParam;
-  fOfflineRecoParam = new AliRecoParam;
-  if( !fOfflineRecoParam ) return -3;
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
+ 
+  if(!pCalib ) return Error(-2,"AliHLTTPCClusterTransformation::Init: Calibration not found");
   
-  
-  AliCDBEntry *entry=AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
-  if(!entry) return -4;
-  TObject *recoParamObj = entry->GetObject();
-  if(!recoParamObj) return -5;
-  if (dynamic_cast<TObjArray*>(recoParamObj)) {
-    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: TObjArray found \n"<<endl;
-    fOfflineRecoParam->AddDetRecoParamArray(1,dynamic_cast<TObjArray*>(recoParamObj));
-  }
-  else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
-    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: AliDetectorRecoParam found \n"<<endl;
-    fOfflineRecoParam->AddDetRecoParam(1,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
-  }
+  pCalib->SetExBField(FieldBz);
+ 
+  if( !pCalib->GetTransform() ) return Error(-3,"AliHLTTPCClusterTransformation::Init: No TPC transformation found");
   
   // -- Get AliRunInfo variables  
 
   AliGRPObject tmpGRP, *pGRP=0;
 
-  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-
-  if(!entry) return -6;
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  
+  if(!entry) return Error(-4,"AliHLTTPCClusterTransformation::Init: No GRP object found in data base");
 
   {
     TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
@@ -129,200 +106,91 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
       pGRP = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
     }
   }
-  
-  
+    
   if( !pGRP ){
-    return -7;
+    return Error(-5,"AliHLTTPCClusterTransformation::Init: Unknown format of the GRP object in data base");
   }
 
   AliRunInfo runInfo(pGRP->GetLHCState(),pGRP->GetBeamType(),pGRP->GetBeamEnergy(),pGRP->GetRunType(),pGRP->GetDetectorMask());
   AliEventInfo evInfo;
   evInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
-  
-  fOfflineRecoParam->SetEventSpecie(&runInfo, evInfo, 0);    
- 
-  AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam->GetDetRecoParam(1);
 
+  entry=AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
+
+  if(!entry) return Error(-6,"AliHLTTPCClusterTransformation::Init: No TPC reco param entry found in data base");
+
+  TObject *recoParamObj = entry->GetObject();
+  if(!recoParamObj) return Error(-7,"AliHLTTPCClusterTransformation::Init: Empty TPC reco param entry in data base");
+
+  if (dynamic_cast<TObjArray*>(recoParamObj)) {
+    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: TObjArray found \n"<<endl;
+    fOfflineRecoParam.AddDetRecoParamArray(1,dynamic_cast<TObjArray*>(recoParamObj));
+  }
+  else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+    //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: AliDetectorRecoParam found \n"<<endl;
+    fOfflineRecoParam.AddDetRecoParam(1,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+  } else {
+    return Error(-8,"AliHLTTPCClusterTransformation::Init: Unknown format of the TPC Reco Param entry in the data base");
+  }
+  
+  
+  fOfflineRecoParam.SetEventSpecie(&runInfo, evInfo, 0);    
+ 
   // 
+
+  AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
+
+  if( !recParam ) return Error(-9,"AliHLTTPCClusterTransformation::Init: No TPC Reco Param entry found for the given event specification");
+
  
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
-  fOfflineTPCParam = pCalib->GetParameters();
-  if( !fOfflineTPCParam ) return -8;
+  // set current time stamp and initialize the fast transformation
+ 
+  int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp );
+  
+  if( err!=0 ){
+    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+  }
 
-  fOfflineTPCParam->Update();
-  fOfflineTPCParam->ReadGeoMatrices();  
-
-  SetRotationMatrix();
-
-  // set current time stamp and initialize the fast transformation instance, if necessary
-
-  if( !AliHLTTPCFastTransform::Instance()->IsInitialised() ) AliHLTTPCFastTransform::Instance()->Init( pCalib->GetTransform(), TimeStamp );
-  else SetCurrentTimeStamp( TimeStamp );
   return 0;
 }
 
+Bool_t AliHLTTPCClusterTransformation::IsInitialised() const 
+{
+  // Is the transformation initialised
+  return fFastTransform.IsInitialised();
+}
 
-void AliHLTTPCClusterTransformation::SetCurrentTimeStamp( UInt_t TimeStamp )
+void AliHLTTPCClusterTransformation::DeInit()
+{
+  // Deinitialisation
+  fFastTransform.DeInit();
+}
+
+Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
 {
   // Set the current time stamp  
-  AliHLTTPCFastTransform::Instance()->SetCurrentTimeStamp( TimeStamp );
-}
 
+  AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
+  if( !recParam )  return Error(-1,"AliHLTTPCClusterTransformation::SetCurrentTimeStamp: No TPC Reco Param entry found");
 
-int  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, float Time, float XYZ[] )
-{
-  // Convert row, pad, time to X Y Z
-   	   
-  Int_t sector=-99, thisrow=-99;  
-  AliHLTTPCTransform::Slice2Sector( Slice, Row, sector, thisrow);
-  Double_t x[3] = {0,0,0}; 
-  AliHLTTPCFastTransform::Instance()->Transform(sector, thisrow, Pad, Time, x);
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
+  if(!pCalib ) return Error(-2,"AliHLTTPCClusterTransformation::Init: Calibration not found");
+   
+  if( !pCalib->GetTransform() ) return Error(-3,"AliHLTTPCClusterTransformation::SetCurrentTimeStamp: No TPC transformation found");
+  
+  pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
-  if( sector!= fLastSector ){
-    if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
-      TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );
-      if ( alignment ){
-	const Double_t *tr = alignment->GetTranslation();
-	const Double_t *rot = alignment->GetRotationMatrix();
-	if( tr && rot ){
-	  for( int i=0; i<3; i++ ) fAliT[i] = tr[i];
-	  for( int i=0; i<9; i++ ) fAliR[i] = rot[i];
-	}
-      }
-    } else {
-      fAliT[0] = 0.;
-      fAliT[1] = 0.;
-      fAliT[2] = 0.;
-      for( int i=0; i<9; i++ ) fAliR[i] = 0;
-      fAliR[0] = 1.;
-      fAliR[4] = 1.;
-      fAliR[8] = 1.;
-    }
-    fLastSector = sector;
+  int err = fFastTransform.SetCurrentTimeStamp( TimeStamp );
+  if( err!=0 ){
+    return Error(-4,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: SetCurrentTimeStamp to the Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
-  // alignment->LocalToMaster( x, y);
-
-  XYZ[0] = fAliT[0] + x[0]*fAliR[0] + x[1]*fAliR[1] + x[2]*fAliR[2];
-  XYZ[1] = fAliT[1] + x[0]*fAliR[3] + x[1]*fAliR[4] + x[2]*fAliR[5];
-  XYZ[2] = fAliT[2] + x[0]*fAliR[6] + x[1]*fAliR[7] + x[2]*fAliR[8];
-
-  return 0; 
-}
-
-int  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int slice, int padrow)
-{
-  // reverse the alignment correction
-  Int_t sector=-99, thisrow=-99;
-  AliHLTTPCTransform::Slice2Sector( slice, padrow, sector, thisrow);
-  if( sector!= fLastSector ){
-    if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
-      TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );
-      if ( alignment ){
-	const Double_t *tr = alignment->GetTranslation();
-	const Double_t *rot = alignment->GetRotationMatrix();
-	if(tr){
-	  for( int i=0; i<3; i++ ) fAliT[i] = tr[i];
-	}
-	SetRotationMatrix(rot, true);
-      }
-    } else {
-      fAliT[0] = 0.;
-      fAliT[1] = 0.;
-      fAliT[2] = 0.;
-      SetRotationMatrix(NULL, true);
-    }
-    fLastSector = sector;
-  }
-
-  // correct for alignment: translation
-  float xyz[3];
-  xyz[0] = XYZ[0] - fAliT[0];
-  xyz[1] = XYZ[1] - fAliT[1];
-  xyz[2] = XYZ[2] - fAliT[2];
-
-  // correct for alignment: rotation
-  XYZ[0]=xyz[0]*fAdjR[0] + xyz[1]*fAdjR[1] + xyz[2]*fAdjR[2];
-  XYZ[1]=xyz[0]*fAdjR[3] + xyz[1]*fAdjR[4] + xyz[2]*fAdjR[5];
-  XYZ[2]=xyz[0]*fAdjR[6] + xyz[1]*fAdjR[7] + xyz[2]*fAdjR[8];
-
   return 0;
-}
-
-void AliHLTTPCClusterTransformation::SetRotationMatrix(const Double_t *rot, bool bCalcAdjugate)
-{
-  // set the rotation matrix and calculate the adjugate if requested
-  if (rot) {
-    for( int i=0; i<9; i++ ) fAliR[i] = rot[i];
-    if (bCalcAdjugate) {
-      CalcAdjugateRotation();
-    }
-    return;
-  }
-  for( int i=0; i<9; i++ ) {fAliR[i] = 0; fAdjR[i] = 0;}
-  fAliR[0] = 1.;
-  fAliR[4] = 1.;
-  fAliR[8] = 1.; 
-  fAdjR[0] = 1.;
-  fAdjR[4] = 1.;
-  fAdjR[8] = 1.; 
-}
-
-bool AliHLTTPCClusterTransformation::CalcAdjugateRotation(bool bCheck)
-{
-  // check rotation matrix and adjugate for consistency
-  fAdjR[0]= fAliR[4]*fAliR[8]-fAliR[5]*fAliR[7];
-  fAdjR[1]= fAliR[5]*fAliR[6]-fAliR[3]*fAliR[8];
-  fAdjR[2]= fAliR[3]*fAliR[7]-fAliR[4]*fAliR[6];
-
-  fAdjR[3]= fAliR[2]*fAliR[7]-fAliR[1]*fAliR[8];
-  fAdjR[4]= fAliR[0]*fAliR[8]-fAliR[2]*fAliR[6];
-  fAdjR[5]= fAliR[2]*fAliR[6]-fAliR[0]*fAliR[7];
-
-  fAdjR[6]= fAliR[1]*fAliR[5]-fAliR[2]*fAliR[4];
-  fAdjR[7]= fAliR[2]*fAliR[3]-fAliR[0]*fAliR[5];
-  fAdjR[8]= fAliR[0]*fAliR[4]-fAliR[1]*fAliR[3];
-
-  if (bCheck) {
-    for (int r=0; r<3; r++) {
-      for (int c=0; c<3; c++) {
-	float a=0.;
-	float expected=0.;
-	if (r==c) expected=1.;
-	for (int i=0; i<3; i++) {
-	  a+=fAliR[3*r+i]*fAdjR[c+(3*i)];
-	}
-	if (TMath::Abs(a-expected)>0.00001) {
-	  std::cout << "inconsistent adjugate at " << r << c << ": " << a << " " << expected << std::endl;
-	  return false;
-	}
-      }
-    }
-  }
-  return true;
 }
 
 void AliHLTTPCClusterTransformation::Print(const char* /*option*/) const
 {
   // print info
-  ios::fmtflags coutflags=std::cout.flags(); // backup cout status flags
-  std::cout << "AliHLTTPCClusterTransformation for sector " << fLastSector << std::endl;
-
-  std::cout.setf(ios_base::showpos|ios_base::showpos|ios::right);
-  std::cout << "  translation: " << std::endl;
-  int r=0;
-  for (r=0; r<3; r++) {
-    std::cout << setw(7) << fixed << setprecision(2);
-    cout << "  " << fAliT[r] << std::endl;
-  }
-  std::cout << "  rotation and adjugated rotation: " << std::endl;
-  for (r=0; r<3; r++) {
-    int c=0;
-    std::cout << setw(7) << fixed << setprecision(2);
-    for (c=0; c<3; c++) std::cout << "  " << fAliR[3*r+c];
-    std::cout << "      ";
-    for (c=0; c<3; c++) std::cout << "  " << fAdjR[3*r+c];
-    std::cout << endl;
-  }
-  std::cout.flags(coutflags); // restore the original flags
+  fFastTransform.Print();
 }
