@@ -98,14 +98,17 @@ AliAnalysisTaskCheckPerformanceCascadepp276::AliAnalysisTaskCheckPerformanceCasc
     fESDtrackCuts                  (0), 
     fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
+    fkSDDselectionOn               (kTRUE),
     fkQualityCutZprimVtxPos        (kTRUE),
     fkRejectEventPileUp            (kTRUE),
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
     fkQualityCutnTPCcls            (kTRUE),
+    fwithSDD                       (kTRUE),
     fMinnTPCcls                    (0),
     fkExtraSelections              (0),
     fVtxRange                      (0),
+    fVtxRangeMin                   (0),
     fApplyAccCut                   (0),
     fMinPtCutOnDaughterTracks      (0),
     fEtaCutOnDaughterTracks        (0),
@@ -293,14 +296,17 @@ AliAnalysisTaskCheckPerformanceCascadepp276::AliAnalysisTaskCheckPerformanceCasc
     fESDtrackCuts                  (0),
     fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
+    fkSDDselectionOn               (kTRUE),
     fkQualityCutZprimVtxPos        (kTRUE),
     fkRejectEventPileUp            (kTRUE),
     fkQualityCutNoTPConlyPrimVtx   (kTRUE),
     fkQualityCutTPCrefit           (kTRUE),
     fkQualityCutnTPCcls            (kTRUE),
+    fwithSDD                       (kTRUE),
     fMinnTPCcls                    (0),
     fkExtraSelections              (0),
     fVtxRange                      (0),
+    fVtxRangeMin                   (0),
     fApplyAccCut                   (0),
     fMinPtCutOnDaughterTracks      (0),
     fEtaCutOnDaughterTracks        (0),
@@ -1492,41 +1498,42 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
    //----------------
    // - SDD selection
    //----------------
-   //NOT NEEDED IN MC
    // - Define variables
    Int_t  ncascadesAfterSDDSel          = -1; //number of cascades after SDD selection
    Int_t  nTrackMultiplicityAfterSDDSel = -1; //number of tracks after SDD selection
-   /*TString trcl = " ";
-   trcl = lESDevent->GetFiredTriggerClasses();
-   if (fAnalysisType == "ESD") trcl = lESDevent->GetFiredTriggerClasses();
-   else if (fAnalysisType == "AOD") trcl = lAODevent->GetFiredTriggerClasses();
-   if (fkSDDonSelection){   // ---> Select event with SDD ON
-        if(!(trcl.Contains("ALLNOTRD"))) {
-            PostData(1, fListHistCascade);
-            PostData(2, fCFContCascadePIDAsXiMinus);
-            PostData(3, fCFContCascadePIDAsXiPlus);
-            PostData(4, fCFContCascadePIDAsOmegaMinus);
-            PostData(5, fCFContCascadePIDAsOmegaPlus);
-            PostData(6, fCFContAsCascadeCuts);
-            cout<<"Bad event: SDD turn OFF =>  RETURN!! (Exclude it)..."<<endl;
-            return;
-        } else {
-            cout<<"Good event: SDD turn ON."<<endl;
+   if (fkSDDselectionOn) {
+        TString trcl = " ";
+        trcl = lESDevent->GetFiredTriggerClasses();
+        if (fAnalysisType == "ESD") trcl = lESDevent->GetFiredTriggerClasses();
+        else if (fAnalysisType == "AOD") trcl = lAODevent->GetFiredTriggerClasses();
+        if (fwithSDD){   // ---> Select event with SDD ON
+            if(!(trcl.Contains("ALLNOTRD"))) {
+                 PostData(1, fListHistCascade);
+                 PostData(2, fCFContCascadePIDAsXiMinus);
+                 PostData(3, fCFContCascadePIDAsXiPlus);
+                 PostData(4, fCFContCascadePIDAsOmegaMinus);
+                 PostData(5, fCFContCascadePIDAsOmegaPlus);
+                 PostData(6, fCFContAsCascadeCuts);
+                 cout<<"Bad event: SDD turn OFF =>  RETURN!! (Exclude it)..."<<endl;
+                 return;
+            } else {
+                 cout<<"Good event: SDD turn ON."<<endl;
+            }
+        } else if (!fwithSDD){  // ---> Select event with SDD OFF
+            if((trcl.Contains("ALLNOTRD"))) {
+                 PostData(1, fListHistCascade);
+                 PostData(2, fCFContCascadePIDAsXiMinus);
+                 PostData(3, fCFContCascadePIDAsXiPlus);
+                 PostData(4, fCFContCascadePIDAsOmegaMinus);
+                 PostData(5, fCFContCascadePIDAsOmegaPlus);
+                 PostData(6, fCFContAsCascadeCuts);
+                 cout<<"Bad event:  SDD turn ON =>  RETURN!! (Exclude it)..."<<endl;
+                 return;
+            } else {
+                 cout<<"Good event: SDD turn OFF."<<endl;
+            }
         }
-   } else if (!fkSDDonSelection){  // ---> Select event with SDD OFF
-        if((trcl.Contains("ALLNOTRD"))) {
-            PostData(1, fListHistCascade);
-            PostData(2, fCFContCascadePIDAsXiMinus);
-            PostData(3, fCFContCascadePIDAsXiPlus);
-            PostData(4, fCFContCascadePIDAsOmegaMinus);
-            PostData(5, fCFContCascadePIDAsOmegaPlus);
-            PostData(6, fCFContAsCascadeCuts);
-            cout<<"Bad event:  SDD turn ON =>  RETURN!! (Exclude it)..."<<endl;
-            return;
-        } else {
-            cout<<"Good event: SDD turn OFF."<<endl;
-        }
-   }*/
+   }
    // - Take the number of cascades and tracks after the SDD selection
    if (fAnalysisType == "ESD") {
        Int_t lMultiplicity = -100;
@@ -1725,15 +1732,15 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
        lMagneticField = lESDevent->GetMagneticField();
        // - Selection on the primary vertex Z position 
        if (fkQualityCutZprimVtxPos) {
-          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
-               AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
-               PostData(1, fListHistCascade);
-               PostData(2, fCFContCascadePIDAsXiMinus);
-               PostData(3, fCFContCascadePIDAsXiPlus);
-               PostData(4, fCFContCascadePIDAsOmegaMinus);
-               PostData(5, fCFContCascadePIDAsOmegaPlus);
-               PostData(6, fCFContAsCascadeCuts);
-               return;
+           if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange || TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
+                AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+                PostData(1, fListHistCascade);
+                PostData(2, fCFContCascadePIDAsXiMinus);
+                PostData(3, fCFContCascadePIDAsXiPlus);
+                PostData(4, fCFContCascadePIDAsOmegaMinus);
+                PostData(5, fCFContCascadePIDAsOmegaPlus);
+                PostData(6, fCFContAsCascadeCuts);
+                return;
           }
        }
        // - Take the number of cascades and tracks after vertex Z position selection
@@ -1765,15 +1772,15 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
        lMagneticField = lAODevent->GetMagneticField();
        // - Selection on the primary vertex Z position 
        if (fkQualityCutZprimVtxPos) {
-           if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
-               AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
-               PostData(1, fListHistCascade);
-               PostData(2, fCFContCascadePIDAsXiMinus);
-               PostData(3, fCFContCascadePIDAsXiPlus);
-               PostData(4, fCFContCascadePIDAsOmegaMinus);
-               PostData(5, fCFContCascadePIDAsOmegaPlus);
-               PostData(6, fCFContAsCascadeCuts);
-               return;
+           if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange && TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
+                AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+                PostData(1, fListHistCascade);
+                PostData(2, fCFContCascadePIDAsXiMinus);
+                PostData(3, fCFContCascadePIDAsXiPlus);
+                PostData(4, fCFContCascadePIDAsOmegaMinus);
+                PostData(5, fCFContCascadePIDAsOmegaPlus);
+                PostData(6, fCFContAsCascadeCuts);
+                return;
            }
        }
        // - Take the number of cascades and tracks after vertex Z position selection
