@@ -6966,7 +6966,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
   Float_t fdensity = 3.0;
 
   // make HLT seeds
-  {
+  if (AliTPCReconstructor::GetRecoParam()->GetUseHLTPreSeeding()) {
     arr = MakeSeedsHLT( fEventHLT );
     if( arr ){
       SumTracks(seeds,arr);     
