@@ -9,6 +9,7 @@
 // //            It works with MC info and ESD and AOD tree 
 // //            Origin   : A.Maire Jan2010, antonin.maire@ires.in2p3.fr
 // //            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
+// //            Modified : D. Colella Feb2012, domenico.colella@ba.infn.it
 // //-----------------------------------------------------------------
 
 class TList;
@@ -37,19 +38,21 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
   
   void SetAnalysisType     (const char* analysisType    = "ESD") { fAnalysisType     = analysisType;}
   
-  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers        = rerunV0CascVertexers;      }
-  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;     }
-  void SetRejectEventPileUp          (Bool_t rejectPileUp               = kTRUE) { fkRejectEventPileUp           = rejectPileUp;              }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx  = qualityCutNoTPConlyPrimVtx;}
-  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit          = qualityCutTPCrefit;        }
-  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls           = qualityCutnTPCcls;         }
-  void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE) { fkSDDonSelection              = sddOnSelection;            }
-  void SetQualityCutMinnTPCcls       (Int_t minnTPCcls                  = 70   ) { fMinnTPCcls                   = minnTPCcls;                }
-  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections             = extraSelections;           }
-  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                     = vtxrange;                  }
-  void SetApplyAccCut                (Bool_t acccut                     = kFALSE){ fApplyAccCut                  = acccut;                    }    
-  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks     = minptdaughtrks;            }
-  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks              = 0.   ) { fEtaCutOnDaughterTracks       = etadaughtrks;              }
+  void SetRelaunchV0CascVertexers    (Bool_t  rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers        = rerunV0CascVertexers;      }
+  void SetSDDSelection               (Bool_t  sddOnSelection             = kTRUE) { fkSDDselectionOn              = sddOnSelection;            }
+  void SetQualityCutZprimVtxPos      (Bool_t  qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;     }
+  void SetRejectEventPileUp          (Bool_t  rejectPileUp               = kTRUE) { fkRejectEventPileUp           = rejectPileUp;              }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t  qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx  = qualityCutNoTPConlyPrimVtx;}
+  void SetQualityCutTPCrefit         (Bool_t  qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit          = qualityCutTPCrefit;        }
+  void SetQualityCutnTPCcls          (Bool_t  qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls           = qualityCutnTPCcls;         }
+  void SetWithSDDOn                  (Bool_t  withsddOn                  = kTRUE) { fwithSDD                      = withsddOn;                 }
+  void SetQualityCutMinnTPCcls       (Int_t   minnTPCcls                 = 70   ) { fMinnTPCcls                   = minnTPCcls;                }
+  void SetExtraSelections            (Bool_t  extraSelections            = 0    ) { fkExtraSelections             = extraSelections;           }
+  void SetVertexRange                (Float_t vtxrange                   = 0.   ) { fVtxRange                     = vtxrange;                  }
+  void SetVertexRangeMin             (Float_t vtxrangemin                = 0.   ) { fVtxRangeMin                  = vtxrangemin;               }
+  void SetApplyAccCut                (Bool_t  acccut                     = kFALSE){ fApplyAccCut                  = acccut;                    }    
+  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks             = 0.   ) { fMinPtCutOnDaughterTracks     = minptdaughtrks;            }
+  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks               = 0.   ) { fEtaCutOnDaughterTracks       = etadaughtrks;              }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -62,15 +65,17 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
         AliPIDResponse *fPIDResponse;           //! PID response object        
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
+        Bool_t          fkSDDselectionOn;               // Boolean : kTRUE = enable the selection based on the SDD status
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
         Bool_t          fkRejectEventPileUp;            // Boolean : kTRUE = enable the rejection of events tagged as pile-up by SPD (AliESDEvent::IsPileupFromSPD)
         Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
         Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
-        Bool_t          fkQualityCutnTPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
-        Bool_t          fkSDDonSelection;               // Boolean : kTRUE = select events with SDD on
-        Int_t           fMinnTPCcls;                    // Boolean : set the value for the minimum numeber of TPC clusters
+        Bool_t          fkQualityCutnTPCcls;            // Boolean : kTRUE = ask for n TPC clusters for each daughter track
+        Bool_t          fwithSDD;                       // Boolean : kTRUE = select events with SDD reco
+        Int_t           fMinnTPCcls;                    // Boolean : set the value for the minimum number of TPC clusters
         Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
+        Float_t         fVtxRangeMin;                   // to select events with |zvtx|>fVtxRangeMin cm
         Bool_t          fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades       
         Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
         Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks 

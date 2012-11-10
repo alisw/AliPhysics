@@ -1,11 +1,14 @@
 AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276( Int_t    minnTPCcls             = 70,
                                                                                   Float_t  vtxlim                 = 10.,
+                                                                                  Float_t  vtxlimmin              = 0.,
+                                                                                  Bool_t   fwithsdd               = kFALSE,
                                                                                   Bool_t   kextrasel              = kFALSE,
                                                                                   Bool_t   kacccut                = kFALSE,
                                                                                   Bool_t   krelaunchvertexers     = kFALSE,
-                                                                                  Bool_t   ksddonselection        = kTRUE,
+                                                                                  Bool_t   ksddonselection        = kFALSE,
                                                                                   Float_t  minptondaughtertracks  = 0.,
-                                                                                  Float_t  etacutondaughtertracks = 9999999. ) {
+                                                                                  Float_t  etacutondaughtertracks = .8,
+                                                                                  Bool_t   standardAnalysis       = kTRUE ) {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -28,16 +31,18 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
 
    taskCheckPerfCascadepp276->SetAnalysisType               (type);
    taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     
+   taskCheckPerfCascadepp276->SetSDDSelection               (fwithsdd);
    taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);
    taskCheckPerfCascadepp276->SetRejectEventPileUp          (kFALSE);
    taskCheckPerfCascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);
    taskCheckPerfCascadepp276->SetQualityCutTPCrefit         (kTRUE);
    taskCheckPerfCascadepp276->SetQualityCutnTPCcls          (kTRUE);             
-   taskCheckPerfCascadepp276->SetSDDSelection               (ksddonselection);
+   taskCheckPerfCascadepp276->SetWithSDDOn                  (ksddonselection);
    taskCheckPerfCascadepp276->SetQualityCutMinnTPCcls       (minnTPCcls);    
    taskCheckPerfCascadepp276->SetExtraSelections            (kextrasel);
    taskCheckPerfCascadepp276->SetApplyAccCut                (kacccut);
    taskCheckPerfCascadepp276->SetVertexRange                (vtxlim);
+   taskCheckPerfCascadepp276->SetVertexRangeMin             (vtxlimmin);
    taskCheckPerfCascadepp276->SetMinptCutOnDaughterTracks   (minptondaughtertracks); 
    taskCheckPerfCascadepp276->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
  
@@ -50,7 +55,8 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
    // User file name (if need be)
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadepp276";
+   if (standardAnalysis) outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadepp276";
+   else                  outputFileName += Form(":PWGLFStrangeness.outputCheckPerformanceCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin); 
    Printf("AddTaskCheckPerformanceCascadepp276 - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascPerf",
