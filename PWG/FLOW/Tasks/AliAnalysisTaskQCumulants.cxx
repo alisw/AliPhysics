@@ -59,6 +59,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE), 
  fCalculateAllCorrelationsVsM(kFALSE), 
+ fCalculateMixedHarmonics(kFALSE),
+ fCalculateMixedHarmonicsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE),  
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -116,6 +118,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
  fCalculateAllCorrelationsVsM(kFALSE),   
+ fCalculateMixedHarmonics(kFALSE),
+ fCalculateMixedHarmonicsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kFALSE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE), 
@@ -164,6 +168,8 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetCalculateAllCorrelationsVsM(fCalculateAllCorrelationsVsM);
+ fQC->SetCalculateMixedHarmonics(fCalculateMixedHarmonics);
+ fQC->SetCalculateMixedHarmonicsVsM(fCalculateMixedHarmonicsVsM);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances); 
  // Multiparticle correlations vs multiplicity:
