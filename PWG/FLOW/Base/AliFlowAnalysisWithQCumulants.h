@@ -61,10 +61,12 @@ class AliFlowAnalysisWithQCumulants{
     virtual void BookEverythingForDistributions(); 
     virtual void BookEverythingForVarious();
     virtual void BookEverythingForNestedLoops();   
+    virtual void BookEverythingForMixedHarmonics();
     virtual void StoreIntFlowFlags();
     virtual void StoreDiffFlowFlags();
     virtual void StoreFlagsForDistributions();   
     virtual void StoreHarmonic();
+    virtual void StoreMixedHarmonicsFlags();
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     // 2a.) Common:
@@ -85,12 +87,14 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateIntFlowProductOfCorrectionTermsForNUA();
     virtual void CalculateIntFlowSumOfEventWeightsNUA();
     virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
+    virtual void CalculateMixedHarmonics();
     // 2c.) Cross-checking reference flow correlations with nested loops: 
     virtual void EvaluateIntFlowNestedLoops(AliFlowEventSimple* const anEvent);
     virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent);
+    virtual void EvaluateMixedHarmonicsWithNestedLoops(AliFlowEventSimple* const anEvent); 
     // 2d.) Differential flow:
     virtual void CalculateDiffFlowCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
@@ -125,7 +129,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateCovariancesIntFlow();  
     virtual void CalculateCovariancesNUAIntFlow();  
     virtual void CalculateCumulantsIntFlow(); 
-    virtual void CalculateReferenceFlow(); 
+	virtual void CalculateReferenceFlow(); 
     virtual void FillCommonHistResultsIntFlow();
     //  nua:   
     virtual void CalculateQcumulantsCorrectedForNUAIntFlow(); 
@@ -151,6 +155,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void Calculate2DDiffFlow(TString type);    
     // 3d.) Other differential correlators:
     virtual void CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta);
+	// 3e.) Mixed harmonics:
+	virtual void CalculateCumulantsMixedHarmonics(); 
     
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms(): 
   virtual void GetOutputHistograms(TList *outputListHistos);
@@ -161,6 +167,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void GetPointersFor2DDiffFlowHistograms(); 
     virtual void GetPointersForOtherDiffCorrelators(); 
     virtual void GetPointersForNestedLoopsHistograms(); 
+    virtual void GetPointersForMixedHarmonicsHistograms(); 
     
   // 5.) other methods:   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
@@ -421,6 +428,45 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetDiffFlowDirectCorrectionTermsForNUA(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l];};          
   void SetOtherDirectDiffCorrelators(TProfile* const oddc, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fOtherDirectDiffCorrelators[i][j][k][l] = oddc;};
   TProfile* GetOtherDirectDiffCorrelators(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fOtherDirectDiffCorrelators[i][j][k][l];};  
+  void SetMixedHarmonicsNestedLoops(TProfile* const mhnl) {this->fMixedHarmonicsNestedLoops = mhnl;};
+  TProfile* GetMixedHarmonicsNestedLoops() const {return this->fMixedHarmonicsNestedLoops;};
+
+  // 9.) Mixed harmonics:
+  void SetMixedHarmonicsList(TList* const mhlist) {this->fMixedHarmonicsList = mhlist;};
+  void SetMixedHarmonicsFlags(TProfile* const mhFlags) {this->fMixedHarmonicsFlags = mhFlags;};
+  TProfile* GetMixedHarmonicsFlags() const {return this->fMixedHarmonicsFlags;}; 
+  void SetCalculateMixedHarmonics(Bool_t const cmh) {this->fCalculateMixedHarmonics = cmh;};
+  Bool_t GetCalculateMixedHarmonics() const {return this->fCalculateMixedHarmonics;};
+  void SetCalculateMixedHarmonicsVsM(Bool_t const cmhvm) {this->fCalculateMixedHarmonicsVsM = cmhvm;};
+  Bool_t GetCalculateMixedHarmonicsVsM() const {return this->fCalculateMixedHarmonicsVsM;};
+  void Set2pCorrelations(TProfile* const p2pCorr) {this->f2pCorrelations = p2pCorr;};
+  TProfile* Get2pCorrelations() const {return this->f2pCorrelations;};
+  void Set3pCorrelations(TProfile* const p3pCorr) {this->f3pCorrelations = p3pCorr;};
+  TProfile* Get3pCorrelations() const {return this->f3pCorrelations;};
+  void Set4pCorrelations(TProfile* const p4pCorr) {this->f4pCorrelations = p4pCorr;};
+  TProfile* Get4pCorrelations() const {return this->f4pCorrelations;};
+  void Set5pCorrelations(TProfile* const p5pCorr) {this->f5pCorrelations = p5pCorr;};
+  TProfile* Get5pCorrelations() const {return this->f5pCorrelations;};
+  void Set6pCorrelations(TProfile* const p6pCorr) {this->f6pCorrelations = p6pCorr;};
+  TProfile* Get6pCorrelations() const {return this->f6pCorrelations;};
+  void Set7pCorrelations(TProfile* const p7pCorr) {this->f7pCorrelations = p7pCorr;};
+  TProfile* Get7pCorrelations() const {return this->f7pCorrelations;};
+  void Set8pCorrelations(TProfile* const p8pCorr) {this->f8pCorrelations = p8pCorr;};
+  TProfile* Get8pCorrelations() const {return this->f8pCorrelations;};
+  void Set2pCumulants(TH1D* const p2pC) {this->f2pCumulants = p2pC;};
+  TH1D* Get2pCumulants() const {return this->f2pCumulants;};
+  void Set3pCumulants(TH1D* const p3pC) {this->f3pCumulants = p3pC;};
+  TH1D* Get3pCumulants() const {return this->f3pCumulants;};
+  void Set4pCumulants(TH1D* const p4pC) {this->f4pCumulants = p4pC;};
+  TH1D* Get4pCumulants() const {return this->f4pCumulants;};
+  void Set5pCumulants(TH1D* const p5pC) {this->f5pCumulants = p5pC;};
+  TH1D* Get5pCumulants() const {return this->f5pCumulants;};
+  void Set6pCumulants(TH1D* const p6pC) {this->f6pCumulants = p6pC;};
+  TH1D* Get6pCumulants() const {return this->f6pCumulants;};
+  void Set7pCumulants(TH1D* const p7pC) {this->f7pCumulants = p7pC;};
+  TH1D* Get7pCumulants() const {return this->f7pCumulants;};
+  void Set8pCumulants(TH1D* const p8pC) {this->f8pCumulants = p8pC;};
+  TH1D* Get8pCumulants() const {return this->f8pCumulants;};
 
  private:
   
@@ -608,7 +654,7 @@ class AliFlowAnalysisWithQCumulants{
   //   2D:                                                            
   TH2D *f2DDiffFlowCumulants[2][4]; // 2D differential cumulants [0=RP,1=POI][cumulant order]
   TH2D *f2DDiffFlow[2][4]; // 2D differential flow [0=RP,1=POI][cumulants order]
-  // 5.) distributions:
+  // 6.) distributions:
   TList *fDistributionsList; // list to hold all distributions of correlations
   TProfile *fDistributionsFlags; // profile to hold all flags for distributions of correlations
   Bool_t fStoreDistributions; // store or not distributions of correlations
@@ -616,11 +662,11 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
   
-  // 6.) various:
+  // 7.) various:
   TList *fVariousList; // list to hold various unclassified objects
   TH1D *fPhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
     
-  // x.) debugging and cross-checking:
+  // 8.) debugging and cross-checking:
   TList *fNestedLoopsList; // list to hold all profiles filled with nested loops
   Bool_t fEvaluateIntFlowNestedLoops; // evaluate nested loops relevant for integrated flow
   Bool_t fEvaluateDiffFlowNestedLoops; // evaluate nested loops relevant for differential flow
@@ -638,8 +684,37 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   // other differential correlators: 
   TProfile *fOtherDirectDiffCorrelators[2][2][2][1]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index]
-                  
-  ClassDef(AliFlowAnalysisWithQCumulants, 0);
+  // mixed harmonics:
+  TProfile *fMixedHarmonicsNestedLoops; // Cross-check mixed harmonics with nested loops.
+             
+  // 9.) mixed harmonics:       
+  //  9a.) lists:
+  TList *fMixedHarmonicsList; // list to hold all histograms and profiles for mixed harmonics 
+  TList *fMixedHarmonicsProfiles; // list to hold all profiles for mixed harmonics
+  TList *fMixedHarmonicsResults; // list to hold all histograms with final results for mixed harmonics  
+  //TList *fIntFlowAllCorrelationsVsM; // list to hold all profiles with correlations vs M
+  //  9b.) flags:
+  TProfile *fMixedHarmonicsFlags; // profile to hold all flags for mixed harmonics
+  Bool_t fCalculateMixedHarmonics; // calculate or not mixed harmonics
+  Bool_t fCalculateMixedHarmonicsVsM; // calculate or not mixed harmonics vs multiplicity
+  //  9c.) profiles:
+  TProfile *f2pCorrelations; // profile to hold all 2-particle correlations
+  TProfile *f3pCorrelations; // profile to hold all 3-particle correlations
+  TProfile *f4pCorrelations; // profile to hold all 4-particle correlations
+  TProfile *f5pCorrelations; // profile to hold all 5-particle correlations
+  TProfile *f6pCorrelations; // profile to hold all 6-particle correlations
+  TProfile *f7pCorrelations; // profile to hold all 7-particle correlations
+  TProfile *f8pCorrelations; // profile to hold all 8-particle correlations
+  //  9d.) results:
+  TH1D *f2pCumulants; // histogram to hold all 2-particle cumulants
+  TH1D *f3pCumulants; // histogram to hold all 3-particle cumulants
+  TH1D *f4pCumulants; // histogram to hold all 4-particle cumulants
+  TH1D *f5pCumulants; // histogram to hold all 5-particle cumulants
+  TH1D *f6pCumulants; // histogram to hold all 6-particle cumulants
+  TH1D *f7pCumulants; // histogram to hold all 7-particle cumulants
+  TH1D *f8pCumulants; // histogram to hold all 8-particle cumulants
+   
+  ClassDef(AliFlowAnalysisWithQCumulants, 1);
 };
 
 //================================================================================================================
