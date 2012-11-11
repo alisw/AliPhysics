@@ -67,13 +67,13 @@ AliEmcalJetTask* AddTaskEmcalJet(
 
   TString name;
   if (type == 0)
-    name = TString(Form("Jet_%s%sR%s_%s_%s_%s_%s",
+    name = TString(Form("Jet_%s%s%s_%s_%s_%s_%s",
                         algoString,typeString,radiusString,nTracks,pTString,nClusters,ETString));
   else if (type == 1)
-    name = TString(Form("Jet_%s%sR%s_%s_%s",
+    name = TString(Form("Jet_%s%s%s_%s_%s",
                         algoString,typeString,radiusString,nTracks,pTString));
   else if (type == 2)
-    name = TString(Form("Jet_%s%sR%s_%s_%s",
+    name = TString(Form("Jet_%s%s%s_%s_%s",
                         algoString,typeString,radiusString,nClusters,ETString));
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
