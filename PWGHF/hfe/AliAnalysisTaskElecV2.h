@@ -56,7 +56,6 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
-  Double_t GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const;
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -109,6 +108,9 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   THnSparse		*fphoteV2;		//! photonic electron v2 (TPC + EMCAL PID)
   THnSparse		*fChargPartV2;		//! charged particle v2
     
+  TH2F			*fGammaWeight;		//! gamma weight
+  TH2F			*fPi0Weight;		//! pi0 weight
+  TH2F			*fEtaWeight;		//! eta weight
   AliAnalysisTaskElecV2(const AliAnalysisTaskElecV2&); // not implemented
   AliAnalysisTaskElecV2& operator=(const AliAnalysisTaskElecV2&); // not implemented
   

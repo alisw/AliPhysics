@@ -126,6 +126,9 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name)
   ,feV2(0)
   ,fphoteV2(0)
   ,fChargPartV2(0)
+  ,fGammaWeight(0)
+  ,fPi0Weight(0)
+  ,fEtaWeight(0)
 {
   //Named constructor
   
@@ -187,6 +190,9 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2()
   ,feV2(0)
   ,fphoteV2(0)
   ,fChargPartV2(0)
+  ,fGammaWeight(0)
+  ,fPi0Weight(0)
+  ,fEtaWeight(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -269,9 +275,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
   AliCentrality *centrality = fESD->GetCentrality(); 
   cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
-  
-  if(cent>90.) return;
-	
+    
   //Event planes
   
   Double_t evPlaneV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
@@ -309,6 +313,35 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
   Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),cent};
   fEPres->Fill(evPlaneRes);
   
+  // Pi0, eta and gamma weights
+  
+  if(fIsMC && fMC && stack && cent>20 && cent<40){
+   Int_t nParticles = stack->GetNtrack();
+   for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
+      TParticle* particle = stack->Particle(iParticle);
+      int fPDG = particle->GetPdgCode(); 
+      double pTMC = particle->Pt();
+      double etaMC = particle->Eta();
+      if(fabs(etaMC)>0.7)continue;
+      
+      Bool_t MChijing = fMC->IsFromBGEvent(iParticle);
+      int iHijing = 1;
+      if(!MChijing)iHijing = 0;
+      
+      if(fPDG==111)fPi0Weight->Fill(pTMC,iHijing);//pi0
+      if(fPDG==221)fEtaWeight->Fill(pTMC,iHijing);//eta
+    
+      Int_t idMother = particle->GetFirstMother();
+      if (idMother>0){
+	TParticle *mother = stack->Particle(idMother);
+	int motherPDG = mother->GetPdgCode();
+	if(fPDG==22 && motherPDG!=111 && motherPDG!=221)fGammaWeight->Fill(pTMC,iHijing);//gamma
+      }   
+
+   }
+  }
+    
+
   // Track loop 
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
@@ -361,7 +394,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fTPCnsigma->Fill(p,fTPCnSigma);
 
     //Remove electron candidate from the event plane
-    Double_t evPlaneCorrTPC = -999.;
+    Float_t evPlaneCorrTPC = evPlaneTPC;
     if(dEdx>70 && dEdx<90){
       Double_t qX = standardQ->X() - esdTPCep->GetQContributionX(track); 
       Double_t qY = standardQ->Y() - esdTPCep->GetQContributionY(track); 
@@ -380,7 +413,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     
     
     Int_t whichFirstMother = 0, whichSecondMother = 0, whichThirdMother = 0; 
-    Int_t IsElec = 0;
+    Int_t whichPart = -99;
     Int_t partPDG = -99, motherPDG = -99, secondMotherPDG = -99, thirdMotherPDG = -99;
     Double_t partPt = -99. , motherPt = -99., secondMotherPt = -99.,thirdMotherPt = -99.; 
     Bool_t MChijing; 
@@ -393,8 +426,11 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
 	    partPDG = particle->GetPdgCode();
 	    partPt = particle->Pt();
 	    
-	    if (TMath::Abs(partPDG)==11) IsElec = 1;
-	    
+	    if (TMath::Abs(partPDG)==11) whichPart = 0; //electron
+	    if (partPDG==22) whichPart = 3; //gamma
+	    if (partPDG==111) whichPart = 2; //pi0
+	    if (partPDG==221) whichPart = 1; //eta
+
 	    MChijing = fMC->IsFromBGEvent(label);
 	  
             int iHijing = 1;
@@ -405,8 +441,6 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
 	      TParticle *mother = stack->Particle(idMother);
 	      motherPt = mother->Pt();
 	      motherPDG = mother->GetPdgCode();
-	      
-	      
 	      
 	      if (motherPDG==22) whichFirstMother = 3; //gamma
 	      if (motherPDG==111) whichFirstMother = 2; //pi0
@@ -431,9 +465,9 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
 		}
 	      }
 	      
-	      Double_t mc[15]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt,whichFirstMother,whichSecondMother,whichThirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt};
-	      
-	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
+	      Double_t mc[15]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,whichPart,cent,pt,whichFirstMother,whichSecondMother,whichThirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt};
+	      fMCphotoElecPt->Fill(mc);
+// 	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta
 	  }
 	}
       }
@@ -614,13 +648,22 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
-  //EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,IsElec,cent,pt,firstMother,secondMother,thirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt
-  Int_t binsv7[15]={100,100,100,3,3,3,90,100,5,5,5,3,100,100,100}; 
+  //EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,whichPart,cent,pt,firstMother,secondMother,thirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt
+  Int_t binsv7[15]={100,100,100,3,3,5,90,100,5,5,5,3,100,100,100}; 
   Double_t xminv7[15]={0,-3.5,0,-1,-1,-1,0,0,-1,-1,-1,-1,0,0,0};
-  Double_t xmaxv7[15]={3,3.5,50,2,2,2,90,50,4,4,4,2,50,50,50}; 
+  Double_t xmaxv7[15]={3,3.5,50,2,2,4,90,50,4,4,4,2,50,50,50}; 
   fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",15,binsv7,xminv7,xmaxv7);
   fOutputList->Add(fMCphotoElecPt);
-   
+
+  fGammaWeight = new TH2F("fGammaWeight", "Gamma weight",100,0,50,3,-1,2);
+  fOutputList->Add(fGammaWeight);
+ 
+  fPi0Weight = new TH2F("fPi0Weight", "Pi0 weight",100,0,50,3,-1,2);
+  fOutputList->Add(fPi0Weight);
+  
+  fEtaWeight = new TH2F("fEtaWeight", "Eta weight",100,0,50,3,-1,2);
+  fOutputList->Add(fEtaWeight);
+  
   PostData(1,fOutputList);
 }
 
@@ -739,39 +782,4 @@ Double_t AliAnalysisTaskElecV2::GetDeltaPhi(Double_t phiA,Double_t phiB) const
   if(dPhi > TMath::Pi()) dPhi = dPhi - TMath::Pi();
   
   return dPhi;
-}
-//_________________________________________
-Double_t AliAnalysisTaskElecV2::GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const
-{
-  //Return E
-  for (Int_t jTracks = 0; jTracks < fESD->GetNumberOfTracks(); jTracks++){
-
-    if(jTracks==iTrack) continue;
-
-    AliESDtrack* wtrack = fESD->GetTrack(jTracks);
-    if (!wtrack) continue;
-
-    Double_t wclsPhi=-999., wclsEta=-999., dPhi=-999., dEta=-999., dR=-999., wclsE=-999.;
-
-    Int_t wclsId = wtrack->GetEMCALcluster();
-    if (wclsId>0){
-      AliESDCaloCluster *wcluster = fESD->GetCaloCluster(wclsId);
-      if(wcluster && wcluster->IsEMCAL()){
-	Float_t wclusterPosition[3]={0,0,0};
-	wcluster->GetPosition(wclusterPosition);
-	TVector3 clsPosVec(wclusterPosition[0],wclusterPosition[1],wclusterPosition[2]);
-	wclsPhi = clsPosVec.Phi();
-	wclsEta = clsPosVec.Eta();
-
-	dPhi = TMath::Abs(wclsPhi - clsPhi);
-	dEta = TMath::Abs(wclsEta - clsEta);
-	dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-	if(dR>0.15){
-	  wclsE = wcluster->E();
-	  return wclsE;
-	}
-      }
-    }
-  }
-  return -999.;
 }
