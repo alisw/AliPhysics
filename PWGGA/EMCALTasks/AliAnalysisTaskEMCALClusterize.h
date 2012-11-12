@@ -35,6 +35,13 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   virtual void   LocalInit()                                    { Init()                       ; }
     
   // Event methods, settings
+  
+  Bool_t         AcceptEventEMCAL();
+  void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent = kTRUE   ; }
+  void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent = kFALSE  ; }
+  void           SetEMCALEnergyCut(Float_t cut)                { fEMCALEnergyCut = cut       ; }
+  void           SetEMCALNcellsCut(Int_t cut)                  { fEMCALNcellsCut = cut       ; }
+
   void           CheckAndGetEvent();
   
   Bool_t         IsExoticEvent();
@@ -192,11 +199,15 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   TString                fCentralityClass;         // Name of selected centrality class     
   Float_t                fCentralityBin[2];        // Minimum and maximum value of the centrality for the analysis
   
-  
+  // Event selection with some signal in EMCAL
+  Bool_t                 fSelectEMCALEvent;       //  Process the event if there is some high energy cluster 
+  Float_t                fEMCALEnergyCut;         //  At least an EMCAL cluster with this energy in the event
+  Int_t                  fEMCALNcellsCut;         //  At least an EMCAL cluster with fNCellsCut cells over fEnergyCut
+
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 22);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 23);
 
 };
 

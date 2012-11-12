@@ -20,6 +20,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  bNonLine   = kFALSE,
                                                        const Int_t   minCen     = -1,
                                                        const Int_t   maxCen     = -1,
+                                                       const Float_t clusterEnergyCutEvent = -1,
                                                        const Int_t   nRowDiff   = 1,
                                                        const Int_t   nColDiff   = 1
                                                        )
@@ -173,7 +174,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
-  //Alignment matrices
+  // Alignment matrices
   //-------------------------------------------------------
 
   clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"); // change only in case 2010 to geometry_2010.root
@@ -182,6 +183,18 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   {    
     clusterize->SwitchOnLoadOwnGeometryMatrices();
   }
+  
+  //-------------------------------------------------------
+  // Clusterize events with some significant signal
+  //-------------------------------------------------------
+  
+  if(clusterEnergyCutEvent > 0)
+  {
+    clusterize->SwitchOnSelectEMCALEvent();
+    clusterize->SetEMCALEnergyCut(clusterEnergyCutEvent);
+    clusterize->SetEMCALNcellsCut(3);
+  }
+  else clusterize->SwitchOffSelectEMCALEvent();
   
   //-------------------------------------------------------
   // Trigger options
