@@ -310,6 +310,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fHeader->fNClus = fCaloClusters->GetEntries();
   fEMCalCells = fESD->GetEMCALCells();
   fHeader->fNCells = fEMCalCells->GetNumberOfCells();
+  AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
+  fHeader->fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
+
   fMCEvent = MCEvent();
   if(fMCEvent)
     fStack = (AliStack*)fMCEvent->Stack();

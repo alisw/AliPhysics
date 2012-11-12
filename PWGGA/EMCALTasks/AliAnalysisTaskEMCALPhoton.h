@@ -118,7 +118,7 @@ class AliPhotonHeaderObj : public TObject
 {
   public: AliPhotonHeaderObj() :
         TObject(), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
-        fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0)  {;}
+	  fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0)  {;}
   public:
   ULong64_t     fTrClassMask;    //         trigger class mask
   UChar_t       fTrCluster;      //         trigger cluster mask
@@ -130,8 +130,9 @@ class AliPhotonHeaderObj : public TObject
   Double32_t    fTr;             //[0,0,16] tr result used for cent 
   Int_t         fNClus;
   Int_t         fNCells;
+  Int_t         fTrackMult;
 
-  ClassDef(AliPhotonHeaderObj,2)
+  ClassDef(AliPhotonHeaderObj,3)
 };
 
 class AliPhotonConvObj : public TObject
