@@ -25,6 +25,7 @@
 
 class TF1;
 class TObjArray;
+class TLinearFitter;
 
 class AliVEvent;
 class AliTRDPIDResponseObject;
@@ -66,20 +67,20 @@ public:
     kDetPidOk=1,
     kDetMismatch=2
   };
-  
+
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
   AliEMCALPIDResponse &GetEMCALResponse() {return fEMCALResponse;}
-  
+
   //buffered PID calculation
   Float_t NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t NumberOfSigmas(EDetCode  detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   
   virtual Float_t NumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource);
+  virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
@@ -123,6 +124,10 @@ public:
   // event info
   Float_t GetCurrentCentrality() const {return fCurrCentrality;};
 
+  // TPC setting
+  void SetUseTPCEtaCorrection(Bool_t useEtaCorrection = kTRUE) { fUseTPCEtaCorrection = useEtaCorrection; };
+  Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
+  
   // TOF setting
   void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
@@ -172,7 +177,8 @@ private:
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
   AliOADBContainer* fOADBvoltageMaps;  //! container with the voltage maps
-  
+  Bool_t fUseTPCEtaCorrection;         // Use TPC eta correction
+
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
@@ -196,9 +202,15 @@ private:
   void SetITSParametrisation();
   
   //TPC
+  void SetTPCEtaMaps(Double_t refineFactorMapX = 6.0, Double_t refineFactorMapY = 6.0, Double_t refineFactorSigmaMapX = 6.0,
+                     Double_t refineFactorSigmaMapY = 6.0);
   void SetTPCPidResponseMaster();
   void SetTPCParametrisation();
   Double_t GetTPCMultiplicityBin(const AliVEvent * const event);
+  
+  // TPC helpers for the eta maps
+  void AddPointToHyperplane(TH2D* h, TLinearFitter* linExtrapolation, Int_t binX, Int_t binY);
+  TH2D* RefineHistoViaLinearInterpolation(TH2D* h, Double_t refineFactorX = 6.0, Double_t refineFactorY = 6.0);
 
   //TRD
   void SetTRDPidResponseMaster();
@@ -231,7 +243,7 @@ private:
   EDetPidStatus GetComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
-  ClassDef(AliPIDResponse, 10);  //PID response handling
+  ClassDef(AliPIDResponse, 11);  //PID response handling
 };
 
 #endif

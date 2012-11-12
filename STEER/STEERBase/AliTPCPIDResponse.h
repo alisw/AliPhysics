@@ -10,6 +10,10 @@
 // With many additions and modifications suggested by
 //      Alexander Kalweit, GSI, alexander.philipp.kalweit@cern.ch
 //      Dariusz Miskowiec, GSI, D.Miskowiec@gsi.de
+// ...and some modifications by
+//      Mikolaj Krzewicki, GSI, mikolaj.krzewicki@cern.ch
+// ...and some modifications plus eta correction functions by
+//      Benjamin Hess, University of Tuebingen, bhess@cern.ch
 //-------------------------------------------------------
 #include <Rtypes.h>
 
@@ -18,8 +22,9 @@
 #include <TObjArray.h>
 
 #include "AliPID.h"
+#include "AliVTrack.h"
 
-class AliVTrack;
+class TH2D;
 class TSpline3;
 
 class AliTPCPIDResponse: public TNamed {
@@ -28,7 +33,7 @@ public:
   AliTPCPIDResponse(const Double_t *param);
   AliTPCPIDResponse(const AliTPCPIDResponse&);
   AliTPCPIDResponse& operator=(const AliTPCPIDResponse&);
-  virtual ~AliTPCPIDResponse() {}
+  virtual ~AliTPCPIDResponse();
 
   enum EChamberStatus {
     kChamberOff=0,
@@ -80,25 +85,33 @@ public:
 
   void SetMagField(Double_t mf) { fMagField=mf; }
   
+  const TH2D* GetEtaCorrMap() const { return fhEtaCorr; };
+  Bool_t SetEtaCorrMap(TH2D* hMap);
+  
+  Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  
+  Double_t GetEtaCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+
+  const TH2D* GetSigmaPar1Map() const { return fhEtaSigmaPar1; };
+  Double_t GetSigmaPar0() const { return fSigmaPar0; };
+  Bool_t SetSigmaParams(TH2D* hSigmaPar1Map, Double_t sigmaPar0);
+  
+  Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+
   //NEW
   void SetSigma(Float_t res0, Float_t resN2, ETPCgainScenario gainScenario );
-  Double_t GetExpectedSignal( Double_t momentum,
-                              AliPID::EParticleType species,
-                              const TSpline3* responseFunction ) const;
   Double_t GetExpectedSignal( const AliVTrack* track,
                               AliPID::EParticleType species,
-                              ETPCdEdxSource dedxSource );
+                              ETPCdEdxSource dedxSource = kdEdxDefault,
+                              Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
   Double_t GetExpectedSigma( const AliVTrack* track, 
                              AliPID::EParticleType species,
-                             ETPCdEdxSource dedxSource );
-  Double_t GetExpectedSigma( Double_t mom,
-                             Int_t nPoints,
-                             AliPID::EParticleType species,
-                             ETPCgainScenario gainScenario,
-                             const TSpline3* responseFunction) const;
+                             ETPCdEdxSource dedxSource = kdEdxDefault,
+                             Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
   Float_t GetNumberOfSigmas( const AliVTrack* track,
                              AliPID::EParticleType species,
-                             ETPCdEdxSource dedxSource );
+                             ETPCdEdxSource dedxSource = kdEdxDefault,
+                             Bool_t correctEta = kFALSE) const;//TODO: In future, default kTRUE
 
   void SetResponseFunction(TObject* o,
                            AliPID::EParticleType type,
@@ -108,10 +121,11 @@ public:
                                  ETPCgainScenario gainScenario ) const;
   TSpline3* GetResponseFunction( const AliVTrack* track,
                                  AliPID::EParticleType species,
-                                 ETPCdEdxSource dedxSource );
+                                 ETPCdEdxSource dedxSource = kdEdxDefault) const;
   Bool_t ResponseFunctiondEdxN(const AliVTrack* track, 
                                AliPID::EParticleType species,
-                               ETPCdEdxSource dedxSource);
+                               ETPCdEdxSource dedxSource,
+                               Double_t& dEdx, Int_t& nPoints, ETPCgainScenario& gainScenario, TSpline3** responseFunction) const;
   Bool_t sectorNumbersInOut(const AliVTrack* track, 
                             Double_t innerRadius, Double_t outerRadius, 
                             Float_t& phiIn, Float_t& phiOut, 
@@ -124,12 +138,6 @@ public:
                                ETPCgainScenario gainScenario ) const;
   void ResetSplines();
 
-  void InvalidateCurrentValues();
-  TSpline3* GetCurrentResponseFunction() const {return fCurrentResponseFunction;}
-  Double_t GetCurrentdEdx() const {return fCurrentdEdx;}
-  Int_t GetCurrentNPoints() const {return fCurrentNPoints;}
-  ETPCgainScenario GetCurrentGainScenario() const {return fCurrentGainScenario;}
-
   //OLD
   Double_t GetExpectedSignal(const Float_t mom,
                      AliPID::EParticleType n=AliPID::kKaon) const;
@@ -139,7 +147,12 @@ public:
                              const Float_t dEdx, 
 			                       const Int_t nPoints,
                              AliPID::EParticleType n=AliPID::kKaon) const {
-
+    //
+    // Deprecated function (for backward compatibility). Please use 
+    // GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource )
+    // instead!TODO
+    //
+    
     Double_t bethe=GetExpectedSignal(mom,n);
     Double_t sigma=GetExpectedSigma(mom,nPoints,n);
     return (dEdx-bethe)/sigma;
@@ -151,6 +164,26 @@ public:
   Float_t  GetRes0(ETPCgainScenario s)  const { return fRes0[s];  }
   Float_t  GetResN2(ETPCgainScenario s) const { return fResN2[s]; }
 
+protected:
+  Double_t GetExpectedSignal(const AliVTrack* track,
+                             AliPID::EParticleType species,
+                             Double_t dEdx,
+                             const TSpline3* responseFunction,
+                             Bool_t correctEta) const; 
+  
+  Double_t GetExpectedSigma(const AliVTrack* track, 
+                            AliPID::EParticleType species,
+                            ETPCgainScenario gainScenario,
+                            Double_t dEdx,
+                            Int_t nPoints,
+                            const TSpline3* responseFunction,
+                            Bool_t correctEta) const;
+                             
+  Double_t GetEtaCorrection(const AliVTrack *track, Double_t dEdxSplines) const;
+  
+  Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species,
+                        Double_t dEdx, const TSpline3* responseFunction) const;
+  
 private:
   Float_t fMIP;          // dEdx for MIP
   Float_t fRes0[fgkNumberOfGainScenarios];  // relative dEdx resolution  rel sigma = fRes0*sqrt(1+fResN2/npoint)
@@ -172,17 +205,18 @@ private:
   Float_t fBadOROCthreshhold;     //voltage threshold for bad OROCS
   Float_t fMaxBadLengthFraction;  //the maximum allowed fraction of track length in a bad sector.
 
-  TSpline3* fCurrentResponseFunction;      //!response function for current track
-  Double_t fCurrentdEdx;                  //!dEdx for currently processed track
-  Int_t fCurrentNPoints;                  //!number of points used for dEdx calculation for current track
-  ETPCgainScenario fCurrentGainScenario;  //!gain scenario used for current track
   Int_t sectorNumber(Double_t phi) const;
 
   Double_t fMagField;  //! Magnetic field
 
   static const char* fgkGainScenarioName[fgkNumberOfGainScenarios+1];
 
-  ClassDef(AliTPCPIDResponse,4)   // TPC PID class
+  TH2D* fhEtaCorr; //! Map for TPC eta correction
+  TH2D* fhEtaSigmaPar1; //! Map for parameter 1 of the dEdx sigma parametrisation
+  
+  Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
+
+  ClassDef(AliTPCPIDResponse,5)   // TPC PID class
 };
 
 #endif

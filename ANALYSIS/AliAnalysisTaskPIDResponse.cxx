@@ -43,7 +43,8 @@ fRun(0),
 fOldRun(0),
 fRecoPass(0),
 fIsTunedOnData(kFALSE),
-fRecoPassTuned(0)  
+fRecoPassTuned(0),
+fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE  
 {
   //
   // Dummy constructor
@@ -62,7 +63,8 @@ fRun(0),
 fOldRun(0),
 fRecoPass(0),
 fIsTunedOnData(kFALSE),
-fRecoPassTuned(0)
+fRecoPassTuned(0),
+fUseTPCEtaCorrection(kFALSE)//TODO: In future, default kTRUE
 {
   //
   // Default constructor
@@ -131,6 +133,7 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
     fOldRun=fRun;
   }
 
+  fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
   fPIDResponse->InitialiseEvent(event,fRecoPass);
   AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
   if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
