@@ -71,6 +71,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fSelOption(1),
       fCorrStrangeness(true),
       fThreeParticleCorr(false),
+      fRejectChunks(false),
+      fNTPC(10),
       fESDEvent(0),
       fAODEvent(0),
       fNMcPrimAccept(0),
@@ -88,6 +90,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fHistPtMC(0),
       fNContrNtracklets(0),
       fNContrNtracks(0),
+      fCorruptedChunks(0),
+      fCorruptedChunksAfter(0),
       fNmcNch(0),
       fPNmcNch(0),
       fNmcNchVtx(0),
@@ -173,6 +177,10 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   fHistPt->SetMarkerStyle(kFullCircle);
   fNContrNtracklets = new TH2F ("fNContrNtracklets", ";N_{tracklets};N_{vtx contrib}", 100,-0.5,99.5,100,-0.5,99.5);
   fNContrNtracks    = new TH2F ("fNContrNtracks", ";N_{tracks};N_{vtx contrib}", 100,-0.5,99.5,100,-0.5,99.5);
+  fCorruptedChunks  = new TH2F ("fCorruptedChunks", 
+				";N_{tracks,TPC};N_{tracks,ITS-TPC}", 100,-0.5,99.5,100,-0.5,99.5);
+  fCorruptedChunksAfter  = new TH2F ("fCorruptedChunksAfter", 
+				     ";N_{tracks,TPC};N_{tracks,ITS-TPC}", 100,-0.5,99.5,100,-0.5,99.5);
 
   if (fUseMC) {
     fHistPtMC = new TH1F("fHistPtMC", "P_{T} distribution MC", 150, 0.1, 3.1);
@@ -399,7 +407,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   fHists->Add(fHistPt);
   fHists->Add(fNContrNtracklets);
   fHists->Add(fNContrNtracks);
-
+  fHists->Add(fCorruptedChunks);
+  fHists->Add(fCorruptedChunksAfter);
+  
   if(fUseMC){
     fHists->Add(fHistPtMC); 
     
@@ -1944,6 +1954,27 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       Double_t vzSPD=vertexSPD->GetZ();
       //if(TMath::Abs(vzSPD)<1e-9) return false;
       if(TMath::Abs(vzSPD)>fVertexZCut) return false;
+
+      //check TPC reconstruction: check for corrupted chunks
+      //better: check TPCvertex, but this is not available yet in AODs
+      Int_t nAcceptedTracksTPC=0;
+      Int_t nAcceptedTracksITSTPC=0;
+      for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
+	AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+	if (!track) continue;
+	if(track->TestFilterBit(128) && TMath::Abs(track->Eta())<fEtaCut &&
+	   track->Pt()>fPtMin && track->Pt()<fPtMax) 
+	  nAcceptedTracksTPC++;
+	if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut &&
+	   track->Pt()>fPtMin && track->Pt()<fPtMax) 
+	  nAcceptedTracksITSTPC++;
+      }
+      fCorruptedChunks->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
+      if(fRejectChunks){
+	if(nAcceptedTracksTPC>fNTPC && nAcceptedTracksITSTPC==0)
+	  return false;//most likely corrupted chunk. No ITS tracks are reconstructed
+      }
+      fCorruptedChunksAfter->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
 
       //control histograms=================
       //tracklet loop

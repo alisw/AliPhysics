@@ -42,6 +42,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetCheckSDD(Bool_t checkSDD, Int_t selOption)         {fCheckSDD = checkSDD; fSelOption = selOption;}
   void         SetCorrStrangeness(Bool_t corrStrangeness)            {fCorrStrangeness = corrStrangeness;}
   void         SetThreeParticleCorrelation(Bool_t threeParticleCorr) {fThreeParticleCorr = threeParticleCorr;}
+  void         SetRejectCorrupted(Bool_t rejectChunks, Int_t nTPC)   {fRejectChunks = rejectChunks; fNTPC = nTPC;}
 
  private:
 
@@ -107,6 +108,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t        fSelOption;                  // 0 = use hit in SDD for event selection, 1 = use trigger for event selection
   Bool_t       fCorrStrangeness;            // for data correction -> Pythia simulations underestimate contamination from strangness
   Bool_t       fThreeParticleCorr;          // perform three particle correlation
+  Bool_t       fRejectChunks;               // rejection of chunks in which no ITS tracks are reconstructed
+  Int_t        fNTPC;                       // track number limit for rejection decision.
 
   AliESDEvent *fESDEvent;                   //! esd event
   AliAODEvent *fAODEvent;                   //! aod event
@@ -124,8 +127,10 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH1F       *fEventStat;                   // how many events are accepted by trigger, vertex selection, 1 track in acceptance (for real data)
   TH1F       *fHistPt;                      // Pt spectrum ESD
   TH1F       *fHistPtMC;                    // Pt spectrum MC
-  TH2F       *fNContrNtracklets;            // controll histogram for vertex->nContributers and number of tracklets
-  TH2F       *fNContrNtracks;               // controll histogram for vertex->nContributers and number of tracks
+  TH2F       *fNContrNtracklets;            // control histogram for vertex->nContributers and number of tracklets
+  TH2F       *fNContrNtracks;               // control histogram for vertex->nContributers and number of tracks
+  TH2F       *fCorruptedChunks;             // control histogram: TPC tracks versus ITS-TPC-tracks
+  TH2F       *fCorruptedChunksAfter;        // control histogram: TPC tracks versus ITS-TPC-tracks
 
   TH2F       *fNmcNch;                      // N mc - N ch rec
   TProfile   *fPNmcNch;                     // N mc - N ch rec
