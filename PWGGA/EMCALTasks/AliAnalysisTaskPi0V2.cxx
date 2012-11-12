@@ -428,12 +428,14 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->SetOwner();  // IMPORTANT!
 
     hEvtCount = new TH1F("hEvtCount", " Event Plane", 10, 0.5, 10.5);
-    hEvtCount->GetXaxis()->SetBinLabel(1,"SemiMB");
-    hEvtCount->GetXaxis()->SetBinLabel(2,"vert");
-    hEvtCount->GetXaxis()->SetBinLabel(3,"cent");
-    hEvtCount->GetXaxis()->SetBinLabel(4,"EPtask");
-    hEvtCount->GetXaxis()->SetBinLabel(5,"EPvalue");
-    hEvtCount->GetXaxis()->SetBinLabel(6,"Pass");
+    hEvtCount->GetXaxis()->SetBinLabel(1,"All");
+    hEvtCount->GetXaxis()->SetBinLabel(2,"Evt Cut");
+    hEvtCount->GetXaxis()->SetBinLabel(3,"Trg Class");
+    hEvtCount->GetXaxis()->SetBinLabel(4,"Vtx");
+    hEvtCount->GetXaxis()->SetBinLabel(5,"Cent");
+    hEvtCount->GetXaxis()->SetBinLabel(5,"EPtask");
+    hEvtCount->GetXaxis()->SetBinLabel(7,"EPvalue");
+    hEvtCount->GetXaxis()->SetBinLabel(8,"Pass");
     fOutput->Add(hEvtCount);
     
     hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
@@ -586,6 +588,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      AliError("Cannot get the ESD event");
      return;
    }
+   hEvtCount->Fill(1);
     
   Int_t AbsRunNumber = fESD->GetRunNumber();
   fRunNumber = ConvertToInternalRunNumber(AbsRunNumber);
@@ -601,6 +604,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   if(!isSelected )
         return; 
 
+  hEvtCount->Fill(2);
   if(!fTrigClass.IsNull()){
     TString fired;
     fired = fESD->GetFiredTriggerClasses();
@@ -627,14 +631,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       return; //Not match skip this event
   }
 
-    hEvtCount->Fill(1);
-    
+    hEvtCount->Fill(3);
     const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
     if(TMath::Abs(fvertex->GetZ())>fVtxCut)
       return;
     Double_t vertex[3] = {fvertex->GetX(), fvertex->GetY(), fvertex->GetZ()};
 
-    hEvtCount->Fill(2);
+    hEvtCount->Fill(4);
 
     if(fESD->GetCentrality()) {
       fCentrality = 
@@ -643,7 +646,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 	   return;
     }
 
-    hEvtCount->Fill(3);
+    hEvtCount->Fill(5);
     AliEventplane *ep = fESD->GetEventplane();
     if (ep) {
       if (ep->GetQVector())
@@ -676,12 +679,12 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
     FillEPQA(); //Fill the EP QA
 
-    hEvtCount->Fill(4);
+    hEvtCount->Fill(6);
 
     if( fEPV0A<-2. || fEPV0C<-2. || fEPTPC<-2. || fEPV0r<-2.) 
       return;
 
-    hEvtCount->Fill(5);
+    hEvtCount->Fill(7);
 
     fEPV0   = TVector2::Phi_0_2pi(fEPV0);    if(fEPV0>TMath::Pi())   fEPV0  = fEPV0  - TMath::Pi();
     fEPV0r  = TVector2::Phi_0_2pi(fEPV0r);   if(fEPV0r>TMath::Pi())  fEPV0r = fEPV0r - TMath::Pi();
@@ -779,7 +782,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
      hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
     }
-    hEvtCount->Fill(6);
+    hEvtCount->Fill(8);
 
     // NEW HISTO should be filled before this point, as PostData puts the
     // information for this iteration of the UserExec in the container
