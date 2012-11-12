@@ -33,4 +33,7 @@
 #pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
 #pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
 #pragma link C++ class AliAnalysisTaskJetHBOM+;
+#pragma link C++ class AliAnalysisTaskJetShape+;
+#pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeTool+;
+#pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM+;
 #endif
