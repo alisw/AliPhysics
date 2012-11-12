@@ -84,7 +84,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
-, fCentralityClass("")
+, fCentralityClass(""),   fSelectEMCALEvent(0)
+, fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
 {
   // Constructor
   
@@ -171,6 +172,43 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   if(fRecoUtils)   delete fRecoUtils;
   
 }
+
+//_______________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
+{
+  // Accept event given there is a EMCAL cluster with enough energy, and not noisy, exotic
+  
+  if(!fSelectEMCALEvent)   return kTRUE; // accept
+  
+  if(fEMCALEnergyCut <= 0) return kTRUE; // accept
+  
+  Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
+  AliVCaloCells * caloCell = InputEvent() -> GetEMCALCells();
+  Int_t           bc       = InputEvent() -> GetBunchCrossNumber();
+
+  for(Int_t icalo = 0; icalo < nCluster; icalo++)
+  {
+    AliVCluster *clus = (AliVCluster*) (InputEvent()->GetCaloCluster(icalo));
+    
+    if( ( clus->IsEMCAL() ) && ( clus->GetNCells() > fEMCALNcellsCut ) && ( clus->E() > fEMCALEnergyCut ) &&
+       fRecoUtils->IsGoodCluster(clus,fGeom,caloCell,bc))
+    {
+      
+      if (fDebug > 0)
+        printf("AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n",
+                             clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
+      
+      return kTRUE;
+    }
+    
+  }// loop
+  
+  if (fDebug > 0)
+    printf("AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL() - Reject \n");
+  
+  return kFALSE;
+  
+}  
 
 //_______________________________________________
 void AliAnalysisTaskEMCALClusterize::AccessOADB()
@@ -423,6 +461,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   // Also check if the quality of the event is good if not reject it
   
   fEvent = 0x0;
+  
+  //Process events if there is a high energy cluster
+  if(!AcceptEventEMCAL())  return ; 
   
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   Int_t eventN = Entry();
@@ -1504,6 +1545,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
+  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
+  
   //Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
@@ -1515,7 +1558,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 
   //Init pointers, geometry, clusterizer, ocdb, aodb
   
-  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
   
   if(fAccessOCDB) AccessOCDB();
   if(fAccessOADB) AccessOADB(); // only once
