@@ -565,7 +565,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       AliHLTComponent::FillEventData(evtData);
       if (eventNo>=0)
 	evtData.fEventID=(AliHLTEventID_t)eventNo;
-      if (timestamp) evtData.fEventCreation_s=timestamp;
+      if (timestamp < kMaxUInt) evtData.fEventCreation_s=timestamp;
       else
       evtData.fEventCreation_s=static_cast<AliHLTUInt32_t>(time(NULL));
       AliHLTComponentTriggerData trigData;

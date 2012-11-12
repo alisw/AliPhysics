@@ -109,7 +109,7 @@ AliHLTUInt64_t AliHLTMisc::GetTriggerMask(AliRawReader* /*rawReader*/) const
 AliHLTUInt32_t AliHLTMisc::GetTimeStamp(AliRawReader* /*rawReader*/) const
 {
   // default method, functionality is implemented in the child class
-  return 0;
+  return kMaxUInt;
 }
 
 AliHLTUInt32_t AliHLTMisc::GetEventType(AliRawReader* /*rawReader*/) const

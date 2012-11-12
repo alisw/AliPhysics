@@ -269,9 +269,9 @@ AliHLTUInt64_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader)
 AliHLTUInt32_t AliHLTMiscImplementation::GetTimeStamp(AliRawReader* rawReader) const
 {
   // extract time stamp of the event from the event header
-  if (!rawReader) return 0;
+  if (!rawReader) return kMaxUInt;
   const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
-  if (!eventHeader) return 0;
+  if (!eventHeader) return kMaxUInt;
   return eventHeader->Get("Timestamp");
 }
 

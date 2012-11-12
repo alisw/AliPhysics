@@ -820,7 +820,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
 	AliHLTUInt64_t trgMask=0x1;
-	AliHLTUInt32_t timestamp=0;
+	AliHLTUInt32_t timestamp=kMaxUInt;
 	AliHLTUInt32_t eventtype=0;
 	if (runLoader==NULL) {
 	  // this is a quick workaround for the case of simulation

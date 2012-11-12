@@ -1038,6 +1038,7 @@ void AliHLTComponent::FillEventData(AliHLTComponentEventData& evtData)
   memset(&evtData, 0, sizeof(AliHLTComponentEventData));
   evtData.fStructSize=sizeof(AliHLTComponentEventData);
   evtData.fEventID=kAliHLTVoidEventID;
+  evtData.fEventCreation_s = kMaxUInt;
 }
 
 void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) 
@@ -2472,10 +2473,11 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
   return fpRunDesc->fRunType;
 }
 
+
 AliHLTUInt32_t    AliHLTComponent::GetTimeStamp() const
 {
   // see header file for function documentation
-  if (fCurrentEventData.fEventCreation_s) {
+  if (fCurrentEventData.fEventCreation_s < kMaxUInt ) { 
     return  fCurrentEventData.fEventCreation_s;
   }
   // using the actual UTC if the time stamp was not set by the framework
