@@ -469,9 +469,9 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
     if(GetReader()->IsPileUpFromEMCal())              { fhXEChargedPileUp[1]->Fill(ptTrig ,xE); fhZTChargedPileUp[1]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[1]->Fill(ptTrig,ptAssoc); }
     if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhXEChargedPileUp[2]->Fill(ptTrig ,xE); fhZTChargedPileUp[2]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[2]->Fill(ptTrig,ptAssoc); }
     if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhXEChargedPileUp[3]->Fill(ptTrig ,xE); fhZTChargedPileUp[3]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[3]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhXEChargedPileUp[4]->Fill(ptTrig ,xE); fhZTChargedPileUp[4]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig ,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig ,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhXEChargedPileUp[4]->Fill(ptTrig ,xE); fhZTChargedPileUp[4]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[4]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig ,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[5]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig ,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[6]->Fill(ptTrig,ptAssoc); }
   }
   
   if(IsDataMC())
