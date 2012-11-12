@@ -25,10 +25,18 @@
 #include "AliCDBEntry.h"
 #include "AliDCSValue.h"
 #include "AliGRPObject.h"
+#include "AliMpArrayI.h"
+#include "AliMpConstants.h"
 #include "AliMpDCSNamer.h"
 #include "AliMpDEStore.h"
+#include "AliMpDetElement.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONCDB.h"
+#include "AliMUONPainterDataRegistry.h"
+#include "AliMUONTrackerData.h"
+#include "AliMUONTrackerDataWrapper.h"
 #include "AliLog.h"
 
 #include "TCanvas.h"
@@ -420,7 +428,10 @@ AliMUONTrackerHV::Print(Option_t* dcsname) const
     
     AliCDBManager::Instance()->SetRun(runNumber);
     
-    TMap* m = AliMUONCalibrationData::CreateHV(runNumber,0x0,kFALSE,&messages,kTRUE);
+    Bool_t patchValues(kFALSE);
+    Bool_t dryRun(kTRUE);
+    
+    TMap* m = AliMUONCalibrationData::CreateHV(runNumber,0x0,patchValues,&messages,dryRun);
     
     TIter next(m);
     TObjString* s;
@@ -551,6 +562,8 @@ AliMUONTrackerHV::ReportTrips(Bool_t includeLowOnes)
   messages.SetOwner(kTRUE);
   TObjString* msg(0);
 
+  std::map<std::string,int> channels;
+
   for ( std::vector<int>::size_type i = 0; i < fRunList.size(); ++i )
   {
     Int_t runNumber = fRunList[i];
@@ -611,6 +624,7 @@ AliMUONTrackerHV::ReportTrips(Bool_t includeLowOnes)
               TString tmp(msg->String());
               tmp.ReplaceAll(channelName.Data(),DCSNamer()->DCSNameFromAlias(channelName.Data()));
               report[timeStamp] = tmp.Data();
+              channels[channelName.Data()]++;
             }
           }
         }
@@ -623,5 +637,78 @@ AliMUONTrackerHV::ReportTrips(Bool_t includeLowOnes)
       AliInfo(Form("%s %s",TTimeStamp(it->first).AsString("s"),it->second.c_str()));
     }
   }
+  
+  AliInfo("--------------------------------------------------------------------");
+  AliInfo("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+  
+  int totalTrips(0);
+  AliMUON2DMap tripMap(kTRUE);
+  Int_t nofChannels(AliMpConstants::ManuNofChannels());
+
+  for ( std::map<std::string,int>::const_iterator it = channels.begin(); it != channels.end(); ++it )
+  {
+    AliInfo(Form("%40s %3d",DCSNamer()->DCSNameFromAlias(it->first.c_str()).Data(),it->second));
+    totalTrips += it->second;
+    
+    Int_t detElemId = DCSNamer()->DetElemIdFromDCSAlias(it->first.c_str());
+    
+    AliMpDetElement* de = AliMpDEStore::Instance()->GetDetElement(detElemId);
+    
+    // build the list of manuIds for this channel
+    AliMpArrayI manuArray;
+    
+    manuArray.SetSize(300);
+    
+    Int_t index = DCSNamer()->DCSIndexFromDCSAlias(it->first.c_str());
+    Int_t firstIndex(index);
+    Int_t lastIndex(index);
+    
+    if ( index < 0 )
+    {
+      // it's a slat, must loop over PCBs
+      firstIndex = 0;
+      lastIndex = DCSNamer()->NumberOfPCBs(detElemId)-1;
+    }
+    
+    for ( int i = firstIndex; i <= lastIndex ; ++i )
+    {
+      const AliMpArrayI* ma = de->ManusForHV(i);
+      if (!ma)
+      {
+        AliError(Form("Could not get ma for de %d index %d",detElemId,i));
+        continue;
+      }
+      for ( int j = 0; j < ma->GetSize(); ++j )
+      {
+        manuArray.Add(ma->GetValue(j),kFALSE);
+      }
+    }
+    
+    for ( Int_t iManu = 0; iManu < manuArray.GetSize(); ++iManu )
+    {
+      Int_t manuId = manuArray.GetValue(iManu);
+      
+      AliMUONVCalibParam* tripRate = new AliMUONCalibParamND(1,nofChannels,detElemId,manuId,0);
+      
+      tripMap.Add(tripRate);
+      
+      for ( Int_t j = 0 ; j < nofChannels; ++j )
+      {
+        tripRate->SetValueAsDouble(j,0,it->second*1.0);
+      }
+    }
+  }
+
+  AliInfo("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+  AliInfo(Form("Total of %3d trips for %4ld runs",totalTrips,fRunList.size()));
+  
+  AliMUONTrackerData* data = new AliMUONTrackerData("tripcount","Number of trips",1);
+  data->Add(tripMap);
+  data->SetDimensionName(0,"ntrips");
+
+  AliMUONVTrackerDataMaker* dw = new AliMUONTrackerDataWrapper(data);
+  
+  AliMUONPainterDataRegistry::Instance()->Register(dw);
+
 }
 
