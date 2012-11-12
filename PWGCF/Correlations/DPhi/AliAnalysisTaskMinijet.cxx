@@ -68,8 +68,9 @@ ClassImp(AliAnalysisTaskMinijet)
       fSelectParticles(1),
       fSelectParticlesAssoc(1),
       fCheckSDD(true),
-      fCorrStrangeness(true),
       fSelOption(1),
+      fCorrStrangeness(true),
+      fThreeParticleCorr(false),
       fESDEvent(0),
       fAODEvent(0),
       fNMcPrimAccept(0),
@@ -82,6 +83,7 @@ ClassImp(AliAnalysisTaskMinijet)
       fLeadingPtRec(0),
       fHists(0),
       fStep(0),
+      fEventStat(0),
       fHistPt(0),
       fHistPtMC(0),
       fNContrNtracklets(0),
@@ -164,6 +166,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   if(fDebug) Printf("In User Create Output Objects.");
    
   fStep = new TH1F("fStep", "fStep", 10, -0.5, 9.5);
+  fEventStat = new TH1F("fEventStat", "fEventStat", 10, -0.5, 9.5);
   fHistPt = new TH1F("fHistPt", "P_{T} distribution REC", 150, 0.1, 3.1);
   fHistPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
@@ -392,6 +395,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   fHists->SetOwner();
 
   fHists->Add(fStep);
+  fHists->Add(fEventStat);
   fHists->Add(fHistPt);
   fHists->Add(fNContrNtracklets);
   fHists->Add(fNContrNtracks);
@@ -506,6 +510,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
  
   if(!fAODEvent && !fESDEvent)return;
 
+
   // SDD check for LHC11a
   if (fCheckSDD) { 
 
@@ -563,11 +568,17 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     Printf("CheckEvent(false)= %d", CheckEvent(false));
   }
 
+  fEventStat->Fill(0);//all events
+
   //check trigger
   if(isSelected){ // has offline trigger
-      
+
+    fEventStat->Fill(1);//triggered event
+
     if(CheckEvent(true)){//step 5 = TrigVtxRecNrec, step 4 = TrigVtxRecMcPropNrec ,step 3 = TrigVtxMcNrec
-	
+
+      fEventStat->Fill(2);//triggered event with vertex
+
       if(!fMcOnly){ 
 	//step 5 = TrigVtxRecNrec
 
@@ -578,6 +589,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 
 	// analyse
 	if(pt.size()){ //(internally ntracks=fNRecAccept)
+	  fEventStat->Fill(3);//triggered event with vertex and one reconstructed track in acceptance
 	  Analyse(pt, eta, phi, charge, strangenessWeight, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);//step 5 = TrigVtxRecNrec
 	}
 
@@ -1702,29 +1714,32 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
 	fMapPair[step]->Fill(prop6, strangeWeightEventAxis*strangeWeightOthers);
   
 	//thrid track loop (Andreas: three particle auto-correlations)
-	for (Int_t third = iTrack+1; third < nAll; third++) {
-	  if(pt[pindexInnerEta[iTrack]]<fTriggerPtCut) continue;
-	  if(pt[pindexInnerEta[third]]<fTriggerPtCut) continue;
+	if(fThreeParticleCorr){
+	  for (Int_t third = iTrack+1; third < nAll; third++) {
+	    if(pt[pindexInnerEta[iTrack]]<fTriggerPtCut) continue;
+	    if(pt[pindexInnerEta[third]]<fTriggerPtCut) continue;
+	    
+	    //dphi1
+	    Float_t dPhi1 = phiEventAxis - phiOthers;
+	    if(dPhi1>1.5*TMath::Pi()) dPhi1 = dPhi1-2*TMath::Pi();
+	    else if(dPhi1<-0.5*TMath::Pi())dPhi1=dPhi1+2*TMath::Pi();
+	    
+	    Float_t phiThird = phi[pindexInnerEta[third]];
+	    Float_t strangeWeightThird = strangeWeight[pindexInnerEta[third]];
+	    
+	    //dphi2
+	    Float_t dPhi2 = phiEventAxis - phiThird;
+	    if(dPhi2>1.5*TMath::Pi()) dPhi2 = dPhi2-2*TMath::Pi();
+	    else if(dPhi2<-0.5*TMath::Pi())dPhi2=dPhi2+2*TMath::Pi();
 	  
-	  //dphi1
-	  Float_t dPhi1 = phiEventAxis - phiOthers;
-	  if(dPhi1>1.5*TMath::Pi()) dPhi1 = dPhi1-2*TMath::Pi();
-	  else if(dPhi1<-0.5*TMath::Pi())dPhi1=dPhi1+2*TMath::Pi();
+	    fDPhi1DPhi2[step]-> Fill(dPhi1, dPhi2, strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird);
+	    Double_t propThree[3] = {dPhi1,dPhi2,ntracksCharged}; 
+	    fMapThree[step]->Fill(propThree,strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird );
+	    
+	    
+	  }// end of three particle correlation loop
 
-	  Float_t phiThird = phi[pindexInnerEta[third]];
-	  Float_t strangeWeightThird = strangeWeight[pindexInnerEta[third]];
-
-	  //dphi2
-	  Float_t dPhi2 = phiEventAxis - phiThird;
-	  if(dPhi2>1.5*TMath::Pi()) dPhi2 = dPhi2-2*TMath::Pi();
-	  else if(dPhi2<-0.5*TMath::Pi())dPhi2=dPhi2+2*TMath::Pi();
-	  
-	  fDPhi1DPhi2[step]-> Fill(dPhi1, dPhi2, strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird);
-	  Double_t propThree[3] = {dPhi1,dPhi2,ntracksCharged}; 
-	  fMapThree[step]->Fill(propThree,strangeWeightEventAxis*strangeWeightOthers*strangeWeightThird );
-
-	  
-	}// end of three particle correlation loop
+	}// if fThreeParticleCorr is set to true
 
       }// end of inner track loop
          
