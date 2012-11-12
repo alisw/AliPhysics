@@ -51,24 +51,10 @@ AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer
 {
   //Comment
   fAlgo= Algo::kPeakFinder;
-  InitOCDB(fRunOnAlien);
   fPeakFinderVectors = new AliCaloPeakFinderVectors() ;
   ResetVectors();
   LoadVectorsOCDB();
 }
-
-
-void 
-AliCaloRawAnalyzerPeakFinder::InitOCDB(bool alien) const
-{
-  // Setting the default OCDB pathe depending on wether we work locally or on the GRID.
-  if( !AliCDBManager::Instance()->IsDefaultStorageSet ())
-    {
-      AliCDBManager::Instance()->SetDefaultStorage(  alien == true ? "alien://$ALICE_ROOT/OCDB" : "local://$ALICE_ROOT/OCDB" );
-      AliCDBManager::Instance()->SetRun(100);
-    }
-}
-
 
 void  
 AliCaloRawAnalyzerPeakFinder::ResetVectors()

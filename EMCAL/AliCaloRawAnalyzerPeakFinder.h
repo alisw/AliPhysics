@@ -45,7 +45,6 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   void     LoadVectorsOCDB();
   void     CopyVectors(const AliCaloPeakFinderVectors *const pfvectors );
   void     ResetVectors();
-  void     InitOCDB(bool alien) const;
   void     WriteRootFile() const;
   void PrintVectors();
   Double_t ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
