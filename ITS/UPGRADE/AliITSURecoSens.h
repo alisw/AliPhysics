@@ -45,8 +45,8 @@ class AliITSURecoSens : public TObject
   Double_t           fPhiTF;                       // phi of tracking frame
   Double_t           fPhiMin;                      // lab phi min
   Double_t           fPhiMax;                      // lab phi max
-  Double_t           fZMin;                        // lab Z min
-  Double_t           fZMax;                        // lab Z max
+  Double_t           fZMin;                        // lab & trk Z min
+  Double_t           fZMax;                        // lab & trk Z max
   //
   ClassDef(AliITSURecoSens,1); // helper for sensor data used in reco
 };

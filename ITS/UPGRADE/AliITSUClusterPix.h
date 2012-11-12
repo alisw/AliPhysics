@@ -18,9 +18,9 @@ class AliITSUClusterPix : public AliCluster
   };
   //
   enum SortMode_t { // various modes
-    kSortLoc = BIT(0)
-    ,kSortTrk = BIT(1)
-    ,kSortBits = kSortLoc|kSortTrk
+    kSortIdLocXZ  = BIT(0)    // sort according to ID, then X,Z of local frame
+    ,kSortIdTrkYZ = BIT(1)    // sort according to ID, then Y,Z of tracking frame
+    ,kSortBits = kSortIdLocXZ|kSortIdTrkYZ
   };
 
  public:
@@ -61,8 +61,8 @@ class AliITSUClusterPix : public AliCluster
   static  void                 SetSortMode(SortMode_t md)   {fgMode &= ~kSortBits; fgMode |= md;}
   static  UInt_t               GetSortMode()                {return fgMode|kSortBits;}
   static  UInt_t               GetMode()                    {return fgMode;}
-  static  SortMode_t SortModeTrkID()                        {return kSortTrk;}
-  static  SortMode_t SortModeLocID()                        {return kSortLoc;}
+  static  SortMode_t           SortModeIdTrkYZ()              {return kSortIdTrkYZ;}
+  static  SortMode_t           SortModeIdLocXZ()              {return kSortIdLocXZ;}
   //
  protected:
   //

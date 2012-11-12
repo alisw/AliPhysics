@@ -111,8 +111,8 @@ void AliITSUReconstructor::Init()
 //_____________________________________________________________________________
 void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) const
 {
-  // reconstruct clusters
-  if (!digitsTree || !clustersTree) return;
+  // reconstruct clusters. If clustersTree is provided, write the tree
+  if (!digitsTree) return;
   AliDebug(1,"ITSU Cluster finder (from digits tree) is initiated here \n");
   //
   // At the moment only pixel digits
@@ -125,12 +125,14 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   //
   for (int ilr=0;ilr<fGM->GetNLayers();ilr++) {
     rpClones[ilr] = (TClonesArray*)fRecPoints.At(ilr);
-    int tp = fGM->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
-    if (tp==AliITSUGeomTGeo::kDetTypePix) {
-      lrBranch[ilr] = clustersTree->Bronch(Form("ITSRecPoints%d",ilr),"TClonesArray",&rpClones[ilr]);
-    }
-    else {
-      AliFatal(Form("Detector type %d is not defined",tp));
+    if (clustersTree) { // do we write clusters tree?
+      int tp = fGM->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
+      if (tp==AliITSUGeomTGeo::kDetTypePix) {
+	lrBranch[ilr] = clustersTree->Bronch(Form("ITSRecPoints%d",ilr),"TClonesArray",&rpClones[ilr]);
+      }
+      else {
+	AliFatal(Form("Detector type %d is not defined",tp));
+      }
     }
   }
   //
@@ -155,12 +157,12 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
       clFinder->Clusterize();
     }
     //
-    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeTrkID());
+    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeIdTrkYZ());
     rpClones[ilr]->Sort();
     AliDebug(1,Form(" -> Lr%d : %d Cluster",ilr,rpClones[ilr]->GetEntries()));
-    lrBranch[ilr]->Fill();
+    if (clustersTree) lrBranch[ilr]->Fill();
   }
-  clustersTree->SetEntries();
+  if (clustersTree) clustersTree->SetEntries();
   //
 }
 
