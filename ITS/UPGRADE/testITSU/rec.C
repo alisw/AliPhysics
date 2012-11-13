@@ -12,7 +12,7 @@ void rec() {
   gSystem->Exec("rm -rf *RecPoints* AliESD*");
 
   // Set ITS upgrade reconstructor
-  gPluginMgr->AddHandler("AliReconstructor", "*",
+  gPluginMgr->AddHandler("AliReconstructor", "ITS",
 			 "AliITSUReconstructor","ITS", "AliITSUReconstructor()");
   
   AliReconstruction rec;
