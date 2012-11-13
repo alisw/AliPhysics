@@ -2,6 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void InitHF(AliDielectron* die, Int_t cutDefinition);
 
+void SetupEventCuts(AliDielectron *die);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 
@@ -86,10 +87,14 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   if (cutDefinition<arrNames->GetEntriesFast()){
     name=arrNames->At(cutDefinition)->GetName();
   }
+  printf(" Adding %s %s config %s for %s \n",(isESD?"ESD":"AOD"),(hasMC?"MC":""),name.Data(),list.Data());
   AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("Track cuts: %s",name.Data()));
   die->SetHasMC(hasMC);
 
-  printf(" Add %s %s config %s for %s \n",(isESD?"ESD":"AOD"),(hasMC?"MC":""),name.Data(),list.Data());
+  // cut setup
+  SetupEventCuts(die);
+  SetupTrackCuts(die,cutDefinition);
+  SetupPairCuts(die,cutDefinition);
 
   // Monte Carlo Signals and TRD efficiency tables
   if(hasMC) {
@@ -113,9 +118,6 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   InitHistograms(die,cutDefinition);
   printf(" Add %d class types to the histo manager \n",die->GetHistogramList()->GetEntries());
 
-  // cut setup
-  SetupTrackCuts(die,cutDefinition);
-  SetupPairCuts(die,cutDefinition);
 
 
   // CF container setup, switched off
@@ -143,9 +145,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
-      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
-      mix->AddVariable(AliDielectronVarManager::kv0ACrpH2,    8,  TMath::Pi()/-2., TMath::Pi()/2.);
+      //       mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
+      //       mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
+      //       mix->AddVariable(AliDielectronVarManager::kv0ACrpH2,    8,  TMath::Pi()/-2., TMath::Pi()/2.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
       mix->SetDepth(120);
       die->SetMixingHandler(mix);
@@ -192,6 +194,24 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   return die;
+}
+
+//______________________________________________________________________________________
+void SetupEventCuts(AliDielectron *die)
+{
+  //
+  // Setup the event cuts
+  //
+
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
+  if(!isESD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,+10.);
+  eventCuts->SetCentralityRange(0.0,80.0);
+  eventCuts->Print();
+  die->GetEventFilter().AddCuts(eventCuts);
+
 }
 
 //______________________________________________________________________________________
@@ -756,7 +776,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Pair","Pt",";p_{T} (GeV/c);#pairs",
 			  400,0,20., AliDielectronVarManager::kPt);
     histos->UserHistogram("Pair","OpeningAngle",";opening angle (rad.);#pairs",
-                          100,0.,3.15, AliDielectronVarManager::kOpeningOBAngle);
+                          100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
     histos->UserHistogram("Pair","Chi2NDF",";#chi^{2}/NDF;#pairs",
                           100,0.,20, AliDielectronVarManager::kChi2NDF);
     histos->UserHistogram("Pair","PsiPair",";#psi;#pairs",
@@ -933,7 +953,7 @@ void AddMCSignals(AliDielectron *die){
   conversionElePairs->SetCheckBothChargesLegs(kTRUE,kTRUE);
   conversionElePairs->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
   conversionElePairs->SetMotherPDGs(22,22);
-  //   die->AddSignalMC(conversionElePairs);
+  die->AddSignalMC(conversionElePairs);
 
   // prompt J/psi radiative channel
   AliDielectronSignalMC* promptJpsiRad = new AliDielectronSignalMC("promptJpsiRad","Prompt J/psi Radiative");   // prompt J/psi (not from beauty decays)
@@ -947,7 +967,7 @@ void AddMCSignals(AliDielectron *die){
   promptJpsiRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
   promptJpsiRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
   promptJpsiRad->SetJpsiRadiative(AliDielectronSignalMC::kIsRadiative);
-  die->AddSignalMC(promptJpsiRad);
+  //  die->AddSignalMC(promptJpsiRad);
 
   // prompt J/psi Non radiative channel
   AliDielectronSignalMC* promptJpsiNonRad = new AliDielectronSignalMC("promptJpsiNonRad","Prompt J/psi non-Radiative");   // prompt J/psi (not from beauty decays)
@@ -961,7 +981,7 @@ void AddMCSignals(AliDielectron *die){
   promptJpsiNonRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
   promptJpsiNonRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
   promptJpsiNonRad->SetJpsiRadiative(AliDielectronSignalMC::kIsNotRadiative);
-  die->AddSignalMC(promptJpsiNonRad);
+  //  die->AddSignalMC(promptJpsiNonRad);
 }
 
 void SetEtaCorrection()
