@@ -77,7 +77,8 @@
 
 #include "AliTRDcheckESD.h"
 #include <iostream>
-using namespace std;
+using std::cout;
+using std::endl;
 
 ClassImp(AliTRDcheckESD)
 
@@ -479,24 +480,42 @@ void AliTRDcheckESD::UserExec(Option_t *){
     }
   }
   if(!isSelected) return;
-  
+
   TString triggerClasses = fESD->GetFiredTriggerClasses();
-  //cout << "triggers fired:  " << triggerClasses.Data() << endl;
+  //  cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++triggers fired:  " << triggerClasses.Data() << endl;
   TObjArray* triggers = triggerClasses.Tokenize(" ");
+  TObjArray* userTriggers = fUserEnabledTriggers.Tokenize(";");
   if(triggers->GetEntries()<1) return;
+  Bool_t hasGoodTriggers = kFALSE;
   Int_t triggerIndices[kNMaxAssignedTriggers] = {0};
+  Int_t nTrigFired=0;
   for(Int_t i=0; i<triggers->GetEntries(); ++i) {
-    //cout << "check trigger " << triggers->At(i)->GetName() << endl;
+    //    cout << "check trigger " << triggers->At(i)->GetName() << endl;
+    TString trigStr=triggers->At(i)->GetName();
+    if(!trigStr.Contains("NOTRD") && !trigStr.Contains("MUON")) hasGoodTriggers = kTRUE;    // check wheter TRD was read out in this event
     if(i>=kNMaxAssignedTriggers) continue;
-    triggerIndices[i] = GetTriggerIndex(triggers->At(i)->GetName(), kFALSE);
-  }  
-  if(!fNAssignedTriggers) {
-    triggerIndices[0] = 1;
-    ((TH1F*)fHistos->At(kTriggerDefs))->Fill(triggerIndices[0]);
-  }
-  else {
-    for(Int_t i=0; i<triggers->GetEntries(); ++i) 
-      ((TH1F*)fHistos->At(kTriggerDefs))->Fill(triggerIndices[i]);
+    //    triggerIndices[i] = GetTriggerIndex(triggers->At(i)->GetName(), kFALSE);
+    for(Int_t j=0;j<userTriggers->GetEntries();++j) {
+      TString userTrigStr=userTriggers->At(j)->GetName();
+      if(trigStr.Contains(userTrigStr.Data())) {
+	triggerIndices[nTrigFired] = GetTriggerIndex(userTrigStr.Data(), kFALSE);
+	if(triggerIndices[nTrigFired]==-1) triggerIndices[nTrigFired]=1;  // 0-assigned to all other triggers
+	++nTrigFired;
+      }
+    }
+    triggerIndices[nTrigFired] = GetTriggerIndex(trigStr.Data(), kFALSE);
+    if(triggerIndices[nTrigFired]==-1) triggerIndices[nTrigFired]=1;  // 0-assigned to all other triggers
+    ++nTrigFired;
+  } 
+  //  Int_t nTRDtracks = fESD->GetNumberOfTrdTracks();
+  //  Int_t nGlobalTracks = fESD->GetNumberOfTracks();
+  //cout << "TRD/All tracks: " << nTRDtracks << "/" << nGlobalTracks << endl;
+  for(Int_t i=0; i<nTrigFired; ++i) 
+    ((TH1F*)fHistos->At(kTriggerDefs))->Fill(triggerIndices[i]);
+
+  if(!hasGoodTriggers) {
+    PostData(1, fHistos);
+    return;
   }
   
   // Get MC information if available
@@ -541,8 +560,19 @@ void AliTRDcheckESD::UserExec(Option_t *){
   AliESDtrack *esdTrack(NULL);
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
     esdTrack = fESD->GetTrack(itrk);
+    //    cout << "track pt/eta: " << esdTrack->Pt() << "/" << esdTrack->Eta() << endl;
+    Float_t dcaxy,dcaz;
+    esdTrack->GetImpactParameters(dcaxy,dcaz);
+    //    cout << "dca xy/z: " << dcaxy << "/" << dcaz << endl;
+    //    cout << "TPC ncls: " << esdTrack->GetTPCNcls() << endl;
+    //    cout << "ITS hit map: ";
+    //    for (Int_t iC=0; iC<6; iC++) {
+    //      cout << ((esdTrack->GetITSClusterMap())&(1<<(iC)) ? "1" : "0") << flush;
+    //    }
+    //    cout << endl;
     if(!fReferenceTrackFilter->IsSelected(esdTrack)) continue;
-    
+    //    cout << "track passed" << endl;    
+
     ULong_t status = esdTrack->GetStatus(); //PrintStatus(status);
             
     // pid quality
@@ -575,7 +605,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
     for(Int_t i=0; i<6; ++i) values[kTrackQtot+i] = 0.0;
         
     if(localCoordGood[0] && localMomGood[0]) {
-      for(Int_t itrig=0; itrig<triggers->GetEntries(); ++itrig) {
+      for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
 	values[kEventTrigger] = triggerIndices[itrig];
 	if((fMatchingPhiEtaCF->GetVar("trigger")<0 && itrig==0) || (fMatchingPhiEtaCF->GetVar("trigger")>=0)) {
 	  for(Int_t iv=0; iv<fMatchingPhiEtaCF->GetNVar(); ++iv) valuesMatchingPhiEtaCF[iv] = values[fMatchingPhiEtaCFVars[iv]];
@@ -606,7 +636,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
       for(Int_t iPlane=0; iPlane<6; iPlane++) {
         values[kTrackQtot+iPlane] = fgkQs*esdTrack->GetTRDslice(iPlane, 0);
 	values[kTrackPhi] = localSagitaPhi[iPlane];
-	for(Int_t itrig=0; itrig<triggers->GetEntries(); ++itrig) {
+	for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
 	  values[kEventTrigger] = triggerIndices[itrig];
 	  if((fCentralityCF->GetVar("trigger")<0 && itrig==0) || (fCentralityCF->GetVar("trigger")>=0)) {
 	    for(Int_t iv=0; iv<fCentralityCF->GetNVar(); ++iv) valuesCentCF[iv] = values[fCentralityCFVars[iv]];
@@ -641,7 +671,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
       values[kTrackPhi] = localSagitaPhi[0];
             
       if(localCoordGood[0] && localMomGood[0]) {
-	for(Int_t itrig=0; itrig<triggers->GetEntries(); ++itrig) {
+	for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
 	  values[kEventTrigger] = triggerIndices[itrig];
 	  if((fMatchingPhiEtaCF->GetVar("trigger")<0 && itrig==0) || (fMatchingPhiEtaCF->GetVar("trigger")>=0)) {
 	    for(Int_t iv=0; iv<fMatchingPhiEtaCF->GetNVar(); ++iv) valuesMatchingPhiEtaCF[iv] = values[fMatchingPhiEtaCFVars[iv]];
@@ -666,7 +696,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
 	  } 
 	}
         if(Bool_t(status & AliESDtrack::kTOFpid)) {
-	  for(Int_t itrig=0; itrig<triggers->GetEntries(); ++itrig) {
+	  for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
 	    values[kEventTrigger] = triggerIndices[itrig];
 	    if((fMatchingPhiEtaCF->GetVar("trigger")<0 && itrig==0) || (fMatchingPhiEtaCF->GetVar("trigger")>=0)) {
 	      for(Int_t iv=0; iv<fMatchingPhiEtaCF->GetNVar(); ++iv) valuesMatchingPhiEtaCF[iv] = values[fMatchingPhiEtaCFVars[iv]];
@@ -783,7 +813,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
   }  // end loop over tracks
   
   
-  triggers->Delete(); delete triggers;
+  
   delete [] valuesMatchingPhiEtaCF;
   delete [] valuesMatchingPtCF;
   delete [] valuesBCCF;
@@ -1264,7 +1294,9 @@ void AliTRDcheckESD::InitializeCFContainers() {
   AliAnalysisManager* man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if(!inputHandler) return;
-  
+
+  GetTriggerIndex("All triggers", kTRUE);
+
   AliPhysicsSelection* physSel = (AliPhysicsSelection*)inputHandler->GetEventSelection();
   const TList* trigList = (physSel ? physSel->GetCollisionTriggerClasses() : 0x0);
   const TList* bgTrigList = (physSel ? physSel->GetBGTriggerClasses() : 0x0);
@@ -1281,8 +1313,6 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
-      arr2->Delete(); delete arr2;
-      arr->Delete(); delete arr;
     }
   }
   // Add background triggers from PhysicsSelection
@@ -1297,18 +1327,14 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
-      arr2->Delete(); delete arr2;
-      arr->Delete(); delete arr;
     }
   }
-  if(!fNAssignedTriggers) {GetTriggerIndex("All triggers", kTRUE);}
-  
+    
   // Add user enabled triggers
   TObjArray* arr = fUserEnabledTriggers.Tokenize(";");
   for(Int_t it=0; it<arr->GetEntries(); ++it) {
     GetTriggerIndex(arr->At(it)->GetName(), kTRUE);
   }
-  arr->Delete(); delete arr;
 }
 
 
@@ -1338,7 +1364,7 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
   for(Int_t i=0;i<8;++i) nbinsCf[kTrackPHslice+i] = 400;
   //Double_t evVtxLims[2]      = {-10.,+10.};
   Double_t evMultLims[6]     = {0.0, 700., 1400., 2100., 2800., 3500.};
-  //Double_t evTriggerLims[2]  = {0.5, 0.5+Float_t(kNMaxAssignedTriggers)};
+  Double_t evTriggerLims[2]  = {0.5, 0.5+Float_t(kNMaxAssignedTriggers)};
   Double_t evBCLims[2]       = {-0.5, +3499.5};
   //Double_t trkTOFBClims[3]   = {-0.5, 0.5, 5.5};
   //Double_t trkDCAxyLims[10]  = {-10.0,  -6.0, -3.0,  -2.0,  -1.0,   
@@ -1365,14 +1391,15 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
   TString nameStr=name;
   if(nameStr.Contains("MatchingPhiEta")) {
     fMatchingPhiEtaCFVars[0] = kTrackCharge;       fMatchingPhiEtaCFVars[1] = kTrackPhi; fMatchingPhiEtaCFVars[2] = kTrackEta;
-    fMatchingPhiEtaCFVars[3] = kTrackTrdTracklets;
-    const Int_t nVars = 4;
+    fMatchingPhiEtaCFVars[3] = kTrackTrdTracklets; fMatchingPhiEtaCFVars[4] = kEventTrigger;
+    const Int_t nVars = 5;
     Int_t nBins[nVars]; for(Int_t i=0; i<nVars; ++i) nBins[i] = nbinsCf[fMatchingPhiEtaCFVars[i]];
     cf = new AliCFContainer(name, title, 3, nVars, nBins);
     cf->SetBinLimits(0, trkChargeLims[0], trkChargeLims[1]);
     cf->SetBinLimits(1, trkPhiLims[0], trkPhiLims[1]);
     cf->SetBinLimits(2, trkEtaLims[0], trkEtaLims[1]);
     cf->SetBinLimits(3, trkTrdNLims[0], trkTrdNLims[1]);
+    cf->SetBinLimits(4, evTriggerLims[0], evTriggerLims[1]);
     for(Int_t i=0; i<nVars; ++i) cf->SetVarTitle(i, varNames[fMatchingPhiEtaCFVars[i]]);
     cf->SetStepTitle(0, "TPC");
     cf->SetStepTitle(1, "TRD");
@@ -1381,8 +1408,8 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
   }
   if(nameStr.Contains("MatchingPt")) {
     fMatchingPtCFVars[0] = kEventMult; fMatchingPtCFVars[1] = kTrackCharge;        fMatchingPtCFVars[2] = kTrackPhi; 
-    fMatchingPtCFVars[3] = kTrackPt;   fMatchingPtCFVars[4] = kTrackTrdTracklets;
-    const Int_t nVars = 5;
+    fMatchingPtCFVars[3] = kTrackPt;   fMatchingPtCFVars[4] = kTrackTrdTracklets;  fMatchingPtCFVars[5] = kEventTrigger;
+    const Int_t nVars = 6;
     Int_t nBins[nVars]; for(Int_t i=0; i<nVars; ++i) nBins[i] = nbinsCf[fMatchingPtCFVars[i]];
     cf = new AliCFContainer(name, title, 3, nVars, nBins);
     cf->SetBinLimits(0, evMultLims);
@@ -1390,6 +1417,7 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
     cf->SetBinLimits(2, trkPhiLims[0], trkPhiLims[1]);
     cf->SetBinLimits(3, trkPtLims);
     cf->SetBinLimits(4, trkTrdNLims[0], trkTrdNLims[1]);
+    cf->SetBinLimits(5, evTriggerLims[0], evTriggerLims[1]);
     for(Int_t i=0; i<nVars; ++i) cf->SetVarTitle(i, varNames[fMatchingPtCFVars[i]]);
     cf->SetStepTitle(0, "TPC");
     cf->SetStepTitle(1, "TRD");
@@ -1411,21 +1439,23 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
   }
   if(nameStr.Contains("Centrality")) {
     fCentralityCFVars[0] = kEventMult; fCentralityCFVars[1] = kTrackP; fCentralityCFVars[2] = kTrackTrdClusters; 
-    fCentralityCFVars[3] = kTrackQtot;
-    const Int_t nVars = 4;
+    fCentralityCFVars[3] = kTrackQtot; fCentralityCFVars[4] = kEventTrigger;
+    const Int_t nVars = 5;
     Int_t nBins[nVars]; for(Int_t i=0; i<nVars; ++i) nBins[i] = nbinsCf[fCentralityCFVars[i]];
     cf = new AliCFContainer(name, title, 1, nVars, nBins);
     cf->SetBinLimits(0, evMultLims);
     cf->SetBinLimits(1, trkPLims);
     cf->SetBinLimits(2, trkTrdNclsLims[0], trkTrdNclsLims[1]);
     cf->SetBinLimits(3, trkQtotLims[0], trkQtotLims[1]);
+    cf->SetBinLimits(4, evTriggerLims[0], evTriggerLims[1]);
     for(Int_t i=0; i<nVars; ++i) cf->SetVarTitle(i, varNames[fCentralityCFVars[i]]);
     cf->SetStepTitle(0, "TRD");
     return cf;
   }
   if(nameStr.Contains("Qtot")) {
     fQtotCFVars[0] = kTrackPhi; fQtotCFVars[1] = kTrackEta; fQtotCFVars[2] = kTrackQtot; 
-    const Int_t nVars = 4;
+    fQtotCFVars[3] = kEventTrigger;
+    const Int_t nVars = 5;
     Int_t nBins[nVars]; for(Int_t i=0; i<nVars-1; ++i) nBins[i] = nbinsCf[fQtotCFVars[i]];
     nBins[2] = 50;
     nBins[nVars-1] = 6;
@@ -1433,22 +1463,24 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
     cf->SetBinLimits(0, trkPhiLims[0], trkPhiLims[1]);
     cf->SetBinLimits(1, trkEtaLims[0], trkEtaLims[1]);
     cf->SetBinLimits(2, trkQtotLims[0], trkQtotLims[1]);
-    cf->SetBinLimits(3, -0.5, 5.5);
+    cf->SetBinLimits(3, evTriggerLims[0], evTriggerLims[1]);
+    cf->SetBinLimits(4, -0.5, 5.5);
     for(Int_t i=0; i<nVars-1; ++i) cf->SetVarTitle(i, varNames[fQtotCFVars[i]]);
     cf->SetVarTitle(nVars-1, "layer");
     cf->SetStepTitle(0, "TRD");
     return cf;
   }
   if(nameStr.Contains("PulseHeight")) {
-    fPulseHeightCFVars[0] = kTrackP; fPulseHeightCFVars[1] = kTrackPHslice; 
-    const Int_t nVars = 3;
+    fPulseHeightCFVars[0] = kTrackP; fPulseHeightCFVars[1] = kTrackPHslice; fPulseHeightCFVars[2] = kEventTrigger;
+    const Int_t nVars = 4;
     Int_t nBins[nVars]; for(Int_t i=0; i<nVars-1; ++i) nBins[i] = nbinsCf[fPulseHeightCFVars[i]];
     nBins[nVars-1] = 8;
     cf = new AliCFContainer(name, title, 1, nVars, nBins);
     //cf->SetBinLimits(0, evTriggerLims[0], evTriggerLims[1]);
     cf->SetBinLimits(0, trkPLims);
     cf->SetBinLimits(1, trkQtotLims[0], trkQtotLims[1]);
-    cf->SetBinLimits(2, -0.5, 7.5);
+    cf->SetBinLimits(2, evTriggerLims[0], evTriggerLims[1]);
+    cf->SetBinLimits(3, -0.5, 7.5);
     for(Int_t i=0; i<nVars-1; ++i) cf->SetVarTitle(i, varNames[fPulseHeightCFVars[i]]);
     cf->SetVarTitle(nVars-1, "slice");
     cf->SetStepTitle(0, "TRD");
@@ -1464,10 +1496,9 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
 	nVars++;
       }
       else {
-        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-        nBins[nVars] = arr->GetEntries()-1;
-        if(nBins[nVars]>0) nVars++;
-        arr->Delete(); delete arr;
+	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+	nBins[nVars] = arr->GetEntries()-1;
+	if(nBins[nVars]>0) nVars++;
       }
     }
     if(nVars<1) return 0x0;
@@ -1477,19 +1508,18 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
     Int_t iUsedVar = 0;
     for(Int_t ivar=0; ivar<kNTrdCfVariables; ++ivar) {
       if(!fExpertCFVarsEnabled[ivar]) continue;
-      if(fExpertCFVarBins[ivar][0]=='\0'){
-        cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
-      } else {
-        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-        if(arr->GetEntries()-1>0) {
-          Double_t* binLims = new Double_t[arr->GetEntries()];
-          for(Int_t ib=0;ib<arr->GetEntries();++ib) {
-            TString binStr = arr->At(ib)->GetName();
-            binLims[ib] = binStr.Atof();
-          }
-          cf->SetBinLimits(iUsedVar++, binLims);
-        }
-        arr->Delete(); delete arr;
+      if(fExpertCFVarBins[ivar][0]=='\0')
+	cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
+      else {
+	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+	if(arr->GetEntries()-1>0) {
+	  Double_t* binLims = new Double_t[arr->GetEntries()];
+	  for(Int_t ib=0;ib<arr->GetEntries();++ib) {
+	    TString binStr = arr->At(ib)->GetName();
+	    binLims[ib] = binStr.Atof();
+	  }
+	  cf->SetBinLimits(iUsedVar++, binLims);
+	}
       }
       cf->SetVarTitle(iUsedVar, varNames[ivar]);
     }
@@ -1661,13 +1691,11 @@ void AliTRDcheckESD::Terminate(Option_t *)
   
   // All tracks
   h1[0] = h2->ProjectionX("Ncl_px");
-  TGraphErrors *ge(NULL);
-  if((ge=(TGraphErrors*)arr->At(0))){
-    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-      ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
-    }
+  TGraphErrors *ge=(TGraphErrors*)arr->At(0);
+  for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+    ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
   }
-
+  
   // All charged tracks
   TH1 *hNclCh[2] = {(TH1D*)h1[0]->Clone("NEG"), (TH1D*)h1[0]->Clone("POS")};
   hNclCh[0]->Reset();hNclCh[1]->Reset();
@@ -1675,13 +1703,15 @@ void AliTRDcheckESD::Terminate(Option_t *)
     hNclCh[0]->Add(h2->ProjectionX("Ncl_px", 2*is-1, 2*is-1)); // neg
     hNclCh[1]->Add(h2->ProjectionX("Ncl_px", 2*is, 2*is));     // pos
   }
-  if(Int_t(hNclCh[0]->GetEntries()) && (ge=(TGraphErrors*)arr->At(1))){
+  if(Int_t(hNclCh[0]->GetEntries())){
+    ge=(TGraphErrors*)arr->At(1);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
     }
   }
   
-  if(Int_t(hNclCh[1]->GetEntries()) && (ge=(TGraphErrors*)arr->At(2))){
+  if(Int_t(hNclCh[1]->GetEntries())){
+    ge=(TGraphErrors*)arr->At(2);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[1]->GetBinContent(ib));
     }
@@ -1690,7 +1720,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
   for(Int_t is(1); is<=AliPID::kSPECIES; is++){
     h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
     if(!Int_t(h1[0]->GetEntries())) continue;
-    if(!(ge=(TGraphErrors*)arr->At(2+is))) continue;
+    ge=(TGraphErrors*)arr->At(2+is);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
     }
@@ -1723,49 +1753,46 @@ void AliTRDcheckESD::Terminate(Option_t *)
 
   // ENERGY LOSS
   if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
-  if((arr = (TObjArray*)fResults->At(kTRDmom-1))){
-    TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
-    if(g06 && g09){
-      ax=h2->GetXaxis();
-      const Int_t nq(4);
-      const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
-      Double_t yq[nq];
-      for(Int_t ily=6; ily--;){
-        h1[0] = h2->ProjectionX("checkESDp0", ily+1, ily+1);
-        h1[0]->GetQuantiles(nq,yq,xq);
-        g06->SetPoint(ily, Float_t(ily), ax->GetBinCenter(h1[0]->GetMaximumBin()));
-        g06->SetPointError(ily, 0., 0., TMath::Abs(yq[0]), yq[3]);
-        g09->SetPoint(ily, Float_t(ily), h1[0]->GetMean());
-        g09->SetPointError(ily, 0., 0., TMath::Abs(yq[1]), yq[2]);
+  arr = (TObjArray*)fResults->At(kTRDmom-1);
+  TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
+  ax=h2->GetXaxis();
+  const Int_t nq(4);
+  const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
+  Double_t yq[nq];
+  for(Int_t ily=6; ily--;){
+    h1[0] = h2->ProjectionX("checkESDp0", ily+1, ily+1);
+    h1[0]->GetQuantiles(nq,yq,xq);
+    g06->SetPoint(ily, Float_t(ily), ax->GetBinCenter(h1[0]->GetMaximumBin()));
+    g06->SetPointError(ily, 0., 0., TMath::Abs(yq[0]), yq[3]);
+    g09->SetPoint(ily, Float_t(ily), h1[0]->GetMean());
+    g09->SetPointError(ily, 0., 0., TMath::Abs(yq[1]), yq[2]);
 
-        //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
-        delete h1[0];
-      }
-      fNRefFigures++;
-    }
+    //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
+    delete h1[0];
   }
+  fNRefFigures++;
 //  if(!HasMC()) return;
 
   // Pt RESOLUTION @ DCA
   TH3S* h3(NULL); TGraphErrors *gg[2] = {NULL,NULL};
   if(!(h3 = dynamic_cast<TH3S*>(fHistos->At(kPtRes)))) return;
-  if((arr = (TObjArray*)fResults->At(kPtRes-1))){
-    TAxis *az(h3->GetZaxis());
-    for(Int_t i(0); i<AliPID::kSPECIES; i++){
-      Int_t idx(2*i);
-      az->SetRange(idx+1, idx+2);
-      gg[1] = (TGraphErrors*)arr->At(idx);
-      gg[0] = (TGraphErrors*)arr->At(idx+1);
-      Process2D((TH2*)h3->Project3D("yx"), gg);
+  arr = (TObjArray*)fResults->At(kPtRes-1);
+  TAxis *az(h3->GetZaxis());
+  for(Int_t i(0); i<AliPID::kSPECIES; i++){
+    Int_t idx(2*i);
+    az->SetRange(idx+1, idx+2); 
+    gg[1] = (TGraphErrors*)arr->At(idx);
+    gg[0] = (TGraphErrors*)arr->At(idx+1);
+    Process2D((TH2*)h3->Project3D("yx"), gg);
 
-      idx+=10;
-      az->SetRange(idx+1, idx+2);
-      gg[1] = (TGraphErrors*)arr->At(idx);
-      gg[0] = (TGraphErrors*)arr->At(idx+1);
-      Process2D((TH2*)h3->Project3D("yx"), gg);
-    }
-    fNRefFigures++;
+    idx+=10;
+    az->SetRange(idx+1, idx+2); 
+    gg[1] = (TGraphErrors*)arr->At(idx);
+    gg[0] = (TGraphErrors*)arr->At(idx+1);
+    Process2D((TH2*)h3->Project3D("yx"), gg);
   }
+  fNRefFigures++;
+  
   fNRefFigures++;
   // 3x3 tracking summary canvases for every centrality class
   fNRefFigures++;
@@ -1803,7 +1830,6 @@ void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
 {
 // Generic function to process one reference plot
 
-  if(!g) return;
   Int_t n1 = 0, n2 = 0, ip=0;
   Double_t eff = 0.;
 
@@ -1825,7 +1851,6 @@ void AliTRDcheckESD::Process2D(TH2 * const h2, TGraphErrors **g)
   // Do the processing
   //
 
-  if(!g[0] || !g[1]) return;
   Int_t n = 0;
   if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
   if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
