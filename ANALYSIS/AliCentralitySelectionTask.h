@@ -76,6 +76,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fV0MZDCEcalOutlierPar1;   // outliers parameter
 
   AliESDtrackCuts* fTrackCuts;  //! optional track cuts
+  AliESDtrackCuts* fEsdTrackCuts;  //! optional track cuts
+  AliESDtrackCuts* fEsdTrackCutsExtra1;  //! optional track cuts
+  AliESDtrackCuts* fEsdTrackCutsExtra2;  //! optional track cuts
 
   Float_t  fZVCut;              //! z-vertex cut (in cm)
   Float_t  fOutliersCut;        //! outliers cut (in n-sigma)
@@ -241,7 +244,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 23); 
+  ClassDef(AliCentralitySelectionTask, 24); 
 };
 
 #endif

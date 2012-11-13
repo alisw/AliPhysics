@@ -106,6 +106,9 @@ AliAnalysisTaskSE(),
   fV0MZDCEcalOutlierPar0(0),   
   fV0MZDCEcalOutlierPar1(0),   
   fTrackCuts(0),
+  fEsdTrackCuts(0),
+  fEsdTrackCutsExtra1(0),
+  fEsdTrackCutsExtra2(0),
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
@@ -295,6 +298,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fV0MZDCEcalOutlierPar0(0),   
   fV0MZDCEcalOutlierPar1(0),   
   fTrackCuts(0),
+  fEsdTrackCuts(0),
+  fEsdTrackCutsExtra1(0),
+  fEsdTrackCutsExtra2(0),
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
@@ -494,6 +500,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fV0MZDCEcalOutlierPar0(ana.fV0MZDCEcalOutlierPar0),   
   fV0MZDCEcalOutlierPar1(ana.fV0MZDCEcalOutlierPar1),   
   fTrackCuts(ana.fTrackCuts),
+  fEsdTrackCuts(ana.fEsdTrackCuts),
+  fEsdTrackCutsExtra1(ana.fEsdTrackCutsExtra1),
+  fEsdTrackCutsExtra2(ana.fEsdTrackCutsExtra2),
   fZVCut(ana.fZVCut),
   fOutliersCut(ana.fOutliersCut),
   fQuality(ana.fQuality),
@@ -655,6 +664,9 @@ AliCentralitySelectionTask::~AliCentralitySelectionTask()
   // Destructor  
   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
   if (fTrackCuts) delete fTrackCuts;
+  if (fEsdTrackCuts) delete fEsdTrackCuts;
+  if (fEsdTrackCutsExtra1) delete fEsdTrackCutsExtra1;
+  if (fEsdTrackCutsExtra2) delete fEsdTrackCutsExtra2;
 }  
 
 //________________________________________________________________________
@@ -884,6 +896,14 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   }
   
   fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+  // Add SPD requirement
+  fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+  fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  // Add SDD requirement
+  fEsdTrackCutsExtra2 = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
+  fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);  
 }
 
 //________________________________________________________________________
@@ -1041,11 +1061,20 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     // ***** CB info (tracklets, clusters, chips)
     //nTracks    = event->GetNumberOfTracks();     
     nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
+
     Short_t nTrTPCcandle = 0;
     for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
+
       AliESDtrack* track = esd->GetTrack(iTracks);
       if (!track) continue;
-      if (track->Pt() > 0.5 && TMath::Abs(track->Eta()) < 0.8)	nTrTPCcandle++;
+      
+      if (! fEsdTrackCuts->IsSelected(track) )continue;
+      
+      if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra2 &&
+       	  !fEsdTrackCutsExtra1->IsSelected(track) &&
+       	  !fEsdTrackCutsExtra2->IsSelected(track)) continue;
+      
+      if (track->Pt() > 0.4 && TMath::Abs(track->Eta()) < 0.9)	nTrTPCcandle++;
     } 
     multCND = nTrTPCcandle;
 
