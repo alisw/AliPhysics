@@ -6,7 +6,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 TString filename="",
 							 TString finAnObjname="AnalysisCuts", 
 							 TString estimatorFilename="",
-							 Double_t refMult=9.26)
+							 Double_t refMult=9.26,
+							 Bool_t subtractDau=kTRUE)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -69,6 +70,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetDebugLevel(0);
   dMultTask->SetUseBit(kTRUE);
   dMultTask->SetDoImpactParameterHistos(kFALSE);
+  dMultTask->SetSubtractTrackletsFromDaughters(subtractDau);
 
   if(pdgMeson==421) { 
     dMultTask->SetMassLimits(1.5648,2.1648);
