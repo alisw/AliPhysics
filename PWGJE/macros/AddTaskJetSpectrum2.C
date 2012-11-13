@@ -1,10 +1,10 @@
 Bool_t ConfigWithFlagsJetSpectrum2();
 AliAnalysisTaskJetSpectrum2 *jetspec = 0;
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Int_t iCl = 0, Bool_t bRCSparseDimensions = kFALSE);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,Int_t hjet=0, UInt_t iEventSelectionMask = 0,Int_t iCl = 0, Bool_t bRCSparseDimensions = kFALSE);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,Int_t hjet=0,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
 
   TString cBack = back;
 
@@ -48,7 +48,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Boo
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* nonStdFile,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Int_t iCl, Bool_t bRCSparseDimensions)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* nonStdFile,UInt_t filterMask,Int_t iPhysicsSelectionFlag,Int_t hjet, UInt_t iEventSelectionMask,Int_t iCl, Bool_t bRCSparseDimensions)
 {
   // Creates a jet fider task, configures it and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -84,7 +84,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    cAdd += Form("_Filter%05d",filterMask);
 
    
-
+   jetspec->SetTRP(hjet);
    jetspec->SetBranchGen(bGen); 
    //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))jetspec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
 
@@ -144,7 +144,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
      jetspec->SetNMultBins(1);
      jetspec->SetNPtLeadingBins(1);
    }
-
+   
    // to fetch the AOD from the AOD extension ouput 
    if(strlen(nonStdFile))jetspec->SetNonStdFile(nonStdFile);
    mgr->AddTask(jetspec);
@@ -152,7 +152,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d_HJ%d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl,hjet));
 
    mgr->ConnectInput  (jetspec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (jetspec, 0, mgr->GetCommonOutputContainer());

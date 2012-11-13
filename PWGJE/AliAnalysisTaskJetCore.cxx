@@ -67,7 +67,6 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
-fDebug(0), 
 fOfflineTrgMask(AliVEvent::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
@@ -107,6 +106,7 @@ fJetPtFractionMin(0.5),
 fNMatchJets(4),
 fMatchMaxDist(0.8),
 fKeepJets(kFALSE),
+fRunAnaAzimuthalCorrelation(kFALSE),
 fkNbranches(2),
 fkEvtClasses(12),
 fOutputList(0x0),
@@ -149,9 +149,9 @@ fh2RPJetsC10(0x0),
 fh2RPJetsC20(0x0),
 fh2RPTC10(0x0),
 fh2RPTC20(0x0), 
-fh3spectriggeredC10(0x0),
-fh3spectriggeredC20(0x0),
-fh3spectriggeredC3060(0x0)
+fHJetSpec(0x0),
+fhTTPt(0x0),
+fHJetPhiCorr(0x0)
 
  
 {
@@ -185,7 +185,6 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
-fDebug(0),
 fOfflineTrgMask(AliVEvent::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
@@ -225,6 +224,7 @@ fJetPtFractionMin(0.5),
 fNMatchJets(4),
 fMatchMaxDist(0.8),
 fKeepJets(kFALSE),
+fRunAnaAzimuthalCorrelation(kFALSE),
 fkNbranches(2),
 fkEvtClasses(12),
 fOutputList(0x0),
@@ -267,9 +267,9 @@ fh2RPJetsC10(0x0),
 fh2RPJetsC20(0x0),
 fh2RPTC10(0x0),
 fh2RPTC20(0x0), 
-fh3spectriggeredC10(0x0),
-fh3spectriggeredC20(0x0),
-fh3spectriggeredC3060(0x0)
+fHJetSpec(0x0),
+fhTTPt(0x0),
+fHJetPhiCorr(0x0)
 
  {
    // Constructor
@@ -408,13 +408,11 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
     fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
     fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
-    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,3.5,100,0.,100.);
-    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,3.5,100,0.,100.); 
-    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,3.5,50,0.,50.); 
-    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,3.5,50,0.,50.);  
-    fh3spectriggeredC10 = new TH3F("Triggered spectrumC10","",100,0.,1.,140,-80.,200.,50,0.,50.);
-    fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",100,0.,1.,140,-80.,200.,50,0.,50.);
-    fh3spectriggeredC3060 = new TH3F("Triggered spectrumC3060","",100,0.,1.,140,-80.,200.,10,0.,50.);
+    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,35,100,0.,100.);
+    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,35,100,0.,100.); 
+    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,35,50,0.,50.); 
+    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,35,50,0.,50.);  
+
 
     
     
@@ -475,10 +473,30 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         fOutputList->Add(fh2RPJetsC20);
          fOutputList->Add(fh2RPTC10);
         fOutputList->Add(fh2RPTC20);
-        fOutputList->Add(fh3spectriggeredC10); 
-        fOutputList->Add(fh3spectriggeredC20); 
-        fOutputList->Add(fh3spectriggeredC3060);   
 
+        const Int_t dimSpec = 5;
+	const Int_t nBinsSpec[dimSpec]     = {10,100, 140, 50, fNRPBins};
+	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0, 0};
+	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50, fNRPBins};
+	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+	fOutputList->Add(fHJetSpec);  
+
+
+	if(fRunAnaAzimuthalCorrelation)
+	  {
+	    fhTTPt = new TH2F("fhTTPt","Trigger track p_{T} vs centrality",10,0,100,100,0,100);
+	    fOutputList->Add(fhTTPt);
+
+	    const Int_t dimCor = 5;
+	    const Int_t nBinsCor[dimCor]     = {50, 200, 100,              8,   10};
+	    const Double_t lowBinCor[dimCor] = {0,  -50, -0.5*TMath::Pi(), 0,   0};
+	    const Double_t hiBinCor[dimCor]  = {50, 150, 1.5*TMath::Pi(),  0.8, 100};
+	    fHJetPhiCorr = new THnSparseF("fHJetPhiCorr","TT p_{T} vs jet p_{T} vs dPhi vs area vs centrality",dimCor,nBinsCor,lowBinCor,hiBinCor);
+	    fOutputList->Add(fHJetPhiCorr);
+	  }
+
+
+        
      
    // =========== Switch on Sumw2 for all histos ===========
    for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
@@ -537,12 +555,12 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 	 std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
-	   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
-	 if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
-	 fHistEvtSelection->Fill(2);
-	   PostData(1, fOutputList);
-	   return;
-	    }
+   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
+      if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
+      fHistEvtSelection->Fill(2);
+      PostData(1, fOutputList);
+      return;
+   }
 
    // vertex selection
    if(!aod){
@@ -620,8 +638,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
      if(externalBackground)rho = externalBackground->GetBackground(0);}
    if(fFlagRandom==1){
       if(externalBackground)rho = externalBackground->GetBackground(2);}
-   if(fFlagRandom==2){
-      if(externalBackground)rho = externalBackground->GetBackground(3);}
 
    // fetch jets
    TClonesArray *aodJets[2];
@@ -729,10 +745,15 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
                    Int_t index2=-1;
+	  
+ 	           Float_t phitt=partback->Phi();
+                   if(phitt<0)phitt+=TMath::Pi()*2.; 
+                   Int_t phiBintt = GetPhiBin(phitt-fRPAngle);
+
+		   Double_t fillspec[] = {centValue,jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt(),phiBintt};
+	  	  fHJetSpec->Fill(fillspec);
+	    
 	   
-	   if(centValue<10.)  fh3spectriggeredC10->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
-           if(centValue<20.)  fh3spectriggeredC20->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
-           if(centValue>30. && centValue<60.)  fh3spectriggeredC3060->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
 
                    if(ptcorr<=0) continue;
 
@@ -883,6 +904,30 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	  
 	  }
 
+	  /////////////////////////////////////////////////////////////////////////////
+	  ////////////////////// Rongrong's analysis //////////////////////////////////
+	  if(fRunAnaAzimuthalCorrelation)
+	    {
+	      fhTTPt->Fill(centValue,partback->Pt());
+	      for(Int_t ij=0; ij<fListJets[0]->GetEntries(); ij++)
+		{
+		  AliAODJet* jet = (AliAODJet*)(fListJets[0]->At(ij));
+		  Double_t jetPt   = jet->Pt();
+		  Double_t jetEta  = jet->Eta();
+		  Double_t jetPhi  = jet->Phi();
+		  if(jetPt==0) continue; 
+		  if((jetEta<fJetEtaMin)||(jetEta>fJetEtaMax)) continue;
+		  Double_t jetArea = jet->EffectiveAreaCharged();
+		  Double_t jetPtCorr=jetPt-rho*jetArea;
+		  Double_t dPhi=TMath::Abs(jetPhi-partback->Phi());
+		  if(dPhi>2*TMath::Pi()) dPhi -= 2*TMath::Pi();
+		  if(dPhi>1.5*TMath::Pi()) dPhi = dPhi-2*TMath::Pi();
+		  Double_t fill[] = {partback->Pt(),jetPtCorr,dPhi,jetArea,centValue};
+		  fHJetPhiCorr->Fill(fill);
+		}
+	    }
+	  /////////////////////////////////////////////////////////////////////////////
+	  /////////////////////////////////////////////////////////////////////////////
 
 
      //////////////////ANGULAR STRUCTURE//////////////////////////////////////
