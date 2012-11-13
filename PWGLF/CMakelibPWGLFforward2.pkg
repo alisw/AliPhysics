@@ -76,6 +76,7 @@ set ( SRCS
   FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.cxx
   FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
 )
@@ -96,7 +97,8 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
              FORWARD/analysis2/AliForwardUtil.h  
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
-	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h)
+	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
+	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)
 
 set ( DHDR  PWGLFforward2LinkDef.h)
 
