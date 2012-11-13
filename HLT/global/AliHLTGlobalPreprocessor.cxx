@@ -171,7 +171,7 @@ Int_t AliHLTGlobalPreprocessor::ProcessStreamerInfo() {
 	    		return -ENOMEM;
 	    	}
 	    }
-	     Store(fgkStreamerInfoType, fgkStreamerInfoName, clone, metaData, GetRun(), kTRUE);
+	     Store(fgkStreamerInfoType, fgkStreamerInfoName, clone, metaData, 0, kTRUE);
 	     if (newMetaData) {
 	     	delete newMetaData;
 	        newMetaData=NULL;
@@ -187,65 +187,4 @@ Int_t AliHLTGlobalPreprocessor::ProcessStreamerInfo() {
 	return 0;
 }
 
-int AliHLTGlobalPreprocessor::ProcessStreamerInfo(TObject* object)
-{
-  /// process the StreamerInfo object
-  int iResult=0;
-  if (!object) return -EINVAL;
 
-  TObjArray* streamerinfos=dynamic_cast<TObjArray*>(object);
-  if (!streamerinfos) {
-    AliError(Form("StreamerInfo object has wrong class type %s, expecting TObjArray", object->ClassName()));
-    return -EINVAL;
-  }
-  if (streamerinfos->GetEntriesFast()==0) return 0;
-
-  bool bStore=false;
-  AliCDBEntry* entry = GetFromOCDB(fgkStreamerInfoType, fgkStreamerInfoName);
-  TObjArray* clone=NULL;
-  if (entry && entry->GetObject()) {
-    TObject* cloneObj=entry->GetObject()->Clone();
-    if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
-    bStore=AliHLTMisc::Instance().MergeStreamerInfo(clone, streamerinfos, 1)>0;
-  } else {
-    TObject* cloneObj=streamerinfos->Clone();
-    if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
-    bStore=true;
-  }
-
-  if (clone) {
-    AliCDBMetaData* metaData=entry?entry->GetMetaData():NULL;
-    AliCDBMetaData* newMetaData=NULL;
-    if (!metaData) {
-      newMetaData=new AliCDBMetaData;
-      if (newMetaData) {
-	metaData=newMetaData;
-	metaData->SetBeamPeriod(0);
-	metaData->SetResponsible("ALICE HLT Matthias.Richter@cern.ch");
-	metaData->SetComment("Streamer info for HLTOUT payload");
-	//metaData->SetAliRootVersion(ALIROOT_SVN_BRANCH);
-      } else {
-	iResult=-ENOMEM;
-      }
-    }
-    if (bStore) {
-      // store new object with validity infinity (last parameter kTRUE)
-      Store(fgkStreamerInfoType, fgkStreamerInfoName, clone, metaData, GetRun(), kTRUE);
-    } else if (entry) {
-      AliInfo(Form("skipping object which is already up-to-date"));
-      entry->PrintId();
-    }
-    delete clone;
-    if (newMetaData) delete newMetaData;
-    newMetaData=NULL;
-    metaData=NULL;
-    // TODO
-    // - what to do with variable 'entry', to be deleted?
-
-  } else {
-    AliError("failed to clone streamer info object array");
-    return -ENOMEM;
-  }
-
-  return iResult;
-}

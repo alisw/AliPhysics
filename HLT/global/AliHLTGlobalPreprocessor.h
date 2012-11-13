@@ -73,7 +73,6 @@ class AliHLTGlobalPreprocessor : public AliHLTModulePreprocessor
   AliHLTGlobalPreprocessor& operator=(const AliHLTGlobalPreprocessor& rhs);
 
   Int_t ProcessStreamerInfo();
-  int ProcessStreamerInfo(TObject* object);
 
   ClassDef(AliHLTGlobalPreprocessor, 0);
 };
