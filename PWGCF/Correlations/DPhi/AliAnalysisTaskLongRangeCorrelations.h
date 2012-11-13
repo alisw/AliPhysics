@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 215 2012-10-31 16:57:09Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 224 2012-11-12 14:46:57Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -54,6 +54,7 @@ public:
   void SetPhiRange(Double_t phiMin, Double_t phiMax) {
     fPhiMin = phiMin; fPhiMax = phiMax;
   }
+  void SetMaxAbsVertexZ(Double_t maxAbsVertexZ) { fMaxAbsVertexZ = maxAbsVertexZ; }
 
   TString GetOutputListName() const;
 
@@ -87,7 +88,7 @@ private:
   Double_t             fCentMin, fCentMax;  // centrality range
   Double_t             fPtMin, fPtMax;      // P_{T} range
   Double_t             fPhiMin, fPhiMax;    // #phi range
-
+  Double_t             fMaxAbsVertexZ;      // max abs(zvertex)
   // histogram data
   Int_t    fnBinsCent, fnBinsPt, fnBinsPhi, fnBinsEta;
   Double_t fxMinCent,  fxMinPt,  fxMinPhi,  fxMinEta;
