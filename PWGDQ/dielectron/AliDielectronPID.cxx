@@ -239,8 +239,10 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   } else if ( (part->IsA() == AliAODTrack::Class()) ){
     aodTrack=static_cast<AliAODTrack*>(track);
     AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
-    origdEdx=pid->GetTPCsignal();
-    pid->SetTPCsignal(origdEdx/GetEtaCorr(aodTrack)/fgCorrdEdx);
+    if (pid){
+      origdEdx=pid->GetTPCsignal();
+      pid->SetTPCsignal(origdEdx/GetEtaCorr(aodTrack)/fgCorrdEdx);
+    }
   }
   
   //Fill values
@@ -296,7 +298,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
       if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
       else if (aodTrack){
         AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
-        pid->SetTPCsignal(origdEdx);
+        if (pid) pid->SetTPCsignal(origdEdx);
       }
 
       return kFALSE;
@@ -306,7 +308,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
   else if (aodTrack){
     AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
-    pid->SetTPCsignal(origdEdx);
+    if (pid) pid->SetTPCsignal(origdEdx);
   }
   return selected;
 }
