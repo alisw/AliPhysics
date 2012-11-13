@@ -121,7 +121,7 @@ public:
     kTrackPHslice,
     kTrackQtot=kTrackPHslice+8,
     kNTrdCfVariables=kTrackQtot+6,
-    kNMaxAssignedTriggers = 50
+    kNMaxAssignedTriggers = 100
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
