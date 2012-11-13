@@ -21,8 +21,8 @@ class AliXRDPROOFtoolkit : public TObject
 {
  public :
   AliXRDPROOFtoolkit ();
-  TChain * MakeChain(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
-  TChain * MakeChainRandom(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
+  static TChain * MakeChain(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
+  static TChain * MakeChainRandom(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
   TDSet  * MakeSet(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1);
   TDSet  * MakeSetRandom(const char*fileIn, const char * treeName,const char *fName=0, Int_t maxFiles=-1);
   static Bool_t FilterList(const char*inputList, const char*fileList, Int_t checkLevel);
