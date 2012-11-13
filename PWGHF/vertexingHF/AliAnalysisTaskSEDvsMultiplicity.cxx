@@ -92,6 +92,7 @@ AliAnalysisTaskSE(),
   fReadMC(kFALSE),
   fMCOption(0),
   fUseBit(kTRUE),
+  fSubtractTrackletsFromDau(kFALSE),
   fRefMult(9.26),
   fPdgMeson(411)
 {
@@ -142,6 +143,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fReadMC(kFALSE),
   fMCOption(0),
   fUseBit(kTRUE),
+  fSubtractTrackletsFromDau(kFALSE),
   fRefMult(9.26),
   fPdgMeson(pdgMeson)
 {
@@ -522,6 +524,16 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       nSelectedPID++;
       fHistNEvents->Fill(10);
     }
+    Double_t multForCand=countTreta1corr;
+    if(fSubtractTrackletsFromDau){
+      for(Int_t iDau=0; iDau<nDau; iDau++){
+	AliAODTrack *t = (AliAODTrack*)d->GetDaughter(iDau);
+	if(!t) continue;
+	if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
+	  if(multForCand>0) multForCand-=1;
+	}
+      }
+    }
     Bool_t isPrimary=kTRUE;
     Int_t labD=-1;
     Double_t trueImpParXY=9999.;
@@ -548,7 +560,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
       Double_t invMass=mass[iHyp];
-      Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,countTreta1corr};
+      Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
 
       if(fReadMC){
 	
@@ -568,7 +580,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	    }else if(fPdgMeson==413){
 	      trueImpParXY=0.; /// FIXME
 	    }
-	    Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,countTreta1corr};
+	    Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,multForCand};
 	    if(fillHisto && passAllCuts){
 	      fHistMassPtImpPar[2]->Fill(arrayForSparse);
 	      fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
@@ -590,22 +602,22 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	if(iHyp==1 && !(passTopolCuts&2)) continue; // candidate not passing as D0bar
       }
 
-      fPtVsMassVsMultNoPid->Fill(countTreta1corr,invMass,ptCand);
+      fPtVsMassVsMultNoPid->Fill(multForCand,invMass,ptCand);
 
       if(fPdgMeson==421){
 	if(iHyp==0 && !(passAllCuts&1)) continue; // candidate not passing as D0
 	if(iHyp==1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
       }
       if(passAllCuts){
-	fPtVsMassVsMult->Fill(countTreta1corr,invMass,ptCand);	   	      
+	fPtVsMassVsMult->Fill(multForCand,invMass,ptCand);	   	      
 	fPtVsMassVsMultUncorr->Fill(countTreta1,invMass,ptCand);
 	// Add separation between part antipart
 	if(fPdgMeson==411){
-	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(countTreta1corr,invMass,ptCand);
-	  else fPtVsMassVsMultAntiPart->Fill(countTreta1corr,invMass,ptCand);
+	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand);
+	  else fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand);
 	}else if(fPdgMeson==421){
-	  if(passAllCuts&1) fPtVsMassVsMultPart->Fill(countTreta1corr,invMass,ptCand);
-	  if(passAllCuts&2) fPtVsMassVsMultAntiPart->Fill(countTreta1corr,invMass,ptCand);
+	  if(passAllCuts&1) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand);
+	  if(passAllCuts&2) fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand);
 	}else if(fPdgMeson==413){
 	  // FIXME ADD Dstar!!!!!!!!
 	}

@@ -47,6 +47,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Double_t GetLowerMassLimit() const {return fLowmasslimit;}
   void SetNMassBins(Int_t nbins){fNMassBins=nbins;}
   Int_t GetNMassBins() const{return fNMassBins;}
+  Bool_t GetSubtractTrackletsFromDaughters() const {return fSubtractTrackletsFromDau;}
 
   void SetImpactParameterBinning(Int_t nbins, Double_t dmin, Double_t dmax){
     fNImpParBins=nbins;
@@ -76,7 +77,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
-
+  void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
   // Implementation of interface methods
@@ -146,13 +147,14 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back
   Bool_t fUseBit;    // flag to use bitmask
+  Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
   
   TProfile* fMultEstimatorAvg[4]; // TProfile with mult vs. Z per period
   Double_t fRefMult;   // refrence multiplcity (period b)
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,4); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,5); // D vs. mult task
 };
 
 #endif
