@@ -36,7 +36,8 @@ public:
    virtual void     Terminate(const Option_t*);
 
    virtual Int_t      GetNInputTracks();
-     
+     // Rongrong
+   virtual void     SetRunAzimuthalCorrelation(Bool_t run) {fRunAnaAzimuthalCorrelation=run;}  
    Double_t RelativePhi(Double_t angle1,Double_t angle2);     
    Int_t   GetPhiBin(Double_t phi);
    virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
@@ -61,7 +62,6 @@ public:
    virtual void     SetBranchNames(const TString &branch1, const TString &branch2);
    virtual void     SetBackgroundBranch(TString &branch) { fBackgroundBranch = branch;}
    virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
-   virtual void     SetDebugLevel(Int_t cucu){fDebug=cucu;}  
    virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
    virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
    virtual void     SetVtxZMin(Float_t z) { fVtxZMin = z; }
@@ -116,7 +116,6 @@ private:
    TString       fNonStdFile; // name of delta aod file to catch the extension
    // event selection
    Bool_t fIsPbPb;         // is Pb-Pb (fast embedding) or p-p (detector response)
-   Int_t fDebug;           //debug level
    AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
    Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
    Float_t fVtxZMin;	  // lower bound on vertex z
@@ -156,7 +155,7 @@ private:
    Int_t   fNMatchJets;       // maximal nb. of jets taken for matching
    Double_t fMatchMaxDist;     // maximal distance of matching jets
    Bool_t  fKeepJets;          // keep jets with negative pt after background subtraction
-  
+   Bool_t fRunAnaAzimuthalCorrelation;        // Flag to run azimuthal correlation between trigger track and recoil jets (Rongrong)  
 
    // output objects
    const Int_t fkNbranches;                   //! number of branches to be read
@@ -205,13 +204,11 @@ private:
      TH2F*      fh2RPJetsC20;
      TH2F*      fh2RPTC10;                     //reaction plane TT 
      TH2F*      fh2RPTC20; 
-     TH3F*      fh3spectriggeredC10;       //spec wrt RP
-     TH3F*      fh3spectriggeredC20;           //triggered spectra
-     TH3F*      fh3spectriggeredC3060;         //triggered spectra
+     THnSparse   *fHJetSpec;               //Recoil jet spectrum
 
-     
      Double_t            fTrigBuffer[10][7];      //!buffer for triggers   
-
+     TH2F        *fhTTPt;                     //! Trigger track pt for normalization (Rongrong)
+     THnSparse   *fHJetPhiCorr;               //! Azimuthal correlation between trigger track and recoil jets (Rongrong)
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented
 

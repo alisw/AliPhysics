@@ -93,6 +93,8 @@ AliAnalysisTaskSE(),
   fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
+  fTRP(0),
+  fDebug(0),
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fJetTriggerBestMask(AliAODJet::kHighTrackPtBest),
   fFilterMask(0),
@@ -201,6 +203,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
+  fTRP(0),
+  fDebug(0),
   fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fJetTriggerBestMask(AliAODJet::kHighTrackPtBest),
   fFilterMask(0),
@@ -532,14 +536,21 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M
     const Int_t nBinsSparse1 = 9;
     const Int_t nBinsArea = 10;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  fNBinsMult,    fNRPBins, nBinsArea,fNTrigger,fNBinsLeadingTrackPt,fNAcceptance+1};
+    Int_t nbinr5=120;
+    Int_t nbinr5min=-50;
+  
+    if(cJetBranch.Contains("KT05")){
+     nbinr5=132;
+     nbinr5min=-80;}
+         
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,nbinr5, 10,  fNBinsMult,    fNRPBins, nBinsArea,fNTrigger,fNBinsLeadingTrackPt,fNAcceptance+1};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,         -0.5,  0.,           -0.5,};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,nbinr5min,  0,   0,        -0.5, 0.,         -0.5,  0.,           -0.5,};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.,fNAcceptance+0.5};
-    
+     
     const Double_t binArrayArea[nBinsArea+1] = {xmin1[5],0.07,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,xmax1[5]};
 
 
@@ -875,6 +886,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   TList genParticles;
 
   Int_t nT = GetListOfTracks(&recParticles,fTrackTypeRec);
+
   if(fDebug>2)Printf("%s:%d Selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,recParticles.GetEntries());
   nT = GetListOfTracks(&genParticles,fTrackTypeGen);
   if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nT,genParticles.GetEntries());
@@ -1036,7 +1048,6 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       }
     }
     // fill jet histos for kmax jets
-
     Float_t phiJet = jet->Phi();
     Float_t etaJet = jet->Eta();
     if(phiJet<0)phiJet+=TMath::Pi()*2.;    
@@ -1046,15 +1057,30 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
     fh1PtIn[iType][kMaxJets]->Fill(ptJet);
     // fill leading jets...
     AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
-    //      AliVParticle *leadTrack = LeadingTrackInCone(jet,&particlesList);
+    //AliVParticle *leadTrack = LeadingTrackInCone(jet,&particlesList);
     Int_t phiBin = GetPhiBin(phiJet-fRPAngle);
     Double_t ptLead = jet->GetPtLeading(); //pT of leading jet
+    AliVParticle *tt = (AliVParticle*)particlesList.At(0);
+    Float_t ttphi=tt->Phi();
+    if(ttphi<0)ttphi+=TMath::Pi()*2.;  
+    Float_t ttpt=tt->Pt();
+    Int_t phiBintt = GetPhiBin(ttphi-fRPAngle);
+     Double_t dphitrigjet=RelativePhi(ttphi,phiJet);
+    if(fTRP==1){
+    if(TMath::Abs(dphitrigjet)<TMath::Pi()-0.6) continue; 
+    var1[1] = ptJet;
+    var1[4] = phiBintt;
+    var1[5] = jet->EffectiveAreaCharged();
+    var1[7] = ttpt;
+    var1[8] = CheckAcceptance(phiJet,etaJet);}
 
+     if(fTRP==0){
     var1[1] = ptJet;
     var1[4] = phiBin;
     var1[5] = jet->EffectiveAreaCharged();
     var1[7] = ptLead;
-    var1[8] = CheckAcceptance(phiJet,etaJet);
+    var1[8] = CheckAcceptance(phiJet,etaJet);}
+    
 
     var2[1] = ptJet;
     var2[3] = etaJet;
@@ -1676,6 +1702,24 @@ AliVParticle *AliAnalysisTaskJetSpectrum2::LeadingTrackInCone(AliAODJet* jet,TLi
   }
   return leading;
 }
+
+
+Double_t AliAnalysisTaskJetSpectrum2::RelativePhi(Double_t mphi,Double_t vphi){
+
+  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
+  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
+  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
+  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
+  double dphi = mphi-vphi;
+  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+  return dphi;//dphi in [-Pi, Pi]
+}
+
+
+
+
+
 
 Int_t AliAnalysisTaskJetSpectrum2::GetPhiBin(Double_t phi)
 {

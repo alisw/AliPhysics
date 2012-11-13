@@ -64,6 +64,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetNMatchJets(Short_t f){fNMatchJets = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
     virtual void SetNRPBins(Short_t i){fNRPBins = i;} 
+    virtual void SetTRP(Int_t i){fTRP=i;}
+    virtual void SetDebug(Int_t i){fDebug=i;}
     virtual void SetNMultBins(Short_t i) {fNBinsMult=i;}
     virtual void SetNPtLeadingBins(Short_t i) {fNBinsLeadingTrackPt=i;}
     virtual void SetFlagJetType(Int_t iType,Int_t iF){fFlagJetType[iType] = iF;}
@@ -133,6 +135,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t GetRho(TList &list);
     Float_t GetCentrality();
     Bool_t  CalculateReactionPlaneAngle(const TList *trackList);
+    Double_t RelativePhi(Double_t phi1,Double_t phi2);
+   
+ 
     Int_t   GetPhiBin(Double_t phi);
     Double_t GetPhiWeight(Double_t phi,Double_t signedpt);
     Int_t   GetListOfJets(TList *list,TClonesArray* jarray,Int_t type);
@@ -174,6 +179,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fDoMatching;            // switch on the matching between rec and gen
     Short_t       fNMatchJets;            // number of leading jets considered from the list
     Short_t       fNRPBins;               // number of bins with respect to RP
+    Int_t         fTRP;                   //flag to bin the RC in |phi_RP-phi
+    Int_t         fDebug;      
     UInt_t        fJetTriggerExcludeMask; // mask for jet triggers to exclude
     UInt_t        fJetTriggerBestMask; // mask for best jet triggers
     UInt_t        fFilterMask;            // filter bit for slecected tracks
