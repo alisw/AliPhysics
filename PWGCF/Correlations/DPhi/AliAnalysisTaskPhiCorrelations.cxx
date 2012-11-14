@@ -100,6 +100,7 @@ fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
 fEfficiencyCorrection(0),
+fCorrectTriggers(kFALSE),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -252,8 +253,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   if (fEfficiencyCorrection)
   {
-    fHistos->SetEfficiencyCorrection(fEfficiencyCorrection);
-    fHistosMixed->SetEfficiencyCorrection((THnF*) fEfficiencyCorrection->Clone());
+    fHistos->SetEfficiencyCorrection(fEfficiencyCorrection, fCorrectTriggers);
+    fHistosMixed->SetEfficiencyCorrection((THnF*) fEfficiencyCorrection->Clone(), fCorrectTriggers);
   }
   
   // add histograms to list
@@ -359,6 +360,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
+  settingsTree->Branch("fCorrectTriggers", &fCorrectTriggers,"CorrectTriggers/O");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
