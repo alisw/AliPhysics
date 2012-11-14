@@ -262,7 +262,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
   // Pile-up
-  TH2F         * fhTimeENoCut;                    //! time of cluster vs E, no cut 
+  TH1F         * fhPtPi0PileUp[7];                //! pT distribution of selected pi0/eta
+  TH2F         * fhTimeENoCut;                    //! time of cluster vs E, no cut
   TH2F         * fhTimeESPD;                      //! time of cluster vs E, IsSPDPileUp
   TH2F         * fhTimeESPDMulti;                 //! time of cluster vs E, IsSPDPileUpMulti
   TH2F         * fhTimeNPileUpVertSPD;            //! time of cluster vs n pile-up vertices from SPD

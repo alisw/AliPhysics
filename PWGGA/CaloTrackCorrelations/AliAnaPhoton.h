@@ -287,7 +287,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEOverPTRD[2];                        //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD 
 
   // Pile-up
-  TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut 
+  TH1F * fhPtPhotonPileUp[7];                   //! pT distribution of selected photons
+  TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut
   TH2F * fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
   TH2F * fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
   TH2F * fhTimeNPileUpVertSPD;                  //! time of cluster vs n pile-up vertices from SPD

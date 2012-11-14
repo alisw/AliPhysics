@@ -139,7 +139,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhAsymmetryLambda0  [j] = 0;    
     fhAsymmetryDispEta  [j] = 0; 
     fhAsymmetryDispPhi  [j] = 0;
-  }  
+    
+    fhPtPi0PileUp       [j] = 0;
+  }
   
   for(Int_t i = 0; i < 3; i++)
   {
@@ -1401,6 +1403,17 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
+    
+    TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+
+    for(Int_t i = 0 ; i < 7 ; i++)
+    {
+      fhPtPi0PileUp[i]  = new TH1F(Form("hPtPi0PileUp%s",pileUpName[i].Data()),
+                                      Form("Selected #pi^{0} (#eta) p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPi0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPi0PileUp[i]);
+    }
+    
     fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeENoCut->SetXTitle("E (GeV)");
     fhTimeENoCut->SetYTitle("time (ns)");
@@ -2193,6 +2206,18 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     fhEPhi   ->Fill(ener,phi);
     fhEtaPhi ->Fill(eta,phi);
 
+    if(fFillPileUpHistograms)
+    {
+      if(GetReader()->IsPileUpFromSPD())               fhPtPi0PileUp[0]->Fill(pt);
+      if(GetReader()->IsPileUpFromEMCal())             fhPtPi0PileUp[1]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPi0PileUp[2]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPi0PileUp[3]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPi0PileUp[4]->Fill(pt);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPi0PileUp[5]->Fill(pt);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPi0PileUp[6]->Fill(pt);
+    }
+
+    
     if(IsDataMC())
     {
       Int_t tag     = pi0->GetTag();
