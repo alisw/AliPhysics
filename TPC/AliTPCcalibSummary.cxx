@@ -229,8 +229,8 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   //
   //L3 data 
   //
-  Float_t bz=AliTPCcalibDB::GetBz(irun);
-  Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);
+  Float_t bz=AliTPCcalibDB::GetBz(irun);               
+  Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);    
   //
   //QA data processing
   //
@@ -388,7 +388,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     ProcessGain(irun,itime);
     //ProcessDriftCERef();
     //ProcessPulserRef();
-    ProcessCurrent(irun,itime);
+    //ProcessCurrent(irun,itime);
 
 
     (*fPcstream)<<"dcs"<<	
