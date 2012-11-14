@@ -1036,6 +1036,9 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".NegativePositive.png";
   cNP->SaveAs(pngName.Data());
 
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistNP);
   //============================================================//
   //Get the ++ correlation function
   TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
@@ -1075,6 +1078,9 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".PositivePositive.png";
   cPP->SaveAs(pngName.Data());
 
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistPP);
   //============================================================//
   //Get the -- correlation function
   TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
@@ -1113,6 +1119,10 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += Form("%.1f",ptAssociatedMax); 
   pngName += ".NegativeNegative.png";
   cNN->SaveAs(pngName.Data());
+
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistNN);
 }
 
 //____________________________________________________________//
@@ -1131,31 +1141,34 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   //longitudinal ridge: [8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))
   //wing structures: [11]*TMath::Power(x,2)
   //flow contribution (v1 up to v4): 2.*([12]*TMath::Cos(y) + [13]*TMath::Cos(2.*y) + [14]*TMath::Cos(3.*y) + [15]*TMath::Cos(4.*y))
-  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
+  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[17])/[9]),2)),[10]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[17])/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
   gFitFunction->SetName("gFitFunction");
   //Normalization
-  gFitFunction->SetParName(0,"N1"); gFitFunction->SetParameter(0,1.0);
+  gFitFunction->SetParName(0,"N1"); gFitFunction->SetParameter(0,1.0);//gFitFunction->SetParLimits(0,0.0,100);
   //near side peak
-  gFitFunction->SetParName(1,"N_{near side}"); gFitFunction->SetParameter(1,0.3);
-  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->SetParameter(2,0.3);
-  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->SetParameter(3,0.1);
-  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->SetParameter(4,1.1);
+  gFitFunction->SetParName(1,"N_{near side}"); gFitFunction->SetParameter(1,0.3);//gFitFunction->SetParLimits(1,0.0,100);//gFitFunction->FixParameter(1,0.0);
+  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.01,0.7);//gFitFunction->FixParameter(2,0.0);
+  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.01,1.7);//gFitFunction->FixParameter(3,0.0);
+  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->SetParameter(4,1.1);//gFitFunction->SetParLimits(4,0.1,10.0);
+  gFitFunction->FixParameter(4,1.0);
   //away side ridge
-  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->SetParameter(5,0.1);
-  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->SetParameter(6,1.1);
-  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->SetParameter(7,1.0);
-  //longitudianl ridge
-  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);
-  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->SetParameter(9,0.6);
-  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->SetParameter(10,1.0);
+  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->SetParameter(5,1.0);//gFitFunction->SetParLimits(5,0.0,100);gFitFunction->FixParameter(5,0.0);
+  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->SetParameter(6,0.5);//gFitFunction->SetParLimits(6,0.01,100.0);gFitFunction->FixParameter(6,0.0);
+  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->SetParameter(7,1.0);//gFitFunction->SetParLimits(7,0.1,10.0);
+  gFitFunction->FixParameter(7,1.0);
+  //longitudinal ridge
+  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);//gFitFunction->FixParameter(8,1.0);
+  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->SetParameter(9,0.6);gFitFunction->SetParLimits(9,0.1,10.0);//gFitFunction->FixParameter(9,0.0);
+  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->SetParameter(10,1.0);gFitFunction->FixParameter(10,1.0);
   //wing structures
-  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->SetParameter(11,0.01);
+  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->SetParameter(11,0.01);gFitFunction->FixParameter(11,0.0);
   //flow contribution
-  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->SetParameter(12,0.2);
-  gFitFunction->SetParName(13,"V1"); gFitFunction->SetParameter(13,0.005);
-  gFitFunction->SetParName(14,"V2"); gFitFunction->SetParameter(14,0.1);
-  gFitFunction->SetParName(15,"V3"); gFitFunction->SetParameter(15,0.05);
-  gFitFunction->SetParName(16,"V4"); gFitFunction->SetParameter(16,0.005);  
+  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->SetParameter(12,0.2);//gFitFunction->SetParLimits(12,0.0,10.0);//gFitFunction->FixParameter(12,0.0);
+  gFitFunction->SetParName(13,"V1"); gFitFunction->SetParameter(13,0.005);//gFitFunction->SetParLimits(13,0.0,10.0);//gFitFunction->FixParameter(13,0.0);
+  gFitFunction->SetParName(14,"V2"); gFitFunction->SetParameter(14,0.1);//gFitFunction->SetParLimits(14,0.0,10.0);//gFitFunction->FixParameter(14,0.0);
+  gFitFunction->SetParName(15,"V3"); gFitFunction->SetParameter(15,0.05);//gFitFunction->SetParLimits(15,0.0,10.0);//gFitFunction->FixParameter(15,0.0);
+  gFitFunction->SetParName(16,"V4"); gFitFunction->SetParameter(16,0.005);//gFitFunction->SetParLimits(16,0.0,10.0);//gFitFunction->FixParameter(16,0.0);
+  gFitFunction->SetParName(17,"Offset"); gFitFunction->SetParameter(17,0.005);gFitFunction->SetParLimits(16,0.0,0.7);//gFitFunction->FixParameter(17,0.0);
 
   //Fitting the correlation function
   gHist->Fit("gFitFunction","nm");
@@ -1201,3 +1214,101 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   
 
 }
+
+
+
+// //____________________________________________________________//
+// void fitCorrelationFunctions(Int_t gCentrality = 1,
+// 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+// 			     Double_t ptTriggerMin = -1.,
+// 			     Double_t ptTriggerMax = -1.,
+// 			     Double_t ptAssociatedMin = -1.,
+// 			     Double_t ptAssociatedMax = -1.,
+// 			     TH2D *gHist) {
+
+//   cout<<"FITTING FUNCTION (HOUSTON)"<<endl;
+
+//   // Fit Function
+//    //x axis = delta_eta
+//    //y axis = delta_phi
+//                                                                                                                                                                                         //  [9]*exp(-1*pow(((x/[10])^2 + (y/[10])^2),0.5)) Hyper expo
+//   TF2 *fit1 = new TF2("fit1","[0] + [1]*cos(y) + [2]*cos(2*y) + [3]*cos(3*y) + [4]*cos(4*y) +[5]*cos(5*y)+ [6]*exp(-0.5*pow(((x/[7])^2 + (y/[8])^2),[11])) + [6]*exp(-0.5*pow(((x/[7])^2 + ((y-6.283)/[8])^2),[11]))+ [9]*exp(-1*((x/[10])^2 + (y/[10])^2)) ",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+ 
+  
+   
+//   Double_t Parameters[] = {0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.3,1.0,0.1,0.1};
+  	
+//   fit1->SetParameters(Parameters);  // input pars from macro arguments
+	
+//   fit1->SetParName(0,"offset");
+//   fit1->SetParName(1,"v1");
+//   fit1->SetParName(2,"v2");
+//   fit1->SetParName(3,"v3");
+//   fit1->SetParName(4,"v4");
+//   fit1->SetParName(5,"v5");
+//   fit1->SetParName(6,"Ridgeamp");
+//   fit1->SetParName(7,"Ridgesigx");
+//   fit1->SetParName(8,"Ridgesigy");
+//   fit1->SetParName(9,"Expoamp");
+//   fit1->SetParName(10,"Exposig");
+//   fit1->SetParName(11,"Gausspara");
+    
+
+//   //Fit Parameter Ranges
+//   fit1->SetParLimits(0,-2.0,2.0);   //offset
+//   fit1->SetParLimits(1,-1.0,0.1);   //v1
+//   fit1->SetParLimits(2,-1.6,0.9);   //v2
+//   fit1->SetParLimits(3,0.0,0.5);    //v3
+//   fit1->SetParLimits(4,0.0,0.9);    //v4
+//   fit1->SetParLimits(5,0.0,0.9);    //v5
+//   fit1->SetParLimits(6,0.0,1.5);    //Ridgeamp
+//   fit1->SetParLimits(7,0.1,3.0);    //Ridgesigx
+//   fit1->SetParLimits(8,0.1,2.0);    //Ridgesigy
+//   fit1->SetParLimits(9,0.0,6.0);      //Expoamp
+//   fit1->SetParLimits(10,0.05,0.5); //Exposig
+//   fit1->SetParLimits(11,0.0,2.0);    //Gausspara
+
+//   //Fitting the correlation function
+//   gHist->Fit("fit1","nm");
+
+//   //Cloning the histogram
+//   TString histoName = gHist->GetName(); histoName += "Fit"; 
+//   TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
+//   TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
+//   gHistResidual->SetName("gHistResidual");
+//   gHistResidual->Sumw2();
+
+//   for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
+//     for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
+//       gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,fit1->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
+//     }
+//   }
+//   gHistResidual->Add(gHistFit,-1);
+
+//   //Write to output file
+//   TString newFileName = "correlationFunctionFit";
+//   if(histoName.Contains("PN")) newFileName += "PN";
+//   else if(histoName.Contains("NP")) newFileName += "NP";
+//   else if(histoName.Contains("PP")) newFileName += "PP";
+//   else if(histoName.Contains("NN")) newFileName += "NN";
+//   newFileName += ".Centrality";  
+//   newFileName += gCentrality; newFileName += ".Psi";
+//   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+//   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+//   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+//   else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+//   else newFileName += "All.PttFrom";
+//   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+//   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptAssociatedMax); 
+//   newFileName += ".root";
+//   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+//   gHist->Write();
+//   gHistFit->Write();
+//   gHistResidual->Write();
+//   fit1->Write();
+//   newFile->Close();
+  
+
+// }
