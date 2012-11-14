@@ -13,6 +13,8 @@
 #include "TMatrixD.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
 #include "AliLog.h"
 #include "TFile.h"
 #include "TParticle.h"
@@ -59,18 +61,18 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fNPairsAnalyzedOfEvent(0),
   fNTracksAnalyzedOfEventAfterCut(0),
   fNPairsAnalyzedOfEventAfterCut(0),
-  fHistXOffsetSingleMuonsVsP(0x0),
-  fHistYOffsetSingleMuonsVsP(0x0),
-  fHistOffsetSingleMuonsVsP(0x0),
-  fHistWOffsetSingleMuonsVsP(0x0),
-  fHistXOffsetSingleMuonsVsPt(0x0),
-  fHistYOffsetSingleMuonsVsPt(0x0),
-  fHistOffsetSingleMuonsVsPt(0x0),
-  fHistWOffsetSingleMuonsVsPt(0x0),
-  fHistXErrorSingleMuonsVsP(0x0),
-  fHistYErrorSingleMuonsVsP(0x0),
-  fHistXErrorSingleMuonsVsPt(0x0),
-  fHistYErrorSingleMuonsVsPt(0x0),
+  fHistXOffsetSingleMuonsVsEtaVsP(0x0),
+  fHistYOffsetSingleMuonsVsEtaVsP(0x0),
+  fHistOffsetSingleMuonsVsEtaVsP(0x0),
+  fHistWOffsetSingleMuonsVsEtaVsP(0x0),
+  fHistXOffsetSingleMuonsVsEtaVsPt(0x0),
+  fHistYOffsetSingleMuonsVsEtaVsPt(0x0),
+  fHistOffsetSingleMuonsVsEtaVsPt(0x0),
+  fHistWOffsetSingleMuonsVsEtaVsPt(0x0),
+  fHistXErrorSingleMuonsVsEtaVsP(0x0),
+  fHistYErrorSingleMuonsVsEtaVsP(0x0),
+  fHistXErrorSingleMuonsVsEtaVsPt(0x0),
+  fHistYErrorSingleMuonsVsEtaVsPt(0x0),
   fHistZOriginSingleMuonsMC(0x0),
   fHistZROriginSingleMuonsMC(0x0), 
   fHistSingleMuonsPtRapidity(0x0), 
@@ -324,10 +326,10 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
   TMatrixD cov(5,5);
   cov = param->GetCovariances();
 
-  fHistXErrorSingleMuonsVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.P());
-  fHistYErrorSingleMuonsVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.P());
-  fHistXErrorSingleMuonsVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Pt());
-  fHistYErrorSingleMuonsVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Pt());
+  fHistXErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Eta(), pMu.P());
+  fHistYErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Eta(), pMu.P());
+  fHistXErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Eta(), pMu.Pt());
+  fHistYErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Eta(), pMu.Pt());
 
   Double_t dX = fMFTTrack->GetOffsetX(fPrimaryVtxX, fPrimaryVtxZ);
   Double_t dY = fMFTTrack->GetOffsetY(fPrimaryVtxY, fPrimaryVtxZ);
@@ -337,14 +339,14 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   //  AliDebug(2, Form("pdg code = %d\n", fMCRefTrack->GetPdgCode()));
 
-  fHistXOffsetSingleMuonsVsP  -> Fill(1.e4*dX,        pMu.P());
-  fHistYOffsetSingleMuonsVsP  -> Fill(1.e4*dY,        pMu.P());
-  fHistOffsetSingleMuonsVsP   -> Fill(1.e4*offset,    pMu.P());
-  fHistWOffsetSingleMuonsVsP  -> Fill(weightedOffset, pMu.P());
-  fHistXOffsetSingleMuonsVsPt -> Fill(1.e4*dX,        pMu.Pt());
-  fHistYOffsetSingleMuonsVsPt -> Fill(1.e4*dY,        pMu.Pt());
-  fHistOffsetSingleMuonsVsPt  -> Fill(1.e4*offset,    pMu.Pt());
-  fHistWOffsetSingleMuonsVsPt -> Fill(weightedOffset, pMu.Pt());
+  fHistXOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dX,        pMu.Eta(), pMu.P());
+  fHistYOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dY,        pMu.Eta(), pMu.P());
+  fHistOffsetSingleMuonsVsEtaVsP   -> Fill(1.e4*offset,    pMu.Eta(), pMu.P());
+  fHistWOffsetSingleMuonsVsEtaVsP  -> Fill(weightedOffset, pMu.Eta(), pMu.P());
+  fHistXOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dX,        pMu.Eta(), pMu.Pt());
+  fHistYOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dY,        pMu.Eta(), pMu.Pt());
+  fHistOffsetSingleMuonsVsEtaVsPt  -> Fill(1.e4*offset,    pMu.Eta(), pMu.Pt());
+  fHistWOffsetSingleMuonsVsEtaVsPt -> Fill(weightedOffset, pMu.Eta(), pMu.Pt());
 
   fHistSingleMuonsPtRapidity -> Fill(pMu.Rapidity(), pMu.Pt());
   Double_t chi2OverNdf = fMFTTrack->GetGlobalChi2()/Double_t(fMFTTrack->GetNMFTClusters()+fMFTTrack->GetNMUONClusters());
@@ -597,20 +599,20 @@ void AliMuonForwardTrackAnalysis::Terminate(Char_t *outputFileName) {
 
   // single muons
 
-  fHistXOffsetSingleMuonsVsP  -> Write();
-  fHistYOffsetSingleMuonsVsP  -> Write();
-  fHistXOffsetSingleMuonsVsPt -> Write();
-  fHistYOffsetSingleMuonsVsPt -> Write();
+  fHistXOffsetSingleMuonsVsEtaVsP  -> Write();
+  fHistYOffsetSingleMuonsVsEtaVsP  -> Write();
+  fHistXOffsetSingleMuonsVsEtaVsPt -> Write();
+  fHistYOffsetSingleMuonsVsEtaVsPt -> Write();
 
-  fHistXErrorSingleMuonsVsP   -> Write();
-  fHistYErrorSingleMuonsVsP   -> Write();
-  fHistXErrorSingleMuonsVsPt  -> Write();
-  fHistYErrorSingleMuonsVsPt  -> Write();
+  fHistXErrorSingleMuonsVsEtaVsP   -> Write();
+  fHistYErrorSingleMuonsVsEtaVsP   -> Write();
+  fHistXErrorSingleMuonsVsEtaVsPt  -> Write();
+  fHistYErrorSingleMuonsVsEtaVsPt  -> Write();
 
-  fHistOffsetSingleMuonsVsP   -> Write();
-  fHistOffsetSingleMuonsVsPt  -> Write();
-  fHistWOffsetSingleMuonsVsP  -> Write();
-  fHistWOffsetSingleMuonsVsPt -> Write();
+  fHistOffsetSingleMuonsVsEtaVsP   -> Write();
+  fHistOffsetSingleMuonsVsEtaVsPt  -> Write();
+  fHistWOffsetSingleMuonsVsEtaVsP  -> Write();
+  fHistWOffsetSingleMuonsVsEtaVsPt -> Write();
 
   fHistSingleMuonsPtRapidity  -> Write();
   fHistSingleMuonsOffsetChi2  -> Write();
@@ -663,20 +665,20 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   // -------------------- single muons
 
-  fHistXOffsetSingleMuonsVsP  = new TH2D("fHistXOffsetSingleMuonsVsP",  "Offset for single muons along X vs P",      200, -1000, 1000, 100, 0, 100);
-  fHistYOffsetSingleMuonsVsP  = new TH2D("fHistYOffsetSingleMuonsVsP",  "Offset for single muons along Y vs P",      200, -1000, 1000, 100, 0, 100);
-  fHistXOffsetSingleMuonsVsPt = new TH2D("fHistXOffsetSingleMuonsVsPt", "Offset for single muons along X vs p_{T}",  200, -1000, 1000, 100, 0,  10);
-  fHistYOffsetSingleMuonsVsPt = new TH2D("fHistYOffsetSingleMuonsVsPt", "Offset for single muons along Y vs p_{T}",  200, -1000, 1000, 100, 0,  10);
+  fHistXOffsetSingleMuonsVsEtaVsP  = new TH3D("fHistXOffsetSingleMuonsVsEtaVsP",  "Offset for single muons along X vs #eta vs P",      200, -1000, 1000, 100, -4.5, -2., 100, 0, 100);
+  fHistYOffsetSingleMuonsVsEtaVsP  = new TH3D("fHistYOffsetSingleMuonsVsEtaVsP",  "Offset for single muons along Y vs #eta vs P",      200, -1000, 1000, 100, -4.5, -2., 100, 0, 100);
+  fHistXOffsetSingleMuonsVsEtaVsPt = new TH3D("fHistXOffsetSingleMuonsVsEtaVsPt", "Offset for single muons along X vs #eta vs p_{T}",  200, -1000, 1000, 100, -4.5, -2., 100, 0,  10);
+  fHistYOffsetSingleMuonsVsEtaVsPt = new TH3D("fHistYOffsetSingleMuonsVsEtaVsPt", "Offset for single muons along Y vs #eta vs p_{T}",  200, -1000, 1000, 100, -4.5, -2., 100, 0,  10);
 
-  fHistXErrorSingleMuonsVsP   = new TH2D("fHistXErrorSingleMuonsVsP",   "Coordinate Error for single muons along X vs P",      200, 0, 1000, 100, 0, 100);
-  fHistYErrorSingleMuonsVsP   = new TH2D("fHistYErrorSingleMuonsVsP",   "Coordinate Error for single muons along Y vs P",      200, 0, 1000, 100, 0, 100);
-  fHistXErrorSingleMuonsVsPt  = new TH2D("fHistXErrorSingleMuonsVsPt",  "Coordinate Error for single muons along X vs p_{T}",  200, 0, 1000, 100, 0,  10);
-  fHistYErrorSingleMuonsVsPt  = new TH2D("fHistYErrorSingleMuonsVsPt",  "Coordinate Error for single muons along Y vs p_{T}",  200, 0, 1000, 100, 0,  10);
+  fHistXErrorSingleMuonsVsEtaVsP   = new TH3D("fHistXErrorSingleMuonsVsEtaVsP",   "Coordinate Error for single muons along X vs #eta vs P",      200, 0, 1000, 100, -4.5, -2., 100, 0, 100);
+  fHistYErrorSingleMuonsVsEtaVsP   = new TH3D("fHistYErrorSingleMuonsVsEtaVsP",   "Coordinate Error for single muons along Y vs #eta vs P",      200, 0, 1000, 100, -4.5, -2., 100, 0, 100);
+  fHistXErrorSingleMuonsVsEtaVsPt  = new TH3D("fHistXErrorSingleMuonsVsEtaVsPt",  "Coordinate Error for single muons along X vs #eta vs p_{T}",  200, 0, 1000, 100, -4.5, -2., 100, 0,  10);
+  fHistYErrorSingleMuonsVsEtaVsPt  = new TH3D("fHistYErrorSingleMuonsVsEtaVsPt",  "Coordinate Error for single muons along Y vs #eta vs p_{T}",  200, 0, 1000, 100, -4.5, -2., 100, 0,  10);
 
-  fHistOffsetSingleMuonsVsP   = new TH2D("fHistOffsetSingleMuonsVsP",   "Offset for single muons vs P",              200, 0, 2000, 100, 0, 100);
-  fHistOffsetSingleMuonsVsPt  = new TH2D("fHistOffsetSingleMuonsVsPt",  "Offset for single muons vs p_{T}",          200, 0, 2000, 100, 0,  10);
-  fHistWOffsetSingleMuonsVsP  = new TH2D("fHistWOffsetSingleMuonsVsP",  "Weighted Offset for single muons vs P",     300, 0,   15, 100, 0, 100);  
-  fHistWOffsetSingleMuonsVsPt = new TH2D("fHistWOffsetSingleMuonsVsPt", "Weighted Offset for single muons vs p_{T}", 300, 0,   15, 100, 0,  10);  
+  fHistOffsetSingleMuonsVsEtaVsP   = new TH3D("fHistOffsetSingleMuonsVsEtaVsP",   "Offset for single muons vs #eta vs P",              200, 0, 2000, 100, -4.5, -2., 100, 0, 100);
+  fHistOffsetSingleMuonsVsEtaVsPt  = new TH3D("fHistOffsetSingleMuonsVsEtaVsPt",  "Offset for single muons vs #eta vs p_{T}",          200, 0, 2000, 100, -4.5, -2., 100, 0,  10);
+  fHistWOffsetSingleMuonsVsEtaVsP  = new TH3D("fHistWOffsetSingleMuonsVsEtaVsP",  "Weighted Offset for single muons vs #eta vs P",     300, 0,   15, 100, -4.5, -2., 100, 0, 100);  
+  fHistWOffsetSingleMuonsVsEtaVsPt = new TH3D("fHistWOffsetSingleMuonsVsEtaVsPt", "Weighted Offset for single muons vs #eta vs p_{T}", 300, 0,   15, 100, -4.5, -2., 100, 0,  10);  
 
   fHistSingleMuonsPtRapidity = new TH2D("fHistSingleMuonsPtRapidity", "Phase Space for single muons", 100, -4.5, -2., 100, 0., 10.);
   fHistSingleMuonsOffsetChi2 = new TH2D("fHistSingleMuonsOffsetChi2", "Offset vs #chi^{2}/ndf for single muons", 400, 0, 4000, 200, 0, 10);
@@ -685,35 +687,50 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   //
 
-  fHistXOffsetSingleMuonsVsP  -> SetXTitle("Offset(X)  [#mum]");
-  fHistYOffsetSingleMuonsVsP  -> SetXTitle("Offset(Y)  [#mum]");
-  fHistXOffsetSingleMuonsVsPt -> SetXTitle("Offset(X)  [#mum]");
-  fHistYOffsetSingleMuonsVsPt -> SetXTitle("Offset(Y)  [#mum]");
+  fHistXOffsetSingleMuonsVsEtaVsP  -> SetXTitle("Offset(X)  [#mum]");
+  fHistYOffsetSingleMuonsVsEtaVsP  -> SetXTitle("Offset(Y)  [#mum]");
+  fHistXOffsetSingleMuonsVsEtaVsPt -> SetXTitle("Offset(X)  [#mum]");
+  fHistYOffsetSingleMuonsVsEtaVsPt -> SetXTitle("Offset(Y)  [#mum]");
 
-  fHistXErrorSingleMuonsVsP   -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
-  fHistYErrorSingleMuonsVsP   -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
-  fHistXErrorSingleMuonsVsPt  -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
-  fHistYErrorSingleMuonsVsPt  -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
+  fHistXErrorSingleMuonsVsEtaVsP   -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
+  fHistYErrorSingleMuonsVsEtaVsP   -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
+  fHistXErrorSingleMuonsVsEtaVsPt  -> SetXTitle("Err. on track position at z_{vtx} (X)  [#mum]");
+  fHistYErrorSingleMuonsVsEtaVsPt  -> SetXTitle("Err. on track position at z_{vtx} (Y)  [#mum]");
 
-  fHistOffsetSingleMuonsVsP   -> SetXTitle("Offset  [#mum]");
-  fHistOffsetSingleMuonsVsPt  -> SetXTitle("Offset  [#mum]");
-  fHistWOffsetSingleMuonsVsP  -> SetXTitle("Weighted Offset");
-  fHistWOffsetSingleMuonsVsPt -> SetXTitle("Weighted Offset");    
+  fHistOffsetSingleMuonsVsEtaVsP   -> SetXTitle("Offset  [#mum]");
+  fHistOffsetSingleMuonsVsEtaVsPt  -> SetXTitle("Offset  [#mum]");
+  fHistWOffsetSingleMuonsVsEtaVsP  -> SetXTitle("Weighted Offset");
+  fHistWOffsetSingleMuonsVsEtaVsPt -> SetXTitle("Weighted Offset");    
 
-  fHistXOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
-  fHistYOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
-  fHistXOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");
-  fHistYOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");
+  fHistXOffsetSingleMuonsVsEtaVsP  -> SetYTitle("#eta");
+  fHistYOffsetSingleMuonsVsEtaVsP  -> SetYTitle("#eta");
+  fHistXOffsetSingleMuonsVsEtaVsPt -> SetYTitle("#eta");
+  fHistYOffsetSingleMuonsVsEtaVsPt -> SetYTitle("#eta");
 
-  fHistXErrorSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
-  fHistYErrorSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
-  fHistXErrorSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
-  fHistYErrorSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
+  fHistXErrorSingleMuonsVsEtaVsP   -> SetYTitle("#eta");
+  fHistYErrorSingleMuonsVsEtaVsP   -> SetYTitle("#eta");
+  fHistXErrorSingleMuonsVsEtaVsPt  -> SetYTitle("#eta");
+  fHistYErrorSingleMuonsVsEtaVsPt  -> SetYTitle("#eta");
 
-  fHistOffsetSingleMuonsVsP   -> SetYTitle("P  [GeV/c]");
-  fHistOffsetSingleMuonsVsPt  -> SetYTitle("p_{T}  [GeV/c]");
-  fHistWOffsetSingleMuonsVsP  -> SetYTitle("P  [GeV/c]");
-  fHistWOffsetSingleMuonsVsPt -> SetYTitle("p_{T}  [GeV/c]");    
+  fHistOffsetSingleMuonsVsEtaVsP   -> SetYTitle("#eta");
+  fHistOffsetSingleMuonsVsEtaVsPt  -> SetYTitle("#eta");
+  fHistWOffsetSingleMuonsVsEtaVsP  -> SetYTitle("#eta");
+  fHistWOffsetSingleMuonsVsEtaVsPt -> SetYTitle("#eta");    
+
+  fHistXOffsetSingleMuonsVsEtaVsP  -> SetZTitle("P  [GeV/c]");
+  fHistYOffsetSingleMuonsVsEtaVsP  -> SetZTitle("P  [GeV/c]");
+  fHistXOffsetSingleMuonsVsEtaVsPt -> SetZTitle("p_{T}  [GeV/c]");
+  fHistYOffsetSingleMuonsVsEtaVsPt -> SetZTitle("p_{T}  [GeV/c]");
+
+  fHistXErrorSingleMuonsVsEtaVsP   -> SetZTitle("P  [GeV/c]");
+  fHistYErrorSingleMuonsVsEtaVsP   -> SetZTitle("P  [GeV/c]");
+  fHistXErrorSingleMuonsVsEtaVsPt  -> SetZTitle("p_{T}  [GeV/c]");
+  fHistYErrorSingleMuonsVsEtaVsPt  -> SetZTitle("p_{T}  [GeV/c]");
+
+  fHistOffsetSingleMuonsVsEtaVsP   -> SetZTitle("P  [GeV/c]");
+  fHistOffsetSingleMuonsVsEtaVsPt  -> SetZTitle("p_{T}  [GeV/c]");
+  fHistWOffsetSingleMuonsVsEtaVsP  -> SetZTitle("P  [GeV/c]");
+  fHistWOffsetSingleMuonsVsEtaVsPt -> SetZTitle("p_{T}  [GeV/c]");    
 
   fHistSingleMuonsPtRapidity -> SetXTitle("y^{#mu}");
   fHistSingleMuonsPtRapidity -> SetYTitle("p_{T}^{#mu}  [GeV/c]");
@@ -722,24 +739,24 @@ void AliMuonForwardTrackAnalysis::BookHistos() {
 
   fHistZOriginSingleMuonsMC  -> SetXTitle("Z  [cm]");
   fHistZROriginSingleMuonsMC -> SetXTitle("Z  [cm]");
-  fHistZROriginSingleMuonsMC -> SetXTitle("R  [cm]");
+  fHistZROriginSingleMuonsMC -> SetYTitle("R  [cm]");
 
   //
 
-  fHistXOffsetSingleMuonsVsP  -> Sumw2();
-  fHistYOffsetSingleMuonsVsP  -> Sumw2();
-  fHistXOffsetSingleMuonsVsPt -> Sumw2();
-  fHistYOffsetSingleMuonsVsPt -> Sumw2();
+  fHistXOffsetSingleMuonsVsEtaVsP  -> Sumw2();
+  fHistYOffsetSingleMuonsVsEtaVsP  -> Sumw2();
+  fHistXOffsetSingleMuonsVsEtaVsPt -> Sumw2();
+  fHistYOffsetSingleMuonsVsEtaVsPt -> Sumw2();
 
-  fHistXErrorSingleMuonsVsP   -> Sumw2();
-  fHistYErrorSingleMuonsVsP   -> Sumw2();
-  fHistXErrorSingleMuonsVsPt  -> Sumw2();
-  fHistYErrorSingleMuonsVsPt  -> Sumw2();
+  fHistXErrorSingleMuonsVsEtaVsP   -> Sumw2();
+  fHistYErrorSingleMuonsVsEtaVsP   -> Sumw2();
+  fHistXErrorSingleMuonsVsEtaVsPt  -> Sumw2();
+  fHistYErrorSingleMuonsVsEtaVsPt  -> Sumw2();
 
-  fHistOffsetSingleMuonsVsP   -> Sumw2();
-  fHistOffsetSingleMuonsVsPt  -> Sumw2();
-  fHistWOffsetSingleMuonsVsP  -> Sumw2();
-  fHistWOffsetSingleMuonsVsPt -> Sumw2();
+  fHistOffsetSingleMuonsVsEtaVsP   -> Sumw2();
+  fHistOffsetSingleMuonsVsEtaVsPt  -> Sumw2();
+  fHistWOffsetSingleMuonsVsEtaVsP  -> Sumw2();
+  fHistWOffsetSingleMuonsVsEtaVsPt -> Sumw2();
 
   fHistSingleMuonsPtRapidity  -> Sumw2();
   fHistSingleMuonsOffsetChi2  -> Sumw2();

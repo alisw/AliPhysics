@@ -17,6 +17,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "AliLog.h"
 #include "TFile.h"
 #include "TParticle.h"
@@ -107,10 +108,10 @@ private:
   Int_t fEv, fEvMix, fFirstEvent, fLastEvent, fNTracksOfEvent, fNTracksAnalyzedOfEvent, fNTracksAnalyzed, fNPairsOfEvent, fNPairsAnalyzedOfEvent;
   Int_t fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut;
   
-  TH2D *fHistXOffsetSingleMuonsVsP,  *fHistYOffsetSingleMuonsVsP,  *fHistOffsetSingleMuonsVsP,  *fHistWOffsetSingleMuonsVsP;      //!
-  TH2D *fHistXOffsetSingleMuonsVsPt, *fHistYOffsetSingleMuonsVsPt, *fHistOffsetSingleMuonsVsPt, *fHistWOffsetSingleMuonsVsPt;     //!
-  TH2D *fHistXErrorSingleMuonsVsP,   *fHistYErrorSingleMuonsVsP;                                                                  //!
-  TH2D *fHistXErrorSingleMuonsVsPt,  *fHistYErrorSingleMuonsVsPt;                                                                 //!
+  TH3D *fHistXOffsetSingleMuonsVsEtaVsP,  *fHistYOffsetSingleMuonsVsEtaVsP,  *fHistOffsetSingleMuonsVsEtaVsP,  *fHistWOffsetSingleMuonsVsEtaVsP;      //!
+  TH3D *fHistXOffsetSingleMuonsVsEtaVsPt, *fHistYOffsetSingleMuonsVsEtaVsPt, *fHistOffsetSingleMuonsVsEtaVsPt, *fHistWOffsetSingleMuonsVsEtaVsPt;     //!
+  TH3D *fHistXErrorSingleMuonsVsEtaVsP,   *fHistYErrorSingleMuonsVsEtaVsP;                                                                  //!
+  TH3D *fHistXErrorSingleMuonsVsEtaVsPt,  *fHistYErrorSingleMuonsVsEtaVsPt;                                                                 //!
   TH1D *fHistZOriginSingleMuonsMC;
   
   TH2D *fHistZROriginSingleMuonsMC, *fHistSingleMuonsPtRapidity, *fHistSingleMuonsOffsetChi2;   //!
@@ -121,7 +122,7 @@ private:
   TH2D *fHistDimuonVtxResolutionZVsPt;    //!
 
   TH2D *fHistRapidityPtMuonPairs[2];              //!
-   TH2D *fHistMassMuonPairsVsPt[2];               //!
+  TH2D *fHistMassMuonPairsVsPt[2];                //!
   TH2D *fHistMassMuonPairsWithoutMFTVsPt[2];      //!
   TH2D *fHistMassMuonPairsVsPtLSp[2];             //!
   TH2D *fHistMassMuonPairsWithoutMFTVsPtLSp[2];   //!
