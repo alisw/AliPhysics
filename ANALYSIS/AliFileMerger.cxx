@@ -522,7 +522,14 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 		     << " with the corresponding object in " << nextsource->GetName() << endl;
 	      }
 	      listH.Delete();
-	      AliSysInfo::AddStamp(nameK.Data(),1,counterK,counterF++); 
+        // get the number of processed entries to be put in the syswatch.log
+        Double_t numberOfEntries = -1;
+        if (obj->IsA()->GetMethodAllAny("GetEntries"))
+        {
+          TMethodCall getEntries(obj->IsA(), "GetEntries", "");
+          getEntries.Execute(obj, numberOfEntries);
+        }
+	      AliSysInfo::AddStamp(nameK.Data(),1,counterK,counterF++,numberOfEntries); 
 	    }
 	  }
 	  nextsource = (TFile*)sourcelist->After( nextsource );

@@ -122,6 +122,7 @@ AliSysInfo::AliSysInfo():
                <<"id0"<<"/I:"                // 0 id
                <<"id1"<<"/I:"                // 1 id
                <<"id2"<<"/I:"                // 1 id
+               <<"id3"<<"/I:"                // 1 id
                <<"first"<<"/D:"              // first stamp
     //
 	       <<"stampSec"<<"/D:"         // time  - time stamp in seconds
@@ -168,7 +169,7 @@ AliSysInfo * AliSysInfo::Instance(){
 }
 
 
-void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
+void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, Int_t id3){
   //
   // 
   //
@@ -204,6 +205,7 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
     << id0      <<"\t"
     << id1      <<"\t"
     << id2      <<"\t"
+    << id3      <<"\t"
     <<setprecision(15)<< first    <<"\t"              // first stamp               
     //
     <<setprecision(15)<< stamp.GetSec()+stamp.GetNanoSec()/1000000000.<<"\t"         // time  - time stamp in seconds
