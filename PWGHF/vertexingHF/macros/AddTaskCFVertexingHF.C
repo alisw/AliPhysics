@@ -47,7 +47,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -252,6 +252,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
 	
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
+
+	Double_t *binLimpTFine=new Double_t[300+1];
+	if(isFinePtBin) {
+	  iBin[ipT]=300.;
+	  for (Int_t ibin0 = 0 ; ibin0<300+1; ibin0++){
+	    binLimpTFine[ibin0] = 0.1*ibin0;
+	  }
+	  printf("pT: nbins fine = 300\n");
+	}
 	
 	// defining now the binning for the other variables:
 	
@@ -363,7 +372,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
 		//setting the bin limits
 		printf("pt\n");
-		container -> SetBinLimits(ipT,binLimpT);
+		if(isFinePtBin) container -> SetBinLimits(ipT,binLimpTFine); 
+		else      	container -> SetBinLimits(ipT,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iy,binLimy);
 		printf("cts\n");
@@ -437,7 +447,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinFast);
 		printf("pt\n");
-		container -> SetBinLimits(ipTFast,binLimpT);
+		if(isFinePtBin) container -> SetBinLimits(ipTFast,binLimpTFine); 
+		else      	container -> SetBinLimits(ipTFast,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iyFast,binLimy);
 		printf("ct\n");
@@ -565,15 +576,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	TF1* funcWeight = 0x0;
 	if (task->GetUseWeight()) {
-		funcWeight = (TF1*)fileCuts->Get("funcWeight");
-		if (funcWeight == 0x0){
-			Printf("FONLL Weights will be used");
-		}
-		else {
-			task->SetWeightFunction(funcWeight);
-			Printf("User-defined Weights will be used. The function being:");
-			task->GetWeightFunction(funcWeight)->Print();
-		}
+	  funcWeight = (TF1*)fileCuts->Get("funcWeight");
+	  if (funcWeight == 0x0){
+	    Printf("FONLL Weights will be used");
+	  }
+	  else {
+	    task->SetWeightFunction(funcWeight);
+	    Printf("User-defined Weights will be used.");
+	  }
 	}
 
 	if(useNchWeight){
@@ -593,12 +603,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	if (task->GetUseWeight()) {
-		Printf("User-defined Weight function:");
-		task->GetWeightFunction(funcWeight)->Print();
+	  if(funcWeight) Printf("User-defined Weight function");
+	  else Printf("FONLL will be used for the weights");
 	}
-	else{
-		Printf("FONLL will be used for the weights");
-	}
+
 	Printf("Use Nch weight = %d",(Int_t)task->GetUseNchWeight());
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
@@ -642,6 +650,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
         // set bin limits
 
         binEdges[0]= binLimpT;
+	if(isFinePtBin) binEdges[0] = binLimpTFine;
         binEdges[1]= binLimy;
 
         correlation->SetBinEdges(0,binEdges[0]);
@@ -702,6 +711,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	// cuts
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
+
 	mgr->AddTask(task);
 	
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -709,6 +719,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
+
 	return task;
 	
 }
