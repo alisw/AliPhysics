@@ -92,6 +92,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillNeutralEventMixPool();
   
+  
   void         FillNeutralUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
                                                          const Float_t xE,       const Float_t hbpXE, 
                                                          const Float_t zT,       const Float_t hbpZT, 
@@ -170,10 +171,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
   void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
   
+  void         SwitchOnFillNeutralInMixedEvent() { fFillNeutralEventMixPool = kTRUE  ; }
+  void         SwitchOffFillNeutralInMixedEvent(){ fFillNeutralEventMixPool = kFALSE ; }
+  
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
 
-  void         SwitchOnCorrelationVzBin()        { fCorrelVzBin         = kTRUE  ; }
-  void         SwitchOffCorrelationVzBin()       { fCorrelVzBin         = kFALSE ; }  
+  void         SwitchOnCorrelationVzBin()        { fCorrelVzBin          = kTRUE  ; }
+  void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }  
   
   void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; } 
@@ -206,6 +210,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TList **     fListMixCaloEvents ;            //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for calo clusters in stored events for mixing
 
   Bool_t       fUseMixStoredInReader;          // Signal if in the current event the pool was filled
+  Bool_t       fFillNeutralEventMixPool;       // Add clusters to pool if requested
   
   Float_t      fM02MaxCut   ;                  // Study photon clusters with l0 smaller than cut
   Float_t      fM02MinCut   ;                  // Study photon clusters with l0 larger than cut
@@ -257,7 +262,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhZTNegCharged  ;               //! Trigger particle -negative charged hadron momentum imbalance histogram 
   TH2F *       fhPtHbpZTCharged  ;             //! Trigger particle -charged hadron momentum HBP histogram
   TH2F *       fhPtHbpZTUeCharged  ;           //! Trigger particle -underlying charged hadron momentum HBP histogram  
- 
+  
   TH2F *       fhXEChargedMC[7]  ;             //! Trigger particle -charged hadron momentum imbalance histogram, check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0), hadron, rest of photons (prompt, FSR, ISR)
   TH2F *       fhDeltaPhiChargedMC[7]  ;       //! Trigger particle -charged hadron delta phi histogram, check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0), hadron, rest of photons (prompt, FSR, ISR)
 
@@ -275,7 +280,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtTrigChargedPileUp[7] ;       //! trigger and correlated particl pt, to be used for mean value for kt
   TH2F *       fhDeltaPhiChargedPtA3GeVPileUp[7] ; //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, pTa > 3 GeV
   TH2F *       fhDeltaEtaChargedPtA3GeVPileUp[7] ; //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT, pTa > 3 GeV
-    
+  
   //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F *       fhDeltaPhiUeLeftCharged  ;      //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
   TH2F *       fhDeltaPhiUeRightCharged  ;     //! Difference of charged particle from underlying events phi and trigger particle  phi 
@@ -314,7 +319,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta > 0.8
   TH2F **      fhDeltaPhiAssocPtBinDEta0 ;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta = 0
   TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPID  
-  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc  
+  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F *       fhDeltaPhiBrad;                 //! Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs xE for different associated pt bins
@@ -389,6 +394,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *       fhNtracksAll;                   //! total number of tracks 
   TH1F *       fhNtracksTrigger;               //! total number of tracks in triggered events 
   TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
+  TH1F *       fhNclustersAll;                 //! total number of clusters
+  TH1F *       fhNclustersTrigger;             //! total number of clusters in triggered events
+  TH1F *       fhNclustersMB;                  //! total number of clusters in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F *       fhMixXECharged;                 //! xE for mixed event
@@ -404,7 +412,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,26)
+  ClassDef(AliAnaParticleHadronCorrelation,27)
 } ;
  
 
