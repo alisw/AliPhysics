@@ -1212,25 +1212,15 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     printf("ERROR: fOutput not available\n");
     return;
   }
+
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+  if(fHistNEvents){
+    printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(2));
+  }else{
+    printf("ERROR: fHistNEvents not available\n");
+    return;
+  }
 
-  TString hisname;
-  Int_t index=0;
-
-  for(Int_t i=0;i<fNPtBins;i++){
-    index=GetHistoIndex(i);
-    
-    hisname.Form("hMassPt%dTC",i);
-    fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-  } 
-    
-  TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
-  c1->cd();
-  TH1F *hMassPt=(TH1F*)fOutput->FindObject("hMassPt3TC");
-  hMassPt->SetLineColor(kBlue);
-  hMassPt->SetXTitle("M[GeV/c^{2}]"); 
-  hMassPt->Draw();
- 
   return;
 }
 //_________________________________________________________________________________________________
