@@ -77,7 +77,8 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fConstrainTrack(kFALSE),         fSelectHybridTracks(0),
+fESDtrackCuts(0),            fConstrainTrack(kFALSE),
+fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
@@ -551,7 +552,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
@@ -1054,6 +1055,10 @@ void AliCaloTrackReader::FillInputCTS()
           
         } // use constrained tracks
         
+        if(fSelectSPDHitTracks)
+        {//Not much sense to use with TPC only or Hybrid tracks
+          if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
+        }
       }
       else continue;
       
@@ -1076,6 +1081,11 @@ void AliCaloTrackReader::FillInputCTS()
         else 
         {
           if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
+        }
+        
+        if(fSelectSPDHitTracks)
+        {//Not much sense to use with TPC only or Hybrid tracks
+          if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
         }
         
         if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
