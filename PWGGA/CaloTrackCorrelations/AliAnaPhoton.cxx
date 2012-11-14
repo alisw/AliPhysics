@@ -134,6 +134,9 @@ AliAnaPhoton::AliAnaPhoton() :
     fhDispEtaDispPhi[i] = 0;
     fhLambda0DispPhi[i] = 0;
     fhLambda0DispEta[i] = 0;
+    
+    fhPtPhotonPileUp[i] = 0;
+    
     for(Int_t j = 0; j < 6; j++)
     {
       fhMCDispEtaDispPhi[i][j] = 0;
@@ -1819,7 +1822,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
-    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    
+    TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+    
+    for(Int_t i = 0 ; i < 7 ; i++)
+    {
+      fhPtPhotonPileUp[i]  = new TH1F(Form("hPtPhotonPileUp%s",pileUpName[i].Data()),
+                                       Form("Selected photon p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPhotonPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPhotonPileUp[i]);
+    }
+    
+    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
     fhTimeENoCut->SetXTitle("E (GeV)");
     fhTimeENoCut->SetYTitle("time (ns)");
     outputContainer->Add(fhTimeENoCut);  
@@ -2556,6 +2570,16 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     if     (ecluster > 0.5)   fhEtaPhiPhoton  ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
     
+    if(fFillPileUpHistograms)
+    {
+      if(GetReader()->IsPileUpFromSPD())               fhPtPhotonPileUp[0]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromEMCal())             fhPtPhotonPileUp[1]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPhotonPileUp[2]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPhotonPileUp[3]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPhotonPileUp[4]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPhotonPileUp[5]->Fill(ptcluster);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPhotonPileUp[6]->Fill(ptcluster);
+    }
 
     //Get original cluster, to recover some information
     Int_t absID             = 0; 
