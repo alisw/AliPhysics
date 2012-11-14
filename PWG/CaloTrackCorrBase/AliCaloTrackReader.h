@@ -253,42 +253,45 @@ public:
   Bool_t           IsPileUpFromNotSPDAndNotEMCal() const ;
 
   void             SetPileUpParamForSPD  (Int_t i, Double_t param)
-                                                           { fPileUpParamSPD[i]  = param ; }
-  void             SetPileUpParamForEMCal(Int_t param)     { fNPileUpClustersCut = param ; }
+                                                           { fPileUpParamSPD[i]  = param  ; }
+  void             SetPileUpParamForEMCal(Int_t param)     { fNPileUpClustersCut = param  ; }
   
-  Int_t            GetNPileUpClusters()                    { return  fNPileUpClusters    ; }
-  Int_t            GetNNonPileUpClusters()                 { return  fNNonPileUpClusters ; }
+  Int_t            GetNPileUpClusters()                    { return  fNPileUpClusters     ; }
+  Int_t            GetNNonPileUpClusters()                 { return  fNNonPileUpClusters  ; }
 
   // Track selection
-  ULong_t          GetTrackStatus()                  const { return fTrackStatus       ; }
-  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit        ; }		
+  ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
+  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
 
-  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask    ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit    ; }		
+  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask       ; }
+  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }		
   
-  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts      ; }
+  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
   void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
 
-  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack = kTRUE   ; } 
-  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack = kFALSE  ; }      
+  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack     = kTRUE  ; } 
+  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack     = kFALSE ; }      
   
   void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
   void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
   
-  Int_t            GetTrackMultiplicity()            const { return fTrackMult         ; }
-  Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut   ; }
-  void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta    ; }		
+  void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
+  void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
+  
+  Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
+  Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
+  void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
   // Calorimeter specific and patches
-  void             AnalyzeOnlyLED()                        { fAnaLED = kTRUE           ; }
-  void             AnalyzeOnlyPhysics()                    { fAnaLED = kFALSE          ; }
+  void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
+  void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
   
-  void             SwitchOnCaloFilterPatch()               { fCaloFilterPatch = kTRUE  ; 
-                                                             fFillCTS = kFALSE         ; }
-  void             SwitchOffCaloFilterPatch()              { fCaloFilterPatch = kFALSE ; }
+  void             SwitchOnCaloFilterPatch()               { fCaloFilterPatch    = kTRUE  ; 
+                                                             fFillCTS            = kFALSE ; }
+  void             SwitchOffCaloFilterPatch()              { fCaloFilterPatch    = kFALSE ; }
   Bool_t           IsCaloFilterPatchOn()             const { 
                     if(fDataType == kAOD) { return fCaloFilterPatch ; } 
-                    else                  { return kFALSE           ; }                  }
+                    else                  { return kFALSE           ; }                     }
   	
   //-------------------------------
   //Vertex methods
@@ -472,6 +475,7 @@ public:
   AliESDtrackCuts *fESDtrackCuts       ;    // Track cut 
   Bool_t           fConstrainTrack     ;    // Constrain Track to vertex
   Bool_t           fSelectHybridTracks ;    // Select CTS tracks of type hybrid (only for AODs)
+  Bool_t           fSelectSPDHitTracks ;    // Ensure that track hits SPD layers
   Int_t            fTrackMult          ;    // Track multiplicity
   Float_t          fTrackMultEtaCut    ;    // Track multiplicity eta cut
   Bool_t           fReadStack          ;    // Access kine information from stack
@@ -539,7 +543,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,46)
+  ClassDef(AliCaloTrackReader,47)
   
 } ;
 
