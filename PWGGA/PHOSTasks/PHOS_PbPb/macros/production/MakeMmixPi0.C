@@ -24,7 +24,7 @@ Double_t BG2(Double_t * x, Double_t * par);
 // const Int_t nPtBins=6 ;
 // const Double_t ptBinEdges[21]={1., 2., 3., 4., 5., 7., 10.} ;
 
-const Int_t nPadX = 6, nPadY = 4;
+const Int_t nPadX = 5, nPadY = 4;
 Int_t nPtBins=0;
 Double_t ptBinEdges[1000] = {0};
 double GetPtBin(int bin){
@@ -32,12 +32,12 @@ double GetPtBin(int bin){
     return 1.;
 
   // return GetPtBin(bin-1) * 1.1;
-  
+
   // if ( bin % 2 )
   //   return GetPtBin(bin-1) + 0.4;
   // else
   //   return GetPtBin(bin-1) + 0.2;
-  
+
   double previousBin = GetPtBin(bin-1);
   double linInc = 0.2;
   double threshold = 5.;
@@ -56,10 +56,11 @@ void MakePtBins() {
   } while(ptBinEdges[bin] < 40.);
   nPtBins = bin -2;
 
+  printf("Making Pt Bins:\n");
   for(int b=0; b < nPtBins+1; ++b)
     printf("%.1f, ", ptBinEdges[b]);
   printf("\n N. Bins: %d\n", nPtBins);
-  
+
 
   // for(int bin = 0; bin <= nPtBins; ++bin){
   //   ptBinEdges[bin] = GetPtBin(bin);
@@ -73,15 +74,16 @@ const int kNCentralityBins = 3;
 
 const Double_t kMean=0.136 ; //Approximate peak position to facilitate error estimate
 
-const char format[] = ".eps"; // say if you want .pdf
+const char format[] = ".pdf"; // say if you want .pdf
 
 TH2F* FindPi0(TList *histoList, bool mix, const char* pid, int centrality);
 
 //-----------------------------------------------------------------------------
 void MakeMmixPi0(const TString filename,
 		 const TString listPath = "PHOSPi0Flow/PHOSPi0FlowCoutput1", // lego train
-		 const Int_t centrality=0, 
+		 const Int_t centrality=0,
 		 const char* pid="CPV",
+		 const char* trigger="kCentral",
 		 const char* saveToDir="")
 {
   MakePtBins();
@@ -100,10 +102,10 @@ void MakeMmixPi0(const TString filename,
   TH1F * hev = (TH1F*)histoList->FindObject("hTotSelEvents") ;
   TH2F * hCentrality  = (TH2F*)histoList->FindObject("hCenPHOSCells") ;
   TH1D * hCentralityX = hCentrality->ProjectionX();
-  
-  printf("TotSelEvents (4): %f \n",hev->GetBinContent(4)) ;
-  printf("Centrality:   %f \n",hCentralityX->Integral()) ;
-  
+
+  printf("TotSelEvents (4): %.0f \n",hev->GetBinContent(4)) ;
+  printf("Centrality:   %.0f \n",hCentralityX->Integral()) ;
+
   TH2F *hPi0 = FindPi0(histoList, false, pid, centrality);
   TH2F *hPi0Mix = FindPi0(histoList, true, pid, centrality);
   if( !hPi0 || !hPi0Mix || hPi0->GetEntries() < 10000) {
@@ -112,9 +114,9 @@ void MakeMmixPi0(const TString filename,
     delete file;
     return;
   }
-  
 
-  TFile* outFile = new TFile(Form("%sPi0_FitResult_%d.root", saveToDir, centrality),"update");
+
+  TFile* outFile = new TFile(Form("%sPi0_FitResult.root", saveToDir, centrality),"update");
 
   PPRstyle();
   gStyle->SetPadLeftMargin(0.14);
@@ -122,10 +124,10 @@ void MakeMmixPi0(const TString filename,
   //gStyle->SetPadTopMargin(0.01);
   gStyle->SetPadBottomMargin(0.08);
 
-  //Fit real only 
+  //Fit real only
   //Linear Bg
   char kkey[55];
-  sprintf(kkey, Form("%s_cent%d",pid,centrality)) ;
+  sprintf(kkey, Form("%s_cent%d_%s",pid, centrality, trigger)) ;
   char key2[155];
   sprintf(key,"Mix%s",kkey) ;
   sprintf(key2,"%s_mr1",key) ;
@@ -157,15 +159,16 @@ void MakeMmixPi0(const TString filename,
   sprintf(key2,"%s_yr2int",key) ;
   TH1D * nr2int = new TH1D(key2,"Raw yield, integrated",nPtBins,ptBinEdges) ;
 
-  TF1 * fit1 = new TF1("fit",CB,0.,1.,6) ;
-  fit1->SetParName(0,"A") ;
-  fit1->SetParName(1,"m_{0}") ;
-  fit1->SetParName(2,"#sigma") ;
-  fit1->SetParName(3,"a_{0}") ;
-  fit1->SetParName(4,"a_{1}") ;
-  fit1->SetParName(5,"a_{2}") ;
-  fit1->SetLineWidth(2) ;
-  fit1->SetLineColor(2) ;
+  // Functions:
+  TF1 * funcRatioFit1 = new TF1("funcRatioFit1",CB,0.,1.,6) ;
+  funcRatioFit1->SetParName(0,"A") ;
+  funcRatioFit1->SetParName(1,"m_{0}") ;
+  funcRatioFit1->SetParName(2,"#sigma") ;
+  funcRatioFit1->SetParName(3,"a_{0}") ;
+  funcRatioFit1->SetParName(4,"a_{1}") ;
+  funcRatioFit1->SetParName(5,"a_{2}") ;
+  funcRatioFit1->SetLineWidth(2) ;
+  funcRatioFit1->SetLineColor(2) ;
   TF1 * fgs = new TF1("gs",CBs,0.,1.,4) ;
   fgs->SetParName(0,"A") ;
   fgs->SetParName(1,"m_{0}") ;
@@ -173,36 +176,33 @@ void MakeMmixPi0(const TString filename,
   fgs->SetParName(3,"B") ;
   fgs->SetLineColor(2) ;
   fgs->SetLineWidth(1) ;
-
-  TF1 * fit2 = new TF1("fit2",CB2,0.,1.,7) ;
-  fit2->SetParName(0,"A") ;
-  fit2->SetParName(1,"m_{0}") ;
-  fit2->SetParName(2,"#sigma") ;
-  fit2->SetParName(3,"a_{0}") ;
-  fit2->SetParName(4,"a_{1}") ;
-  fit2->SetParName(5,"a_{2}") ;
-  fit2->SetParName(6,"a_{3}") ;
-  fit2->SetLineWidth(2) ;
-  fit2->SetLineColor(4) ;
-  fit2->SetLineStyle(2) ;
-
+  TF1 * funcRatioFit2 = new TF1("funcRatioFit2",CB2,0.,1.,7) ;
+  funcRatioFit2->SetParName(0,"A") ;
+  funcRatioFit2->SetParName(1,"m_{0}") ;
+  funcRatioFit2->SetParName(2,"#sigma") ;
+  funcRatioFit2->SetParName(3,"a_{0}") ;
+  funcRatioFit2->SetParName(4,"a_{1}") ;
+  funcRatioFit2->SetParName(5,"a_{2}") ;
+  funcRatioFit2->SetParName(6,"a_{3}") ;
+  funcRatioFit2->SetLineWidth(2) ;
+  funcRatioFit2->SetLineColor(4) ;
+  funcRatioFit2->SetLineStyle(2) ;
   TF1 * fbg1 = new TF1("bg1",BG1,0.,1.,3) ;
   TF1 * fbg2 = new TF1("bg2",BG2,0.,1.,4) ;
 
-  TCanvas * c3 = new TCanvas("mggFit1_Signal","mggFitCB",10,10,1200,800) ;
-  c3->Divide(nPadX,nPadY) ;
 
-  TCanvas * c1 = new TCanvas("mggFit1","mggFit1",10,10,1200,800) ;
-  c1->Divide(nPadX,nPadY) ;
-  c1->cd(0) ;
-
+  // Canvases
   TCanvas * rawCanvas = new TCanvas("rawCanvas","rawCanvas",10,10,1200,800);
   rawCanvas->Divide(nPadX, nPadY);
+  TCanvas * ratioCanvas = new TCanvas("mggFit1","mggFit1",10,10,1200,800) ;
+  ratioCanvas->Divide(nPadX,nPadY) ;
+  TCanvas * sbsCanvas = new TCanvas("mggFit1_Signal","mggFitCB",10,10,1200,800) ;
+  sbsCanvas->Divide(nPadX,nPadY) ;
 
-  TAxis * pta=hPi0->GetYaxis() ;
-  //TAxis * ma=hPi0->GetXaxis() ;
+
   for(Int_t ptBin=1; ptBin<=nPtBins; ptBin++){
-    c1->cd(ptBin) ;
+    ratioCanvas->cd(ptBin) ;
+    TAxis * pta=hPi0->GetYaxis() ;
     Int_t imin=pta->FindBin(ptBinEdges[ptBin-1]+0.0001);
     Int_t imax=pta->FindBin(ptBinEdges[ptBin]-0.0001) ;
     Double_t pt=(ptBinEdges[ptBin]+ptBinEdges[ptBin-1])/2. ;
@@ -215,40 +215,32 @@ void MakeMmixPi0(const TString filename,
     hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
     hPi0ProjMix->SetXTitle("M_{#gamma#gamma}^{Mix} (GeV/c^{2})");
 
-
     Printf("\n\t%.1f<pt<%.1f GeV/c, entries: %.0f",ptBinEdges[ptBin-1],ptBinEdges[ptBin],  hPi0Proj->GetEntries());
     if( hPi0Proj->GetEntries() < 100. ) {
       Printf("skipping this bin as n. entries is to low");
       continue;
     }
-      
 
-    // if(ptBin<=17){
     hPi0Proj ->Rebin(4) ;
     hPi0ProjMix->Rebin(4) ;
-    // }
-    // else{
-    //   hPi0Proj ->Rebin(5) ;
-    //   hPi0ProjMix->Rebin(5) ;
-    // }
     hPi0Proj->SetName(Form("%s_rebin", hPi0Proj->GetName()));
     hPi0ProjMix->SetName(Form("%s_rebin", hPi0ProjMix->GetName()));
 
+    // Error Fix
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0Proj ->GetBinContent(ib)==0)hPi0Proj ->SetBinError(ib,1.);}
     for(Int_t ib=1; ib<=hPi0Proj->GetNbinsX();ib++){if(hPi0ProjMix->GetBinContent(ib)==0)hPi0ProjMix->SetBinError(ib,1.);}
-    TH1D * hPi0Proj2    = (TH1D*)hPi0Proj ->Clone(Form("rawPi0Signal2_ptBin%d",ptBin)) ;
-    TH1D * hpcopy = (TH1D*)hPi0Proj ->Clone(Form("Pi0SignalMixRatio_ptBin%d",ptBin)) ;
-    TH1D * hpm2   = (TH1D*)hPi0ProjMix->Clone(Form("rawPi0Mixed_ptBin%d",ptBin)) ;
-    TH1D * hpmScaled = (TH1D*)hPi0ProjMix->Clone(Form("rawPi0MixedScaled_ptBin%d",ptBin)) ;
 
-    hpcopy->Divide(hPi0ProjMix) ;
-    hpcopy->SetMarkerStyle(20) ;
-    hpcopy->SetMarkerSize(0.7) ;
-    
-    fit1->SetParameters(0.001,0.136,0.0055,0.0002,-0.002,0.0) ;
-    fit1->SetParLimits(0,0.000,1.000) ;
-    fit1->SetParLimits(1,0.120,0.145) ;
-    fit1->SetParLimits(2,0.004,0.012) ;
+    // Signal-Mix Ratio
+    TH1D * hPi0Ratio = (TH1D*)hPi0Proj->Clone( Form("hPi0Ratio_ptBin%d",ptBin) ) ;
+    hPi0Ratio->SetTitle(Form("#frac{M_{#gamma#gamma}}{M_{#gamma#gamma}^{Mix}}, %.1f<p_{T}<%.1f GeV/c", ptBinEdges[ptBin-1], ptBinEdges[ptBin]));
+    hPi0Ratio->Divide(hPi0ProjMix) ;
+    hPi0Ratio->SetMarkerStyle(20) ;
+    hPi0Ratio->SetMarkerSize(0.7) ;
+
+    funcRatioFit1->SetParameters(0.001,0.136,0.0055,0.0002,-0.002,0.0) ;
+    funcRatioFit1->SetParLimits(0,0.000,1.000) ;
+    funcRatioFit1->SetParLimits(1,0.120,0.145) ;
+    funcRatioFit1->SetParLimits(2,0.004,0.012) ;
 
     Double_t rangeMin=0.05 ;
     Double_t rangeMax=0.3 ;
@@ -257,148 +249,155 @@ void MakeMmixPi0(const TString filename,
       rangeMin=0.06 ;
       rangeMax=0.25 ;
     }
-    int error = hpcopy->Fit(fit1,"Q" ,"",rangeMin,rangeMax) ;
+    int error = hPi0Ratio->Fit(funcRatioFit1,"Q" ,"",rangeMin,rangeMax) ;
     if( error ) {
       Printf("fit (ratio) error: %d ", error);
       continue;
     }
-    error = hpcopy->Fit(fit1,"MQ","",rangeMin,rangeMax) ;
+    error = hPi0Ratio->Fit(funcRatioFit1,"MQ","",rangeMin,rangeMax) ;
     if( error % 4000) {
       Printf("fit (ratio more) error: %d ", error);
       continue;
     }
 
 
-    ar1->SetBinContent(ptBin,fit1->GetParameter(3)) ;
-    ar1->SetBinError  (ptBin,fit1->GetParError(3)) ;
-    br1->SetBinContent(ptBin,fit1->GetParameter(4)) ;
-    br1->SetBinError  (ptBin,fit1->GetParError(4)) ;
+    ar1->SetBinContent(ptBin,funcRatioFit1->GetParameter(3)) ;
+    ar1->SetBinError  (ptBin,funcRatioFit1->GetParError(3)) ;
+    br1->SetBinContent(ptBin,funcRatioFit1->GetParameter(4)) ;
+    br1->SetBinError  (ptBin,funcRatioFit1->GetParError(4)) ;
 
-    fit2->SetParameters(fit1->GetParameters()) ;
-    fit2->SetParLimits(0,0.000,1.000) ;
-    fit2->SetParLimits(1,0.110,0.145) ;
-    fit2->SetParLimits(2,0.004,0.012) ;
+    funcRatioFit2->SetParameters(funcRatioFit1->GetParameters()) ;
+    funcRatioFit2->SetParLimits(0,0.000,1.000) ;
+    funcRatioFit2->SetParLimits(1,0.110,0.145) ;
+    funcRatioFit2->SetParLimits(2,0.004,0.012) ;
 
-    error = hpcopy->Fit(fit2,"+NQ","",rangeMin,rangeMax) ;
+    error = hPi0Ratio->Fit(funcRatioFit2,"+NQ","",rangeMin,rangeMax) ;
     if( error )  {
-      Printf("fit (fit2) error: %d ", error);
+      Printf("fit (funcRatioFit2) error: %d ", error);
       continue;
     }
-    error =hpcopy->Fit(fit2,"+MQ","",rangeMin,rangeMax) ;
+    error =hPi0Ratio->Fit(funcRatioFit2,"+MQ","",rangeMin,rangeMax) ;
     if( error % 4000) {
-      Printf("fit (fit2 more) error: %d ", error);
+      Printf("fit (funcRatioFit2 more) error: %d ", error);
       continue;
     }
 
-    ar2->SetBinContent(ptBin,fit2->GetParameter(3)) ;
-    ar2->SetBinError  (ptBin,fit2->GetParError(3)) ;
-    br2->SetBinContent(ptBin,fit2->GetParameter(4)) ;
-    br2->SetBinError  (ptBin,fit2->GetParError(4)) ;
-    cr2->SetBinContent(ptBin,fit2->GetParameter(5)) ;
-    cr2->SetBinError  (ptBin,fit2->GetParError(5)) ;
-    hpcopy->GetXaxis()->SetRangeUser(0.05,0.30) ;
-    hpcopy->SetTitle(Form("#frac{M_{#gamma#gamma}}{M_{#gamma#gamma}^{Mix}}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
-    hpcopy->DrawCopy() ;
-    hpcopy->Write(0,TObject::kOverwrite) ;
-    c1->Update() ;
+    ar2->SetBinContent(ptBin,funcRatioFit2->GetParameter(3)) ;
+    ar2->SetBinError  (ptBin,funcRatioFit2->GetParError(3)) ;
+    br2->SetBinContent(ptBin,funcRatioFit2->GetParameter(4)) ;
+    br2->SetBinError  (ptBin,funcRatioFit2->GetParError(4)) ;
+    cr2->SetBinContent(ptBin,funcRatioFit2->GetParameter(5)) ;
+    cr2->SetBinError  (ptBin,funcRatioFit2->GetParError(5)) ;
+    hPi0Ratio->GetXaxis()->SetRangeUser(0.05,0.30) ;
+    hPi0Ratio->DrawCopy() ;
+    hPi0Ratio->Write(0,TObject::kOverwrite) ;
+    ratioCanvas->Update() ;
 
-    fbg1->SetParameters(fit1->GetParameter(3),fit1->GetParameter(4),fit1->GetParameter(5)); 
-    fbg2->SetParameters(fit2->GetParameter(3),fit2->GetParameter(4),fit2->GetParameter(5),
-			fit2->GetParameter(6)); 
+    fbg1->SetParameters(funcRatioFit1->GetParameter(3),funcRatioFit1->GetParameter(4),funcRatioFit1->GetParameter(5));
+    fbg2->SetParameters(funcRatioFit2->GetParameter(3),funcRatioFit2->GetParameter(4),funcRatioFit2->GetParameter(5),
+			funcRatioFit2->GetParameter(6));
 
     Double_t intRangeMin = PeakPosition(pt)-3.*PeakWidth(pt) ;
     Double_t intRangeMax = PeakPosition(pt)+3.*PeakWidth(pt) ;
     Int_t    intBinMin   = hPi0Proj->GetXaxis()->FindBin(intRangeMin) ;
     Int_t    intBinMax   = hPi0Proj->GetXaxis()->FindBin(intRangeMax) ;
-    Double_t errStat     = hPi0ProjMix->Integral(intBinMin,intBinMax); 
-    
+    Double_t errStat     = hPi0ProjMix->Integral(intBinMin,intBinMax);
+
     rawCanvas->cd(ptBin);
-    hpmScaled->Scale(fbg1->Eval(0.1349));
+    TH1D * hPi0MixScaled = (TH1D*)hPi0ProjMix ->Clone(Form("%s_clone2", hPi0Proj->GetName())) ;
+    hPi0MixScaled->Scale(fbg1->Eval(0.1349));
     hPi0Proj->SetLineColor(kBlack);
     hPi0Proj->SetAxisRange(0.0, 0.3);
     hPi0Proj->DrawCopy();
     hPi0Proj->Write(0,TObject::kOverwrite) ;
-    hpmScaled->SetLineColor(kRed);
-    hpmScaled->SetTitle(Form("M_{#gamma#gamma}^{Mix,scaled}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
-    hpmScaled->DrawCopy("same");
+    hPi0MixScaled->SetLineColor(kRed);
+    hPi0MixScaled->SetTitle(Form("M_{#gamma#gamma}^{Mix,scaled}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+    hPi0MixScaled->DrawCopy("same");
     rawCanvas->Update();
-    hpmScaled->Write(0,TObject::kOverwrite) ;
-    
-    hPi0ProjMix ->Multiply(fbg1) ;
-    hpm2->Multiply(fbg2) ;
-    hPi0Proj  ->Add(hPi0ProjMix ,-1.) ;
-    hPi0Proj2 ->Add(hpm2,-1.) ;
+    hPi0MixScaled->Write(0,TObject::kOverwrite) ;
 
-    c3->cd(ptBin) ;
+    // Linear background subtraction
+    TH1D * hPi0MixScaledPol1 = (TH1D*)hPi0ProjMix->Clone(Form("hPi0MixScaledPol1_ptBin%d", ptBin)) ;
+    hPi0MixScaledPol1 ->Multiply(fbg1) ;
+    TH1D * hPi0BSPol1 = (TH1D*)hPi0Proj->Clone(Form("hPi0BSPol1_ptBin%d", ptBin)) ;
+    hPi0BSPol1->Add(hPi0MixScaledPol1 ,-1.) ;
 
-    Int_t binPi0 = hPi0Proj->FindBin(fit1->GetParameter(1));
-    Int_t nWidPi0 = 2 * (Int_t) (fit1->GetParameter(2)/hPi0Proj->GetBinWidth(1));
-    fgs->SetParameters(hPi0Proj->Integral(binPi0-nWidPi0,binPi0+nWidPi0)/5., fit1->GetParameter(1), fit1->GetParameter(2)) ;
-    fgs->SetParLimits(0,0.000,1.e+5) ;
+    // Quadratic background
+    TH1D * hPi0MixScaledPol2 = (TH1D*)hPi0ProjMix->Clone(Form("hPi0MixScaledPol2_ptBin%d", ptBin)) ;
+    hPi0MixScaledPol2->Multiply(fbg2) ;
+    TH1D * hPi0BSPol2     = (TH1D*)hPi0Proj    ->Clone(Form("hPi0BSPol2_ptBin%d", ptBin)) ;
+    hPi0BSPol2 ->Add(hPi0MixScaledPol2,-1.) ;
+
+    sbsCanvas->cd(ptBin) ;
+
+    Int_t binPi0 = hPi0BSPol1->FindBin(funcRatioFit1->GetParameter(1));
+    Int_t nWidPi0 = 2 * (Int_t) (funcRatioFit1->GetParameter(2)/hPi0BSPol1->GetBinWidth(1));
+    fgs->SetParameters(hPi0BSPol1->Integral(binPi0-nWidPi0,binPi0+nWidPi0)/5., funcRatioFit1->GetParameter(1), funcRatioFit1->GetParameter(2)) ;
+    fgs->SetParLimits(0,0.,1.e+5) ;
     fgs->SetParLimits(1,0.110,0.145) ;
     fgs->SetParLimits(2,0.004,0.02) ;
-    error = hPi0Proj->Fit(fgs,"Q","",rangeMin,rangeMax) ;   
+    error = hPi0BSPol1->Fit(fgs,"Q","",rangeMin,rangeMax) ;
     if( error ) {
-      Printf("fit (hPi0Proj fgs) error: %d ", error);
+      Printf("fit (hPi0BSPol1 fgs) error: %d ", error);
       continue;
     }
-    hPi0Proj->SetMaximum(hPi0Proj2->GetMaximum()*1.5) ;
-    hPi0Proj->SetMinimum(hPi0Proj2->GetMinimum()*1.1) ;
-    hPi0Proj->SetMarkerStyle(20) ;
-    hPi0Proj->SetMarkerSize(0.7) ;
+    hPi0BSPol1->SetMaximum(hPi0BSPol2->GetMaximum()*1.5) ;
+    hPi0BSPol1->SetMinimum(hPi0BSPol2->GetMinimum()*1.1) ;
+    hPi0BSPol1->SetMarkerStyle(20) ;
+    hPi0BSPol1->SetMarkerSize(0.7) ;
     mr1->SetBinContent(ptBin,fgs->GetParameter(1)) ;
     mr1->SetBinError  (ptBin,fgs->GetParError(1) ) ;
     sr1->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
     sr1->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
-    Double_t y=fgs->GetParameter(0)/hPi0Proj->GetXaxis()->GetBinWidth(1) ;
+    Double_t y=fgs->GetParameter(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
     nr1->SetBinContent(ptBin,y) ;
-    Double_t ey=fgs->GetParError(0)/hPi0Proj->GetXaxis()->GetBinWidth(1) ;
+    Double_t ey=fgs->GetParError(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
     nr1->SetBinError(ptBin,ey) ;
 
-    Double_t npiInt = hPi0Proj->Integral(intBinMin,intBinMax) ;
+    Double_t npiInt = hPi0BSPol1->Integral(intBinMin,intBinMax) ;
     Double_t norm   = fbg1->GetParameter(0) ;
     Double_t normErr= fbg1->GetParError(0) ;
     if(npiInt>0.){
       nr1int->SetBinContent(ptBin,npiInt) ;
       nr1int->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*errStat + normErr*normErr*errStat*errStat + norm*norm*errStat)) ;
     }
-    hPi0Proj2->GetXaxis()->SetRangeUser(0.05,0.3) ;
-    hPi0Proj2->SetMaximum(hPi0Proj2->GetMaximum()*1.5) ;
-    hPi0Proj2->SetMinimum(hPi0Proj2->GetMinimum()*1.1) ;
-    hPi0Proj2->SetMarkerStyle(20) ;
-    hPi0Proj2->SetMarkerSize(0.7) ;
-    hPi0Proj2->Fit(fgs,"Q","",rangeMin,rangeMax) ;
+    hPi0BSPol2->GetXaxis()->SetRangeUser(0.05,0.3) ;
+    hPi0BSPol2->SetMaximum(hPi0BSPol2->GetMaximum()*1.5) ;
+    hPi0BSPol2->SetMinimum(hPi0BSPol2->GetMinimum()*1.1) ;
+    hPi0BSPol2->SetMarkerStyle(20) ;
+    hPi0BSPol2->SetMarkerSize(0.7) ;
+    hPi0BSPol2->Fit(fgs,"Q","",rangeMin,rangeMax) ;
     if( error ) {
-      Printf("fit (hPi0Proj2 fgs) error: %d ", error);
+      Printf("fit (hPi0BSPol2 fgs) error: %d ", error);
       continue;
     }
     mr2->SetBinContent(ptBin,fgs->GetParameter(1)) ;
     mr2->SetBinError  (ptBin,fgs->GetParError(1)) ;
     sr2->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
     sr2->SetBinError  (ptBin,fgs->GetParError(2)) ;
-    y=fgs->GetParameter(0)/hPi0Proj->GetXaxis()->GetBinWidth(1) ;
+    y=fgs->GetParameter(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
     nr2->SetBinContent(ptBin,y) ;
-    ey= fgs->GetParError(0)/hPi0Proj->GetXaxis()->GetBinWidth(1) ;
+    ey= fgs->GetParError(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
     nr2->SetBinError(ptBin,ey) ;
-    npiInt=hPi0Proj2->Integral(intBinMin,intBinMax) ;
+    Double_t npiInt2=hPi0BSPol2->Integral(intBinMin,intBinMax) ;
     norm=fbg2->GetParameter(0) ;
     normErr=fbg2->GetParError(0) ;
-    if(npiInt>0.){
-      nr2int->SetBinContent(ptBin,npiInt) ;
-      nr2int->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*errStat + normErr*normErr*errStat*errStat + norm*norm*errStat)) ;
-    } 
-    hPi0Proj2->SetTitle(Form("M_{#gamma#gamma}^{BS_{2}}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
-    hPi0Proj2->DrawCopy() ;
-    c3->Update() ;
-    hPi0Proj2->Write(0,TObject::kOverwrite) ;
+    if(npiInt2>0.){
+      nr2int->SetBinContent(ptBin,npiInt2) ;
+      nr2int->SetBinError(ptBin,TMath::Sqrt(npiInt2 + norm*errStat + normErr*normErr*errStat*errStat + norm*norm*errStat)) ;
+    }
+    hPi0BSPol2->SetTitle(Form("M_{#gamma#gamma}^{BS_{2}}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid,ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+    hPi0BSPol2->DrawCopy() ;
+    sbsCanvas->Update() ;
+    hPi0BSPol2->Write(0,TObject::kOverwrite) ;
   }
-  
+
   char name[55] ;
   sprintf(name,"%sPi0_ratio_%s%s", saveToDir, kkey, format) ;
-  c1->Print(name) ;
+  ratioCanvas->Print(name) ;
   sprintf(name,"%sPi0_signal_%s%s", saveToDir, kkey, format) ;
-  c3->Print(name) ;
+  sbsCanvas->Print(name) ;
   sprintf(name,"%sPi0_raw_%s%s", saveToDir, kkey, format) ;
   rawCanvas->Print(name);
 
@@ -424,7 +423,7 @@ void MakeMmixPi0(const TString filename,
     Printf("ERROR: Centrality: %d not defined !!! ERROR", centrality);
     return;
   }
-    
+
   Double_t nevents = hCentralityX->Integral(cMin,cMax);
   if ( nevents > 0.9 ) {
     nr1   ->Scale(1./nevents) ;
@@ -433,7 +432,7 @@ void MakeMmixPi0(const TString filename,
     nr2int->Scale(1./nevents) ;
   } else {
     Printf("WARNING: non positive nEvents in centrality range, cMin:%d, cMax:%d, nEvents:%f", cMin, cMax, nevents );
-    
+
   }
 
   mr1->Write(0,TObject::kOverwrite) ;
@@ -457,9 +456,9 @@ void MakeMmixPi0(const TString filename,
   file->Close();
   delete file;
 
-  delete c1;
-  delete c3;
-  delete rawCanvas;  
+  delete ratioCanvas;
+  delete sbsCanvas;
+  delete rawCanvas;
 }
 
 //-----------------------------------------------------------------------------
@@ -475,7 +474,7 @@ Double_t PeakWidth(Double_t pt){
   Double_t c=0.000319 ;
   return TMath::Sqrt(a*a+b*b/pt/pt+c*c*pt*pt) ;
 }
- 
+
 //-----------------------------------------------------------------------------
 Double_t CB(Double_t * x, Double_t * par){
   //Parameterization of Real/Mixed ratio
@@ -583,7 +582,7 @@ void MakeMmixPi0()
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_SemiCentral/PHOSPi0Flow_SemiCentralCoutput1", -1, "CPV", "out/kSemiCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", -1, "CPV", "out/kMB/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_PHOSPb/PHOSPi0Flow_PHOSPbCoutput1", -1, "CPV", "out/kPHOSPb/");
-  
+
   // 0-10%
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow/PHOSPi0FlowCoutput1", 0, "CPV", "out/kCentral/");
   // MakeMmixPi0("AnalysisResults.root", "PHOSPi0Flow_MB/PHOSPi0Flow_MBCoutput1", 0, "CPV", "out/kMB/");
@@ -608,20 +607,20 @@ TH2F* FindPi0(TList *histoList, bool mix, const char* pid, int centrality)
   TString mixStr("");
   if( mix )
     mixStr = "Mi";
-  
+
   // If centrality is some integer in range [0, kNCentralityBins] return Pi0 plot for that cent.
   if( centrality >= 0 && centrality < kNCentralityBins ) {
     TString name = Form("h%sPi0%s_cen%d", mixStr.Data(), pid, centrality);
     TH2F* hist = (TH2F*) histoList->FindObject(name.Data());
     hist->Sumw2();
     return hist;
-  } 
+  }
   // If centrality is '-1' Merge [0, kNCentralityBins)
   else if ( centrality == -1 ) {
     TString name = Form("h%sPi0%s_cen%d", mixStr.Data(), pid, 0);
     TH2F* histMerge = (TH2F*) histoList->FindObject(name.Data()) -> Clone(Form("h%sPi0%s_merged", mixStr.Data(), pid));
     histMerge->Sumw2();
-    
+
     for( int cent = 1; cent < kNCentralityBins; ++cent ) {
       name = Form("h%sPi0%s_cen%d", mixStr.Data(), pid, cent);
       TH2F* other = (TH2F*) histoList->FindObject(name.Data());
