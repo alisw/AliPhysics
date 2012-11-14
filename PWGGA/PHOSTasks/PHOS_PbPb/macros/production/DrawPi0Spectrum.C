@@ -2,6 +2,7 @@
 // Uses files produced by MakeMmixPi0.C
 // author: Yuri Kharlov <Yuri.Kharlov@cern.ch>
 
+const char* fileName = "output/Pi0_FitResult.root";
 const char *centrality[] = {"0-10%","10-40%","40-80%"};
 
 DrawPi0Spectrum()
@@ -12,22 +13,22 @@ DrawPi0Spectrum()
   gStyle->SetPadTopMargin(0.05);
   gStyle->SetPadLeftMargin(0.12);
 
-  DrawPi0SpectrumCentral();
-  DrawPi0SpectrumSemiCentral(1);
+  //DrawPi0SpectrumCentral();
+  //DrawPi0SpectrumSemiCentral(1);
   // DrawPi0SpectrumSemiCentral(2);
 
-  // DrawPi0SpectrumCentralTrigger();
+   DrawPi0SpectrumCentralTrigger();
   // DrawPi0SpectrumSemiCentralTrigger(2);
 }
 
 //-----------------------------------------------------------------------------
 DrawPi0SpectrumCentral()
 {
-  f1=new TFile("LHC11h_Pi0_FitResult.root");
+  f1=new TFile("output/Pi0_FitResult.root");
 
-  h1 = (TH1D*)f1->Get("MixAll_cent0_yr2int");
-  h2 = (TH1D*)f1->Get("MixCPV_cent0_yr2int");
-  h3 = (TH1D*)f1->Get("MixDisp_cent0_yr2int");
+  h1 = (TH1D*)f1->Get("MixAll_cent0_kCentral_yr2int");
+  h2 = (TH1D*)f1->Get("MixCPV_cent0_kCentral_yr2int");
+  h3 = (TH1D*)f1->Get("MixDisp_cent0_kCentral_yr2int");
 
   Int_t nPt = h1->GetNbinsX();
   for (Int_t iPt=1; iPt<=nPt; iPt++) {
@@ -102,11 +103,11 @@ DrawPi0SpectrumCentral()
 //-----------------------------------------------------------------------------
 void DrawPi0SpectrumSemiCentral(const Int_t cent=1)
 {
-  f1=new TFile("LHC11h_calo_Pi0_FitResult_kPHOSPb_v2.root");
-  f3=new TFile("LHC11h_calo_Pi0_FitResult_kSemiCentral_v2.root");
+  f1=new TFile("output/Pi0_FitResult.root");
+  //f3=new TFile("output/LHC11h_Pi0_FitResult.root");
 
-  h1 = (TH1D*)f1->Get(Form("MixDisp10_cent%d_yr2int",cent));
-  h3 = (TH1D*)f3->Get(Form("MixDisp10_cent%d_yr2",cent));
+  h1 = (TH1D*)f1->Get(Form("MixDisp_cent%d_kPHOSPb_yr2int",cent));
+  h3 = (TH1D*)f1->Get(Form("MixDisp_cent%d_kSemiCentral_yr2",cent));
 
   TPaveText *txt = new TPaveText(0.6,0.9,0.8,0.99,"NDC");
   txt->SetFillColor(kWhite);
@@ -138,7 +139,7 @@ void DrawPi0SpectrumSemiCentral(const Int_t cent=1)
   ratioSemiCent->SetYTitle("kPHOS/kSemiCentral");
   ratioSemiCent->SetMarkerColor(kBlack);
   ratioSemiCent->SetLineColor(kBlack);
-  ratioSemiCent->SetAxisRange(0.,150.,"Y");
+  //ratioSemiCent->SetAxisRange(0.,150.,"Y");
   ratioSemiCent->Fit("pol0","Q","",10.,30.);
   Double_t suppr = ratioSemiCent->GetFunction("pol0")->GetParameter(0);
   h1->Scale(1./suppr);
@@ -165,13 +166,13 @@ void DrawPi0SpectrumSemiCentral(const Int_t cent=1)
 
 DrawPi0SpectrumCentralTrigger()
 {
-  f1=new TFile("out/kCentral/Pi0_FitResult_0.root");
-  f2=new TFile("out/kMB/Pi0_FitResult_0.root");
-  f3=new TFile("out/kPHOSPb/Pi0_FitResult_0.root");
+  f1=new TFile("output/Pi0_FitResult.root");
+  // f2=new TFile("out/kMB/Pi0_FitResult_0.root");
+  // f3=new TFile("out/kPHOSPb/Pi0_FitResult_0.root");
 
-  h1 = (TH1D*)f1->Get("MixCPV_cent0_yr2int");
-  h2 = (TH1D*)f2->Get("MixCPV_cent0_yr2int");
-  h3 = (TH1D*)f3->Get("MixCPV_cent0_yr2int");
+  h1 = (TH1D*)f1->Get("MixCPV_cent0_kCentral_yr2int");
+  h2 = (TH1D*)f1->Get("MixCPV_cent0_kMB_yr2int");
+  h3 = (TH1D*)f1->Get("MixCPV_cent0_kPHOSPb_yr2int");
 
   Int_t nPt = h1->GetNbinsX();
   for (Int_t iPt=1; iPt<=nPt; iPt++) {
@@ -262,13 +263,13 @@ DrawPi0SpectrumCentralTrigger()
 
 void DrawPi0SpectrumSemiCentralTrigger(int cent = 1)
 {
-  f1=new TFile(Form("out/kSemiCentral/Pi0_FitResult_%d.root", cent));
-  f2=new TFile(Form("out/kMB/Pi0_FitResult_%d.root", cent));
-  f3=new TFile(Form("out/kPHOSPb/Pi0_FitResult_%d.root", cent));
+  f1=new TFile("output/Pi0_FitResult.root");
+  // f2=new TFile(Form("out/kMB/Pi0_FitResult_%d.root", cent));
+  // f3=new TFile(Form("out/kPHOSPb/Pi0_FitResult_%d.root", cent));
 
-  h1 = (TH1D*)f1->Get(Form("MixCPV_cent%d_yr2int", cent));
-  h2 = (TH1D*)f2->Get(Form("MixCPV_cent%d_yr2int", cent));
-  h3 = (TH1D*)f3->Get(Form("MixCPV_cent%d_yr2int", cent));
+  h1 = (TH1D*)f1->Get(Form("MixCPV_cent%d_kSemiCentral_yr2int", cent));
+  h2 = (TH1D*)f1->Get(Form("MixCPV_cent%d_kMB_yr2int", cent));
+  h3 = (TH1D*)f1->Get(Form("MixCPV_cent%d_kPHOSPb_yr2int", cent));
 
   Int_t nPt = h1->GetNbinsX();
   for (Int_t iPt=1; iPt<=nPt; iPt++) {
