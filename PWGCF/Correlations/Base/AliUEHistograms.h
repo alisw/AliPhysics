@@ -52,7 +52,7 @@ class AliUEHistograms : public TNamed
   
   void SetRunNumber(Long64_t runNumber) { fRunNumber = runNumber; }
   
-  void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
+  void SetEfficiencyCorrection(THnF* hist, Bool_t correctTriggers) { fEfficiencyCorrection = hist; fCorrectTriggers = correctTriggers; }
   
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
@@ -128,6 +128,7 @@ protected:
   TH2F* fControlConvResoncances; // control histograms for cuts on conversions and resonances
   
   THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
+  Bool_t fCorrectTriggers;	// if true correct also trigger particles
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Int_t fTriggerSelectCharge;    // select charge of trigger particle
@@ -141,7 +142,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 20)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 21)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

@@ -59,6 +59,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fITSClusterMap(0),
   fControlConvResoncances(0),
   fEfficiencyCorrection(0),
+  fCorrectTriggers(kFALSE),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
@@ -186,6 +187,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fITSClusterMap(0),
   fControlConvResoncances(0),
   fEfficiencyCorrection(0),
+  fCorrectTriggers(kFALSE),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fTriggerRestrictEta(-1),
@@ -704,9 +706,12 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
 	  
 	  // trigger particle
-	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
-	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[2]); //pt
-	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	  if (fCorrectTriggers)
+	  {
+	    effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
+	    effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[2]); //pt
+	    useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	  }
 	}
     
         // fill all in toward region and do not use the other regions
@@ -724,7 +729,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	vars[2] = zVtx;
 
 	Double_t useWeight = 1;
-	if (fEfficiencyCorrection && applyEfficiency)
+	if (fEfficiencyCorrection && applyEfficiency && fCorrectTriggers)
 	{
 	  Int_t effVars[4];
 	  
@@ -986,6 +991,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;
+  target.fCorrectTriggers = fCorrectTriggers;
 }
 
 //____________________________________________________________________
