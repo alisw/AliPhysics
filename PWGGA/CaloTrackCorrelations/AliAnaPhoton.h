@@ -68,7 +68,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
 
-  void         FillPileUpHistograms(const Float_t energy, const Float_t time) ;
+  void         FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time) ;
   void         FillPileUpHistogramsPerEvent(TObjArray * clusters) ;
 
   void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms = kTRUE  ; }
@@ -287,7 +287,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEOverPTRD[2];                        //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD 
 
   // Pile-up
+  TH1F * fhPtPileUp[7];                         //! pT distribution of clusters before any selection
+  TH1F * fhPtChargedPileUp[7];                  //! pT distribution of track matched clusters
   TH1F * fhPtPhotonPileUp[7];                   //! pT distribution of selected photons
+  TH2F * fhLambda0PileUp[7];                    //! E vs M02 distribution of clusters, before any selection
+  TH2F * fhLambda0ChargedPileUp[7];             //! E vs M02 distribution of clusters, track matched clusters
+  TH2F * fhClusterTimeDiffPileUp[7];            //! E vs Time difference inside cluster, before any selection
+  TH2F * fhClusterTimeDiffChargedPileUp[7];     //! E vs Time difference inside cluster for track matched clusters
+  TH2F * fhClusterTimeDiffPhotonPileUp[7];      //! E vs Time difference inside cluster for selected photons
   TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut
   TH2F * fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
   TH2F * fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
