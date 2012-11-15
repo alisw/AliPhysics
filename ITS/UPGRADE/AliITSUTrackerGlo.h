@@ -13,7 +13,10 @@
 class AliITSUReconstructor;
 class AliITSURecoDet;
 class AliITSUSeed;
+class AliITSUClusterPix;
+
 class TTree;
+
 
 //-------------------------------------------------------------------------
 class AliITSUTrackerGlo : public AliTracker {
@@ -23,7 +26,7 @@ class AliITSUTrackerGlo : public AliTracker {
     kTrXIn ,kTrYIn ,kTrZIn ,kTrPhiIn , // entrance (outer) point on the layer from above 
     kTrXOut,kTrYOut,kTrZOut,kTrPhiOut, // exit (inner) point on the layer
     kTrPhi0, kTrDPhi, kTrZ0, kTrDZ,     // mean phi,dPhi, mean z, dZ (don't change this order)
-    kNTrData};
+    kNTrImpData};
   //
   enum {kTransportFailed=1  // seed did not reach target layer
 	,kRWCheckFailed =2  // failed to rotate the seed to frame of the layer impact point
@@ -45,15 +48,17 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   Init(AliITSUReconstructor* rec);
   void                   FindTrack(AliESDtrack* esdTr);
   Bool_t                 InitSeed(AliESDtrack *esdTr);
-  Int_t                  GetNSeeds(Int_t lr)              const {return 0;} //todo
-  AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return 0;} //todo
+  Int_t                  GetNSeeds(Int_t lr)              const {return fSeedsLr[lr].GetEntriesFast();} //RS TOCHECK
+  AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return (AliITSUSeed*)fSeedsLr[lr].UncheckedAt(sID);} //RS TOCHECK
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag) {return kFALSE;} // todo
   void                   KillSeed(Int_t ilr, Int_t id) {} // todo
-  Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA, double* rwData);
+  Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   //
-  AliITSUSeed*           NewSeed(const AliITSUSeed* src=0);
-
+  AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
+  void                   DeleteLastSeedFromPool()               {fSeedsPool.RemoveLast();}
+  void                   ResetSeedTree();  // RS TOCHECK
+  //
  private:
   
   AliITSUTrackerGlo(const AliITSUTrackerGlo&);
@@ -63,8 +68,10 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
   AliITSURecoDet*                 fITS;            // interface to ITS
   Double_t                        fCurrMass;       // current track mass
+  Double_t                        fTrImpData[kNTrImpData];  // data on track impact on the layer
   //
-
+  // the seeds management to be optimized
+  TObjArray*                      fSeedsLr;        // seeds at each layer
   TClonesArray                    fSeedsPool;      // pool for seeds
 
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker

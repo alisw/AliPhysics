@@ -25,10 +25,31 @@
 
 ClassImp(AliITSURecoParam)
 
+
+const Double_t AliITSURecoParam::fgkMaxDforV0dghtrForProlongation = 30;
+const Double_t AliITSURecoParam::fgkMaxDForProlongation           = 40; 
+const Double_t AliITSURecoParam::fgkMaxDZForProlongation          = 60;      
+const Double_t AliITSURecoParam::fgkMinPtForProlongation          = 0.0; 
+const Double_t AliITSURecoParam::fgkNSigmaRoadY                   = 5.;
+const Double_t AliITSURecoParam::fgkNSigmaRoadZ                   = 5.; 
+const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1000e-4;
+const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1000e-4;
+const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
+//
+
 //_____________________________________________________________________________
 AliITSURecoParam::AliITSURecoParam()
-:  fNLayers(0)
+  :  fNLayers(0)
+  ,fMaxDforV0dghtrForProlongation(fgkMaxDforV0dghtrForProlongation)
+  ,fMaxDForProlongation(fgkMaxDForProlongation)
+  ,fMaxDZForProlongation(fgkMaxDZForProlongation)
+  ,fMinPtForProlongation(fgkMaxDForProlongation)
+  ,fNSigmaRoadY(fgkNSigmaRoadY)
+  ,fNSigmaRoadZ(fgkNSigmaRoadZ)
+     //
   ,fTanLorentzAngle(0)
+  ,fSigmaY2(0)
+  ,fSigmaZ2(0)
 {
   // def c-tor
   SetName("ITS");
@@ -37,8 +58,17 @@ AliITSURecoParam::AliITSURecoParam()
 
 //_____________________________________________________________________________
 AliITSURecoParam::AliITSURecoParam(Int_t nLr)
-:  fNLayers(0)
+  :  fNLayers(0)
+  ,fMaxDforV0dghtrForProlongation(fgkMaxDforV0dghtrForProlongation)
+  ,fMaxDForProlongation(fgkMaxDForProlongation)
+  ,fMaxDZForProlongation(fgkMaxDZForProlongation)
+  ,fMinPtForProlongation(fgkMaxDForProlongation)
+  ,fNSigmaRoadY(fgkNSigmaRoadY)
+  ,fNSigmaRoadZ(fgkNSigmaRoadZ)
+     //
   ,fTanLorentzAngle(0)
+  ,fSigmaY2(0)
+  ,fSigmaZ2(0)
 {
   // def c-tor
   SetName("ITS");
@@ -51,6 +81,8 @@ AliITSURecoParam::~AliITSURecoParam()
 {
   // destructor
   delete[] fTanLorentzAngle;
+  delete[] fSigmaY2;
+  delete[] fSigmaZ2;
 }
 
 //_____________________________________________________________________________
@@ -89,9 +121,13 @@ void  AliITSURecoParam::SetNLayers(Int_t n)
   if (n<1) n = 1; // in case we want to have dummy params
   fNLayers = n;
   fTanLorentzAngle = new Double_t[n];
+  fSigmaY2 = new Double_t[n];
+  fSigmaZ2 = new Double_t[n];
   //
   for (int i=n;i--;) {
-    fTanLorentzAngle[i] = 0;
+    fTanLorentzAngle[i] = fgkTanLorentzAngle;
+    fSigmaY2[i] = fgkSigmaRoadY*fgkSigmaRoadY;
+    fSigmaZ2[i] = fgkSigmaRoadZ*fgkSigmaRoadZ;
   }
   //
 }
@@ -102,4 +138,20 @@ void  AliITSURecoParam::SetTanLorentzAngle(Int_t lr, Double_t v)
   // set Lorentz angle value
   if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
   fTanLorentzAngle[lr] = v;
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetSigmaY2(Int_t lr, Double_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fSigmaY2[lr] = v;
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetSigmaZ2(Int_t lr, Double_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fSigmaZ2[lr] = v;
 }

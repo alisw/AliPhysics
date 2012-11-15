@@ -8,7 +8,8 @@ ClassImp(AliITSUSeed)
 
 //_________________________________________________________________________
 AliITSUSeed::AliITSUSeed() 
-: fMass(kPionMass)
+:  fClID(0)
+  ,fParent(0)
 {
   // def c-tor
 }
@@ -21,8 +22,9 @@ AliITSUSeed::~AliITSUSeed()
 
 //_________________________________________________________________________
 AliITSUSeed::AliITSUSeed(const AliITSUSeed& src) 
-  : AliExternalTrackParam(src)
-  , fMass(src.fMass)
+  :AliExternalTrackParam(src)
+  ,fClID(src.fClID)
+  ,fParent(src.fParent) 
 {
   // def c-tor
 }
@@ -32,7 +34,8 @@ AliITSUSeed &AliITSUSeed::operator=(const AliITSUSeed& src)
 {
   // def c-tor
   if (this == &src) return *this;
-  fMass = src.fMass;
+  fClID = src.fClID;
+  fParent = src.fParent;
   AliExternalTrackParam::operator=(src);
   return *this;
 }

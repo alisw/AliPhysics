@@ -1,6 +1,7 @@
 #include "AliITSURecoSens.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliITSURecoSens)
 

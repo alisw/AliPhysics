@@ -3,10 +3,11 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
 #include "AliITSURecoSens.h"
-class TClonesArray;
 class AliITSUGeomTGeo;
 class AliITSsegmentation;
+class AliCluster;
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -50,6 +51,7 @@ class AliITSURecoLayer : public TNamed
   AliITSURecoSens*   GetSensor(Int_t i)            const {return (AliITSURecoSens*)fSensors[i];}
   AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInLadder+is);}
   TClonesArray*      GetClusters()                 const {return (TClonesArray*)fClusters;}
+  AliCluster*        GetCluster(Int_t icl)         const {return (AliCluster*)fClusters->UncheckedAt(icl);}
   void               SetClusters(TClonesArray* cl)       {fClusters = cl;}
   //
   Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors]);

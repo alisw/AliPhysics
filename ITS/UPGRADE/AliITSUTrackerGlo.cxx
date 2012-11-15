@@ -35,6 +35,7 @@
 #include "AliITSReconstructor.h"
 #include "AliITSUSeed.h"
 #include "AliITSUAux.h"
+#include "AliITSUClusterPix.h"
 using namespace AliITSUAux;
 using namespace TMath;
 
@@ -45,7 +46,8 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
 :  fReconstructor(rec)
   ,fITS(0)
   ,fCurrMass(kPionMass)
-  ,fSeedsPool("AliITSUSeed",100)
+  ,fSeedsLr(0)
+  ,fSeedsPool("AliITSUSeed",0)
 {
   // Default constructor
   if (rec) Init(rec);
@@ -57,6 +59,7 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
  // Default destructor
  //  
   delete fITS;
+  delete[] fSeedsLr;
   //
 }
 
@@ -64,10 +67,17 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
 void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
 {
   // init with external reconstructor
+  //
   fITS = new AliITSURecoDet(rec->GetGeom(),"ITSURecoInterface");
   for (int ilr=fITS->GetNLayersActive();ilr--;) {
     fITS->GetLayerActive(ilr)->SetClusters(rec->GetClusters(ilr));
   }
+  //
+  fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
+  int n = fITS->GetNLayersActive()+1;
+  fSeedsLr = new TObjArray[n];
+  //
+
 }
 
 //_________________________________________________________________________
@@ -147,14 +157,14 @@ Bool_t AliITSUTrackerGlo::NeedToProlong(AliESDtrack* esdTr)
       esdTr->IsOn(AliESDtrack::kITSin)  ||
       esdTr->GetKinkIndex(0)>0) return kFALSE;
   //
-  if (esdTr->Pt()<AliITSReconstructor::GetRecoParam()->GetMinPtForProlongation()) return kFALSE;
+  if (esdTr->Pt()<AliITSUReconstructor::GetRecoParam()->GetMinPtForProlongation()) return kFALSE;
   //
   float dtz[2];
   esdTr->GetDZ(GetX(),GetY(),GetZ(),bz,dtz); 
   // if track is not V0 candidata but has large offset wrt IP, reject it. RS TOCHECK
-  if ( !(esdTr->GetV0Index(0)>0 && dtz[0]>AliITSReconstructor::GetRecoParam()->GetMaxDforV0dghtrForProlongation()) 
-       && (Abs(dtz[0])>AliITSReconstructor::GetRecoParam()->GetMaxDForProlongation() ||
-	   Abs(dtz[1])>AliITSReconstructor::GetRecoParam()->GetMaxDZForProlongation())) return kFALSE;
+  if ( !(esdTr->GetV0Index(0)>0 && dtz[0]>AliITSUReconstructor::GetRecoParam()->GetMaxDforV0dghtrForProlongation()) 
+       && (Abs(dtz[0])>AliITSUReconstructor::GetRecoParam()->GetMaxDForProlongation() ||
+	   Abs(dtz[1])>AliITSUReconstructor::GetRecoParam()->GetMaxDZForProlongation())) return kFALSE;
   //
   return kTRUE;
 }
@@ -164,18 +174,21 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 {
   // find prolongaion candidates finding for single seed
   //
-  if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
-  if (!InitSeed(esdTr))         return;  // initialize prolongations hypotheses tree
+  const double kTolerX = 5e-4;
   //
-  double rwData[kNTrData];
+  if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
+  if (!InitSeed(esdTr))      return;  // initialize prolongations hypotheses tree
+  //
   AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors];
   AliITSUSeed seed0;
+  TObjArray clArr; // container for transfer of clusters matching to seed
   //
   for (int ila=fITS->GetNLayersActive();ila--;) {
     int ilaUp = ila+1;                         // prolong seeds from layer above
     int nSeedsUp = GetNSeeds(ilaUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
-      seed0 = *GetSeed(ilaUp,isd);  // copy of the seed on prev.active layer
+      AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
+      seed0 = *seedU;
       // go till next active layer
       if (!TransportToLayer(&seed0, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
@@ -184,31 +197,54 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
       }
       AliITSURecoLayer* lrA = fITS->GetLayerActive(ila);
-      if (!GetRoadWidth(&seed0, ila, rwData)) { // failed to find road width on the layer
+      if (!GetRoadWidth(&seed0, ila)) { // failed to find road width on the layer
 	if (NeedToKill(&seed0,kRWCheckFailed)) KillSeed(ilaUp,isd); 
 	continue;
       }
-      int nsens = lrA->FindSensors(&rwData[kTrPhi0], hitSens);  // find detectors which may be hit by the track (max 4)
+      int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track (max 4)
       //
       for (int isn=nsens;isn--;) {
+	AliITSURecoSens* sens = hitSens[isn];
+	AliITSUSeed* seedT = NewSeedFromPool(&seed0);
+	seedT->SetParent(seedU);
+	if (!seedT->Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) {DeleteLastSeedFromPool(); continue;}
+	int clID    = sens->GetFirstClusterId();
+	for (int icl=sens->GetNClusters();icl--;) {
+	  AliITSUClusterPix* cl = (AliITSUClusterPix*)lrA->GetCluster(clID); // cluster data is in the tracking frame
+	  if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
+	    if (!seedT->PropagateParamOnlyTo(seedT->GetX()+cl->GetX(),GetBz())) {DeleteLastSeedFromPool(); continue;}
+	  }
+	  
 
-
+	}
       }
       
     }
   }
   //
+  ResetSeedTree();
 }
 
 //_________________________________________________________________________
 Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr)
 {
-  // int prolongaion candidates finding for single seed
+  // init prolongaion candidates finding for single seed
   fCurrMass = esdTr->GetMass();
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
- 
+  //
+  AliITSUSeed* seed = NewSeedFromPool();
+  seed->AliExternalTrackParam::operator=(*esdTr);
+  seed->SetParent(esdTr);
+  fSeedsLr[fITS->GetNLayersActive()].AddLast(seed);
   return kTRUE;
   // TO DO
+}
+
+//_________________________________________________________________________
+void AliITSUTrackerGlo::ResetSeedTree()
+{
+  // reset current hypotheses tree
+  for (int i=fITS->GetNLayersActive()+1;i--;) fSeedsLr[fITS->GetNLayersActive()].Clear();
 }
 
 //_________________________________________________________________________
@@ -251,18 +287,18 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
 }
 
 //_________________________________________________________________________
-Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA, double* rwData)
+Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
 {
   // calculate road width in terms of phi and z for the track which MUST be on the external radius of the layer
   // as well as some aux info
   double bz = GetBz();
   AliITSURecoLayer* lrA = fITS->GetLayerActive(ilrA);
-  seed->GetXYZ(&rwData[kTrXIn]);    // lab position at the entrance from above
+  seed->GetXYZ(&fTrImpData[kTrXIn]);    // lab position at the entrance from above
   //
-  rwData[kTrPhiIn] = ATan2(rwData[kTrYIn],rwData[kTrXIn]);
-  if (!seed->Rotate(rwData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
-  double dr  = lrA->GetDR();                          // approximate X dist at the inner radius
-  if (!seed->GetXYZAt(seed->GetX()-dr, bz, rwData + kTrXOut)) {
+  fTrImpData[kTrPhiIn] = ATan2(fTrImpData[kTrYIn],fTrImpData[kTrXIn]);
+  if (!seed->Rotate(fTrImpData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
+  double dr  = lrA->GetDR();                              // approximate X dist at the inner radius
+  if (!seed->GetXYZAt(seed->GetX()-dr, bz, fTrImpData + kTrXOut)) {
     // special case: track does not reach inner radius, might be tangential
     double r = seed->GetD(0,0,bz);
     double x;
@@ -272,28 +308,28 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA, double* rwDa
       return kFALSE;
     }
     dr = Abs(seed->GetX() - x);
-    if (!seed->GetXYZAt(x, bz, rwData + kTrXOut)) {
+    if (!seed->GetXYZAt(x, bz, fTrImpData + kTrXOut)) {
       AliError(Form("This should not happen: x=%f",x));
       seed->Print();
       return kFALSE;      
     }
   }
   //
-  rwData[kTrPhiOut] = ATan2(rwData[kTrYOut],rwData[kTrXOut]);
-  double sgy = seed->GetSigmaY2() + dr*seed->GetSigmaSnp2() + AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
-  double sgz = seed->GetSigmaZ2() + dr*seed->GetSigmaTgl2() + AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
-  sgy = Sqrt(sgy)*AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY();
-  sgz = Sqrt(sgz)*AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ();
-  rwData[kTrPhi0] = 0.5*(rwData[kTrPhiOut]+rwData[kTrPhiIn]);
-  rwData[kTrZ0]   = 0.5*(rwData[kTrZOut]+rwData[kTrPhiIn]);
-  rwData[kTrDPhi] = 0.5*Abs(rwData[kTrPhiOut]-rwData[kTrPhiIn]) + sgy/lrA->GetR();
-  rwData[kTrDZ]   = 0.5*Abs(rwData[kTrZOut]-rwData[kTrPhiIn])   + sgz;
+  fTrImpData[kTrPhiOut] = ATan2(fTrImpData[kTrYOut],fTrImpData[kTrXOut]);
+  double sgy = seed->GetSigmaY2() + dr*dr*seed->GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
+  double sgz = seed->GetSigmaZ2() + dr*dr*seed->GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
+  sgy = Sqrt(sgy)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY();
+  sgz = Sqrt(sgz)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ();
+  fTrImpData[kTrPhi0] = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
+  fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrPhiIn]);
+  fTrImpData[kTrDPhi] = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]) + sgy/lrA->GetR();
+  fTrImpData[kTrDZ]   = 0.5*Abs(fTrImpData[kTrZOut]-fTrImpData[kTrPhiIn])   + sgz;
   //  
   return kTRUE;
 }
 
 //_________________________________________________________________________
-AliITSUSeed* AliITSUTrackerGlo::NewSeed(const AliITSUSeed* src)
+AliITSUSeed* AliITSUTrackerGlo::NewSeedFromPool(const AliITSUSeed* src)
 {
   // create new seed, optionally copying from the source
   return src ? 

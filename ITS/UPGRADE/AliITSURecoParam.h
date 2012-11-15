@@ -25,15 +25,53 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static AliITSURecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
   static AliITSURecoParam *GetCosmicTestParam();// special setting for cosmic  
 
-  Double_t    GetTanLorentzAngle(Int_t lr)                 const;
+  Double_t    GetMaxDforV0dghtrForProlongation() const {return fMaxDforV0dghtrForProlongation;}
+  Double_t    GetMaxDForProlongation()           const {return fMaxDForProlongation;}
+  Double_t    GetMaxDZForProlongation()          const {return fMaxDZForProlongation;}
+  Double_t    GetMinPtForProlongation()          const {return fMinPtForProlongation;}
+  Double_t    GetTanLorentzAngle(Int_t lr)       const;
+  Double_t    GetSigmaY2(Int_t lr)               const;
+  Double_t    GetSigmaZ2(Int_t lr)               const;
+  Double_t    GetNSigmaRoadY()                   const {return fNSigmaRoadY;}
+  Double_t    GetNSigmaRoadZ()                   const {return fNSigmaRoadZ;}
   //
   void        SetNLayers(Int_t n);
-  void        SetTanLorentzAngle(Int_t lr, Double_t v=0.);
+  void        SetTanLorentzAngle(Int_t lr, Double_t v);
+  void        SetSigmaY2(Int_t lr, Double_t v);
+  void        SetSigmaZ2(Int_t lr, Double_t v);
+
+  void        GetMaxDforV0dghtrForProlongation(Double_t v)            {fMaxDforV0dghtrForProlongation = v;}
+  void        SetMaxDForProlongation(Double_t v)                      {fMaxDForProlongation = v;}
+  void        SetMaxDZForProlongation(Double_t v)                     {fMaxDZForProlongation = v;}
+  void        SetMinPtForProlongation(Double_t v)                     {fMinPtForProlongation = v;}
+  void        SetNSigmaRoadY(Double_t v)                              {fNSigmaRoadY=v;}
+  void        SetNSigmaRoadZ(Double_t v)                              {fNSigmaRoadZ=v;}
 
 
  protected:
   Int_t          fNLayers;          // number of layers 
+  //
+  Double_t       fMaxDforV0dghtrForProlongation; // max. rphi imp. par. cut for V0 daughter
+  Double_t       fMaxDForProlongation; // max. rphi imp. par. cut
+  Double_t       fMaxDZForProlongation; // max. 3D imp. par. cut
+  Double_t       fMinPtForProlongation; // min. pt cut
+  Double_t       fNSigmaRoadY;          // N sigmas for road in Y
+  Double_t       fNSigmaRoadZ;          // N sigmas for road in Z
+  //
   Double_t*      fTanLorentzAngle;  //[fNLayers] Optional Lorentz angle for each layer
+  Double_t*      fSigmaY2;          //[fNLayers] addition to road width^2
+  Double_t*      fSigmaZ2;          //[fNLayers] addition to road width^2
+  //
+  static const Double_t fgkMaxDforV0dghtrForProlongation;      // default
+  static const Double_t fgkMaxDForProlongation;                // default
+  static const Double_t fgkMaxDZForProlongation;               // default
+  static const Double_t fgkMinPtForProlongation;               // default
+  static const Double_t fgkNSigmaRoadY;                        // default
+  static const Double_t fgkNSigmaRoadZ;                        // default
+  // for arrays
+  static const Double_t fgkSigmaRoadY;                         // default
+  static const Double_t fgkSigmaRoadZ;                         // default
+  static const Double_t fgkTanLorentzAngle;                    // default
   //
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
@@ -47,6 +85,20 @@ inline Double_t AliITSURecoParam::GetTanLorentzAngle(Int_t lr) const
 {
   // get tg of Lorentz Angle for the layer
   return lr<fNLayers ? fTanLorentzAngle[lr]:0;
+}
+
+//_____________________________________________________________________________
+inline Double_t AliITSURecoParam::GetSigmaY2(Int_t lr) const 
+{
+  // get tg of Lorentz Angle for the layer
+  return lr<fNLayers ? fSigmaY2[lr]:0;
+}
+
+//_____________________________________________________________________________
+inline Double_t AliITSURecoParam::GetSigmaZ2(Int_t lr) const 
+{
+  // get tg of Lorentz Angle for the layer
+  return lr<fNLayers ? fSigmaZ2[lr]:0;
 }
 
 #endif
