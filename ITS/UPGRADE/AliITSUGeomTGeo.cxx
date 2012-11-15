@@ -474,6 +474,7 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
 {
   // Get the transformation matrix of the SENSOR (not ncessary the same as the module) 
   // for a given module 'index' by quering the TGeoManager
+  static TGeoHMatrix matTmp;
   const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
   const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
 			      ,AliITSUGeomTGeo::GetITSLayerPattern()
@@ -491,13 +492,13 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
     AliError(Form("Error in cd-ing to %s",path.Data()));
     return 0;
   } // end if !gGeoManager
-  TGeoHMatrix* mat = gGeoManager->GetCurrentMatrix();
+  matTmp = *gGeoManager->GetCurrentMatrix(); // matrix may change after cd
   //RSS
   //  printf("%d/%d/%d %s\n",lay,ladd,detInLad,path.Data());
   //  mat->Print();
   // Retstore the modeler state.
   gGeoManager->PopPath();
-  return mat;
+  return &matTmp;
 }
 
 
