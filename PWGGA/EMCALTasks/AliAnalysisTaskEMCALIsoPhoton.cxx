@@ -422,6 +422,9 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t
   Float_t eta=-1, phi=-1;  
   for(int icell=0;icell<ncells;icell++){
     absid = TMath::Abs(fEMCalCells->GetCellNumber(icell));
+    Float_t celltime = fEMCalCells->GetCellTime(absid);
+    if(celltime>2e-8 || celltime<-2e-8)
+      continue;
     if(!fGeom)
       return;
     fGeom->EtaPhiFromIndex(absid,eta,phi);
