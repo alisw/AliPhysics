@@ -99,6 +99,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
     void   SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
     void   SetRemoveDuplicates(Bool_t flag = kTRUE) { fRemoveDuplicates = flag; }
+    void   SetSkipFastCluster(Bool_t flag = kTRUE) { fSkipFastCluster = flag; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -170,10 +171,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
     Bool_t fRemoveWeakDecays;	   // remove secondaries from weak decays from tracks and particles
     Bool_t fRemoveDuplicates;      // remove particles with the same label (double reconstruction)
+    Bool_t fSkipFastCluster;	   // skip kFastOnly flagged events (only for data)
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 20); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 21); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
