@@ -184,7 +184,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
   // Initialise the transformation here once more for the case of off-line reprocessing
   if( !fgTimeInitialisedFromEvent ){
     Long_t currentTime = static_cast<AliHLTUInt32_t>(time(NULL));
-    UInt_t eventTimeStamp = GetTimeStamp();
+    Long_t eventTimeStamp = GetTimeStamp();
     if( TMath::Abs( fgTransform.GetCurrentTimeStamp() - eventTimeStamp )>60 && 
 	TMath::Abs( currentTime - eventTimeStamp)>60*60*5 ){
       int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
