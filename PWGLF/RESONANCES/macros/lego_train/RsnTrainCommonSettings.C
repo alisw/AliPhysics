@@ -1,4 +1,4 @@
-void RsnTrainCommonSettings(TString type) {
+void RsnTrainCommonSettings(TString type,TString rsnPart,TString extraMacro="",TString extraMacroArgs="") {
 
    Bool_t valid;
    AliRsnTrainManager::GetGlobalStr("LegoTrainPath",valid);
@@ -6,6 +6,10 @@ void RsnTrainCommonSettings(TString type) {
       TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
       AliRsnTrainManager::SetGlobalStr("LegoTrainPath",legoTrainPath.Data());
    }
+
+   // removing Option part fo Rsn particle
+   if (rsnPart.Contains(":")) rsnPart.Remove(rsnPart.Index(":"),rsnPart.Length());
+   AliRsnTrainManager::SetGlobalStr("RsnParticle",rsnPart.Data());
 
    // CollisionType (pp=0,PbPb=1,pPb=2)
    if (type.Contains("pp")) AliRsnTrainManager::SetGlobalInt("IsCollisionType",0);
@@ -22,9 +26,7 @@ void RsnTrainCommonSettings(TString type) {
 
    // flag if we want to use event Mixing
    if (type.Contains("MIX")) AliRsnTrainManager::SetGlobalInt("IsMixing",1);
-   AliRsnTrainManager::SetGlobalInt("IsMixing",0);
-   // number of mixing
-   AliRsnTrainManager::SetGlobalInt("NumMix",5);
+   else AliRsnTrainManager::SetGlobalInt("IsMixing",0);
 
    // Use Rsn Mini
    if (type.Contains("MINI")) AliRsnTrainManager::SetGlobalInt("IsRsnMini",1);
@@ -32,16 +34,28 @@ void RsnTrainCommonSettings(TString type) {
 
 
    // current RSN base defaults (Will be changed in future)
-
-   AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",10.0);
-   AliRsnTrainManager::SetGlobalStr("RsnLegoTrainCommonCutOption","mon");
-   AliRsnTrainManager::SetGlobalInt("RsnPhysSelFilterBit",-1);
-   AliRsnTrainManager::SetGlobalInt("RsnCommonQualityCut",-1);
-   AliRsnTrainManager::SetGlobalInt("RsnUseRapidity",0);
-   AliRsnTrainManager::SetGlobalInt("RsnOutputFull",1);
-   AliRsnTrainManager::SetGlobalInt("RsnUseMCMomentum",0);
-   AliRsnTrainManager::SetGlobalInt("RsnUseMCMonitoring",0);
-
+   if (!extraMacro.IsNull()) {
+      extraMacro.ReplaceAll(".C","");
+      Printf("Running Extra Macro %s(%s)",extraMacro.Data(),extraMacroArgs.Data());
+      gROOT->ProcessLine(TString::Format("%s(%s)",extraMacro.Data(),extraMacroArgs.Data()).Data());
+   }
+   AliRsnTrainManager::SetGlobalInt("RsnNumMix",5,kFALSE);
+   AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",10.0,kFALSE);
+   AliRsnTrainManager::SetGlobalStr("RsnLegoTrainCommonCutOption","mon",kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnPhysSelFilterBit",-1,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnCommonQualityCut",-1,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnUseRapidity",0,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnOutputFull",1,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnUseMCMomentum",0,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnUseMCMonitoring",0,kFALSE);
+   AliRsnTrainManager::SetGlobalInt("RsnUseAOD049Patch",0,kFALSE);
+   
+   // for now we will use only on/off (0/1), maybe we can use number also, but let's see if neede
+   AliRsnTrainManager::SetGlobalInt("RsnMixDiffMult",1);
+   AliRsnTrainManager::SetGlobalInt("RsnMixDiffVz",1);
+   AliRsnTrainManager::SetGlobalInt("RsnMixDiffAngle",0);
+            
+   
    // expert options (don't change)
    AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",-1);
 

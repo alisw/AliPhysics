@@ -152,7 +152,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    rsnBaseSettings.Append("_MINI");
 
    if (!RsnLoadMacro("AddRsnTaskTrain.C")) return kFALSE;
-   AddRsnTaskTrain(rsnBaseSettings,rsnStr.Data(),rsnCutStr.Data());
+   AddRsnTaskTrain(rsnBaseSettings,rsnStr.Data(),rsnCutStr.Data(),"","","");
 
    return kTRUE;
 }

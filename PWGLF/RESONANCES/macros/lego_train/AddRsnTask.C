@@ -18,6 +18,9 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    Int_t useMC = AliRsnTrainManager::GetGlobalInt("IsMC",valid);
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
    Int_t physSelBit = AliRsnTrainManager::GetGlobalInt("RsnPhysSelFilterBit",valid);
+   Int_t isMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
+   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
+   Int_t isAOD049 = AliRsnTrainManager::GetGlobalInt("RsnUseAOD049Patch",valid);
 
    if (isRsnMini) {
       postfix.Prepend("Mini");
@@ -30,7 +33,7 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
       AliRsnAnalysisTask *taskRsn = new AliRsnAnalysisTask(TString::Format("Rsn%s",postfix.Data()).Data());
       task = (AliAnalysisTaskSE *) taskRsn;
    }
-   
+
    postfix.Append(TString::Format("_%s_%s",rsnPart.Data(),rsnCut.Data()).Data());
 
    if (physSelBit>=0) task->SelectCollisionCandidates((AliVEvent::EOfflineTriggerTypes)physSelBit);
@@ -47,6 +50,13 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    if (!RsnConfig(task,rsnIH,listRsn)) {
       Printf("Error in RsnConfig.C");
       return 0;
+   }
+
+   // setup Event Mixing
+   if (isMixing) AddEventMixingSettings(task);
+
+   if (isAOD049 && (!useMC) && (collisionType==1)) {
+      task->SetUseCentralityPatch(kTRUE);
    }
 
    // add the task to manager
@@ -80,6 +90,39 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    mgr->ConnectOutput(task, 1, output);
 
    return task;
+}
+
+void AddEventMixingSettings(AliAnalysisTaskSE *task) {
+
+   Bool_t valid = kTRUE;
+   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
+   Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
+   Int_t mixNum = AliRsnTrainManager::GetGlobalInt("RsnNumMix",valid);
+   
+   Int_t isMixDiffMult = AliRsnTrainManager::GetGlobalInt("RsnMixDiffMult",valid);
+   Int_t isMixDiffVz = AliRsnTrainManager::GetGlobalInt("RsnMixDiffVz",valid);
+   Int_t isMixDiffAngle = AliRsnTrainManager::GetGlobalInt("RsnMixDiffAngle",valid);
+
+   if (isRsnMini) {
+      AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *) task;
+      if (collisionType == 0) {
+         //         taskRsn->UseMultiplicity("TRACKS");
+         taskRsn->UseMultiplicity("QUALITY");
+         if (isMixDiffMult) taskRsn->SetMaxDiffMult(10);
+      } else {
+         taskRsn->UseCentrality("V0M");
+         if (isMixDiffMult) taskRsn->SetMaxDiffMult(1);
+      }
+      // set mixing
+      taskRsn->UseContinuousMix();
+      //task->UseBinnedMix();
+      taskRsn->SetNMix(mixNum);
+      
+      if (isMixDiffVz) taskRsn->SetMaxDiffVz(1);
+      if (isMixDiffAngle) taskRsn->SetMaxDiffAngle(30.0 * TMath::DegToRad());
+   }
+   // TODO RSN non Mini
+
 }
 
 Bool_t RsnLoadMacroTask(TString macro,TString path="") {
