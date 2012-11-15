@@ -155,7 +155,8 @@ TList *GetListOfObjects(const char* filename,
 
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
     cout<<"======================================================="<<endl;
-    cout<<"List name: "<<listBF->GetName()<<endl;
+    cout<<"List name: "<<listBFName.Data()<<endl;
+    cout<<"List name (check): "<<listBF->GetName()<<endl;
     //listBF->ls();
     
     //Get the histograms

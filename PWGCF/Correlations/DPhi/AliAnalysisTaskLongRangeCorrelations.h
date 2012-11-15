@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 224 2012-11-12 14:46:57Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 227 2012-11-15 11:18:34Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -23,6 +23,7 @@
 
 class TList;
 class TObjArray;
+class TClonesArray;
 
 class AliAODEvent;
 class AliAODHeader;
@@ -63,16 +64,18 @@ protected:
   // <n_1>(phi_1,eta_1)
   // <n_2>(phi_2,eta_2) 
   // <n_1, n_2>(phi_1,eta_1;phi_2,eta_2)
-  void CalculateMoments(TObjArray*, TObjArray*, Double_t weight=1.); 
-  void       ComputeN2ForThisEvent(THnSparse*, THnSparse*, const char*, Double_t weight=1);
+  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t weight=1.); 
+  void       ComputeNXForThisEvent(TObjArray* hNs, const char* histName, Double_t weight=1);
   THnSparse* ComputeNForThisEvent(TObjArray*, const char*) const;
 
-  TObjArray* GetAcceptedTracks(AliAODEvent* , AliAODHeader*, Double_t);
+  TObjArray* GetAcceptedTracks(AliAODEvent*, Double_t);
+  TObjArray* GetAcceptedTracks(TClonesArray*, Double_t);
 
   // filling histograms by name
-  void Fill(const char* histName, Double_t x);                           // TH1 weight=1
-  void Fill(const char* histName, Double_t x, Double_t y);               // TH2 weight=1
-  void Fill(const char* histName, const Double_t* x, Double_t weight=1); // THnSparse
+  void Fill(const char*, Double_t);                           // TH1 weight=1
+  void Fill(const char*, Double_t, Double_t );                // TH2 weight=1
+  void Fill(const char*, Double_t, Double_t, Double_t);       // TH3 weight=1
+  void Fill(const char*, const Double_t*, Double_t weight=1); // THnSparse
 
   void SetupForMixing();
 
