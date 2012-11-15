@@ -2061,15 +2061,15 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  TList *cRetrievedList = 0x0;
+/*  TList *cRetrievedList = 0x0;
          cRetrievedList = (TList*)GetOutputData(1);
 	if(!cRetrievedList){
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: ouput data container list not available\n"); return;
 	}
-  /*fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
+  fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
   if (!fHistTrackMultiplicity) {
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistTrackMultiplicity not available\n"); return;
-	}*/
+	}
   fHistMassXiMinus    = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassXiMinus") );	
 	if (!fHistMassXiMinus) {
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassXiMinus not available\n"); return;
@@ -2090,14 +2090,14 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
   TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascadep276","CheckCascade overview",10,10,1010,660);
   canCheckCascade->Divide(2,2);
   
-  /*canCheckCascade->cd(1);
+  canCheckCascade->cd(1);
   canCheckCascade->cd(1)->SetLogy();
   fHistTrackMultiplicity->SetMarkerStyle(kFullStar);  
   fHistTrackMultiplicity->GetXaxis()->SetLabelFont(42);
   fHistTrackMultiplicity->GetYaxis()->SetLabelFont(42);
   fHistTrackMultiplicity->SetTitleFont(42, "xy");
   fHistTrackMultiplicity->GetXaxis()->SetTitleOffset(1.1);
-  fHistTrackMultiplicity->DrawCopy("H");*/
+  fHistTrackMultiplicity->DrawCopy("H");
   
   canCheckCascade->cd(2);  
   fHistMassXiMinus ->SetMarkerStyle(kFullCircle);
@@ -2155,5 +2155,5 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
  		legendOmega->AddEntry( fHistMassOmegaMinus,"#Omega^{-} candidates","lp");
  		legendOmega->AddEntry( fHistMassOmegaPlus,"#Omega^{+} candidates","lp");
  		legendOmega->Draw();
-
+     */
 }

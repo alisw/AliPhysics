@@ -3185,7 +3185,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::Terminate(Option_t *) {
   // Draw result to the screen
   // Called once at the end of the query
 	
-  TList *cRetrievedList = 0x0;
+ /* TList *cRetrievedList = 0x0;
   cRetrievedList = (TList*)GetOutputData(1);
   if(!cRetrievedList) {
 	Printf("ERROR - AliAnalysisTaskCheckPerformanceCascadepp276 : ouput data container list not available\n");
@@ -3204,5 +3204,5 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::Terminate(Option_t *) {
 
   fHistTrackMultiplicityBeforeAnySel->SetMarkerStyle(22);
   fHistTrackMultiplicityBeforeAnySel->DrawCopy("E");
-
+ */
 }

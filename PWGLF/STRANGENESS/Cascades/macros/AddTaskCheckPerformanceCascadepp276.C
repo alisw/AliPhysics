@@ -27,7 +27,7 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276("TaskCheckPerformanceCascadepp276");
+   AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276(Form("TaskCheckPerformanceCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin));
 
    taskCheckPerfCascadepp276->SetAnalysisType               (type);
    taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     

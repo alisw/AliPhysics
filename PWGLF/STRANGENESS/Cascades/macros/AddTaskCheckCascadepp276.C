@@ -27,7 +27,7 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276("TaskCheckCascadepp276");
+   AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276(Form("TaskCheckCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin));
 
    taskcheckcascadepp276->SetAnalysisType               (type);
    taskcheckcascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);
