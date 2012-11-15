@@ -88,46 +88,35 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Position and SS weight parameter
   params->SetW0(4.5);
 
-  // Time cuts, depend on data type (no cells time in AODs)
-  TString sHandler((mgr->GetInputEventHandler())->ClassName());
-  if(sHandler.Contains("AOD"))
+  // Time cuts
+  
+  if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
+  else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
+  
+  if(timeWindow > 1)
   {
-    printf("AliAnalysisTaskEMCALClusterize - Open time cuts for AODs\n");
-    params->SetTimeCut(1e6);//Open this cut for AODs
-    params->SetTimeMin(-1); //Open this cut for AODs
-    params->SetTimeMax(1e6);//Open this cut for AODs    
+    params->SetTimeMin(-1*timeWindow*1.e-9);
+    params->SetTimeMax(timeWindow*1.e-9);
   }
   else
   {
-    printf("AliAnalysisTaskEMCALClusterize - Set time cuts for ESDs\n");
-    if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
-    else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
-    
-    if(timeWindow > 1)
+    if(bRecalT && !bMC)
     {
-      params->SetTimeMin(-1*timeWindow*1.e-9);
-      params->SetTimeMax(timeWindow*1.e-9);
+      params->SetTimeMin(-250*1.e-9);
+      params->SetTimeMax( 250*1.e-9);
+      printf("default time window for calibrated time -250 ns < T < 250 ns\n");
     }
     else
-    { 
-      if(bRecalT && !bMC)
-      {
-        params->SetTimeMin(-250*1.e-9);
-        params->SetTimeMax( 250*1.e-9);
-        printf("default time window for calibrated time -250 ns < T < 250 ns\n");
-      }
-      else 
-      {
-        // same as in reco, USE IF NO TIME RECALIBRATION
-        params->SetTimeMin(425*1.e-9);
-        params->SetTimeMax(825*1.e-9);
-        printf("default time window 425 ns < T < 825 ns\n");
-      }
+    {
+      // same as in reco, USE IF NO TIME RECALIBRATION
+      params->SetTimeMin(425*1.e-9);
+      params->SetTimeMax(825*1.e-9);
+      printf("default time window 425 ns < T < 825 ns\n");
     }
   }
 
   // Energy cuts
-  params->SetClusteringThreshold(minEseed/1.e3);                                          
+  params->SetClusteringThreshold(minEseed/1.e3);
   params->SetMinECut            (minEcell/1.e3); 
 
   // Clusterizer type
