@@ -6,19 +6,20 @@
 ClassImp(AliITSURecoDet)
 
 //______________________________________________________
-AliITSURecoDet::AliITSURecoDet(const char* name)
+AliITSURecoDet::AliITSURecoDet(AliITSUGeomTGeo* geom, const char* name)
 :  fNLayers(0)
   ,fNLayersActive(0)
   ,fRMax(-1)
   ,fRMin(-1)
   ,fLayers(0)
   ,fLayersActive(0)
-  ,fITSGeom(0)
+  ,fGeom(geom)
 {
   // def. c-tor
   SetNameTitle(name,name);
   fLayers.SetOwner(kTRUE);        // layers belong to this array
   fLayersActive.SetOwner(kFALSE); // this one just points on active layers in fLayers
+  Build();
 }
 
 //______________________________________________________
@@ -27,7 +28,6 @@ AliITSURecoDet::~AliITSURecoDet()
   // def. d-tor
   fLayersActive.Clear(); 
   fLayers.Clear();         // owned!
-  delete fITSGeom;
 }
 
 //______________________________________________________
@@ -56,21 +56,19 @@ Bool_t AliITSURecoDet::Build()
 {
   // build detector from TGeo
   //
-  fITSGeom = new AliITSUGeomTGeo(kTRUE,kTRUE);
-  int nlr = fITSGeom->GetNLayers();
+  if (!fGeom) AliFatal("Geometry interface is not set");
+  int nlr = fGeom->GetNLayers();
   if (!nlr) AliFatal("No geometry loaded");
   //
   // build active ITS layers
   for (int ilr=0;ilr<nlr;ilr++) {
-    int lrTyp = fITSGeom->GetLayerDetTypeID(ilr);
-    int nLad = fITSGeom->GetNLadders(ilr);
-    int nDet = fITSGeom->GetNDetectors(ilr);
+    int lrTyp = fGeom->GetLayerDetTypeID(ilr);
     // name layer according its active id, detector type and segmentation tyoe
-    AliITSURecoLayer* lra = new AliITSURecoLayer( Form("Lr%d%s%d",ilr,fITSGeom->GetDetTypeName(lrTyp),
-						       lrTyp%AliITSUGeomTGeo::kMaxSegmPerDetType),
-						  ilr,nLad*nDet,fITSGeom);
-    lra->Build();
+    AliITSURecoLayer* lra = new AliITSURecoLayer(Form("Lr%d%s%d",ilr,fGeom->GetDetTypeName(lrTyp),
+						      lrTyp%AliITSUGeomTGeo::kMaxSegmPerDetType),
+						 ilr,fGeom);
     AddLayer(lra);
   }
   return kTRUE;
 }
+

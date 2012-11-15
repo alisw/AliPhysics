@@ -29,6 +29,8 @@ void rec() {
 			 Form("local://%s",gSystem->pwd()));
   rec.SetSpecificStorage("ITS/Align/Data",
 			 Form("local://%s",gSystem->pwd()));
+  rec.SetSpecificStorage("ITS/Calib/RecoParam",
+			 Form("local://%s",gSystem->pwd()));
   
 
   rec.SetRunQA(":");

@@ -1,8 +1,9 @@
+#include <TClonesArray.h>
 #include "AliITSURecoLayer.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
-#include "AliITSURecoSens.h"
 #include "AliITSUAux.h"
+#include "AliITSUClusterPix.h"
 
 using namespace AliITSUAux;
 using namespace TMath;
@@ -26,16 +27,17 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name)
   ,fPhiOffs(0)
   ,fSensDZInv(0)
   ,fDPhiLadInv(0)
+  ,fMaxStep(0.5)
   ,fSensors(0)
   ,fITSGeom(0)
+  ,fClusters(0)
 {
   // def. c-tor
   SetNameTitle(name,name);
-  fSensors.SetOwner(kTRUE);
 }
 
 //______________________________________________________
-AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, AliITSUGeomTGeo* gm)
+AliITSURecoLayer::AliITSURecoLayer(const char* name, Int_t activeID, AliITSUGeomTGeo* gm)
   :fActiveID(activeID)
   ,fNSensors(0)
   ,fNSensInLadder(0)
@@ -50,18 +52,23 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name,Int_t activeID,Int_t nsens, 
   ,fPhiOffs(0)
   ,fSensDZInv(0)
   ,fDPhiLadInv(0)
-  ,fSensors(nsens)
+  ,fMaxStep(0.5)
+  ,fSensors(0)
   ,fITSGeom(gm)
+  ,fClusters(0)
 {
   // def. c-tor
   SetNameTitle(name,name);
-  fSensors.SetOwner(kTRUE);
+  Build();
 }
 
 //______________________________________________________
 AliITSURecoLayer::~AliITSURecoLayer()
 {
   // def. d-tor
+  delete[] fSensors;
+  delete[] fPhiLadMax;
+  delete[] fPhiLadMin;
 }
 
 //______________________________________________________
@@ -74,11 +81,14 @@ void AliITSURecoLayer::Print(Option_t* opt) const
 }
 
 //______________________________________________________
-Bool_t AliITSURecoLayer::Build()
+void AliITSURecoLayer::Build()
 {
   // build internal structures
+  if (fActiveID<0) return;
   fNLadders = fITSGeom->GetNLadders(fActiveID);
   fNSensInLadder = fITSGeom->GetNDetectors(fActiveID);
+  fNSensors = fNLadders*fNSensInLadder;
+  fSensors = new AliITSURecoSens*[fNSensors];
   const AliITSsegmentation* kSegm = fITSGeom->GetSegmentation(fActiveID);
   //
   // name layer according its active id, detector type and segmentation tyoe
@@ -98,7 +108,7 @@ Bool_t AliITSURecoLayer::Build()
     //
     for (int idt=0;idt<fNSensInLadder;idt++) {
       AliITSURecoSens* sens = new AliITSURecoSens(fNSensors++);
-      fSensors.AddLast(sens);
+      fSensors[idt] = sens;
       //
       double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
       mmod = *fITSGeom->GetMatrix(fActiveID,ild,idt);
@@ -176,12 +186,13 @@ Bool_t AliITSURecoLayer::Build()
 	  int neighbID = ildN*fNSensInLadder+idtN;
 	  //	  
 	  int zType = 1;  // side
-	  if (sens->GetZMin()-zTol>sensN->GetZMax()) continue; // too large distance
-	  if (sensN->GetZMin()-zTol>sens->GetZMax()) continue; // too large distance
+	  if (sens->GetZMin()-zTol  > sensN->GetZMax()) continue; // too large distance
+	  if (sensN->GetZMin()-zTol > sens->GetZMax() ) continue; // too large distance
 	  if      (sens->GetZMin()-zTol>sensN->GetZMin()) zType =  0;     // bottom
 	  else if (sensN->GetZMin()-zTol>sens->GetZMin()) zType =  2;     // top
 	  //
 	  int phiType = 1;
+
 	  double phiTstMn = sensN->GetPhiMin()-phiTol;
 	  BringTo02Pi(phiTstMn);
 	  if (!OKforPhiMax(sens->GetPhiMax(),phiTstMn)) continue; // too large angle	  
@@ -203,19 +214,10 @@ Bool_t AliITSURecoLayer::Build()
   } // ladders
   //
   //
-  return kTRUE;
 }
 
 //______________________________________________________
-void AliITSURecoLayer::AddSensor(const AliITSURecoSens* mod)
-{
-  //add new module
-  fSensors.AddLast((TObject*)mod);
-  fNSensors++;
-}
-
-//______________________________________________________
-Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens **sensors)
+Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors])
 {
   // find sensors having intersection with track
   // impPar contains: lab phi of track, dphi, labZ, dz
@@ -264,3 +266,27 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens **sens
   return nsens;
 }
 
+//______________________________________________________
+void AliITSURecoLayer::ProcessClusters(Int_t mode)
+{
+  // register in each sensor of the layer its cluster.
+  // the clusters of the layer must be sorted per sensor
+  int ncl = fClusters->GetEntriesFast();
+  int curSensID = -1;
+  AliITSURecoSens* curSens = 0;
+  for (int icl=0;icl<ncl;icl++) {
+    AliITSUClusterPix* cl = (AliITSUClusterPix*) fClusters->UncheckedAt(icl);
+    cl->GoToFrameTrk();
+    int vID = cl->GetVolumeId();
+    if (vID<curSensID) {AliFatal("Clusters are not sorted in increasing sensorID");}
+    if (vID>curSensID) {
+      if (curSens) curSens->ProcessClusters(mode);    // prepare clusters for reconstruction
+      curSens   = GetSensor(vID - fITSGeom->GetFirstModIndex(fActiveID));
+      curSensID = vID;
+      curSens->SetFirstClusterId(icl);
+    }
+    curSens->IncNClusters();
+  }
+  if (curSens) curSens->ProcessClusters(mode); // last sensor was not processed yet
+  //
+}

@@ -224,7 +224,7 @@ void Config()
   Int_t   iSHIL  =  0;
   Int_t   iT0    =  0;
   Int_t   iTOF   =  0;
-  Int_t   iTPC   =  0;
+  Int_t   iTPC   =  1;
   Int_t   iTRD   =  0;
   Int_t   iZDC   =  0;
   Int_t   iEMCAL =  0;

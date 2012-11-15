@@ -23,13 +23,12 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
 ClassImp(AliITSURecoParam)
-
 
 //_____________________________________________________________________________
 AliITSURecoParam::AliITSURecoParam()
+:  fNLayers(0)
+  ,fTanLorentzAngle(0)
 {
   // def c-tor
   SetName("ITS");
@@ -37,9 +36,21 @@ AliITSURecoParam::AliITSURecoParam()
 }
 
 //_____________________________________________________________________________
+AliITSURecoParam::AliITSURecoParam(Int_t nLr)
+:  fNLayers(0)
+  ,fTanLorentzAngle(0)
+{
+  // def c-tor
+  SetName("ITS");
+  SetTitle("ITS");
+  SetNLayers(nLr);
+}
+
+//_____________________________________________________________________________
 AliITSURecoParam::~AliITSURecoParam() 
 {
   // destructor
+  delete[] fTanLorentzAngle;
 }
 
 //_____________________________________________________________________________
@@ -70,3 +81,25 @@ AliITSURecoParam *AliITSURecoParam::GetCosmicTestParam()
   return param;
 }
 
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetNLayers(Int_t n)
+{
+  // set n layers and init all layer dependent arrays
+  if (fNLayers>0) AliFatal(Form("Number of layers was already set to %d",fNLayers));
+  if (n<1) n = 1; // in case we want to have dummy params
+  fNLayers = n;
+  fTanLorentzAngle = new Double_t[n];
+  //
+  for (int i=n;i--;) {
+    fTanLorentzAngle[i] = 0;
+  }
+  //
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetTanLorentzAngle(Int_t lr, Double_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fTanLorentzAngle[lr] = v;
+}

@@ -1,0 +1,74 @@
+#ifndef ALIITSTRACKERU_H
+#define ALIITSTRACKERU_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+//-------------------------------------------------------------------------
+//                ITS upgrade tracker base class
+//-------------------------------------------------------------------------
+
+#include "AliTracker.h"
+#include "AliESDEvent.h"
+
+class AliITSUReconstructor;
+class AliITSURecoDet;
+class AliITSUSeed;
+class TTree;
+
+//-------------------------------------------------------------------------
+class AliITSUTrackerGlo : public AliTracker {
+
+  public:
+  enum { // info from track extrapolation to layer for cluster check
+    kTrXIn ,kTrYIn ,kTrZIn ,kTrPhiIn , // entrance (outer) point on the layer from above 
+    kTrXOut,kTrYOut,kTrZOut,kTrPhiOut, // exit (inner) point on the layer
+    kTrPhi0, kTrDPhi, kTrZ0, kTrDZ,     // mean phi,dPhi, mean z, dZ (don't change this order)
+    kNTrData};
+  //
+  enum {kTransportFailed=1  // seed did not reach target layer
+	,kRWCheckFailed =2  // failed to rotate the seed to frame of the layer impact point
+  };
+
+  AliITSUTrackerGlo(AliITSUReconstructor* rec);
+  virtual ~AliITSUTrackerGlo();
+
+  virtual Int_t          Clusters2Tracks(AliESDEvent *event);
+  virtual Int_t          PropagateBack(AliESDEvent *event);
+  virtual Int_t          RefitInward(AliESDEvent *event);
+  virtual Int_t          LoadClusters(TTree * treeRP=0);
+  virtual void           UnloadClusters();
+  virtual AliCluster*    GetCluster(Int_t index) const;
+
+
+  //------------------------------------
+  Bool_t                 NeedToProlong(AliESDtrack* estTr);
+  void                   Init(AliITSUReconstructor* rec);
+  void                   FindTrack(AliESDtrack* esdTr);
+  Bool_t                 InitSeed(AliESDtrack *esdTr);
+  Int_t                  GetNSeeds(Int_t lr)              const {return 0;} //todo
+  AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return 0;} //todo
+  Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
+  Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag) {return kFALSE;} // todo
+  void                   KillSeed(Int_t ilr, Int_t id) {} // todo
+  Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA, double* rwData);
+  //
+  AliITSUSeed*           NewSeed(const AliITSUSeed* src=0);
+
+ private:
+  
+  AliITSUTrackerGlo(const AliITSUTrackerGlo&);
+  AliITSUTrackerGlo &operator=(const AliITSUTrackerGlo &tr);
+  //
+ protected:
+  AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
+  AliITSURecoDet*                 fITS;            // interface to ITS
+  Double_t                        fCurrMass;       // current track mass
+  //
+
+  TClonesArray                    fSeedsPool;      // pool for seeds
+
+  ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
+    
+};
+#endif
+

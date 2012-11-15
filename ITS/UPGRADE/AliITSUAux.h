@@ -21,6 +21,9 @@ namespace AliITSUAux {
   void   BringTo02Pi(double &phi);
   Bool_t OKforPhiMin(double phiMin,double phi);
   Bool_t OKforPhiMax(double phiMax,double phi);
+  //
+  const Double_t kNominalBz = 5.01;           // nominal field
+  const Double_t kPionMass = 1.3957e-01;
 }
 
 //_________________________________________________________________________________

@@ -34,6 +34,8 @@ set ( SRCS
     AliITSURecoLayer.cxx
     AliITSURecoDet.cxx
     AliITSUClusterPix.cxx
+    AliITSUSeed.cxx
+    AliITSUTrackerGlo.cxx
 #
 #    v0/AliITSlayerUpgrade.cxx 
 #    v0/AliITStrackerUpgrade.cxx 

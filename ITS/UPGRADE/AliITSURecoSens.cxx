@@ -6,7 +6,9 @@ ClassImp(AliITSURecoSens)
 
 //______________________________________________________
 AliITSURecoSens::AliITSURecoSens(Int_t id)
-:  fXTF(0)
+:  fNClusters(0)
+  ,fFirstClusterId(-1)
+  ,fXTF(0)
   ,fPhiTF(0)
   ,fPhiMin(0)
   ,fPhiMax(0)
@@ -21,6 +23,8 @@ AliITSURecoSens::AliITSURecoSens(Int_t id)
 //______________________________________________________
 AliITSURecoSens::AliITSURecoSens(const AliITSURecoSens &source)
   :TObject(source)
+  ,fNClusters(source.fNClusters)
+  ,fFirstClusterId(source.fFirstClusterId)
   ,fXTF(source.fXTF)
   ,fPhiTF(source.fPhiTF)
   ,fPhiMin(source.fPhiMin)
@@ -38,6 +42,8 @@ AliITSURecoSens& AliITSURecoSens::operator=(const AliITSURecoSens &source)
   // = operator
   if (&source==this) return *this;
   TObject::operator=(source);
+  fNClusters = source.fNClusters;
+  fFirstClusterId = source.fFirstClusterId;
   fXTF = source.fXTF;
   fPhiTF = source.fPhiTF;
   fPhiMin = source.fPhiMin;
@@ -68,3 +74,18 @@ void AliITSURecoSens::Print(Option_t*) const
   for (int i=0;i<kNNeighbors;i++) printf(" %4d",fNeighbors[i]); printf("\n");
 }
 
+//______________________________________________________
+void AliITSURecoSens::ResetClusters()
+{
+  // discard old clusters
+  fNClusters = 0;
+  fFirstClusterId = -1;
+}
+
+//______________________________________________________
+void AliITSURecoSens::ProcessClusters(Int_t)
+{
+  // create structures for fast finding
+  //
+  // to do
+}

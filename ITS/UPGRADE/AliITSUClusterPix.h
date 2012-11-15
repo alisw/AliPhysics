@@ -66,9 +66,9 @@ class AliITSUClusterPix : public AliCluster
   //
  protected:
   //
-  UShort_t                fNxNz;          // effective cluster size in X (1st byte) and Z (2nd byte) directions
-  static UInt_t           fgMode;         // general mode (sorting mode etc)
-  static AliITSUGeomTGeo* fgGeom;         // pointer on the geometry data
+  UShort_t                fNxNz;          //  effective cluster size in X (1st byte) and Z (2nd byte) directions
+  static UInt_t           fgMode;         //! general mode (sorting mode etc)
+  static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 
   ClassDef(AliITSUClusterPix,1)
 };

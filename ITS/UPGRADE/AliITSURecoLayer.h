@@ -3,9 +3,11 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include "AliITSURecoSens.h"
+class TClonesArray;
 class AliITSUGeomTGeo;
 class AliITSsegmentation;
-class AliITSURecoSens;
+
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
@@ -21,17 +23,19 @@ class AliITSURecoLayer : public TNamed
   //
   enum {kPassive=BIT(14)};
   AliITSURecoLayer(const char* name);
-  AliITSURecoLayer(const char* name, Int_t activeID,Int_t nsens,AliITSUGeomTGeo* gm);
+  AliITSURecoLayer(const char* name, Int_t activeID,AliITSUGeomTGeo* gm);
   virtual ~AliITSURecoLayer();
   //
-  Bool_t             Build();
+  void               ProcessClusters(Int_t mode=0);
   //
   Int_t              GetID()                       const {return (int)GetUniqueID();}
   Int_t              GetActiveID()                 const {return fActiveID;}
   Int_t              GetNSensors()                 const {return fNSensors;}
   Double_t           GetRMin()                     const {return fRMin;}
   Double_t           GetRMax()                     const {return fRMax;}
+  Double_t           GetDR()                       const {return fRMax-fRMin;}
   Double_t           GetR()                        const {return fR;}
+  Double_t           GetMaxStep()                  const {return fMaxStep;}
   Bool_t             IsActive()                    const {return !TestBit(kPassive);}
   Bool_t             IsPassive()                   const {return TestBit(kPassive);}
   //
@@ -41,16 +45,20 @@ class AliITSURecoLayer : public TNamed
   void               SetRMax(Double_t r)                 {fRMax = r;}
   void               SetR(Double_t r)                    {fR = r;}
   void               SetPassive(Bool_t v=kTRUE)          {SetBit(kPassive,v);}
-
+  void               SetMaxStep(Double_t st)             {fMaxStep = st>0 ? st : 0.1;}
   //
-  AliITSURecoSens*   GetSensor(Int_t i)            const {return (AliITSURecoSens*)fSensors.UncheckedAt(i);}
+  AliITSURecoSens*   GetSensor(Int_t i)            const {return (AliITSURecoSens*)fSensors[i];}
   AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInLadder+is);}
-  void               AddSensor(const AliITSURecoSens* mod); 
+  TClonesArray*      GetClusters()                 const {return (TClonesArray*)fClusters;}
+  void               SetClusters(TClonesArray* cl)       {fClusters = cl;}
   //
-  Int_t              FindSensors(const double* impPar, AliITSURecoSens **sensors);
+  Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors]);
   //
   virtual void       Print(Option_t* option = "")  const;
-
+  //
+ protected:
+  void               Build();
+  //
  protected:
   Int_t              fActiveID;  // ID within active layers
   Int_t              fNSensors;  // N of modules
@@ -66,8 +74,10 @@ class AliITSURecoLayer : public TNamed
   Double_t           fPhiOffs;   // offset in phi for 1st ladder
   Double_t           fSensDZInv; // inverse mean sensor Z span
   Double_t           fDPhiLadInv;// inverse mean ladder dphi
-  TObjArray          fSensors;   // sensors
+  Double_t           fMaxStep;   // max step in tracking X allowed within layer
+  AliITSURecoSens**  fSensors;   // sensors
   AliITSUGeomTGeo*   fITSGeom;   // geometry interface
+  TClonesArray*      fClusters;  // clusters of the layer
   //
  private:
   AliITSURecoLayer(const AliITSURecoLayer &source); 
