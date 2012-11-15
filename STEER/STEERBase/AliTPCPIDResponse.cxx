@@ -153,11 +153,15 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=that.fRes0[i];fResN2[i]=that.fResN2[i];}
  
   // Copy eta maps
-  fhEtaCorr = new TH2D(*(that.fhEtaCorr));
-  fhEtaCorr->SetDirectory(0);
+  if (that.fhEtaCorr){
+    fhEtaCorr = new TH2D(*(that.fhEtaCorr));
+    fhEtaCorr->SetDirectory(0);
+  }
   
-  fhEtaSigmaPar1 = new TH2D(*(that.fhEtaSigmaPar1));
-  fhEtaSigmaPar1->SetDirectory(0);
+  if (that.fhEtaSigmaPar1){
+    fhEtaSigmaPar1 = new TH2D(*(that.fhEtaSigmaPar1));
+    fhEtaSigmaPar1->SetDirectory(0);
+  }
 }
 
 //_________________________________________________________________________
@@ -184,12 +188,16 @@ AliTPCPIDResponse& AliTPCPIDResponse::operator=(const AliTPCPIDResponse& that)
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=that.fRes0[i];fResN2[i]=that.fResN2[i];}
 
   delete fhEtaCorr;
-  fhEtaCorr = new TH2D(*(that.fhEtaCorr));
-  fhEtaCorr->SetDirectory(0);
+  if (that.fhEtaCorr){
+    fhEtaCorr = new TH2D(*(that.fhEtaCorr));
+    fhEtaCorr->SetDirectory(0);
+  }
   
   delete fhEtaSigmaPar1;
-  fhEtaSigmaPar1 = new TH2D(*(that.fhEtaSigmaPar1));
-  fhEtaSigmaPar1->SetDirectory(0);
+  if (that.fhEtaSigmaPar1){
+    fhEtaSigmaPar1 = new TH2D(*(that.fhEtaSigmaPar1));
+    fhEtaSigmaPar1->SetDirectory(0);
+  }
   
   fSigmaPar0 = that.fSigmaPar0;
 
