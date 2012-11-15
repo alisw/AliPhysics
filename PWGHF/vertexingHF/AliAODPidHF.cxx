@@ -65,6 +65,7 @@ AliAODPidHF::AliAODPidHF():
   fTOFdecide(kFALSE),
   fOldPid(kFALSE),
   fPtThresholdTPC(999999.),
+  fMaxTrackMomForCombinedPID(999999.),
   fPidResponse(0),
   fPidCombined(new AliPIDCombined()),
   fTPCResponse(new AliTPCPIDResponse()),
@@ -134,6 +135,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fTOFdecide(pid.fTOFdecide),
   fOldPid(pid.fOldPid),
   fPtThresholdTPC(pid.fPtThresholdTPC),
+  fMaxTrackMomForCombinedPID(pid.fMaxTrackMomForCombinedPID),
   fPidResponse(pid.fPidResponse),
   fPidCombined(pid.fPidCombined),
   fTPCResponse(0x0),
@@ -493,13 +495,14 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
 // TPC nsigma cut PID, different sigmas in different p bins
 
+  AliAODPid *pidObj = track->GetDetPid();
+  Double_t mom = pidObj->GetTPCmomentum();
+  if(mom>fPtThresholdTPC) return kTRUE;
+
   Double_t nsigma;
   if(GetnSigmaTPC(track,specie,nsigma)!=1) return kFALSE;
   nsigma=TMath::Abs(nsigma);
 
-  AliAODPid *pidObj = track->GetDetPid();
-  Double_t mom = pidObj->GetTPCmomentum();
-  if(mom>fPtThresholdTPC) return 0;
 
   if(mom<fPLimit[0] && nsigma<fnSigma[0]) return kTRUE;
   if(mom<fPLimit[1] && mom>fPLimit[0] && nsigma<fnSigma[1]) return kTRUE;
@@ -511,8 +514,12 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
 Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
   // combination of the PID info coming from TPC and TOF
 
+  Double_t ptrack=track->P();
+  if(ptrack>fMaxTrackMomForCombinedPID) return 1;
+
   Bool_t okTPC=CheckTPCPIDStatus(track);
   Bool_t okTOF=CheckTOFPIDStatus(track);
+  if(ptrack>fPtThresholdTPC) okTPC=kFALSE;
 
   if(fMatch==1){
     //TOF || TPC (a la' Andrea R.)
@@ -546,7 +553,6 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
       tTOFinfo=-1;
       if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=1;
       if(fCompat && tTOFinfo>0){
-	Double_t ptrack=track->P();
 	if(ptrack>fPCompatTOF) {
 	  Double_t sig0tmp=fnSigma[3];
 	  SetSigma(3,fnSigmaCompat[1]);
@@ -607,8 +613,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
     // convention (temporary): -1 = kFALSE, 1 = kTRUE, 0 = not identified
     if(fTPC && fTOF) if(!okTPC && !okTOF) return 0;
 
-    Double_t ptrack=track->P();
-
+ 
     Int_t tTPCinfo=-1;
     if(ptrack>=fPLimit[0] && ptrack<fPLimit[1] && fTPC) {  
       if(!okTPC) return 0;
