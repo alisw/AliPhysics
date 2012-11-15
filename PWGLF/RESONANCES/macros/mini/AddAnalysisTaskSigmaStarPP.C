@@ -122,7 +122,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    } else 
      Printf("========================== DATA analysis - PID cuts used");
      //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
-   if (!ConfigSigmaStar(task, isMC, isPP, piPIDCuts, pPIDCuts, aodFilterBit, "", cutsPair) return 0x0;
+   if (!ConfigSigmaStar(task, isMC, isPP, piPIDCuts, pPIDCuts, aodFilterBit, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
