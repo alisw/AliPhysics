@@ -8,7 +8,9 @@
 #include "AliITSUSegmentationPix.h"
 #include "AliITSdigit.h"
 #include "AliITSURecoParam.h"
+#include "AliITSUAux.h"
 using namespace TMath;
+using namespace AliITSUAux;
 
 ClassImp(AliITSUClusterizer)
 
@@ -19,6 +21,8 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
   ,fRecoParam(0)
   ,fInputDigits(0)
   ,fInputDigitsReadIndex(0)
+  ,fLayerID(0)
+  ,fLorAngCorrection(0)
   ,fOutputClusters(0)
   ,fDigitFreelist(0)
   ,fPartFreelist(0)
@@ -172,6 +176,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
     nx = 1+Nint(dx/px);
     nz = 1+Nint(dz/pz);
   }
+  x -= fLorAngCorrection;  // LorentzAngle correction
   cluster->SetX(x);
   cluster->SetZ(z);
   cluster->SetY(0);
@@ -294,4 +299,12 @@ void AliITSUClusterizer::Clusterize()
   if (iNextRow) iNextRow->fNextInRow=0;
   CloseRemainingParts(iNextRowBegin);
   return;
+}
+
+//______________________________________________________________________________
+void AliITSUClusterizer::PrepareLorentzAngleCorrection(Double_t bz)
+{
+  // calculate parameters for Lorentz Angle correction. Must be called 
+  // after setting segmentation and recoparams
+  fLorAngCorrection = 0.5*fRecoParam->GetTanLorentzAngle(fLayerID)*bz/kNominalBz*fSegm->Dy();
 }

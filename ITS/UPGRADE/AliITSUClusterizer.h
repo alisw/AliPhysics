@@ -21,8 +21,11 @@ class AliITSUClusterizer : public TObject
   void Clusterize();
   void SetSegmentation(const AliITSUSegmentationPix *segm);
   void SetRecoParam(const AliITSURecoParam* param)     {fRecoParam = param;}
+  void SetLayerID(Int_t id)                            {fLayerID = id;}
   void SetVolID(Int_t id)                              {fVolID = id;}
   void SetNRow(Int_t nrow);
+  void PrepareLorentzAngleCorrection(Double_t bz);
+  //
   // interface methods
   void MakeRecPointBranch(TTree */*treeR*/)            {};
   void SetRecPointTreeAddress(TTree */*treeR*/)        {};
@@ -94,6 +97,8 @@ class AliITSUClusterizer : public TObject
   // Digit Input
   const TClonesArray *fInputDigits;         // supplied digits
   Int_t         fInputDigitsReadIndex;      // digits counter
+  Int_t         fLayerID;                   // current layer id
+  Double_t      fLorAngCorrection;          // Lorentz Angle correction for current layer
   // Cluster Output
   TClonesArray *fOutputClusters;            // external container to store clusters
   //
