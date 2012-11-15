@@ -1292,23 +1292,17 @@ void AliCaloTrackReader::FillInputEMCAL()
     
     if      (fInputEvent->FindListObject(fEMCALClustersListName))
     {
-      clusterList = dynamic_cast<TClonesArray*> (fInputEvent ->FindListObject(fEMCALClustersListName));
+      clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
     }
     else if(fOutputEvent)
-    { 
+    {
       clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
     }
     
     if(!clusterList)
     {
-      //printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? Try input event <%s>\n",fEMCALClustersListName.Data());
-      //List not in output event, try input event
-      clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
-      if(!clusterList)
-      {
         printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters?  <%s>\n",fEMCALClustersListName.Data());
         return;
-      }
     }
     
     Int_t nclusters = clusterList->GetEntriesFast();
@@ -1319,6 +1313,46 @@ void AliCaloTrackReader::FillInputEMCAL()
       if (clus) FillInputEMCALAlgorithm(clus, iclus);
       else printf("AliCaloTrackReader::FillInputEMCAL() - Null cluster in list!\n");
     }// cluster loop
+    
+    // Recalculate the pile-up time, in case long time clusters removed during clusterization
+    //printf("Input event INIT : Pile-up clusters %d, NO pile-up %d\n",fNPileUpClusters,fNNonPileUpClusters);
+
+    fNPileUpClusters    = 0; // Init counter
+    fNNonPileUpClusters = 0; // Init counter
+    
+    for (Int_t iclus =  0; iclus < fInputEvent->GetNumberOfCaloClusters(); iclus++)
+    {
+      AliVCluster * clus = 0;
+      
+      if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+      {
+        if (IsEMCALCluster(clus))
+        {
+          
+          if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) continue ;
+
+          Float_t  frac     =-1;
+          Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
+          Double_t tof = clus->GetTOF();
+          GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+          tof*=1e9;
+
+          //printf("Input event cluster : AbsIdMax %d, E %2.2f, time %2.2f \n", absIdMax,clus->E(),tof);
+
+          //Reject clusters with bad channels, close to borders and exotic;
+          if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber()))  continue;
+
+          if(!IsInTimeWindow(tof,clus->E()))
+          {
+            fNPileUpClusters++ ;
+          }
+          else
+            fNNonPileUpClusters++;
+        }
+      }
+    }
+    
+    //printf("Input event : Pile-up clusters %d, NO pile-up %d\n",fNPileUpClusters,fNNonPileUpClusters);
     
     // Recalculate track matching, not necessary if already done in the reclusterization task.
     // in case it was not done ...
