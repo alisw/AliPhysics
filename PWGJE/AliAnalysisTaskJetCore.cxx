@@ -919,9 +919,12 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 		  if((jetEta<fJetEtaMin)||(jetEta>fJetEtaMax)) continue;
 		  Double_t jetArea = jet->EffectiveAreaCharged();
 		  Double_t jetPtCorr=jetPt-rho*jetArea;
-		  Double_t dPhi=TMath::Abs(jetPhi-partback->Phi());
+		  Double_t dPhi=jetPhi-partback->Phi();
 		  if(dPhi>2*TMath::Pi()) dPhi -= 2*TMath::Pi();
-		  if(dPhi>1.5*TMath::Pi()) dPhi = dPhi-2*TMath::Pi();
+		  if(dPhi<-2*TMath::Pi()) dPhi += 2*TMath::Pi();
+		  if(dPhi<-0.5*TMath::Pi()) dPhi += 2*TMath::Pi();
+		  if(dPhi>1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
+
 		  Double_t fill[] = {partback->Pt(),jetPtCorr,dPhi,jetArea,centValue};
 		  fHJetPhiCorr->Fill(fill);
 		}
