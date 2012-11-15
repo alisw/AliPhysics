@@ -66,6 +66,7 @@ class AliAODPidHF : public AliAODPid{
  void SetTOFdecide(Bool_t tOFdecide){fTOFdecide=tOFdecide;return;}
  void SetOldPid(Bool_t oldPid){fOldPid=oldPid;return;}
  void SetPtThresholdTPC(Double_t ptThresholdTPC){fPtThresholdTPC=ptThresholdTPC;return;}
+ void SetMaxTrackMomForCombinedPID(Double_t mom){fMaxTrackMomForCombinedPID=mom;}
  void SetPidResponse(AliPIDResponse *pidResp) {fPidResponse=pidResp;return;}
  void SetCombDetectors(ECombDetectors pidComb) {
    fCombDetectors=pidComb;
@@ -112,6 +113,7 @@ class AliAODPidHF : public AliAODPid{
  Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
  Bool_t GetOldPid(){return fOldPid;}
  Double_t GetPtThresholdTPC(){return fPtThresholdTPC;}
+ Double_t GetMaxTrackMomForCombinedPID(){return fMaxTrackMomForCombinedPID;}
  AliPIDResponse *GetPidResponse() const {return fPidResponse;}
  AliPIDCombined *GetPidCombined() const {return fPidCombined;}
  ECombDetectors GetCombDetectors() const {
@@ -184,6 +186,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fTOFdecide; //  real data PbPb 
  Bool_t fOldPid; //  old PID method implemented
  Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
+ Double_t fMaxTrackMomForCombinedPID; // momentum threshold to use PID
  AliPIDResponse *fPidResponse; //! pid response
  AliPIDCombined* fPidCombined; //! combined PID object 
 
@@ -193,7 +196,7 @@ class AliAODPidHF : public AliAODPid{
  ECombDetectors fCombDetectors; // detectors to be involved for combined PID
  Bool_t fUseCombined; // detectors to be involved for combined PID
 
- ClassDef(AliAODPidHF,18) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,19) // AliAODPid for heavy flavor PID
 
 };
 
