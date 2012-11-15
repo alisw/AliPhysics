@@ -71,7 +71,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<6; ++i) { //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list);
+    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list,triggers);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
