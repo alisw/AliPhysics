@@ -1,5 +1,10 @@
 AliESDtrackCuts *RsnQualityCut(TString cut="pp_LHC11_p4_120") {
 
+
+   // For RSN analysis, we select Primaries
+   Bool_t selPrimaries = kTRUE;
+   
+   Printf("RsnQualityCut : %s",cut.Data());
    AliESDtrackCuts *esdTrackCuts = 0;
    if (cut.Contains("pp_LHC11a_p4")) {
       //esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);

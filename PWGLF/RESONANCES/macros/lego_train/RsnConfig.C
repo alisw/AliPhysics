@@ -463,40 +463,44 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    // nITCcluster
    AliRsnValueDaughter *axisITSnClusters = new AliRsnValueDaughter("ITS", AliRsnValueDaughter::kNITSclusters);
-   axisITSnClusters->SetBins(10,0,10);
+   axisITSnClusters->SetBins(8,-0.5,7.5);
 
    AliRsnListOutput *outMonitorITSnClusters = new AliRsnListOutput("nClusters", AliRsnListOutput::kHistoDefault);
    outMonitorITSnClusters->AddValue(axisITSnClusters);
+   outMonitorITSnClusters->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorITSnClusters);
    if (lm) lm->AddOutput(outMonitorITSnClusters);
 
    // nTPCcluster
    AliRsnValueDaughter *axisTPCnClusters = new AliRsnValueDaughter("TPC", AliRsnValueDaughter::kNTPCclusters);
-   axisTPCnClusters->SetBins(300,0,300);
+   axisTPCnClusters->SetBins(166,-0.5,165.5);
 
    AliRsnListOutput *outMonitorTPCnClusters = new AliRsnListOutput("nClusters", AliRsnListOutput::kHistoDefault);
    outMonitorTPCnClusters->AddValue(axisTPCnClusters);
+   outMonitorTPCnClusters->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorTPCnClusters);
    if (lm) lm->AddOutput(outMonitorTPCnClusters);
 
    // ITSchi2
    AliRsnValueDaughter *axisITSchi2 = new AliRsnValueDaughter("ITS", AliRsnValueDaughter::kITSchi2);
-   axisITSchi2->SetBins(10,0,10);
+   axisITSchi2->SetBins(100,0,10);
 
    AliRsnListOutput *outMonitorITSchi2 = new AliRsnListOutput("chi2", AliRsnListOutput::kHistoDefault);
    outMonitorITSchi2->AddValue(axisITSchi2);
+   outMonitorITSchi2->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorITSchi2);
    if (lm) lm->AddOutput(outMonitorITSchi2);
 
    // TPCchi2
    AliRsnValueDaughter *axisTPCchi2 = new AliRsnValueDaughter("TPC", AliRsnValueDaughter::kTPCchi2);
-   axisTPCchi2->SetBins(10,0,10);
+   axisTPCchi2->SetBins(100,0,10);
 
    AliRsnListOutput *outMonitorTPCchi2 = new AliRsnListOutput("chi2", AliRsnListOutput::kHistoDefault);
    outMonitorTPCchi2->AddValue(axisTPCchi2);
+   outMonitorTPCchi2->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorTPCchi2);
    if (lm) lm->AddOutput(outMonitorTPCchi2);
@@ -507,6 +511,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    AliRsnListOutput *outMonitorDCAXY = new AliRsnListOutput("DCA", AliRsnListOutput::kHistoDefault);
    outMonitorDCAXY->AddValue(axisDCAXY);
+   outMonitorDCAXY->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorDCAXY);
    if (lm) lm->AddOutput(outMonitorDCAXY);
@@ -517,6 +522,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    AliRsnListOutput *outMonitorDCAZ = new AliRsnListOutput("DCA", AliRsnListOutput::kHistoDefault);
    outMonitorDCAZ->AddValue(axisDCAZ);
+   outMonitorDCAZ->AddValue(axisPtBig);
    // add outputs to loop
    if (mon) mon->Add(outMonitorDCAZ);
    if (lm) lm->AddOutput(outMonitorDCAZ);

@@ -900,6 +900,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
+	 //get mother pdg code
          if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;

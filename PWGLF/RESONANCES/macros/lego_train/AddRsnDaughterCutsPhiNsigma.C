@@ -31,6 +31,8 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    Double_t etaRange=0.8;
    Double_t trackPtMin=0.;
    Double_t trackPtMax=1.e10;
+   Int_t NclTPC=70;
+   Char_t DCAxyFormula[100]="0.0182+0.035/pt^1.01";
 
    Bool_t useTPC_K=kFALSE;
    Bool_t useTOF_K=kFALSE;
@@ -54,13 +56,13 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    if (opt.Contains("KTPCnsig20")) nSigmaTPC = 2.0;
    if (opt.Contains("KTPCnsig25")) nSigmaTPC = 2.5;
    if (opt.Contains("KTPCnsig30")) nSigmaTPC = 3.0;
+   if (opt.Contains("KTPCnsig1000")) nSigmaTPD = 100.0;
 
    if (opt.Contains("KTOFnsig10")) nSigmaTOF = 1.0;
    if (opt.Contains("KTOFnsig15")) nSigmaTOF = 1.5;
    if (opt.Contains("KTOFnsig20")) nSigmaTOF = 2.0;
    if (opt.Contains("KTOFnsig25")) nSigmaTOF = 2.5;
    if (opt.Contains("KTOFnsig30")) nSigmaTOF = 3.0;
-
    if (opt.Contains("KTOFnsig1000")) nSigmaTOF = 100.0;
 
    if (opt.Contains("trackPt")) {
@@ -68,6 +70,7 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       if (opt.Contains("trackPtMin015")) trackPtMin = 0.15;
       if (opt.Contains("trackPtMin02")) trackPtMin = 0.2;
       if (opt.Contains("trackPtMin05")) trackPtMin = 0.5;
+      if (opt.Contains("trackPtMin06")) trackPtMin = 0.6;
 
       if (opt.Contains("trackPtMax18")) trackPtMax = 1.8;
       if (opt.Contains("trackPtMax20")) trackPtMax = 2.0;
@@ -90,6 +93,24 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       useEta = kTRUE;
    }
 
+   Bool_t useNclTPC = kFALSE;
+   if (opt.Contains("NclTPC")) {
+      if (opt.Contains("NclTPC70")) NclTPC=70;
+      if (opt.Contains("NclTPC75")) NclTPC=75;
+      if (opt.Contains("NclTPC80")) NclTPC=80;
+      if (opt.Contains("NclTPC85")) NclTPC=85;
+      if (opt.Contains("NclTPC90")) NclTPC=90;
+      useNclTPC = kTRUE;
+   }
+
+   Bool_t useDCAxy = kFALSE;
+   if (opt.Contains("DCAxy")) {
+      if (opt.Contains("DCAxyFormula7s")) sprintf(DCAxyFormula,"0.0182+0.035/pt^1.01");
+      if (opt.Contains("DCAxyFormula6s")) sprintf(DCAxyFormula,"0.0156+0.03/pt^1.01");
+      if (opt.Contains("DCAxyFormula5s")) sprintf(DCAxyFormula,"0.013+0.025/pt^1.01");
+      useDCAxy = kTRUE;
+   }
+
 //---------------------------------------------
 //  Combine cuts
 //---------------------------------------------
@@ -102,12 +123,15 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    AliRsnCutTrackQuality *qualityCut = new AliRsnCutTrackQuality("cutQualityK");
    if (!rsnQualityCut.IsNull()) {
       AliESDtrackCuts *esdTK = RsnQualityCut(rsnQualityCut.Data());
+      if(useDCAxy) esdTK->SetMaxDCAToVertexXYPtDep(DCAxyFormula);
       qualityCut->SetESDtrackCuts(esdTK);
    } else {
       if (useCommonQualityCut>=0) {
          qualityCut->SetAODTestFilterBit(useCommonQualityCut);
+         if(useDCAxy) {qualityCut->SetCheckOnlyFilterBit(kFALSE); qualityCut->SetDCARPtFormula(DCAxyFormula);}
       } else {
          qualityCut->SetDefaults2010();
+         if(useDCAxy) qualityCut->SetDCARPtFormula(DCAxyFormula);
       }
    }
 
@@ -153,6 +177,17 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       cuts->AddCut(cutTrackPt);
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutTrackPt->GetName();
+   }
+
+   if (useNclTPC) {
+      Printf("Adding NclTPC >= %i",NclTPC);
+      AliRsnValueDaughter *valNclTPC = new AliRsnValueDaughter(Form("val%sNclTPC%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kNTPCclusters);
+      AliRsnCutValue *cutNclTPC = new AliRsnCutValue(Form("cut%sNclTPC%s",AliPID::ParticleName(type1),opt.Data()),NclTPC-0.1,1000.);
+      cutNclTPC->SetTargetType(AliRsnTarget::kDaughter);
+      cutNclTPC->SetValueObj(valNclTPC);
+      cuts->AddCut(cutNclTPC);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutNclTPC->GetName();
    }
 
    if (usePDG) {
