@@ -133,6 +133,7 @@ fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
 fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
+fSkipFastCluster(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -360,6 +361,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
+  settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
   settingsTree->Branch("fCorrectTriggers", &fCorrectTriggers,"CorrectTriggers/O");
   
   settingsTree->Fill();
@@ -775,6 +777,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     
   // skip not selected events here (the AOD is not updated for those)
   if (!fSkipTrigger && !(fInputHandler->IsEventSelected() & fSelectBit))
+    return;
+  
+  // skip fast cluster events here if requested
+  if (!fSkipFastCluster && (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly))
     return;
 
   // Support for ESD and AOD based analysis
