@@ -1,8 +1,8 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 
-void SetupEventCuts(AliDielectron *die);
+void SetupEventCuts(AliDielectron *die, ULong64_t triggers);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
 
 void AddMCSignals(AliDielectron *die);
 
@@ -15,12 +15,11 @@ enum { kQA=0 };
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
-Bool_t  isESD = kTRUE;
-Bool_t  hasMC = kFALSE;
-TString list  = gSystem->Getenv("LIST");
+Bool_t  isESD      = kTRUE;
+Bool_t  hasMC      = kFALSE;
+TString list       = gSystem->Getenv("LIST");
 
-
-AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="")
+AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)
 {
   //
   // Setup the instance of AliDielectron
@@ -55,7 +54,7 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="")
   die->SetHasMC(hasMC);
 
   // cut setup
-  SetupEventCuts(die);
+  SetupEventCuts(die,triggers);
   SetupTrackCuts(die,cutDefinition);
   //  SetupPairCuts(die,cutDefinition);
 
@@ -110,18 +109,28 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="")
 }
 
 //______________________________________________________________________________________
-void SetupEventCuts(AliDielectron *die)
+void SetupEventCuts(AliDielectron *die, ULong64_t triggers)
 {
   //
   // Setup the event cuts
   //
+
+  // trigger specific centrality cuts (reject trigger inefficiencies)
+  Double_t minCent=0.0, maxCent=100.;
+  switch(triggers) {
+  case AliVEvent::kCentral:     minCent= 0.; maxCent= 9.; break;
+  case AliVEvent::kSemiCentral: minCent=12.; maxCent=53.; break;
+  case AliVEvent::kMB:          minCent= 0.; maxCent=80.; break;
+  default:                      minCent= 0.; maxCent=80.; break;
+  }
+
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
   if(!isESD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
+  eventCuts->SetCentralityRange(minCent,maxCent);
   eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
 
@@ -413,7 +422,15 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Track","","", AliDielectronVarManager::kNclsITS, 80, 0.,80.,      AliDielectronVarManager::kCentrality);
     histos->UserProfile("Track","", "", AliDielectronVarManager::kNclsITS,
 			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
-    
+
+    histos->UserHistogram("Track","","", 7,0.,7., AliDielectronVarManager::kITSLayerFirstCls);
+    histos->UserProfile("Track","", "", AliDielectronVarManager::kITSLayerFirstCls,
+			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
+
+    // TRD
+    histos->UserHistogram("Track","", "",   7, 0., 7., AliDielectronVarManager::kTRDpidQuality);
+    histos->UserHistogram("Track","", "", 105,-1.,20., AliDielectronVarManager::kTRDchi2);
+ 
     // TPC PID
     histos->UserProfile("Track","","", AliDielectronVarManager::kTPCnSigmaEle, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserHistogram("Track","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(16, 0.,80.), AliDielectronHelper::MakeLinBinning(100, -5.,+5),
