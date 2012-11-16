@@ -21,6 +21,7 @@
 #include "TClonesArray.h"
 #include "TParticle.h"
 #include "AliMFTConstants.h"
+#include "TLorentzVector.h"
 
 //====================================================================================================================================================
 
@@ -78,7 +79,17 @@ public:
   void SetNWrongClustersMC(Int_t nClusters) { fNWrongClustersMC = nClusters; }
   Int_t GetNWrongClustersMC() { return fNWrongClustersMC; }
 
-  Double_t Pt() { return TMath::Sqrt(TMath::Power(GetTrackParamAtMFTCluster(0)->Px(),2)+TMath::Power(GetTrackParamAtMFTCluster(0)->Py(),2)); }
+  Double_t Pt()       { return fKinem.Pt(); }
+  Double_t Eta()      { return fKinem.Eta(); }
+  Double_t Rapidity() { return fKinem.Rapidity(); }
+  Double_t Px()       { return fKinem.Px(); }
+  Double_t Py()       { return fKinem.Py(); }
+  Double_t Pz()       { return fKinem.Pz(); }
+  Double_t P()        { return fKinem.P();  }
+
+  TMatrixD GetParamCovMatrix() { return fParamCovMatrix; }
+
+  void EvalKinem(Double_t z);
 
   void SetTrackMCId(Int_t id) { fTrackMCId = id; }
   Int_t GetTrackMCId() { return fTrackMCId; }
@@ -105,6 +116,10 @@ protected:
   Int_t fNWrongClustersMC;    // number of wrong associated MC clusters
 
   Int_t fTrackMCId;   // this number will identify the track within a MC simulation: run, event, MUON track
+
+  TLorentzVector fKinem;
+
+  TMatrixD fParamCovMatrix;
 
   ClassDef(AliMuonForwardTrack,1)
     

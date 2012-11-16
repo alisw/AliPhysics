@@ -196,9 +196,9 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
   fInputTreeWithBranson    -> GetEvent(fEv);
   fInputTreeWithoutBranson -> GetEvent(fEv);
 
-  AliDebug(2,Form("**** analyzing event # %4d (%3d tracks) ****", fEv, fMuonForwardTracksWithBranson->GetEntriesFast()));
+  AliDebug(2,Form("**** analyzing event # %4d (%3d tracks) ****", fEv+1, fMuonForwardTracksWithBranson->GetEntriesFast()));
 
-  AliInfo(Form("**** analyzing event # %6d of %6d ****", fEv, fLastEvent));
+  AliInfo(Form("**** analyzing event # %6d of %6d ****", fEv+1, fLastEvent+1));
 
   fPrimaryVtxX = gRandom->Gaus(0., fXVertResMC);
   fPrimaryVtxY = gRandom->Gaus(0., fYVertResMC);
@@ -225,7 +225,7 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
     while (AnalyzeMuonPair(kSingleEvent)) continue;
   }
 
-  AliDebug(2,Form("**** analyzed  event # %4d (%3d tracks and %3d pairs analyzed) ****", fEv, fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut));
+  AliDebug(2,Form("**** analyzed  event # %4d (%3d tracks and %3d pairs analyzed) ****", fEv+1, fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut));
   
   if (fMuonPairAnalysis && fMixing) {
     for (fEvMix=fEv+1; fEvMix<=fEv+fNEventsToMix; fEvMix++) {
@@ -256,8 +256,8 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
 	fInputTreeWithoutBranson -> GetEvent(fEv);
 
 	AliDebug(2,Form("**** mixing event # %4d (%3d tracks) with event # %4d (%3d tracks) ****", 
-			fEv,    fMuonForwardTracksWithBranson->GetEntriesFast(),
-			fEvMix, fMuonForwardTracksWithBransonMix ->GetEntriesFast()));	  
+			fEv+1,    fMuonForwardTracksWithBranson->GetEntriesFast(),
+			fEvMix+1, fMuonForwardTracksWithBransonMix ->GetEntriesFast()));	  
 	if (fMuonForwardTrackPairsWithBranson || fMuonForwardTrackPairsWithoutBranson) {
 	  fMuonForwardTrackPairsWithBranson    -> Clear("C");
 	  fMuonForwardTrackPairsWithoutBranson -> Clear("C");

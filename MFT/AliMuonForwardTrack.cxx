@@ -32,6 +32,8 @@
 #include "TParticle.h"
 #include "AliMuonForwardTrack.h"
 #include "AliMFTConstants.h"
+#include "TLorentzVector.h"
+#include "TDatabasePDG.h"
 
 ClassImp(AliMuonForwardTrack)
 
@@ -43,7 +45,9 @@ AliMuonForwardTrack::AliMuonForwardTrack():
   fMCTrackRef(0),
   fMFTClusters(0),
   fNWrongClustersMC(-1),
-  fTrackMCId(-1)
+  fTrackMCId(-1),
+  fKinem(0,0,0,0),
+  fParamCovMatrix(5,5)
 {
 
   // default constructor
@@ -66,7 +70,9 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
   fMCTrackRef(0),
   fMFTClusters(0),
   fNWrongClustersMC(-1),
-  fTrackMCId(-1)
+  fTrackMCId(-1),
+  fKinem(0,0,0,0),
+  fParamCovMatrix(5,5)
 {
 
   SetMUONTrack(MUONTrack);
@@ -88,7 +94,9 @@ AliMuonForwardTrack::AliMuonForwardTrack(const AliMuonForwardTrack& track):
   fMCTrackRef(0x0),
   fMFTClusters(0x0),
   fNWrongClustersMC(track.fNWrongClustersMC),
-  fTrackMCId(track.fTrackMCId)
+  fTrackMCId(track.fTrackMCId),
+  fKinem(track.fKinem),
+  fParamCovMatrix(track.fParamCovMatrix)
 {
 
   // copy constructor
@@ -125,6 +133,8 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   fMFTClusters->SetOwner(kTRUE);
   fNWrongClustersMC = track.fNWrongClustersMC;
   fTrackMCId        = track.fTrackMCId;
+  fKinem            = track.fKinem;
+  fParamCovMatrix   = track.fParamCovMatrix;
 
   for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
   for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
@@ -524,3 +534,20 @@ Bool_t AliMuonForwardTrack::IsFromBackground() {
 }
 
 //====================================================================================================================================================
+
+void AliMuonForwardTrack::EvalKinem(Double_t z) {
+
+  AliMUONTrackParam *param = GetTrackParamAtMFTCluster(0);
+  AliMUONTrackExtrap::ExtrapToZCov(param, z);
+
+  Double_t mMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
+  Double_t energy = TMath::Sqrt(param->P()*param->P() + mMu*mMu);
+  fKinem.SetPxPyPzE(param->Px(), param->Py(), param->Pz(), energy);
+
+  TMatrixD cov(5,5);
+  fParamCovMatrix = param->GetCovariances();
+
+}
+
+//====================================================================================================================================================
+
