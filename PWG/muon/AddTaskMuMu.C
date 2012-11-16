@@ -4,8 +4,7 @@
 /// author: L. Aphecetche (Subatech) (laurent.aphecetche - at - subatech.in2p3.fr)
 ///
 
-AliAnalysisTask* AddTaskMuMu(const char* outputname, TList* triggerClassesToConsider, Bool_t aa)
-                                    
+AliAnalysisTask* AddTaskMuMu(const char* outputname, TList* triggerClassesToConsider, const char* beamYear, TArrayF* centralities)                                    
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -24,22 +23,37 @@ AliAnalysisTask* AddTaskMuMu(const char* outputname, TList* triggerClassesToCons
   // Configure analysis
   //===========================================================================  
   
-  AliAnalysisMuMu* task;
+  AliAnalysisTaskMuMu* task;
   
   if ( triggerClassesToConsider ) 
   {
-    task = AliAnalysisMuMu::Create(inputDataType,triggerClassesToConsider);    
+    task = new AliAnalysisTaskMuMu((inputDataType=="ESD"),triggerClassesToConsider,beamYear,centralities);    
   }
   else 
   {
-    task = AliAnalysisMuMu::Create(inputDataType,aa);    
+    task = new AliAnalysisTaskMuMu((inputDataType=="ESD"),beamYear,centralities);    
   }
   
-  task->AddSingleCut("MATCHLOWRABS",AliAnalysisMuMu::kAll|AliAnalysisMuMu::kMatchedLow|AliAnalysisMuMu::kRabs);
-  task->AddPairCut("MATCHLOWRABS",AliAnalysisMuMu::kAll|AliAnalysisMuMu::kMatchedLow|AliAnalysisMuMu::kRabs);
+  task->AddEventCut("ALL",AliAnalysisTaskMuMu::kEventAll);
+  
+//  task->AddEventCut("PSALL",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS);  
+//  task->AddEventCut("PSALLZSPD",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventZSPD);
 
-  task->AddSingleCut("MATCHHIGHRABSDCA",AliAnalysisMuMu::kAll|AliAnalysisMuMu::kMatchedHigh|AliAnalysisMuMu::kRabs|AliAnalysisMuMu::kDCA);
-  task->AddPairCut("MATCHHIGHRABSDCA",AliAnalysisMuMu::kAll|AliAnalysisMuMu::kMatchedHigh|AliAnalysisMuMu::kRabs|AliAnalysisMuMu::kDCA);
+  task->AddEventCut("PSALLV0ANDZSPD",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventV0AND | AliAnalysisTaskMuMu::kEventZSPD);  
+
+  task->AddEventCut("PSALLTVXZSPD",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventTVX | AliAnalysisTaskMuMu::kEventZSPD);
+
+  task->AddEventCut("PSALLTVXV0ANDZSPD",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventTVX | AliAnalysisTaskMuMu::kEventV0AND | AliAnalysisTaskMuMu::kEventZSPD);
+
+  
+  task->AddSingleCut("MATCHLOWRABSDCA",
+                     AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kDCA);
+  task->AddSingleCut("MATCHLOWRABSDCAP10",
+                     AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kDCA|AliAnalysisTaskMuMu::kP10);
+
+  task->AddPairCut("MATCHLOWRABSDCABOTH",
+                   AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kDCA,
+                   AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kDCA);
 
   mgr->AddTask(task);  
   
