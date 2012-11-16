@@ -27,6 +27,7 @@
 #ifndef ROOT_TCollection
 #  include "TCollection.h"
 #endif
+#include "Riostream.h"
 #include <map>
 #include <string>
 
@@ -71,6 +72,13 @@ public:
   
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
+  virtual TList* CreateListOfKeysA() const;
+  virtual TList* CreateListOfKeysB() const;
+  virtual TList* CreateListOfKeysC() const;
+  virtual TList* CreateListOfKeysD() const;
+  
+  virtual TList* CreateListOfHistogramNames(const char* keyA, const char* keyB="", const char* keyC="", const char* keyD="") const;
+  
   virtual TObject* Remove(TObject *obj);
 
   TString KeyA(const char* identifier) const;
@@ -102,6 +110,8 @@ private:
   AliHistogramCollection(const AliHistogramCollection& rhs);
   AliHistogramCollection& operator=(const AliHistogramCollection& rhs);
 
+  TList* CreateListOfKeys(Int_t index) const;
+
   Bool_t InternalAdopt(const char* identifier, TH1* histo);
   
   Bool_t HistoSameAxis(TH1 *h0, TH1 *h1) const;
@@ -117,12 +127,12 @@ private:
 
 private:
   
-  mutable TMap* fMap; /// map of TMap of THashList* of TH1*...
-  Bool_t fMustShowEmptyHistogram; /// Whether or not to show empty histograms with the Print method
-  mutable Int_t fMapVersion; /// internal version of map (to avoid custom streamer...)
+  mutable TMap* fMap; // map of TMap of THashList* of TH1*...
+  Bool_t fMustShowEmptyHistogram; // Whether or not to show empty histograms with the Print method
+  mutable Int_t fMapVersion; // internal version of map (to avoid custom streamer...)
   mutable std::map<std::string,int> fMessages; //! log messages
   
-  ClassDef(AliHistogramCollection,7) /// A collection of histograms
+  ClassDef(AliHistogramCollection,7) // A collection of histograms
 };
 
 class AliHistogramCollectionIterator : public TIterator

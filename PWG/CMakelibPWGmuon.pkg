@@ -27,9 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
-    muon/AliAnalysisMuMu.cxx 
-    muon/AliAnalysisMuMuFromESD.cxx 
-    muon/AliAnalysisMuMuFromAOD.cxx 
+    muon/AliAnalysisTaskMuMu.cxx 
     muon/AliHistogramCollection.cxx 
     muon/AliAnalysisTaskESDMuonFilter.cxx 
     muon/AliAnalysisTaskMuonAODfromGeneral.cxx 

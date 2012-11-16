@@ -29,11 +29,15 @@
 set ( SRCS 
     muondep/AliAnalysisTaskESDMCLabelAddition.cxx 
     muondep/AliAnalysisTaskPileup.cxx 
-    muondep/AliAnalysisTaskMuonRefit.cxx 
+    muondep/AliAnalysisTaskMuonRefit.cxx
+    muondep/AliAnalysisTriggerScalers.cxx
+    muondep/AliAnalysisMuMu.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGmuondepLinkDef.h )
+
+set ( EXPORT "muondep/AliAnalysisTriggerScalers.h" )
 
 set ( EINCLUDE  MUON MUON/mapping PWG/muondep STEER/STEER STEER/STEERBase)

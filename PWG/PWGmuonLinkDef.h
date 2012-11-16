@@ -34,9 +34,8 @@
 #pragma link C++ class AliHistogramCollectionIterator+;
 #pragma link C++ class AliAnalysisTaskMuonCollisionMultiplicity+;
 #pragma link C++ class AliCFMuonResUpsilon+;
-#pragma link C++ class AliAnalysisMuMu+;
-#pragma link C++ class AliAnalysisMuMuFromAOD+;
-#pragma link C++ class AliAnalysisMuMuFromESD+;
+#pragma link C++ class AliAnalysisTaskMuMu+;
+#pragma link C++ class AliAnalysisTaskMuMu::PairCut+;
 #pragma link C++ class AliMuonEventCuts+;
 #pragma link C++ class AliMuonTrackCuts+;
 #pragma link C++ class AliMuonPairCuts+;
