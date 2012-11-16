@@ -380,10 +380,10 @@ void AliHMPIDTaskQA::UserCreateOutputObjects() {
    fHmpPesdPhmp = new TH2F("fHmpPesdPhmp","HMPID: ESD p - running p;HMP p (GeV/c);ESD p (Gev/c)",100,0,10,100,0,10);
    fHmpHistList->Add(fHmpPesdPhmp);
 
-   fHmpCkovPesd = new TH2F("fHmpCkovPesd","HMPID: ThetaCherenkov vs P;p_esd (GeV/c);#Theta_C;Entries",100,0,10,110,0,1.1);
+   fHmpCkovPesd = new TH2F("fHmpCkovPesd","HMPID: ThetaCherenkov vs P;p_esd (GeV/c);#Theta_C;Entries",500,0,10,500,0,1.0);
    fHmpHistList->Add(fHmpCkovPesd);
 
-   fHmpCkovPhmp = new TH2F("fHmpCkovPhmp","HMPID: ThetaCherenkov vs P;p_hmp (GeV/c);#Theta_C;Entries",100,0,10,110,0,1.1);
+   fHmpCkovPhmp = new TH2F("fHmpCkovPhmp","HMPID: ThetaCherenkov vs P;p_hmp (GeV/c);#Theta_C;Entries",500,0,10,500,0,1.0);
    fHmpHistList->Add(fHmpCkovPhmp);
 
    for (Int_t i=0; i<7; i++){
