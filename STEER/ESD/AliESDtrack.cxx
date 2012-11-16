@@ -562,15 +562,14 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   track->GetITSdEdxSamples(itsdEdx);
   SetITSdEdxSamples(itsdEdx);
   //
-  SetTPCsignal(track->GetTPCsignal(),fTPCsignalS,track->GetTPCsignalN()); // No signalS in AODPid
-  SetTPCdEdxInfo(track->GetTPCdEdxInfo());
+  SetTPCsignal(track->GetTPCsignal(),fTPCsignalS,track->GetTPCsignalN()); // No signalS in AODPi
+  AliTPCdEdxInfo * dEdxInfo = track->GetTPCdEdxInfo();
+  if (dEdxInfo) SetTPCdEdxInfo(new AliTPCdEdxInfo(*dEdxInfo));
   //
-  fTRDnSlices = track->GetNumberOfTRDslices();
-  if (fTRDnSlices>0) {
-    fTRDslices = new Double32_t[fTRDnSlices*6];
-    for (int isl=fTRDnSlices;isl--;) 
-      for (int ipl=6;ipl--;) 
-	SetTRDslice(track->GetTRDslice(ipl,isl),ipl,isl);
+  int ntrdsl = track->GetNumberOfTRDslices()/6;
+  if (ntrdsl>0) {    
+    SetNumberOfTRDslices((ntrdsl+2)*kTRDnPlanes);
+    for (int isl=ntrdsl;isl--;) for (int ipl=kTRDnPlanes;ipl--;) SetTRDslice(track->GetTRDslice(ipl,isl),ipl,isl);
   }
   //
   fTRDncls = track->GetTRDncls();
@@ -2151,7 +2150,7 @@ void  AliESDtrack::SetTRDslice(Double_t q, Int_t plane, Int_t slice) {
   }
   Int_t ns=GetNumberOfTRDslices();
   if ((slice<0) || (slice>=ns)) {
-    AliError("Wrong TRD slice !");
+    AliError(Form("Wrong TRD slice %d/%d, NSlices=%d",plane,slice,ns));
     return;
   }
   Int_t n=plane*ns + slice;
