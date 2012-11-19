@@ -57,7 +57,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   printf("triggers:   %s \n",         triggerNames[j]  );
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
 
-  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
+  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJB_%s",triggerNames[j])));
   task->SetTriggerMask(triggers);
   //task->SetTriggerMask(AliVEvent::kMB);
 
