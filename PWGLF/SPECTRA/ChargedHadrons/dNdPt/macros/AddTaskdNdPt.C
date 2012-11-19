@@ -100,7 +100,8 @@ AlidNdPtTask *AddTaskdNdPt()
 		fdNdPtAnalysisPbPb->SetAnalysisMode(analysisMode); 
 		fdNdPtAnalysisPbPb->SetParticleMode(particleMode); 
 		fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");      
-		fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kCentral | AliVEvent::kMB | AliVEvent::kSemiCentral);
+		//fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kCentral | AliVEvent::kMB | AliVEvent::kSemiCentral);
+		fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);
 		//fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kEMC1);
 
 		// cut to remove tpc sector
