@@ -144,7 +144,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return event->Angle();
       case kLeadingPt:
          return 0.0;
-      case kPt:	
+      case kPt:
          return pair->Pt(fUseMCInfo);
       case kInvMass:
          return pair->InvMass(fUseMCInfo);

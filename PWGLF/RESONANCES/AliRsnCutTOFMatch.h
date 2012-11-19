@@ -14,16 +14,16 @@
 class AliVTrack;
 
 class AliRsnCutTOFMatch : public AliRsnCut {
- public:
-  
-  AliRsnCutTOFMatch();
-  AliRsnCutTOFMatch(const char *name);
-  virtual ~AliRsnCutTOFMatch() { }
-  
-  Bool_t   MatchTOF(const AliVTrack *vtrack) const;
-  Bool_t   IsSelected(TObject *object);
+public:
 
-  ClassDef(AliRsnCutTOFMatch, 1)
+   AliRsnCutTOFMatch();
+   AliRsnCutTOFMatch(const char *name);
+   virtual ~AliRsnCutTOFMatch() { }
+
+   Bool_t   MatchTOF(const AliVTrack *vtrack) const;
+   Bool_t   IsSelected(TObject *object);
+
+   ClassDef(AliRsnCutTOFMatch, 1)
 
 };
 
