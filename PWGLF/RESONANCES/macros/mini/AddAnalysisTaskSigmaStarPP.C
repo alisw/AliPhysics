@@ -15,7 +15,7 @@
 //
 ****************************************************************************/
 
-AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
+AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
 (
    Bool_t      isMC,
    Bool_t      isPP,
@@ -27,7 +27,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
    Int_t       aodN = 0,
-   TString     outNameSuffix = ""
+   TString     outNameSuffix = "Sigma1385"
 )
 {  
   //
@@ -42,7 +42,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    } 
 
    // create the task and configure 
-   TString taskName = Form("SigmaStarPP%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
+   TString taskName = Form("SigmaStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -59,7 +59,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
-   ::Info("AddAnalysisTaskSigmaStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+   ::Info("AddAnalysisTaskSigmaStarPP", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
    
    mgr->AddTask(task);
    
@@ -98,9 +98,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    
    //event plane (only for PbPb)
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
-   AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
-   if (!isPP)
+   AliRsnMiniOutput *outPlane = 0x0; //task->CreateOutput("eventPlane", "HIST", "EVENT");
+   if (!isPP){
+     outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
      outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
+     }
    
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
@@ -116,20 +118,20 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStar
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
    if (isMC) {
-       Printf("========================== MC analysis - PID cuts used");
+       Printf("========================== MC analysis - PID cuts not used");
        piPIDCut = 1E20; pPIDCut = 1E20;
        //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
    } else 
      Printf("========================== DATA analysis - PID cuts used");
      //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
-   if (!ConfigSigmaStar(task, isMC, isPP, piPIDCuts, pPIDCuts, aodFilterBit, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, isMC, isPP, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskSigmaStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddAnalysisTaskSigmaStarPP - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
 							   TList::Class(), 
