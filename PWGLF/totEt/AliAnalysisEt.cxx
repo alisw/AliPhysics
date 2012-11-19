@@ -161,6 +161,8 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 
 AliAnalysisEt::~AliAnalysisEt()
 {//Destructor
+  delete fTmCorrections;
+  delete fReCorrections;
   if(fDepositTree){
     fDepositTree->Clear();
     delete fDepositTree; // optional TTree
@@ -682,6 +684,7 @@ Int_t AliAnalysisEt::ReadCorrections(TString filename)
     fTmCorrections = dynamic_cast<AliAnalysisEtTrackMatchCorrections*>(f->Get(name));
     if(!fTmCorrections)
     {
+      cout<<"No corrections with name "<<name<<endl;
       Printf("Could not load TM corrections");
       return -1;
     }

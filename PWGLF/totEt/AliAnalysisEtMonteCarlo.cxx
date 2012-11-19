@@ -314,6 +314,8 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiPlusMultAcc; // enter comment here
     delete fHistPiMinusMultAcc; // enter comment here
     delete fHistPiZeroMultAcc; // enter comment here
+    delete fHistGammasFound; // enter comment here
+    delete fHistGammasGenerated; // enter comment here
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -567,6 +569,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     //return -1;
 //    }
 
+//Note that this only returns clusters for the selected detector.  fSelector actually calls the right GetClusters... for the detector
     TRefArray *caloClusters = fSelector->GetClusters();
 
     Int_t nCluster = caloClusters->GetEntries();
