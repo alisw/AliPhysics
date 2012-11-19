@@ -4582,8 +4582,11 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
     cout << "Hist2 does not exist." << endl;
     return;
   }
+  
+//   hist1->Rebin2D(2, 2); hist1->Scale(0.25);
+//   hist2->Rebin2D(2, 2); hist2->Scale(0.25);
 
-  TCanvas *c = new TCanvas("c", "", 1400, 1100);
+  TCanvas *c = new TCanvas("c", "", 600, 900);
   c->Divide(1,3);
 
   TH2* ratio = (TH2*) hist1->Clone("ratio");
@@ -4610,18 +4613,25 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   {
     cout << "SkipGraph called." << endl;
   }
-  for (Int_t x = 0; x<=hist1->GetNbinsX();x++)
+  for (Int_t x = 1; x<=hist1->GetNbinsX();x++)
   {
-    for (Int_t y = 0; y<=hist1->GetNbinsY();y++)
+    for (Int_t y = 1; y<=hist1->GetNbinsY();y++)
     {
-      if (hist2->GetBinContent(x,y) > 0)
-	ratio->SetBinContent(x,y,hist1->GetBinContent(x,y)/hist2->GetBinContent(x,y));
+      Int_t binx = hist2->GetXaxis()->FindBin(hist1->GetXaxis()->GetBinCenter(x));
+      Int_t biny = hist2->GetYaxis()->FindBin(hist1->GetYaxis()->GetBinCenter(y));
+      if (hist2->GetBinContent(binx,biny) > 0)
+	ratio->SetBinContent(x,y,hist1->GetBinContent(x,y)/hist2->GetBinContent(binx,biny));
     }
   }
+  
+  hist1->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  hist2->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  ratio->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  
   c->cd(1);
-  hist1->Draw("colz");
+  hist1->Draw("surf1");
   c->cd(2);
-  hist2->Draw("colz");
+  hist2->Draw("surf1");
   c->cd(3);
   ratio->Draw("colz");
 }
@@ -5005,3 +5015,394 @@ void CompareSTARpTt(const char* STARFileName, const char* GraphFileName)
   mg2->GetYaxis()->SetTitle(Form("#sigma_{#Delta#eta} (%s) (rad.)", fitLabel));
   legend->Draw();
 }
+
+void AcceptanceEfficiencyToy()
+{
+  // toy MC to study the intermix of a detector efficiency as fct of eta and the mixed event correction
+  
+//     TF1* eff = new TF1("eff", "0.9 - 0.3 * abs(x)", -1, 1);
+
+  // pA efficiency
+  Double_t xAxis1[51] = {-2.5, -2.4, -2.3, -2.2, -2.1, -2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5}; 
+  TH1D *effHist = new TH1D("effHist","step1: projection on #Delta#eta",50, xAxis1);
+  effHist->SetBinContent(13,0.271338);
+  effHist->SetBinContent(14,0.334383);
+  effHist->SetBinContent(15,0.4399013);
+  effHist->SetBinContent(16,0.6723888);
+  effHist->SetBinContent(17,0.8022655);
+  effHist->SetBinContent(18,0.809605);
+  effHist->SetBinContent(19,0.8145845);
+  effHist->SetBinContent(20,0.817339);
+  effHist->SetBinContent(21,0.8210758);
+  effHist->SetBinContent(22,0.8228529);
+  effHist->SetBinContent(23,0.8246998);
+  effHist->SetBinContent(24,0.8249083);
+  effHist->SetBinContent(25,0.8162804);
+  effHist->SetBinContent(26,0.8148814);
+  effHist->SetBinContent(27,0.8237724);
+  effHist->SetBinContent(28,0.8247403);
+  effHist->SetBinContent(29,0.822931);
+  effHist->SetBinContent(30,0.8220786);
+  effHist->SetBinContent(31,0.8195946);
+  effHist->SetBinContent(32,0.8159786);
+  effHist->SetBinContent(33,0.812606);
+  effHist->SetBinContent(34,0.8080089);
+  effHist->SetBinContent(35,0.6991395);
+  effHist->SetBinContent(36,0.4702392);
+  effHist->SetBinContent(37,0.3467974);
+  effHist->SetBinContent(38,0.2798031);
+  effHist->SetBinError(13,0.000586557);
+  effHist->SetBinError(14,0.0006215941);
+  effHist->SetBinError(15,0.0006542189);
+  effHist->SetBinError(16,0.0006190971);
+  effHist->SetBinError(17,0.0005263518);
+  effHist->SetBinError(18,0.0005197939);
+  effHist->SetBinError(19,0.0005148436);
+  effHist->SetBinError(20,0.0005131777);
+  effHist->SetBinError(21,0.0005095525);
+  effHist->SetBinError(22,0.000508042);
+  effHist->SetBinError(23,0.0005058743);
+  effHist->SetBinError(24,0.0005058348);
+  effHist->SetBinError(25,0.000514767);
+  effHist->SetBinError(26,0.0005161097);
+  effHist->SetBinError(27,0.0005054953);
+  effHist->SetBinError(28,0.0005028134);
+  effHist->SetBinError(29,0.0005030626);
+  effHist->SetBinError(30,0.0005016751);
+  effHist->SetBinError(31,0.0005036153);
+  effHist->SetBinError(32,0.0005049182);
+  effHist->SetBinError(33,0.0005063787);
+  effHist->SetBinError(34,0.0005090265);
+  effHist->SetBinError(35,0.0005904377);
+  effHist->SetBinError(36,0.0006403924);
+  effHist->SetBinError(37,0.0006090749);
+  effHist->SetBinError(38,0.0005733178);
+
+  //   eff = new TF1("eff", "0.9 - 0.05 * abs(x) - 0.6 * TMath::Floor(abs(x) + 0.2)", -1, 1);
+//   eff = new TF1("eff", "0.9 - 0.6 * TMath::Floor(abs(x) + 0.2)", -1, 1);
+//   eff = new TF1("eff", "0.9", -1, 1);
+
+//   for (Int_t i=1; i<=50; i++)
+//     effHist->SetBinContent(i, 0.2);
+
+  Float_t etaAcceptance = 1.2;
+
+  new TCanvas; effHist->Draw(); effHist->Fit("pol0", "", "", -etaAcceptance+0.01, etaAcceptance-0.01);
+  
+  Int_t bins = 200;
+  TH1D* same = new TH1D("same", "", bins, -2.5, 2.5);
+  TH1D* mixed = new TH1D("mixed", "", bins, -2.5, 2.5);
+  TH1D* eta =  new TH1D("eta", "", bins, -2.5, 2.5);
+  
+  TH1D* sameEff = new TH1D("sameEff", "", bins, -2.5, 2.5);
+  TH1D* mixedEff = new TH1D("mixedEff", "", bins, -2.5, 2.5);
+  TH1D* etaEff =  new TH1D("etaEff", "", bins, -2.5, 2.5);
+  TH1D* allEtaEff =  new TH1D("allEtaEff", "", bins, -2.5, 2.5);
+
+  TH1D* etaSource =  new TH1D("etaSource", "", bins, -2.5, 2.5);
+  TH1D* etaSourceEff =  new TH1D("etaSourceEff", "", bins, -2.5, 2.5);
+
+  Float_t sigma = 0.5;
+  Float_t assoc = 0;
+  Bool_t assocTracked = kFALSE;
+  
+  same->Sumw2();
+  mixed->Sumw2();
+  eta->Sumw2();
+  sameEff->Sumw2();
+  mixedEff->Sumw2();
+  etaEff->Sumw2();
+  allEtaEff->Sumw2();
+  etaSource->Sumw2();
+  etaSourceEff->Sumw2();
+  
+  for (Int_t i=0; i<1000000; i++)
+  {
+    // randomize mean
+    Float_t mean = gRandom->Uniform(-5, 5);
+    
+    Float_t trig = gRandom->Gaus(mean, sigma);
+    Bool_t trigTracked = (gRandom->Uniform() < effHist->GetBinContent(effHist->FindBin(trig))); // eff->Eval(trig)
+    if (TMath::Abs(trig) < etaAcceptance)
+    {
+      eta->Fill(trig);
+      if (trigTracked)
+	etaEff->Fill(trig);
+    }
+    
+    // mixed event
+    if (i > 0 && TMath::Abs(trig) < etaAcceptance && TMath::Abs(assoc) < etaAcceptance)
+    {
+      mixed->Fill(trig - assoc);
+    
+      if (trigTracked && assocTracked)
+	mixedEff->Fill(trig - assoc);
+// 	mixedEff->Fill(trig - assoc, 1.0 / effHist->GetBinContent(effHist->FindBin(assoc)));
+    }
+    
+//     mean = gRandom->Uniform(-5, 5);
+    assoc = gRandom->Gaus(mean, sigma);
+    
+    assocTracked = (gRandom->Uniform() < effHist->GetBinContent(effHist->FindBin(assoc)));
+    
+    if (TMath::Abs(trig) < etaAcceptance && trigTracked)
+      allEtaEff->Fill(trig);
+    if (TMath::Abs(assoc) < etaAcceptance && assocTracked)
+      allEtaEff->Fill(assoc);
+    
+    // same event
+    if (TMath::Abs(trig) < etaAcceptance && TMath::Abs(assoc) < etaAcceptance)
+    {
+      same->Fill(trig - assoc);
+      
+//       if (trigTracked)
+	etaSource->Fill(assoc);
+      
+      if (trigTracked && assocTracked)
+      {
+	sameEff->Fill(trig - assoc);
+	etaSourceEff->Fill(assoc);
+/*	sameEff->Fill(trig - assoc, 1.0 / effHist->GetBinContent(effHist->FindBin(assoc)));
+	etaSourceEff->Fill(assoc, 1.0 / effHist->GetBinContent(effHist->FindBin(assoc)));*/
+      }
+    }
+  }
+  
+  Float_t mixedConstant = 0;
+  if (1)
+  {
+    new TCanvas;
+    TF1* pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixed->Fit(pol1, "+", "", -1, -0.0001);
+    Float_t mixedConstant1 = pol1->Eval(0);
+    pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixed->Fit(pol1, "+", "", 0.0001, 1);
+    Float_t mixedConstant2 = pol1->Eval(0);
+    mixedConstant = (mixedConstant1 + mixedConstant2) / 2;
+    Printf("%f %f %f", mixedConstant1, mixedConstant2, mixedConstant);
+  }
+  else
+    mixedConstant = mixed->Integral(bins / 2, bins / 2 + 1) / 2;
+
+  mixed = (TH1D*) mixed->Clone();
+  mixed->Scale(1.0 / mixedConstant);
+  
+  new TCanvas; same->DrawCopy(); mixed->SetLineColor(2); mixed->DrawCopy("SAME");
+  
+  same->Divide(mixed);
+  same->Scale(1.0 / eta->Integral());
+  new TCanvas; same->DrawCopy();
+
+  new TCanvas; eta->DrawCopy(); etaEff->SetLineColor(2); etaEff->DrawCopy("SAME");
+  
+  new TCanvas; etaSource->DrawCopy(); etaSourceEff->SetLineColor(2); etaSourceEff->DrawCopy("SAME"); allEtaEff->SetLineColor(4); allEtaEff->DrawCopy("SAME");
+  
+//   etaSource->Multiply(effHist);
+  
+  if (0)
+  {
+    new TCanvas;
+    TF1* pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixedEff->Fit(pol1, "+", "", -1, -0.0001);
+    Float_t mixedConstant1 = pol1->Eval(0);
+    pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixedEff->Fit(pol1, "+", "", 0.0001, 1);
+    Float_t mixedConstant2 = pol1->Eval(0);
+    mixedConstant = (mixedConstant1 + mixedConstant2) / 2;
+    Printf("%f %f %f", mixedConstant1, mixedConstant2, mixedConstant);
+  }
+  else
+    mixedConstant = mixedEff->Integral(bins / 2, bins / 2 + 1) / 2;
+  
+  mixedEff = (TH1D*) mixedEff->Clone();
+  mixedEff->Scale(1.0 / mixedConstant);
+  
+  new TCanvas; sameEff->DrawCopy(); mixedEff->SetLineColor(2); mixedEff->DrawCopy("SAME");
+
+  sameEff->Divide(mixedEff);
+  sameEff->Scale(1.0 / etaEff->Integral());
+  new TCanvas; sameEff->DrawCopy();
+  
+  new TCanvas; same->DrawCopy(); sameEff->SetLineColor(2); sameEff->DrawCopy("SAME");
+  
+  sameEff->Divide(same);
+  new TCanvas; sameEff->DrawCopy(); sameEff->Fit("pol0");
+}
+
+void Acceptance2DToy(Float_t etaAcceptance = 1.0)
+{
+  // toy MC to study the effect of acceptance on the correlation function
+
+  Int_t bins = 40;
+  TH2D* same = new TH2D("same", "", bins, -2.5, 2.5, bins, -TMath::Pi(), TMath::Pi());
+  TH2D* mixed = new TH2D("mixed", "", bins, -2.5, 2.5, bins,  -TMath::Pi(), TMath::Pi());
+  TH1D* eta =  new TH1D("eta", "", bins, -2.5, 2.5);
+  TH1D* phi =  new TH1D("phi", "", bins, -TMath::Pi(), TMath::Pi());
+  
+  Float_t sigma = 0.4;
+  const Int_t nParticles = 8;
+  Float_t etas[nParticles];
+  Float_t phis[nParticles];
+  Float_t lastetas[nParticles];
+  Float_t lastphis[nParticles];
+  
+  TF2* func = new TF2("func", "[0]*exp(-0.5*((x/[1])**2+(y/[2])**2))", -5, 5, -5, 5);
+  func->SetParameters(1, sigma, sigma);
+
+  same->Sumw2();
+  mixed->Sumw2();
+  eta->Sumw2();
+  
+  for (Int_t i=0; i<1000000; i++)
+  {
+    for (Int_t j=0; j<nParticles/2; j++)
+    {
+      // randomize mean
+      Float_t meanEta = gRandom->Uniform(-5, 5);
+      Float_t meanPhi = gRandom->Uniform(0, TMath::TwoPi());
+      
+      Double_t gausEta, gausPhi;
+      func->GetRandom2(gausEta, gausPhi);
+      
+      Float_t trigEta = meanEta + gausEta;
+      Float_t trigPhi = meanPhi + gausPhi;
+      
+      if (trigPhi > TMath::Pi())
+	trigPhi -= TMath::TwoPi();
+      if (trigPhi < -TMath::Pi())
+	trigPhi += TMath::TwoPi();
+
+      func->GetRandom2(gausEta, gausPhi);
+      
+      Float_t assocEta = meanEta + gausEta;
+      Float_t assocPhi = meanPhi + gausPhi;
+      
+      if (assocPhi > TMath::Pi())
+	assocPhi -= TMath::TwoPi();
+      if (assocPhi < -TMath::Pi())
+	assocPhi += TMath::TwoPi();
+      
+      etas[j*2] = trigEta;
+      etas[j*2+1] = assocEta;
+      phis[j*2] = trigPhi;
+      phis[j*2+1] = assocPhi;
+    }
+    
+    // same event
+    for (Int_t j=0; j<nParticles; j++)
+    {
+      if (TMath::Abs(etas[j]) > etaAcceptance)
+	continue;
+
+      eta->Fill(etas[j]);
+      phi->Fill(phis[j]);
+
+      for (Int_t k=j+1; k<nParticles; k++)
+      {
+	if (TMath::Abs(etas[k]) > etaAcceptance)
+	  continue;
+	
+	Float_t deltaEta = etas[j] - etas[k];
+	Float_t deltaPhi = phis[j] - phis[k];
+      
+	if (deltaPhi > TMath::Pi())
+	  deltaPhi -= TMath::TwoPi();
+	if (deltaPhi < -TMath::Pi())
+	  deltaPhi += TMath::TwoPi();
+    
+	same->Fill(deltaEta, deltaPhi);
+      }
+    }
+    
+    // mixed event
+    if (i > 0)
+    {
+      for (Int_t j=0; j<nParticles; j++)
+      {
+	if (TMath::Abs(etas[j]) > etaAcceptance)
+	  continue;
+
+	for (Int_t k=0; k<nParticles; k++)
+	{
+	  if (TMath::Abs(lastetas[k]) > etaAcceptance)
+	    continue;
+	  
+	  Float_t deltaEta = etas[j] - lastetas[k];
+	  Float_t deltaPhi = phis[j] - lastphis[k];
+	
+	  if (deltaPhi > TMath::Pi())
+	    deltaPhi -= TMath::TwoPi();
+	  if (deltaPhi < -TMath::Pi())
+	    deltaPhi += TMath::TwoPi();
+      
+	  mixed->Fill(deltaEta, deltaPhi);
+	}
+      }
+      
+      for (Int_t j=0; j<nParticles; j++)
+      {
+	lastetas[j] = etas[j];
+	lastphis[j] = phis[j];
+      }
+    }
+/*    // add an uncorrelated particle
+    Float_t assocEta2 = gRandom->Uniform(-5, 5);
+    Float_t assocPhi2 = gRandom->Uniform(0, TMath::TwoPi());
+
+    deltaEta = trigEta - assocEta2;
+    deltaPhi = trigPhi - assocPhi2;
+
+    if (deltaPhi > TMath::Pi())
+      deltaPhi -= TMath::TwoPi();
+    if (deltaPhi < -TMath::Pi())
+      deltaPhi += TMath::TwoPi();
+
+    // same event
+    if (TMath::Abs(trigEta) < etaAcceptance && TMath::Abs(assocEta) < etaAcceptance)
+      same->Fill(deltaEta, deltaPhi);*/
+  }
+  
+  Float_t mixedConstant = 0;
+  if (1)
+  {
+    TH1* mixedProj = mixed->ProjectionX();
+    mixedProj->Scale(1.0 / mixed->GetNbinsY());
+    new TCanvas;
+    TF1* pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixedProj->Fit(pol1, "+", "", -1, -0.0001);
+    Float_t mixedConstant1 = pol1->Eval(0);
+    pol1 = new TF1("pol", "pol1(0)", -10, 10);
+    mixedProj->Fit(pol1, "+", "", 0.0001, 1);
+    Float_t mixedConstant2 = pol1->Eval(0);
+    mixedConstant = (mixedConstant1 + mixedConstant2) / 2;
+    Printf("%f %f %f", mixedConstant1, mixedConstant2, mixedConstant);
+  }
+  else
+    mixedConstant = mixed->Integral(bins / 2, bins / 2 + 1) / 2;
+
+  mixed = (TH2D*) mixed->Clone();
+  mixed->Scale(1.0 / mixedConstant);
+  
+  new TCanvas; same->DrawCopy("SURF1"); 
+  new TCanvas; mixed->DrawCopy("SURF1");
+  
+  same->Divide(mixed);
+  same->Scale(1.0 / eta->Integral());
+  new TCanvas; same->DrawCopy("SURF1");
+
+  new TCanvas; eta->DrawCopy();
+  new TCanvas; phi->DrawCopy();
+  
+  Printf("%f", same->Integral());
+  
+  TH1* projSame = (TH1*) same->ProjectionX("projSame");
+
+  TF1* func1 = new TF1("func1", "[0]+gaus(1)", -5, 5);
+  func1->SetParameters(0.01, 0.01, 0, sigma*2);
+  func1->FixParameter(2, 0);
+  
+  projSame->Fit(func1);
+  func1->SetParameter(0, 0);
+  Printf("%f", func1->Integral(-2, 2) / projSame->GetBinWidth(1));
+}
+

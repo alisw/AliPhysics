@@ -29,6 +29,7 @@
 #include "AliAODTrack.h"
 
 #include "TList.h"
+#include "TCanvas.h"
 #include "TH2F.h"
 #include "TH1F.h"
 #include "TH3F.h"
@@ -67,6 +68,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
+  fWeightPerEvent(kFALSE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -195,6 +197,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
+  fWeightPerEvent(kFALSE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -513,6 +516,37 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
     if (mixed)
       jMax = mixed->GetEntriesFast();
     
+    TH1* triggerWeighting = 0;
+    if (fWeightPerEvent)
+    {
+      TAxis* axis = fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->GetGrid(0)->GetGrid()->GetAxis(2);
+      triggerWeighting = new TH1F("triggerWeighting", "", axis->GetNbins(), axis->GetXbins()->GetArray());
+    
+      for (Int_t i=0; i<particles->GetEntriesFast(); i++)
+      {
+	AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
+	
+	// some optimization
+	Float_t triggerEta = triggerParticle->Eta();
+
+	if (fTriggerRestrictEta > 0 && TMath::Abs(triggerEta) > fTriggerRestrictEta)
+	  continue;
+
+	if (fOnlyOneEtaSide != 0)
+	{
+	  if (fOnlyOneEtaSide * triggerEta < 0)
+	    continue;
+	}
+	
+	if (fTriggerSelectCharge != 0)
+	  if (triggerParticle->Charge() * fTriggerSelectCharge < 0)
+	    continue;
+	
+	triggerWeighting->Fill(triggerParticle->Pt());
+      }
+//       new TCanvas; triggerWeighting->Draw();
+    }
+    
     for (Int_t i=0; i<particles->GetEntriesFast(); i++)
     {
       AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
@@ -713,6 +747,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
 	  }
 	}
+	
+	if (fWeightPerEvent)
+	{
+	  Int_t weightBin = triggerWeighting->GetXaxis()->FindBin(vars[2]);
+// 	  Printf("Using weight %f", triggerWeighting->GetBinContent(weightBin));
+	  useWeight /= triggerWeighting->GetBinContent(weightBin);
+	}
     
         // fill all in toward region and do not use the other regions
         fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, useWeight);
@@ -743,6 +784,12 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	
         fNumberDensityPhi->GetEventHist()->Fill(vars, step, useWeight);
       }
+    }
+    
+    if (triggerWeighting)
+    {
+      delete triggerWeighting;
+      triggerWeighting = 0;
     }
   }
   
@@ -989,6 +1036,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fCutConversions = fCutConversions;
   target.fCutResonances = fCutResonances;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
+  target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;
   target.fCorrectTriggers = fCorrectTriggers;

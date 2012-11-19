@@ -83,6 +83,7 @@ class AliUEHistograms : public TNamed
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
+  void SetWeightPerEvent(Bool_t flag)   { fWeightPerEvent = flag; }
   
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
@@ -137,12 +138,13 @@ protected:
   Bool_t fCutConversions;        // cut on conversions (inv mass)
   Bool_t fCutResonances;         // cut on resonances (inv mass)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
   
   Long64_t fRunNumber;           // run number that has been processed
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 21)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 22)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
