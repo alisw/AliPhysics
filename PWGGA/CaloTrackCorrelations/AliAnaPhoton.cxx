@@ -142,6 +142,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fhLambda0PileUp       [i] = 0;
     fhLambda0ChargedPileUp[i] = 0;
     
+    fhClusterEFracLongTimePileUp  [i] = 0;
+    
     fhClusterTimeDiffPileUp       [i] = 0;
     fhClusterTimeDiffChargedPileUp[i] = 0;
     fhClusterTimeDiffPhotonPileUp [i] = 0;
@@ -233,14 +235,6 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
 
   if(fFillPileUpHistograms)
   {
-    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); }
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); }
-    
     
     // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
     AliVCaloCells* cells = 0;
@@ -258,17 +252,25 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
     if( GetCaloPID()->GetIdentifiedParticleType(calo)== AliCaloPID::kPhoton) okPhoton = kTRUE;
 
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
-    
+    Float_t clusterLongTimeE = 0;
+    Float_t clusterOKTimeE   = 0;
     //Loop on cells inside cluster
     for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
     {
       Int_t absId  = calo->GetCellsAbsId()[ipos];
-      if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
+      //if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
+      if(cells->GetCellAmplitude(absIdMax) > 0.1)
       {
         Double_t time  = cells->GetCellTime(absId);
-        GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+        Float_t  amp   = cells->GetCellAmplitude(absId);
+        Int_t    bc    = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+        GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,time,cells);
+        time*=1e9;
         
-        Float_t diff = (tmax-time*1e9);
+        Float_t diff = (tmax-time);
+      
+        if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimeE   += amp;
+        else                                      clusterLongTimeE += amp;
         
         if(GetReader()->IsPileUpFromSPD())
         {
@@ -342,6 +344,19 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
       }// Not max
     }//loop
     
+    Float_t frac = 0;
+    if(clusterLongTimeE+clusterOKTimeE > 0.001)
+      frac = clusterLongTimeE/(clusterLongTimeE+clusterOKTimeE);
+    //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimeE,clusterOKTimeE,frac,ecluster);
+    
+    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
+        
   }
   
   //.......................................
@@ -1987,6 +2002,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                       Form("Selected photon p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
       fhPtPhotonPileUp[i]->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtPhotonPileUp[i]);
+      
+      
+      fhClusterEFracLongTimePileUp[i]  = new TH2F(Form("hClusterEFracLongTimePileUp%s",pileUpName[i].Data()),
+                                             Form("Cluster E vs fraction of cluster energy from large T cells, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,200,0,1);
+      fhClusterEFracLongTimePileUp[i]->SetXTitle("E (GeV)");
+      fhClusterEFracLongTimePileUp[i]->SetYTitle("E(large time) / E");
+      outputContainer->Add(fhClusterEFracLongTimePileUp[i]);
       
       fhClusterTimeDiffPileUp[i]  = new TH2F(Form("hClusterTimeDiffPileUp%s",pileUpName[i].Data()),
                                 Form("Cluster E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
