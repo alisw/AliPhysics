@@ -124,7 +124,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
-, fCentralityClass("")           
+, fCentralityClass(""),     fSelectEMCALEvent(0)
+, fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
 {
   // Constructor
   
