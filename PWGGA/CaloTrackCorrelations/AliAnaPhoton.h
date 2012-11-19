@@ -295,6 +295,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhClusterTimeDiffPileUp[7];            //! E vs Time difference inside cluster, before any selection
   TH2F * fhClusterTimeDiffChargedPileUp[7];     //! E vs Time difference inside cluster for track matched clusters
   TH2F * fhClusterTimeDiffPhotonPileUp[7];      //! E vs Time difference inside cluster for selected photons
+  TH2F * fhClusterEFracLongTimePileUp[7];       //! E vs fraction of cluster energy from cells with large time
   TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut
   TH2F * fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
   TH2F * fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
