@@ -134,6 +134,7 @@ fRejectCentralityOutliers(kFALSE),
 fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
 fSkipFastCluster(kFALSE),
+fWeightPerEvent(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -252,6 +253,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetTrackEtaCut(fTrackEtaCut);
   fHistosMixed->SetTrackEtaCut(fTrackEtaCut);
   
+  fHistos->SetWeightPerEvent(fWeightPerEvent);
+  fHistosMixed->SetWeightPerEvent(fWeightPerEvent);
+
   if (fEfficiencyCorrection)
   {
     fHistos->SetEfficiencyCorrection(fEfficiencyCorrection, fCorrectTriggers);
@@ -362,6 +366,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
   settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
+  settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   settingsTree->Branch("fCorrectTriggers", &fCorrectTriggers,"CorrectTriggers/O");
   
   settingsTree->Fill();
@@ -780,7 +785,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   
   // skip fast cluster events here if requested
-  if (!fSkipFastCluster && (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly))
+  if (fSkipFastCluster && (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly))
     return;
 
   // Support for ESD and AOD based analysis

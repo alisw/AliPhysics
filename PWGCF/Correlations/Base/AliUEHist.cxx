@@ -266,7 +266,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
     iTrackBin[4] = (useTTRBinning) ? kNLeadingPhiBinsTTR : kNLeadingPhiBins;
     trackBins[4] = (useTTRBinning) ? leadingPhiBinsTTR : leadingPhiBins;
-    trackAxisTitle[4] = "#Delta#varphi (rad.)";
+    trackAxisTitle[4] = "#Delta#varphi (rad)";
 
     if (useVtxAxis > 0)
     {
@@ -904,6 +904,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
   mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
   
+//   Printf("%f %f %f %f", trackSameAll->GetEntries(), eventSameAll->GetEntries(), trackMixedAll->GetEntries(), eventMixedAll->GetEntries());
+  
 //   TH1* normParameters = new TH1F("normParameters", "", 100, 0, 2);
   
 //   trackSameAll->Dump();
@@ -924,6 +926,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
     trackMixedAll->GetAxis(2)->SetRange(0, -1);
     TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
+//     Printf("%f", tracksMixed->Integral());
     Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
     
     // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
@@ -934,7 +937,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     
     if (mixedNormError == 0 || mixedNormError2 == 0)
     {
-      Printf("ERROR: Skipping multiplicity %d because mixed event is empty", multBin);
+      Printf("ERROR: Skipping multiplicity %d because mixed event is empty %f %f %f %f", multBin, mixedNorm, mixedNormError, mixedNorm2, mixedNormError2);
       continue;
     }
     
@@ -991,7 +994,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 3; vertexBin <= 8; vertexBin++)
+//     for (Int_t vertexBin = 5; vertexBin <= 6; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
