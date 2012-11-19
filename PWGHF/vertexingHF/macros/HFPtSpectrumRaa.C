@@ -41,7 +41,10 @@
 //      9. MinHypo  = minimum energy loss hypothesis (Default 1./3.)
 //      10. MaxHypo = maximum energy loss hypothesis (Default 3.0)
 //      11. MaxRb = maximum Raa(b) hypothesis (Default 6.0, won't do anything)
-//      12. isRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//      12. RbHypo : flag to decide whether the Eloss hypothesis is Rb or Rb/Rc
+//      13. CentralHypo = central energy loss hypothesis, DEFAULT TO 1.0
+//      14. isRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//      15. ScaledAndExtrapRef: flag to tag scaled+reference pp-scaled-data
 //
 //  Complains to : Zaida Conesa del Valle
 //
@@ -95,7 +98,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t decay=1,
 		     Double_t sigmaABCINT1B=54.e9,
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
-		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0, 
+		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0,
+		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
 		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
 
@@ -365,15 +369,15 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t ElossHypo = 0.;
     if (fdMethod==kfc) { ElossHypo = 1. / Rcb; }
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty) ; }
-
+    if(isRbHypo) ElossHypo = RaaBeauty;
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
     //
     // Find the bin for the central Eloss hypo
     //
-    if( TMath::Abs( ElossHypo - 1.0 ) < 0.075 ){
+    if( TMath::Abs( ElossHypo - CentralHypo ) < 0.075 ){
       Int_t hABbin = hSigmaAB->FindBin( pt );
-      Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - 1.0 );
-      Double_t DeltaV = TMath::Abs( ElossHypo - 1.0 );
+      Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - CentralHypo );
+      Double_t DeltaV = TMath::Abs( ElossHypo - CentralHypo );
       //      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
       if ( DeltaV < DeltaIni ) ElossCentral[ hABbin ] = ElossHypo;
       //      cout << " final ECentral " << ElossCentral[ hABbin ] << endl;
@@ -511,6 +515,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t ElossHypo = 0.;
     if (fdMethod==kfc) { ElossHypo = 1./ Rcb; }
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty); }
+    if(isRbHypo) ElossHypo = RaaBeauty;
     hRCharmVsElossHypo[ptbin]->Fill( ElossHypo, RaaCharm );
 
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
