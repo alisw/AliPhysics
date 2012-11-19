@@ -595,12 +595,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
   Bool_t isSelected =0;      
   if(fEvtSelect == 1){  //MB+SemiCentral
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT | AliVEvent::kSemiCentral));
   } else if (fEvtSelect == 2){  //MB+Central+SemiCentral
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral));
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT | AliVEvent::kSemiCentral | AliVEvent::kCentral));
   } else if(fEvtSelect == 3){  //MB
- isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB ));
+ isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT ));
   }
+
   if(!isSelected )
         return; 
 
@@ -625,8 +626,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
     delete arr;
     if (
-	!match || //select by Trigger classes in KCentral and KSemiCentral
-        !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB ))              // always accept MB
+	!match && //select by Trigger classes in KCentral and KSemiCentral
+        !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT ))              // always accept MB
 	) 
       return; //Not match skip this event
   }
