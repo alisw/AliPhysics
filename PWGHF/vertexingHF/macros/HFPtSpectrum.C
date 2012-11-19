@@ -38,7 +38,7 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 
@@ -95,12 +95,20 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     tab = 18.93; tabUnc = 0.74;
   } else if ( cc == k2040 ) {
     tab = 6.86; tabUnc = 0.28;
+  } else if ( cc == k2030 ) {
+    tab = 8.73769; tabUnc = 0.370219;
+  } else if ( cc == k3040 ) {
+    tab = 5.02755; tabUnc = 0.22099;
+  } else if ( cc == k4050 ) {
+    tab = 2.68327; tabUnc = 0.137073;
   } else if ( cc == k3050 ) {
     tab = 3.87011; tabUnc = 0.183847;
   } else if ( cc == k4060 ) {
     tab = 2.00;  tabUnc= 0.11;
   } else if ( cc == k4080 ) {
     tab = 1.20451; tabUnc = 0.071843;
+  } else if ( cc == k5060 ) {
+    tab = 1.32884; tabUnc = 0.0929536;
   } else if ( cc == k6080 ) {
     tab = 0.419; tabUnc = 0.033;
   } else if ( cc == k80100 ){
@@ -314,7 +322,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     else if ( cc == k010 )  systematics->SetCentrality("010");
     else if ( cc == k1020 )  systematics->SetCentrality("1020");
     else if ( cc == k020 )  systematics->SetCentrality("020");
-    else if ( cc == k2040 ) {
+    else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
       systematics->SetCentrality("2040");
       systematics->SetIsPbPb2010EnergyScan(true);
     }
@@ -323,7 +331,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       else if (isRaavsEP == kInPlane) systematics->SetCentrality("3050InPlane");
       else if (isRaavsEP == kOutOfPlane) systematics->SetCentrality("3050OutOfPlane");
     }
-    else if ( cc == k4060 )  systematics->SetCentrality("4060");
+    else if ( cc == k4060 || cc == k4050 || cc == k5060 )  systematics->SetCentrality("4060");
     else if ( cc == k6080 )  systematics->SetCentrality("6080");
     else if ( cc == k4080 ) systematics->SetCentrality("4080");
     else {
