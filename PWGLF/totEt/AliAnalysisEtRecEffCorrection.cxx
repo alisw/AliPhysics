@@ -11,9 +11,11 @@
 ClassImp(AliAnalysisEtRecEffCorrection);
 
 AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection() : TNamed("RecEff","RecEff")
-    ,fEnergyCorrection("ReCorr","pol1",0.01)
+							       ,fEnergyCorrection()//"ReCorr","1",0.01)
     ,fMaxEnergy(0)
-{}
+{
+  fEnergyCorrection.SetName("ReCorr");
+}
 
 AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection(TString name, const TF1 &correction, const Double_t maxEnergy) : TNamed(name, name)
     ,fEnergyCorrection(correction)
@@ -28,7 +30,8 @@ AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection(const AliAnalysisEt
 
 //! Destructor
 AliAnalysisEtRecEffCorrection::~AliAnalysisEtRecEffCorrection()
-{}
+{
+}
 
 //! Assignment operator
 AliAnalysisEtRecEffCorrection& AliAnalysisEtRecEffCorrection::operator=(const AliAnalysisEtRecEffCorrection &other)
@@ -46,7 +49,7 @@ bool AliAnalysisEtRecEffCorrection::operator==(const AliAnalysisEtRecEffCorrecti
 {
     if (this == &other) return true;
     return false;
-//     return (fMaxEnergy == other.fMaxEnergy && fEnergyCorrection == other.fEnergyCorrection);
+    //return (fMaxEnergy == other.fMaxEnergy && fEnergyCorrection == other.fEnergyCorrection);
 }
 
 Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy)
