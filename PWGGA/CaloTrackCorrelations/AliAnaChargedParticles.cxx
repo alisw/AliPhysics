@@ -39,22 +39,26 @@
 ClassImp(AliAnaChargedParticles)
   
 //__________________________________________________
-  AliAnaChargedParticles::AliAnaChargedParticles() : 
+  AliAnaChargedParticles::AliAnaChargedParticles() :
     AliAnaCaloTrackCorrBaseClass(),
     fPdg(0), 
-    fhNtracks(0),   fhPt(0),
-    fhPhiNeg(0),    fhEtaNeg(0), 
-    fhPhiPos(0),    fhEtaPos(0), 
-    fhEtaPhiPos(0), fhEtaPhiNeg(0),
+    fhNtracks(0),     fhPt(0),
+    fhPhiNeg(0),      fhEtaNeg(0), 
+    fhPhiPos(0),      fhEtaPos(0), 
+    fhEtaPhiPos(0),   fhEtaPhiNeg(0),
     //MC
-    fhPtPion(0),    fhPhiPion(0),     fhEtaPion(0),
-    fhPtProton(0),  fhPhiProton(0),   fhEtaProton(0),
-    fhPtElectron(0),fhPhiElectron(0), fhEtaElectron(0),
-    fhPtKaon(0),    fhPhiKaon(0),     fhEtaKaon(0),
-    fhPtUnknown(0), fhPhiUnknown(0),  fhEtaUnknown(0)
+    fhPtPion(0),      fhPhiPion(0),      fhEtaPion(0),
+    fhPtProton(0),    fhPhiProton(0),    fhEtaProton(0),
+    fhPtElectron(0),  fhPhiElectron(0),  fhEtaElectron(0),
+    fhPtKaon(0),      fhPhiKaon(0),      fhEtaKaon(0),
+    fhPtUnknown(0),   fhPhiUnknown(0),   fhEtaUnknown(0),
+    fhTOFSignal(0),   fhTOFSignalPtCut(0),
+    fhPtTOFSignal(0), fhPtTOFStatus0(0), fhEtaPhiTOFStatus0(0)
 {
   //Default Ctor
 
+  for(Int_t i = 0; i < 7; i++) fhPtTOFSignalPileUp[i] = 0;
+  
   //Initialize parameters
   InitParameters();
 
@@ -106,7 +110,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPos->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhEtaPos);
   
-  fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiPos->SetXTitle("#eta ");
   fhEtaPhiPos->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiPos);
@@ -115,6 +119,46 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiNeg->SetXTitle("#eta ");
   fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
+  
+  Int_t ntofbins = 1000;
+  Int_t mintof = -500;
+  Int_t maxtof =  500;
+
+  fhTOFSignal  = new TH1F ("hTOFSignal","TOF signal", ntofbins,mintof,maxtof);
+  fhTOFSignal->SetXTitle("TOF signal #times (ns?)");
+  outputContainer->Add(fhTOFSignal);
+
+  fhTOFSignalPtCut  = new TH1F ("hTOFSignalPtCut","TOF signal", ntofbins,mintof,maxtof);
+  fhTOFSignalPtCut->SetXTitle("TOF signal (ns?)");
+  outputContainer->Add(fhTOFSignalPtCut);
+
+  fhPtTOFSignal  = new TH2F ("hPtTOFSignal","TOF signal", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+  fhPtTOFSignal->SetYTitle("TOF signal (ns?)");
+  fhPtTOFSignal->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtTOFSignal);
+  
+  TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+  
+  for(Int_t i = 0 ; i < 7 ; i++)
+  {
+    fhPtTOFSignalPileUp[i]  = new TH2F(Form("hPtTOFSignalPileUp%s",pileUpName[i].Data()),
+                                       Form("Track TOF vs p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()),
+                                       nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+    fhPtTOFSignalPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtTOFSignalPileUp[i]->SetXTitle("TOF signal (ns?)");
+    outputContainer->Add(fhPtTOFSignalPileUp[i]);
+  }
+  
+  fhPtTOFStatus0  = new TH1F ("hPtTOFStatus0","p_T distribution of tracks not hitting TOF", nptbins,ptmin,ptmax);
+  fhPtTOFStatus0->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtTOFStatus0);
+  
+  
+  fhEtaPhiTOFStatus0  = new TH2F ("hEtaPhiTOFStatus0","pt/eta/phi for tracks without hit on TOF",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiTOFStatus0->SetXTitle("#eta ");
+  fhEtaPhiTOFStatus0->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiTOFStatus0);
+
   
   if(IsDataMC()){
     
@@ -245,9 +289,29 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(i));
     
-    //Fill AODParticle after some selection       
+     //Fill AODParticle after some selection       
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
+    
+    //TOF
+    ULong_t status = track->GetStatus();
+    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME );
+    Double32_t tof = track->GetTOFsignal()*1e-3;
+    //if( tof < 0) printf("TOF Signal %e, status %d, pt %f\n", tof,status,status2,p3.Pt());
+    
+    if(okTOF)
+    {
+      fhTOFSignal  ->Fill(tof);
+      fhPtTOFSignal->Fill(p3.Pt(), tof);
+            
+      if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(p3.Pt(), tof); 
+      if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalPileUp[1]->Fill(p3.Pt(), tof);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtTOFSignalPileUp[2]->Fill(p3.Pt(), tof);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtTOFSignalPileUp[3]->Fill(p3.Pt(), tof);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtTOFSignalPileUp[4]->Fill(p3.Pt(), tof);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalPileUp[5]->Fill(p3.Pt(), tof);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalPileUp[6]->Fill(p3.Pt(), tof);
+    }
     
     Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
     
@@ -258,16 +322,25 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     if(IsFiducialCutOn() && ! in ) continue ;
     
     // Momentum selection
-    if(p3.Pt() < GetMinPt() || p3.Pt() > GetMaxPt()) continue;
+    if(track->Pt() < GetMinPt() || track->Pt() > GetMaxPt()) continue;
+    
+    if(okTOF) fhTOFSignalPtCut->Fill(tof); 
+    else
+    {
+      fhPtTOFStatus0    ->Fill(track->Pt());
+      fhEtaPhiTOFStatus0->Fill(track->Eta(),track->Phi());
+    }
     
     //Keep only particles identified with fPdg
     //Selection not done for the moment
     //Should be done here.
     
     // Mixed event
-    if (GetMixedEvent()){
+    if (GetMixedEvent())
+    {
       evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
-    } 
+    }
+    
     GetVertex(vert,evtIndex); 
     if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
         
