@@ -41,20 +41,21 @@ using std::endl;
 ClassImp(AliRDHFCutsLctoV0)
 
 //--------------------------------------------------------------------------
-  AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const char* name, Short_t /*v0channel*/) : 
+  AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const char* name, Short_t /*v0channel*/) :
   AliRDHFCuts(name),
   fPidSelectionFlag(0),
   fPidHFV0pos(0),
   fPidHFV0neg(0),
-  fV0daughtersCuts(0)
+  fV0daughtersCuts(0),
+  fV0Type(0)
 {
   //
   // Default Constructor
   //
 
-  Int_t nvars=9;
+  const Int_t nvars=10;
   SetNVars(nvars);
-  TString varNames[9]={"inv. mass if K0S [GeV/c2]",
+  TString varNames[nvars]={"inv. mass if K0S [GeV/c2]",
 		       "inv. mass if Lambda [GeV/c2]",
 		       "inv. mass V0 if K0S [GeV/c2]",
 		       "inv. mass V0 if Lambda [GeV/c2]",
@@ -62,19 +63,23 @@ ClassImp(AliRDHFCutsLctoV0)
 		       "pT min V0-positive track [GeV/c]",
 		       "pT min V0-negative track [GeV/c]",
 		       "dca cascade cut [cm]",
-		       "dca V0 cut [cm]"};
+		       "dca V0 cut [cm]",
+               "V0 type"
+                        };
 
-  Bool_t isUpperCut[9]={kTRUE,
-			kTRUE, 
-			kTRUE, 
+  Bool_t isUpperCut[nvars]={kTRUE,
+			kTRUE,
+			kTRUE,
 			kTRUE,
 			kFALSE,
 			kFALSE,
 			kFALSE,
 			kTRUE,
-			kTRUE};
+			kTRUE,
+            kTRUE
+                        };
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[9]={kFALSE,
+  Bool_t forOpt[nvars]={kFALSE,
 		    kFALSE,
 		    kTRUE,
 		    kTRUE,
@@ -82,8 +87,10 @@ ClassImp(AliRDHFCutsLctoV0)
 		    kTRUE,
 		    kTRUE,
 		    kTRUE,
-		    kTRUE};
-  SetVarsForOpt(9,forOpt); // It was 5: why only 5? And which ones?
+		    kTRUE,
+            kTRUE
+                    };
+  SetVarsForOpt(nvars,forOpt); // It was 5: why only 5? And which ones?
 
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
@@ -109,7 +116,9 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fPidSelectionFlag(0),
   fPidHFV0pos(0),
   fPidHFV0neg(0),
-  fV0daughtersCuts(0)/*
+  fV0daughtersCuts(0),
+  fV0Type(0)
+    /*
 		       fV0channel(source.fV0channel)*/
 {
   //
@@ -144,7 +153,7 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
     delete fV0daughtersCuts;
     fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
 
-    //fV0channel = source.fV0channel;
+    fV0Type  = source.fV0Type;
 
   }
 
@@ -156,7 +165,7 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
 AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
  //
  //  // Default Destructor
- //   
+ //
 
  if (fPidHFV0pos) {
   delete fPidHFV0pos;
@@ -176,8 +185,8 @@ AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
-  // 
-  // Fills in vars the values of the variables 
+  //
+  // Fills in vars the values of the variables
   //
 
   if (pdgdaughters[0]==-9999) return; // dummy
@@ -193,7 +202,7 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   AliAODTrack *bachelorTrack = (AliAODTrack*)dd->GetBachelor();
   AliAODv0 *v0 = (AliAODv0*)dd->Getv0();
   AliAODTrack *v0positiveTrack = (AliAODTrack*)dd->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)dd->Getv0NegativeTrack(); 
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)dd->Getv0NegativeTrack();
 
   Int_t iter=-1;
   // cut on cascade mass, if K0S + p
@@ -250,7 +259,7 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
     iter++;
     vars[iter]=dd->GetDCA(); // prong-to-prong DCA
   }
- 
+
   // cut on V0 dca
   if (fVarsForOpt[8]) {
     iter++;
@@ -296,16 +305,18 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
+
+
   // Get the V0 daughter tracks
   AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack(); 
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack();
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
     return 0;
   }
 
-  // selection on daughter tracks 
-  if (selectionLevel==AliRDHFCuts::kAll || 
+  // selection on daughter tracks
+  if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
     if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
@@ -327,12 +338,12 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
 
   // selection on candidate
-  if (selectionLevel==AliRDHFCuts::kAll || 
+  if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kCandidate) {
 
     Double_t pt = d->Pt();
     Int_t ptbin = PtBin(pt);
-    
+
     Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
     Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
     Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
@@ -341,7 +352,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     Double_t mk0s    = v0->MassK0Short();
     Double_t mLck0sp = d->InvMassLctoK0sP();
 
-    // Lambda + pi 
+    // Lambda + pi
     Double_t mlambda  = v0->MassLambda();
     Double_t malambda = v0->MassAntiLambda();
     Double_t mLcLpi   = d->InvMassLctoLambdaPi();
@@ -353,7 +364,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     }
 
     // cuts on the V0 mass: K0S case
-    if (TMath::Abs(mk0s-mk0sPDG)>fCutsRD[GetGlobalIndex(2,ptbin)]) { 
+    if (TMath::Abs(mk0s-mk0sPDG)>fCutsRD[GetGlobalIndex(2,ptbin)]) {
       okK0spipi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to K0S cut",mk0s));
     }
@@ -382,7 +393,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
     if (!okLck0sp && !okLcLpi && !okLcLBarpi) return 0;
 
-    // cuts on the minimum pt of the tracks 
+    // cuts on the minimum pt of the tracks
     if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) {
       AliDebug(4,Form(" bachelor track Pt=%2.2e > %2.2e",bachelorTrack->Pt(),fCutsRD[GetGlobalIndex(4,ptbin)]));
       return 0;
@@ -432,8 +443,8 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   Int_t returnvaluePID = 7;
 
   // selection on candidate
-  if (selectionLevel==AliRDHFCuts::kAll || 
-      //selectionLevel==AliRDHFCuts::kCandidate || 
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      //selectionLevel==AliRDHFCuts::kCandidate ||
       selectionLevel==AliRDHFCuts::kPID )
     returnvaluePID = IsSelectedPID(d);
 
@@ -595,7 +606,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   }
 
   // not used
-  //if ( fUseTrackSelectionWithFilterBits && 
+  //if ( fUseTrackSelectionWithFilterBits &&
   //!(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
 
   AliAODv0 *v0 = (AliAODv0*)d->Getv0();
@@ -606,14 +617,14 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
 
   // Get the V0 daughter tracks
   AliAODTrack *v0positiveTrack = (AliAODTrack*)d->Getv0PositiveTrack();
-  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack(); 
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)d->Getv0NegativeTrack();
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
     return 0;
   }
 
-  // selection on daughter tracks 
-  if (selectionLevel==AliRDHFCuts::kAll || 
+  // selection on daughter tracks
+  if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
     if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
@@ -634,7 +645,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   Bool_t okLck0sp=kFALSE, okLcLpi=kFALSE, okLcLBarpi=kFALSE;
 
   // selection on candidate
-  if (selectionLevel==AliRDHFCuts::kAll || 
+  if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kCandidate) {
 
     Double_t pt = d->Pt();
@@ -648,7 +659,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
     Double_t mk0s    = v0->MassK0Short();
     Double_t mLck0sp = d->InvMassLctoK0sP();
 
-    // Lambda + pi 
+    // Lambda + pi
     Double_t mlambda  = v0->MassLambda();
     Double_t malambda = v0->MassAntiLambda();
     Double_t mLcLpi   = d->InvMassLctoLambdaPi();
@@ -736,8 +747,8 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   Int_t returnvaluePID = 7;
 
   // selection on PID
-  if (selectionLevel==AliRDHFCuts::kAll || 
-      //selectionLevel==AliRDHFCuts::kCandidate || 
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      //selectionLevel==AliRDHFCuts::kCandidate ||
       selectionLevel==AliRDHFCuts::kPID )
     returnvaluePID = IsSelectedPID(d);
   */
@@ -765,7 +776,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   esdTrackCuts->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCuts->SetMinNClustersTPC(70);
   //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-  //				           AliESDtrackCuts::kAny); 
+  //				           AliESDtrackCuts::kAny);
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
@@ -782,7 +793,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   esdTrackCutsV0daughters->SetMinNClustersITS(0);//(4); // default is 5
   esdTrackCutsV0daughters->SetMinNClustersTPC(70);
   //esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-  //					              AliESDtrackCuts::kAny); 
+  //					              AliESDtrackCuts::kAny);
   // default is kBoth, otherwise kAny
   esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
@@ -896,10 +907,23 @@ void AliRDHFCutsLctoV0::SetStandardCutsPbPb2011() {
 
   //
   // Enable all 2011 PbPb run triggers
-  //  
+  //
   SetTriggerClass("");
   ResetMaskAndEnableMBTrigger();
   EnableCentralTrigger();
   EnableSemiCentralTrigger();
 
+}
+//-----------------------
+Int_t AliRDHFCutsLctoV0::GetV0Type(){
+
+  const Int_t nvars = this->GetNVars() ;
+  //Float_t *vArray =GetCuts();
+  //fV0Type = vArray[nvars-1];
+  fV0Type = (this->GetCuts())[nvars-1];
+  //this->GetCuts(vArray);
+  TString *sVarNames=GetVarNames();
+
+  if(sVarNames[nvars-1].Contains("V0 type")) return (Int_t)fV0Type;
+  else {AliInfo("AliRDHFCutsLctoV0 Last variable is not the Vo type!!!"); return -999;}
 }

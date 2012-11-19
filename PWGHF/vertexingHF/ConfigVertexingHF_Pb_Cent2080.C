@@ -2,7 +2,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
   vHF = new AliAnalysisVertexingHF();
- 
+
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
   vHF->SetJPSItoEleOff();
@@ -16,8 +16,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kFALSE);
   vHF->SetMassCutBeforeVertexing(kTRUE); // PbPb
+  vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
 
-  //--- set cuts for single-track selection  
+  //--- set cuts for single-track selection
   //     displaced tracks
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
@@ -38,7 +39,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCutsSoftPi->SetMinNClustersITS(3);
-  esdTrackCutsSoftPi->SetMaxDCAToVertexXY(1.);  
+  esdTrackCutsSoftPi->SetMaxDCAToVertexXY(1.);
   esdTrackCutsSoftPi->SetMaxDCAToVertexZ(1.);
   esdTrackCutsSoftPi->SetPtRange(0.1,1.e10);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
@@ -105,18 +106,18 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
   cutsDStartoKpipi->SetUsePID(kFALSE);
-  
+
   const Int_t nvars=16;
   const Int_t nptbins=2;
-  
+
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=5.;
   ptbins[2]=999.;
-  
+
   cutsDStartoKpipi->SetPtBins(nptbins+1,ptbins);
-  
+
   Float_t** rdcutsvalmine;
   rdcutsvalmine=new Float_t*[nvars];
   for(Int_t iv=0;iv<nvars;iv++){
@@ -158,7 +159,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   rdcutsvalmine[15][1]=0.;    // NormDecayLenghtXY
 
   cutsDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
- 
+
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
   cutsDStartoKpipi->SetMinPtCandidate(1.);
@@ -167,16 +168,16 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--------------------------------------------------------
 
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
-  cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
+  Float_t cutsArrayLctoV0[10]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.,0.0};
+  cutsLctoV0->SetCuts(10,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
-  // 
+  //
   //--- set this if you want to reconstruct primary vertex candidate by
-  //    candidate using other tracks in the event (for pp, broad 
+  //    candidate using other tracks in the event (for pp, broad
   //    interaction region)
   //vHF->SetRecoPrimVtxSkippingTrks();
-  //--- OR set this if you want to remove the candidate daughters from 
+  //--- OR set this if you want to remove the candidate daughters from
   //    the primary vertex, without recostructing it from scratch
   //vHF->SetRmTrksFromPrimVtx();
 
@@ -185,7 +186,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- verbose
   //  AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
 
- 
+
   return vHF;
 }
 
