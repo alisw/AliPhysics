@@ -104,10 +104,14 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
   TH1I *   fhNMergedFiles;      //! Number of files merged
   TH1F *   fhScaleFactor;       //! Factor to scale histograms
+  TH1I *   fhEMCalBCEvent;      //! N events depending on the existance of a cluster in a given bunch crossing
+  TH1I *   fhEMCalBCEventCut;   //! N events depending on the existance of a cluster above acceptance and E cut in a given bunch crossing
+  TH1I *   fhTrackBCEvent;      //! N events depending on the existance of a track in a given bunch crossing
+  TH1I *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,13)
+  ClassDef(AliAnaCaloTrackCorrMaker,14)
 } ;
  
 

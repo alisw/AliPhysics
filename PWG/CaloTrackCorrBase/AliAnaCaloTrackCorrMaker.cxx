@@ -53,7 +53,10 @@ fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fh2PileUpClusterMult(0),      fh2PileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
-fhNMergedFiles(0),            fhScaleFactor(0)
+fhNMergedFiles(0),            fhScaleFactor(0),
+fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
+fhTrackBCEvent(0),            fhTrackBCEventCut(0)
+
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -82,7 +85,12 @@ fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNMergedFiles(maker.fhNMergedFiles),          
-fhScaleFactor(maker.fhScaleFactor)
+fhScaleFactor(maker.fhScaleFactor),
+fhEMCalBCEvent(maker.fhEMCalBCEvent),
+fhEMCalBCEventCut(maker.fhEMCalBCEventCut),
+fhTrackBCEvent(maker.fhTrackBCEvent),
+fhTrackBCEventCut(maker.fhTrackBCEventCut)
+
 {
   // cpy ctor
 }
@@ -195,8 +203,36 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNPileUpEvents->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
-
   fOutputContainer->Add(fhNPileUpEvents);
+  
+  fhTrackBCEvent      = new TH1I("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhTrackBCEvent->SetYTitle("# events");
+  fhTrackBCEvent->SetXTitle("Bunch crossing");
+  for(Int_t i = 1; i < 20; i++)
+    fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+  fOutputContainer->Add(fhTrackBCEvent);
+  
+  fhTrackBCEventCut      = new TH1I("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhTrackBCEventCut->SetYTitle("# events");
+  fhTrackBCEventCut->SetXTitle("Bunch crossing");
+  for(Int_t i = 1; i < 20; i++)
+    fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+  fOutputContainer->Add(fhTrackBCEventCut);
+
+  
+  fhEMCalBCEvent      = new TH1I("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhEMCalBCEvent->SetYTitle("# events");
+  fhEMCalBCEvent->SetXTitle("Bunch crossing");
+  for(Int_t i = 1; i < 20; i++)
+    fhEMCalBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+  fOutputContainer->Add(fhEMCalBCEvent);
+  
+  fhEMCalBCEventCut      = new TH1I("hEMCalBCEventCut",   "Number of events with at least 1 cluster in a bunch crossing", 19 , 0 , 19 ) ;
+  fhEMCalBCEventCut->SetYTitle("# events");
+  fhEMCalBCEventCut->SetXTitle("Bunch crossing");
+  for(Int_t i = 1; i < 20; i++)
+    fhEMCalBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+  fOutputContainer->Add(fhEMCalBCEventCut);
   
   fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
@@ -478,12 +514,22 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
     fh2PileUpClusterMultAndSPDPileUp->Fill(fReader->GetNPileUpClusters(),fReader->GetNNonPileUpClusters());
   }
+  
   fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
   fh2PileUpClusterMult->Fill(fReader->GetNPileUpClusters  (),fReader->GetNNonPileUpClusters());
   fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality        ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
 
+  
+  for(Int_t i = 0; i < 19; i++)
+  {
+    if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
+    if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
+    if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
+    if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
+  }
+  
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);

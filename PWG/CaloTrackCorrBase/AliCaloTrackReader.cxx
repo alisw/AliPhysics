@@ -69,6 +69,7 @@ fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
 fUseParamTimeCut(kFALSE),
+fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -1024,13 +1025,19 @@ void AliCaloTrackReader::FillInputCTS()
   Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
   fTrackMult    = 0;
   Int_t nstatus = 0;
-  
-  for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fTrackBCEvent   [i] = 0;
+    fTrackBCEventCut[i] = 0;
+  }
+  for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
     
     //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
-    if (fTrackStatus && !((track->GetStatus() & fTrackStatus) == fTrackStatus)) 
+    ULong_t status = track->GetStatus();
+
+    if (fTrackStatus && !((status & fTrackStatus) == fTrackStatus))
       continue ;
     
     nstatus++;
@@ -1105,26 +1112,48 @@ void AliCaloTrackReader::FillInputCTS()
     
     TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
-    if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt())
+    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME );
+    Double_t tof = -1000;
+    Int_t    bc  = -1000;
+    if(okTOF)
     {
-      if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) 
-        continue;
+      tof = track->GetTOFsignal()*1e-3;
       
-      if(fDebug > 2 && momentum.Pt() > 0.1) 
-        printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-               momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+      //printf("track TOF %e\n",tof);
+      bc = TMath::Nint((tof-25)/50) + 9;
+      //printf("track pt %f, tof %2.2f, bc=%d\n",track->Pt(),tof,bc);
       
-      if (fMixedEvent) 
+      SetTrackEventBC(bc);
+      
+    }
+    
+    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
+        
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+    
+    if(okTOF)
+    {
+       SetTrackEventBCcut(bc);
+      
+      //In any case, the time should to be larger than the fixed window ...
+      if( tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax )
       {
-        track->SetID(itrack);
+        //printf("Remove track time %f\n",tof);
+        continue ;
       }
-      
-      fCTSTracks->Add(track);        
-      
-    }//Pt and Fiducial cut passed. 
+    }
+    
+    if(fDebug > 2 && momentum.Pt() > 0.1)
+      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+             momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+    
+    if (fMixedEvent)  track->SetID(itrack);
+
+    fCTSTracks->Add(track);
+    
   }// track loop
 	
-  if(fDebug > 1) 
+  if(fDebug > 1)
     printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);
   
 }
@@ -1221,24 +1250,31 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
     clus->SetE(rdmEnergy);
   }
   
+  Double_t tof = clus->GetTOF()*1e9;
+
+  Int_t bc = TMath::Nint(tof/50) + 9;
+  //printf("tof %2.2f, bc+5=%d\n",tof,bc);
+  
+  SetEMCalEventBC(bc);
+  
+  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) return ;
+
   TLorentzVector momentum ;
   
-  clus->GetMomentum(momentum, fVertex[vindex]);      
+  clus->GetMomentum(momentum, fVertex[vindex]);
   
   if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return ;
   
-  if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return ;
-  
-  Double_t tof = clus->GetTOF()*1e9;
+  SetEMCalEventBCcut(bc);
 
-  if(!IsInTimeWindow(tof,momentum.E()))
+  if(!IsInTimeWindow(tof,clus->E()))
   {
     fNPileUpClusters++ ;
     return ;
   }
   else
     fNNonPileUpClusters++;
-
+  
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
            momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -1265,6 +1301,11 @@ void AliCaloTrackReader::FillInputEMCAL()
   
   fNPileUpClusters    = 0; // Init counter
   fNNonPileUpClusters = 0; // Init counter
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fEMCalBCEvent   [i] = 0;
+    fEMCalBCEventCut[i] = 0;
+  }
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   if(fEMCALClustersListName=="")
@@ -1319,6 +1360,11 @@ void AliCaloTrackReader::FillInputEMCAL()
 
     fNPileUpClusters    = 0; // Init counter
     fNNonPileUpClusters = 0; // Init counter
+    for(Int_t i = 0; i < 19; i++)
+    {
+      fEMCalBCEvent   [i] = 0;
+      fEMCalBCEventCut[i] = 0;
+    }
     
     for (Int_t iclus =  0; iclus < fInputEvent->GetNumberOfCaloClusters(); iclus++)
     {
@@ -1329,8 +1375,6 @@ void AliCaloTrackReader::FillInputEMCAL()
         if (IsEMCALCluster(clus))
         {
           
-          if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) continue ;
-
           Float_t  frac     =-1;
           Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
           Double_t tof = clus->GetTOF();
@@ -1342,12 +1386,24 @@ void AliCaloTrackReader::FillInputEMCAL()
           //Reject clusters with bad channels, close to borders and exotic;
           if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber()))  continue;
 
+          Int_t bc = TMath::Nint(tof/50) + 9;
+          SetEMCalEventBC(bc);
+          
+          if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) continue ;
+
+          TLorentzVector momentum ;
+          
+          clus->GetMomentum(momentum, fVertex[0]);
+          
+          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return ;
+
+          SetEMCalEventBCcut(bc);
+
           if(!IsInTimeWindow(tof,clus->E()))
-          {
             fNPileUpClusters++ ;
-          }
           else
             fNNonPileUpClusters++;
+          
         }
       }
     }
