@@ -174,13 +174,13 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 {
   // find prolongaion candidates finding for single seed
   //
-  const double kTolerX = 5e-4;
-  //
   if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
   if (!InitSeed(esdTr))      return;  // initialize prolongations hypotheses tree
   //
   AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors];
-  AliITSUSeed seed0;
+  AliITSUSeed seedUC;  // copy of the seed from the upper layer
+  AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
+  //
   TObjArray clArr; // container for transfer of clusters matching to seed
   //
   for (int ila=fITS->GetNLayersActive();ila--;) {
@@ -188,37 +188,39 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
     int nSeedsUp = GetNSeeds(ilaUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
-      seed0 = *seedU;
+      seedUC = *seedU;
+      seedUC.SetParent(seedU);
       // go till next active layer
-      if (!TransportToLayer(&seed0, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
+      if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
 	// Check if the seed satisfies to track definition
-	if (NeedToKill(&seed0,kTransportFailed)) KillSeed(ilaUp,isd); 
+	if (NeedToKill(&seedUC,kTransportFailed)) KillSeed(ilaUp,isd); 
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
       }
       AliITSURecoLayer* lrA = fITS->GetLayerActive(ila);
-      if (!GetRoadWidth(&seed0, ila)) { // failed to find road width on the layer
-	if (NeedToKill(&seed0,kRWCheckFailed)) KillSeed(ilaUp,isd); 
+      if (!GetRoadWidth(&seedUC, ila)) { // failed to find road width on the layer
+	if (NeedToKill(&seedUC,kRWCheckFailed)) KillSeed(ilaUp,isd); 
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track (max 4)
       //
       for (int isn=nsens;isn--;) {
+	seedT = seedUC;
 	AliITSURecoSens* sens = hitSens[isn];
-	AliITSUSeed* seedT = NewSeedFromPool(&seed0);
-	seedT->SetParent(seedU);
-	if (!seedT->Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) {DeleteLastSeedFromPool(); continue;}
-	int clID    = sens->GetFirstClusterId();
+	//
+	if (!seedT.Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) continue; // propagation failed, seedT is intact
+	int clID0 = sens->GetFirstClusterId();
 	for (int icl=sens->GetNClusters();icl--;) {
-	  AliITSUClusterPix* cl = (AliITSUClusterPix*)lrA->GetCluster(clID); // cluster data is in the tracking frame
-	  if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
-	    if (!seedT->PropagateParamOnlyTo(seedT->GetX()+cl->GetX(),GetBz())) {DeleteLastSeedFromPool(); continue;}
-	  }
-	  
-
+	  int res = CheckCluster(&seedT,ila,clID0+icl);
+	  //
+	  if (res==kStopSearchOnSensor) break;     // stop looking on this sensor
+	  if (res==kClusterNotMatching) continue;  // cluster does not match
+	  // cluster is matching and it was added to the hypotheses tree
 	}
       }
-      
+      // cluster search is done. Do we need ta have a version of this seed skipping current layer
+      seedT.SetLr(ila);
+      if (!NeedToKill(&seedT,kMissingCluster)) AddProlongationHypothesis(NewSeedFromPool(&seedT) ,ila);      
     }
   }
   //
@@ -235,7 +237,7 @@ Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr)
   AliITSUSeed* seed = NewSeedFromPool();
   seed->AliExternalTrackParam::operator=(*esdTr);
   seed->SetParent(esdTr);
-  fSeedsLr[fITS->GetNLayersActive()].AddLast(seed);
+  AddProlongationHypothesis(seed,fITS->GetNLayersActive());
   return kTRUE;
   // TO DO
 }
@@ -335,4 +337,51 @@ AliITSUSeed* AliITSUTrackerGlo::NewSeedFromPool(const AliITSUSeed* src)
   return src ? 
     new(fSeedsPool[fSeedsPool.GetEntriesFast()]) AliITSUSeed(*src) :
     new(fSeedsPool[fSeedsPool.GetEntriesFast()]) AliITSUSeed();
+}
+
+//_________________________________________________________________________
+Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID) 
+{
+  // Check if the cluster (in tracking frame!) is matching to track. 
+  // The track must be already propagated to sensor tracking frame.
+  // Returns:  kStopSearchOnSensor if the search on given sensor should be stopped, 
+  //           kClusterMatching    if the cluster is matching
+  //           kClusterMatching    otherwise
+  //
+  // The seed is already propagated to cluster
+  const double kTolerX = 5e-4;
+  AliCluster *cl = fITS->GetLayerActive(lr)->GetCluster(clID);
+  //
+  if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
+    if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) return kStopSearchOnSensor; // propagation failed, seedT is intact
+  }
+  double dy = cl->GetY() - track->GetY();
+  double dy2 = dy*dy;
+  double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
+    AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
+  if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
+    if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
+    else      return kClusterNotMatching;   // Other clusters may match
+  }
+  double dz2 = cl->GetZ()-track->GetZ();
+  dz2 *= dz2;
+  tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
+    AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
+  if (dz2>tol2) return kClusterNotMatching; // Other clusters may match
+  //
+  // check chi2
+  Double_t p[2]={cl->GetY(), cl->GetZ()};
+  Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
+  double chi2 = track->GetPredictedChi2(p,cov);
+  if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) return kClusterNotMatching;
+  //
+  track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
+  if (!track->Update(p,cov)) return kClusterNotMatching;
+  track->SetChi2Cl(chi2);
+  track->SetLrClusterID(lr,clID);
+  cl->IncreaseClusterUsage();
+  //
+  AddProlongationHypothesis(track,lr);
+  //
+  return kClusterMatching;
 }

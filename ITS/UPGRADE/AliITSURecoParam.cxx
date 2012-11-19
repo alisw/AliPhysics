@@ -34,6 +34,7 @@ const Double_t AliITSURecoParam::fgkNSigmaRoadY                   = 5.;
 const Double_t AliITSURecoParam::fgkNSigmaRoadZ                   = 5.; 
 const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1000e-4;
 const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1000e-4;
+const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;;
 const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
 //
 
@@ -50,6 +51,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
+  ,fMaxTr2ClChi2(0)
 {
   // def c-tor
   SetName("ITS");
@@ -69,6 +71,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
+  ,fMaxTr2ClChi2(0)
 {
   // def c-tor
   SetName("ITS");
@@ -83,6 +86,7 @@ AliITSURecoParam::~AliITSURecoParam()
   delete[] fTanLorentzAngle;
   delete[] fSigmaY2;
   delete[] fSigmaZ2;
+  delete[] fMaxTr2ClChi2;
 }
 
 //_____________________________________________________________________________
@@ -123,11 +127,13 @@ void  AliITSURecoParam::SetNLayers(Int_t n)
   fTanLorentzAngle = new Double_t[n];
   fSigmaY2 = new Double_t[n];
   fSigmaZ2 = new Double_t[n];
+  fMaxTr2ClChi2 = new Double_t[n];
   //
   for (int i=n;i--;) {
     fTanLorentzAngle[i] = fgkTanLorentzAngle;
     fSigmaY2[i] = fgkSigmaRoadY*fgkSigmaRoadY;
     fSigmaZ2[i] = fgkSigmaRoadZ*fgkSigmaRoadZ;
+    fMaxTr2ClChi2[i] = fgkMaxTr2ClChi2;
   }
   //
 }
@@ -154,4 +160,12 @@ void  AliITSURecoParam::SetSigmaZ2(Int_t lr, Double_t v)
   // set Lorentz angle value
   if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
   fSigmaZ2[lr] = v;
+}
+
+//_____________________________________________________________________________
+void  AliITSURecoParam::SetMaxTr2ClChi2(Int_t lr, Double_t v)
+{
+  // set Lorentz angle value
+  if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
+  fMaxTr2ClChi2[lr] = v;
 }

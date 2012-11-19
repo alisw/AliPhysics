@@ -9,10 +9,10 @@
 
 #include "AliTracker.h"
 #include "AliESDEvent.h"
+#include "AliITSUSeed.h"
 
 class AliITSUReconstructor;
 class AliITSURecoDet;
-class AliITSUSeed;
 class AliITSUClusterPix;
 
 class TTree;
@@ -28,9 +28,11 @@ class AliITSUTrackerGlo : public AliTracker {
     kTrPhi0, kTrDPhi, kTrZ0, kTrDZ,     // mean phi,dPhi, mean z, dZ (don't change this order)
     kNTrImpData};
   //
-  enum {kTransportFailed=1  // seed did not reach target layer
+  enum {kMissingCluster=0  // no cluster found on this layer
+	,kTransportFailed=1  // seed did not reach target layer
 	,kRWCheckFailed =2  // failed to rotate the seed to frame of the layer impact point
   };
+  enum {kStopSearchOnSensor,kClusterNotMatching,kClusterMatching}; // flags for track-to-cluster checks
 
   AliITSUTrackerGlo(AliITSUReconstructor* rec);
   virtual ~AliITSUTrackerGlo();
@@ -54,6 +56,8 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag) {return kFALSE;} // todo
   void                   KillSeed(Int_t ilr, Int_t id) {} // todo
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
+  Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
+  void                   AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
   void                   DeleteLastSeedFromPool()               {fSeedsPool.RemoveLast();}
@@ -77,5 +81,14 @@ class AliITSUTrackerGlo : public AliTracker {
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     
 };
+
+//_________________________________________________________________________
+inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr)
+{
+  // add new seed prolongation hypothesis 
+  fSeedsLr[lr].AddLast(seed);
+}
+
+
 #endif
 
