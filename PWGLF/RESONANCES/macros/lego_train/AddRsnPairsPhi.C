@@ -15,7 +15,6 @@ void AddRsnPairsPhi(AliAnalysisTaskSE *task,
                     AliRsnCutSet *cutsEvent=0,
                     AliRsnCutSet *cutsPair=0,
                     TString suffix = "") {
-   cerr<<"***** AddRsnPairsPhi"<<endl;
 
    Printf("id1=%d id2=%d",listID1,listID2);
 
@@ -42,7 +41,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
-
+   
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
@@ -87,7 +86,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
 
-   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("rsnUseRapidity",valid);
+   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("RsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 

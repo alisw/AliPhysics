@@ -56,7 +56,7 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    if (isMixing) AddEventMixingSettings(task);
 
    if (isAOD049 && (!useMC) && (collisionType==1)) {
-      task->SetUseCentralityPatch(kTRUE);
+      if (isRsnMini) taskRsnMini->SetUseCentralityPatch(kTRUE);
    }
 
    // add the task to manager

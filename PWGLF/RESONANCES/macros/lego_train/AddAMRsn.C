@@ -142,7 +142,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
 //   rsnBaseSettings = "Rsn_PbPb";
 //   rsnBaseSettings = "Rsn_pPb";
 
-   if (input.CompareTo("esd")) rsnBaseSettings.Append("_ESD");
+   if (!input.CompareTo("esd")) rsnBaseSettings.Append("_ESD");
    else rsnBaseSettings.Append("_AOD");
 
    // use mc
