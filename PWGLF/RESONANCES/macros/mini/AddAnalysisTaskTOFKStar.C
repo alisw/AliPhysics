@@ -104,9 +104,12 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    
    //event plane (only for PbPb)
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
-   AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
-   outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
-   
+   AliRsnMiniOutput *outPlane = 0x0;
+   if (!isPP){
+     task->CreateOutput("eventPlane", "HIST", "EVENT");
+     outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
+   }
+
    TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 220,-11.,11.);
    task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
