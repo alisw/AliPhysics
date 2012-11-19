@@ -175,7 +175,6 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
   Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
-  Double_t               fCellTime[12672];         // Array with cluster time to be passed to digit in case of AODs 
   Float_t                fCellMatchdEta[12672];    // Array with cluster-track dPhi 
   Float_t                fCellMatchdPhi[12672];    // Array with cluster-track dEta 
 
