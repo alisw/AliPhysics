@@ -50,7 +50,7 @@ public:
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
-   void                SetEventQAHist(TString type,TH2F* histo); 
+   void                SetEventQAHist(TString type,TH2F *histo);
 
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);

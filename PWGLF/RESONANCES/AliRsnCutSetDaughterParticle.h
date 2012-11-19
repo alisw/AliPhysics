@@ -22,44 +22,44 @@ class AliRsnCutSetDaughterParticle : public AliRsnCutSet {
 public:
 
    enum ERsnDaughterCutSet {
-     kNoCuts,
-     kQualityStd2010,
-     kQualityStd2011,
-     kTOFMatch,
-     kFastTPCpidNsigma,
-     kFastTOFpidNsigma,
-     kTPCTOFpidKstarPP2010,
-     kTOFpidKstarPbPb2010,
-     kTOFTPCmismatchKstarPbPb2010,
-     kNDaughterCuts
-  };
-     
+      kNoCuts,
+      kQualityStd2010,
+      kQualityStd2011,
+      kTOFMatch,
+      kFastTPCpidNsigma,
+      kFastTOFpidNsigma,
+      kTPCTOFpidKstarPP2010,
+      kTOFpidKstarPbPb2010,
+      kTOFTPCmismatchKstarPbPb2010,
+      kNDaughterCuts
+   };
+
    AliRsnCutSetDaughterParticle();
-   AliRsnCutSetDaughterParticle(const char *name, 
-				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
-				AliPID::EParticleType pid,
-				Float_t nsigmaFast,
-				Int_t AODfilterBit);
+   AliRsnCutSetDaughterParticle(const char *name,
+                                AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
+                                AliPID::EParticleType pid,
+                                Float_t nsigmaFast,
+                                Int_t AODfilterBit);
    AliRsnCutSetDaughterParticle(const AliRsnCutSetDaughterParticle &copy);
    AliRsnCutSetDaughterParticle &operator=(const AliRsnCutSetDaughterParticle &copy);
    virtual ~AliRsnCutSetDaughterParticle();
-   
+
    void           Init();
-   void           SetNsigmaForFastTPCpid(Float_t nsigma){fNsigmaTPC=nsigma; return;};
-   void           SetNsigmaForFastTOFpid(Float_t nsigma){fNsigmaTOF=nsigma; return;};
-   void           SetAODTrackCutFilterBit(Int_t ibit){fAODTrkCutFilterBit=ibit; return;}
+   void           SetNsigmaForFastTPCpid(Float_t nsigma) {fNsigmaTPC=nsigma; return;};
+   void           SetNsigmaForFastTOFpid(Float_t nsigma) {fNsigmaTOF=nsigma; return;};
+   void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
    //getters
-   const char *  GetAppliedDaughterCutSetName() { return GetName();}
+   const char   *GetAppliedDaughterCutSetName() { return GetName();}
    const Int_t   GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
-   const AliRsnCutTrackQuality * GetQualityCut() {return fCutQuality;};
+   const AliRsnCutTrackQuality *GetQualityCut() {return fCutQuality;};
 
 private:
 
    AliPID::EParticleType fPID;              // PID for track
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet    fAppliedCutSetID;     // ID of applied cut
    Float_t               fNsigmaTPC;         // number of TPC sigmas for fast pid cut only
-   Float_t               fNsigmaTOF;         // number of TOF sigmas for fast pid cut only 
-   AliRsnCutTrackQuality * fCutQuality;      //pointer to quality cut object
+   Float_t               fNsigmaTOF;         // number of TOF sigmas for fast pid cut only
+   AliRsnCutTrackQuality *fCutQuality;       //pointer to quality cut object
    Int_t                 fAODTrkCutFilterBit; //AOD filter bit for track cuts
    ClassDef(AliRsnCutSetDaughterParticle, 2) // cut definitions for K*
 

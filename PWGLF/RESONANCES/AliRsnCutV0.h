@@ -67,7 +67,7 @@ protected:
    AliESDtrackCuts *fESDtrackCuts;     // quality cuts for v0 daughters
 
    AliRsnCutTrackQuality fCutQuality;       // track quality cut
-   Int_t            fAODTestFilterBit;  // test filter bit for AODs 
+   Int_t            fAODTestFilterBit;  // test filter bit for AODs
 
    ClassDef(AliRsnCutV0, 1)
 };
