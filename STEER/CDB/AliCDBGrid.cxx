@@ -818,8 +818,9 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 	else
 	    AliInfo(Form("Storage Element: %s", targetSE.Data()));
 
-	//In case of other SEs specified by the user, mirror the file to the remaining SEs
-	while(remainingSEs>0){
+	// Mirror the file to all the SEs specified by the user, but the one where the file was stored
+	for(Int_t i=0; i<nSEs; i++){
+	    if(i==nSEs-remainingSEs-1) continue; // skip mirroring to the SE where the file was saved
 	    TString mirrorCmd("mirror ");
 	    mirrorCmd += filename;
 	    mirrorCmd += " ";
