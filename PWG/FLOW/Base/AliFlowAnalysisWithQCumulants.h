@@ -47,6 +47,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForDistributions();
   virtual void InitializeArraysForVarious();
   virtual void InitializeArraysForNestedLoops();
+  virtual void InitializeArraysForMixedHarmonics();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
     virtual void CrossCheckSettings();
@@ -155,8 +156,8 @@ class AliFlowAnalysisWithQCumulants{
     virtual void Calculate2DDiffFlow(TString type);    
     // 3d.) Other differential correlators:
     virtual void CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta);
-	// 3e.) Mixed harmonics:
-	virtual void CalculateCumulantsMixedHarmonics(); 
+    // 3e.) Mixed harmonics:
+    virtual void CalculateCumulantsMixedHarmonics(); 
     
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms(): 
   virtual void GetOutputHistograms(TList *outputListHistos);
@@ -467,6 +468,12 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* Get7pCumulants() const {return this->f7pCumulants;};
   void Set8pCumulants(TH1D* const p8pC) {this->f8pCumulants = p8pC;};
   TH1D* Get8pCumulants() const {return this->f8pCumulants;};
+  void SetMixedHarmonicEventWeights(TH1D* const mhew, Int_t const power) {this->fMixedHarmonicEventWeights[power] = mhew;};
+  TH1D* GetMixedHarmonicEventWeights(Int_t power) const {return this->fMixedHarmonicEventWeights[power];};
+  void SetMixedHarmonicProductOfEventWeights(TH2D* const mhpoew) {this->fMixedHarmonicProductOfEventWeights = mhpoew;};
+  TH2D* GetMixedHarmonicProductOfEventWeights() const {return this->fMixedHarmonicProductOfEventWeights;};
+  void SetMixedHarmonicProductOfCorrelations(TProfile2D* const mhpoc) {this->fMixedHarmonicProductOfCorrelations = mhpoc;};
+  TProfile2D* GetMixedHarmonicProductOfCorrelations() const {return this->fMixedHarmonicProductOfCorrelations;};
 
  private:
   
@@ -692,6 +699,7 @@ class AliFlowAnalysisWithQCumulants{
   TList *fMixedHarmonicsList; // list to hold all histograms and profiles for mixed harmonics 
   TList *fMixedHarmonicsProfiles; // list to hold all profiles for mixed harmonics
   TList *fMixedHarmonicsResults; // list to hold all histograms with final results for mixed harmonics  
+  TList *fMixedHarmonicsErrorPropagation; // list to hold all objects needed for statistical error propagation  
   //TList *fIntFlowAllCorrelationsVsM; // list to hold all profiles with correlations vs M
   //  9b.) flags:
   TProfile *fMixedHarmonicsFlags; // profile to hold all flags for mixed harmonics
@@ -713,8 +721,12 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *f6pCumulants; // histogram to hold all 6-particle cumulants
   TH1D *f7pCumulants; // histogram to hold all 7-particle cumulants
   TH1D *f8pCumulants; // histogram to hold all 8-particle cumulants
+  //  9e.) statistical error propagation:
+  TH1D *fMixedHarmonicEventWeights[2]; // sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]    
+  TH2D *fMixedHarmonicProductOfEventWeights; // sum of products of event weights for mixed harmonics
+  TProfile2D *fMixedHarmonicProductOfCorrelations; // averages of products of mixed harmonics correlations
    
-  ClassDef(AliFlowAnalysisWithQCumulants, 1);
+  ClassDef(AliFlowAnalysisWithQCumulants, 2);
 };
 
 //================================================================================================================
