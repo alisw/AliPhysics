@@ -262,8 +262,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA);
 
   }
-  else
-    isSelected = 1;
+  if(fIsMC)
+    isSelected = kTRUE;
+
 
   // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
