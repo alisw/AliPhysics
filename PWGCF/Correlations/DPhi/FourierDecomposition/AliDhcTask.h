@@ -26,7 +26,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
     AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
     fTrackDepth(0), fPoolSize(0), fTracksName(), fDoWeights(0),
     fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHPtAss(0), 
-    fHPtTrg(0), fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0), fIndex(0), 
+    fHPtTrg(0), fHPtTrg_Evt(0), fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0), fIndex(0), 
     fMeanPtTrg(0), fMeanPtAss(0), fMean2PtTrg(0), fMean2PtAss(0), 
     fCentrality(99), fZVertex(99), fEsdTrackCutsTPCOnly(0), fPoolMgr(0),
     fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
@@ -88,6 +88,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TH2         *fHTrk;            //! Phi, Eta, etc.
   TH1         *fHPtAss;          //! Pt ass 
   TH1         *fHPtTrg;          //! Pt trg
+  TH1         *fHPtTrg_Evt;      //! Pt trg per event for weighting
   TH1         *fHCent;           //! Centrality
   TH1         *fHZvtx;           //! Zvertex
   Int_t        fNbins;           //! Number of histogram bins

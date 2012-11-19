@@ -32,7 +32,7 @@ ClassImp(AliDhcTask)
 AliDhcTask::AliDhcTask(const char *name) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(0),
-  fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0),
+  fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0), fHPtTrg_Evt(0),
   fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0),
   fIndex(0), fMeanPtTrg(0), fMeanPtAss(0), fMean2PtTrg(0), fMean2PtAss(0),
   fCentrality(99), fZVertex(99), fEsdTrackCutsTPCOnly(0), fPoolMgr(0),
@@ -141,6 +141,7 @@ void AliDhcTask::BookHistos()
   fOutputList->Add(fHPtAss);
   fHPtTrg = new TH1F("fHPtTrg","PtTrig;P_{T} (GeV/c) [GeV/c]",nPtTrig,ptt);
   fOutputList->Add(fHPtTrg);
+  fHPtTrg_Evt = (TH1*) fHPtTrg->Clone("fHPtTrg_Evt");
   fHCent = new TH1F("fHCent","Cent;bins",nCent,cent);
   fOutputList->Add(fHCent);
   fHZvtx = new TH1F("fHZvtx","Zvertex;bins",nZvtx,zvtx);
@@ -572,19 +573,16 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
   Int_t globIndex = (cbin-1)*nZvtx*nPtTrig*nPtAssc+(zbin-1)*nPtTrig*nPtAssc;
 
-  Double_t weight = 1;
+  Double_t weight = 1.0;
+  fHPtTrg_Evt->Reset();
   if (fDoWeights) { // Count trigger particles in this event
     for (Int_t i=0; i<iMax; ++i) {
       const AliMiniTrack &a(evt1.at(i));
       Float_t pta  = a.Pt();
-      Int_t abin = fHPtTrg->FindBin(pta);
-      if (fHPtTrg->IsBinOverflow(abin) ||
-          fHPtTrg->IsBinUnderflow(abin))
-        continue;
-      ++weight;
+      fHPtTrg_Evt->Fill(pta);
     }
   }
-  
+
   for (Int_t i=0; i<iMax; ++i) {
 
     // Trigger particles
@@ -613,7 +611,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       if (pta < ptb) 
 	continue;
 
-      Int_t bbin = fHPtTrg->FindBin(ptb);
+      Int_t bbin = fHPtAss->FindBin(ptb);
       if (fHPtAss->IsBinOverflow(bbin) ||
 	  fHPtAss->IsBinUnderflow(bbin))
 	continue;
@@ -622,7 +620,15 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t deta = a.Eta() - b.Eta();
 
       Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
-      hist[index]->Fill(dphi,deta,1./weight);
+      if (fDoWeights) {
+        weight = fHPtTrg_Evt->GetBinContent(abin);
+      }
+      if  (weight==0.0) {
+        AliError(Form("Trying to work with weight = %f",weight));
+      }
+      else {
+        hist[index]->Fill(dphi,deta,1./weight);
+      }
 
       if (pairing == kSameEvt) {
 	fHPtAss->AddBinContent(bbin);
