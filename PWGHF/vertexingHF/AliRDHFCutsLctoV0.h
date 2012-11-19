@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //***********************************************************
 // Class AliRDHFCutsLctoV0
@@ -13,7 +13,7 @@
 #include "AliAODPidHF.h"
 #include "AliRDHFCuts.h"
 
-class AliRDHFCutsLctoV0 : public AliRDHFCuts 
+class AliRDHFCutsLctoV0 : public AliRDHFCuts
 {
  public:
 
@@ -29,18 +29,18 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
  };
 
   AliRDHFCutsLctoV0(const char* name="CutsLctoV0", Short_t v0channel=0);
-  
+
   virtual ~AliRDHFCutsLctoV0();
 
   AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0& source);
-  AliRDHFCutsLctoV0& operator=(const AliRDHFCutsLctoV0& source); 
- 
+  AliRDHFCutsLctoV0& operator=(const AliRDHFCutsLctoV0& source);
+
   using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
-  
+
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
 
@@ -53,6 +53,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
+
+  Int_t GetV0Type();
 
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
@@ -86,9 +88,11 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliAODPidHF *fPidHFV0pos;
   AliAODPidHF *fPidHFV0neg;
   AliESDtrackCuts *fV0daughtersCuts; // cuts for v0 daughters (AOD converted to ESD on the flight!)
+  Float_t     fV0Type; // V0 type -- should be defined as in AliRDHFCuts.h
+
   //UShort_t fV0channel;
 
-  ClassDef(AliRDHFCutsLctoV0,3);  // class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,4);  // class for cuts on AOD reconstructed Lc->V0+bachelor
 };
 
 #endif

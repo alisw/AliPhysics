@@ -2,7 +2,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
   vHF = new AliAnalysisVertexingHF();
- 
+
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
@@ -15,8 +15,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetSecVtxWithKF();
   //vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kTRUE);
-
-  //--- set cuts for single-track selection  
+  vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
+  
+  //--- set cuts for single-track selection
   //     displaced tracks
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
@@ -80,16 +81,16 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[9]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.};
-  cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
+  Float_t cutsArrayLctoV0[10]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.,0.0};
+  cutsLctoV0->SetCuts(10,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
-  // 
+  //
   //--- set this if you want to reconstruct primary vertex candidate by
-  //    candidate using other tracks in the event (for pp, broad 
+  //    candidate using other tracks in the event (for pp, broad
   //    interaction region)
   //vHF->SetRecoPrimVtxSkippingTrks();
-  //--- OR set this if you want to remove the candidate daughters from 
+  //--- OR set this if you want to remove the candidate daughters from
   //    the primary vertex, without recostructing it from scratch
   //vHF->SetRmTrksFromPrimVtx();
 
@@ -98,7 +99,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- verbose
   //  AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
 
- 
+
   return vHF;
 }
 

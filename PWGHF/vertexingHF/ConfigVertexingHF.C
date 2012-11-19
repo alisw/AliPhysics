@@ -15,6 +15,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetSecVtxWithKF();
   //  vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kFALSE);
+  vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
 
   //--- set cuts for single-track selection  
   //     displaced tracks
@@ -80,8 +81,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
-  cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
+  Float_t cutsArrayLctoV0[10]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.,0.0};
+  cutsLctoV0->SetCuts(10,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
   // 

@@ -101,6 +101,10 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t GetRmTrksFromPrimVtx() const {return fRmTrksFromPrimVtx;}
   void SetFindVertexForDstar(Bool_t vtx=kTRUE) { fFindVertexForDstar=vtx; }
   void SetFindVertexForCascades(Bool_t vtx=kTRUE) { fFindVertexForCascades=vtx; }
+
+  void  SetV0TypeForCascadeVertex(Int_t type) {fV0TypeForCascadeVertex = type;}
+  Int_t GetV0TypeForCascadeVertex()           { return fV0TypeForCascadeVertex;}
+  
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void UnsetRecoPrimVtxSkippingTrks()
@@ -158,6 +162,8 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; } 
 
   void SetMasses();
+  Bool_t CheckCutsConsistency();
+
   void SetUseKaonPIDfor3Prong(Bool_t opt=kTRUE){fUseKaonPIDfor3Prong=opt;}
   void SetnSigmaTOFforKaonSel(Double_t nsl, Double_t nsh){
     fnSigmaTOFKaonLow=nsl; fnSigmaTOFKaonHi=nsh;}
@@ -220,6 +226,7 @@ class AliAnalysisVertexingHF : public TNamed {
   TList *fListOfCuts;    // pointer to list of cuts for output file
   Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
   Bool_t fFindVertexForCascades;  // reconstruct a secondary vertex or assume it's from the primary vertex
+  Int_t  fV0TypeForCascadeVertex;  // Select which V0 type we want to use for the cascas
   Bool_t fMassCutBeforeVertexing; // to go faster in PbPb
   // dummies for invariant mass calculation
   AliAODRecoDecay *fMassCalc2; // for 2 prong
@@ -307,7 +314,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,21);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,22);  // Reconstruction of HF decay candidates
 };
 
 
