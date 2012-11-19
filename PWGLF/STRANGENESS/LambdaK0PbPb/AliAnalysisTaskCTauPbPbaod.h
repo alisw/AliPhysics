@@ -32,6 +32,8 @@ public:
   void SetTPCrows(Double_t cospa){fTPCcr=cospa;} 
   void SetTPCratio(Double_t cospa){fTPCcrfd=cospa;} 
   void SetPrimDCA(Double_t cospa){fDCApv=cospa;} 
+  void SetRmin(Double_t rmin){fRmin=rmin;} 
+  void SetRmax(Double_t rmax){fRmax=rmax;} 
 
  
   virtual void   UserCreateOutputObjects();
@@ -56,6 +58,8 @@ private:
   Double_t fTPCcr;      // threshold for the number of crossed TPC pad rows
   Double_t fTPCcrfd;    // threshold for the ratio of TPC crossed/findable rows
   Double_t fDCApv;      // threshold for the DCA wrt the primary vertex
+  Double_t fRmin;       // Min radius of the fiducial volume
+  Double_t fRmax;       // Max radius of the fiducial volume
 
   TList       *fOutput; //! The list of histograms
 
@@ -66,6 +70,7 @@ private:
   TH1F *fTPCrows;    //! number of crossed TPC pad rows
   TH1F *fTPCratio;   //! ratio of TPC crossed/findable rows
   TH1F *fPrimDCA;    //! DCA wrt the primary vertex
+  TH1F *fR;          //! Radial positions of the V0 vertices
 
   TH2F* fdEdx;       //! dEdx
   TH2F* fdEdxPid;    //! dEdx with PID
