@@ -50,8 +50,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiPos;      //! phi distribution vs pT, positive
   TH2F * fhEtaPos;      //! eta distribution vs pT, positive
   TH2F * fhEtaPhiPos;   //! eta vs phi distribution of positive charge  
-  TH2F * fhEtaPhiNeg;   //! eta vs phi distribution of negative charge  
-
+  TH2F * fhEtaPhiNeg;   //! eta vs phi distribution of negative charge
+  
   //MC
   TH1F * fhPtPion;      //! pT distribution
   TH2F * fhPhiPion;     //! phi distribution vs pT
@@ -73,10 +73,18 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiUnknown;  //! phi distribution vs pT
   TH2F * fhEtaUnknown;  //! eta distribution vs pT
   
+  // TOF
+  TH1F * fhTOFSignal;        //! TOF signal, good status
+  TH1F * fhTOFSignalPtCut;   //! TOF signal, good status, pt and acceptance cut
+  TH2F * fhPtTOFSignal;      //! TOF signal vs track pT, good status
+  TH2F * fhPtTOFSignalPileUp[7]; //! TOF signal vs track pT, good status, pile-up
+  TH1F * fhPtTOFStatus0;     //! pT of tracks not passing TOF status selection
+  TH2F * fhEtaPhiTOFStatus0; //! eta/phi of tracks not passing TOF status selection
+
   AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
-  ClassDef(AliAnaChargedParticles,3)
+  ClassDef(AliAnaChargedParticles,4)
 
 } ;
 
