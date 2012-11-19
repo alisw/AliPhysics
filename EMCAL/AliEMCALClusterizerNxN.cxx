@@ -262,9 +262,12 @@ void AliEMCALClusterizerNxN::MakeClusters()
     while ( (digit = static_cast<AliEMCALDigit *>(nextdigitC())) ) 
     { // scan over the list of digitsC
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
-
-      if (fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fMinECut) // no threshold by default!
-      {                                                                          // needs to be set in OCDB!
+      Float_t time              = digit->GetTime();
+      if (fGeom->CheckAbsCellId(digit->GetId()) &&
+          dEnergyCalibrated > fMinECut          &&
+          time              < fTimeMax          &&
+          time              > fTimeMin             ) // no threshold by default!
+      {                                              // needs to be set in OCDB!
         if (dEnergyCalibrated > dMaxEnergyDigit) 
         {
           dMaxEnergyDigit = dEnergyCalibrated;

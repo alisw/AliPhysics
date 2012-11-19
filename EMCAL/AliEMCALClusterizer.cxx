@@ -198,13 +198,6 @@ void AliEMCALClusterizer::Calibrate(Float_t & amp, Float_t & time, const Int_t a
   // Convert digitized amplitude into energy, calibrate time
   // Calibration parameters are taken from OCDB : OCDB/EMCAL/Calib/Data
 
-  //Check if time is too large or too small, indication of a noisy channel, remove in this case
-  if(time > fTimeMax || time < fTimeMin) {
-    amp  = 0 ;
-    time = 0 ;
-    return ;
-  }  
-  
   //Return energy with default parameters if calibration is not available
   if (!fCalibData && !fCaloPed) {
     if (fIsInputCalibrated == kTRUE)

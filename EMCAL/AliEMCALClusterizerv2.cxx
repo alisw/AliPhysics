@@ -121,7 +121,7 @@ void AliEMCALClusterizerv2::MakeClusters()
     Calibrate(dEnergyCalibrated, time ,digit->GetId());
     digit->SetCalibAmp(dEnergyCalibrated);
     digit->SetTime(time);
-    if (dEnergyCalibrated < fMinECut) 
+    if (dEnergyCalibrated < fMinECut || time > fTimeMax || time < fTimeMin) 
       continue;
     if (!fGeom->CheckAbsCellId(digit->GetId()))
       continue;
