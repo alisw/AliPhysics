@@ -120,6 +120,13 @@ public:
   
   //Time cut
   
+  Double_t         GetTrackTimeCutMin()              const { return fTrackTimeCutMin       ; }
+  Double_t         GetTrackTimeCutMax()              const { return fTrackTimeCutMax       ; }
+  
+  
+  void             SetTrackTimeCut(Double_t a, Double_t b) { fTrackTimeCutMin = a ;
+                                                             fTrackTimeCutMax = b          ; } // ns
+  
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
 
@@ -258,7 +265,18 @@ public:
   
   Int_t            GetNPileUpClusters()                    { return  fNPileUpClusters     ; }
   Int_t            GetNNonPileUpClusters()                 { return  fNNonPileUpClusters  ; }
+  
+  Int_t            GetEMCalEventBC(Int_t bc)     const     { if(bc >=0 && bc < 19) return  fEMCalBCEvent   [bc] ; else return 0 ; }
+  Int_t            GetTrackEventBC(Int_t bc)     const     { if(bc >=0 && bc < 19) return  fTrackBCEvent   [bc] ; else return 0 ; }
+  Int_t            GetEMCalEventBCcut(Int_t bc)  const     { if(bc >=0 && bc < 19) return  fEMCalBCEventCut[bc] ; else return 0 ; }
+  Int_t            GetTrackEventBCcut(Int_t bc)  const     { if(bc >=0 && bc < 19) return  fTrackBCEventCut[bc] ; else return 0 ; }
 
+  void             SetEMCalEventBC(Int_t bc)               { if(bc >=0 && bc < 19) fEMCalBCEvent   [bc] = 1 ; }
+  void             SetTrackEventBC(Int_t bc)               { if(bc >=0 && bc < 19) fTrackBCEvent   [bc] = 1 ; }
+  void             SetEMCalEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fEMCalBCEventCut[bc] = 1 ; }
+  void             SetTrackEventBCcut(Int_t bc)            { if(bc >=0 && bc < 19) fTrackBCEventCut[bc] = 1 ; }
+
+  
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
@@ -450,8 +468,10 @@ public:
   Float_t          fEMCALParamTimeCutMin[4];// Remove clusters/cells with time smaller than parametrized value, in ns
   Double_t         fEMCALParamTimeCutMax[4];// Remove clusters/cells with time larger than parametrized value, in ns
   Bool_t           fUseParamTimeCut;        // Use simple or parametrized time cut
+  Double_t         fTrackTimeCutMin;        // Remove tracks with time smaller than this value, in ns
+  Double_t         fTrackTimeCutMax;        // Remove tracks with time larger than this value, in ns
   
-  TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis  
+  TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis
   TObjArray      * fCTSTracks ;             //-> temporal array with tracks
   TObjArray      * fEMCALClusters ;         //-> temporal array with EMCAL CaloClusters
   TObjArray      * fPHOSClusters ;          //-> temporal array with PHOS  CaloClusters
@@ -529,6 +549,10 @@ public:
   Int_t            fNPileUpClusters;             // Number of clusters with time avobe 20 ns
   Int_t            fNNonPileUpClusters;          // Number of clusters with time below 20 ns
   Int_t            fNPileUpClustersCut;          // Cut to select event as pile-up
+  Int_t            fEMCalBCEvent[19];            // Fill one entry per event if there is a cluster in a given BC
+  Int_t            fEMCalBCEventCut[19];         // Fill one entry per event if there is a cluster in a given BC, depend on cluster E, acceptance cut
+  Int_t            fTrackBCEvent[19];            // Fill one entry per event if there is a track in a given BC
+  Int_t            fTrackBCEventCut[19];         // Fill one entry per event if there is a track in a given BC, depend on track pT, acceptance cut
 
   //Centrality/Event plane
   TString          fCentralityClass;        // Name of selected centrality class     
