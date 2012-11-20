@@ -297,6 +297,8 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
   //    none.
   // Return:
   //    none.
+  /* 
+  // RSTmp this injection points partitioning should be reimplemented
   const Int_t kn10=10;
   const Double_t kti[kn10]={7.443716945e-3,2.166976971e-1,3.397047841e-1,
 			    4.325316833e-1,4.869532643e-1,5.130467358e-1,
@@ -306,6 +308,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 			    7.472567455e-2,3.333567215e-2,3.333567215e-2,
 			    7.472567455e-2,1.095431813e-1,1.346333597e-1,
 			    1.477621124e-1};
+  */
   const Double_t kBunchLenght = 25e-9; // LHC clock
   TObjArray *hits = mod->GetHits();
   Int_t nhits = hits->GetEntriesFast();
@@ -317,6 +320,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
   Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
   Double_t t,st,el,sig,sigx,sigz,fda,de=0.0,ld=0.0;
   Double_t thick = 0.5*fSeg->Dy();  // Half thickness
+  Double_t minDim = Min(fSeg->Dpx(1),fSeg->Dpz(1)); // RStmp: smallest pitch
   fSimuParam->GetPixSigmaDiffusionAsymmetry(fda);
   //
   for (h=0;h<nhits;h++) {
@@ -327,21 +331,30 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 	) continue;
     //
     if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
-    st = Sqrt(x1*x1+y1*y1+z1*z1);
-    if (st>0.0) 
-      for (i=0;i<kn10;i++) { // Integrate over t
-	t   = kti[i];
+    st = Sqrt(x1*x1+y1*y1+z1*z1); 
+    if (st>0.0) {
+      int np = int(1.5*st/minDim);  //RStmp: at the moment neglect kti,kwi: inject the points in such a way that there is ~1.5 point per cell
+      if (np<5) np = 5;             //RStmp
+      double dt = 1./(np+1);        //RStmp
+      double dw = 1./np;
+      //      printf("Dst: %f md:%f np=%d Tr#%d\n",st,minDim,np,idtrack);
+      t = -0.5*dt;
+      for (i=0;i<np;i++) {          //RStmp Integrate over t
+	//      for (i=0;i<kn10;i++) { // Integrate over t
+	t  += dt;  // RStmp kti[i];
 	x   = x0+x1*t;
 	y   = y0+y1*t;
 	z   = z0+z1*t;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-	el  = kwi[i]*de/fSimuParam->GetGeVToCharge();
+	//	el  = kwi[i]*de/fSimuParam->GetGeVToCharge();
+	el  = dw*de/fSimuParam->GetGeVToCharge();
 	sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
 	sigx=sig;
 	sigz=sig*fda;
 	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
 	SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
       } // end for i // End Integrate over t
+    }
     else { // st == 0.0 deposit it at this point
       x   = x0;
       y   = y0;
