@@ -749,7 +749,10 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     if ( !IsGoodChannel("PHOS",mod,cellX,cellZ) )
       continue ; // reject if not.
 
-
+    Double_t distBC=clu->GetDistanceToBadChannel();
+    if(distBC<kMinBCDistance)
+      continue ;
+      
     FillHistogram("hCluEvsClu", clu->E(), clu->GetNCells()) ;
 
     if(clu->GetNCells() < kMinNCells) continue ;

@@ -142,6 +142,7 @@ private:
 
     // cluster cut variables:
     static const Double_t kMinClusterEnergy = 0.3;
+    static const Double_t kMinBCDistance = 2.5;  //distance to nearest bad channel
     static const Int_t kMinNCells = 3;
     static const Double_t kMinM02 = 0.2;
 
