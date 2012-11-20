@@ -1159,20 +1159,22 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (fIsMCInput && eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
       
       AliGenHijingEventHeader* hHijing=0;
+      AliGenDPMjetEventHeader* dpmHeader=0;
+      
       AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
       if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
 	hHijing = (AliGenHijingEventHeader*)mcGenH;
+	if(hHijing) Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
       }
       else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
 	TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
 	hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+	if(hHijing) Npart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
       }
-      if (hHijing) {
-	Npart  = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+      else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+	dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+	if(dpmHeader) Npart = dpmHeader->ProjectileParticipants()+ dpmHeader->TargetParticipants();
       }
-      else {
-	// now you really have a problem.
-      } 
     }
   }   
 
