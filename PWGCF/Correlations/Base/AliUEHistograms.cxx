@@ -781,6 +781,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[2]); //zVtx
 	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
 	}
+	if (fWeightPerEvent)
+	{
+	  // leads effectively to a filling of one entry per filled trigger particle pT bin
+	  Int_t weightBin = triggerWeighting->GetXaxis()->FindBin(vars[0]);
+// 	  Printf("Using weight %f", triggerWeighting->GetBinContent(weightBin));
+	  useWeight /= triggerWeighting->GetBinContent(weightBin);
+	}
 	
         fNumberDensityPhi->GetEventHist()->Fill(vars, step, useWeight);
       }
@@ -939,6 +946,18 @@ void AliUEHistograms::SetTrackEtaCut(Float_t value)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->SetTrackEtaCut(value);
+}
+
+//____________________________________________________________________
+void AliUEHistograms::SetWeightPerEvent(Bool_t flag)
+{
+  // sets fWeightPerEvent for all contained AliUEHist classes
+  
+  fWeightPerEvent = flag;
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetWeightPerEvent(fWeightPerEvent);
 }
 
 //____________________________________________________________________

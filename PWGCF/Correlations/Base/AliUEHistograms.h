@@ -68,6 +68,7 @@ class AliUEHistograms : public TNamed
   Long64_t GetRunNumber() { return fRunNumber; }
   Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
+  Bool_t GetWeightPerEvent() { return fWeightPerEvent; }
   
   void Correct(AliUEHistograms* corrections);
   
@@ -77,13 +78,13 @@ class AliUEHistograms : public TNamed
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   void SetTrackEtaCut(Float_t value);
+  void SetWeightPerEvent(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   void SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
-  void SetWeightPerEvent(Bool_t flag)   { fWeightPerEvent = flag; }
   
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
