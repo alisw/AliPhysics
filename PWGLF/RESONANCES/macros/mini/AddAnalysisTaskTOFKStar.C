@@ -106,7 +106,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
    AliRsnMiniOutput *outPlane = 0x0;
    if (!isPP){
-     task->CreateOutput("eventPlane", "HIST", "EVENT");
+     outPlane=task->CreateOutput("eventPlane", "HIST", "EVENT");
      outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
    }
 
