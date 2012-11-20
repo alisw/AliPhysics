@@ -9,7 +9,7 @@ void rec() {
   gSystem->Load("libITSUpgradeSim.so");
   gSystem->Load("libITSUpgradeRec.so");
 
-  gSystem->Exec("rm -rf *RecPoints* AliESD*");
+  //  gSystem->Exec("rm -rf *RecPoints* AliESD*");
 
   // Set ITS upgrade reconstructor
   gPluginMgr->AddHandler("AliReconstructor", "ITS",
@@ -17,8 +17,11 @@ void rec() {
   
   AliReconstruction rec;
 
-  rec.SetRunReconstruction("ITS"); // run cluster finder
-  rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
+  //  rec.SetRunReconstruction("ITS TPC"); // run cluster finder
+  //  rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
+
+  rec.SetRunReconstruction("");//ITS TPC"); // run cluster finder
+  rec.SetRunTracking("ITS TPC"); // Turn on with ITS when tracker is implemented
 
   rec.SetRunVertexFinder(kFALSE); // to be implemented - CreateVertexer
   rec.SetRunMultFinder(kFALSE);   // to be implemented - CreateMultFinder

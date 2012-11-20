@@ -57,6 +57,9 @@ class AliITSURecoLayer : public TNamed
   Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors]);
   //
   virtual void       Print(Option_t* option = "")  const;
+  virtual Bool_t     IsSortable()                  const {return kTRUE;}
+  virtual Bool_t     IsEqual(const TObject* obj)   const;
+  virtual Int_t      Compare(const TObject* obj)   const;
   //
  protected:
   void               Build();

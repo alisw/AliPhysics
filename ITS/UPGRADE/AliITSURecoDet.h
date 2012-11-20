@@ -41,6 +41,7 @@ class AliITSURecoDet : public TNamed
   //
  protected:
   Bool_t             Build();
+  void               IndexLayers();
   //
  protected:
   Int_t              fNLayers;        // total number of layers

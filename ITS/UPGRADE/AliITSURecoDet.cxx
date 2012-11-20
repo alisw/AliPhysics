@@ -69,6 +69,19 @@ Bool_t AliITSURecoDet::Build()
 						 ilr,fGeom);
     AddLayer(lra);
   }
+  //
+  // build passive ITS layers
+  //
+  IndexLayers();
+  Print("lr");
   return kTRUE;
 }
 
+//______________________________________________________
+void AliITSURecoDet::IndexLayers()
+{
+  fLayersActive.Sort();
+  for (int i=0;i<fNLayersActive;i++) GetLayerActive(i)->SetActiveID(i);
+  fLayers.Sort();
+  for (int i=0;i<fNLayers;i++) GetLayer(i)->SetID(i);
+}

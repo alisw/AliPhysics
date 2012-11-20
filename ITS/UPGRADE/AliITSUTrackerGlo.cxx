@@ -85,10 +85,13 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
   //
+  AliITSUReconstructor::GetRecoParam()->Print();
+
   fITS->ProcessClusters();
   // select ESD tracks to propagate
   int nTrESD = esdEv->GetNumberOfTracks();
   for (int itr=0;itr<nTrESD;itr++) {
+    printf("Processing track %d\n",itr);
     AliESDtrack *esdTr = esdEv->GetTrack(itr);
     FindTrack(esdTr);
   }
@@ -186,13 +189,16 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
   for (int ila=fITS->GetNLayersActive();ila--;) {
     int ilaUp = ila+1;                         // prolong seeds from layer above
     int nSeedsUp = GetNSeeds(ilaUp);
+    printf("NSeeds %d\n",nSeedsUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
       seedUC = *seedU;
       seedUC.SetParent(seedU);
       // go till next active layer
+      printf("Lr:%d Seed:%d\n",ila,isd);
       if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
+	printf("Tr failed\n");
 	// Check if the seed satisfies to track definition
 	if (NeedToKill(&seedUC,kTransportFailed)) KillSeed(ilaUp,isd); 
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
@@ -203,6 +209,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track (max 4)
+      printf("Lr:%d Ns:%d\n",ila, nsens);
       //
       for (int isn=nsens;isn--;) {
 	seedT = seedUC;
@@ -210,6 +217,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	//
 	if (!seedT.Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) continue; // propagation failed, seedT is intact
 	int clID0 = sens->GetFirstClusterId();
+	printf("Sn:%d Ncl:%d\n",isn,sens->GetNClusters());
 	for (int icl=sens->GetNClusters();icl--;) {
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
 	  //
@@ -235,6 +243,7 @@ Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr)
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
   //
   AliITSUSeed* seed = NewSeedFromPool();
+  seed->SetLr(fITS->GetNLayersActive());   // fake layer
   seed->AliExternalTrackParam::operator=(*esdTr);
   seed->SetParent(esdTr);
   AddProlongationHypothesis(seed,fITS->GetNLayersActive());
@@ -280,7 +289,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
     //
     // go the entrance of the layer, assuming no materials in between
     double xToGo = dir>0 ? lrTo->GetRMin() : lrTo->GetRMax();
-    if (seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
     if (!seed->PropagateTo(xToGo, GetBz())) return kFALSE; // RS: do we need BxByBz?
     lrFr = lrTo;
   }

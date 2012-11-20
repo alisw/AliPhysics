@@ -28,7 +28,7 @@
 #include "AliESDEvent.h"
 
 #include "AliTracker.h"
-#include "AliITStrackerMI.h"
+#include "AliITSUTrackerGlo.h"
 
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
@@ -171,41 +171,10 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
 AliTracker* AliITSUReconstructor::CreateTracker() const
 {
   // create a ITS tracker
-
-  AliDebug(1,"ITSU tracking initialization will be done here\n");
+  AliITSUTrackerGlo* tracker = new AliITSUTrackerGlo((AliITSUReconstructor*)this);
  
-  return 0;
-
-  /* // from Current ITS
-  Int_t trackerOpt = GetRecoParam()->GetTracker();
-  AliTracker* tracker;    
-  if (trackerOpt==1) {
-    tracker = new AliITStrackerMI(0);
-    AliITStrackerMI *mit=(AliITStrackerMI*)tracker;
-    mit->SetDetTypeRec(fDetTypeRec);
-  }  
-  else if (trackerOpt==2) {
-    tracker = new AliITStrackerV2(0);
-  }
-  else {
-    tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI
-    AliITStrackerSA *sat=(AliITStrackerSA*)tracker;
-    sat->SetDetTypeRec(fDetTypeRec);
-    if(GetRecoParam()->GetTrackerSAOnly()) sat->SetSAFlag(kTRUE);
-    if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
-    if(GetRecoParam()->GetInwardFindingSA()){
-      sat->SetInwardFinding();
-      sat->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
-    }else{
-      sat->SetOutwardFinding();
-      sat->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
-    }
-    sat->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
-  }
-
   return tracker;
-  */
-  
+ 
 }
 
 //_____________________________________________________________________________

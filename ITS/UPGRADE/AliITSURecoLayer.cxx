@@ -75,7 +75,8 @@ AliITSURecoLayer::~AliITSURecoLayer()
 void AliITSURecoLayer::Print(Option_t* opt) const			      
 {
   //print 
-  printf("Layer %s %d (active:%+d), NSensors: %d\n",GetName(),GetID(),GetActiveID(),GetNSensors());
+  printf("Lr %s %d (act:%+d), NSens: %4d | MaxStep:%.2f ",GetName(),GetID(),GetActiveID(),GetNSensors(),fMaxStep);
+  printf("%6.3f<R<%6.3f | %+8.3f<Z<%+8.3f dZ:%6.3f\n",fRMin,fRMax,fZMin,fZMax,fSensDZInv>0 ? 1/fSensDZInv : 0);
   TString opts = opt; opts.ToLower();
   if (opts.Contains("sn")) for (int i=0;i<GetNSensors();i++) GetSensor(i)->Print(opt);
 }
@@ -108,7 +109,7 @@ void AliITSURecoLayer::Build()
     //
     for (int idt=0;idt<fNSensInLadder;idt++) {
       AliITSURecoSens* sens = new AliITSURecoSens(fNSensors++);
-      fSensors[idt] = sens;
+      fSensors[ild*fNSensInLadder+idt] = sens;
       //
       double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
       mmod = *fITSGeom->GetMatrix(fActiveID,ild,idt);
@@ -129,12 +130,11 @@ void AliITSURecoLayer::Build()
 	    else if (!OKforPhiMin(phiMin,phi)) phiMin=phi;
 	    if      (phiMax<-1e8) phiMax=phi;
 	    else if (!OKforPhiMax(phiMax,phi)) phiMax=phi;	      
-	    if (glo[2]>zMax) zMax=glo[2]; else if (glo[2]<zMin) zMin=glo[2];
+	    if (glo[2]>zMax) zMax=glo[2];
+	    if (glo[2]<zMin) zMin=glo[2];
 	  }
 	}
       }
-      printf("%d %d (%d)  %f %f\n",ild,idt, ild*fNSensInLadder+idt,phiMin,phiMax);
-
       sens->SetBoundaries(phiMin,phiMax,zMin,zMax);
       mt2l = fITSGeom->GetMatrixT2L(fActiveID,ild,idt);
       mmod.Multiply(mt2l);	
@@ -154,7 +154,7 @@ void AliITSURecoLayer::Build()
       if (fZMin>zMin) fZMin = zMin;
       if (fZMax<zMax) fZMax = zMax;
       //
-      if (idt>0) fSensDZInv += zMax - GetSensor(fNSensors-2)->GetZMax(); // z interval to previoud
+      if (idt>0) fSensDZInv += zMax - GetSensor(ild,idt-1)->GetZMax(); // z interval to previous
     }
   }
   //
@@ -212,7 +212,6 @@ void AliITSURecoLayer::Build()
       } // z scan
     } // sensors
   } // ladders
-  //
   //
 }
 
@@ -289,4 +288,23 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
   }
   if (curSens) curSens->ProcessClusters(mode); // last sensor was not processed yet
   //
+}
+
+//______________________________________________________
+Bool_t AliITSURecoLayer::IsEqual(const TObject* obj) const
+{
+  // check if layers are equal in R
+  const AliITSURecoLayer* lr = dynamic_cast<const AliITSURecoLayer*>(obj);
+  return Abs(lr->GetR()-GetR())<1e-6 ? kTRUE : kFALSE;
+}
+
+//______________________________________________________
+Int_t  AliITSURecoLayer::Compare(const TObject* obj) const
+{
+  // compare two layers
+  const AliITSURecoLayer* lr = dynamic_cast<const AliITSURecoLayer*>(obj);
+  double dr = GetR() - lr->GetR();
+  if (Abs(dr)<1e-6) return 0;
+  return dr>0 ? 1:-1;
+  //      
 }

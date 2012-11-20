@@ -44,7 +44,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fMaxDforV0dghtrForProlongation(fgkMaxDforV0dghtrForProlongation)
   ,fMaxDForProlongation(fgkMaxDForProlongation)
   ,fMaxDZForProlongation(fgkMaxDZForProlongation)
-  ,fMinPtForProlongation(fgkMaxDForProlongation)
+  ,fMinPtForProlongation(fgkMinPtForProlongation)
   ,fNSigmaRoadY(fgkNSigmaRoadY)
   ,fNSigmaRoadZ(fgkNSigmaRoadZ)
      //
@@ -64,7 +64,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fMaxDforV0dghtrForProlongation(fgkMaxDforV0dghtrForProlongation)
   ,fMaxDForProlongation(fgkMaxDForProlongation)
   ,fMaxDZForProlongation(fgkMaxDZForProlongation)
-  ,fMinPtForProlongation(fgkMaxDForProlongation)
+  ,fMinPtForProlongation(fgkMinPtForProlongation)
   ,fNSigmaRoadY(fgkNSigmaRoadY)
   ,fNSigmaRoadZ(fgkNSigmaRoadZ)
      //
@@ -168,4 +168,28 @@ void  AliITSURecoParam::SetMaxTr2ClChi2(Int_t lr, Double_t v)
   // set Lorentz angle value
   if (lr>=fNLayers) AliFatal(Form("Number of defined layers is %d",fNLayers));
   fMaxTr2ClChi2[lr] = v;
+}
+
+//========================================================================
+//_____________________________________________________________________________
+void AliITSURecoParam::Print(Option_t *opt) const
+{
+  // print params
+  printf("%s: %s %s\n",ClassName(),GetName(),GetTitle());
+  printf("%-30s\t%f\n","fMaxDforV0dghtrForProlongation",fMaxDforV0dghtrForProlongation);
+  printf("%-30s\t%f\n","fMaxDForProlongation",fMaxDForProlongation); 
+  printf("%-30s\t%f\n","fMaxDZForProlongation",fMaxDZForProlongation);
+  printf("%-30s\t%f\n","fMinPtForProlongation",fMinPtForProlongation);
+  printf("%-30s\t%f\n","fNSigmaRoadY",fNSigmaRoadY);
+  printf("%-30s\t%f\n","fNSigmaRoadZ",fNSigmaRoadZ);
+  //
+  printf("N.Layers: %d\n",fNLayers);
+  if (fNLayers>0) {
+    printf("Layer-wise data:\n");
+    printf("%-30s\t:","fTanLorentzAngle");  for (int i=0;i<fNLayers;i++) printf(" %+.2e",fTanLorentzAngle[i]); printf("\n");
+    printf("%-30s\t:","fSigmaY2");          for (int i=0;i<fNLayers;i++) printf(" %+.2e",fSigmaY2[i]); printf("\n");
+    printf("%-30s\t:","fSigmaZ2");          for (int i=0;i<fNLayers;i++) printf(" %+.2e",fSigmaZ2[i]); printf("\n");
+    printf("%-30s\t:","fMaxTr2ClChi2");     for (int i=0;i<fNLayers;i++) printf(" %+.2e",fMaxTr2ClChi2[i]); printf("\n");
+  }
+  //
 }

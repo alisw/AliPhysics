@@ -87,6 +87,7 @@ inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_
 {
   // add new seed prolongation hypothesis 
   fSeedsLr[lr].AddLast(seed);
+  seed->Print("par");
 }
 
 

@@ -346,6 +346,7 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrix(Int_t index)  const
 {
   // Get the transformation matrix for a given module 'index'
   // by quering the TGeoManager
+  static TGeoHMatrix matTmp;
   TGeoPNEntry *pne = GetPNEntry(index);
   if (!pne) return NULL;
 
@@ -359,9 +360,9 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrix(Int_t index)  const
     AliError(Form("Volume path %s not valid!",path));
     return NULL;
   }
-  TGeoHMatrix *mat = gGeoManager->GetCurrentMatrix();
+  matTmp = *gGeoManager->GetCurrentMatrix();
   gGeoManager->PopPath();
-  return mat;
+  return &matTmp;
 }
 
 //______________________________________________________________________

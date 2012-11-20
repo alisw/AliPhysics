@@ -49,7 +49,8 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetMinPtForProlongation(Double_t v)                     {fMinPtForProlongation = v;}
   void        SetNSigmaRoadY(Double_t v)                              {fNSigmaRoadY=v;}
   void        SetNSigmaRoadZ(Double_t v)                              {fNSigmaRoadZ=v;}
-
+  //
+  virtual void Print(Option_t *opt="")  const;
 
  protected:
   Int_t          fNLayers;          // number of layers 
@@ -90,28 +91,28 @@ class AliITSURecoParam : public AliDetectorRecoParam
 inline Double_t AliITSURecoParam::GetTanLorentzAngle(Int_t lr) const 
 {
   // get tg of Lorentz Angle for the layer
-  return lr<fNLayers ? fTanLorentzAngle[lr]:0;
+  return (lr<fNLayers)&&fTanLorentzAngle ? fTanLorentzAngle[lr]:0;
 }
 
 //_____________________________________________________________________________
 inline Double_t AliITSURecoParam::GetSigmaY2(Int_t lr) const 
 {
   // get tg of Lorentz Angle for the layer
-  return lr<fNLayers ? fSigmaY2[lr]:fgkSigmaRoadY*fgkSigmaRoadY; //0;
+  return (lr<fNLayers)&&fSigmaY2 ? fSigmaY2[lr]:fgkSigmaRoadY*fgkSigmaRoadY; //0;
 }
 
 //_____________________________________________________________________________
 inline Double_t AliITSURecoParam::GetSigmaZ2(Int_t lr) const 
 {
   // get tg of Lorentz Angle for the layer
-  return lr<fNLayers ? fSigmaZ2[lr]:fgkSigmaRoadZ*fgkSigmaRoadZ;//0;
+  return (lr<fNLayers)&&fSigmaZ2 ? fSigmaZ2[lr]:fgkSigmaRoadZ*fgkSigmaRoadZ;//0;
 }
 
 //_____________________________________________________________________________
 inline Double_t AliITSURecoParam::GetMaxTr2ClChi2(Int_t lr) const
 {
   // get tg of Lorentz Angle for the layer
-  return lr<fNLayers ? fMaxTr2ClChi2[lr]:fgkMaxTr2ClChi2; //0;
+  return (lr<fNLayers)&&fMaxTr2ClChi2 ? fMaxTr2ClChi2[lr]:fgkMaxTr2ClChi2; //0;
 }
 
 #endif
