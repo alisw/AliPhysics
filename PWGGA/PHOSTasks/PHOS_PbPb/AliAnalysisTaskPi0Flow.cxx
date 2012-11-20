@@ -816,7 +816,10 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     ph->SetMomV2(&lorentzMomentum) ;
     ph->SetNCells(clu->GetNCells());
     ph->SetDispBit(TestLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
-    ph->SetDisp2Bit(TestLambda2(clu->E(),clu->GetM20(),clu->GetM02())) ;
+    //Evaluate CoreDispersion
+    Double_t m02=0.,m20=0. ;
+    EvalCoreLambdas(clu, cells, m02, m20) ;
+    ph->SetDisp2Bit(TestCoreLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
     if(ph->IsDispOK()){
       sprintf(skey,"hCluDispM%d",mod) ;
       FillHistogram(skey,cellX,cellZ,1.);
@@ -2488,4 +2491,98 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
     FillHistogram("phiRPV0CTPC",fRP,fRPV0C,fCentralityV0M) ;
     FillHistogram("cos2V0CTPC",TMath::Cos(2.*(fRP-fRPV0C)),fCentralityV0M) ;
   }
+}
+//____________________________________________________________________________
+void  AliAnalysisTaskPi0Flow::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells * cells,Double_t &m02, Double_t &m20){ 
+  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
+    
+  Double_t rCut=4.5 ;  
+    
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+// Calculates the center of gravity in the local PHOS-module coordinates
+  Float_t wtot = 0;
+  Double_t xc[100]={0} ;
+  Double_t zc[100]={0} ;
+  Double_t ei[100]={0} ;
+  Double_t x = 0 ;
+  Double_t z = 0 ;
+  Int_t mulDigit=TMath::Min(100,clu->GetNCells()) ;
+  const Double_t logWeight=4.5 ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t relid[4] ;
+    Float_t xi=0. ;
+    Float_t zi=0. ;
+    Int_t absId = clu->GetCellAbsId(iDigit) ;
+    fPHOSGeo->AbsToRelNumbering(absId, relid) ;
+    fPHOSGeo->RelPosInModule(relid, xi, zi);
+    xc[iDigit]=xi ;
+    zc[iDigit]=zi ;
+    ei[iDigit] = elist[iDigit]*cells->GetCellAmplitude(absId) ;
+    if (clu->E()>0 && ei[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( ei[iDigit] / clu->E() ) ) ;
+      x    += xc[iDigit] * w ;
+      z    += zc[iDigit] * w ;
+      wtot += w ;
+    }
+  }
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+     
+  wtot = 0. ;
+  Double_t dxx  = 0.;
+  Double_t dzz  = 0.;
+  Double_t dxz  = 0.;
+  Double_t xCut = 0. ;
+  Double_t zCut = 0. ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    if (clu->E()>0 && ei[iDigit]>0.) {
+        Double_t w = TMath::Max( 0., logWeight + TMath::Log( ei[iDigit] / clu->E() ) ) ;
+        Double_t xi= xc[iDigit] ;
+        Double_t zi= zc[iDigit] ;
+	if((xi-x)*(xi-x)+(zi-z)*(zi-z) < rCut*rCut){
+          xCut += w * xi ;
+          zCut += w * zi ; 
+          dxx  += w * xi * xi ;
+          dzz  += w * zi * zi ;
+          dxz  += w * xi * zi ; 
+          wtot += w ;
+	}
+    }
+    
+  }
+  if (wtot>0) {
+    xCut/= wtot ;
+    zCut/= wtot ;
+    dxx /= wtot ;
+    dzz /= wtot ;
+    dxz /= wtot ;
+    dxx -= xCut * xCut ;
+    dzz -= zCut * zCut ;
+    dxz -= xCut * zCut ;
+
+    m02 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    m20 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  }
+  else {
+    m20=m02=0.;
+  }
+
+}
+//____________________________________________________________________________
+Bool_t AliAnalysisTaskPi0Flow::TestCoreLambda(Double_t pt,Double_t l1,Double_t l2){
+  //Evaluates if lambdas correspond to photon cluster
+  //Tuned using pp date 
+  //For core radius R=4.5
+  Double_t   l1Mean  = 1.150200 + 0.097886/(1.+1.486645*pt+0.000038*pt*pt) ;
+  Double_t   l2Mean = 1.574706 + 0.997966*exp(-0.895075*pt)-0.010666*pt ;
+  Double_t   l1Sigma = 0.100255 + 0.337177*exp(-0.517684*pt)+0.001170*pt ;
+  Double_t   l2Sigma = 0.232580 + 0.573401*exp(-0.735903*pt)-0.002325*pt ;
+  Double_t   c = -0.110983 -0.017353/(1.-1.836995*pt+0.934517*pt*pt) ;
+
+  Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
+              0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
+              0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
+  return (R2<2.5*2.5) ;  
 }

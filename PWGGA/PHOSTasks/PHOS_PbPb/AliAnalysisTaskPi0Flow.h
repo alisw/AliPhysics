@@ -102,6 +102,8 @@ private:
     Double_t ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     Int_t ConvertToInternalRunNumber(Int_t run) ;
     Double_t CoreEnergy(AliVCluster * clu, AliVCaloCells * cells);
+    void EvalCoreLambdas(AliVCluster * clu, AliVCaloCells * cells, Double_t &m02, Double_t &m20) ; 
+    Bool_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
 
 
 
