@@ -58,6 +58,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
+  fWeightPerEvent(0),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -361,6 +362,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
+  fWeightPerEvent(0),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -466,6 +468,7 @@ void AliUEHist::Copy(TObject& c) const
     
   target.fCombineMinMax = fCombineMinMax;
   target.fTrackEtaCut = fTrackEtaCut;
+  target.fWeightPerEvent = fWeightPerEvent;
   target.fHistogramType = fHistogramType;
 }
 
@@ -1090,9 +1093,14 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     if (sums[0] > 0)
       errors[0] /= sums[0];
     
-    Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
-    if (totalEvents > 0)
-      totalTracks->Scale(1.0 / totalEvents);
+    if (!fWeightPerEvent)
+    {
+      Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
+      if (totalEvents > 0)
+	totalTracks->Scale(1.0 / totalEvents);
+    }
+    else
+      Printf("(%d correlation function(s)) (error %f)", nCorrelationFunctions, errors[0]);
   
     // normalizate to dphi width
     Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);
