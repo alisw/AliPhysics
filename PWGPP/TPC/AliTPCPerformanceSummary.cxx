@@ -108,7 +108,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
       "time="<<time<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
-      "duration="<<
+      "duration="<<duration<<
       "runType.="<<&runType;
     if (pTPC) {
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
@@ -1047,24 +1047,24 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // dump results to the tree
     //
     (*pcstream)<<"tpcQA"<<
-      "meanTPCnclF="<<meanTPCnclF <<              // mean number  of  ratio findable clusters
-      "meanTPCnclFStat="<<meanTPCnclFStat <<              // mean number  of  ratio findable cluster - statistic used
-      "meanTPCnclFErr="<<meanTPCnclFErr <<              // mean number  of  ratio findable clusters  - errorr
-      "rmsTPCnclF="<<rmsTPCnclF <<
-      "meanTPCChi2="<<meanTPCChi2 <<
-      "rmsTPCChi2="<<rmsTPCChi2 <<
-      "slopeATPCnclF="<< slopeATPCnclF<<
-      "slopeCTPCnclF="<< slopeCTPCnclF<<
-      "slopeATPCnclFErr="<< slopeATPCnclFErr<<
-      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<<
-      "meanTPCncl="<<meanTPCncl <<
-      "meanTPCnclStat="<<meanTPCnclStat <<              // mean number  of cluster - statistic used
-      "meanTPCnclErr="<<meanTPCnclErr <<              // mean number  of clusters  - errorr
-      "rmsTPCncl="<< rmsTPCncl<<
-      "slopeATPCncl="<< slopeATPCncl<<
-      "slopeCTPCncl="<< slopeCTPCncl<<
-      "slopeATPCnclErr="<< slopeATPCnclErr<<
-      "slopeCTPCnclErr="<< slopeCTPCnclErr;
+      "meanTPCnclF="<<meanTPCnclF <<   // mean number of cluster/number of findable cluster   
+      "meanTPCnclFStat="<<meanTPCnclFStat <<   // number of cluster/number of findable cluster   - number of etries
+      "meanTPCnclFErr="<<meanTPCnclFErr <<   // error of mean number of cluster/number of findable cluster   
+      "rmsTPCnclF="<<rmsTPCnclF <<     //  RMS of distribution of number of cluster/number of findable cluster   
+      "meanTPCChi2="<<meanTPCChi2 <<   // ????
+      "rmsTPCChi2="<<rmsTPCChi2 <<     // ????
+      "slopeATPCnclF="<< slopeATPCnclF<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
+      "slopeCTPCnclF="<< slopeCTPCnclF<<  // C side- fit of number of clusters/findable   (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
+      "slopeATPCnclFErr="<< slopeATPCnclFErr<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
+      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<< // C side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
+      "meanTPCncl="<<meanTPCncl <<   // mean number of cluster
+      "meanTPCnclStat="<<meanTPCnclStat <<   // number of cluster   - number of etries in histogram
+      "meanTPCnclErr="<<meanTPCnclErr <<   // error of mean number of cluster   
+      "rmsTPCncl="<< rmsTPCncl<<     // rms of mean number of cluster                     
+      "slopeATPCncl="<< slopeATPCncl<< // A side- fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope  
+      "slopeCTPCncl="<< slopeCTPCncl<< // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter 1 - slope
+      "slopeATPCnclErr="<< slopeATPCnclErr<<  // A  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
+      "slopeCTPCnclErr="<< slopeCTPCnclErr; // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
     
     return 0;
 }
