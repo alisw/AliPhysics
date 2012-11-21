@@ -32,10 +32,9 @@ ClassImp(AliDhcTask)
 AliDhcTask::AliDhcTask(const char *name) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(0),
-  fESD(0), fAOD(0), fOutputList(0), fHistPt(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0), fHPtTrg_Evt(0),
-  fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0),
-  fIndex(0), fMeanPtTrg(0), fMeanPtAss(0), fMean2PtTrg(0), fMean2PtAss(0),
-  fCentrality(99), fZVertex(99), fEsdTrackCutsTPCOnly(0), fPoolMgr(0),
+  fESD(0), fAOD(0), fOutputList(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0), fHPtTrg_Evt(0),
+  fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0), fHPts(0), fIndex(0), 
+  fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0)
@@ -75,10 +74,10 @@ void AliDhcTask::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(1);
 
-  fEsdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  //fEsdTrackCutsTPCOnly->SetMinNClustersTPC(70);
-  fEsdTrackCutsTPCOnly->SetMinNCrossedRowsTPC(70);
-  fEsdTrackCutsTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fEsdTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  //fEsdTPCOnly->SetMinNClustersTPC(70);
+  fEsdTPCOnly->SetMinNCrossedRowsTPC(70);
+  fEsdTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 
   BookHistos();
   InitEventMixer(); 
@@ -91,6 +90,10 @@ void AliDhcTask::BookHistos()
   // Book histograms.
 
   if (fVerbosity > 1) {
+    AliInfo(Form("Number of pt(t) bins: %d", fBPtT->GetNbins()));
+    for (Int_t i=1; i<=fBPtT->GetNbins(); i++) {
+      AliInfo(Form("pt(t) bin %d, %f to %f", i, fBPtT->GetBinLowEdge(i), fBPtT->GetBinUpEdge(i)));
+    }
     AliInfo(Form("Number of pt(a) bins: %d", fBPtA->GetNbins()));
     for (Int_t i=1; i<=fBPtA->GetNbins(); i++) {
       AliInfo(Form("pt(a) bin %d, %f to %f", i, fBPtA->GetBinLowEdge(i), fBPtA->GetBinUpEdge(i)));
@@ -122,21 +125,12 @@ void AliDhcTask::BookHistos()
     zvtx[i] = fBZvtx->GetBinUpEdge(i);
   }
 
-  // Event histo
-  fHEvt = new TH2F("fHEvt", "Event-level variables; Zvtx; Cent", 30, -15, 15, 101, 0, 101);
+  fHEvt = new TH2F("fHEvt", "Event-level variables; Zvtx; Cent", nZvtx, zvtx, nCent, cent);
   fOutputList->Add(fHEvt);
-  // Track histo
   fHTrk = new TH2F("fHTrk", "Track-level variables", 
 		   100, 0, TMath::TwoPi(), 100, -fEtaMax, +fEtaMax);
   fOutputList->Add(fHTrk);
   
-  // Left over from the tutorial :)
-  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 200, 0., fPtMax);
-  fHistPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-  fHistPt->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
-  fHistPt->SetMarkerStyle(kFullCircle);
-  fOutputList->Add(fHistPt);
-
   fHPtAss = new TH1F("fHPtAss","PtAssoc;P_{T} (GeV/c) [GeV/c]",nPtAssc,pta);
   fOutputList->Add(fHPtAss);
   fHPtTrg = new TH1F("fHPtTrg","PtTrig;P_{T} (GeV/c) [GeV/c]",nPtTrig,ptt);
@@ -148,52 +142,50 @@ void AliDhcTask::BookHistos()
   fOutputList->Add(fHZvtx);
 
   fNbins = nPtTrig*nPtAssc*nCent*nZvtx;
-  fHSs = new TH2*[fNbins];
-  fHMs = new TH2*[fNbins];
+  fHSs   = new TH2*[fNbins];
+  fHMs   = new TH2*[fNbins];
+  fHPts  = new TH1*[fNbins];
 
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
   //fOutputList->Add(fIndex);
 
-  fMeanPtTrg = new TProfile2D*[nPtTrig*nPtAssc];
-  fMeanPtAss = new TProfile2D*[nPtTrig*nPtAssc];
-  fMean2PtTrg = new TProfile2D*[nPtTrig*nPtAssc];
-  fMean2PtAss = new TProfile2D*[nPtTrig*nPtAssc];
-  for (Int_t c=1; c<=nCent; ++c) {
-    TString title(Form("cen=%d (%.1f)",c,fHCent->GetBinCenter(c)));
-    fMeanPtTrg[c-1]  = new TProfile2D(Form("hMeanPtTrgCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
-    fMeanPtAss[c-1]  = new TProfile2D(Form("hMeanPtAssCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
-    fMean2PtTrg[c-1] = new TProfile2D(Form("hMean2PtTrgCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
-    fMean2PtAss[c-1] = new TProfile2D(Form("hMean2PtAssCen%d",c),title,nPtTrig,ptt,nPtAssc,pta);
-    fOutputList->Add(fMeanPtTrg[c-1]);
-    fOutputList->Add(fMeanPtAss[c-1]);
-    fOutputList->Add(fMean2PtTrg[c-1]);
-    fOutputList->Add(fMean2PtAss[c-1]);
-  }
-
   Int_t count = 0;
   for (Int_t c=1; c<=nCent; ++c) {
     for (Int_t z=1; z<=nZvtx; ++z) {
       for (Int_t t=1; t<=nPtTrig; ++t) {
 	for (Int_t a=1; a<=nPtAssc; ++a) {
-	  fHSs[count] = 0;
-	  fHMs[count] = 0;
+	  fHSs[count]  = 0;
+	  fHMs[count]  = 0;
+          fHPts[count] = 0;
 	  if (a>t) {
 	    ++count;
 	    continue;
 	  }
-	  TString title(Form("cen=%d (%.1f), zVtx=%d (%.1f), trig=%d (%.1f), assc=%d (%.1f)",
-			     c,fHCent->GetBinCenter(c), z,fHZvtx->GetBinCenter(z),
-			     t,fHPtTrg->GetBinCenter(t),a, fHPtAss->GetBinCenter(a)));
-	  fHSs[count] = new TH2F(Form("hS%d",count), Form("Signal %s",title.Data()),
+          if (t==1 && a==1) {
+            TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f)",
+                               c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c), 
+                               z, fBZvtx->GetBinLowEdge(z), fBZvtx->GetBinUpEdge(z)));
+            fHPts[count] = new TH1F(Form("hPt%d",count), Form("Ptdist %s;p_{T} (GeV/c)",title.Data()), 200,0,20);
+            fOutputList->Add(fHPts[count]);
+          }
+	  TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f), trig=%d (%.1f to %.1f), assoc=%d (%.1f to %.1f)",
+			     c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c), 
+                             z, fBZvtx->GetBinLowEdge(z), fBZvtx->GetBinUpEdge(z),
+			     t, fBPtT->GetBinLowEdge(t),  fBPtT->GetBinUpEdge(t),
+                             a, fBPtA->GetBinLowEdge(a),  fBPtA->GetBinUpEdge(a)));
+	  fHSs[count] = new TH2F(Form("hS%d",count), Form("Signal %s;#Delta #varphi;#Delta #eta",title.Data()),
 				 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
-	  fHMs[count] = new TH2F(Form("hM%d",count), Form("Signal %s",title.Data()),
+	  fHMs[count] = new TH2F(Form("hM%d",count), Form("Mixed %s;#Delta #varphi;#Delta #eta",title.Data()),
 				 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
 	  fOutputList->Add(fHSs[count]);
 	  fOutputList->Add(fHMs[count]);
+          Int_t tcount = (Int_t)fIndex->Eval(t,a,z,c);
 	  if (fVerbosity>5)
-	    cout << count << " " << fIndex->Eval(t,a,z,c) << ": " << title << endl;
+	    cout << count << " " << tcount << ": " << title << endl;
+          if (count != tcount)
+            AliFatal(Form("Index mismatch: %d %d", count, tcount));
 	  ++count;
 	}
       }
@@ -303,7 +295,6 @@ void AliDhcTask::UserExec(Option_t *)
 
   // Fill Event histogram
   fHEvt->Fill(fZVertex, fCentrality);
-
   if (fCentrality > fBCent->GetXmax() || fCentrality < fBCent->GetXmin()) {
     AliInfo(Form("Event REJECTED (centrality out of range). fCentrality = %.1f", fCentrality));
     return;
@@ -384,7 +375,7 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
         AliError(Form("Couldn't get ESD track %d\n", i));
         continue;
       }
-      Bool_t trkOK = fEsdTrackCutsTPCOnly->AcceptTrack(esdtrack);
+      Bool_t trkOK = fEsdTPCOnly->AcceptTrack(esdtrack);
       if (!trkOK)
         continue;
       Double_t pt = esdtrack->Pt();
@@ -573,13 +564,15 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
   Int_t globIndex = (cbin-1)*nZvtx*nPtTrig*nPtAssc+(zbin-1)*nPtTrig*nPtAssc;
 
-  Double_t weight = 1.0;
+  Int_t ptindex = (Int_t)fIndex->Eval(1,1,zbin,cbin);
+
   fHPtTrg_Evt->Reset();
   if (fDoWeights) { // Count trigger particles in this event
     for (Int_t i=0; i<iMax; ++i) {
       const AliMiniTrack &a(evt1.at(i));
       Float_t pta  = a.Pt();
       fHPtTrg_Evt->Fill(pta);
+      fHPts[ptindex]->Fill(pta);
     }
   }
 
@@ -595,7 +588,6 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       continue;
 
     if (pairing == kSameEvt) {
-      fHistPt->Fill(pta);
       fHTrk->Fill(a.Phi(),a.Eta());
       fHPtTrg->AddBinContent(abin);
     }
@@ -620,22 +612,18 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t deta = a.Eta() - b.Eta();
 
       Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
-      if (fDoWeights) {
+      Double_t weight = 1.0;
+      if (fDoWeights) 
         weight = fHPtTrg_Evt->GetBinContent(abin);
-      }
-      if  (weight==0.0) {
+
+      if (weight==0.0) {
         AliError(Form("Trying to work with weight = %f",weight));
-      }
-      else {
+      } else {
         hist[index]->Fill(dphi,deta,1./weight);
       }
 
       if (pairing == kSameEvt) {
 	fHPtAss->AddBinContent(bbin);
-	fMeanPtTrg[cbin-1]->Fill(pta,ptb,pta);
-	fMeanPtAss[cbin-1]->Fill(pta,ptb,ptb);
-	fMean2PtTrg[cbin-1]->Fill(pta,ptb,pta*pta);
-	fMean2PtAss[cbin-1]->Fill(pta,ptb,ptb*ptb);
       }
     }
   }
@@ -650,29 +638,10 @@ void AliDhcTask::Terminate(Option_t *)
   // Called once at the end of the query
 
   delete fPoolMgr;
-
   fHCent->SetEntries(fHCent->Integral());
   fHZvtx->SetEntries(fHZvtx->Integral());
   fHPtTrg->SetEntries(fHPtTrg->Integral());
   fHPtAss->SetEntries(fHPtAss->Integral());
-
-  if (gROOT->IsBatch())
-    return;
-
-  fOutputList = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutputList) {
-    AliError("Output list not available");
-    return;
-  }
-  
-  fHistPt = dynamic_cast<TH1F*> (fOutputList->FindObject("fHistPt"));
-  if (!fHistPt) {
-    AliError("ERROR: fHistPt not available\n");
-    return;
-  }
-  TCanvas *c1 = new TCanvas("AliDhcTask","Pt",10,10,510,510);
-  c1->cd(1)->SetLogy();
-  fHistPt->DrawCopy("E");
 }
 
 //________________________________________________________________________
