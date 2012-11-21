@@ -33,6 +33,8 @@ Double_t dV1 = 0.0; // constant harmonic v1
 Double_t dV2 = 0.05; // constant harmonic v2 
 Double_t dV3 = 0.0; // constant harmonic v3
 Double_t dV4 = 0.0; // constant harmonic v4
+Double_t dV5 = 0.0; // constant harmonic v5
+Double_t dV6 = 0.0; // constant harmonic v6
 //    Remark 2: By default all harmonics are constant for each event and for each particle. However, for v2 
 //              the uniform event-wise fluctuations or pt dependence can be enabled:
 //  d1) Enable/disable uniform event-wise fluctuations of v2: 
@@ -158,6 +160,8 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
  eventMakerOnTheFly->SetV2(dV2);
  eventMakerOnTheFly->SetV3(dV3);
  eventMakerOnTheFly->SetV4(dV4); 
+ eventMakerOnTheFly->SetV5(dV5); 
+ eventMakerOnTheFly->SetV6(dV6); 
  if(bUniformFluctuationsV2)
  {
   eventMakerOnTheFly->SetUniformFluctuationsV2(bUniformFluctuationsV2); 
@@ -253,6 +257,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
   qc->SetMaxMult(10000);      
   qc->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
   qc->SetCalculateDiffFlowVsEta(kTRUE); // if you set kFALSE only differential flow vs pt is calculated
+  qc->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators
   qc->Init();  
  } // end of if(QC)
  // GFC = Generating Function Cumulants 
@@ -574,6 +579,16 @@ void CheckUserSettings()
  if(TMath::Abs(dV4) > 0.5)
  {
   printf("\n WARNING: |dV4| > 0.5 !!!! Please check your settings before taking off.\n\n");
+  exit(0);
+ }
+ if(TMath::Abs(dV5) > 0.5)
+ {
+  printf("\n WARNING: |dV5| > 0.5 !!!! Please check your settings before taking off.\n\n");
+  exit(0);
+ }
+ if(TMath::Abs(dV6) > 0.5)
+ {
+  printf("\n WARNING: |dV6| > 0.5 !!!! Please check your settings before taking off.\n\n");
   exit(0);
  }
  if(LYZ1SUM && LYZ2SUM)
