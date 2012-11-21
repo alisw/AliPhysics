@@ -49,6 +49,8 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterAccessHLTOUT)
 
+const int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::iterator::fkRowOffsetOuterSector = AliHLTTPCTransform::GetFirstRow(2);
+
 AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   : TObject()
   , fVerbosity(0)
@@ -404,33 +406,21 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 }
 
 AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::AliRawClusterContainer()
-  : fClusterVectors()
-  , fClusterMaps()
+  : fClusterMaps()
   , fSectorArray(new TClonesArray(AliTPCclusterMI::Class()))
   , fIterator()
 
 {
   /// constructor
-  AliHLTTPCRawClusterVector* first=new AliHLTTPCRawClusterVector;
-  if (first) {
-    first->reserve(500000);
-    fClusterVectors.push_back(first);
-  }
   for (int i=0; i<72; i++) {
     fClusterMaps.push_back(new AliRawClusterEntryVector);
+    fClusterMaps.back()->reserve(5000);
   }
 }
 
 AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::~AliRawClusterContainer()
 {
   /// dectructor
-  {
-    for (vector<AliHLTTPCRawClusterVector*>::iterator i=fClusterVectors.begin(); i!=fClusterVectors.end(); i++) {
-      if (*i) {
-	delete *i;
-      }
-    }
-  }
   {
     for (vector<AliRawClusterEntryVector*>::iterator i=fClusterMaps.begin(); i!=fClusterMaps.end(); i++) {
       if (*i) {
@@ -475,48 +465,19 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterEntry* AliHLTTPCClusterAccessHLTOUT::
 {
   /// load next cluster from array of the sepcific sector
   unsigned sector=partition<2?slice:slice+36;
-  if (fClusterMaps.size()<=sector ||
+  if (fClusterMaps.size()<=sector || 
       fClusterMaps[sector]==NULL) {
     AliErrorClass(Form("no cluster array available for sector %d", sector));
     return NULL;
   }
-  if (fClusterVectors.size()==0) {
-    AliFatalClass("memory allocation of first cluster array failed");
-    return NULL;
-  }
-  AliHLTTPCRawClusterVector* pClusters=NULL;
-  for (vector<AliHLTTPCRawClusterVector*>::iterator i=fClusterVectors.begin(); i!=fClusterVectors.end(); i++) {
-    if (*i && (*i)->size()<(*i)->capacity()) {
-      pClusters=*i;
-      break;
-    }
-  }
-  if (!pClusters) {
-    pClusters=new AliHLTTPCRawClusterVector;
-    if (!pClusters) {
-      AliFatalClass("memory allocation of next cluster array failed");
-      return NULL;
-    }
-    pClusters->reserve(500000);
-    fClusterVectors.push_back(pClusters);
-  }
-
-  AliHLTTPCRawCluster dummy;
-  pClusters->push_back(dummy);
-  AliRawClusterEntry entry(&(pClusters->back()));
   AliRawClusterEntryVector& map=*(fClusterMaps[sector]);
-  map.push_back(entry);
+  map.push_back(AliRawClusterEntry());
   return &map.back();
 }
 
 void  AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Clear(Option_t* /*option*/)
 {
   /// internal cleanup
-  {
-    for (vector<AliHLTTPCRawClusterVector*>::iterator i=fClusterVectors.begin(); i!=fClusterVectors.end(); i++) {
-      if (*i) (*i)->clear();
-    }
-  }
   {
     for (vector<AliRawClusterEntryVector*>::iterator i=fClusterMaps.begin(); i!=fClusterMaps.end(); i++)
       if (*i) (*i)->clear();
@@ -543,27 +504,26 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
   pSectorArray->Clear();
 
   AliRawClusterEntryVector& map=*fClusterMaps[sector];
-  for (unsigned i=0; i<map.size(); i++) {
-    if (!map[i].fCluster) continue;
-    if (row>=0 && map[i].fCluster->GetPadRow()!=row) continue;
-    AliTPCclusterMI* pCluster=new ((*pSectorArray)[i]) AliTPCclusterMI;
+  unsigned nFilled=0;
+  for (unsigned i=0; i<map.size(); i++) {    
+    if (row>=0 && map[i].fCluster.GetPadRow()!=row) continue;
+    AliTPCclusterMI* pCluster=new ((*pSectorArray)[nFilled]) AliTPCclusterMI;
     if (!pCluster) break;
+    
+    pCluster->SetRow(map[i].fCluster.GetPadRow());
+    pCluster->SetPad(map[i].fCluster.GetPad());
+    pCluster->SetTimeBin(map[i].fCluster.GetTime());
+    pCluster->SetSigmaY2(map[i].fCluster.GetSigmaY2());
+    pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaZ2());
+    pCluster->SetQ(map[i].fCluster.GetCharge());
+    pCluster->SetMax(map[i].fCluster.GetQMax());
 
-    pCluster->SetRow(map[i].fCluster->GetPadRow());
-    pCluster->SetPad(map[i].fCluster->GetPad());
-    pCluster->SetTimeBin(map[i].fCluster->GetTime());
-    pCluster->SetSigmaY2(map[i].fCluster->GetSigmaY2());
-    pCluster->SetSigmaZ2(map[i].fCluster->GetSigmaZ2());
-    pCluster->SetQ(map[i].fCluster->GetCharge());
-    pCluster->SetMax(map[i].fCluster->GetQMax());
-
-    if (map[i].fMC) {
-      for (int k=0; k<3; k++) {
-	// TODO: sort the labels according to the weight in order to assign the most likely mc label
-	// to the first component 
-	pCluster->SetLabel(map[i].fMC->fClusterID[k].fMCID, k);
-      }
+    for (int k=0; k<3; k++) {
+      // TODO: sort the labels according to the weight in order to assign the most likely mc label
+      // to the first component 
+      pCluster->SetLabel(map[i].fMC.fClusterID[k].fMCID, k);    
     }
+    nFilled++;
   }
 
   return 0;
@@ -583,14 +543,13 @@ void AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Print(Option_t *optio
 	cout << "  sector " << setfill(' ') << setw(2) << iArray << ": " << map.size() << endl;
 	if (bAll) {
 	  for (unsigned iCluster=0; iCluster<map.size(); iCluster++) {
-	    if (!map[iCluster].fCluster) continue;
-	    AliHLTTPCRawCluster* pCluster=map[iCluster].fCluster;
+	    AliHLTTPCRawCluster &cluster = map[iCluster].fCluster;
 	    cout << "    AliTPCclusterMI:"
-		 << "  row="    << pCluster->GetPadRow() 
-		 << "  pad="    << pCluster->GetPad()
-		 << "  time="   << pCluster->GetTime()
-		 << "  charge=" << pCluster->GetCharge()
-		 << "  maxq="   << pCluster->GetQMax()
+		 << "  row="    << cluster.GetPadRow() 
+		 << "  pad="    << cluster.GetPad()
+		 << "  time="   << cluster.GetTime()
+		 << "  charge=" << cluster.GetCharge()
+		 << "  maxq="   << cluster.GetQMax()
 		 << endl;
 	  }
 	}
@@ -615,6 +574,6 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::iterator& AliHLTTPCCluster
 
   // offline uses row number in physical sector, inner sector consists of
   // partitions 0 and 1, outer sector of partition 2-5
-  fRowOffset=partition<2?0:AliHLTTPCTransform::GetFirstRow(2);
+  fRowOffset=partition<2?0:fkRowOffsetOuterSector;
   return *this;
 }
