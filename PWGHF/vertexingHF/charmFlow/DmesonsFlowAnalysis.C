@@ -59,7 +59,7 @@ Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value);
 void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs,Bool_t inoutanis);
 void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TString partname="Dplus",Int_t evPlane=2);
 void DrawEventPlane(Int_t mincentr=0,Int_t maxcentr=0,TString filename="AnalysisResults.root",TString dirname="PWG3_D2H_HFv2",TString listname="coutputv2",Int_t evPlane=2);
-Double_t DrawEventPlane(TList *list,Int_t mincentr=0,Int_t maxcentr=0,Int_t evPlane=2,Double_t &error);
+Double_t DrawEventPlane(Double_t &error, TList *list,Int_t mincentr=0,Int_t maxcentr=0,Int_t evPlane=2);
 void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr=20,Int_t endCentr=80,Int_t evPlane=2);
 
 //methods implementation
@@ -82,16 +82,27 @@ TList *LoadMassHistos(TList *inputlist,Int_t minCent,Int_t maxCent,Bool_t inouta
 	  TString hisname=Form("hMdeltaphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
 	  TH2F* htmp=(TH2F*)inputlist->FindObject(hisname.Data());
 	  Int_t startX=htmp->FindBin(phibinslim[iphi]);
-	  Int_t endX=htmp->FindBin(phibinslim[iphi+1]);
+	  Int_t endX=htmp->FindBin(phibinslim[iphi+1]-0.0001); // -0.0001 to be sure that the upper limit of the bin is properly set
 	  TH1F *h1tmp;
 	  if(inoutanis){
 	    if(iphi==0){
-	      h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi0",iPtBin),htmp->FindBin(0),htmp->FindBin(TMath::Pi()/4.));
-	      h1tmp->Add((TH1F*)htmp->ProjectionY(Form("hMass%d",iPtBin),htmp->FindBin(3.*TMath::Pi()/4.),htmp->FindBin(TMath::Pi())));
+	      Int_t firstBin=htmp->FindBin(0);
+	      Int_t lastBin=htmp->FindBin(TMath::Pi()/4.-0.0001); // -0.0001 to be sure that the upper limit of the bin is pi/4
+	      h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi0",iPtBin),firstBin,lastBin);
+	      printf("In-plane, Range: bins %d-%d -> phi %f - %f\n",firstBin,lastBin,htmp->GetXaxis()->GetBinLowEdge(firstBin),htmp->GetXaxis()->GetBinUpEdge(lastBin));
+	      firstBin=htmp->FindBin(3.*TMath::Pi()/4.);
+	      lastBin=htmp->FindBin(TMath::Pi()-0.0001); // -0.0001 to be sure that the upper limit of the bin is pi
+	      h1tmp->Add((TH1F*)htmp->ProjectionY(Form("hMass%d",iPtBin),firstBin,lastBin));
+	      printf("In-plane, Range: bins %d-%d -> phi %f - %f\n",firstBin,lastBin,htmp->GetXaxis()->GetBinLowEdge(firstBin),htmp->GetXaxis()->GetBinUpEdge(lastBin));
 	    }else{
-	      h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi1",iPtBin),htmp->FindBin(TMath::Pi()/4.),htmp->FindBin(3.*TMath::Pi()/4.));
+	      Int_t firstBin=htmp->FindBin(TMath::Pi()/4.);
+	      Int_t lastBin=htmp->FindBin(3.*TMath::Pi()/4.-0.0001); // -0.0001 to be sure that the upper limit of the bin is pi/4
+	      h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi1",iPtBin),firstBin,lastBin);
+	      printf("Out-of-plane, Range: bins %d-%d -> phi %f - %f\n",firstBin,lastBin,htmp->GetXaxis()->GetBinLowEdge(firstBin),htmp->GetXaxis()->GetBinUpEdge(lastBin));
 	    }
-	  }else h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi%d",iPtBin,iphi),startX,endX);
+	  }else{
+	    h1tmp=(TH1F*)htmp->ProjectionY(Form("hMass%d_phi%d",iPtBin,iphi),startX,endX);
+	  }
 	  if(hMass==0)hMass=(TH1F*)h1tmp->Clone();
 	  else hMass->Add((TH1F*)h1tmp->Clone());
 	}
@@ -431,10 +442,11 @@ void DrawEventPlane(Int_t mincentr,Int_t maxcentr,TString filename,TString dirna
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
   }
-  DrawEventPlane(list,mincentr,maxcentr,evPlane,0);
+  Double_t err;
+  DrawEventPlane(err,list,mincentr,maxcentr,evPlane);
 }
 //_______________________________________________________________________________________________________________________________
-Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane,Double_t &error){
+Double_t DrawEventPlane(Double_t &error, TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane){
   
   //draw the histograms correlated to the event plane, returns event plane resolution
   
@@ -553,7 +565,7 @@ void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr,Int_t endCentr,I
   //  Int_t nCC=(endCentr-startCentr)/step;
   Double_t errory=0;
   for(Int_t i=startCentr;i<endCentr;i=i+step){
-    Double_t resolFull=DrawEventPlane(list,i,i+step,evPlane,errory);
+    Double_t resolFull=DrawEventPlane(errory,list,i,i+step,evPlane);
     gresovscentr->SetPoint(iPoint,i+(Float_t)step/2.,resolFull);
     gresovscentr->SetPointError(iPoint,5./2.,errory);
     iPoint++;
