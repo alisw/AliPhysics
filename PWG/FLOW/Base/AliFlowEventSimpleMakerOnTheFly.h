@@ -46,6 +46,10 @@ class AliFlowEventSimpleMakerOnTheFly{
   Double_t GetV3() const {return this->fV3;} 
   void SetV4(Double_t dV4) {this->fV4 = dV4;}
   Double_t GetV4() const {return this->fV4;} 
+  void SetV5(Double_t dV5) {this->fV5 = dV5;}
+  Double_t GetV5() const {return this->fV5;} 
+  void SetV6(Double_t dV6) {this->fV6 = dV6;}
+  Double_t GetV6() const {return this->fV6;} 
   void SetUniformFluctuationsV2(Bool_t b) {this->fUniformFluctuationsV2 = b;}
   Bool_t GetUniformFluctuationsV2() const {return this->fUniformFluctuationsV2;} 
   void SetMinV2(Double_t dMinV2) {this->fMinV2 = dMinV2;}
@@ -90,6 +94,8 @@ class AliFlowEventSimpleMakerOnTheFly{
   Double_t fV2; // harmonic v2
   Double_t fV3; // harmonic v3
   Double_t fV4; // harmonic v4
+  Double_t fV5; // harmonic v5
+  Double_t fV6; // harmonic v6
   Bool_t fUniformFluctuationsV2; // v2 is sampled uniformly for each event and for all particles from [fMinV2,fMaxV2] 
   Double_t fMinV2; // if v2 is sampled uniformly for each event, this is lower boundary on its value  
   Double_t fMaxV2; // if v2 is sampled uniformly for each event, this is upper boundary on its value

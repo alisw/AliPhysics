@@ -48,6 +48,8 @@ fV1(0.),
 fV2(0.05),
 fV3(0.),
 fV4(0.),
+fV5(0.),
+fV6(0.),
 fUniformFluctuationsV2(kFALSE),
 fMinV2(0.04),
 fMaxV2(0.06),
@@ -109,7 +111,7 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  // b) Define the phi distribution:
  Double_t dPhiMin = 0.; 
  Double_t dPhiMax = TMath::TwoPi();
- fPhiDistribution = new TF1("fPhiDistribution","1+2.*[1]*TMath::Cos(x-[0])+2.*[2]*TMath::Cos(2.*(x-[0]))+2.*[3]*TMath::Cos(3.*(x-[0]))+2.*[4]*TMath::Cos(4.*(x-[0]))",dPhiMin,dPhiMax);
+ fPhiDistribution = new TF1("fPhiDistribution","1+2.*[1]*TMath::Cos(x-[0])+2.*[2]*TMath::Cos(2.*(x-[0]))+2.*[3]*TMath::Cos(3.*(x-[0]))+2.*[4]*TMath::Cos(4.*(x-[0]))+2.*[5]*TMath::Cos(5.*(x-[0]))+2.*[6]*TMath::Cos(6.*(x-[0]))",dPhiMin,dPhiMax);
  fPhiDistribution->SetParName(0,"Reaction Plane");
  fPhiDistribution->SetParameter(0,0.);
  fPhiDistribution->SetParName(1,"Directed Flow (v1)"); 
@@ -120,7 +122,11 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  fPhiDistribution->SetParameter(3,fV3);
  fPhiDistribution->SetParName(4,"Quadrangular Flow (v4)");
  fPhiDistribution->SetParameter(4,fV4);
-    
+ fPhiDistribution->SetParName(5,"Pentagonal Flow (v5)");
+ fPhiDistribution->SetParameter(5,fV5);
+ fPhiDistribution->SetParName(6,"Hexagonal Flow (v6)");
+ fPhiDistribution->SetParameter(6,fV6);
+
 } // end of void AliFlowEventSimpleMakerOnTheFly::Init()
 
 //====================================================================================================================
