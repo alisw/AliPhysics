@@ -83,6 +83,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   Double_t                               fClusThresh;            //!energy threshold for cluster be saved
   AliAnalysisTaskEMCALClusterizeFast    *fClusterizer;           //!pointer for alternative clusterizer
   TString                                fCaloClustersName;      //alternative clusterizer name
+
   
   
  private:
@@ -117,9 +118,10 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
 class AliPhotonHeaderObj : public TObject
 {
   public: AliPhotonHeaderObj() :
-        TObject(), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
+  TObject(), fInputFileName(""), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
 	  fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0)  {;}
   public:
+  TString       fInputFileName;  // used for normalization purposes in MC productions
   ULong64_t     fTrClassMask;    //         trigger class mask
   UChar_t       fTrCluster;      //         trigger cluster mask
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
@@ -132,7 +134,7 @@ class AliPhotonHeaderObj : public TObject
   Int_t         fNCells;
   Int_t         fTrackMult;
 
-  ClassDef(AliPhotonHeaderObj,3)
+  ClassDef(AliPhotonHeaderObj,4)
 };
 
 class AliPhotonConvObj : public TObject

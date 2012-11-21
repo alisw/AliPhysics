@@ -262,8 +262,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA);
 
   }
-  if(fIsMC)
-    isSelected = kTRUE;
+  if(fIsMC){
+    isSelected = kTRUE;  
+  }
 
 
   // Post output data.
@@ -278,6 +279,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     return;
   if(TMath::Abs(pv->GetZ())>15)
     return;
+
+  TTree *tree = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetTree();
+  TFile *inpfile = (TFile*)tree->GetCurrentFile();
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -294,6 +298,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       fSelPrimTracks->Add(track);
   } //track loop 
 
+  fHeader->fInputFileName  = inpfile->GetName();
   fHeader->fTrClassMask    = fESD->GetHeader()->GetTriggerMask();
   fHeader->fTrCluster      = fESD->GetHeader()->GetTriggerCluster();
   AliCentrality *cent = InputEvent()->GetCentrality();
