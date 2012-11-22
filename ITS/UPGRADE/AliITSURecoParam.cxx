@@ -32,12 +32,19 @@ const Double_t AliITSURecoParam::fgkMaxDZForProlongation          = 60;
 const Double_t AliITSURecoParam::fgkMinPtForProlongation          = 0.0; 
 const Double_t AliITSURecoParam::fgkNSigmaRoadY                   = 5.;
 const Double_t AliITSURecoParam::fgkNSigmaRoadZ                   = 5.; 
-const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1000e-4;
-const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1000e-4;
+const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1.;//1000e-4;
+const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1.;//1000e-4;
 const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;;
 const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
 //
+// hardwired params for TPC-ITS border layer
+const Double_t AliITSURecoParam::fgkTPCITSWallRMin                = 50.;
+const Double_t AliITSURecoParam::fgkTPCITSWallRMax                = 80.;
+const Double_t AliITSURecoParam::fgkTPCITSWallZSpanH              = 250.;
+const Double_t AliITSURecoParam::fgkTPCITSWallMaxStep             = 6.;
 
+
+//
 //_____________________________________________________________________________
 AliITSURecoParam::AliITSURecoParam()
   :  fNLayers(0)
@@ -47,6 +54,11 @@ AliITSURecoParam::AliITSURecoParam()
   ,fMinPtForProlongation(fgkMinPtForProlongation)
   ,fNSigmaRoadY(fgkNSigmaRoadY)
   ,fNSigmaRoadZ(fgkNSigmaRoadZ)
+     //
+  ,fTPCITSWallRMin(fgkTPCITSWallRMin)
+  ,fTPCITSWallRMax(fgkTPCITSWallRMax)
+  ,fTPCITSWallZSpanH(fgkTPCITSWallZSpanH)
+  ,fTPCITSWallMaxStep(fgkTPCITSWallMaxStep)
      //
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
@@ -182,6 +194,9 @@ void AliITSURecoParam::Print(Option_t *opt) const
   printf("%-30s\t%f\n","fMinPtForProlongation",fMinPtForProlongation);
   printf("%-30s\t%f\n","fNSigmaRoadY",fNSigmaRoadY);
   printf("%-30s\t%f\n","fNSigmaRoadZ",fNSigmaRoadZ);
+  //
+  printf("TPC-ITS wall: %.3f<R<%.3f DZ/2=%.3f MaxStep=%.3f\n",
+	 fTPCITSWallRMin,fTPCITSWallRMax,fTPCITSWallZSpanH,fTPCITSWallMaxStep);
   //
   printf("N.Layers: %d\n",fNLayers);
   if (fNLayers>0) {

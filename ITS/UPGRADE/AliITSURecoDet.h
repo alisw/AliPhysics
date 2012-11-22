@@ -52,6 +52,9 @@ class AliITSURecoDet : public TNamed
   TObjArray          fLayersActive;   // active layers
   AliITSUGeomTGeo*   fGeom;           // ITS geometry
   //
+ protected:
+  static const Char_t*     fgkBeamPipeVolName;    // name of the beam pipe volume
+
  private:
   AliITSURecoDet(const AliITSURecoDet &source); 
   AliITSURecoDet& operator=(const AliITSURecoDet &source); 

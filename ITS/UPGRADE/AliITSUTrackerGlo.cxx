@@ -180,7 +180,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
   if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
   if (!InitSeed(esdTr))      return;  // initialize prolongations hypotheses tree
   //
-  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors];
+  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
   AliITSUSeed seedUC;  // copy of the seed from the upper layer
   AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
   //
@@ -208,7 +208,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	if (NeedToKill(&seedUC,kRWCheckFailed)) KillSeed(ilaUp,isd); 
 	continue;
       }
-      int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track (max 4)
+      int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
       printf("Lr:%d Ns:%d\n",ila, nsens);
       //
       for (int isn=nsens;isn--;) {
@@ -332,9 +332,9 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   sgy = Sqrt(sgy)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY();
   sgz = Sqrt(sgz)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ();
   fTrImpData[kTrPhi0] = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
-  fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrPhiIn]);
+  fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrZIn]);
   fTrImpData[kTrDPhi] = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]) + sgy/lrA->GetR();
-  fTrImpData[kTrDZ]   = 0.5*Abs(fTrImpData[kTrZOut]-fTrImpData[kTrPhiIn])   + sgz;
+  fTrImpData[kTrDZ]   = 0.5*Abs(fTrImpData[kTrZOut]-fTrImpData[kTrZIn])   + sgz;
   //  
   return kTRUE;
 }

@@ -36,6 +36,8 @@ class AliITSURecoLayer : public TNamed
   Double_t           GetRMax()                     const {return fRMax;}
   Double_t           GetDR()                       const {return fRMax-fRMin;}
   Double_t           GetR()                        const {return fR;}
+  Double_t           GetZMin()                     const {return fZMin;}
+  Double_t           GetZMax()                     const {return fZMax;}
   Double_t           GetMaxStep()                  const {return fMaxStep;}
   Bool_t             IsActive()                    const {return !TestBit(kPassive);}
   Bool_t             IsPassive()                   const {return TestBit(kPassive);}
@@ -45,6 +47,8 @@ class AliITSURecoLayer : public TNamed
   void               SetRMin(Double_t r)                 {fRMin = r;}
   void               SetRMax(Double_t r)                 {fRMax = r;}
   void               SetR(Double_t r)                    {fR = r;}
+  void               SetZMin(Double_t z)                 {fZMin = z;}
+  void               SetZMax(Double_t z)                 {fZMax = z;}
   void               SetPassive(Bool_t v=kTRUE)          {SetBit(kPassive,v);}
   void               SetMaxStep(Double_t st)             {fMaxStep = st>0 ? st : 0.1;}
   //

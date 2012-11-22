@@ -1,9 +1,18 @@
+#include <TGeoVolume.h>
+#include <TGeoTube.h>
+#include <TGeoManager.h>
 #include "AliITSURecoDet.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
 #include "AliITSUSegmentationPix.h"
+#include "AliITSUReconstructor.h"
+
 
 ClassImp(AliITSURecoDet)
+
+
+const Char_t* AliITSURecoDet::fgkBeamPipeVolName = "IP_PIPE";
+
 
 //______________________________________________________
 AliITSURecoDet::AliITSURecoDet(AliITSUGeomTGeo* geom, const char* name)
@@ -67,10 +76,44 @@ Bool_t AliITSURecoDet::Build()
     AliITSURecoLayer* lra = new AliITSURecoLayer(Form("Lr%d%s%d",ilr,fGeom->GetDetTypeName(lrTyp),
 						      lrTyp%AliITSUGeomTGeo::kMaxSegmPerDetType),
 						 ilr,fGeom);
+    lra->SetPassive(kFALSE);
     AddLayer(lra);
   }
   //
   // build passive ITS layers
+  //
+  double rMin,rMax,zMin,zMax;
+  // beam pipe
+  TGeoVolume *v = gGeoManager->GetVolume(fgkBeamPipeVolName);
+  AliITSURecoLayer* lrp = 0;
+  if (!v) AliWarning("No beam pipe found in geometry");
+  {
+    TGeoTube *t=(TGeoTube*)v->GetShape();
+    rMin = t->GetRmin();
+    rMax = t->GetRmax();
+    zMin =-t->GetDz();
+    zMax = t->GetDz();
+    lrp = new AliITSURecoLayer("BeamPipe");
+    lrp->SetRMin(rMin);
+    lrp->SetRMax(rMax);
+    lrp->SetR(0.5*(rMin+rMax));
+    lrp->SetZMin(zMin);
+    lrp->SetZMax(zMax);
+    lrp->SetPassive(kTRUE);
+    AddLayer(lrp);
+    //
+  }
+  //
+  // TPC-ITS wall
+  lrp = new AliITSURecoLayer("TPC-ITSwall");
+  lrp->SetRMin(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMin());
+  lrp->SetRMax(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMax());
+  lrp->SetR(0.5*(lrp->GetRMin()+lrp->GetRMax()));
+  lrp->SetZMin(-AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
+  lrp->SetZMax( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
+  lrp->SetMaxStep( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallMaxStep());
+  lrp->SetPassive(kTRUE);
+  AddLayer(lrp);
   //
   IndexLayers();
   Print("lr");
