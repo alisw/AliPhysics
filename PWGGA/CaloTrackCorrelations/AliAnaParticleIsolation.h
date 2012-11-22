@@ -152,7 +152,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiDecayIso ;                     //! eta vs phi of isolated Pi0 decay particles
   TH2F *   fhEtaPhiDecayNoIso ;                   //! eta vs phi of not isolated leading Pi0 decay particles
   TH2F *   fhConeSumPt ;                          //! Sum Pt in the cone
-  TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
+  TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
+  TH2F *   fhPtTrackInCone ;                      //! Track Pt in the cone
+  TH2F *   fhPtTrackInConeOtherBC ;               //! Track Pt in the cone, tracks out of main BC Time window
+  TH2F *   fhPtTrackInConeOtherBCPileUpSPD ;      //! Track Pt in the cone, tracks out of main BC Time window
   TH2F *   fhPtInConePileUp[7] ;                  //! Particle Pt in the cone, if event is from pile-up (SPD method)
   TH2F *   fhPtInConeCent ;                       //! Particle Pt in the cone versus centrality
   TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
