@@ -60,7 +60,8 @@ ClassImp(AliAnaChargedParticles)
     fhEtaPhiTOFBC0(0), fhEtaPhiTOFBCPlus(0), fhEtaPhiTOFBCMinus(0),
     fhEtaPhiTOFBC0PileUpSPD(0),
     fhEtaPhiTOFBCPlusPileUpSPD(0),
-    fhEtaPhiTOFBCMinusPileUpSPD(0)
+    fhEtaPhiTOFBCMinusPileUpSPD(0),
+    fhProductionVertexBC(0)
 {
   //Default Ctor
 
