@@ -273,6 +273,7 @@ void PublishCanvas(TList *qaList, const char* det, const char* name, TString nad
 
   for (Int_t i=0; i<nPads;++i) {
     fCanvas->cd(i+1);
+    SetupPadStyle();
     arrHistos.At(i)->Draw();
   }
 
