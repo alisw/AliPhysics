@@ -59,12 +59,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kEDbins = 1,
     kRVALUES = 6+1,// 6 Gaussian radii (3-8fm), last slot for Therminator source
-    kNDampValues = 16,// change to 11 soon
-    kDENtypes = (kRVALUES)*kNDampValues,
+    kNDampValues = 16,
+    kDENtypes = 1,// was (kRVALUES)*kNDampValues
     kCentBins=10,// 0-50%
     kSCLimit2 = 1,// 1, 6
     kSCLimit3 = 1,// 1, 10
-    kMCfixedRbin = 3,// 3 normally, (Rbin=3 (R=6fm)), 4 for systematic variation
+    kMCfixedRbin = 4,// 4 normally, (Rbin=4 (R=7fm)), 5 for systematic variation
     kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
  };
 
@@ -87,7 +87,6 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
   Float_t FSICorrelation2(Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
-  Float_t MCWeightOSL(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
   Float_t MCWeight3D(Bool_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
   //
@@ -116,7 +115,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St_DT {
     TH3D *fTwoPartNorm; //!
     //TH3D *fTwoPartNormErr; //!
-    TH2D *f4VectProdTwoPartNorm; //!
+    TH3D *f4VectProd1TwoPartNorm; //!
+    TH3D *f4VectProd2TwoPartNorm; //!
   };  
   struct St6 {
     TH1D *fExplicit3; //!
@@ -124,9 +124,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //
     TH1D *fNorm3; //!
     TH3D *fTerms3; //!
-    TH2D *f4VectProdTermsCC3; //!
-    TH2D *f4VectProdTermsCC2; //!
-    TH2D *f4VectProdTermsCC0; //!
+    TH3D *f4VectProd1TermsCC3; //!
+    TH3D *f4VectProd1TermsCC2; //!
+    TH3D *f4VectProd1TermsCC0; //!
+    TH3D *f4VectProd2TermsCC3; //!
+    TH3D *f4VectProd2TermsCC2; //!
+    TH3D *f4VectProd2TermsCC0; //!
     TH3D *fIdeal; //!
     TH3D *fSmeared; //!
     //
@@ -142,6 +145,9 @@ class AliChaoticity : public AliAnalysisTaskSE {
     TH3I *fExplicit2ThreeD; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
+    //
+    TH1D *fMCqinv; //!
+    TH1D *fMCqinvQW; //!
     struct St7 OSL_ktbin[2];
   };
   struct St_EDB {// SC structure
