@@ -31,8 +31,6 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   tender->SetDefaultCDBStorage("raw://");
   mgr->AddTask(tender);
   
-  Bool_t cachePID=kFALSE;
-
   //check that that tender is the first task after the pid response
   TString firstName(mgr->GetTasks()->First()->GetName());
   Bool_t isSecond=(mgr->GetTasks()->At(1) == (TObject*)tender);
@@ -42,15 +40,7 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
     return NULL;
   }
   
-  AliAnalysisTaskPIDResponse *pidResp=(AliAnalysisTaskPIDResponse*)mgr->GetTasks()->First();
-  if (pidResp->GetCachePID()){
-    usePID=kTRUE;
-    pidResp->SetCachePID(kFALSE);
-    cachePID=kTRUE;
-  }
-  
   //========= Attach VZERO supply ======
-
   if (useV0) {
      AliVZEROTenderSupply *vzeroSupply=new AliVZEROTenderSupply("VZEROtender");
      vzeroSupply->SetDebug(kFALSE);
@@ -128,7 +118,6 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   //========= Attach PID supply ======
   if (usePID) {
     AliPIDTenderSupply *pidSupply=new AliPIDTenderSupply("PIDtender");
-    pidSupply->SetCachePID(cachePID);
     tender->AddSupply(pidSupply);
   }
 

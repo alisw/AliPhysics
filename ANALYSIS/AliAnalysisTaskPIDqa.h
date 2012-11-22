@@ -59,6 +59,7 @@ private:
   TList                 *fListQAtofhmpid;   //! List with EMCAL QA histograms
   TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
   TList                 *fListQAV0;         //! List with V0 kine cuts QA histograms
+  TList                 *fListQAinfo;       //! List with information about loaded splines etc.
 
   
   void ExecNewRun();
@@ -73,6 +74,7 @@ private:
   void SetupTOFHMPIDqa();
   void SetupTPCTOFqa();
   void SetupV0qa();
+  void SetupQAinfo();
 
   //
   void FillV0PIDlist();
@@ -86,6 +88,7 @@ private:
   void FillHMPIDqa();
   void FillTOFHMPIDqa();
   void FillTPCTOFqa();
+  void FillQAinfo();
   
   //
   void SetRecoInfo();
