@@ -929,7 +929,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
-					      Double_t ptAssociatedMax) {
+					      Double_t ptAssociatedMax,
+					      Bool_t   normToTrig) {
   //Returns the 2D correlation function for (+-) pairs
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
@@ -974,7 +975,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   //c2->cd();
   //fHistPN->Project(0,1,2)->DrawCopy("colz");
 
-  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
+  if(normToTrig && (Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
     
   return gHist;
@@ -986,7 +987,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
-					      Double_t ptAssociatedMax) {
+					      Double_t ptAssociatedMax,
+					      Bool_t   normToTrig) {
   //Returns the 2D correlation function for (+-) pairs
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
@@ -1011,7 +1013,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
+  if(normToTrig && (Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
     
   return gHist;
@@ -1023,7 +1025,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
-					      Double_t ptAssociatedMax) {
+					      Double_t ptAssociatedMax,
+					      Bool_t   normToTrig) {
   //Returns the 2D correlation function for (+-) pairs
   // Psi_2: axis 0
   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
@@ -1048,7 +1051,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistPP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
+  if(normToTrig && (Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
   
   return gHist;
@@ -1060,7 +1063,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 					      Double_t ptTriggerMin,
 					      Double_t ptTriggerMax,
 					      Double_t ptAssociatedMin,
-					      Double_t ptAssociatedMax) {
+					      Double_t ptAssociatedMax,
+					      Bool_t   normToTrig) {
   //Returns the 2D correlation function for (+-) pairs
   // Psi_2: axis 0
   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
@@ -1085,7 +1089,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNN->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
+  if(normToTrig && (Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
     
   return gHist;
