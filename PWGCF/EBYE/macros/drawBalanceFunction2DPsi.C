@@ -421,6 +421,11 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     c4a->SetHighLightColor(10);
     c4a->SetLeftMargin(0.15);
     gHistBalanceFunctionSubtracted->DrawCopy("colz");
+
+    fitbalanceFunction(gCentrality, psiMin = -0.5, psiMax,
+		       ptTriggerMin, ptTriggerMax,
+		       ptAssociatedMin, ptAssociatedMax,
+		       gHistBalanceFunctionSubtracted);
   }
 
   TString newFileName = "balanceFunction2D.Centrality"; 
@@ -456,6 +461,101 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   }
   fOutput->Close();
 }
+
+//____________________________________________________________//
+void fitbalanceFunction(Int_t gCentrality = 1,
+			Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+			Double_t ptTriggerMin = -1.,
+			Double_t ptTriggerMax = -1.,
+			Double_t ptAssociatedMin = -1.,
+			Double_t ptAssociatedMax = -1.,
+			TH2D *gHist) {
+
+  cout<<"FITTING FUNCTION"<<endl;
+
+  //near side peak: [1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))
+  //away side ridge: [5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))
+  //longitudinal ridge: [8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))
+  //wing structures: [11]*TMath::Power(x,2)
+  //flow contribution (v1 up to v4): 2.*([12]*TMath::Cos(y) + [13]*TMath::Cos(2.*y) + [14]*TMath::Cos(3.*y) + [15]*TMath::Cos(4.*y))
+  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[17])/[9]),2)),[10]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[17])/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
+  gFitFunction->SetName("gFitFunction");
+
+
+  //Normalization
+  gFitFunction->SetParName(0,"N1"); 
+  //near side peak
+  gFitFunction->SetParName(1,"N_{near side}");gFitFunction->FixParameter(1,0.0);
+  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->FixParameter(2,0.0);
+  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(3,0.0);
+  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->FixParameter(4,1.0);
+  //away side ridge
+  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->FixParameter(5,0.0);
+  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->FixParameter(6,0.0);
+  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->FixParameter(7,1.0);
+  //longitudinal ridge
+  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);//
+  gFitFunction->FixParameter(8,0.0);
+  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->FixParameter(9,0.0);
+  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->FixParameter(10,1.0);
+  //wing structures
+  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->FixParameter(11,0.0);
+  //flow contribution
+  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->FixParameter(12,0.0);
+  gFitFunction->SetParName(13,"V1"); gFitFunction->FixParameter(13,0.0);
+  gFitFunction->SetParName(14,"V2"); gFitFunction->FixParameter(14,0.0);
+  gFitFunction->SetParName(15,"V3"); gFitFunction->FixParameter(15,0.0);
+  gFitFunction->SetParName(16,"V4"); gFitFunction->FixParameter(16,0.0);
+  gFitFunction->SetParName(17,"Offset"); gFitFunction->FixParameter(17,0.0);
+
+  // just release the near side peak
+  gFitFunction->ReleaseParameter(0);gFitFunction->SetParameter(0,1.0);
+  gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);gFitFunction->SetParLimits(1,0.0,100);
+  gFitFunction->ReleaseParameter(2);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
+  gFitFunction->ReleaseParameter(3);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
+
+  gHist->Fit("gFitFunction","nm");
+
+
+  //Cloning the histogram
+  TString histoName = gHist->GetName(); histoName += "Fit"; 
+  TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
+  TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
+  gHistResidual->SetName("gHistResidual");
+  gHistResidual->Sumw2();
+
+  for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
+    for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
+      gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,gFitFunction->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
+    }
+  }
+  gHistResidual->Add(gHistFit,-1);
+
+  //Write to output file
+  TString newFileName = "balanceFunctionFit";
+  newFileName += ".Centrality";  
+  newFileName += gCentrality; newFileName += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+  else newFileName += "All.PttFrom";
+  newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+  newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptAssociatedMax); 
+  newFileName += ".root";
+  TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+  gHist->Write();
+  gHistFit->Write();
+  gHistResidual->Write();
+  gFitFunction->Write();
+  newFile->Close();
+  
+
+}
+
+
 
 //____________________________________________________________//
 void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
