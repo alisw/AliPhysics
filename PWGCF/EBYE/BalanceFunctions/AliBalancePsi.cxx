@@ -1096,6 +1096,74 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 }
 
 //____________________________________________________________________//
+TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin, 
+							     Double_t psiMax,
+							     Double_t ptTriggerMin,
+							     Double_t ptTriggerMax,
+							     Double_t ptAssociatedMin,
+							     Double_t ptAssociatedMax,
+							     Bool_t   normToTrig) {
+  //Returns the 2D correlation function for the sum of all charge combination pairs
+  // Psi_2: axis 0
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+
+  // pt trigger
+  if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+  }
+
+  // pt associated
+  if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    
+  //0:step, 1: Delta eta, 2: Delta phi
+  TH2D *gHistNN = dynamic_cast<TH2D *>(fHistNN->Project(0,1,2));
+  if(!gHistNN){
+    AliError("Projection of fHistNN = NULL");
+    return gHistNN;
+  }
+  TH2D *gHistPP = dynamic_cast<TH2D *>(fHistPP->Project(0,1,2));
+  if(!gHistPP){
+    AliError("Projection of fHistPP = NULL");
+    return gHistPP;
+  }
+  TH2D *gHistNP = dynamic_cast<TH2D *>(fHistNP->Project(0,1,2));
+  if(!gHistNP){
+    AliError("Projection of fHistNP = NULL");
+    return gHistNP;
+  }
+  TH2D *gHistPN = dynamic_cast<TH2D *>(fHistPN->Project(0,1,2));
+  if(!gHistPN){
+    AliError("Projection of fHistPN = NULL");
+    return gHistPN;
+  }
+
+  // sum all 2 particle histograms
+  gHistNN->Add(gHistPP);
+  gHistNN->Add(gHistNP);
+  gHistNN->Add(gHistPN);
+
+  // if normalization to trigger particle, divide by sum of + and - triggers
+  if(normToTrig && (Double_t)(fHistN->Project(0,1)->GetEntries())!=0 && (Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
+    gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries() + fHistN->Project(0,1)->GetEntries()));
+  
+  return gHistNN;
+}
+
+//____________________________________________________________________//
 Float_t AliBalancePsi::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign) { 
   //
   // calculates dphistar
