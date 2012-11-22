@@ -1,7 +1,7 @@
 //Based on the file $ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/runProofCascadePbPb()
 void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk",
-			       TString  alirootVer    = "VO_ALICE@AliRoot::v5-03-46-AN",
-			       TString  rootVer       = "VO_ALICE@ROOT::v5-34-01-1", 
+			       TString  alirootVer    = "VO_ALICE@AliRoot::v5-03-70-AN",
+			       TString  rootVer       = "VO_ALICE@ROOT::v5-34-02", 
 			       TString  path          = "/alice/data/LHC10h_000138624_p2_AOD049",
 			       TString  name          = "LambdaOverK0sRatio", 
 			       Double_t minCen        = 0.,
@@ -12,7 +12,8 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
 			       Double_t rapMaxV0      = 0.75,
 			       Bool_t   sepInjec      = kTRUE,
 			       Bool_t   isMC          = kFALSE,
-			       Bool_t   usePID        = kTRUE){
+			       Bool_t   usePID        = kTRUE,
+			       Bool_t   doQA          = kFALSE){
   
   Printf("   \nThe parameters of the programm are : \n ");
   Printf(" \t Analysis mode:\t %s\n \t Centrality:\t %.1lf - %.1lf\n \t Use MC Data?:\t %s\n \t Use PID?:\t %s\n",
@@ -35,7 +36,8 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
    
   TProof::Reset(proofCluster.Data());
-  TProof::Open(proofCluster.Data(),"workers=40"); 
+  TProof::Open(proofCluster.Data()); 
+  //TProof::Open(proofCluster.Data(),"workers=1"); 
   gProof->ClearPackages();
   gProof->EnablePackage(alirootVer.Data(),list);
 
@@ -54,16 +56,20 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
 
-  // My task
-  gProof->Load("AliAnalysisTaskLambdaOverK0sJets.cxx+g");
-  gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,rapMaxV0,sepInjec,isMC,usePID);
+  Double_t checkIDTrig= kFALSE;
+  Double_t nSigmaPID = 3.0;
   
+  // My task
+  gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
+  gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,nSigmaPID,sepInjec,isMC,usePID,doQA);
+
   // _____________________________________________________ //
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("proof",path); 
+  //mgr->StartAnalysis("proof",path,1,1); 
   
 }
 
