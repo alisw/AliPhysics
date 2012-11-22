@@ -1192,6 +1192,11 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   // Make a sparse draw of the variables
   // Writen by Weilin.Yu
   const Int_t entries =  tree->Draw(expr,cut,"goff");
+  if (entries<=0) {
+    TStatToolkit t;
+    t.Error("TStatToolkit::MakeGraphSparse",Form("Empty or Not valid expression (%s) or cut *%s)", expr,cut));
+    return 0;
+  }
   //  TGraph * graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
   TGraph * graph = 0;
   if (tree->GetV3()) graph = new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,tree->GetV3());
