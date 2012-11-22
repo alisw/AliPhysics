@@ -27,14 +27,16 @@
 // --- ROOT system ---
 #include "TClonesArray.h"
 #include "TList.h"
-#include "TH1I.h"
+#include "TH1F.h"
 //#include <TObjectTable.h>
 
-//---- AliRoot system ---- 
+//---- AliRoot system ----
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliAnaCaloTrackCorrBaseClass.h" 
-#include "AliAnaCaloTrackCorrMaker.h" 
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrMaker.h"
 
 ClassImp(AliAnaCaloTrackCorrMaker)
 
@@ -189,11 +191,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   //General event histograms
   
-  fhNEvents      = new TH1I("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
+  fhNEvents      = new TH1F("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhNPileUpEvents      = new TH1I("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
+  fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
@@ -205,29 +207,33 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
   fOutputContainer->Add(fhNPileUpEvents);
   
-  fhTrackBCEvent      = new TH1I("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
   fhTrackBCEvent->SetYTitle("# events");
   fhTrackBCEvent->SetXTitle("Bunch crossing");
   for(Int_t i = 1; i < 20; i++)
     fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
   fOutputContainer->Add(fhTrackBCEvent);
   
-  fhTrackBCEventCut      = new TH1I("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhTrackBCEventCut      = new TH1F("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
   fhTrackBCEventCut->SetYTitle("# events");
   fhTrackBCEventCut->SetXTitle("Bunch crossing");
   for(Int_t i = 1; i < 20; i++)
     fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
   fOutputContainer->Add(fhTrackBCEventCut);
 
-  
-  fhEMCalBCEvent      = new TH1I("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
+  fhPrimaryVertexBC      = new TH1F("hPrimaryVertexBC", "Number of primary vertex per bunch crossing ", 18 , -9 , 9 ) ;
+  fhPrimaryVertexBC->SetYTitle("# events");
+  fhPrimaryVertexBC->SetXTitle("Bunch crossing");
+  fOutputContainer->Add(fhPrimaryVertexBC);
+
+  fhEMCalBCEvent      = new TH1F("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
   fhEMCalBCEvent->SetYTitle("# events");
   fhEMCalBCEvent->SetXTitle("Bunch crossing");
   for(Int_t i = 1; i < 20; i++)
     fhEMCalBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
   fOutputContainer->Add(fhEMCalBCEvent);
   
-  fhEMCalBCEventCut      = new TH1I("hEMCalBCEventCut",   "Number of events with at least 1 cluster in a bunch crossing", 19 , 0 , 19 ) ;
+  fhEMCalBCEventCut      = new TH1F("hEMCalBCEventCut",   "Number of events with at least 1 cluster in a bunch crossing", 19 , 0 , 19 ) ;
   fhEMCalBCEventCut->SetYTitle("# events");
   fhEMCalBCEventCut->SetXTitle("Bunch crossing");
   for(Int_t i = 1; i < 20; i++)
@@ -238,24 +244,24 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
   
-  fhTrackMult    = new TH1I("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
+  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
-  fhPileUpClusterMult    = new TH1I("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
+  fhPileUpClusterMult    = new TH1F("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
   fhPileUpClusterMult->SetXTitle("# clusters");
   fOutputContainer->Add(fhPileUpClusterMult);
   
-  fhPileUpClusterMultAndSPDPileUp = new TH1I("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
+  fhPileUpClusterMultAndSPDPileUp = new TH1F("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
   fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
   fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
   
-  fh2PileUpClusterMult = new TH2I("h2PileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100 , 100 , 0 , 100 ) ;
+  fh2PileUpClusterMult = new TH2F("h2PileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100 , 100 , 0 , 100 ) ;
   fh2PileUpClusterMult->SetXTitle("# clusters (large t)");
   fh2PileUpClusterMult->SetYTitle("# clusters (small t)");
   fOutputContainer->Add(fh2PileUpClusterMult);
   
-  fh2PileUpClusterMultAndSPDPileUp = new TH2I("h2PileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 , 100 , 0 , 100) ;
+  fh2PileUpClusterMultAndSPDPileUp = new TH2F("h2PileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 , 100 , 0 , 100) ;
   fh2PileUpClusterMultAndSPDPileUp->SetXTitle("# clusters (large t)");
   fh2PileUpClusterMultAndSPDPileUp->SetYTitle("# clusters (small t)");
   fOutputContainer->Add(fh2PileUpClusterMultAndSPDPileUp);
@@ -270,7 +276,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   if(fScaleFactor > 0)
   {
-    fhNMergedFiles = new TH1I("hNMergedFiles",   "Number of merged output files"     , 1 , 0 , 1  ) ;
+    fhNMergedFiles = new TH1F("hNMergedFiles",   "Number of merged output files"     , 1 , 0 , 1  ) ;
     fhNMergedFiles->SetYTitle("# files");
     fhNMergedFiles->Fill(1); // Fill here with one entry, while merging it will count the rest
     fOutputContainer->Add(fhNMergedFiles);
@@ -307,7 +313,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
         //Add only  to the histogram name the name of the task
         if(   strcmp((templist->At(i))->ClassName(),"TObjString")   ) 
         {
-          snprintf(newname,buffersize, "%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());  
+          snprintf(newname,buffersize, "%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());
+          //printf("name %s, new name %s\n",(templist->At(i))->GetName(),newname);
           ((TH1*) templist->At(i))->SetName(newname);
         }
         
@@ -533,7 +540,18 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);
-    
+  
+  Int_t primaryBC = -1000;
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (fReader->GetInputEvent());
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (fReader->GetInputEvent());
+
+  if     (esdevent)
+    primaryBC = esdevent->GetPrimaryVertex()->GetBC();
+  else if(aodevent)
+    primaryBC = aodevent->GetPrimaryVertex()->GetBC();
+
+  fhPrimaryVertexBC->Fill(primaryBC);
+
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
 	

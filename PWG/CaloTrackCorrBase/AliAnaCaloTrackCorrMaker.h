@@ -16,7 +16,7 @@
 class TList; 
 class TClonesArray;
 #include<TObject.h>
-class TH1I;
+class TH1F;
 
 // --- Analysis system ---
 #include "AliCaloTrackReader.h" 
@@ -92,22 +92,23 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Double_t fScaleFactor ;       //  Scaling factor needed for normalization
 
   // Control histograms
-  TH1I *   fhNEvents;           //! Number of events counter histogram
-  TH1I *   fhNPileUpEvents;     //! N events pasing pile up cut
+  TH1F *   fhNEvents;           //! Number of events counter histogram
+  TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
-  TH1I *   fhPileUpClusterMult; //! N clusters with high time
-  TH1I *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
-  TH2I *   fh2PileUpClusterMult; //! N clusters with high time vs N clusterd with small time
-  TH2I *   fh2PileUpClusterMultAndSPDPileUp; //! N clusters with high time vs N clusterd with small time in events tagged as pile-up by SPD
-  TH1I *   fhTrackMult;         //! Number of tracks per event histogram
+  TH1F *   fhPileUpClusterMult; //! N clusters with high time
+  TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
+  TH2F *   fh2PileUpClusterMult; //! N clusters with high time vs N clusterd with small time
+  TH2F *   fh2PileUpClusterMultAndSPDPileUp; //! N clusters with high time vs N clusterd with small time in events tagged as pile-up by SPD
+  TH1F *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
-  TH1I *   fhNMergedFiles;      //! Number of files merged
+  TH1F *   fhNMergedFiles;      //! Number of files merged
   TH1F *   fhScaleFactor;       //! Factor to scale histograms
-  TH1I *   fhEMCalBCEvent;      //! N events depending on the existance of a cluster in a given bunch crossing
-  TH1I *   fhEMCalBCEventCut;   //! N events depending on the existance of a cluster above acceptance and E cut in a given bunch crossing
-  TH1I *   fhTrackBCEvent;      //! N events depending on the existance of a track in a given bunch crossing
-  TH1I *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
+  TH1F *   fhEMCalBCEvent;      //! N events depending on the existance of a cluster in a given bunch crossing
+  TH1F *   fhEMCalBCEventCut;   //! N events depending on the existance of a cluster above acceptance and E cut in a given bunch crossing
+  TH1F *   fhTrackBCEvent;      //! N events depending on the existance of a track in a given bunch crossing
+  TH1F *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
+  TH1F *   fhPrimaryVertexBC;   //! Primary vertex BC
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
