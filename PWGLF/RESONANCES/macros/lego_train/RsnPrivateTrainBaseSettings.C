@@ -4,17 +4,19 @@ TList *RsnPrivateTrainBaseSettings() {
    TString legoTrainPath = AliAnalysisManager::GetGlobalStr("RsnLegoTrainPath",valid);
    Int_t usePhysSel        = -1;
 //   usePhysSel              = AliVEvent::kMB;
-
-   Int_t useCentralityTask = 0;
-   Int_t useEventPlaneTask = 0;
-   Int_t usePIDqa          = 0;
+   
+   Int_t usePIDResponseTask      = 1;
+   Int_t useCentralityTask       = 0;
+   Int_t useEventPlaneTask       = 1;
+   Int_t useVZEROEPSelectionTask = 1;
+   Int_t usePIDqa                = 0;
 
    Int_t useEventMixPar    = 0;
    Int_t useRsnPar         = 0;
    Int_t useRsnParDev      = -1;
 //   useRsnParDev            = 1;
 
-   TString rootver = "v5-34-01";
+   TString rootver = "v5-34-02-1";
    TString alirootver = "";
 //      alirootver = "v5-03-07-AN";
 
@@ -42,12 +44,13 @@ TList *RsnPrivateTrainBaseSettings() {
    AliAnalysisManager::SetGlobalInt("rsnUseRSNParDev",useRsnParDev);
 
    // common options
+   AliAnalysisManager::SetGlobalInt("rsnUsePIDResponse",usePIDResponseTask);
    AliAnalysisManager::SetGlobalInt("rsnUsePhysSel",usePhysSel);
    AliAnalysisManager::SetGlobalInt("rsnUseCentralityTask",useCentralityTask);
    AliAnalysisManager::SetGlobalInt("rsnUseEventPlaneTask",useEventPlaneTask);
-   AliAnalysisManager::SetGlobalInt("rsnUsePIDqa",usePIDqa);
+   AliAnalysisManager::SetGlobalInt("rsnUseVZEROEPSelection",useVZEROEPSelectionTask);
 
-   AliAnalysisManager::SetGlobalInt("rsnUsePIDResponse",1);
+   AliAnalysisManager::SetGlobalInt("rsnUsePIDqa",usePIDqa);
 
    // RSN train settings for GRID
    AliAnalysisManager::SetGlobalStr("rsnTrainDSConfig",dsConfig.Data());

@@ -50,13 +50,12 @@ void RsnTrainCommonSettings(TString type,TString rsnPart,TString extraMacro="",T
    AliRsnTrainManager::SetGlobalInt("RsnUseMCMonitoring",0,kFALSE);
    AliRsnTrainManager::SetGlobalInt("RsnUseAOD049Patch",0,kFALSE);
    
-   // for now we will use only on/off (0/1), maybe we can use number also, but let's see if neede
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffMult",1);
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffVz",1);
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffAngle",0);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffMult",10.0,kFALSE);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffVz",1.0,kFALSE);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffAngle",-1.0,kFALSE);
             
    
    // expert options (don't change)
-   AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",-1);
+   AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",-1,kFALSE);
 
 }
