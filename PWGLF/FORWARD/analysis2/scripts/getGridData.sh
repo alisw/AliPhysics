@@ -188,12 +188,14 @@ get_filelist()
     
     local datd=data
     local esdd=ESDs/
+    local yerd=$year/
     case x$prodpost in 
 	x_*) ;; 
 	x) ;; 
 	*)  mess 3 "Assuming simulation output"
 	    datd=sim 
 	    esdd= 
+	    yerd=
 	    ;; 
     esac
     
@@ -208,7 +210,7 @@ get_filelist()
 	*) post="_${post}" ;; 
     esac
 
-    path=/alice/${datd}/${year}/${prodfull}/
+    path=/alice/${datd}${yerd}/${prodfull}/
     local search="$file"
 
     if test "x$run" != "x" ; then 
@@ -229,7 +231,9 @@ EOF
     mess 1 "Getting list of files from AliEn - can take minutes - be patient"
     mess 2 "alien_find ${path} ${search}"
     files=`alien_find ${path} ${search} | grep -v "files found" 2>> ${redir}` 
+    rm -f .list
     for i in $files ; do 
+	echo $i >> .list 
 	let numf=$numf+1
     done 
     mess 1 -n "Total of $numf files ... "
@@ -251,7 +255,13 @@ fix_perm()
 docheck=1
 check_file()
 {
+    
     if test $docheck -lt 1 ; then return 0; fi 
+    case $1 in 
+	*.root) ;;
+	*.zip) return 0 ;;
+    esac
+	    
     root -l -b  <<EOF >> ${redir} 2>&1 
 .L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/CheckQAFile.C
 CheckQAFile("$1");
@@ -270,14 +280,26 @@ download_file()
     local store=$1 ; shift 
     local r=$1 ; shift 
     local o=${store}/ 
-    o=${o}`basename $file .root`_`printf %04d ${r}`.root 
+    case $file in 
+	*.root)
+	    o=${o}`basename $file .root`_`printf %04d ${r}`.root 
+	    ;;
+	*.zip)
+	    local d=`printf %04d ${r}` 
+	    mkdir -p ${o}/${d}
+	    o=${o}/${d}/${file}
+	    ;;
+    esac
+    printf "%4d/%4d: %20s -> %20s ..." $cur $max $source $o 
 
     mess 2 -n "$source -> $o ... "
     if test -f $o ; then 
-	mess 2 "exists" 
+	printf "exists\n"
+	# mess 2 "exists" 
 	# sleep 1
     else
-	mess 2 -n "copying ... " 
+	printf "copying\n"
+	# mess 2 -n "copying ... " 
 	if test $noact -lt 1 ; then 
 	    alien_cp alien:${source} file:${o} >> ${redir} 2>&1 
 	    fix_perm $o 
@@ -289,14 +311,24 @@ download_file()
     if test $noact -gt 0 ; then return 0 ; fi 
     if test ! -f $o ; then return 1 ; fi 
 	
-    check_file ${o} 
-    local ret=$? 
-    case $ret in 
-	0|2) ;; 
-	1|3|4|5|6) return 2 ;; 
-    esac
 
-    analyse_file ${o}
+    case $o in 
+	*.root) 
+	    check_file ${o} 
+	    local ret=$? 
+	    case $ret in 
+		0|2) ;; 
+		1|3|4|5|6) return 2 ;; 
+	    esac
+	    ;;
+	*.zip)
+	    d=`dirname $o` ;
+	    b=`basename $o` ; 
+	    mess 3 "Unzipping $b in $d"
+	    (cd $d && unzip -n -qq $b)
+	    ;;
+    esac
+    # analyse_file ${o}
 
     return 0
 }
@@ -317,7 +349,6 @@ submit_jobs()
 	local b=`echo $i | sed -e "s,${path},,"` 
 	local r=`echo $b | sed -e "s,/.*,,"` 
 
-	printf "%3d/%3d: %s\n" $cur $max $r 
 
 	let counter=$counter+1
 
@@ -412,7 +443,7 @@ EOF
     fi
     get_job
 else 
-    if test "x$prodfull" = "x" || test "x$passfull" = "x" ; then 
+    if test "x$prodfull" = "x" && test "x$passfull" = "x" ; then 
 	cat<<EOF > /dev/stderr
 When specifying prodcution and/or pass both options -p and -P _must_ 
 be specified. 
@@ -428,7 +459,7 @@ fi
 
 proddir=LHC${prodyear}${prodletter}
 store=${proddir}
-if test ! "x$passno" = "x" ; then 
+if test "x$passfull" != "x" && test $passno -gt 0 ; then 
     store=${store}/pass${passno}
 elif test ! "x$prodpost" = "x" ; then 
     proddir=${proddir}${prodpost}
@@ -469,7 +500,7 @@ EOF
 # --- Do a search to find our files ----------------------------------
 get_filelist
 
-if test $maxf -gt 0 && test $maxf -lt $numf ; then 
+if test $maxf -ge 0 && test $maxf -lt $numf ; then 
     numf=$maxf 
 fi
 
