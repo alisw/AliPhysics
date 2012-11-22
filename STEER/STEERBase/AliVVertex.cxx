@@ -20,6 +20,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliVVertex.h"
+#include "AliVTrack.h"
 
 ClassImp(AliVVertex)
 
@@ -34,4 +35,10 @@ AliVVertex& AliVVertex::operator=(const AliVVertex& vVert)
     }
   
   return *this; 
+}
+
+Int_t AliVVertex::GetBC() const 
+{
+  // get BCID
+  return AliVTrack::kTOFBCNA;
 }

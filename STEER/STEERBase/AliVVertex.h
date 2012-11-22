@@ -34,6 +34,9 @@ public:
   virtual void     PrintIndices() const = 0;
   virtual void     Print(Option_t* option = "") const = 0;
 
+  virtual void     SetBC(Int_t) {}
+  virtual Int_t    GetBC() const;
+
   virtual void Clear(Option_t* option) {TNamed::Clear(option);}
 
 

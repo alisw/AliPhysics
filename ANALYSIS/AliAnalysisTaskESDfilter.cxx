@@ -1895,6 +1895,7 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
   AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
   fPrimaryVertex->SetName(vtx->GetName());
   fPrimaryVertex->SetTitle(vtx->GetTitle());
+  fPrimaryVertex->SetBC(vtx->GetBC());
   
   TString vtitle = vtx->GetTitle();
   if (!vtitle.Contains("VertexerTracks")) 
