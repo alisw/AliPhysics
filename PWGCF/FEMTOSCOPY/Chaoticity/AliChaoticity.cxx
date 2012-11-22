@@ -576,7 +576,9 @@ AliChaoticity::~AliChaoticity()
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSLQW) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSLQW;
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSL) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSL;
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSLQW) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSLQW;
-	      
+	      //
+	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv;
+	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW;
 	    }// term_2
 	  }// SC_2
 	  
@@ -588,8 +590,18 @@ AliChaoticity::~AliChaoticity()
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC3;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC2) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC2;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC0) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC0;
+		//
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC3;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC2) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC2;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC0) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC0;
+		//
 		for(Int_t dt=0; dt<kDENtypes; dt++){
 		  if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNorm;
+		  if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd1TwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd1TwoPartNorm;
+		  if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNorm;
 		}//dt
 		
 	      }// term_3
@@ -670,7 +682,7 @@ void AliChaoticity::ParInit()
     fNormQcutHigh[2] = 1.5;
   }
 
-  fQLowerCut = 0.005;// was 0.002
+  fQLowerCut = 0.002;// was 0.005
   fKupperBound = 1.0;
   //
   // 4x1 (Kt: 0-0.2, 0.2-0.4, 0.4-0.6, 0.6-1.0)
@@ -798,11 +810,12 @@ void AliChaoticity::ParInit()
 
   // Set weights, Coulomb corrections, and Momentum resolution corrections manually if not on LEGO
   if(!fLEGO && !fTabulatePairs) {
-    SetWeightArrays(fLEGO);// Set Weight Array
     SetFSICorrelations(fLEGO);// Read in 2-particle and 3-particle FSI correlations
-    if(!fMCcase) SetMomResCorrections(fLEGO);// Read Momentum resolution file
+    if(!fMCcase) {
+      SetWeightArrays(fLEGO);// Set Weight Array
+      SetMomResCorrections(fLEGO);// Read Momentum resolution file
+    }
   }
-  
 }
 //________________________________________________________________________
 void AliChaoticity::UserCreateOutputObjects()
@@ -886,7 +899,6 @@ void AliChaoticity::UserCreateOutputObjects()
   fOutputList->Add(fKt3Dist);
 
   
-
   if(fPdensityExplicitLoop || fPdensityPairCut){
     
     for(Int_t mb=0; mb<fMbins; mb++){
@@ -925,29 +937,38 @@ void AliChaoticity::UserCreateOutputObjects()
 		if(fMCcase && sc==0){
 		  TString *nameIdeal = new TString(nameEx2->Data());
 		  nameIdeal->Append("_Ideal");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",kDENtypes,-0.5,kDENtypes-0.5, kQbinsWeights,0,fQupperBoundWeights);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",kRVALUES*kNDampValues,-0.5,kRVALUES*kNDampValues-0.5, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal);
 		  TString *nameSmeared = new TString(nameEx2->Data());
 		  nameSmeared->Append("_Smeared");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",kDENtypes,-0.5,kDENtypes-0.5, kQbinsWeights,0,fQupperBoundWeights);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",kRVALUES*kNDampValues,-0.5,kRVALUES*kNDampValues-0.5, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared);
+		  //
+		  TString *nameEx2MC=new TString(nameEx2->Data());
+		  nameEx2MC->Append("_MCqinv");
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv = new TH1D(nameEx2MC->Data(),"",400,0,2);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv);
+		  TString *nameEx2MCQW=new TString(nameEx2->Data());
+		  nameEx2MCQW->Append("_MCqinvQW");
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = new TH1D(nameEx2MCQW->Data(),"",400,0,2);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW);
 		}
-		if(c1==c2 && sc==0){
+		if(sc==0){
 		  
 		  TString *nameEx2OSLB1 = new TString(nameEx2->Data()); 
 		  nameEx2OSLB1->Append("_osl_b1");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSL = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",50,0,.2, 50,0,.2, 50,0,.2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSL = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSL);
 		  nameEx2OSLB1->Append("_QW");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSLQW = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",50,0,.2, 50,0,.2, 50,0,.2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSLQW = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fExplicit2OSLQW);
 		  //
 		  TString *nameEx2OSLB2 = new TString(nameEx2->Data()); 
 		  nameEx2OSLB2->Append("_osl_b2");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSL = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",50,0,.2, 50,0,.2, 50,0,.2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSL = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSL);
 		  nameEx2OSLB2->Append("_QW");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSLQW = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",50,0,.2, 50,0,.2, 50,0,.2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSLQW = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fExplicit2OSLQW);
 		  
 		}
@@ -1022,23 +1043,43 @@ void AliChaoticity::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
+		      const int NEdges=16;
+		      double lowEdges4vect[NEdges]={0};
+		      lowEdges4vect[0]=0.0;
+		      lowEdges4vect[1]=0.0001;// best resolution at low Q^2
+		      for(int edge=2; edge<NEdges; edge++){
+			lowEdges4vect[edge] = lowEdges4vect[edge-1] + lowEdges4vect[1]*(edge);
+		      }
+		      
 		      if(c1==c2 && c1==c3 && sc==0 && fMCcase==kFALSE){
-			TString *name4vectCC3=new TString(namePC3->Data());
-			name4vectCC3->Append("_4VectProdCC3");
+			TString *name4vect1CC3=new TString(namePC3->Data());
+			TString *name4vect2CC3=new TString(namePC3->Data());
+			name4vect1CC3->Append("_4VectProd1CC3");
+			name4vect2CC3->Append("_4VectProd2CC3");
 			// use 3.75e6 MeV^4 as the resolution on QprodSum
-			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC3 = new TH2D(name4vectCC3->Data(),"",200,0,0.0003, 200,0,0.0003);
-			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC3);
+			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC3 = new TH3D(name4vect1CC3->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC3);
+			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC3 = new TH3D(name4vect2CC3->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC3);
 			if(term!=0){
-			  TString *name4vectCC2=new TString(namePC3->Data());
-			  name4vectCC2->Append("_4VectProdCC2");
-			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC2 = new TH2D(name4vectCC2->Data(),"",200,0,0.0003, 200,0,0.0003);
-			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC2);
+			  TString *name4vect1CC2=new TString(namePC3->Data());
+			  TString *name4vect2CC2=new TString(namePC3->Data());
+			  name4vect1CC2->Append("_4VectProd1CC2");
+			  name4vect2CC2->Append("_4VectProd2CC2");
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC2 = new TH3D(name4vect1CC2->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC2);
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC2 = new TH3D(name4vect2CC2->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC2);
 			}
 			if(term==4){
-			  TString *name4vectCC0=new TString(namePC3->Data());
-			  name4vectCC0->Append("_4VectProdCC0");
-			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC0 = new TH2D(name4vectCC0->Data(),"",200,0,0.0003, 200,0,0.0003);
-			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProdTermsCC0);
+			  TString *name4vect1CC0=new TString(namePC3->Data());
+			  TString *name4vect2CC0=new TString(namePC3->Data());
+			  name4vect1CC0->Append("_4VectProd1CC0");
+			  name4vect2CC0->Append("_4VectProd2CC0");
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC0 = new TH3D(name4vect1CC0->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1TermsCC0);
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC0 = new TH3D(name4vect2CC0->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsCC0);
 			}
 		      }
 		      if(sc==0 && fMCcase==kTRUE){
@@ -1077,11 +1118,14 @@ void AliChaoticity::UserCreateOutputObjects()
 			  //Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNormErr = new TH3D(nameDenType->Data(),"",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 			  //fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNormErr);
 			  //
-			  TString *name4vectTPN=new TString(nameDenType->Data());
-			  name4vectTPN->Append("_4VectProd");
-			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProdTwoPartNorm = new TH2D(name4vectTPN->Data(),"",200,0,0.0003, 200,0,0.0003);
-			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProdTwoPartNorm);
-
+			  TString *name4vect1TPN=new TString(nameDenType->Data());
+			  TString *name4vect2TPN=new TString(nameDenType->Data());
+			  name4vect1TPN->Append("_4VectProd1");
+			  name4vect2TPN->Append("_4VectProd2");
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd1TwoPartNorm = new TH3D(name4vect1TPN->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd1TwoPartNorm);
+			  Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNorm = new TH3D(name4vect2TPN->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
+			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNorm);
 			}
 					
 		      }// term=4
@@ -1167,12 +1211,12 @@ void AliChaoticity::Exec(Option_t *)
   // Trigger Cut
   if(fAOD->GetRunNumber() >= 136851 && fAOD->GetRunNumber() <= 139517){// 10h data
   Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-  if(!isSelected1 && !fMCcase) {/*cout<<"Event Rejected"<<endl;*/ return;}
+  if(!isSelected1 && !fMCcase) {return;}
   }else if(fAOD->GetRunNumber() >= 167693 && fAOD->GetRunNumber() <= 170593){// 11h data
     Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
     Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
-    if(!isSelected1 && !isSelected2 && !fMCcase) {/*cout<<"Event Rejected"<<endl;*/ return;}
-  }else {/*cout<<"Event Rejected"<<endl;*/ return;}
+    if(!isSelected1 && !isSelected2 && !fMCcase) {return;}
+  }else {return;}
 
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;
@@ -1377,7 +1421,7 @@ void AliChaoticity::Exec(Option_t *)
 	if(nSigmaTPC[4]<fSigmaCutTPC) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
       }
       
-      
+      //cout<<nSigmaTPC[2]<<endl;
       //////////////////////////////////////
       // Bayesian PIDs for TPC only tracking
       //const Double_t* PID = aodtrack->PID();
@@ -1453,7 +1497,7 @@ void AliChaoticity::Exec(Option_t *)
   // Pion Multiplicity Cut (To ensure all Correlation orders are present in each event)
   if(myTracks < 3) {cout<<"Less than 3 tracks. Skipping Event."<<endl; return;}
   /////////////////////////////////////////
-
+ 
 
   ////////////////////////////////
   ///////////////////////////////
@@ -1482,7 +1526,6 @@ void AliChaoticity::Exec(Option_t *)
   //////////////////////////////////////////////////
   
   
-
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
 
@@ -1674,17 +1717,21 @@ void AliChaoticity::Exec(Option_t *)
 	      }
 	    }
 	    
+	    mcParticle1 = (AliAODMCParticle*)mcArray->At(abs((fEvt)->fTracks[i].fLabel));
+	    mcParticle2 = (AliAODMCParticle*)mcArray->At(abs((fEvt+en2)->fTracks[j].fLabel));
+	    
 	    //HIJING resonance test
 	    if(ch1 != ch2){
-	      mcParticle1 = (AliAODMCParticle*)mcArray->At(abs((fEvt)->fTracks[i].fLabel));
-	      mcParticle2 = (AliAODMCParticle*)mcArray->At(abs((fEvt+en2)->fTracks[j].fLabel));
 	      ((TH1F*)fOutputList->FindObject("fAllOSPairs"))->Fill(fMbin+1, qinv12);
-	      if(abs(mcParticle1->GetPdgCode())==211 && abs(mcParticle2->GetPdgCode())==211){
+	      if(abs(mcParticle1->GetPdgCode())==211 && abs(mcParticle2->GetPdgCode())==211){// Pions
 		if(mcParticle1->GetMother() == mcParticle2->GetMother() && mcParticle1->GetMother() >=0){
 		  ((TH1F*)fOutputList->FindObject("fResonanceOSPairs"))->Fill(fMbin+1, qinv12);
 		}
 	      }
 	    }
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12MC, MCWeight(ch1,ch2,4,5,qinv12MC));
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(ch1,ch2,4,5,qinv12MC));
+	    
 	  }// label check 2
 	}// MC case
 	
@@ -1692,9 +1739,10 @@ void AliChaoticity::Exec(Option_t *)
 	// 2-particle term
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2->Fill(transK12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
-
+	
+	
 	// osl frame
-	if(bin1==bin2 && fillIndex2==0){
+	if(fillIndex2==0){
 	  if((transK12 > 0.2) && (transK12 < 0.3)){  
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fExplicit2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fExplicit2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
@@ -1882,8 +1930,8 @@ void AliChaoticity::Exec(Option_t *)
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
 	
 	// osl frame
-	if(bin1==bin2 && fillIndex2==0){
-	  if((transK12 > 0.2) && (transK12 < 0.3)){  
+	if(fillIndex2==0){
+	  if((transK12 > 0.2) && (transK12 < 0.3)){
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fExplicit2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fExplicit2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
 	  }
@@ -2379,31 +2427,37 @@ void AliChaoticity::Exec(Option_t *)
 	      qinv23Bin = fMomRes3DTerm1->GetZaxis()->FindBin(qinv23);
 	    }
 	    //4-vector product sums
-	    Double_t Qsum = (pVect1[0]-pVect2[0])*(pVect2[1]-pVect3[1]) - (pVect1[1]-pVect2[1])*(pVect2[0]-pVect3[0]);
-	    Qsum += (pVect1[0]-pVect2[0])*(pVect2[2]-pVect3[2]) - (pVect1[2]-pVect2[2])*(pVect2[0]-pVect3[0]);
-	    Qsum += (pVect1[0]-pVect2[0])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[0]-pVect3[0]);
-	    Qsum += (pVect1[1]-pVect2[1])*(pVect2[2]-pVect3[2]) - (pVect1[2]-pVect2[2])*(pVect2[1]-pVect3[1]);
-	    Qsum += (pVect1[1]-pVect2[1])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[1]-pVect3[1]);
-	    Qsum += (pVect1[2]-pVect2[2])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[2]-pVect3[2]);
-	    Qsum *= Qsum;
-	    // 4-vector inner product test
-	    Double_t QsumIn = (pVect1[0]-pVect2[0])*(pVect2[0]-pVect3[0]) - (pVect1[1]-pVect2[1])*(pVect2[1]-pVect3[1]);
-	    QsumIn += -(pVect1[2]-pVect2[2])*(pVect2[2]-pVect3[2]) - (pVect1[3]-pVect2[3])*(pVect2[3]-pVect3[3]);
-	    QsumIn *= QsumIn;
-
+	    Double_t Qsum01v1 = (pVect1[0]-pVect2[0])*(pVect2[1]-pVect3[1]) - (pVect1[1]-pVect2[1])*(pVect2[0]-pVect3[0]);
+	    Qsum01v1 += (pVect1[0]-pVect2[0])*(pVect2[2]-pVect3[2]) - (pVect1[2]-pVect2[2])*(pVect2[0]-pVect3[0]);
+	    Qsum01v1 += (pVect1[0]-pVect2[0])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[0]-pVect3[0]);
+	    Double_t Qsum12 = (pVect1[1]-pVect2[1])*(pVect2[2]-pVect3[2]) - (pVect1[2]-pVect2[2])*(pVect2[1]-pVect3[1]);
+	    Double_t Qsum13v1 = (pVect1[1]-pVect2[1])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[1]-pVect3[1]);
+	    Qsum13v1 += (pVect1[2]-pVect2[2])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[2]-pVect3[2]);
+	    //
+	    Double_t Qsum01v2 = (pVect1[0]-pVect2[0])*(pVect2[1]-pVect3[1]) - (pVect1[1]-pVect2[1])*(pVect2[0]-pVect3[0]);
+	    Qsum01v2 += (pVect1[0]-pVect2[0])*(pVect2[2]-pVect3[2]) - (pVect1[2]-pVect2[2])*(pVect2[0]-pVect3[0]);
+	    Double_t Qsum13v2 = (pVect1[1]-pVect2[1])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[1]-pVect3[1]);
+	    Qsum13v2 += (pVect1[0]-pVect2[0])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[0]-pVect3[0]);
+	    Qsum13v2 += (pVect1[2]-pVect2[2])*(pVect2[3]-pVect3[3]) - (pVect1[3]-pVect2[3])*(pVect2[2]-pVect3[2]);
+	    
+	    	    
+	    
 	    //	    
 	    if(config==1) {// 123
 	      SetFillBins3(fillIndex3, key1, key2, key3, ch1, ch2, ch3, 0, bin1, bin2, bin3, fDummyB, fDummyB, fDummyB);
-	     	      
+	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, 0, 1, firstQ, secondQ, thirdQ);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTerms3->Fill(firstQ, secondQ, thirdQ);
 		((TH2F*)fOutputList->FindObject("fKt3Dist"))->Fill(fMbin+1, transK3);
 		//
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
-		  Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		  Double_t K3 = FSICorrelationOmega0(kTRUE, firstQ, secondQ, thirdQ);// K3
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProdTermsCC3->Fill(Qsum, QsumIn, MomRes3/K3);
+		  if(qinv12>0.005 && qinv13>0.005 && qinv23>0.005){
+		    Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		    Double_t K3 = FSICorrelationOmega0(kTRUE, firstQ, secondQ, thirdQ);// K3
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1TermsCC3->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3/K3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2TermsCC3->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3/K3);
+		  }
 		}		
 		//////////////////////////////////////
 		// Momentum resolution calculation
@@ -2421,8 +2475,8 @@ void AliChaoticity::Exec(Option_t *)
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
 		  }
-		  }// fMCcase
-
+		}// fMCcase
+		
 	      }
 	      
 	    }else if(config==2){// 12, 13, 23
@@ -2440,18 +2494,22 @@ void AliChaoticity::Exec(Option_t *)
 		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, jj, firstQ, secondQ, thirdQ);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTerms3->Fill(firstQ, secondQ, thirdQ);
 		  if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
-		    Float_t InteractingQ=0;
-		    if(part==1) {InteractingQ=qinv12;}// 12 from SE
-		    else {InteractingQ=qinv13;}// 13 from SE
-		    Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		    Double_t K3 = FSICorrelationOmega0(kTRUE, qinv12, qinv13, qinv23);// K3
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProdTermsCC3->Fill(Qsum, QsumIn, MomRes3/K3);
-		    //
-		    if(jj==2) MomRes3 = fMomRes3DTerm2->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		    else if(jj==3) MomRes3 = fMomRes3DTerm3->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		    else MomRes3 = fMomRes3DTerm4->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		    Float_t K2 = FSICorrelation2(+1,+1, kRVALUES-1, InteractingQ);// K2 from Therminator source
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProdTermsCC2->Fill(Qsum, QsumIn, MomRes3/K2);
+		    if(qinv12>0.005 && qinv13>0.005 && qinv23>0.005){
+		      Float_t InteractingQ=0;
+		      if(part==1) {InteractingQ=qinv12;}// 12 from SE
+		      else {InteractingQ=qinv13;}// 13 from SE
+		      Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		      Double_t K3 = FSICorrelationOmega0(kTRUE, qinv12, qinv13, qinv23);// K3
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsCC3->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3/K3);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsCC3->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3/K3);
+		      //
+		      if(jj==2) MomRes3 = fMomRes3DTerm2->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		      else if(jj==3) MomRes3 = fMomRes3DTerm3->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		      else MomRes3 = fMomRes3DTerm4->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		      Float_t K2 = FSICorrelation2(+1,+1, kRVALUES-1, InteractingQ);// K2 from Therminator source
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1TermsCC2->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3/K2);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2TermsCC2->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3/K2);
+		    }
 		  }
 		  //////////////////////////////////////
 		  // Momentum resolution calculation
@@ -2493,16 +2551,21 @@ void AliChaoticity::Exec(Option_t *)
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ, enhancement);
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
-		  Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		  Double_t K3 = FSICorrelationOmega0(kTRUE, firstQ, secondQ, thirdQ);// K3
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProdTermsCC3->Fill(Qsum, QsumIn, MomRes3/K3);
-		  //
-		  MomRes3 = fMomRes3DTerm2->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);// Term2 used but equivalent to 3 and 4
-		  Float_t K2 = FSICorrelation2(+1,+1, kRVALUES-1, firstQ);// firstQ used but any Q can be used here since all are on equal footing.  
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProdTermsCC2->Fill(Qsum, QsumIn, MomRes3/K2);
-		  //
-		  MomRes3 = fMomRes3DTerm5->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProdTermsCC0->Fill(Qsum, QsumIn, MomRes3);// untouched version
+		  if(qinv12>0.005 && qinv13>0.005 && qinv23>0.005){
+		    Float_t MomRes3 = fMomRes3DTerm1->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		    Double_t K3 = FSICorrelationOmega0(kTRUE, firstQ, secondQ, thirdQ);// K3
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd1TermsCC3->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3/K3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd2TermsCC3->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3/K3);
+		    //
+		    MomRes3 = fMomRes3DTerm2->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);// Term2 used but equivalent to 3 and 4
+		    Float_t K2 = FSICorrelation2(+1,+1, kRVALUES-1, firstQ);// firstQ used but any Q can be used here since all are on equal footing.  
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd1TermsCC2->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3/K2);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd2TermsCC2->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3/K2);
+		    //
+		    MomRes3 = fMomRes3DTerm5->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd1TermsCC0->Fill(Qsum01v1, Qsum12, Qsum13v1, MomRes3);// untouched version
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd2TermsCC0->Fill(Qsum01v2, Qsum12, Qsum13v2, MomRes3);// untouched version
+		  }
 		}
 		//////////////////////////////////////
 		// Momentum resolution calculation
@@ -2536,15 +2599,19 @@ void AliChaoticity::Exec(Option_t *)
 	     
 	      	      
 	      // Coul correlations from Wave-functions
-	      for(Int_t rIter=0; rIter<kRVALUES; rIter++){// 3fm to 8fm 
-		for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){// 0.3 to 0.6
-		  Float_t myDamp = fDampStart + (fDampStep)*myDampIt;
-		  Int_t denIndex = rIter*kNDampValues + myDampIt;
-		  Int_t momResIndex = denIndex;
-		  		  
-		  Float_t coulCorr12 = FSICorrelation2(+1,+1, rIter, qinv12);
-		  Float_t coulCorr13 = FSICorrelation2(+1,+1, rIter, qinv13);
-		  Float_t coulCorr23 = FSICorrelation2(+1,+1, rIter, qinv23);
+	      //for(Int_t rIter=0; rIter<kRVALUES; rIter++){// 3fm to 8fm, last value for Therminator 
+	      //for(Int_t myDampIt=0; myDampIt<kNDampValues; myDampIt++){// 0.3 to 0.6
+	      //Float_t myDamp = fDampStart + (fDampStep)*myDampIt;
+	      //Int_t denIndex = (kRVALUES-1)*kNDampValues + myDampIt;
+	      //Int_t denIndex = myDampIt;
+	      Int_t myDampIt = 5;
+	      Float_t myDamp = 0.4;
+	      Int_t denIndex = 0;
+	      Int_t momResIndex = 4*kNDampValues + myDampIt;// Therminator slot uses R=7 for momentum resolution
+
+		  Float_t coulCorr12 = FSICorrelation2(+1,+1, kRVALUES-1, qinv12);
+		  Float_t coulCorr13 = FSICorrelation2(+1,+1, kRVALUES-1, qinv13);
+		  Float_t coulCorr23 = FSICorrelation2(+1,+1, kRVALUES-1, qinv23);
 		  Int_t momBin12 = fMomResC2->GetYaxis()->FindBin(qinv12);
 		  Int_t momBin13 = fMomResC2->GetYaxis()->FindBin(qinv13);
 		  Int_t momBin23 = fMomResC2->GetYaxis()->FindBin(qinv23);
@@ -2570,10 +2637,11 @@ void AliChaoticity::Exec(Option_t *)
 		  
 		  weightTotal = sqrt(weight12CC*weight13CC*weight23CC);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].fTwoPartNorm->Fill(qinv12, qinv13, qinv23, enhancement*weightTotal);
-		  weightTotal *= fMomRes3DTerm5->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProdTwoPartNorm->Fill(Qsum, QsumIn, enhancement*weightTotal);
-  		  
-		 
+		  if(qinv12>0.005 && qinv13>0.005 && qinv23>0.005){
+		    weightTotal *= fMomRes3DTerm5->GetBinContent(qinv12Bin, qinv13Bin, qinv23Bin);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum01v1, Qsum12, Qsum13v1, enhancement*weightTotal);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum01v2, Qsum12, Qsum13v2, enhancement*weightTotal);
+		  }
 		  // Save cpu time and memory by skipping r3 denominator calculation below.  den errors are negligible compared to num errors.
 		  /*
 		    if(weightTotal > 0.0001){// tiny numbers cause a Float_ting point exception below
@@ -2586,8 +2654,8 @@ void AliChaoticity::Exec(Option_t *)
 		    }
 		  */
   		  
-		}// damp iter
-	      }// R iter
+		  //}// damp iter
+		//}// R iter
 	    
 	      
 	      
@@ -2596,14 +2664,13 @@ void AliChaoticity::Exec(Option_t *)
 	}// en2
 	
 	
-      }
-    }
+      }// p1
+    }//en1
     
-  
     ///////////////////
   }// end of PdensityPairs
   
-   
+  
  
     
    
@@ -3371,7 +3438,7 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, 
 Float_t AliChaoticity::MCWeight(Int_t charge1, Int_t charge2, Int_t rIndex, Int_t dampIndex, Float_t qinv){
   
   Float_t radius = Float_t(rIndex+3.)/0.19733;// convert to GeV
-  if(rIndex==kRVALUES-1) radius = 6.0/0.19733;// Therminator default radius
+  if(rIndex==kRVALUES-1) radius = 8.0/0.19733;// Therminator default radius
   Float_t myDamp = fDampStart + (fDampStep)*dampIndex;
   Float_t coulCorr12 = FSICorrelation2(charge1, charge2, rIndex, qinv);
   if(charge1==charge2){
@@ -3385,7 +3452,7 @@ Float_t AliChaoticity::MCWeight(Int_t charge1, Int_t charge2, Int_t rIndex, Int_
 Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t rIndex, Int_t dampIndex, Float_t q12, Float_t q13, Float_t q23){
   if(term==5) return 1.0;
   
-  Float_t radius = (3. + rIndex)/0.19733;//starts at 5fm. convert to GeV
+  Float_t radius = (3. + rIndex)/0.19733;//starts at 3fm. convert to GeV
   Float_t myDamp = fDampStart + (fDampStep)*dampIndex;
   Float_t fc = sqrt(myDamp);
   if(SameCharge){// all three of the same charge
@@ -3430,14 +3497,6 @@ Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t rIndex, I
       return ((1-myDamp) + myDamp*coulCorr23);
     }else return 1.0;
   }
-  
-}
-//________________________________________________________________________
-Float_t AliChaoticity::MCWeightOSL(Float_t radius, Float_t myDamp, Float_t Q_out, Float_t Q_side, Float_t Q_long, Float_t qinv){
-  Int_t rIndex = Int_t(radius+0.001-3);
-  Float_t coulCorr12 = FSICorrelation2(+1,+1, rIndex, qinv);
-  
-  return ((1-myDamp) + myDamp*(1 + exp(-pow(radius/0.19733,2)*(Q_out*Q_out+Q_side*Q_side+Q_long*Q_long)))*coulCorr12);
   
 }
 //________________________________________________________________________
