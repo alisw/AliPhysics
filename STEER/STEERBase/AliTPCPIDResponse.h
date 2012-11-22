@@ -126,8 +126,8 @@ public:
                                AliPID::EParticleType species,
                                ETPCdEdxSource dedxSource,
                                Double_t& dEdx, Int_t& nPoints, ETPCgainScenario& gainScenario, TSpline3** responseFunction) const;
-  Bool_t sectorNumbersInOut(const AliVTrack* track, 
-                            Double_t innerRadius, Double_t outerRadius, 
+  Bool_t sectorNumbersInOut(Double_t* trackPositionInner,
+                            Double_t* trackPositionOuter,
                             Float_t& phiIn, Float_t& phiOut, 
                             Int_t& in, Int_t& out ) const;
   AliTPCPIDResponse::EChamberStatus TrackStatus(const AliVTrack* track, Int_t layer) const;

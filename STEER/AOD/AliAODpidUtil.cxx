@@ -44,8 +44,6 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
     Float_t dedx = track->GetTPCsignalTunedOnData();
     if(dedx > 0) return dedx;
 
-    Double_t mom = t->GetTPCmomentum();
-
     dedx = t->GetTPCsignal();
     track->SetTPCsignalTunedOnData(dedx);
 
@@ -92,10 +90,11 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 	    kGood = kFALSE;
 
 	if(kGood){
-	    Double_t bethe=fTPCResponse.GetExpectedSignal(mom,type);
-	    Double_t sigma=fTPCResponse.GetExpectedSigma(mom,t->GetTPCsignalN(),type);
-	    dedx = gRandom->Gaus(bethe,sigma);
-
+	    //TODO maybe introduce different dEdxSources?
+        Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
+        Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection());
+        dedx = gRandom->Gaus(bethe,sigma);
+        
 	    if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
 	}
 

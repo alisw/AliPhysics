@@ -718,7 +718,7 @@ void AliPIDResponse::SetRecoInfo()
   if (fRun >= 186636  ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
 
   //exception new pp MC productions from 2011
-  if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11B2";
+  if ( (fBeamType=="PP" || fBeamType=="PPB") && reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11B2";
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
 }
@@ -780,7 +780,7 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
       Double_t centerX = hRefined->GetXaxis()->GetBinCenter(binX);
       Double_t centerY = hRefined->GetYaxis()->GetBinCenter(binY);
       
-      /*TODO NOW NOW
+      /*
       linExtrapolation->ClearPoints();
       
       // For interpolation: Just take the corresponding bin from the old histo.
@@ -847,7 +847,7 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
       Double_t interpolatedValue = linExtrapolation->GetParameter(0) + linExtrapolation->GetParameter(1) * centerX
                                  + linExtrapolation->GetParameter(2) * centerY;
       */
-      Double_t interpolatedValue = h->Interpolate(centerX, centerY) ;//TODO NOW NOW NOW
+      Double_t interpolatedValue = h->Interpolate(centerX, centerY) ;
       hRefined->SetBinContent(binX, binY, interpolatedValue);      
     }
   } 
@@ -865,48 +865,54 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   // Load the TPC eta correction maps from the OADB
   //
   
-  TString dataType = "DATA";
-  TString period = fLHCperiod.IsNull() ? "No period information" : fLHCperiod;
-  
-  if (fIsMC)  {
-    dataType = "MC";
-    fRecoPass = 1;
-    
-    if (fMCperiodTPC.IsNull()) {
-      AliFatal("MC detected, but no MC period set -> Not changing eta maps!");
-      return;
-    }
-  
-    period = fMCperiodTPC;
-  }
-  
-  TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), fRecoPass);
-  
-  AliInfo(Form("Current period and reco pass: %s.pass%d", period.Data(), fRecoPass));
   if (fUseTPCEtaCorrection == kFALSE) {
     // Disable eta correction via setting no maps
     if (!fTPCResponse.SetEtaCorrMap(0x0))
-      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled"); 
+      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled");
     else
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the correction maps");
     
     if (!fTPCResponse.SetSigmaParams(0x0, 0))
-      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma"); 
-    else
+      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma");
+    else  
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the sigma maps");
     
     return;
   }
+
+  TString dataType = "DATA";
+  TString period = fLHCperiod.IsNull() ? "No period information" : fLHCperiod;
+  
+  if (fIsMC)  {
+    if (!fTuneMConData) {
+      period=fMCperiodTPC;
+      dataType="MC";
+    }
+    fRecoPass = 1;
+    
+    if (!fTuneMConData && fMCperiodTPC.IsNull()) {
+      AliFatal("MC detected, but no MC period set -> Not changing eta maps!");
+      return;
+    }
+  }
+
+  Int_t recopass = fRecoPass;
+  if (fTuneMConData)
+    recopass = fRecoPassUser;
+  
+  TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), recopass);
+  
+  AliInfo(Form("Current period and reco pass: %s.pass%d", period.Data(), recopass));
   
   // Invalidate old maps
   fTPCResponse.SetEtaCorrMap(0x0);
   fTPCResponse.SetSigmaParams(0x0, 0);
   
   // Load the eta correction maps
-  AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), fRecoPass)); 
+  AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
   Int_t statusCont = etaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                              Form("TPCetaMaps_%s_pass%d", dataType.Data(), fRecoPass));
+                                              Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
   }
@@ -915,8 +921,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     
     TH2D* etaMap = 0x0;
     
-    if (fIsMC) {
-      TString searchMap = Form("TPCetaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), fRecoPass);
+    if (fIsMC && !fTuneMConData) {
+      TString searchMap = Form("TPCetaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaMap = dynamic_cast<TH2D *>(etaMapsCont.GetDefaultObject(searchMap.Data()));
       if (!etaMap) {
         // Try default object
@@ -953,10 +959,10 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   }
   
   // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
-  AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), fRecoPass)); 
+  AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
   statusCont = etaSigmaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                             Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), fRecoPass));
+                                             Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta sigma maps from OADB -> Using old sigma parametrisation");
   }
@@ -965,8 +971,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     
     TObjArray* etaSigmaPars = 0x0;
     
-    if (fIsMC) {
-      TString searchMap = Form("TPCetaSigmaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), fRecoPass);
+    if (fIsMC && !fTuneMConData) {
+      TString searchMap = Form("TPCetaSigmaMaps_%s_%s_pass%d", dataType.Data(), period.Data(), recopass);
       etaSigmaPars = dynamic_cast<TObjArray *>(etaSigmaMapsCont.GetDefaultObject(searchMap.Data()));
       if (!etaSigmaPars) {
         // Try default object
@@ -1096,21 +1102,22 @@ void AliPIDResponse::SetTPCParametrisation()
   TString period=fLHCperiod;
   if (fIsMC && !fTuneMConData) period=fMCperiodTPC;
 
-  AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+  Int_t recopass = fRecoPass;
+  if(fTuneMConData) recopass = fRecoPassUser;
+    
+  AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   Bool_t found=kFALSE;
   //
   //set the new PID splines
   //
   if (fArrPidResponseMaster){
-    Int_t recopass = fRecoPass;
-    if(fTuneMConData) recopass = fRecoPassUser;
     //for MC don't use period information
     //if (fIsMC) period="[A-Z0-9]*";
     //for MC use MC period information
     //pattern for the default entry (valid for all particles)
     TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN(_*)([A-Z1-9]*)",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
 
-    //find particle id ang gain scenario
+    //find particle id and gain scenario
     for (Int_t igainScenario=0; igainScenario<AliTPCPIDResponse::fgkNumberOfGainScenarios; igainScenario++)
     {
       TObject *grAll=NULL;
@@ -1177,7 +1184,7 @@ void AliPIDResponse::SetTPCParametrisation()
   else AliInfo("no fArrPidResponseMaster");
 
   if (!found){
-    AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+    AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   }
 
   //
@@ -1197,7 +1204,7 @@ void AliPIDResponse::SetTPCParametrisation()
   }
   
   if (fArrPidResponseMaster)
-  fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+  fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
 
@@ -1736,18 +1743,10 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   
   Double_t nSigma = -999.;
   
-  //TODO: TPCsignalTunedOnData not taken into account for the new TPCPIDresponse functions, so take the old functions
-  if (fTuneMConData) {
-    Double_t mom  = track->GetTPCmomentum();
-    Double_t sig  = this->GetTPCsignalTunedOnData(track);
-    UInt_t   sigN = track->GetTPCsignalN();
+  if (fTuneMConData)
+    this->GetTPCsignalTunedOnData(track);
   
-    if (sigN>0)
-      nSigma = fTPCResponse.GetNumberOfSigmas(mom, sig, sigN, type);
-  }
-  else {
-    nSigma = fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
-  }
+  nSigma = fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
   
   return nSigma;
 }
@@ -1910,16 +1909,9 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     
-    //TODO: TPCsignalTunedOnData not taken into account for the new TPCPIDresponse functions, so take the old functions
-    if (fTuneMConData) {
-      Double_t mom = track->GetTPCmomentum();
-      bethe=fTPCResponse.GetExpectedSignal(mom,type);
-      sigma=fTPCResponse.GetExpectedSigma(mom,track->GetTPCsignalN(),type);
-    }
-    else {
-      bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
-      sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
-    }
+    bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+    sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
+    
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
     } else {

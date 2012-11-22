@@ -188,12 +188,14 @@ AliTPCPIDResponse& AliTPCPIDResponse::operator=(const AliTPCPIDResponse& that)
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=that.fRes0[i];fResN2[i]=that.fResN2[i];}
 
   delete fhEtaCorr;
+  fhEtaCorr=0x0;
   if (that.fhEtaCorr){
     fhEtaCorr = new TH2D(*(that.fhEtaCorr));
     fhEtaCorr->SetDirectory(0);
   }
   
   delete fhEtaSigmaPar1;
+  fhEtaSigmaPar1=0x0;
   if (that.fhEtaSigmaPar1){
     fhEtaSigmaPar1 = new TH2D(*(that.fhEtaSigmaPar1));
     fhEtaSigmaPar1->SetDirectory(0);
@@ -534,7 +536,10 @@ Float_t AliTPCPIDResponse::GetNumberOfSigmas(const AliVTrack* track,
 Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track, 
                                                  AliPID::EParticleType species,
                                                  ETPCdEdxSource dedxSource,
-                                                 Double_t& dEdx, Int_t& nPoints, ETPCgainScenario& gainScenario, TSpline3** responseFunction) const 
+                                                 Double_t& dEdx, 
+                                                 Int_t& nPoints, 
+                                                 ETPCgainScenario& gainScenario, 
+                                                 TSpline3** responseFunction) const 
 {
   // Calculates the right parameters for PID
   //   dEdx parametrization for the proper gain scenario, dEdx 
@@ -547,7 +552,14 @@ Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track,
   if (dedxSource == kdEdxDefault) {
     // Fast handling for default case. In addition: Keep it simple (don't call additional functions) to
     // avoid possible bugs
-    dEdx = track->GetTPCsignal();
+    
+    // GetTPCsignalTunedOnData will be non-positive, if it has not been set (i.e. in case of MC NOT tuned to data).
+    // If this is the case, just take the normal signal
+    dEdx = track->GetTPCsignalTunedOnData();
+    if (dEdx <= 0) {
+      dEdx = track->GetTPCsignal();
+    }
+    
     nPoints = track->GetTPCsignalN();
     gainScenario = kDefault;
     
@@ -557,6 +569,7 @@ Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track,
     return kTRUE;
   }
   
+  //TODO Proper handle of tuneMConData for other dEdx sources
   
   Double32_t signal[4]; //0: IROC, 1: OROC medium, 2:OROC long, 3: OROC all (def. truncation used)
   Char_t ncl[3];        //same
@@ -572,8 +585,8 @@ Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track,
   if (dEdxInfo) dEdxInfo->GetTPCSignalRegionInfo(signal,ncl,nrows);
 
   //check if we cross a bad OROC in which case we reject
-  EChamberStatus trackStatus = TrackStatus(track,2);
-  if (trackStatus==kChamberOff || trackStatus==kChamberLowGain)
+  EChamberStatus trackOROCStatus = TrackStatus(track,2);
+  if (trackOROCStatus==kChamberOff || trackOROCStatus==kChamberLowGain)
   {
     return kFALSE;
   }
@@ -582,6 +595,7 @@ Bool_t AliTPCPIDResponse::ResponseFunctiondEdxN( const AliVTrack* track,
   {
     case kdEdxOROC:
       {
+        if (trackOROCStatus==kChamberInvalid) return kFALSE; //never reached OROC
         dEdx = signal[3];
         nPoints = ncl[2]+ncl[1];
         gainScenario = kOROChigh;
@@ -852,63 +866,16 @@ Bool_t AliTPCPIDResponse::SetSigmaParams(TH2D* hSigmaPar1Map, Double_t sigmaPar0
 
 
 //_________________________________________________________________________
-Bool_t AliTPCPIDResponse::sectorNumbersInOut(const AliVTrack* track,
-                                             Double_t innerRadius,
-                                             Double_t outerRadius,
-                                             Float_t& inphi, 
+Bool_t AliTPCPIDResponse::sectorNumbersInOut(Double_t* trackPositionInner,
+                                             Double_t* trackPositionOuter,
+                                             Float_t& inphi,
                                              Float_t& outphi,
-                                             Int_t& in, 
-                                             Int_t& out ) const
+                                             Int_t& in,
+                                                                                                                                                                                                                                     Int_t& out ) const
 {
   //calculate the sector numbers (equivalent to IROC chamber numbers) a track crosses
   //for OROC chamber numbers add 36
   //returned angles are between (0,2pi)
-  
-  Double_t trackPositionInner[3]; 
-  Double_t trackPositionOuter[3]; 
-
-  Bool_t trackAtInner=kTRUE;
-  Bool_t trackAtOuter=kTRUE;
-  const AliExternalTrackParam* ip = track->GetInnerParam();
-  
-  //if there is no inner param this could mean we're using the AOD track,
-  //we still can extrapolate from the vertex - so use those params.
-  if (ip) track=ip;
-
-  if (!track->GetXYZAt(innerRadius, fMagField, trackPositionInner))
-    trackAtInner=kFALSE;
-
-  if (!track->GetXYZAt(outerRadius, fMagField, trackPositionOuter))
-    trackAtOuter=kFALSE;
-
-  if (!trackAtInner)
-  {
-    //if we dont even enter inner radius we do nothing
-    inphi=0.0;
-    outphi=0.0;
-    in=0;
-    out=0;
-    return kFALSE;
-  }
-
-  if (!trackAtOuter)
-  {
-    //if we don't reach the outer radius check that the apex is indeed within the outer radius and use apex position
-    Bool_t haveApex = TrackApex(track, fMagField, trackPositionOuter);
-    Float_t apexRadius = TMath::Sqrt(trackPositionOuter[0]*trackPositionOuter[0]+trackPositionOuter[1]*trackPositionOuter[1]);
-    if ( haveApex && apexRadius<=outerRadius && apexRadius>innerRadius)
-    {
-      //printf("pt: %.2f, apexRadius: %.2f(%s), x: %.2f, y: %.2f\n",track->Pt(),apexRadius,(haveApex)?"OK":"BAD",trackPositionOuter[0],trackPositionOuter[1]);
-    }
-    else
-    {
-      inphi=0.0;
-      outphi=0.0;
-      in=0;
-      out=0;
-      return kFALSE;
-    }
-  }
 
   inphi = TMath::ATan2(trackPositionInner[1],trackPositionInner[0]);
   outphi = TMath::ATan2(trackPositionOuter[1], trackPositionOuter[0]);
@@ -927,7 +894,8 @@ Bool_t AliTPCPIDResponse::sectorNumbersInOut(const AliVTrack* track,
   }
   return kTRUE;
 }
-
+    
+    
 //_____________________________________________________________________________
 Int_t AliTPCPIDResponse::sectorNumber(Double_t phi) const
 {
@@ -955,14 +923,62 @@ AliTPCPIDResponse::EChamberStatus AliTPCPIDResponse::TrackStatus(const AliVTrack
   Float_t outphi=0.;
   Float_t innerRadius = (layer==1)?83.0:133.7;
   Float_t outerRadius = (layer==1)?133.5:247.7;
-  if (!sectorNumbersInOut(track, 
-                          innerRadius, 
-                          outerRadius, 
+
+  /////////////////////////////////////////////////////////////////////////////
+  //find out where track enters and leaves the layer.
+  //
+  Double_t trackPositionInner[3]; 
+  Double_t trackPositionOuter[3]; 
+  
+  //if there is no inner param this could mean we're using the AOD track,
+  //we still can extrapolate from the vertex - so use those params.
+  const AliExternalTrackParam* ip = track->GetInnerParam();
+  if (ip) track=ip;
+
+  Bool_t trackAtInner = track->GetXYZAt(innerRadius, fMagField, trackPositionInner);
+  Bool_t trackAtOuter = track->GetXYZAt(outerRadius, fMagField, trackPositionOuter);
+
+  if (!trackAtInner)
+  {
+    //if we dont even enter inner radius we do nothing and return invalid
+    inphi=0.0;
+    outphi=0.0;
+    in=0;
+    out=0;
+    return kChamberInvalid;
+  }
+
+  if (!trackAtOuter)
+  {
+    //if we don't reach the outer radius check that the apex is indeed within the outer radius and use apex position
+    Bool_t haveApex = TrackApex(track, fMagField, trackPositionOuter);
+    Float_t apexRadius = TMath::Sqrt(trackPositionOuter[0]*trackPositionOuter[0]+trackPositionOuter[1]*trackPositionOuter[1]);
+    if ( haveApex && apexRadius<=outerRadius && apexRadius>innerRadius)
+    {
+      //printf("pt: %.2f, apexRadius: %.2f(%s), x: %.2f, y: %.2f\n",track->Pt(),apexRadius,(haveApex)?"OK":"BAD",trackPositionOuter[0],trackPositionOuter[1]);
+    }
+    else
+    {
+      inphi=0.0;
+      outphi=0.0;
+      in=0;
+      out=0;
+      return kChamberInvalid;
+    }
+  }
+
+
+  if (!sectorNumbersInOut(trackPositionInner, 
+                          trackPositionOuter, 
                           inphi, 
                           outphi, 
                           in, 
-                          out)) return kChamberOff;
+                          out)) return kChamberInvalid;
 
+  /////////////////////////////////////////////////////////////////////////////
+  //now we have the location of the track we can check 
+  //if it is in a good/bad chamber
+  //
   Bool_t sideA = kTRUE;
   
   if (((in/18)%2==1) && ((out/18)%2==1)) sideA=kFALSE;
@@ -1000,6 +1016,7 @@ AliTPCPIDResponse::EChamberStatus AliTPCPIDResponse::TrackStatus(const AliVTrack
   Float_t trackLengthInBad = 0.;
   Float_t trackLengthInLowGain = 0.;
   Float_t trackLengthTotal = TMath::Abs(outphi-inphi);
+  Float_t lengthFractionInBadSectors = 0.;
 
   const Float_t sectorWidth = TMath::TwoPi()/18.;  
   
@@ -1016,12 +1033,21 @@ AliTPCPIDResponse::EChamberStatus AliTPCPIDResponse::TrackStatus(const AliVTrack
     else {deltaPhi=sectorWidth;}
     
     Float_t v = fVoltageMap[(layer==1)?(j):(j+36)];
-    if (v<=fBadIROCthreshhold) trackLengthInBad+=deltaPhi;
-    if (v<=fLowGainIROCthreshold && v>fBadIROCthreshhold) trackLengthInLowGain+=deltaPhi;
+    if (v<=fBadIROCthreshhold) 
+    { 
+      trackLengthInBad+=deltaPhi; 
+      lengthFractionInBadSectors=1.;
+    }
+    if (v<=fLowGainIROCthreshold && v>fBadIROCthreshhold) 
+    {
+      trackLengthInLowGain+=deltaPhi;
+      lengthFractionInBadSectors=1.;
+    }
   }
 
   //for now low gain and bad (off) chambers are treated equally
-  Float_t lengthFractionInBadSectors = (trackLengthInLowGain+trackLengthInBad)/trackLengthTotal;
+  if (trackLengthTotal>0)
+    lengthFractionInBadSectors = (trackLengthInLowGain+trackLengthInBad)/trackLengthTotal;
 
   //printf("### side: %s, pt: %.2f, pz: %.2f, in: %i, out: %i, phiIN: %.2f, phiOUT: %.2f, rIN: %.2f, rOUT: %.2f\n",(sideA)?"A":"C",track->Pt(),track->Pz(),in,out,inphi,outphi,innerRadius,outerRadius);
   
