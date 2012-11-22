@@ -164,6 +164,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *HphopTcheck; 
  TH1D                   *fpTCheck; 
  TH2D                   *fMomDtoE; 
+ TH2D                   *fLabelCheck;
+ TH2D                   *fgeoFake;
  
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented

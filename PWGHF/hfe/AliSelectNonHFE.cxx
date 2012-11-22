@@ -33,6 +33,8 @@
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliPIDResponse.h"
+#include "AliPID.h"
 
 #include "AliSelectNonHFE.h"
 #include "AliKFParticle.h"
@@ -49,8 +51,10 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
   ,fAlgorithm("MA")
   ,fAngleCut(999)
   ,fdcaCut(999)
-  ,fdEdxMin(62)
-  ,fdEdxMax(100)
+  ,fTPCnSigmaMin(-3)
+  ,fTPCnSigmaMax(3)
+  ,fTOFnSigmaMin(-3)
+  ,fTOFnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
   ,fIsLS(kFALSE)
@@ -65,6 +69,7 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
   ,fHistDCABack(0)
   ,fHistAngle(0)
   ,fHistAngleBack(0)
+  ,fPIDResponse(0)
 {
   //
   // Constructor
@@ -90,8 +95,10 @@ AliSelectNonHFE::AliSelectNonHFE()
   ,fAlgorithm("MA")
   ,fAngleCut(999)
   ,fdcaCut(999)
-  ,fdEdxMin(62)
-  ,fdEdxMax(100)
+  ,fTPCnSigmaMin(-3)
+  ,fTPCnSigmaMax(3)
+  ,fTOFnSigmaMin(-3)
+  ,fTOFnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
   ,fIsLS(kFALSE)
@@ -106,6 +113,7 @@ AliSelectNonHFE::AliSelectNonHFE()
   ,fHistDCABack(0)
   ,fHistAngle(0)
   ,fHistAngleBack(0)
+  ,fPIDResponse(0)
 {
   //
   // Constructor
@@ -173,8 +181,10 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent
 	}
       
       //Second track cuts
-      Double_t dEdx2 = track2->GetTPCsignal();
-      if(dEdx2<fdEdxMin || dEdx2>fdEdxMax) continue;
+      Double_t tpcNsigma2 = fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron);
+      Double_t tofNsigma2 = fPIDResponse->NumberOfSigmasTOF(track2,AliPID::kElectron);
+      if(tpcNsigma2<fTPCnSigmaMin || tpcNsigma2>fTPCnSigmaMax) continue;
+      if(tofNsigma2<fTOFnSigmaMin || tofNsigma2>fTOFnSigmaMax) continue;
       if(!fTrackCuts->AcceptTrack(track2)) continue;
       
       if(fAlgorithm=="MA")
