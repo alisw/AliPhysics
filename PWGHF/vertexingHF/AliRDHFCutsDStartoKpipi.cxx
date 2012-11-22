@@ -48,7 +48,8 @@ ClassImp(AliRDHFCutsDStartoKpipi)
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) : 
   AliRDHFCuts(name),
   fTrackCutsSoftPi(0),
-  fMaxPtPid(9999.)
+  fMaxPtPid(9999.),
+  fTPCflag(999.)
 {
   //
   // Default Constructor
@@ -116,7 +117,8 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &source) :
   AliRDHFCuts(source),
   fTrackCutsSoftPi(0),
-  fMaxPtPid(9999.)
+  fMaxPtPid(9999.),
+  fTPCflag(999.)
 {
   //
   // Copy constructor
@@ -523,6 +525,13 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
 	if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
       }
     }
+
+    //--------------------------------
+    // cut on high momentum in the TPC
+    //--------------------------------
+    Double_t pPIDcut = track->P();
+    if(pPIDcut>fTPCflag) isTPC=1;
+    
     isParticle = isTPC&&isTOF;
   }
   
@@ -541,6 +550,7 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
     isParticle = Bool_t(k==type);
   }
   
+
   return isParticle;
   
 }
