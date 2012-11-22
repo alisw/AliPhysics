@@ -153,6 +153,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiPhoton  ;               //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5
   TH2F * fhEtaPhi05Photon  ;             //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5
   
+  
+  
   //Shower shape
   TH2F * fhNLocMax;                       //! number of maxima in selected clusters
 
@@ -306,7 +308,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
   TH2F * fhClusterMultSPDPileUp[4];             //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, pile up event
   TH2F * fhClusterMultNoPileUp[4];              //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, not pile up event
-  
+  TH2F * fhEtaPhiBC0;                           //! eta/phi of clusters in BC=0
+  TH2F * fhEtaPhiBCPlus;                        //! eta/phi of clusters in BC>0
+  TH2F * fhEtaPhiBCMinus;                       //! eta/phi of clusters in BC<0
+  TH2F * fhEtaPhiBC0PileUpSPD;                  //! eta/phi of clusters in BC=0, SPD pile-up
+  TH2F * fhEtaPhiBCPlusPileUpSPD;               //! eta/phi of clusters in BC>0, SPD pile-up
+  TH2F * fhEtaPhiBCMinusPileUpSPD;              //! eta/phi of clusters in BC<0, SPD pile-up
+
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   

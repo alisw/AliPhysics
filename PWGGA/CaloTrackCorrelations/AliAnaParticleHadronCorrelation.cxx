@@ -101,10 +101,14 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
     //Pile-Up
     fhDeltaPhiChargedPileUp(),      fhDeltaEtaChargedPileUp(),
-    fhXEChargedPileUp(),            fhXEUeChargedPileUp(),      
+    fhDeltaPhiChargedPtA3GeVPileUp(), fhDeltaEtaChargedPtA3GeVPileUp(),
+    fhXEChargedPileUp(),            fhXEUeChargedPileUp(),
     fhZTChargedPileUp(),            fhZTUeChargedPileUp(), 
     fhPtTrigChargedPileUp(),
-    fhDeltaPhiChargedPtA3GeVPileUp(), fhDeltaEtaChargedPtA3GeVPileUp(),
+    fhDeltaPhiChargedOtherBC(),     fhDeltaPhiChargedPtA3GeVOtherBC(),
+    fhXEChargedOtherBC(),           fhXEUeChargedOtherBC(),
+    fhZTChargedOtherBC(),           fhZTUeChargedOtherBC(),
+    fhPtTrigChargedOtherBC(),
     fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
     fhDeltaPhiUeLeftUpCharged(0),   fhDeltaPhiUeRightUpCharged(0),
     fhDeltaPhiUeLeftDownCharged(0), fhDeltaPhiUeRightDownCharged(0),
@@ -235,11 +239,11 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 }
 
 //______________________________________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   bin,
-                                                                              const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
+void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,      const Int_t   bin,
+                                                                              const Float_t phiAssoc, const Float_t phiTrig,     Float_t &     deltaPhi,
                                                                               const Float_t etaAssoc, const Float_t etaTrig,  
-                                                                              const Bool_t  decay,    const Float_t hmpidSignal, const Int_t nTracks,
-                                                                              const Int_t   mcTag)
+                                                                              const Bool_t  decay,    const Float_t hmpidSignal, const Bool_t  outTOF,
+                                                                              const Int_t nTracks,       const Int_t   mcTag)
 {
   // Fill angular correlation related histograms
   
@@ -268,6 +272,12 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
   
   if(fFillPileUpHistograms)
   {
+    if(outTOF)
+    {
+       fhDeltaPhiChargedOtherBC->Fill(ptTrig ,deltaPhi) ;
+      if(ptAssoc > 3 ) fhDeltaPhiChargedPtA3GeVOtherBC->Fill(ptTrig ,deltaPhi) ;
+    }
+    
     if(GetReader()->IsPileUpFromSPD())               { fhDeltaEtaChargedPileUp[0]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[0]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromEMCal())             { fhDeltaEtaChargedPileUp[1]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[1]->Fill(ptTrig ,deltaPhi) ; }
     if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhDeltaEtaChargedPileUp[2]->Fill(ptTrig ,deltaEta) ; fhDeltaPhiChargedPileUp[2]->Fill(ptTrig ,deltaPhi) ; }
@@ -449,7 +459,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
                                                                              const Float_t pout,
                                                                              const Int_t   nTracks,  const Int_t   charge,
                                                                              const Int_t   bin,      const Bool_t  decay,
-                                                                             const Int_t   mcTag)
+                                                                             const Bool_t outTOF,    const Int_t   mcTag)
 
 {
   // Fill mostly momentum imbalance related histograms
@@ -464,13 +474,20 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
   // Pile up studies
   if(fFillPileUpHistograms) 
   {
-    if(GetReader()->IsPileUpFromSPD())                { fhXEChargedPileUp[0]->Fill(ptTrig ,xE); fhZTChargedPileUp[0]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromEMCal())              { fhXEChargedPileUp[1]->Fill(ptTrig ,xE); fhZTChargedPileUp[1]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[1]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhXEChargedPileUp[2]->Fill(ptTrig ,xE); fhZTChargedPileUp[2]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[2]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhXEChargedPileUp[3]->Fill(ptTrig ,xE); fhZTChargedPileUp[3]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[3]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhXEChargedPileUp[4]->Fill(ptTrig ,xE); fhZTChargedPileUp[4]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[4]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig ,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[5]->Fill(ptTrig,ptAssoc); }
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig ,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT);fhPtTrigChargedPileUp[6]->Fill(ptTrig,ptAssoc); }
+    if(outTOF)
+    {
+      fhXEChargedOtherBC    ->Fill(ptTrig,xE);
+      fhZTChargedOtherBC    ->Fill(ptTrig,zT);
+      fhPtTrigChargedOtherBC->Fill(ptTrig,ptAssoc);
+    }
+    
+    if(GetReader()->IsPileUpFromSPD())                { fhXEChargedPileUp[0]->Fill(ptTrig,xE); fhZTChargedPileUp[0]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[0]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromEMCal())              { fhXEChargedPileUp[1]->Fill(ptTrig,xE); fhZTChargedPileUp[1]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[1]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhXEChargedPileUp[2]->Fill(ptTrig,xE); fhZTChargedPileUp[2]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[2]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhXEChargedPileUp[3]->Fill(ptTrig,xE); fhZTChargedPileUp[3]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[3]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhXEChargedPileUp[4]->Fill(ptTrig,xE); fhZTChargedPileUp[4]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[4]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[5]->Fill(ptTrig,ptAssoc); }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[6]->Fill(ptTrig,ptAssoc); }
   }
   
   if(IsDataMC())
@@ -524,7 +541,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
 
 //_______________________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const Float_t ptTrig,   const Float_t ptAssoc,
-                                                                           const Float_t deltaPhi, const Int_t nTracks)
+                                                                           const Float_t deltaPhi, const Int_t nTracks, const Bool_t outTOF)
 {
   // Fill underlying event histograms
   
@@ -546,6 +563,13 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   
   if(fFillPileUpHistograms)
   {
+    
+    if(outTOF)
+    {
+      fhXEUeChargedOtherBC->Fill(ptTrig,uexE);
+      fhZTUeChargedOtherBC->Fill(ptTrig,uezT);
+    }
+    
     if(GetReader()->IsPileUpFromSPD())               { fhXEUeChargedPileUp[0]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[0]->Fill(ptTrig,uezT);}
     if(GetReader()->IsPileUpFromEMCal())             { fhXEUeChargedPileUp[1]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[1]->Fill(ptTrig,uezT);}
     if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhXEUeChargedPileUp[2]->Fill(ptTrig,uexE); fhZTUeChargedPileUp[2]->Fill(ptTrig,uezT);}
@@ -2661,7 +2685,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   Float_t ptTrig  = aodParticle->Pt();  
   Bool_t   decay  = aodParticle->IsTagged();
   Int_t    mcTag  = aodParticle->GetTag();
-  
+  Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
+
   Float_t pt       = -100. ;
   Float_t zT       = -100. ; 
   Float_t xE       = -100. ; 
@@ -2774,10 +2799,18 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       
       //printf("assoc Bin = %d, vZ bin  = %d, bin = %d \n", assocBin,GetEventVzBin(),bin);
       
+      ULong_t status = track->GetStatus();
+      Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+      //Double32_t tof = track->GetTOFsignal()*1e-3;
+      Int_t trackBC = track->GetTOFBunchCrossing(bz);
+
+      Bool_t outTOF = kFALSE;
+      if(okTOF && trackBC!=0) outTOF = kTRUE;
+      
       // Azimuthal Angle
       // calculate deltaPhi for later, shift when needed
       FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                              eta, etaTrig, decay, track->GetHMPIDsignal(),nTracks,mcTag);
+                                              eta, etaTrig, decay, track->GetHMPIDsignal(),outTOF,nTracks,mcTag);
       
       // Imbalance zT/xE/pOut
       zT = pt/ptTrig ;
@@ -2796,13 +2829,13 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       {
         
         FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, 
-                                               nTracks, track->Charge(), bin, decay,mcTag);
+                                               nTracks, track->Charge(), bin, decay,outTOF,mcTag);
         
       } 
-      if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) ) 
+      if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
       { //UE study
         
-        FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, nTracks);
+        FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, nTracks,outTOF);
 
         fhUePart->Fill(ptTrig);
         

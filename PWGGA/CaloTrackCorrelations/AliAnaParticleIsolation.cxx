@@ -64,7 +64,8 @@ fhEtaPhiNoIso(0),
 fhENoIso(0),                      fhPtNoIso(0),                    fhPtNLocMaxNoIso(0),                     
 fhPtDecayIso(0),                  fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
-fhConeSumPt(0),                   fhPtInCone(0),                   
+fhConeSumPt(0),                   fhPtInCone(0),
+fhPtTrackInCone(0),               fhPtTrackInConeOtherBC(0),       fhPtTrackInConeOtherBCPileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
 fhFRConeSumPt(0),                 fhPtInFRCone(0),                 fhPhiUEConeSumPt(0),
 fhEtaUEConeSumPt(0),              fhEtaBand(0),                    fhPhiBand(0),
@@ -801,14 +802,36 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     outputContainer->Add(fhConeSumPt) ;
     
     fhPtInCone  = new TH2F("hPtInCone",
-                           Form("p_{T} in isolation cone for R = %2.2f",r),
+                           Form("p_{T} of clusters and tracks in isolation cone for R = %2.2f",r),
                            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPtInCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInCone) ;
     
+    fhPtTrackInCone  = new TH2F("hPtTrackInCone",
+                           Form("p_{T} of tracks in isolation cone for R = %2.2f",r),
+                           nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+    fhPtTrackInCone->SetYTitle("p_{T in cone} (GeV/c)");
+    fhPtTrackInCone->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtTrackInCone) ;
+    
     if(fFillPileUpHistograms)
     {
+      fhPtTrackInConeOtherBC  = new TH2F("hPtTrackInConeOtherBC",
+                                         Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC!=0",r),
+                                         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeOtherBC->SetYTitle("p_{T in cone} (GeV/c)");
+      fhPtTrackInConeOtherBC->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtTrackInConeOtherBC) ;
+      
+      fhPtTrackInConeOtherBCPileUpSPD  = new TH2F("hPtTrackInConeOtherBCPileUpSPD",
+                                         Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC!=0, pile-up from SPD",r),
+                                         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeOtherBCPileUpSPD->SetYTitle("p_{T in cone} (GeV/c)");
+      fhPtTrackInConeOtherBCPileUpSPD->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtTrackInConeOtherBCPileUpSPD) ;
+
+      
       for (Int_t i = 0; i < 7 ; i++)
       {
         fhPtInConePileUp[i]  = new TH2F(Form("hPtInConePileUp%s",pileUpName[i].Data()),
@@ -1778,6 +1801,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   Float_t etaUEptsum = 0 ;
   Float_t phiUEptsum = 0 ;
   
+  Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
+
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
@@ -1893,10 +1918,19 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       {
         AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
         Float_t pTtrack = track->Pt();
-        fhPtInCone->Fill(pt,pTtrack);
+        fhPtInCone     ->Fill(pt,pTtrack);
+        fhPtTrackInCone->Fill(pt,pTtrack);
         if(fFillPileUpHistograms)
         {
-          if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(pt,pTtrack);
+          ULong_t status = track->GetStatus();
+          Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+          //Double32_t tof = track->GetTOFsignal()*1e-3;
+          Int_t trackBC = track->GetTOFBunchCrossing(bz);
+
+          if( okTOF && trackBC!=0 )fhPtTrackInConeOtherBC->Fill(pt,pTtrack);
+
+          if(GetReader()->IsPileUpFromSPD())             { fhPtInConePileUp[0]->Fill(pt,pTtrack);
+            if(okTOF && trackBC!=0 )           fhPtTrackInConeOtherBCPileUpSPD->Fill(pt,pTtrack); }
           if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(pt,pTtrack);
           if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(pt,pTtrack);
           if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(pt,pTtrack);

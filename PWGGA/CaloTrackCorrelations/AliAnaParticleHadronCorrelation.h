@@ -57,11 +57,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   // Filling histogram methods
   
-  void         FillChargedAngularCorrelationHistograms  (const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   assocBin,
-                                                         const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
+  void         FillChargedAngularCorrelationHistograms  (const Float_t ptAssoc,  const Float_t ptTrig,      const Int_t   assocBin,
+                                                         const Float_t phiAssoc, const Float_t phiTrig,     Float_t &     deltaPhi,
                                                          const Float_t etaAssoc, const Float_t etaTrig,  
-                                                         const Bool_t  decay,    const Float_t hmpidSignal,const Int_t nTracks,
-                                                         const Int_t   mcTag);
+                                                         const Bool_t  decay,    const Float_t hmpidSignal, const Bool_t outTOF,
+                                                         const Int_t nTracks,    const Int_t   mcTag);
   
   void         FillChargedEventMixPool();
   
@@ -73,10 +73,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          const Float_t xE,       const Float_t hbpXE, 
                                                          const Float_t zT,       const Float_t hbpZT, 
                                                          const Float_t pout,     const Int_t   nTracks,  const Int_t charge,
-                                                         const Int_t   assocBin, const Bool_t  decay,    const Int_t mcTag );
+                                                         const Int_t   assocBin, const Bool_t  decay,
+                                                         const Bool_t outTOF,    const Int_t mcTag );
   
   void         FillChargedUnderlyingEventHistograms     (const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                         const Float_t deltaPhi, const Int_t nTracks);
+                                                         const Float_t deltaPhi, const Int_t nTracks,    const Bool_t outTOF);
   
   void         FillChargedUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
                                                          const Float_t deltaPhi);
@@ -273,13 +274,22 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Events tagged as pileup by SDD,EMCal, or combination
   TH2F *       fhDeltaPhiChargedPileUp[7]  ;    //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhDeltaEtaChargedPileUp[7]  ;    //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT
+  TH2F *       fhDeltaPhiChargedPtA3GeVPileUp[7] ; //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, pTa > 3 GeV
+  TH2F *       fhDeltaEtaChargedPtA3GeVPileUp[7] ; //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT, pTa > 3 GeV
   TH2F *       fhXEChargedPileUp[7]  ;          //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhXEUeChargedPileUp[7]  ;        //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhZTChargedPileUp[7]  ;          //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhZTUeChargedPileUp[7]  ;        //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhPtTrigChargedPileUp[7] ;       //! trigger and correlated particl pt, to be used for mean value for kt
-  TH2F *       fhDeltaPhiChargedPtA3GeVPileUp[7] ; //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, pTa > 3 GeV
-  TH2F *       fhDeltaEtaChargedPtA3GeVPileUp[7] ; //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT, pTa > 3 GeV
+  
+  TH2F *       fhDeltaPhiChargedOtherBC  ;       //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
+  TH2F *       fhDeltaPhiChargedPtA3GeVOtherBC ; //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, pTa > 3 GeV
+  TH2F *       fhXEChargedOtherBC  ;             //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhXEUeChargedOtherBC  ;           //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhZTChargedOtherBC  ;             //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhZTUeChargedOtherBC  ;           //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhPtTrigChargedOtherBC ;          //! trigger and correlated particl pt, to be used for mean value for kt
+
   
   //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F *       fhDeltaPhiUeLeftCharged  ;      //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT

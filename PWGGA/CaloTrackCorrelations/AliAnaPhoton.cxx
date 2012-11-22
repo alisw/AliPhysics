@@ -103,7 +103,11 @@ AliAnaPhoton::AliAnaPhoton() :
     fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
     fhTimeNPileUpVertContributors(0),
     fhTimePileUpMainVertexZDistance(0),   fhTimePileUpMainVertexZDiamond(0),
-    fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp()
+    fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp(),
+    fhEtaPhiBC0(0),  fhEtaPhiBCPlus(0),   fhEtaPhiBCMinus(0),
+    fhEtaPhiBC0PileUpSPD(0),
+    fhEtaPhiBCPlusPileUpSPD(0),
+    fhEtaPhiBCMinusPileUpSPD(0)
  {
   //default ctor
   
@@ -235,7 +239,6 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
 
   if(fFillPileUpHistograms)
   {
-    
     // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
     AliVCaloCells* cells = 0;
     if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
@@ -356,7 +359,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
     if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
     if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
     if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
-        
+    
+    if(tmax > -25 && tmax < 25) {fhEtaPhiBC0    ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(mom.Eta(),mom.Phi()); }
+    else if (tmax > 25)         {fhEtaPhiBCPlus ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(mom.Eta(),mom.Phi()); }
+    else if (tmax <-25)         {fhEtaPhiBCMinus->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(mom.Eta(),mom.Phi()); }
   }
   
   //.......................................
@@ -1473,6 +1479,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhi05Photon->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhi05Photon) ;
   }
+
   
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
                        nptbins,ptmin,ptmax,10,0,10); 
@@ -2047,6 +2054,36 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     }
     
+    fhEtaPhiBC0  = new TH2F ("hEtaPhiBC0","eta-phi for clusters tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBC0->SetXTitle("#eta ");
+    fhEtaPhiBC0->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBC0);
+    
+    fhEtaPhiBCPlus  = new TH2F ("hEtaPhiBCPlus","eta-phi for clusters tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCPlus->SetXTitle("#eta ");
+    fhEtaPhiBCPlus->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCPlus);
+    
+    fhEtaPhiBCMinus  = new TH2F ("hEtaPhiBCMinus","eta-phi for clusters tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCMinus->SetXTitle("#eta ");
+    fhEtaPhiBCMinus->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCMinus);
+    
+    fhEtaPhiBC0PileUpSPD  = new TH2F ("hEtaPhiBC0PileUpSPD","eta-phi for clusters tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBC0PileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBC0PileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBC0PileUpSPD);
+    
+    fhEtaPhiBCPlusPileUpSPD  = new TH2F ("hEtaPhiBCPlusPileUpSPD","eta-phi for clusters tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCPlusPileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBCPlusPileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCPlusPileUpSPD);
+    
+    fhEtaPhiBCMinusPileUpSPD  = new TH2F ("hEtaPhiBCMinusPileUpSPD","eta-phi for clusters tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCMinusPileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBCMinusPileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCMinusPileUpSPD);
+
     fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
     fhTimeENoCut->SetXTitle("E (GeV)");
     fhTimeENoCut->SetYTitle("time (ns)");
