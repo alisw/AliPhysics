@@ -151,10 +151,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	add_custom_target(${BASIC_TARGET}
 	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 	) 
-  set(DYN_TARGET "daqDA-${ONLINEDETECTORNAME}-all-dyn")
-  add_custom_target(${DYN_TARGET}
-    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    ) 
 	set(BASIC_RPM "daqDA-${ONLINEDETECTORNAME}-all-rpm")
 	add_custom_target(${BASIC_RPM}
 	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
@@ -187,7 +183,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	  endif(DANAME)
 	add_dependencies(${BASIC_TARGET} ${DATARGETNAME})  
 	add_dependencies(${BASIC_RPM} ${DATARGETNAME}-rpm) 
-      add_dependencies(${DYN_TARGET} ${DATARGETNAME}-dyn)
 	 set(DATARGETDIR "${DAINSTALL}/${DAMODULE}/tgt_$ENV{ALICE_TARGET}")
 	  file(MAKE_DIRECTORY ${DATARGETDIR})
 	  set(DAOBJ "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.o")
@@ -195,7 +190,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DALIB "${DAMODULE}${SUBDAMODULE}${DANAME}DA")
 	  set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
 	  set(DADEP "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.d") 
-      set(DADYNEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da")
 
 	# DAVERSION
       execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -244,15 +238,10 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(CMAKE_MODULE_LINKER_FLAGS ${LDFLAGS})
 
 add_dependencies(DA-all ${DATARGETNAME})
-      add_dependencies(DA-dyn-all ${DATARGETNAME}-dyn)
 add_custom_target(${DATARGETNAME}
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 add_dependencies(${DATARGETNAME} ${DAEXE})
-      add_custom_target(${DATARGETNAME}-dyn
-	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-	)
-      add_dependencies(${DATARGETNAME}-dyn ${DADYNEXE})
 
 set(ZIP)
 foreach(_lib ${ALIROOTALIBS})
@@ -476,16 +465,7 @@ WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
 
-#target_link_libraries(${DAEXE} "-L" "lib${DALIB}.a" ${DAOBJ} ${EXTRAROOTLIB} "${ROOTALIBDIR}/libRoot.a" "${ROOTALIBDIR}/libfreetype.a" "${ROOTALIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
-
 add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${ROOTLIB})
-
-      add_custom_target(${DADYNEXE}
-	COMMAND echo "***** Making executable ${DADYNEXE} *****"
-	COMMAND g++ ${LDFLAGS} -L${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${DAOBJ} ${ALIROOTDLIBS} ${ROOTDLIBS} ${SYSLIBS} ${DAQDALIB} ${AMOREDADLIBS} ${MONITORLIBS} -o ${DADYNEXE}
-	WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-	)
-      add_dependencies(${DADYNEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DAQDALIB} ${ALIROOTDLIBS})
 
 add_custom_target(DAOBJ_${DAEXE}_
 )
@@ -494,10 +474,7 @@ TARGET DAOBJ_${DAEXE}_
 COMMAND echo "***** Compiling ${DASRC} *****"
 COMMAND echo "${DFLAGS}"
 	COMMAND g++ -c ${AMOREDEFINITIONS} -D${CMAKE_SYSTEM_NAME} ${DATE_CFLAGS} -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
-	#COMMAND g++ -c ${DATEFLAGS} -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
-# -DDATE_SYS=${CMAKE_SYSTEM_NAME} -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I${DATE_ROOT}/rorc -I${DATE_ROOT}/runControl -I${DATE_ROOT}/readList -I${DATE_ROOT}/eventBuilder -I${DATE_ROOT}/banksManager -I${DATE_ROOT}/bufferManager -I${DATE_ROOT}/db -I${DATE_ROOT}/commonDefs -I${DATE_ROOT}/monitoring
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
-	# ${CMAKE_SOURCE_DIR} 
 )
 add_dependencies(DAOBJ_${DAEXE}_ DADEP_${DAEXE}_ )
 
@@ -508,17 +485,12 @@ TARGET DADEP_${DAEXE}_
 COMMAND echo "***** Making detector-algorithm dependencies ${DADEP} *****"
 	COMMAND g++ -MM ${DATE_CFLAGS} -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} > ${DADEP}
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
-	# ${CMAKE_SOURCE_DIR}
-	# -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I${DATE_ROOT}/rorc -I${DATE_ROOT}/runControl -I${DATE_ROOT}/readList -I${DATE_ROOT}/eventBuilder -I${DATE_ROOT}/banksManager -I${DATE_ROOT}/bufferManager -I${DATE_ROOT}/db -I${DATE_ROOT}/commonDefs -I${DATE_ROOT}/monitoring -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook
 )
 
 
 add_custom_command(TARGET clean
 COMMAND rm -rf junk*.exe
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-      add_custom_command(TARGET clean
-	COMMAND rm -rf ${DADYNEXE}
-	WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
   
 
 	endif(match)
