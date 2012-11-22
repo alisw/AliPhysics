@@ -65,10 +65,10 @@ fFiducialCut(0x0),           fCheckFidCut(kFALSE),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
-fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
+fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
+fUseEMCALTimeCut(1),         fUseParamTimeCut(0),             fUseTrackTimeCut(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
-fUseParamTimeCut(kFALSE),
 fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
@@ -1025,6 +1025,8 @@ void AliCaloTrackReader::FillInputCTS()
   Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
   fTrackMult    = 0;
   Int_t nstatus = 0;
+  Double_t bz   = GetInputEvent()->GetMagneticField();
+
   for(Int_t i = 0; i < 19; i++)
   {
     fTrackBCEvent   [i] = 0;
@@ -1114,17 +1116,20 @@ void AliCaloTrackReader::FillInputCTS()
     
     Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME );
     Double_t tof = -1000;
-    Int_t    bc  = -1000;
+    //Int_t    bc  = -1000;
+    Int_t trackBC = -1000 ;
+    
     if(okTOF)
     {
+      trackBC = track->GetTOFBunchCrossing(bz);
+      SetTrackEventBC(trackBC+9);
+
       tof = track->GetTOFsignal()*1e-3;
-      
       //printf("track TOF %e\n",tof);
-      bc = TMath::Nint((tof-25)/50) + 9;
+      //bc = TMath::Nint((tof-25)/50) + 9;
       //printf("track pt %f, tof %2.2f, bc=%d\n",track->Pt(),tof,bc);
-      
-      SetTrackEventBC(bc);
-      
+      //SetTrackEventBC(bc);
+
     }
     
     if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
@@ -1133,10 +1138,11 @@ void AliCaloTrackReader::FillInputCTS()
     
     if(okTOF)
     {
-       SetTrackEventBCcut(bc);
-      
+       //SetTrackEventBCcut(bc);
+      SetTrackEventBCcut(trackBC+9);
+
       //In any case, the time should to be larger than the fixed window ...
-      if( tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax )
+      if( fUseTrackTimeCut && trackBC==0 && (tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
       {
         //printf("Remove track time %f\n",tof);
         continue ;
@@ -1270,7 +1276,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if(!IsInTimeWindow(tof,clus->E()))
   {
     fNPileUpClusters++ ;
-    return ;
+    if(fUseEMCALTimeCut) return ;
   }
   else
     fNNonPileUpClusters++;

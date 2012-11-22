@@ -123,9 +123,11 @@ public:
   Double_t         GetTrackTimeCutMin()              const { return fTrackTimeCutMin       ; }
   Double_t         GetTrackTimeCutMax()              const { return fTrackTimeCutMax       ; }
   
-  
   void             SetTrackTimeCut(Double_t a, Double_t b) { fTrackTimeCutMin = a ;
                                                              fTrackTimeCutMax = b          ; } // ns
+  
+  void             SwitchOnUseTrackTimeCut()               { fUseTrackTimeCut = kTRUE      ; }
+  void             SwitchOffUseTrackTimeCut()              { fUseTrackTimeCut = kFALSE     ; }
   
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
@@ -137,6 +139,9 @@ public:
   
   void             SetEMCALParametrizedMinTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMin[i] = par ; } 
   void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; } 
+  
+  void             SwitchOnUseEMCALTimeCut()               { fUseEMCALTimeCut = kTRUE      ; }
+  void             SwitchOffUseEMCALTimeCut()              { fUseEMCALTimeCut = kFALSE     ; }
   
   void             SwitchOnUseParametrizedTimeCut()        { fUseParamTimeCut = kTRUE      ; }
   void             SwitchOffUseParametrizedTimeCut()       { fUseParamTimeCut = kFALSE     ; }
@@ -463,11 +468,13 @@ public:
   Float_t          fCTSPtMax;               // pT Threshold on charged particles 
   Float_t          fEMCALPtMax;             // pT Threshold on emcal clusters
   Float_t          fPHOSPtMax;              // pT Threshold on phos clusters
+  Bool_t           fUseEMCALTimeCut;        // Do time cut selection
+  Bool_t           fUseParamTimeCut;        // Use simple or parametrized time cut
+  Bool_t           fUseTrackTimeCut;        // Do time cut selection
   Double_t         fEMCALTimeCutMin;        // Remove clusters/cells with time smaller than this value, in ns
   Double_t         fEMCALTimeCutMax;        // Remove clusters/cells with time larger than this value, in ns
   Float_t          fEMCALParamTimeCutMin[4];// Remove clusters/cells with time smaller than parametrized value, in ns
   Double_t         fEMCALParamTimeCutMax[4];// Remove clusters/cells with time larger than parametrized value, in ns
-  Bool_t           fUseParamTimeCut;        // Use simple or parametrized time cut
   Double_t         fTrackTimeCutMin;        // Remove tracks with time smaller than this value, in ns
   Double_t         fTrackTimeCutMax;        // Remove tracks with time larger than this value, in ns
   
