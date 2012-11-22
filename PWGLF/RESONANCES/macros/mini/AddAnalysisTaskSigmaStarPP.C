@@ -119,12 +119,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
    if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
-       piPIDCut = 1E20; pPIDCut = 1E20;
        //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
    } else 
      Printf("========================== DATA analysis - PID cuts used");
      //ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair);
-   if (!ConfigSigmaStar(task, isMC, isPP, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, isPP, isMC, piPIDCut, pPIDCut, aodFilterBit, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
