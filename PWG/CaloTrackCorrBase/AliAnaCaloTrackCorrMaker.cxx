@@ -57,8 +57,8 @@ fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
 fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
-fhTrackBCEvent(0),            fhTrackBCEventCut(0)
-
+fhTrackBCEvent(0),            fhTrackBCEventCut(0),
+fhPrimaryVertexBC(0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -91,8 +91,8 @@ fhScaleFactor(maker.fhScaleFactor),
 fhEMCalBCEvent(maker.fhEMCalBCEvent),
 fhEMCalBCEventCut(maker.fhEMCalBCEventCut),
 fhTrackBCEvent(maker.fhTrackBCEvent),
-fhTrackBCEventCut(maker.fhTrackBCEventCut)
-
+fhTrackBCEventCut(maker.fhTrackBCEventCut),
+fhPrimaryVertexBC(maker.fhPrimaryVertexBC)
 {
   // cpy ctor
 }
