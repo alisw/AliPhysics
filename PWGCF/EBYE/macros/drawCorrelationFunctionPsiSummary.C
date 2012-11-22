@@ -1,11 +1,111 @@
 const Int_t numberOfCentralityBins = 8;
 TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
-const Int_t gRebin = 1;
+void drawCorrelationFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
+					      Int_t gTrainID = 250,			      
+					      Double_t psiMin = -0.5, 
+					      Double_t psiMax = 3.5){
+  TFile        *fPar[3][4];
+  TGraphErrors *gPar[3][4][18];
+
+  Int_t iCentrality[3] = {1,3,5};
+  TString sType[4]     = {"PP","NN","PN","NP"};
+  
+  for(Int_t iCent = 0 ; iCent < 3; iCent++){
+    for(Int_t iType = 0 ; iType < 4; iType++){
+
+      // open file
+      fPar[iCent][iType] = TFile::Open(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_%s_FitParameters.root",lhcPeriod,gTrainID,iCentrality[iCent],sType[iType].Data()));
+      if(!fPar[iCent][iType]){
+	cerr<<"FILE "<<Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_%s_FitParameters.root",lhcPeriod,gTrainID,iCentrality[iCent],sType[iType].Data())<<" not found!"<<endl;
+	return;
+      } 
+
+      // open graph
+      for(Int_t iPar = 0 ; iPar < 18; iPar++){
+	gPar[iCent][iType][iPar] = (TGraphErrors*)fPar[iCent][iType]->Get(Form("gPar%d",iPar));
+	if(!gPar[iCent][iType][iPar]){
+	  cerr<<"Graph for parameter "<<iPar<<" not found!"<<endl;
+	  return;
+	} 
+      }
+    }
+  }
+
+  TCanvas *cSummary[18]; 
+  for(Int_t iPar = 0 ; iPar < 18; iPar++){
+
+    cSummary[iPar]  = new TCanvas(Form("cSummary%d",iPar),Form("Summary %d",iPar));
+    cSummary[iPar]->Divide(2,1);
+
+    // compare charges
+    Int_t iCent = 0;
+    cSummary[iPar]->cd(1);
+    gPar[iCent][0][iPar]->SetMarkerColor(1);
+    gPar[iCent][0][iPar]->SetLineColor(1);
+    gPar[iCent][0][iPar]->Draw("AP");
+    gPar[iCent][1][iPar]->SetMarkerColor(2);
+    gPar[iCent][1][iPar]->SetLineColor(2);
+    gPar[iCent][1][iPar]->Draw("P");
+    gPar[iCent][2][iPar]->SetMarkerColor(4);
+    gPar[iCent][2][iPar]->SetLineColor(4);
+    gPar[iCent][2][iPar]->Draw("P");
+    gPar[iCent][3][iPar]->SetMarkerColor(8);
+    gPar[iCent][3][iPar]->SetLineColor(8);
+    gPar[iCent][3][iPar]->Draw("P");
+    
+    TLegend *legend1 = new TLegend(0.2,0.6,0.85,0.88,"","brNDC");
+    setupLegend(legend1,0.065);
+    for(Int_t iType = 0 ; iType < 4; iType++){
+      legend1->AddEntry(gPar[iCent][iType][iPar],sType[iType].Data(),"lp");
+    }
+    legend1->Draw();
+    
+    // compare centralities
+    Int_t iType = 2;
+    cSummary[iPar]->cd(2);
+    gPar[0][iType][iPar]->SetMarkerColor(1);
+    gPar[0][iType][iPar]->SetLineColor(1);
+    gPar[0][iType][iPar]->Draw("AP");
+    gPar[1][iType][iPar]->SetMarkerColor(2);
+    gPar[1][iType][iPar]->SetLineColor(2);
+    gPar[1][iType][iPar]->Draw("P");
+    gPar[2][iType][iPar]->SetMarkerColor(4);
+    gPar[2][iType][iPar]->SetLineColor(4);
+    gPar[2][iType][iPar]->Draw("P");
+    
+    
+    TLegend *legend2 = new TLegend(0.2,0.6,0.85,0.88,"","brNDC");
+    setupLegend(legend2,0.065);
+    for(Int_t iCent = 0 ; iCent < 3; iCent++){
+      legend2->AddEntry(gPar[iCent][iType][iPar],Form("%s \%",centralityArray[iCentrality[iCent]].Data()),"lp");
+    }
+    legend2->Draw();
+
+    cSummary[iPar]->SaveAs(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_FitParameter%d_Summary.eps",lhcPeriod,gTrainID,iPar));
+  } 
+  
+  
+}
+  
+
+void drawCorrelationFunctionPsiSummaryAll(
+					  const char* lhcPeriod = "LHC11h",
+					  Int_t gTrainID = 208,			      
+					  Int_t gCentrality = 1,
+					  Double_t psiMin = -0.5, 
+					  Double_t psiMax = 3.5) {
+
+  drawCorrelationFunctionPsiSummary("PP",lhcPeriod,gTrainID,gCentrality,psiMin,psiMax);
+  drawCorrelationFunctionPsiSummary("PN",lhcPeriod,gTrainID,gCentrality,psiMin,psiMax);
+  drawCorrelationFunctionPsiSummary("NP",lhcPeriod,gTrainID,gCentrality,psiMin,psiMax);
+  drawCorrelationFunctionPsiSummary("NN",lhcPeriod,gTrainID,gCentrality,psiMin,psiMax);
+
+}
 
 void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
 				       const char* lhcPeriod = "LHC11h",
-				       Int_t gTrainID = 222,			      
+				       Int_t gTrainID = 208,			      
 				       Int_t gCentrality = 1,
 				       Double_t psiMin = -0.5, 
 				       Double_t psiMax = 3.5) {
@@ -64,29 +164,10 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
   TString inFileName = "";
   
   //Fit Parameters
-  Double_t p[17][kNPtBins*kNPtBins];
-  Double_t pE[17][kNPtBins*kNPtBins];
-  TString pNames[17] = {
-    "Normalization",
-    "NearSideN",
-    "NearSideSigmaDeltaEta",
-    "NearSideSigmaDeltaPhi",
-    "NearSideSigmaExponent",
-    "AwaySideN",
-    "AwaySideSigmaDeltaPhi",
-    "AwaySideSigmaExponent",
-    "LongRidgeN",
-    "LongRidgeSigma",
-    "LongRidgeExponent",
-    "Wing",
-    "FlowN",
-    "FlowV1",
-    "FlowV2",
-    "FlowV3",
-    "FlowV4"
-  }
-  
-  for(Int_t iPar = 0; iPar < 17; iPar++){
+  Double_t p[18][kNPtBins*kNPtBins];
+  Double_t pE[18][kNPtBins*kNPtBins];
+
+  for(Int_t iPar = 0; iPar < 18; iPar++){
     for(Int_t i = 0; i < kNPtBins; i++){
       for(Int_t j = 0; j < kNPtBins; j++){
 	p[iPar][i*kNPtBins+j] = -1.;
@@ -212,21 +293,23 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
 
       // fit parameters
       fFit = (TF2*)inFile->Get("gFitFunction");
-      for(Int_t iPar = 0; iPar < 17; iPar++){
+      for(Int_t iPar = 0; iPar < 18; iPar++){
 	p[iPar][i*kNPtBins+j] = fFit->GetParameter(iPar);
 	pE[iPar][i*kNPtBins+j] = fFit->GetParError(iPar);
+	cout<<iPar<<") Parameter "<<fFit->GetParName(iPar)<<" : "<<p[iPar][i*kNPtBins+j]<<" +- "<<pE[iPar][i*kNPtBins+j]<<endl;
       }
 
       inFile->Close();
     }
   }
 
-  TGraphErrors *gPar[17];
-  for(Int_t iPar = 0; iPar < 17; iPar++){
+  TGraphErrors *gPar[18];
+  for(Int_t iPar = 0; iPar < 18; iPar++){
     gPar[iPar]  = new TGraphErrors(kNPtBins*kNPtBins,pt,p[iPar],ptE,pE[iPar]);
-    gPar[iPar]->SetTitle(pNames[iPar].Data());
+    gPar[iPar]->SetName(Form("gPar%d",iPar));
+    gPar[iPar]->SetTitle(fFit->GetParName(iPar));
     gPar[iPar]->GetXaxis()->SetTitle("p_{T}");
-    gPar[iPar]->GetYaxis()->SetTitle(pNames[iPar].Data());
+    gPar[iPar]->GetYaxis()->SetTitle(fFit->GetParName(iPar));
     gPar[iPar]->SetMinimum(0.01);
     gPar[iPar]->SetMaximum(2);
     gPar[iPar]->SetMarkerStyle(20);
@@ -252,16 +335,16 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
   gPar[3]->Draw("AP");
 
   cPar->cd(4);
-  gPar[6]->Draw("AP");
+  gPar[8]->Draw("AP");
 
   cPar->cd(5);
   gPar[9]->Draw("AP");
 
   cPar->cd(6);
-  gPar[12]->Draw("AP");
+  gPar[17]->Draw("AP");
 
   cPar->cd(7);
-  gPar[13]->Draw("AP");
+  gPar[12]->Draw("AP");
 
   cPar->cd(8);
   gPar[14]->Draw("AP");
@@ -269,8 +352,13 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
   cPar->cd(9);
   gPar[15]->Draw("AP");
 
-  cPar->SaveAs(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_FitParameters.eps",lhcPeriod,gTrainID,histoName.Data()));
-  cPar->SaveAs(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_FitParameters.pdf",lhcPeriod,gTrainID,histoName.Data()));
+  cPar->SaveAs(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_%s_FitParameters.eps",lhcPeriod,gTrainID,gCentrality,histoName.Data()));
+  cPar->SaveAs(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_%s_FitParameters.pdf",lhcPeriod,gTrainID,gCentrality,histoName.Data()));
+
+  TFile *fOut = TFile::Open(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_Cent%d_%s_FitParameters.root",lhcPeriod,gTrainID,gCentrality,histoName.Data()),"RECREATE");
+  for(Int_t iPar = 0; iPar < 18; iPar++){
+    gPar[iPar]->Write();
+  }
 
   // delete canvases
   for(Int_t i = 0; i < kNPtBins; i++){
@@ -279,4 +367,18 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
     }
   }
 
+}
+
+
+
+//____________________________________________________________//
+void setupLegend(TLegend *currentLegend=0,float currentTextSize=0.07){
+  currentLegend->SetTextFont(42);
+  currentLegend->SetBorderSize(0);
+  currentLegend->SetFillStyle(0);
+  currentLegend->SetFillColor(0);
+  currentLegend->SetMargin(0.25);
+  currentLegend->SetTextSize(currentTextSize);
+  currentLegend->SetEntrySeparation(0.5);
+  return;
 }
