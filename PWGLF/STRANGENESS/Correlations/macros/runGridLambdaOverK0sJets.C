@@ -1,8 +1,8 @@
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-03-46-AN",
-			      TString  rootVer    = "v5-34-01-1",
+			      TString  alirootVer = "v5-03-70-AN",
+			      TString  rootVer    = "v5-34-02",
 			      TString  dataPath   = "ESDs/pass2/AOD049/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2010/LHC10h",
 			      TString  workDir    = "work",
@@ -16,6 +16,7 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kTRUE,
+			      Bool_t   doQA       = kFALSE,
 			      Int_t    run        = 138624){
   
   Printf("   \nThe parameters of the programm are : \n ");
@@ -43,10 +44,13 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
  
+  Double_t checkIDTrig= kFALSE;
+  Double_t nSigmaPID = 3.0;
+
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,rapMaxV0,sepInjec,isMC,usePID);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,nSigmaPID,sepInjec,isMC,usePID,doQA);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;

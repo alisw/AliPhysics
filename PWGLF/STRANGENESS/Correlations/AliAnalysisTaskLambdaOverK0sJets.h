@@ -47,8 +47,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetPID(Bool_t usePID=kTRUE) {fUsePID=usePID;} 
   void SetCentrality(Double_t min=0., Double_t max=90.) {fCentMin=min;fCentMax=max;} 
+  void SetQA(Bool_t doQA=kFALSE){fDoQA=doQA;}
   void SetTriggerPt(Double_t ptMinTrig=8., Double_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
   void SetTriggerEta(Double_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
+  void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
   void SetSeparateInjectedPart(Bool_t doSep=kTRUE) {fSeparateInjPart=doSep;} 
 
   // Setters for V0 candidate selection
@@ -102,9 +104,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Bool_t   fUsePID;                      //  Use PID for tracks
   Double_t fCentMin;                     //  Minimum centrality
   Double_t fCentMax;                     //  Maximum centrality
+  Bool_t   fDoQA;                        //  Do Auality Assurance?
   Double_t fTrigPtMin;                   //  Minimum pt for trigger particle
   Double_t fTrigPtMax;                   //  Maximum pt for trigger particle
   Double_t fTrigEtaMax;                  //  Maximum eta for trigger particle
+  Bool_t   fCheckIDTrig;
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 
   AliPIDResponse *fPIDResponse;          //  PID Response
@@ -121,6 +125,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Double_t fMaxCtau;                     //  Maximum ctau
 
   TList*  fOutput;                       //! List of histograms
+  TList*  fOutputQA;                     //! List of histograms
 
   TH1F*   fEvents;                       //! Counter for the number of events in each step
 
@@ -139,6 +144,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fCheckTriggerFromV0Daug;       //! Trigger particle: it is a daughter from a V0-candidate
   TH1F*   fTriggerComingFromDaug;        //! Trigger particle: pt when LP is a daughter from a V0-candidate
   TH1F*   fTriggerIsV0;                  //! Trigger particle: the V0 is the highest-pt particle
+  TH3F*   fCheckIDTrigPtK0s;
+  TH3F*   fCheckIDTrigPhiK0s;
+  TH3F*   fCheckIDTrigPtLambda;
+  TH3F*   fCheckIDTrigPhiLambda;
 
   TH1F*   fInjectedParticles;            //! Number of injected particles
 
@@ -241,6 +250,71 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fLambdaBckgDCAPosDaugToPrimVtx;  //! Lambda background: DCA of Positive daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
   TH2F*   fLambdaMassCascade;              //! Lambda background: Poddible mismatching of tracks due to cascades decays
         
+
+  TH3F*   fK0sPIDPosDaug;
+  TH3F*   fK0sPIDNegDaug;
+  TH3F*   fK0sBckgPIDPosDaug;
+  TH3F*   fK0sBckgPIDNegDaug;
+
+  TH3F*   fK0sPhiEtaPosDaug;
+  TH3F*   fK0sPhiEtaNegDaug;
+  TH3F*   fK0sBckgPhiEtaPosDaug;
+  TH3F*   fK0sBckgPhiEtaNegDaug;
+
+  TH2F*   fK0sDCAPosDaug;
+  TH2F*   fK0sDCANegDaug;
+  TH2F*   fK0sBckgDCAPosDaug;
+  TH2F*   fK0sBckgDCANegDaug;
+
+  TH2F*   fK0sDifPtPosDaug;
+  TH2F*   fK0sDifPtNegDaug;
+  TH2F*   fK0sBckgDifPtPosDaug;
+  TH2F*   fK0sBckgDifPtNegDaug;
+
+  TH3F*   fK0sDecayPos;
+  TH3F*   fK0sBckgDecayPos;
+  TH2F*   fK0sDecayVertex;
+  TH2F*   fK0sBckgDecayVertex;
+  TH2F*   fK0sDecayVertexZoom;
+  TH2F*   fK0sBckgDecayVertexZoom;
+
+  TH2F*   fK0sCPA;
+  TH2F*   fK0sBckgCPA;
+  TH2F*   fK0sDCAV0Daug;
+  TH2F*   fK0sBckgDCAV0Daug;
+
+  TH3F*   fLambdaPIDPosDaug;
+  TH3F*   fLambdaPIDNegDaug;
+  TH3F*   fLambdaBckgPIDPosDaug;
+  TH3F*   fLambdaBckgPIDNegDaug;
+
+  TH3F*   fLambdaPhiEtaPosDaug;
+  TH3F*   fLambdaPhiEtaNegDaug;
+  TH3F*   fLambdaBckgPhiEtaPosDaug;
+  TH3F*   fLambdaBckgPhiEtaNegDaug;
+
+  TH2F*   fLambdaDCAPosDaug;
+  TH2F*   fLambdaDCANegDaug;
+  TH2F*   fLambdaBckgDCAPosDaug;
+  TH2F*   fLambdaBckgDCANegDaug;
+
+  TH2F*   fLambdaDifPtPosDaug;
+  TH2F*   fLambdaDifPtNegDaug;
+  TH2F*   fLambdaBckgDifPtPosDaug;
+  TH2F*   fLambdaBckgDifPtNegDaug;
+
+  TH3F*   fLambdaDecayPos;
+  TH3F*   fLambdaBckgDecayPos;
+  TH2F*   fLambdaDecayVertex;
+  TH2F*   fLambdaBckgDecayVertex;
+  TH2F*   fLambdaDecayVertexZoom;
+  TH2F*   fLambdaBckgDecayVertexZoom;
+
+  TH2F*   fLambdaCPA;
+  TH2F*   fLambdaBckgCPA;
+  TH2F*   fLambdaDCAV0Daug;
+  TH2F*   fLambdaBckgDCAV0Daug;
+
   ClassDef(AliAnalysisTaskLambdaOverK0sJets,1);
 
 };
