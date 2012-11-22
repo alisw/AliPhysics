@@ -787,7 +787,6 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 					AliDebug(2, message.Data());
 					if(remainingAttempts>0) sleep(nsleep);
 				}else{
-					Printf("File opened successfully at attempt n. %d",fNretry-remainingAttempts);
 					remainingAttempts=0;
 				}
 				nsleep*=fInitRetrySeconds;
