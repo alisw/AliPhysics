@@ -1,26 +1,54 @@
 #ifndef __CINT__
 #include "AliRsnTrainManager.h"
 #endif
-Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
+Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
    Bool_t usePrivateTrain = kFALSE;
    usePrivateTrain = kTRUE;
 
    TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
-   //legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
+//   legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
    AliAnalysisManager::SetGlobalStr("RsnLegoTrainPath",legoTrainPath.Data());
+   
+   AliAnalysisManager *mrg = AliAnalysisManager::GetAnalysisManager();
 
+   TString rsnBaseSettings = "Rsn_pp";
+//   rsnBaseSettings = "Rsn_PbPb";
+//   rsnBaseSettings = "Rsn_pPb";
+
+   Bool_t useRsnMini = kTRUE;
+//   useRsnMini = kFALSE;
+
+
+   Bool_t useMixing = kFALSE;
+//   useMixing = kTRUE;
 
    // RSN Setting (same as old AddRsnToManager<Rsn>.C)
    // Rsn Particle
    TString rsnStr="Phi";
    // Rsn Cut
-   TString rsnCutStr="PhiNsigma:KTPCnsig30";
+   TString rsnCutStr="";
+
+   rsnCutStr="PhiNsigma:KTPCnsig30";
+
+   if ((rsnCutStr.IsNull())&&(!postfix.IsNull())) {
+     rsnCutStr = "PhiNsigma:";
+     rsnCutStr.Append(postfix.Data());
+   }
+
    // Rsn Quality Cut
    TString rsnQualityCutStr = "";
-   // rsnQualityCutStr = "pp_LHC11_p4_120";
+//   rsnQualityCutStr = "pp_LHC11a_p4_120";
+//   rsnQualityCutStr = "pp_LHC11a_p4_70";
+   
 
+   TString extraMacro = "";
+   TString extraMacroArgs = "";
+//   extraMacro = "RsnTrainSettingsExtra.C";
+//   extraMacroArgs = "10.0,10,1,1,1,1,1,1,1";
+//   extraMacroArgs = "10, 5, 5, -1, 1, 0, 1, 1, 1";
+   
    input.ToLower();
    inputMC.ToLower();
    Bool_t useMC = !inputMC.CompareTo("mc");
@@ -42,15 +70,8 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       Int_t physSel = AliAnalysisManager::GetGlobalInt("rsnUsePhysSel",valid);
       Int_t useCentralityTask = AliAnalysisManager::GetGlobalInt("rsnUseCentralityTask",valid);
       Int_t useEventPlaneTask = AliAnalysisManager::GetGlobalInt("rsnUseEventPlaneTask",valid);
+      Int_t useVZEROEPSelection = AliAnalysisManager::GetGlobalInt("rsnUseVZEROEPSelection",valid);
       Int_t usePIDqa = AliAnalysisManager::GetGlobalInt("rsnUsePIDqa",valid);
-
-
-//      Int_t splitMgrByTask = AliAnalysisManager::GetGlobalInt("rsnSplitMgrByTasks",valid);
-
-//      Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
-
-//      Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
-//      Int_t mixNum = AliAnalysisManager::GetGlobalInt("rsnNumMix",valid);
 
       // ALICE stuff
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -85,13 +106,13 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       }
 
       AliRsnInputHandler *rsnIH=0;
-
       if (pidResponse) {
          if (multiInputHandler) {
             // add PID Response Handler
             if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
             AddPIDResponseInputHandler(multiInputHandler,useMC);
          } else {
+         	Printf("Adding PIDResponse task ...");
             gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
             AddTaskPIDResponse(useMC);
          }
@@ -103,10 +124,14 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
          multiInputHandler->AddInputEventHandler(rsnIH);
       }
 
-      if (physSel) {
+      if (physSel>0) {
          if (!input.CompareTo("esd")) {
             gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-            AddTaskPhysicsSelection(useMC);
+            Bool_t physSelBigOut = kTRUE;
+//            physSelBigOut = kFALSE;
+
+            AddTaskPhysicsSelection(useMC,kTRUE,0,physSelBigOut);
+            if (physSelBigOut) mrg->SetSpecialOutputLocation("root://aaa//aaa/");
          }
 
          // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
@@ -126,6 +151,11 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
          AliEPSelectionTask *eventPlaneTask = AddTaskEventplane();
       }
 
+      if (useVZEROEPSelection) {
+         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+         AddTaskVZEROEPSelection();
+      }
+
       if (usePIDqa) {
          gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
          AddTaskPIDqa();
@@ -138,10 +168,6 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       gSystem->Load("libPWGLFresonances.so");
    }
 
-   TString rsnBaseSettings = "Rsn_pp";
-//   rsnBaseSettings = "Rsn_PbPb";
-//   rsnBaseSettings = "Rsn_pPb";
-
    if (!input.CompareTo("esd")) rsnBaseSettings.Append("_ESD");
    else rsnBaseSettings.Append("_AOD");
 
@@ -149,10 +175,15 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (useMC) rsnBaseSettings.Append("_MC");
 
    // use mini
-   rsnBaseSettings.Append("_MINI");
+   if (useRsnMini) rsnBaseSettings.Append("_MINI");
+
+   // use mixing
+   if (useMixing) rsnBaseSettings.Append("_MIX");
 
    if (!RsnLoadMacro("AddRsnTaskTrain.C")) return kFALSE;
-   AddRsnTaskTrain(rsnBaseSettings,rsnStr.Data(),rsnCutStr.Data(),"","","");
+   AddRsnTaskTrain(rsnBaseSettings.Data(),rsnStr.Data(),rsnCutStr.Data(),rsnQualityCutStr.Data(),extraMacro,extraMacroArgs);
+
+   Printf("%s_%s_%s %s",rsnBaseSettings.Data(),rsnStr.Data(),rsnCutStr.Data(),rsnQualityCutStr.Data());
 
    return kTRUE;
 }

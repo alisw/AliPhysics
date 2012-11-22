@@ -4,9 +4,10 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
                            Int_t filterBit,
                            Int_t useRapidity,
                            Int_t useAOD49Patch,
-                           Int_t useMixDiffMult,
-                           Int_t useMixDiffVz,
-                           Int_t useMixDiffAngle) {
+                           Double_t useMixDiffMult,
+                           Double_t useMixDiffVz,
+                           Double_t useMixDiffAngle,
+                           Int_t printRefresh=-1) {
 
    AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",primaryVertex);
    AliRsnTrainManager::SetGlobalInt("RsnCommonQualityCut",useCommonQualityCut);
@@ -16,10 +17,11 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
 
    // for now we will use only on/off (0/1), maybe we can use number also, but let's see if neede
    AliRsnTrainManager::SetGlobalInt("RsnNumMix",numMix);
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffMult",useMixDiffMult);
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffVz",useMixDiffVz);
-   AliRsnTrainManager::SetGlobalInt("RsnMixDiffAngle",useMixDiffAngle);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffMult",useMixDiffMult);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffVz",useMixDiffVz);
+   AliRsnTrainManager::SetGlobalDbl("RsnMixDiffAngle",useMixDiffAngle);
 
+   AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",printRefresh);
 
    return;
 }

@@ -99,27 +99,28 @@ void AddEventMixingSettings(AliAnalysisTaskSE *task) {
    Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
    Int_t mixNum = AliRsnTrainManager::GetGlobalInt("RsnNumMix",valid);
    
-   Int_t isMixDiffMult = AliRsnTrainManager::GetGlobalInt("RsnMixDiffMult",valid);
-   Int_t isMixDiffVz = AliRsnTrainManager::GetGlobalInt("RsnMixDiffVz",valid);
-   Int_t isMixDiffAngle = AliRsnTrainManager::GetGlobalInt("RsnMixDiffAngle",valid);
+   Double_t mixDiffMult = AliRsnTrainManager::GetGlobalInt("RsnMixDiffMult",valid);
+   Double_t mixDiffVz = AliRsnTrainManager::GetGlobalInt("RsnMixDiffVz",valid);
+   Double_t mixDiffAngle = AliRsnTrainManager::GetGlobalInt("RsnMixDiffAngle",valid);
 
    if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *) task;
       if (collisionType == 0) {
          //         taskRsn->UseMultiplicity("TRACKS");
          taskRsn->UseMultiplicity("QUALITY");
-         if (isMixDiffMult) taskRsn->SetMaxDiffMult(10);
       } else {
          taskRsn->UseCentrality("V0M");
-         if (isMixDiffMult) taskRsn->SetMaxDiffMult(1);
       }
+      if (mixDiffMult>0.0) taskRsn->SetMaxDiffMult(mixDiffMult);
+            
       // set mixing
       taskRsn->UseContinuousMix();
       //task->UseBinnedMix();
       taskRsn->SetNMix(mixNum);
       
-      if (isMixDiffVz) taskRsn->SetMaxDiffVz(1);
-      if (isMixDiffAngle) taskRsn->SetMaxDiffAngle(30.0 * TMath::DegToRad());
+      if (mixDiffVz>0.0) taskRsn->SetMaxDiffVz(mixDiffVz);
+      if (mixDiffAngle>0.0) taskRsn->SetMaxDiffAngle(mixDiffAngle);
+      // 30.0 * TMath::DegToRad()
    }
    // TODO RSN non Mini
 
