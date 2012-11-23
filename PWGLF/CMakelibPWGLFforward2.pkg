@@ -26,6 +26,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)   #
 #------------------------------------------------------------------------#
 
+if((DEFINED ALIROOT_SVN_REVISION)) 
+  add_definitions(-DALIROOT_SVN_REVISION=${ALIROOT_SVN_REVISION})
+endif((DEFINED ALIROOT_SVN_REVISION)) 
+if((DEFINED ALIROOT_SVN_BRANCH)) 
+  add_definitions(-DALIROOT_SVN_BRANCH=\"${ALIROOT_SVN_BRANCH}\")
+endif((DEFINED ALIROOT_SVN_BRANCH))
+
 set ( SRCS   
   FORWARD/analysis2/AliAODCentralMult.cxx
   FORWARD/analysis2/AliAODForwardEP.cxx
@@ -102,21 +109,21 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 
 set ( DHDR  PWGLFforward2LinkDef.h)
 
-add_executable(runTrain
-  FORWARD/analysis2/trains/runMain.cxx)
-target_link_libraries(runTrain 
-  ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS})
-install(TARGETS runTrain 
-  RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
+# add_executable(runTrain
+#   FORWARD/analysis2/trains/runMain.cxx)
+# target_link_libraries(runTrain 
+#   ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS})
+# install(TARGETS runTrain 
+#   RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
 
-add_executable(runTrain2
+add_executable(runTrain
   FORWARD/trains/trainMain.cxx)
-target_link_libraries(runTrain2 
+target_link_libraries(runTrain 
   ${BINLIBDIRS} ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS} 
   -lSTEERBase -lESD -lAOD -lOADB -lANALYSIS -lANALYSISalice)
-install(TARGETS runTrain2 
+install(TARGETS runTrain 
   RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
-add_dependencies(runTrain2 STEERBase ESD AOD OADB ANALYSIS ANALYSISalice)
+add_dependencies(runTrain STEERBase ESD AOD OADB ANALYSIS ANALYSISalice)
 
 # --------------------------------------------------------------------
 # Extra targets 
