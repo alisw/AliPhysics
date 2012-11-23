@@ -18,7 +18,7 @@ class TObjArray;
 class AliZDCQAChecker: public AliQACheckerBase {
 
 public:
-  AliZDCQAChecker() : AliQACheckerBase("ZDC","ZDC Quality Assurance Data Maker") {;}          // ctor
+  AliZDCQAChecker();             // ctor
   virtual ~AliZDCQAChecker() {;} // dtor
 
  protected:
@@ -26,10 +26,22 @@ public:
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,
       const AliDetectorRecoParam * /*recoParam*/); 
   void SetupHisto(const TObjArray& messages, TH1& histo, Float_t& code);
+ 
+  void    GetThresholds();
+  void    PrintThresholds();
 
  private:  
   AliZDCQAChecker(const AliZDCQAChecker& qac); // cpy ctor   
   AliZDCQAChecker& operator= (const AliZDCQAChecker & /*checker*/);
+
+  TObjArray *fQAThresholds;    		//! Reference data from OCDB 
+  Float_t    fZDCQAThr_ZNCTDCRefThr; 	// TDC reference value for QA checks
+  Float_t    fZDCQAThr_ZPCTDCRefThr; 	// TDC reference value for QA checks
+  Float_t    fZDCQAThr_ZNATDCRefThr; 	// TDC reference value for QA checks
+  Float_t    fZDCQAThr_ZPATDCRefThr; 	// TDC reference value for QA checks
+  Float_t    fZDCQAThr_ZEM1TDCRefThr; 	// TDC reference value for QA checks
+  Float_t    fZDCQAThr_ZEM2TDCRefThr; 	// TDC reference value for QA checks
+  
   ClassDef(AliZDCQAChecker,1)  // description 
 
 };
