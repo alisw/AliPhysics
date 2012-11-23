@@ -703,8 +703,8 @@ protected:
       << "  --name=$name";
     opts.Store(o, " \\\n  --", "", true);
     o << ")\n\n"
-      << "echo \"Running runTrain2 ${opts[@]} $@\"\n"
-      << "runTrain2 \"${opts[@]}\" $@\n\n"
+      << "echo \"Running runTrain ${opts[@]} $@\"\n"
+      << "runTrain \"${opts[@]}\" $@\n\n"
       << "# EOF" << std::endl;
     o.close();
     gSystem->Exec(Form("chmod a+x %s.sh", out.Data()));
