@@ -4562,7 +4562,8 @@ void CompareGraphsDraw(const char* GraphFile1, const char* GraphFile2, Int_t off
 //  DrawCentrality("IAAFit", nHists, graphs[32+offset], 0, 20, "I_{AA} (Fit)", graphs1[32+offset]);
 }
 
-void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t i, Int_t j, Int_t histId)
+Int_t canvasCount = 0;
+void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t i, Int_t j, Int_t histId, Float_t scaling = 1, Bool_t swapAxis = kFALSE)
 {
   Int_t ptId = 0;
   Int_t maxAssocPt = 6;
@@ -4582,12 +4583,20 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
     cout << "Hist2 does not exist." << endl;
     return;
   }
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
+  hist2->Scale(1.0 / hist2->GetYaxis()->GetBinWidth(1));
+  
+  hist2->Scale(1.0 / hist2->GetXaxis()->GetBinWidth(1)); hist1->Rebin2D(4, 2); hist1->Scale(1.0 / 8);
+
+  hist2->Scale(scaling);
   
 //   hist1->Rebin2D(2, 2); hist1->Scale(0.25);
 //   hist2->Rebin2D(2, 2); hist2->Scale(0.25);
 
-  TCanvas *c = new TCanvas("c", "", 600, 900);
+  TCanvas *c = new TCanvas(Form("c%d", canvasCount), Form("c%d", canvasCount), 600, 900);
   c->Divide(1,3);
+  canvasCount++;
 
   TH2* ratio = (TH2*) hist1->Clone("ratio");
   if (hist1->GetEntries() < 1e4 || hist2->GetEntries() < 1e4)
@@ -4619,6 +4628,11 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
     {
       Int_t binx = hist2->GetXaxis()->FindBin(hist1->GetXaxis()->GetBinCenter(x));
       Int_t biny = hist2->GetYaxis()->FindBin(hist1->GetYaxis()->GetBinCenter(y));
+      if (swapAxis)
+      {
+	biny = hist2->GetYaxis()->FindBin(hist1->GetXaxis()->GetBinCenter(x));
+	binx = hist2->GetXaxis()->FindBin(hist1->GetYaxis()->GetBinCenter(y));
+      }
       if (hist2->GetBinContent(binx,biny) > 0)
 	ratio->SetBinContent(x,y,hist1->GetBinContent(x,y)/hist2->GetBinContent(binx,biny));
     }
@@ -4634,6 +4648,12 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   hist2->Draw("surf1");
   c->cd(3);
   ratio->Draw("colz");
+  
+  return;
+  
+  new TCanvas;
+  hist1->ProjectionX("p1", hist1->GetYaxis()->FindBin(-1.5), hist1->GetYaxis()->FindBin(1.5))->Draw();
+  hist2->ProjectionY("p2", hist2->GetXaxis()->FindBin(-1.5), hist2->GetXaxis()->FindBin(1.5))->DrawCopy("SAME")->SetLineColor(2);
 }
 
 void CompareSTARpTa(const char* STARFileName, const char* GraphFileName)

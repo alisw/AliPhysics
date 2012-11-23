@@ -1134,7 +1134,44 @@ void Validation2DAllStepsNew(const char* fileName, Int_t bin = 0)
     proj1->Divide(proj1, proj2, 1, 1, "B");
     proj1->Draw();
   }
+  
+  c = new TCanvas("c4", "c4", 1200, 400);
+  c->Divide(3, 1);
+ 
+  for (Int_t i=0; i<1; i++)
+  {
+    if (!hist[i])
+      continue;
 
+    if (hist[5])
+    {
+      c->cd(1);
+      TH2* clone = (TH2*) hist[i]->Clone();
+      clone->Divide(hist[5]);
+      clone->DrawCopy("COLZ");
+      gPad->SetRightMargin(0.15);
+    }
+    
+    c->cd(2);
+    proj1 = ((TH2*) hist[i])->ProjectionX(Form("proj1_%d", i), hist[i]->GetYaxis()->FindBin(-0.99), hist[i]->GetYaxis()->FindBin(0.99));
+    proj1->DrawCopy();
+    
+    baselineValues1[i] = proj1->Integral(proj1->FindBin(TMath::Pi()/2 - 0.2), proj1->FindBin(TMath::Pi()/2 + 0.2)) / (proj1->FindBin(TMath::Pi()/2 + 0.2) - proj1->FindBin(TMath::Pi()/2 - 0.2) + 1);
+    peakYield1[i] = proj1->Integral(proj1->GetXaxis()->FindBin(-1), proj1->GetXaxis()->FindBin(1)) / (proj1->GetXaxis()->FindBin(0.99) - proj1->GetXaxis()->FindBin(-0.99) + 1) - baselineValues1[i];
+    Printf("%d: %f %f", i, peakYield1[i], baselineValues1[i]);
+
+    if (hist[5])
+    {
+      proj2 = ((TH2*) hist[5])->ProjectionX(Form("proj2_%d", i), hist[5]->GetYaxis()->FindBin(-0.99), hist[5]->GetYaxis()->FindBin(0.99));
+      proj2->SetLineColor(2);
+      proj2->DrawCopy("SAME");
+    
+      c->cd(3);
+      proj1->Divide(proj1, proj2, 1, 1, "B");
+      proj1->Draw();
+    }
+  }
+  
   for (Int_t i=0; i<6; i++)
     Printf("%d/%d: %f %f", i, 0, peakYield1[i] / peakYield1[0] - 1, baselineValues1[i] / baselineValues1[0] - 1);
 
@@ -7678,7 +7715,10 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
     Printf("WARNING: Setting eta cut to %f without checking", etaCut);
     h3->SetTrackEtaCut(etaCut);
   }
-    
+  
+  h->SetWeightPerEvent(h->GetWeightPerEvent());
+  h2->SetWeightPerEvent(h->GetWeightPerEvent());
+  h3->SetWeightPerEvent(h->GetWeightPerEvent());
 
   //   return;
   
@@ -7752,11 +7792,14 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       {
 	// pA, fine binning
 	Int_t step = 8;
+// 	Int_t step = 0;
       
 	GetSumOfRatios(h, hMixed, &hist1,  step,  0, 20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist2,  step, 20, 40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist4,  step, 40, 60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist5,  step, 60, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist7,  step, 80, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist8,  step, 0, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 
 	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h3, hMixed3, &hist6,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
@@ -7783,6 +7826,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	GetSumOfRatios(h, hMixed, &hist2,  step,  3, 10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist4,  step, 10, 50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist5,  step, 50, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist7,  step, 80, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }     
       else if (1)
       {
@@ -12417,10 +12461,10 @@ void PlotTrackingEfficiency(const char* fileName)
   }
   
   legend->Draw();  
-  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
-  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
-  
-  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
+//   DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+//   DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+//   
+//   DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
   
   c->SaveAs("correction_tracking.eps");
   
@@ -12436,9 +12480,9 @@ void PlotTrackingEfficiency(const char* fileName)
   proj->SetStats(0);
   projClone = proj->DrawClone("");
 
-  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
-  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
-  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
+//   DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+//   DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+//   DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
 
   c->SaveAs("correction_contamination.eps");
   
@@ -12454,9 +12498,9 @@ void PlotTrackingEfficiency(const char* fileName)
   proj->SetStats(0);
   projClone = proj->DrawClone("");
 
-  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
-  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
-  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
+//   DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+//   DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+//   DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
 
   c->SaveAs("contamination.eps");  
 }
@@ -13854,4 +13898,89 @@ void GetRefMultiplicity(const char* fileNameESD, const char* tag = "")
     syst->SetBinError(i, 0);
   }
   syst->Draw();
+}
+
+void CheckBin(const char* fileName)
+{
+  loadlibs();
+
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
+  
+  sparse = h->GetUEHist(2)->GetTrackHist(0)->GetGrid(8)->GetGrid();
+  sparse->GetAxis(1)->SetRangeUser(5, 5.1);
+  sparse->GetAxis(2)->SetRangeUser(7, 7.1);
+  sparse->GetAxis(3)->SetRangeUser(90, 91);
+  sparse->GetAxis(4)->SetRangeUser(9, 9.1);
+ 
+  new TCanvas;
+  sparse->Projection(0, 4)->Draw("colz");
+
+  sparse = hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(8)->GetGrid();
+  sparse->GetAxis(1)->SetRangeUser(5, 5.1);
+  sparse->GetAxis(2)->SetRangeUser(7, 7.1);
+  sparse->GetAxis(3)->SetRangeUser(90, 91);
+  sparse->GetAxis(4)->SetRangeUser(9, 9.1);
+ 
+  new TCanvas;
+  sparse->Projection(0, 4)->Draw("colz");
+}
+
+void GetCorrectedYields(const char* fileName, const char* correctionFile)
+{
+  loadlibs();
+
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  
+  // centrality, pT, eta
+  yieldsUncorr = h->GetYield();
+  new TCanvas; yieldsUncorr->DrawCopy();
+  
+  AliUEHistograms* hCorr = (AliUEHistograms*) GetUEHistogram(correctionFile);
+  
+  hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(-1.9, 1.9);
+  hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(2)->GetGrid()->GetAxis(4)->SetRangeUser(-1.9, 1.9);
+  
+  // eta, pT
+  TH2* generated = hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->Projection(1, 0);
+  TH2* measured = hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(2)->GetGrid()->Projection(1, 0);
+  
+  Printf("%f %f", generated->GetEntries(), measured->GetEntries());
+
+  new TCanvas; generated->Draw("COLZ");
+  new TCanvas; measured->Draw("COLZ");
+  
+  effCorr = (TH2*) generated->Clone("correction");
+  effCorr->Divide(generated, measured, 1, 1, "B");
+  
+  new TCanvas; effCorr->Draw("COLZ");
+  
+//   return;
+  
+  yieldsCorr = (TH3F*) yieldsUncorr->Clone("fYieldsCorr");
+  yieldsCorr->Reset();
+  
+  for (Int_t x=1; x<=yieldsUncorr->GetNbinsX(); x++)
+    for (Int_t y=1; y<=yieldsUncorr->GetNbinsY(); y++)
+      for (Int_t z=1; z<=yieldsUncorr->GetNbinsZ(); z++)
+      {
+	Float_t factor = effCorr->GetBinContent(effCorr->GetXaxis()->FindBin(yieldsUncorr->GetZaxis()->GetBinCenter(z)), effCorr->GetYaxis()->FindBin(yieldsUncorr->GetYaxis()->GetBinCenter(y)));
+	yieldsCorr->SetBinContent(x, y, z, yieldsUncorr->GetBinContent(x, y, z) * factor);
+	yieldsCorr->SetBinError(x, y, z, yieldsUncorr->GetBinError(x, y, z) * factor);
+      }
+
+  new TCanvas; yieldsCorr->DrawCopy();
+  
+  TFile::Open("corr_yield.root", "RECREATE");
+  yieldsCorr->Write();
+  gFile->Close();
+
+  new TCanvas; yieldsUncorr->Project3D("z1")->Draw(); yieldsCorr->Project3D("z2")->DrawCopy("SAME")->SetLineColor(2);
+
+  yieldsUncorr->GetXaxis()->SetRangeUser(0.1, 9.9);
+  yieldsCorr->GetXaxis()->SetRangeUser(0.1, 9.9);
+  new TCanvas; yieldsUncorr->Project3D("z3")->Draw(); yieldsCorr->Project3D("z4")->DrawCopy("SAME")->SetLineColor(2);
+  yieldsUncorr->GetXaxis()->SetRangeUser(60.1, 99.9);
+  yieldsCorr->GetXaxis()->SetRangeUser(60.1, 99.9);
+  yieldsUncorr->Project3D("z5")->DrawCopy("SAME")->SetLineColor(3); yieldsCorr->Project3D("z6")->DrawCopy("SAME")->SetLineColor(4);
 }
