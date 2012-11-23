@@ -143,7 +143,8 @@ public:
   Double_t SigGeom        (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknown photon origin
   Double_t SigCrom        (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknonw photon energy
   Double_t Sigma2         (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh              );//photon candidate sigma^2
-  static Double_t SigmaCorrFact  (Double_t occupancy                                                             ) {return 0.109*occupancy + 1.15;}//correction facotor for theoretical resolution
+  
+  static Double_t SigmaCorrFact(Int_t iPart, Double_t occupancy                                         );//correction factor for theoretical resolution
 
   //Mathieson Getters
   

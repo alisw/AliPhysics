@@ -367,3 +367,18 @@ Double_t AliHMPIDParam::SigGeom(Double_t trkTheta,Double_t trkPhi,Double_t theta
   return trErr*dtdT;
 }//SigGeom()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Double_t AliHMPIDParam::SigmaCorrFact  (Int_t iPart, Double_t occupancy) 
+{
+  Double_t corr = 1.0;
+                                                                                                             
+  switch(iPart) {
+    case 0: corr = 0.115*occupancy + 1.166; break; 
+    case 1: corr = 0.115*occupancy + 1.166; break;
+    case 2: corr = 0.115*occupancy + 1.166; break;
+    case 3: corr = 0.065*occupancy + 1.137; break;
+    case 4: corr = 0.048*occupancy + 1.202; break;
+  }
+                                                                                                                           
+ return corr; 
+}
+

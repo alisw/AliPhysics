@@ -72,7 +72,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t nmean,Int_t nsp,Double_t *p
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(nmean*pmod);                   //  evaluate the theor. Theta Cherenkov
     if(cosThetaTh>1) continue;                                                                                               //  no light emitted, zero height
     Double_t thetaCerTh = TMath::ACos(cosThetaTh);                                                                           //  theoretical Theta Cherenkov
-    Double_t sigmaRing = Resolution(thetaCerTh,pTrk);
+    Double_t sigmaRing = Resolution(iPart,thetaCerTh,pTrk);
     
     if(sigmaRing==0) {
       for(Int_t jPart=0;jPart<nsp;jPart++) prob[jPart]=1.0/(Float_t)nsp;
@@ -96,13 +96,16 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t nmean,Int_t nsp,Double_t *p
   delete pPid ; pPid=0x0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
+Double_t AliHMPIDPid::Resolution(Int_t iPart, Double_t thetaCerTh, AliESDtrack *pTrk)
 {
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();
       
   AliHMPIDRecon rec;
   Float_t xPc,yPc,thRa,phRa;
+  Float_t x, y;
+  Int_t q, nph;
   pTrk->GetHMPIDtrk(xPc,yPc,thRa,phRa);
+  pTrk->GetHMPIDmip(x,y,q,nph);
   
   Double_t xRa = xPc - (pParam->RadThick()+pParam->WinThick()+pParam->GapThick())*TMath::Cos(phRa)*TMath::Tan(thRa); //just linear extrapolation back to RAD
   Double_t yRa = yPc - (pParam->RadThick()+pParam->WinThick()+pParam->GapThick())*TMath::Sin(phRa)*TMath::Tan(thRa); //just linear extrapolation back to RAD
@@ -110,18 +113,24 @@ Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
   
   Double_t occupancy = pTrk->GetHMPIDoccupancy();
   Double_t thetaMax = TMath::ACos(1./pParam->MeanIdxRad());
-  Int_t nPhots = (Int_t)(21.*TMath::Sin(thetaCerTh)*TMath::Sin(thetaCerTh)/(TMath::Sin(thetaMax)*TMath::Sin(thetaMax))+0.01);
+  Int_t    nPhotsTh = (Int_t)(12.*TMath::Sin(thetaCerTh)*TMath::Sin(thetaCerTh)/(TMath::Sin(thetaMax)*TMath::Sin(thetaMax))+0.01);
 
   Double_t sigmatot = 0;
   Int_t nTrks = 20;
+
   for(Int_t iTrk=0;iTrk<nTrks;iTrk++) {
     Double_t invSigma = 0;
     Int_t nPhotsAcc = 0;
+    
+    Int_t nPhots = 0; 
+    if(nph<nPhotsTh+TMath::Sqrt(nPhotsTh) && nph>nPhotsTh-TMath::Sqrt(nPhotsTh)) nPhots = nph;
+    else nPhots = gRandom->Poisson(nPhotsTh);
+  
     for(Int_t j=0;j<nPhots;j++){
       Double_t phi = gRandom->Rndm()*TMath::TwoPi();
       TVector2 pos; pos=rec.TracePhot(thetaCerTh,phi);
       if(!pParam->IsInside(pos.X(),pos.Y())) continue;
-      if(pParam->IsInDead(pos.X(),pos.Y())) continue;
+      if(pParam->IsInDead(pos.X(),pos.Y()))  continue;
       Double_t sigma2 = pParam->Sigma2(thRa,phRa,thetaCerTh,phi);//photon candidate sigma^2
       if(sigma2!=0) {
         invSigma += 1./sigma2;
@@ -130,5 +139,6 @@ Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
     }      
     if(invSigma!=0) sigmatot += 1./TMath::Sqrt(invSigma);  
   }
-  return (sigmatot/nTrks)*pParam->SigmaCorrFact(occupancy);
+  
+  return (sigmatot/nTrks)*pParam->SigmaCorrFact(iPart,occupancy);
 }
