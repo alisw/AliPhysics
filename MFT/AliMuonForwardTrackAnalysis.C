@@ -14,7 +14,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 				 Double_t massMax = 10.,                           // upper limit for the cut on dimuon mass
 				 Double_t maxChi2SingleMuons = 1.5,                // upper limit for the cut on the single muon chi2
 				 Double_t maxOffsetSingleMuons = 250.,             // upper limit for the cut on the single muon offset w.r.t. the primary vtx
-				 Bool_t correlateCutOnOffsetChi2 = kTRUE,          // if true, the cur region in the chi2-offset plane for single muons is a quadrant aorund the origin
+				 Bool_t correlateCutOnOffsetChi2 = kTRUE,          // if true, the cut region in the chi2-offset plane for single muons is a quadrant aorund the origin
 				 Double_t maxWOffsetMuonPairsAtPrimaryVtx = 1.e9,  // upper limit for the cut on weighted offset of dimuond w.r.t. the primary vtx
 				 Double_t maxWOffsetMuonPairsAtPCA = 1.e9,         // upper limit for the cut on weighted offset of dimuond w.r.t. their PCA
 				 Double_t maxDistancePrimaryVtxPCA = 1.e9,         // upper limit for the cut on the distance between primary vtx and PCA
@@ -26,11 +26,14 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 				 Bool_t muonPairAnalysis = kTRUE,                  // if true, the aalysis of muon pairs will be performed
 				 Int_t firstEvent = -1,
 				 Int_t lastEvent = -1, 
-				 Int_t myRandom = 0,                               // number which will tag the name of the output file
+				 Int_t numTag = 0,                                 // number which will tag the name of the output file
 				 Double_t ptMinSingleMuons = 0.0,                  // lower limit for the cut on the single muon pt
 				 Double_t trueMass = 3.097,                        // used to evaluate the pseudo proper decay length, usually for J/psi only
 				 Bool_t evalDimuonVtxResolution=kFALSE,            // to be set true only if prompt dimuon sources are analyzed
-				 Int_t nEventsToMix = 0) {                         // if <1 or >100, mixing is not performed
+				 Int_t nEventsToMix = 0,                           // if <1 or >100, mixing is not performed
+				 const Char_t *tag = "noTag",                      // tag added to the output file name
+				 Double_t etaMinSingleMuons = -3.6,                // lower limit for the cut on the single muon eta
+				 Double_t etaMaxSingleMuons = -2.5) {              // upper limit for the cut on the single muon eta
   
   const Double_t mJpsi = TDatabasePDG::Instance()->GetParticle("J/psi")->Mass();
 
@@ -54,6 +57,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 
   myAnalysis->SetMaxNWrongClustersMC(maxNWrongClusters);
   myAnalysis->SetMinPtSingleMuons(ptMinSingleMuons);
+  //  myAnalysis->SetEtaRangeSingleMuons(etaMinSingleMuons, etaMaxSingleMuons);
   myAnalysis->SetMaxChi2SingleMuons(maxChi2SingleMuons);
   myAnalysis->SetMaxOffsetSingleMuons(maxOffsetSingleMuons);
   myAnalysis->CorrelateCutOnOffsetChi2(correlateCutOnOffsetChi2);
@@ -71,7 +75,7 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                    
 
   if (myAnalysis->Init("MuonGlobalTracks.root")) {
     while (myAnalysis->LoadNextEvent()) continue;
-    myAnalysis->Terminate(Form("outFiles/outFile.%d.%d.%d.root", myAnalysis->GetFirstEvent(), myAnalysis->GetLastEvent(), myRandom));
+    myAnalysis->Terminate(Form("outFiles/outFile.%d.%s.root", numTag, tag));
   }
 
 }

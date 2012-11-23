@@ -73,6 +73,7 @@ public:
 
   void SetMaxNWrongClustersMC(Int_t nClusters) { fMaxNWrongClustersMC = nClusters; }
   void SetMinPtSingleMuons(Double_t ptMin) { fMinPtSingleMuons = ptMin; }
+  void SetEtaRangeSingleMuons(Double_t min, Double_t max) { fMinEtaSingleMuons=min; fMaxEtaSingleMuons=max; }
   void SetMaxChi2SingleMuons(Double_t chi2Max) { fMaxChi2SingleMuons = chi2Max; }
   void SetMaxOffsetSingleMuons(Double_t offsetMax) { fMaxOffsetSingleMuons = offsetMax; }
   void CorrelateCutOnOffsetChi2(Bool_t option) { fCorrelateCutOnOffsetChi2 = option; }
@@ -145,7 +146,7 @@ private:
   Double_t fXVertResMC, fYVertResMC, fZVertResMC;
   Double_t fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ;
   Int_t fMaxNWrongClustersMC;
-  Double_t fMinPtSingleMuons;
+  Double_t fMinPtSingleMuons, fMinEtaSingleMuons, fMaxEtaSingleMuons;
 
   Bool_t fUseBransonForCut, fUseBransonForKinematics, fCorrelateCutOnOffsetChi2;
 

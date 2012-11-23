@@ -96,6 +96,8 @@ AliMuonForwardTrackAnalysis::AliMuonForwardTrackAnalysis():
   fPrimaryVtxZ(0.),
   fMaxNWrongClustersMC(999),
   fMinPtSingleMuons(0),
+  fMinEtaSingleMuons(-99999.),
+  fMaxEtaSingleMuons(+99999.),
   fUseBransonForCut(kFALSE),
   fUseBransonForKinematics(kFALSE),
   fCorrelateCutOnOffsetChi2(kFALSE),
@@ -196,9 +198,9 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
   fInputTreeWithBranson    -> GetEvent(fEv);
   fInputTreeWithoutBranson -> GetEvent(fEv);
 
-  AliDebug(2,Form("**** analyzing event # %4d (%3d tracks) ****", fEv+1, fMuonForwardTracksWithBranson->GetEntriesFast()));
+  AliDebug(2,Form("**** analyzing event # %4d (%3d tracks) ****", fEv, fMuonForwardTracksWithBranson->GetEntriesFast()));
 
-  AliInfo(Form("**** analyzing event # %6d of %6d ****", fEv+1, fLastEvent+1));
+  AliInfo(Form("**** analyzing event # %6d of %6d ****", fEv, fLastEvent));
 
   fPrimaryVtxX = gRandom->Gaus(0., fXVertResMC);
   fPrimaryVtxY = gRandom->Gaus(0., fYVertResMC);
@@ -225,7 +227,7 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
     while (AnalyzeMuonPair(kSingleEvent)) continue;
   }
 
-  AliDebug(2,Form("**** analyzed  event # %4d (%3d tracks and %3d pairs analyzed) ****", fEv+1, fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut));
+  AliDebug(2,Form("**** analyzed  event # %4d (%3d tracks and %3d pairs analyzed) ****", fEv, fNTracksAnalyzedOfEventAfterCut, fNPairsAnalyzedOfEventAfterCut));
   
   if (fMuonPairAnalysis && fMixing) {
     for (fEvMix=fEv+1; fEvMix<=fEv+fNEventsToMix; fEvMix++) {
@@ -256,8 +258,8 @@ Bool_t AliMuonForwardTrackAnalysis::LoadNextEvent() {
 	fInputTreeWithoutBranson -> GetEvent(fEv);
 
 	AliDebug(2,Form("**** mixing event # %4d (%3d tracks) with event # %4d (%3d tracks) ****", 
-			fEv+1,    fMuonForwardTracksWithBranson->GetEntriesFast(),
-			fEvMix+1, fMuonForwardTracksWithBransonMix ->GetEntriesFast()));	  
+			fEv,    fMuonForwardTracksWithBranson->GetEntriesFast(),
+			fEvMix, fMuonForwardTracksWithBransonMix ->GetEntriesFast()));	  
 	if (fMuonForwardTrackPairsWithBranson || fMuonForwardTrackPairsWithoutBranson) {
 	  fMuonForwardTrackPairsWithBranson    -> Clear("C");
 	  fMuonForwardTrackPairsWithoutBranson -> Clear("C");
@@ -315,21 +317,20 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
     fHistZROriginSingleMuonsMC -> Fill(-1.*fMCRefTrack->Vz(), TMath::Sqrt(fMCRefTrack->Vx()*fMCRefTrack->Vx()+fMCRefTrack->Vy()*fMCRefTrack->Vy()));
   }
 
-  AliMUONTrackParam *param = fMFTTrack->GetTrackParamAtMFTCluster(0);
-  AliMUONTrackExtrap::ExtrapToZCov(param, fPrimaryVtxZ);
-
-  TLorentzVector pMu;
-  Double_t mMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
-  Double_t energy = TMath::Sqrt(param->P()*param->P() + mMu*mMu);
-  pMu.SetPxPyPzE(param->Px(), param->Py(), param->Pz(), energy);
+  fMFTTrack -> EvalKinem(fPrimaryVtxZ);
 
   TMatrixD cov(5,5);
-  cov = param->GetCovariances();
+  cov = fMFTTrack->GetParamCovMatrix();
 
-  fHistXErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Eta(), pMu.P());
-  fHistYErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Eta(), pMu.P());
-  fHistXErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), pMu.Eta(), pMu.Pt());
-  fHistYErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), pMu.Eta(), pMu.Pt());
+  fHistXErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), fMFTTrack->Eta(), fMFTTrack->P());
+  fHistYErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), fMFTTrack->Eta(), fMFTTrack->P());
+  fHistXErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), fMFTTrack->Eta(), fMFTTrack->Pt());
+  fHistYErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), fMFTTrack->Eta(), fMFTTrack->Pt());
+
+  fHistXErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(0,0)), fMFTTrack->Eta(), fMFTTrack->P());
+  fHistYErrorSingleMuonsVsEtaVsP  -> Fill(1.e4*TMath::Sqrt(cov(2,2)), fMFTTrack->Eta(), fMFTTrack->P());
+  fHistXErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(0,0)), fMFTTrack->Eta(), fMFTTrack->Pt());
+  fHistYErrorSingleMuonsVsEtaVsPt -> Fill(1.e4*TMath::Sqrt(cov(2,2)), fMFTTrack->Eta(), fMFTTrack->Pt());
 
   Double_t dX = fMFTTrack->GetOffsetX(fPrimaryVtxX, fPrimaryVtxZ);
   Double_t dY = fMFTTrack->GetOffsetY(fPrimaryVtxY, fPrimaryVtxZ);
@@ -339,16 +340,16 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeSingleMuon() {
 
   //  AliDebug(2, Form("pdg code = %d\n", fMCRefTrack->GetPdgCode()));
 
-  fHistXOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dX,        pMu.Eta(), pMu.P());
-  fHistYOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dY,        pMu.Eta(), pMu.P());
-  fHistOffsetSingleMuonsVsEtaVsP   -> Fill(1.e4*offset,    pMu.Eta(), pMu.P());
-  fHistWOffsetSingleMuonsVsEtaVsP  -> Fill(weightedOffset, pMu.Eta(), pMu.P());
-  fHistXOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dX,        pMu.Eta(), pMu.Pt());
-  fHistYOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dY,        pMu.Eta(), pMu.Pt());
-  fHistOffsetSingleMuonsVsEtaVsPt  -> Fill(1.e4*offset,    pMu.Eta(), pMu.Pt());
-  fHistWOffsetSingleMuonsVsEtaVsPt -> Fill(weightedOffset, pMu.Eta(), pMu.Pt());
+  fHistXOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dX,        fMFTTrack->Eta(), fMFTTrack->P());
+  fHistYOffsetSingleMuonsVsEtaVsP  -> Fill(1.e4*dY,        fMFTTrack->Eta(), fMFTTrack->P());
+  fHistOffsetSingleMuonsVsEtaVsP   -> Fill(1.e4*offset,    fMFTTrack->Eta(), fMFTTrack->P());
+  fHistWOffsetSingleMuonsVsEtaVsP  -> Fill(weightedOffset, fMFTTrack->Eta(), fMFTTrack->P());
+  fHistXOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dX,        fMFTTrack->Eta(), fMFTTrack->Pt());
+  fHistYOffsetSingleMuonsVsEtaVsPt -> Fill(1.e4*dY,        fMFTTrack->Eta(), fMFTTrack->Pt());
+  fHistOffsetSingleMuonsVsEtaVsPt  -> Fill(1.e4*offset,    fMFTTrack->Eta(), fMFTTrack->Pt());
+  fHistWOffsetSingleMuonsVsEtaVsPt -> Fill(weightedOffset, fMFTTrack->Eta(), fMFTTrack->Pt());
 
-  fHistSingleMuonsPtRapidity -> Fill(pMu.Rapidity(), pMu.Pt());
+  fHistSingleMuonsPtRapidity -> Fill(fMFTTrack->Rapidity(), fMFTTrack->Pt());
   Double_t chi2OverNdf = fMFTTrack->GetGlobalChi2()/Double_t(fMFTTrack->GetNMFTClusters()+fMFTTrack->GetNMUONClusters());
   fHistSingleMuonsOffsetChi2  -> Fill(1.e4*offset, chi2OverNdf);
 
@@ -526,10 +527,9 @@ void AliMuonForwardTrackAnalysis::BuildMuonPairsMix() {
 
 Bool_t AliMuonForwardTrackAnalysis::PassedCutSingleMuon(AliMuonForwardTrack *track) {
 
-  AliMUONTrackParam *param = track->GetTrackParamAtMFTCluster(0);
-  AliMUONTrackExtrap::ExtrapToZCov(param, fPrimaryVtxZ);
-
+  track -> EvalKinem(fPrimaryVtxZ);
   if (track->Pt()<fMinPtSingleMuons) return kFALSE;
+  if (track->Eta()<fMinEtaSingleMuons || track->Eta()>fMaxEtaSingleMuons) return kFALSE;
   
   Double_t offset = 1.e4*track->GetOffset(fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ);
   Double_t chi2OverNdf = track->GetGlobalChi2() / Double_t(track->GetNMFTClusters()+track->GetNMUONClusters()); 

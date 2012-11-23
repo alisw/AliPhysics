@@ -121,7 +121,7 @@ protected:
 
   TMatrixD fParamCovMatrix;
 
-  ClassDef(AliMuonForwardTrack,1)
+  ClassDef(AliMuonForwardTrack,2)
     
 };
 
