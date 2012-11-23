@@ -60,6 +60,8 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 
   TObjArray messages;
   messages.SetOwner(kTRUE);
+  
+  GetThresholds();
 
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
     Int_t count = 0; 
@@ -252,7 +254,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // 2012 -> Reference values from RUN 177399
 	      //Double_t refTDCs[6] = {-322.7,-321.4,-321.6,-321.7,-316.2,-315.4};
 	      //  11/2012 -> QA threshold values x TDCs are read from configuration file
-	      Float_t refTDCs[6];
+	      Double_t refTDCs[6];
 	      refTDCs[0] = fZDCQAThr_ZNCTDCRefThr;
 	      refTDCs[1] = fZDCQAThr_ZPCTDCRefThr;
 	      refTDCs[2] = fZDCQAThr_ZNATDCRefThr;
@@ -627,7 +629,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // Reference values from RUN 137161
 	      //Double_t refTDCs[6] = {-320.7,-319.0,-318.6,-319.9,-321.3,-320.8};
 	      //  11/2012 -> QA threshold values x TDCs are read from configuration file
-	      Float_t refTDCs[6];
+	      Double_t refTDCs[6];
 	      refTDCs[0] = fZDCQAThr_ZNCTDCRefThr;
 	      refTDCs[1] = fZDCQAThr_ZPCTDCRefThr;
 	      refTDCs[2] = fZDCQAThr_ZNATDCRefThr;
@@ -955,14 +957,14 @@ void AliZDCQAChecker::GetThresholds()
   PrintThresholds();
 }
 
-//___________________________________________________________________________________________________
+//_______________________________________________________________________________
 void AliZDCQAChecker::PrintThresholds()
 {
   printf("\n ####    ZDC QA Thresholds  read from configuration file: ");  
-  printf(" \t fZDCQAThr_ZNCTDCRefThr %1.2f \n",fZDCQAThr_ZNCTDCRefThr);
-  printf(" \t fZDCQAThr_ZPCTDCRefThr %1.2f \n",fZDCQAThr_ZPCTDCRefThr);
-  printf(" \t fZDCQAThr_ZNATDCRefThr %1.2f \n",fZDCQAThr_ZNATDCRefThr);
-  printf(" \t fZDCQAThr_ZPATDCRefThr %1.2f \n",fZDCQAThr_ZPATDCRefThr);
-  printf(" \t fZDCQAThr_ZEM1TDCRefThr %1.2f \n",fZDCQAThr_ZEM1TDCRefThr);
-  printf(" \t fZDCQAThr_ZEM2TDCRefThr %1.2f \n\n",fZDCQAThr_ZEM2TDCRefThr);
+  printf(" \t fZDCQAThr_ZNCTDCRefThr %f \n",fZDCQAThr_ZNCTDCRefThr);
+  printf(" \t fZDCQAThr_ZPCTDCRefThr %f \n",fZDCQAThr_ZPCTDCRefThr);
+  printf(" \t fZDCQAThr_ZNATDCRefThr %f \n",fZDCQAThr_ZNATDCRefThr);
+  printf(" \t fZDCQAThr_ZPATDCRefThr %f \n",fZDCQAThr_ZPATDCRefThr);
+  printf(" \t fZDCQAThr_ZEM1TDCRefThr %f \n",fZDCQAThr_ZEM1TDCRefThr);
+  printf(" \t fZDCQAThr_ZEM2TDCRefThr %f \n\n",fZDCQAThr_ZEM2TDCRefThr);
 }

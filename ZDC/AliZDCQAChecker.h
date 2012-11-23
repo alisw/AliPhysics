@@ -35,12 +35,12 @@ public:
   AliZDCQAChecker& operator= (const AliZDCQAChecker & /*checker*/);
 
   TObjArray *fQAThresholds;    		//! Reference data from OCDB 
-  Float_t    fZDCQAThr_ZNCTDCRefThr; 	// TDC reference value for QA checks
-  Float_t    fZDCQAThr_ZPCTDCRefThr; 	// TDC reference value for QA checks
-  Float_t    fZDCQAThr_ZNATDCRefThr; 	// TDC reference value for QA checks
-  Float_t    fZDCQAThr_ZPATDCRefThr; 	// TDC reference value for QA checks
-  Float_t    fZDCQAThr_ZEM1TDCRefThr; 	// TDC reference value for QA checks
-  Float_t    fZDCQAThr_ZEM2TDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZNCTDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZPCTDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZNATDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZPATDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZEM1TDCRefThr; 	// TDC reference value for QA checks
+  Double_t    fZDCQAThr_ZEM2TDCRefThr; 	// TDC reference value for QA checks
   
   ClassDef(AliZDCQAChecker,1)  // description 
 
