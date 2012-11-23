@@ -59,11 +59,8 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
    TH1F        *fKinKRbn; //Pt of PDG Kaons inside the selcted ones by the KInk topology 
    TH1F        *fKinkKaonBg; //Pt of the BG inside the kink-Kaon identified spectrum
    TH1F        *fM1kaon; //inv mass of kink-tracks taken as kaons decaying to  mu + neutrino
-   TH1F        *fgenPtEtR; //MC Pt spectrum of kaons decaying to muon+neutrino and pi +pi, inside eta,Pt,Rad cuts
    TH1F        *fPtKink; //Pt  spectrum   of all kinks  from track bank
    TH1F        *fptKink; //Pt  spectrum of all kinks from kink bank
-   TH2F        *fcodeH ; //PDG code(mother)  vrs PDG dcode(daughter) of kinks with Qt <0.12 (fake)
-   TH2F        *fdcodeH ; //inks, code  vrs dcode of BG,if mother code is 321 and daughter code > 
    TH2F        *fAngMomK; // Decay angle vrs Mother Mom for pdg kaons
    TH2F        *fAngMomPi; // Decay angle vrs Mother Mom for pdg pions
    TH2F        *fAngMomKC; //Decay angle vrs Mother Mom for pdg kaons, inside the selected sample
@@ -86,7 +83,6 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
    TH2F        *fZvXv; //two dime of Z vrs X of vtx main           
    TH2F        *fZvYv; // two dime of Z vrs Y of vtx main           
    TH2F        *fXvYv; // two dime of X vrs Y of main tracks vtx main           
-   TH1F        *fPtPrKink; // pt of Primary PDG kaons inside the selected ones by the kink topology              
    TH1F        *fHistPtKaoP; //Pt Kaon spectrum of clean sample pos
    TH1F        *fHistPtKaoN; //Pt Kaon spectrum of clean sample neg
    TH1F        *frapiKESD;// rapidi K      
@@ -102,6 +98,14 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
    TH2F        *fPosiKinKYZ;//!MC position  kink
    TH2F        *fPosiKinKBg;//!MC position  kink
    TH2F        *fQtMothP;//!qt vrs p mother  
+   TH2F        *fTPCSgnlPtpc;//Kink mother moment vrs TPC signal                 
+   TH2F        *fTPCMomNSgnl;//kink  mother TPC momentum vrs nsigmas of dEdx                    
+   TH2F        *fMothKinkMomSgnl;//kink  mother TPC momentum vrs nsigmas of dEdx                    
+   TH1F        *fNSigmTPC;//kink  mother TPC momentum vrs nsigmas of dEdx                    
+   TH2F        *fTPCSgnlKinkDau;//Kink mother moment vrs TPC signal                 
+   TH1F        *fPtKinkPos; //Pos K Pt  spectrum   of all kinks  from track bank, K0 bins
+   TH1F        *fPtKinkNeg; //Neg K Pt  spectrum   of all kinks  from track bank, K0 bins
+   TH2F        *fRadNclCln;//kink  Radius      Ncl  TPC  for kaons from kink clean sample
 
    TF1         *f1;
    TF1         *f2;
