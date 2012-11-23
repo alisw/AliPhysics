@@ -181,7 +181,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }  
   
   void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; } 
+  void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; }
   
  private:
   
