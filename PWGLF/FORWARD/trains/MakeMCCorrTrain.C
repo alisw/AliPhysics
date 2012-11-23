@@ -54,7 +54,7 @@ protected:
     if (!mgr->GetMCtruthEventHandler()) return;
     
     // --- Task to copy header information ---------------------------
-    gROOT->Macro("AddTaskCopyHeader.C");
+    // gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
     gROOT->Macro("AddTaskForwardMCCorr.C"); 

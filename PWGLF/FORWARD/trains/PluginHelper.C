@@ -217,8 +217,7 @@ struct PluginHelper : public Helper
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
     // Execute through interpreter until patch is applied
-    gROOT->ProcessLine(Form("((AliAnalysisAlien*)%p)->SetDropToShell(false);",
-			    fHandler));
+    fHandler->SetDropToShell(false);
     if (fOptions.Has("mode"))
       fHandler->SetAliRootMode(fOptions.Get("mode"));
     else 
