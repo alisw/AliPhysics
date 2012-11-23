@@ -33,7 +33,7 @@ AddTaskCentraldNdeta(const char* trig      = "INEL",
 		     Bool_t      cutEdges  = false,
 		     Double_t    trigEff   = 1, 
 		     Double_t    trigEff0  = 1,
-		     Bool_t      corrEmpty = false,
+		     Bool_t      corrEmpty = true,
 		     const char* mcanalysisfilename = "none")
 {
   // --- Load libraries ----------------------------------------------

@@ -569,6 +569,11 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   fList->Add(AliForwardUtil::MakeParameter("v0and",fUseV0AND));
   fList->Add(AliForwardUtil::MakeParameter("nPileUp", fMinPileupContrib));
   fList->Add(AliForwardUtil::MakeParameter("dPileup", fMinPileupDistance));
+  fList->Add(AliForwardUtil::MakeParameter("alirootRev", 
+					   AliForwardUtil::AliROOTRevision()));
+  fList->Add(AliForwardUtil::MakeParameter("alirootBranch", 
+					   AliForwardUtil::AliROOTBranch()));
+
 }
 
 //____________________________________________________________________

@@ -13,13 +13,13 @@
 # 
 # Then, one needs to run this script in set-up mode e.g., 
 # 
-#   $0 --what setup  \
+#   $0 --what=setup  \
 #       --name=LHC10h --sys=pbpb --snn=2760 --field=5 \
 #       --real-dir=/alice/data/2010/LHC10h \
 #       --real-pattern=ESDs/pass2/*/AliESDs.root \
-#       --mc-dir=/alice/sim/LHC11a7 \
+#       --mc-dir=/alice/sim/LHC10h11 \
 #       --mc-pattern=*/AliESDs.root \
-#       --runs=runs.list --par
+#       --runs=LHC10.list --par
 # 
 # Note, all the settings are written to the file .config in the
 # current directory, so you do not need to give the parameters at
@@ -28,54 +28,42 @@
 # 
 # Next, we need to generate the corrections.  Do 
 # 
-#   $0 --what corrs 
+#   $0 --what=corrs 
 # 
 # and then monitor output on MonAlisa.  When enough has finished, execute 
 # 
-#   $0 --what corrs --step terminate 
+#   $0 --what=corrs --step=terminate 
 # 
-# enough times to get the final merged result.  Next, we need to download 
-# the results
+# enough times to get the final merged result.  Next, we need to
+# extract and upload the corrections to our local corrections folder
 # 
-#   $0 --what corrs --step download 
-# 
-# and extract and upload the corrections to our local corrections folder
-# 
-#   $0 --what corrs --step upload 
+#   $0 --what=corrs --step=upload 
 # 
 # Now we can submit our AOD generation jobs.  Do 
 # 
-#   $0 --what aods 
+#   $0 --what=aods 
 # 
 # and then monitor output on MonAlisa.  When enough has finished, execute 
 # 
-#   $0 --what aods --step terminate 
+#   $0 --what=aods --step=terminate 
 # 
-# enough times to get the final merged result.  Next, we need to download 
-# the results
+# enough times to get the final merged result.  Next, we need to
+# download the results and we draw the summary results
 # 
-#   $0 --what aods --step download 
-# 
-# and we can draw the summary results 
-# 
-#   $0 --what aods --step draw 
+#   $0 --what aods --step=draw 
 # 
 # Now, we should do the dN/deta analysis.  Do 
 # 
-#   $0 --what dndetas
+#   $0 --what=dndetas
 # 
 # and then monitor output on MonAlisa.  When enough has finished, execute 
 # 
-#   $0 --what dndetas --step terminate 
+#   $0 --what=dndetas --step=terminate 
 # 
 # enough times to get the final merged result.  Next, we need to download 
-# the results
+# the results and we can draw the summary and final plot
 # 
-#   $0 --what dndetas --step download 
-# 
-# and we can draw the final results 
-# 
-#   $0 --what dndetas --step draw 
+#   $0 --what=dndetas --step=draw 
 # 
 # Enjoy
 # 
@@ -93,14 +81,16 @@ par=0
 noact=0
 aliroot="&aliroot=v5-03-75pATF-AN"
 # root="root=v5-34-02-1"
+fwd_dir=$ALICE_ROOT/PWGLF/FORWARD/analysis2
 
 real_dir=
 real_pat=
 mc_dir=
 mc_pat=
-my_real_dir=/alice/cern.ch/users/
+my_real_dir=
 my_mc_dir=
 
+# === Various functions ==============================================
 # --- Usage ----------------------------------------------------------
 usage()
 {
@@ -135,9 +125,8 @@ and must be executed in that order.  STEP is one of
 
   full        Run the analysis 
   terminate   Terminate the job (may need iterations)
-  download    Download results 
-  upload      Upload corrections (only for OPERATION=corrs)
-  draw        Draw (partial) results
+  upload      Upload corrections (only for TRAINS=corrs)
+  draw        Draw (partial) results (not for TRAINS=corrs)
 EOF
 }
 
@@ -149,6 +138,84 @@ manual()
 	sed -e '/\(BEGIN\|END\)_MANUAL/ d' -e 's/^# //' -e "s,\$0,$0,"
 }
 
+# === Utilities to execute scripts ===================================
+# --- Run script -----------------------------------------------------
+script()
+{
+    local scr=$1 ; shift 
+    local args=$1 ; shift
+    echo "Will run aliroot -l -b -q $scr($args)"
+    if test $noact -gt 0 ; then return ; fi
+    aliroot -l -b <<EOF
+.x $scr($args)
+.q
+EOF
+}
+# --- Run acceptance generation --------------------------------------
+accGen()
+{
+    local run=$1 
+    script ${fwd_dir}/corrs/ExtractAcceptance.C \
+	"${run},${sys},${snn},${field}"
+}
+
+# --- Extract corrections --------------------------------------------
+terminate()
+{
+    script Terminate.C 
+}
+# --- Extract corrections --------------------------------------------
+download()
+{
+    test -f .download && return 0 
+    script Download.C 
+    touch .download
+}
+# --- Extract corrections --------------------------------------------
+extract()
+{
+    test -f .extract && return 0 
+    script Extract.C 
+    touch .extract
+}
+# --- Upload a file --------------------------------------------------
+upload()
+{
+    test -f .upload && return 0 
+    script Upload.C \"file://${here}/${name}_corrs_${now}\"
+    touch .upload 
+}
+# --- Extract and upload ---------------------------------------------
+extract_upload()
+{
+    echo "Download, extract, and uploade in `basename $PWD`"
+    download
+    for i in *.zip ; do 
+	if test ! -f $i ; then continue ; fi 
+	echo "Extracting and uploading from $i"
+	if test $noact -gt 0 ; then continue ; fi
+	rm -rf tmp
+	(mkdir -p tmp && \
+	    cd tmp && \ 
+	    unzip ../$i && \
+		script ../Extract.C "" "" && 
+	    upload)
+    done
+}
+
+# --- Draw -----------------------------------------------------------
+draw()
+{
+    local scr=$1 
+    download 
+    for i in *.zip ; do 
+	d=`basename $i .zip` 
+	mkdir -p $d 
+	unzip $i -d $d
+	(cd $d && script $scr)
+    done
+}
+
 # --- Get the grid home dir ------------------------------------------
 outputs()
 {
@@ -158,9 +225,62 @@ TGrid::Connect("alien://");
 gSystem->RedirectOutput(0);
 std::cout << gGrid->GetHomeDirectory() << std::endl;
 EOF`
-
     my_real_dir="$l/${name}_${now}_aod/output"
     my_mc_dir="$l/${name}_${now}_mcaod/output"
+}
+
+# === Trains =========================================================
+# --- Run set-ups ----------------------------------------------------
+setup()
+{
+    run_for_acc=`cat $runs | awk '{FS=" \n\t"}{printf "%d", $1}' | head -n 1` 
+    if test x$run_for_acc = "x" || test $run_for_acc -lt 1; then 
+	echo "No run for acceptance correction specified" > /dev/stderr 
+	exit 1
+    fi
+
+   now=`date '+%Y%m%d_%H%M'` 
+   outputs
+
+    # Write settings to a file, which we later can source 
+    cat > ${dotconf} <<EOF
+name="$name"
+runs=${runs}
+sys=$sys
+snn=$snn
+field=$field
+real_dir=${real_dir}
+real_pat=${real_pat}
+mc_dir=${mc_dir}
+mc_pat=${mc_pat}
+my_real_dir=${my_real_dir}
+my_mc_dir=${my_mc_dir}
+par=${par}
+now=${now}
+EOF
+
+    if test $noact -lt 1 ; then 
+	mkdir -p ${name}_acc_${now}
+    fi
+    echo "Make acceptance corrections" 
+    (cd ${name}_acc_${now} && \
+	accGen $run_for_acc && \
+	upload )
+}    
+
+# --- Run set-ups ----------------------------------------------------
+cleanup()
+{
+    rm -rf \
+	${name}_acc_${now} \
+	${name}_mccorr_${now} \
+	${name}_mceloss_${now} \
+	${name}_eloss_${now} \
+	${name}_mcaod_${now} \
+	${name}_aod_${now} \
+	${name}_mcdndeta_${now} \
+	${name}_dndeta_${now} \
+	${name}_corrs_${now}
 }
 
 # --- Check settings -------------------------------------------------
@@ -231,115 +351,6 @@ Date & time:            ${now}
 
 EOF
 }
-   
-# --- Run script -----------------------------------------------------
-script()
-{
-    scr=$1 ; shift 
-    args=$1 
-    echo "Will run aliroot -l -b -q $scr($args)"
-    if test $noact -gt 0 ; then return ; fi
-    aliroot -l -b <<EOF
-.x $scr($args)
-.q
-EOF
-}
-# --- Run acceptance generation --------------------------------------
-accGen()
-{
-    local run=$1 
-    script $ALICE_ROOT/PWGLF/FORWARD/analysis2/corrs/ExtractAcceptance.C \
-	"${run},${sys},${snn},${field}"
-}
-
-# --- Extract corrections --------------------------------------------
-terminate()
-{
-    script Terminate.C 
-}
-# --- Extract corrections --------------------------------------------
-download()
-{
-    script Download.C 
-}
-# --- Extract corrections --------------------------------------------
-extract()
-{
-    script Extract.C 
-}
-# --- Upload a file --------------------------------------------------
-upload()
-{
-    script Upload.C \"file://${here}/${corrs}\"
-}
-# --- Extract and upload ---------------------------------------------
-extract_upload()
-{
-  for i in *.zip ; do 
-      if test ! -f $i ; then continue ; fi 
-      echo "Extracting and uploading from $i"
-      if test $noact -gt 0 ; then continue ; fi
-      rm -rf tmp
-      (mkdir -p tmp && \
-	  cd tmp && \ 
-	  unzip ../$i && \
-	      script ../Extract.C && 
-	  upload)
-  done
-}
-
-# --- Run set-ups ----------------------------------------------------
-cleanup()
-{
-    rm -rf ${name}_acc \
-	${name}_mccorr \
-	${name}_mceloss \
-	${name}_eloss \
-	${name}_mcaod \
-	${name}_aod \
-	${name}_mcdndeta \
-	${name}_dndeta \
-	tmp \
-	${corrs}
-}
-
-# --- Run set-ups ----------------------------------------------------
-setup()
-{
-    run_for_acc=`cat $runs | awk '{FS=" \n\t"}{printf "%d", $1}' | head -n 1` 
-    if test x$run_for_acc = "x" || test $run_for_acc -lt 1; then 
-	echo "No run for acceptance correction specified" > /dev/stderr 
-	exit 1
-    fi
-
-   now=`date '+%Y%m%d_%H%M'` 
-   outputs
-
-    # Write settings to a file, which we later can source 
-    cat > ${dotconf} <<EOF
-name="$name"
-runs=${runs}
-sys=$sys
-snn=$snn
-field=$field
-real_dir=${real_dir}
-real_pat=${real_pat}
-mc_dir=${mc_dir}
-mc_pat=${mc_pat}
-my_real_dir=${my_real_dir}
-my_mc_dir=${my_mc_dir}
-par=${par}
-now=${now}
-EOF
-
-    if test $noact -lt 1 ; then 
-	mkdir -p ${name}_acc
-    fi
-    echo "Make acceptance corrections" 
-    (cd ${name}_acc && \
-	accGen $run_for_acc && \
-	upload )
-}    
 
 # --- Run the train --------------------------------------------------
 # Usage:
@@ -364,11 +375,12 @@ allAboard()
 	*corr)  cl=MakeMCCorrTrain ; mc=1 ;;
 	*eloss) cl=MakeFMDELossTrain ;;  
 	*aod)   cl=MakeAODTrain 
-	    opts="--corr=../${corrs} --sys=${sys} --snn=${snn} --field=${field}"
+	    opts="--corr=../${name}_corrs_${now} --sys=${sys} --snn=${snn} --field=${field}"
 	    ;;
 	*dndeta) cl=MakedNdetaTrain 
 	    tree=aodTree 
 	    uopt="&concat"
+	    opts="${opts}"
 	    ;;
 	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
     esac
@@ -387,6 +399,12 @@ allAboard()
 		uopt="${uopt}&mc"
 		dir=$my_mc_dir
 	    fi
+	    ;;
+    esac
+    case $type in 
+	*aod|*dndeta) 
+	    if test $sys -gt 1 ; then opts="${opts} --cent" ; fi ;; 
+	*)
 	    ;;
     esac
     if test $par -gt 0 ; then 
@@ -419,7 +437,7 @@ EOF
 Then, do 
 
   (cd ${nme}_${now} && aliroot -l -b -q Extract.C)
-  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${corrs}")')
+  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${name}_corrs_${now}")')
 
 to upload the results to our local corrections store. 
 EOF
@@ -428,7 +446,7 @@ EOF
 	    cat <<EOF
 Then, do 
  
-  (cd ${nme}_${now} && aliroot -l $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawAODSummary.C)
+  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawAODSummary.C)
 
 to get a PDF of the diagnostics histograms
 EOF
@@ -437,7 +455,7 @@ EOF
 	    cat <<EOF
 Then, do 
  
-  (cd ${nme}_${now} && aliroot -l $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawdNdetaSummary.C)
+  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawdNdetaSummary.C)
 
 to get a PDF of the diagnostics histograms, and 
 
@@ -450,6 +468,7 @@ EOF
 }
 
 
+# === Wrappers =======================================================
 # --- Run all correction jobs ----------------------------------------
 corrs()
 {
@@ -462,12 +481,6 @@ corrs_terminate()
     (cd ${name}_mccorr_${now}  && terminate)
     (cd ${name}_mceloss_${now} && terminate)
     (cd ${name}_eloss_${now}   && terminate)
-}
-corrs_download() 
-{
-    (cd ${name}_mccorr_${now}  && download)
-    (cd ${name}_mceloss_${now} && download)
-    (cd ${name}_eloss_${now}   && download)
 }
 corrs_upload() 
 {
@@ -490,21 +503,14 @@ aods_terminate()
     (cd ${name}_mcaod_${now} && terminate)
     (cd ${name}_aod_${now}   && terminate)
 }
-aods_download() 
-{
-    (cd ${name}_mcaod_${now} && download)
-    (cd ${name}_aod_${now}   && download)
-}
 aods_upload()
 {
     echo "Upload does not make sense for AOD jobs"
 }
 aods_draw() 
 {
-    (cd ${name}_mcaod_${now} && \
-	script $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawAODSummary.C)
-    (cd ${name}_aod_${now} && \
-	script $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawAODSummary.C)
+    (cd ${name}_mcaod_${now} && draw ${fwd_dir}/DrawAODSummary.C)
+    (cd ${name}_aod_${now}   && draw ${fwd_dir}/DrawAODSummary.C)
 }
 
 # --- Run all dN/deta jobs -------------------------------------------
@@ -518,25 +524,19 @@ dndetas_terminate()
     (cd ${name}_mcdndeta_${now} && terminate)
     (cd ${name}_dndeta_${now}   && terminate)
 }
-dndetas_download() 
-{
-    (cd ${name}_mcdndeta_${now} && download)
-    (cd ${name}_dndeta_${now}   && download)
-}
 dndetas_upload()
 {
     echo "Upload does not make sense for dN/deta jobs"
 }
 dndetas_draw() 
 {
-    (cd ${name}_mcdndeta_${now} && \
-	script $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawdNdetaSummary.C && \
+    (cd ${name}_mcdndeta_${now} && draw ${fwd_dir}/DrawdNdetaSummary.C && \
 	script draw.C)
-    (cd ${name}_dndeta_${now} && \
-	script $ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawdNdetaSummary.C && \
+    (cd ${name}_dndeta_${now}   && draw ${fwd_dir}/DrawdNdetaSummary.C && \
 	script draw.C)
 }
 
+# === Executable code
 # --- Source settings if found ---------------------------------------
 if test -f $dotconf ; then 
     source $dotconf 
@@ -596,12 +596,12 @@ case $what in
     *) echo "$0: Unknown operation: $what" > /dev/stderr ; exit 1 ;;
 esac
     
-case $step in 
-    full) ;; 
-    term*) func=${func}_terminate ;; 
-    down*) func=${func}_download ;; 
-    up*)   func=${func}_upload ;; 
-    dr*)   func=${func}_draw ;;
+case x$step in 
+    x|xfull) ;; 
+    xterm*) func=${func}_terminate ;; 
+    xup*)   func=${func}_upload ;; 
+    xdr*)   func=${func}_draw ;;
+    *) echo "$0: Unknown step $step" > /dev/stderr ; exit 1 ;;
 esac
 
 echo "Will execute $func" 

@@ -218,11 +218,11 @@ AliCentralMultiplicityTask::GetESDEvent()
     //AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
   }
   Bool_t ok = true;
-  if (!GetManager().HasSecondaryCorrection()) {
+  if (/*fUseSecondary &&*/ !GetManager().HasSecondaryCorrection()) {
     ok = false;
     AliError("No secondary correction defined!");
   }
-  if (!GetManager().HasAcceptanceCorrection()) {
+  if (/*fUseAcceptance &&*/ !GetManager().HasAcceptanceCorrection()) {
     ok = false;
     AliError("No acceptance correction defined!");
   }

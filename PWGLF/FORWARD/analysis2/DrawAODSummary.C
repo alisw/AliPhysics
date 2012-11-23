@@ -7,7 +7,35 @@
  * 
  * 
  */
+#ifndef __CINT__
+# include <THStack.h>
+# include <TH1.h>
+# include <TH2.h>
+# include <TParameter.h>
+# include <TCanvas.h>
+# include <TList.h>
+# include <TFile.h>
+# include <TError.h>
+# include <TLatex.h>
+# include <TLegend.h>
+# include <TLegendEntry.h>
+# include <TMath.h>
+# include <TString.h>
+# include <TStyle.h>
+# include <TSystem.h>
+# include <TProfile.h>
+# include <TGaxis.h>
+#else
+class THStack;
+class TH1;
+class TH2;
+class TCollection;
+class TCanvas;
+class TVirtualPad;
+class TLatex;
+#endif
 
+bool fgPause = false;
 //____________________________________________________________________
 /** 
  * Find an object in a collection
@@ -62,7 +90,7 @@ TObject* GetObject(const TDirectory* parent, const TString& name)
     return 0;
   }
   // --- Find the object ---------------------------------------------
-  TObject* o = parent->Get(name);
+  TObject* o = const_cast<TDirectory*>(parent)->Get(name);
   if (!o) {
     Warning("GetObject", "Object \"%s\" not found in parent \"%s\"",
 	    name.Data(), parent->GetName());
@@ -365,8 +393,7 @@ void CloseCanvas(TCanvas* c)
  * @param c      Canvas 
  * @param title  Title 
  */
-void PrintCanvas(TCanvas* c, const TString& title, 
-		 Float_t size=.7, Bool_t pause=false)
+void PrintCanvas(TCanvas* c, const TString& title, Float_t size=.7)
 {
   // Info("PrintCanvas", "Printing page %s", title.Data());
   TString tit;
@@ -389,7 +416,7 @@ void PrintCanvas(TCanvas* c, const TString& title,
   gSystem->RedirectOutput(0);
   
   // std::cin.peek();
-  if (pause) Pause();
+  if (fgPause) Pause();
 
   ClearCanvas(c);
 }
@@ -448,6 +475,70 @@ void DrawInPad(TVirtualPad* c, Int_t padNo, TObject* h, Option_t* opts="",
   p->cd();
 }
 //____________________________________________________________________
+void DrawTwoInPad(TVirtualPad* c, Int_t padNo, TH1* h1, TH1* h2,
+		  Option_t* opts="", UShort_t flags=0x0)
+{
+  // Info("DrawInPad", "Drawing %p in pad # %d of %p w/options %s, flags 0x%x", 
+  //      h, padNo, c, opts, flags);
+  TVirtualPad* p = c->cd(padNo);
+  if (!p) { 
+    Warning("DrawInPad", "Pad # %d not found in %s", padNo, c->GetName());
+    return;
+  }
+  if (flags & 0x1) p->SetLogx();
+  if (flags & 0x2) p->SetLogy();
+  if (flags & 0x4) p->SetLogz();
+  p->SetFillColor(0);
+
+  TString o(opts);
+  o.ToLower();
+  TString fopts(o);
+  Bool_t e3 = o.Contains("e3");
+  if (e3) {
+    fopts.ReplaceAll("e3", " same");
+  }
+
+  h1->GetYaxis()->SetLabelSize(0);
+  h1->GetYaxis()->SetTicks("");
+  h1->GetYaxis()->SetNdivisions(0);
+  h1->DrawCopy(o); // First draw with opts 
+  if (e3) h1->DrawCopy(fopts);
+  p->Update();
+
+  // Make axis 
+  Double_t m1 = 1.05 * h1->GetMaximum();
+  TGaxis*  a1 = new TGaxis(p->GetUxmin(), p->GetUymin(), 
+			   p->GetUxmin(), p->GetUymax(), 
+			   0, m1, 510);
+  a1->SetLineColor(h1->GetLineColor());
+  a1->Draw();
+  
+  o.Append(" same");
+  Double_t m2    = 1.1 * h2->GetMaximum();
+  Double_t scale = m1 / m2;
+  h2->Scale(scale);
+  h2->DrawCopy(o);
+  if (e3) h2->DrawCopy(fopts);
+
+  TGaxis*  a2 = new TGaxis(p->GetUxmax(), p->GetUymin(), 
+			   p->GetUxmax(), p->GetUymax(), 
+			   0, m2, 510, "+L");
+  a2->SetLineColor(h2->GetLineColor());
+  a2->Draw();
+  
+  if (flags& 0x10) { 
+    TLegend* l = p->BuildLegend();
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+  }
+  p->Modified();
+  p->Update();
+  p->cd();
+}  
+  
+
+//____________________________________________________________________
 void CreateTemplates(TLatex*& name, TLatex*& value, Float_t size=.03)
 {
   Double_t x1 = .1;
@@ -490,18 +581,21 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
   CreateTemplates(name, value);
 
   Int_t sys, sNN, field, runNo, lowFlux, nPileUp;
+  Int_t aliRev, aliBra;
   Bool_t fpVtx, v0and;
   Double_t dPileUp;
   
-  GetParameter(c, "sys",     sys);
-  GetParameter(c, "sNN",     sNN);
-  GetParameter(c, "field",   field);
-  GetParameter(c, "runNo",   runNo);
-  GetParameter(c, "lowFlux", lowFlux);
-  GetParameter(c, "fpVtx",   fpVtx);
-  GetParameter(c, "v0and",   v0and);
-  GetParameter(c, "nPileUp", nPileUp);
-  GetParameter(c, "dPileup", dPileUp);
+  GetParameter(c, "sys",           sys);
+  GetParameter(c, "sNN",           sNN);
+  GetParameter(c, "field",         field);
+  GetParameter(c, "runNo",         runNo);
+  GetParameter(c, "lowFlux",       lowFlux);
+  GetParameter(c, "fpVtx",         fpVtx);
+  GetParameter(c, "v0and",         v0and);
+  GetParameter(c, "nPileUp",       nPileUp);
+  GetParameter(c, "dPileup",       dPileUp);
+  GetParameter(c, "alirootRev",    aliRev);
+  GetParameter(c, "alirootBranch", aliBra);
 
   DrawParameter(name, value, y, "System", (sys == 1 ? "pp" : 
 					   sys == 2 ? "PbPb" : 
@@ -516,6 +610,8 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
 		Form("%d", nPileUp));
   DrawParameter(name, value, y, "Least distance of pile-up vertex", 
 		Form("%fcm", dPileUp));
+  DrawParameter(name, value, y, "AliROOT", 
+		Form("%7lu/0x%8lx", ULong_t(aliRev), ULong_t(aliBra)));
 
   PrintCanvas(can, "Event Inspector");
 
@@ -524,9 +620,16 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
 
   TH1*    nEventsTr    = GetH1(c, "nEventsTr");
   TH1*    nEventsTrVtx = GetH1(c, "nEventsTrVtx");
+  TH1*    vertex       = GetH1(c, "vertex");
+  Bool_t  mc           = (vertex != 0);
   if (nEventsTr)    nEventsTr->Rebin(2);
   if (nEventsTrVtx) nEventsTrVtx->Rebin(2);
+  if (vertex) {
+    // vertex->Rebin(2);
+    vertex->SetFillColor(kMagenta+2);
+  }
   DrawInPad(body, 1, nEventsTr);
+  DrawInPad(body, 1, vertex, "same");
   DrawInPad(body, 1, nEventsTrVtx, "same"); 
   DrawInPad(body, 1, GetH1(c, "nEventsAccepted"), "same", 0x10);
 
@@ -540,6 +643,63 @@ void DrawEventInspector(const TCollection* forward, TCanvas* can)
   DrawInPad(body, 8, GetH2(c, "centVsQuality"), "colz", 0x4);
 
   PrintCanvas(can, "EventInspector - Histograms");  
+
+  if (!mc) return; // not MC 
+  
+  TH1* phiR         = GetH1(c, "phiR");
+  TH1* b            = GetH1(c, "b");
+  TH2* bVsNpart     = GetH2(c, "bVsParticipants");
+  TH2* bVsNbin      = GetH2(c, "bVsBinary");
+  TH2* bVsCent      = GetH2(c, "bVsCentrality");
+  TH2* vzComparison = GetH2(c, "vzComparison");
+  TH2* centVsNpart  = GetH2(c, "centralityVsParticipans");// Spelling!
+  TH2* centVsNbin   = GetH2(c, "centralityVsBinary");
+  
+  body = can->cd(2);
+  body->Divide(2,3);
+
+  DrawInPad(body, 1, phiR);
+  DrawInPad(body, 2, vzComparison, "colz", 0x4);
+  DrawInPad(body, 3, b);
+
+  TProfile* nPartB = bVsNpart->ProfileX("nPartB",1,-1,"s");
+  TProfile* nBinB  = bVsNbin->ProfileX("nBinB",1,-1,"s");
+  nPartB->SetMarkerColor(kBlue+2);
+  nPartB->SetMarkerStyle(20);
+  nPartB->SetLineColor(kBlue+2);
+  nPartB->SetFillColor(kBlue-10);
+  nPartB->SetFillStyle(1001);
+  nPartB->SetMarkerSize(0.7);
+  nBinB->SetMarkerColor(kRed+2);
+  nBinB->SetMarkerStyle(21);
+  nBinB->SetLineColor(kRed+2);
+  nBinB->SetFillColor(kRed-10);
+  nBinB->SetMarkerSize(0.7);
+  nBinB->SetFillStyle(1001);
+
+  DrawTwoInPad(body, 4, nPartB, nBinB, "e3 p", 0x10);
+
+  DrawInPad(body, 5, bVsCent, "colz", 0x4);
+
+  TProfile* nPartC = centVsNpart->ProfileY("nPartC",1,-1,"s");
+  TProfile* nBinC  = centVsNbin->ProfileY("nBinC",1,-1,"s");
+  nPartC->SetMarkerColor(kBlue+2);
+  nPartC->SetMarkerStyle(20);
+  nPartC->SetLineColor(kBlue+2);
+  nPartC->SetFillColor(kBlue-10);
+  nPartC->SetFillStyle(1001);
+  nPartC->SetMarkerSize(0.7);
+  nBinC->SetMarkerColor(kRed+2);
+  nBinC->SetMarkerStyle(21);
+  nBinC->SetLineColor(kRed+2);
+  nBinC->SetFillColor(kRed-10);
+  nBinC->SetMarkerSize(0.7);
+  nBinC->SetFillStyle(1001);
+
+  DrawTwoInPad(body, 6, nPartC, nBinC, "e3 p", 0x10);
+
+  PrintCanvas(can, "EventInspector - Monte-Carlo");  
+  
 }
 
 //____________________________________________________________________
@@ -591,7 +751,7 @@ void DrawSharingFilter(const TCollection* forward, TCanvas* can)
     DrawInPad(body, 4, GetH1(sc, "distanceBefore"), "",     0x2);
     DrawInPad(body, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
 
-    TH2D* nB = GetH2(sc, "neighborsBefore");
+    TH2* nB = GetH2(sc, "neighborsBefore");
     if (nB) { 
       nB->GetXaxis()->SetRangeUser(0,8); 
       nB->GetYaxis()->SetRangeUser(0,8); 
@@ -603,12 +763,43 @@ void DrawSharingFilter(const TCollection* forward, TCanvas* can)
     PrintCanvas(can, Form("Sharing filter - %s", *ptr));
     ptr++;
   }
+
+  TCollection* cc = GetCollection(c, "esd_mc_comparion"); // Spelling!
+  if (!cc) return; // Not MC 
+
+  body = can->cd(2);
+  body->Divide(2,3);
+  DrawInPad(body, 1, GetH2(cc, "FMD1i_corr"), "colz", 0x4);
+  DrawInPad(body, 3, GetH2(cc, "FMD2i_corr"), "colz", 0x4);
+  DrawInPad(body, 4, GetH2(cc, "FMD2o_corr"), "colz", 0x4);
+  DrawInPad(body, 5, GetH2(cc, "FMD3i_corr"), "colz", 0x4);
+  DrawInPad(body, 6, GetH2(cc, "FMD3o_corr"), "colz", 0x4);
+
+  PrintCanvas(can, "Sharing filter - MC vs Reco");
+
+  TCollection* mc = GetCollection(c, "mcTrackDensity"); // Spelling!
+  if (!mc) return; // Not MC 
+
+  body = can->cd(2);
+  body->Divide(2,3);
+  DrawInPad(body, 1, GetH2(mc, "binFlow"),    "colz", 0x4);
+  DrawInPad(body, 2, GetH2(mc, "binFlowEta"), "colz", 0x4);
+  DrawInPad(body, 3, GetH2(mc, "binFlowPhi"), "colz", 0x4);
+  DrawInPad(body, 4, GetH1(mc, "nRefs"),       "",    0x2);
+  DrawInPad(body, 4, GetH1(mc, "clusterRefs"), "same");
+  DrawInPad(body, 4, GetH1(mc, "clusterSize"), "same");
+  DrawInPad(body, 4, GetH1(mc, "nClusters"),    "same", 0x10);
+  DrawInPad(body, 5, GetH2(mc, "clusterVsRefs"),"colz", 0x4);
+
+
+  PrintCanvas(can, "Sharing filter - MC");
+  
 }
 
 //____________________________________________________________________
 void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
 {
-  Info("DrawEventInspector", "Drawing density calculator from %p", 
+  Info("DrawDensityCalculator", "Drawing density calculator from %p", 
        forward);
   TCollection* c = GetCollection(forward, "fmdDensityCalculator");
   if (!c) return;
@@ -638,7 +829,7 @@ void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
   DrawParameter(name, value, y, "Recalculate #phi",(recalcPhi ? "yes" : "no")); 
   DrawParameter(name, value, y, "#phi acceptance method", 
 		(phiAcceptance == 1 ? "N_{ch}" : 
-		 phiAcceptance == 2 ? "#DeltaE" : none));
+		 phiAcceptance == 2 ? "#DeltaE" : "none"));
   DrawParameter(name, value, y, "Region size (sector#timesstrip)", 
 		Form("%2d #times %2d", phiLumping, etaLumping));
 
@@ -646,9 +837,15 @@ void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
   // p->Divide(3,1);
 
   TH1* accI = GetH1(c, "accI");
-  if (accI) { accI->SetMaximum(60); accI->SetMinimum(0); }
+  TH1* accO = GetH1(c, "accO");
+  if (accI) { 
+    Double_t scale = 1./accI->GetMaximum();
+    accI->Scale(scale); 
+    accO->Scale(scale);
+    accI->SetMinimum(0); 
+  }
   DrawInPad(p, 2, accI); 
-  DrawInPad(p, 2, GetH1(c, "accO"), "same", 0x10); 
+  DrawInPad(p, 2, accO, "same", 0x10); 
   DrawInPad(p, 3, GetH2(c, "lowCuts"), "colz");
   DrawInPad(p, 4, GetH2(c, "maxWeights"), "colz");
   
@@ -660,7 +857,7 @@ void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
     TCollection* sc = GetCollection(c, *ptr);
     if (!sc) { ptr++; continue; }
     
- body = can->cd(2);
+    body = can->cd(2);
     body->Divide(2,3);
     
     DrawInPad(body, 1, GetH2(sc, "elossVsPoisson"), "colz",   0x4);
@@ -682,12 +879,30 @@ void DrawDensityCalculator(const TCollection* forward, TCanvas* can)
     PrintCanvas(can, Form("Density calculator - %s", *ptr));
     ptr++;    
   }
+
+  TCollection* cc = GetCollection(c, "esd_mc_comparison"); 
+  if (!cc) return; // Not MC 
+
+  body = can->cd(2);
+  body->Divide(2,5);
+  DrawInPad(body, 1, GetH2(cc, "FMD1I_corr_mc_esd"), "colz", 0x4);
+  DrawInPad(body, 3, GetH2(cc, "FMD2I_corr_mc_esd"), "colz", 0x4);
+  DrawInPad(body, 5, GetH2(cc, "FMD2O_corr_mc_esd"), "colz", 0x4);
+  DrawInPad(body, 7, GetH2(cc, "FMD3O_corr_mc_esd"), "colz", 0x4);
+  DrawInPad(body, 9, GetH2(cc, "FMD3I_corr_mc_esd"), "colz", 0x4);
+  DrawInPad(body, 2,  GetH1(cc, "FMD1I_diff_mc_esd"), "", 0x2);
+  DrawInPad(body, 4,  GetH1(cc, "FMD2I_diff_mc_esd"), "", 0x2);
+  DrawInPad(body, 6,  GetH1(cc, "FMD2O_diff_mc_esd"), "", 0x2);
+  DrawInPad(body, 8,  GetH1(cc, "FMD3O_diff_mc_esd"), "", 0x2);
+  DrawInPad(body, 10, GetH1(cc, "FMD3I_diff_mc_esd"), "", 0x2);
+
+  PrintCanvas(can, "Density calculator - MC vs Reco");
 }
 
 //____________________________________________________________________
 void DrawCorrector(const TCollection* forward, TCanvas* can)
 {
-  Info("DrawEventInspector", "Drawing corrector from %p", forward);
+  Info("DrawCorrector", "Drawing corrector from %p", forward);
   TCollection* c = GetCollection(forward, "fmdCorrector");
   if (!c) return;
   
@@ -711,12 +926,25 @@ void DrawCorrector(const TCollection* forward, TCanvas* can)
   DrawParameter(name, value, y, "Merging eff.", merging ? "yes" : "no");
     
   PrintCanvas(can, "Corrector");
+
+  TCollection* cc = GetCollection(c, "esd_mc_comparison"); 
+  if (!cc) return; // Not MC 
+
+  body = can->cd(2);
+  body->Divide(2,3);
+  DrawInPad(body, 1, GetH2(cc, "FMD1I_esd_vs_mc"), "colz", 0x0);
+  DrawInPad(body, 3, GetH2(cc, "FMD2I_esd_vs_mc"), "colz", 0x0);
+  DrawInPad(body, 4, GetH2(cc, "FMD2O_esd_vs_mc"), "colz", 0x0);
+  DrawInPad(body, 5, GetH2(cc, "FMD3O_esd_vs_mc"), "colz", 0x0);
+  DrawInPad(body, 6, GetH2(cc, "FMD3I_esd_vs_mc"), "colz", 0x0);
+
+  PrintCanvas(can, "Corrector - MC vs Reco");
 }
 
 //____________________________________________________________________
 void DrawHistCollector(const TCollection* forward, TCanvas* can)
 {
-  Info("DrawEventInspector", "Drawing histogram collector from %p", forward);
+  Info("DrawHistCollector", "Drawing histogram collector from %p", forward);
   TCollection* c = GetCollection(forward, "fmdHistCollector");
   if (!c) return;
 
@@ -730,7 +958,7 @@ void DrawHistCollector(const TCollection* forward, TCanvas* can)
   CreateTemplates(name, value, .05);
   
   Int_t nCutBins, fiducial, merge, skipRings;
-  Float_t fiducialCut;
+  Double_t fiducialCut;
   Bool_t  bgAndHits;
 
   GetParameter(c, "nCutBins",       nCutBins);
@@ -738,7 +966,8 @@ void DrawHistCollector(const TCollection* forward, TCanvas* can)
   GetParameter(c, "bgAndHits",      bgAndHits);
   GetParameter(c, "merge",          merge);
   GetParameter(c, "fiducial",       fiducial);
-  GetParameter(c, "correctionCut",  fiducialCut);
+  // GetParameter(c, "correctionCut",  fiducialCut);
+  GetParameter(c, "fiducialCut",  fiducialCut);
 
   DrawParameter(name, value, y, "# of bins to cut",      Form("%d", nCutBins));
   DrawParameter(name, value, y, "Bg & hit maps stored.", bgAndHits?"yes":"no");
@@ -761,10 +990,34 @@ void DrawHistCollector(const TCollection* forward, TCanvas* can)
 		 
   DrawInPad(body, 2, GetH2(c, "sumRings"), "colz"); 
   DrawInPad(body, 3, GetH2(c, "coverage"), "colz");
-  
+
+  body->cd(1)->Modified();
+  body->cd(2)->Modified();
+  body->cd(3)->Modified();
+  body->cd(1)->Update();
+  body->cd(2)->Update();
+  body->cd(3)->Update();
   PrintCanvas(can, "Histogram collector");
 }
   
+//____________________________________________________________________
+void AddToAll(THStack* all, const THStack* stack, Int_t curr, Int_t step)
+{
+  if (!stack) return;
+
+  TIter   next(stack->GetHists());
+  TH1*    h = 0;
+  while ((h = static_cast<TH1*>(next()))) {
+    TH1* copy = static_cast<TH1*>(h->Clone(Form("%s_copy", h->GetName())));
+    copy->SetDirectory(0);
+    if (curr != step) {
+      copy->SetMarkerColor(kGray);
+      copy->SetLineColor(kGray);
+    }
+    all->Add(copy);
+  }
+}
+
 //____________________________________________________________________
 void DrawStep(THStack*     delta, 
 	      THStack*     nchs, 
@@ -775,13 +1028,15 @@ void DrawStep(THStack*     delta,
 	      Int_t        step)
 {
   THStack* all = 0;
+  TH1* res = 0;
   if (step < 6) {
     all = new THStack;
     if (step != 1) AddToAll(all, delta,  step, 1);
     if (step != 2) AddToAll(all, nchs,   step, 2);
     if (step != 3) AddToAll(all, prims,  step, 3);
     if (step != 4) AddToAll(all, rings,  step, 4);
-    TH1* res = static_cast<TH1*>(dndeta->Clone("dNdeta"));
+
+    res = static_cast<TH1*>(dndeta->Clone("dNdeta"));
     res->SetTitle("dN/d#eta");
     res->SetMarkerColor(step == 5 ? kBlack : kGray);
     res->SetLineColor(step == 5 ? kBlack : kGray);  
@@ -882,7 +1137,7 @@ void DrawStep(THStack*     delta,
     case 6: 
       break;
     default: 
-      Error("DrawStep", "Unknown step: %d (must be in 1-4)");
+      Error("DrawStep", "Unknown step: %d (must be in 1-6)", step);
       break;
     }
   }
@@ -907,23 +1162,6 @@ void FixStack(THStack* stack, const TString& title, Int_t marker)
   TIter next(stack->GetHists());
   TH1*  h = 0;
   while ((h = static_cast<TH1*>(next())))  h->SetMarkerStyle(marker);
-}
-//____________________________________________________________________
-void AddToAll(THStack* all, const THStack* stack, Int_t curr, Int_t step)
-{
-  if (!stack) return;
-
-  TIter   next(stack->GetHists());
-  TH1*    h = 0;
-  while ((h = static_cast<TH1*>(next()))) {
-    TH1* copy = static_cast<TH1*>(h->Clone(Form("%s_copy", h->GetName())));
-    copy->SetDirectory(0);
-    if (curr != step) {
-      copy->SetMarkerColor(kGray);
-      copy->SetLineColor(kGray);
-    }
-    all->Add(copy);
-  }
 }
 //____________________________________________________________________
 void DrawSteps(const TCollection* forward, TCanvas* can)
@@ -966,20 +1204,43 @@ void DrawResults(const TCollection* forward,
   if (!c) return;
   
   DrawInPad(body, 1, GetStack(c, "all"), "nostack");
+
   DrawInPad(body, 2, GetH1(forwardRes, "dNdeta"));
   DrawInPad(body, 3, GetH1(forwardRes, "dNdeta_"));
   DrawInPad(body, 4, GetH1(forwardRes, "norm"));
   DrawInPad(body, 4, GetH1(forwardRes, "phi"), "same", 0x10);
   DrawInPad(body, 5, GetH1(forward,    "d2Ndetadphi"), "colz");
+
+  TCollection* mc = GetCollection(forwardRes, "mcRingResults");
+  if (mc) {
+    THStack* sMc = new THStack;
+    sMc->SetTitle("MC dN/d#eta per Ring");
+    const char* subs[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0 };
+    const char** ptr   = subs;
+    while (*ptr) { 
+      TCollection* sc = GetCollection(mc, *ptr);
+      if (!sc) { ptr++; continue; }
+      
+      TH1* h = GetH1(sc, "dndeta_eta");
+      if (!h) { ptr++; continue; }
+      sMc->Add(h);
+      ptr++;
+    }
+    DrawInPad(body, 1, sMc, "nostack same", 0x10);
+  }
+
   
   PrintCanvas(can, "Results");
+
 }
   
   
 //____________________________________________________________________
-void DrawAODSummary(const TString& filename="forward.root")
+void DrawAODSummary(const char* fname="forward.root",
+		    UShort_t what=0x7F)
 {
   // --- Open the file -----------------------------------------------
+  TString filename(fname);
   TFile* file = TFile::Open(filename.Data(), "READ");
   if (!file) { 
     Error("DrawAODSummary", "Failed to open \"%s\"", filename.Data());
@@ -996,19 +1257,21 @@ void DrawAODSummary(const TString& filename="forward.root")
 
   TCanvas* c = CreateCanvas(pdfName);
 
+  fgPause = what & 0x80;
+
   // --- Do each sub-algorithm ---------------------------------------
-  DrawEventInspector(forward,c);
-  DrawSharingFilter(forward,c);
-  DrawDensityCalculator(forward, c);
-  DrawCorrector(forward, c);
-  DrawHistCollector(forward, c);
+  if (what & 0x01) DrawEventInspector(forward,c);
+  if (what & 0x02) DrawSharingFilter(forward,c);
+  if (what & 0x04) DrawDensityCalculator(forward, c);
+  if (what & 0x08) DrawCorrector(forward, c);
+  if (what & 0x10) DrawHistCollector(forward, c);
   
   // --- Do the results ----------------------------------------------
   TCollection* forwardRes = GetCollection(file, "ForwardResults");
   if (!forwardRes) return;
 
-  DrawSteps(forwardRes, c);
-  DrawResults(forward, forwardRes, c);
+  if (what & 0x20) DrawSteps(forwardRes, c);
+  if (what & 0x40) DrawResults(forward, forwardRes, c);
   
   CloseCanvas(c);
 }

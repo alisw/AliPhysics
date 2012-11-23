@@ -50,6 +50,29 @@ public:
   //==================================================================
   /** 
    * @{ 
+   * @name AliROOT version
+   */
+  /** 
+   * Get the revision number of AliROOT
+   * 
+   * @return Subversion revision number of AliROOT used
+   */
+  static ULong_t AliROOTRevision();
+  /**
+   * Get the branch identifier of AliROOT.  In case of trunk, return
+   * 0xFFFFFFFF, while for @b vM-N-R{-S}, we get
+   *
+   * @code 
+   *    ((M & 0xFF) << 12 | (N & 0xFF) << 8 | (R & 0xFF) << 3 | (X))
+   * @endcode 
+   * where @c X is 0xAA if @b S is specified (e.g., analysis tag). 
+   *
+   * @return branch identifer encoded in bits 
+   */
+  static ULong_t AliROOTBranch();
+  //==================================================================
+  /** 
+   * @{ 
    * @name Collision/run parameters 
    */
   /**						
@@ -232,10 +255,12 @@ public:
   static TObject* MakeParameter(const char* name, Int_t value);
   static TObject* MakeParameter(const char* name, Double_t value);
   static TObject* MakeParameter(const char* name, Bool_t value);
+  static TObject* MakeParameter(const char* name, ULong_t value);
   static void GetParameter(TObject* o, UShort_t& value);
   static void GetParameter(TObject* o, Int_t& value);
   static void GetParameter(TObject* o, Double_t& value);
   static void GetParameter(TObject* o, Bool_t& value);
+  static void GetParameter(TObject* o, ULong_t& value);
   /* @} */
 
   /** 
