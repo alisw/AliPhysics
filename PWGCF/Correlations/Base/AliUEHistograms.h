@@ -60,6 +60,7 @@ class AliUEHistograms : public TNamed
   TH2F* GetCorrelationR()   { return fCorrelationR; }
   TH2F* GetCorrelationLeading2Phi() { return fCorrelationLeading2Phi; }
   TH2F* GetCorrelationMultiplicity() { return fCorrelationMultiplicity; }
+  TH3F* GetYield() { return fYields; }
   
   TH2F* GetEventCount()     { return fEventCount; }
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
