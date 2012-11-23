@@ -3,6 +3,7 @@
 // 
 //
 #include "AliForwardUtil.h"
+//#include <ARVersion.h>
 #include <AliAnalysisManager.h>
 #include "AliAODForwardMult.h"
 #include <AliLog.h>
@@ -23,6 +24,47 @@
 #include <TMath.h>
 #include <TError.h>
 #include <TROOT.h>
+
+//====================================================================
+ULong_t AliForwardUtil::AliROOTRevision()
+{
+#ifdef ALIROOT_SVN_REVISION
+  return ALIROOT_SVN_REVISION;
+#else 
+  return 0;
+#endif
+}
+//____________________________________________________________________
+ULong_t AliForwardUtil::AliROOTBranch()
+{
+#ifdef ALIROOT_SVN_BRANCH
+  static ULong_t ret = 0;
+  if (ret != 0) return ret;
+  
+  TString str(ALIROOT_SVN_BRANCH);
+  if (str[0] == 'v') str.Remove(0,1);
+  if (str.EqualTo("trunk")) return ret = 0xFFFFFFFF;
+
+  TObjArray*   tokens = str.Tokenize("-");
+  TObjString*  pMajor = static_cast<TObjString*>(tokens->At(0));
+  TObjString*  pMinor = static_cast<TObjString*>(tokens->At(1));
+  TObjString*  pRelea = static_cast<TObjString*>(tokens->At(2));
+  TObjString* pAn     = (tokens->GetEntries() > 3 ? 
+    static_cast<TObjString*>(tokens->At(3)) : 0);
+  TString sMajor = pMajor->String().Strip(TString::kLeading, '0');
+  TString sMinor = pMinor->String().Strip(TString::kLeading, '0');
+  TString sRelea = pRelea->String().Strip(TString::kLeading, '0');
+  
+  ret = (((sMajor.Atoi() & 0xFF) << 12) |
+    ((sMinor.Atoi() & 0xFF) <<  8) |
+    ((sRelea.Atoi() & 0xFF) <<  4) |
+    (pAn ? 0xAA : 0));
+  
+  return ret;
+#else 
+  return 0;
+#endif
+}
 
 //====================================================================
 UShort_t
@@ -275,6 +317,13 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
   return ret;
 }
 //_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
+{
+  TParameter<Long_t>* ret = new TParameter<Long_t>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+//_____________________________________________________________________
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
@@ -299,6 +348,12 @@ void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, ULong_t& value)
 {
   if (!o) return;
   value = o->GetUniqueID();

@@ -358,6 +358,10 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   InitializeCentBins();
   if (fCentAxis) fSums->Add(fCentAxis);
 
+  fSums->Add(AliForwardUtil::MakeParameter("alirootRev", 
+					   AliForwardUtil::AliROOTRevision()));
+  fSums->Add(AliForwardUtil::MakeParameter("alirootBranch", 
+					   AliForwardUtil::AliROOTBranch()));
 
   // Centrality histogram 
   fCent = new TH1D("cent", "Centrality", 100, 0, 100);
