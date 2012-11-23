@@ -1148,11 +1148,13 @@ void AliCaloTrackReader::FillInputCTS()
       SetTrackEventBCcut(trackBC+9);
 
       //In any case, the time should to be larger than the fixed window ...
-      if( fUseTrackTimeCut && trackBC==0 && (tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
+      if( fUseTrackTimeCut && (trackBC!=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
       {
-        //printf("Remove track time %f\n",tof);
+        //printf("Remove track time %f and bc = %d\n",tof,trackBC);
         continue ;
       }
+      //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
+
     }
     
     if(fUseTrackDCACut)
