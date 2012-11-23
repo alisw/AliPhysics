@@ -92,7 +92,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiTOFBC0PileUpSPD;        //! eta/phi of tracks passing TOF status selection, tracks in BC=0, pile-up spd
   TH2F * fhEtaPhiTOFBCPlusPileUpSPD;     //! eta/phi of tracks passing TOF status selection, tracks in BC>0, pile-up spd
   TH2F * fhEtaPhiTOFBCMinusPileUpSPD;    //! eta/phi of tracks passing TOF status selection, tracks in BC<0, pile-up spd
-  TH1F * fhProductionVertexBC;           //!  check BC of production vertex
+//  TH1F * fhProductionVertexBC;           //!  check BC of production vertex
 
   TH2F * fhPtDCA[3];                     //! DCA (xy,z,constrained) of all tracks
   //TH2F * fhPtDCAVtxOutBC0[3];            //! DCA (xy,z,constrained) of all tracks, vertex BC!=0
