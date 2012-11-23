@@ -21,22 +21,20 @@
  * @par Outputs: 
  * - 
  *
- * @param name     Name of train 
- * @param options  Options @see RunTrain 
- * @param runs     Options @see RunTrain 
- * @param nEvents  Number of events to process, negative for all 
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
+ * @param options    Options string
+ * @param url        Execution and input URL
  *
- * @ingroup pwglf_forward_flow
+ * @ingroup pwglf_forward_aod
  */
-void MakeFMDEventPlane(TString name    = "fmdEP", 
-		       TString options = "help", 
-		       TString runs    = "", 
-		       Int_t   nEvents = -1)
+void MakeFMDEventPlane(TString     name       = "aod", 
+		       TString     url        = "help",
+		       TString     options    = "help")
 {
-  if (name.IsNull()) Fatal("MakeFMDEventPlane", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
-  RunTrain("MakeFMDEventPlaneTrain", name, options, runs, nEvents);
+  MakeTrain(name, "MakeFMDEventPlaneTrain", url, options);
 }
 //----------------------------------------------------------------
 //

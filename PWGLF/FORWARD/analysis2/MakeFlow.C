@@ -36,6 +36,8 @@ void MakeFlow(TString name    = "flow",
 	      TString urlOpts = "workers=10&recursive") 
 {
   if (name.IsNull()) Fatal("MakeFlow", "Must specify a name");
+  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains",
+			   gROOT->GetMacroPath()));
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/trains/RunTrain.C");
 

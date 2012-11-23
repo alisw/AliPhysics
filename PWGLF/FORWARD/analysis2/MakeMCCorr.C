@@ -11,23 +11,20 @@
 /** 
  * Generate MC corrections 
  * 
- * @param name     Name of train
- * @param options  Comma separated list options, pass "help" for list
- * @param runs     Comma separated list of run numbers
- * @param nEvents  Number of events to process.  If 0 or less, then 
- *                 all events are analysed
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
+ * @param options    Options string
+ * @param url        Execution and input URL
  *
- * @ingroup pwglf_forward_corr
+ * @ingroup pwglf_forward_aod
  */
-void MakeMCCorr(TString name    = "mcCorr", 
-		TString options = "help", 
-		TString runs    = "", 
-		Int_t   nEvents = -1)
+void MakeMCCorr(TString     name       = "aod", 
+		TString     url        = "help",
+		TString     options    = "help")
 {
-  if (name.IsNull()) Fatal("MakeMCCorr", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
-  RunTrain("MakeMCCorrTrain", name, options, runs, nEvents);
+  MakeTrain(name, "MakeMCCorrTrain", url, options);
 }
 //
 // EOF

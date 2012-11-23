@@ -19,27 +19,20 @@
 /** 
  * Run first pass of the analysis - that is read in ESD and produce AOD
  * 
- * If PROOF mode is selected, then Terminate will be run on the master node 
- * in any case. 
- *
  * @param name       Name of train - free form.  This will be the name
  *                   of the output directory if the plug-in is used 
- * @param options    Option string
- * @param runs       List of runs, or file name of file contain runs
- * @param nEvents    Number of events to process.  If 0 or less, then 
- *                   all events are analysed
+ * @param options    Options string
+ * @param url        Execution and input URL
  *
  * @ingroup pwglf_forward_aod
  */
 void MakeAOD(TString     name       = "aod", 
-	     TString     options    = "help",
-	     TString     runs       = "",
-	     Int_t       nEvents    = -1)
+	     TString     url        = "help",
+	     TString     options    = "help")
 {
-  if (name.IsNull()) Fatal("MakeAOD", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
-  RunTrain("MakeAODTrain", name, options, runs, nEvents);
+  MakeTrain(name, "MakeAODTrain", url, options);
 }
 //
 // EOF
