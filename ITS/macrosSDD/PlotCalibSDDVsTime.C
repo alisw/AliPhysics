@@ -84,6 +84,7 @@ void PlotCalibSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
     if(year==2009 && (nrun>100000 && nv< 184)) continue; // protection for files with swapped ladder 0-1 of layer 4
     if(year==2010 && (nrun>=114603 && nv< 98)) continue; // protection for files without treatment of masked hybrids 
     if(year==2011 && (nrun>=145349 && nrun<=148978) && nrun2> 148978) continue; // protection for files affected by problem in second DA
+    if(year==2011 && nrun==156856) continue;
     if(nrun<firstRun) continue;
     if(nrun>lastRun) continue;
     sprintf(filnamalien,"alien://%s",filnam);

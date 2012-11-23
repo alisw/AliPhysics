@@ -505,12 +505,19 @@ void ShowCalibrationSDD(Int_t nrun, Int_t year=2012, Int_t nmod=0){
   gSystem->Exec(cmd.Data());
   Char_t filnam[200],filnamalien[200];
   FILE* runtxt=fopen("run.txt","r");
-  fscanf(runtxt,"%s\n",filnam);    
-  if(!strstr(filnam,"/alice/data/")){
+  Bool_t found=kFALSE;
+  while(!feof(runtxt)){
+    fscanf(runtxt,"%s\n",filnam);    
+    if(strstr(filnam,"/alice/data/")){
+      found=kTRUE;
+      break;
+    }  
+  }
+  if(!found){
     printf("Bad run number\n");
-    gSystem->Exec("rm run.txt");
+    //    gSystem->Exec("rm run.txt");
     return;
-  }  
+  }
   sprintf(filnamalien,"alien://%s",filnam);
   
   printf("Open file: %s\n",filnamalien);
