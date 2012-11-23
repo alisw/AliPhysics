@@ -85,14 +85,14 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   // Fixme: Move me to reference histos
   Float_t safeFactor = 5.;
   Float_t warningPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
-  Float_t warningPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
+  Float_t warningPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 3.1, 0.0001, safeFactor*0.4};
   Float_t warningPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
 
   Float_t* warningPercent[kNrawsHistos] = {warningPercentTrigAlgo, warningPercentCalib, warningPercentReadout};
   
   Float_t errorFactor = 30.;
   Float_t errorPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., 100., 100., 100., 100., errorFactor*1., errorFactor*1., errorFactor*1.};
-  Float_t errorPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {errorFactor*0.4, errorFactor*1., 3.*6.2, 3.*0.0001, errorFactor*0.4};
+  Float_t errorPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {errorFactor*0.4, errorFactor*1., 6.2, 3.*0.0001, errorFactor*0.4};
   Float_t errorPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., errorFactor*1.};
   // END OF LIMTS
 
@@ -106,13 +106,13 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
     rv[specie] = AliMUONVQAChecker::kInfo;
 
     TH1* hAnalyzedEvents = AliQAv1::GetData(list,AliMUONQAIndices::kTriggerRawNAnalyzedEvents,AliRecoParam::ConvertIndex(specie));
-    Int_t nAnalyzedEvents = 0;
-    if ( hAnalyzedEvents ) 
-      nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
 
     //if ( nAnalyzedEvents == 0 ) rv[specie] = AliMUONVQAChecker::kFatal;
 
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
+      Int_t nAnalyzedEvents = 0;
+      Int_t ibinNevents = ( histoRawsPercentIndex[ihisto] == AliMUONQAIndices::kTriggerReadOutErrorsNorm ) ? 1 : 2;
+      if ( hAnalyzedEvents ) nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(ibinNevents));
       AliMUONVQAChecker::ECheckCode currRv = AliMUONVQAChecker::kInfo;
       messages.Clear();
       currHisto = AliQAv1::GetData(list,histoRawsPercentIndex[ihisto],AliRecoParam::ConvertIndex(specie));
@@ -158,7 +158,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
       if ( MarkHisto(*currHisto, currRv) < rv[specie] )
 	rv[specie] = currRv;
       currHisto->GetYaxis()->SetRangeUser(0., 110.);
-      SetupHisto(nAnalyzedEvents, messages, *currHisto, currRv);
+      SetupHisto(nAnalyzedEvents, messages, *currHisto, currRv, specie);
     } // loop on histos
   } // loop on species
 
@@ -183,7 +183,7 @@ AliMUONTriggerQAChecker::CheckESD(TObjArray** , const AliMUONRecoParam* )
 
 
 //___________________________________________________________________ 
-void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code)
+void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code, Int_t esIndex)
 {
   //
   /// Add text to histos
@@ -191,8 +191,11 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
 
   Double_t y1 = 0.87 - (messages.GetLast()+2)*0.075;
   TPaveText* text = new TPaveText(0.25,y1,0.75,0.89,"NDC");
-    
-  text->AddText(Form("MTR - Total events %i", nevents));
+  
+  Int_t eventLimit = ( AliRecoParam::ConvertIndex(esIndex) == AliRecoParam::kCalib ) ? 5 : 20;
+
+  text->AddText(Form("MTR - Specie: %s", AliRecoParam::GetEventSpecieName(esIndex)));
+  text->AddText(Form("Total events %i", nevents));
 
   TString defaultText = "";  
   Int_t color = 0;
@@ -201,7 +204,7 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
     color = AliMUONVQAChecker::kFatalColor;
     defaultText = "No events analyzed!";
   }
-  else if ( nevents <= 20 ) {
+  else if ( nevents <= eventLimit ) {
     color = AliMUONVQAChecker::kWarningColor;
     text->AddText("Not enough events to judge");
     defaultText = "Please wait for more statistics";

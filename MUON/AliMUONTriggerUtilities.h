@@ -27,6 +27,7 @@ public:
   Bool_t IsMasked(const AliMUONVDigit& digit) const;
   Bool_t IsMasked(const AliMpPad& pad, Int_t detElemId, Int_t cathode) const;
   Bool_t IsMasked(Int_t detElemId, Int_t cathode, Int_t localCircuit, Int_t strip) const;
+  Bool_t IsMaskedBoard ( Int_t localCircuit, Int_t detElemId = 1100, Int_t cathode = 0 ) const;
   AliMUONVDigitStore* GetMaskedDigits() const { return fMaskedDigitsStore; }
 
 private:

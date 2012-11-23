@@ -64,6 +64,7 @@ ClassImp(AliMUONTriggerQADataMakerRec)
 #include "AliMpPad.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
+#include "AliMUONTriggerUtilities.h"
 
 namespace
 {
@@ -81,7 +82,8 @@ fTriggerProcessor(0x0),
 fDigitStore(0x0),
 fDigitStoreFromRaw(0x0),
 fTriggerStoreFromRaw(0x0),
-fTriggerStoreReprocessRaw(0x0)
+fTriggerStoreReprocessRaw(0x0),
+fTriggerUtils(0x0)
 {
     /// ctor
 }
@@ -98,6 +100,7 @@ AliMUONTriggerQADataMakerRec::~AliMUONTriggerQADataMakerRec()
   delete fDigitStoreFromRaw;
   delete fTriggerStoreFromRaw;
   delete fTriggerStoreReprocessRaw;
+  delete fTriggerUtils;
 }
 
 //____________________________________________________________________________ 
@@ -144,8 +147,9 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
     // if it is not there, it means that the trigger is not taken into account
     // so we can skip the trigger class for all other histos
     if ( ! histo1D ) continue;
-    Float_t nbevent = histo1D->GetBinContent(1);
+    
     for(Int_t ihisto=0; ihisto<kNrawsHistos; ihisto++){
+      Float_t nbevent = ( histoRawsIndex[ihisto] == AliMUONQAIndices::kTriggerReadOutErrors ) ? histo1D->GetBinContent(1) : histo1D->GetBinContent(2);
       TH1* inputHisto = GetRawsData(histoRawsIndex[ihisto],itc);
       TH1* scaledHisto = GetRawsData(histoRawsScaledIndex[ihisto],itc);
       // Check here for both since we do not clone Calib-only histograms
@@ -221,7 +225,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   AliMUONTriggerDisplay triggerDisplay;
 
   TString histoName, histoTitle;
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) {
+  if ( CurrentEventSpecie() == AliRecoParam::kCalib ) {
     histo1D = new TH1F("hTriggerScalersTime", "Acquisition time from trigger scalers", 1, 0.5, 1.5);
     histo1D->GetXaxis()->SetBinLabel(1, "One-bin histogram: bin is filled at each scaler event.");
     histo1D->GetYaxis()->SetTitle("Cumulated scaler time (s)");
@@ -257,7 +261,8 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
       } // loop on chambers
     } // loop on cathodes    
 
-    TString axisLabel[AliMUONQAIndices::kNtrigCalibSummaryBins] = {"#splitline{Dead}{Channels}", "#splitline{Dead}{Local Boards}", "#splitline{Dead}{Regional Boards}", "#splitline{Dead}{Global Board}", "#splitline{Noisy}{Strips}"};
+    //TString axisLabel[AliMUONQAIndices::kNtrigCalibSummaryBins] = {"#splitline{Dead}{Channels}", "#splitline{Dead}{Local Boards}", "#splitline{Dead}{Regional Boards}", "#splitline{Dead}{Global Board}", "#splitline{Noisy}{Strips}"};
+    TString axisLabel[AliMUONQAIndices::kNtrigCalibSummaryBins] = {"#splitline{Dead}{Channels}", "#splitline{Dead}{Local Boards}", "#splitline{Dead}{Regional Boards}", "#splitline{Dead}{Global Board}", ""}; // Change for nosiy strips
 
     TH1F* histoCalib = new TH1F("hTriggerCalibSummaryAll", "MTR calibration summary counts", AliMUONQAIndices::kNtrigCalibSummaryBins, -0.5, (Float_t)AliMUONQAIndices::kNtrigCalibSummaryBins - 0.5);
     for (Int_t ibin=1; ibin<=AliMUONQAIndices::kNtrigCalibSummaryBins; ibin++){
@@ -330,7 +335,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D->GetYaxis()->SetTitle(errorAxisTitle.Data());
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerErrorLocalTrigY, expert, !image, !saveCorr);
 
-  if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+  if ( CurrentEventSpecie() != AliRecoParam::kCalib ) {
     histo1D = new TH1F("hTriggerRatio4434Local", "Ratio4434Local",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
     histo1D->GetXaxis()->SetTitle(boardName.Data());
     histo1D->GetYaxis()->SetTitle("ratio 44/34");
@@ -450,13 +455,14 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   Add2RawsList(histoGlobalMult,     AliMUONQAIndices::kTriggerGlobalOutput,     expert, !image, !saveCorr);
   Add2RawsList(histoGlobalMultNorm, AliMUONQAIndices::kTriggerGlobalOutputNorm, expert, !image, !saveCorr);
 
-  histo1D = new TH1F("hTriggerRawNAnalyzedEvents", "Number of analyzed events per specie", 1, 0.5, 1.5);
-  Int_t esindex = AliRecoParam::AConvert(CurrentEventSpecie());
-  histo1D->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(esindex));
+  histo1D = new TH1F("hTriggerRawNAnalyzedEvents", "Number of analyzed events per specie", 2, 0.5, 2.5);
+  //histo1D->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(CurrentEventSpecie()));
+  histo1D->GetXaxis()->SetBinLabel(1,"All");
+  histo1D->GetXaxis()->SetBinLabel(2,"w/o Readout errors");
   histo1D->GetYaxis()->SetTitle("Number of analyzed events");
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRawNAnalyzedEvents, expert, !image, !saveCorr);
 
-  if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+  if ( CurrentEventSpecie() != AliRecoParam::kCalib ) {
     histo1D = new TH1F("hTriggerNumberOf34Dec", "Number of 3/4",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
     histo1D->GetXaxis()->SetTitle(boardName.Data());
     histo1D->GetYaxis()->SetTitle("Number of 3/4");
@@ -471,7 +477,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D = new TH1F("hTriggerIsThere","trigger is there",1,0,1);
   Add2RawsList(histo1D,AliMUONQAIndices::kTriggerIsThere,kTRUE,kFALSE,kFALSE);
 
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) {
+  if ( CurrentEventSpecie() == AliRecoParam::kCalib ) {
     TH1F* histoGlobalScalers = new TH1F("hTriggerGlobalScalers","Trigger global scalers", 6, -0.5, 6.-0.5);
     histoGlobalScalers->GetYaxis()->SetTitle("L0 counts");
     histoGlobalScalers->GetXaxis()->SetTitle("Global output");
@@ -521,8 +527,7 @@ void AliMUONTriggerQADataMakerRec::InitRecPoints()
   TH1F* histo1D = 0x0;
 
   histo1D = new TH1F("hTriggerNAnalyzedEvents", "Number of analyzed events per specie", 1, 0.5, 1.5);
-  Int_t esindex = AliRecoParam::AConvert(CurrentEventSpecie());
-  histo1D->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(esindex));
+  histo1D->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(CurrentEventSpecie()));
   histo1D->GetYaxis()->SetTitle("Number of analyzed events");
   Add2RecPointsList(histo1D, AliMUONQAIndices::kTriggerNAnalyzedEvents, expert, !image);
   ForbidCloning(histo1D);
@@ -580,11 +585,10 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     AliMUONGlobalTrigger inputGlobalTrigger;
 
-    UShort_t maxNcounts = 0xFFFF;
+    //UShort_t maxNcounts = 0xFFFF; // Uncomment for noisy strips
     
     // Get trigger Local, Regional, Global in/outputs and scalers
-
-    Int_t loCircuit=0;
+  
     AliMpCDB::LoadDDLStore();
 
     const AliMUONRawStreamTriggerHP::AliHeader*          darcHeader  = 0x0;
@@ -596,9 +600,10 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     // When a crate is not present, the loop on boards is not performed
     // This should allow to correctly count the local boards
-    Int_t countNotifiedBoards = 0, countAllBoards = 0;
+    Int_t countAllBoards = 0;
 
     Bool_t containTriggerData = kFALSE;
+  Bool_t hasReadoutErrors = kFALSE;
     AliMUONRawStreamTriggerHP rawStreamTrig(rawReader);
     while (rawStreamTrig.NextDDL()) 
       {
@@ -606,16 +611,14 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
         Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
         if ( scalerEvent ) AliDebug(1,Form("Scaler event: evtSpecie recoParam %s  QA %s\n",
-                                           AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()))),
-                                           AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(CurrentEventSpecie()))));
+                                           AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie())),
+                                           AliRecoParam::GetEventSpecieName(CurrentEventSpecie())));
 
       Bool_t fillScalerHistos = ( scalerEvent && 
-				  ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) );
+				  ( CurrentEventSpecie() == AliRecoParam::kCalib ) );
 
       if ( scalerEvent != fillScalerHistos ) {
-	//Int_t esindex = AliRecoParam::AConvert(CurrentEventSpecie());
-        Int_t esindex = AliRecoParam::AConvert(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()));
-        AliWarning(Form("Scaler event found but event specie is %s. Scaler histos will not be filled", AliRecoParam::GetEventSpecieName(esindex)));
+        AliWarning(Form("Scaler event found but event specie is %s. Scaler histos will not be filled", AliRecoParam::GetEventSpecieName(CurrentEventSpecie())));
       }
 
       darcHeader = rawStreamTrig.GetHeaders();
@@ -686,8 +689,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 	  // if card exist
 	  if (!localStruct) continue;
-          
-	  loCircuit = crate->GetLocalBoardId(localStruct->GetId());
+    
+	  Int_t loCircuit = crate->GetLocalBoardId(localStruct->GetId());
 
 	  if ( !loCircuit ) continue; // empty slot
 
@@ -704,8 +707,6 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  inputLocalTrigger.SetLocalStruct(loCircuit, *localStruct);
 	  fTriggerStoreFromRaw->Add(inputLocalTrigger);
 
-	  countNotifiedBoards++;  
-
 	  TArrayS xyPattern[2];	  
 	  localStruct->GetXPattern(xyPattern[0]);
 	  localStruct->GetYPattern(xyPattern[1]);
@@ -721,9 +722,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  if (Int_t(localStruct->GetDec())!=0){
 	    FillRawsData(AliMUONQAIndices::kTriggeredBoards,loCircuit);
 	  }
-	  else if ( fillScalerHistos ){
-	    nDeadLocal++;
-	  }
+	  else if ( fillScalerHistos && ! TriggerUtilities()->IsMaskedBoard(loCircuit) ) nDeadLocal++;
 
 	  // loop over strips
 	  if ( fillScalerHistos ) {
@@ -757,7 +756,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 					
           AliMpPad pad = seg->PadByLocation(loCircuit,istrip,kFALSE);
           if (!pad.IsValid()) continue;
-          nStripsTot++;
+          if ( ! TriggerUtilities()->IsMasked(pad, detElemId, cathode)) nStripsTot++;
           
           // UShort_t pattern = (UShort_t)xyPattern[cathode].At(ich); 
           // if ((pattern >> ibitxy) & 0x1) nFiredStrips++;
@@ -768,14 +767,20 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
             nFiredStrips++;
           }
 
-          if ( scalerVal[ich] >= maxNcounts )
-            nNoisyStrips++;
+          //if ( scalerVal[ich] >= maxNcounts ) nNoisyStrips++; // Uncomment for noisy strips
         } // loop on chamber
 	    } // loop on strips
 	  } // scaler event
 	} // iLocal
-	if ( nBoardsInReg == 0 )
-	  nDeadRegional++; // Not necessary when regional output will work
+        if ( nBoardsInReg == 0 ) {
+          // Check masks
+          Int_t nMaskedInReg = 0;
+          for ( Int_t iLocal = 0; iLocal < crate->GetNofLocalBoards(); ++iLocal ) {
+            Int_t loCircuit = crate->GetLocalBoardId(iLocal);
+            if ( TriggerUtilities()->IsMaskedBoard(loCircuit) ) nMaskedInReg++;
+          }
+          if ( nMaskedInReg != crate->GetNofLocalBoards() ) nDeadRegional++; // Not necessary when regional output will work
+        }
       } // iReg
 
       Float_t readoutErrors[AliMUONQAIndices::kNtrigStructErrorBins] = {
@@ -786,22 +791,26 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       };
     
       for (Int_t ibin=0; ibin<AliMUONQAIndices::kNtrigStructErrorBins; ibin++){
-	if ( readoutErrors[ibin] > 0 )
-	  FillRawsData(AliMUONQAIndices::kTriggerReadOutErrors, ibin, readoutErrors[ibin]);
+        if ( readoutErrors[ibin] > 0 ) {
+          hasReadoutErrors = kTRUE;
+          FillRawsData(AliMUONQAIndices::kTriggerReadOutErrors, ibin, readoutErrors[ibin]);
+        }
       }
     } // NextDDL
 
     if ( ! containTriggerData ) return;
 
     FillRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents,1.);
+  
+  // Do not check algorithm if there are ReadOut errors
+  if ( hasReadoutErrors ) return; // COMMENT if you want to check events with readout errors as well
+  FillRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents,2.);
 
-    nDeadLocal += AliMUONConstants::NTriggerCircuit() - countNotifiedBoards;
     if ( nStripsTot > 0 ) { // The value is != 0 only for scaler events
       AliDebug(AliQAv1::GetQADebugLevel(), Form("nStripsFired %i  nStripsTot %i", nFiredStrips, nStripsTot));
       Float_t fraction[AliMUONQAIndices::kNtrigCalibSummaryBins] = {
 	((Float_t)(nStripsTot - nFiredStrips)) / ((Float_t)nStripsTot),
-	//(Float_t)nDeadLocal / ((Float_t)countNotifiedBoards),
-	(Float_t)nDeadLocal / ((Float_t)AliMUONConstants::NTriggerCircuit()),
+        (Float_t)nDeadLocal / ((Float_t)AliMUONConstants::NTriggerCircuit()),
 	(Float_t)nDeadRegional / 16.,
 	(Float_t)nDeadGlobal / 6., // Number of bits of global response
 	(Float_t)nNoisyStrips / ((Float_t)nStripsTot),
@@ -841,7 +850,7 @@ void AliMUONTriggerQADataMakerRec::MakeDigits(TTree* digitsTree)
   /// makes data from Digits
 
   // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  if ( CurrentEventSpecie() == AliRecoParam::kCalib ) return;
   
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
@@ -866,7 +875,7 @@ void AliMUONTriggerQADataMakerRec::MakeRecPoints(TTree* /*clustersTree*/)
   /// Fill histogram with total number of analyzed events for normalization purposes
 
   // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  if ( CurrentEventSpecie() == AliRecoParam::kCalib ) return;
 	
   FillRecPointsData(AliMUONQAIndices::kTriggerNAnalyzedEvents,1.);
 }
@@ -1219,7 +1228,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
   // First search for YCopy errors.
   Int_t loCircuit = -1;
   TIter next(fTriggerStoreReprocessRaw->CreateLocalIterator());
-  AliMUONLocalTrigger* recoLocalTrigger, *inputLocalTrigger;
+  AliMUONLocalTrigger* recoLocalTrigger = 0x0;
   while ( ( recoLocalTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {  
     loCircuit = recoLocalTrigger->LoCircuit();
@@ -1227,7 +1236,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
 
     FillRawsData(AliMUONQAIndices::kTriggerErrorLocalYCopyTest,loCircuit);
   
-    inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
+    AliMUONLocalTrigger* inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
 
     Int_t recoTrigPattern[4]  = {recoLocalTrigger->GetY1Pattern(), recoLocalTrigger->GetY2Pattern(), recoLocalTrigger->GetY3Pattern(), recoLocalTrigger->GetY4Pattern()};
     Int_t inputTrigPattern[4] = {inputLocalTrigger->GetY1Pattern(), inputLocalTrigger->GetY2Pattern(), inputLocalTrigger->GetY3Pattern(), inputLocalTrigger->GetY4Pattern()};
@@ -1266,16 +1275,16 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
     loCircuit = recoLocalTrigger->LoCircuit();
     Int_t iboard = loCircuit - 1;
     
+    AliMUONLocalTrigger* inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
+    
     TString debugString = Form("Local board %i", loCircuit);
   
     // Fill ratio 44/34 histos (if not scaler event)
-    if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+    if ( CurrentEventSpecie() != AliRecoParam::kCalib ) {
       Bool_t is34 = ( recoLocalTrigger->IsTrigX() && recoLocalTrigger->IsTrigY() );
       Bool_t is44 = TriggerElectronics()->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
       if ( is34 ) FillRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec,loCircuit);
       if ( is44 ) FillRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec,loCircuit);
-      
-      inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
       
       if ( is44 && ! is34 ) {
         AliWarning(Form("Local board %i satisfies the 4/4 conditions but not the 3/4", loCircuit));
@@ -1286,7 +1295,6 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
                               recoLocalTrigger->LoHpt(), inputLocalTrigger->LoHpt());
       }
     }
-    
 
     if ( recoLocalTrigger->LoStripX() != inputLocalTrigger->LoStripX() ) {
       FillRawsData(AliMUONQAIndices::kTriggerErrorLocalXPos,loCircuit);
@@ -1434,7 +1442,7 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval, Int_t 
   /// Fill ratio 44/34 histos
   TH1* histoEvents = ( isEndOfCycle ) ? GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents,itc) : GetMatchingRawsHisto(AliMUONQAIndices::kTriggerRawNAnalyzedEvents,itc);
   if ( ! histoEvents ) return;
-  Int_t numEvent = Int_t(histoEvents->GetBinContent(1));
+  Int_t numEvent = Int_t(histoEvents->GetBinContent(2));
 
   // Fill every fgkUpdateRatio4434 events
   if (numEvent % evtInterval != 0)
@@ -1442,6 +1450,8 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval, Int_t 
   
   TH1* histo44dec = ( isEndOfCycle ) ? GetRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec,itc) : GetMatchingRawsHisto(AliMUONQAIndices::kTriggerNumberOf44Dec,itc);
   TH1* histo34dec = ( isEndOfCycle ) ? GetRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec,itc) : GetMatchingRawsHisto(AliMUONQAIndices::kTriggerNumberOf34Dec,itc);
+  
+  if ( ! histo44dec || ! histo34dec ) return; // protection when running on calibration events only
   
   Float_t totalNumberOf44 = histo44dec->GetSumOfWeights();
   Float_t totalNumberOf34 = histo34dec->GetSumOfWeights();
@@ -1539,6 +1549,16 @@ AliMUONCalibrationData* AliMUONTriggerQADataMakerRec::CalibrationData()
   /// (create it if necessary)
   if ( ! fCalibrationData ) fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
   return fCalibrationData;
+}
+
+//____________________________________________________________________________
+AliMUONTriggerUtilities* AliMUONTriggerQADataMakerRec::TriggerUtilities()
+{
+  /// Return trigger utilities for masks
+  /// (create it if necessary)
+  if ( ! fTriggerUtils )
+    fTriggerUtils = new AliMUONTriggerUtilities(CalibrationData());
+  return fTriggerUtils;
 }
 
 //____________________________________________________________________________ 

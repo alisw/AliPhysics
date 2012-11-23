@@ -23,6 +23,7 @@ class TMap;
 class AliMpDCSNamer;
 class AliMUONVTriggerStore;
 class AliMUONGlobalTrigger;
+class AliMUONTriggerUtilities;
 
 class AliMUONTriggerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -69,6 +70,7 @@ private:
 				Char_t histo);
   AliMUONTriggerElectronics* TriggerElectronics();
   AliMUONCalibrationData* CalibrationData();
+  AliMUONTriggerUtilities* TriggerUtilities();
 
   //Int_t fTriggerOutputRegionalData[16]; ///< Data Regional Trigger decision for each Regional Board (1R:0, 2R:1, ... , 1L:8, ...) -> 4 bits LPt, 4 bits HPt
   //Int_t fTriggerInputRegionalRecLPt[2][16][16]; ///< Reconstructed Regional Input LPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
@@ -89,8 +91,9 @@ private:
   AliMUONVDigitStore* fDigitStoreFromRaw; //!< pointer to digit store from RAW data
   AliMUONVTriggerStore* fTriggerStoreFromRaw; //!< pointer to trigger store from input RAW data
   AliMUONVTriggerStore* fTriggerStoreReprocessRaw; //!< pointer to trigger store from re-computed RAW data
+  AliMUONTriggerUtilities* fTriggerUtils; //! trigger utilities (for masks)
   
-  ClassDef(AliMUONTriggerQADataMakerRec,2)  // MUON Quality assurance data maker
+  ClassDef(AliMUONTriggerQADataMakerRec,3)  // MUON Quality assurance data maker
 
 };
 

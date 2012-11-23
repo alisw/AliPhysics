@@ -28,7 +28,7 @@ public:
 private:
 
   AliMUONVQAChecker::ECheckCode MarkHisto(TH1& histo, AliMUONVQAChecker::ECheckCode value) const;
-  void SetupHisto(Int_t nevents, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code);
+  void SetupHisto(Int_t nevents, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code, Int_t esIndex);
 
 
   ClassDef(AliMUONTriggerQAChecker,1)  // MUON quality assurance checker

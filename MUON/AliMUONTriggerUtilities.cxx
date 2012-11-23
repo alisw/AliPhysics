@@ -23,10 +23,11 @@
 #include "AliMUONCalibrationData.h"
 //#include "AliMUONTriggerCrateStore.h"
 //#include "AliMUONTriggerCrate.h"
-//#include "AliMUONTriggerCrateConfig.h"
+//#include "AliMUONGlobalCrateConfig.h"
 //#include "AliMUONVCalibParam.h"
 //#include "AliMUONRegionalTriggerConfig.h"
-//#include "AliMUONLocalTriggerBoard.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTriggerElectronics.h"
@@ -71,8 +72,34 @@ Bool_t AliMUONTriggerUtilities::Init()
   /// Build trigger status map from masks
   AliMUONTriggerElectronics trigElectronics(fCalibrationData);
   AliMUONDigitMaker digitMaker(kFALSE);
-  AliMUONDigitStoreV2R digitStore;
-  AliMUONTriggerStoreV1 triggerStore;
+  AliMUONDigitStoreV2R digitStore, digitStorePart;
+  AliMUONTriggerStoreV1 triggerStore, triggerStorePart;
+
+//  // In the trigger logic, when the regional input is masked in the
+  TArrayI activeBoards(AliMUONConstants::NTriggerCircuit());
+//  for (Int_t iSide = 0; iSide < 2; iSide++) // right & left side
+//  {
+//    UInt_t currMaskLpt = fCalibrationData->GlobalTriggerCrateConfig()->GetGlobalMask(iSide);
+//    UInt_t currMaskHpt = fCalibrationData->GlobalTriggerCrateConfig()->GetGlobalMask(2+iSide);
+//    for (Int_t iReg = 0; iReg < 8; iReg++) // 8 crates/regional boards for each side.
+//    {
+//      Bool_t isActiveLpt = ( currMaskLpt >> (4*iReg) ) & 0xF;
+//      Bool_t isActiveHpt = ( currMaskHpt >> (4*iReg) ) & 0xF;
+//      if ( ! isActiveLpt && ! isActiveHpt ) continue;
+//      AliMUONTriggerCrate* cr = trigElectronics.GetCrateStore()->Crate(iSide, iReg);
+//      TObjArray *boards = cr->Boards();
+//      
+//      for ( Int_t iboard = 1; iboard < boards->GetEntries(); iboard++)
+//      {
+//        TObject* currBoard = boards->At(iboard);
+//        
+//        if ( ! currBoard ) break;
+//        Int_t idx = static_cast<AliMUONLocalTriggerBoard*>(currBoard)->GetNumber()-1;
+//        if ( idx < 0 ) continue; // Some boards of crates 2 and 3 do not exist, but they are still in the board list
+//        activeBoards[idx] = 1;
+//      } // loop on boards in crate
+//    } // loop on regional
+//  } // loop on side
   
   TArrayS xyPatternAll[2]; 	 
   for(Int_t icath=0; icath<AliMpConstants::NofCathodes(); icath++){ 	 
@@ -83,6 +110,15 @@ Bool_t AliMUONTriggerUtilities::Init()
   // Create a store with all digits in trigger
   for ( Int_t iboard=1; iboard<=AliMpConstants::NofLocalBoards(); iboard++ ) {
     digitMaker.TriggerDigits(iboard, xyPatternAll, digitStore, kFALSE);
+    
+    // For each local board, fill all the strips and check the global output:
+    // if the board is masked at the global level, the output will be 0
+    digitStorePart.Clear();
+    digitMaker.TriggerDigits(iboard, xyPatternAll, digitStorePart, kFALSE);
+    triggerStorePart.Clear();
+    trigElectronics.Digits2Trigger(digitStorePart, triggerStorePart);
+    AliMUONGlobalTrigger* globalTrig = triggerStorePart.Global();
+    if ( globalTrig->GetGlobalResponse() > 0 ) activeBoards[iboard-1] = 1;
   }
   
   // Create trigger with electronics (it applies masks)
@@ -104,7 +140,8 @@ Bool_t AliMUONTriggerUtilities::Init()
     Int_t detElemId = dig->DetElemId();
     Int_t board = dig->ManuId();
     Int_t strip = dig->ManuChannel();
-    AliMUONVDigit* currDigit = digitStoreMasked.FindObject(detElemId, board, strip, cath);
+    AliMUONVDigit* currDigit = 0x0;
+    if ( activeBoards[board-1] == 1 ) currDigit = digitStoreMasked.FindObject(detElemId, board, strip, cath);
     Bool_t isMasked = ( currDigit ) ? kFALSE : kTRUE;
     if ( isMasked ) fMaskedDigitsStore->Add(*((AliMUONVDigit*)dig->Clone()), AliMUONVDigitStore::kDeny);
     else {
@@ -188,6 +225,16 @@ Bool_t AliMUONTriggerUtilities::IsMasked(Int_t detElemId, Int_t cathode, Int_t l
   AliDebug(1,Form("detElemId %i  cath %i  board %i  strip %i  is active %i\n", detElemId, cathode, localCircuit, strip, ! isMasked));
   return isMasked;
 }
+
+//_____________________________________________________________________________
+Bool_t AliMUONTriggerUtilities::IsMaskedBoard ( Int_t localCircuit, Int_t detElemId, Int_t cathode ) const
+{
+  /// Check if board is masked
+  Int_t trigCh = detElemId/100-11;
+  Int_t arrayIndex = GetArrayIndex(cathode, trigCh, localCircuit);
+  return ( fTriggerStatusMap[arrayIndex] == 0 );
+}
+
 
 
 //_____________________________________________________________________________
