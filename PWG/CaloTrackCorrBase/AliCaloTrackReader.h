@@ -118,6 +118,16 @@ public:
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
+  
+  Double_t         GetTrackDCACut(Int_t i)           const { if(i >= 0 && i < 3 ) return fTrackDCACut[i] ;
+                                                             else return -999              ; }
+  
+  void             SetTrackDCACut(Int_t i, Float_t cut)    { if(i >= 0 && i < 3 )
+                                                             fTrackDCACut[i] = cut         ; }
+  
+  void             SwitchOnUseTrackDCACut()                { fUseTrackDCACut = kTRUE       ; }
+  void             SwitchOffUseTrackDCACut()               { fUseTrackDCACut = kFALSE      ; }
+  
   //Time cut
   
   Double_t         GetTrackTimeCutMin()              const { return fTrackTimeCutMin       ; }
@@ -477,7 +487,9 @@ public:
   Double_t         fEMCALParamTimeCutMax[4];// Remove clusters/cells with time larger than parametrized value, in ns
   Double_t         fTrackTimeCutMin;        // Remove tracks with time smaller than this value, in ns
   Double_t         fTrackTimeCutMax;        // Remove tracks with time larger than this value, in ns
-  
+  Bool_t           fUseTrackDCACut;         // Do DCA selection
+  Double_t         fTrackDCACut[3];         // Remove tracks with DCA larger than cut
+
   TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis
   TObjArray      * fCTSTracks ;             //-> temporal array with tracks
   TObjArray      * fEMCALClusters ;         //-> temporal array with EMCAL CaloClusters
