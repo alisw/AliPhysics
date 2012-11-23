@@ -295,7 +295,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->SetName(GetOutputSlot(2)->GetContainer()->GetName());
 
     //TOF pid
-    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",6,-0.5,5.5);
+    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",7,-0.5,6.5);
     hTOFflags->SetMinimum(0.);
     hTOFflags->GetXaxis()->SetBinLabel(1,"All Tracks");
     hTOFflags->GetXaxis()->SetBinLabel(2,"kTPCout");
@@ -303,6 +303,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTOFflags->GetXaxis()->SetBinLabel(4,"kTIME");
     hTOFflags->GetXaxis()->SetBinLabel(5,"kTOFpid");
     hTOFflags->GetXaxis()->SetBinLabel(6,"kTOFmismatch");
+    hTOFflags->GetXaxis()->SetBinLabel(7,"kDetPidOK");
 
     TString hname="hTOFsig";
     TH1F* hTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
@@ -320,6 +321,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     hname="hTOFstartTimeRes";
     TH1F* hTOFstartTimeRes=new TH1F(hname.Data(),"TOF start time resolution; Resolution (ps) ;Entries", 100, 0.,300.);
+
+    hname="hTOFstartTimeDistrib";
+    TH1F* hTOFstartTimeDistrib=new TH1F(hname.Data(),"TOF start time distribution; Start time ;Entries", 400, -1000.,1000.);
 
     hname="hTOFtime";
     TH1F* hTOFtime=new TH1F(hname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
@@ -373,6 +377,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->Add(hTPCsig);
     fOutputPID->Add(hTOFstartTimeMask);
     fOutputPID->Add(hTOFstartTimeRes);
+    fOutputPID->Add(hTOFstartTimeDistrib);
     fOutputPID->Add(hTOFtime);
     fOutputPID->Add(hTOFtimeKaonHyptime);
     fOutputPID->Add(hTOFtimeKaonHyptimeAC);
@@ -972,7 +977,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
   Bool_t isSimpleMode=fSimpleMode;
   if(!arrayProng) {
-    AliInfo("Branch not found! The output will contain only trak related histograms\n");
+    AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
     fNEntries->Fill(2);
   }
@@ -1257,6 +1262,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     delete [] pdgdaughters;
     return;
   }
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+
   //AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
   Bool_t oldPID=pidHF->GetOldPid();
@@ -1276,7 +1285,24 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     //loop on tracks in the event
     for (Int_t k=0;k<ntracks;k++){
       AliAODTrack* track=aod->GetTrack(k);
+
+      // Track selection cuts
       if(track->GetID()<0) continue;
+      Bool_t selTrack=kTRUE;
+      ULong_t trStatus=track->GetStatus();
+      if (!((trStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+	  !((trStatus & AliVTrack::kITSrefit) == AliVTrack::kITSrefit)){
+	selTrack=kFALSE;
+      }
+      Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+      Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+      if (track->GetTPCNclsF()>0) {
+	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
+      }
+      if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ){
+	selTrack=kFALSE;	
+      }
+
       AliAODPid *pid = track->GetDetPid();
       if(!pid && fDebug>1) cout<<"No AliAODPid found"<<endl;
 
@@ -1290,21 +1316,31 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	//check TOF
 	TH1F* htmpfl=((TH1F*)fOutputPID->FindObject("hTOFflags"));
 	htmpfl->Fill(0.);
-	if (track->GetStatus()&AliESDtrack::kTPCout) htmpfl->Fill(1.);
-	if (track->GetStatus()&AliESDtrack::kTOFout) htmpfl->Fill(2.);
-	if (track->GetStatus()&AliESDtrack::kTIME) htmpfl->Fill(3.);
-	if (track->GetStatus()&AliESDtrack::kTOFpid) htmpfl->Fill(4.);
-	if (track->GetStatus()&AliESDtrack::kTOFmismatch) htmpfl->Fill(5.);
+	if (trStatus&AliESDtrack::kTPCout) htmpfl->Fill(1.);
+	if (trStatus&AliESDtrack::kTOFout) htmpfl->Fill(2.);
+	if (trStatus&AliESDtrack::kTIME) htmpfl->Fill(3.);
+	if (trStatus&AliESDtrack::kTOFpid) htmpfl->Fill(4.);
+	if (trStatus&AliESDtrack::kTOFmismatch) htmpfl->Fill(5.);
 
-	if(pidHF && pidHF->CheckStatus(track,"TOF")){
+	Bool_t isTOFok=kFALSE;
+	if(pidResp){
+	  Double_t prob[AliPID::kSPECIES];
+	  if(pidResp->ComputeTOFProbability(track,AliPID::kSPECIES,prob)==AliPIDResponse::kDetPidOk){
+	    isTOFok=kTRUE;
+	    htmpfl->Fill(6.);
+	  }
+	}
+
+	if(selTrack && isTOFok){
 	  Double_t tofTime=pid->GetTOFsignal();
 	  AliTOFHeader* tofH=(AliTOFHeader*)aod->GetTOFHeader();
 	  if (tofH && (TMath::Abs(tofRes[0]) <= 1.E-16) ) { // new AOD
             // with new AOD we need to retrieve startTime, subtract it and retrieve correctly TOF PID resolutions  *PA*
-	    AliTOFPIDResponse tofResp=pidHF->GetPidResponse()->GetTOFResponse();
+	    AliTOFPIDResponse tofResp=pidResp->GetTOFResponse();
 	    Double_t startTime = tofResp.GetStartTime(track->P());
 	    Float_t startTimeRes = tofResp.GetStartTimeRes(track->P());  
 	    Int_t startTimeMask = tofResp.GetStartTimeMask(track->P());  
+	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeDistrib"))->Fill(startTime);
 	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeMask"))->Fill(startTimeMask);
 	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeRes"))->Fill(startTimeRes);
 	    tofTime-=startTime;
@@ -1316,9 +1352,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  if (pid->GetTOFsignal()< 0) ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(-1);
 
 	  Double_t nsigma[3]={-10,-10,-10};
-	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kPion,nsigma[0]);	 
-	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kKaon,nsigma[1]);	 
-	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kProton,nsigma[2]);	 
+	  nsigma[0]=pidResp->NumberOfSigmasTOF(track,AliPID::kPion);
+	  nsigma[1]=pidResp->NumberOfSigmasTOF(track,AliPID::kKaon);
+	  nsigma[2]=pidResp->NumberOfSigmasTOF(track,AliPID::kProton);
 
 	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),nsigma[1]);
 	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),nsigma[0]);
