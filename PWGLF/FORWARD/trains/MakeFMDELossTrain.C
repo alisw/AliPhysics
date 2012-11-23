@@ -119,7 +119,7 @@ protected:
       << "{\n"
       << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/corrs/ExtractELoss.C\");\n"
       << "  ExtractELoss(\"forward_eloss.root\"," 
-      <<  fOptions.Has("mc") << ");\n"
+      <<  fHelper->IsMC() << ");\n"
       << "}\n"
       << "// EOF" << std::endl;
     f.close();
