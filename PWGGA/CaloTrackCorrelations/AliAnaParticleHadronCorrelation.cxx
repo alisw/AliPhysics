@@ -74,7 +74,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixTrackEvents(),          fListMixCaloEvents(),
     fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
     fM02MaxCut(0),                  fM02MinCut(0),  
-    fFillPileUpHistograms(0),
+    fFillPileUpHistograms(0),       
     //Histograms
     fhPtInput(0),                   fhPtFidCut(0),
     fhPtLeading(0),                 fhPtLeadingPileUp(),              
@@ -274,7 +274,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
   {
     if(outTOF)
     {
-       fhDeltaPhiChargedOtherBC->Fill(ptTrig ,deltaPhi) ;
+      fhDeltaPhiChargedOtherBC->Fill(ptTrig ,deltaPhi) ;
       if(ptAssoc > 3 ) fhDeltaPhiChargedPtA3GeVOtherBC->Fill(ptTrig ,deltaPhi) ;
     }
     
@@ -563,7 +563,6 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   
   if(fFillPileUpHistograms)
   {
-    
     if(outTOF)
     {
       fhXEUeChargedOtherBC->Fill(ptTrig,uexE);
@@ -1271,7 +1270,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhUePart);
 
     outputContainer->Add(fhXECharged) ;
-    
+  
     if(IsDataMC())
     {
       for(Int_t i=0; i < 7; i++)
@@ -1309,9 +1308,58 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhPtTrigPout) ;
     outputContainer->Add(fhPtTrigCharged) ;
     
-    
     if(fFillPileUpHistograms)
     {
+      fhDeltaPhiChargedOtherBC  = new TH2F
+      ("hDeltaPhiChargedOtherBC","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, track BC!=0",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedOtherBC->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiChargedOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhDeltaPhiChargedPtA3GeVOtherBC  = new TH2F
+      ("hDeltaPhiChargedPtA3GeVOtherBC","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}, p_{TA}>3 GeV/c, track BC!=0",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiChargedPtA3GeVOtherBC->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiChargedPtA3GeVOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhPtTrigChargedOtherBC  =
+      new TH2F("hPtTrigChargedOtherBC","trigger and charged tracks pt distribution, track BC!=0",
+               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhPtTrigChargedOtherBC->SetYTitle("p_{T h^{#pm}} (GeV/c)");
+      fhPtTrigChargedOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhXEChargedOtherBC  =
+      new TH2F("hXEChargedOtherBC","x_{E} for charged tracks, track BC!=0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhXEChargedOtherBC->SetYTitle("x_{E}");
+      fhXEChargedOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhXEUeChargedOtherBC  =
+      new TH2F("hXEUeChargedOtherBC","x_{E} for Underlying Event, track BC!=0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhXEUeChargedOtherBC->SetYTitle("x_{E}");
+      fhXEUeChargedOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      fhZTChargedOtherBC  =
+      new TH2F("hZTChargedOtherBC","z_{T} for charged tracks, track BC!=0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhZTChargedOtherBC->SetYTitle("z_{T}");
+      fhZTChargedOtherBC->SetXTitle("p_{T trigger}");
+      
+      fhZTUeChargedOtherBC  =
+      new TH2F("hZTUeChargedOtherBC","z_{T} for Underlying Event, track BC!=0",
+               nptbins,ptmin,ptmax,200,0.,2.);
+      fhZTUeChargedOtherBC->SetYTitle("z_{T}");
+      fhZTUeChargedOtherBC->SetXTitle("p_{T trigger} (GeV/c)");
+      
+      outputContainer->Add(fhDeltaPhiChargedOtherBC) ;
+      outputContainer->Add(fhDeltaPhiChargedPtA3GeVOtherBC) ;
+      outputContainer->Add(fhXEChargedOtherBC) ;
+      outputContainer->Add(fhXEUeChargedOtherBC) ;
+      outputContainer->Add(fhZTChargedOtherBC) ;
+      outputContainer->Add(fhZTUeChargedOtherBC) ;
+      outputContainer->Add(fhPtTrigChargedOtherBC) ;    
+
       for(Int_t i = 0 ; i < 7 ; i++)
       {
         fhPtLeadingPileUp[i]  = new TH1F(Form("hPtLeadingPileUp%s",pileUpName[i].Data()),
