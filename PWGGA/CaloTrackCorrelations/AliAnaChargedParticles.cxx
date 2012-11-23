@@ -60,8 +60,8 @@ ClassImp(AliAnaChargedParticles)
     fhEtaPhiTOFBC0(0), fhEtaPhiTOFBCPlus(0), fhEtaPhiTOFBCMinus(0),
     fhEtaPhiTOFBC0PileUpSPD(0),
     fhEtaPhiTOFBCPlusPileUpSPD(0),
-    fhEtaPhiTOFBCMinusPileUpSPD(0),
-    fhProductionVertexBC(0)
+    fhEtaPhiTOFBCMinusPileUpSPD(0)//,
+//    fhProductionVertexBC(0)
 {
   //Default Ctor
 
@@ -148,10 +148,10 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
   
-  fhProductionVertexBC      = new TH1F("hProductionVertexBC", "tracks production vertex bunch crossing ", 18 , -9 , 9 ) ;
-  fhProductionVertexBC->SetYTitle("# tracks");
-  fhProductionVertexBC->SetXTitle("Bunch crossing");
-  outputContainer->Add(fhProductionVertexBC);
+//  fhProductionVertexBC      = new TH1F("hProductionVertexBC", "tracks production vertex bunch crossing ", 18 , -9 , 9 ) ;
+//  fhProductionVertexBC->SetYTitle("# tracks");
+//  fhProductionVertexBC->SetXTitle("Bunch crossing");
+//  outputContainer->Add(fhProductionVertexBC);
 
   Int_t ntofbins = 1000;
   Int_t mintof = -500;
@@ -442,8 +442,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
-  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (GetReader()->GetInputEvent());
-  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (GetReader()->GetInputEvent());
+  //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (GetReader()->GetInputEvent());
+  //AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (GetReader()->GetInputEvent());
   
   Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
 
@@ -465,22 +465,22 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     //if( tof < 0) printf("TOF Signal %e, status %d, pt %f\n", tof,status,status2,p3.Pt());
     
     Double_t dcaCons = -999;
-    Int_t vtxBC = -999;
-    if     (esdevent) vtxBC = esdevent->GetPrimaryVertex()->GetBC();
-    else if(aodevent) vtxBC = aodevent->GetPrimaryVertex()->GetBC();
+    //Int_t vtxBC = -999;
+    //if     (esdevent) vtxBC = esdevent->GetPrimaryVertex()->GetBC();
+    //else if(aodevent) vtxBC = aodevent->GetPrimaryVertex()->GetBC();
     
-    if(vtxBC!=AliVTrack::kTOFBCNA)printf("BC primary %d",vtxBC);
+    //if(vtxBC!=AliVTrack::kTOFBCNA)printf("BC primary %d",vtxBC);
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     if(aodTrack)
     {
       dcaCons = aodTrack->DCA();
-      vtxBC   = aodTrack->GetProdVertex()->GetBC();
+      //vtxBC   = aodTrack->GetProdVertex()->GetBC();
     }
 
-    if(vtxBC!=AliVTrack::kTOFBCNA) printf(" - production %d\n",vtxBC);
+    //if(vtxBC!=AliVTrack::kTOFBCNA) printf(" - production %d\n",vtxBC);
 
-    fhProductionVertexBC->Fill(vtxBC);
+    //fhProductionVertexBC->Fill(vtxBC);
     
     Double_t dca[2]   = {1e6,1e6};
     Double_t covar[3] = {1e6,1e6,1e6};
