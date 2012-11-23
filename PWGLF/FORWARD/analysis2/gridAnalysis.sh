@@ -411,12 +411,13 @@ allAboard()
 	uopt="${uopt}&par"
     fi
     url="alien://${dir}?run=${runs}&pattern=${pat}${uopt}${aliroot}${root}#${tree}"
+    opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
     opts="${opts} --date=${now} --class=$cl --name=$nme"
     
     echo "Running train: runTrain2 ${opts} --url=${url} $@" 
     if test $noact -gt 0 ; then return ; fi
 
-    runTrain2 ${opts} --overwrite --url=${url} $@ 
+    runTrain ${opts} --overwrite --url=${url} $@ 
 
     cat <<EOF
 Check https://alimonitor.cern.ch/users/jobs.jsp for progress 
