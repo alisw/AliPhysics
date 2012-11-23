@@ -70,6 +70,7 @@ fUseEMCALTimeCut(1),         fUseParamTimeCut(0),             fUseTrackTimeCut(0
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
 fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
+fUseTrackDCACut(0),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -384,6 +385,11 @@ void AliCaloTrackReader::InitParameters()
   fEMCALPtMax = 1000. ;
   fPHOSPtMax  = 1000. ;
   
+  //Track DCA cuts
+  fTrackDCACut[0] = 3; //xy, quite large
+  fTrackDCACut[1] = 3; //z, quite large
+  fTrackDCACut[2] = 3; //TPC constrained, quite large
+
   //Do not filter the detectors input by default.
   fFillEMCAL      = kFALSE;
   fFillPHOS       = kFALSE;
@@ -1135,7 +1141,7 @@ void AliCaloTrackReader::FillInputCTS()
     if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
         
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
-    
+      
     if(okTOF)
     {
        //SetTrackEventBCcut(bc);
@@ -1148,6 +1154,33 @@ void AliCaloTrackReader::FillInputCTS()
         continue ;
       }
     }
+    
+    if(fUseTrackDCACut)
+    {
+      //In case of hybrid tracks on AODs, constrained TPC tracks cannot be propagated back to primary vertex
+      AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
+      Float_t dcaCons = -999;
+      if(aodTrack)
+      {
+        dcaCons = aodTrack->DCA();
+        //vtxBC   = aodTrack->GetProdVertex()->GetBC();
+        if(dcaCons > -999)
+        {
+          if(TMath::Abs(dcaCons) > fTrackDCACut[2] ) continue ;
+        }
+      }
+
+      //non contrained TPC tracks (tracks with ITS points) on AODs
+      if(dcaCons==-999)
+      {
+        Double_t dca[2]   = {1e6,1e6};
+        Double_t covar[3] = {1e6,1e6,1e6};
+        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
+        if( !okDCA                               ||
+            TMath::Abs(dca[0]) > fTrackDCACut[0] ||
+            TMath::Abs(dca[1]) > fTrackDCACut[1]    ) continue ;
+      }
+    }// DCA cuts
     
     if(fDebug > 2 && momentum.Pt() > 0.1)
       printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
