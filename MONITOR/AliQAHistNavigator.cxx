@@ -198,7 +198,9 @@ void AliQAHistNavigator::SetExpertMode(Bool_t mode)
     //sets the expert mode
     Bool_t oldmode = fExpertMode;
     fExpertMode = mode;
-    if (fExpertMode!=oldmode) fPCurrItem = (AliQADirListItem*)GetItemList()->First();
+    TList* itemList = GetItemList();
+    
+    if (fExpertMode!=oldmode && itemList) fPCurrItem = (AliQADirListItem*)itemList->First();
     
 }
 
@@ -328,10 +330,11 @@ Bool_t AliQAHistNavigator::SetItem( Int_t hist )
 TList* AliQAHistNavigator::GetItemList()
 {
     //returns the current list of histograms, if none, returns empty list
-    TList* itemlist=NULL;
+    TList* itemlist=0;
     if (fExpertMode)
     {
-        AliQADirList* expertlist = (AliQADirList*)fPCurrLevel->GetDirs()->FindObject(fExpertDirName);
+        AliQADirList* expertlist = 0;
+        if(fPCurrLevel) expertlist = (AliQADirList*)fPCurrLevel->GetDirs()->FindObject(fExpertDirName);
         if (expertlist) itemlist = expertlist->GetItems();
         else
         {
@@ -342,7 +345,7 @@ TList* AliQAHistNavigator::GetItemList()
         }
     } else
     {
-        itemlist = fPCurrLevel->GetItems();
+        if(fPCurrLevel) itemlist = fPCurrLevel->GetItems();
     }
     return itemlist;
 }
@@ -378,7 +381,7 @@ TString AliQAHistNavigator::GetFileName()
 TString AliQAHistNavigator::GetDirName()
 {
     //get the name of dir containing current item
-    if (!fPCurrItem) return "";
+    if (!fPCurrItem || !fPCurrItem->GetParent()) return "";
     AliQADirList* d=(AliQADirList*)fPCurrItem->GetParent();
     TString path;
     do
