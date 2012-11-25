@@ -14,10 +14,11 @@ class AliITSUClusterizer : public TObject
 {
   //
  public:
-  enum {kDigitChunkSize=1024};
+  enum {kDigitChunkSize=1024, kMaxLabels=20,kMaxLabInCluster=3};
   //
   AliITSUClusterizer(Int_t nrowInit=0);
   virtual ~AliITSUClusterizer();
+  void SetRawData(Bool_t v=kTRUE)                      {fRawData = v;}
   void Clusterize();
   void SetSegmentation(const AliITSUSegmentationPix *segm);
   void SetRecoParam(const AliITSURecoParam* param)     {fRecoParam = param;}
@@ -33,13 +34,15 @@ class AliITSUClusterizer : public TObject
   
   void SetDigits(const TClonesArray *digits)       {fInputDigits=digits;fInputDigitsReadIndex=0;}
   void SetClusters(TClonesArray *clusters)         {fOutputClusters=clusters;}
-
+  //
+  // labeling methods
+  void AddLabel(int label);
+  void CheckLabels();
+  //
  protected: // transient data types
   struct AliITSUClusterizerClusterDigit {
     AliITSUClusterizerClusterDigit *fNext;
     AliITSdigit *fDigit;
-    Int_t fU;
-    Int_t fV;
   };
   
   struct AliITSUClusterizerClusterCand;
@@ -98,6 +101,11 @@ class AliITSUClusterizer : public TObject
   const TClonesArray *fInputDigits;         // supplied digits
   Int_t         fInputDigitsReadIndex;      // digits counter
   Int_t         fLayerID;                   // current layer id
+  //
+  Int_t         fCurrLabels[kMaxLabels];    // labels collected for current cluster
+  Int_t         fNLabels;                   // number of collected labels
+  Bool_t        fRawData;                   // is raw data processed?
+  //
   Double_t      fLorAngCorrection;          // Lorentz Angle correction for current layer
   // Cluster Output
   TClonesArray *fOutputClusters;            // external container to store clusters
@@ -186,6 +194,15 @@ inline void AliITSUClusterizer::DetachPartFromCand(AliITSUClusterizerClusterCand
   if (part->fPrevInCluster)    part->fPrevInCluster->fNextInCluster=part->fNextInCluster;
   else                         cand->fFirstPart=part->fNextInCluster;
   if (part->fNextInCluster)    part->fNextInCluster->fPrevInCluster=part->fPrevInCluster;
+}
+
+//______________________________________________________________________________
+inline void AliITSUClusterizer::AddLabel(int label)
+{
+  // add new label
+  if (fNLabels==kMaxLabels) return;
+  for (int i=fNLabels;i--;) if (fCurrLabels[i]==label) return;
+  fCurrLabels[fNLabels++] = label;
 }
 
 

@@ -1,6 +1,9 @@
 #include <TTree.h>
 #include <TObjArray.h>
+#include <TParticle.h>
 #include <TMath.h>
+#include "AliRun.h"
+#include "AliMC.h"
 #include <AliITSUSegmentationPix.h>
 #include "AliITSUClusterizer.h"
 #include "AliITSUClusterPix.h"
@@ -22,6 +25,8 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
   ,fInputDigits(0)
   ,fInputDigitsReadIndex(0)
   ,fLayerID(0)
+  ,fNLabels(0)
+  ,fRawData(kFALSE)
   ,fLorAngCorrection(0)
   ,fOutputClusters(0)
   ,fDigitFreelist(0)
@@ -104,9 +109,6 @@ AliITSUClusterizer::AliITSUClusterizerClusterDigit* AliITSUClusterizer::NextDigi
     AliITSdigit *tmp=static_cast<AliITSdigit*>(fInputDigits->UncheckedAt(fInputDigitsReadIndex++));
     AliITSUClusterizerClusterDigit *digit=AllocDigit();
     digit->fDigit=tmp;
-    // IMPORTANT: A lexiographical order (fV,fU) is assumed
-    digit->fU=tmp->GetCoord1();
-    digit->fV=tmp->GetCoord2();
     return digit;
   }
   else
@@ -148,21 +150,33 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
 {
   // convert set of digits to cluster data in LOCAL frame
   const double k1to12 = 1./12;
+  static int maxLbinDigit = AliITSdigit::GetNTracks();
   //
+  fNLabels = 0;
   Int_t n=0;
   cand->fLastDigit->fNext=0;
   double x=0,z=0,xmn=1e9,xmx=-1e9,zmn=1e9,zmx=-1e9,px=0,pz=0;
   float  cx,cz;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-    fSegm->GetPadCxz(idigit->fV,idigit->fU,cx,cz);
+    AliITSdigit* dig = idigit->fDigit;
+    fSegm->GetPadCxz(dig->GetCoord2(),dig->GetCoord1(),cx,cz);
     x += cx;
     z += cz;
     if (cx<xmn) xmn=cx;
     if (cx>xmx) xmx=cx;
     if (cz<zmn) zmn=cz;
     if (cz>zmx) zmx=cz;
-    px += fSegm->Dpx(idigit->fV);
-    pz += fSegm->Dpz(idigit->fU);
+    px += fSegm->Dpx(dig->GetCoord2());
+    pz += fSegm->Dpz(dig->GetCoord1());
+    //
+    if (!fRawData) {
+      for(Int_t dlab=0;dlab<maxLbinDigit;dlab++){
+	Int_t digitlab = (dig->GetTracks())[dlab];
+	if(digitlab<0) continue;
+	AddLabel(digitlab);
+      }
+    }
+    //
     ++n;
   }
   UChar_t nx=1,nz=1;
@@ -185,6 +199,12 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   cluster->SetSigmaYZ(0);
   cluster->SetFrameLoc();
   cluster->SetNxNz(nx,nz);
+  //
+  if (!fRawData) {
+    CheckLabels();
+    int nl = Min(kMaxLabInCluster,fNLabels);
+    for (int i=nl;i--;) cluster->SetLabel(fCurrLabels[i],i);
+  }
   //
   // Set Volume id
   cluster->SetVolumeId(fVolID);
@@ -225,7 +245,9 @@ void AliITSUClusterizer::CloseRemainingParts(AliITSUClusterizerClusterPart *part
 //______________________________________________________________________________
 void AliITSUClusterizer::Clusterize() 
 {
-  // main algo
+  // main algo for MC clustererization
+  SetRawData(kFALSE);
+  //
   AliITSUClusterizerClusterDigit *iDigit=NextDigit();
   AliITSUClusterizerClusterPart *iPrevRowBegin=0;
   AliITSUClusterizerClusterPart *iNextRowBegin=0;
@@ -233,11 +255,11 @@ void AliITSUClusterizer::Clusterize()
   AliITSUClusterizerClusterPart *iNextRow=0;
   Int_t lastV=0;
   while (iDigit) {
-    if (iDigit->fV!=lastV) {
+    if (iDigit->fDigit->GetCoord2()!=lastV) {
       // NEW ROW
       if (iNextRow) iNextRow->fNextInRow=0;
       if (iPrevRowBegin) CloseRemainingParts(iPrevRowBegin);
-      if (iDigit->fV==lastV+1) {
+      if (iDigit->fDigit->GetCoord2()==lastV+1) {
 	iPrevRowBegin=iNextRowBegin;
 	iPrevRow     =iNextRowBegin;
       }
@@ -249,10 +271,10 @@ void AliITSUClusterizer::Clusterize()
       }
       iNextRowBegin=0;
       iNextRow     =0;
-      lastV=iDigit->fV; 
+      lastV=iDigit->fDigit->GetCoord2(); 
     }
     // skip cluster parts before this digit
-    while (iPrevRow && iPrevRow->fUEnd<iDigit->fU) {
+    while (iPrevRow && iPrevRow->fUEnd<iDigit->fDigit->GetCoord1()) {
       iPrevRow=iPrevRow->fNextInRow;
     }
     // find the longest continous line of digits [iDigit,pDigit]=[iDigit,jDigit)
@@ -262,9 +284,9 @@ void AliITSUClusterizer::Clusterize()
     cand->fFirstPart=0;
     cand->fFirstDigit=cand->fLastDigit=iDigit; // NB: first diggit is attached differently
     iDigit->fNext=0;
-    Int_t lastU =iDigit->fU;
+    Int_t lastU =iDigit->fDigit->GetCoord1();
     Int_t lastU1=lastU+1;
-    while (jDigit && jDigit->fU==lastU1 && jDigit->fV==lastV) {
+    while (jDigit && jDigit->fDigit->GetCoord1()==lastU1 && jDigit->fDigit->GetCoord2()==lastV) {
       pDigit=jDigit;
       jDigit=NextDigit();
       AttachDigitToCand(cand,pDigit);
@@ -307,4 +329,55 @@ void AliITSUClusterizer::PrepareLorentzAngleCorrection(Double_t bz)
   // calculate parameters for Lorentz Angle correction. Must be called 
   // after setting segmentation and recoparams
   fLorAngCorrection = 0.5*fRecoParam->GetTanLorentzAngle(fLayerID)*bz/kNominalBz*fSegm->Dy();
+}
+
+//______________________________________________________________________
+void AliITSUClusterizer::CheckLabels() 
+{
+  // Tries to find mother's labels
+  //
+  if (fNLabels<1) return;
+  AliRunLoader *rl = AliRunLoader::Instance();
+  if(!rl) return;
+  TTree *trK=(TTree*)rl->TreeK();
+  if (!trK) return;
+  //
+  static int   labS[kMaxLabels];
+  static float kine[kMaxLabels];
+  Int_t nlabels = fNLabels; 
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  for (Int_t i=fNLabels;i--;) labS[i] = fCurrLabels[i];
+  //
+  for (Int_t i=0;i<nlabels;i++) {
+    Int_t label = labS[i];
+    if (label>=ntracks) continue;
+    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+    kine[i] = part->Energy() - part->GetCalcMass(); // kinetic energy 
+    if (kine[i] < 0.02) {    // reduce soft particles from the same cluster
+      Int_t m=part->GetFirstMother();
+      if (m<0) continue; // primary
+      //
+      if (part->GetStatusCode()>0) continue;
+      //
+      // if the parent is within the same cluster, assign parent's label
+      for (int j=0;j<nlabels;j++) if (labS[j]==m) { labS[i] = m; break;}
+    }
+  } 
+  //
+  if (nlabels>kMaxLabInCluster) { // only 3 labels are stored in cluster, sort in decreasing momentum
+    static int ind[kMaxLabels],labSS[kMaxLabels];
+    TMath::Sort(nlabels,kine,ind);
+    for (int i=nlabels;i--;) labSS[i] = labS[i];
+    for (int i=nlabels;i--;) labS[i] = labSS[ind[i]]; 
+  }
+  //
+  //compress labels -- if multi-times the same
+  for (Int_t i=0;i<nlabels;i++) fCurrLabels[i]=-2;
+  fNLabels = 0;
+  int j=0;
+  for (int i=0;i<nlabels;i++) {
+    for (j=fNLabels;j--;) if (labS[i]==fCurrLabels[j]) break; // the label already there
+    if (j<0) fCurrLabels[fNLabels++] = labS[i];
+  }
+  //
 }
