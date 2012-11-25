@@ -14,6 +14,7 @@
 class AliITSUReconstructor;
 class AliITSURecoDet;
 class AliITSUClusterPix;
+class AliESDtrack;
 
 class TTree;
 
@@ -43,8 +44,9 @@ class AliITSUTrackerGlo : public AliTracker {
   virtual Int_t          LoadClusters(TTree * treeRP=0);
   virtual void           UnloadClusters();
   virtual AliCluster*    GetCluster(Int_t index) const;
-
-
+  //------------------------------------
+  AliITSURecoDet*        GetITSInterface()       const {return fITS;}
+  //
   //------------------------------------
   Bool_t                 NeedToProlong(AliESDtrack* estTr);
   void                   Init(AliITSUReconstructor* rec);
@@ -71,6 +73,7 @@ class AliITSUTrackerGlo : public AliTracker {
  protected:
   AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
   AliITSURecoDet*                 fITS;            // interface to ITS
+  AliESDtrack*                    fCurrESDtrack;   // current esd track in processing
   Double_t                        fCurrMass;       // current track mass
   Double_t                        fTrImpData[kNTrImpData];  // data on track impact on the layer
   //

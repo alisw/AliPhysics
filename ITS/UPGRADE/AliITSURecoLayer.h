@@ -32,6 +32,8 @@ class AliITSURecoLayer : public TNamed
   Int_t              GetID()                       const {return (int)GetUniqueID();}
   Int_t              GetActiveID()                 const {return fActiveID;}
   Int_t              GetNSensors()                 const {return fNSensors;}
+  Int_t              GetNLadders()                 const {return fNLadders;}
+  Int_t              GetNSensInLadder()            const {return fNSensInLadder;}
   Double_t           GetRMin()                     const {return fRMin;}
   Double_t           GetRMax()                     const {return fRMax;}
   Double_t           GetDR()                       const {return fRMax-fRMin;}
@@ -52,9 +54,10 @@ class AliITSURecoLayer : public TNamed
   void               SetPassive(Bool_t v=kTRUE)          {SetBit(kPassive,v);}
   void               SetMaxStep(Double_t st)             {fMaxStep = st>0 ? st : 0.1;}
   //
-  AliITSURecoSens*   GetSensor(Int_t i)            const {return (AliITSURecoSens*)fSensors[i];}
+  AliITSURecoSens*   GetSensor(Int_t i)            const {return i<0 ? 0:(AliITSURecoSens*)fSensors[i];}
   AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInLadder+is);}
   TClonesArray*      GetClusters()                 const {return (TClonesArray*)fClusters;}
+  Int_t              GetNClusters()                const {return fClusters ? fClusters->GetEntriesFast() : 0;}
   AliCluster*        GetCluster(Int_t icl)         const {return (AliCluster*)fClusters->UncheckedAt(icl);}
   void               SetClusters(TClonesArray* cl)       {fClusters = cl;}
   //

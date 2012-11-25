@@ -56,7 +56,7 @@ void AliITSUSeed::Print(Option_t* opt) const
   printf("Lr%d Cl:%4d Chi2Glo:%6.3f Chi2Cl:",lr,cl,GetChi2Glo());
   cl<0 ? printf("  NA  ") : printf("%6.3f",GetChi2Cl());
   printf(" |"); 
-  for (int i=0;i<=lr;i++) printf("%c",HasClusterOnLayer(i) ? '+':'-'); printf("|\n");
+  for (int i=0;i<=12;i++) printf("%c",HasClusterOnLayer(i) ? '+':'-'); printf("|\n");
   TString opts = opt; opts.ToLower();
   if (opts.Contains("etp")) AliExternalTrackParam::Print();
   if (opts.Contains("parent") && GetParent()) GetParent()->Print(opt);

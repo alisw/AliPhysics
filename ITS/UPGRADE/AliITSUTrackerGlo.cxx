@@ -45,6 +45,7 @@ ClassImp(AliITSUTrackerGlo)
 AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
 :  fReconstructor(rec)
   ,fITS(0)
+  ,fCurrESDtrack(0)
   ,fCurrMass(kPionMass)
   ,fSeedsLr(0)
   ,fSeedsPool("AliITSUSeed",0)
@@ -91,8 +92,8 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   // select ESD tracks to propagate
   int nTrESD = esdEv->GetNumberOfTracks();
   for (int itr=0;itr<nTrESD;itr++) {
-    printf("Processing track %d\n",itr);
     AliESDtrack *esdTr = esdEv->GetTrack(itr);
+    AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
     FindTrack(esdTr);
   }
 
@@ -189,16 +190,15 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
   for (int ila=fITS->GetNLayersActive();ila--;) {
     int ilaUp = ila+1;                         // prolong seeds from layer above
     int nSeedsUp = GetNSeeds(ilaUp);
-    printf("NSeeds %d\n",nSeedsUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
       seedUC = *seedU;
       seedUC.SetParent(seedU);
       // go till next active layer
-      printf("Lr:%d Seed:%d\n",ila,isd);
+      AliInfo(Form("Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
       if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
 	//
-	printf("Tr failed\n");
+	AliInfo("Transport failed");
 	// Check if the seed satisfies to track definition
 	if (NeedToKill(&seedUC,kTransportFailed)) KillSeed(ilaUp,isd); 
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
@@ -209,7 +209,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
-      printf("Lr:%d Ns:%d\n",ila, nsens);
+      AliInfo(Form("Will check %d sensors on lr:%d ",nsens,ila));
       //
       for (int isn=nsens;isn--;) {
 	seedT = seedUC;
@@ -217,7 +217,6 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	//
 	if (!seedT.Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) continue; // propagation failed, seedT is intact
 	int clID0 = sens->GetFirstClusterId();
-	printf("Sn:%d Ncl:%d\n",isn,sens->GetNClusters());
 	for (int icl=sens->GetNClusters();icl--;) {
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
 	  //
@@ -240,6 +239,7 @@ Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr)
 {
   // init prolongaion candidates finding for single seed
   fCurrMass = esdTr->GetMass();
+  fCurrESDtrack = esdTr;
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
   //
   AliITSUSeed* seed = NewSeedFromPool();
@@ -365,6 +365,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) return kStopSearchOnSensor; // propagation failed, seedT is intact
   }
   double dy = cl->GetY() - track->GetY();
+  double dz2 = cl->GetZ()-track->GetZ();
+  //
+  AliInfo(Form("Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d)",clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2)));
+  //
   double dy2 = dy*dy;
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
@@ -372,7 +376,6 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
     if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
     else      return kClusterNotMatching;   // Other clusters may match
   }
-  double dz2 = cl->GetZ()-track->GetZ();
   dz2 *= dz2;
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
@@ -382,6 +385,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Double_t p[2]={cl->GetY(), cl->GetZ()};
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = track->GetPredictedChi2(p,cov);
+  AliInfo(Form("Chi2=%f",chi2));
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) return kClusterNotMatching;
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates

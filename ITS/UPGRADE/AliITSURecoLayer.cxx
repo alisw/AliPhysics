@@ -222,10 +222,12 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   // find sensors having intersection with track
   // impPar contains: lab phi of track, dphi, labZ, dz
   double z = impPar[2];
-  if (z>fZMax+impPar[3]) return -1; // outside of Z coverage
+  if (z>fZMax+impPar[3]) return 0; // outside of Z coverage
   z -= fZMin;
-  if (z<-impPar[3]) return -1; // outside of Z coverage
+  if (z<-impPar[3]) return 0; // outside of Z coverage
   int sensInLad = int(z*fSensDZInv);
+  if      (sensInLad<0) sensInLad = 0;
+  else if (sensInLad>=fNSensInLadder) sensInLad = fNSensInLadder-1;
   //
   double phi = impPar[0] - fPhiOffs;
   BringTo02Pi(phi);
@@ -273,6 +275,7 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
   // the clusters of the layer must be sorted per sensor
   int ncl = fClusters->GetEntriesFast();
   int curSensID = -1;
+  for (int i=fNSensors;i--;) GetSensor(i)->SetNClusters(0);
   AliITSURecoSens* curSens = 0;
   for (int icl=0;icl<ncl;icl++) {
     AliITSUClusterPix* cl = (AliITSUClusterPix*) fClusters->UncheckedAt(icl);
