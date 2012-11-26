@@ -38,7 +38,10 @@ fMcLabel(mcLabel),
 fid(trackid),
 fImpPar(impPar),
 fCheckSoftPi(checkSoftPi),
-fCharge(0)
+fCharge(0),
+fInvMass(0),
+fPtBin(-1),
+fOriginMother(-1)
 {
 	//
 	// default constructor
@@ -53,7 +56,10 @@ fMcLabel(mcLabel),
 fid(trackid),
 fImpPar(impPar),
 fCheckSoftPi(checkSoftPi),
-fCharge(charge)
+fCharge(charge),
+fInvMass(0),
+fPtBin(-1),
+fOriginMother(-1)
 {
 	//
 	// default constructor
@@ -68,12 +74,52 @@ fMcLabel(McLabel),
 fid(0),
 fImpPar(0.),
 fCheckSoftPi(kFALSE),
-fCharge(0)
+fCharge(0),
+fInvMass(0),
+fPtBin(-1),
+fOriginMother(-1)
 {
 	//
 	// default constructor
 	//
 }
+
+AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int originmother) : 
+fEta(eta), 
+fPhi(phi), 
+fpT(pt), 
+fMcLabel(0),
+fid(0),
+fImpPar(0.),
+fCheckSoftPi(kFALSE),
+fCharge(charge),
+fInvMass(0),
+fPtBin(-1),
+fOriginMother(originmother)
+{
+	//
+	// default constructor
+	//
+}
+
+AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int originmother) : 
+fEta(eta), 
+fPhi(phi), 
+fpT(pt), 
+fMcLabel(0),
+fid(0),
+fImpPar(0.),
+fCheckSoftPi(kFALSE),
+fCharge(0),
+fInvMass(invmass),
+fPtBin(ptbin),
+fOriginMother(originmother)
+{
+	//
+	// default constructor
+	//
+}
+
 
 AliReducedParticle::~AliReducedParticle() {
 

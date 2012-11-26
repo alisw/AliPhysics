@@ -35,14 +35,17 @@
 
 
 #include "AliLog.h"
+#include "AliVParticle.h"
 
 // class to get the reduced hadron candidate
 class AliReducedParticle : public AliVParticle
 {
 public:
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi);
-	AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge);
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge);
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int orginmother); 
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int orginmother=0);
 
     ~AliReducedParticle();
     
@@ -55,6 +58,9 @@ public:
     virtual Int_t  GetID()		const{return fid;}
     virtual Double_t GetImpPar() const{return fImpPar;}
     virtual Bool_t CheckSoftPi() const{return fCheckSoftPi;}
+    virtual Double_t GetInvMass() const {return fInvMass;}
+    virtual int GetPtBin() const  {return fPtBin;}
+    virtual int GetOriginMother() const {return fOriginMother;}
 	
 	// kinematics
     virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
@@ -89,15 +95,19 @@ public:
 	
     
 private:
-    Double_t fEta;      // eta
-    Double_t fPhi;      // phi
-    Double_t fpT;       // pT
-    Int_t fMcLabel; //mclabel
-    Int_t fid; // track ID
-    Double_t fImpPar; // impact parameter
+    Double_t fEta;       // eta
+    Double_t fPhi;       // phi
+    Double_t fpT;        // pT
+    Int_t fMcLabel;      //mclabel
+    Int_t fid;           // track ID
+    Double_t fImpPar;    // impact parameter
     Bool_t fCheckSoftPi; // check if the track is compatible with a softpion from D*
-    Short_t fCharge; // charge of the associated track
+    Short_t fCharge;     // charge of the associated track
+    Double_t fInvMass;   // Invariant mass of Dmeson
+    int fPtBin;          // Ptbin of Dmesons
+    int fOriginMother;   //  Holds the origin motherquark (process)
+
     
-    ClassDef(AliReducedParticle, 3); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+    ClassDef(AliReducedParticle, 4); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 #endif

@@ -45,6 +45,15 @@ class AliHFCorrelator : public TNamed
 	AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t ppOrPbPb);
 	virtual ~AliHFCorrelator();
 	
+	// enum for setting which associated particle type to work with
+	enum{
+	  kUndefined=0,
+	  kHadron=1,
+	  kKaon,
+	  kKZero,
+	  kElectron
+	};
+
 	//setters
 	void SetDeltaPhiInterval (Double_t min, Double_t max){
 		fPhiMin = min; fPhiMax = max;
@@ -73,9 +82,9 @@ class AliHFCorrelator : public TNamed
         Bool_t DefineEventPool(); // Definition of the Event pool parameters
 	Bool_t Initialize(); // function that initlize everything for the analysis	
 	Bool_t ProcessEventPool(); // processes the event pool
-	Bool_t ProcessAssociatedTracks(Int_t EventLoopIndex); //
+	Bool_t ProcessAssociatedTracks(Int_t EventLoopIndex, const TObjArray* associatedTracks=NULL); //
 	Bool_t Correlate(Int_t loopindex); // function that computes the correlations between the trigger particle and the track n. loopindex
-	Bool_t PoolUpdate();// updates the event pool
+	Bool_t PoolUpdate(const TObjArray* associatedTracks=NULL);// updates the event pool
 	Double_t SetCorrectPhiRange(Double_t phi); // sets all the angles in the correct range
 	void SetPidAssociated() {fhadcuts->SetPidAssociated();}
 
