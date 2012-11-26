@@ -34,7 +34,7 @@ Int_t iCollisionType = 0; // 0=pp, 1=PbPb
 // Trigger mask.
 
 UInt_t kTriggerInt = AliVEvent::kAnyINT;
-UInt_t kTriggerMuonBarrel = AliVEvent::kMUU7 | AliVEvent::kMuonUnlikeLowPt8 ;
+UInt_t kTriggerMuonBarrel = AliVEvent::kMUU7 | AliVEvent::kMuonUnlikeLowPt8 | AliVEvent::kMuonUnlikeLowPt0;
 UInt_t kTriggerEMC   = AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMCEJE | AliVEvent::kEMCEGA;
 UInt_t kTriggerHM   = AliVEvent::kHighMult;
 // Main trigger mask used:
@@ -79,22 +79,25 @@ Bool_t doFBFqa        = 1; // new - not ported yet to revision
 Int_t       debug_level        = 1;        // Debugging
 Int_t       run_number = 0;
 
-void QAtrain_duo(const char *suffix  = "", 
-                 Int_t run           = 0, 
-                 const char *xmlfile = "wn.xml",
-                 Int_t  stage        = 0, /*0 = QA train, 1...n - merging stage*/
-                 const char *cdb     = "raw://")
+void QAtrain_duo(const char *suffix="", Int_t run = 0, 
+             const char *xmlfile   = "wn.xml",
+             Int_t  stage          = 0, /*0 = QA train, 1...n - merging stage*/
+             const char *cdb     = "raw://")
 {
   run_number = run;
   TString ss(suffix);
   ss.ToLower();
   Bool_t ibarrel = (ss.Contains("barrel"))?kTRUE:kFALSE;
 
-  TGrid::Connect("alien://");
-  if (!gGrid || !gGrid->IsConnected()) {
-    ::Error("QAtrain", "No grid connection");
-    return;
-  }   
+  TString cdbString(cdb);
+  if (cdbString.Contains("raw://"))
+  {
+    TGrid::Connect("alien://");
+    if (!gGrid || !gGrid->IsConnected()) {
+      ::Error("QAtrain", "No grid connection");
+      return;
+    }  
+  }
   // Set temporary merging directory to current one
   gSystem->Setenv("TMPDIR", gSystem->pwd());
   // Set temporary compilation directory to current one
@@ -152,6 +155,7 @@ void LoadLibraries()
      gSystem->Load("libPWGGACaloTrackCorrelations");
      gSystem->Load("libPWGGACaloTasks");
      gSystem->Load("libPWGGAPHOSTasks");
+     gSystem->Load("libPWGEMCAL");
      gSystem->Load("libPWGGAEMCALTasks");
   }  
   if(doMUON || doMUONTrig) {
@@ -233,6 +237,10 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
 //  taskv0qa->SelectCollisionCandidates();
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskVZEROQATrig.C");
+    AliAnaVZEROQA *taskv0qatrig = AddTaskVZEROQATrig(0);
+    taskv0qatrig->SelectCollisionCandidates(AliVEvent::kINT8);
+
   }
   if (doVZEROPbPb && iCollisionType==1) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/VZERO/AddTaskVZEROPbPb.C");
@@ -362,13 +370,33 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
 
   if(doCALO) {
+  // - In case of MC analysis, it skips the triggered events wagon (given that
+  //the normal wagon is always suffixed as "default")
+  //- No need to pass the type of data
+  //- No need to specify the year. In principle the year is only needed when
+  //setting the size of some histograms (change in number of SM along the years),
+  //I do not know how to access automatically the run number when the histograms
+  // are created in the UserCreateOutput. By default I set them to the maximum
+  //expected size, but I still let the possibility to check the year.
+
+  //So the way to initialize the task in trunk is now
+
+  //AddTaskCalorimeterQA(Bool_t kSimulation = kFALSE,
+                                   //  const char *suffix="default",
+                                   // TString outputFile = "", 
+                                   //  Int_t year = 2012, 
+                                   //  Bool_t kPrintSettings = kFALSE)
+
+  //So, in principle only the first 2 need to be specified.
+
+  
       gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
-      AliAnalysisTaskCaloTrackCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", 2012, kFALSE, kFALSE);
+      AliAnalysisTaskCaloTrackCorrelation *taskCaloQA = AddTaskCalorimeterQA(kFALSE, "default");
       taskCaloQA->SetDebugLevel(0);
       // offline mask set in AddTask to kMB
       taskCaloQA->SelectCollisionCandidates(kTriggerMask);
       // Add a new calo task with EMC1 trigger only
-      taskCaloQA = AddTaskCalorimeterQA("ESD", 2012, kFALSE, kFALSE, "", "EMC7");
+      taskCaloQA = AddTaskCalorimeterQA(kFALSE, "trigEMC");
       taskCaloQA->SetDebugLevel(0);
       taskCaloQA->SelectCollisionCandidates(kTriggerEMC);
   }
