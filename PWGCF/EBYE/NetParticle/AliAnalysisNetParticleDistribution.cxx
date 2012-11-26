@@ -55,7 +55,7 @@ AliAnalysisNetParticleDistribution::AliAnalysisNetParticleDistribution() :
   fPtRange(NULL),
   fAODtrackCutBit(1024),
   fNp(NULL),
-  fNCorrNp(2),
+  fNCorrNp(1),
   fCorrNp(NULL),
   fNMCNp(5),
   fMCNp(NULL),
@@ -96,7 +96,8 @@ AliAnalysisNetParticleDistribution::~AliAnalysisNetParticleDistribution() {
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit) {
+Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, 
+						     Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit, Int_t nCorrNp) {
   // -- Initialize
   
   fHelper = helper;
@@ -105,6 +106,7 @@ Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelpe
   fPtRange = ptRange;
   fEtaMax = etaMax;
   fAODtrackCutBit = trackCutBit;
+  fNCorrNp = nCorrNp;
 
   // ------------------------------------------------------------------
   // -- N particles / N anti-particles
@@ -146,7 +148,8 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
   AddHistSet("fHDist", "Uncorrected");
   AddHistSet("fHDistCorr0", "Corrected [without cross section correction]");
   AddHistSet("fHDistCorr1", "Corrected [with cross section correction]");
-  
+  AddHistSet("fHDistCorr2", "Corrected [only cross section correction]");
+
   if (fIsMC) {
     AddHistSet("fHMCrapidity", "MC primary in |y| < 0.5");
     AddHistSet("fHMCptMin",    "MC primary in |y| + #it{p}_{T} > 0.1");
@@ -154,11 +157,11 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
     AddHistSet("fHMCeta",      Form("MC primary in |y| < 0.5 + |#eta| < %.1f", fEtaMax));
     AddHistSet("fHMCetapt",    Form("MC primary in |y| < 0.5 + |#eta| < %.1f + #it{p}_{T} [%.1f,%.1f]", fEtaMax, fPtRange[0], fPtRange[1]));
     
-    AddHistSet("fHControlMCLambdarapidity", "Control MC Lambda primary in |y| < 0.5");
-    AddHistSet("fHControlMCLambdaptMin",    "Control MC Lambda primary in |y| + #it{p}_{T} > 0.1");
-    AddHistSet("fHControlMCLambdapt",       Form("Control MC primary in |y| < 0.5 + #it{p}_{T} [%.1f,%.1f]", fPtRange[0], fPtRange[1]));
-    AddHistSet("fHControlMCLambdaeta",      Form("Control MC primary in |y| < 0.5 + |#eta| < %.1f", fEtaMax));
-    AddHistSet("fHControlMCLambdaetapt",    Form("Control MC primary in |y| < 0.5 + |#eta| < %.1f + #it{p}_{T} [%.1f,%.1f]", fEtaMax, fPtRange[0], fPtRange[1]));
+    //    AddHistSet("fHControlMCLambdarapidity", "Control MC Lambda primary in |y| < 0.5");
+    //    AddHistSet("fHControlMCLambdaptMin",    "Control MC Lambda primary in |y| + #it{p}_{T} > 0.1");
+    //    AddHistSet("fHControlMCLambdapt",       Form("Control MC primary in |y| < 0.5 + #it{p}_{T} [%.1f,%.1f]", fPtRange[0], fPtRange[1]));
+    //    AddHistSet("fHControlMCLambdaeta",      Form("Control MC primary in |y| < 0.5 + |#eta| < %.1f", fEtaMax));
+    //    AddHistSet("fHControlMCLambdaetapt",    Form("Control MC primary in |y| < 0.5 + |#eta| < %.1f + #it{p}_{T} [%.1f,%.1f]", fEtaMax, fPtRange[0], fPtRange[1]));
   }
 
   // ------------------------------------------------------------------
@@ -208,7 +211,7 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
 //________________________________________________________________________
 Int_t AliAnalysisNetParticleDistribution::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler,  AliMCEvent *mcEvent) {
   // -- Setup Event
-
+  
   ResetEvent();
 
   // -- Get ESD objects
@@ -272,15 +275,17 @@ Int_t AliAnalysisNetParticleDistribution::Process() {
   // -- Process NetParticle Distributions
 
   // -- Fill ESD tracks
-  if (fESD) ProcessESDTracks();
-
+  if (fESD) 
+    ProcessESDTracks();
+  
   // -- Fill AOD tracks
-  else if (fAOD) ProcessAODTracks();
+  else if (fAOD) 
+    ProcessAODTracks();
     
   // -- Fill MC truth particles (missing for AOD XXX)
   if (fIsMC)  {
     ProcessStackParticles();
-    ProcessStackControlParticles();
+    //    ProcessStackControlParticles();
   }
 
   return 0;
@@ -316,9 +321,9 @@ Int_t AliAnalysisNetParticleDistribution::ProcessESDTracks() {
       continue;
 
     // -- Check if accepted with thighter DCA cuts
-    if (fHelper->IsTrackAcceptedDCA(track))
+    if (!fHelper->IsTrackAcceptedDCA(track))
       continue;
-    
+
     // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     // -- Fill Probe Particle
     // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -363,7 +368,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessESDTracks() {
 
 //________________________________________________________________________
 Int_t AliAnalysisNetParticleDistribution::ProcessAODTracks() {
-  // -- Process ESD tracks and fill histograms
+  // -- Process AOD tracks and fill histograms
 
   for (Int_t idxTrack = 0; idxTrack < fAOD->GetNumberOfTracks(); ++idxTrack) {
     AliAODTrack *track = (AliAODTrack*)fAOD->GetTrack(idxTrack); 
@@ -456,7 +461,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
       continue;
     
     // -- Check if particle / anti-particle
-    if (TMath::Abs(particle->GetPdgCode()) != pdgCode)
+    if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != pdgCode)
       continue;
     
     // -- Get particle : 0 anti-particle / 1 particle
@@ -482,7 +487,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
     if (TMath::Abs(particle->Eta()) <= fEtaMax)
       fMCNp[3][idxPart] += 1.;       // -> MCeta
     
-    if (particle->Pt() > fPtRange[0] && particle->Pt() > fPtRange[1] && TMath::Abs(particle->Eta()) <= fEtaMax)
+    if (particle->Pt() > fPtRange[0] && particle->Pt() <= fPtRange[1] && TMath::Abs(particle->Eta()) <= fEtaMax)
       fMCNp[4][idxPart] += 1.;       // -> MCetapt
     
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
@@ -558,27 +563,24 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackControlParticles() {
   // -- Fill Particle Fluctuation Histograms
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  FillHistSet(Form("fHControlMC%srapidity", name), fControlMCNp[0], 0);
-  FillHistSet(Form("fHControlMC%sptMin",    name), fControlMCNp[1], 1);
-  FillHistSet(Form("fHControlMC%spt",       name), fControlMCNp[2], 2);
-  FillHistSet(Form("fHControlMC%seta",      name), fControlMCNp[3], 3);
-  FillHistSet(Form("fHControlMC%setapt",    name), fControlMCNp[4], 4);
+  //  FillHistSet(Form("fHControlMC%srapidity", name), fControlMCNp[0], 0);
+  //  FillHistSet(Form("fHControlMC%sptMin",    name), fControlMCNp[1], 1);
+  //  FillHistSet(Form("fHControlMC%spt",       name), fControlMCNp[2], 2);
+  //  FillHistSet(Form("fHControlMC%seta",      name), fControlMCNp[3], 3);
+  //  FillHistSet(Form("fHControlMC%setapt",    name), fControlMCNp[4], 4);
 
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
+ * ---------------------------------------------------------------------------------
+ *                            Helper Methods - private
+ * ---------------------------------------------------------------------------------
+ */
 
 //________________________________________________________________________
 void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const Char_t *title)  {
   // -- Add histogram sets for particle and anti-particle
-
-  Int_t pid = fHelper->GetParticleSpecies();
-  if( pid < 0 || pid > AliPID::kSPECIES){
-    AliError("Particle ID not in AliPID::kSPECIES");
-    return;
-  }
 
   fOutList->Add(new TList);
   TList *list = static_cast<TList*>(fOutList->Last());
@@ -593,58 +595,56 @@ void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const C
   
   for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
     list->Add(new TH2F(Form("%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
-		       Form("%s %s Dist %s;Centrality;N_{%s}", title, fHelper->GetParticleTitle(idxPart).Data(), sPtTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()), 
+		       Form("%s %s Dist %s;Centrality;N_{%s}", title, fHelper->GetParticleTitle(idxPart).Data(), sPtTitle.Data(), 
+			    fHelper->GetParticleTitleLatex(idxPart).Data()), 
 		       24, -0.5, 11.5, 501, -0.5, 500.49));
   } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
    
   list->Add(new TH2F(Form("%sNet%s", name, fHelper->GetParticleName(1).Data()), 
-		     Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5, 201, -100.5, 100.49));
+		     Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			  fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5, 201, -100.5, 100.49));
 
   list->Add(new TProfile(Form("%sNet%sM", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()),  24, -0.5, 11.5));
+			 Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()),  24, -0.5, 11.5));
   list->Add(new TProfile(Form("%sNet%s2M", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s (Net %s)^{2} Dist %s;Centrality;(N_{%s} - N_{%s})^{2}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+			 Form("%s (Net %s)^{2} Dist %s;Centrality;(N_{%s} - N_{%s})^{2}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
   list->Add(new TProfile(Form("%sNet%s3M", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s (Net %s)^{3} Dist %s;Centrality;(N_{%s} - N_{%s})^{3}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+			 Form("%s (Net %s)^{3} Dist %s;Centrality;(N_{%s} - N_{%s})^{3}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
   list->Add(new TProfile(Form("%sNet%s4M", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s (Net %s)^{4} Dist %s;Centrality;(N_{%s} - N_{%s})^{4}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+			 Form("%s (Net %s)^{4} Dist %s;Centrality;(N_{%s} - N_{%s})^{4}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
   list->Add(new TProfile(Form("%sNet%s5M", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s (Net %s)^{5} Dist %s;Centrality;(N_{%s} - N_{%s})^{5}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+			 Form("%s (Net %s)^{5} Dist %s;Centrality;(N_{%s} - N_{%s})^{5}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
   list->Add(new TProfile(Form("%sNet%s6M", name, fHelper->GetParticleName(1).Data()), 
-			 Form("%s (Net %s)^{6} Dist %s;Centrality;(N_{%s} - N_{%s})^{6}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
-		         
+			 Form("%s (Net %s)^{6} Dist %s;Centrality;(N_{%s} - N_{%s})^{6}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			      fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5));
+  
   list->Add(new TH2F(Form("%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()), 
-		     Form("%s (Net %s)/ Sum Dist %s;Centrality;(N_{%s} - N_{%s})/(N_{%s} + N_{%s})", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 
+		     Form("%s (Net %s)/ Sum Dist %s;Centrality;(N_{%s} - N_{%s})/(N_{%s} + N_{%s})", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
+			  fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data(),fHelper->GetParticleTitleLatex(1).Data(),
+			  fHelper->GetParticleTitleLatex(0).Data()), 
 		     24, -0.5, 11.5, 801, -50.5, 50.49));
-
+  
   if (sName.Contains("fHControlMC")) {
     for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
       list->Add(new TH2F(Form("%s%sOver%s", name, fHelper->GetParticleName(idxPart).Data(), fHelper->GetControlParticleName(idxPart).Data()), 
 			 Form("%s %s / %s Dist %s;Centrality;N_{%s}/N_{Tracks}", 
-			      title, fHelper->GetParticleTitle(idxPart).Data(), fHelper->GetControlParticleTitle(idxPart).Data(), sPtTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()), 
+			      title, fHelper->GetParticleTitle(idxPart).Data(), fHelper->GetControlParticleTitle(idxPart).Data(), sPtTitle.Data(), 
+			      fHelper->GetParticleTitleLatex(idxPart).Data()), 
 			 24, -0.5, 11.5, 101, 0., 1.));
     } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
   }
  
-  //  if (sName.Contains("fHDist")) {
-  //    list->Add(new TH3F(Form("%sNet%s_RecVsMC", name, fHelper->GetParticleName(1).Data()), 
-  //		       Form("%s Net %s Dist - Rec Vs MC - %s;Centrality;(N_{%s} - N_{%s})_{rec};(N_{%s} - N_{%s})_{MC}", 
-  //			    title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 
-  //		       24, -0.5, 11.5, 201, -100.5, 100.49, 201, -100.5, 100.49));
-  //  }
-  
   return;
 }
 
 //________________________________________________________________________
 void AliAnalysisNetParticleDistribution::FillHistSet(const Char_t *name, Float_t *np, Int_t controlIdx)  {
   // -- Add histogram sets for particle and anti-particle
-
-  Int_t pid = fHelper->GetParticleSpecies();
-  if( pid < 0 || pid > AliPID::kSPECIES){
-    AliError("Particle ID not in AliPID::kSPECIES");
-    return;
-  }
 
   TList *list = static_cast<TList*>(fOutList->FindObject(name));
 
@@ -672,13 +672,8 @@ void AliAnalysisNetParticleDistribution::FillHistSet(const Char_t *name, Float_t
   TString sName(name);
   if (sName.Contains("fHControlMC") && controlIdx >= 0) {
     (static_cast<TH2F*>(list->FindObject(Form("%s%sOverlambdabar", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[0]/fControlMCNp[controlIdx][0]);
-    (static_cast<TH2F*>(list->FindObject(Form("%s%sOverlambda", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[1]/fControlMCNp[controlIdx][1]);
+    (static_cast<TH2F*>(list->FindObject(Form("%s%sOverlambda",    name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[1]/fControlMCNp[controlIdx][1]);
   }
-
-  //  if (sName.Contains("fHDist")) {
-  //    Float_t deltaMCNp  = fMCNp[controlIdx][1]-fMCNp[controldx][0];
-  //    (static_cast<TH3F*>(list->FindObject(Form("%sNetp_RecVsMC", name))))->Fill(centralityBin, deltaNp, deltaMCNp);
-  //  }
 
   return;
 }

@@ -1394,8 +1394,8 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   gFitFunction->ReleaseParameter(5);gFitFunction->SetParameter(5,1.0);//gFitFunction->SetParLimits(5,0.0,10);
   gFitFunction->ReleaseParameter(6);gFitFunction->SetParameter(6,0.5);//gFitFunction->SetParLimits(6,0.0,10);
   //gFitFunction->ReleaseParameter(7);gFitFunction->SetParameter(7,1.0);gFitFunction->SetParLimits(7,0.0,2.0);
-  gFitFunction->ReleaseParameter(8);gFitFunction->SetParameter(8,0.05);
-  gFitFunction->ReleaseParameter(9);gFitFunction->SetParameter(9,0.6);gFitFunction->SetParLimits(9,0.1,10.0);
+  //gFitFunction->ReleaseParameter(8);gFitFunction->SetParameter(8,0.05);
+  //gFitFunction->ReleaseParameter(9);gFitFunction->SetParameter(9,0.6);gFitFunction->SetParLimits(9,0.1,10.0);
   //gFitFunction->ReleaseParameter(10);gFitFunction->SetParameter(10,1.0);gFitFunction->SetParLimits(10,0.0,2.0);
   gFitFunction->ReleaseParameter(17);gFitFunction->SetParameter(17,0.7);gFitFunction->SetParLimits(17,0.0,0.9);
 

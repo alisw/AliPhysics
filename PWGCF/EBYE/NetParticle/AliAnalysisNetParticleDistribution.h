@@ -43,7 +43,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit);
+  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit, Int_t nCorrNp);
 
   /** Add histograms to outlist */
   void CreateHistograms(TList *outList);
@@ -51,7 +51,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
 
-  /** Resre Event */
+  /** Reset Event */
   void ResetEvent();
 
   /** Process NetParticle Distributions */ 
@@ -81,7 +81,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   /** Process control particles from the stack and fill histograms */
   Int_t ProcessStackControlParticles();
   
- /*
+  /*
    * ---------------------------------------------------------------------------------
    *                            Helper Methods - private
    * ---------------------------------------------------------------------------------
