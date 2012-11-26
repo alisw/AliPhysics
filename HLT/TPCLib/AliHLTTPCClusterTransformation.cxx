@@ -69,7 +69,7 @@ AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation()
 int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
 {
   // Initialisation
-  
+ 
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
   }
@@ -124,12 +124,14 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
 
   if (dynamic_cast<TObjArray*>(recoParamObj)) {
     //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: TObjArray found \n"<<endl;
-    fOfflineRecoParam.AddDetRecoParamArray(1,dynamic_cast<TObjArray*>(recoParamObj));
+    TObjArray *copy = (TObjArray*)( static_cast<TObjArray*>(recoParamObj)->Clone() );
+    fOfflineRecoParam.AddDetRecoParamArray(1,copy);
   }
   else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
     //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: AliDetectorRecoParam found \n"<<endl;
-    fOfflineRecoParam.AddDetRecoParam(1,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
-  } else {
+    AliDetectorRecoParam *copy = (AliDetectorRecoParam*)static_cast<AliDetectorRecoParam*>(recoParamObj)->Clone();
+    fOfflineRecoParam.AddDetRecoParam(1,copy);
+  } else {    
     return Error(-8,"AliHLTTPCClusterTransformation::Init: Unknown format of the TPC Reco Param entry in the data base");
   }
   
@@ -146,9 +148,8 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
   // set current time stamp and initialize the fast transformation
- 
   int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp );
-  
+
   if( err!=0 ){
     return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
