@@ -64,7 +64,7 @@ fmixing(kFALSE),
 fmontecarlo(kFALSE),
 fsystem(kFALSE),
 fUseReco(kTRUE),
-fselect(0),
+fselect(kUndefined),
 
 fUseImpactParameter(0),
 fPIDmode(0),
@@ -108,7 +108,7 @@ fmixing(kFALSE),
 fmontecarlo(kFALSE),
 fsystem(ppOrPbPb),
 fUseReco(kTRUE),
-fselect(0),
+fselect(kUndefined),
 fUseImpactParameter(0),
 fPIDmode(0),
 
@@ -245,16 +245,20 @@ Bool_t AliHFCorrelator::ProcessEventPool(){
 }
 
 //_____________________________________________________
-Bool_t AliHFCorrelator::ProcessAssociatedTracks(Int_t EventLoopIndex){
-
+Bool_t AliHFCorrelator::ProcessAssociatedTracks(Int_t EventLoopIndex, const TObjArray* associatedTracks){
+  // TODO: memory leak needs to be fixed, for every call, a new array
+  // is allocated, but the pointer immediately lost. The cleanup is
+  // not straightforward as in the case of event mixing the pointer
+  // will be an external array which must not be deleted.
 	fAssociatedTracks = new TObjArray();
 	
 	if(!fmixing){ // analysis on Single Event
 		
 		
-		if(fselect==1 || fselect ==2)	fAssociatedTracks = AcceptAndReduceTracks(fAODEvent);
-		if(fselect==3) {fAssociatedTracks = AcceptAndReduceKZero(fAODEvent);}	
 		
+		if(fselect==kHadron || fselect ==kKaon)	fAssociatedTracks = AcceptAndReduceTracks(fAODEvent);
+		if(fselect==kKZero) {fAssociatedTracks = AcceptAndReduceKZero(fAODEvent);}	
+		if(fselect==kElectron && associatedTracks) fAssociatedTracks=new TObjArray(*associatedTracks);
 		
 	}
 	
@@ -293,14 +297,17 @@ Bool_t AliHFCorrelator::Correlate(Int_t loopindex){
 }
 		
 //_____________________________________________________
-Bool_t AliHFCorrelator::PoolUpdate(){
+Bool_t AliHFCorrelator::PoolUpdate(const TObjArray* associatedTracks){
 
 	if(!fmixing) return kFALSE;
 	if(!fPool) return kFALSE;
 	if(fmixing) { // update the pool for Event Mixing
 		TObjArray* objArr = NULL;
-		if(fselect==1 || fselect==2) objArr = (TObjArray*)AcceptAndReduceTracks(fAODEvent);
-		else if(fselect==3) objArr = (TObjArray*)AcceptAndReduceKZero(fAODEvent);
+		if(fselect==kHadron || fselect==kKaon) objArr = (TObjArray*)AcceptAndReduceTracks(fAODEvent);
+		else if(fselect==kKZero) objArr = (TObjArray*)AcceptAndReduceKZero(fAODEvent);
+		else if(fselect==kElectron && associatedTracks){
+		  objArr = new TObjArray(*associatedTracks);
+		}
 		else return kFALSE;
 		if(objArr->GetEntriesFast()>0) fPool->UpdatePool(objArr); // updating the pool only if there are entries in the array
 	}
@@ -360,7 +367,7 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 			if(fD0cand) rejectsoftpi = fhadcuts->InvMassDstarRejection(fD0cand,track,fhypD0);
 		
 			
-			if(fselect ==2){	
+			if(fselect ==kKaon){	
 				if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
 			}
 		
