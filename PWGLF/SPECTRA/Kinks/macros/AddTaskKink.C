@@ -1,4 +1,4 @@
-AliAnalysisKinkESDat* AddKinkTask()
+AliAnalysisKinkESDat* AddTaskKink()
 {
   //pp settings 	
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,9 +27,9 @@ AliAnalysisKinkESDat* AddKinkTask()
 
  AliAnalysisKinkESDat*  task = new AliAnalysisKinkESDat("AliAnalysisKinkESDat");
 
- task->SetMC("kFALSE"); // 26/11/12
+ //task->SetMC("kFALSE"); // 26/11/12
 
-task->SetMultCut(0,1002);
+task->SetMulCut(0,1002);
   mgr->AddTask(task);
 
   //Attach input
@@ -37,12 +37,11 @@ task->SetMultCut(0,1002);
 //  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());     
    mgr->ConnectInput(task,0,cinput);
   
-  AliAnalysisDataContainer *coutput1= mgr->CreateContainer("KinksKaon",TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer("PWGLFKKinks",TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(task, 1, coutput1);
  
   
   return task;
   
 }
-
 
