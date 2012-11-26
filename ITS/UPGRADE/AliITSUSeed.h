@@ -47,7 +47,7 @@ inline void AliITSUSeed::SetLrClusterID(Int_t lr, Int_t cl)
 {
   // assign layer, cluster (if -1 - no hit on this layer)
   fClID = PackCluster(lr,cl);
-  if (cl>=0) fHitsPattern &= 0x1<<lr;
+  if (cl>=0) fHitsPattern |= 0x1<<lr;
 }
 
 
