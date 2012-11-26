@@ -170,6 +170,7 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange
   
   if (ev->IsA() == AliAODEvent::Class()) {
     AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
+    if (!tracklets) return -1;
     nTracklets = tracklets->GetNumberOfTracklets();
     for (Int_t nn = 0; nn < nTracklets; nn++) {
       Double_t theta = tracklets->GetTheta(nn);

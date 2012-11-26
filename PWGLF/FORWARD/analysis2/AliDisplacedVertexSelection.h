@@ -33,7 +33,7 @@ public:
    * @param l     List to add output to
    * @param name  Name of the list 
    */
-  void Output(TList* l, const char* name=0) const;
+  void CreateOutputObjects(TList* l, const char* name=0) const;
   /** 
    * Print information 
    * 
@@ -72,7 +72,7 @@ protected:
   Double_t fVertexZ;
   Double_t fCent;
   
-  ClassDef(AliDisplacedVertexSelection,1); // Cuts on ESD Mult 
+  ClassDef(AliDisplacedVertexSelection,2); // Cuts on ESD Mult 
 };
 
 #endif

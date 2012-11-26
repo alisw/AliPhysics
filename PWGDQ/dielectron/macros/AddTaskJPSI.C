@@ -33,10 +33,10 @@ AliAnalysisTask *AddTaskJPSI(Bool_t hasMC_aod = kFALSE){
 
   //Add event filter
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
+  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
 
   // add event filter
   task->SetEventFilter(eventCuts);

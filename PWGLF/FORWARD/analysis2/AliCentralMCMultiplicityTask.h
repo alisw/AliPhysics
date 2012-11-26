@@ -99,7 +99,7 @@ protected:
   AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl
 					    // from MC
   AliAODCentralMult      fAODMCCentral;     // Output object
-  ClassDef(AliCentralMCMultiplicityTask,1)  // Forward multiplicity class
+  ClassDef(AliCentralMCMultiplicityTask,2)  // Forward multiplicity class
 };
 
 #endif

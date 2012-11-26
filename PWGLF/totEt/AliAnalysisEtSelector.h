@@ -31,7 +31,7 @@ public:
     virtual ~AliAnalysisEtSelector();
     
     // Set the current event
-    virtual void SetEvent(const AliESDEvent *event) = 0;// { fEvent = event; }
+    virtual void SetEvent(const AliESDEvent *event);
     
     // Init
     virtual void Init() {} 
@@ -43,19 +43,19 @@ public:
     virtual TRefArray* GetClusters() { return 0; }
     
     // Return true if cluster has energy > cut
-    virtual Bool_t CutMinEnergy(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Return true if cluster has energy > cut
-    virtual Bool_t CutMinEnergy(const TParticle &/*part*/) const { return true; }
+    virtual Bool_t PassMinEnergyCut(const TParticle &/*part*/) const { return true; }
     
     // Cut on distance to bad channel
-    virtual Bool_t CutDistanceToBadChannel(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Cut on track matching
-    virtual Bool_t CutTrackMatching(const AliESDCaloCluster &/*cluster*/) const { return true; }
+    virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
     
     // Cut on neutral monte carlo particle
-    virtual Bool_t CutNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
+    virtual Bool_t IsNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
     
     // Is it an EM E_T particle
     virtual Bool_t IsEmEtParticle(const Int_t pdgCode) const;
@@ -75,6 +75,9 @@ public:
     // From secondary vertex?
     virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
     
+    // Cluster is in correct detector
+    virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;
+    
 protected:
   
     const AliVEvent *fEvent; // Pointer to current event
@@ -86,8 +89,8 @@ protected:
     Bool_t SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     
     Int_t fRunNumber;
-    
 
+    Bool_t fInitialized; // matrix initialized
     
 private:
 

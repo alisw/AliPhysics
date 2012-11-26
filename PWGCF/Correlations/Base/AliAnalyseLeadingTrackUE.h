@@ -59,6 +59,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Bool_t         TriggerSelection(const TObject* obj);                                   // Select good triggers with AliPhysicsSelection class
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
   void 		 RemoveInjectedSignals(TObjArray* tracks, TObject* arrayMC, Int_t maxLabel);
+  void 		 RemoveWeakDecays(TObjArray* tracks, TObject* mcObj);
   
  private:
   Int_t          fDebug;             // debug flag

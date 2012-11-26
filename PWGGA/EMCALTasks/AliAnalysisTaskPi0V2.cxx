@@ -61,8 +61,10 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fTracksName("PicoTracks"),
+    fTracksName("PicoTrack"),
+    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
     fTracks(0),
+    fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(10.),
     fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
@@ -72,12 +74,14 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
     hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
+    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0), 
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
+    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 
 {
@@ -92,7 +96,9 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fOutput(0),
     fESD(0),
     fTracksName("PicoTracks"),
+    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
     fTracks(0),
+    fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(10.),
     fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
@@ -102,12 +108,14 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
     hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
+    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),  
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
+    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 {
     // Constructor
@@ -368,6 +376,24 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
 
 
 }
+void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC)
+{
+  //cluster(photon) v2 method
+  Double_t Pt   = p1.Pt();
+  Double_t Phi  = p1.Phi();
+
+  Double_t difClusV0 = TVector2::Phi_0_2pi(Phi-EPV0r);   if(difClusV0 >TMath::Pi()) difClusV0  -= TMath::Pi();
+  Double_t difClusV0A = TVector2::Phi_0_2pi(Phi-EPV0A);  if(difClusV0A >TMath::Pi()) difClusV0A -= TMath::Pi();
+  Double_t difClusV0C = TVector2::Phi_0_2pi(Phi-EPV0C);  if(difClusV0C >TMath::Pi()) difClusV0C -= TMath::Pi();
+  Double_t difClusTPC = TVector2::Phi_0_2pi(Phi-EPTPC);  if(difClusTPC >TMath::Pi()) difClusTPC -= TMath::Pi();
+
+  hdifClus_EPV0->Fill(fCentrality,  difClusV0, Pt);
+  hdifClus_EPV0A->Fill(fCentrality, difClusV0A, Pt);
+  hdifClus_EPV0C->Fill(fCentrality, difClusV0C, Pt);
+  hdifClus_EPTPC->Fill(fCentrality, difClusTPC, Pt);
+
+
+}
 //_________________________________________________________________________________________________
 void AliAnalysisTaskPi0V2::GetMom(TLorentzVector& p, const AliESDCaloCluster *c, Double_t *vertex)
 {
@@ -487,6 +513,15 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifful_EPTPC);
     fOutput->Add(hdifout_EPTPC);
 
+    hdifClus_EPV0 = new TH3F("hdifClus_EPV0", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifClus_EPV0A = new TH3F("hdifClus_EPV0A", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifClus_EPV0C = new TH3F("hdifClus_EPV0C", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifClus_EPTPC = new TH3F("hdifClus_EPTPC", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    fOutput->Add(hdifClus_EPV0);
+    fOutput->Add(hdifClus_EPV0A);
+    fOutput->Add(hdifClus_EPV0C);
+    fOutput->Add(hdifClus_EPTPC);
+
     hAllcentV0  = new TH1F("hAllcentV0",  "All cent EP V0",  100, 0., TMath::Pi());
     hAllcentV0r = new TH1F("hAllcentV0r", "All cent EP V0r", 100, 0., TMath::Pi());
     hAllcentV0A = new TH1F("hAllcentV0A", "All cent EP V0A", 100, 0., TMath::Pi());
@@ -497,6 +532,25 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hAllcentV0A);
     fOutput->Add(hAllcentV0C);
     fOutput->Add(hAllcentTPC);
+
+    h2DcosV0r = new TH2F("h2DcosV0r", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DsinV0r = new TH2F("h2DsinV0r", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DcosV0A = new TH2F("h2DcosV0A", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DsinV0A = new TH2F("h2DsinV0A", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DcosV0C = new TH2F("h2DcosV0C", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DsinV0C = new TH2F("h2DsinV0C", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DcosTPC = new TH2F("h2DcosTPC", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    h2DsinTPC = new TH2F("h2DsinTPC", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
+    fOutput->Add(h2DcosV0r);
+    fOutput->Add(h2DsinV0r);
+    fOutput->Add(h2DcosV0A);
+    fOutput->Add(h2DsinV0A);
+    fOutput->Add(h2DcosV0C);
+    fOutput->Add(h2DsinV0C);
+    fOutput->Add(h2DcosTPC);
+    fOutput->Add(h2DsinTPC);
+
+    h2DsinV0C = new TH2F("h2DsinV0C", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
 
     const Int_t ndims = 5;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
@@ -526,6 +580,15 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     // Create pointer to reconstructed event
    AliVEvent *event = InputEvent();
    if (!event) { Printf("ERROR: Could not retrieve event"); return; }
+   // create pointer to event
+   fESD = dynamic_cast<AliESDEvent*>(event);
+   if (!fESD) {
+     AliError("Cannot get the ESD event");
+     return;
+   }
+    
+  Int_t AbsRunNumber = fESD->GetRunNumber();
+  fRunNumber = ConvertToInternalRunNumber(AbsRunNumber);
 
   Bool_t isSelected =0;      
   if(fEvtSelect == 1){  //MB+SemiCentral
@@ -538,12 +601,31 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
   if(!isSelected )
         return; 
 
-    // create pointer to event
-    fESD = dynamic_cast<AliESDEvent*>(event);
-    if (!fESD) {
-        AliError("Cannot get the ESD event");
-        return;
-    }  
+  if(!fTrigClass.IsNull()){
+    TString fired;
+    fired = fESD->GetFiredTriggerClasses();
+    if (!fired.Contains("-B-"))
+      return;
+    TObjArray *arr = fTrigClass.Tokenize("|");
+    if (!arr)
+      return;
+    Bool_t match = 0;
+    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
+      TObject *obj = arr->At(i);
+      if (!obj)
+	continue;
+      if (fired.Contains(obj->GetName())) {
+	match = 1;
+	break;
+      }
+    }
+    delete arr;
+    if (
+	!match || //select by Trigger classes in KCentral and KSemiCentral
+        !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB ))              // always accept MB
+	) 
+      return; //Not match skip this event
+  }
 
     hEvtCount->Fill(1);
     
@@ -563,15 +645,15 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
     hEvtCount->Fill(3);
     AliEventplane *ep = fESD->GetEventplane();
-      if (ep) {
+    if (ep) {
       if (ep->GetQVector())
-        fEPTPC    = ep->GetQVector()->Phi()/2. ;
+	fEPTPC    = ep->GetQVector()->Phi()/2. ;
       else
-        fEPTPC = -999.;
+	fEPTPC = -999.;
       if (ep->GetQsub1()&&ep->GetQsub2())
-        fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
+	fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
       else
-        fEPTPCreso = -1;
+	fEPTPCreso = -1;
 
       fEPV0    = ep->GetEventplane("V0",  fESD);
       fEPV0A   = ep->GetEventplane("V0A", fESD);
@@ -591,15 +673,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       fEPV0CR1 = ep->CalculateVZEROEventPlane(fESD, 1, 2, qx, qy);
       fEPV0CR2 = ep->CalculateVZEROEventPlane(fESD, 2, 2, qx, qy);
       fEPV0CR3 = ep->CalculateVZEROEventPlane(fESD, 3, 2, qx, qy);
-
     }
+    FillEPQA(); //Fill the EP QA
 
     hEvtCount->Fill(4);
 
-    if( fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. 
-	|| fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. 
-	|| fEPTPC<-2. || fEPV0r<-2. || fEPV0Ar<-2. 
-	|| fEPV0Cr<-2.) return;
+    if( fEPV0A<-2. || fEPV0C<-2. || fEPTPC<-2. || fEPV0r<-2.) 
+      return;
 
     hEvtCount->Fill(5);
 
@@ -652,12 +732,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
      if(!c1->IsEMCAL()) continue;
      if(!IsGoodCluster(c1)) continue;
+     TLorentzVector p1;
+     GetMom(p1, c1, vertex);
+     FillCluster(p1, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
      for(Int_t j=i+1; j<nCluster; ++j){
        AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
        if(!c2->IsEMCAL()) continue;
        if(!IsGoodCluster(c2)) continue;
-       TLorentzVector p1;
-       GetMom(p1, c1, vertex);
        TLorentzVector p2;
        GetMom(p2, c2, vertex);
        FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
@@ -704,8 +785,208 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     // information for this iteration of the UserExec in the container
     PostData(1, fOutput);
 }
+//____________________________________________________________________
+Int_t AliAnalysisTaskPi0V2::ConvertToInternalRunNumber(Int_t n)
+{
+    switch(n){
+    case  170593 : return 179 ;
+    case  170572 : return 178 ;
+    case  170556 : return 177 ;
+    case  170552 : return 176 ;
+    case  170546 : return 175 ;
+    case  170390 : return 174 ;
+    case  170389 : return 173 ;
+    case  170388 : return 172 ;
+    case  170387 : return 171 ;
+    case  170315 : return 170 ;
+    case  170313 : return 169 ;
+    case  170312 : return 168 ;
+    case  170311 : return 167 ;
+    case  170309 : return 166 ;
+    case  170308 : return 165 ;
+    case  170306 : return 164 ;
+    case  170270 : return 163 ;
+    case  170269 : return 162 ;
+    case  170268 : return 161 ;
+    case  170267 : return 160 ;
+    case  170264 : return 159 ;
+    case  170230 : return 158 ;
+    case  170228 : return 157 ;
+    case  170208 : return 156 ;
+    case  170207 : return 155 ;
+    case  170205 : return 154 ;
+    case  170204 : return 153 ;
+    case  170203 : return 152 ;
+    case  170195 : return 151 ;
+    case  170193 : return 150 ;
+    case  170163 : return 149 ;
+    case  170162 : return 148 ;
+    case  170159 : return 147 ;
+    case  170155 : return 146 ;
+    case  170152 : return 145 ;
+    case  170091 : return 144 ;
+    case  170089 : return 143 ;
+    case  170088 : return 142 ;
+    case  170085 : return 141 ;
+    case  170084 : return 140 ;
+    case  170083 : return 139 ;
+    case  170081 : return 138 ;
+    case  170040 : return 137 ;
+    case  170038 : return 136 ;
+    case  170036 : return 135 ;
+    case  170027 : return 134 ;
+    case  169981 : return 133 ;
+    case  169975 : return 132 ;
+    case  169969 : return 131 ;
+    case  169965 : return 130 ;
+    case  169961 : return 129 ;
+    case  169956 : return 128 ;
+    case  169926 : return 127 ;
+    case  169924 : return 126 ;
+    case  169923 : return 125 ;
+    case  169922 : return 124 ;
+    case  169919 : return 123 ;
+    case  169918 : return 122 ;
+    case  169914 : return 121 ;
+    case  169859 : return 120 ;
+    case  169858 : return 119 ;
+    case  169855 : return 118 ;
+    case  169846 : return 117 ;
+    case  169838 : return 116 ;
+    case  169837 : return 115 ;
+    case  169835 : return 114 ;
+    case  169683 : return 113 ;
+    case  169628 : return 112 ;
+    case  169591 : return 111 ;
+    case  169590 : return 110 ;
+    case  169588 : return 109 ;
+    case  169587 : return 108 ;
+    case  169586 : return 107 ;
+    case  169584 : return 106 ;
+    case  169557 : return 105 ;
+    case  169555 : return 104 ;
+    case  169554 : return 103 ;
+    case  169553 : return 102 ;
+    case  169550 : return 101 ;
+    case  169515 : return 100 ;
+    case  169512 : return 99 ;
+    case  169506 : return 98 ;
+    case  169504 : return 97 ;
+    case  169498 : return 96 ;
+    case  169475 : return 95 ;
+    case  169420 : return 94 ;
+    case  169419 : return 93 ;
+    case  169418 : return 92 ;
+    case  169417 : return 91 ;
+    case  169415 : return 90 ;
+    case  169411 : return 89 ;
+    case  169238 : return 88 ;
+    case  169236 : return 87 ;
+    case  169167 : return 86 ;
+    case  169160 : return 85 ;
+    case  169156 : return 84 ;
+    case  169148 : return 83 ;
+    case  169145 : return 82 ;
+    case  169144 : return 81 ;
+    case  169143 : return 80 ;
+    case  169138 : return 79 ;
+    case  169099 : return 78 ;
+    case  169094 : return 77 ;
+    case  169091 : return 76 ;
+    case  169045 : return 75 ;
+    case  169044 : return 74 ;
+    case  169040 : return 73 ;
+    case  169035 : return 72 ;
+    case  168992 : return 71 ;
+    case  168988 : return 70 ;
+    case  168984 : return 69 ;
+    case  168826 : return 68 ;
+    case  168777 : return 67 ;
+    case  168514 : return 66 ;
+    case  168512 : return 65 ;
+    case  168511 : return 64 ;
+    case  168467 : return 63 ;
+    case  168464 : return 62 ;
+    case  168461 : return 61 ;
+    case  168460 : return 60 ;
+    case  168458 : return 59 ;
+    case  168362 : return 58 ;
+    case  168361 : return 57 ;
+    case  168356 : return 56 ;
+    case  168342 : return 55 ;
+    case  168341 : return 54 ;
+    case  168325 : return 53 ;
+    case  168322 : return 52 ;
+    case  168318 : return 51 ;
+    case  168311 : return 50 ;
+    case  168310 : return 49 ;
+    case  168213 : return 48 ;
+    case  168212 : return 47 ;
+    case  168208 : return 46 ;
+    case  168207 : return 45 ;
+    case  168206 : return 44 ;
+    case  168205 : return 43 ;
+    case  168204 : return 42 ;
+    case  168203 : return 41 ;
+    case  168181 : return 40 ;
+    case  168177 : return 39 ;
+    case  168175 : return 38 ;
+    case  168173 : return 37 ;
+    case  168172 : return 36 ;
+    case  168171 : return 35 ;
+    case  168115 : return 34 ;
+    case  168108 : return 33 ;
+    case  168107 : return 32 ;
+    case  168105 : return 31 ;
+    case  168104 : return 30 ;
+    case  168103 : return 29 ;
+    case  168076 : return 28 ;
+    case  168069 : return 27 ;
+    case  168068 : return 26 ;
+    case  168066 : return 25 ;
+    case  167988 : return 24 ;
+    case  167987 : return 23 ;
+    case  167986 : return 22 ;
+    case  167985 : return 21 ;
+    case  167921 : return 20 ;
+    case  167920 : return 19 ;
+    case  167915 : return 18 ;
+    case  167909 : return 17 ;
+    case  167903 : return 16 ;
+    case  167902 : return 15 ;
+    case  167818 : return 14 ;
+    case  167814 : return 13 ;
+    case  167813 : return 12 ;
+    case  167808 : return 11 ;
+    case  167807 : return 10 ;
+    case  167806 : return 9 ;
+    case  167713 : return 8 ;
+    case  167712 : return 7 ;
+    case  167711 : return 6 ;
+    case  167706 : return 5 ;
+    case  167693 : return 4 ;
+    case  166532 : return 3 ;
+    case  166530 : return 2 ;
+    case  166529 : return 1 ;
+
+    default : return 199;
+    }
+}
+//_______________________________________________________________________
+void AliAnalysisTaskPi0V2::FillEPQA()
+{
+  
+  h2DcosV0r->Fill(fRunNumber, TMath::Cos(fEPV0r));
+  h2DsinV0r->Fill(fRunNumber, TMath::Sin(fEPV0r));
+  h2DcosV0A->Fill(fRunNumber, TMath::Cos(fEPV0A));
+  h2DsinV0A->Fill(fRunNumber, TMath::Sin(fEPV0A));
+  h2DcosV0C->Fill(fRunNumber, TMath::Cos(fEPV0C));
+  h2DsinV0C->Fill(fRunNumber, TMath::Sin(fEPV0C));
+  h2DcosTPC->Fill(fRunNumber, TMath::Cos(fEPTPC));
+  h2DsinTPC->Fill(fRunNumber, TMath::Sin(fEPTPC));
 
 
+}
 //________________________________________________________________________
 void AliAnalysisTaskPi0V2::Terminate(Option_t *) 
 {

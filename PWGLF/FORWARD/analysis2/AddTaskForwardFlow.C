@@ -28,11 +28,14 @@
  *
  * @ingroup pwglf_forward_flow
  */
-void AddTaskForwardFlow(TString  type          = "", 
+void AddTaskForwardFlow(TString  type          = "234", 
+                        Bool_t   useEtaGap     = kFALSE,
                         Bool_t   mc            = kFALSE,
-			Bool_t   dispVtx       = kFALSE,
-			Double_t outlierCutFMD = 4.1, 
-			Double_t outlierCutSPD = 4.1,
+			Double_t outlierCutFMD = 4.0, 
+			Double_t outlierCutSPD = 0,
+			Double_t etaGap        = 2.0,
+			Bool_t   useCent       = kFALSE,
+			Bool_t   satVtx        = kFALSE,
                         TString  addFlow       = "",
                         Int_t    addFType      = 0,
                         Int_t    addFOrder     = 0)
@@ -52,32 +55,48 @@ void AddTaskForwardFlow(TString  type          = "",
     Fatal("","The relevant tasks wasn't added to the train");
 
   // --- For the selected flow tasks the input and output is set -----
+  const char* name = (useEtaGap ? "ForwardQCumulantsEtaGap", "ForwardQCumulants");
   AliForwardFlowTaskQC* task = 0;
+  // --- Set up adding flow to MC input ----------------------------
   if (mc) {
-    AliForwardMCFlowTaskQC* mcTask = new AliForwardMCFlowTaskQC("QCumulants");
-    // --- Set up adding flow to MC input ----------------------------
-    mcTask->SetUseImpactParameter(true);
-    mcTask->AddFlow(addFlow);
-    mcTask->AddFlowType(addFType);
-    mcTask->AddFlowOrder(addFOrder);
+    AliForwardMCFlowTaskQC* mcTask = new AliForwardMCFlowTaskQC(name);
+    mcTask->SetUseImpactParameter(!useCent);
+    if (addFlow.Data()[0] != '\0') {
+      mcTask->AddFlow(addFlow);
+      mcTask->AddFlowType(addFType);
+      mcTask->AddFlowOrder(addFOrder);
+    }
     task = mcTask;
   }
+  // --- Or use normal task ----------------------------------------
   else 
-    task = new AliForwardFlowTaskQC("QCumulants");
+    task = new AliForwardFlowTaskQC(name);
+  
   mgr->AddTask(task); 
 
+  // --- Set flow flags --------------------------------------------
+  UShort_t flags = AliForwardFlowTaskQC::kSymEta;
+  if (useEtaGap)           flags |= AliForwardFlowTaskQC::kEtaGap;
+  if (satVtx)              flags |= AliForwardFlowTaskQC::kSatVtx;
+  if (useEtaGap || satVtx) flags ^= AliForwardFlowTaskQC::kSymEta;
+  task->SetFlowFlags(flags);
+  
+  // --- Set eta gap value -----------------------------------------
+  task->SetEtaGapValue(etaGap);
+
   // --- Check which harmonics to calculate --------------------------
-  Bool_t v2 = type.Contains("2");
-  Bool_t v3 = type.Contains("3");
-  Bool_t v4 = type.Contains("4");
-  Bool_t v5 = type.Contains("5");
-  Bool_t v6 = type.Contains("6");
-  task->SetDoHarmonics(v2, v3, v4, v5, v6);
+  const char* harm = type.Data();
+  Int_t i = 0;
+  while (i < type.Length()) {
+    char c = harm[i];
+    Short_t n = atoi(&c);
+    task->AddFlowMoment(n);
+    i++;
+  }
 
   // --- Set non-default axis for vertices ---------------------------
   TAxis* a = 0;
-  if (dispVtx) {
-    AliForwardFlowTaskQC::fgDispVtx = true;
+  if (satVtx) {
     a = new TAxis(6, 93.75, 318.75);
   }
   else 
@@ -88,12 +107,14 @@ void AddTaskForwardFlow(TString  type          = "",
   task->SetDetectorCuts(outlierCutFMD, outlierCutSPD);
 
   // --- Create containers for output --------------------------------
+  const char* sumName = (useEtaGap ? "FlowQCSumsEtaGap" : "FlowQCSums");
+  const char* resName = (useEtaGap ? "FlowQCResultsEtaGap" : "FlowQCResults");
   AliAnalysisDataContainer* sums = 
-    mgr->CreateContainer("FlowQCSums", TList::Class(), 
+    mgr->CreateContainer(sumName, TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
 			 AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer* output = 
-    mgr->CreateContainer("FlowQCResults", TList::Class(), 
+    mgr->CreateContainer(resName, TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
 			 AliAnalysisManager::GetCommonFileName());
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

@@ -57,6 +57,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCentralityDistribution(0),
   fCentralityCorrelation(0),
   fITSClusterMap(0),
+  fControlConvResoncances(0),
   fEfficiencyCorrection(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
@@ -159,6 +160,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 3, -0.5, 2.5, 100, -0.1, 0.1);
+  
   TH1::AddDirectory(oldStatus);
 }
 
@@ -181,6 +184,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCentralityDistribution(0),
   fCentralityCorrelation(0),
   fITSClusterMap(0),
+  fControlConvResoncances(0),
   fEfficiencyCorrection(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
@@ -314,6 +318,12 @@ void AliUEHistograms::DeleteContainers()
       delete fTwoTrackDistancePt[i];
       fTwoTrackDistancePt[i] = 0;
     }
+    
+  if (fControlConvResoncances)
+  {
+    delete fControlConvResoncances;
+    fControlConvResoncances = 0;
+  }
     
   if (fEfficiencyCorrection)
   {
@@ -572,21 +582,43 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         // conversions
 	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
 	{
-	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3);
+	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
+	  
+	  fControlConvResoncances->Fill(0.0, mass);
 
 	  if (mass < 0.04*0.04) 
 	    continue;
 	}
 	
-	// K0s, rhos
+	// K0s
 	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
 	{
-	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396);
+	  Float_t mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
-	  if ((mass > 0.49*0.49 && mass < 0.51*0.51) || (mass > 0.765*0.765 && mass < 0.785*0.785))
+	  const Float_t kK0smass = 0.4976;
+	  
+	  fControlConvResoncances->Fill(1, mass - kK0smass*kK0smass);
+
+	  if (mass > (kK0smass-0.02)*(kK0smass-0.02) && mass < (kK0smass+0.02)*(kK0smass+0.02))
 	    continue;
 	}
 	
+	// Lambda
+	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
+	{
+	  Float_t mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
+	  Float_t mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
+	  
+	  const Float_t kLambdaMass = 1.115;
+
+	  fControlConvResoncances->Fill(2, mass1 - kLambdaMass*kLambdaMass);
+	  fControlConvResoncances->Fill(2, mass2 - kLambdaMass*kLambdaMass);
+
+	  if ((mass1 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass1 < (kLambdaMass+0.02)*(kLambdaMass+0.02)) || 
+	      (mass2 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass2 < (kLambdaMass+0.02)*(kLambdaMass+0.02)))
+	    continue;
+	}
+
 	if (twoTrackEfficiencyCut)
 	{
 	  // the variables & cuthave been developed by the HBT group 
@@ -660,13 +692,20 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	if (fEfficiencyCorrection && applyEfficiency)
 	{
 	  Int_t effVars[4];
+	  
+	  // associated particle
 	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(eta[j]);
-	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]);
-	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]);
-	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[1]); //pt
+	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[3]); //centrality
+	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[5]); //zVtx
 	  
 // 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrection->GetBinContent(effVars));
 	  
+	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	  
+	  // trigger particle
+	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[2]); //pt
 	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
 	}
     
@@ -683,7 +722,21 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         vars[0] = triggerParticle->Pt();
         vars[1] = centrality;
 	vars[2] = zVtx;
-        fNumberDensityPhi->GetEventHist()->Fill(vars, step);
+
+	Double_t useWeight = 1;
+	if (fEfficiencyCorrection && applyEfficiency)
+	{
+	  Int_t effVars[4];
+	  
+	  // trigger particle
+	  effVars[0] = fEfficiencyCorrection->GetAxis(0)->FindBin(triggerEta);
+	  effVars[1] = fEfficiencyCorrection->GetAxis(1)->FindBin(vars[0]); //pt
+	  effVars[2] = fEfficiencyCorrection->GetAxis(2)->FindBin(vars[1]); //centrality
+	  effVars[3] = fEfficiencyCorrection->GetAxis(3)->FindBin(vars[2]); //zVtx
+	  useWeight *= fEfficiencyCorrection->GetBinContent(effVars);
+	}
+	
+        fNumberDensityPhi->GetEventHist()->Fill(vars, step, useWeight);
       }
     }
   }
@@ -827,6 +880,16 @@ void AliUEHistograms::SetCombineMinMax(Bool_t flag)
 }
 
 //____________________________________________________________________
+void AliUEHistograms::SetTrackEtaCut(Float_t value)
+{
+  // sets track eta cut for all contained AliUEHist classes
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetTrackEtaCut(value);
+}
+
+//____________________________________________________________________
 void AliUEHistograms::Correct(AliUEHistograms* corrections)
 {
   // corrects the contained histograms by calling AliUEHist::Correct
@@ -904,6 +967,9 @@ void AliUEHistograms::Copy(TObject& c) const
   if (fITSClusterMap)
     target.fITSClusterMap = dynamic_cast<TH3F*> (fITSClusterMap->Clone());
   
+  if (fControlConvResoncances)
+    target.fControlConvResoncances = dynamic_cast<TH2F*> (fControlConvResoncances->Clone());
+  
   for (Int_t i=0; i<2; i++)
     if (fTwoTrackDistancePt[i])
       target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
@@ -939,7 +1005,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 18;
+  const Int_t kMaxLists = 19;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -977,6 +1043,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
       lists[16]->Add(entry->fCentralityCorrelation);
     if (entry->fYields)
       lists[17]->Add(entry->fYields);
+    if (entry->fControlConvResoncances)
+      lists[18]->Add(entry->fControlConvResoncances);
 
     fMergeCount += entry->fMergeCount;
 
@@ -1008,6 +1076,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     fCentralityCorrelation->Merge(lists[16]);
   if (fYields && lists[17]->GetEntries() > 0)
     fYields->Merge(lists[17]);
+  if (fControlConvResoncances && lists[18]->GetEntries() > 0)
+    fControlConvResoncances->Merge(lists[18]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -1066,6 +1136,7 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fITSClusterMap);
   list.Add(fTwoTrackDistancePt[0]);
   list.Add(fTwoTrackDistancePt[1]);
+  list.Add(fControlConvResoncances);
   
   for (Int_t i=0; i<list.GetEntries(); i++)
     ((TH1*) list.At(i))->Scale(factor);
@@ -1080,7 +1151,7 @@ void AliUEHistograms::Reset()
       GetUEHist(i)->Reset();
 }
 
-Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0)
+Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2)
 {
   // calculate inv mass squared
   // same can be achieved, but with more computing time with
@@ -1099,10 +1170,10 @@ Float_t AliUEHistograms::GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t ph
   if (eta2 < -1e-10 || eta2 > 1e-10)
     tantheta2 = 2 * TMath::Exp(-eta2) / ( 1 - TMath::Exp(-2*eta2));
   
-  Float_t e1squ = m0 * m0 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
-  Float_t e2squ = m0 * m0 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+  Float_t e1squ = m0_1 * m0_1 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+  Float_t e2squ = m0_2 * m0_2 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
   
-  Float_t mass2 = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
+  Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1 - phi2) + 1.0 / tantheta1 / tantheta2 ) ) );
   
   return mass2;
 }

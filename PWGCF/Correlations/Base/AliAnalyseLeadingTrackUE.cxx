@@ -168,14 +168,13 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra1 corresponds to esdTrackCutsHTG
 
-    // empty object
     fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_SPD", "Reject tracks with cluster in SPD");
     fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
   }
   else
   {
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
     fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
     // Add SPD requirement 
@@ -300,6 +299,64 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
   tracks->Compress();
   
   AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
+}
+
+//-------------------------------------------------------------------
+void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcObj)
+{
+  // remove particles from weak decays
+  // <tracks> can be the following cases:
+  // a. tracks: in this case the label is taken and then case b.
+  // b. particles: it is checked if IsSecondaryFromWeakDecay is true
+  // <mcObj> can be AOD (TClonesArray) or ESD (AliMCEvent)
+  
+  TClonesArray* arrayMC = 0;
+  AliMCEvent* mcEvent = 0;
+  if (mcObj->InheritsFrom("AliMCEvent"))
+    mcEvent = static_cast<AliMCEvent*>(mcObj);
+  else if (mcObj->InheritsFrom("TClonesArray"))
+    arrayMC = static_cast<TClonesArray*>(mcObj);
+  else
+  {
+    arrayMC->Dump();
+    AliFatal("Invalid object passed");
+  }
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) 
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+    
+    if (part->InheritsFrom("AliESDtrack") || part->InheritsFrom("AliAODTrack"))
+      part = ((mcEvent) ? mcEvent->GetTrack(TMath::Abs(part->GetLabel())) : (AliVParticle*)arrayMC->At(TMath::Abs(part->GetLabel())));
+    
+    if (part->InheritsFrom("AliAODMCParticle"))
+    {
+      if (!((AliAODMCParticle*) part)->IsSecondaryFromWeakDecay())
+	continue;
+    }
+    else if (part->InheritsFrom("AliMCParticle") && mcEvent)
+    {
+      if (!(mcEvent->Stack()->IsSecondaryFromWeakDecay(part->GetLabel())))
+	continue;
+    }
+    else
+    {
+      part->Dump();
+      AliFatal("Unknown particle");
+    }
+    
+//     Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+    TObject* object = tracks->RemoveAt(i);
+    if (tracks->IsOwner())
+      delete object;
+  }
+ 
+  tracks->Compress();
+  
+  if (before > tracks->GetEntriesFast())
+    AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
 
 //-------------------------------------------------------------------
@@ -481,7 +538,6 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
   return nTracks;
 }
 
-
 //-------------------------------------------------------------------
 AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies)
 {
@@ -660,6 +716,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, ipart);
 	  if(!track) return 0;
     
+// 	  Printf(">%f %f %f", track->Eta(), track->Phi(), track->Pt());
+	  
 	  if(track->Pt()>0.){
 	    // only constrain tracks above threshold
 	    AliExternalTrackParam exParam;
@@ -675,6 +733,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
 	  }
 	  
+// 	  Printf(">%f %f %f\n", track->Eta(), track->Phi(), track->Pt());
+
 	  part = track;
 	}
 	else if (fFilterBit == 2048)

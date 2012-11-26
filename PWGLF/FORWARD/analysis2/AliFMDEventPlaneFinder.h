@@ -64,7 +64,7 @@ public:
    * 
    * @param etaAxis  Eta axis to use 
    */
-  virtual void Init(const TAxis& etaAxis);
+  virtual void SetupForData(const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
@@ -84,7 +84,7 @@ public:
    * 
    * @param dir List to write in
    */  
-  virtual void DefineOutput(TList* dir);
+  virtual void CreateOutputObjects(TList* dir);
   /** 
    * Print information 
    * 
@@ -233,7 +233,7 @@ protected:
   Int_t             fRunNumber;          // Run number supplied
   Bool_t            fUsePhiWeights;      // Flag for phi weights
 
-  ClassDef(AliFMDEventPlaneFinder,1); //  
+  ClassDef(AliFMDEventPlaneFinder,2); //  
 };
 
 #endif

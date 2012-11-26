@@ -73,7 +73,6 @@ struct LocalHelper : public Helper
   LocalHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), fChain(0)
   {
-    fOptions.Add("mc",       "Scan for MC files (galice,kinematics,trackrefs)");
     fOptions.Add("recursive","Scan recursive");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
   }

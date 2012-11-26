@@ -88,7 +88,7 @@ public:
    * 
    * @param list List to add outputs to
    */
-  virtual void DefineOutput(TList* list);
+  virtual void CreateOutputObjects(TList* list);
   /** 
    * Print information to standard out
    * 
@@ -224,7 +224,7 @@ protected:
   Double_t fPhiR;                 // Reaction plane  of this event
   Bool_t   fDebug;                // Debug flag
 
-  ClassDef(AliBaseMCTrackDensity,2); // Calculate track-ref density
+  ClassDef(AliBaseMCTrackDensity,3); // Calculate track-ref density
 };
 
 #endif

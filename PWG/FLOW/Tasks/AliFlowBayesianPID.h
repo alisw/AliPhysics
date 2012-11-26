@@ -80,7 +80,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   // setter
   void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t /*recomputeT0TOF*/=kFALSE);
-  void SetDetResponse(AliAODEvent *aod,Float_t centrality=-1.0);
+  void SetDetResponse(AliAODEvent *aod,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0);
   void SetNewTrackParam(Bool_t flag=kTRUE){fNewTrackParam=flag;};
   void SetDetAND(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskAND[idet] = kTRUE;};
   void SetDetOR(Int_t idet){if(idet < fgkNdetectors && idet >= 0) fMaskOR[idet] = kTRUE;};
@@ -156,9 +156,11 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   Float_t fDedx; // dE/dx tuned for MC
 
+  Bool_t fIsTOFheaderAOD; // check the TOF header in AOD
+
   static TH1D *fgHtofChannelDist; // channel distance from IP
 
-  ClassDef(AliFlowBayesianPID, 8); // example of analysis
+  ClassDef(AliFlowBayesianPID, 9); // example of analysis
 };
 
 #endif

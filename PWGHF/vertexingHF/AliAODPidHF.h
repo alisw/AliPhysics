@@ -70,6 +70,19 @@ class AliAODPidHF : public AliAODPid{
  void SetCombDetectors(ECombDetectors pidComb) {
    fCombDetectors=pidComb;
   }
+ void SetPionPriorHisto(TH1F* histo){
+   if(fPriorsH[AliPID::kPion]) delete fPriorsH[AliPID::kPion];
+   fPriorsH[AliPID::kPion] = new TH1F(*histo);
+ }
+ void SetKaonPriorHisto(TH1F* histo){
+   if(fPriorsH[AliPID::kKaon]) delete fPriorsH[AliPID::kKaon];
+   fPriorsH[AliPID::kKaon] = new TH1F(*histo);
+ }
+ void SetProtonPriorHisto(TH1F* histo){
+   if(fPriorsH[AliPID::kProton]) delete fPriorsH[AliPID::kProton];
+   fPriorsH[AliPID::kProton] = new TH1F(*histo);
+ }
+
  
  //Getters
  

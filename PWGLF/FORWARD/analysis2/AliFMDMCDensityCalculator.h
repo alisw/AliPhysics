@@ -129,7 +129,7 @@ public:
    * 
    * @param etaAxis Eta axis to use 
    */
-  void Init(const TAxis& etaAxis);
+  void SetupForData(const TAxis& etaAxis);
   /** 
    * Calculate the charged particle density from the MC track references. 
    * 
@@ -158,7 +158,7 @@ public:
    * 
    * @param dir List to write in
    */  
-  void DefineOutput(TList* dir);
+  void CreateOutputObjects(TList* dir);
 protected:
   /** 
    * MAke comparison profiles
@@ -216,7 +216,7 @@ protected:
   TH1D*       fFMD3oD; // Correlation in FMD3o
   TList*      fComps; // List of comparisons 
 
-  ClassDef(AliFMDMCDensityCalculator,1); // Calculate Nch density 
+  ClassDef(AliFMDMCDensityCalculator,2); // Calculate Nch density 
 };
 
 #endif

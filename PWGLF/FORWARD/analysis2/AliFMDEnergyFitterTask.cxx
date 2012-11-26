@@ -149,7 +149,7 @@ AliFMDEnergyFitterTask::Init()
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitterTask::InitializeSubs()
+AliFMDEnergyFitterTask::SetupForData()
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
@@ -163,8 +163,8 @@ AliFMDEnergyFitterTask::InitializeSubs()
   fcm.Init(sys, sNN, fld, 0);
   TAxis eAxis(0,0,0);
   TAxis vAxis(10,-10,10);
-  fEnergyFitter.Init(eAxis);
-  fEventInspector.Init(vAxis);
+  fEnergyFitter.SetupForData(eAxis);
+  fEventInspector.SetupForData(vAxis);
 
 }
 
@@ -180,8 +180,8 @@ AliFMDEnergyFitterTask::UserCreateOutputObjects()
   fList = new TList;
   fList->SetOwner();
 
-  fEventInspector.DefineOutput(fList);
-  fEnergyFitter.DefineOutput(fList);
+  fEventInspector.CreateOutputObjects(fList);
+  fEnergyFitter.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -222,6 +222,9 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
     return;
   }
 
+  // --- Read in the data --------------------------------------------
+  LoadBranches();
+
   // On the first event, initialize the parameters 
   if (fFirstEvent && esd->GetESDRun()) { 
     fEventInspector.ReadRunDetails(esd);
@@ -245,7 +248,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
     // pars->PrintStatus();
     fFirstEvent = false;
 
-    InitializeSubs();
+    SetupForData();
   }
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;

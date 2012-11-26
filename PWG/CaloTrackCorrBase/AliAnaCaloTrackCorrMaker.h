@@ -34,21 +34,22 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    AddAnalysis(TObject* ana, Int_t n) ;
 
+  TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
   TList * GetListOfAnalysisCuts();
   TList * GetOutputContainer() ;
-
+  
   TList * FillAndGetAODBranchList();
   
-  Int_t   GetAnaDebug()        const  { return fAnaDebug    ; }
-  void    SetAnaDebug(Int_t d)        { fAnaDebug = d       ; }
+  Int_t   GetAnaDebug()           const { return fAnaDebug    ; }
+  void    SetAnaDebug(Int_t d)          { fAnaDebug = d       ; }
 	
-  Bool_t  AreHistogramsMade()   const { return fMakeHisto   ; }
-  void    SwitchOnHistogramsMaker()   { fMakeHisto = kTRUE  ; }
-  void    SwitchOffHistogramsMaker()  { fMakeHisto = kFALSE ; }
+  Bool_t  AreHistogramsMade()     const { return fMakeHisto   ; }
+  void    SwitchOnHistogramsMaker()     { fMakeHisto = kTRUE  ; }
+  void    SwitchOffHistogramsMaker()    { fMakeHisto = kFALSE ; }
  
-  Bool_t  AreAODsMade()         const { return fMakeAOD     ; }
-  void    SwitchOnAODsMaker()         { fMakeAOD = kTRUE    ; }
-  void    SwitchOffAODsMaker()        { fMakeAOD = kFALSE   ; }
+  Bool_t  AreAODsMade()           const { return fMakeAOD     ; }
+  void    SwitchOnAODsMaker()           { fMakeAOD = kTRUE    ; }
+  void    SwitchOffAODsMaker()          { fMakeAOD = kFALSE   ; }
   	
 
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
@@ -94,6 +95,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1I *   fhNEvents;           //! Number of events counter histogram
   TH1I *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhZVertex;           //! Vertex of accepted event
+  TH1I *   fhPileUpClusterMult; //! N clusters with high time
+  TH1I *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
+  TH2I *   fh2PileUpClusterMult; //! N clusters with high time vs N clusterd with small time
+  TH2I *   fh2PileUpClusterMultAndSPDPileUp; //! N clusters with high time vs N clusterd with small time in events tagged as pile-up by SPD
   TH1I *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
@@ -102,7 +107,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,12)
+  ClassDef(AliAnaCaloTrackCorrMaker,13)
 } ;
  
 

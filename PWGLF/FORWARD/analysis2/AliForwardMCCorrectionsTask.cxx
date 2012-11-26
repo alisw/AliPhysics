@@ -258,7 +258,7 @@ AliForwardMCCorrectionsTask::DefineBins(TList* l)
     Double_t  high = fVtxAxis.GetBinUpEdge(i);
     VtxBin*   bin  = new VtxBin(low, high, fEtaAxis);
     fVtxBins->AddAt(bin, i);
-    bin->DefineOutput(l);
+    bin->CreateOutputObjects(l);
   }
 }
 
@@ -326,8 +326,8 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
 
   AliInfo(Form("Initialising sub-routines: %p, %p", 
 	       &fInspector, &fTrackDensity));
-  fInspector.DefineOutput(fList);
-  fTrackDensity.DefineOutput(fList);
+  fInspector.CreateOutputObjects(fList);
+  fTrackDensity.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -356,6 +356,9 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
     return;
   }
 
+  // --- Read in the data --------------------------------------------
+  LoadBranches();
+
   //--- Read run information -----------------------------------------
   if (fFirstEvent && esd->GetESDRun()) {
     fInspector.ReadRunDetails(esd);
@@ -372,7 +375,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 		 esd->GetMagneticField(),
 		 esd->GetRunNumber()));
 
-    fInspector.Init(fVtxAxis);
+    fInspector.SetupForData(fVtxAxis);
 
     Print();
     fFirstEvent = false;
@@ -483,7 +486,7 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
   VtxBin*   bin = 0;
   UShort_t  iVz = 1;
   while ((bin = static_cast<VtxBin*>(next()))) 
-    bin->Finish(fList, output, iVz++, corr);
+    bin->Terminate(fList, output, iVz++, corr);
 
   output->Add(corr);
 
@@ -594,7 +597,7 @@ AliForwardMCCorrectionsTask::VtxBin::operator=(const VtxBin& o)
 
 //____________________________________________________________________
 void
-AliForwardMCCorrectionsTask::VtxBin::DefineOutput(TList* l)
+AliForwardMCCorrectionsTask::VtxBin::CreateOutputObjects(TList* l)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -628,7 +631,7 @@ AliForwardMCCorrectionsTask::VtxBin::MakeBg(const TH2D* hits,
   
 //____________________________________________________________________
 void
-AliForwardMCCorrectionsTask::VtxBin::Finish(const TList* input, 
+AliForwardMCCorrectionsTask::VtxBin::Terminate(const TList* input, 
 					    TList* output, 
 					    UShort_t iVz,
 					    AliFMDCorrSecondaryMap* map)

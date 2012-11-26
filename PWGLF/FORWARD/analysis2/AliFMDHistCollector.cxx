@@ -129,7 +129,7 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 
 //____________________________________________________________________
 void
-AliFMDHistCollector::Init(const TAxis& vtxAxis,
+AliFMDHistCollector::SetupForData(const TAxis& vtxAxis,
 			  const TAxis& etaAxis)
 {
   // 
@@ -291,7 +291,7 @@ AliFMDHistCollector::CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const
     
 //____________________________________________________________________
 void
-AliFMDHistCollector::DefineOutput(TList* dir)
+AliFMDHistCollector::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 

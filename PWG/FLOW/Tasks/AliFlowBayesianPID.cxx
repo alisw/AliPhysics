@@ -35,7 +35,7 @@ TH1D* AliFlowBayesianPID::fgHtofChannelDist=NULL;
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100),fPsi(999),fPsiRes(999),fIsMC(kFALSE),fDedx(0.0),fIsTOFheaderAOD(0)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -255,10 +255,10 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->SetTOFResponse(esd,flagStart);
 
   if(fNewTrackParam){
-    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.008);
-    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.008);
-    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.002);
-    fPIDesd->GetTOFResponse().SetTrackParameter(3,40);
+    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.005); // old 0.008
+    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.005); // old 0.008
+    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.0);//old 0.002
+    fPIDesd->GetTOFResponse().SetTrackParameter(3,15); // old 40
   }
 
   fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
@@ -270,7 +270,7 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->MakePID(esd,kFALSE);
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::SetDetResponse(AliAODEvent *aod,Float_t centrality){
+void AliFlowBayesianPID::SetDetResponse(AliAODEvent *aod,Float_t centrality,EStartTimeType_t flagStart){
   // Set the detector responses (including also TPC dE/dx paramterization vs. centrality)
   if(!aod){
     printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
@@ -384,11 +384,22 @@ void AliFlowBayesianPID::SetDetResponse(AliAODEvent *aod,Float_t centrality){
   }
 
   if(fNewTrackParam){
-    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.008);
-    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.008);
-    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.002);
-    fPIDesd->GetTOFResponse().SetTrackParameter(3,40);
+    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.005); // old 0.008
+    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.005); // old 0.008
+    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.0); // old 0.002
+    fPIDesd->GetTOFResponse().SetTrackParameter(3,15); // old 40
   }
+
+  if(aod->GetTOFHeader() && !fIsTOFheaderAOD){
+    printf("TOF header found\n");
+  }
+  if(aod->GetTOFHeader()){
+    fIsTOFheaderAOD=1;
+    fPIDesd->SetTOFResponse(aod,flagStart);
+  }
+  else
+    fIsTOFheaderAOD=0;
+ 
 
   // reset EP information
   fPsi=999;
@@ -779,16 +790,27 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
     inttimes[8] = inttimes[0] / p * fMass[8] * TMath::Sqrt(1+p*p/fMass[8]/fMass[8]);
 
     for(Int_t iS=0;iS<fgkNspecies;iS++){
-      if(iS==0){
-	AliAODPid *pidObj = t->GetDetPid();
-	if (!pidObj) fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
-	else{
-	  Double_t sigmaTOFPidInAOD[10];
-	  pidObj->GetTOFpidResolution(sigmaTOFPidInAOD);
-	  if(sigmaTOFPidInAOD[0] > fTOFresolution)
-	    fPIDesd->GetTOFResponse().SetTimeResolution(sigmaTOFPidInAOD[0]); // use the electron TOF PID sigma as time resolution (including the T0 used)
-	  else 
-	    fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+
+      if(!fIsTOFheaderAOD){
+	if(iS==0){
+	  AliAODPid *pidObj = t->GetDetPid();
+	  if (!pidObj) fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+	  else{
+	    Double_t sigmaTOFPidInAOD[10];
+	    pidObj->GetTOFpidResolution(sigmaTOFPidInAOD);
+	    if(sigmaTOFPidInAOD[0] > fTOFresolution){
+	      fPIDesd->GetTOFResponse().SetTimeResolution(sigmaTOFPidInAOD[0]); // use the electron TOF PID sigma as time resolution (including the T0 used)
+	      Float_t newElSigma = fPIDesd->GetTOFResponse().GetExpectedSigma(p, inttimes[0], fMass[0]);
+	      Float_t newpar = fPIDesd->GetTOFResponse().GetTrackParameter(3);
+	      sigmaTOFPidInAOD[0] = TMath::Sqrt(2*sigmaTOFPidInAOD[0]*sigmaTOFPidInAOD[0] - newElSigma*newElSigma - (50*50 - newpar*newpar)/p/p);
+	      fPIDesd->GetTOFResponse().SetTimeResolution(sigmaTOFPidInAOD[0]); // use the electron TOF PID sigma as time resolution (including the T0 used)
+	      
+	      //            fPIDesd->GetTOFResponse().Dump();
+	      //	    printf("sigmaBayes(%f) = %f %f (%f %f %f)\n",t->P(),sigmaTOFPidInAOD[0],newElSigma,p, inttimes[0], fMass[0]);
+	    }
+	    else
+	      fPIDesd->GetTOFResponse().SetTimeResolution(fTOFresolution);
+	  }
 	}
       }
 

@@ -307,6 +307,20 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TString hname="hTOFsig";
     TH1F* hTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
 
+    hname="hTOFstartTimeMask";
+    TH1F* hTOFstartTimeMask=new TH1F(hname.Data(),"TOF start time mask; Mask ;Entries", 8, -0.5,7.5);
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(1,"FILL");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(2,"TOF");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(3,"T0A");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(4,"TOF.and.T0A");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(5,"T0C");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(6,"TOF.and.T0C");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(7,"T0AC");
+    hTOFstartTimeMask->GetXaxis()->SetBinLabel(8,"TOF.and.T0AC");
+
+    hname="hTOFstartTimeRes";
+    TH1F* hTOFstartTimeRes=new TH1F(hname.Data(),"TOF start time resolution; Resolution (ps) ;Entries", 100, 0.,300.);
+
     hname="hTOFtime";
     TH1F* hTOFtime=new TH1F(hname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
 
@@ -357,6 +371,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->Add(hTOFflags);
     fOutputPID->Add(hTOFsig);
     fOutputPID->Add(hTPCsig);
+    fOutputPID->Add(hTOFstartTimeMask);
+    fOutputPID->Add(hTOFstartTimeRes);
     fOutputPID->Add(hTOFtime);
     fOutputPID->Add(hTOFtimeKaonHyptime);
     fOutputPID->Add(hTOFtimeKaonHyptimeAC);
@@ -1281,9 +1297,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	if (track->GetStatus()&AliESDtrack::kTOFmismatch) htmpfl->Fill(5.);
 
 	if(pidHF && pidHF->CheckStatus(track,"TOF")){
+	  Double_t tofTime=pid->GetTOFsignal();
+	  AliTOFHeader* tofH=(AliTOFHeader*)aod->GetTOFHeader();
+	  if (tofH && (TMath::Abs(tofRes[0]) <= 1.E-16) ) { // new AOD
+            // with new AOD we need to retrieve startTime, subtract it and retrieve correctly TOF PID resolutions  *PA*
+	    AliTOFPIDResponse tofResp=pidHF->GetPidResponse()->GetTOFResponse();
+	    Double_t startTime = tofResp.GetStartTime(track->P());
+	    Float_t startTimeRes = tofResp.GetStartTimeRes(track->P());  
+	    Int_t startTimeMask = tofResp.GetStartTimeMask(track->P());  
+	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeMask"))->Fill(startTimeMask);
+	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeRes"))->Fill(startTimeRes);
+	    tofTime-=startTime;
+	    for (Int_t type=0;type<=AliPID::kSPECIES;type++) tofRes[type]=tofResp.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMassZ(type)); 
+	  }
 	  ((TH1F*)fOutputPID->FindObject("hTOFtime"))->Fill(times[AliPID::kProton]);
-	  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptime"))->Fill(track->P(),pid->GetTOFsignal()-times[3]); //3 is kaon
-	  ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(pid->GetTOFsignal());
+	  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptime"))->Fill(track->P(),tofTime-times[3]); //3 is kaon
+	  ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(tofTime);
 	  if (pid->GetTOFsignal()< 0) ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(-1);
 
 	  Double_t nsigma[3]={-10,-10,-10};
@@ -1525,7 +1554,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      if(pid){
 		Double_t times[5];
 		pid->GetIntegratedTimes(times);
-		if(pidHF && pidHF->CheckStatus(track,"TOF")) ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[AliPID::kKaon]);
+		if(pidHF && pidHF->CheckStatus(track,"TOF")){
+		  Double_t tofTime=pid->GetTOFsignal();
+		  AliTOFHeader* tofH=(AliTOFHeader*)aod->GetTOFHeader();
+		  Double_t tofRes[AliPID::kSPECIES];
+		  pid->GetTOFpidResolution(tofRes);
+		  if (tofH && (TMath::Abs(tofRes[0]) <= 1.E-16) ) { // new AOD
+		    AliTOFPIDResponse tofResp=pidHF->GetPidResponse()->GetTOFResponse();
+		    Double_t startTime=tofResp.GetStartTime(track->P());
+		    tofTime-=startTime;
+		  }
+		  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),tofTime-times[AliPID::kKaon]);
+		}
 		if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
 	      }
 	      fNEntries->Fill(3);

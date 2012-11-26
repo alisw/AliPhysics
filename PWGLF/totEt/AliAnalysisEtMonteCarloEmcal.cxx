@@ -8,6 +8,7 @@
 //_________________________________________________________________________
 #include "AliAnalysisEtMonteCarloEmcal.h"
 #include "AliAnalysisEtCuts.h"
+#include "AliAnalysisEtSelectorEmcal.h"
 #include "AliESDtrack.h"
 
 using namespace std;
@@ -29,6 +30,7 @@ AliAnalysisEtMonteCarloEmcal::~AliAnalysisEtMonteCarloEmcal()
 void AliAnalysisEtMonteCarloEmcal::Init()
 { // Init
   AliAnalysisEtMonteCarlo::Init();
+  fSelector = new AliAnalysisEtSelectorEmcal(fCuts);
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
 }

@@ -899,18 +899,24 @@ Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t ns
 //-----------------------------
 void AliAODPidHF::SetPriorsHistos(TString priorFileName){
   // Set histograms with priors
+
   for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
     if(fPriorsH[ispecies]) delete fPriorsH[ispecies];
     TString nt ="name";
     nt+="_prior_";
     nt+=AliPID::ParticleName(ispecies);
-    fPriorsH[ispecies]=new TH1F(nt,nt,100,0,10);
   }
+  TDirectory *current = gDirectory;
   TFile *priorFile=TFile::Open(priorFileName);
   if (priorFile) {
-    fPriorsH[AliPID::kProton]->Add(static_cast<TH1*>(priorFile->Get("priors3step9")));
-    fPriorsH[AliPID::kKaon  ]->Add(static_cast<TH1*>(priorFile->Get("priors2step9")));
-    fPriorsH[AliPID::kPion  ]->Add(static_cast<TH1*>(priorFile->Get("priors1step9")));
+    TH1F* h3=static_cast<TH1F*>(priorFile->Get("priors3step9"));
+    TH1F* h2=static_cast<TH1F*>(priorFile->Get("priors2step9"));
+    TH1F* h1=static_cast<TH1F*>(priorFile->Get("priors1step9"));
+    current->cd();
+    fPriorsH[AliPID::kProton] = new TH1F(*h3);
+    fPriorsH[AliPID::kKaon  ] = new TH1F(*h2);
+    fPriorsH[AliPID::kPion  ] = new TH1F(*h1);
+    priorFile->Close();
     delete priorFile;
     TF1 *salt=new TF1("salt","1.e-10",0,10);
     fPriorsH[AliPID::kProton]->Add(salt);

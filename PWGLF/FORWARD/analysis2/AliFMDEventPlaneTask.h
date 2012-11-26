@@ -127,7 +127,7 @@ protected:
   TH1D*                   fHistVertexSel;    //  Diagnostics histogram
   TH1D*                   fHistVertexAll;    //  Diagnostics histogram
 
-  ClassDef(AliFMDEventPlaneTask, 1); // Analysis task for FMD analysis
+  ClassDef(AliFMDEventPlaneTask, 2); // Analysis task for FMD analysis
 };
  
 #endif

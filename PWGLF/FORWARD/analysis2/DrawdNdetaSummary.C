@@ -332,6 +332,8 @@ ClearCanvas(TCanvas* c)
   p2->SetFillStyle(0);
   p2->SetBorderSize(0);
   p2->SetBorderMode(0);
+  p2->SetRightMargin(0.02);
+  p2->SetTopMargin(0.02);
   c->cd();
   p2->Draw();
   p2->cd();
@@ -583,14 +585,30 @@ void DrawSums(TDirectory* top, const TString& base, TCanvas* can, bool onlyMB)
 }
 
 //____________________________________________________________________
-void CleanStack(THStack* stack, TLegend* l, const TAxis* axis)
+THStack* CleanStack(const THStack* stack, TLegend* l, const TAxis* axis)
 {
-  TList* hists = stack->GetHists();
-  // Clean up list of histogram.  Histograms with no entries or 
-  // no functions are deleted.  We have to do this using the TObjLink 
-  // objects stored in the list since ROOT cannot guaranty the validity 
-  // of iterators when removing from a list - tsck.  Should just implement
-  // TIter::Remove(). 
+  THStack* ret   = new THStack(stack->GetName(), stack->GetTitle());
+  TList*   hists = stack->GetHists();
+  TIter    next(hists);
+  TH1*     h     = 0;
+  Int_t    j     = 0;
+  while ((h = static_cast<TH1*>(next()))) {
+    TString name(h->GetName());
+    if (name.Contains("_mirror")) continue;
+    if (l) { 
+      j++;
+      name.Form("%3d%% - %3d%%", 
+		Int_t(axis->GetBinLowEdge(j)), 
+		Int_t(axis->GetBinUpEdge(j)));
+      TLegendEntry* e = l->AddEntry("dummy", name, "f");
+      e->SetFillStyle(1001);
+      e->SetFillColor(h->GetMarkerColor());
+    }
+    ret->Add(h);
+  }
+  return ret;
+#if 0
+  // There's no dictinary for TObjLink
   TObjLink* lnk = hists->FirstLink();
   Int_t j = 0;
   while (lnk) {
@@ -618,6 +636,7 @@ void CleanStack(THStack* stack, TLegend* l, const TAxis* axis)
     }
     lnk = lnk->Next();
   }
+#endif
 }
 
 //____________________________________________________________________
@@ -635,14 +654,24 @@ void DrawCentRes(const TCollection* sums, TCanvas* can, const TString& base,
   if (!c) return;
 
   TVirtualPad* body = can->cd(2);
-  body->Divide(2, 3);
+  body->Divide(2, 3, 0.05, 0);
 
-  DrawInPad(body, 1, GetH1(c, "triggers"), "HIST TEXT");
-  DrawInPad(body, 2, GetH1(c, Form("norm%s",base.Data())));
-  DrawInPad(body, 3, GetH1(c, Form("dndeta%s",base.Data())));
-  DrawInPad(body, 4, GetH1(c, Form("dndeta%s_rebin05",base.Data())));
+  Int_t        trP = 1;
+  TVirtualPad* p   = body->GetPad(trP);
+  p->SetBottomMargin(0.15);
+  p->SetLeftMargin(0.15);
+  if (trP > 2) p->SetTopMargin(0.05);
+  
+  DrawInPad(body, trP, GetH1(c, "triggers"), "HIST TEXT");
+  DrawInPad(body, 2,   GetH1(c, Form("norm%s",base.Data())));
+  DrawInPad(body, 4, GetH1(c, Form("dndeta%s",base.Data())));
+  DrawInPad(body, 6, GetH1(c, Form("dndeta%s_rebin05",base.Data())));
   DrawInPad(body, 5, GetH2(c, Form("d2Ndetadphi%s", base.Data())),"colz");
   
+  body->GetPad(2)->SetGridx(); body->GetPad(2)->SetLeftMargin(0.15);
+  body->GetPad(4)->SetGridx(); body->GetPad(4)->SetLeftMargin(0.15);
+  body->GetPad(6)->SetGridx(); body->GetPad(6)->SetLeftMargin(0.15);
+
   TObject*   normCalc = GetObject(c, "normCalc");
   TString    calc     = normCalc->GetTitle();
   TObjArray* lines    = calc.Tokenize("\n");
@@ -654,7 +683,7 @@ void DrawCentRes(const TCollection* sums, TCanvas* can, const TString& base,
   disp->SetBorderSize(0);
   disp->SetBorderSize(0);
   disp->SetFillStyle(0);
-  DrawInPad(body, 6, disp);
+  DrawInPad(body, 3, disp);
 
   PrintCanvas(can, Form("%s result: %3d%% - %3d%%", base.Data(), cLow, cHigh));
 }  
@@ -696,20 +725,22 @@ DrawRes(TDirectory* top, const TString& base, TCanvas* can, Bool_t onlyMB)
   PrintCanvas(can, Form("%s results", base.Data()));
   
   TVirtualPad* body = can->cd(2);
-  body->Divide(1, 3);
+  body->Divide(1, 3, 0, 0);
 
   TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, "Centralities");
   l->SetNColumns(2);
   l->SetFillStyle(0);
   l->SetBorderSize(0);
-  THStack* dndeta = GetStack(c, "dndeta");
-  CleanStack(dndeta, l, centAxis);
-  THStack* dndeta5 = GetStack(c, "dndeta_rebin05");
-  CleanStack(dndeta5, 0, 0);
+  THStack* dndeta_  = GetStack(c, "dndeta");
+  THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
+  THStack* dndeta5_ = GetStack(c, "dndeta_rebin05");
+  THStack* dndeta5  = CleanStack(dndeta5_, 0, 0);
 
-  DrawInPad(body, 1, dndeta,  "nostack");
-  DrawInPad(body, 2, dndeta5, "nostack");
-  DrawInPad(body, 3, l, "");
+  DrawInPad(body, 1, l, "");
+  DrawInPad(body, 2, dndeta,  "nostack");
+  DrawInPad(body, 3, dndeta5, "nostack");
+  body->GetPad(2)->SetGridx();
+  body->GetPad(3)->SetGridx();
 
   PrintCanvas(can, Form("%s results - stacks", base.Data()));
   

@@ -198,7 +198,7 @@ protected:
    * 
    * @return false on errors
    */
-  virtual Bool_t InitializeSubs();
+  virtual Bool_t SetupForData();
 
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
@@ -221,7 +221,7 @@ protected:
 
   TList* fList; // Output list 
 
-  ClassDef(AliForwardMCMultiplicityTask,1) // Forward multiplicity class
+  ClassDef(AliForwardMCMultiplicityTask,2) // Forward multiplicity class
 };
 
 #endif

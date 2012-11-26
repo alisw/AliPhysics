@@ -90,7 +90,6 @@ struct GridHelper : public PluginHelper
     fOptions.Add("pattern","GLOB",   "File/directory name pattern");
     fOptions.Add("alien",  "VERSION","Alien API version",              "V1.1x");
     fOptions.Add("concat", "Concatenate all runs");
-    fOptions.Add("mc",     "Assume MC input");
   }
   GridHelper(const GridHelper& o)
     : PluginHelper(o), fRuns()
@@ -209,8 +208,12 @@ struct GridHelper : public PluginHelper
       Info("GridHelper::RegisterRuns", "Reading runs from %s", s.Data());
       std::ifstream in(s.Data());
       if (!in) { 
-	Warning("GridHelper::RegisterRuns", "Failed to open %s", s.Data());
-	continue;
+	s.Prepend("../");
+	in.open(s.Data());
+	if (!in) {
+	  Warning("GridHelper::RegisterRuns", "Failed to open %s", s.Data());
+	  continue;
+	}
       }
       while (!in.eof()) { 
 	Int_t r;
@@ -276,7 +279,7 @@ struct GridHelper : public PluginHelper
     fHandler->SetRunMode(operation);
 
     // --- Add the run numbers ---------------------------------------
-    fHandler->SetRunPrefix(mgr->GetMCtruthEventHandler() ? "" : "000");
+    fHandler->SetRunPrefix(fOptions.Has("mc") ? "%d" : "%09d");
     Int_t nRun = RegisterRuns();
 
     // --- Do not test copying ---------------------------------------

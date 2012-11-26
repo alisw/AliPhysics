@@ -65,7 +65,7 @@ fhENoIso(0),                      fhPtNoIso(0),                    fhPtNLocMaxNo
 fhPtDecayIso(0),                  fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
 fhConeSumPt(0),                   fhPtInCone(0),                   
-fhPtInConePileUp(0),              fhPtInConeCent(0),
+fhPtInConePileUp(),               fhPtInConeCent(0),
 fhFRConeSumPt(0),                 fhPtInFRCone(0),                 fhPhiUEConeSumPt(0),
 fhEtaUEConeSumPt(0),              fhEtaBand(0),                    fhPhiBand(0),
 fhConeSumPtEtaUESub(0),           fhConeSumPtPhiUESub(0),
@@ -114,8 +114,8 @@ fhELambda0LocMax1(),              fhELambda1LocMax1(),
 fhELambda0LocMax2(),              fhELambda1LocMax2(),
 fhELambda0LocMaxN(),              fhELambda1LocMaxN(),
 // PileUp
-fhEIsoPileUp(0),                  fhPtIsoPileUp(0),
-fhENoIsoPileUp(0),                fhPtNoIsoPileUp(0),
+fhEIsoPileUp(),                   fhPtIsoPileUp(),
+fhENoIsoPileUp(),                 fhPtNoIsoPileUp(),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
@@ -212,6 +212,17 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
     
   } 
+  
+  // Pile-Up
+  
+  for(Int_t i = 0 ; i < 7 ; i++)
+  {
+    fhPtInConePileUp[i] = 0 ;
+    fhEIsoPileUp    [i] = 0 ;
+    fhPtIsoPileUp   [i] = 0 ;
+    fhENoIsoPileUp  [i] = 0 ;
+    fhPtNoIsoPileUp [i] = 0 ;
+  }
   
 }
 
@@ -569,6 +580,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t ptfrac = GetIsolationCut()->GetPtFraction();
   Float_t r      = GetIsolationCut()->GetConeSize();
   
+  TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+  
   if(!fMakeSeveralIC)
   {
     TString hName [] = {"NoIso",""};
@@ -796,12 +809,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     if(fFillPileUpHistograms)
     {
-      fhPtInConePileUp  = new TH2F("hPtInConePileUp",
-                             Form("p_{T} in isolation cone for R = %2.2f, from pile-up (SPD)",r),
-                             nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
-      fhPtInConePileUp->SetYTitle("p_{T in cone} (GeV/c)");
-      fhPtInConePileUp->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPtInConePileUp) ;      
+      for (Int_t i = 0; i < 7 ; i++)
+      {
+        fhPtInConePileUp[i]  = new TH2F(Form("hPtInConePileUp%s",pileUpName[i].Data()),
+                                        Form("p_{T} in isolation cone for R = %2.2f, from pile-up (%s)",r,pileUpName[i].Data()),
+                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtInConePileUp[i]->SetYTitle("p_{T in cone} (GeV/c)");
+        fhPtInConePileUp[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhPtInConePileUp[i]) ;
+      }
     }
     
     fhPtInConeCent  = new TH2F("hPtInConeCent",
@@ -1529,34 +1545,36 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
-    
-    fhEIsoPileUp   = new TH1F("hEPileUp",
-                        Form("Number of isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by SDD",r,ptthre,ptfrac),
-                        nptbins,ptmin,ptmax); 
-    fhEIsoPileUp->SetYTitle("dN / dE");
-    fhEIsoPileUp->SetXTitle("E (GeV/c)");
-    outputContainer->Add(fhEIsoPileUp) ; 
-    
-    fhPtIsoPileUp  = new TH1F("hPtPileUp",
-                        Form("Number of isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}, pile-up event by SDD = %2.2f",r,ptthre,ptfrac),
-                        nptbins,ptmin,ptmax); 
-    fhPtIsoPileUp->SetYTitle("dN / p_{T}");
-    fhPtIsoPileUp->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtIsoPileUp) ; 
-    
-    fhENoIsoPileUp   = new TH1F("hENoIsoPileUp",
-                              Form("Number of not isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by SDD",r,ptthre,ptfrac),
-                              nptbins,ptmin,ptmax); 
-    fhENoIsoPileUp->SetYTitle("dN / dE");
-    fhENoIsoPileUp->SetXTitle("E (GeV/c)");
-    outputContainer->Add(fhENoIsoPileUp) ; 
-    
-    fhPtNoIsoPileUp  = new TH1F("hPtNoIsoPileUp",
-                              Form("Number of not isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}, pile-up event by SDD = %2.2f",r,ptthre,ptfrac),
-                              nptbins,ptmin,ptmax); 
-    fhPtNoIsoPileUp->SetYTitle("dN / p_{T}");
-    fhPtNoIsoPileUp->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtNoIsoPileUp) ;     
+    for (Int_t i = 0; i < 7 ; i++)
+    {
+      fhEIsoPileUp[i]   = new TH1F(Form("hEPileUp%s",pileUpName[i].Data()),
+                                Form("Number of isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by %s",r,ptthre,ptfrac,pileUpName[i].Data()),
+                                nptbins,ptmin,ptmax); 
+      fhEIsoPileUp[i]->SetYTitle("dN / dE");
+      fhEIsoPileUp[i]->SetXTitle("E (GeV/c)");
+      outputContainer->Add(fhEIsoPileUp[i]) ; 
+      
+      fhPtIsoPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
+                                Form("Number of isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}= %2.2f, pile-up event by %s ",r,ptthre,ptfrac,pileUpName[i].Data()),
+                                nptbins,ptmin,ptmax); 
+      fhPtIsoPileUp[i]->SetYTitle("dN / p_{T}");
+      fhPtIsoPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtIsoPileUp[i]) ; 
+      
+      fhENoIsoPileUp[i]   = new TH1F(Form("hENoIsoPileUp%s",pileUpName[i].Data()),
+                                  Form("Number of not isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f, pile-up event by %s",r,ptthre,ptfrac,pileUpName[i].Data()),
+                                  nptbins,ptmin,ptmax); 
+      fhENoIsoPileUp[i]->SetYTitle("dN / dE");
+      fhENoIsoPileUp[i]->SetXTitle("E (GeV/c)");
+      outputContainer->Add(fhENoIsoPileUp[i]) ; 
+      
+      fhPtNoIsoPileUp[i]  = new TH1F(Form("hPtNoIsoPileUp%s",pileUpName[i].Data()),
+                                  Form("Number of not isolated particles vs p_{T} for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr}= %2.2f, pile-up event by %s ",r,ptthre,ptfrac,pileUpName[i].Data()),
+                                  nptbins,ptmin,ptmax); 
+      fhPtNoIsoPileUp[i]->SetYTitle("dN / p_{T}");
+      fhPtNoIsoPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtNoIsoPileUp[i]) ;     
+    }
     
     fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeENoCut->SetXTitle("E (GeV)");
@@ -1597,7 +1615,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
     fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
-    
   }
   
   return outputContainer ;
@@ -1877,7 +1894,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
         Float_t pTtrack = track->Pt();
         fhPtInCone->Fill(pt,pTtrack);
-        if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())  fhPtInConePileUp->Fill(pt,pTtrack);
+        if(fFillPileUpHistograms)
+        {
+          if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(pt,pTtrack);
+          if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(pt,pTtrack);
+        }
+        
         if (GetEventCentrality()) fhPtInConeCent->Fill(GetEventCentrality(),pTtrack);
         coneptsum+=pTtrack;
       }
@@ -1906,7 +1933,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         }
         
         fhPtInCone->Fill(pt, mom.Pt());
-        if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())  fhPtInConePileUp->Fill(pt,mom.Pt());
+        if(fFillPileUpHistograms)
+        {
+          if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(pt,mom.Pt());
+          if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(pt,mom.Pt());
+        }
+        
         if (GetEventCentrality()) fhPtInConeCent->Fill(GetEventCentrality(),mom.Pt());
         coneptsum+=mom.Pt();
       }
@@ -1955,11 +1992,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         fhEtaPhiDecayIso->Fill(eta,phi);
       }
       
-      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      if(fFillPileUpHistograms)
       {
-        fhEIsoPileUp ->Fill(energy);
-        fhPtIsoPileUp->Fill(pt);
-      }      
+        if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy) ; fhPtIsoPileUp[0]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy) ; fhPtIsoPileUp[1]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhEIsoPileUp[2] ->Fill(energy) ; fhPtIsoPileUp[2]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhEIsoPileUp[3] ->Fill(energy) ; fhPtIsoPileUp[3]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhEIsoPileUp[4] ->Fill(energy) ; fhPtIsoPileUp[4]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhEIsoPileUp[5] ->Fill(energy) ; fhPtIsoPileUp[5]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhEIsoPileUp[6] ->Fill(energy) ; fhPtIsoPileUp[6]->Fill(pt) ; }
+      }
       
       if(IsDataMC())
       {
@@ -2029,10 +2071,15 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhEtaPhiNoIso   ->Fill(eta,phi);
       fhPtNLocMaxNoIso->Fill(pt,nlm);
 
-      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      if(fFillPileUpHistograms)
       {
-        fhENoIsoPileUp ->Fill(energy);
-        fhPtNoIsoPileUp->Fill(pt);
+        if(GetReader()->IsPileUpFromSPD())                { fhENoIsoPileUp[0] ->Fill(energy) ; fhPtNoIsoPileUp[0]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCal())              { fhENoIsoPileUp[1] ->Fill(energy) ; fhPtNoIsoPileUp[1]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhENoIsoPileUp[2] ->Fill(energy) ; fhPtNoIsoPileUp[2]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhENoIsoPileUp[3] ->Fill(energy) ; fhPtNoIsoPileUp[3]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhENoIsoPileUp[4] ->Fill(energy) ; fhPtNoIsoPileUp[4]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhENoIsoPileUp[5] ->Fill(energy) ; fhPtNoIsoPileUp[5]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy) ; fhPtNoIsoPileUp[6]->Fill(pt) ; }
       }
       
       if(decay) 

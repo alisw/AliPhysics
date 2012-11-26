@@ -68,7 +68,8 @@ fFillVZERO(kFALSE),
 fEMCALEnergyCut(0.),      fEMCALNcellsCut (0),
 fPHOSEnergyCut(0.),       fPHOSNcellsCut (0), 
 fTrackPtCut(-1),
-fVzCut(100.),             fEvent(0x0),              
+fVzCut(100.),             fCheckEventVertex(kTRUE),
+fEvent(0x0),              
 fESDEvent(0x0),           fAODEvent(0x0)
 {
   // Default constructor
@@ -100,7 +101,8 @@ fFillVZERO(kFALSE),
 fEMCALEnergyCut(0.),      fEMCALNcellsCut(0), 
 fPHOSEnergyCut(0.),       fPHOSNcellsCut(0), 
 fTrackPtCut(-1),
-fVzCut(100.),             fEvent(0x0),              
+fVzCut(100.),             fCheckEventVertex(kTRUE),
+fEvent(0x0),              
 fESDEvent(0x0),           fAODEvent(0x0)
 {
   // Constructor
@@ -177,7 +179,9 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
   }// loop
   
   if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::AcceptEventEMCAL() - Reject \n");
-  
+
+  //printf("Fired %s\n",((AliESDEvent*)InputEvent())->GetFiredTriggerClasses().Data());
+
   return kFALSE;
   
 }  
@@ -258,7 +262,6 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventVertex()
   Double_t v[3];
   InputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   
-  
   if(TMath::Abs(v[2]) > fVzCut) 
   {
     if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventVertex() - Vz Reject : vz %2.2f > %2.2f\n",v[2],fVzCut);
@@ -275,6 +278,8 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
   //Check if the vertex was well reconstructed, copy from v0Reader of conversion group
   //It only works for ESDs
   
+  if(!fCheckEventVertex) return kTRUE;
+
   // AODs
   if(!fESDEvent) 
   {
@@ -929,7 +934,8 @@ void AliAnalysisTaskCaloFilter::Init()
     fPHOSNcellsCut     = filter->fPHOSNcellsCut;
     fTrackPtCut        = filter->fTrackPtCut;
     fVzCut             = filter->fVzCut;
-    
+    fCheckEventVertex  = filter->fCheckEventVertex;
+
     for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
   }
 } 

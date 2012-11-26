@@ -210,6 +210,12 @@ struct Helper
     return ret;
   }
   /** 
+   * Check if the MC option was set
+   * 
+   * @return true if the MC option was given 
+   */
+  virtual Bool_t IsMC() const { return fOptions.Has("mc"); }
+  /** 
    * The file part of tehe output URL - overwritten by derived classes. 
    * 
    * 
@@ -369,6 +375,7 @@ protected:
   Helper(const TUrl& url, Int_t verbose) 
     : fUrl(url), fOptions(), fVerbose(verbose)
   {
+    fOptions.Add("mc", "Assume simulation input");
   }
 
   virtual Bool_t ParseOptions()

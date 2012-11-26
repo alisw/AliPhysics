@@ -137,8 +137,8 @@ void AliFMDEventPlaneTask::UserCreateOutputObjects()
 
   // Init of EventPlaneFinder
   TAxis* pe = new TAxis(200, -4., 6.);
-  fEventPlaneFinder.DefineOutput(fSumList);
-  fEventPlaneFinder.Init(*pe);
+  fEventPlaneFinder.CreateOutputObjects(fSumList);
+  fEventPlaneFinder.SetupForData(*pe);
 
   PostData(1, fSumList);
 

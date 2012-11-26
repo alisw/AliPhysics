@@ -193,7 +193,7 @@ protected:
    * Initialise the sub objects and stuff.  Called on first event 
    * @return false on error. 
    */
-  virtual Bool_t  InitializeSubs();
+  virtual Bool_t  SetupForData();
 
   Bool_t fEnableLowFlux;// Whether to use low-flux specific code
   Bool_t fFirstEvent;   // Whether the event is the first seen 
@@ -216,7 +216,7 @@ protected:
   TList* fList; // Output list 
   Int_t fDebug; // Debug flag
 
-  ClassDef(AliForwardQATask,1) // Forward QA class
+  ClassDef(AliForwardQATask,2) // Forward QA class
 };
 
 #endif

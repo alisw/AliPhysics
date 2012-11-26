@@ -945,7 +945,7 @@ void DrawSteps(const TCollection* forward, TCanvas* can)
   FixStack(rings,	"dN/d#eta per ring",            23);
   
   TVirtualPad* body = can->cd(2);
-  body->Divide(2,3);
+  body->Divide(2,3,0,0);
   for (Int_t step = 1; step <= 6; step++) { 
     DrawStep(deltas, nchs, prims, rings, dndeta, body, step);
   }
@@ -954,22 +954,23 @@ void DrawSteps(const TCollection* forward, TCanvas* can)
 
 
 //____________________________________________________________________
-void DrawResults(const TCollection* forward, TCanvas* can)
+void DrawResults(const TCollection* forward, 
+		 const TCollection* forwardRes, TCanvas* can)
 {
   // MakeChapter(can, "Results");
 
   TVirtualPad* body = can->cd(2);
-  body->Divide(2,3);
+  body->Divide(2,3, .1, 0);
 
-  TCollection* c = GetCollection(forward, "ringResults");
+  TCollection* c = GetCollection(forwardRes, "ringResults");
   if (!c) return;
   
   DrawInPad(body, 1, GetStack(c, "all"), "nostack");
-  DrawInPad(body, 2, GetH1(forward, "dNdeta"));
-  DrawInPad(body, 3, GetH1(forward, "dNdeta_"));
-  DrawInPad(body, 4, GetH1(forward, "norm"));
-  DrawInPad(body, 4, GetH1(forward, "phi"), "same", 0x10);
-  DrawInPad(body, 5, GetH1(forward, "d2Ndetadphi"), "colz");
+  DrawInPad(body, 2, GetH1(forwardRes, "dNdeta"));
+  DrawInPad(body, 3, GetH1(forwardRes, "dNdeta_"));
+  DrawInPad(body, 4, GetH1(forwardRes, "norm"));
+  DrawInPad(body, 4, GetH1(forwardRes, "phi"), "same", 0x10);
+  DrawInPad(body, 5, GetH1(forward,    "d2Ndetadphi"), "colz");
   
   PrintCanvas(can, "Results");
 }
@@ -1003,8 +1004,11 @@ void DrawAODSummary(const TString& filename="forward.root")
   DrawHistCollector(forward, c);
   
   // --- Do the results ----------------------------------------------
-  DrawSteps(forward, c);
-  DrawResults(forward, c);
+  TCollection* forwardRes = GetCollection(file, "ForwardResults");
+  if (!forwardRes) return;
+
+  DrawSteps(forwardRes, c);
+  DrawResults(forward, forwardRes, c);
   
   CloseCanvas(c);
 }

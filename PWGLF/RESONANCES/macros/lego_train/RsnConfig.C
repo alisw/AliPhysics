@@ -119,9 +119,9 @@ Bool_t RsnLoadMacroFromConfig(TString macro,TString path="") {
       return kTRUE;
    }
 
-   if (!gSystem->AccessPathName(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())))) {
-      gROOT->LoadMacro(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
-      Printf("Macro loaded from %s ...",gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+   if (!gSystem->AccessPathName(gSystem->ExpandPathName(TString::Format("%s/%s",lego_path.Data(),macro.Data()).Data()))) {
+      gROOT->LoadMacro(gSystem->ExpandPathName(TString::Format("%s/%s",lego_path.Data(),macro.Data()).Data()));
+      Printf("Macro loaded from %s ...",gSystem->ExpandPathName(TString::Format("%s/%s",lego_path.Data(),macro.Data()).Data()));
       return kTRUE;
    }
 

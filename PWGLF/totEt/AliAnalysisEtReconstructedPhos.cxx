@@ -83,7 +83,7 @@ void AliAnalysisEtReconstructedPhos::Init()
     
     fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
     fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
-
+    fSelector = new AliAnalysisEtSelectorPhos(fCuts);
 
 }
 
@@ -97,5 +97,4 @@ bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, D
 void AliAnalysisEtReconstructedPhos::CreateHistograms()
 { // add some extra histograms & objects to the ones from base class
   AliAnalysisEtReconstructed::CreateHistograms();
-  fSelector = new AliAnalysisEtSelectorPhos(fCuts);
 }

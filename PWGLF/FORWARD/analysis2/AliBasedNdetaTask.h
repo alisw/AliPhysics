@@ -863,7 +863,7 @@ protected:
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
     Int_t    fDebug;    // Debug level 
 
-    ClassDef(CentralityBin,2); // A centrality bin 
+    ClassDef(CentralityBin,3); // A centrality bin 
   };
   TList*          fSums;         // Container of sums 
   TList*          fOutput;       // Container of outputs 
@@ -888,7 +888,7 @@ protected:
   TObject*        fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
   
-  ClassDef(AliBasedNdetaTask,9); // Determine charged particle density
+  ClassDef(AliBasedNdetaTask,10); // Determine charged particle density
 };
 
 #endif

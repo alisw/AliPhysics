@@ -208,7 +208,7 @@ AliFMDEnergyFitter::GetRingHistos(UShort_t d, Char_t r) const
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::Init(const TAxis& eAxis)
+AliFMDEnergyFitter::SetupForData(const TAxis& eAxis)
 {
   // 
   // Initialise the task
@@ -231,7 +231,7 @@ AliFMDEnergyFitter::Init(const TAxis& eAxis)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next())))
-    o->Init(fEtaAxis, fCentralityAxis, fMaxE, fNEbins, fUseIncreasingBins);
+    o->SetupForData(fEtaAxis, fCentralityAxis, fMaxE, fNEbins, fUseIncreasingBins);
 }  
 //____________________________________________________________________
 void
@@ -415,7 +415,7 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::DefineOutput(TList* dir)
+AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
 {
   // 
   // Define the output histograms.  These are put in a sub list of the
@@ -436,7 +436,7 @@ AliFMDEnergyFitter::DefineOutput(TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->Output(d);
+    o->CreateOutputObjects(d);
   }
 }
 //____________________________________________________________________
@@ -815,7 +815,7 @@ AliFMDEnergyFitter::RingHistos::MakeTotal(const char* name,
 		     
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis, 
+AliFMDEnergyFitter::RingHistos::SetupForData(const TAxis& eAxis, 
 				     const TAxis& /* cAxis */,
 				     Double_t maxDE, Int_t nDEbins, 
 				     Bool_t useIncrBin)
@@ -1406,7 +1406,7 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::RingHistos::Output(TList* dir)
+AliFMDEnergyFitter::RingHistos::CreateOutputObjects(TList* dir)
 {
   // 
   // Define outputs

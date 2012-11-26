@@ -146,7 +146,7 @@ public:
    * @param vtxAxis  @f$ v_z@f$ axis 
    * @param etaAxis  @f$ \eta@f$ axis 
    */  
-  virtual void Init(const TAxis& vtxAxis,
+  virtual void SetupForData(const TAxis& vtxAxis,
 		    const TAxis& etaAxis);
   /** 
    * Do the calculations 
@@ -167,7 +167,7 @@ public:
    * 
    * @param dir List to write in
    */  
-  virtual void DefineOutput(TList* dir);
+  virtual void CreateOutputObjects(TList* dir);
   /** 
    * Set the merge method 
    * 
@@ -383,7 +383,7 @@ protected:
   UShort_t    fSkipFMDRings;    // FMD rings to ignore     
   Bool_t      fBgAndHitMaps;    // Make hit/bg maps or not
   
-  ClassDef(AliFMDHistCollector,3); // Calculate Nch density 
+  ClassDef(AliFMDHistCollector,4); // Calculate Nch density 
 };
 
 //____________________________________________________________________

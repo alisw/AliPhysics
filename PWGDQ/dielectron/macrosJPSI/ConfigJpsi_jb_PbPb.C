@@ -111,8 +111,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 
   // histogram setup
   InitHistograms(die,cutDefinition);
-  printf(" Add %d types and %03d histos to the manager \n",die->GetHistogramList()->GetEntries(),
-	 0/*die->GetHistoManager()->GetList()->GetEntries()*/);
+  printf(" Add %d class types to the histo manager \n",die->GetHistogramList()->GetEntries());
 
   // cut setup
   SetupTrackCuts(die,cutDefinition);
@@ -129,10 +128,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // HF arrays setup
-  //  if(cutDefinition <  kEtaGap01 ) {
-    InitHF(die,cutDefinition);
-    //}
-
+  InitHF(die,cutDefinition);
 
   // bgrd estimators
   if(!hasMC) {
@@ -181,9 +177,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   }
 
   // prefilter settings
-  //die->SetNoPairing();
-  //die->SetPreFilterAllSigns();
   die->SetPreFilterUnlikeOnly();
+  //die->SetPreFilterAllSigns();
+  //die->SetNoPairing();
 
   // setup eta correction
   //  if(isESD && list.Contains("LHC10h")) SetEtaCorrection();
@@ -352,7 +348,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   ////////////////////////////////// DATA + MC
   // pid cuts TPC + TOF & TRD
   pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-  
+
   if(cutDefinition==kTOF || cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2D)
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
 
@@ -413,7 +409,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //
 
   // booleans for histo selection
-  Bool_t bHistEvts = kFALSE, bHistPair = kFALSE, bHistPairME = kFALSE, bHistFlow = kFALSE, bHistFlowQA=kFALSE;
+  Bool_t bHistTrackQA=kFALSE, bHistEvts = kFALSE, bHistPair = kFALSE, bHistPairME = kFALSE, bHistFlow = kFALSE, bHistFlowQA=kFALSE;
   switch (cutDefinition) {
   case kTPC:
   case kTOF:      bHistEvts=kTRUE; bHistFlow=kTRUE; bHistPair=kTRUE; bHistPairME=kTRUE; break;
@@ -455,12 +451,28 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","RunNumber","Events per run;run;events",
 			  GetRunNumbers(),
 			  AliDielectronVarManager::kRunNumber);
-    histos->UserHistogram("Event","VtxZ","Vertex Z;z (cm)", 300,-15.,15.,
+    histos->UserHistogram("Event","RunNumber_VtxZ",";run;z_{vtx} (cm)",
+			  GetRunNumbers(), AliDielectronHelper::MakeLinBinning(150,-15.,15.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kZvPrim);
+    histos->UserHistogram("Event","RunNumber_Multiplicity",";run;multiplicity V0",
+			  GetRunNumbers(), AliDielectronHelper::MakeLinBinning(250,0.,25000.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kMultV0);
+    histos->UserHistogram("Event","RunNumber_v0ArpH2",";run;#Psi_{2}^{V0A} (rad.)",
+			  GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kv0ArpH2);
+    histos->UserHistogram("Event","RunNumber_v0CrpH2",";run;#Psi_{2}^{V0C} (rad.)",
+			  GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kv0CrpH2);
+    histos->UserHistogram("Event","RunNumber_TPCrpH2",";run;#Psi_{2}^{TPC} (rad.)",
+			  GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kTPCrpH2);
+
+    histos->UserHistogram("Event","VtxZ","Vertex Z;z_{vtx} (cm)", 300,-15.,15.,
 			  AliDielectronVarManager::kZvPrim);
     histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0;events", 500,0.,25000.,
 			  AliDielectronVarManager::kMultV0);
     histos->UserHistogram("Event","Cent_Mult","Centrality vs. Multiplicity;centrality (%);Multiplicity V0",
-			  100,0.,100., 500,0.,25000.,
+			  100,0.,100., 250,0.,25000.,
 			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kMultV0);
     histos->UserProfile("Event","Cent_Nacc", "accepted tracks;centrality (%)",
 			AliDielectronVarManager::kNacc,
@@ -593,6 +605,89 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   } //hist: flowQA
 
+
+  // RUN QA
+  if(bHistTrackQA) {
+
+    // Event QA
+    histos->UserHistogram("Event","RunNumber","Events per run;run;#events",
+			  GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","RunNumber-Centrality",";run;#LTcentrality#GT (%)", AliDielectronVarManager::kCentrality,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","RunNumber-CentralitySPD",";run;#LTcentrality_{SPD}#GT (%)", AliDielectronVarManager::kCentralitySPD,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","RunNumber-VtxZ",";run;#LTz_{vtx}#GT (cm)", AliDielectronVarManager::kZvPrim,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","RunNumber-sigVtxZ",";run;#LTRMS(z_{vtx})#GT (cm)", AliDielectronVarManager::kZvPrim,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber, "s;-10;10");
+
+    //Track classes
+    histos->SetReservedWords("Track");
+    for (Int_t i=0; i<2; ++i) histos->AddClass(Form("Track_%s",AliDielectron::TrackClassName(i)));
+
+    histos->UserProfile("Track","RunNumber-Pt",";run;#LTp_{T}#GT (GeV/c)", AliDielectronVarManager::kPt,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber-Eta",";run;#LT#eta#GT", AliDielectronVarManager::kEta,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber-Phi",";run;#LT#varphi#GT", AliDielectronVarManager::kPhi,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber-ImpactParXY",";run;#LTdXY#GT (cm)", AliDielectronVarManager::kImpactParXY,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber-ImpactParZ",";run;#LTdZ#GT (cm)", AliDielectronVarManager::kImpactParZ,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    // TPC
+    histos->UserProfile("Track","RunNumber-NclsTPC",";run;#LTN_{cls}^{TPC}#GT", AliDielectronVarManager::kNclsTPC,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber_Cent-NclsTPC",";run;centrality (%);#LTN_{cls}^{TPC}#GT", AliDielectronVarManager::kNclsTPC,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(32, 0.,80.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","RunNumber_Eta-NclsTPC",";run;#eta;#LTN_{cls}^{TPC}#GT", AliDielectronVarManager::kNclsTPC,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(20, -1.,+1.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kEta);
+    histos->UserProfile("Track","RunNumber_Phi-NclsTPC",";run;#varphi;#LTN_{cls}^{TPC}#GT", AliDielectronVarManager::kNclsTPC,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(18, 0.,TMath::Pi()),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kPhi);
+
+    // ITS
+    histos->UserProfile("Track","RunNumber-NclsITS",";run;#LTN_{cls}^{ITS}#GT", AliDielectronVarManager::kNclsITS,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber_Cent-NclsITS",";run;centrality (%);#LTN_{cls}^{ITS}#GT", AliDielectronVarManager::kNclsITS,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(32, 0.,80.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","RunNumber_Eta-NclsITS",";run;#eta;#LTN_{cls}^{ITS}#GT", AliDielectronVarManager::kNclsITS,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(20, -1.,+1.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kEta);
+    histos->UserProfile("Track","RunNumber_Phi-NclsITS",";run;#varphi;#LTN_{cls}^{ITS}#GT", AliDielectronVarManager::kNclsITS,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(18, 0.,TMath::Pi()),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kPhi);
+
+    // TPC PID
+    histos->UserProfile("Track","RunNumber-TPCnSigmaEle",";run;#LTn#sigma_{ele}^{TPC}#GT", AliDielectronVarManager::kTPCnSigmaEle,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber_Cent-TPCnSigmaEle",";run;centrality (%);#LTn#sigma_{ele}^{TPC}#GT", AliDielectronVarManager::kTPCnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(32, 0.,80.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","RunNumber_Eta-TPCnSigmaEle",";run;#eta;#LTn#sigma_{ele}^{TPC}#GT", AliDielectronVarManager::kTPCnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(20, -1.,+1.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kEta);
+    histos->UserProfile("Track","RunNumber_Phi-TPCnSigmaEle",";run;#varphi;#LTn#sigma_{ele}^{TPC}#GT", AliDielectronVarManager::kTPCnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(18, 0.,TMath::Pi()),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kPhi);
+    // TOF PID
+    histos->UserProfile("Track","RunNumber-TOFnSigmaEle",";run;#LTn#sigma_{ele}^{TOF}#GT", AliDielectronVarManager::kTOFnSigmaEle,
+			GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","RunNumber_Cent-TOFnSigmaEle",";run;centrality (%);#LTn#sigma_{ele}^{TOF}#GT", AliDielectronVarManager::kTOFnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(32, 0.,80.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","RunNumber_Eta-TOFnSigmaEle",";run;#eta;#LTn#sigma_{ele}^{TOF}#GT", AliDielectronVarManager::kTOFnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(20, -1.,+1.),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kEta);
+    histos->UserProfile("Track","RunNumber_Phi-TOFnSigmaEle",";run;#varphi;#LTn#sigma_{ele}^{TOF}#GT", AliDielectronVarManager::kTOFnSigmaEle,
+			GetRunNumbers(), AliDielectronHelper::MakeLinBinning(18, 0.,TMath::Pi()),
+			AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kPhi);
+  }
+
+
   if(bHistPair) {
     //Initialise histogram classes
     histos->SetReservedWords("Track;Pair");
@@ -661,7 +756,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Pair","Pt",";p_{T} (GeV/c);#pairs",
 			  400,0,20., AliDielectronVarManager::kPt);
     histos->UserHistogram("Pair","OpeningAngle",";opening angle (rad.);#pairs",
-                          100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
+                          100,0.,3.15, AliDielectronVarManager::kOpeningOBAngle);
     histos->UserHistogram("Pair","Chi2NDF",";#chi^{2}/NDF;#pairs",
                           100,0.,20, AliDielectronVarManager::kChi2NDF);
     histos->UserHistogram("Pair","PsiPair",";#psi;#pairs",
@@ -704,8 +799,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     }
   */
 
-  histos->UserHistogram("Track","TRDprobEle",";P_{ele}^{TRD};#tracks", 
-			100,0.,1.,            AliDielectronVarManager::kTRDprobEle);
+  //  histos->UserHistogram("Track","TRDprobEle",";P_{ele}^{TRD};#tracks", 
+  //			100,0.,1.,            AliDielectronVarManager::kTRDprobEle);
   
   die->SetHistogramManager(histos);
 }
@@ -833,12 +928,40 @@ void AddMCSignals(AliDielectron *die){
   directJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
   die->AddSignalMC(directJpsi);
   
-  AliDielectronSignalMC* conversionElePairs = new AliDielectronSignalMC("conversionElePairs","conversion electron pairs");  // pairs made from conversion (may be also from 2 different conversions)                                                                                                                                                                                             
+  AliDielectronSignalMC* conversionElePairs = new AliDielectronSignalMC("conversionElePairs","conversion electron pairs");  // pairs made from conversion (may be also from 2 different conversions)
   conversionElePairs->SetLegPDGs(11,-11);
   conversionElePairs->SetCheckBothChargesLegs(kTRUE,kTRUE);
   conversionElePairs->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
   conversionElePairs->SetMotherPDGs(22,22);
   //   die->AddSignalMC(conversionElePairs);
+
+  // prompt J/psi radiative channel
+  AliDielectronSignalMC* promptJpsiRad = new AliDielectronSignalMC("promptJpsiRad","Prompt J/psi Radiative");   // prompt J/psi (not from beauty decays)
+  promptJpsiRad->SetLegPDGs(11,-11);
+  promptJpsiRad->SetMotherPDGs(443,443);
+  promptJpsiRad->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+  promptJpsiRad->SetMothersRelation(AliDielectronSignalMC::kSame);
+  promptJpsiRad->SetFillPureMCStep(kTRUE);
+  promptJpsiRad->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  promptJpsiRad->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  promptJpsiRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  promptJpsiRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  promptJpsiRad->SetJpsiRadiative(AliDielectronSignalMC::kIsRadiative);
+  die->AddSignalMC(promptJpsiRad);
+
+  // prompt J/psi Non radiative channel
+  AliDielectronSignalMC* promptJpsiNonRad = new AliDielectronSignalMC("promptJpsiNonRad","Prompt J/psi non-Radiative");   // prompt J/psi (not from beauty decays)
+  promptJpsiNonRad->SetLegPDGs(11,-11);
+  promptJpsiNonRad->SetMotherPDGs(443,443);
+  promptJpsiNonRad->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+  promptJpsiNonRad->SetMothersRelation(AliDielectronSignalMC::kSame);
+  promptJpsiNonRad->SetFillPureMCStep(kTRUE);
+  promptJpsiNonRad->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  promptJpsiNonRad->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  promptJpsiNonRad->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  promptJpsiNonRad->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  promptJpsiNonRad->SetJpsiRadiative(AliDielectronSignalMC::kIsNotRadiative);
+  die->AddSignalMC(promptJpsiNonRad);
 }
 
 void SetEtaCorrection()
@@ -907,7 +1030,7 @@ TVectorD *GetRunNumbers() {
 
   TVectorD *vec = new TVectorD(2);
   (*vec)[0] = 0;
-  (*vec)[0] = 1;
+  (*vec)[1] = 1;
   return vec;
      
 }

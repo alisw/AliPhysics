@@ -70,19 +70,24 @@ AddTaskForwardMult(Bool_t   mc,
     what ^= AliForwardCorrectionManager::kDoubleHit;
     what ^= AliForwardCorrectionManager::kVertexBias;
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
+    what ^= AliForwardCorrectionManager::kAcceptance;
     if (!cm.Init(sys,sNN,field,mc,what))
       Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
   
   // --- Make the output container and connect it --------------------
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-  // outputfile += ":PWGLFforwardDnDeta"; 
-  // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,outputfile);
+			 AliAnalysisManager::kOutputContainer,
+			 AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer *output = 
+    mgr->CreateContainer("ForwardResults", TList::Class(), 
+			 AliAnalysisManager::kParamContainer, 
+			 AliAnalysisManager::GetCommonFileName());
+
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, histOut);
+  mgr->ConnectOutput(task, 2, output);
 
   return task;
 }

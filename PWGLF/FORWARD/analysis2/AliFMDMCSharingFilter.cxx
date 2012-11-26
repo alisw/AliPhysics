@@ -209,7 +209,7 @@ AliFMDMCSharingFilter::CompareResults(const AliESDFMD&  esd,
   
 //____________________________________________________________________
 void
-AliFMDMCSharingFilter::DefineOutput(TList* dir)
+AliFMDMCSharingFilter::CreateOutputObjects(TList* dir)
 {
   // 
   // Define the output histograms.  These are put in a sub list of the
@@ -219,7 +219,7 @@ AliFMDMCSharingFilter::DefineOutput(TList* dir)
   // Parameters:
   //    dir Directory to add to 
   //
-  AliFMDSharingFilter::DefineOutput(dir);
+  AliFMDSharingFilter::CreateOutputObjects(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   TList* cd = new TList;
   cd->SetOwner();
@@ -231,12 +231,12 @@ AliFMDMCSharingFilter::DefineOutput(TList* dir)
   cd->Add(fFMD3i);
   cd->Add(fFMD3o);
   cd->Add(fOperComp);
-  fTrackDensity.DefineOutput(d);
+  fTrackDensity.CreateOutputObjects(d);
 }
 
 //____________________________________________________________________
 void
-AliFMDMCSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
+AliFMDMCSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -245,7 +245,7 @@ AliFMDMCSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    dir     Where the output is 
   //    nEvents Number of events 
   //
-  AliFMDSharingFilter::ScaleHistograms(dir, nEvents);
+  AliFMDSharingFilter::Terminate(dir, output, nEvents);
 }
 
 //____________________________________________________________________

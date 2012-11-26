@@ -81,7 +81,7 @@ public:
    *
    * @param etaAxis Eta axis to use  -- not used
    */
-  virtual void Init(const TAxis& etaAxis);
+  virtual void SetupForData(const TAxis& etaAxis);
   /**
    * Do the calculations 
    * 
@@ -97,13 +97,13 @@ public:
    * @param dir     Where the output is stored
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
+  virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
    * @param dir List to write in
    */  
-  virtual void DefineOutput(TList* dir);
+  virtual void CreateOutputObjects(TList* dir);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -210,16 +210,16 @@ protected:
      * 
      * @param dir Where to put it 
      */
-    void Output(TList* dir);
+    void CreateOutputObjects(TList* dir);
     /** 
      * Scale the histograms to the total number of events 
      * 
      * @param dir     where the output is stored
      * @param nEvents Number of events 
      */
-    void ScaleHistograms(TList* dir, Int_t nEvents);
+    void Terminate(TList* dir, Int_t nEvents);
     TH2D*     fDensity;      // Distribution primary Nch
-    ClassDef(RingHistos,1);
+    ClassDef(RingHistos,2);
   };
   /** 
    * Get the ring histogram container 
@@ -247,7 +247,7 @@ protected:
   Bool_t   fUseMergingEfficiency; // Whether to use the merging efficiency
   Int_t    fDebug;                //  Debug level 
 
-  ClassDef(AliFMDCorrector,3); // Correct the inclusive d2N/detadphi
+  ClassDef(AliFMDCorrector,4); // Correct the inclusive d2N/detadphi
 };
 
 #endif

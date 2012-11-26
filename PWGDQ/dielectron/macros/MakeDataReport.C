@@ -404,8 +404,74 @@ fPPio->Draw("same");
   TF1 f("fP","-8*exp(-0.6*x)",0,40);
 f.Draw("same")
 
+//Unbinned fit
+
+RooWorkspace w("w",kTRUE);
+w.factory("CBShape::cb(M[0,5],x0[0],sigma[.04],alpha[1],n[1])")
+RooRealVar cut("cut","cut")
+RooDataSet data("data","data",c,w::M,"cut")
+
+
+
+abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3&&(Leg1_TPC_nSigma_Pions)>=3.5&&(Leg2_TPC_nSigma_Pions)>=3.5&&(Leg1_TPC_nSigma_Protons)>=3.0&&(Leg2_TPC_nSigma_Protons)>=3.0&&abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9&&Leg1_NclsTPC>=70&&Leg2_NclsTPC>=70&&Leg1_Pt>=1&&Leg2_Pt>=1&&abs(Y)<0.9&&Leg1_ITSLayerFirstCls<2&&Leg2_ITSLayerFirstCls<2
+*/
+
+/*
+c=Pair
+c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
+c->SetAlias("cutPi","(Leg1_TPC_nSigma_Pions)>=3.5&&(Leg2_TPC_nSigma_Pions)>=3.5");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>=1.5&&(Leg2_TPC_nSigma_Protons)>=1.5");
+// c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>=3.&&(Leg2_TPC_nSigma_Protons)>=3.");
+c->SetAlias("pidSig","cutE&&cutPi&&cutP");
+
+c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9");
+c->SetAlias("LegNcl","Leg1_NclsTPC>=70&&Leg2_NclsTPC>=70");
+c->SetAlias("LegPt","Leg1_Pt>=.6&&Leg2_Pt>=.6");
+c->SetAlias("Rap","abs(Y)<0.9");
+c->SetAlias("QA","LegNcl&&LegEta&&Rap&&LegPt&&Rap");
+
+c->SetAlias("ITS1","Leg1_ITSLayerFirstCls<1&&Leg2_ITSLayerFirstCls<1")
+c->SetAlias("ITS2","Leg1_ITSLayerFirstCls<2&&Leg2_ITSLayerFirstCls<2")
+c->SetAlias("ITS3","Leg1_ITSLayerFirstCls<3&&Leg2_ITSLayerFirstCls<3")
+c->SetAlias("ITS4","Leg1_ITSLayerFirstCls<4&&Leg2_ITSLayerFirstCls<4")
+c->SetAlias("ITS5","Leg1_ITSLayerFirstCls<5&&Leg2_ITSLayerFirstCls<5")
+c->SetAlias("ITS6","Leg1_ITSLayerFirstCls<6&&Leg2_ITSLayerFirstCls<6")
+
+c->SetAlias("cut","PairType==1 && QA && pidSig && ITS5");
+
+TFile f("/data/Work/data/pp2.76/m.root","recreate")
+TTree *tnew=c->CopyTree("cut")
+tnew->Write("Pair");
+f.Save()
+f.Close()
+
+c->SetMarkerStyle(20);
+c->SetMarkerSize(1);
+c->Draw("M>>hM(250,0.,5.)","cut","e");
+hM=hM
+hM->SetMarkerColor(kRed)
+hM->SetLineColor(kRed)
+
+c->SetAlias("cutLS","(PairType==0||PairType==2) && QA && pidSig && ITS5");
+
+c->Draw("M>>hMLS(250,0.,5.)","cutLS","esame");
+hMLS=hMLS
+hMLS->SetLineColor(kBlue);
+hMLS->SetMarkerStyle(27)
+Double_t factor=hM->Integral(hM->FindBin(3.201),hM->FindBin(4.9))/hMLS->Integral(hMLS->FindBin(3.201),hMLS->FindBin(4.9));
+printf("scale factor: %.2f\n",factor)
+hMLS->Scale(factor);
+
+hSub=(TH1*)hM->Clone("hSub");
+hSub->Add(hMLS,-1);
+hSub->SetLineColor(kBlack);
+hSub->SetMarkerColor(kBlack);
+hSub->Draw("same")
+
+hSub->Integral(hSub->FindBin(2.961),hSub->FindBin(3.159))
 
 */
+
 
 
 /*
@@ -413,45 +479,142 @@ f.Draw("same")
 // Default
 //
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.5&&(Leg2_TPC_nSigma_Protons)>3.5");
+c->SetAlias("cutPi","(Leg1_TPC_nSigma_Pions)>=3.5&&(Leg2_TPC_nSigma_Pions)>=3.5");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>=3&&(Leg2_TPC_nSigma_Protons)>=3");
 c->SetAlias("pidSig","cutE&&cutPi&&cutP");
 
 c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9");
-c->SetAlias("LegNcl","Leg1_NclsTPC>70&&Leg2_NclsTPC>70");
-c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
+c->SetAlias("LegNcl","Leg1_NclsTPC>=70&&Leg2_NclsTPC>=70");
+c->SetAlias("LegPt","Leg1_Pt>=.6&&Leg2_Pt>=0.6");
 c->SetAlias("Rap","abs(Y)<0.9");
-c->SetAlias("QA","LegNcl&&LegEta&&Rap&&LegPt");
+c->SetAlias("QA","LegNcl&&LegEta&&Rap&&LegPt&&Rap");
 
-c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1");
+c->SetAlias("cutSigN","Leg2_TPCsignalN>=Leg2_NclsTPC&&Leg1_TPCsignalN>=Leg1_NclsTPC");
+c->SetAlias("etaAdd","Leg1_Eta<0&&Leg2_Eta<0")
+c->SetAlias("ITS1","Leg1_ITSLayerFirstCls<1&&Leg2_ITSLayerFirstCls<1")
+c->SetAlias("ITS2","Leg1_ITSLayerFirstCls<2&&Leg2_ITSLayerFirstCls<2")
+c->SetAlias("ITS3","Leg1_ITSLayerFirstCls<3&&Leg2_ITSLayerFirstCls<3")
+c->SetAlias("ITS4","Leg1_ITSLayerFirstCls<4&&Leg2_ITSLayerFirstCls<4")
+c->SetAlias("ITS5","Leg1_ITSLayerFirstCls<5&&Leg2_ITSLayerFirstCls<5")
+c->SetAlias("ITS6","Leg1_ITSLayerFirstCls<6&&Leg2_ITSLayerFirstCls<6")
 
-c->SetAlias("cut","PairType==1&&QA&&pidSig");
+c->SetAlias("cut","PairType==1 && QA && pidSig");
 
+c->SetMarkerStyle(20);
+c->SetMarkerSize(.5);
 c->Draw("M>>hM(125,0.,5.)","cut","e");
+c->Draw("M>>hM1(125,0.,5.)","cut&&ITS1","esame"); hM1->SetLineColor(kRed); hM1->SetMarkerColor(kRed);
+c->Draw("M>>hM2(125,0.,5.)","cut&&ITS2","esame"); hM2->SetLineColor(kBlue); hM2->SetMarkerColor(kBlue);
+c->Draw("M>>hM3(125,0.,5.)","cut&&ITS3","esame"); hM3->SetLineColor(kGreen);  hM3->SetMarkerColor(kGreen);
+c->Draw("M>>hM4(125,0.,5.)","cut&&ITS4","esame"); hM4->SetLineColor(kMagenta);  hM4->SetMarkerColor(kMagenta);
+c->Draw("M>>hM5(125,0.,5.)","cut&&ITS5","esame"); hM5->SetLineColor(kYellow);  hM5->SetMarkerColor(kYellow);
+c->Draw("M>>hM6(125,0.,5.)","cut&&ITS6","esame"); hM6->SetLineColor(kAzure);  hM6->SetMarkerColor(kAzure);
+
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&Leg1_ITSLayerFirstCls<1&&Leg2_ITSLayerFirstCls<1");
+c->Draw("M>>hM1(125,0.,5.)","cut","esame");
+hM1->SetMarkerColor(kBlue); hM1->SetLineColor(kBlue)
+
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&Leg1_ITSLayerFirstCls<2&&Leg2_ITSLayerFirstCls<2&&Run!=146805");
+c->Draw("M>>hM2(125,0.,5.)","cut","esame");
+hM2->SetMarkerColor(kMagenta); hM2->SetLineColor(kMagenta); hM2->SetMarkerStyle(20);
+
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&Leg1_ITSLayerFirstCls<5&&Leg2_ITSLayerFirstCls<5");
+c->Draw("M>>hM3(125,0.,5.)","cut","esame");
+hM3->SetMarkerColor(kGreen); hM3->SetLineColor(kGreen)
+
+//
+c->SetMarkerColor(kBlack); c->SetLineColor(kBlack); c->Draw("M>>hM(125,0.,5.)","cut","e");
+new TCanvas; c->SetMarkerColor(kBlue); c->SetLineColor(kBlue); c->Draw("M>>hM2(125,0.01,5.01)","cut","e");
+new TCanvas; c->SetMarkerColor(kRed); c->SetLineColor(kRed); c->Draw("M>>hM3(125,0.02,5.02)","cut","e");
+new TCanvas; c->SetMarkerColor(kGreen); c->SetLineColor(kGreen); c->Draw("M>>hM4(125,0.03,5.03)","cut","e");
 
 
 
+// trd cut
+
+c->SetAlias("stp","1./9.*TMath::Pi()")
+c->SetAlias("trdcut","((Leg1_Phi>1.5*stp&&Leg1_Phi<5.5*stp || Leg1_Phi>9.5*stp&&Leg1_Phi<16.5*stp) && (Leg2_Phi>1.5*stp&&Leg2_Phi<5.5*stp || Leg2_Phi>9.5*stp&&Leg2_Phi<16
+.5*stp))")
+
+c->SetAlias("trdcutn","(!(Leg1_Phi>1.5*stp&&Leg1_Phi<5.5*stp || Leg1_Phi>9.5*stp&&Leg1_Phi<16.5*stp) && !(Leg2_Phi>1.5*stp&&Leg2_Phi<5.5*stp || Leg2_Phi>9.5*stp&&Leg2_Phi
+<16.5*stp))")
+
+c->SetAlias("trdcutn2","((Leg1_Phi>1.5*stp&&Leg1_Phi<5.5*stp || Leg1_Phi>9.5*stp&&Leg1_Phi<16.5*stp) && !(Leg2_Phi>1.5*stp&&Leg2_Phi<5.5*stp || Leg2_Phi>9.5*stp&&Leg2_Phi<16.5*stp))")
+
+c->SetAlias("trdcutn3","(!(Leg1_Phi>1.5*stp&&Leg1_Phi<5.5*stp || Leg1_Phi>9.5*stp&&Leg1_Phi<16.5*stp) && (Leg2_Phi>1.5*stp&&Leg2_Phi<5.5*stp || Leg2_Phi>9.5*stp&&Leg2_Phi<16.5*stp))")
+
+c1->Divide(2,2)
+c1->cd(1)
+c->Draw("M>>hM1(125,0.,5.)","cut&&trdcut","e");
+c1->cd(2)
+c->Draw("M>>hM2(125,0.,5.)","cut&&trdcutn","e");
+c1->cd(3)
+c->Draw("M>>hM3(125,0.,5.)","cut&&trdcutn2","e");
+c1->cd(4)
+c->Draw("M>>hM4(125,0.,5.)","cut&&trdcutn3","e");
+
+
+c->SetAlias("notrd","((Leg1_TrackStatus&512)==0 && (Leg2_TrackStatus&512)==0)")
+c->SetAlias("withtrd","((Leg1_TrackStatus&512)==512 && (Leg2_TrackStatus&512)==512)")
+
+c->SetAlias("notrd2","((Leg1_TrackStatus&512)==0 && (Leg2_TrackStatus&512)==512)")
+c->SetAlias("notrd3","((Leg1_TrackStatus&512)==512 && (Leg2_TrackStatus&512)==0)")
+
+c3->Divide(2,2)
+c3->cd(1)
+c->Draw("M>>hM5(125,0.,5.)","cut&&notrd","e");
+c3->cd(2)
+c->Draw("M>>hM6(125,0.,5.)","cut&&withtrd","e");
+c3->cd(3)
+c->Draw("M>>hM7(125,0.,5.)","cut&&notrd2","e");
+c3->cd(4)
+c->Draw("M>>hM8(125,0.,5.)","cut&&notrd3","e");
+
+//pt ele only pid
+c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-2.&&Leg1_TPC_nSigma_Electrons<3&&Leg2_TPC_nSigma_Electrons>-2.&&Leg2_TPC_nSigma_Electrons<3");
+c->SetAlias("pidSig","cutE");
+c->SetAlias("LegPt","Leg1_Pt>1.2&&Leg2_Pt>1.2");
+
+c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9");
+c->SetAlias("LegNcl","Leg1_NclsTPC>70&&Leg2_NclsTPC>70");
+c->Draw("M>>hM(125,0.,5.)","cut","e");
 
 //---------------------
 
-c->SetAlias("cut","PairType==1")
+c->SetAlias("cut","PairType==1&&QA")
 
 
 c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
 
 
 c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
-c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
+c->SetAlias("LegPt","Leg1_Pt>1.5&&Leg2_Pt>1.5");
 
+//distance to chamber edge
+c->SetAlias("tgs","pi/180.*20");
+c->SetAlias("ed1","Leg1_Phi-int(Leg1_Phi/tgs+.5)*tgs");
+c->SetAlias("ed2","Leg2_Phi-int(Leg2_Phi/tgs+.5)*tgs");
+
+c->Draw("M:abs(ed1)>>hMd(15,0.,.18,65,0.,5.2)","cut","colz");
 
 
 //--------PID
 //-Param dEdx
 c->SetAlias("cutPipardEdx","Leg1_TPC_signal>75-20*exp(-.7*Leg1_P_InnerParam)&&Leg2_TPC_signal>75-20*exp(-.7*Leg2_P_InnerParam)")
+
+//require TOF PID
   c->SetAlias("TOFe1r","(((Leg1_TrackStatus&32768)==32768)&&abs(Leg1_TOF_nSigma_Electrons)<3)");
   c->SetAlias("TOFe2r","(((Leg2_TrackStatus&32768)==32768)&&abs(Leg2_TOF_nSigma_Electrons)<3)");
 
+//if avail TOF PID
+  c->SetAlias("TOFe1","((Leg1_TrackStatus&32768)==0)||(((Leg1_TrackStatus&32768)==32768)&&abs(Leg1_TOF_nSigma_Electrons)<3)");
+  c->SetAlias("TOFe2","((Leg2_TrackStatus&32768)==0)||(((Leg2_TrackStatus&32768)==32768)&&abs(Leg2_TOF_nSigma_Electrons)<3)");
+  c->SetAlias("TOFe","TOFe1&&TOFe2");
+
+
 c->SetAlias("cutPspecial","(abs(Leg1_TPC_nSigma_Protons)>3||(abs(Leg1_TPC_nSigma_Protons)<=3&&TOFe1r))&&(abs(Leg2_TPC_nSigma_Protons)>3||(abs(Leg2_TPC_nSigma_Protons)<=3&&TOFe2r))")
+
+c->SetAlias("cutP","(Leg1_Pt>1.2||TOFe1r)) && (Leg2_Pt>1.2 || TOFe2r)")
 
 //-- nsigma
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
@@ -560,8 +723,8 @@ c->SetAlias("cut","PairType==1&&QA&&pidSig");
 c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
 
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+// c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+// c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
 
 c->Draw("M>>hM(601,-.015,6.005)","cut","e");
 
@@ -668,7 +831,7 @@ c->Draw("Leg2_TPC_signal:Leg2_P_InnerParam>>+sigTPC","cut","colz")
 
 
 c->Draw("Leg1_TPC_nSigma_Electrons:Leg1_P_InnerParam>>nSigE","cut","colz")
-c->Draw("Leg2_TPC_nSigma_Electrons:Leg2_P_InnerParam>>+nSigE","cut","colz")
+c->Draw("Leg2_TPC_nSigma_Electrons:Leg2_P_InnerParam>>+nSigE","cut","colzsame")
 
 c->Draw("Leg1_TPC_nSigma_Muos:Leg1_P_InnerParam>>nSigMu","cut","goff")
 c->Draw("Leg2_TPC_nSigma_Muons:Leg1_P_InnerParam>>nSigMu","cut","goff")
@@ -680,8 +843,8 @@ c->Draw("Leg2_TPC_nSigma_Pions:Leg2_P_InnerParam>>+nSigPi","cut","colz")
 c->Draw("Leg1_TPC_nSigma_Kaons:Leg1_P_InnerParam>>nSigK","cut","goff")
 c->Draw("Leg2_TPC_nSigma_Kaons:Leg2_P_InnerParam>>+nSigK","cut","colz")
 
-c->Draw("Leg1_TPC_nSigma_Protons+.5:Leg1_P_InnerParam>>nSigP","cut","goff")
-c->Draw("Leg2_TPC_nSigma_Protons+.5:Leg2_P_InnerParam>>+nSigP","cut","colz")
+c->Draw("Leg1_TPC_nSigma_Protons:Leg1_P_InnerParam>>nSigP","cut","goff")
+c->Draw("Leg2_TPC_nSigma_Protons:Leg2_P_InnerParam>>+nSigP","cut","colz")
 
 
 
@@ -692,9 +855,11 @@ c->Draw("Leg2_TOF_nSigma_Electrons:Leg2_P_InnerParam>>+nSigE","cut","colz")
 c->Draw("Leg1_TOF_nSigma_Protons:Leg1_P_InnerParam>>nSigP","cut","goff")
 c->Draw("Leg2_TOF_nSigma_Protons:Leg2_P_InnerParam>>+nSigP","cut","colz")
 
+c->SetScanField(0)
+c->Scan("M:EventInFile:Leg1_ID:Leg2_ID:File.GetString()","","colsize=1 col=.4f:6.d:5.d:5.d:130.s")
 
-Pair->SetScanField(0)
-Pair->Scan("EventInFile:File.GetString()","","colsize=1 col=3.d:100.s")
+c->Scan("1:Run:EventInFile:File.GetString()","","colsize=1 col=.2f:8.d:8.d:130.s");
+
 
 
 AliDielectronSignalFunc sig;
@@ -1152,5 +1317,63 @@ c->SetAlias("cutPioL2",Form("Leg2_TPC_nSigma_Electrons>(%f*%f+(AliExternalTrackP
 
 c->SetAlias("cutPro","cutProL1&&cutProL2");
 c->SetAlias("cutPio","cutPioL1&&cutPioL2");
+
+
+//
+// track in or out of TRD
+//
+c->SetAlias("TRD11","(Leg1_TrackStatus&512)==512 && (Leg2_TrackStatus&512)==512");
+c->SetAlias("TRD00","(Leg1_TrackStatus&512)==  0 && (Leg2_TrackStatus&512)==  0");
+c->SetAlias("TRD01","(Leg1_TrackStatus&512)==  0 && (Leg2_TrackStatus&512)==512");
+c->SetAlias("TRD10","(Leg1_TrackStatus&512)==512 && (Leg2_TrackStatus&512)==  0");
+
+TCanvas *c2=(TCanvas)gROOT->FindObject("c2");
+if (!c2) c2=new TCanvas("c2","c2");
+c2->Clear()
+c2->Divide(2,2);
+
+c->SetAlias("cut","PairType==1 && QA && pidSig && ITS2");
+
+TLine l;
+l.SetLineColor(kGray+2);
+// l.SetLineWidth(2);
+TBox b;
+b.SetFillColor(kGray);
+b.SetFillStyle(3004);
+
+c2->cd(1);
+c->Draw("M>>hM11(125,0.,5.)","cut&TRD11","e");
+b.DrawBox(2.92,0,3.16,gPad->GetUymax())
+l.DrawLine(3.095,0,3.095,gPad->GetUymax());
+c2->cd(2);
+c->Draw("M>>hM10(125,0.,5.)","cut&TRD10","e");
+b.DrawBox(2.92,0,3.16,gPad->GetUymax())
+l.DrawLine(3.095,0,3.095,gPad->GetUymax());
+c2->cd(3);
+c->Draw("M>>hM01(125,0.,5.)","cut&TRD01","e");
+b.DrawBox(2.92,0,3.16,gPad->GetUymax())
+l.DrawLine(3.095,0,3.095,gPad->GetUymax());
+c2->cd(4);
+c->Draw("M>>hM00(125,0.,5.)","cut&TRD00","e");
+b.DrawBox(2.92,0,3.16,gPad->GetUymax())
+l.DrawLine(3.095,0,3.095,gPad->GetUymax());
+
+
+//
+// number of cluster in ITS
+//
+
+TH1F h("hITS","hITS",10,0,10);
+for (Int_t i=0; i<6; ++i){
+  c->Draw(Form("((Leg2_ITS_clusterMap&%d)==%d)*(%d+1)>>+hITS",i,i,i),"cut");
+}
+
+c->SetAlias("nclsITS1","((Leg2_ITS_clusterMap&1)==1) + ((Leg2_ITS_clusterMap&2)==2) + ((Leg2_ITS_clusterMap&4)==4) + ((Leg2_ITS_clusterMap&8)==8) + ((Leg2_ITS_clusterMap&16)==16) + ((Leg2_ITS_clusterMap&32)==32)")
+
+c->SetAlias("nclsITS2","((Leg1_ITS_clusterMap&1)==1) + ((Leg1_ITS_clusterMap&2)==2) + ((Leg1_ITS_clusterMap&4)==4) + ((Leg1_ITS_clusterMap&8)==8) + ((Leg1_ITS_clusterMap&16)==16) + ((Leg1_ITS_clusterMap&32)==32)")
+
+
+
+
 */
 

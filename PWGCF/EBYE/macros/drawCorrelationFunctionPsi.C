@@ -2,6 +2,63 @@ const Int_t numberOfCentralityBins = 8;
 TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
 const Int_t gRebin = 1;
+
+//____________________________________________________________//
+void drawCorrelationFunctionPsiAllPtCombinations(const char* filename = "AnalysisResults.root", 
+						 Int_t gCentrality = 1,
+						 Int_t gBit = -1,
+						 const char* gCentralityEstimator = 0x0,
+						 Bool_t kShowShuffled = kFALSE, 
+						 Bool_t kShowMixed = kTRUE, 
+						 Double_t psiMin = -0.5, 
+						 Double_t psiMax = 3.5){
+
+  // this could also be retrieved directly from AliBalancePsi
+  const Int_t kNPtBins = 16;
+  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+
+  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
+
+  for(Int_t iTrig = 0; iTrig < 2/*kNPtBins*/; iTrig++){
+    for(Int_t iAssoc = 0; iAssoc < 2/*kNPtBins*/; iAssoc++){
+      cout<<"================================================================="<<endl;
+      cout<<"PROCESS NOW: "<<endl; 
+      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
+      drawCorrelationFunctionPsi(filename,gCentrality,gBit,gCentralityEstimator,kShowShuffled,kShowMixed,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
+      cout<<"================================================================="<<endl;
+      cout<<endl;
+    }
+  }
+
+}
+
+//____________________________________________________________//
+void drawCorrelationFunctionsAllPtCombinations(const char* lhcPeriod = "LHC11h",
+					       Int_t gTrainID = 208,			      
+					       Int_t gCentrality = 1,
+					       Double_t psiMin = -0.5, Double_t psiMax = 3.5) 
+{
+
+ // this could also be retrieved directly from AliBalancePsi
+  const Int_t kNPtBins = 16;
+  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+
+  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
+
+  for(Int_t iTrig = 0; iTrig < kNPtBins; iTrig++){
+    for(Int_t iAssoc = 0; iAssoc < kNPtBins; iAssoc++){
+      cout<<"================================================================="<<endl;
+      cout<<"FIT NOW: "<<endl; 
+      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
+      drawCorrelationFunctions(lhcPeriod,gTrainID,gCentrality,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
+      cout<<"================================================================="<<endl;
+      cout<<endl;
+    }
+  }  
+
+}
+
+
 void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root", 
 				Int_t gCentrality = 1,
 				Int_t gBit = -1,
@@ -52,12 +109,10 @@ TList *GetListOfObjects(const char* filename,
 			const char *gCentralityEstimator,
 			Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
-  TList *listQA = 0x0;
   TList *listBF = 0x0;
-  TList *listBFShuffling = 0x0;
   
   //Open the file
-  TFile *f = TFile::Open(filename);
+  TFile *f = TFile::Open(filename,"UPDATE");
   if((!f)||(!f->IsOpen())) {
     Printf("The file %s is not found. Aborting...",filename);
     return listBF;
@@ -89,90 +144,106 @@ TList *GetListOfObjects(const char* filename,
     listBFName += "_Bit"; listBFName += gBit; }
   if(gCentralityEstimator) {
     listBFName += "_"; listBFName += gCentralityEstimator;}
-  listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
-  cout<<"======================================================="<<endl;
-  cout<<"List name: "<<listBF->GetName()<<endl;
-  //listBF->ls();
 
-  //Get the histograms
-  TString histoName;
-  if(kData == 0)
-    histoName = "fHistPV0M";
-  else if(kData == 1)
-    histoName = "fHistP_shuffleV0M";
-  else if(kData == 2)
-    histoName = "fHistPV0M";
-  AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
-  if(!fHistP) {
-    Printf("fHistP %s not found!!!",histoName.Data());
-    break;
+  // histograms were already retrieved (in first iteration)
+  if(dir->Get(Form("%s_histograms",listBFName.Data()))){
+    listBF = dynamic_cast<TList *>(dir->Get(Form("%s_histograms",listBFName.Data())));
   }
-  fHistP->FillParent(); fHistP->DeleteContainers();
 
-  if(kData == 0)
-    histoName = "fHistNV0M";
-  if(kData == 1)
-    histoName = "fHistN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNV0M";
-  AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistN) {
-    Printf("fHistN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistN->FillParent(); fHistN->DeleteContainers();
+  // histograms were not yet retrieved (this is the first iteration)
+  else{
+
+    listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
+    cout<<"======================================================="<<endl;
+    cout<<"List name: "<<listBF->GetName()<<endl;
+    //listBF->ls();
     
-  if(kData == 0)
-    histoName = "fHistPNV0M";
-  if(kData == 1)
-    histoName = "fHistPN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistPNV0M";
-  AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistPN) {
-    Printf("fHistPN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistPN->FillParent(); fHistPN->DeleteContainers();
+    //Get the histograms
+    TString histoName;
+    if(kData == 0)
+      histoName = "fHistPV0M";
+    else if(kData == 1)
+      histoName = "fHistP_shuffleV0M";
+    else if(kData == 2)
+      histoName = "fHistPV0M";
+    AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
+    if(!fHistP) {
+      Printf("fHistP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistP->FillParent(); fHistP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNV0M";
+    if(kData == 1)
+      histoName = "fHistN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNV0M";
+    AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistN) {
+      Printf("fHistN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistN->FillParent(); fHistN->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistPNV0M";
+    if(kData == 1)
+      histoName = "fHistPN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistPNV0M";
+    AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistPN) {
+      Printf("fHistPN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistPN->FillParent(); fHistPN->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNPV0M";
+    if(kData == 1)
+      histoName = "fHistNP_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNPV0M";
+    AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistNP) {
+      Printf("fHistNP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistNP->FillParent(); fHistNP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistPPV0M";
+    if(kData == 1)
+      histoName = "fHistPP_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistPPV0M";
+    AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistPP) {
+      Printf("fHistPP %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistPP->FillParent(); fHistPP->DeleteContainers();
+    
+    if(kData == 0)
+      histoName = "fHistNNV0M";
+    if(kData == 1)
+      histoName = "fHistNN_shuffleV0M";
+    if(kData == 2)
+      histoName = "fHistNNV0M";
+    AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
+    if(!fHistNN) {
+      Printf("fHistNN %s not found!!!",histoName.Data());
+      break;
+    }
+    fHistNN->FillParent(); fHistNN->DeleteContainers();
+    
+    dir->cd();
+    listBF->Write(Form("%s_histograms",listBFName.Data()), TObject::kSingleKey);
+    
+  }// first iteration
   
-  if(kData == 0)
-    histoName = "fHistNPV0M";
-  if(kData == 1)
-    histoName = "fHistNP_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNPV0M";
-  AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistNP) {
-    Printf("fHistNP %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistNP->FillParent(); fHistNP->DeleteContainers();
-
-  if(kData == 0)
-    histoName = "fHistPPV0M";
-  if(kData == 1)
-    histoName = "fHistPP_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistPPV0M";
-  AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistPP) {
-    Printf("fHistPP %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistPP->FillParent(); fHistPP->DeleteContainers();
-
-  if(kData == 0)
-    histoName = "fHistNNV0M";
-  if(kData == 1)
-    histoName = "fHistNN_shuffleV0M";
-  if(kData == 2)
-    histoName = "fHistNNV0M";
-  AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
-  if(!fHistNN) {
-    Printf("fHistNN %s not found!!!",histoName.Data());
-    break;
-  }
-  fHistNN->FillParent(); fHistNN->DeleteContainers();
+  f->Close();
   
   return listBF;
 }
@@ -311,7 +382,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".PositiveNegative.png";
-  cPN[0]->SaveAs(pngName.Data());
+  //cPN[0]->SaveAs(pngName.Data());
   
   if(listBFShuffled) {
     histoTitle = "(+-) shuffled | Centrality: "; 
@@ -342,7 +413,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositiveNegative.png";
-    cPN[1]->SaveAs(pngName.Data());
+    //cPN[1]->SaveAs(pngName.Data());
   }
 
   if(listBFMixed) {
@@ -374,7 +445,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositiveNegative.png";
-    cPN[2]->SaveAs(pngName.Data());
+    //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
     gHistPN[3] = dynamic_cast<TH2D *>(gHistPN[0]->Clone());
@@ -393,7 +464,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositiveNegative.png";
-    cPN[3]->SaveAs(pngName.Data());
+    //cPN[3]->SaveAs(pngName.Data());
   }
 
   //(-+)
@@ -425,7 +496,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".NegativePositive.png";
-  cNP[0]->SaveAs(pngName.Data());
+  //cNP[0]->SaveAs(pngName.Data());
 
   if(listBFShuffled) {
     histoTitle = "(-+) shuffled | Centrality: "; 
@@ -456,7 +527,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativePositive.png";
-    cNP[1]->SaveAs(pngName.Data());
+    //cNP[1]->SaveAs(pngName.Data());
   }
 
   if(listBFMixed) {
@@ -488,7 +559,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativePositive.png";
-    cNP[2]->SaveAs(pngName.Data());
+    //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
     gHistNP[3] = dynamic_cast<TH2D *>(gHistNP[0]->Clone());
@@ -507,7 +578,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativePositive.png";
-    cNP[3]->SaveAs(pngName.Data());
+    //cNP[3]->SaveAs(pngName.Data());
   }
   
   //(++)
@@ -539,7 +610,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".PositivePositive.png";
-  cPP[0]->SaveAs(pngName.Data());
+  //cPP[0]->SaveAs(pngName.Data());
   
   if(listBFShuffled) {
     histoTitle = "(++) shuffled | Centrality: "; 
@@ -570,7 +641,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositivePositive.png";
-    cPP[1]->SaveAs(pngName.Data());
+    //cPP[1]->SaveAs(pngName.Data());
   }
 
   if(listBFMixed) {
@@ -602,7 +673,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositivePositive.png";
-    cPP[2]->SaveAs(pngName.Data());
+    //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
     gHistPP[3] = dynamic_cast<TH2D *>(gHistPP[0]->Clone());
@@ -621,7 +692,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositivePositive.png";
-    cPP[3]->SaveAs(pngName.Data());
+    //cPP[3]->SaveAs(pngName.Data());
   }
 
   //(--)
@@ -653,7 +724,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   pngName += centralityArray[gCentrality-1]; 
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".NegativeNegative.png";
-  cNN[0]->SaveAs(pngName.Data());
+  //cNN[0]->SaveAs(pngName.Data());
 
   if(listBFShuffled) {
     histoTitle = "(--) shuffled | Centrality: "; 
@@ -684,7 +755,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativeNegative.png";
-    cNN[1]->SaveAs(pngName.Data());
+    //cNN[1]->SaveAs(pngName.Data());
   }
 
   if(listBFMixed) {
@@ -716,7 +787,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativeNegative.png";
-    cNN[2]->SaveAs(pngName.Data());
+    //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
     gHistNN[3] = dynamic_cast<TH2D *>(gHistNN[0]->Clone());
@@ -735,7 +806,398 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += centralityArray[gCentrality-1]; 
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".NegativeNegative.png";
-    cNN[3]->SaveAs(pngName.Data());
+    //cNN[3]->SaveAs(pngName.Data());
   }
+
+  //Write to output file
+  TString newFileName = "correlationFunction.Centrality";  
+  newFileName += gCentrality; newFileName += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+  else newFileName += "All.PttFrom";
+  newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+  newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptAssociatedMax); 
+  newFileName += ".root";
+  TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+  gHistPN[0]->SetName("gHistPNRaw"); gHistPN[0]->Write();
+  gHistNP[0]->SetName("gHistNPRaw"); gHistNP[0]->Write();
+  gHistPP[0]->SetName("gHistPPRaw"); gHistPP[0]->Write();
+  gHistNN[0]->SetName("gHistNNRaw"); gHistNN[0]->Write();
+  if(listBFShuffled) {
+    gHistPN[1]->SetName("gHistPNShuffled"); gHistPN[1]->Write();
+    gHistNP[1]->SetName("gHistNPShuffled"); gHistNP[1]->Write();
+    gHistPP[1]->SetName("gHistPPShuffled"); gHistPP[1]->Write();
+    gHistNN[1]->SetName("gHistNNShuffled"); gHistNN[1]->Write();
+  }
+  if(listBFMixed) {
+    gHistPN[2]->SetName("gHistPNMixed"); gHistPN[2]->Write();
+    gHistNP[2]->SetName("gHistNPMixed"); gHistNP[2]->Write();
+    gHistPP[2]->SetName("gHistPPMixed"); gHistPP[2]->Write();
+    gHistNN[2]->SetName("gHistNNMixed"); gHistNN[2]->Write();
+
+    gHistPN[3]->SetName("gHistPNCorrelationFunctions"); gHistPN[3]->Write();
+    gHistNP[3]->SetName("gHistNPCorrelationFunctions"); gHistNP[3]->Write();
+    gHistPP[3]->SetName("gHistPPCorrelationFunctions"); gHistPP[3]->Write();
+    gHistNN[3]->SetName("gHistNNCorrelationFunctions"); gHistNN[3]->Write();
+  }
+  newFile->Close();
+
+  // some cleaning
+  for(Int_t i = 0; i < 4; i++){
+
+    if(!listBFShuffled && i == 1) continue;
+    if(!listBFMixed && (i == 2 || i == 3)) continue;
+
+    if(gHistPP[i]) delete gHistPP[i];
+    if(gHistPN[i]) delete gHistPN[i];
+    if(gHistNP[i]) delete gHistNP[i];
+    if(gHistNN[i]) delete gHistNN[i];
+    
+    if(cPN[i]) delete cPN[i];
+    if(cNP[i]) delete cNP[i];
+    if(cPP[i]) delete cPP[i];
+    if(cNN[i]) delete cNN[i];
+  }
+
+  delete hP;
+  delete hN;
+  delete hPP;
+  delete hPN;
+  delete hNP;
+  delete hNN;
+
+  delete hPMixed;
+  delete hNMixed;
+  delete hPPMixed;
+  delete hPNMixed;
+  delete hNPMixed;
+  delete hNNMixed;
+
+  delete hPShuffled;
+  delete hNShuffled;
+  delete hPPShuffled;
+  delete hPNShuffled;
+  delete hNPShuffled;
+  delete hNNShuffled;
+
 }
 
+//____________________________________________________________//
+void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
+			      Int_t gTrainID = 208,			      
+			      Int_t gCentrality = 1,
+			      Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+			      Double_t ptTriggerMin = -1.,
+			      Double_t ptTriggerMax = -1.,
+			      Double_t ptAssociatedMin = -1.,
+			      Double_t ptAssociatedMax = -1.) {
+  //Macro that draws the charge dependent correlation functions
+  //for each centrality bin for the different pT of trigger and 
+  //associated particles
+  //Author: Panos.Christakoglou@nikhef.nl
+  TGaxis::SetMaxDigits(3);
+
+  //Get the input file
+  TString filename = "PbPb/"; filename += lhcPeriod; 
+  filename +="/Train"; filename += gTrainID;
+  filename +="/Centrality"; filename += gCentrality;
+  filename += "/correlationFunction.Centrality";
+  filename += gCentrality; filename += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
+  else filename += "All.PttFrom";
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += ".root";  
+
+  //Open the file
+  TFile *f = TFile::Open(filename.Data());
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found. Aborting...",filename);
+    return listBF;
+  }
+  //f->ls();
+  
+  //Latex
+  TString centralityLatex = "Centrality: ";
+  centralityLatex += centralityArray[gCentrality-1]; 
+  centralityLatex += "%";
+
+  TString psiLatex;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+  else 
+    psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
+ 
+  TString pttLatex = Form("%.1f",ptTriggerMin);
+  pttLatex += " < p_{T,trig} < "; pttLatex += Form("%.1f",ptTriggerMax);
+  pttLatex += " GeV/c";
+
+  TString ptaLatex = Form("%.1f",ptAssociatedMin);
+  ptaLatex += " < p_{T,assoc} < "; ptaLatex += Form("%.1f",ptAssociatedMax);
+  ptaLatex += " GeV/c";
+
+  TLatex *latexInfo1 = new TLatex();
+  latexInfo1->SetNDC();
+  latexInfo1->SetTextSize(0.045);
+  latexInfo1->SetTextColor(1);
+
+  TString pngName;
+
+  //============================================================//
+  //Get the +- correlation function
+  TH2D *gHistPN = dynamic_cast<TH2D *>(f->Get("gHistPNCorrelationFunctions"));
+  gHistPN->SetStats(kFALSE);
+  gHistPN->SetTitle("");
+  gHistPN->GetXaxis()->SetRangeUser(-1.45,1.45);
+  gHistPN->GetXaxis()->CenterTitle();
+  gHistPN->GetXaxis()->SetTitleOffset(1.2);
+  gHistPN->GetYaxis()->CenterTitle();
+  gHistPN->GetYaxis()->SetTitleOffset(1.2);
+  gHistPN->GetZaxis()->SetTitleOffset(1.2);
+  TCanvas *cPN = new TCanvas("cPN","",0,0,600,500);
+  cPN->SetFillColor(10); cPN->SetHighLightColor(10);
+  cPN->SetLeftMargin(0.15);
+  gHistPN->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
+
+  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
+  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+
+  pngName = "CorrelationFunction.Centrality"; 
+  pngName += centralityArray[gCentrality-1]; 
+  pngName += ".Psi"; 
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
+  else pngName += "All.PttFrom";
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".PositiveNegative.png";
+  cPN->SaveAs(pngName.Data());
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistPN);
+  //============================================================//
+  //Get the -+ correlation function
+  TH2D *gHistNP = dynamic_cast<TH2D *>(f->Get("gHistNPCorrelationFunctions"));
+  gHistNP->SetStats(kFALSE);
+  gHistNP->SetTitle("");
+  gHistNP->GetXaxis()->SetRangeUser(-1.45,1.45);
+  gHistNP->GetXaxis()->CenterTitle();
+  gHistNP->GetXaxis()->SetTitleOffset(1.2);
+  gHistNP->GetYaxis()->CenterTitle();
+  gHistNP->GetYaxis()->SetTitleOffset(1.2);
+  gHistNP->GetZaxis()->SetTitleOffset(1.2);
+  TCanvas *cNP = new TCanvas("cNP","",50,50,600,500);
+  cNP->SetFillColor(10); cNP->SetHighLightColor(10);
+  cNP->SetLeftMargin(0.15);
+  gHistNP->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
+
+  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
+  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+
+  pngName = "CorrelationFunction.Centrality"; 
+  pngName += centralityArray[gCentrality-1]; 
+  pngName += ".Psi"; 
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
+  else pngName += "All.PttFrom";
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".NegativePositive.png";
+  cNP->SaveAs(pngName.Data());
+
+  //============================================================//
+  //Get the ++ correlation function
+  TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
+  gHistPP->SetStats(kFALSE);
+  gHistPP->SetTitle("");
+  gHistPP->GetXaxis()->SetRangeUser(-1.45,1.45);
+  gHistPP->GetXaxis()->CenterTitle();
+  gHistPP->GetXaxis()->SetTitleOffset(1.2);
+  gHistPP->GetYaxis()->CenterTitle();
+  gHistPP->GetYaxis()->SetTitleOffset(1.2);
+  gHistPP->GetZaxis()->SetTitleOffset(1.2);
+  TCanvas *cPP = new TCanvas("cPP","",100,100,600,500);
+  cPP->SetFillColor(10); cPP->SetHighLightColor(10);
+  cPP->SetLeftMargin(0.15);
+  gHistPP->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
+
+  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
+  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+
+  pngName = "CorrelationFunction.Centrality"; 
+  pngName += centralityArray[gCentrality-1]; 
+  pngName += ".Psi"; 
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
+  else pngName += "All.PttFrom";
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".PositivePositive.png";
+  cPP->SaveAs(pngName.Data());
+
+  //============================================================//
+  //Get the -- correlation function
+  TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
+  gHistNN->SetStats(kFALSE);
+  gHistNN->SetTitle("");
+  gHistNN->GetXaxis()->SetRangeUser(-1.45,1.45);
+  gHistNN->GetXaxis()->CenterTitle();
+  gHistNN->GetXaxis()->SetTitleOffset(1.2);
+  gHistNN->GetYaxis()->CenterTitle();
+  gHistNN->GetYaxis()->SetTitleOffset(1.2);
+  gHistNN->GetZaxis()->SetTitleOffset(1.2);
+  TCanvas *cNN = new TCanvas("cNN","",150,150,600,500);
+  cNN->SetFillColor(10); cNN->SetHighLightColor(10);
+  cNN->SetLeftMargin(0.15);
+  gHistNN->DrawCopy("surf1fb");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();
+
+  latexInfo1->DrawLatex(0.44,0.88,centralityLatex.Data());
+  //latexInfo1->DrawLatex(0.44,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.82,pttLatex.Data());
+  latexInfo1->DrawLatex(0.44,0.76,ptaLatex.Data());
+
+  pngName = "CorrelationFunction.Centrality"; 
+  pngName += centralityArray[gCentrality-1]; 
+  pngName += ".Psi"; 
+  if((psiMin == -0.5)&&(psiMax == 0.5)) pngName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) pngName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) pngName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) pngName += "Rest.Ptt";
+  else pngName += "All.PttFrom";
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".NegativeNegative.png";
+  cNN->SaveAs(pngName.Data());
+}
+
+//____________________________________________________________//
+void fitCorrelationFunctions(Int_t gCentrality = 1,
+			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+			     Double_t ptTriggerMin = -1.,
+			     Double_t ptTriggerMax = -1.,
+			     Double_t ptAssociatedMin = -1.,
+			     Double_t ptAssociatedMax = -1.,
+			     TH2D *gHist) {
+
+  cout<<"FITTING FUNCTION"<<endl;
+
+  //near side peak: [1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))
+  //away side ridge: [5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))
+  //longitudinal ridge: [8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))
+  //wing structures: [11]*TMath::Power(x,2)
+  //flow contribution (v1 up to v4): 2.*([12]*TMath::Cos(y) + [13]*TMath::Cos(2.*y) + [14]*TMath::Cos(3.*y) + [15]*TMath::Cos(4.*y))
+  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
+  gFitFunction->SetName("gFitFunction");
+  //Normalization
+  gFitFunction->SetParName(0,"N1"); gFitFunction->SetParameter(0,1.0);
+  //near side peak
+  gFitFunction->SetParName(1,"N_{near side}"); gFitFunction->SetParameter(1,0.3);
+  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->SetParameter(2,0.3);
+  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->SetParameter(3,0.1);
+  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->SetParameter(4,1.1);
+  //away side ridge
+  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->SetParameter(5,0.1);
+  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->SetParameter(6,1.1);
+  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->SetParameter(7,1.0);
+  //longitudianl ridge
+  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);
+  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->SetParameter(9,0.6);
+  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->SetParameter(10,1.0);
+  //wing structures
+  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->SetParameter(11,0.01);
+  //flow contribution
+  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->SetParameter(12,0.2);
+  gFitFunction->SetParName(13,"V1"); gFitFunction->SetParameter(13,0.005);
+  gFitFunction->SetParName(14,"V2"); gFitFunction->SetParameter(14,0.1);
+  gFitFunction->SetParName(15,"V3"); gFitFunction->SetParameter(15,0.05);
+  gFitFunction->SetParName(16,"V4"); gFitFunction->SetParameter(16,0.005);  
+
+  //Fitting the correlation function
+  gHist->Fit("gFitFunction","nm");
+
+  //Cloning the histogram
+  TString histoName = gHist->GetName(); histoName += "Fit"; 
+  TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
+  TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
+  gHistResidual->SetName("gHistResidual");
+  gHistResidual->Sumw2();
+
+  for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
+    for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
+      gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,gFitFunction->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
+    }
+  }
+  gHistResidual->Add(gHistFit,-1);
+
+  //Write to output file
+  TString newFileName = "correlationFunctionFit";
+  if(histoName.Contains("PN")) newFileName += "PN";
+  else if(histoName.Contains("NP")) newFileName += "NP";
+  else if(histoName.Contains("PP")) newFileName += "PP";
+  else if(histoName.Contains("NN")) newFileName += "NN";
+  newFileName += ".Centrality";  
+  newFileName += gCentrality; newFileName += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+  else newFileName += "All.PttFrom";
+  newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+  newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptAssociatedMax); 
+  newFileName += ".root";
+  TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+  gHist->Write();
+  gHistFit->Write();
+  gHistResidual->Write();
+  gFitFunction->Write();
+  newFile->Close();
+  
+
+}

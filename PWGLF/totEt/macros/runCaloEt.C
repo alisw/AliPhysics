@@ -7,7 +7,7 @@
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "PHOS") // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *det = "EMCalDetail") // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -43,6 +43,8 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtSelector.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtSelectorPhos.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtSelectorEmcal.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtTrackMatchCorrections.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtRecEffCorrection.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");

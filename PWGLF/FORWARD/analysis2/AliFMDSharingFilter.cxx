@@ -282,9 +282,9 @@ AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
 }
 //____________________________________________________________________
 void
-AliFMDSharingFilter::Init(const TAxis& axis)
+AliFMDSharingFilter::SetupForData(const TAxis& axis)
 {
-  // Initialise 
+  // Initialise - called on first event
   DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
   AliForwardCorrectionManager& fcm  = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*          fits = fcm.GetELossFit();
@@ -936,7 +936,7 @@ AliFMDSharingFilter::DeAngleCorrect(Double_t mult, Double_t eta) const
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
+AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -950,11 +950,19 @@ AliFMDSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
 
+  TList* out = new TList;
+  out->SetName(d->GetName());
+  out->SetOwner();
+  
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "Sum of ring signals");
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->ScaleHistograms(d, nEvents);
+    o->Terminate(d, nEvents);
+    if (!o->fSum) { 
+      Warning("Terminate", "No sum histogram found for ring %s", o->GetName());
+      continue;
+    }
     TH1D* sum = o->fSum->ProjectionX(o->GetName(), 1, o->fSum->GetNbinsY(),"e");
     sum->Scale(1., "width");
     sum->SetTitle(o->GetName());
@@ -962,12 +970,13 @@ AliFMDSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
     sum->SetYTitle("#sum #Delta/#Delta_{mip}");
     sums->Add(sum);
   }
-  d->Add(sums);
+  out->Add(sums);
+  output->Add(out);
 }
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::DefineOutput(TList* dir)
+AliFMDSharingFilter::CreateOutputObjects(TList* dir)
 {
   // 
   // Define the output histograms.  These are put in a sub list of the
@@ -1032,7 +1041,7 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->Output(d);
+    o->CreateOutputObjects(d);
   }
 }
 //____________________________________________________________________
@@ -1301,8 +1310,7 @@ AliFMDSharingFilter::RingHistos::Finish()
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::RingHistos::ScaleHistograms(const TList* dir, 
-						 Int_t nEvents)
+AliFMDSharingFilter::RingHistos::Terminate(const TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -1323,12 +1331,12 @@ AliFMDSharingFilter::RingHistos::ScaleHistograms(const TList* dir,
 
   TH2D* summed = static_cast<TH2D*>(l->FindObject("summed"));
   if (summed) summed->Scale(1./nEvents);
-  
+  fSum = summed;
 }
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::RingHistos::Output(TList* dir)
+AliFMDSharingFilter::RingHistos::CreateOutputObjects(TList* dir)
 {
   // 
   // Make output 

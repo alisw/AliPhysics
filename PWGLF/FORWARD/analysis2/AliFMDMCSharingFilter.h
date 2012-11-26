@@ -34,7 +34,7 @@
  *    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
  *      signals before and after the filter.  
  *    - For each ring (see above), an array of distributions of number of 
- *      hit strips for each vertex bin (if enabled - see Init method)
+ *      hit strips for each vertex bin (if enabled - see SetupForData method)
  * 
  *
  * @ingroup pwglf_forward_algo
@@ -128,14 +128,14 @@ public:
    * 
    * @param dir Directory to add to 
    */
-  void DefineOutput(TList* dir);
+  void CreateOutputObjects(TList* dir);
   /** 
    * Scale the histograms to the total number of events 
    * 
    * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(const TList* dir, Int_t nEvents);
+  void Terminate(const TList* dir, TList* output, Int_t nEvents);
   /** 
    * Print information
    * 
@@ -152,7 +152,7 @@ protected:
   TH2D* fFMD3i;      // ESD-MC correlation 
   TH2D* fFMD3o;      // ESD-MC correlation 
   TH2I* fOperComp;   // Operation vs # trackrefs
-  ClassDef(AliFMDMCSharingFilter,1); //
+  ClassDef(AliFMDMCSharingFilter,2); //
 };
 
 #endif

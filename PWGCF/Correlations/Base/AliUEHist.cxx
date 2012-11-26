@@ -57,6 +57,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fZVtxMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
+  fTrackEtaCut(0),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -111,13 +112,19 @@ AliUEHist::AliUEHist(const char* reqHist) :
 						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
 
   // pT
-  //iTrackBin[1] = 20;
-  //Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
   iTrackBin[1] = 9;
   Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0 };
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
+  // pT, fine
+  const Int_t kNpTBinsFine = 22;
+  Double_t pTBinsFine[kNpTBinsFine+1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0};
+
+  // pT, wide range
+  //const Int_t kNpTBinsWideRange = 20;
+  //Double_t pTBinsWideRange[kNpTBinsWideRange+1] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+
   // pT,lead binning 1
   const Int_t kNLeadingpTBins = 100;
   Double_t leadingpTBins[kNLeadingpTBins+1];
@@ -126,7 +133,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   // pT,lead binning 2
   //const Int_t kNLeadingpTBins2 = 8;
-  //Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
+//   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
   const Int_t kNLeadingpTBins2 = 6;
   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
   
@@ -317,13 +324,14 @@ AliUEHist::AliUEHist(const char* reqHist) :
 
   SetStepNames(fEventHist);
   
+  iTrackBin[1] = kNpTBinsFine;
   iTrackBin[2] = kNSpeciesBins;
   iTrackBin[4] = kNVertexBins2;
 
   fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 5, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
   fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
-  fTrackHistEfficiency->SetBinLimits(1, trackBins[1]);
+  fTrackHistEfficiency->SetBinLimits(1, pTBinsFine);
   fTrackHistEfficiency->SetVarTitle(1, trackAxisTitle[1]);
   fTrackHistEfficiency->SetBinLimits(2, speciesBins);
   fTrackHistEfficiency->SetVarTitle(2, "particle species");
@@ -352,6 +360,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fZVtxMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
+  fTrackEtaCut(0),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -456,6 +465,7 @@ void AliUEHist::Copy(TObject& c) const
     target.fContaminationEnhancement = dynamic_cast<TH1F*> (fContaminationEnhancement->Clone());
     
   target.fCombineMinMax = fCombineMinMax;
+  target.fTrackEtaCut = fTrackEtaCut;
   target.fHistogramType = fHistogramType;
 }
 
@@ -914,6 +924,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
     trackMixedAll->GetAxis(2)->SetRange(0, -1);
     TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
+    Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
     
     // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
     Double_t mixedNormError = 0;
@@ -961,13 +972,26 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       continue;
     }
     
+    // finite bin correction
+    if (fTrackEtaCut > 0)
+    {
+      Double_t finiteBinCorrection = -1.0 / (2*fTrackEtaCut) * binWidthEta / 2 + 1;
+      Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm *= finiteBinCorrection;
+      mixedNormError *= finiteBinCorrection;
+    }
+    else
+    {
+      Printf("ERROR: fTrackEtaCut not set. Finite bin correction cannot be applied. Continuing anyway...");
+    }
+    
 //     Printf("Norm: %f +- %f", mixedNorm, mixedNormError);
 
 //     normParameters->Fill(mixedNorm);
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
     for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 4; vertexBin <= 4; vertexBin++)
+//     for (Int_t vertexBin = 3; vertexBin <= 8; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -1083,6 +1107,17 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   
   return totalTracks;
 }
+
+/*
+TH2* AliUEHist::GetPtDistInPhiRegion(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiBegin, Float_t phiEnd)
+{
+  // Returns pT,assoc distribution in the given pt,trig, multiplicity, phi region
+  // Does not use sum of ratios for mixed event correction (TODO to be improved)
+  // returns a 2D histogram: deltaphi, deltaeta
+  //
+  // Parameters:
+  //   mixed: AliUEHist containing mixed event corresponding to this object
+*/
 
 //____________________________________________________________________
 TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm, Bool_t useVertexBins)

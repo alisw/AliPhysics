@@ -103,6 +103,8 @@ class AliUEHist : public TObject
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
   void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
   
+  void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
+  
   void SetContaminationEnhancement(TH1F* hist)    { fContaminationEnhancement = hist; }
   
   void SetHistogramType(const char* histogramType)  { fHistogramType = histogramType; }
@@ -150,6 +152,7 @@ protected:
   TH1F* fContaminationEnhancement;    // histogram that contains the underestimation of secondaries in the MC as function of pT
   
   Bool_t fCombineMinMax;              // flag to combine min and max to a general towards region
+  Float_t fTrackEtaCut;               // cut used during production of histograms (needed for finite bin correction in GetSumOfRatios)
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
@@ -158,7 +161,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 10) // underlying event histogram container
+  ClassDef(AliUEHist, 11) // underlying event histogram container
 };
 
 #endif

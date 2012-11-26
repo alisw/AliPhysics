@@ -126,7 +126,7 @@ protected:
   AliTrackReference* fStored; //! Last stored
   TH2D*              fOutput; //! Output 
 
-  ClassDef(AliSPDMCTrackDensity,3); // Calculate track-ref density
+  ClassDef(AliSPDMCTrackDensity,4); // Calculate track-ref density
 };
 
 #endif

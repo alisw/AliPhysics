@@ -96,7 +96,7 @@ public:
    * 
    * @param list List to add outputs to
    */
-  void DefineOutput(TList* list);
+  void CreateOutputObjects(TList* list);
   
   void Print(Option_t* option="") const;
 protected:
@@ -183,7 +183,7 @@ protected:
   TH2D*      fNcr;                  // Number of clusters per track
   AliESDFMD* fOutput;               //! Output ESD object
 
-  ClassDef(AliFMDMCTrackDensity,4); // Calculate track-ref density
+  ClassDef(AliFMDMCTrackDensity,5); // Calculate track-ref density
 };
 
 #endif

@@ -254,7 +254,7 @@ AliFMDEventPlaneFinder::MakeCorrHist(const char* name,
    
 //____________________________________________________________________
 void
-AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
+AliFMDEventPlaneFinder::SetupForData(const TAxis& etaAxis)
 {
   // Intialize this sub-algorithm 
   //
@@ -310,7 +310,7 @@ AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
 
 //_____________________________________________________________________
 void
-AliFMDEventPlaneFinder::DefineOutput(TList* dir)
+AliFMDEventPlaneFinder::CreateOutputObjects(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 

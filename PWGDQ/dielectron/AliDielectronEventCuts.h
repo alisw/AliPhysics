@@ -49,10 +49,11 @@ public:
   Bool_t IsSelectedESD(TObject* event);
   Bool_t IsSelectedAOD(TObject* event);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
-  
+
+  void Print(const Option_t* option = "") const;
 
 private:
-
+  static const char* fgkVtxNames[AliDielectronEventCuts::kVtxTracksOrSPD+1];  //vertex names
   Double_t fVtxZmin;                // minimum z vertex position
   Double_t fVtxZmax;                // maximum z vertex position
   Bool_t   fRequireVtx;             // require a vertex
@@ -68,8 +69,6 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
-  const AliAODVertex* GetPrimaryVertexTPC(const AliAODEvent *ev);
-
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
@@ -77,15 +76,5 @@ private:
   ClassDef(AliDielectronEventCuts,1)         // Dielectron EventCuts
 };
 
-//______________________________________________________________________________
-inline const AliAODVertex* GetPrimaryVertexTPC(const AliAODEvent *ev) {
-  // Get TPC primary vertex
-  Int_t nVertices=ev->GetNumberOfVertices();
-  for(Int_t iVert=0; iVert<nVertices; iVert++){
-    AliAODVertex *v=ev->GetVertex(iVert);
-    if(v->GetType()==AliAODVertex::kMainSPD) return v;
-  }
-  return 0;
-}
 
 #endif

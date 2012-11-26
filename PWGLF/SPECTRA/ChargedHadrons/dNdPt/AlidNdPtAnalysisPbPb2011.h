@@ -62,12 +62,12 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
   
   // Set binning for Histograms (if not set default binning is used)
-  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
-  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
-  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
-  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
-  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv= CloneArray(nbins+1,edges); }
-  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(nbins+1,edges); }
+  void SetBinsMult(Int_t nbins, Double_t* edges) { Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = CloneArray(nbins,edges); }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = CloneArray(nbins,edges); }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins,edges); }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { Printf("[I] Setting Eta Bins"); fEtaNbins = nbins; fBinsEta = CloneArray(nbins,edges); }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= CloneArray(nbins,edges); }
+  void SetBinsCentrality(Int_t nbins, Double_t* edges) { Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = CloneArray(nbins,edges); }
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
@@ -199,18 +199,18 @@ private:
   TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
   
   //binning for THNsparse
-  Int_t	fMultNbins;
+  Int_t fMultNbins;
   Int_t fPtNbins;
   Int_t fPtCorrNbins;
   Int_t fEtaNbins;
   Int_t fZvNbins;
   Int_t fCentralityNbins;
-  Double_t* fBinsMult;
-  Double_t* fBinsPt;
-  Double_t* fBinsPtCorr;
-  Double_t* fBinsEta;
-  Double_t* fBinsZv;
-  Double_t* fBinsCentrality;
+  Double_t* fBinsMult; //[fMultNbins]
+  Double_t* fBinsPt; //[fPtNbins]
+  Double_t* fBinsPtCorr; //[fPtCorrNbins]
+  Double_t* fBinsEta; //[fEtaNbins]
+  Double_t* fBinsZv; //[fZvNbins]
+  Double_t* fBinsCentrality; //[fCentralityNbins]
   
   Bool_t fIsInit;
   

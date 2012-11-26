@@ -8,6 +8,7 @@
 //_________________________________________________________________________
 #include "AliAnalysisEtReconstructedEmcal.h"
 #include "AliAnalysisEtCuts.h"
+#include "AliAnalysisEtSelectorEmcal.h"
 #include "AliESDtrack.h"
 
 using namespace std;
@@ -33,6 +34,7 @@ void AliAnalysisEtReconstructedEmcal::Init()
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
 
+  fSelector = new AliAnalysisEtSelectorEmcal(fCuts);
 }
 
 bool AliAnalysisEtReconstructedEmcal::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)

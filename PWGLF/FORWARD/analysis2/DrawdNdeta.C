@@ -353,19 +353,31 @@ struct dNdetaDrawer
     // --- Try to get the emperical correction -----------------------
     TGraphErrors* empCorr = 0;
     if (!fEmpirical.IsNull()) {
-      TFile* empirical = TFile::Open(fEmpirical, "READ");
-      if (!empirical) { 
-	empirical = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
-				     "Empirical/%s", fEmpirical.Data()));
+      if (gSystem->AccessPathName(fEmpirical.Data())) { // Not found here
+	fEmpirical = 
+	  Form(gSystem->ExpandPathName(Form("$ALICE_ROOT/PWGLF/FORWARD/"
+					    "corrections/Empirical/%s", 
+					    fEmpirical.Data())));
+	if (gSystem->AccessPathName(fEmpirical.Data())) { // Not found here
+	  Warning("Open", "Couldn't get empirical correction file");
+	  fEmpirical = "";
+	}
       }
-      if (empirical) { 
-	empCorr = static_cast<TGraphErrors*>(empirical->Get("fmdfull/average"));
-	if (!empCorr) 
-	  Warning("Open", "couldn't get the empirical correction");
+      if (!fEmpirical.IsNull()) {
+	TFile* empirical = TFile::Open(fEmpirical, "READ");
+	if (!empirical) { 
+	  Warning("Open", "couldn't open empirical correction file: %s",
+		  fEmpirical.Data());
+	  fEmpirical = "";
+	}
+	const char* empPath = "fmdfull/average";
+	empCorr = static_cast<TGraphErrors*>(empirical->Get(empPath));
+	if (!empCorr) {
+	  Warning("Open", "Didn't find the graph %s in %s", 
+		  empPath, fEmpirical.Data());
+	  fEmpirical = "";
+	}
       }
-      else 
-	Warning("Run", "Failed to open file %s for empirical corrections", 
-		fEmpirical.Data());
     }
     if (!empCorr) fEmpirical = "";
 

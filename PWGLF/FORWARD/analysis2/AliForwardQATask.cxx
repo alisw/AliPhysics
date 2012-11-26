@@ -258,7 +258,7 @@ AliForwardQATask::GetESDEvent()
 	     esd->GetRunNumber());
 
 
-    if (!InitializeSubs()) {
+    if (!SetupForData()) {
       AliWarning("Initialisation of sub algorithms failed!");
       SetZombie(true);
       esd = 0;
@@ -272,7 +272,7 @@ AliForwardQATask::GetESDEvent()
 }
 //____________________________________________________________________
 Bool_t
-AliForwardQATask::InitializeSubs()
+AliForwardQATask::SetupForData()
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
@@ -289,10 +289,10 @@ AliForwardQATask::InitializeSubs()
 
   fHistos.Init(*pe);
 
-  fEventInspector.Init(*pv);
-  fEnergyFitter.Init(*pe);
-  fSharingFilter.Init(*pe);
-  fDensityCalculator.Init(*pe);
+  fEventInspector.SetupForData(*pv);
+  fEnergyFitter.SetupForData(*pe);
+  fSharingFilter.SetupForData(*pe);
+  fDensityCalculator.SetupForData(*pe);
 
   this->Print();
 
@@ -310,10 +310,10 @@ AliForwardQATask::UserCreateOutputObjects()
   fList = new TList;
   fList->SetOwner();
   
-  fEventInspector.DefineOutput(fList);
-  fEnergyFitter.DefineOutput(fList);
-  fSharingFilter.DefineOutput(fList);
-  fDensityCalculator.DefineOutput(fList);
+  fEventInspector.CreateOutputObjects(fList);
+  fEnergyFitter.CreateOutputObjects(fList);
+  fSharingFilter.CreateOutputObjects(fList);
+  fDensityCalculator.CreateOutputObjects(fList);
 
   PostData(1, fList);
 }
@@ -424,6 +424,11 @@ AliForwardQATask::Terminate(Option_t*)
     return;
   }
   
+  // Make a deep copy and post that as output 2 
+  TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
+						      list->GetName())));
+  list2->SetOwner();
+
   // Get our histograms from the container 
   TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
   TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
@@ -447,21 +452,18 @@ AliForwardQATask::Terminate(Option_t*)
   AliInfoF("Fitting took %d real-time seconds, and %f CPU seconds", 
 	   Int_t(swf.RealTime()), swf.CpuTime());
 
-  fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
-  fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
+  fSharingFilter.Terminate(list,list2,Int_t(hEventsTr->Integral()));
+  fDensityCalculator.Terminate(list,list2,Int_t(hEventsTrVtx->Integral()));
 
-  // Make a deep copy and post that as output 2 
-  TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
-						      list->GetName())));
   if (fDebug) AliInfoF("Posting post processing results to %s", 
 		       list2->GetName());
-  list2->SetOwner();
   PostData(2, list2);
 
   swt.Stop();
   AliInfoF("Terminate took %d real-time seconds, and %f CPU seconds", 
 	   Int_t(swt.RealTime()), swt.CpuTime());
 
+  
 }
 
 //____________________________________________________________________

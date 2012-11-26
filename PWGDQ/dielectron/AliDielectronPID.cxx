@@ -36,6 +36,8 @@ Detailed description
 #include <AliPIDResponse.h>
 #include <AliTRDPIDResponse.h>
 #include <AliESDtrack.h> //!!!!! Remove once Eta correction is treated in the tender
+#include <AliAODTrack.h>
+#include <AliAODPid.h>
 
 #include "AliDielectronVarManager.h"
 
@@ -226,15 +228,20 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   //loop over all cuts
   AliVTrack *part=static_cast<AliVTrack*>(track);
   AliESDtrack *esdTrack=0x0;
+  AliAODTrack *aodTrack=0x0;
   Double_t origdEdx=-1;
   
   // apply ETa correction, remove once this is in the tender
-  if( (part->IsA() == AliESDtrack::Class()) && fgFunEtaCorr ){
+  if( (part->IsA() == AliESDtrack::Class()) ){
     esdTrack=static_cast<AliESDtrack*>(part);
     origdEdx=esdTrack->GetTPCsignal();
     esdTrack->SetTPCsignal(origdEdx/GetEtaCorr(esdTrack)/fgCorrdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
+  } else if ( (part->IsA() == AliAODTrack::Class()) ){
+    aodTrack=static_cast<AliAODTrack*>(track);
+    AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
+    origdEdx=pid->GetTPCsignal();
+    pid->SetTPCsignal(origdEdx/GetEtaCorr(aodTrack)/fgCorrdEdx);
   }
-
   
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
@@ -287,12 +294,20 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     }
     if (!selected) {
       if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
+      else if (aodTrack){
+        AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
+        pid->SetTPCsignal(origdEdx);
+      }
 
       return kFALSE;
     }
   }
 
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
+  else if (aodTrack){
+    AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
+    pid->SetTPCsignal(origdEdx);
+  }
   return selected;
 }
 
@@ -550,7 +565,7 @@ void AliDielectronPID::SetCorrVal(Double_t run)
 }
 
 //______________________________________________
-Double_t AliDielectronPID::GetEtaCorr(AliVTrack *track)
+Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
 {
   //
   // return eta correction
