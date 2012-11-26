@@ -217,8 +217,8 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
-	    if(irawHisto==16) nentries = Int_t (hdata->GetEntries());
-	    if(irawHisto==18){ 
+	    if(irawHisto==20) nentries = Int_t (hdata->GetEntries());
+	    if(irawHisto==22){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
 		 if((hdata->GetBinContent(ibin))>10.){
@@ -248,7 +248,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
-	    else if(irawHisto==19){
+	    else if(irawHisto==23){
 	      // Reference values must be inserted in the order:
 	      // ZNC, ZPC, ZNA, ZPA, ZEM1, ZEM2
 	      // 2012 -> Reference values from RUN 177399
@@ -595,8 +595,8 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
-	    if(irawHisto==16) nentries = Int_t (hdata->GetEntries());
-	    if(irawHisto==18){ 
+	    if(irawHisto==20) nentries = Int_t (hdata->GetEntries());
+	    if(irawHisto==22){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
 		 if((hdata->GetBinContent(ibin))>10.){
@@ -625,7 +625,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
-	    else if(irawHisto==19){
+	    else if(irawHisto==23){
 	      // Reference values from RUN 137161
 	      //Double_t refTDCs[6] = {-320.7,-319.0,-318.6,-319.9,-321.3,-320.8};
 	      //  11/2012 -> QA threshold values x TDCs are read from configuration file
@@ -936,22 +936,22 @@ void AliZDCQAChecker::GetThresholds()
     return;   
   }
   
-  TParameter<float>* myParam0 = (TParameter<float>*) thresholds->GetThreshold(0); 
+  TParameter<double>* myParam0 = (TParameter<double>*) thresholds->GetThreshold(0); 
   fZDCQAThr_ZNCTDCRefThr = myParam0->GetVal();
   
-  TParameter<float>* myParam1 = (TParameter<float>*) thresholds->GetThreshold(1); 
+  TParameter<double>* myParam1 = (TParameter<double>*) thresholds->GetThreshold(1); 
   fZDCQAThr_ZPCTDCRefThr = myParam1->GetVal();
   
-  TParameter<float>* myParam2 = (TParameter<float>*) thresholds->GetThreshold(2); 
+  TParameter<double>* myParam2 = (TParameter<double>*) thresholds->GetThreshold(2); 
   fZDCQAThr_ZNATDCRefThr = myParam2->GetVal();
   
-  TParameter<float>* myParam3 = (TParameter<float>*) thresholds->GetThreshold(3); 
+  TParameter<double>* myParam3 = (TParameter<double>*) thresholds->GetThreshold(3); 
   fZDCQAThr_ZPATDCRefThr = myParam3->GetVal();
   
-  TParameter<float>* myParam4 = (TParameter<float>*) thresholds->GetThreshold(4); 
+  TParameter<double>* myParam4 = (TParameter<double>*) thresholds->GetThreshold(4); 
   fZDCQAThr_ZEM1TDCRefThr = myParam4->GetVal();
   
-  TParameter<float>* myParam5 = (TParameter<float>*) thresholds->GetThreshold(5); 
+  TParameter<double>* myParam5 = (TParameter<double>*) thresholds->GetThreshold(5); 
   fZDCQAThr_ZEM2TDCRefThr = myParam5->GetVal();
   
   PrintThresholds();
@@ -960,7 +960,7 @@ void AliZDCQAChecker::GetThresholds()
 //_______________________________________________________________________________
 void AliZDCQAChecker::PrintThresholds()
 {
-  printf("\n ####    ZDC QA Thresholds  read from configuration file: ");  
+  printf("\n ####    ZDC QA Thresholds  read from configuration file: \n");  
   printf(" \t fZDCQAThr_ZNCTDCRefThr %f \n",fZDCQAThr_ZNCTDCRefThr);
   printf(" \t fZDCQAThr_ZPCTDCRefThr %f \n",fZDCQAThr_ZPCTDCRefThr);
   printf(" \t fZDCQAThr_ZNATDCRefThr %f \n",fZDCQAThr_ZNATDCRefThr);
