@@ -114,6 +114,13 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Int_t   fTreeVariableRunNumber; //! 
   ULong64_t fTreeVariableEventNumber; //!
 
+  Float_t fTreeVariableV0x; //!
+  Float_t fTreeVariableV0y; //!
+  Float_t fTreeVariableV0z; //!
+
+  Float_t fTreeVariableV0Px; //!
+  Float_t fTreeVariableV0Py; //!
+  Float_t fTreeVariableV0Pz; //!
 
 //Note: TDistOverTotMom needs a mass hypothesis to be converted to proper decaylength.
 
