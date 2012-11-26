@@ -139,6 +139,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -245,6 +246,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   
   PostData(1, fOutputList);
+  PostData(2, fTree);
 }
 
 //________________________________________________________________________
@@ -348,6 +350,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fCaloClustersNew)
     fCaloClustersNew->Clear();
   PostData(1, fOutputList);
+  PostData(2, fTree);
 }      
 
 //________________________________________________________________________
@@ -873,8 +876,8 @@ Double_t AliAnalysisTaskEMCALPhoton ::GetMaxCellEnergy(const AliVCluster *cluste
 void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  if(fIsGrid)
-    return;
+/*  if(fIsGrid)
+    return;*/
   if (fTree) {
     TFile *f = OpenFile(1);
     TDirectory::TContext context(f);
