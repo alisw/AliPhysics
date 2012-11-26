@@ -12,7 +12,7 @@
 //          Physics Department of Athens University
 //                    mspyrop@phys.uoa.gr
 //-----------------------------------------------------------------
-//class AliTPCPIDResponse;
+class AliPIDResponse;
 class AliESDVertex;
 class AliESDtrack;
 class TF1;
@@ -28,7 +28,6 @@ class AliESDtrackCuts;
 
 class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
  public:
- // AliAnalysisKinkESDat();
   AliAnalysisKinkESDat(const char *name = "AliAnalysisKinkESDat");
   virtual ~AliAnalysisKinkESDat() {}
 
@@ -114,6 +113,7 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
 Int_t fLowMulcut;  // 
 Int_t fUpMulcut;
 AliESDtrackCuts* fCutsMul;
+AliPIDResponse *fPIDResponse;     //! PID response object
 
   AliAnalysisKinkESDat(const AliAnalysisKinkESDat&); // not implemented
   AliAnalysisKinkESDat& operator=(const AliAnalysisKinkESDat&); // not implemented
