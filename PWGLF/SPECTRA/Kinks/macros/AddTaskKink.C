@@ -1,47 +1,48 @@
-AliAnalysisKinkESDMC *AddTaskKink(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*/)
+AliAnalysisKinkESDat* AddKinkTask()
 {
-// Creates, configures and attaches to the train a V0 check task.
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddTaskKink", "No analysis manager to connect to.");
+  //pp settings 	
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) 
+    {
+      ::Error("AddKinkTask", "No analysis manager to connect to.");
       return NULL;
-   }   
+    }   
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) 
+    {
+      ::Error("AddKinkTask", "This task requires an input event handler");
+      return NULL;
+    }   
+  
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if(type.Contains("AOD"))
+    {
+      ::Error("AddKinkTask", "This task requires to run on ESD");
+      return NULL;
+    }
+  
+  //TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  //outputFileName += ":PWG2SpectraTOF";
 
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskKink", "This task requires an input event handler");
-      return NULL;
-   }   
-   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-   if (type != "ESD") {
-      ::Error("AddTaskKink", "This task needs ESD input handler");
-      return NULL;
-   }   
-   if (!mgr->GetMCtruthEventHandler()) {
-      ::Error("AddTaskKink", "This task needs an MC handler");
-      return NULL;
-   }
-   // Create and configure the task
-	AliAnalysisKinkESDMC *taskkink = new AliAnalysisKinkESDMC("TaskkinkESDMC");
-   mgr->AddTask(taskkink);
+ AliAnalysisKinkESDat*  task = new AliAnalysisKinkESDat("AliAnalysisKinkESDat");
 
-   // Create ONLY the output containers for the data produced by the task.
-   // Get and connect other common input/output containers via the manager as below
-   //==============================================================================
-   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outputFileName += ":PWG2KINKESDMC";
-   if (lCollidingSystems) outputFileName += "_AA";
-   else outputFileName += "_PP";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+ task->SetMC("kFALSE"); // 26/11/12
 
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkESDMC",
-							     TList::Class(),
-							     AliAnalysisManager::kOutputContainer,
-							     outputFileName );
-   mgr->ConnectInput(taskkink, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskkink, 1, coutput1);
-   return taskkink;
-}   
+task->SetMultCut(0,1002);
+  mgr->AddTask(task);
+
+  //Attach input
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 
+//  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());     
+   mgr->ConnectInput(task,0,cinput);
+  
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer("KinksKaon",TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+  mgr->ConnectOutput(task, 1, coutput1);
+ 
+  
+  return task;
+  
+}
+
+
