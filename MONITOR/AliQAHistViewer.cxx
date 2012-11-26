@@ -205,8 +205,8 @@ AliQAHistViewer::~AliQAHistViewer()
 {
    // Clean up main frame...
    Cleanup();
-   delete fEcan;
-   delete fQANavigator;
+  // if(fEcan) delete fEcan; fEcan = 0;
+   if(fQANavigator)   delete fQANavigator; fQANavigator = 0;
 }
 
 //_________________________________________________________________________
