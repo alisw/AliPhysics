@@ -64,10 +64,13 @@ void readHit(){
 	//
 	//	if(pHit->GetParticle()->IsPrimary()){
 	Double_t xg,yg,zg=0.;
+	Double_t xg0,yg0,zg0=0.,tg0;
 	pHit->GetPositionG(xg,yg,zg);
+	pHit->GetPositionG0(xg0,yg0,zg0,tg0);
 	xyGlob->Fill(xg,yg);
 	zGlob->Fill(zg);
-	printf("Module %d | Lr:%d Ladder: %d, X:%+.3e Y:%+.3e Z:%+.3e TrackID: %d\n",id,lr,ld,xg,yg,zg,pHit->GetTrack());
+	printf("Module %d | Lr:%d Ladder: %d, X:[%+.3e:%+.3e] Y:[%+.3e:%+.3e] Z:[%+.3e %+.3e] TrackID: %d\n",id,lr,ld,
+	       xg0,xg,yg0,yg,zg0,zg,pHit->GetTrack());
 	hDeLoss[lr]->Fill(pHit->GetIonization());
 	//	} // is primary
       }//loop hit 

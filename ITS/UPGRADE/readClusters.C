@@ -57,14 +57,13 @@ void readClusters(){
       printf("Layer %d : %d clusters\n",ilr,nClu);
       //
       for (int icl=0;icl<nClu;icl++) {
-	AliCluster *cl = (AliCluster*)clr->At(icl);
+	AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
+	cl->Print();
 	Double_t loc[3]={cl->GetX(),cl->GetY(),cl->GetZ()}; 
 	Double_t glob[3]; 
 	gm->LocalToGlobal(cl->GetVolumeId(),loc,glob);
-	cl->Print();
-	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
-	       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
-
+	//	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",icl,cl->GetVolumeId(),
+	//	       loc[0],loc[1],loc[2],glob[0],glob[1],glob[2]);
 	xyGlob->Fill(glob[0],glob[1]);
 	zGlob->Fill(glob[2]);
  

@@ -72,13 +72,15 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 //_____________________________________________________________________________RS
 void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
-  //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
-  //  expects x, z in cm. RS: TO CHECK: why from 1
-  ix = int(x/fPitchX) + 1;     
-  iz = int(Z2Col(z)) + 1;
+  //  Returns pixel coordinates (ix,iz) for given coordinates (x,z counted from col/row 0:0)
+  //  expects x, z in cm.
+  ix = int(x/fPitchX);     
+  iz = int(Z2Col(z));
   //  
-  if (iz >  fNCol) iz= fNCol;
-  if (ix >  fNRow) ix= fNRow;
+  if      (iz<0)        { AliWarning(Form("Z=%f gives col=%d ouside [%d:%d)",z,iz,0,fNCol)); iz=0; }
+  else if (iz >= fNCol) { AliWarning(Form("Z=%f gives col=%d ouside [%d:%d)",z,iz,0,fNCol)); iz= fNCol-1;}
+  if      (ix<0)        { AliWarning(Form("X=%f gives row=%d ouside [%d:%d)",x,ix,0,fNRow)); ix=0; }
+  else if (ix >= fNRow) { AliWarning(Form("X=%f gives row=%d ouside [%d:%d)",x,ix,0,fNRow)); ix= fNRow-1;}
   //
 }
 
@@ -109,7 +111,7 @@ Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const
   int chip = int(z/fChipDZ);
   float col = chip*fNColPerChip;
   z -= chip*fChipDZ;
-  if (z>fPitchZLftCol) col += 1+(z-fPitchZLftCol)/fPitchZ;
+  if (z>fPitchZLftCol) col += (z-fPitchZLftCol)/fPitchZ;
   return col;
 }
 
@@ -265,8 +267,8 @@ void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
   x = -0.5*Dx(); // default value.
   z = -0.5*Dz(); // default value.
   // RS: to check: why we don't do strict check for [0:n)
-  if(ix<0 || ix>fNRow) return; // outside of detector 
-  if(iz<0 || iz>fNCol) return; // outside of detctor
+  if(ix<0 || ix>=fNRow) {AliWarning(Form("Obtained row %d is not in range [%d:%d)",ix,0,fNRow)); return;} // outside of detector 
+  if(iz<0 || iz>=fNCol) {AliWarning(Form("Obtained col %d is not in range [%d:%d)",ix,0,fNCol)); return;} // outside of detector 
   x += (ix+0.5)*fPitchX;       // RS: we go to the center of the pad, i.e. + pitch/2, not to the boundary as in SPD
   z += Col2Z(iz); 
   return; // Found x and z, return.

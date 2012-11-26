@@ -60,17 +60,19 @@ TGeoHMatrix* AliITSUClusterPix::GetMatrix(Bool_t ) const
 void AliITSUClusterPix::Print(Option_t* /*option*/) const
 {
   // Print cluster information.
-  printf("Cluster of module %5d, <nx>=%3d <nz>=%3d |Err^2:%.3e %.3e %+.3e |",GetVolumeId(),GetNx(),GetNz(),
+  printf("Cl.in mod %5d, nx:%3d nz:%3d |Err^2:%.3e %.3e %+.3e |",GetVolumeId(),GetNx(),GetNz(),
 	 GetSigmaY2(),GetSigmaZ2(),GetSigmaYZ());
-  printf("XYZ: %+.4e %+.4e %+.4e in frame ",GetX(),GetY(),GetZ());
-  if      (IsFrameLoc()) printf("LOC");
-  else if (IsFrameGlo()) printf("GLO");
-  else if (IsFrameTrk()) printf("TRK");
+  printf("XYZ: (%+.4e %+.4e %+.4e ",GetX(),GetY(),GetZ());
+  if      (IsFrameLoc()) printf("LOC)");
+  else if (IsFrameGlo()) printf("GLO)");
+  else if (IsFrameTrk()) printf("TRK)");
   if (!IsFrameGlo() && fgGeom) {
     Float_t g[3];
     GetGlobalXYZ(g);
-    printf(" (%+.4e %+.4e %+.4e in GLO)",g[0],g[1],g[2]);
+    printf(" (%+.4e %+.4e %+.4e GLO)",g[0],g[1],g[2]);
   }
+  printf(" MClb:");
+  for (int i=0;i<3;i++) printf(" %5d",GetLabel(i));
   printf("\n");
   //
 }

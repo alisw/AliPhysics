@@ -159,7 +159,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   float  cx,cz;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
     AliITSdigit* dig = idigit->fDigit;
-    fSegm->GetPadCxz(dig->GetCoord2(),dig->GetCoord1(),cx,cz);
+    fSegm->DetToLocal(dig->GetCoord2(),dig->GetCoord1(),cx,cz);
     x += cx;
     z += cz;
     if (cx<xmn) xmn=cx;
