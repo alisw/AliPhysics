@@ -238,7 +238,14 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*24*/	fTree->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
 /*25*/	fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 /*26*/	fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
+//-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info 
+        fTree->Branch("fTreeVariableV0x",&fTreeVariableV0x,"fTreeVariableV0x/F");
+        fTree->Branch("fTreeVariableV0y",&fTreeVariableV0y,"fTreeVariableV0y/F");
+        fTree->Branch("fTreeVariableV0z",&fTreeVariableV0z,"fTreeVariableV0z/F");
 
+        fTree->Branch("fTreeVariableV0Px",&fTreeVariableV0Px,"fTreeVariableV0Px/F");
+        fTree->Branch("fTreeVariableV0Py",&fTreeVariableV0Py,"fTreeVariableV0Py/F");
+        fTree->Branch("fTreeVariableV0Pz",&fTreeVariableV0Pz,"fTreeVariableV0Pz/F");
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -628,12 +635,24 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       if ( fkUseOnTheFly ) CheckChargeV0(v0); 
 
       Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
+
       Double_t tV0mom[3];
       v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] ); 
       Double_t lV0TotalMomentum = TMath::Sqrt(
       tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
 
       lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+
+      //Set Variables for later filling
+      fTreeVariableV0x = tDecayVertexV0[0];
+      fTreeVariableV0y = tDecayVertexV0[1];
+      fTreeVariableV0z = tDecayVertexV0[2];
+
+      //Set Variables for later filling
+      fTreeVariableV0Px = tV0mom[0];
+      fTreeVariableV0Py = tV0mom[1];
+      fTreeVariableV0Pz = tV0mom[2];
+
       lPt = v0->Pt();
       lRapK0Short = v0->RapK0Short();
       lRapLambda  = v0->RapLambda();
