@@ -131,8 +131,10 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
   //Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
   //const Int_t kNPtBins = 5;
   //Double_t ptBins[kNPtBins+1] = {0.6,1.0,1.5,2.0,4.0,20.0};
-  const Int_t kNPtBins = 4;
-  Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
+  //const Int_t kNPtBins = 4;
+  //Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
+  const Int_t kNPtBins = 3;
+  Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0};
   //const Int_t kNPtBins = 1;
   //Double_t ptBins[kNPtBins+1] = {1.0,2.0};
 
@@ -288,8 +290,8 @@ void drawCorrelationFunctionPsiSummary(TString histoName = "PN",
       latexInfo1->DrawLatex(0.2,0.95,"Residual");
 
 
-      cQA[i][j]->SaveAs(Form(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_PttFrom%.1fTo%.1fPtaFrom%.1fTo%.1f.eps",lhcPeriod,gTrainID,histoName.Data(),ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax)));
-      cQA[i][j]->SaveAs(Form(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_PttFrom%.1fTo%.1fPtaFrom%.1fTo%.1f.pdf",lhcPeriod,gTrainID,histoName.Data(),ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax)));
+      //cQA[i][j]->SaveAs(Form(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_PttFrom%.1fTo%.1fPtaFrom%.1fTo%.1f.eps",lhcPeriod,gTrainID,histoName.Data(),ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax)));
+      cQA[i][j]->SaveAs(Form(Form("PbPb/%s/Train%d/figs/correlationFunctionFit_%s_PttFrom%.1fTo%.1fPtaFrom%.1fTo%.1f.png",lhcPeriod,gTrainID,histoName.Data(),ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax)));
 
       // fit parameters
       fFit = (TF2*)inFile->Get("gFitFunction");

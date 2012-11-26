@@ -8,7 +8,7 @@ void drawBalanceFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
   TFile        *fPar[3];
   TGraphErrors *gPar[3][18];
 
-  Int_t iCentrality[3] = {1,1,5};
+  Int_t iCentrality[3] = {1,3,5};
   
   for(Int_t iCent = 0 ; iCent < 3; iCent++){
 

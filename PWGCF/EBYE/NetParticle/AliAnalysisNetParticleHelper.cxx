@@ -34,6 +34,8 @@ ClassImp(AliAnalysisNetParticleHelper)
  * ---------------------------------------------------------------------------------
  */
 
+  // MW make fgk ... static const
+
   const Char_t* aPartNames[AliPID::kSPECIES][2]             = {
     {"ele",     "posi"},
     {"mubar",   "mu"},
@@ -69,10 +71,11 @@ ClassImp(AliAnalysisNetParticleHelper)
 
 //________________________________________________________________________
 AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
-  fESDHandler(NULL),
+  fModeDistCreation(0),
+
+  fInputEventHandler(NULL),
   fPIDResponse(NULL),
   fESD(NULL),
-  fAODHandler(NULL),
   fAOD(NULL),
   fMCEvent(NULL),
   fStack(NULL),
@@ -92,6 +95,7 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fControlParticleIsNeutral(kTRUE),
   fControlParticleName("Lambda"),
 
+  fUsePID(kTRUE),
   fNSigmaMaxTPC(2.5),
   fNSigmaMaxTOF(2.5),
   fMinPtForTOFRequired(0.8),
@@ -108,7 +112,8 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
 
   fEtaCorrFunc(NULL),
   fCorr0(NULL),
-  fCorr1(NULL) {
+  fCorr1(NULL),
+  fCorr2(NULL) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliAnalysisNetParticleHelper",10);
@@ -118,13 +123,21 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
 AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
   // Destructor
 
-  for (Int_t jj = 0; jj < 2; ++jj) {
-    if (fCorr0[jj]) delete[] fCorr0[jj];
-    if (fCorr1[jj]) delete[] fCorr1[jj];
+  if (fModeDistCreation == 1) {
+    for (Int_t jj = 0; jj < 2; ++jj) {
+      if (fCorr0[jj]) delete[] fCorr0[jj];
+      if (fParticleSpecies == AliPID::kProton) {
+	if (fCorr1[jj]) delete[] fCorr1[jj];
+	if (fCorr2[jj]) delete[] fCorr2[jj];
+      }
+    }
+    if (fCorr0) delete[] fCorr0;
+    if (fParticleSpecies == AliPID::kProton) {
+      if (fCorr1) delete[] fCorr1;
+      if (fCorr2) delete[] fCorr2;
+    }
   }
-  if (fCorr0) delete[] fCorr0;
-  if (fCorr1) delete[] fCorr1;
-  
+
   return;
 }
 
@@ -137,21 +150,38 @@ AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
 //________________________________________________________________________
 void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid) {
   // -- Set particle species (ID, Name, Title, Title LATEX)
-
-  if( (Int_t)pid < 0 || (Int_t)pid > AliPID::kSPECIES){
+  
+  if ( Int_t(pid) < 0 || Int_t(pid) > AliPID::kSPECIES) {
     AliWarning("Particle ID not in AliPID::kSPECIES --> Set to protons");
     pid = AliPID::kProton;
   }  
-
-  fParticleSpecies     = pid;
-
+  
+  fParticleSpecies = pid;
+  
   for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
     fPartName[idxPart]       = aPartNames[fParticleSpecies][idxPart];
     fPartTitle[idxPart]      = aPartTitles[fParticleSpecies][idxPart];
     fPartTitleLatex[idxPart] = aPartTitlesLatex[fParticleSpecies][idxPart];
   }
 }
+//________________________________________________________________________
+void AliAnalysisNetParticleHelper::SetUsePID(Bool_t usePID) {
+  // -- Set usage of PID
+  //    > if turn off, set charge types (ID, Name, Title, Title LATEX)
+  
+  fUsePID = usePID;
+  
+  if (!usePID) {
+    fParticleSpecies   = AliPID::kUnknown;
 
+    fPartName[0]       = "neg";
+    fPartName[1]       = "pos";
+    fPartTitle[0]      = "Negative";
+    fPartTitle[1]      = "Positive";
+    fPartTitleLatex[0] = "Negative";
+    fPartTitleLatex[1] = "Positive";
+  }
+}
 
 /*
  * ---------------------------------------------------------------------------------
@@ -226,10 +256,11 @@ TString AliAnalysisNetParticleHelper::GetControlParticleTitle(Int_t idxPart) {
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC) {
+Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
+  fModeDistCreation = modeDistCreation;
 
   // -- Setup event cut statistics 
   InitializeEventStats();
@@ -252,20 +283,21 @@ Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC) {
 //________________________________________________________________________
 Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent) {
   // -- Setup Event
-
+  
   // -- Get ESD objects
   if(esdHandler){
-    fESDHandler  = esdHandler;
-    fPIDResponse = esdHandler->GetPIDResponse();
-    fESD         = fESDHandler->GetEvent();
+    fInputEventHandler = static_cast<AliInputEventHandler*>(esdHandler);
+    fESD               = dynamic_cast<AliESDEvent*>(fInputEventHandler->GetEvent());
   }
 
   // -- Get AOD objects
   else if(aodHandler){
-    fAODHandler  = aodHandler;
-    fPIDResponse = aodHandler->GetPIDResponse();
-    fAOD         = fAODHandler->GetEvent();
+    fInputEventHandler = static_cast<AliInputEventHandler*>(aodHandler);
+    fAOD               = dynamic_cast<AliAODEvent*>(fInputEventHandler->GetEvent());
   }
+
+  // -- Get Common objects
+  fPIDResponse = fInputEventHandler->GetPIDResponse();
 
   // -- Get MC objects
   fMCEvent     = mcEvent;
@@ -292,17 +324,16 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
     fCentralityBin = centBin + 1;
   else
     fCentralityBin = -2;
-  
+
   // -- Stay within the max centrality bin
   if (fCentralityBin >= fCentralityBinMax)
     fCentralityBin = -2;
-  
+
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
 
-  if(esdHandler){
-    // -- Update TPC pid with eta correction (only for ESDs?) XXX
+  // -- Update TPC pid with eta correction (only for ESDs!!)
+  if(esdHandler)
     UpdateEtaCorrectedTPCPid();
-  }
 
   return 0;
 }
@@ -321,20 +352,11 @@ Bool_t AliAnalysisNetParticleHelper::IsEventTriggered() {
   for (Int_t ii = 0; ii < fNTriggers; ++ii)
     aTriggerFired[ii] = kFALSE;
 
-  if(fESDHandler){
-    if ((fESDHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
-    if ((fESDHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
-    if ((fESDHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
-    if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
-    if ((fESDHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
-  }
-  else if(fAODHandler){
-    if ((fAODHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
-    if ((fAODHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
-    if ((fAODHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
-    if ((fAODHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
-    if ((fAODHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
-  }
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
 
   Bool_t isTriggered = kFALSE;
 
@@ -397,7 +419,7 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
   }
   else
     aEventCuts[iCut] = 1;
-  
+
   // -- 4 - Centrality = -1  (no centrality or not hadronic)
   ++iCut;
   if(fCentralityBin == -1.) 
@@ -444,6 +466,7 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(TParticle *p
         
   return kTRUE;
 }
+
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCParticle *particle) {
   // -- Check if MC particle is accepted for basic parameters
@@ -465,6 +488,7 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCPart
         
   return kTRUE;
 }
+
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC) {
   // -- Check if MC particle is accepted for basic parameters
@@ -511,7 +535,17 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCPart
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP) {
   // -- Check if particle is accepted
   // > in rapidity
+  // > if no pid : 
+  // >   use yP as input for the pseudo-rapdity_MAX to be checked
   // > return 0 if not accepted
+
+  if (!fUsePID) {
+    Bool_t isAccepted = kFALSE;
+    if (TMath::Abs(particle->Eta()) < yP)
+      isAccepted = kTRUE;
+    yP = particle->Eta();
+    return isAccepted;
+  }
 
   Double_t mP = AliPID::ParticleMass(fParticleSpecies);
 
@@ -550,7 +584,7 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleFindable(Int_t label) {
  */
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliESDtrack *track) {
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliVTrack* track) {
   // -- Check if track is accepted 
   // > for basic parameters
 
@@ -558,39 +592,22 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliESDtrack *tr
     return kFALSE;
   
   if (track->Charge() == 0) 
-    return kFALSE;
-  
-  // -- Get momentum for dEdx
-  if (!track->GetInnerParam()) 
     return kFALSE;
   
   return kTRUE;
 } 
  
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedBasicCharged(AliAODTrack *track) {
-  // -- Check if track is accepted 
-  // > for basic parameters
-
-  if (!track)
-    return kFALSE;
-  
-  if (track->Charge() == 0) 
-    return kFALSE;
-  
-  //// -- Get momentum for dEdx --> returns always ZERO XXX
-  //if (!track->GetInnerParam()) 
-  //  return kFALSE;
-  
-  return kTRUE;
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliVTrack *track, Double_t &yP) {
   // -- Check if track is accepted
   // > in rapidity
   // > return 0 if not accepted
 
+  if (!fUsePID) {
+    yP = track->Eta();
+    return kTRUE;
+  }
+  
   Double_t mP = AliPID::ParticleMass(fParticleSpecies);
 
   // -- Calculate rapidities and kinematics
@@ -609,12 +626,20 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedRapidity(AliVTrack *track, D
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliESDtrack *track) {  //ONLY FOR ESDs so far XXX
-  // -- Check if track is accepted 
+Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliVTrack *vTrack) {
+  // -- Check if track is accepted - ONLY FOR ESDs so far 
   // > for DCA, if both SPD layers have hits
+  // > For now only Implemented for ESDs
 
   Bool_t isAccepted = kTRUE;
 
+  if (!fESD)
+    return isAccepted;
+
+  AliESDtrack* track = dynamic_cast<AliESDtrack*>(vTrack);
+  if (!track)
+    return kFALSE;
+  
   // -- Get nHits SPD
   if (track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) {
 
@@ -646,6 +671,13 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double
 
   Bool_t isAcceptedTPC = kFALSE;
   Bool_t isAcceptedTOF = kTRUE;
+
+  // -- In case not PID is used
+  if (!fUsePID) {
+    pid[0] = 10.;
+    pid[1] = 10.;
+    return kTRUE;
+  }
   
   // -- Get PID
   pid[0] = fPIDResponse->NumberOfSigmasTPC(track, fParticleSpecies);
@@ -668,7 +700,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double
     
     // Has no TOF PID availible
     else { 
-      if (track->Pt() > fMinPtForTOFRequired)
+      if (track->Pt() > fMinPtForTOFRequired) 
 	isAcceptedTOF = kFALSE;
       else
 	isAcceptedTOF = kTRUE;
@@ -708,7 +740,13 @@ Double_t AliAnalysisNetParticleHelper::GetTrackbyTrackCorrectionFactor(Double_t 
   // -- Get efficiency correctionf of particle dependent on (eta, phi, pt, centrality)
 
   Int_t idxPart = (aTrack[2] < 0) ? 0 : 1;
-  THnSparseF* corrMatrix = (flag == 0) ? fCorr0[idxPart][fCentralityBin] : fCorr1[idxPart][fCentralityBin];
+  THnF* corrMatrix = NULL;
+  if (flag == 0)
+    corrMatrix = fCorr0[idxPart][fCentralityBin];
+  else if (flag == 1)
+    corrMatrix = fCorr1[idxPart][fCentralityBin];
+  else 
+    corrMatrix = fCorr2[idxPart][fCentralityBin];
   
   Double_t dimBin[3] = {aTrack[3], aTrack[4], aTrack[1]}; // eta, phi, pt    
 
@@ -723,7 +761,7 @@ Double_t AliAnalysisNetParticleHelper::GetTrackbyTrackCorrectionFactor(Double_t 
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleHelper::BinLogAxis(const THnSparseF *h, Int_t axisNumber) {
+void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *h, Int_t axisNumber) {
   // -- Method for the correct logarithmic binning of histograms
   
   TAxis *axis = h->GetAxis(axisNumber);
@@ -736,10 +774,11 @@ void AliAnalysisNetParticleHelper::BinLogAxis(const THnSparseF *h, Int_t axisNum
   newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
   
-  for (int i = 1; i <= bins; i++) {
+  for (int i = 1; i <= bins; i++)
    newBins[i] = factor * newBins[i-1];
-  }
+  
   axis->Set(bins, newBins);
+
   delete [] newBins;
 }
 
@@ -825,60 +864,74 @@ Int_t AliAnalysisNetParticleHelper::InitializeEtaCorrection(Bool_t isMC) {
 Int_t AliAnalysisNetParticleHelper::InitializeTrackbyTrackCorrection() {
   // -- Initialize track by track correction matrices
 
-  if( fParticleSpecies != AliPID::kProton){
-    AliWarning("Only proton corrections (preliminary available) --> Will correct with these");
-  }
+  if (fModeDistCreation != 1)
+    return 0;
   
-  // In future --> !!!!!!!!!!!!!!!!!!!!!!!
-  //TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrection.root");
-  TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrectionProton.root");
+  TFile* corrFile  = TFile::Open("/hera/alice/jthaeder/train/trunk/jthaeder_trigger/netParticle/eff/effectiveCorrection.root");
+  // JMT In future --> !!!!!!!!!!!!!!!!!!!!!!!
+  // JMT TFile* corrFile  = TFile::Open("${ALICE_ROOT}/PWGCF/EBYE/NetParticle/eff/effectiveCorrection.root");
+
   if (!corrFile) {
     AliError("Track-by-track correction file can not be opened!");
     return -1;
   }
 
-  // -- correction - not cross section corrected
-  fCorr0    = new THnSparseF**[2];
-  fCorr0[0] = new THnSparseF*[fCentralityBinMax];
-  fCorr0[1] = new THnSparseF*[fCentralityBinMax];
+  // -- Correction - not cross section corrected
+  fCorr0    = new THnF**[2];
+  fCorr0[0] = new THnF*[fCentralityBinMax];
+  fCorr0[1] = new THnF*[fCentralityBinMax];
 
   for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
-
-    // In future --> !!!!!!!!!!!!!!!!!!!!!!!
-    // THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr0_Cent_%d", fPartName[0].Data(), idxCent)));
-    // THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr0_Cent_%d", fPartName[1].Data(), idxCent)));
-    THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("pbar_Corr0_Cent_%d", idxCent)));
-    THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("p_Corr0_Cent_%d", idxCent)));
+    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr0_Cent_%d", fPartName[0].Data(), idxCent)));
+    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr0_Cent_%d", fPartName[1].Data(), idxCent)));
 
     if (!sp0 || !sp1) {
-      AliError(Form("Effective correction objects 0 - idxCent %d can not be retrieved!",idxCent));
+      AliError(Form("Effective correction objects 0 - idxCent %d can not be retrieved!", idxCent));
       return -1;
     }
     
-    fCorr0[0][idxCent] = static_cast<THnSparseF*>(sp0->Clone());
-    fCorr0[1][idxCent] = static_cast<THnSparseF*>(sp1->Clone());
+    fCorr0[0][idxCent] = static_cast<THnF*>(sp0->Clone());
+    fCorr0[1][idxCent] = static_cast<THnF*>(sp1->Clone());
   }
 
-  // -- correction - ross section corrected
-  fCorr1    = new THnSparseF**[2];
-  fCorr1[0] = new THnSparseF*[fCentralityBinMax];
-  fCorr1[1] = new THnSparseF*[fCentralityBinMax];
+  // -- From now only for protons
+  if (fParticleSpecies != AliPID::kProton)
+    return 0;
+
+  // -- Correction - cross section corrected
+  fCorr1    = new THnF**[2];
+  fCorr1[0] = new THnF*[fCentralityBinMax];
+  fCorr1[1] = new THnF*[fCentralityBinMax];
 
   for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
-
-    // In future --> !!!!!!!!!!!!!!!!!!!!!!!
-    //THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr1_Cent_%d", fPartName[0].Data(), idxCent)));
-    //THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("%s_Corr1_Cent_%d", fPartName[1].Data(), idxCent)));
-    THnSparseF *sp0 = static_cast<THnSparseF*>(corrFile->Get(Form("pbar_Corr1_Cent_%d", idxCent)));
-    THnSparseF *sp1 = static_cast<THnSparseF*>(corrFile->Get(Form("p_Corr1_Cent_%d", idxCent)));
+    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr1_Cent_%d", fPartName[0].Data(), idxCent)));
+    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr1_Cent_%d", fPartName[1].Data(), idxCent)));
 
     if (!sp0 || !sp1) {
-      AliError(Form("Effective correction objects 1 - idxCent %d can not be retrieved!",idxCent));
+      AliError(Form("Effective correction objects 1 - idxCent %d can not be retrieved!", idxCent));
       return -1;
     }
 
-    fCorr1[0][idxCent] = static_cast<THnSparseF*>(sp0->Clone());
-    fCorr1[1][idxCent] = static_cast<THnSparseF*>(sp1->Clone());
+    fCorr1[0][idxCent] = static_cast<THnF*>(sp0->Clone());
+    fCorr1[1][idxCent] = static_cast<THnF*>(sp1->Clone());
+  }
+
+  // -- Correction - cross section correction only
+  fCorr2    = new THnF**[2];
+  fCorr2[0] = new THnF*[fCentralityBinMax];
+  fCorr2[1] = new THnF*[fCentralityBinMax];
+
+  for (Int_t idxCent = 0; idxCent < fCentralityBinMax; ++idxCent) {
+    THnF *sp0 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr2_Cent_%d", fPartName[0].Data(), idxCent)));
+    THnF *sp1 = static_cast<THnF*>(corrFile->Get(Form("hn_%s_Corr2_Cent_%d", fPartName[1].Data(), idxCent)));
+
+    if (!sp0 || !sp1) {
+      AliError(Form("Effective correction objects 2 - idxCent %d can not be retrieved!", idxCent));
+      return -1;
+    }
+
+    fCorr2[0][idxCent] = static_cast<THnF*>(sp0->Clone());
+    fCorr2[1][idxCent] = static_cast<THnF*>(sp1->Clone());
   }
 
   return 0;

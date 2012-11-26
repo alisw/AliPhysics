@@ -46,7 +46,7 @@ ClassImp(AliAnalysisTaskNetParticle)
 //________________________________________________________________________
 AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
   AliAnalysisTaskSE(name),
-  fHelper(new AliAnalysisNetParticleHelper),
+  fHelper(NULL),
   fEffCont(NULL),
   fDCA(NULL),
   fDist(NULL),
@@ -60,7 +60,7 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
   fESD(NULL), 
   fESDHandler(NULL),
 
-  fESDTrackCutsBase(new AliESDtrackCuts),
+  fESDTrackCutsBase(NULL),
   fESDTrackCuts(NULL),
   fESDTrackCutsBkg(NULL),
   fESDTrackCutsEff(NULL),
@@ -74,18 +74,18 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
   fModeEffCreation(0),
   fModeDCACreation(0),
   fModeDistCreation(0),
+  fModeQACreation(0),
 
   fMCEvent(NULL),
   fMCStack(NULL),
 
   fHnQA(NULL),
-  fUseQATHnSparse(kFALSE),
 
   fEtaMax(0.9),
-  fPtRange(new Float_t[2]),
-  fPtRangeEff(new Float_t[2]),
+  fPtRange(),
+  fPtRangeEff(),
 
-  fAODtrackCutBit(1024){
+  fAODtrackCutBit(1024) {
   // Constructor   
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskNetParticle",10);
@@ -108,9 +108,6 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
 AliAnalysisTaskNetParticle::~AliAnalysisTaskNetParticle() {
   // Destructor
 
-  if (fPtRange)          delete[] fPtRange;
-  if (fPtRangeEff)       delete[] fPtRangeEff;
-
   if (fESDTrackCutsBase) delete fESDTrackCutsBase;
   if (fESDTrackCuts)     delete fESDTrackCuts;
   if (fESDTrackCutsBkg)  delete fESDTrackCutsBkg;
@@ -132,7 +129,7 @@ AliAnalysisTaskNetParticle::~AliAnalysisTaskNetParticle() {
 void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // Create histograms
 
-  //Have to do this for grid analysis????
+  // -- Initialize all classes
   Initialize();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -188,81 +185,11 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
     fOutListDCA->Add(fDCA->GetHnDCA());
 
   // ------------------------------------------------------------------
-  // -- Add Multiplicity Correlations
-  // ------------------------------------------------------------------
-  /*
-  fOutList->Add(new TH2F("fHMultCorrTPCref0", "Centrality vs Multiplicity (TPCref);Centrality;Multiplicity (TPCref)",          
-			 24, -0.5, 11.49, 10001, 0.5, 10000.49));
-  fOutList->Add(new TH2F("fHMultCorrTracks0", "Centrality vs Multiplicity (Tracks);Centrality;Multiplicity (Tracks)",          
-			 24, -0.5, 11.49, 10001, 0.5, 10000.49));
-  fOutList->Add(new TH2F("fHMultCorrESDTracks0", "Centrality vs Multiplicity (ESDTracks);Centrality;Multiplicity (ESDTracks)", 
-			 24, -0.5, 11.49, 10001, 0.5, 10000.49));
-  
-  fOutList->Add(new TH2F("fHMultCorrTPCref1", "Centrality vs Multiplicity (TPCref);Centrality;Multiplicity (TPCref)",          
-			 101, -0.5, 100.49, 10001, 0.5, 10000.49));
-  fOutList->Add(new TH2F("fHMultCorrTracks1", "Centrality vs Multiplicity (Tracks);Centrality;Multiplicity (Tracks)",          
-			 101, -0.5, 100.49, 10001, 0.5, 10000.49));
-  fOutList->Add(new TH2F("fHMultCorrESDTracks1", "Centrality vs Multiplicity (ESDTracks);Centrality;Multiplicity (ESDTracks)", 
-			 101, -0.5, 100.49, 10001, 0.5, 10000.49));
-  */
-  // ------------------------------------------------------------------
   // -- Create THnSparseF - QA
   // ------------------------------------------------------------------
-  /*
-  Double_t dCent[2] = {-0.5, 8.5};
-  Int_t iCent       = 9;
-  
-  Double_t dEta[2]  = {-0.9, 0.9}; // -> 37 bins
-  Int_t iEta        = Int_t((dEta[1]-dEta[0]) / 0.075) +1 ; 
+  if (fModeQACreation == 1)
+    CreateQAHists();
 
-  Double_t dRap[2]  = {-0.5, 0.5}; 
-  Int_t iRap        = Int_t((dRap[1]-dRap[0]) / 0.075) +1 ; 
-
-  Double_t dPhi[2]  = {0.0, TMath::TwoPi()};
-  Int_t iPhi        = 42;
-
-  Double_t dPt[2]   = {0.1, 3.0}; 
-  Int_t iPt         = Int_t((dPt[1]-dPt[0]) / 0.075);
-
-  Double_t dSign[2] = {-1.5, 1.5};
-  Int_t iSign       = 3;
-
-  //                      cent:isAccepted: pInner:     pt:     sign:tpcSignal:nSigmaTPC:nSigmaTOF:      eta:     phi:       y: dcar: dcaz: nSigmaCdd: nSigmaCzz  
-  Int_t    bin[15] = {   iCent,       2  ,    iPt,    iPt,    iSign,      500,     50  ,     50  ,     iEta,    iPhi,    iRap,  50 ,  50 ,       50 ,       50 };
-  Double_t min[15] = {dCent[0],      -0.5, dPt[0], dPt[0], dSign[0],       30,     -5.0,     -5.0,  dEta[0], dPhi[0], dRap[0], -10., -10.,      -10.,      -10.};
-  Double_t max[15] = {dCent[1],       1.5, dPt[1], dPt[1], dSign[1],      500,      5.0,      5.0,  dEta[1], dPhi[1], dRap[1],  10.,  10.,       10.,       10.};
-  
-  if (fUseQATHnSparse) {
-    fOutListQA->Add(new THnSparseF("fHnQA", "cent:isAccepted:pInner:pt:sign:tpcSignal:nSigmaTPC:nSigmaTOF:eta:phi:u:dcar:dcaz:nSigmaCdd:nSigmaCzz",
-				   15, bin, min, max));
-    
-    fHnQA = static_cast<THnSparseF*>(fOutListQA->Last());
-    fHnQA->Sumw2();
-
-    fHnQA->GetAxis(0)->SetTitle("centrality");
-    fHnQA->GetAxis(1)->SetTitle("isAccepted");
-    fHnQA->GetAxis(2)->SetTitle("#it{p}_{Inner} (GeV/#it{c})");
-    fHnQA->GetAxis(3)->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    fHnQA->GetAxis(4)->SetTitle("sign");
-    
-    fHnQA->GetAxis(5)->SetTitle("TPC signal");
-    fHnQA->GetAxis(6)->SetTitle("n #sigma TPC");
-    fHnQA->GetAxis(7)->SetTitle("n #sigma TOF");
-    
-    fHnQA->GetAxis(8)->SetTitle("#eta");
-    fHnQA->GetAxis(9)->SetTitle("#varphi");
-    fHnQA->GetAxis(10)->SetTitle("#it{y}");    
-
-    fHnQA->GetAxis(11)->SetTitle("DCAr");
-    fHnQA->GetAxis(12)->SetTitle("DCAz");
-
-    fHnQA->GetAxis(13)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");
-    fHnQA->GetAxis(14)->SetTitle("n #sigma #sqrt(Czz)/DCAz");
-
-    fHelper->BinLogAxis(fHnQA, 2);
-    fHelper->BinLogAxis(fHnQA, 3);
-  }
-  */
   // ------------------------------------------------------------------
 
   TH1::AddDirectory(oldStatus);
@@ -305,6 +232,12 @@ void AliAnalysisTaskNetParticle::UserExec(Option_t *) {
     fDist->Process();
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  // -- Fill QA histograms
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  if (fModeQACreation == 1)
+    FillQAHists();
+
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   // -- Post output data
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -339,6 +272,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   
   // -- Create ESD track cuts
   // --------------------------
+  fESDTrackCutsBase = new AliESDtrackCuts;
   fESDTrackCutsBase->SetMinNCrossedRowsTPC(70);                                             // TPC
   fESDTrackCutsBase->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);                    // TPC
 
@@ -397,7 +331,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   // -- Initialize Helper
   // ------------------------------------------------------------------
-  if (fHelper->Initialize(fIsMC))
+  if (fHelper->Initialize(fIsMC, fModeDistCreation))
     return -1;
 
   // ------------------------------------------------------------------
@@ -405,7 +339,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
     fEffCont = new AliAnalysisNetParticleEffCont;
-    fEffCont->Initialize(fESDTrackCutsEff, fHelper,fAODtrackCutBit);
+    fEffCont->Initialize(fESDTrackCutsEff, fHelper, fAODtrackCutBit);
   }
 
   // ------------------------------------------------------------------
@@ -421,7 +355,10 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if (fModeDistCreation == 1) {
     fDist = new AliAnalysisNetParticleDistribution;
-    fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax,fAODtrackCutBit);
+    if (fHelper->GetParticleSpecies() == AliPID::kProton)
+      fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax, fAODtrackCutBit, 3);
+    else
+      fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fPtRange, fEtaMax, fAODtrackCutBit, 1);
   }
 
   // ------------------------------------------------------------------
@@ -449,20 +386,16 @@ Int_t AliAnalysisTaskNetParticle::SetupEvent() {
 
   // -- ESD Event
   // ------------------------------------------------------------------
-  if(!fIsAOD){
-    if (SetupESDEvent() < 0) {
-      AliError("Setup ESD Event failed");
-      return -1;
-    }
+  if (!fIsAOD && SetupESDEvent() < 0) {
+    AliError("Setup ESD Event failed");
+    return -1;
   }
 
   // -- AOD Event
   // ------------------------------------------------------------------
-  else {
-    if (SetupAODEvent() < 0) {
-      AliError("Setup AOD Event failed");
-      return -1;
-    }
+  if (fIsAOD && SetupAODEvent() < 0) {
+    AliError("Setup AOD Event failed");
+    return -1;
   }
   
   // -- Setup MC Event
@@ -476,17 +409,14 @@ Int_t AliAnalysisTaskNetParticle::SetupEvent() {
   // ------------------------------------------------------------------
   fHelper->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
 
-  if (fIsMC && fModeEffCreation)
-    fEffCont->SetupEvent(fESDHandler, fMCEvent);
-
-  if (fIsAOD && fModeEffCreation)
-    fEffCont->SetupEvent(fAODHandler);
+  if (fModeEffCreation && (fIsMC || fIsAOD) )
+    fEffCont->SetupEvent(fESDHandler, fAODHandler, fMCEvent); 
 
   if (fModeDCACreation == 1)
     fDCA->SetupEvent(fESDHandler, fMCEvent);
 
   if (fModeDistCreation == 1)
-    fDist->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
+    fDist->SetupEvent(fESDHandler, fAODHandler, fMCEvent);   // JMT need AOD?
 
   // -- Evaluate Event cuts
   // ------------------------------------------------------------------
@@ -634,7 +564,7 @@ void AliAnalysisTaskNetParticle::ResetEvent() {
   // -- Reset ESD Event
   fESD       = NULL;
 
-  // -- Reset ESD Event
+  // -- Reset AOD Event
   fAOD       = NULL;
 
   // -- Reset MC Event
@@ -650,19 +580,75 @@ void AliAnalysisTaskNetParticle::ResetEvent() {
 
 /*
  * ---------------------------------------------------------------------------------
- *                           Process Methods - private
+ *                           Helper Methods - private
  * ---------------------------------------------------------------------------------
  */
 
-#if 0
+//________________________________________________________________________
+void AliAnalysisTaskNetParticle::CreateQAHists() {
+  // -- Create QA histograms
+  
+  Double_t dCent[2] = {-0.5, 8.5};
+  Int_t iCent       = 9;
+  
+  Double_t dEta[2]  = {-0.9, 0.9}; // -> 37 bins
+  Int_t iEta        = Int_t((dEta[1]-dEta[0]) / 0.075) +1 ; 
+
+  Double_t dRap[2]  = {-0.5, 0.5}; 
+  Int_t iRap        = Int_t((dRap[1]-dRap[0]) / 0.075) +1 ; 
+
+  Double_t dPhi[2]  = {0.0, TMath::TwoPi()};
+  Int_t iPhi        = 42;
+
+  Double_t dPt[2]   = {0.1, 3.0}; 
+  Int_t iPt         = Int_t((dPt[1]-dPt[0]) / 0.075);
+
+  Double_t dSign[2] = {-1.5, 1.5};
+  Int_t iSign       = 3;
+
+  //                      cent:isAccepted: pInner:     pt:     sign:tpcSignal:nSigmaTPC:nSigmaTOF:      eta:     phi:       y: dcar: dcaz: nSigmaCdd: nSigmaCzz  
+  Int_t    bin[15] = {   iCent,       2  ,    iPt,    iPt,    iSign,      500,     50  ,     50  ,     iEta,    iPhi,    iRap,  50 ,  50 ,       50 ,       50 };
+  Double_t min[15] = {dCent[0],      -0.5, dPt[0], dPt[0], dSign[0],       30,     -5.0,     -5.0,  dEta[0], dPhi[0], dRap[0], -10., -10.,      -10.,      -10.};
+  Double_t max[15] = {dCent[1],       1.5, dPt[1], dPt[1], dSign[1],      500,      5.0,      5.0,  dEta[1], dPhi[1], dRap[1],  10.,  10.,       10.,       10.};
+  
+  fOutListQA->Add(new THnSparseF("fHnQA", "cent:isAccepted:pInner:pt:sign:tpcSignal:nSigmaTPC:nSigmaTOF:eta:phi:u:dcar:dcaz:nSigmaCdd:nSigmaCzz",
+				 15, bin, min, max));
+  
+  fHnQA = static_cast<THnSparseF*>(fOutListQA->Last());
+  fHnQA->Sumw2();
+  
+  fHnQA->GetAxis(0)->SetTitle("centrality");
+  fHnQA->GetAxis(1)->SetTitle("isAccepted");
+  fHnQA->GetAxis(2)->SetTitle("#it{p}_{Inner} (GeV/#it{c})");
+  fHnQA->GetAxis(3)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fHnQA->GetAxis(4)->SetTitle("sign");
+  
+  fHnQA->GetAxis(5)->SetTitle("TPC signal");
+  fHnQA->GetAxis(6)->SetTitle("n #sigma TPC");
+  fHnQA->GetAxis(7)->SetTitle("n #sigma TOF");
+  
+  fHnQA->GetAxis(8)->SetTitle("#eta");
+  fHnQA->GetAxis(9)->SetTitle("#varphi");
+  fHnQA->GetAxis(10)->SetTitle("#it{y}");    
+  
+  fHnQA->GetAxis(11)->SetTitle("DCAr");
+  fHnQA->GetAxis(12)->SetTitle("DCAz");
+  
+  fHnQA->GetAxis(13)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");
+  fHnQA->GetAxis(14)->SetTitle("n #sigma #sqrt(Czz)/DCAz");
+  
+  fHelper->BinLogAxis(fHnQA, 2);
+  fHelper->BinLogAxis(fHnQA, 3);
+}
 
 //________________________________________________________________________
-void AliAnalysisTaskNetParticle::ProcessESDTrackLoop() {
-  // -- Process ESD tracks and fill histograms
-  
-  Int_t nTracks = 0;
+void AliAnalysisTaskNetParticle::FillQAHists() {
+  // -- Process ESD tracks and fill QA histograms
 
-  for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
+  if (!fESD)
+    return;
+
+  for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
     AliESDtrack *track = fESD->GetTrack(idxTrack); 
 
     // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -684,7 +670,10 @@ void AliAnalysisTaskNetParticle::ProcessESDTrackLoop() {
 
     // -- Check if accepted bt PID from TPC or TPC+TOF
     Double_t pid[2];
-    Bool_t isAcceptedPID = fHelper->IsTrackAcceptedPID(track, pid);
+    Bool_t isAcceptedPID = fHelper->IsTrackAcceptedPID(track, pid); 
+    isAcceptedPID = isAcceptedPID; // JMT : NOT USED FOR NOW
+    //    if (!isAcceptedPID)      // JMT : NOT USED FOR NOW
+    //      continue;              // JMT : NOT USED FOR NOW
 
     // -- Check if accepted with thighter DCA cuts
     Bool_t isAcceptedDCA = fHelper->IsTrackAcceptedDCA(track);
@@ -696,65 +685,38 @@ void AliAnalysisTaskNetParticle::ProcessESDTrackLoop() {
     // -- Fill tracks in QA THnSparseF
     // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-    if (fUseQATHnSparse && fHnQA->GetEntries() < 5e5) {
+    if (fHnQA->GetEntries() > 5e5) 
+      return;
 
-      // -- Get dca r/z
-      Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-      track->GetImpactParameters(dca,cov);
-      
-      Float_t dcaRoverCdd = ( TMath::Sqrt(cov[0]) != 0. )  ? dca[0]/TMath::Sqrt(cov[0]) : -9.99;
-      Float_t dcaZoverCzz = ( TMath::Sqrt(cov[2]) != 0. )  ? dca[1]/TMath::Sqrt(cov[2]) : -9.99;
-      
-      Double_t aQA[15] = {
-	Double_t(fHelper->GetCentralityBin()),                     //  0 centrality 
-	Double_t(isAcceptedVertex || isAcceptedDCA),  //  1 isAccepted -> Vertex || isAcceptedDCA
-	track->GetInnerParam()->GetP(),               //  2 p at InnerParam
-	track->Pt(),                                  //  3 pt
-	track->GetSign(),                             //  4 sign
-	track->GetTPCsignal(),                        //  5 TPC dE/dx
-	pid[0],                                       //  6 n Sigma TPC
-	pid[1],                                       //  7 n Sigma TOF
-	track->Eta(),                                 //  8 eta
-	track->Phi(),                                 //  9 phi
-	yP,                                           // 10 rapidity   
-	dca[0],                                       // 11 dca r
-	dca[1],                                       // 12 dca z
-	dcaRoverCdd,                                  // 13 sqrt(cov[dd])
-	dcaZoverCzz,                                  // 14 sqrt(cov[zz])
-      };
+    // -- Get dca r/z
+    Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+    track->GetImpactParameters(dca,cov);
     
-      fHnQA->Fill(aQA);
-    }
-
-    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-    // -- Apply track cuts
-    // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-    if (!isAcceptedVertex || !isAcceptedDCA)
-      continue;
-
-    ++nTracks;
-
-    if (!isAcceptedPID)
-      continue;
+    Float_t dcaRoverCdd = ( TMath::Sqrt(cov[0]) != 0. )  ? dca[0]/TMath::Sqrt(cov[0]) : -9.99;
+    Float_t dcaZoverCzz = ( TMath::Sqrt(cov[2]) != 0. )  ? dca[1]/TMath::Sqrt(cov[2]) : -9.99;
     
-  } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
+    Double_t aQA[15] = {
+      Double_t(fHelper->GetCentralityBin()),        //  0 centrality 
+      Double_t(isAcceptedVertex || isAcceptedDCA),  //  1 isAccepted -> Vertex || isAcceptedDCA
+      track->GetTPCmomentum(),                      //  2 p at InnerParam
+      track->Pt(),                                  //  3 pt
+      track->GetSign(),                             //  4 sign
+      track->GetTPCsignal(),                        //  5 TPC dE/dx
+      pid[0],                                       //  6 n Sigma TPC
+      pid[1],                                       //  7 n Sigma TOF
+      track->Eta(),                                 //  8 eta
+      track->Phi(),                                 //  9 phi
+      yP,                                           // 10 rapidity   
+      dca[0],                                       // 11 dca r
+      dca[1],                                       // 12 dca z
+      dcaRoverCdd,                                  // 13 sqrt(cov[dd])
+      dcaZoverCzz,                                  // 14 sqrt(cov[zz])
+    };
+    
+    fHnQA->Fill(aQA);
+  
+} // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
 
-  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  // -- Fill Particle Fluctuation Histograms
-  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-  /*
-  Int_t tpcRef = fESDTrackCuts->GetReferenceMultiplicity(fESD,kTRUE);
-
-  (static_cast<TH2F*>(fOutList->FindObject("fHMultCorrTPCref0")))->Fill(fHelper->GetCentralityBin(),  tpcRef);
-  (static_cast<TH2F*>(fOutList->FindObject("fHMultCorrTracks0")))->Fill(fHelper->GetCentralityBin(),  nTracks);
-
-  Float_t centPercentile = fHelper->GetCentralityPercentile();
-  (static_cast<TH2F*>(fOutList->FindObject("fHMultCorrTPCref1")))->Fill(centPercentile,  tpcRef);
-  (static_cast<TH2F*>(fOutList->FindObject("fHMultCorrTracks1")))->Fill(centPercentile,  nTracks);
-*/
   return;
 }
 
-#endif
