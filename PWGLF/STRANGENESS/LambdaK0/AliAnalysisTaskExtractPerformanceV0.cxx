@@ -354,6 +354,24 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 
 /*34*/   fTree->Branch("fTreeVariableVertexZ",&fTreeVariableVertexZ,"fTreeVariableVertexZ/F");
 
+//-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info 
+        fTree->Branch("fTreeVariableV0x",&fTreeVariableV0x,"fTreeVariableV0x/F");
+        fTree->Branch("fTreeVariableV0y",&fTreeVariableV0y,"fTreeVariableV0y/F");
+        fTree->Branch("fTreeVariableV0z",&fTreeVariableV0z,"fTreeVariableV0z/F");
+
+        fTree->Branch("fTreeVariableV0Px",&fTreeVariableV0Px,"fTreeVariableV0Px/F");
+        fTree->Branch("fTreeVariableV0Py",&fTreeVariableV0Py,"fTreeVariableV0Py/F");
+        fTree->Branch("fTreeVariableV0Pz",&fTreeVariableV0Pz,"fTreeVariableV0Pz/F");
+
+//-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info, perfect info from MC
+        fTree->Branch("fTreeVariableMCV0x",&fTreeVariableMCV0x,"fTreeVariableMCV0x/F");
+        fTree->Branch("fTreeVariableMCV0y",&fTreeVariableMCV0y,"fTreeVariableMCV0y/F");
+        fTree->Branch("fTreeVariableMCV0z",&fTreeVariableMCV0z,"fTreeVariableMCV0z/F");
+
+        fTree->Branch("fTreeVariableMCV0Px",&fTreeVariableMCV0Px,"fTreeVariableMCV0Px/F");
+        fTree->Branch("fTreeVariableMCV0Py",&fTreeVariableMCV0Py,"fTreeVariableMCV0Py/F");
+        fTree->Branch("fTreeVariableMCV0Pz",&fTreeVariableMCV0Pz,"fTreeVariableMCV0Pz/F");
+
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -1300,6 +1318,17 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lPt = v0->Pt();
       lRapK0Short = v0->RapK0Short();
       lRapLambda  = v0->RapLambda();
+
+      //Set Variables for later filling
+      fTreeVariableV0x = tDecayVertexV0[0];
+      fTreeVariableV0y = tDecayVertexV0[1];
+      fTreeVariableV0z = tDecayVertexV0[2];
+
+      //Set Variables for later filling
+      fTreeVariableV0Px = tV0mom[0];
+      fTreeVariableV0Py = tV0mom[1];
+      fTreeVariableV0Pz = tV0mom[2];
+
       if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
 
       UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
@@ -1435,6 +1464,19 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          //Set tree variables
          fTreeVariablePID   = pThisV0->GetPdgCode(); //PDG Code
          fTreeVariablePtMC  = pThisV0->Pt(); //Perfect Pt
+
+         //Set Variables for later filling
+         //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the 
+         //Creation vertex of any one of the daughters!
+         fTreeVariableMCV0x = mcPosV0Dghter->Vx();
+         fTreeVariableMCV0y = mcPosV0Dghter->Vy();
+         fTreeVariableMCV0z = mcPosV0Dghter->Vz();
+
+         //Set Variables for later filling
+         fTreeVariableMCV0Px = pThisV0->Px();
+         fTreeVariableMCV0Py = pThisV0->Py();
+         fTreeVariableMCV0Pz = pThisV0->Pz();
+
          //Only Interested if it's a Lambda, AntiLambda or K0s 
          //Avoid the Junction Bug! PYTHIA has particles with Px=Py=Pz=E=0 occasionally, 
          //having particle code 88 (unrecognized by PDG), for documentation purposes.

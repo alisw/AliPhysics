@@ -133,6 +133,22 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    Int_t fTreeVariableMultiplicity;//!
    Int_t fTreeVariableMultiplicityMC;//!
 
+  Float_t fTreeVariableV0x; //!
+  Float_t fTreeVariableV0y; //!
+  Float_t fTreeVariableV0z; //!
+
+  Float_t fTreeVariableV0Px; //!
+  Float_t fTreeVariableV0Py; //!
+  Float_t fTreeVariableV0Pz; //!
+
+  Float_t fTreeVariableMCV0x; //!
+  Float_t fTreeVariableMCV0y; //!
+  Float_t fTreeVariableMCV0z; //!
+
+  Float_t fTreeVariableMCV0Px; //!
+  Float_t fTreeVariableMCV0Py; //!
+  Float_t fTreeVariableMCV0Pz; //!
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
