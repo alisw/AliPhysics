@@ -27,6 +27,7 @@ namespace AliITSUAux {
   Int_t  UnpackCluster(UInt_t p);
   Bool_t IsCluster(UInt_t p);
   Int_t  NumberOfBitsSet(UInt_t x);
+  void   PrintBits(ULong64_t patt, Int_t maxBits);
   //
   const Double_t kNominalBz = 5.01;           // nominal field
   const Double_t kPionMass  = 1.3957e-01;
