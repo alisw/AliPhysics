@@ -46,16 +46,16 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   // Setter for global variables in the event
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetPID(Bool_t usePID=kTRUE) {fUsePID=usePID;} 
-  void SetCentrality(Double_t min=0., Double_t max=90.) {fCentMin=min;fCentMax=max;} 
+  void SetCentrality(Float_t min=0., Float_t max=90.) {fCentMin=min;fCentMax=max;} 
   void SetQA(Bool_t doQA=kFALSE){fDoQA=doQA;}
-  void SetTriggerPt(Double_t ptMinTrig=8., Double_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
-  void SetTriggerEta(Double_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
+  void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
+  void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
   void SetSeparateInjectedPart(Bool_t doSep=kTRUE) {fSeparateInjPart=doSep;} 
 
   // Setters for V0 candidate selection
   // TO BE FIXED!!!
-  void SetV0Cuts(Double_t *cutsV0){
+  void SetV0Cuts(Float_t *cutsV0){
     //   1.  Daughter cuts
     fMinPtDaughter=cutsV0[0];
     fMaxEtaDaughter=cutsV0[1];
@@ -70,19 +70,19 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   }
 
   //   1.  Daughter cuts
-  void SetMinPtDaughter(Double_t minPtDaughter=0.160) {fMinPtDaughter=minPtDaughter;} 
-  void SetMaxEtaDaughter(Double_t maxEta=0.8) {fMaxEtaDaughter=maxEta;} 
-  void SetMaxDCADaughter(Double_t maxDCA=1.0) {fMaxDCADaughter=maxDCA;} 
+  void SetMinPtDaughter(Float_t minPtDaughter=0.160) {fMinPtDaughter=minPtDaughter;} 
+  void SetMaxEtaDaughter(Float_t maxEta=0.8) {fMaxEtaDaughter=maxEta;} 
+  void SetMaxDCADaughter(Float_t maxDCA=1.0) {fMaxDCADaughter=maxDCA;} 
   //   2.  V0 candidate
-  void SetMaxY(Double_t yMax=0.5) {fYMax=yMax;} 
-  void SetDCAToPrimVtx(Double_t dcaToPrimVtx=0.1) {fDCAToPrimVtx=dcaToPrimVtx;}
-  void SetMinCPA(Double_t minCPA=0.998) {fMinCPA=minCPA;} 
-  void SetNSigmaPID(Double_t nSigma=3) {fNSigma=nSigma;} 
-  void SetCtau(Double_t minCtau = 0., Double_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
+  void SetMaxY(Float_t yMax=0.5) {fYMax=yMax;} 
+  void SetDCAToPrimVtx(Float_t dcaToPrimVtx=0.1) {fDCAToPrimVtx=dcaToPrimVtx;}
+  void SetMinCPA(Float_t minCPA=0.998) {fMinCPA=minCPA;} 
+  void SetNSigmaPID(Float_t nSigma=3) {fNSigma=nSigma;} 
+  void SetCtau(Float_t minCtau = 0., Float_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
 
   // Getters
-  Double_t GetMinCentr() { return fCentMin; }
-  Double_t GetMaxCentr() { return fCentMax; }
+  Float_t GetMinCentr() { return fCentMin; }
+  Float_t GetMaxCentr() { return fCentMax; }
 
   // Main functions
   virtual void     UserCreateOutputObjects();
@@ -102,27 +102,27 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   AliAODEvent *fAOD;
   Bool_t   fIsMC;                        //  Use MC data 
   Bool_t   fUsePID;                      //  Use PID for tracks
-  Double_t fCentMin;                     //  Minimum centrality
-  Double_t fCentMax;                     //  Maximum centrality
+  Float_t  fCentMin;                     //  Minimum centrality
+  Float_t  fCentMax;                     //  Maximum centrality
   Bool_t   fDoQA;                        //  Do Auality Assurance?
-  Double_t fTrigPtMin;                   //  Minimum pt for trigger particle
-  Double_t fTrigPtMax;                   //  Maximum pt for trigger particle
-  Double_t fTrigEtaMax;                  //  Maximum eta for trigger particle
+  Float_t  fTrigPtMin;                   //  Minimum pt for trigger particle
+  Float_t  fTrigPtMax;                   //  Maximum pt for trigger particle
+  Float_t  fTrigEtaMax;                  //  Maximum eta for trigger particle
   Bool_t   fCheckIDTrig;
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 
-  AliPIDResponse *fPIDResponse;          //  PID Response
+  AliPIDResponse *fPIDResponse;         //  PID Response
 
 
-  Double_t fMinPtDaughter;               //  Minimum transverse momentum for V0's daughters
-  Double_t fMaxEtaDaughter;              //  Maximum pseudo-rapidity for V0's daughters  
-  Double_t fMaxDCADaughter;              //  Maximum Distance of Closest Approach between daughters (given in sigmas)
-  Double_t fYMax;                        //  Maximum rapidity for V0
-  Double_t fDCAToPrimVtx;                //  Mimimum distance of closest approach of daughters to the vertex           
-  Double_t fMinCPA;                      //  Minimum Cosine of the Pointing Angle to the vertex for V0  
-  Double_t fNSigma;                      //  Number of sigmas for PID wi dE/dx
-  Double_t fMinCtau;                     //  Minimum ctau
-  Double_t fMaxCtau;                     //  Maximum ctau
+  Float_t fMinPtDaughter;                //  Minimum transverse momentum for V0's daughters
+  Float_t fMaxEtaDaughter;               //  Maximum pseudo-rapidity for V0's daughters  
+  Float_t fMaxDCADaughter;               //  Maximum Distance of Closest Approach between daughters (given in sigmas)
+  Float_t fYMax;                         //  Maximum rapidity for V0
+  Float_t fDCAToPrimVtx;                 //  Mimimum distance of closest approach of daughters to the vertex            
+  Float_t fMinCPA;                       //  Minimum Cosine of the Pointing Angle to the vertex for V0  
+  Float_t fNSigma;                       //  Number of sigmas for PID wi dE/dx
+  Float_t fMinCtau;                      //  Minimum ctau
+  Float_t fMaxCtau;                      //  Maximum ctau
 
   TList*  fOutput;                       //! List of histograms
   TList*  fOutputQA;                     //! List of histograms
@@ -152,24 +152,22 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fInjectedParticles;            //! Number of injected particles
 
   TH1F*   fK0sMCPt;                      //! K0s MC: pt
-  TH2F*   fK0sMCPtRap;                   //! K0s MC: pt vs rapidity
-  TH2F*   fK0sMCPtEta;                   //! K0s MC: pt vs pseudo-rapidity
-  TH3F*   fK0sMCPtLt;                    //! K0s MC: pt vs decay lenght vs centrality
+  TH3F*   fK0sMCPtRap;                   //! K0s MC: pt vs rapidity
+  TH3F*   fK0sMCPtPhiEta;                //! K0s MC: pt vs pseudo-rapidity
   TH1F*   fK0sAssocPt;                   //! K0s Assoc: pt
-  TH3F*   fK0sAssocPtLt;                 //! K0s Assoc: pt vs decay lenght vs centrality
-  TH3F*   fK0sAssocPtLtArm;              //! K0s Assoc: pt vs decay lenght vs centrality
-  TH2F*   fK0sAssocPtRap;                //! K0s Assoc: pt vs rapidity
-  TH2F*   fK0sAssocPtEta;                //! K0s Assoc: pt vs pseudo-rapidity
+  TH3F*   fK0sAssocPtArm;                //! K0s Assoc: pt vs decay lenght vs centrality
+  TH3F*   fK0sAssocPtRap;                //! K0s Assoc: pt vs rapidity
+  TH3F*   fK0sAssocPtPhiEta;             //! K0s Assoc: pt vs pseudo-rapidity
+  TH3F*   fK0sMCResPhi;
 
   TH1F*   fLambdaMCPt;                   //! Lambda MC: pt
-  TH2F*   fLambdaMCPtRap;                //! Lambda MC: pt vs rapidity
-  TH2F*   fLambdaMCPtEta;                //! Lambda MC: pt vs pseudo-rapidity
-  TH3F*   fLambdaMCPtLt;                 //! Lambda MC: pt vs decay lenght vs centrality
+  TH3F*   fLambdaMCPtRap;                //! Lambda MC: pt vs rapidity
+  TH3F*   fLambdaMCPtPhiEta;             //! Lambda MC: pt vs pseudo-rapidity
   TH1F*   fLambdaAssocPt;                //! Lambda Assoc: pt
-  TH3F*   fLambdaAssocPtLt;              //! Lambda Assoc: pt vs decay lenght vs centrality
-  TH3F*   fLambdaAssocPtLtArm;           //! Lambda Assoc: pt vs decay lenght vs centrality
-  TH2F*   fLambdaAssocPtRap;             //! Lambda Assoc: pt vs rapidity
-  TH2F*   fLambdaAssocPtEta;             //! Lambda Assoc: pt vs pseudo-rapidity
+  TH3F*   fLambdaAssocPtArm;             //! Lambda Assoc: pt vs decay lenght vs centrality
+  TH3F*   fLambdaAssocPtRap;             //! Lambda Assoc: pt vs rapidity
+  TH3F*   fLambdaAssocPtPhiEta;          //! Lambda Assoc: pt vs pseudo-rapidity
+  TH3F*   fLambdaMCResPhi;
 
   TH3F*   fHistArmenterosPodolanski;     //! Armenteros-Podolanski plot inside 3 sigma of the signal
   TH3F*   fHistArmPodBckg;               //! Armenteros-Podolanski plot outside 3 sigma of the signal      
