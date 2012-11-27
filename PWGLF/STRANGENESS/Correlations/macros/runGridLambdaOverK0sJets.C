@@ -7,12 +7,12 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
 			      TString  dataDir    = "/alice/data/2010/LHC10h",
 			      TString  workDir    = "work",
 			      TString  name       = "LambdaOverK0sRatio", 
-			      Double_t minCen     = 0.,
-			      Double_t maxCen     = 90.,
-			      Double_t ptMinTrig  = 8.,
-			      Double_t ptMaxTrig  = 20.,
-			      Double_t etaMaxTrig = 0.75,
-			      Double_t rapMaxV0   = 0.75,
+			      Float_t  minCen     = 0.,
+			      Float_t  maxCen     = 90.,
+			      Float_t  ptMinTrig  = 8.,
+			      Float_t  ptMaxTrig  = 20.,
+			      Float_t  etaMaxTrig = 0.75,
+			      Float_t  rapMaxV0   = 0.75,
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kTRUE,
@@ -44,8 +44,8 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
  
-  Double_t checkIDTrig= kFALSE;
-  Double_t nSigmaPID = 3.0;
+  Float_t checkIDTrig= kFALSE;
+  Float_t nSigmaPID = 3.0;
 
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 

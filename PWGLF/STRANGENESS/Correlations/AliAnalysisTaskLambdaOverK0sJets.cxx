@@ -59,12 +59,12 @@ static Int_t    nbinsdEta = 40;              // Number of bins for dEta
 static Int_t    nbinPtLP = 200;
 static Int_t    nbinsVtx = 20;
 
-static Double_t pMin = 0.0;                  // Lower cut for transverse momentum
-static Double_t pMax = 10.;                  // Max cut for transverse momentum for V0
-static Double_t ptMaxLP = 50.;               // Max cut for transverse momentum LP
+static Float_t pMin = 0.0;                  // Lower cut for transverse momentum
+static Float_t pMax = 10.;                  // Max cut for transverse momentum for V0
+static Float_t ptMaxLP = 50.;               // Max cut for transverse momentum LP
 
-static Double_t lMin = 0.0;                  // Limits in the histo for fidutial volume
-static Double_t lMax = 100.;                 // Limits in the fidutial volume
+static Float_t lMin = 0.0;                  // Limits in the histo for fidutial volume
+static Float_t lMax = 100.;                 // Limits in the fidutial volume
 
 //
 //  
@@ -79,45 +79,13 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 
   fOutput(0), fOutputQA(0), fEvents(0), fCentrality(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0), fNumberPileUp(0), fCentMult(0), fdEdx(0), fdEdxPid(0), 
 
-  fTriggerMCPtCent(0),
-  fTriggerPtCent(0),
-  fTriggerEtaPhi(0),
-  fCheckTriggerFromV0Daug(0),
-  fTriggerComingFromDaug(0),
-  fTriggerIsV0(0),
-  fCheckIDTrigPtK0s(0),
-  fCheckIDTrigPhiK0s(0),
-  fCheckIDTrigPtLambda(0),
-  fCheckIDTrigPhiLambda(0),
+  fTriggerMCPtCent(0), fTriggerPtCent(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0),  fInjectedParticles(0),
 
-  fInjectedParticles(0),
-
-  fK0sMCPt(0),
-  fK0sMCPtRap(0),
-  fK0sMCPtEta(0),
-  fK0sMCPtLt(0),
-  fK0sAssocPt(0),
-  fK0sAssocPtLt(0),
-  fK0sAssocPtLtArm(0),
-  fK0sAssocPtRap(0),
-  fK0sAssocPtEta(0),
-
-  fLambdaMCPt(0),
-  fLambdaMCPtRap(0),
-  fLambdaMCPtEta(0),
-  fLambdaMCPtLt(0),
-  fLambdaAssocPt(0),
-  fLambdaAssocPtLt(0),
-  fLambdaAssocPtLtArm(0),
-  fLambdaAssocPtRap(0),
-  fLambdaAssocPtEta(0),
-
-  fHistArmenterosPodolanski(0),
-  fHistArmPodBckg(0),
-
+  fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtPhiEta(0), fK0sAssocPt(0), fK0sAssocPtArm(0), fK0sAssocPtRap(0), fK0sAssocPtPhiEta(0), fLambdaMCPt(0), fLambdaMCPtRap(0), fLambdaMCPtPhiEta(0), fLambdaAssocPt(0), fLambdaAssocPtArm(0), fLambdaAssocPtRap(0), fLambdaAssocPtPhiEta(0), fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
+  
   fK0sMass(0),     
   fK0sPtLtSB(0),    
-  fK0sPtvsEta (0),
+  fK0sPtvsEta(0),
   fK0sPtvsRap(0),
   fK0sEtaPhi(0),
   fK0sMassPtPhi(0),
@@ -360,22 +328,17 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fK0sMCPt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fK0sMCPt);
 
-  fK0sMCPtRap    = new TH2F("fK0sMCPtRap", "K^{0}_{S} MC",nbins,pMin,pMax,30,-1.5,1.5);
+  fK0sMCPtRap    = new TH3F("fK0sMCPtRap", "K^{0}_{S} MC",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
   fK0sMCPtRap->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fK0sMCPtRap->GetYaxis()->SetTitle("y"); 
+  fK0sMCPtRap->GetZaxis()->SetTitle("centrality"); 
   fOutput->Add(fK0sMCPtRap);
   
-  fK0sMCPtEta    = new TH2F("fK0sMCPtEta", "K^{0}_{S} MC",nbins,pMin,pMax,30,-1.5,1.5);
-  fK0sMCPtEta->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sMCPtEta->GetYaxis()->SetTitle("#eta"); 
-  fOutput->Add(fK0sMCPtEta);
-  
-  fK0sMCPtLt =
-    new TH3F("fK0sMCPtLt", "K^{0}_{S} MC",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fK0sMCPtLt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sMCPtLt->GetYaxis()->SetTitle("L_{T} (cm)"); 
-  fK0sMCPtLt->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fK0sMCPtLt);
+  fK0sMCPtPhiEta    = new TH3F("fK0sMCPtPhiEta", "K^{0}_{S} MC",nbinsPhi,0.,2.*TMath::Pi(),30,-1.5,1.5,nbins,pMin,pMax);
+  fK0sMCPtPhiEta->GetXaxis()->SetTitle("#phi (rad)"); 
+  fK0sMCPtPhiEta->GetYaxis()->SetTitle("#eta"); 
+  fK0sMCPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fOutput->Add(fK0sMCPtPhiEta);
   
   // K0s MC-Association:
   fK0sAssocPt = 
@@ -383,99 +346,75 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fK0sAssocPt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fK0sAssocPt);
 
-  /*
-  fK0sAssocPtLt = 
-    new TH3F("fK0sAssocPtLt","K^{0}_{S} Assoc: L_{T} vs p_{T}",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fK0sAssocPtLt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sAssocPtLt->GetYaxis()->SetTitle("L_{T} (cm)");
-  fK0sAssocPtLt->GetZaxis()->SetTitle("centrality");
-  fOutput->Add(fK0sAssocPtLt);
-  */
+  fK0sAssocPtArm = 
+    new TH3F("fK0sAssocPtArm","K^{0}_{S} Assoc: p_{T} vs y vs centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
+  fK0sAssocPtArm->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fK0sAssocPtArm->GetYaxis()->SetTitle("y"); 
+  fK0sAssocPtArm->GetZaxis()->SetTitle("centrality"); 
+  fOutput->Add(fK0sAssocPtArm);
 
-  fK0sAssocPtLt = 
-    new TH3F("fK0sAssocPtLt","K^{0}_{S} Assoc:  p_{T} vs y vs centrlaity",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
-  fK0sAssocPtLt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sAssocPtLt->GetYaxis()->SetTitle("y");
-  fK0sAssocPtLt->GetZaxis()->SetTitle("centrality");
-  fOutput->Add(fK0sAssocPtLt);
-
-  /*
-  fK0sAssocPtLtArm = 
-    new TH3F("fK0sAssocPtLtArm","K^{0}_{S} Assoc: L_{T} vs p_{T}",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fK0sAssocPtLtArm->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sAssocPtLtArm->GetYaxis()->SetTitle("L_{T} (cm)"); 
-  fK0sAssocPtLtArm->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fK0sAssocPtLtArm);
-  */
-
-  fK0sAssocPtLtArm = 
-    new TH3F("fK0sAssocPtLtArm","K^{0}_{S} Assoc: p_{T} vs y vs centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
-  fK0sAssocPtLtArm->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sAssocPtLtArm->GetYaxis()->SetTitle("y"); 
-  fK0sAssocPtLtArm->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fK0sAssocPtLtArm);
-
-  fK0sAssocPtRap    = new TH2F("fK0sAssocPtRap","K^{0}_{S} Assoc",nbins,pMin,pMax,30,-1.5,1.5);
+  fK0sAssocPtRap    = new TH3F("fK0sAssocPtRap","K^{0}_{S} Assoc",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
   fK0sAssocPtRap->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fK0sAssocPtRap->GetYaxis()->SetTitle("y"); 
+  fK0sAssocPtRap->GetZaxis()->SetTitle("centrality");
   fOutput->Add(fK0sAssocPtRap);
   
-  fK0sAssocPtEta    = new TH2F("fK0sAssocPtEta","K^{0}_{S} Assoc",nbins,pMin,pMax,30,-1.5,1.5);
-  fK0sAssocPtEta->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sAssocPtEta->GetYaxis()->SetTitle("#eta"); 
-  fOutput->Add(fK0sAssocPtEta);
-  
+  fK0sAssocPtPhiEta    = new TH3F("fK0sAssocPtPhiEta","K^{0}_{S} Assoc",nbinsPhi,0.,2.*TMath::Pi(),30,-1.5,1.5,nbins,pMin,pMax);
+  fK0sAssocPtPhiEta->GetXaxis()->SetTitle("#phi"); 
+  fK0sAssocPtPhiEta->GetYaxis()->SetTitle("#eta"); 
+  fK0sAssocPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fOutput->Add(fK0sAssocPtPhiEta);
+
+  fK0sMCResPhi     = new TH3F("fK0sMCResPhi","K^{0}_{S} Assoc: #phi resolution; #phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,0.5,0.5,nbins,pMin,pMax,100,0.,100.);
+  fOutput->Add(fK0sMCResPhi);
+
   // Lambda MC-true: 
   fLambdaMCPt = new TH1F("fLambdaMCPt","#Lambda MC",nbins,pMin,pMax);
   fLambdaMCPt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fLambdaMCPt);
 
-  fLambdaMCPtRap = new TH2F("fLambdaMCPtRap","#Lambda MC",nbins,pMin,pMax,30,-1.5,1.5);
+  fLambdaMCPtRap = new TH3F("fLambdaMCPtRap","#Lambda MC",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
   fLambdaMCPtRap->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fLambdaMCPtRap->GetYaxis()->SetTitle("y"); 
+  fLambdaMCPtRap->GetZaxis()->SetTitle("centrality");
   fOutput->Add(fLambdaMCPtRap);
   
-  fLambdaMCPtEta = new TH2F("fLambdaMCPtEta","#Lambda MC",nbins,pMin,pMax,30,-1.5,1.5);
-  fLambdaMCPtEta->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaMCPtEta->GetYaxis()->SetTitle("#eta"); 
-  fOutput->Add(fLambdaMCPtEta);
+  fLambdaMCPtPhiEta = new TH3F("fLambdaMCPtPhiEta","#Lambda MC",nbinsPhi,0.,2.*TMath::Pi(),30,-1.5,1.5,nbins,pMin,pMax);
+  fLambdaMCPtPhiEta->GetXaxis()->SetTitle("#phi (rad)"); 
+  fLambdaMCPtPhiEta->GetYaxis()->SetTitle("#eta"); 
+  fLambdaMCPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fOutput->Add(fLambdaMCPtPhiEta);
   
-  fLambdaMCPtLt =
-    new TH3F("fLambdaMCPtLt", "#Lambda MC",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fLambdaMCPtLt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaMCPtLt->GetYaxis()->SetTitle("L_{T} (cm)"); 
-  fLambdaMCPtLt->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fLambdaMCPtLt);
-  
+
   // Lambda MC-Association:
   fLambdaAssocPt = 
     new TH1F("fLambdaAssocPt","#Lambda Assoc: L_{T} vs p_{T}",nbins,pMin,pMax);
   fLambdaAssocPt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fLambdaAssocPt);
 
-  fLambdaAssocPtLt = 
-    new TH3F("fLambdaAssocPtLt","#Lambda Assoc: L_{T} vs p_{T}",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fLambdaAssocPtLt->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaAssocPtLt->GetYaxis()->SetTitle("L_{T} (cm)"); 
-  fLambdaAssocPtLt->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fLambdaAssocPtLt);
+  /*
+  fLambdaAssocPtArm = 
+    new TH3F("fLambdaAssocPtArm","#Lambda Assoc: L_{T} vs p_{T}",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
+  fLambdaAssocPtArm->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fLambdaAssocPtArm->GetYaxis()->SetTitle("L_{T} (cm)"); 
+  fLambdaAssocPtArm->GetZaxis()->SetTitle("centrality"); 
+  fOutput->Add(fLambdaAssocPtArm);
+  */
 
-  fLambdaAssocPtLtArm = 
-    new TH3F("fLambdaAssocPtLtArm","#Lambda Assoc: L_{T} vs p_{T}",nbins,pMin,pMax,2*nbins,lMin,lMax,100,0.,100.);
-  fLambdaAssocPtLtArm->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaAssocPtLtArm->GetYaxis()->SetTitle("L_{T} (cm)"); 
-  fLambdaAssocPtLtArm->GetZaxis()->SetTitle("centrality"); 
-  fOutput->Add(fLambdaAssocPtLtArm);
-  
-  fLambdaAssocPtRap = new TH2F("fLambdaAssocPtRap", "#Lambda Assoc",nbins,pMin,pMax,30,-1.5,1.5);
+  fLambdaAssocPtRap = new TH3F("fLambdaAssocPtRap", "#Lambda Assoc",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
   fLambdaAssocPtRap->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
   fLambdaAssocPtRap->GetYaxis()->SetTitle("y"); 
+  fLambdaAssocPtRap->GetZaxis()->SetTitle("centrality"); 
   fOutput->Add(fLambdaAssocPtRap);
   
-  fLambdaAssocPtEta = new TH2F("fLambdaAssocPtEta", "#Lambda Assoc",nbins,pMin,pMax,30,-1.5,1.5);
-  fLambdaAssocPtEta->GetXaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaAssocPtEta->GetYaxis()->SetTitle("#eta"); 
-  fOutput->Add(fLambdaAssocPtEta);
+  fLambdaAssocPtPhiEta = new TH3F("fLambdaAssocPtPhiEta", "#Lambda Assoc",nbinsPhi,0.,2.*TMath::Pi(),30,-1.5,1.5,nbins,pMin,pMax);
+  fLambdaAssocPtPhiEta->GetXaxis()->SetTitle("#phi (rad)"); 
+  fLambdaAssocPtPhiEta->GetYaxis()->SetTitle("#eta"); 
+  fLambdaAssocPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
+  fOutput->Add(fLambdaAssocPtPhiEta);
+
+  fLambdaMCResPhi     = new TH3F("fLambdaMCResPhi","#Lambda Assoc: #phi resolution;#phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,0.5,0.5,nbins,pMin,pMax,100,0.,100.);
+  fOutput->Add(fLambdaMCResPhi);
   
   }  
 
@@ -598,7 +537,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fK0sDCADaugToPrimVtx->GetZaxis()->SetTitle("p_{T,l} (GeV/c)"); 
   fOutput->Add(fK0sDCADaugToPrimVtx);
 
-  //Double_t kVtxBins[] = {-10.,-7.,-4.,-2.,0.,2.,4.,7.,10.};
+  //Float_t kVtxBins[] = {-10.,-7.,-4.,-2.,0.,2.,4.,7.,10.};
   char hNameHist[256];
   for(Int_t k=0;k<kN1;k++){
 
@@ -1521,16 +1460,16 @@ Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptV0(AliAODVertex *vtx, const AliAO
   if (TMath::Abs(xy)<fDCAToPrimVtx) return kFALSE;
 
   // Daughters: DCA
-  Double_t dca = v1->DcaV0Daughters();
+  Float_t dca = v1->DcaV0Daughters();
   if (dca>fMaxDCADaughter) return kFALSE;
 
   // V0: Cosine of the pointing angle
-  Double_t cpa=v1->CosPointingAngle(vtx);
+  Float_t cpa=v1->CosPointingAngle(vtx);
   if (cpa<fMinCPA) return kFALSE;
 
   // V0: Fiducial volume
   Double_t xyz[3]; v1->GetSecondaryVtx(xyz);
-  Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
+  Float_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
   if (r2<0.9*0.9) return kFALSE;
   if (r2>lMax*lMax) return kFALSE;
 
@@ -1539,10 +1478,10 @@ Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptV0(AliAODVertex *vtx, const AliAO
 
 //___________________________________________________________________________________________
 
-static Double_t dPHI(Double_t phi1, Double_t phi2) 
+static Float_t dPHI(Float_t phi1, Float_t phi2) 
 { 
   // Calculate the phi difference between two tracks  
-  Double_t deltaPhi = phi1 - phi2;
+  Float_t deltaPhi = phi1 - phi2;
   
   if (deltaPhi<-TMath::PiOver2())    deltaPhi = deltaPhi + 2*(TMath::Pi());
   if (deltaPhi>(3*TMath::PiOver2()))  deltaPhi = deltaPhi - 2*(TMath::Pi());
@@ -1551,7 +1490,7 @@ static Double_t dPHI(Double_t phi1, Double_t phi2)
 
 //___________________________________________________________________________________________
 
-static Double_t MyRapidity(Double_t rE, Double_t rPz)
+static Float_t MyRapidity(Float_t rE, Float_t rPz)
 { 
   // Local method for rapidity
   return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
@@ -1567,9 +1506,9 @@ static Int_t EqualPt(AliAODTrack *trk, const AliAODTrack *nTrk, const AliAODTrac
   Int_t    isSamePt = 0;
 
  /*
-  Double_t p[3];     trk->GetPxPyPz(p);
-  Double_t pNegTrk[3]; nTrk->GetPxPyPz(pNegTrk);
-  Double_t pPosTrk[3]; pTrk->GetPxPyPz(pPosTrk);
+  Float_t p[3];     trk->GetPxPyPz(p);
+  Float_t pNegTrk[3]; nTrk->GetPxPyPz(pNegTrk);
+  Float_t pPosTrk[3]; pTrk->GetPxPyPz(pPosTrk);
   
  
   if( (  fabs(p[0]-pNegTrk[0])<kEpsilon && 
@@ -1604,11 +1543,11 @@ void AliAnalysisTaskLambdaOverK0sJets::RecCascade(AliAODTrack *trk1,const AliAOD
   // The trigger particle track will be always consider as a possible daughter of the V0 which coming from the Cascade decay.
   // The daughters of the V0 candidates are switched to be the bachelor track for the Cascade reconstruction.
 
-  Double_t lMassBach=0., lPtot2Bach=0., lEBach=0.;
-  Double_t lMassLambda=0., lPtot2Lambda=0., lELambda = 0.; 
-  Double_t pLambda[3] = {0.,0.,0.};
-  Double_t pCascade[3] = {0.,0.,0.};
-  Double_t lMassCascade = 0., lPtot2Cascade=0.;
+  Float_t lMassBach=0., lPtot2Bach=0., lEBach=0.;
+  Float_t lMassLambda=0., lPtot2Lambda=0., lELambda = 0.; 
+  Float_t pLambda[3] = {0.,0.,0.};
+  Float_t pCascade[3] = {0.,0.,0.};
+  Float_t lMassCascade = 0., lPtot2Cascade=0.;
 
   // Two loops are done to consider the posibility to reconstruct a Xi or an Omega
   for(Int_t i=0;i<2;i++){
@@ -1676,9 +1615,9 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
   // 2) Reconstruction and Correlation
   // 3) Mixed event
 
-  Double_t ptTrig  = -100.;
-  Double_t phiTrig = -100.;
-  Double_t etaTrig = -100.;
+  Float_t ptTrig  = -100.;
+  Float_t phiTrig = -100.;
+  Float_t etaTrig = -100.;
 
   if( step==kTriggerCheck || isTriggered ){
     ptTrig  = trkTrig->Pt();
@@ -1688,18 +1627,18 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
   
   // ---- 1) TriggerCheck: Variables used to crosscheck if trigger particle is a V0 daughter ---- //
   Int_t    isTrigFromV0daug = 0, isV0LP = 0;
-  Double_t ptV0LP = -1000.;
+  Float_t ptV0LP = -1000.;
 
 
   // *************************************************
   // Centrality selection
   AliCentrality *cent = fAOD->GetCentrality();
-  Double_t centrality = cent->GetCentralityPercentile("V0M");
+  Float_t centrality = cent->GetCentralityPercentile("V0M");
 
   // *************************************************
   // MC Event
   TClonesArray *stackMC = 0x0;
-  Double_t mcXv=0., mcYv=0., mcZv=0.;
+  Float_t mcXv=0., mcYv=0., mcZv=0.;
    
   if(fIsMC){
     TList *lst = fAOD->GetList();
@@ -1717,7 +1656,7 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
   // *************************************************
   // V0 loop - AOD
   const AliAODVertex *vtx=fAOD->GetPrimaryVertex();
-  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
+  Float_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
   Int_t nV0sTot = fAOD->GetNumberOfV0s();
   for (Int_t iV0 = 0; iV0 < nV0sTot; iV0++) {
     
@@ -1730,22 +1669,22 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
     
     // Decay vertex
     Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
-    Double_t dx=xyz[0]-xv, dy=xyz[1]-yv;
+    Float_t dx=xyz[0]-xv, dy=xyz[1]-yv;
 
     // Decay lenght and pt
-    Double_t lt=TMath::Sqrt(dx*dx + dy*dy);
-    Double_t pt=TMath::Sqrt(v0->Pt2V0());
+    Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
+    Float_t pt=TMath::Sqrt(v0->Pt2V0());
 
-    Double_t dlK = 0.4977*lt/pt;
-    Double_t dlL = 1.1157*lt/pt; 
+    Float_t dlK = 0.4977*lt/pt;
+    Float_t dlL = 1.1157*lt/pt; 
 
     // ctau
     Bool_t ctK=kTRUE; if (dlK > fMaxCtau*2.68 || dlK < fMinCtau*2.68) ctK=kFALSE; 
     Bool_t ctL=kTRUE; if (dlL > fMaxCtau*7.89 || dlL < fMinCtau*7.89) ctL=kFALSE; 
 
     // Armenteros variables:
-    Double_t lAlphaV0      =  v0->AlphaV0();
-    Double_t lPtArmV0      =  v0->PtArmV0();
+    Float_t lAlphaV0      =  v0->AlphaV0();
+    Float_t lPtArmV0      =  v0->PtArmV0();
     
     // MC Association:
     Bool_t lComeFromSigma     = kFALSE; 
@@ -1921,35 +1860,44 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
 	if ((p0->Pt())<pMin) goto noas;
 	if (TMath::Abs(p0->Y())>fYMax ) goto noas;
 	
-	Double_t dxAs = mcXv - p0->Xv(),  dyAs = mcYv - p0->Yv(),  dzAs = mcZv - p0->Zv();
-	Double_t l = TMath::Sqrt(dxAs*dxAs + dyAs*dyAs + dzAs*dzAs);
+	Float_t dxAs = mcXv - p0->Xv(),  dyAs = mcYv - p0->Yv(),  dzAs = mcZv - p0->Zv();
+	Float_t l = TMath::Sqrt(dxAs*dxAs + dyAs*dyAs + dzAs*dzAs);
 	
 	dxAs = mcXv - pPart->Xv(); dyAs = mcYv - pPart->Yv();
-	//Double_t ltAs = TMath::Sqrt(dxAs*dxAs + dyAs*dyAs);
-	Double_t ptAs = p0->Pt();
-	Double_t rapAs = p0->Y();
-	Double_t etaAs = p0->Eta();
-	
+	//Float_t ltAs = TMath::Sqrt(dxAs*dxAs + dyAs*dyAs);
+	Float_t ptAs = p0->Pt();
+	Float_t rapAs = p0->Y();
+	Float_t etaAs = p0->Eta();
+	// phi resolution for V0-reconstruction
+	Float_t resPhi = p0->Phi() - v0->Phi();	
+
 	if (l < 0.01) { // Primary V0
 	  
 	  if(ctK && lCheckMcK0Short){ 
 	    fK0sAssocPt->Fill(ptAs);
-	    fK0sAssocPtLt->Fill(ptAs,rapAs,centrality);
-	    fK0sAssocPtRap->Fill(ptAs,rapAs);
-	    fK0sAssocPtEta->Fill(ptAs,etaAs);
+	    fK0sAssocPtRap->Fill(ptAs,rapAs,centrality);
+	    if(centrality<10)
+	      fK0sAssocPtPhiEta->Fill(p0->Phi(),etaAs,ptAs);
 	    
 	    if(lPtArmV0 > TMath::Abs(0.2*lAlphaV0) )
-	      fK0sAssocPtLtArm->Fill(ptAs,rapAs,centrality);
+	      fK0sAssocPtArm->Fill(ptAs,rapAs,centrality);
+
+	    fK0sMCResPhi->Fill(resPhi,pt,centrality);
+
+	    //fK0sMCResPhiTrig->Fill(resPhi,pt,centrality);
 
 	  }
 	  else if(ctL && lCheckMcLambda) {    
 	    fLambdaAssocPt->Fill(ptAs);
-	    fLambdaAssocPtLt->Fill(ptAs,rapAs,centrality);
-	    fLambdaAssocPtRap->Fill(ptAs,rapAs);
-	    fLambdaAssocPtEta->Fill(ptAs,etaAs);
+	    fLambdaAssocPtRap->Fill(ptAs,rapAs,centrality);
+	    if(centrality<10)
+	      fLambdaAssocPtPhiEta->Fill(p0->Phi(),etaAs,ptAs);
 
-	    if(lPtArmV0 < TMath::Abs(0.2*lAlphaV0) )
-	      fLambdaAssocPtLtArm->Fill(ptAs,rapAs,centrality);
+	    //if(lPtArmV0 < TMath::Abs(0.2*lAlphaV0) )
+	    //fLambdaAssocPtArm->Fill(ptAs,rapAs,centrality);
+
+	    fLambdaMCResPhi->Fill(resPhi,pt,centrality);
+	    //fLambdaMCResPhiTrig->Fill(resPhi,pt,centrality);
 	  }
 	  /*
 	  else if (ctL && lCheckMcAntiLambda){
@@ -1978,15 +1926,15 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
     
   noas:
 
-    Double_t pPos = -100.;
-    Double_t pNeg = -100.;
-    Double_t dedxPos = -1000.;
-    Double_t dedxNeg = -1000.;
+    Float_t pPos = -100.;
+    Float_t pNeg = -100.;
+    Float_t dedxPos = -1000.;
+    Float_t dedxNeg = -1000.;
 
-    Double_t nsigPosPion   = 0.;
-    Double_t nsigPosProton = 0.;
-    Double_t nsigNegPion   = 0.;
-    Double_t nsigNegProton = 0.;
+    Float_t nsigPosPion   = 0.;
+    Float_t nsigPosProton = 0.;
+    Float_t nsigNegPion   = 0.;
+    Float_t nsigNegProton = 0.;
 
     if(fUsePID) {     
       const AliAODPid *pidNeg = ntrack->GetDetPid();
@@ -2005,26 +1953,26 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
       nsigNegProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrack,AliPID::kProton));
     }
 
-    Double_t dcaNeg = -100.;
-    Double_t dcaPos = -100.;
-    Double_t lPtNeg = -100.;
-    Double_t lPtPos = -100.;
-    Double_t phiNeg = -100.;
-    Double_t phiPos = -100.;
-    Double_t etaNeg = -100.;
-    Double_t etaPos = -100.;
+    Float_t dcaNeg = -100.;
+    Float_t dcaPos = -100.;
+    Float_t lPtNeg = -100.;
+    Float_t lPtPos = -100.;
+    Float_t phiNeg = -100.;
+    Float_t phiPos = -100.;
+    Float_t etaNeg = -100.;
+    Float_t etaPos = -100.;
 
-    Double_t dPtPos = -100.;
-    Double_t dPtNeg = -100.;
+    Float_t dPtPos = -100.;
+    Float_t dPtNeg = -100.;
 
-    Double_t dca   = -100;
-    Double_t cpa   = -100;
-    Double_t lEta  = -100.;
-    Double_t lPhi  = -100.;
+    Float_t dca   = -100;
+    Float_t cpa   = -100;
+    Float_t lEta  = -100.;
+    Float_t lPhi  = -100.;
     
-    Double_t radio = -100.;
-    Double_t dPhi  = -100.;
-    Double_t dEta  = -100.; 
+    Float_t radio = -100.;
+    Float_t dPhi  = -100.;
+    Float_t dEta  = -100.; 
 
      /*
     // Good regions
@@ -2074,9 +2022,9 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
     // *******************
     // Disentangle the V0 candidate
 
-    Double_t massK0s = 0., mK0s = 0., sK0s = 0.;
-    Double_t massLambda = 0., mLambda = 0., sLambda = 0.;
-    Double_t massAntiLambda = 0.;
+    Float_t massK0s = 0., mK0s = 0., sK0s = 0.;
+    Float_t massLambda = 0., mLambda = 0., sLambda = 0.;
+    Float_t massAntiLambda = 0.;
 
     Bool_t isCandidate2K0s = kFALSE;
     massK0s = v0->MassK0Short();
@@ -2141,11 +2089,11 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
                      );
           
 
-              Double_t posDeltaPt =  ptTrig - ptrack->Pt();
-              Double_t negDeltaPt =  ptTrig - ntrack->Pt();
+              Float_t posDeltaPt =  ptTrig - ptrack->Pt();
+              Float_t negDeltaPt =  ptTrig - ntrack->Pt();
 
-              Double_t posDeltaPhi =  phiTrig - ptrack->Phi();
-              Double_t negDeltaPhi =  phiTrig - ntrack->Phi();
+              Float_t posDeltaPhi =  phiTrig - ptrack->Phi();
+              Float_t negDeltaPhi =  phiTrig - ntrack->Phi();
 
 	      	      
 	      if(  (TMath::Abs(ptrack->GetID())+1)==(TMath::Abs(trkTrig->GetID())) ){
@@ -2378,11 +2326,11 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
                    );
           
 	      
-              Double_t posDeltaPt =  ptTrig - ptrack->Pt();
-              Double_t negDeltaPt =  ptTrig - ntrack->Pt();
+              Float_t posDeltaPt =  ptTrig - ptrack->Pt();
+              Float_t negDeltaPt =  ptTrig - ntrack->Pt();
 
-              Double_t posDeltaPhi =  phiTrig - ptrack->Phi();
-              Double_t negDeltaPhi =  phiTrig - ntrack->Phi();
+              Float_t posDeltaPhi =  phiTrig - ptrack->Phi();
+              Float_t negDeltaPhi =  phiTrig - ntrack->Phi();
 
 	      if(  (TMath::Abs(ptrack->GetID())+1)==(TMath::Abs(trkTrig->GetID())) ){
 		fCheckIDTrigPtLambda->Fill(posDeltaPt,0.,pt); 
@@ -2645,13 +2593,13 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
 { 
   // Obtain the trigger particle of the event to perform the correlations in phi and eta
 
-  Double_t ptTrigger  = -1000.;
+  Float_t ptTrigger  = -1000.;
   Int_t    iTrigger   = -1000;
-  Double_t phiTrigger = -1000.;
-  Double_t etaTrigger = -1000.;
+  Float_t phiTrigger = -1000.;
+  Float_t etaTrigger = -1000.;
   Int_t    isTriggerFromV0Daug = -1000;
   Int_t    isV0LP  = -1000; 
-  Double_t ptV0LP  = -100.;
+  Float_t ptV0LP  = -100.;
   Int_t    isSndCheck = 0; 
 
   Int_t    idSndTrigger = 0;
@@ -2664,7 +2612,7 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
 
     AliAODTrack *t = fAOD->GetTrack(i);
     if (t->IsMuonTrack()) continue;
-    Double_t pt=t->Pt(),pz=t->Pz();
+    Float_t pt=t->Pt(),pz=t->Pz();
     if (TMath::Abs(pz/pt)>0.8) continue;
     if (TMath::Abs(t->Eta())>0.8 ) continue;
     if (!(t->TestFilterMask(1<<7))) continue; 
@@ -2721,7 +2669,7 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
 
     AliAODTrack *t=fAOD->GetTrack(i);
     if (t->IsMuonTrack()) continue;
-    Double_t pt=t->Pt(),pz=t->Pz();
+    Float_t pt=t->Pt(),pz=t->Pz();
     if (TMath::Abs(pz/pt)>0.8) continue;
     if (TMath::Abs(t->Eta())>0.8 ) continue;
     if (!(t->TestFilterMask(1<<7))) continue; 
@@ -2750,10 +2698,10 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
 
   endLP:
  
-  Double_t idTrigger = 1.*iTrigger;
-  Double_t flagTriggerFromV0daug = 1.*isTriggerFromV0Daug;
-  Double_t flagV0LP = 1.*isV0LP;
-  Double_t flagSndLoop = 1.*isSndCheck;
+  Float_t idTrigger = 1.*iTrigger;
+  Float_t flagTriggerFromV0daug = 1.*isTriggerFromV0Daug;
+  Float_t flagV0LP = 1.*isV0LP;
+  Float_t flagSndLoop = 1.*isSndCheck;
 
   TArrayD* myTrigger = new TArrayD(4);
   myTrigger->AddAt(idTrigger,0);
@@ -2792,7 +2740,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
   // Centrality selection
   AliCentrality *cent = fAOD->GetCentrality();
-  Double_t centrality = cent->GetCentralityPercentile("V0M");
+  Float_t centrality = cent->GetCentralityPercentile("V0M");
   fCentrality->Fill(centrality);
 
   if (!cent->IsEventInCentralityClass(fCentMin,fCentMax,"V0M")) return;
@@ -2803,7 +2751,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   if (vtx->GetNContributors()<3) return;
   fEvents->Fill(4);
 
-  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
+  Float_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
   
   fPrimaryVertexX->Fill(xv);
   fPrimaryVertexY->Fill(yv);
@@ -2824,7 +2772,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   
   Int_t nTrk = fAOD->GetNumberOfTracks();
   Int_t mult=0;
-  Double_t nsig=0;
+  Float_t nsig=0;
   
   for (Int_t iTrk=0; iTrk<nTrk; iTrk++) {
     
@@ -2832,12 +2780,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     if (track->IsMuonTrack()) continue;
     if (!track->IsOn(AliAODTrack::kTPCrefit)) continue;
     
-    Double_t xyz[3];
+    Float_t xyz[3];
     if (track->GetPosition(xyz)) continue;
     if (TMath::Abs(xyz[0])>3.) continue;
     if (TMath::Abs(xyz[1])>3.) continue;
 
-    Double_t pt = track->Pt(), pz = track->Pz();
+    Float_t pt = track->Pt(), pz = track->Pz();
     if (TMath::Abs(pz/pt)>0.8) continue;
 
     if( TMath::Abs(track->Eta())>0.8 ) continue;
@@ -2848,8 +2796,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       const AliAODPid *pid = track->GetDetPid();
       if (!pid) continue;
       
-      Double_t p = pid->GetTPCmomentum();
-      Double_t dedx = pid->GetTPCsignal()/47.; //47?
+      Float_t p = pid->GetTPCmomentum();
+      Float_t dedx = pid->GetTPCsignal()/47.; //47?
       fdEdx->Fill(p,dedx,1);
       
       nsig = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
@@ -2874,9 +2822,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Int_t    is2ndLoop = TMath::FloorNint( triggerArray->At(3) );
   
   Bool_t isTriggered = kFALSE;
-  Double_t ptTrigger  = -100.;
-  Double_t phiTrigger = -100.;
-  Double_t etaTrigger = -100.;
+  Float_t ptTrigger  = -100.;
+  Float_t phiTrigger = -100.;
+  Float_t etaTrigger = -100.;
   AliAODTrack *trkTrigger = 0x0;
 
   if(iTrigger<0)
@@ -2925,7 +2873,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   // Start loop over MC particles
   
   TClonesArray *stack = 0x0;
-  Double_t mcXv=0., mcYv=0., mcZv=0.;
+  Float_t mcXv=0., mcYv=0., mcZv=0.;
   
   if(fIsMC) {
 
@@ -2946,9 +2894,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     // --------- Trigger particle --------------
     // -----------------------------------------
 
-    Double_t triggerMCPt = -1000.;
-    Double_t triggerMCPhi = -1000.;
-    Double_t triggerMCEta = -1000.;
+    Float_t triggerMCPt = -1000.;
+    Float_t triggerMCPhi = -1000.;
+    Float_t triggerMCEta = -1000.;
     Bool_t   isTriggeredMC = kFALSE;
 
     for (Int_t iTrkMC = 0; iTrkMC < nTrkMC; iTrkMC++){
@@ -2990,7 +2938,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if(isNaturalPart == 0) continue;
       if( !p0->IsPhysicalPrimary() ) continue;
       
-      Double_t ptPrim = p0->Pt();
+      Float_t ptPrim = p0->Pt();
       if(ptPrim>triggerMCPt){
 
 	triggerMCPt  = p0->Pt();
@@ -3033,8 +2981,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	// ----------------------------------------
 	
-	Double_t lRapCurrentPart = MyRapidity(p0->E(),p0->Pz());      
-	Double_t lPtCurrentPart  = p0->Pt();
+	Float_t lRapCurrentPart = MyRapidity(p0->E(),p0->Pz());      
+	Float_t lPtCurrentPart  = p0->Pt();
 	
 	Int_t iCurrentMother = p0->GetMother();       
 	AliAODMCParticle *pCurrentMother = (AliAODMCParticle *)stack->At(iCurrentMother);
@@ -3065,8 +3013,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	if ((p0->Pt())<pMin) continue;  
 	if (TMath::Abs(lRapCurrentPart) > fYMax)  continue;
 	
-	Double_t dx = mcXv-p0->Xv(),  dy = mcYv-p0->Yv(),  dz = mcZv-p0->Zv();
-	Double_t l = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+	Float_t dx = mcXv-p0->Xv(),  dy = mcYv-p0->Yv(),  dz = mcZv-p0->Zv();
+	Float_t l = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
 	
 	//Cut in the 3D-distance of the secondary vertex to primary vertex
 	if (l > 0.01) continue; // secondary V0 
@@ -3091,8 +3039,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     // -----------------------------------------
     // ---------- Strange particles ------------
     // -----------------------------------------
-    Double_t dPhiMC = -100.;
-    Double_t dEtaMC = -100.;
+    Float_t dPhiMC = -100.;
+    Float_t dEtaMC = -100.;
     for (Int_t iTrkMC = 0; iTrkMC < nTrkMC; iTrkMC++){
       
       AliAODMCParticle *p0 = (AliAODMCParticle*)stack->At(iTrkMC);
@@ -3120,10 +3068,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
       // ----------------------------------------
 
-      Double_t lRapCurrentPart = MyRapidity(p0->E(),p0->Pz());      
-      Double_t lEtaCurrentPart = p0->Eta();
-      Double_t lPhiCurrentPart = p0->Phi();
-      Double_t lPtCurrentPart  = p0->Pt();
+      Float_t lRapCurrentPart = MyRapidity(p0->E(),p0->Pz());      
+      Float_t lEtaCurrentPart = p0->Eta();
+      Float_t lPhiCurrentPart = p0->Phi();
+      Float_t lPtCurrentPart  = p0->Pt();
 
       Int_t iCurrentMother = p0->GetMother();       
       AliAODMCParticle *pCurrentMother = (AliAODMCParticle *)stack->At(iCurrentMother);
@@ -3154,25 +3102,25 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if ((p0->Pt())<pMin) continue;  
       if (TMath::Abs(lRapCurrentPart) > fYMax)  continue;
     
-      Double_t dx = mcXv-p0->Xv(),  dy = mcYv-p0->Yv(),  dz = mcZv-p0->Zv();
-      Double_t l = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+      Float_t dx = mcXv-p0->Xv(),  dy = mcYv-p0->Yv(),  dz = mcZv-p0->Zv();
+      Float_t l = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
       
       //Cut in the 3D-distance of the secondary vertex to primary vertex
       if (l > 0.01) continue; // secondary V0 
      
       //Transverse distance to vertex
       dx = mcXv-pDaughter0->Xv(); dy = mcYv-pDaughter0->Yv();
-      Double_t lt=TMath::Sqrt(dx*dx + dy*dy);
+      //Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
 
       // K0s
       if (lPdgcodeCurrentPart == kK0Short) {
 	//if (multiplicity>=1){
 	fK0sMCPt->Fill(lPtCurrentPart);
-	fK0sMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart);
-	fK0sMCPtEta->Fill(lPtCurrentPart,lEtaCurrentPart);
-	fK0sMCPtLt->Fill(lPtCurrentPart,lt,centrality);
-	//}
+	fK0sMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
 
+	if(centrality<10)
+	  fK0sMCPtPhiEta->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
+	//}
 
 	// Triggered Event
 	if(isTriggeredMC){
@@ -3198,10 +3146,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if (lPdgcodeCurrentPart == kLambda0) {
 	//if (multiplicity>=1){	
 	fLambdaMCPt->Fill(lPtCurrentPart);
-	fLambdaMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart);
-	fLambdaMCPtEta->Fill(lPtCurrentPart,lEtaCurrentPart);
-	fLambdaMCPtLt->Fill(lPtCurrentPart,lt,centrality);
+	fLambdaMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart,centrality);
 	//}
+	if(centrality<10)
+	  fLambdaMCPtPhiEta->Fill(lPhiCurrentPart,lEtaCurrentPart,lPtCurrentPart);
 
 	// Triggered Event
 	if(isTriggeredMC){
@@ -3231,7 +3179,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	fAntiLambdaMCPt->Fill(lPtCurrentPart);
 	fAntiLambdaMCPtRap->Fill(lPtCurrentPart,lRapCurrentPart);
 	fAntiLambdaMCPtEta->Fill(lPtCurrentPart,lEtaCurrentPart);
-	fAntiLambdaMCPtLt->Fill(lPtCurrentPart,lt,centrality);
 
 	//}
       }
