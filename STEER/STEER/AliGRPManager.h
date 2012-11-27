@@ -18,6 +18,7 @@
 
 class AliRunInfo;
 class AliGRPObject;
+class THashTable;
 
 class AliGRPManager: public TObject {
 public:
@@ -31,6 +32,7 @@ public:
   Bool_t      SetMagField();
 
   AliRunInfo* GetRunInfo();
+  THashTable* GetCosmicTriggers(); // return the list of cosmic triggers as defined by trigger coordination
 
 private:
   

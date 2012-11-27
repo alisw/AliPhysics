@@ -8,10 +8,6 @@
  
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TEveElement.h>
-#include <TROOT.h>
-#include <TFile.h>
-#include <TCanvas.h>
-#include <TH2F.h>
 
 #include <AliEveEventManager.h>
 #include <AliEveLego.h>

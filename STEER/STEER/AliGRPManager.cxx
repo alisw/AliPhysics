@@ -33,6 +33,7 @@
 // Note: CDB manager should be initialized beforehand                     //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <THashTable.h>
 #include <TGeoGlobalMagField.h>
 
 #include "AliGRPManager.h"
@@ -195,6 +196,7 @@ AliRunInfo* AliGRPManager::GetRunInfo()
   // Constructs and returns an object
   // containing the run information
   // The user code is the owner of the object
+  if(!fGRPData) ReadGRPEntry();
 
   TString lhcState = fGRPData->GetLHCState();
   if (lhcState==AliGRPObject::GetInvalidString()) {
@@ -230,6 +232,25 @@ AliRunInfo* AliGRPManager::GetRunInfo()
 
   return new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
 }
+
+THashTable* AliGRPManager::GetCosmicTriggers()
+{
+  THashTable* listOfCosmicTriggers = 0;
+  AliCDBEntry* entry = 0;
+	
+  entry = AliCDBManager::Instance()->Get("GRP/Calib/CosmicTriggers");
+  if (entry) {
+    listOfCosmicTriggers = dynamic_cast<THashTable*>(entry->GetObject());
+    entry->SetOwner(0);
+  }
+
+  if (!listOfCosmicTriggers) {
+    AliWarning("Can not get list of cosmic triggers from OCDB! Cosmic event specie will be effectively disabled!");
+  }
+  
+  return listOfCosmicTriggers;
+}
+
 
 //_____________________________________________________________________________
 void AliGRPManager::SetGRPEntry(const AliGRPObject* source)

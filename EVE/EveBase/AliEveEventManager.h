@@ -14,6 +14,8 @@
 #include <TQObject.h>
 #include <TObjArray.h>
 
+#include <AliEventInfo.h>
+
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
 
@@ -24,6 +26,7 @@ class AliAODEvent;
 class AliRawReader;
 
 class AliGRPObject;
+class AliRecoParam;
 class AliMagF;
 
 class TEveElement;
@@ -82,6 +85,7 @@ public:
   AliEveEventSelector* GetEventSelector() const { return fPEventSelector; }
   TString       GetEventInfoHorizontal() const;
   TString       GetEventInfoVertical()   const;
+  const AliEventInfo*	GetEventInfo();
 
   static Int_t  CurrentEventId();
 
@@ -99,6 +103,7 @@ public:
 
   static AliMagF*      AssertMagField();
   static TGeoManager*  AssertGeometry();
+  static AliRecoParam* AssertRecoParams();
 
   static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
   static AliEveEventManager* GetDependentManager(const TString& name);
@@ -148,7 +153,8 @@ protected:
   AliAODEvent  *fAOD;			// AODEvent object.
 
   AliRawReader *fRawReader;             // Raw-data reader.
-
+  AliEventInfo	fEventInfo;		// Current Event Info
+  
   Bool_t        fAutoLoad;              // Automatic loading of events (online)
   Float_t       fAutoLoadTime;          // Auto-load time in seconds
   TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
@@ -185,6 +191,7 @@ protected:
 
   static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
   static AliMagF      *fgMagField;      // Global pointer to magnetic field.
+  static AliRecoParam* fgRecoParam;
   static Bool_t        fgUniformField;  // Track with uniform field.
 
 private:
@@ -196,6 +203,7 @@ private:
   void StopAutoLoadTimer();
 
   static Bool_t InitGRP();
+  static Bool_t InitRecoParam();
 
   Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 

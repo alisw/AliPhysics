@@ -8,21 +8,60 @@
  **************************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <iostream>
+
+#include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
+#include <TMap.h>
+#include <TString.h>
+#include <TSystem.h>
 #include <TStyle.h>
 #include <TTree.h>
+#include <TRegexp.h>
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 #include <TEveTreeTools.h>
 
-#include <AliRawReader.h>
 #include <AliAltroRawStreamV3.h>
-#include <AliTPCRawStreamV3.h>
 #include <AliEveEventManager.h>
 #include <AliEveTPCData.h>
 #include <AliEveTPCSector2D.h>
 #include <AliEveTPCSector3D.h>
+#include <AliGeomManager.h>
+#include <AliMagF.h>
+#include <AliRawReader.h>
+
+#include <AliGRPObject.h>
+#include <AliCDBManager.h>
+#include <AliCDBPath.h>
+#include <AliCDBEntry.h>
+
+#include <STEER/STEER/AliGRPManager.h>
+
+#include <TPC/AliTPCcalibDB.h>
+#include <TPC/AliTPCTransform.h>
+#include <TPC/AliTPCclusterMI.h>
+#include <TPC/AliTPCClustersRow.h>
+
+#include <TPC/AliTPCParam.h>
+#include <TPC/AliTPCRawStreamV3.h>
+#include <TPC/AliTPCRecoParam.h>
+#include <TPC/AliTPCReconstructor.h>
+
+#include <HLT/BASE/AliHLTOUT.h>
+#include <HLT/BASE/AliHLTSystem.h>
+#include <HLT/BASE/AliHLTPluginBase.h>
+
+#include <RAW/AliRawHLTManager.h>
 #endif
+
+// read TPC clusters compressed by HLT from RawReader and return output in OutputTree
+TTree* readHLTClusters(AliRawReader *RawReader);
+
+// add the HLT clusters from clustersTree to visualization
+void renderHLTClusters(TTree* clustersTree);
+
 
 // Macro to visualise rootified raw-data from TPC.
 //
@@ -31,13 +70,16 @@
 // mode = 1 - show only 2D sectors
 // mode = 2 - show only 3D sectors
 // mode = 3 - show both 2D and 3D sectors
-
 void tpc_raw(Int_t mode = 3)
 {
   gStyle->SetPalette(1, 0);
 
+  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::AssertMagField();
+  
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
   reader->Reset();
+  
   AliTPCRawStreamV3 input(reader);
   reader->Select("TPC"); // ("TPC", firstRCU, lastRCU);
 
@@ -78,6 +120,149 @@ void tpc_raw(Int_t mode = 3)
       t->IncRTS();
     }
   }
-
+  
+  // Display TPC clusters compressed by HLT
+  TTree* hltClustersTree = readHLTClusters(reader); // read HLT compressed clusters from TPC from raw reader and output them in hltClustersTree
+  if(hltClustersTree) renderHLTClusters(hltClustersTree);
+  
   gEve->EnableRedraw();
+  gEve->Redraw3D();
+  
+}
+
+// read TPC Clusters compressed by HLT from a raw filename
+TTree* readHLTClusters(AliRawReader *fRawReader)
+{
+/*************************
+*  Raw IO Stuff
+**************************/
+  AliRawReader* rawReader = AliRawHLTManager::CreateRawReaderHLT(fRawReader, "TPC");
+  rawReader->Select("TPC");
+
+/*************************
+*  HLT IO Stuff
+**************************/
+  AliHLTSystem* hltSystem=AliHLTPluginBase::GetInstance();
+
+  AliHLTOUT* hltOut = AliHLTOUT::New(rawReader); 
+  hltOut->Init();
+  hltSystem->InitHLTOUT(hltOut);
+  
+/*************************
+*  GRP Stuff
+**************************/
+  AliGRPManager manGRP;
+  AliRecoParam* recoParam = AliEveEventManager::AssertRecoParams();
+  
+  AliEveEventManager* curEventMan = (AliEveEventManager*)gEve->GetCurrentEvent();
+  
+  const AliRunInfo* runInfo = manGRP.GetRunInfo();
+  const THashTable* cosmicTriggers = manGRP.GetCosmicTriggers();
+  const AliEventInfo* eventinfo = curEventMan->GetEventInfo();
+  
+  recoParam->SetEventSpecie(runInfo,*eventinfo,cosmicTriggers);
+  
+  AliTPCRecoParam *tpcRecoParam = (AliTPCRecoParam*)recoParam->GetDetRecoParam(1); // TPC has index 1
+  tpcRecoParam->SetUseHLTClusters(3); // reconstruct only HLT clusters
+	
+/**************************
+*  Reconstruction of Clusters
+**************************/
+  TTree* outputClustersTree = new TTree;
+  
+  AliTPCReconstructor *reconstructor = new AliTPCReconstructor();
+  reconstructor->SetOption("useHLT");
+  reconstructor->CreateTracker(); // this will set the option to reconstruct for only HLT clusters
+  
+  reconstructor->SetRecoParam(tpcRecoParam);
+  reconstructor->SetRunInfo((AliRunInfo*)runInfo);
+  reconstructor->SetEventInfo((AliEventInfo*)eventinfo);
+  
+  reconstructor->Reconstruct(rawReader, outputClustersTree);
+  
+  delete reconstructor;
+  
+  hltSystem->ReleaseHLTOUT(hltOut);
+  
+  return outputClustersTree;
+}
+ 
+void renderHLTClusters(TTree* clustersTree)
+{
+ 
+/**************************
+*  Visualization of Clusters
+**************************/
+  const Int_t kMaxCl=100*160;
+  Int_t fNColorBins = 5;
+  
+  TEvePointSet* clusters = new TEvePointSet(kMaxCl);
+  clusters->SetOwnIds(kTRUE);
+
+  TEvePointSetArray * cc = new TEvePointSetArray("TPC Clusters Colorized");
+  cc->SetMainColor(kRed);
+  cc->SetMarkerStyle(4);
+  cc->SetMarkerSize(0.4);
+  cc->InitBins("Cluster Charge", fNColorBins, 0., fNColorBins*60.);
+  
+  cc->GetBin(0)->SetMainColor(kGray);
+  cc->GetBin(0)->SetMarkerSize(0.4);
+  cc->GetBin(1)->SetMainColor(kBlue);
+  cc->GetBin(1)->SetMarkerSize(0.42);
+  cc->GetBin(2)->SetMainColor(kCyan);
+  cc->GetBin(2)->SetMarkerSize(0.44);
+  cc->GetBin(3)->SetMainColor(kGreen);
+  cc->GetBin(3)->SetMarkerSize(0.46);
+  cc->GetBin(4)->SetMainColor(kYellow);
+  cc->GetBin(4)->SetMarkerSize(0.48);
+  cc->GetBin(5)->SetMainColor(kRed);
+  cc->GetBin(5)->SetMarkerSize(0.50);
+  cc->GetBin(6)->SetMainColor(kMagenta);
+  cc->GetBin(6)->SetMarkerSize(0.52);
+  
+
+// Loop over clusters
+  Int_t nentries = clustersTree->GetEntriesFast();
+	
+  AliTPCClustersRow *clrow = new AliTPCClustersRow();
+  clrow->SetClass("AliTPCclusterMI");
+  //clrow->SetArray(kMaxCl);
+  clustersTree->SetBranchAddress("Segment", &clrow);
+  
+  for (Int_t i=0; i<nentries; i++) {
+    if (!clustersTree->GetEvent(i)) continue;
+    
+    TClonesArray *cl = clrow->GetArray();
+    Int_t ncl = cl->GetEntriesFast();
+
+    while (ncl--)
+    {
+      AliTPCclusterMI* clusterMI = (AliTPCclusterMI*) cl->At(ncl);
+
+      AliCluster *c = (AliCluster*) cl->UncheckedAt(ncl);
+      Float_t g[3]; //global coordinates
+      c->GetGlobalXYZ(g);
+   
+      cc->Fill(g[0], g[1], g[2], clusterMI->GetQ());
+      clusters->SetNextPoint(g[0], g[1], g[2]);
+      AliCluster *atp = new AliCluster(*clusterMI);
+      clusters->SetPointId(atp);
+
+    }
+    cl->Clear();
+  }
+
+  delete clrow;
+	  
+  clusters->SetName("TPC Clusters");
+  clusters->SetTitle(Form("N=%d", clusters->Size()));
+
+  const TString viz_tag("REC Clusters TPC"); // to be changed
+  clusters->ApplyVizTag(viz_tag, "Clusters");
+  
+  cc->SetRnrSelf(kTRUE);
+
+  gEve->AddElement(cc);
+
+  return;
 }
