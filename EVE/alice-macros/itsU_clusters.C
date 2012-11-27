@@ -15,13 +15,14 @@
 #include <TEveElement.h>
 #include <TEvePointSet.h>
 
-#include <AliRunLoader.h>
-#include <AliCluster.h>
-#include <AliEveEventManager.h>
-#include <AliGeomManager.h>
-#include <AliITSUGeomTGeo.h>
-#include <AliITSUSegmentationPix.h>
-#include <TGeoManager.h>
+#include "AliRunLoader.h"
+#include "AliCluster.h"
+#include "AliEveEventManager.h"
+#include "AliGeomManager.h"
+#include "../ITS/UPGRADE/AliITSUGeomTGeo.h"
+#include "../ITS/UPGRADE/AliITSUSegmentationPix.h"
+#include "../ITS/UPGRADE/AliITSUClusterPix.h"
+#include "TGeoManager.h"
 
 #else
 class TEveElement;
@@ -39,7 +40,7 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
 
   gGeoManager = gEve->GetGeometry("geometry.root");
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
-
+  AliITSUClusterPix::SetGeom(gm);
   TTree *cTree = rl->GetTreeR("ITS", false);
   if (cTree == 0)
     return ;
@@ -68,7 +69,7 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
     //      AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)fGM->GetSegmentation(ilr);
     Float_t maxRsqr = maxR*maxR;
     for (Int_t icl = 0; icl < ncl; ++icl) {
-      AliCluster *c = (AliCluster*) clr->UncheckedAt(icl);
+      AliITSUClusterPix *c = (AliITSUClusterPix*) clr->UncheckedAt(icl);
       Int_t mod = c->GetVolumeId();
       int lay,lad,det;
       gm->GetModuleId(mod, lay,lad,det);
@@ -85,15 +86,15 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
 	evClusters->AddElement(layClusters);   
       }
       
-      Double_t l[3]={c->GetX(),c->GetY(),c->GetZ()}; 
-      Double_t g[3]; 
-      gm->LocalToGlobal(mod,l,g);
+      float g[3]; 
+      c->GetGlobalXYZ(g);
+      //      gm->LocalToGlobal(mod,l,g);
       if (g[0]*g[0] + g[1]*g[1] < maxRsqr) {
 	layClusters->SetNextPoint(g[0], g[1], g[2]);
-	AliCluster *atp = new AliCluster(*c);
+	AliITSUClusterPix *atp = new AliITSUClusterPix(*c);
 	layClusters->SetPointId(atp);
-	//	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",
-	//	       icl,atp->GetVolumeId(), l[0],l[1],l[2], g[0],g[1],g[2]);
+		printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",
+		       icl,atp->GetVolumeId(), l[0],l[1],l[2], g[0],g[1],g[2]);
       }
     }
   }
