@@ -99,6 +99,11 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWGUDdiffractive.so");
     gSystem->Load("libPWGUDselectors.so");
 
+    // ITS/UPGRADE
+    gSystem->Load("libITSUpgradeBase.so");
+    gSystem->Load("libITSUpgradeSim.so");
+    gSystem->Load("libITSUpgradeRec.so");
+
     // EVE
     gSystem->Load("libEve.so");
     gSystem->Load("libEveBase.so");
