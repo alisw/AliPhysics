@@ -39,7 +39,7 @@ class AliITSUTrackCond : public TObject
   Int_t       GetID()                                  const {return GetUniqueID();}
   Int_t       GetNConditions()                         const {return fNConditions;}
   UShort_t    GetGroup(Int_t condID,Int_t grID)        const {return fConditions[fAuxData[condID*kNAuxSz+kCondStart]+grID];}
-  Bool_t      CheckPattern(Int_t ncl,UShort_t patt)    const;
+  Bool_t      CheckPattern(UShort_t patt)    const;
   //
   virtual void  Print(Option_t* option = "")           const;
 

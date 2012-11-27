@@ -10,6 +10,7 @@
 #include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliITSUSeed.h"
+#include "AliITSUTrackCond.h"
 
 class AliITSUReconstructor;
 class AliITSURecoDet;
@@ -55,7 +56,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Int_t                  GetNSeeds(Int_t lr)              const {return fSeedsLr[lr].GetEntriesFast();} //RS TOCHECK
   AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return (AliITSUSeed*)fSeedsLr[lr].UncheckedAt(sID);} //RS TOCHECK
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
-  Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag) {return kFALSE;} // todo
+  Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
   void                   KillSeed(Int_t ilr, Int_t id) {} // todo
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
@@ -80,7 +81,9 @@ class AliITSUTrackerGlo : public AliTracker {
   // the seeds management to be optimized
   TObjArray*                      fSeedsLr;        // seeds at each layer
   TClonesArray                    fSeedsPool;      // pool for seeds
-
+  //
+  AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
+  //
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     
 };
@@ -90,7 +93,7 @@ inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_
 {
   // add new seed prolongation hypothesis 
   fSeedsLr[lr].AddLast(seed);
-  seed->Print("par");
+  printf("*** Adding: "); seed->Print();
 }
 
 

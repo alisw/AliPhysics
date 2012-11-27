@@ -62,11 +62,12 @@ void AliITSUTrackCond::AddNewCondition(Int_t minClusters)
 }
 
 //______________________________________________________________
-Bool_t AliITSUTrackCond::CheckPattern(Int_t ncl,UShort_t patt) const
+Bool_t AliITSUTrackCond::CheckPattern(UShort_t patt) const
 {
   // check if the pattern matches to some condition
   Short_t *arrAux = (Short_t*)fAuxData.GetArray();
   Short_t *arrGrp = (Short_t*)fConditions.GetArray();  
+  int ncl = NumberOfBitsSet(patt);
   int cntCond = 0;
   for (int ic=0;ic<fNConditions;ic++) {
     if (arrAux[cntCond+kMinClus]>ncl) {cntCond+=kNAuxSz; continue;} // check number of clusters

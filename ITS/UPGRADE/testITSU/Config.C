@@ -70,7 +70,7 @@ void Config()
   // Theta range given through pseudorapidity limits 22/6/2001
 
   // Set Random Number seed
-  gRandom->SetSeed(0); // Set 0 to use the currecnt time
+  gRandom->SetSeed(1); // Set 0 to use the currecnt time
 
 
   // libraries required by geant321
@@ -299,7 +299,7 @@ void Config()
 								750,  //835,  // nrows
 								20.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								300.e-4  // sensor thickness in cm
+								20.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,    // segID (0:9)
@@ -308,7 +308,7 @@ void Config()
 								750*2,//835,  // nrows
 								20.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								300.e-4  // sensor thickness in cm
+								20.e-4  // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       AliITSUSegmentationPix* seg2 = new AliITSUSegmentationPix(2,    // segID (0:9)
@@ -317,7 +317,7 @@ void Config()
 								750*2,//835,  // nrows
 								20.e-4,  // default row pitch in cm
 								20.e-4,  // default col pitch in cm
-								300.e-4   // sensor thickness in cm
+								20.e-4   // sensor thickness in cm
 								);    // see AliITSUSegmentationPix.h for extra options
       seg2->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
       //

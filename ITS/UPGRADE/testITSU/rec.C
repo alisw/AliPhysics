@@ -17,13 +17,13 @@ void rec() {
   
   AliReconstruction rec;
 
-    rec.SetRunReconstruction("ITS TPC"); // run cluster finder
-    rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
+  //rec.SetRunReconstruction("ITS TPC"); // run cluster finder
+  //rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
 
-    /*
+  
   rec.SetRunReconstruction("");//ITS TPC"); // run cluster finder
   rec.SetRunTracking("ITS TPC"); // Turn on with ITS when tracker is implemented
-    */
+  
 
   rec.SetRunVertexFinder(kFALSE); // to be implemented - CreateVertexer
   rec.SetRunMultFinder(kFALSE);   // to be implemented - CreateMultFinder

@@ -194,8 +194,8 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   cluster->SetX(x);
   cluster->SetZ(z);
   cluster->SetY(0);
-  cluster->SetSigmaZ2(dz*dz*k1to12);
-  cluster->SetSigmaY2(dx*dx*k1to12);
+  cluster->SetSigmaZ2(nz>1 ? dz*dz*k1to12 : pz*pz*k1to12);
+  cluster->SetSigmaY2(nx>1 ? dx*dx*k1to12 : px*px*k1to12);
   cluster->SetSigmaYZ(0);
   cluster->SetFrameLoc();
   cluster->SetNxNz(nx,nz);
