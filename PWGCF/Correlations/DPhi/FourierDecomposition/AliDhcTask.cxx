@@ -567,11 +567,11 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
   Int_t ptindex = (Int_t)fIndex->Eval(1,1,zbin,cbin);
 
   fHPtTrg_Evt->Reset();
-  if (fDoWeights) { // Count trigger particles in this event
-    for (Int_t i=0; i<iMax; ++i) {
-      const AliMiniTrack &a(evt1.at(i));
-      Float_t pta  = a.Pt();
-      fHPtTrg_Evt->Fill(pta);
+  for (Int_t i=0; i<iMax; ++i) {
+    const AliMiniTrack &a(evt1.at(i));
+    Float_t pta  = a.Pt();
+    fHPtTrg_Evt->Fill(pta);
+    if (pairing == kSameEvt) {
       fHPts[ptindex]->Fill(pta);
     }
   }
