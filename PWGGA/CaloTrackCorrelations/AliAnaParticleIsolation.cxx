@@ -65,7 +65,9 @@ fhENoIso(0),                      fhPtNoIso(0),                    fhPtNLocMaxNo
 fhPtDecayIso(0),                  fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
 fhConeSumPt(0),                   fhPtInCone(0),
-fhPtTrackInCone(0),               fhPtTrackInConeOtherBC(0),       fhPtTrackInConeOtherBCPileUpSPD(0),
+fhPtTrackInCone(0),
+fhPtTrackInConeOtherBC(0),        fhPtTrackInConeOtherBCPileUpSPD(0),
+fhPtTrackInConeBC0(0),            fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
 fhFRConeSumPt(0),                 fhPtInFRCone(0),                 fhPhiUEConeSumPt(0),
 fhEtaUEConeSumPt(0),              fhEtaBand(0),                    fhPhiBand(0),
@@ -830,6 +832,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtTrackInConeOtherBCPileUpSPD->SetYTitle("p_{T in cone} (GeV/c)");
       fhPtTrackInConeOtherBCPileUpSPD->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtTrackInConeOtherBCPileUpSPD) ;
+
+      fhPtTrackInConeBC0  = new TH2F("hPtTrackInConeBC0",
+                                         Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC==0",r),
+                                         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeBC0->SetYTitle("p_{T in cone} (GeV/c)");
+      fhPtTrackInConeBC0->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtTrackInConeBC0) ;
+      
+      fhPtTrackInConeBC0PileUpSPD  = new TH2F("hPtTrackInConeBC0PileUpSPD",
+                                                  Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC==0, pile-up from SPD",r),
+                                                  nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeBC0PileUpSPD->SetYTitle("p_{T in cone} (GeV/c)");
+      fhPtTrackInConeBC0PileUpSPD->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtTrackInConeBC0PileUpSPD) ;
 
       
       for (Int_t i = 0; i < 7 ; i++)
@@ -1927,10 +1943,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           //Double32_t tof = track->GetTOFsignal()*1e-3;
           Int_t trackBC = track->GetTOFBunchCrossing(bz);
 
-          if( okTOF && trackBC!=0 )fhPtTrackInConeOtherBC->Fill(pt,pTtrack);
-
+          if     ( okTOF && trackBC!=0 )fhPtTrackInConeOtherBC->Fill(pt,pTtrack);
+          else if( okTOF && trackBC==0 )fhPtTrackInConeBC0    ->Fill(pt,pTtrack);
+          
           if(GetReader()->IsPileUpFromSPD())             { fhPtInConePileUp[0]->Fill(pt,pTtrack);
-            if(okTOF && trackBC!=0 )           fhPtTrackInConeOtherBCPileUpSPD->Fill(pt,pTtrack); }
+            if(okTOF && trackBC!=0 )           fhPtTrackInConeOtherBCPileUpSPD->Fill(pt,pTtrack);
+            if(okTOF && trackBC==0 )           fhPtTrackInConeBC0PileUpSPD    ->Fill(pt,pTtrack); }
           if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(pt,pTtrack);
           if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(pt,pTtrack);
           if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(pt,pTtrack);
