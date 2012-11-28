@@ -29,9 +29,15 @@ public:
   
   Int_t GetTriggerInput(Int_t runNumber, const char* inputname);
 
+  Int_t GetFillNumberFromRunNumber(Int_t runNumber);
+
   AliAnalysisTriggerScalerItem* GetTriggerScaler(Int_t runNumber, const char* level, const char* triggerClassName);
 
-  void IntegratedLuminosity();
+  void IntegratedLuminosity(const char* triggerList="",
+                            const char* lumiTrigger="C0TVX-S-NOPF-ALLNOTRD",
+                            Double_t lumiCrossSection=28.0,
+                            const char* csvOutputFile="",
+                            const char sep='\t');
     
   TGraph* PlotTriggerRatio(const char* triggerClassName1,
                            const char* what1,
@@ -48,15 +54,19 @@ public:
   void SetRunList(Int_t runNumber);
   void SetRunList(const char* runlist);
 
+  virtual void Print(Option_t* opt="") const;
+  
   void SetVerbose(Int_t level=1) { fVerbose=level; }
     
   static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
 
-  static void PrintIntegers(std::vector<int>& integers, const char sep = '\n',
+  static void PrintIntegers(const std::vector<int>& integers, const char sep = '\n',
                             std::ostream& out = std::cout);
 
-private:
   TObject* GetOCDBObject(const char* path, Int_t runNumber);
+  
+private:
+  
   TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
                     const std::vector<double>& vy, const std::vector<double>& vey);
 
