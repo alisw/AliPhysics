@@ -1187,7 +1187,7 @@ TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param
 }
 
 
-TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor){
+TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize){
   //
   // Make a sparse draw of the variables
   // Writen by Weilin.Yu
@@ -1246,6 +1246,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   graphNew->GetHistogram()->SetTitle("");
   graphNew->SetMarkerStyle(mstyle); 
   graphNew->SetMarkerColor(mcolor);
+  if (msize>0) graphNew->SetMarkerSize(msize);
   delete [] tempArray;
   delete [] index;
   delete [] newBins;
