@@ -1120,7 +1120,7 @@ void AliCaloTrackReader::FillInputCTS()
     
     TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
-    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME );
+    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
     Double_t tof = -1000;
     //Int_t    bc  = -1000;
     Int_t trackBC = -1000 ;
@@ -1156,7 +1156,7 @@ void AliCaloTrackReader::FillInputCTS()
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
 
     }
-    
+          
     if(fUseTrackDCACut)
     {
       //In case of hybrid tracks on AODs, constrained TPC tracks cannot be propagated back to primary vertex
