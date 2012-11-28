@@ -120,7 +120,8 @@ fSingleTrackCutNames(0x0),
 fPairTrackCutNames(0x0),
 fCentralityNames(0x0),
 fEventCutNames(0x0),
-fUseBackgroundTriggers(kFALSE)
+fUseBackgroundTriggers(kFALSE),
+fTriggerInputBitMap()
 {
   /// default ctor
 }
@@ -144,7 +145,8 @@ fSingleTrackCutNames(0x0),
 fPairTrackCutNames(0x0),
 fCentralityNames(new TObjArray),
 fEventCutNames(0x0),
-fUseBackgroundTriggers(kFALSE)
+fUseBackgroundTriggers(kFALSE),
+fTriggerInputBitMap()
 {
   /// Constructor
   /// The list of triggers to be considered will be updated on the fly
@@ -176,7 +178,8 @@ fSingleTrackCutNames(0x0),
 fPairTrackCutNames(0x0),
 fCentralityNames(new TObjArray),
 fEventCutNames(0x0),
-fUseBackgroundTriggers(kFALSE)
+fUseBackgroundTriggers(kFALSE),
+fTriggerInputBitMap()
 {
   /// Constructor with a predefined list of triggers to consider
 
@@ -226,16 +229,16 @@ AliAnalysisTaskMuMu::~AliAnalysisTaskMuMu()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMuMu::AddTriggerClasses(const char* triggerlist)
+void AliAnalysisTaskMuMu::AddTriggerClasses(const char* triggerlist, const char* sep)
 {
-  /// Given a list of trigger names (triggerlist) separated by spaces
+  /// Given a list of trigger names (triggerlist) separated by sep
   /// add those which we don't know yet (selecting only the few ones
   /// we're interested in, e.g CINT* CMU* CMB*
   ///
   
   TString slist(triggerlist);
   
-  TObjArray* a = slist.Tokenize(" ");
+  TObjArray* a = slist.Tokenize(sep);
   TObjString* s;
   TIter next(a);
   
@@ -400,9 +403,10 @@ AliAnalysisTaskMuMu::CentralityName(Double_t centrality) const
 //_____________________________________________________________________________
 Bool_t 
 AliAnalysisTaskMuMu::CheckTriggerClass(const TString& toCheck,
-                                        const TString& firedTriggerClasses) const
+                                       const TString& firedTriggerClasses,
+                                       UInt_t l0Inputs) const
 {
-  // Check if the "toCheck" class (or logical combination of classes) 
+  // Check if the "toCheck" class (or logical combination of classes and L0 inputs)
   // are within the "firedTriggerClasses"
   
   Bool_t ok(kFALSE);
@@ -423,7 +427,16 @@ AliAnalysisTaskMuMu::CheckTriggerClass(const TString& toCheck,
     while ( ( an = static_cast<TObjString*>(nextA()) ) )
     {
       //        AliDebug(1,Form("    an %s => %d",an->String().Data(),firedTriggerClasses.Contains(an->String().Data())));
-      comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
+      if ( an->String().BeginsWith("0") )
+      {
+        // that's an input
+        UInt_t bit = GetTriggerInputBitMaskFromInputName(an->String().Data());
+        comp.ReplaceAll(an->String().Data(),( (l0Inputs & (bit)) == bit) ? "1" : "0");
+      }
+      else
+      {
+        comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
+      }
     }
     delete a;
     
@@ -664,7 +677,7 @@ UInt_t AliAnalysisTaskMuMu::EAGetL0TriggerInputs(const AliVEvent& event) const
   
   if ( event.IsA() == AliESDEvent::Class() ) 
   {
-    return static_cast<const AliESDEvent&>(event).GetNumberOfMuonTracks();
+    return static_cast<const AliESDEvent&>(event).GetHeader()->GetL0TriggerInputs();
   }
   else if ( event.IsA() == AliAODEvent::Class() ) 
   {
@@ -685,7 +698,17 @@ Int_t AliAnalysisTaskMuMu::EAGetNumberOfMuonTracks(const AliVEvent& event) const
   // get the number of muon tracks from the event
   if ( event.IsA() == AliESDEvent::Class() ) 
   {
-    return static_cast<const AliESDEvent&>(event).GetNumberOfMuonTracks();
+    Int_t n(0);
+    const AliESDEvent& esd = static_cast<const AliESDEvent&>(event);
+    for ( Int_t i = 0; i < esd.GetNumberOfMuonTracks(); ++i )
+    {
+      AliESDMuonTrack* muon = const_cast<AliESDEvent&>(esd).GetMuonTrack(i);
+      if ( muon->ContainTrackerData() )
+      {
+        ++n;
+      }
+    }
+    return n;
   }
   else if ( event.IsA() == AliAODEvent::Class() ) 
   {
@@ -985,11 +1008,13 @@ void AliAnalysisTaskMuMu::FillHistogramCollection(const char* physics, const cha
   
   CreatePairHisto(physics,triggerClassName,"MinvLSPt", "unlike sign inv. mass vs Pt",nbinsPt,ptMin,ptMax,nMinvBins,minvMin,minvMax);
 
-  Double_t xmin = -40;
-  Double_t xmax = +40;
-  Int_t nbins = GetNbins(xmin,xmax,0.5);
+  Double_t xmin = -35;
+  Double_t xmax = +35;
+  Int_t nbins = GetNbins(xmin,xmax,0.4);
   
   CreateEventHisto(physics,triggerClassName,"Zvertex","z vertex",nbins,xmin,xmax);  
+
+  CreateEventHisto(physics,triggerClassName,"T0Zvertex","T0 zvertex",nbins,xmin,xmax);
 
   xmin = -5;
   xmax = 5;
@@ -1055,8 +1080,9 @@ void AliAnalysisTaskMuMu::FillHistogramCollection(const char* physics, const cha
 
   /*
   CreateEventHisto(physics,triggerClassName,"T02D","(T0C+T0A)/2 versus (T0A-T0C)/2;Time (T0A-T0C)/2 (ns);Time (T0A+T0C)/2 (ns)",nbins,xmin,xmax,nbins,xmin,xmax);
-  CreateEventHisto(physics,triggerClassName,"T0Flags","T0 flags",3,0,3);    
+   CreateEventHisto(physics,triggerClassName,"T0Flags","T0 flags",3,0,3);
    */
+
   
   
   TH1* h = new TH1F("Centrality","Centrality",12,-10,110);
@@ -1168,8 +1194,27 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
     Histo(physics,triggerClassName,centrality,"Zvertex")->Fill(vertex->GetZ());
   }
 
-  AliVVZERO* vzero = event.GetVZEROData();
+  if ( !fIsFromESD )
+  {
+    const AliAODTZERO* tzero = static_cast<const AliAODEvent&>(event).GetTZEROData();
   
+    if (tzero)
+    {
+      Histo(physics,triggerClassName,centrality,"T0Zvertex")->Fill(tzero->GetT0VertexRaw());
+    }
+  }
+  else
+  {
+    const AliESDTZERO* tzero = static_cast<const AliESDEvent&>(event).GetESDTZERO();
+    
+    if (tzero)
+    {
+      Histo(physics,triggerClassName,centrality,"T0Zvertex")->Fill(tzero->GetT0zVertex());
+    }    
+  }
+  
+  AliVVZERO* vzero = event.GetVZEROData();
+    
   if (vzero)
   {
     Float_t v0a = vzero->GetV0ATime();
@@ -1314,6 +1359,7 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask(const AliVEvent& event) const
   kEventZ7 = events with | zvertex | < 7cm
   kEventZ10 = events with | zvertex | < 10 cm
   kEventSD2 = events with 0SD2 input present (was for PbPb 2010)
+  kEventMSL = events with 0MSL input present
    
    */
   
@@ -1323,15 +1369,15 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask(const AliVEvent& event) const
   
   UInt_t trigger = EAGetL0TriggerInputs(event); 
   
-  UInt_t l0TVXBIT = (1<<3); // 0TVX  FIXME: get this number (3) from the CTP config !
+  UInt_t l0TVXBIT = GetTriggerInputBitMaskFromInputName("0TVX");
   
   if ( ( trigger & (l0TVXBIT) ) == l0TVXBIT )
   {
     m |= AliAnalysisTaskMuMu::kEventTVX;
   }
   
-  UInt_t l0VBABIT = (1<<0); // 0VBA FIXME: get this number (0) from the CTP config !
-  UInt_t l0VBCBIT = (1<<1); // 0VBC FIXME: get this number (1) from the CTP config !
+  UInt_t l0VBABIT = GetTriggerInputBitMaskFromInputName("0VBA");
+  UInt_t l0VBCBIT = GetTriggerInputBitMaskFromInputName("0VBC");
   
   if ( ( ( trigger & (l0VBABIT ) ) == l0VBABIT ) && 
       ( ( trigger & (l0VBCBIT ) ) == l0VBCBIT ) )
@@ -1339,10 +1385,17 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask(const AliVEvent& event) const
     m |= AliAnalysisTaskMuMu::kEventV0AND;
   }
   
+  UInt_t l0MSLBIT = GetTriggerInputBitMaskFromInputName("0MSL");
+  
+  if ( ( trigger & (l0MSLBIT) ) == l0MSLBIT )
+  {
+    m |= AliAnalysisTaskMuMu::kEventMSL;
+  }
+  
   if ( fBeamYear == "PbPb2010" ) 
   {
     // consider only events with OSM2 fired
-    UInt_t sd2 = (1<<12);  
+    UInt_t sd2 = GetTriggerInputBitMaskFromInputName("0SM2");
     if ( ( trigger & sd2 ) == sd2 )
     {
       m |= AliAnalysisTaskMuMu::kEventSD2;
@@ -1405,6 +1458,87 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask(const AliVEvent& event) const
   return m;
 }
 
+//_____________________________________________________________________________
+UInt_t AliAnalysisTaskMuMu::GetTriggerInputBitMaskFromInputName(const char* inputName) const
+{
+  // Get trigger input bit from its name
+  // FIXME : this should really come directly from the trigger configuration
+  // object, if only this one would be available in a more convenient
+  // way than the OCDB (e.g. in RunBasedContainer ?)
+  //
+
+  if ( fTriggerInputBitMap.empty() )
+  {
+    // nothing given to us, use the bad bad hard-coded values !
+    
+    TString sInputName(inputName);
+
+    if ( sInputName == "0SM2" ) return (1<<12);
+
+    
+    if ( sInputName == "0VBA" ) return (1<<0);
+    if ( sInputName == "0VBC" ) return (1<<1);
+    if ( sInputName == "0SMB" ) return (1<<2);
+    if ( sInputName == "0TVX" ) return (1<<3);
+    if ( sInputName == "0VGC" ) return (1<<4);
+    if ( sInputName == "0VGA" ) return (1<<5);
+    if ( sInputName == "0SH1" ) return (1<<6);
+    if ( sInputName == "0SH2" ) return (1<<7);
+    if ( sInputName == "0HPT" ) return (1<<8);
+    if ( sInputName == "0AMU" ) return (1<<9);
+    if ( sInputName == "0OB0" ) return (1<<10);
+    if ( sInputName == "0ASL" ) return (1<<11);
+    if ( sInputName == "0MSL" ) return (1<<12);
+    if ( sInputName == "0MSH" ) return (1<<13);
+    if ( sInputName == "0MUL" ) return (1<<14);
+    if ( sInputName == "0MLL" ) return (1<<15);
+    if ( sInputName == "0EMC" ) return (1<<16);
+    if ( sInputName == "0PH0" ) return (1<<17);
+    if ( sInputName == "0HWU" ) return (1<<18);
+    if ( sInputName == "0LSR" ) return (1<<19);
+    if ( sInputName == "0T0A" ) return (1<<20);
+    if ( sInputName == "0BPA" ) return (1<<21);
+    if ( sInputName == "0BPC" ) return (1<<22);
+    if ( sInputName == "0T0C" ) return (1<<23);
+
+    if ( sInputName == "1EJE" ) return (1<<0);
+    if ( sInputName == "1EGA" ) return (1<<1);
+    if ( sInputName == "1EJ2" ) return (1<<2);
+    if ( sInputName == "1EG2" ) return (1<<3);
+    if ( sInputName == "1PHL" ) return (1<<4);
+    if ( sInputName == "1PHM" ) return (1<<5);
+    if ( sInputName == "1PHH" ) return (1<<6);
+    if ( sInputName == "1HCO" ) return (1<<8);
+    if ( sInputName == "1HJT" ) return (1<<9);
+    if ( sInputName == "1HSE" ) return (1<<10);
+    if ( sInputName == "1DUM" ) return (1<<11);
+    if ( sInputName == "1HQU" ) return (1<<12);
+    if ( sInputName == "1H14" ) return (1<<13);
+    if ( sInputName == "1ZMD" ) return (1<<14);
+    if ( sInputName == "1ZMB" ) return (1<<16);
+    if ( sInputName == "1ZED" ) return (1<<17);
+    if ( sInputName == "1ZAC" ) return (1<<18);
+    if ( sInputName == "1EJE" ) return (1<<19);
+    
+    AliError(Form("Don't know this input %s",inputName));
+    
+    return (1<<31);
+  }
+  else
+  {
+    std::map<std::string,int>::const_iterator it = fTriggerInputBitMap.find(inputName);
+    if ( it != fTriggerInputBitMap.end() )
+    {
+      return ( 1 << it->second );
+    }
+    else
+    {
+      AliError(Form("Don't know this input %s",inputName));
+      
+      return (1<<31);
+    }
+  }
+}
 
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::GetPairMask(const AliVParticle& t1, const AliVParticle& t2,
@@ -1823,7 +1957,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   
   if ( IsDynamicTriggerClasses() ) 
   {
-    AddTriggerClasses(EAGetFiredTriggerClasses(*event));    
+    AddTriggerClasses(EAGetFiredTriggerClasses(*event)," ");
   }
   else
   {
@@ -1894,6 +2028,10 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
       if ( AtLeastOneMuonTrigger(firedTriggerClasses) )
       {
         fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEMUONTRIGGER", fCurrentRunNumber));
+        if ( AtLeastOneMBTrigger(firedTriggerClasses) )
+        {
+          fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEMUONORMBTRIGGER", fCurrentRunNumber));
+        }
       }
 
       if ( AtLeastOneMBTrigger(firedTriggerClasses) )
@@ -1901,29 +2039,25 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
         fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEMBTRIGGER", fCurrentRunNumber));
       }
 
-      if ( AtLeastOneMuonTrigger(firedTriggerClasses) && AtLeastOneMBTrigger(firedTriggerClasses) )
-      {
-        fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEMUONORMBTRIGGER", fCurrentRunNumber));
-      }
-
-      if ( AtLeastOneEmcalTrigger(firedTriggerClasses) )
-      {
-        fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALTRIGGER", fCurrentRunNumber));
-      }
-
-      if ( AtLeastOneEmcalTrigger(firedTriggerClasses) && AtLeastOneMBTrigger(firedTriggerClasses) )
-      {
-        fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALORMBTRIGGER", fCurrentRunNumber));
-      }
-
+//      if ( AtLeastOneEmcalTrigger(firedTriggerClasses) )
+//      {
+//        fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALTRIGGER", fCurrentRunNumber));
+//
+//        if ( AtLeastOneMBTrigger(firedTriggerClasses) )
+//        {
+//          fEventCounters->Count(Form("event:%s/trigger:%s/run:%d", et->String().Data(), "ATLEASTONEEMCALORMBTRIGGER", fCurrentRunNumber));
+//        }
+//      }
 
     }
   }
 
+  UInt_t l0Inputs = EAGetL0TriggerInputs(*event);
+
   // second loop to count only the triggers we're interested in
   while ( ( tname = static_cast<TObjString*>(next()) ) )
   {
-    if ( !CheckTriggerClass(tname->String(),firedTriggerClasses) ) continue;
+    if ( !CheckTriggerClass(tname->String(),firedTriggerClasses,l0Inputs) ) continue;
     
     nextEventCut.Reset();
     

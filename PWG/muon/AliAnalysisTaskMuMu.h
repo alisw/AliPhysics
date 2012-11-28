@@ -65,7 +65,8 @@ public:
     kEventZSPD=BIT(5),
     kEventZ7=BIT(7),    
     kEventZ10=BIT(10),
-    kEventSD2=BIT(16)
+    kEventSD2=BIT(16),
+    kEventMSL=BIT(17)
   };
   
   AliAnalysisTaskMuMu();
@@ -73,39 +74,39 @@ public:
   AliAnalysisTaskMuMu(Bool_t fromESD, const char* beamYear, TArrayF* centralities=0x0);
   virtual ~AliAnalysisTaskMuMu();
   
-  void UserCreateOutputObjects();
-
-  virtual void Terminate(Option_t *);
+  virtual void AddEventCut(const char* cutName, UInt_t mask);
+  
+  virtual void AddPairCut(const char* cutName, UInt_t maskForOneOrBothTrack, UInt_t maskForTrackPair=0);
+  
+  virtual void AddSingleCut(const char* cutName, UInt_t mask);
+  
+  void AddTriggerClasses(const char* triggerlist, const char* sep=",");
+  
+  virtual void DisableHistogramming() { fIsHistogrammingDisabled = kTRUE; }
   
   virtual void FinishTaskOutput();
+  
+  Bool_t IsPP() const;
+
+  virtual Bool_t IsHistogrammingDisabled() const { return fIsHistogrammingDisabled; }
+
+  static void MergeCentralities(AliHistogramCollection* histogramCollection);
   
   virtual void NotifyRun();
   
   virtual void Print(Option_t* opt="") const;
   
-  virtual void AddEventCut(const char* cutName, UInt_t mask); 
-  
-  virtual void AddPairCut(const char* cutName, UInt_t maskForOneOrBothTrack, UInt_t maskForTrackPair=0);
-  
-  virtual void AddSingleCut(const char* cutName, UInt_t mask);
-
   virtual void ShouldSeparatePlusAndMinus(Bool_t value) { fShouldSeparatePlusAndMinus = value; }
   
   virtual Bool_t ShouldSeparatePlusAndMinus() const { return fShouldSeparatePlusAndMinus; }
-
+  
+  virtual void Terminate(Option_t *);
+  
   void UseBackgroundTriggers(Bool_t value=kTRUE) { fUseBackgroundTriggers = value; }
-  
-  virtual void UserExec(Option_t* opt);
 
-  void AddTriggerClasses(const char* triggerlist);
-  
-  Bool_t IsPP() const;
-  
-  static void MergeCentralities(AliHistogramCollection* histogramCollection);
- 
-  virtual Bool_t IsHistogrammingDisabled() const { return fIsHistogrammingDisabled; } 
-  
-  virtual void DisableHistogramming() { fIsHistogrammingDisabled = kTRUE; }
+  void UserCreateOutputObjects();
+
+  virtual void UserExec(Option_t* opt);
   
   class PairCut : public TObject {
   public:
@@ -132,9 +133,8 @@ private:
 
   Bool_t PassPhysicsSelection() const;
 
-  Bool_t CheckTriggerClass(const TString& toCheck, const TString& firedTriggerClasses) const;
+  Bool_t CheckTriggerClass(const TString& toCheck, const TString& firedTriggerClasses, UInt_t l0Inputs) const;
 
-  
   virtual void FillHistos(const char* physics, const char* triggerClassName, const char* centrality, const AliVEvent& event);
 
   void FillHistosForTrack(const char* physics, const char* triggerClassName, const char* centrality, const AliVParticle& track, Int_t trackIndex);
@@ -174,6 +174,8 @@ private:
    void DefineCentralityClasses(TArrayF* centralities);
   
   void FillHistogramCollection(const char* physics, const char* triggerClassName);
+
+  UInt_t GetTriggerInputBitMaskFromInputName(const char* inputName) const;
 
   TH1* Histo(const char* physics, const char* histoname);
   
@@ -271,12 +273,14 @@ private:
   TObjArray* fEventCutNames; // cut at event level (array of TObjString)
   
   Bool_t fUseBackgroundTriggers; // whether or not we should use the ACE triggers
-   
+  
+  std::map<std::string,int> fTriggerInputBitMap; // map of L0 input name to bit
+  
   AliAnalysisTaskMuMu(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
   AliAnalysisTaskMuMu& operator=(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
   
   
-  ClassDef(AliAnalysisTaskMuMu,16) // a class to analyse muon pairs (and single also ;-) )
+  ClassDef(AliAnalysisTaskMuMu,17) // a class to analyse muon pairs (and single also ;-) )
 };
 
 #endif
