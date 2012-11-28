@@ -41,13 +41,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticity(const AliChaoticity &obj); 
   AliChaoticity &operator=(const AliChaoticity &obj);
   
- private:
 
   virtual void   UserCreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
- enum {
+
+ enum ChaoticityConstants {
     kPairLimit = 15000,//15000
     kNormPairLimit = 45000,
     kMultLimitPbPb = 2000,//2000
@@ -68,6 +67,15 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
  };
 
+  Int_t GetNumKtbins() const {return kKbinsT;}
+  Int_t GetNumRValues() const {return kRVALUES;}
+  Int_t GetNumCentBins() const {return kCentBins;}
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
+  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[5]=0x0);
+
+ private:
+
   void ParInit();
   Bool_t AcceptPair(AliChaoticityTrackStruct, AliChaoticityTrackStruct);
   Float_t GamovFactor(Int_t, Int_t, Float_t);
@@ -81,23 +89,16 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void ArrangeQs(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Short_t, Short_t, Float_t&, Float_t&, Float_t&);
   Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[kKbinsT][kCentBins]=0x0);
-  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
-  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[2]=0x0);
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
   Float_t FSICorrelation2(Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeight3D(Bool_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
   //
-  Int_t GetNumKtbins() const {return kKbinsT;}
-  Int_t GetNumRValues() const {return kRVALUES;}
-  Int_t GetNumCentBins() const {return kCentBins;}
-
+  
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
-  //AliESDEvent            *fESD; //!    // ESD object
   TList                  *fOutputList; //! Compact Output list
   AliPIDResponse         *fPIDResponse; //! PID response object; equivalent to AliAODpidUtil
   

@@ -816,6 +816,7 @@ void AliChaoticity::ParInit()
       SetMomResCorrections(fLEGO);// Read Momentum resolution file
     }
   }
+
 }
 //________________________________________________________________________
 void AliChaoticity::UserCreateOutputObjects()
@@ -1401,6 +1402,7 @@ void AliChaoticity::Exec(Option_t *)
 	
       }// aodTrack2
       
+      //cout<<nSigmaTPC[2]<<endl;
       ///////////////////
       ((TH3F*)fOutputList->FindObject("fTPCResponse"))->Fill(centralityPercentile, fTempStruct[myTracks].fMom, signalTPC);
       if(fTempStruct[myTracks].fTOFhit) {
@@ -3249,8 +3251,7 @@ void AliChaoticity::GetQosl(Float_t track1[], Float_t track2[], Float_t& qout, F
   qlong = (p0*vz - pz*v0)/mt;
 }
 //________________________________________________________________________
-void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[kKbinsT][kCentBins]){
- 
+void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F ***histos){
   if(legoCase){
     for(Int_t mb=0; mb<fMbins; mb++){
       for(Int_t edB=0; edB<kEDbins; edB++){
@@ -3556,6 +3557,7 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2D[2], TH3D *t
   // read in 2-particle and 3-particle FSI correlations = K2 & K3
   // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
   if(legoCase){
+    cout<<"LEGO call to SetFSICorrelations"<<endl;
     fFSI2SS = (TH2D*)temp2D[0]->Clone();
     fFSI2OS = (TH2D*)temp2D[1]->Clone();
     fFSIOmega0SS = (TH3D*)temp3D[0]->Clone();
@@ -3566,6 +3568,7 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2D[2], TH3D *t
     fFSIOmega0SS->SetDirectory(0);
     fFSIOmega0OS->SetDirectory(0);
   }else {
+    cout<<"non LEGO call to SetFSICorrelations"<<endl;
     TFile *fsifile = new TFile("KFile.root","READ");
     if(!fsifile->IsOpen()) {
       cout<<"No FSI file found"<<endl;
