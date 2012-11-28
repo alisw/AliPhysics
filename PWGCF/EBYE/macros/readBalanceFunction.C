@@ -6,7 +6,7 @@ const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,
 const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
 const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
-void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE, Bool_t correctWithAcceptanceOnly = kFALSE) {
+void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE, Bool_t correctWithAcceptanceOnly = kFALSE,  Bool_t correctWithMixed = kFALSE) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -20,7 +20,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   gSystem->Load("libPWGCFebye.so");
 
   //Draw BF       
-  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow,etaBins, correctWithEfficiency,correctWithAcceptanceOnly);    
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow,etaBins, correctWithEfficiency,correctWithAcceptanceOnly,correctWithMixed);    
   
 
   //Merge the output
@@ -28,7 +28,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE, Bool_t correctWithAcceptanceOnly = kFALSE) {
+void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE, Bool_t correctWithAcceptanceOnly = kFALSE,  Bool_t correctWithMixed = kFALSE) {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 13;
@@ -42,6 +42,41 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   cQARef->Divide(4,3);
   TCanvas *cBF[13][10];
   TCanvas *cBFS[13][10];
+
+  // only one correction method allowed (correctWithEfficiency/Acceptance OR divide by event mixing)
+  if((correctWithEfficiency||correctWithAcceptanceOnly) && correctWithMixed){
+    Printf("only one correction method allowed (correctWithEfficiency/Acceptance OR divide by event mixing)");
+    return;
+  }
+
+  // if divide by event mixing, first get all files for all centralities
+  // here the event mixing file is more or less hard coded (has to be changed if somebody else wants to use this)
+  TH1D *hMixedEta[nrOfCentralities][4];
+  TH1D *hMixedPhi[nrOfCentralities][4];
+  
+  if(correctWithMixed){
+    TFile* fMixed[nrOfCentralities];
+    
+    for (Int_t iCent = 0; iCent < nrOfCentralities ; iCent++){
+      fMixed[iCent] = TFile::Open(Form("/Users/physics/ALICE/balance/BF_EM_new/gridOut/Centrality%.0f_%.0f_oldMethod/Histograms_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_EventMixing_%.0f-%.0f_AnalysisResults.root",centralityArray[iCent],centralityArray[iCent+1],fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centralityArray[iCent],centralityArray[iCent+1]),"READ");
+
+      if(!fMixed[iCent]){
+	Printf("Event Mixing file not available!");
+	return;
+      }
+
+      // at the time of production the event mixing had no centrality info (all in most central bin, centarlity is selected before)
+      hMixedEta[iCent][0] =  (TH1D*)fMixed[iCent]->Get(Form("hPN_eta_0"));
+      hMixedPhi[iCent][0] =  (TH1D*)fMixed[iCent]->Get(Form("hPN_phi_0"));
+      hMixedEta[iCent][1] =  (TH1D*)fMixed[iCent]->Get(Form("hNP_eta_0"));
+      hMixedPhi[iCent][1] =  (TH1D*)fMixed[iCent]->Get(Form("hNP_phi_0"));
+      hMixedEta[iCent][2] =  (TH1D*)fMixed[iCent]->Get(Form("hNN_eta_0"));
+      hMixedPhi[iCent][2] =  (TH1D*)fMixed[iCent]->Get(Form("hNN_phi_0"));
+      hMixedEta[iCent][3] =  (TH1D*)fMixed[iCent]->Get(Form("hPP_eta_0"));
+      hMixedPhi[iCent][3] =  (TH1D*)fMixed[iCent]->Get(Form("hPP_phi_0"));
+      
+    }
+  }
 
   // get the file
   TFile *f = TFile::Open(inFile.Data());
@@ -117,7 +152,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     list = (TList*)key->ReadObj();
     listName = TString(list->GetName());
 
-    cout<<"Processing list "<<listName<<endl;
+    //cout<<"Processing list "<<listName<<endl;
 
  
     // ----------------------------------------------------
@@ -281,7 +316,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
       for(Int_t a = 0; a < 7; a++){
 
-    	cout<<"ANALYSE "<<gBFAnalysisType[a]<<endl;
+    	//cout<<"ANALYSE "<<gBFAnalysisType[a]<<endl;
 
     	// create the BF object
     	bf[iList][a]  = new AliBalance();
@@ -327,8 +362,11 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     	bf[iList][a]->SetHistNnn(a, fHistNN[iList][a]);
 
     	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
+	  
+    	  if(correctWithMixed && a == 1) gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow,correctWithEfficiency,correctWithAcceptanceOnly,correctWithMixed,hMixedEta[iCanvas]);
+	  else if(correctWithMixed && a == 6) gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow,correctWithEfficiency,correctWithAcceptanceOnly,correctWithMixed,hMixedPhi[iCanvas]);
+	  else gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow,correctWithEfficiency,correctWithAcceptanceOnly);
 
-    	  gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow,correctWithEfficiency,correctWithAcceptanceOnly);
     	  gbf[iList][iCanvas][a]->SetName(Form("BF_%s_Cent_%.0f_%.0f_%d",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1],iList));
 
     	  cBF[iList][iCanvas]->cd(a+1);
@@ -431,7 +469,9 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
   	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 	  
-  	  gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow, correctWithEfficiency,correctWithAcceptanceOnly);
+  	  if(correctWithMixed && a == 1) gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow, correctWithEfficiency,correctWithAcceptanceOnly,correctWithMixed,hMixedEta[iCanvas]);
+	  else if(correctWithMixed && a == 6) gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow, correctWithEfficiency,correctWithAcceptanceOnly,correctWithMixed,hMixedPhi[iCanvas]);
+	  else gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow, correctWithEfficiency,correctWithAcceptanceOnly);
   	  gbfs[iList][iCanvas][a]->SetName(Form("BFS_%s_Cent_%.0f_%.0f_%d",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1],iList));
 	  
   	  cBFS[iList][iCanvas]->cd(a+1);
@@ -541,6 +581,9 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	fOut = TFile::Open(Form("Histograms_AccCorrWithEfficiency_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
       }
     }
+    else if(correctWithMixed){
+      fOut = TFile::Open(Form("Histograms_CorrEM_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+    }
     else{
       fOut = TFile::Open(Form("Histograms_AccCorr_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
     }
@@ -550,9 +593,11 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   }
   fOut->cd();
   for(Int_t i = 0; i < iList+1; i++){
+    if(gbf[i][0][1]){
     cout<<"PROCESS LIST "<<i<<" NOW!"<<endl;
     for(Int_t a = 0; a < 7; a++){
-    cout<<"PROCESS VARIABLE "<<a<<" NOW!"<<endl;
+      if(a==1||a==6){
+      cout<<"PROCESS VARIABLE "<<a<<" NOW!"<<endl;
       
       if(fHistPN[i][a]){
 	(fHistPN[i][a]->ProjectionY(Form("hPN_%s_%d",gBFAnalysisType[a].Data(),i)))->Write();
@@ -618,6 +663,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	}
 	cout<<"//=========================Centrality "<<centralityArray[j]<<"-"<<centralityArray[j+1]<<"%==================//"<<endl;
 	cout<<endl;
+      }
       }
     }
 
@@ -765,6 +811,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
       gintegPS[i]->Write();
 
     }
+    }
   }
   fOut->Close();
   f->Close();
@@ -786,13 +833,13 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Int_t fStopBin = -
   if(fStopBin > -1) fNumberOfBins = fStopBin;
   Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
   
-  cout<<"=================================================="<<endl;
-  cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
-  cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
-  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) { 
-    cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
-  } 
-  cout<<"=================================================="<<endl;
+  // cout<<"=================================================="<<endl;
+  // cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
+  // cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
+  // for(Int_t i = fStartBin; i <= fNumberOfBins; i++) { 
+  //   cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
+  // } 
+  // cout<<"=================================================="<<endl;
   for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
     gSumXi += gHistBalance->GetBinCenter(i);
     gSumBi += gHistBalance->GetBinContent(i);
@@ -813,10 +860,10 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Int_t fStopBin = -
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
   
-  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
-  cout<<"New error: "<<deltaErrorNew<<endl;
-  cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
-  cout<<"=================================================="<<endl;
+  // cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
+  // cout<<"New error: "<<deltaErrorNew<<endl;
+  // cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
+  // cout<<"=================================================="<<endl;
 
   WM  = delta;
   WME = deltaError;
@@ -839,13 +886,13 @@ void GetIntegral(TH1D *gHistBalance, Double_t &integ, Double_t &integE) {
   Int_t fNumberOfBins = gHistBalance->GetNbinsX();
   Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
   
-  cout<<"=================================================="<<endl;
-  cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
-  cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
-  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) { 
-    cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
-  } 
-  cout<<"=================================================="<<endl;
+  // cout<<"=================================================="<<endl;
+  // cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
+  // cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
+  // for(Int_t i = fStartBin; i <= fNumberOfBins; i++) { 
+  //   cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
+  // } 
+  // cout<<"=================================================="<<endl;
   for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
     gSumXi += gHistBalance->GetBinCenter(i);
     gSumBi += gHistBalance->GetBinContent(i);
@@ -866,10 +913,10 @@ void GetIntegral(TH1D *gHistBalance, Double_t &integ, Double_t &integE) {
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
   
-  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
-  cout<<"New error: "<<deltaErrorNew<<endl;
-  cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
-  cout<<"=================================================="<<endl;
+  // cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
+  // cout<<"New error: "<<deltaErrorNew<<endl;
+  // cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
+  // cout<<"=================================================="<<endl;
 
   integ  = integral;
   integE = integralError;
