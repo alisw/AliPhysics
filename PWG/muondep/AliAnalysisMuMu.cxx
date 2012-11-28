@@ -993,7 +993,7 @@ void AliAnalysisMuMu::Result::Fit(Int_t nrebin)
   
   TH1* hminv = fHC->Histo("MinvUSPt:py");
   
-  if (!hminv || hminv->GetEntries()==0 ) return;
+  if (!hminv || hminv->GetEntries()<100 ) return;
     
   fMinv = static_cast<TH1*>(hminv->Clone(Form("minv%d",n)));
   fMinv->Rebin(fRebin);
@@ -1058,7 +1058,7 @@ void AliAnalysisMuMu::Result::Fit(Int_t nrebin)
     // strict cuts on pairs
   }
   
-  Print();
+//  Print();
 }
 
 //_____________________________________________________________________________
@@ -1128,10 +1128,13 @@ Double_t AliAnalysisMuMu::Result::GetError(const char* name) const
 //_____________________________________________________________________________
 void AliAnalysisMuMu::Result::Print(Option_t* /*opt*/) const
 {
-  std::cout << Form("%9s %20s NTRIGGER %10d",
+  std::cout << Form("%20s - %s %s %s - NRUNS %d - NTRIGGER %10d",
                GetName(),
-               fTriggerName.Data(),
-               fNofTriggers) << std::endl;
+               EventSelection(),
+                    PairSelection(),
+                    CentralitySelection(),
+                    NofRuns(),
+               NofTriggers()) << std::endl;
   
   if (NofJpsi())
   {
@@ -1174,7 +1177,7 @@ void AliAnalysisMuMu::Result::Print(Option_t* /*opt*/) const
 
 
 //_____________________________________________________________________________
-TString FindTrigger(const AliHistogramCollection& hc, 
+TString FindTrigger(const AliHistogramCollection& hc,
                     const char* base,
                     const char* selection,
                     const char* paircut,
@@ -1227,14 +1230,26 @@ TString FindTrigger(const AliHistogramCollection& hc,
 
 TString AliAnalysisMuMu::fgOCDBPath("raw://");
 
+TString AliAnalysisMuMu::fgDefaultDimuonTriggers("CMUL7-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-MUON,CMUL8-S-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD,CMUL7-B-NOPF-MUON,CMUU7-B-NOPF-ALLNOTRD,CMUU7-B-NOPF-MUON,CPBI1MUL-B-NOPF-MUON");
+
+TString AliAnalysisMuMu::fgDefaultMuonTriggers("CMSL7-S-NOPF-MUON,CMSL7-S-NOPF-ALLNOTRD,CMSL8-S-NOPF-MUON,CMSL8-S-NOPF-ALLNOTRD,CMSL7-B-NOPF-MUON,CMUS1-B-NOPF-MUON,CMUS7-B-NOPF-MUON");
+
+TString AliAnalysisMuMu::fgDefaultMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD,CINT7-S-NOPF-ALLNOTRD,CINT8-B-NOPF-ALLNOTRD,CINT8-S-NOPF-ALLNOTRD,CINT1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD");
+
+TString AliAnalysisMuMu::fgDefaultEventSelectionList("ALL");
+
+TString AliAnalysisMuMu::fgDefaultPairSelectionList("pMATCHLOWRABSDCABOTH");
+
 //_____________________________________________________________________________
 AliAnalysisMuMu::AliAnalysisMuMu(const char* filename) : TObject(),
 fFilename(filename),
 fHistogramCollection(0x0),
 fCounterCollection(0x0),
-fDimuonTriggers("CMUL7-S-NOPF-ALLNOTRD CMUL7-S-NOPF-MUON CMUL8-S-NOPF-MUON CMUL7-B-NOPF-ALLNOTRD CMUL7-B-NOPF-MUON CMUU7-B-NOPF-ALLNOTRD CMUU7-B-NOPF-MUON CPBI1MUL-B-NOPF-MUON"),
-fMuonTriggers("CMSL7-S-NOPF-MUON CMSL8-S-NOPF-MUON CMSL7-B-NOPF-MUON CMUS1-B-NOPF-MUON CMUS7-B-NOPF-MUON"),
-fMinbiasTriggers("CINT7-B-NOPF-ALLNOTRD CINT7-S-NOPF-ALLNOTRD CINT8-B-NOPF-ALLNOTRD CINT8-S-NOPF-ALLNOTRD CINT1-B-NOPF-ALLNOTRD CPBI2_B1-B-NOPF-ALLNOTRD")
+fDimuonTriggers(fgDefaultDimuonTriggers),
+fMuonTriggers(fgDefaultMuonTriggers),
+fMinbiasTriggers(fgDefaultMinbiasTriggers),
+fEventSelectionList(fgDefaultEventSelectionList),
+fPairSelectionList(fgDefaultPairSelectionList)
 {
   // ctor
   
@@ -1290,7 +1305,10 @@ void AliAnalysisMuMu::CentralityCheck(const char* filelist)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers)
+void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
+                                  ULong64_t* totalNmb,
+                                  ULong64_t* totalNmsl,
+                                  ULong64_t* totalNmul)
 {
   // Report of some basic numbers, like number of MB and MUON triggers, 
   // both before and after physics selection, and comparison with 
@@ -1313,12 +1331,18 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers)
 
   TObjArray* events = fCounterCollection->GetKeyWords("event").Tokenize(",");
 
+  Bool_t doPS = (events->FindObject("PSALL") != 0x0);
+  
   TObjString* srun;
   TObjString* strigger;
 
-  ULong64_t totalNmb(0);
-  ULong64_t totalNmsl(0);
-  ULong64_t totalNmul(0);
+  ULong64_t localNmb(0);
+  ULong64_t localNmsl(0);
+  ULong64_t localNmul(0);
+  
+  if ( totalNmb) *totalNmb = 0;
+  if ( totalNmsl) *totalNmsl = 0;
+  if ( totalNmul ) *totalNmul = 0;
 
   while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
   {
@@ -1331,42 +1355,56 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers)
     
     nextTrigger.Reset();
     
+    Int_t nofPS(0);
+    
     while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
     {
+      
+      if ( !fgDefaultMinbiasTriggers.Contains(strigger->String().Data()) &&
+           !fgDefaultMuonTriggers.Contains(strigger->String().Data()) &&
+           !fgDefaultDimuonTriggers.Contains(strigger->String().Data()) ) continue;
+          
       ULong64_t n = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
                                                     strigger->String().Data(),"ALL",srun->String().Atoi()));
 
-      details += Form("\n%50s %10lld",strigger->String().Data(),n);
+      details += TString::Format("\n%50s %10lld",strigger->String().Data(),n);
       
 
-      ULong64_t nps(0);
-      
-      if ( events->FindObject("PSALL") )
+      ULong64_t nps = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
+                                                      strigger->String().Data(),"PSALL",srun->String().Atoi()));
+
+      if ( doPS )
       {
-        nps = fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
-                                                    strigger->String().Data(),"PSALL",srun->String().Atoi()));
-        details += Form(" PS %5.1f %%",nps*100.0/n);
+        details += TString::Format(" PS %5.1f %%",nps*100.0/n);
       }
 
+      if (nps)
+      {
+        ++nofPS;
+      }
+      
       if ( fMinbiasTriggers.Contains(strigger->String()) )
       {
         nmb += n;
-        totalNmb += n;
+        if ( totalNmb) (*totalNmb) += n;
+        localNmb += n;
       }
       else if ( fMuonTriggers.Contains(strigger->String()) )
       {
         nmsl += n;
-        totalNmsl += n;
+        if ( totalNmsl) (*totalNmsl) += n;
+        localNmsl += n;
       }
       else if ( fDimuonTriggers.Contains(strigger->String()) )
       {
         nmul += n;
-        totalNmul += n;
+        if ( totalNmul ) (*totalNmul) += n;
+        localNmul += n;
       }      
     }
     
-    std::cout << Form("MB %10lld MSL %10lld MUL %10lld ",
-                 nmb,nmsl,nmul);
+    std::cout << Form("MB %10lld MSL %10lld MUL %10lld %s",
+                 nmb,nmsl,nmul,(nofPS == 0 ? "(NO PS AVAIL)": ""));
     
     if ( detailTriggers )
     {
@@ -1375,12 +1413,60 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers)
     std::cout << std::endl;
   }
 
-  std::cout << std::endl << Form("%13s MB %10lld MSL %10lld MUL %10lld ","TOTAL",
-               totalNmb,totalNmsl,totalNmul) << std::endl;
+  if ( !totalNmul && !totalNmsl && !totalNmb )
+  {
+    std::cout << std::endl << Form("%13s MB %10lld MSL %10lld MUL %10lld ","TOTAL",
+                                   localNmb,localNmsl,localNmul) << std::endl;
+  }
 
-  delete runs;                
+  delete runs;
   delete triggers;
   delete events;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::BasicCountsEvolution(const char* filelist, Bool_t detailTriggers)
+{
+  // Report of some basic numbers, like number of MB and MUON triggers,
+  // both before and after physics selection, and comparison with
+  // the total number of such triggers (taken from the OCDB scalers)
+  // if requested.
+  //
+  // if detailTriggers is kTRUE, each kind of (MB,MUL,MSL) is counted separately
+  //
+  // To change the list of (single muon, dimuon, MB) triggers, use
+  // the SetDefault*TriggerList methods prior to call this one
+  //
+  
+  TObjArray* files = ReadFileList(filelist);
+  
+  if (!files || files->IsEmpty() ) return;
+  
+  TIter next(files);
+  TObjString* str;
+  
+  ULong64_t totalNmb(0);
+  ULong64_t totalNmsl(0);
+  ULong64_t totalNmul(0);
+
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    AliAnalysisMuMu m(str->String().Data());
+    
+    ULong64_t nmb(0);
+    ULong64_t nmsl(0);
+    ULong64_t nmul(0);
+    
+    m.BasicCounts(detailTriggers,&nmb,&nmsl,&nmul);
+    
+    totalNmb += nmb;
+    totalNmsl += nmsl;
+    totalNmul += nmul;
+  }
+  
+  std::cout << std::endl << Form("%13s MB %10lld MSL %10lld MUL %10lld ","TOTAL",
+                                 totalNmb,totalNmsl,totalNmul) << std::endl;
+
 }
 
 //_____________________________________________________________________________
@@ -1561,7 +1647,7 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
   std::map<std::string, std::vector<float> > yplus,erryplus;
   std::map<std::string, std::vector<float> > yminus,erryminus;
   
-  TObjArray* triggers = TString(triggerList).Tokenize(" ");
+  TObjArray* triggers = TString(triggerList).Tokenize(",");
   
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
@@ -1707,6 +1793,136 @@ TObjArray* AliAnalysisMuMu::ComputeBackgroundEvolution(const char* filelist,
 }
 
 //_____________________________________________________________________________
+TMap*
+AliAnalysisMuMu::ComputeJpsiEvolution(const char* filelist, const char* triggerList,
+                                      const char* outputFile, const char* outputMode,
+                                      Bool_t simulation)
+{
+  /// Compute some jpsi information for a list of files / trigger combinations
+  
+  TObjArray* files = ReadFileList(filelist);
+  
+  if (!files || files->IsEmpty() ) return 0x0;
+  
+  TMap results; // one TObjString->TObjArray per file
+  results.SetOwnerKeyValue(kTRUE,kTRUE);
+  
+  TIter nextFile(files);
+  TObjString* str;
+  UInt_t fitType(0);
+  
+  while ( ( str = static_cast<TObjString*>(nextFile()) ) )
+  {
+    std::cout << str->String().Data() << std::endl;
+    
+    AliAnalysisMuMu m(str->String().Data());
+    
+    m.SetDimuonTriggerList(triggerList);
+    m.SetEventSelectionList("ALL");
+    
+    TObjArray* array = m.Jpsi(simulation); // the array will contain results for all triggers in fDimuonTriggers variable
+    
+    if (!array)
+    {
+      AliWarningClass(Form("Got no jpsi for %s",str->String().Data()));
+    }
+    else
+    {
+      Result* r = static_cast<Result*>(array->First());
+      if (!r) continue;
+      fitType = r->FitType();
+    }
+    
+    results.Add(new TObjString(str->String()), array);
+  }
+  
+  if (!results.GetSize()) return 0x0;
+  
+  // compute the total over all files
+  
+  TMap* total = new TMap;
+  total->SetOwnerKeyValue(kTRUE,kTRUE);
+  
+  nextFile.Reset();
+  TObjArray* triggers = TString(triggerList).Tokenize(",");
+  
+  TIter nextTrigger(triggers);
+  TObjString* trigger(0x0);
+  
+  while ( ( trigger = static_cast<TObjString*>(nextTrigger())))
+  {
+    nextFile.Reset();
+    
+    Int_t nruns(0);
+    Int_t n(0);
+    TList l;    
+    Result* ref(0x0);
+    AliHistogramCollection* hc(0x0);
+    
+    while ( ( str = static_cast<TObjString*>(nextFile()) ) )
+    {
+      TObjArray* a = static_cast<TObjArray*>(results.GetValue(str->String().Data()));
+      
+      Result* r(0x0);
+      
+      if (a)
+      {
+        r = static_cast<Result*>(a->FindObject(trigger->String().Data()));
+        
+        if (r)
+        {
+          if (!ref) ref = r;
+
+          if ( !hc )
+          {
+            AliHistogramCollection* htmp = r->HC();
+            if (!htmp)
+            {
+              continue;
+            }
+            hc = static_cast<AliHistogramCollection*>(htmp->Clone(Form("hc%d",0)));
+          }
+          else
+          {
+            l.Add(r->HC());
+          }
+          
+          n += r->NofTriggers();
+          ++nruns;
+        }
+      }
+    }
+    
+    hc->Merge(&l);
+    
+    if (!ref) continue;
+    
+    Result* sum = new Result(ref->TriggerClass(),ref->EventSelection(),
+                             ref->PairSelection(),ref->CentralitySelection(),
+                             n,hc,1,fitType);
+
+    sum->SetNofRuns(nruns);
+    
+    total->Add(new TObjString(trigger->String().Data()),sum);
+    
+  }
+
+  StdoutToAliInfoClass(total->Print(););
+  
+  TFile* fout = new TFile(outputFile,outputMode);
+  
+  results.Write("rbr",TObject::kSingleKey|TObject::kOverwrite);
+  
+  total->Write("total",TObject::kSingleKey|TObject::kOverwrite);
+  
+  delete fout;
+  
+  AliInfoClass(Form("%d files analyzed",files->GetEntries()));
+  
+  return total;
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisMuMu::DecodeFileName(const char* filename,
                                              TString& period,
                                              int& esdpass,
@@ -1802,6 +2018,22 @@ Bool_t AliAnalysisMuMu::DecodeFileName(const char* filename,
   return kTRUE;
 }
 
+//______________________________________________________________________________
+void AliAnalysisMuMu::DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label)
+{
+  AliDebugClass(1,Form("RUN1 %09d RUN2 %09d YMIN %e YMAX %e %s",
+                       run1,run2,ymin,ymax,label));
+  TBox* b = new TBox(run1*1.0,ymin,run2*1.0,ymax);
+  b->SetFillColor(5);
+  b->Draw();
+  TText* text = new TText((run1+run2)/2.0,ymax*0.85,label);
+  text->SetTextSize(0.025);
+  text->SetTextFont(42);
+  text->SetTextAlign(23);
+  text->SetTextAngle(45);
+  text->Draw();
+}
+
 //_____________________________________________________________________________
 TString 
 AliAnalysisMuMu::ExpandPathName(const char* file)
@@ -1838,7 +2070,7 @@ ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t 
   
   AliAnalysisTriggerScalers ts(runNumber,fgOCDBPath.Data());
   
-  TObjArray* triggers = TString(triggerList).Tokenize(" ");
+  TObjArray* triggers = TString(triggerList).Tokenize(",");
   TObjString* trigger;
   TIter next(triggers);
   ULong64_t n(0);
@@ -1899,6 +2131,8 @@ UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList
 TObjArray* 
 AliAnalysisMuMu::Jpsi(Bool_t simulation)
 {
+  // Fit the J/psi (and psiprime) peaks for the triggers in fDimuonTriggers list
+  
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
   
@@ -1906,30 +2140,50 @@ AliAnalysisMuMu::Jpsi(Bool_t simulation)
   {
     const char* selection = "ALL";
     
-    Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"ANY",selection,"sALL","pMATCHLOWRABSBOTH","PP",Result::kJpsi));
+    Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"ANY",selection,"pMATCHLOWRABSBOTH","PP",Result::kJpsi));
   }
   else
   {
-      const char* eventSelection[] = { "ALL", "PSALL" };//, "PSTVX", "PSNOTVX", "NOTVX" };
-      const char* pairSelection[] = { "pMATCHLOWRABSDCABOTH" , "pMATCHLOWRABSDCA" };
+    TObjArray* triggerArray = fDimuonTriggers.Tokenize(",");
+    TObjArray* eventTypeArray = fEventSelectionList.Tokenize(",");
+    TObjArray* pairCutArray = fPairSelectionList.Tokenize(",");
     
-    for ( int i = 0; i < 1; ++i )
+    TIter nextTrigger(triggerArray);
+    TIter nextEventType(eventTypeArray);
+    TIter nextPairCut(pairCutArray);
+    
+    TObjString* trigger;
+    TObjString* eventType;
+    TObjString* pairCut;
+    
+    while ( ( trigger = static_cast<TObjString*>(nextTrigger())) )
     {
-      for ( int j = 0; j < 1; ++j )
+      AliDebug(1,Form("TRIGGER %s",trigger->String().Data()));
+      
+      nextEventType.Reset();
+      
+      while ( ( eventType = static_cast<TObjString*>(nextEventType())) )
       {
+        AliDebug(1,Form("EVENTTYPE %s",eventType->String().Data()));
         
-        Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"CMUL8-S-NOPF-MUON",eventSelection[i],"sALL",pairSelection[j],"PP",Result::kJpsi | Result::kJpsiPrime,2));
-
-          Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"CMUL7-S-NOPF-ALLNOTRD",eventSelection[i],"sALL",pairSelection[j],"PP",Result::kJpsi | Result::kJpsiPrime,2));
-
-        Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"CMUL7-S-NOPF-MUON",eventSelection[i],"sALL",pairSelection[j],"PP",Result::kJpsi | Result::kJpsiPrime,2));
-
-        Add(a,GetResult(*fHistogramCollection,*fCounterCollection,"C0MUL-SC-NOPF-MUON",eventSelection[i],"sALL",pairSelection[j],"PP",Result::kJpsi | Result::kJpsiPrime,2));
-
+        nextPairCut.Reset();
         
+        while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) )
+        {
+          AliDebug(1,Form("PAIRCUT %s",pairCut->String().Data()));
+          Add(a,GetResult(*fHistogramCollection,*fCounterCollection,
+                          trigger->String().Data(),
+                          eventType->String().Data(),
+                          pairCut->String().Data(),
+                          "PP",
+                          Result::kJpsi | Result::kJpsiPrime,2));
+        }
       }
     }
     
+    delete triggerArray;
+    delete eventTypeArray;
+    delete pairCutArray;
   }
   
   if ( a->GetLast() < 0 )
@@ -1942,279 +2196,221 @@ AliAnalysisMuMu::Jpsi(Bool_t simulation)
 }
 
 //_____________________________________________________________________________
-TObjArray* 
-AliAnalysisMuMu::JpsiEvolution(const char* filelist, const char* outputFile, Bool_t simulation)
-{  
-  TObjArray* files = ReadFileList(filelist);
-  
-  if (!files || files->IsEmpty() ) return 0x0;
-  
-    std::vector<float> nof, errnof, mean, errmean, sigma, errsigma, x,errx, ntriggers, errntriggers;
-    std::vector<float> nofupsilon, errnofupsilon, meanupsilon, errmeanupsilon, sigmaupsilon, errsigmaupsilon;
-  
-  std::map<std::string,TObjArray*> results;
-  
-  int dim(0);
-  
-  TIter next(files);
-  TObjString* str;
-  UInt_t fitType(0);
-  
-  while ( ( str = static_cast<TObjString*>(next()) ) )
+void
+AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerList, Bool_t fillBoundaries,
+                                   const char* efficiencyFile)
+{
+  if ( efficiencyFile && strlen(efficiencyFile) > 0 )
   {
-    std::cout << str->String().Data() << std::endl;
-    
-    AliAnalysisMuMu m(str->String().Data());
-    
-    TObjArray* array = m.Jpsi(simulation);
-    
-    if (!array) 
+    std::ifstream in(gSystem->ExpandPathName(efficiencyFile));
+    if (!in.bad())
     {
-      std::cout << "Got no jpsi for " << str->String().Data() << std::endl;
-    }
-    else
-    {
-      Result* r = static_cast<Result*>(array->First());
-      if (!r) continue;
-      fitType = r->FitType();
+      char line[1024];
+      int run;
+      float eff, error;
+      while ( in.getline(line,1023,'\n') )
+      {
+        sscanf(line,"%d %f ± %f",&run,&eff,&error);
+        AliInfoClass(Form("%09d %8.6f ± %8.6f",run,eff,error));
+      }
     }
     
-    if (array) dim = TMath::Max(dim,array->GetLast()+1);
-    results.insert(std::make_pair<std::string,TObjArray*>(str->String().Data(),array));
-    
-//    gROOT->CloseFiles();
+    return;
   }
   
-  if (results.empty()) return 0x0;
+  TFile* f = TFile::Open(gSystem->ExpandPathName(resultFile));
   
-  std::map<std::string,TObjArray*>::const_iterator it;
-  TObjArray* total = new TObjArray;
-  total->SetOwner(kTRUE);
+  std::map<int, std::pair<int,int> > fills;
   
-  int seq(0);
+  TMap* m = static_cast<TMap*>(f->Get("rbr"));
+
+  TIter next(m);
+  TObjString* str;
   
-  for ( int i = 0; i < dim; ++i )
+  TObjArray files;
+  files.SetOwner(kTRUE);
+  
+  while ( ( str = static_cast<TObjString*>(next())) )
   {
-    Int_t n(0);
+    files.Add(new TObjString(str->String()));
+  }
+  
+  files.Sort();
+  
+  std::map<std::string, std::vector<float> > x_jpsirate;
+  std::map<std::string, std::vector<float> > y_jpsirate;
+  std::map<std::string, std::vector<float> > xerr_jpsirate;
+  std::map<std::string, std::vector<float> > yerr_jpsirate;
+  
+  TIter nextTrigger(TString(triggerList).Tokenize(","));
+  TObjString* trigger(0x0);
+  
+  int runMin(100000000);
+  int runMax(0);
+
+  TIter nextFile(&files);
+
+  while ( ( trigger = static_cast<TObjString*>(nextTrigger())))
+  {
+    TString triggerClass(trigger->String());
     
-    AliHistogramCollection* hc(0x0);
+    nextFile.Reset();
     
-    TList l;
     
-    TString name;
-    
-    next.Reset();
-    
-    while ( ( str = static_cast<TObjString*>(next()) ) )
+    while ( ( str = static_cast<TObjString*>(nextFile())) )
     {
-      TObjArray* a = results[str->String().Data()];
-      
-      Result* r(0x0);
-      
-      if (a)
+      TObjArray* a = static_cast<TObjArray*>(m->GetValue(str->String().Data()));
+      if (!a) continue;
+      Result* r = static_cast<Result*>(a->FindObject(triggerClass.Data()));
+      if (!r) continue;
+
+      TString period;
+      int aodtrain,esdpass,runnumber;
+
+      if ( DecodeFileName(str->String().Data(),period,esdpass,aodtrain,runnumber) )
       {
-        r = static_cast<Result*>(a->At(i));
+        runMin = TMath::Min(runMin,runnumber);
+        runMax = TMath::Max(runMax,runnumber);
         
-        if (r)
+        x_jpsirate[triggerClass.Data()].push_back(runnumber);
+        xerr_jpsirate[triggerClass.Data()].push_back(0.5);
+
+        if ( fillBoundaries )
         {
-          if ( !hc )
+          AliAnalysisTriggerScalers ts(runnumber,fgOCDBPath.Data());
+          int fill = ts.GetFillNumberFromRunNumber(runnumber);
+          
+          if (fills.count(fill))
           {
-            AliHistogramCollection* htmp = r->HC();
-            if (!htmp)
-            {
-              continue;
-            }
-            hc = static_cast<AliHistogramCollection*>(htmp->Clone(Form("hc%d",i)));
-            name = r->TriggerClass();
+            std::pair<int,int>& p = fills[fill];
+            p.first = TMath::Min(runnumber,p.first);
+            p.second = TMath::Max(runnumber,p.second);
           }
           else
           {
-            l.Add(r->HC());        
+            fills[fill] = make_pair<int,int>(runnumber,runnumber);
           }
         }
-      }
-      
-      if (i==0)
-      {
-        TString period;
-        int aodtrain,esdpass,runnumber;
         
-        if ( DecodeFileName(str->String().Data(),period,esdpass,aodtrain,runnumber) ) 
-        {
-          x.push_back(runnumber);
-        }
-        else
-        {
-          x.push_back(seq++);
-        }
-        errx.push_back(0.5);         
+        Double_t y(0.0);
+        Double_t yerr(0.0);
         
-        if ( !r || 
-             !TMath::Finite(r->SigmaJpsi()) )
+        if ( TMath::Finite(r->SigmaJpsi()) && r->NofTriggers() > 10 )
         {
-          nof.push_back(0);
-          errnof.push_back(0);
-          mean.push_back(0);
-          sigma.push_back(0);
-          errmean.push_back(0);
-          errsigma.push_back(0);
-          ntriggers.push_back(0);
-          errntriggers.push_back(0);
+          y = 100*r->NofJpsi()/r->NofTriggers();
           
-          nofupsilon.push_back(0);
-          errnofupsilon.push_back(0);
-          meanupsilon.push_back(0);
-          errmeanupsilon.push_back(0);
-          sigmaupsilon.push_back(0);
-          errsigmaupsilon.push_back(0);
+          if ( r->NofJpsi() > 0 )
+          {
+            yerr = y * TMath::Sqrt( (r->ErrorOnNofJpsi()*r->ErrorOnNofJpsi())/(r->NofJpsi()*r->NofJpsi()) + 1.0/r->NofTriggers());
+          }
         }
-        else
-        {
-//          r->Print();
-          
-          nof.push_back(r->NofJpsi()/r->NofTriggers());
-          errnof.push_back(r->ErrorOnNofJpsi()/r->NofTriggers());
-          mean.push_back(r->MeanJpsi());
-          sigma.push_back(r->SigmaJpsi());
-          errmean.push_back(r->ErrorOnMeanJpsi());
-          errsigma.push_back(r->ErrorOnSigmaJpsi());
-          ntriggers.push_back(r->NofTriggers());
-          errntriggers.push_back(TMath::Sqrt(r->NofTriggers()));
-
-          nofupsilon.push_back(r->NofUpsilon()/r->NofTriggers());
-          errnofupsilon.push_back(r->ErrorOnNofUpsilon()/r->NofTriggers());
-          meanupsilon.push_back(r->MeanUpsilon());
-          sigmaupsilon.push_back(r->SigmaUpsilon());
-          errmeanupsilon.push_back(r->ErrorOnMeanUpsilon());
-          errsigmaupsilon.push_back(r->ErrorOnSigmaUpsilon());
-                    
-        }
+        
+        y_jpsirate[triggerClass.Data()].push_back(y);
+        yerr_jpsirate[triggerClass.Data()].push_back(yerr);
       }
-      
-      if ( r ) n += r->NofTriggers();              
     }
+  }
+
+  delete f;
+  
+  TCanvas* c = new TCanvas("cJpsiRateEvolution","cJpsiRateEvolution");
+  
+  c->Draw();
+  
+  Double_t ymin(0);
+  Double_t ymax(2);
+  
+  TH2* h = new TH2F("h","h;RunNumber;J/#psi per CMUL (%)",100,runMin,runMax,100,ymin,ymax);
+  
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  
+  h->GetXaxis()->SetNoExponent();
+  
+  h->Draw();
+
+  if (fillBoundaries)
+  {
+    std::map<int, std::pair<int,int> >::const_iterator it;
     
-    hc->Merge(&l);
+    for ( it = fills.begin(); it != fills.end(); ++it )
+    {
+      const std::pair<int,int>& p = it->second;
+      TString fillnumber;
+      fillnumber.Form("%d",it->first);
+      DrawFill(p.first,p.second,ymin,ymax,fillnumber.Data());
+    }
+  }
+
+  h->Draw("sameaxis");
+  
+  //c->RedrawAxis("g");
+
+  nextTrigger.Reset();
+  
+  int i(0);
+  int color[] = { 1,2,4,5,6 };
+  int marker[] = { 20,23,25,21,22 };
+  
+  while ( ( trigger = static_cast<TObjString*>(nextTrigger())))
+  {
+    std::vector<float>& x = x_jpsirate[trigger->String().Data()];
+    std::vector<float>& y = y_jpsirate[trigger->String().Data()];
+    std::vector<float>& xerr = xerr_jpsirate[trigger->String().Data()];
+    std::vector<float>& yerr = yerr_jpsirate[trigger->String().Data()];
     
-    Result* sum = new Result(Form("%s %d runs",name.Data(),(int)results.size()),n,hc,1,fitType);
+    TGraphErrors* g = new TGraphErrors(x.size(),&x[0],&y[0],&xerr[0],&yerr[0]);
     
-    sum->Print();
-    //    std::cout << Form("sum %p h=%p",sum,sum->Minv()) << std::endl;
+    g->SetLineColor(color[i]);
+    g->SetMarkerColor(color[i]);
+    g->SetMarkerStyle(marker[i]);
+    g->GetXaxis()->SetNoExponent();
+    g->Draw("LP");
+//    g->Print();
+
+    Double_t m2 = g->GetMean(2);
     
-    total->Add(sum);
+    TLine* line = new TLine(runMin,m2,runMax,m2);
+    line->SetLineColor(color[i]);
+    line->Draw();
     
+    AliInfoClass(Form("TRIGGER %s MEAN %7.2f",trigger->String().Data(),m2));
+    ++i;
   }
   
   
-  new TCanvas;
-  
-  TGraphErrors* grate = new TGraphErrors(nof.size(),&x[0],&nof[0],&errx[0],&errnof[0]);
-  
-  grate->GetXaxis()->SetNoExponent();
-  grate->Draw("ALP");
-//  grate->SetTitle("J/psi per CMUU");
-  grate->SetTitle("J/psi acc*eff");
-  grate->SetName("jpsiacceff");
-  
-  new TCanvas;
-  
-  TGraphErrors* gsigma = new TGraphErrors(nof.size(),&x[0],&sigma[0],&errx[0],&errsigma[0]);
-  
-  gsigma->GetXaxis()->SetNoExponent();
-  gsigma->Draw("ALP");
-  gsigma->SetTitle("J/psi sigma");
-  gsigma->SetName("jpsisigma");
-  
-  new TCanvas;
-  
-  TGraphErrors* gmean = new TGraphErrors(nof.size(),&x[0],&mean[0],&errx[0],&errmean[0]);
-  
-  gmean->GetXaxis()->SetNoExponent();
-  gmean->Draw("ALP");
-  gmean->SetTitle("J/psi mean");
-  gmean->SetName("jpsimean");
-
-  new TCanvas;
-  
-  TGraphErrors* gntriggers = new TGraphErrors(nof.size(),&x[0],&ntriggers[0],&errx[0],&errntriggers[0]);
-  
-  gntriggers->GetXaxis()->SetNoExponent();
-  gntriggers->Draw("ALP");
-  gntriggers->SetTitle("number of triggers");
-  gntriggers->SetName("ntriggers");
-  
-  new TCanvas;
-  
-  TGraphErrors* grateupsilon = new TGraphErrors(nofupsilon.size(),&x[0],&nofupsilon[0],&errx[0],&errnofupsilon[0]);
-  
-  grateupsilon->GetXaxis()->SetNoExponent();
-  grateupsilon->Draw("ALP");
-  //  grate->SetTitle("J/psi per CMUU");
-  grateupsilon->SetTitle("Upsilon acc*eff");
-  grateupsilon->SetName("upsilonacceff");
-  
-  new TCanvas;
-  
-  TGraphErrors* gsigmaupsilon = new TGraphErrors(nofupsilon.size(),&x[0],&sigmaupsilon[0],&errx[0],&errsigmaupsilon[0]);
-  
-  gsigmaupsilon->GetXaxis()->SetNoExponent();
-  gsigmaupsilon->Draw("ALP");
-  gsigmaupsilon->SetTitle("upsilon sigma");
-  gsigmaupsilon->SetName("upsilonsigma");
-  
-  new TCanvas;
-  
-  TGraphErrors* gmeanupsilon = new TGraphErrors(nofupsilon.size(),&x[0],&meanupsilon[0],&errx[0],&errmeanupsilon[0]);
-  
-  gmeanupsilon->GetXaxis()->SetNoExponent();
-  gmeanupsilon->Draw("ALP");
-  gmeanupsilon->SetTitle("upsilon mean");
-  gmeanupsilon->SetName("upsilonmean");
-  
-  TFile fout(outputFile,"RECREATE");
-  
-  grate->Write();
-  gsigma->Write();
-  gmean->Write();
-  gntriggers->Write();
-  grateupsilon->Write();
-  gmeanupsilon->Write();
-  gsigmaupsilon->Write();
-  
-  total->Write("results",TObject::kSingleKey|TObject::kOverwrite);
-  
-  fout.Close();
-  
-  std::cout << files->GetEntries() << " files analysed" << std::endl;
-  
-  return total;
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMu::Result* 
+AliAnalysisMuMu::Result*
 AliAnalysisMuMu::GetResult(const AliHistogramCollection& hc,
-                                 AliCounterCollection& cc,
-                                 const char* base,
-                                 const char* selection,
-                                 const char* trackcut,
-                                 const char* paircut,
-                                 const char* centrality,
-                                 UInt_t fitType,
-                                 Int_t nrebin)
+                           AliCounterCollection& cc,
+                           const char* base,
+                           const char* selection,
+                           const char* paircut,
+                           const char* centrality,
+                           UInt_t fitType,
+                           Int_t nrebin)
 {
   Result* r(0x0);
-  
+
   TString trigger = FindTrigger(hc,base,selection,paircut,centrality);
   
-  if ( trigger == "" ) return 0;
+  if ( trigger == "" )
+  {
+    return 0;
+  }
   
   Int_t ntrigger = (Int_t)cc.GetSum(Form("trigger:%s/event:%s",trigger.Data(),selection));
 
 //  new TCanvas;
   
-  r = new Result(Form("%s - %s - %s - %s - %s",trigger.Data(),selection,trackcut,paircut,centrality),
+  r = new Result(trigger.Data(),
+                 selection,
+                 paircut,
+                 centrality,
                  ntrigger,
-                 hc.Project(selection,trigger.Data(),centrality,paircut),
+                 hc.Project(selection,trigger,centrality,paircut),
                  nrebin,
                  fitType);
   
@@ -2276,7 +2472,7 @@ void AliAnalysisMuMu::PlotBackgroundEvolution(const char* gfile, const char* tri
   l->SetTextColor(AliAnalysisMuMu::kBlue);
   l->SetLineColor(AliAnalysisMuMu::kBlue);
   
-  TObjArray* triggers = TString(triggerList).Tokenize(" ");
+  TObjArray* triggers = TString(triggerList).Tokenize(",");
   
   gStyle->SetOptTitle(0);
   
@@ -2452,7 +2648,7 @@ AliAnalysisMuMu::SinglePtPlot(const char* rootfile)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList)
+void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compact)
 {
   // Give the fraction of triggers (in triggerList) relative 
   // to what is expected in the scalers
@@ -2483,6 +2679,8 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList)
   {
     std::cout << Form("RUN %09d ",srun->String().Atoi());
     
+    if (!compact) std::cout << std::endl;
+    
     nextTrigger.Reset();
     
     while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
@@ -2500,10 +2698,14 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList)
       total += n;
       totalExpected += expected;
       
-      std::cout << Form("%20s %9lld expected %9lld ",strigger->String().Data(),n,expected);
+      std::cout << Form("%30s %9lld expected %9lld ",strigger->String().Data(),n,expected);
       
       if ( expected > 0 ) {
         std::cout << Form("fraction %5.1f %%",n*100.0/expected);
+      }
+      if (!compact)
+      {
+        std::cout << std::endl;
       }
     }
     std::cout << std::endl;
@@ -2651,4 +2853,3 @@ AliAnalysisMuMu::RunNumberFromFileName(const char* filename)
   if ( ok ) return runnumber;
   return -1;
 }
-
