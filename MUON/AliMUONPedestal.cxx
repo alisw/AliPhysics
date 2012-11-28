@@ -66,6 +66,7 @@ fNManu(0),
 fNManuConfig(0),
 fConfig(1),
 fStatusDA(0),
+fHistos(0),
 fErrorBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBPoutofconfigTable(new AliMUON2DMap(kFALSE)),
@@ -75,7 +76,9 @@ fHistoFileName(),
 fPedestalStore(new AliMUON2DMap(kTRUE)),
 fIndex(-1),
 fPrefixDA(),
-fPrefixLDC()
+fPrefixLDC(),
+fHistoFile(0),
+fTree(0)
 {
 /// Default constructor
 }
@@ -93,6 +96,7 @@ fNManu(0),
 fNManuConfig(0),
 fConfig(1),
 fStatusDA(0),
+fHistos(0),
 fErrorBuspatchTable(0),
 fManuBuspatchTable(0),
 fManuBPoutofconfigTable(0),
@@ -102,7 +106,9 @@ fHistoFileName(),
 fPedestalStore(0),
 fIndex(-1),
 fPrefixDA(),
-fPrefixLDC()
+fPrefixLDC(),
+fHistoFile(0),
+fTree(0)
 {
 /// Root IO constructor
 }
@@ -160,10 +166,28 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
 //______________________________________________________________________________
 void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 {
+  static Int_t tree_charge=0;
   static Int_t warn=0;
+  Int_t DDL= busPatchId/100+2560;
   /// Compute pedestals values
   AliMUONVCalibParam* ped = 
     static_cast<AliMUONVCalibParam*>(fPedestalStore ->FindObject(busPatchId, manuId));
+
+
+  if(!tree_charge && fHistos==2)
+    {
+      fTree = new TTree("tc","Charge tree");
+      fTree->Branch("bp",&busPatchId,"bp/I");
+      fTree->Branch("manu",&manuId,",manu/I");
+      fTree->Branch("channel",&channelId,",channel/I");
+      fTree->Branch("DDL",&DDL,",DDL/I");
+      fTree->Branch("charge",&charge,"charge/I");
+      //      fTree->Branch("Pedestal",&Pedestal,"Pedestal/D");
+      //      fTree->Branch("chargetrue",&chargeminusPed,"chargetrue/D");
+      //      fTree->Branch("evt",&evt,"evt/I");
+      tree_charge=1;
+    }
+
 
   if (!ped)   
     {
@@ -190,6 +214,8 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
       ped->SetValueAsDouble(channelId, 0, 0.);
     }
   if (ped->ValueAsDouble(channelId, 1) == -1) ped->SetValueAsDouble(channelId, 1, 0.);
+
+  if(fHistos==2) fTree->Fill();  
 
   Double_t pedMean  = ped->ValueAsDouble(channelId, 0) + (Double_t) charge;
   Double_t pedSigma = ped->ValueAsDouble(channelId, 1) + (Double_t) charge*charge;
@@ -447,6 +473,13 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 }
 
 //______________________________________________________________________________
+void AliMUONPedestal::CreateControlHistos()
+{
+// Create histo 
+  fHistoFileName=Form("%s.root",fPrefixDA.Data());
+  fHistoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
+}
+//______________________________________________________________________________
 void AliMUONPedestal::MakeControlHistos()
 {
   /// Create control histograms
@@ -458,29 +491,31 @@ void AliMUONPedestal::MakeControlHistos()
   Int_t busPatchId;
   Int_t manuId;
   Int_t channelId;
+  Int_t DDL;
 
 // histo
-  TFile*  histoFile = 0;
+//  TFile*  histoFile = 0;
   TTree* tree = 0;
   TH1F* pedMeanHisto = 0;
   TH1F* pedSigmaHisto = 0;
     
-  fHistoFileName=Form("%s.root",fPrefixDA.Data());
-  histoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
+  //  fHistoFileName=Form("%s.root",fPrefixDA.Data());
+  //  histoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
 
   Int_t nx = ADCMax()+1;
   Int_t xmin = 0;
   Int_t xmax = ADCMax(); 
   pedMeanHisto = new TH1F("pedmean_allch","Pedestal mean all channels",nx,xmin,xmax);
-  pedMeanHisto->SetDirectory(histoFile);
+  pedMeanHisto->SetDirectory(fHistoFile);
 
   nx = 201;
   xmin = 0;
   xmax = 200; 
   pedSigmaHisto = new TH1F("pedsigma_allch","Pedestal sigma all channels",nx,xmin,xmax);
-  pedSigmaHisto->SetDirectory(histoFile);
+  pedSigmaHisto->SetDirectory(fHistoFile);
 
   tree = new TTree("t","Pedestal tree");
+  tree->Branch("DDL",&DDL,",DDL/I");
   tree->Branch("bp",&busPatchId,"bp/I");
   tree->Branch("manu",&manuId,",manu/I");
   tree->Branch("channel",&channelId,",channel/I");
@@ -497,6 +532,7 @@ void AliMUONPedestal::MakeControlHistos()
   {
     busPatchId = ped->ID0();
     manuId = ped->ID1();
+    DDL= busPatchId/100+2560;
     
     for ( channelId = 0; channelId < ped->Size(); ++channelId ) 
     {
@@ -511,7 +547,7 @@ void AliMUONPedestal::MakeControlHistos()
     }
   }
     
-  histoFile->Write();  
-  histoFile->Close(); 
+  fHistoFile->Write();  
+  fHistoFile->Close(); 
 
 }

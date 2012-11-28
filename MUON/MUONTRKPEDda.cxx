@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2012-02-16 New version: MUONTRKPEDda.cxx,v 1.8
+        2012-11-23 New version: MUONTRKPEDda.cxx,v 1.9
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -268,7 +268,7 @@ int main(Int_t argc, const char **argv)
       filein >> line >> nConfig ; cout << "mutrkpedvalues: " << line << nConfig << "  "  ;
       filein >> line >> nEvthres ; if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << nEvthreshold << "  " ; 
       filein >> line >> checkTokenlost ; cout << line << checkTokenlost << "  " ;
-      filein >> line >> flag_histo ;  if(flag_histo !=0)  cout << line << flag_histo << "  " ; 
+      filein >> line >> flag_histo ;  cout << line << flag_histo << "  " ; // =0 , 1-> standard , 2-> ntuple charge
       filein >> line >> maxEvts ;  if(maxEvts!=0){maxEvents=maxEvts;  cout << line << maxEvents;}
       //     filein >> line >> errorDetail ; cout << line << errorDetail << "  " ;
       //     filein >> line >> nSorting ; cout << line << nSorting << "  " ;
@@ -278,6 +278,7 @@ int main(Int_t argc, const char **argv)
   muonPedestal->SetconfigDA(nConfig);
   muonPedestal->SetnEvthreshold(nEvthreshold);
   muonPedestal->SetnSorting(nSorting);
+  muonPedestal->SetHistos(flag_histo);
 
   // nConfig=1: configuration ascii file config_$DATE_ROLE_NAME read from DetDB
   if(nConfig)
@@ -287,6 +288,8 @@ int main(Int_t argc, const char **argv)
       if(status) {printf(" !!! Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
       muonPedestal->LoadConfig(dbfile);  
     } 
+
+    if(flag_histo)muonPedestal->CreateControlHistos(); /// Generate pedestal histo rootfile
 
   // Rawdeader, RawStreamHP
   AliRawReader* rawReader = AliRawReader::Create(inputFile);
@@ -558,7 +561,6 @@ int main(Int_t argc, const char **argv)
   status1 = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
   if (status1) { detail=Form("%s: !!! ERROR: Failed to export pedestal file : %s to FES \n",prefixLDC,shuttleFile.Data()); 
     printf("%s",detail); filcout << detail ; status= -1; }
-  //else { detail=Form("%s : *****  STORE Pedestal FILE in FES : OK ****** \n",prefixLDC); printf("%s",detail); filcout << detail ;}
 
   // Transferring configuration file to FES  (be sure that env variable DAQDALIB_PATH is set)
   if(nConfig) 
@@ -566,21 +568,21 @@ int main(Int_t argc, const char **argv)
       status1 = daqDA_FES_storeFile(dbfile,"CONFIG");
       if (status1) { detail=Form("%s: !!! ERROR: Failed to export configuration file : %s to FES \n",prefixLDC,dbfile); 
 	printf("%s",detail); filcout << detail ; status=-1; }
-      //      else {detail=Form("%s : *****  STORE Configuration FILE in FES : OK  ****** \n",prefixLDC); printf("%s",detail); filcout << detail ;}
     }
+
+  filcout.close();
 
  // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
   Char_t *dir;
   unsigned int nLastVersions=50;
   dir= getenv("DAQ_DETDB_LOCAL");
   if(dir != NULL)  {
-    unsigned int nLastVersions=50;
+    //    unsigned int nLastVersions=50;
     printf("\n%s : ---  Local DataBase: %s (Max= %d) ---\n",prefixLDC,dir,nLastVersions);
       if(!shuttleFile.IsNull())status1 = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
       if(flag_histo)status1 = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
       status1 = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
   }
-
 
     cout << " " << endl; 
     
@@ -602,7 +604,6 @@ int main(Int_t argc, const char **argv)
     cout << prefixLDC << " : Warning: MCH DA not compiled with AMORE support" << endl;
 #endif
     
-  filcout.close();
 
   if(!status)printf("\n%s : -------- End execution : %s -------- (status= %d) \n",prefixLDC,prefixDA,status);
   else { printf("\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,status);}

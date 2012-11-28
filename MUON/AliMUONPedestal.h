@@ -22,6 +22,8 @@
 class AliMUONVStore;
 
 class TTimeStamp;
+class TTree;
+class TFile;
 
 using std::ofstream;
 using std::ostream;
@@ -56,7 +58,9 @@ class AliMUONPedestal : public TObject
 
     /// set config flag
     void SetconfigDA(Int_t ind) {fConfig = ind;}
-    /// set Nb of evt threshold to calculate pedestal
+     /// set Histos flag
+    void SetHistos(Int_t ind) {fHistos = ind;}
+   /// set Nb of evt threshold to calculate pedestal
     void SetnEvthreshold(Int_t ind) {fNEvthreshold = ind;}
     /// set DA status (return code)
     void SetStatusDA(Int_t ind) {fStatusDA = ind;}
@@ -74,6 +78,8 @@ class AliMUONPedestal : public TObject
     void Finalize();
     /// Create String to be put into file or AMORE DB
     void MakeASCIIoutput(ostream& out) const;
+    /// Create Histograms
+    void CreateControlHistos();
     /// Fill Histograms
     void MakeControlHistos();
 
@@ -91,6 +97,7 @@ protected:
     Int_t fNManuConfig; ///<  Nb of Manu in the current detector configuration
     Int_t fConfig; ///< flag 1(0) for reading(or not) configuration ascii file
     Int_t fStatusDA; ///< DA return code (0=OK)
+    Int_t fHistos; ///< flag for Histograms (0,1=standard, 2=ntuple with charge)
     AliMUONVStore* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
     AliMUONVStore* fManuBuspatchTable; ///< Occupancy rate for each (buspatch, manu)
     AliMUONVStore* fManuBPoutofconfigTable; ///< (buspatch, manu) out of config
@@ -102,6 +109,8 @@ protected:
     Int_t fIndex; ///< calibration run index
     TString fPrefixDA; ///< specific DA prefixname
     TString fPrefixLDC; ///< specific LDC prefixname
+    TFile* fHistoFile; ///< .root histo file
+    TTree* fTree ; ///< charge Tree
 
   static const Int_t fgkADCMax; ///< max channel count
   
@@ -111,7 +120,7 @@ protected:
     /// Not implemented
     AliMUONPedestal& operator = (const AliMUONPedestal& rhs);
 
-  ClassDef(AliMUONPedestal,5) // Pedestal computing for DA 
+  ClassDef(AliMUONPedestal,6) // Pedestal computing for DA
 };
 
 #endif
