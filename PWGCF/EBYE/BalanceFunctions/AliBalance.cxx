@@ -55,7 +55,11 @@ AliBalance::AliBalance() :
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
   fCentStart(0.),
-  fCentStop(0.)
+  fCentStop(0.),
+  fHistHBTbefore(NULL),
+  fHistHBTafter(NULL),
+  fHistConversionbefore(NULL),
+  fHistConversionafter(NULL)
 {
   // Default constructor
  
@@ -99,13 +103,6 @@ AliBalance::AliBalance() :
     fHistNN[i] = NULL;
 
   }
-
-  //QA histograms
-  fHistHBTbefore = NULL;
-  fHistHBTafter  = NULL;
-  fHistConversionbefore = NULL;
-  fHistConversionafter  = NULL;
-
 }
 
 
@@ -119,7 +116,11 @@ AliBalance::AliBalance(const AliBalance& balance):
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
   fCentStart(balance.fCentStart),
-  fCentStop(balance.fCentStop) {
+  fCentStop(balance.fCentStop),
+  fHistHBTbefore(balance.fHistHBTbefore),
+  fHistHBTafter(balance.fHistHBTafter),
+  fHistConversionbefore(balance.fHistConversionbefore),
+  fHistConversionafter(balance.fHistConversionafter) {
   //copy constructor
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
     fNn[i] = balance.fNn[i];
@@ -789,12 +790,12 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   Double_t deltaBalP2 = 0.0, integral = 0.0;
   Double_t deltaErrorNew = 0.0;
   
-  cout<<"=================================================="<<endl;
-  for(Int_t i = 1; i <= fNumberOfBins[iAnalysisType]; i++) { 
-    x[i-1] = fP2Start[iAnalysisType] + fP2Step[iAnalysisType]*i + fP2Step[iAnalysisType]/2;
-    //cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
-  } 
-  //cout<<"=================================================="<<endl;
+  // cout<<"=================================================="<<endl;
+  // for(Int_t i = 1; i <= fNumberOfBins[iAnalysisType]; i++) { 
+  //   x[i-1] = fP2Start[iAnalysisType] + fP2Step[iAnalysisType]*i + fP2Step[iAnalysisType]/2;
+  //   cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
+  // } 
+  // cout<<"=================================================="<<endl;
   for(Int_t i = 2; i <= fNumberOfBins[iAnalysisType]; i++) {
     gSumXi += gHistBalance->GetBinCenter(i);
     gSumBi += gHistBalance->GetBinContent(i);
@@ -814,15 +815,15 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
-  cout<<"Analysis type: "<<kBFAnalysisType[iAnalysisType].Data()<<endl;
-  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
-  cout<<"New error: "<<deltaErrorNew<<endl;
-  cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
-  cout<<"=================================================="<<endl;
+  // cout<<"Analysis type: "<<kBFAnalysisType[iAnalysisType].Data()<<endl;
+  // cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
+  // cout<<"New error: "<<deltaErrorNew<<endl;
+  // cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
+  // cout<<"=================================================="<<endl;
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow,Bool_t correctWithEfficiency, Bool_t correctWithAcceptanceOnly) {
+TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow,Bool_t correctWithEfficiency, Bool_t correctWithAcceptanceOnly, Bool_t correctWithMixed, TH1D *hMixed[4]) {
   //Returns the BF histogram, extracted from the 6 TH2D objects 
   //(private members) of the AliBalance class.
   //
@@ -893,7 +894,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // withAcceptanceOnly: Data single distributions are normalized to 1 (efficiency not taken into account)
   // else : Data single distributions are normalized to give single particle efficiency of MC
   TFile *fEfficiencyMatrix = NULL;
-  if(correctWithEfficiency){
+  if(correctWithEfficiency && !correctWithMixed){
     if(correctWithAcceptanceOnly) fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/accOnlyFromConvolutionAllCent.root");
     else  fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
     if(!fEfficiencyMatrix){
@@ -906,7 +907,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // - single particle efficiencies from MC (AliAnalysiTaskEfficiency)
   // - two particle efficiencies from convolution of data single particle distributions 
   //   (normalized to single particle efficiency)
-  if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
+  if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency && !correctWithMixed){
 
     TH1F* hEffP  = NULL;
     TH1F* hEffN  = NULL;
@@ -974,7 +975,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // - single particle efficiencies from MC (AliAnalysiTaskEfficiency)
   // - two particle efficiencies from convolution of data single particle distributions 
   //   (normalized to single particle efficiency)  
-  if(iAnalysisType == kPhi && correctWithEfficiency){
+  if(iAnalysisType == kPhi && correctWithEfficiency && !correctWithMixed){
 
     TH1F* hEffPhiP  = NULL;
     TH1F* hEffPhiN  = NULL;
@@ -1020,6 +1021,48 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     }  
   }
 
+  // do the correction with the event mixing directly!
+  if(correctWithMixed){
+
+    if(hMixed[0] && hMixed[1] && hMixed[2] && hMixed[3]){
+
+      // scale that EM is 1 at 0 for Deta
+      //                    in the region 0-10degree (one 1/2 sector) for Dphi
+      if(iAnalysisType==6){
+	hMixed[0]->Scale(1./(Double_t)hMixed[0]->Integral(hMixed[0]->FindBin(0),hMixed[0]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
+	hMixed[2]->Scale(1./(Double_t)hMixed[2]->Integral(hMixed[2]->FindBin(0),hMixed[2]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
+	hMixed[3]->Scale(1./(Double_t)hMixed[3]->Integral(hMixed[3]->FindBin(0),hMixed[3]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
+      }
+      else{
+	hMixed[0]->Scale(1./(Double_t)hMixed[0]->GetBinContent(1));
+	hMixed[2]->Scale(1./(Double_t)hMixed[2]->GetBinContent(1));
+	hMixed[3]->Scale(1./(Double_t)hMixed[3]->GetBinContent(1));
+      }
+
+      // scale to average efficiency in the pt region (0.3-1.5) and |eta| < 0.8
+      // by multiplying the average single particle efficiencies from HIJING
+      Double_t normPMC = 0.847546;
+      Double_t normNMC = 0.83827;
+      hMixed[0]->Scale(normNMC*normPMC);
+      hMixed[2]->Scale(normNMC*normNMC);
+      hMixed[3]->Scale(normPMC*normPMC);
+
+      // divide by event mixing
+      hTemp1->Divide(hMixed[0]);
+      hTemp2->Divide(hMixed[0]);
+      hTemp3->Divide(hMixed[2]);
+      hTemp4->Divide(hMixed[3]);
+
+      // scale also single histograms with average efficiency
+      hTemp5->Scale(1./normNMC);
+      hTemp6->Scale(1./normPMC);
+
+    }
+    else{
+      AliError("Correction with EventMixing requested, but not all Histograms there!");
+      return NULL;
+    }
+  }
 
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
@@ -1036,7 +1079,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   }
 
   // do the acceptance correction (only for Eta and etaWindow > 0)
-  if(iAnalysisType == kEta && etaWindow > 0 && !correctWithEfficiency){
+  if(iAnalysisType == kEta && etaWindow > 0 && !correctWithEfficiency && !correctWithMixed){
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
       
       Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);

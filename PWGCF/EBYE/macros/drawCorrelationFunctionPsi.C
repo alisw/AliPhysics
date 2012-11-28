@@ -432,7 +432,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig);
+    gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1) gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
     
     // normalization to 1 at (0,0) --> Jan Fietes method
@@ -558,7 +558,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig);
+    gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1) gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
 
     // normalization to 1 at (0,0) --> Jan Fietes method
@@ -684,7 +684,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig);
+    gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1) gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
 
     // normalization to 1 at (0,0) --> Jan Fietes method
@@ -810,7 +810,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
-    gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig);
+    gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
     if(rebinEta > 1 || rebinPhi > 1) gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
 
     // normalization to 1 at (0,0) --> Jan Fietes method
