@@ -81,7 +81,9 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 
   fTriggerMCPtCent(0), fTriggerPtCent(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0),  fInjectedParticles(0),
 
-  fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtPhiEta(0), fK0sAssocPt(0), fK0sAssocPtArm(0), fK0sAssocPtRap(0), fK0sAssocPtPhiEta(0), fLambdaMCPt(0), fLambdaMCPtRap(0), fLambdaMCPtPhiEta(0), fLambdaAssocPt(0), fLambdaAssocPtArm(0), fLambdaAssocPtRap(0), fLambdaAssocPtPhiEta(0), fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
+  fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtPhiEta(0), fK0sAssocPt(0), fK0sAssocPtArm(0), fK0sAssocPtRap(0), fK0sAssocPtPhiEta(0), fK0sMCResPhi(0), fLambdaMCPt(0), fLambdaMCPtRap(0), fLambdaMCPtPhiEta(0), fLambdaAssocPt(0), fLambdaAssocPtArm(0), fLambdaAssocPtRap(0), fLambdaAssocPtPhiEta(0), fLambdaMCResPhi(0),
+
+  fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
   
   fK0sMass(0),     
   fK0sPtLtSB(0),    
