@@ -957,6 +957,14 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       candidate->SetLabel(label);
       if (label>-1) candidate->SetPdgCode(fPdgMother);
 
+      // check for gamma kf particle
+      label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);
+      if (label>-1) {
+	candidate->SetGammaTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
+				  static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
+      // should we set the pdgmothercode and the label
+      }
+
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
       

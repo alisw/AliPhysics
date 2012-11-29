@@ -128,6 +128,35 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
     fD2+=kf1;
   }
 }
+//______________________________________________
+void AliDielectronPair::SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
+				       AliVTrack * const particle2, Int_t pid2)
+{
+  //
+  // Sort particles by pt, first particle larget Pt
+  // set AliKF daughters and a GAMMA pair
+  // refParticle1 and 2 are the original tracks. In the case of track rotation
+  // they are needed in the framework
+  //
+  fD1.Initialize();
+  fD2.Initialize();
+
+  AliKFParticle kf1(*particle1,pid1);
+  AliKFParticle kf2(*particle2,pid2);
+  fPair.ConstructGamma(kf1,kf2);
+
+  if (particle1->Pt()>particle2->Pt()){
+    fRefD1 = particle1;
+    fRefD2 = particle2;
+    fD1+=kf1;
+    fD2+=kf2;
+  } else {
+    fRefD1 = particle2;
+    fRefD2 = particle1;
+    fD1+=kf2;
+    fD2+=kf1;
+  }
+}
 
 //______________________________________________
 void AliDielectronPair::SetTracks(const AliKFParticle * const particle1,

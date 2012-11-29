@@ -72,7 +72,9 @@ private:
 
   Bool_t fMixIncomplete;  // whether to mix uncomplete bins at the end of the processing
   Bool_t fMoveToSameVertex; //whether to move the mixed tracks to the same vertex position
-
+  
+  TProcessID *fPID;             //! internal PID for references to buffered objects
+  
   void DoMixing(TClonesArray &pool, AliDielectron *diele);
 
   AliDielectronMixingHandler(const AliDielectronMixingHandler &c);

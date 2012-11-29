@@ -20,7 +20,7 @@
 
 
 class TObjArray;
-class TMap;
+class TProcessID;
 
 class AliDielectronEvent : public TNamed {
 public:
@@ -43,6 +43,9 @@ public:
 
   Int_t GetNTracksP() const { return fNTracksP; }
   Int_t GetNTracksN() const { return fNTracksN; }
+
+  void SetProcessID(TProcessID *pid) { fPID=pid;    }
+  const TProcessID* GetProcessID()   { return fPID; }
   
 virtual void Clear(Option_t *opt="C");
 
@@ -54,8 +57,6 @@ private:
 
   TClonesArray fArrPairs;       //Pair array
 
-  TMap *fMapStoredVertices;//! already buffered vertices in AOD
-  
   Int_t fNTracksP;              //number of positive tracks
   Int_t fNTracksN;              //number of negative tracks
 
@@ -63,9 +64,13 @@ private:
 
   Double_t fEventData[AliDielectronVarManager::kNMaxValues]; // event informaion from the var manager
 
+  TProcessID *fPID;             //! internal PID for references to buffered objects
+  UInt_t      fPIDIndex;        //! index of PID
+
   AliDielectronEvent(const AliDielectronEvent &c);
   AliDielectronEvent &operator=(const AliDielectronEvent &c);
 
+  void AssignID(TObject *obj);
   
   ClassDef(AliDielectronEvent,1)         // Dielectron Event
 };
