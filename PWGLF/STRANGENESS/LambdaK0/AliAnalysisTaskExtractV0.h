@@ -122,6 +122,10 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Float_t fTreeVariableV0Py; //!
   Float_t fTreeVariableV0Pz; //!
 
+  Float_t fTreeVariablePVx; //!
+  Float_t fTreeVariablePVy; //!
+  Float_t fTreeVariablePVz; //!
+
 //Note: TDistOverTotMom needs a mass hypothesis to be converted to proper decaylength.
 
 	TH1F    *fHistV0MultiplicityBeforeTrigSel;             //! V0 multiplicity distribution
