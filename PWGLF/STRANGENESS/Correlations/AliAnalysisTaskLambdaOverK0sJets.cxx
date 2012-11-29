@@ -367,7 +367,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fK0sAssocPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fK0sAssocPtPhiEta);
 
-  fK0sMCResPhi     = new TH3F("fK0sMCResPhi","K^{0}_{S} Assoc: #phi resolution; #phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,0.5,0.5,nbins,pMin,pMax,100,0.,100.);
+  fK0sMCResPhi     = new TH3F("fK0sMCResPhi","K^{0}_{S} Assoc: #phi resolution; #phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,-0.5,0.5,nbins,pMin,pMax,100,0.,100.);
   fOutput->Add(fK0sMCResPhi);
 
   // Lambda MC-true: 
@@ -415,7 +415,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fLambdaAssocPtPhiEta->GetZaxis()->SetTitle("p_{T} (GeV/c)"); 
   fOutput->Add(fLambdaAssocPtPhiEta);
 
-  fLambdaMCResPhi     = new TH3F("fLambdaMCResPhi","#Lambda Assoc: #phi resolution;#phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,0.5,0.5,nbins,pMin,pMax,100,0.,100.);
+  fLambdaMCResPhi     = new TH3F("fLambdaMCResPhi","#Lambda Assoc: #phi resolution;#phi_{MC}-#phi_{Rec};p_{T} (GeV/c); centrality",100,-0.5,0.5,nbins,pMin,pMax,100,0.,100.);
   fOutput->Add(fLambdaMCResPhi);
   
   }  
