@@ -239,6 +239,10 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*25*/	fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 /*26*/	fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
 //-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info 
+        fTree->Branch("fTreeVariablePVx",&fTreeVariablePVx,"fTreeVariablePVx/F");
+        fTree->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
+        fTree->Branch("fTreeVariablePVz",&fTreeVariablePVz,"fTreeVariablePVz/F");
+
         fTree->Branch("fTreeVariableV0x",&fTreeVariableV0x,"fTreeVariableV0x/F");
         fTree->Branch("fTreeVariableV0y",&fTreeVariableV0y,"fTreeVariableV0y/F");
         fTree->Branch("fTreeVariableV0z",&fTreeVariableV0z,"fTreeVariableV0z/F");
@@ -602,6 +606,10 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       fHistPVyAnalysis->Fill( tPrimaryVtxPosition[1] );
       fHistPVzAnalysis->Fill( tPrimaryVtxPosition[2] );
    }
+
+  fTreeVariablePVx = tPrimaryVtxPosition[0];
+  fTreeVariablePVy = tPrimaryVtxPosition[1];
+  fTreeVariablePVz = tPrimaryVtxPosition[2];
 
 //Variable definition
    Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;

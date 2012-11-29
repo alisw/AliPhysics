@@ -372,6 +372,15 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableMCV0Py",&fTreeVariableMCV0Py,"fTreeVariableMCV0Py/F");
         fTree->Branch("fTreeVariableMCV0Pz",&fTreeVariableMCV0Pz,"fTreeVariableMCV0Pz/F");
 
+//-----------FOR CTAU DEBUGGING: Primary vertex info 
+        fTree->Branch("fTreeVariablePVx",&fTreeVariablePVx,"fTreeVariablePVx/F");
+        fTree->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
+        fTree->Branch("fTreeVariablePVz",&fTreeVariablePVz,"fTreeVariablePVz/F");
+
+        fTree->Branch("fTreeVariableMCPVx",&fTreeVariableMCPVx,"fTreeVariableMCPVx/F");
+        fTree->Branch("fTreeVariableMCPVy",&fTreeVariableMCPVy,"fTreeVariableMCPVy/F");
+        fTree->Branch("fTreeVariableMCPVz",&fTreeVariableMCPVz,"fTreeVariableMCPVz/F");
+
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -1198,6 +1207,14 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    }
 
   fTreeVariableVertexZ = lPrimaryVtxPosition[2];
+
+  fTreeVariablePVx = lPrimaryVtxPosition[0];
+  fTreeVariablePVy = lPrimaryVtxPosition[1];
+  fTreeVariablePVz = lPrimaryVtxPosition[2];
+
+  fTreeVariableMCPVx = (mcPrimaryVtx.At(0));
+  fTreeVariableMCPVy = (mcPrimaryVtx.At(1));
+  fTreeVariableMCPVz = (mcPrimaryVtx.At(2));
 
 //------------------------------------------------
 // stack loop starts here
