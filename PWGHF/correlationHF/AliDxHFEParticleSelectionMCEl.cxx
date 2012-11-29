@@ -30,6 +30,7 @@
 #include "TH1F.h"
 #include "TAxis.h"
 #include "AliAODTrack.h"
+#include "AliReducedParticle.h"
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -44,8 +45,7 @@ ClassImp(AliDxHFEParticleSelectionMCEl)
 AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   : AliDxHFEParticleSelectionEl(opt)
   , fMCTools()
-  , fElectronProperties(NULL)
-  , fWhichCut(NULL)
+  , fPDGnotMCElectron(NULL)
   , fOriginMother(0)
   , fResultMC(0)
 {
@@ -78,9 +78,47 @@ const char* AliDxHFEParticleSelectionMCEl::fgkPDGMotherBinLabels[]={
   "others"
 };
 
+                             
+const char*  AliDxHFEParticleSelectionMCEl::fgkPDGBinLabels[]={
+  "positron",
+  "electron",
+  "#mu+",
+  "#mu-",
+  "#pi+",
+  "#pi-",
+  "K+",
+  "K-",
+  "proton",
+  "antiproton",
+  "others"
+};
+
 AliDxHFEParticleSelectionMCEl::~AliDxHFEParticleSelectionMCEl()
 {
   // destructor
+
+  if(fPDGnotMCElectron){
+    delete fPDGnotMCElectron;
+    fPDGnotMCElectron=NULL;
+  }
+
+}
+
+int AliDxHFEParticleSelectionMCEl::Init()
+{
+  //
+  // init function
+  // 
+  int iResult=0;
+  iResult=AliDxHFEParticleSelectionEl::Init();
+  if (iResult<0) return iResult;
+
+  // Histo containing PDG of track which was not MC truth electron
+  fPDGnotMCElectron= new TH1F("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,-0.5,AliDxHFEToolsMC::kNofPDGLabels-0.5);
+  for (int iLabel=0; iLabel<AliDxHFEToolsMC::kNofPDGLabels; iLabel++)
+    fPDGnotMCElectron->GetXaxis()->SetBinLabel(iLabel+1, fgkPDGBinLabels[iLabel]);
+  AddControlObject(fPDGnotMCElectron);
+  return 0;
 }
 
 THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
@@ -88,24 +126,22 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
   //
   // Defines the THnSparse. 
 
-  const int thnSize = 6;
+  const int thnSize = 4;
   InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
 
-  //     		       0    1      2     3       4         5
-  // 	 	               Pt   Phi   Eta  'stat e'  mother "pdg e"
-  int    thnBins[thnSize] = { 1000,  200, 500,    2,       14,      10 };
-  double thnMin [thnSize] = {    0,    0, -1., -0.5,     -1.5,    -0.5 };
-  double thnMax [thnSize] = {  100, 2*Pi,  1.,  1.5,     12.5,     9.5 };
+  //     		       0    1      2     3     
+  // 	 	               Pt   Phi   Eta   mother 
+  int    thnBins[thnSize] = { 1000,  200, 500,    14  };
+  double thnMin [thnSize] = {    0,    0, -1.,  -1.5  };
+  double thnMax [thnSize] = {  100, 2*Pi,  1.,  12.5  };
   const char* thnNames[thnSize]={
     "Pt",
     "Phi",
     "Eta", 
-    "MC statistics electron",
-    "Mother", 
-    "PDG of selected electron"
+    "Mother", //bin==-1: Not MC truth electron
   };
  
   return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
@@ -125,9 +161,7 @@ int AliDxHFEParticleSelectionMCEl::FillParticleProperties(AliVParticle* p, Doubl
   data[i++]=track->Pt();
   data[i++]=track->Phi();
   data[i++]=track->Eta();
-  data[i++]=fResultMC;     // stat electron (MC electron or not)
-  data[i++]=fOriginMother; // at the moment not included background. Should expand
-  data[i++]=1;             // PDG e - not sure if needed, maybe only needed as separate histo? 
+  data[i++]=fOriginMother; 
   
   return i;
 }
@@ -182,10 +216,11 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     return 0; // no meaningful filtering on mc possible
   }
  
-  if (fMCTools.RejectByPDG(p,false)) {
+  int pdgParticle=-1;
+  if (fMCTools.RejectByPDG(p,false, &pdgParticle)) {
     // rejected by pdg
-    // would also like to use this info? or not meaningful?
-    // NEED TO CHANGE THIS!
+    // TODO: Move this to fMCTools???? Can this be part of the statistics in the MC class?
+    fPDGnotMCElectron->Fill(fMCTools.MapPDGLabel(pdgParticle));
     return 0;
   }
 
@@ -206,7 +241,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     fOriginMother=fMCTools.GetOriginMother();
   }
   else{
-    //Could this be done in a more elegant way?
+    //TODO: Could this be done in a more elegant way?
     switch(pdgMother){
     case(AliDxHFEToolsMC::kPDGpi0): fOriginMother=AliDxHFEToolsMC::kNrOrginMother; break;
     case(AliDxHFEToolsMC::kPDGeta): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+1; break;
@@ -230,4 +265,13 @@ void AliDxHFEParticleSelectionMCEl::Clear(const char* option)
 {
   /// clear internal memory
   fMCTools.Clear(option);
+}
+
+AliVParticle *AliDxHFEParticleSelectionMCEl::CreateParticle(AliVParticle* track)
+{
+
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother);
+
+  return part;
+
 }

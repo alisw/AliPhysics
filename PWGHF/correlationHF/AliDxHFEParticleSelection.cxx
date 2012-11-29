@@ -32,6 +32,7 @@
 #include "TMath.h"
 #include "TH1D.h"
 #include "THnSparse.h"
+#include "AliReducedParticle.h"
 #include "TFile.h"
 #include <iostream>
 #include <cerrno>
@@ -240,13 +241,14 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
   if (!pEvent) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
+  selectedTracks->SetOwner(); // creating new track objects below
   int nofTracks=pEvent->GetNumberOfTracks();
   for (int itrack=0; itrack<nofTracks; itrack++) {
     AliVParticle* track=pEvent->GetTrack(itrack);
     int selectionCode=IsSelected(track,pEvent);
     HistogramParticleProperties(track, selectionCode);
     if (selectionCode==0) continue;
-    selectedTracks->Add(track);
+    selectedTracks->Add(CreateParticle(track));
   }
   return selectedTracks;
 }
@@ -259,6 +261,7 @@ TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEv
   if (!pParticles) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
+  selectedTracks->SetOwner(); // creating new track objects below
   TIter next(pParticles);
   TObject* pObj=NULL;
   while ((pObj=next())) {
@@ -267,7 +270,7 @@ TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEv
     int selectionCode=IsSelected(track, pEvent);
     HistogramParticleProperties(track, selectionCode);
     if (selectionCode ==0) continue;
-    selectedTracks->Add(track);
+    selectedTracks->Add(CreateParticle(track));
   }
   return selectedTracks;
 }
@@ -348,4 +351,13 @@ TObject* AliDxHFEParticleSelection::FindObject(const TObject* obj) const
     return fControlObjects->FindObject(obj);
   }
   return NULL;
+}
+
+AliVParticle *AliDxHFEParticleSelection::CreateParticle(AliVParticle* track)
+{
+  // Creating object with reduced particle properties
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge(), 0);
+
+  return part;
+
 }

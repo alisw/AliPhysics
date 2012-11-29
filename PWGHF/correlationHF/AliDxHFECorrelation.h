@@ -16,11 +16,15 @@
 
 #include "TNamed.h"
 
-class AliRDHFCutsD0toKpi;
 class TH1;
 class THnSparse;
 class TObject;
 class TList;
+class AliHFCorrelator;
+class AliVParticle;
+class TObjArray;
+class AliVEvent;
+class AliAnalysisCuts;
 
 class AliDxHFECorrelation : public TNamed {
  public:
@@ -39,13 +43,26 @@ class AliDxHFECorrelation : public TNamed {
   };
 
   // init
-  int Init();
+  int Init(const char* arguments="");
+
+  // parse argument string
+  int ParseArguments(const char* arguments);
 
   /// fill histograms from particles
-  int Fill(const TObjArray* candidatesD0, const TObjArray* candidatesElectron);
+  int Fill(const TObjArray* candidatesD0, const TObjArray* candidatesElectron, const AliVEvent* pEvent);
 
   /// histogram event properties
   virtual int HistogramEventProperties(int bin);
+  virtual THnSparse* DefineTHnSparse();
+  virtual int FillParticleProperties(AliVParticle* tr, AliVParticle* as, Double_t* data, int dimension) const;
+
+  /// create control THnSparse
+  THnSparse* CreateControlTHnSparse(const char* name,
+				    int thnSize,
+				    int* thnBins,
+				    double* thnMin,
+				    double* thnMax,
+				    const char** binLabels) const;
 
   /// overloaded from TObject: cleanup
   virtual void Clear(Option_t * option ="");
@@ -60,15 +77,25 @@ class AliDxHFECorrelation : public TNamed {
   /// overloaded from TObject: save to file
   virtual void     SaveAs(const char *filename="",Option_t *option="") const; // *MENU*
 
-  virtual void SetCuts(AliRDHFCutsD0toKpi* cuts) {fCuts=cuts;}
+  virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
+  //void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
+  //void SetSystem(Bool_t system){fSystem=system;}
+  //void SetPhiRange(Double_t min, Double_t max){fMinPhi=min; fMaxPhi=max;}
+  // TODO: SetEventType only needed for MC. How to avoid this?
+  virtual void SetEventType(int type){fEventType=type;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
+  Double_t GetMinPhi() const {return fMinPhi;}
+  Double_t GetMaxPhi() const {return fMaxPhi;}
+  Double_t GetDeltaPhi() const {return fDeltaPhi;}
+  Double_t GetDeltaEta() const {return fDeltaEta;}
+  inline int GetDimTHnSparse() const {return fDimThn;}
 
+  void EventMixingChecks(const AliVEvent* pEvent);
 
   AliDxHFECorrelation& operator+=(const AliDxHFECorrelation& other);
-
 
   // Probably not needed anymore, since code was changed to THnSparse
   // but keep here in case we need it later
@@ -86,6 +113,15 @@ class AliDxHFECorrelation : public TNamed {
   /// add control object to list, the base class becomes owner of the object
   int AddControlObject(TObject* pObj);
 
+ /// set the dimension of THn and allocate filling array
+  void InitTHnSparseArray(int dimension) {
+    fDimThn=dimension; 
+    if (fCorrArray) delete[] fCorrArray; fCorrArray=NULL;
+    if (dimension>0) fCorrArray=new Double_t[dimension];
+  }
+
+  inline Double_t* ParticleProperties() const {return fCorrArray;}
+
  private:
   /// copy constructor
   AliDxHFECorrelation(const AliDxHFECorrelation& other);
@@ -101,16 +137,26 @@ class AliDxHFECorrelation : public TNamed {
   // Solved by marking fhEventControlCorr as transient, the cause, though, is not
   // understood
 
-  TObjArray* fHistograms;     //  the histograms - for the moment not in use. 
-  TList* fControlObjects;     //  list of control objects
-  THnSparse* fCorrProperties; //  the Correlation properties of selected particles
-  TH1* fhEventControlCorr;    //! event control histogram (saved via control object list)
-  AliRDHFCutsD0toKpi *fCuts;  //! Cuts 
-  Bool_t fUseMC;              //! use MC info
+  TObjArray* fHistograms;        //  the histograms - for the moment not in use. 
+  TList* fControlObjects;        //  list of control objects
+  THnSparse* fCorrProperties;    //  the Correlation properties of selected particles
+  TH1* fhEventControlCorr;       //! event control histogram (saved via control object list)
+  AliAnalysisCuts *fCuts;        //! Cuts 
+  Bool_t fUseMC;                 // use MC info
+  AliHFCorrelator *fCorrelator;  //! object for correlations
+  Bool_t fUseEventMixing;        // Run Event Mixing analysis
+  Short_t fSystem;               // Which system pp/PbPb
+  Double_t fMinPhi;              // Holds min phi
+  Double_t fMaxPhi;              // Holds maxa phi
+  Double_t fDeltaPhi;            // Delta Phi  
+  Double_t fDeltaEta;            // Delta Eta
+  int fDimThn;                   // Holds dim of THnSparse
+  Double_t* fCorrArray;          //! filling array for THnSparse
+  Int_t fEventType;              // Event type. Only needed for MC (fix)
+
 
   static const char* fgkEventControlBinNames[];
-  static const char* fgkCorrControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 3)
+  ClassDef(AliDxHFECorrelation, 4)
 };
 #endif

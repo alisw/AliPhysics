@@ -80,6 +80,7 @@ class AliDxHFEParticleSelection : public TNamed {
   virtual int HistogramEventProperties(int bin);
 
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual AliVParticle* CreateParticle(AliVParticle* track);
 
   /// check and add track to internal array
   int CheckAndAdd(AliVParticle* p);

@@ -32,10 +32,15 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   /// destructor
   virtual ~AliDxHFEParticleSelectionMCEl();
 
+  //Overload Init function from electron selection class
+  virtual int Init();
+
   // Setting up control objects: overloaded from AliDxHFEParticleSelection
   virtual THnSparse* DefineTHnSparse();
 
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual AliVParticle* CreateParticle(AliVParticle* track);
+
 
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
@@ -56,14 +61,14 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
 
   /// TODO: check if the label definitions can be used from the ToolsMC
   static const char* fgkPDGMotherBinLabels[];
-
+  static const char* fgkPDGBinLabels[];
+                    
   AliDxHFEToolsMC fMCTools;            // MC selection tools
-  THnSparse*      fElectronProperties; // the particle properties of selected particles
-  TH1*            fWhichCut;           // effective cut for a rejected particle
+  TH1*            fPDGnotMCElectron;   //! PDG of track not MC truth electron
   int fOriginMother;                   //  Holds the origin motherquark (process)
   int fResultMC;                       // Holds information on check on MC
 
-  ClassDef(AliDxHFEParticleSelectionMCEl, 1);
+  ClassDef(AliDxHFEParticleSelectionMCEl, 2);
 };
 
 #endif

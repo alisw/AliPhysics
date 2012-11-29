@@ -133,7 +133,10 @@ class AliDxHFEToolsMC {
 
   /// check if pdg should be rejected
   /// always false if pdg list is not initialized
-  bool RejectByPDG(AliVParticle* p, bool doStatistics=true);
+  bool RejectByPDG(AliVParticle* p, bool doStatistics=true, int* pdgParticleResult=NULL);
+  bool RejectByPDG(AliVParticle* p, int* pdgParticleResult) {
+    return RejectByPDG(p, true, pdgParticleResult);
+  }
 
   /// check if pdg should be rejected by mother
   /// always false if mother pdg list is not initialized
@@ -149,6 +152,8 @@ class AliDxHFEToolsMC {
 
   // Compare pdg to quark and gluon
   void CheckOriginMother(int pdg);
+  // Tests if particle have been marked as HF quark 
+  Bool_t TestIfHFquark(int origin);
 
   // Setting MC label from outside
   void SetMClabel(int mclab){fMClabel=mclab;}
@@ -158,6 +163,13 @@ class AliDxHFEToolsMC {
   /// check if pdg should be rejected, particle is not rejected
   /// if it is in the list, returns always false if list is empty
   bool RejectByPDG(int pdg, const vector<int> &list) const;
+
+  int GetNrMCParticles() const {return fNrMCParticles;}
+
+  /// mapping of pdg code to enum
+  int MapPDGLabel(int pdg) const;
+  /// mapping of pdg code to enum
+  int MapPDGMotherLabel(int pdg) const;
 
  protected:
 
@@ -173,11 +185,6 @@ class AliDxHFEToolsMC {
 			      int nBins,
 			      const char** binLabels) const;
 
-  /// mapping of pdg code to enum
-  int MapPDGLabel(int pdg) const;
-  /// mapping of pdg code to enum
-  int MapPDGMotherLabel(int pdg) const;
-
   static const char* fgkPDGBinLabels[];
   static const char* fgkPDGMotherBinLabels[];
   static const char* fgkStatisticsBinLabels[];
@@ -190,7 +197,8 @@ class AliDxHFEToolsMC {
   TH1* fHistPDGMother;     //  control histogram pdg of selected particle
   int fOriginMother;       //  Holds the origin motherquark (process)
   int fMClabel;            //  MClabel passed from outside (default =-1)
+  int fNrMCParticles;      //  number of MC particles 
 
-  ClassDef(AliDxHFEToolsMC, 1);
+  ClassDef(AliDxHFEToolsMC, 2);
 };
 #endif

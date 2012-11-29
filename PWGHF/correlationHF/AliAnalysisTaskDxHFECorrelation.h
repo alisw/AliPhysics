@@ -27,6 +27,7 @@ class AliDxHFECorrelation;
 class AliAnalysisCuts;
 class AliHFEpid;
 class AliHFEcuts;
+class AliHFAssociatedTrackCuts;
 
 /**
  * @class AliAnalysisTaskDxHFECorrelation
@@ -59,6 +60,9 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   virtual void SetCutsD0(AliAnalysisCuts* cuts){fCutsD0=cuts;}
   virtual void SetCutsHFE(AliHFEcuts* cuts){fCutsHFE=cuts;}
+  void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
+  void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
+  void SetSystem(Bool_t system){fSystem=system;}
 
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
@@ -82,12 +86,17 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   AliDxHFEParticleSelection* fElectrons; //  selection of electrons
   AliAnalysisCuts *fCutsD0;              //  Cuts D0 
   AliHFEcuts *fCutsHFE;                  //  Cuts HFE
+  AliAnalysisCuts *fCuts;                // Cuts which holds info for AliHFCorrelator 
   AliHFEpid *fPID;                       //  dummy
   Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   Bool_t fUseMC;                 // use MC info
+  Bool_t fUseEventMixing;        // Run Event Mixing analysis
+  Int_t fSystem;                 // Which system pp/PbPb
+  TObjArray *fSelectedD0s; // Array for selected D0s
+  TObjArray *fSelectedElectrons; // Array for selected Electrons
 
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 2);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 3);
 };
 
 #endif
