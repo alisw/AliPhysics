@@ -20,6 +20,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  bNonLine   = kFALSE,
                                                        const Int_t   minCen     = -1,
                                                        const Int_t   maxCen     = -1,
+                                                       const Float_t clusterEnergyCutEvent = -1,
                                                        const Int_t   nRowDiff   = 1,
                                                        const Int_t   nColDiff   = 1
                                                        )
@@ -87,46 +88,35 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Position and SS weight parameter
   params->SetW0(4.5);
 
-  // Time cuts, depend on data type (no cells time in AODs)
-  TString sHandler((mgr->GetInputEventHandler())->ClassName());
-  if(sHandler.Contains("AOD"))
+  // Time cuts
+  
+  if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
+  else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
+  
+  if(timeWindow > 1)
   {
-    printf("AliAnalysisTaskEMCALClusterize - Open time cuts for AODs\n");
-    params->SetTimeCut(1e6);//Open this cut for AODs
-    params->SetTimeMin(-1); //Open this cut for AODs
-    params->SetTimeMax(1e6);//Open this cut for AODs    
+    params->SetTimeMin(-1*timeWindow*1.e-9);
+    params->SetTimeMax(timeWindow*1.e-9);
   }
   else
   {
-    printf("AliAnalysisTaskEMCALClusterize - Set time cuts for ESDs\n");
-    if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
-    else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
-    
-    if(timeWindow > 1)
+    if(bRecalT && !bMC)
     {
-      params->SetTimeMin(-1*timeWindow*1.e-9);
-      params->SetTimeMax(timeWindow*1.e-9);
+      params->SetTimeMin(-250*1.e-9);
+      params->SetTimeMax( 250*1.e-9);
+      printf("default time window for calibrated time -250 ns < T < 250 ns\n");
     }
     else
-    { 
-      if(bRecalT && !bMC)
-      {
-        params->SetTimeMin(-250*1.e-9);
-        params->SetTimeMax( 250*1.e-9);
-        printf("default time window for calibrated time -250 ns < T < 250 ns\n");
-      }
-      else 
-      {
-        // same as in reco, USE IF NO TIME RECALIBRATION
-        params->SetTimeMin(425*1.e-9);
-        params->SetTimeMax(825*1.e-9);
-        printf("default time window 425 ns < T < 825 ns\n");
-      }
+    {
+      // same as in reco, USE IF NO TIME RECALIBRATION
+      params->SetTimeMin(425*1.e-9);
+      params->SetTimeMax(825*1.e-9);
+      printf("default time window 425 ns < T < 825 ns\n");
     }
   }
 
   // Energy cuts
-  params->SetClusteringThreshold(minEseed/1.e3);                                          
+  params->SetClusteringThreshold(minEseed/1.e3);
   params->SetMinECut            (minEcell/1.e3); 
 
   // Clusterizer type
@@ -173,7 +163,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
-  //Alignment matrices
+  // Alignment matrices
   //-------------------------------------------------------
 
   clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"); // change only in case 2010 to geometry_2010.root
@@ -182,6 +172,18 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   {    
     clusterize->SwitchOnLoadOwnGeometryMatrices();
   }
+  
+  //-------------------------------------------------------
+  // Clusterize events with some significant signal
+  //-------------------------------------------------------
+  
+  if(clusterEnergyCutEvent > 0)
+  {
+    clusterize->SwitchOnSelectEMCALEvent();
+    clusterize->SetEMCALEnergyCut(clusterEnergyCutEvent);
+    clusterize->SetEMCALNcellsCut(3);
+  }
+  else clusterize->SwitchOffSelectEMCALEvent();
   
   //-------------------------------------------------------
   // Trigger options

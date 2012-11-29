@@ -41,13 +41,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticity(const AliChaoticity &obj); 
   AliChaoticity &operator=(const AliChaoticity &obj);
   
- private:
 
   virtual void   UserCreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
- enum {
+
+ enum ChaoticityConstants {
     kPairLimit = 15000,//15000
     kNormPairLimit = 45000,
     kMultLimitPbPb = 2000,//2000
@@ -59,14 +58,23 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kEDbins = 1,
     kRVALUES = 6+1,// 6 Gaussian radii (3-8fm), last slot for Therminator source
-    kNDampValues = 16,// change to 11 soon
-    kDENtypes = (kRVALUES)*kNDampValues,
+    kNDampValues = 16,
+    kDENtypes = 1,// was (kRVALUES)*kNDampValues
     kCentBins=10,// 0-50%
     kSCLimit2 = 1,// 1, 6
     kSCLimit3 = 1,// 1, 10
-    kMCfixedRbin = 3,// 3 normally, (Rbin=3 (R=6fm)), 4 for systematic variation
+    kMCfixedRbin = 4,// 4 normally, (Rbin=4 (R=7fm)), 5 for systematic variation
     kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
  };
+
+  Int_t GetNumKtbins() const {return kKbinsT;}
+  Int_t GetNumRValues() const {return kRVALUES;}
+  Int_t GetNumCentBins() const {return kCentBins;}
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
+  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[5]=0x0);
+
+ private:
 
   void ParInit();
   Bool_t AcceptPair(AliChaoticityTrackStruct, AliChaoticityTrackStruct);
@@ -81,24 +89,16 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void ArrangeQs(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Short_t, Short_t, Float_t&, Float_t&, Float_t&);
   Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[kKbinsT][kCentBins]=0x0);
-  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
-  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[2]=0x0);
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
   Float_t FSICorrelation2(Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
-  Float_t MCWeightOSL(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
   Float_t MCWeight3D(Bool_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
   //
-  Int_t GetNumKtbins() const {return kKbinsT;}
-  Int_t GetNumRValues() const {return kRVALUES;}
-  Int_t GetNumCentBins() const {return kCentBins;}
-
+  
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
-  //AliESDEvent            *fESD; //!    // ESD object
   TList                  *fOutputList; //! Compact Output list
   AliPIDResponse         *fPIDResponse; //! PID response object; equivalent to AliAODpidUtil
   
@@ -116,7 +116,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St_DT {
     TH3D *fTwoPartNorm; //!
     //TH3D *fTwoPartNormErr; //!
-    TH2D *f4VectProdTwoPartNorm; //!
+    TH3D *f4VectProd1TwoPartNorm; //!
+    TH3D *f4VectProd2TwoPartNorm; //!
   };  
   struct St6 {
     TH1D *fExplicit3; //!
@@ -124,9 +125,12 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //
     TH1D *fNorm3; //!
     TH3D *fTerms3; //!
-    TH2D *f4VectProdTermsCC3; //!
-    TH2D *f4VectProdTermsCC2; //!
-    TH2D *f4VectProdTermsCC0; //!
+    TH3D *f4VectProd1TermsCC3; //!
+    TH3D *f4VectProd1TermsCC2; //!
+    TH3D *f4VectProd1TermsCC0; //!
+    TH3D *f4VectProd2TermsCC3; //!
+    TH3D *f4VectProd2TermsCC2; //!
+    TH3D *f4VectProd2TermsCC0; //!
     TH3D *fIdeal; //!
     TH3D *fSmeared; //!
     //
@@ -142,6 +146,9 @@ class AliChaoticity : public AliAnalysisTaskSE {
     TH3I *fExplicit2ThreeD; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
+    //
+    TH1D *fMCqinv; //!
+    TH1D *fMCqinvQW; //!
     struct St7 OSL_ktbin[2];
   };
   struct St_EDB {// SC structure

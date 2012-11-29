@@ -59,12 +59,10 @@ protected:
   AliTRDtrendingManager& operator=(const AliTRDtrendingManager& ref);
 
 private:
-  static Bool_t	                fgTerminated; // instance terminate flag
+  void              MakeList(Int_t entries=1000);
+//  static Bool_t	                fgTerminated; // instance terminate flag
 	static AliTRDtrendingManager*	fgInstance;	  // instance
   TObjArray        *fEntries;    // list of trending values
-  AliTRDtrendValue *fValue;      // current loaded trend value
-//  Int_t             fRunRange[2];// valability range
-
   ClassDef(AliTRDtrendingManager, 0) // TRD trending Manager
 };
 

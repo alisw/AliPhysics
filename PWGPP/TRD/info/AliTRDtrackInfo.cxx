@@ -82,6 +82,9 @@ AliTRDtrackInfo::AliMCinfo::AliMCinfo()
   ,fTRDlabel(0)
   ,fPDG(0)
   ,fNTrackRefs(0)
+  ,fEta(-999.)
+  ,fPhi(-999.)
+  ,fPt(-1.)
 {
   // Set 0-Pointers
   memset(fTrackRefs, 0, sizeof(AliTrackReference *) * 12);
@@ -93,6 +96,9 @@ AliTRDtrackInfo::AliMCinfo::AliMCinfo(const AliMCinfo &mc)
   ,fTRDlabel(mc.fTRDlabel)
   ,fPDG(mc.fPDG)
   ,fNTrackRefs(mc.fNTrackRefs)
+  ,fEta(mc.fEta)
+  ,fPhi(mc.fPhi)
+  ,fPt(mc.fPt)
 {
   //
   // Constructor

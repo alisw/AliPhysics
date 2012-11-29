@@ -46,6 +46,9 @@ fDCA(1.0),
 fTPCcr(70.),
 fTPCcrfd(0.8),
 fDCApv(0.1),
+fRmin(0.9),
+fRmax(100.),
+
 fOutput(0),
 fMult(0),
 fCosPA(0),
@@ -53,6 +56,7 @@ fDtrDCA(0),
 fTPCrows(0),
 fTPCratio(0),
 fPrimDCA(0),
+fR(0),
 fdEdx(0),
 fdEdxPid(0),
 
@@ -122,6 +126,10 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fPrimDCA=new TH1F("fPrimDCA","DCA wrt the primary vertex",50,0.0,1.5);
   fPrimDCA->GetXaxis()->SetTitle("DCA wrt the PV (cm)"); 
   fOutput->Add(fPrimDCA);
+
+  fR=new TH1F("fR","Radius of the V0 vertices",101,0.0,102);
+  fR->GetXaxis()->SetTitle("R (cm)"); 
+  fOutput->Add(fR);
 
   fdEdx=new TH2F("fdEdx","dE/dx",50,0.2,3,50,0.,6.);
   fOutput->Add(fdEdx);
@@ -309,12 +317,13 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
 
   Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
   Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
-  if (r2<0.9*0.9) return kFALSE;
-  if (r2>100*100) return kFALSE;
+  if (r2<fRmin*fRmin) return kFALSE;
+  if (r2>fRmax*fRmax) return kFALSE;
 
   fCosPA->Fill(cpa);
   fDtrDCA->Fill(dca);
   fPrimDCA->Fill(xyn); fPrimDCA->Fill(xyp);
+  fR->Fill(TMath::Sqrt(r2));
 
   return kTRUE;
 }

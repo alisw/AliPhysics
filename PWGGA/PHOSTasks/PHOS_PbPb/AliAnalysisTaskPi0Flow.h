@@ -102,6 +102,8 @@ private:
     Double_t ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     Int_t ConvertToInternalRunNumber(Int_t run) ;
     Double_t CoreEnergy(AliVCluster * clu, AliVCaloCells * cells);
+    void EvalCoreLambdas(AliVCluster * clu, AliVCaloCells * cells, Double_t &m02, Double_t &m20) ; 
+    Bool_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
 
 
 
@@ -140,6 +142,7 @@ private:
 
     // cluster cut variables:
     static const Double_t kMinClusterEnergy = 0.3;
+    static const Double_t kMinBCDistance = 2.5;  //distance to nearest bad channel
     static const Int_t kMinNCells = 3;
     static const Double_t kMinM02 = 0.2;
 

@@ -95,6 +95,7 @@ class AliAODv0;
 
 #include "AliAnalysisTaskCheckCascadepp276.h"
 
+
 using std::cout;
 using std::endl;
 
@@ -109,15 +110,17 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276()
     fESDtrackCuts               (0),
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
+    fkSDDSelectionOn            (kTRUE),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
     fkQualityCutnTPCcls         (kTRUE),
     fkQualityCutPileup          (kTRUE),
-    fkSDDonSelection            (kTRUE),
+    fwithSDD                    (kTRUE),
     fMinnTPCcls                 (0),
     fkExtraSelections           (0),
     fVtxRange                   (0),
+    fVtxRangeMin                (0),
     fMinPtCutOnDaughterTracks   (0),
     fEtaCutOnDaughterTracks     (0),
 
@@ -201,15 +204,17 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
     fESDtrackCuts               (0), 
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
+    fkSDDSelectionOn            (kTRUE),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
     fkQualityCutnTPCcls         (kTRUE),
     fkQualityCutPileup          (kTRUE),
-    fkSDDonSelection            (kTRUE),
+    fwithSDD                    (kTRUE),
     fMinnTPCcls                 (0),
     fkExtraSelections           (0),
     fVtxRange                   (0),
+    fVtxRangeMin                (0),
     fMinPtCutOnDaughterTracks   (0),
     fEtaCutOnDaughterTracks     (0),
      
@@ -986,9 +991,10 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   Int_t nTrackMultiplicityAfterSDDSel = 0;
   // - Selection for ESD and AOD
   if (fAnalysisType == "ESD") {
-      TString trcl = lESDevent->GetFiredTriggerClasses();
-      //cout<<"Fired Trigger Classes: "<<trcl<<endl;
-      if (fkSDDonSelection){
+     if (fkSDDSelectionOn) {
+        TString trcl = lESDevent->GetFiredTriggerClasses();
+        //cout<<"Fired Trigger Classes: "<<trcl<<endl;
+        if (fwithSDD){
           if(!(trcl.Contains("ALLNOTRD"))) {
                cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
                PostData(1, fListHistCascade);
@@ -999,7 +1005,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                PostData(6, fCFContCascadeCuts);
                return;
           }
-      } else if (!fkSDDonSelection){
+        } else if (!fwithSDD){
           if((trcl.Contains("ALLNOTRD"))) {
                cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
                PostData(1, fListHistCascade);
@@ -1010,13 +1016,15 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                PostData(6, fCFContCascadeCuts);
                return;
           }
-      }
-      // - Take the number of cascades and tracks after the SDD selection
-      ncascadesAfterSDDSel = lESDevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterSDDSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+        }
+     }
+     // - Take the number of cascades and tracks after the SDD selection
+     ncascadesAfterSDDSel = lESDevent->GetNumberOfCascades();
+     nTrackMultiplicityAfterSDDSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
   } else if (fAnalysisType == "AOD") {
-      TString trcl = lAODevent->GetFiredTriggerClasses();
-      if (fkSDDonSelection){
+     if (fkSDDSelectionOn) {
+        TString trcl = lAODevent->GetFiredTriggerClasses();
+        if (fwithSDD){
            if(!(trcl.Contains("ALLNOTRD"))) {
                 PostData(1, fListHistCascade);
                 PostData(2, fCFContCascadePIDXiMinus);
@@ -1027,7 +1035,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                 cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
                 return;
            }
-      } else if (!fkSDDonSelection) {
+        } else if (!fwithSDD) {
            if((trcl.Contains("ALLNOTRD"))) {
                 PostData(1, fListHistCascade);
                 PostData(2, fCFContCascadePIDXiMinus);
@@ -1038,10 +1046,11 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                 cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
                 return;
            }
-      }
-      // - Take the number of cascades and tracks after the SDD selection
-      ncascadesAfterSDDSel = lAODevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterSDDSel = -100; //FIXME: I can't find the equivalent method for the AOD
+        }
+     }
+     // - Take the number of cascades and tracks after the SDD selection
+     ncascadesAfterSDDSel = lAODevent->GetNumberOfCascades();
+     nTrackMultiplicityAfterSDDSel = -100; //FIXME: I can't find the equivalent method for the AOD
   }
   // - Fill the plots
   fHistCascadeMultiplicityAfterSDDSel->Fill(ncascadesAfterSDDSel);
@@ -1146,7 +1155,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       //if(TMath::Abs(lMagneticField ) < 10e-6) continue;
       // - Selection on the primary vertex Z position 
       if (fkQualityCutZprimVtxPos) {
-          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
+          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange || TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
                AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
                PostData(1, fListHistCascade);
                PostData(2, fCFContCascadePIDXiMinus);
@@ -1187,7 +1196,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       //if(TMath::Abs(lMagneticField ) < 10e-6) continue;
       // - Selection on the primary vertex Z position 
       if (fkQualityCutZprimVtxPos) {
-          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
+          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange || TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
               AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
@@ -2052,15 +2061,15 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  TList *cRetrievedList = 0x0;
+/*  TList *cRetrievedList = 0x0;
          cRetrievedList = (TList*)GetOutputData(1);
 	if(!cRetrievedList){
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: ouput data container list not available\n"); return;
 	}
-  /*fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
+  fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
   if (!fHistTrackMultiplicity) {
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistTrackMultiplicity not available\n"); return;
-	}*/
+	}
   fHistMassXiMinus    = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassXiMinus") );	
 	if (!fHistMassXiMinus) {
 		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassXiMinus not available\n"); return;
@@ -2081,14 +2090,14 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
   TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascadep276","CheckCascade overview",10,10,1010,660);
   canCheckCascade->Divide(2,2);
   
-  /*canCheckCascade->cd(1);
+  canCheckCascade->cd(1);
   canCheckCascade->cd(1)->SetLogy();
   fHistTrackMultiplicity->SetMarkerStyle(kFullStar);  
   fHistTrackMultiplicity->GetXaxis()->SetLabelFont(42);
   fHistTrackMultiplicity->GetYaxis()->SetLabelFont(42);
   fHistTrackMultiplicity->SetTitleFont(42, "xy");
   fHistTrackMultiplicity->GetXaxis()->SetTitleOffset(1.1);
-  fHistTrackMultiplicity->DrawCopy("H");*/
+  fHistTrackMultiplicity->DrawCopy("H");
   
   canCheckCascade->cd(2);  
   fHistMassXiMinus ->SetMarkerStyle(kFullCircle);
@@ -2146,5 +2155,5 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
  		legendOmega->AddEntry( fHistMassOmegaMinus,"#Omega^{-} candidates","lp");
  		legendOmega->AddEntry( fHistMassOmegaPlus,"#Omega^{+} candidates","lp");
  		legendOmega->Draw();
-
+     */
 }

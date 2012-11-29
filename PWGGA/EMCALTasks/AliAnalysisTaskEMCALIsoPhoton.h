@@ -37,7 +37,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
   void                   FillClusHists();
   void                   FillMcHists();
-  Float_t                   GetClusSource(const AliVCluster *cluster);
+  Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(const int firstd, const int lastd, const int selfid, const char *indputindent);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }

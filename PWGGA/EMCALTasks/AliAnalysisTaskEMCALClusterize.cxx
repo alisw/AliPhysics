@@ -77,14 +77,15 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
 , fRecoUtils(0),          fConfigName("")
-, fCellLabels(),          fCellSecondLabels(),        fCellTime()
+, fCellLabels(),          fCellSecondLabels()
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fMaxEvent(0),           fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
-, fCentralityClass("")
+, fCentralityClass(""),   fSelectEMCALEvent(0)
+, fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
 {
   // Constructor
   
@@ -93,7 +94,6 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
-    fCellTime[j]         =  0.;    
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }  
@@ -117,14 +117,15 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
 , fRecoUtils(0),            fConfigName("")
-, fCellLabels(),            fCellSecondLabels(),        fCellTime()
+, fCellLabels(),            fCellSecondLabels()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fMaxEvent(0),             fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
-, fCentralityClass("")           
+, fCentralityClass(""),     fSelectEMCALEvent(0)
+, fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
 {
   // Constructor
   
@@ -133,7 +134,6 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
-    fCellTime[j]         =  0.; 
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }
@@ -163,7 +163,7 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   if (fCaloClusterArr)
   {
     fCaloClusterArr->Delete();
-    delete fCaloClusterArr; 
+    delete fCaloClusterArr;
   }
   
   if(fClusterizer) delete fClusterizer;
@@ -171,6 +171,43 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   if(fRecoUtils)   delete fRecoUtils;
   
 }
+
+//_______________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
+{
+  // Accept event given there is a EMCAL cluster with enough energy, and not noisy, exotic
+  
+  if(!fSelectEMCALEvent)   return kTRUE; // accept
+  
+  if(fEMCALEnergyCut <= 0) return kTRUE; // accept
+  
+  Int_t           nCluster = InputEvent() -> GetNumberOfCaloClusters();
+  AliVCaloCells * caloCell = InputEvent() -> GetEMCALCells();
+  Int_t           bc       = InputEvent() -> GetBunchCrossNumber();
+
+  for(Int_t icalo = 0; icalo < nCluster; icalo++)
+  {
+    AliVCluster *clus = (AliVCluster*) (InputEvent()->GetCaloCluster(icalo));
+    
+    if( ( clus->IsEMCAL() ) && ( clus->GetNCells() > fEMCALNcellsCut ) && ( clus->E() > fEMCALEnergyCut ) &&
+       fRecoUtils->IsGoodCluster(clus,fGeom,caloCell,bc))
+    {
+      
+      if (fDebug > 0)
+        printf("AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n",
+                             clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
+      
+      return kTRUE;
+    }
+    
+  }// loop
+  
+  if (fDebug > 0)
+    printf("AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL() - Reject \n");
+  
+  return kFALSE;
+  
+}  
 
 //_______________________________________________
 void AliAnalysisTaskEMCALClusterize::AccessOADB()
@@ -424,6 +461,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   
   fEvent = 0x0;
   
+  //Process events if there is a high energy cluster
+  if(!AcceptEventEMCAL())  return ; 
+  
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   Int_t eventN = Entry();
   if(aodIH) eventN = aodIH->GetReadEntry(); 
@@ -538,7 +578,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       {
         fCellLabels[index[icell]]       = label;
         fCellSecondLabels[index[icell]] = label2;
-        fCellTime[index[icell]]         = clus->GetTOF();    
         fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
         fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
         //printf(" %d,", index[icell] );
@@ -564,28 +603,22 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     id = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
     
-    // Do not include cells with too low energy, nor exotic cell
-    if(amp < fRecParam->GetMinECut() ) accept = kFALSE;
-    
-    // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
-    if (time*1e9 < 1.) 
-    { 
-      time = fCellTime[id];
-      //printf("cell %d time org %f - ",id, time*1.e9);
-      fRecoUtils->RecalibrateCellTime(id,bc,time);
-      //printf("recal %f\n",time*1.e9);
-    }
+    // Do not include cells with too low energy, nor exotic cell, nor too large time
+    if( amp  < fRecParam->GetMinECut() ||
+        time > fRecParam->GetTimeMax() ||
+        time < fRecParam->GetTimeMin()    ) accept = kFALSE;
     
     if(  accept && fRecoUtils->IsExoticCell(id,cells,bc))
     {
       accept = kFALSE;
     }
     
+    //printf("cell %d, amp %2.3f time %2.3f, accept %d\n",id, amp, time*1.e9,accept);
+    
     if( !accept )
     {
       fCellLabels[id]      =-1; //reset the entry in the array for next event
       fCellSecondLabels[id]=-1; //reset the entry in the array for next event
-      fCellTime[id]        = 0.; 
       fCellMatchdEta[id]   =-999;
       fCellMatchdPhi[id]   =-999;
       if( DebugLevel() > 2 )
@@ -685,7 +718,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
           {
             fCellLabels[cellNumber]      =-1; //reset the entry in the array for next event
             fCellSecondLabels[cellNumber]=-1; //reset the entry in the array for next event
-            fCellTime[cellNumber]        = 0.;   
             fCellMatchdEta[cellNumber]   =-999;
             fCellMatchdPhi[cellNumber]   =-999;
             continue;
@@ -911,11 +943,7 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
       Int_t absId0 = newCluster->GetCellsAbsId()[0]; // Assign match of first cell in cluster
       newCluster->SetTrackDistance(fCellMatchdPhi[absId0],fCellMatchdEta[absId0]);
     }
-    
-    //printf("New cluster E %f, Time  %e, Id = ", newCluster->E(), newCluster->GetTOF() );
-    //for(Int_t icell=0; icell < newCluster->GetNCells(); icell++ ) printf(" %d,", newCluster->GetCellsAbsId() [icell] );
-    //printf("\n");
-    
+        
     // Calculate distance to bad channel for new cluster. Make sure you give the list of bad channels.
     fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
     
@@ -1371,9 +1399,11 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
     clus->SetPosition(g);
     clus->SetNCells(ncellsTrue);
     clus->SetCellsAbsId(absIds);
+    
     clus->SetCellsAmplitudeFraction(ratios);
     clus->SetChi2(-1); //not yet implemented
     clus->SetTOF(recPoint->GetTime()) ; //time-of-flight
+    
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
     
@@ -1504,6 +1534,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
+  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
+  
   //Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
@@ -1515,7 +1547,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 
   //Init pointers, geometry, clusterizer, ocdb, aodb
   
-  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
   
   if(fAccessOCDB) AccessOCDB();
   if(fAccessOADB) AccessOADB(); // only once

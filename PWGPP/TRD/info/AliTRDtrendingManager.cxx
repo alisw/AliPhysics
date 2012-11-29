@@ -24,7 +24,7 @@
 ClassImp(AliTRDtrendingManager)
 
 AliTRDtrendingManager* AliTRDtrendingManager::fgInstance=NULL;
-Bool_t AliTRDtrendingManager::fgTerminated = kFALSE;
+//Bool_t AliTRDtrendingManager::fgTerminated = kFALSE;
 
 //____________________________________________
 AliTRDtrendingManager* AliTRDtrendingManager::Instance()
@@ -33,10 +33,8 @@ AliTRDtrendingManager* AliTRDtrendingManager::Instance()
   // Singleton implementation
   // Returns an instance of this class, it is created if neccessary
   //
-  if (fgTerminated != kFALSE) return NULL;
-
+//   if (fgTerminated) return NULL;
   if (!fgInstance) fgInstance = new AliTRDtrendingManager();
-
   return fgInstance;
 }
 
@@ -50,8 +48,7 @@ void AliTRDtrendingManager::Terminate()
   // This function can be called several times.
   //
   
-  fgTerminated = kTRUE;
-  
+/*  fgTerminated = kTRUE;*/
   if (fgInstance != NULL) {
     if(TFile::Open("TRD.Trend.root", "RECREATE")){
       if(fEntries) fEntries->Write();
@@ -65,18 +62,18 @@ void AliTRDtrendingManager::Terminate()
 AliTRDtrendingManager::AliTRDtrendingManager() 
   : TObject()
   ,fEntries(NULL)
-  ,fValue(NULL)
 {
 // Constructor
-//  fRunRange[0] = 0; fRunRange[1] = AliCDBRunRange::Infinity();
 }
 
 //____________________________________________
 AliTRDtrendingManager::~AliTRDtrendingManager()
 {
 // Destructor
-  if(fValue) delete fValue;
-  if(fEntries) delete fEntries;
+  if(fEntries){
+    fEntries->Delete();
+    delete fEntries;
+  }
 }
 
 //____________________________________________
@@ -103,45 +100,44 @@ void AliTRDtrendingManager::AddValue(
 
   if(!fEntries){ // if no trending map defined create one
     AliDebug(1, "No trending map loaded. Create one from scratch.");
-    fEntries = new TObjArray(50);
-    fEntries->SetOwner();
-    fEntries->SetName("values");
+    MakeList(1000);
   }
 
-  if(!(fValue = GetValue(name))){
-    // create new trending value`
-    fValue = new AliTRDtrendValue(name, title?title:"");
-    fValue->Set(mean, sigm);
-    if(messages) for(Int_t ilevel(AliTRDtrendValue::kNlevels); ilevel--;) if(messages[ilevel]) fValue->SetAlarm(ilevel, messages[ilevel]);
-    TObjArray *r(NULL);
-    if(responsible){
-      TString s(responsible);
-      r=s.Tokenize("/");
+  if(GetValue(name)){
+    AliInfo(Form("Trend value \"%s\" already in list. Use Modify function", name));
+    return;
+  }
+  // create new trending value`
+  AliTRDtrendValue *fValue = new AliTRDtrendValue(name, title?title:"");
+  fValue->Set(mean, sigm);
+  if(messages) for(Int_t ilevel(AliTRDtrendValue::kNlevels); ilevel--;) if(messages[ilevel]) fValue->SetAlarm(ilevel, messages[ilevel]);
+  TObjArray *r(NULL);
+  if(responsible){
+    TString s(responsible);
+    r=s.Tokenize("/");
+    if(r->GetEntriesFast()!=2){
+      AliWarning("Responsible name/email incorrectly formated.");
+    } else {
+      fValue->SetResponsible(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
+    }
+    r->Delete(); delete r;
+  }
+  if(notifiables){
+    TString s(notifiables);
+    TObjArray *n=s.Tokenize(",");
+    for(Int_t in(0); in<TMath::Min(AliTRDtrendValue::kNnotifiable, n->GetEntriesFast()); in++){
+      TString ss(((TObjString*)n->At(in))->String());
+      r=ss.Tokenize("/");
       if(r->GetEntriesFast()!=2){
-        AliWarning("Responsible name/email incorrectly formated.");
+        AliWarning(Form("Notifiable person name/email incorrectly formated for [%s].", ss.Data()));
       } else {
-        fValue->SetResponsible(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
+        fValue->SetNotifiable(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
       }
       r->Delete(); delete r;
     }
-    if(notifiables){
-      TString s(notifiables);
-      TObjArray *n=s.Tokenize(",");
-      for(Int_t in(0); in<TMath::Min(AliTRDtrendValue::kNnotifiable, n->GetEntriesFast()); in++){
-        TString ss(((TObjString*)n->At(in))->String());
-        r=ss.Tokenize("/");
-        if(r->GetEntriesFast()!=2){
-          AliWarning(Form("Notifiable person name/email incorrectly formated for [%s].", ss.Data()));
-        } else {
-          fValue->SetNotifiable(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
-        }
-        r->Delete(); delete r;
-      }
-      n->Delete(); delete n;
-    }
+    n->Delete(); delete n;
   }
-
-  fEntries->AddLast(new AliTRDtrendValue(*fValue));
+  fEntries->AddLast(fValue);
 }
 
 //____________________________________________
@@ -152,8 +148,7 @@ AliTRDtrendValue* AliTRDtrendingManager::GetValue(const Char_t *name)
     AliError("No trending map defined.");
     return NULL;
   }
-  fValue = (AliTRDtrendValue*)fEntries->FindObject(name);
-  return fValue;
+  return (AliTRDtrendValue*)fEntries->FindObject(name);
 }
 
 //____________________________________________
@@ -195,7 +190,7 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
         nmiss++;
         continue;
       }
-      if(tv->GetVal()<-998. ||
+      if(tv->GetVal()<=-998. ||
          (strstr(TV->GetName(), "TRDcheckDET")&&TMath::Abs(tv->GetVal())<1.e-5) ||
          (strstr(TV->GetName(), "TRDefficiency")&&tv->GetVal()<1.e-5) ||
          (!(strcmp(TV->GetName(), "TRDcheckDET_ChargeTracklet"))&&TMath::Abs(tv->GetVal())<1.e1)) continue;
@@ -278,7 +273,8 @@ Bool_t AliTRDtrendingManager::ModifyValue(
   }
   AliWarning("*** EXPERT FUNCTION *** This function is modifying one trending value to the current DB. Continue if you know what yout do!");
 
-  if(!GetValue(name)){
+  AliTRDtrendValue *fValue(NULL);
+  if(!(fValue = GetValue(name))) { 
     AliError(Form("Missing trending value %s", name));
     return kFALSE;
   }  
@@ -341,11 +337,21 @@ void AliTRDtrendingManager::Load(const char *fn)
   if(!TFile::Open(fn)) return;
 
   TList *tvList = gFile->GetListOfKeys(); TIterator *iter(tvList->MakeIterator()); AliTRDtrendValue *tv(NULL);
-  fEntries = new TObjArray(tvList->GetEntries());
-  fEntries->SetOwner();
+  MakeList(tvList->GetEntries());
   TKey *ktv(NULL);
   while((ktv = (TKey*)iter->Next())){
     tv = (AliTRDtrendValue*)gFile->Get(ktv->GetName());
     fEntries->AddLast(new AliTRDtrendValue(*tv));
+    delete tv;
   }
+  gFile->Close();
+}
+
+//____________________________________________
+void AliTRDtrendingManager::MakeList(Int_t entries)
+{
+// allocate trending values array
+  fEntries = new TObjArray(entries);
+  fEntries->SetOwner();
+  fEntries->SetName("TrendValues");
 }

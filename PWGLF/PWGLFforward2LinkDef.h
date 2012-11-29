@@ -30,6 +30,7 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ class AliAnalysisTaskZDCPbPb+;
+#pragma link C++ class AliAnalysisTaskZDCTreeMaker+;
 
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliAODForwardEP+;

@@ -11,27 +11,20 @@
 /** 
  * Run second pass analysis - make @f$ dN/d\eta@f$
  * 
- * If PROOF mode is selected, then Terminate will be run on the master node 
- * in any case. 
- *
  * @param name       Name of train - free form.  This will be the name
  *                   of the output directory if the plug-in is used 
- * @param options    Option string
- * @param runs       List of runs, or file name of file contain runs
- * @param nEvents    Number of events to process.  If 0 or less, then 
- *                   all events are analysed
+ * @param options    Options string
+ * @param url        Execution and input URL
  *
  * @ingroup pwglf_forward_aod
  */
-void MakedNdeta(TString     name     = "dndeta", 
-		TString     options  = "help", 
-		TString     runs     = "",
-	        Int_t       nEvents  = -1)
+void MakedNdeta(TString     name       = "aod", 
+	        TString     url        = "help",
+	        TString     options    = "help")
 {
-  if (name.IsNull()) Fatal("MakedNdeta", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
-  RunTrain("MakedNdetaTrain", name, options, runs, nEvents);
+  MakeTrain(name, "MakedNdetaTrain", url, options);
 }
 //
 // EOF

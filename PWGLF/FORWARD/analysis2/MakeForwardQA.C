@@ -10,26 +10,20 @@
 /** 
  * Run a pass on ESD data to produce quality assurance data.
  *
- * @param name    Name of train
- * @param options Comma separated list of options, pass "help" for list
- * @param runs    Comma separated list of run numbers
- * @param nEvents Number of events to process.  If 0 or less, then 
- *                all events are analysed
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
+ * @param options    Options string
+ * @param url        Execution and input URL
  *
- * @ingroup pwglf_forward
+ * @ingroup pwglf_forward_aod
  */
-/** 
- * 
- * 
- */void MakeForwardQA(TString name    = "qa", 
-		      TString options = "help", 
-		      TString runs    = "", 
-		      Int_t   nEvents = -1)
+void MakeForwardQA(TString     name       = "aod", 
+		   TString     url        = "help",
+		   TString     options    = "help")
 {
-  if (name.IsNull()) Fatal("MakeForwardQA", "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
-  RunTrain("MakeQATrain", name, options, runs, nEvents);
+  MakeTrain(name, "MakeQATrain", url, options);
 }
 //
 // EOF

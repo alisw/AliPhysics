@@ -13,6 +13,9 @@
  *     isCreateCSC    -> Prepare for CrossSectionCorrection 
  *                       - requires isModeEff to be set
  *                       - Proton only
+ 
+*  JMT add mode isModeAOD
+
  * 
  * - OUTPUT CONTAINER : #N = 5
  *   (1) - Standard Output, Distributions
@@ -51,7 +54,7 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     Info("AddTaskNetParticle", "This task has MC.");
   
   // ----------------------------------------------
-  // -- Create task configure it
+  // -- Create task 
   // ----------------------------------------------
   AliAnalysisTaskNetParticle *task = new AliAnalysisTaskNetParticle("AliAnalysisTaskNetParticle");
   if (!task) {
@@ -59,96 +62,118 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
     return NULL;
   }
 
-  if (isMC) 
-    task->SetIsMC();
-
-  // -- Set particle type
   // ----------------------------------------------
-  Float_t minPt, maxPt, minPtEff, maxPtEff, minPtForTOF; 
-
-  if (sName.Contains("Proton")) {
-    task->SetParticleSpecies(AliPID::kProton);
-    task->SetControlParticleSpecies(3122, kTRUE, "Lambda");
-    minPt    = 0.4;    maxPt    = 2.2;
-    minPtEff = 0.2;    maxPtEff = 2.6;
-    minPtForTOF = 0.8;
-    if (isCreateCSC) {
-      minPtForTOF = maxPtEff;
-    }
-  }
-  else if (sName.Contains("Pion")) {
-    task->SetParticleSpecies(AliPID::kPion);
-    task->SetControlParticleSpecies(3122, kTRUE, "Lambda");  /// maybe something else ...
-    minPt    = 0.3;    maxPt    = 0.9;
-    minPtEff = 0.2;    maxPtEff = 1.2;
-    minPtForTOF = 0.8;
-  }
-  else if (sName.Contains("Kaon")) {
-    task->SetParticleSpecies(AliPID::kKaon);
-    task->SetControlParticleSpecies(3122, kTRUE, "Lambda");  /// maybe something else ...
-    //minPt    = 0.4;    maxPt    = 0.8; // GRID test 1
-    minPt    = 0.5;    maxPt    = 0.8; // GRID test 2
-    minPtEff = 0.1;    maxPtEff = 2.5;
-    minPtForTOF = 0.5;
-  }
-  else {
-    Error("AddTaskNetParticle", "Unknown Particle type.");
-    return NULL;
-  }
-
   // -- Configure flags
   // ----------------------------------------------
+
+  // -- Enable QA plots
+  Int_t isModeQA = 0;
+
+  if (isMC) 
+    task->SetIsMC();
   if (isModeEff) 
     task->SetModeEffCreation(1);     // => 1 = on    | 0 = off (default)
   if (isModeDCA)
     task->SetModeDCACreation(1);     // => 1 = on    | 0 = off (default)
   if (isModeDist)
     task->SetModeDistCreation(1);    // => 1 = on    | 0 = off (default)
-  if(isModeAOD){
-    task->SetIsAOD(1);               // => 1 = AODs  | 0 = ESDs
+  if (isModeAOD) {
+    task->SetIsAOD(1);               // => 1 = AOD   | 0 = ESD (default)
     task->SetTrackFilterBit(1024);   // 1024 = RAA cuts
   }
-  // -- Enable QA plots
-  if (useQAThnSparse)
-    task->SetUseQATHnSparse(kTRUE);
+  if (isModeQA)
+    task->SetModeQACreation(1);      // => 1 = on    | 0 = off (default)
 
+  // ----------------------------------------------
+  // -- Create helper class
+  // ----------------------------------------------
+  AliAnalysisNetParticleHelper *helper = new AliAnalysisNetParticleHelper;
+  if (!helper) {
+    Error("AddTaskNetParticle", "Helper could not be created.");
+    delete task;
+    return NULL;
+  }
+
+  task->SetNetParticleHelper(helper);
+
+  // ----------------------------------------------
+  // -- Set particle type
+  // ----------------------------------------------
+  Float_t minPt, maxPt, minPtEff, maxPtEff, minPtForTOF, nSigmaTPC, nSigmaTOF; 
+
+  if (sName.Contains("Proton")) {
+    helper->SetParticleSpecies(AliPID::kProton);
+    helper->SetControlParticleSpecies(3122, kTRUE, "Lambda");
+    minPt    = 0.4;    maxPt    = 2.2;
+    minPtEff = 0.2;    maxPtEff = 2.6;
+    minPtForTOF = 0.8;
+    nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
+    if (isCreateCSC) {
+      minPtForTOF = maxPtEff;
+    }
+  }
+  else if (sName.Contains("Pion")) {
+    helper->SetParticleSpecies(AliPID::kPion);
+    minPt    = 0.3;    maxPt    = 0.9;
+    minPtEff = 0.2;    maxPtEff = 1.2;
+    minPtForTOF = 0.8;
+    nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
+  }
+  else if (sName.Contains("Kaon")) {
+    helper->SetParticleSpecies(AliPID::kKaon);
+    minPt    = 0.5;    maxPt    = 0.8;
+    minPtEff = 0.1;    maxPtEff = 2.5;
+    minPtForTOF = 0.5;
+    nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
+  }
+  else if (sName.Contains("Charge")) {
+    helper->SetUsePID(kFALSE);
+    minPt    = 0.2;    maxPt    = 2.8;
+    minPtEff = 0.1;    maxPtEff = 3.0;
+    minPtForTOF = -1.;
+    nSigmaTPC = -1.;   nSigmaTOF = -1.;
+  }
+  else {
+    Error("AddTaskNetParticle", "Unknown Particle type.");
+    delete task;
+    return NULL;
+  }
+
+  // ----------------------------------------------
   // -- Configure cuts 
   // ----------------------------------------------
 
   // -- Set cut flags ...
   task->SetESDTrackCutMode(0);     // => 0 = clean | 1 = dirty
 
-  // -- Set standard event cuts
-  task->SetVertexZMax(10.);   
-  task->SetCentralityBinMax(7);
-
-  // -- Set track event cuts
-  task->SetRapidityMax(0.5); 
-  task->SetMinTrackLengthMC(70.);  
-  task->SetNSigmaMaxCdd(3.); 
-  task->SetNSigmaMaxCzz(3.); 
-
-  //task->SetNSigmaMaxTPC(3); // GRID test 1
-  //task->SetNSigmaMaxTOF(3); // GRID test 1
-  task->SetNSigmaMaxTPC(2); // GRID test 2
-  task->SetNSigmaMaxTOF(2); // GRID test 2
-  task->SetMinPtForTOFRequired(minPtForTOF);
-
   // -- Set analysis ranges
   task->SetEtaMax(0.9);        
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
+
+  // ----------------------------------------------
+  // -- Configure cuts - helper class
+  // ----------------------------------------------
+
+  // -- Set standard event cuts
+  helper->SetVertexZMax(10.);   
+  helper->SetCentralityBinMax(7);
+
+  // -- Set track event cuts
+  helper->SetRapidityMax(0.5); 
+  helper->SetMinTrackLengthMC(70.);  
+  helper->SetNSigmaMaxCdd(3.); 
+  helper->SetNSigmaMaxCzz(3.); 
+
+  // -- Set pid cuts
+  helper->SetNSigmaMaxTPC(nSigmaTPC);
+  helper->SetNSigmaMaxTOF(nSigmaTOF);
+  helper->SetMinPtForTOFRequired(minPtForTOF);
   
   // ----------------------------------------------
-  // -- Initialize and add task to the ANALYSIS manager
+  // -- Add task to the ANALYSIS manager
   // ----------------------------------------------
-  if (!task->Initialize())
-    mgr->AddTask(task);
-  else {
-    Error("Initialize failed, not adding AliAnalysistaskNetParticle !!!");
-    delete task;
-    return NULL;
-  }
+  mgr->AddTask(task);
 
   // ----------------------------------------------
   // -- data containers - input

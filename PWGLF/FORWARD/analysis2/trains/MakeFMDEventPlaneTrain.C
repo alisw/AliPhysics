@@ -6,7 +6,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  */
 #include "TrainSetup.C"
 
@@ -16,21 +16,20 @@
  * 
  *
  * @ingroup pwglf_forward_flow
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  */
 class MakeFMDEventPlaneTrain : public TrainSetup
 {
 public:
   /** 
-   * Constructor.  Date and time must be specified when running this
-   * in Termiante mode on Grid
+   * Constructor.  
    * 
    * @param name     Name of train (free form)
    */
   MakeFMDEventPlaneTrain(const char* name) 
   : TrainSetup(name)
   {
-    SetType(kAOD);
+    fOptions.Set("type", "AOD");
   }
 protected:
   /** 
@@ -38,21 +37,23 @@ protected:
    * 
    * @param par  Whether to use par files 
    */
-  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager*)
+  void CreateTasks(AliAnalysisManager*)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("AnalysisResults.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", par, true);
+    LoadLibrary("PWGLFforward2)");
     
+    Bool_t mc   = mgr->GetMCtruthEventHandler() != 0;
+
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
 			     "$ALICE_ROOT/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDEventPlane.C(%d)", fMC));
+    gROOT->Macro(Form("AddTaskFMDEventPlane.C(%d)", mc));
   }
   /** 
    * Do not the centrality selection
@@ -63,7 +64,7 @@ protected:
    * 
    * @return 0
    */
-  AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   //__________________________________________________________________
   const char* ClassName() const { return "MakeFMDEventPlaneTrain"; }
 };

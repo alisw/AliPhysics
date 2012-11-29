@@ -473,44 +473,53 @@ void AliHFAssociatedTrackCuts::PrintAll()
 {
 	
 	printf("\n=================================================");
-	printf("\nCuts for the associated track: \n \n");
-	       
-	printf("ITS Refit........................................: %s\n",fESDTrackCuts->GetRequireITSRefit() ? "Yes" : "No");
-	printf("TPC Refit........................................: %s\n",fESDTrackCuts->GetRequireTPCRefit() ? "Yes" : "No");
-	printf("ITS SA...........................................: %s\n",fESDTrackCuts->GetRequireITSStandAlone() ? "Yes" : "No");
-	printf("TPC SA...........................................: %s\n",fESDTrackCuts->GetRequireTPCStandAlone() ? "Yes" : "No");
-	printf("Min number of ITS clusters.......................: %d\n",fESDTrackCuts->GetMinNClustersITS());
-	printf("Min number of TPC clusters.......................: %d\n",fESDTrackCuts->GetMinNClusterTPC());
-	Int_t spd = fESDTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
-	if(spd==0) std::cout <<  "SPD..............................................: kOff"  << std::endl;
-	if(spd==1) std::cout <<  "SPD..............................................: kNone"  << std::endl;
-	if(spd==2) std::cout <<  "SPD..............................................: kAny"  << std::endl;
-	if(spd==3) std::cout <<  "SPD..............................................: kFirst"  << std::endl;
-	if(spd==4) std::cout <<  "SPD..............................................: kOnlyFirst"  << std::endl;
-	if(spd==5) std::cout <<  "SPD..............................................: kSecond"  << std::endl;
-	if(spd==6) std::cout <<  "SPD..............................................: kOnlySecond"  << std::endl;
-	if(spd==7) std::cout <<  "SPD..............................................: kBoth"  << std::endl;
-	
+	if(fESDTrackCuts){
+	  printf("\nCuts for the associated track: \n \n");
+	  
+	  printf("ITS Refit........................................: %s\n",fESDTrackCuts->GetRequireITSRefit() ? "Yes" : "No");
+	  printf("TPC Refit........................................: %s\n",fESDTrackCuts->GetRequireTPCRefit() ? "Yes" : "No");
+	  printf("ITS SA...........................................: %s\n",fESDTrackCuts->GetRequireITSStandAlone() ? "Yes" : "No");
+	  printf("TPC SA...........................................: %s\n",fESDTrackCuts->GetRequireTPCStandAlone() ? "Yes" : "No");
+	  printf("Min number of ITS clusters.......................: %d\n",fESDTrackCuts->GetMinNClustersITS());
+	  printf("Min number of TPC clusters.......................: %d\n",fESDTrackCuts->GetMinNClusterTPC());
+	  Int_t spd = fESDTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
+	  if(spd==0) std::cout <<  "SPD..............................................: kOff"  << std::endl;
+	  if(spd==1) std::cout <<  "SPD..............................................: kNone"  << std::endl;
+	  if(spd==2) std::cout <<  "SPD..............................................: kAny"  << std::endl;
+	  if(spd==3) std::cout <<  "SPD..............................................: kFirst"  << std::endl;
+	  if(spd==4) std::cout <<  "SPD..............................................: kOnlyFirst"  << std::endl;
+	  if(spd==5) std::cout <<  "SPD..............................................: kSecond"  << std::endl;
+	  if(spd==6) std::cout <<  "SPD..............................................: kOnlySecond"  << std::endl;
+	  if(spd==7) std::cout <<  "SPD..............................................: kBoth"  << std::endl;
+	}
+	else printf("\nNo Cuts for Associated Tracks\n");
 	std::cout <<  "Filter Bit.......................................: " << fBit  << std::endl;
 	std::cout <<  "Charge...........................................: " << fCharge  << std::endl;
-		
-	for(Int_t j=0;j<fNTrackCuts;j++){
-		std::cout << fTrackCutsNames[j] << fAODTrackCuts[j] << std::endl;
+	
+	if(fAODTrackCuts){
+	  for(Int_t j=0;j<fNTrackCuts;j++){
+	    std::cout << fTrackCutsNames[j] << fAODTrackCuts[j] << std::endl;
+	  }
 	}
-	printf("\n");
-	printf("=================================================");
-	printf("\nCuts for the K0 candidates: \n \n");
-	for(Int_t k=0;k<fNvZeroCuts;k++){
-		std::cout << fvZeroCutsNames[k] <<  fAODvZeroCuts[k] << std::endl;
+
+	if(fAODvZeroCuts){
+	  printf("\n");
+	  printf("=================================================");
+	  printf("\nCuts for the K0 candidates: \n \n");
+	  for(Int_t k=0;k<fNvZeroCuts;k++){
+	    std::cout << fvZeroCutsNames[k] <<  fAODvZeroCuts[k] << std::endl;
+	  }
 	}
+	else printf("\nNo Cuts for the K0 candidates\n");
 	std::cout << " " << std::endl;
 	PrintPoolParameters();
 	PrintSelectedMCevents();
-
-	printf("=================================================");
-	printf("\nAdditional description\n");
-	std::cout << fDescription << std::endl;
-	printf("\n");
+	if(fDescription){
+	  printf("=================================================");
+	  printf("\nAdditional description\n");
+	  std::cout << fDescription << std::endl;
+	  printf("\n");
+	}
 
 }
 

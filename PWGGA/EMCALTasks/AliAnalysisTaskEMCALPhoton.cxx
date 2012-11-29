@@ -139,6 +139,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -245,6 +246,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   
   PostData(1, fOutputList);
+  PostData(2, fTree);
 }
 
 //________________________________________________________________________
@@ -262,8 +264,10 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA);
 
   }
-  else
-    isSelected = 1;
+  if(fIsMC){
+    isSelected = kTRUE;  
+  }
+
 
   // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -277,6 +281,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     return;
   if(TMath::Abs(pv->GetZ())>15)
     return;
+
+  TTree *tree = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetTree();
+  TFile *inpfile = (TFile*)tree->GetCurrentFile();
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -293,6 +300,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       fSelPrimTracks->Add(track);
   } //track loop 
 
+  fHeader->fInputFileName  = inpfile->GetName();
   fHeader->fTrClassMask    = fESD->GetHeader()->GetTriggerMask();
   fHeader->fTrCluster      = fESD->GetHeader()->GetTriggerCluster();
   AliCentrality *cent = InputEvent()->GetCentrality();
@@ -310,6 +318,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fHeader->fNClus = fCaloClusters->GetEntries();
   fEMCalCells = fESD->GetEMCALCells();
   fHeader->fNCells = fEMCalCells->GetNumberOfCells();
+  AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
+  fHeader->fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
+
   fMCEvent = MCEvent();
   if(fMCEvent)
     fStack = (AliStack*)fMCEvent->Stack();
@@ -339,6 +350,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fCaloClustersNew)
     fCaloClustersNew->Clear();
   PostData(1, fOutputList);
+  PostData(2, fTree);
 }      
 
 //________________________________________________________________________
@@ -864,8 +876,8 @@ Double_t AliAnalysisTaskEMCALPhoton ::GetMaxCellEnergy(const AliVCluster *cluste
 void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  if(fIsGrid)
-    return;
+/*  if(fIsGrid)
+    return;*/
   if (fTree) {
     TFile *f = OpenFile(1);
     TDirectory::TContext context(f);

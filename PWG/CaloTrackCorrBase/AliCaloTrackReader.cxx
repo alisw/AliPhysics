@@ -65,10 +65,12 @@ fFiducialCut(0x0),           fCheckFidCut(kFALSE),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
-fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
+fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
+fUseEMCALTimeCut(1),         fUseParamTimeCut(0),             fUseTrackTimeCut(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
-fUseParamTimeCut(kFALSE),
+fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
+fUseTrackDCACut(0),
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -77,7 +79,8 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fConstrainTrack(kFALSE),         fSelectHybridTracks(0),
+fESDtrackCuts(0),            fConstrainTrack(kFALSE),
+fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
@@ -382,6 +385,11 @@ void AliCaloTrackReader::InitParameters()
   fEMCALPtMax = 1000. ;
   fPHOSPtMax  = 1000. ;
   
+  //Track DCA cuts
+  fTrackDCACut[0] = 3; //xy, quite large
+  fTrackDCACut[1] = 3; //z, quite large
+  fTrackDCACut[2] = 3; //TPC constrained, quite large
+
   //Do not filter the detectors input by default.
   fFillEMCAL      = kFALSE;
   fFillPHOS       = kFALSE;
@@ -551,7 +559,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
@@ -1023,13 +1031,21 @@ void AliCaloTrackReader::FillInputCTS()
   Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
   fTrackMult    = 0;
   Int_t nstatus = 0;
-  
-  for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
+  Double_t bz   = GetInputEvent()->GetMagneticField();
+
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fTrackBCEvent   [i] = 0;
+    fTrackBCEventCut[i] = 0;
+  }
+  for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
     
     //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
-    if (fTrackStatus && !((track->GetStatus() & fTrackStatus) == fTrackStatus)) 
+    ULong_t status = track->GetStatus();
+
+    if (fTrackStatus && !((status & fTrackStatus) == fTrackStatus))
       continue ;
     
     nstatus++;
@@ -1054,6 +1070,10 @@ void AliCaloTrackReader::FillInputCTS()
           
         } // use constrained tracks
         
+        if(fSelectSPDHitTracks)
+        {//Not much sense to use with TPC only or Hybrid tracks
+          if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
+        }
       }
       else continue;
       
@@ -1078,6 +1098,11 @@ void AliCaloTrackReader::FillInputCTS()
           if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
         }
         
+        if(fSelectSPDHitTracks)
+        {//Not much sense to use with TPC only or Hybrid tracks
+          if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
+        }
+        
         if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
         
         if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
@@ -1095,26 +1120,81 @@ void AliCaloTrackReader::FillInputCTS()
     
     TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
     
-    if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt())
+    Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+    Double_t tof = -1000;
+    //Int_t    bc  = -1000;
+    Int_t trackBC = -1000 ;
+    
+    if(okTOF)
     {
-      if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) 
-        continue;
+      trackBC = track->GetTOFBunchCrossing(bz);
+      SetTrackEventBC(trackBC+9);
+
+      tof = track->GetTOFsignal()*1e-3;
+      //printf("track TOF %e\n",tof);
+      //bc = TMath::Nint((tof-25)/50) + 9;
+      //printf("track pt %f, tof %2.2f, bc=%d\n",track->Pt(),tof,bc);
+      //SetTrackEventBC(bc);
+
+    }
+    
+    if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
+        
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
       
-      if(fDebug > 2 && momentum.Pt() > 0.1) 
-        printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-               momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-      
-      if (fMixedEvent) 
+    if(okTOF)
+    {
+       //SetTrackEventBCcut(bc);
+      SetTrackEventBCcut(trackBC+9);
+
+      //In any case, the time should to be larger than the fixed window ...
+      if( fUseTrackTimeCut && (trackBC!=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
       {
-        track->SetID(itrack);
+        //printf("Remove track time %f and bc = %d\n",tof,trackBC);
+        continue ;
       }
-      
-      fCTSTracks->Add(track);        
-      
-    }//Pt and Fiducial cut passed. 
+      //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
+
+    }
+          
+    if(fUseTrackDCACut)
+    {
+      //In case of hybrid tracks on AODs, constrained TPC tracks cannot be propagated back to primary vertex
+      AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
+      Float_t dcaCons = -999;
+      if(aodTrack)
+      {
+        dcaCons = aodTrack->DCA();
+        //vtxBC   = aodTrack->GetProdVertex()->GetBC();
+        if(dcaCons > -999)
+        {
+          if(TMath::Abs(dcaCons) > fTrackDCACut[2] ) continue ;
+        }
+      }
+
+      //non contrained TPC tracks (tracks with ITS points) on AODs
+      if(dcaCons==-999)
+      {
+        Double_t dca[2]   = {1e6,1e6};
+        Double_t covar[3] = {1e6,1e6,1e6};
+        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
+        if( !okDCA                               ||
+            TMath::Abs(dca[0]) > fTrackDCACut[0] ||
+            TMath::Abs(dca[1]) > fTrackDCACut[1]    ) continue ;
+      }
+    }// DCA cuts
+    
+    if(fDebug > 2 && momentum.Pt() > 0.1)
+      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+             momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+    
+    if (fMixedEvent)  track->SetID(itrack);
+
+    fCTSTracks->Add(track);
+    
   }// track loop
 	
-  if(fDebug > 1) 
+  if(fDebug > 1)
     printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);
   
 }
@@ -1211,24 +1291,31 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
     clus->SetE(rdmEnergy);
   }
   
+  Double_t tof = clus->GetTOF()*1e9;
+
+  Int_t bc = TMath::Nint(tof/50) + 9;
+  //printf("tof %2.2f, bc+5=%d\n",tof,bc);
+  
+  SetEMCalEventBC(bc);
+  
+  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) return ;
+
   TLorentzVector momentum ;
   
-  clus->GetMomentum(momentum, fVertex[vindex]);      
+  clus->GetMomentum(momentum, fVertex[vindex]);
   
   if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return ;
   
-  if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return ;
-  
-  Double_t tof = clus->GetTOF()*1e9;
+  SetEMCalEventBCcut(bc);
 
-  if(!IsInTimeWindow(tof,momentum.E()))
+  if(!IsInTimeWindow(tof,clus->E()))
   {
     fNPileUpClusters++ ;
-    return ;
+    if(fUseEMCALTimeCut) return ;
   }
   else
     fNNonPileUpClusters++;
-
+  
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
            momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
@@ -1255,6 +1342,11 @@ void AliCaloTrackReader::FillInputEMCAL()
   
   fNPileUpClusters    = 0; // Init counter
   fNNonPileUpClusters = 0; // Init counter
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fEMCalBCEvent   [i] = 0;
+    fEMCalBCEventCut[i] = 0;
+  }
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   if(fEMCALClustersListName=="")
@@ -1282,23 +1374,17 @@ void AliCaloTrackReader::FillInputEMCAL()
     
     if      (fInputEvent->FindListObject(fEMCALClustersListName))
     {
-      clusterList = dynamic_cast<TClonesArray*> (fInputEvent ->FindListObject(fEMCALClustersListName));
+      clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
     }
     else if(fOutputEvent)
-    { 
+    {
       clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
     }
     
     if(!clusterList)
     {
-      //printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? Try input event <%s>\n",fEMCALClustersListName.Data());
-      //List not in output event, try input event
-      clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
-      if(!clusterList)
-      {
         printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters?  <%s>\n",fEMCALClustersListName.Data());
         return;
-      }
     }
     
     Int_t nclusters = clusterList->GetEntriesFast();
@@ -1309,6 +1395,61 @@ void AliCaloTrackReader::FillInputEMCAL()
       if (clus) FillInputEMCALAlgorithm(clus, iclus);
       else printf("AliCaloTrackReader::FillInputEMCAL() - Null cluster in list!\n");
     }// cluster loop
+    
+    // Recalculate the pile-up time, in case long time clusters removed during clusterization
+    //printf("Input event INIT : Pile-up clusters %d, NO pile-up %d\n",fNPileUpClusters,fNNonPileUpClusters);
+
+    fNPileUpClusters    = 0; // Init counter
+    fNNonPileUpClusters = 0; // Init counter
+    for(Int_t i = 0; i < 19; i++)
+    {
+      fEMCalBCEvent   [i] = 0;
+      fEMCalBCEventCut[i] = 0;
+    }
+    
+    for (Int_t iclus =  0; iclus < fInputEvent->GetNumberOfCaloClusters(); iclus++)
+    {
+      AliVCluster * clus = 0;
+      
+      if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+      {
+        if (IsEMCALCluster(clus))
+        {
+          
+          Float_t  frac     =-1;
+          Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
+          Double_t tof = clus->GetTOF();
+          GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+          tof*=1e9;
+
+          //printf("Input event cluster : AbsIdMax %d, E %2.2f, time %2.2f \n", absIdMax,clus->E(),tof);
+
+          //Reject clusters with bad channels, close to borders and exotic;
+          if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber()))  continue;
+
+          Int_t bc = TMath::Nint(tof/50) + 9;
+          SetEMCalEventBC(bc);
+          
+          if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) continue ;
+
+          TLorentzVector momentum ;
+          
+          clus->GetMomentum(momentum, fVertex[0]);
+          
+          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return ;
+
+          SetEMCalEventBCcut(bc);
+
+          if(!IsInTimeWindow(tof,clus->E()))
+            fNPileUpClusters++ ;
+          else
+            fNNonPileUpClusters++;
+          
+        }
+      }
+    }
+    
+    //printf("Input event : Pile-up clusters %d, NO pile-up %d\n",fNPileUpClusters,fNNonPileUpClusters);
     
     // Recalculate track matching, not necessary if already done in the reclusterization task.
     // in case it was not done ...

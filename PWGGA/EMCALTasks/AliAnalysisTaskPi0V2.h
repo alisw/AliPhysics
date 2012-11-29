@@ -120,6 +120,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH2F			*hEPV0CR0;		//! 2-D histo EPV0AR0 vs cent
     TH2F			*hEPV0CR3;		//! 2-D histo EPV0AR3 vs cent
 
+    TH2F			*hdifV0Ar_V0Cr;		//! 2-D histo diff V0Ar, V0Cr vs cent
     TH2F			*hdifV0A_V0CR0;		//! 2-D histo diff V0A, V0CR0 vs cent
     TH2F			*hdifV0A_V0CR3;		//! 2-D histo diff V0A, V0CR3 vs cent
     TH2F			*hdifV0ACR0_V0CR3;	//! 2-D histo diff V0CR0, V0CR3 vs cent

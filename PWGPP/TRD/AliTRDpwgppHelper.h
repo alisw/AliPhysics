@@ -15,6 +15,7 @@ public:
   enum ETRDinfoGenOutSlots {
     kEventInfo     = 1
     ,kTracksBarrel
+    ,kTracksITS
     ,kTracksSA
     ,kTracksKink
     ,kV0List

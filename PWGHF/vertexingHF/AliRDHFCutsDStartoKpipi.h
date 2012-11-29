@@ -43,6 +43,8 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   virtual void SetStandardCutsPbPb2011();  
   void SetMaxPtPid(Float_t maxPt){fMaxPtPid = maxPt;}
 
+  void SetOffHighPtPIDinTPC(Float_t TPCrem =999.){fTPCflag = TPCrem;}
+
   void AddTrackCutsSoftPi(const AliESDtrackCuts *cuts) 
      {fTrackCutsSoftPi=new AliESDtrackCuts(*cuts); return;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return fTrackCutsSoftPi;}
@@ -51,8 +53,9 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
   AliESDtrackCuts *fTrackCutsSoftPi; // cuts for soft pion (AOD converted to ESD on the flight!)
   Float_t fMaxPtPid; // maximum Dstar Pt for using PID
+  Float_t fTPCflag;   // 
 
-  ClassDef(AliRDHFCutsDStartoKpipi,5);  // class for cuts on AOD reconstructed D0->Kpipi
+  ClassDef(AliRDHFCutsDStartoKpipi,6);  // class for cuts on AOD reconstructed D0->Kpipi
 };
 
 #endif

@@ -87,6 +87,11 @@ class AliBalancePsi : public TObject {
 				   Double_t ptTriggerMax=-1.,
 				   Double_t ptAssociatedMin=-1.,
 				   Double_t ptAssociatedMax=-1);
+  TH2D   *GetCorrelationFunctionChargeIndependent(Double_t psiMin, Double_t psiMax,
+						  Double_t ptTriggerMin=-1.,
+						  Double_t ptTriggerMax=-1.,
+						  Double_t ptAssociatedMin=-1.,
+						  Double_t ptAssociatedMax=-1);
 
   AliTHn *GetHistNp() {return fHistP;}
   AliTHn *GetHistNn() {return fHistN;}

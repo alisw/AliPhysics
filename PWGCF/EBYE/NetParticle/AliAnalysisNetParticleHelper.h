@@ -9,7 +9,8 @@
 // Helper Class for for NetParticle Distributions
 // Authors: Jochen Thaeder <jochen@thaeder.de>
 
-#include "THnSparse.h"
+#include "THnBase.h"
+#include "THn.h"
 #include "TParticle.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -18,6 +19,7 @@ class AliESDtrack;
 class AliMCEvent;
 class AliStack;
 class AliPIDResponse;
+class AliInputEventHandler;
 class AliESDInputHandler;
 class AliAODInputHandler;
 class AliAODEvent;
@@ -57,6 +59,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
     fControlParticleName = name;
   }
 
+  void SetUsePID(Bool_t b);
   void SetNSigmaMaxTPC(Float_t f)                    {fNSigmaMaxTPC        = f;}
   void SetNSigmaMaxTOF(Float_t f)                    {fNSigmaMaxTOF        = f;}
   void SetMinPtForTOFRequired(Float_t f)             {fMinPtForTOFRequired = f;}
@@ -82,6 +85,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Int_t    GetCentralityBin()                {return fCentralityBin;}
   Float_t  GetCentralityPercentile()         {return fCentralityPercentile;}
 
+  Bool_t   GetUsePID()                       {return fUsePID;}
+
   Int_t    GetControlParticleCode()          {return fControlParticleCode;}
   Bool_t   IsControlParticleNeutral()        {return fControlParticleIsNeutral;}
   TString& GetControlParticleName()          {return fControlParticleName;}
@@ -93,7 +98,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
 
   /** Initialize Helper */
-  Int_t Initialize(Bool_t isMC);
+  Int_t Initialize(Bool_t isMC, Int_t modeDistCreation);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
@@ -116,13 +121,13 @@ class AliAnalysisNetParticleHelper : public TNamed {
    * ---------------------------------------------------------------------------------
    */
   
-  /** Check if charged MC particle is accepted for basic parameters */
-  /** NOT possible for AODs (AliAODMCParticle NOT from TParticle)*/
+  /** Check if charged MC particle is accepted for basic parameters
+      NOT possible for AODs (AliAODMCParticle NOT from TParticle) */
   Bool_t IsParticleAcceptedBasicCharged(TParticle *particle, Int_t idxMC);
   Bool_t IsParticleAcceptedBasicCharged(AliAODMCParticle *particle);
 
-  /** Check if neutral MC particle is accepted for basic parameters */
-  /** NOT possible for AODs (AliAODMCParticle NOT from TParticle)*/
+  /** Check if neutral MC particle is accepted for basic parameters
+      NOT possible for AODs (AliAODMCParticle NOT from TParticle) */
   Bool_t IsParticleAcceptedBasicNeutral(TParticle *particle, Int_t idxMC);
   Bool_t IsParticleAcceptedBasicNeutral(AliAODMCParticle *particle);
  
@@ -139,15 +144,13 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
   
   /** Check if track is accepted for basic parameters */
-  /** NOT possible with AliVTrack (GetInnerParam returns NULL) */
-  Bool_t IsTrackAcceptedBasicCharged(AliESDtrack *track);
-  Bool_t IsTrackAcceptedBasicCharged(AliAODTrack *track);
+  Bool_t IsTrackAcceptedBasicCharged(AliVTrack *track);
   
   /** Check if track is accepted for Rapidity */
   Bool_t IsTrackAcceptedRapidity(AliVTrack *track, Double_t &yP);
 
   /** Check if track is accepted for DCA */
-  Bool_t IsTrackAcceptedDCA(AliESDtrack *track);
+  Bool_t IsTrackAcceptedDCA(AliVTrack *track);
 
   /** Check if track is accepted for PID */
   Bool_t IsTrackAcceptedPID(AliVTrack *track, Double_t *pid);
@@ -165,7 +168,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Double_t GetTrackbyTrackCorrectionFactor(Double_t *aTrack,  Int_t flag);
   
   /** Method for the correct logarithmic binning of histograms */
-  void BinLogAxis(const THnSparseF *h, Int_t axisNumber);
+  void BinLogAxis(const THnBase *h, Int_t axisNumber);
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -209,11 +212,11 @@ class AliAnalysisNetParticleHelper : public TNamed {
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
+  Int_t                 fModeDistCreation;         //  Dist creation mode       : 1 = on | 0 = off 
 
-  AliESDInputHandler   *fESDHandler;               //! Ptr to ESD handler 
+  AliInputEventHandler *fInputEventHandler;        //! Ptr to input event handler (ESD or AOD)
   AliPIDResponse       *fPIDResponse;              //! Ptr to PID response Object
   AliESDEvent          *fESD;                      //! Ptr to ESD event
-  AliAODInputHandler   *fAODHandler;               //! Ptr to AOD handler 
   AliAODEvent          *fAOD;                      //! Ptr to AOD event
   AliMCEvent           *fMCEvent;                  //! Ptr to MC event
   AliStack             *fStack;                    //! Ptr to stack
@@ -238,6 +241,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Bool_t                fControlParticleIsNeutral; //  Is control particle neutral
   TString               fControlParticleName;      //  Name of control particle
   // -----------------------------------------------------------------------
+  Bool_t                fUsePID;                   //  Use PID, default is on
   Float_t               fNSigmaMaxTPC;             //  N Sigma for TPC PID
   Float_t               fNSigmaMaxTOF;             //  N Sigma for TOF PID
   Float_t               fMinPtForTOFRequired;      //  Min pt from where TOF is required
@@ -257,8 +261,9 @@ class AliAnalysisNetParticleHelper : public TNamed {
   // =======================================================================
 
   TF1                  *fEtaCorrFunc;              //! Eta correction function for TPC dE/dx  
-  THnSparseF         ***fCorr0;                    // Correction matrices for particle / anti-particle
-  THnSparseF         ***fCorr1;                    // Correction matrices [cross section corrected] matrices for particle/ anti-particle
+  THnF               ***fCorr0;                    // Correction matrices for particle / anti-particle
+  THnF               ***fCorr1;                    // Correction matrices [cross section corrected] matrices for particle / anti-particle
+  THnF               ***fCorr2;                    // Correction matrices cross section correction matrices only for particle / anti-particle
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleHelper, 1);

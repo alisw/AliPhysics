@@ -6,7 +6,7 @@
  * @brief  
  * 
  * 
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  */
 #include "TrainSetup.C"
 
@@ -14,7 +14,7 @@
 /**
  * Analysis train to do Quality assurance
  * 
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  * @ingroup pwglf_forward_qa
  */
 class MakeQATrain : public TrainSetup
@@ -27,10 +27,10 @@ public:
    * @param name     Name of train 
    */
   MakeQATrain(const char* name  = "Forward QA") 
-    : TrainSetup(name), 
-      fUseCent(false)
+    : TrainSetup(name)
   {
-    SetType(kESD);
+    fOptions.Add("cent", "Use centrality");
+    fOptions.Set("type", "ESD");
   }
 protected:
   //__________________________________________________________________
@@ -40,13 +40,13 @@ protected:
    * @param par  Whether to use par files 
    * @param mgr  Analysis manager 
    */
-  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager* mgr)
+  void CreateTasks(AliAnalysisManager* mgr)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_qa.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", par, true);
+    LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -56,7 +56,7 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", mc, fUseCent));
+    gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", mc, fOptions.Has("cent")));
   }
   /** 
    * Create entrality selection if enabled 
@@ -66,7 +66,7 @@ protected:
    */
   virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
   {
-    if (!fUseCent) return;
+    if (!fOptions.Has("cent")) return;
 
     gROOT->Macro("AddTaskCentrality.C");
     const char* cname = "CentralitySelection";
@@ -81,23 +81,9 @@ protected:
    * 
    * @return 0
    */
-  AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   //__________________________________________________________________
   const char* ClassName() const { return "MakeQATrain"; }
-  //__________________________________________________________________
-  void MakeOptions(Runner& r) 
-  {
-    TrainSetup::MakeOptions(r);
-    r.Add(new Option("cent",   "Use centrality"));
-  }
-  //__________________________________________________________________
-  void SetOptions(Runner& r)
-  {
-    TrainSetup::SetOptions(r);
-    Option*   cent	= r.FindOption("cent");
-    if (cent) fUseCent  = cent->AsBool();
-  }
-  Bool_t fUseCent; // Whether to use centrality or not 
 };
 
 //

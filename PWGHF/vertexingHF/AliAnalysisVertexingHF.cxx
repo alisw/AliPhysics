@@ -109,6 +109,7 @@ fCutsDStartoKpipi(0x0),
 fListOfCuts(0x0),
 fFindVertexForDstar(kTRUE),
 fFindVertexForCascades(kTRUE),
+fV0TypeForCascadeVertex(0),
 fMassCutBeforeVertexing(kFALSE),
 fMassCalc2(0),
 fMassCalc3(0),
@@ -181,6 +182,7 @@ fCutsDStartoKpipi(source.fCutsDStartoKpipi),
 fListOfCuts(source.fListOfCuts),
 fFindVertexForDstar(source.fFindVertexForDstar),
 fFindVertexForCascades(source.fFindVertexForCascades),
+fV0TypeForCascadeVertex(source.fV0TypeForCascadeVertex),
 fMassCutBeforeVertexing(source.fMassCutBeforeVertexing),
 fMassCalc2(source.fMassCalc2),
 fMassCalc3(source.fMassCalc3),
@@ -250,6 +252,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fListOfCuts = source.fListOfCuts;
   fFindVertexForDstar = source.fFindVertexForDstar;
   fFindVertexForCascades = source.fFindVertexForCascades;
+  fV0TypeForCascadeVertex = source.fV0TypeForCascadeVertex;
   fMassCutBeforeVertexing = source.fMassCutBeforeVertexing;
   fMassCalc2 = source.fMassCalc2;
   fMassCalc3 = source.fMassCalc3;
@@ -334,6 +337,10 @@ TList *AliAnalysisVertexingHF::FillListOfCuts() {
     list->Add(cutsDStartoKpipi);
   }
   
+  //___ Check consitstency of cuts between vertexer and analysis tasks
+  Bool_t bCutsOk = CheckCutsConsistency();
+  if (bCutsOk == kFALSE) {AliFatal("AliAnalysisVertexingHF::FillListOfCuts vertexing and the analysis task cuts are not consistent!");}
+
   // keep a pointer to the list
   fListOfCuts = list;
 
@@ -571,6 +578,11 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	if ( (!v0 || !v0->IsA()->InheritsFrom("AliAODv0") ) && 
 	     (!esdV0 || !esdV0->IsA()->InheritsFrom("AliESDv0") ) ) continue;
 	
+	if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
+                    (v0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
+
+        if ( esdV0 && ((esdV0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
+                      ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
 
 	// Get the tracks that form the V0
 	//  ( parameters at primary vertex )
@@ -2766,3 +2778,22 @@ void AliAnalysisVertexingHF::SetMasses(){
   fMassDstar=TDatabasePDG::Instance()->GetParticle(413)->Mass();
   fMassJpsi=TDatabasePDG::Instance()->GetParticle(443)->Mass();
 }
+//-----------------------------------------------------------------------------
+Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
+  //
+  // Check the Vertexer and the analysts task consitstecny
+  //
+
+
+  //___ Check if the V0 type from AliRDHFCutsLctoV0 is the same as the one set in the ConfigVertexingHF.C for AliAnalysisVertexingHF
+
+
+  if ( fCutsLctoV0 && fV0TypeForCascadeVertex != fCutsLctoV0->GetV0Type())
+  {
+    printf("ERROR: V0 type doesn not match in AliAnalysisVertexingHF (%d) required in AliRDHFCutsLctoV0 (%d)\n",fV0TypeForCascadeVertex,fCutsLctoV0->GetV0Type());
+    return kFALSE;
+  }
+  return kTRUE;
+}
+//-----------------------------------------------------------------------------
+

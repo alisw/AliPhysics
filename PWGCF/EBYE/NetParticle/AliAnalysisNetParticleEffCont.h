@@ -41,8 +41,7 @@ class AliAnalysisNetParticleEffCont : public TNamed {
   void Initialize(AliESDtrackCuts *cuts, AliAnalysisNetParticleHelper* helper, Int_t trackCutBit);
 
   /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent); 
-  Int_t SetupEvent(AliAODInputHandler *esdHandler); // MC particles are stored in AOD
+  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent); 
 
   /** Reset Event */
   void ResetEvent();
@@ -69,7 +68,6 @@ class AliAnalysisNetParticleEffCont : public TNamed {
   AliAnalysisNetParticleEffCont(const AliAnalysisNetParticleEffCont&); // not implemented
   AliAnalysisNetParticleEffCont& operator=(const AliAnalysisNetParticleEffCont&); // not implemented
 
-
   /*
    * ---------------------------------------------------------------------------------
    *                                Methods - private
@@ -81,7 +79,6 @@ class AliAnalysisNetParticleEffCont : public TNamed {
 
   /** Fill MC labels */
   void FillMCLabels(); 
-  void FillMCLabelsAOD();  
 
   /** Fill efficiency THnSparse */
   void FillMCEffHist();

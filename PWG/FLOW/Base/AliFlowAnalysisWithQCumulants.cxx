@@ -172,7 +172,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  // 7.) various:
  fVariousList(NULL),
  fPhiDistributionForOneEvent(NULL),
- // x.) debugging and cross-checking:
+ // 8.) debugging and cross-checking:
  fNestedLoopsList(NULL),
  fEvaluateIntFlowNestedLoops(kFALSE),
  fEvaluateDiffFlowNestedLoops(kFALSE),
@@ -182,7 +182,32 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowExtraDirectCorrelations(NULL),
  fCrossCheckInPtBinNo(10),
  fCrossCheckInEtaBinNo(20),
- fNoOfParticlesInBin(NULL)
+ fNoOfParticlesInBin(NULL),
+ fMixedHarmonicsNestedLoops(NULL),
+ // 9.) mixed harmonics: 
+ fMixedHarmonicsList(NULL),
+ fMixedHarmonicsProfiles(NULL),
+ fMixedHarmonicsResults(NULL),
+ fMixedHarmonicsErrorPropagation(NULL),
+ fMixedHarmonicsFlags(NULL),
+ fCalculateMixedHarmonics(kFALSE),
+ fCalculateMixedHarmonicsVsM(kFALSE),
+ f2pCorrelations(NULL),
+ f3pCorrelations(NULL),
+ f4pCorrelations(NULL),
+ f5pCorrelations(NULL),
+ f6pCorrelations(NULL),
+ f7pCorrelations(NULL),
+ f8pCorrelations(NULL),
+ f2pCumulants(NULL),
+ f3pCumulants(NULL),
+ f4pCumulants(NULL),
+ f5pCumulants(NULL),
+ f6pCumulants(NULL),
+ f7pCumulants(NULL),
+ f8pCumulants(NULL),
+ fMixedHarmonicProductOfEventWeights(NULL),
+ fMixedHarmonicProductOfCorrelations(NULL)
  {
   // constructor  
   
@@ -206,6 +231,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   this->InitializeArraysForDistributions();
   this->InitializeArraysForVarious();
   this->InitializeArraysForNestedLoops();
+  this->InitializeArraysForMixedHarmonics();
   
  } // end of constructor
  
@@ -228,7 +254,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  // c) Book all objects;
  // d) Store flags for integrated and differential flow;
  // e) Store flags for distributions of corelations;
- // f) Store harmonic which will be estimated.
+ // f) Store harmonic which will be estimated;
+ // g) Store flags for mixed harmonics.
   
  //save old value and prevent histograms from being added to directory
  //to avoid name clashes in case multiple analaysis objects are used
@@ -250,6 +277,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->BookEverythingForDistributions();
  this->BookEverythingForVarious();
  this->BookEverythingForNestedLoops();
+ this->BookEverythingForMixedHarmonics();
+
  // d) Store flags for integrated and differential flow:
  this->StoreIntFlowFlags();
  this->StoreDiffFlowFlags();
@@ -257,6 +286,8 @@ void AliFlowAnalysisWithQCumulants::Init()
  this->StoreFlagsForDistributions();
  // f) Store harmonic which will be estimated:
  this->StoreHarmonic();
+ // g) Store flags for mixed harmonics:
+ this->StoreMixedHarmonicsFlags();
  
  TH1::AddDirectory(oldHistAddStatus);
 } // end of void AliFlowAnalysisWithQCumulants::Init()
@@ -335,8 +366,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     {
      wTrack = aftsTrack->Weight(); 
     }
-    // Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,6, k = 0,1,...,8):
-    for(Int_t m=0;m<6;m++) // to be improved - hardwired 6 
+    // Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,12, k = 0,1,...,8):
+    for(Int_t m=0;m<12;m++) // to be improved - hardwired 6 
     {
      for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
      {
@@ -511,7 +542,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   // Whether or not using particle weights the following is calculated in the same way:  
   if(nRP>0){this->CalculateIntFlowProductOfCorrectionTermsForNUA();}     
   if(nRP>0){this->CalculateIntFlowSumOfEventWeightsNUA();}     
-  if(nRP>0){this->CalculateIntFlowSumOfProductOfEventWeightsNUA();}      
+  if(nRP>0){this->CalculateIntFlowSumOfProductOfEventWeightsNUA();}     
+  // Mixed harmonics:
+  if(fCalculateMixedHarmonics){this->CalculateMixedHarmonics();}
  } // end of if(!fEvaluateIntFlowNestedLoops)
 
  // g) Call the methods which calculate correlations for differential flow:
@@ -622,14 +655,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  
 } // end of AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::Finish()
 {
  // Calculate the final results.
  
  // a) Check all pointers used in this method;
- // b) Acces the constants;
+ // b) Access the constants;
  // c) Access the flags;
  // d) Calculate reference cumulants (not corrected for detector effects);
  // e) Correct reference cumulants for detector effects;
@@ -640,12 +673,13 @@ void AliFlowAnalysisWithQCumulants::Finish()
  // j) Calculate the final results for integrated flow (RP/POI) and store in AliFlowCommonHistResults;
  // k) Store results for differential flow in AliFlowCommonHistResults;
  // l) Print the final results for integrated flow (RP/POI) on the screen; 
- // m) Cross-checking: Results from Q-vectors vs results from nested loops.
- 
+ // m) Cross-checking: Results from Q-vectors vs results from nested loops;
+ // i) Calculate cumulants for mixed harmonics.
+
  // a) Check all pointers used in this method:
  this->CheckPointersUsedInFinish();
   
- // b) Acces the constants:
+ // b) Access the constants:
  this->CommonConstants("Finish");          
  
  if(fCommonHists && fCommonHists->GetHarmonic()) // to be improved (moved somewhere else)
@@ -653,7 +687,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
   fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1);
  } 
  
- // c) Access the flags: // to be improved (implement a method for this? should I store again the flags becose they can get modified with redoFinish?)
+ // c) Access the flags: // to be improved (implement a method for this? should I store again the flags because they can get modified with redoFinish?)
  fUsePhiWeights = (Bool_t)fUseParticleWeights->GetBinContent(1); 
  fUsePtWeights = (Bool_t)fUseParticleWeights->GetBinContent(2); 
  fUseEtaWeights = (Bool_t)fUseParticleWeights->GetBinContent(3);  
@@ -675,7 +709,10 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
  fCrossCheckInEtaBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(4); 
-          
+ fCalculateMixedHarmonics = (Bool_t)fMixedHarmonicsFlags->GetBinContent(1);
+ //fHarmonic = (Int_t)fMixedHarmonicsFlags->GetBinContent(2); // TBI should I add inpdependent generic harmonic here?
+ fCalculateMixedHarmonicsVsM = (Bool_t)fMixedHarmonicsFlags->GetBinContent(3);
+
  // d) Calculate reference cumulants (not corrected for detector effects):
  this->FinalizeCorrelationsIntFlow();
  this->CalculateCovariancesIntFlow();
@@ -768,7 +805,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  {
   this->CrossCheckIntFlowCorrelations();
   this->CrossCheckIntFlowCorrectionTermsForNUA(); 
-  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights){this->CrossCheckIntFlowExtraCorrelations();}     
+  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights){this->CrossCheckIntFlowExtraCorrelations();}
+  if(fCalculateMixedHarmonics){this->CrossCheckIntFlowCorrelations();}     
  } // end of if(fEvaluateIntFlowNestedLoops)  
  //  m2) Differential flow: 
  if(fEvaluateDiffFlowNestedLoops && fCalculateDiffFlow) 
@@ -790,14 +828,17 @@ void AliFlowAnalysisWithQCumulants::Finish()
   this->CrossCheckOtherDiffCorrelators("POI","Pt");  
   if(fCalculateDiffFlowVsEta){this->CrossCheckOtherDiffCorrelators("POI","Eta");}
  } // end of if(fEvaluateDiffFlowNestedLoops)
-                                                                                                                                                                                                                                                                                                                                   
+                                                                                
+ // i) Calculate cumulants for mixed harmonics: 
+ if(fCalculateMixedHarmonics){this->CalculateCumulantsMixedHarmonics();} 
+
 } // end of AliFlowAnalysisWithQCumulants::Finish()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateIntFlowNestedLoops(AliFlowEventSimple* anEvent)
 {
- // Evalauted all correlators for reference flow with nested loops.
+ // Evaluate all correlators for reference flow with nested loops.
  
  Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = nRP + nPOI 
  if(nPrim>0 && nPrim<=fMaxAllowedMultiplicity) // by default fMaxAllowedMultiplicity = 10 
@@ -807,11 +848,17 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowNestedLoops(AliFlowEventSimpl
   {
    // Correlations:
    this->CalculateIntFlowCorrelations(); // from Q-vectors
-   this->EvaluateIntFlowCorrelationsWithNestedLoops(anEvent); // from nested loops (to be improved: do I have to pass here anEvent or not?)
+   this->EvaluateIntFlowCorrelationsWithNestedLoops(anEvent); // from nested loops (TBI: do I have to pass here anEvent or not?)
    // Correction for non-uniform acceptance:
    this->CalculateIntFlowCorrectionsForNUASinTerms(); // from Q-vectors (sin terms)
    this->CalculateIntFlowCorrectionsForNUACosTerms(); // from Q-vectors (cos terms)
    this->EvaluateIntFlowCorrectionsForNUAWithNestedLoops(anEvent); // from nested loops (both sin and cos terms)
+   // Mixed harmonics:
+   if(fCalculateMixedHarmonics)
+   {
+    this->CalculateMixedHarmonics(); // from Q-vectors  
+    this->EvaluateMixedHarmonicsWithNestedLoops(anEvent); // from nested loops (TBI: do I have to pass here anEvent or not?)
+   } // end of if(fCalculateMixedHarmonics)
   }
   // Using particle weights:
   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights)
@@ -836,7 +883,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowNestedLoops(AliFlowEventSimpl
 
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateIntFlowNestedLoops(AliFlowEventSimple* anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowNestedLoops(AliFlowEventSimple* anEvent)
 {
@@ -916,7 +963,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowNestedLoops(AliFlowEventSimp
 
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowNestedLoops(AliFlowEventSimple* anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
 {
@@ -1013,7 +1060,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
@@ -1109,7 +1156,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
 {
@@ -1119,7 +1166,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
  // d) Get pointers for differential flow histograms;
  // e) Get pointers for 2D differential flow histograms;
  // f) Get pointers for other differential correlators;
- // g) Get pointers for nested loops' histograms.
+ // g) Get pointers for nested loops' histograms;
+ // h) Get pointers for mixed harmonics histograms.
  
  if(outputListHistos)
  {	
@@ -1135,6 +1183,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->GetPointersForDiffFlowHistograms(); 
   this->GetPointersFor2DDiffFlowHistograms(); 
   this->GetPointersForOtherDiffCorrelators();  
+  this->GetPointersForMixedHarmonicsHistograms(); 
   this->GetPointersForNestedLoopsHistograms(); 
  } else 
    {
@@ -1144,7 +1193,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
    
 } // end of void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 TProfile* AliFlowAnalysisWithQCumulants::MakePtProjection(TProfile2D *profilePtEta) const
 {
@@ -1196,7 +1245,7 @@ TProfile* AliFlowAnalysisWithQCumulants::MakePtProjection(TProfile2D *profilePtE
 } // end of TProfile* AliFlowAnalysisWithQCumulants::MakePtProjection(TProfile2D *profilePtEta)
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 TProfile* AliFlowAnalysisWithQCumulants::MakeEtaProjection(TProfile2D *profilePtEta) const
@@ -1229,7 +1278,7 @@ TProfile* AliFlowAnalysisWithQCumulants::MakeEtaProjection(TProfile2D *profilePt
  
 } // end of TProfile* AliFlowAnalysisWithQCumulants::MakeEtaProjection(TProfile2D *profilePtEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString type)
 {
@@ -1356,7 +1405,7 @@ void AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString t
   
 }// end of AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString type="RF");
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
 {
@@ -1368,7 +1417,7 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
 }
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::WriteHistograms(TDirectoryFile *outputFileName)
@@ -1380,7 +1429,7 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TDirectoryFile *outputFileNa
  outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
 }
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 {
@@ -1443,7 +1492,7 @@ void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
  
 } // end of void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
 {
@@ -1459,6 +1508,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
  fUseParticleWeightsName += fAnalysisLabel->Data();
  fUseParticleWeights = new TProfile(fUseParticleWeightsName.Data(),"0 = particle weight not used, 1 = particle weight used ",4,0,4);
  fUseParticleWeights->SetLabelSize(0.06);
+ fUseParticleWeights->SetStats(kFALSE);
  (fUseParticleWeights->GetXaxis())->SetBinLabel(1,"w_{#phi}");
  (fUseParticleWeights->GetXaxis())->SetBinLabel(2,"w_{p_{T}}");
  (fUseParticleWeights->GetXaxis())->SetBinLabel(3,"w_{#eta}");
@@ -1543,7 +1593,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
  
 } // end of AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
 {
@@ -1564,6 +1614,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.04);
  fIntFlowFlags->SetLabelOffset(0.02,"Y");
+ fIntFlowFlags->SetStats(kFALSE);
  fIntFlowFlags->GetXaxis()->SetBinLabel(1,"Particle Weights");
  fIntFlowFlags->GetXaxis()->SetBinLabel(2,"Event Weights");
  fIntFlowFlags->GetXaxis()->SetBinLabel(3,"Corrected for NUA?");
@@ -1583,8 +1634,8 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
 
  // b) Book event-by-event quantities:
  // Re[Q_{m*n,k}], Im[Q_{m*n,k}] and S_{p,k}^M: 
- fReQ  = new TMatrixD(6,9);
- fImQ  = new TMatrixD(6,9);
+ fReQ = new TMatrixD(12,9);
+ fImQ = new TMatrixD(12,9);
  fSpk = new TMatrixD(8,9);
  // average correlations <2>, <4>, <6> and <8> for single event (bining is the same as in fIntFlowCorrelationsPro and fIntFlowCorrelationsHist):
  TString intFlowCorrelationsEBEName = "fIntFlowCorrelationsEBE";
@@ -2525,7 +2576,649 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    
 } // end of AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::BookEverythingForMixedHarmonics()
+{
+ // Book all objects for mixed harmonics.
+
+ // a) Book profile to hold all flags for mixed harmonics;
+ // b) Book all objects in TList fMixedHarmonicsProfiles;
+ // c) Book all objects in TList fMixedHarmonicsResults;
+ // d) Book all objects in TList fMixedHarmonicsErrorPropagation.
+
+ // a) Book profile to hold all flags for mixed harmonics:
+ TString mixedHarmonicsFlagsName = "fMixedHarmonicsFlags";
+ mixedHarmonicsFlagsName += fAnalysisLabel->Data();
+ fMixedHarmonicsFlags = new TProfile(mixedHarmonicsFlagsName.Data(),"Flags for Mixed Harmonics",4,0,4);
+ fMixedHarmonicsFlags->SetTickLength(-0.01,"Y");
+ fMixedHarmonicsFlags->SetMarkerStyle(25);
+ fMixedHarmonicsFlags->SetLabelSize(0.04);
+ fMixedHarmonicsFlags->SetLabelOffset(0.02,"Y");
+ fMixedHarmonicsFlags->SetStats(kFALSE);
+ fMixedHarmonicsFlags->GetXaxis()->SetBinLabel(1,"Calculate Mixed Harmonics");
+ fMixedHarmonicsFlags->GetXaxis()->SetBinLabel(2,"Generic Harmonic");
+ fMixedHarmonicsFlags->GetXaxis()->SetBinLabel(3,"Calculate vs Multiplicity");
+ fMixedHarmonicsFlags->GetXaxis()->SetBinLabel(4,"Multiplicity Weight");
+ fMixedHarmonicsList->Add(fMixedHarmonicsFlags);
+
+ if(!fCalculateMixedHarmonics){return;}
+
+ // b) Book all objects in TList fMixedHarmonicsProfiles:
+ //  b1) 2-p correlations:
+ TString s2pCorrelationsName = "f2pCorrelations";
+ s2pCorrelationsName += fAnalysisLabel->Data();
+ f2pCorrelations = new TProfile(s2pCorrelationsName.Data(),Form("2-particle correlations (n = %d)",fHarmonic),6,0,6,"s");
+ f2pCorrelations->SetTickLength(-0.01,"Y");
+ f2pCorrelations->SetMarkerStyle(25);
+ f2pCorrelations->SetLabelSize(0.04);
+ f2pCorrelations->SetLabelOffset(0.02,"Y");
+ f2pCorrelations->SetStats(kFALSE);
+ f2pCorrelations->Sumw2();
+ f2pCorrelations->GetXaxis()->SetBinLabel(1,Form("#LT#LT2#GT#GT_{%dn|%dn}",1*fHarmonic,1*fHarmonic));
+ f2pCorrelations->GetXaxis()->SetBinLabel(2,Form("#LT#LT2#GT#GT_{%dn|%dn}",2*fHarmonic,2*fHarmonic));
+ f2pCorrelations->GetXaxis()->SetBinLabel(3,Form("#LT#LT2#GT#GT_{%dn|%dn}",3*fHarmonic,3*fHarmonic));
+ f2pCorrelations->GetXaxis()->SetBinLabel(4,Form("#LT#LT2#GT#GT_{%dn|%dn}",4*fHarmonic,4*fHarmonic));
+ f2pCorrelations->GetXaxis()->SetBinLabel(5,Form("#LT#LT2#GT#GT_{%dn|%dn}",5*fHarmonic,5*fHarmonic));
+ f2pCorrelations->GetXaxis()->SetBinLabel(6,Form("#LT#LT2#GT#GT_{%dn|%dn}",6*fHarmonic,6*fHarmonic));
+ fMixedHarmonicsProfiles->Add(f2pCorrelations);
+ //  b2) 3-p correlations (3+6):
+ TString s3pCorrelationsName = "f3pCorrelations";
+ s3pCorrelationsName += fAnalysisLabel->Data();
+ f3pCorrelations = new TProfile(s3pCorrelationsName.Data(),Form("3-particle correlations (n = %d)",fHarmonic),10,0,10,"s"); 
+ f3pCorrelations->SetTickLength(-0.01,"Y");
+ f3pCorrelations->SetMarkerStyle(25);
+ f3pCorrelations->SetLabelSize(0.04);
+ f3pCorrelations->SetLabelOffset(0.02,"Y");
+ f3pCorrelations->SetStats(kFALSE);
+ f3pCorrelations->Sumw2();
+ // 3-p correlations sensitive to two distinct harmonics (3):
+ f3pCorrelations->GetXaxis()->SetBinLabel(1,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(2,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(3,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(4,""); // empty
+ // 3-p correlations sensitive to three distinct harmonics (6):
+ f3pCorrelations->GetXaxis()->SetBinLabel(5,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(6,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(7,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(8,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(9,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f3pCorrelations->GetXaxis()->SetBinLabel(10,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicsProfiles->Add(f3pCorrelations);
+ //  b3) 4-p correlations (6+15+2+10+8):
+ TString s4pCorrelationsName = "f4pCorrelations";
+ s4pCorrelationsName += fAnalysisLabel->Data();
+ f4pCorrelations = new TProfile(s4pCorrelationsName.Data(),Form("4-particle correlations (n = %d)",fHarmonic),45,0,45,"s");
+ f4pCorrelations->SetTickLength(-0.01,"Y");
+ f4pCorrelations->SetMarkerStyle(25);
+ f4pCorrelations->SetLabelSize(0.03);
+ f4pCorrelations->SetLabelOffset(0.02,"Y");
+ f4pCorrelations->SetStats(kFALSE);
+ f4pCorrelations->Sumw2();
+ // "same harmonic" (6):
+ f4pCorrelations->GetXaxis()->SetBinLabel(1,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(2,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(3,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(4,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(5,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(6,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,6*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(7,""); // empty
+ // "standard candles" (15):
+ f4pCorrelations->GetXaxis()->SetBinLabel(8,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(9,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(10,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(11,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(12,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(13,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(14,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(15,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(16,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(17,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(18,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,6*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(19,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(20,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(21,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,4*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(22,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,5*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(23,""); // empty
+ // 4-p correlations sensitive to two distinct harmonics (2):
+ f4pCorrelations->GetXaxis()->SetBinLabel(24,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(25,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(26,""); // empty
+ // 4-p correlations sensitive to three distinct harmonics (10):
+ f4pCorrelations->GetXaxis()->SetBinLabel(27,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(28,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(29,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(30,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(31,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(32,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(33,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(34,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(35,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(36,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,5*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(37,""); // empty
+ // 4-p correlations sensitive to four distinct harmonics (8):
+ f4pCorrelations->GetXaxis()->SetBinLabel(38,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(39,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(40,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(41,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(42,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,2*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(43,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(44,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,3*fHarmonic));
+ f4pCorrelations->GetXaxis()->SetBinLabel(45,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicsProfiles->Add(f4pCorrelations);
+ //  b3) 5-p correlations (30+9+30+11+3):
+ TString s5pCorrelationsName = "f5pCorrelations";
+ s5pCorrelationsName += fAnalysisLabel->Data();
+ f5pCorrelations = new TProfile(s5pCorrelationsName.Data(),Form("5-particle correlations (n = %d)",fHarmonic),87,0,87,"s");
+ f5pCorrelations->SetTickLength(-0.01,"Y");
+ f5pCorrelations->SetMarkerStyle(25);
+ f5pCorrelations->SetLabelSize(0.02);
+ f5pCorrelations->SetLabelOffset(0.02,"Y");
+ f5pCorrelations->SetStats(kFALSE);
+ f5pCorrelations->Sumw2();
+ // "standard candles" (30):
+ f5pCorrelations->GetXaxis()->SetBinLabel(1,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(2,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(3,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(4,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(5,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(6,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(7,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(8,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(9,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(10,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(11,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(12,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(13,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(14,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(15,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(16,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(17,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(18,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(19,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(20,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(21,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(22,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(23,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(24,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(25,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(26,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(27,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(28,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(29,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(30,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(31,""); // empty
+ // 5-p correlations sensitive to two distinct harmonics (9):
+ f5pCorrelations->GetXaxis()->SetBinLabel(32,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(33,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(34,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(35,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(36,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(37,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(38,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(39,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(40,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(41,""); // empty
+ // 5-p correlations sensitive to three distinct harmonics (30):
+ f5pCorrelations->GetXaxis()->SetBinLabel(42,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(43,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(44,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(45,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(46,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(47,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(48,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(49,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(50,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(51,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(52,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(53,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(54,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(55,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(56,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(57,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(58,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(59,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(60,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(61,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(62,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(63,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(64,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(65,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(66,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(67,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,5*fHarmonic,5*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(68,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(69,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,5*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(70,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(71,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(72,""); // empty
+ // 5-p correlations sensitive to four distinct harmonics (11):
+ f5pCorrelations->GetXaxis()->SetBinLabel(73,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(74,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(75,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(76,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(77,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(78,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(79,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,5*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(80,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(81,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(82,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,5*fHarmonic,5*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(83,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(84,""); // empty
+ // 5-p correlations sensitive to five distinct harmonics (3):
+ f5pCorrelations->GetXaxis()->SetBinLabel(85,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(86,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,1*fHarmonic,5*fHarmonic,4*fHarmonic));
+ f5pCorrelations->GetXaxis()->SetBinLabel(87,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicsProfiles->Add(f5pCorrelations);
+ //  b4) 6-p correlations (??+??+??+??+??):
+ TString s6pCorrelationsName = "f6pCorrelations";
+ s6pCorrelationsName += fAnalysisLabel->Data();
+ f6pCorrelations = new TProfile(s6pCorrelationsName.Data(),Form("6-particle correlations (n = %d)",fHarmonic),1,0.,1.);
+ f6pCorrelations->SetTickLength(-0.01,"Y");
+ f6pCorrelations->SetMarkerStyle(25);
+ f6pCorrelations->SetLabelSize(0.02);
+ f6pCorrelations->SetLabelOffset(0.02,"Y");
+ f6pCorrelations->SetStats(kFALSE);
+ f6pCorrelations->Sumw2(); 
+ //fMixedHarmonicsProfiles->Add(f6pCorrelations); // TBI
+ //  b5) 7-p correlations (??+??+??+??+??):
+ TString s7pCorrelationsName = "f7pCorrelations";
+ s7pCorrelationsName += fAnalysisLabel->Data();
+ f7pCorrelations = new TProfile(s7pCorrelationsName.Data(),Form("7-particle correlations (n = %d)",fHarmonic),1,0.,1.);
+ f7pCorrelations->SetTickLength(-0.01,"Y");
+ f7pCorrelations->SetMarkerStyle(25);
+ f7pCorrelations->SetLabelSize(0.02);
+ f7pCorrelations->SetLabelOffset(0.02,"Y");
+ f7pCorrelations->SetStats(kFALSE);
+ f7pCorrelations->Sumw2(); 
+ //fMixedHarmonicsProfiles->Add(f7pCorrelations); // TBI
+ //  b6) 8-p correlations (??+??+??+??+??):
+ TString s8pCorrelationsName = "f8pCorrelations";
+ s8pCorrelationsName += fAnalysisLabel->Data();
+ f8pCorrelations = new TProfile(s8pCorrelationsName.Data(),Form("8-particle correlations (n = %d)",fHarmonic),1,0.,1.);
+ f8pCorrelations->SetTickLength(-0.01,"Y");
+ f8pCorrelations->SetMarkerStyle(25);
+ f8pCorrelations->SetLabelSize(0.02);
+ f8pCorrelations->SetLabelOffset(0.02,"Y");
+ f8pCorrelations->SetStats(kFALSE);
+ f8pCorrelations->Sumw2(); 
+ //fMixedHarmonicsProfiles->Add(f8pCorrelations); // TBI
+
+ // c) Book all objects in TList fMixedHarmonicsResults:
+ // QC{2}:
+ f2pCumulants = f2pCorrelations->ProjectionX("f2pCumulants");
+ f2pCumulants->SetTitle(Form("2-particle cumulants (n = %d)",fHarmonic));
+ f2pCumulants->SetStats(kFALSE);
+ f2pCumulants->SetMarkerStyle(kFullSquare);
+ f2pCumulants->SetMarkerColor(kBlack);
+ f2pCumulants->SetLineColor(kBlack);
+ fMixedHarmonicsResults->Add(f2pCumulants);
+ // QC{3}:
+ f3pCumulants = f3pCorrelations->ProjectionX("f3pCumulants");
+ f3pCumulants->SetTitle(Form("3-particle cumulants (n = %d)",fHarmonic));
+ f3pCumulants->SetStats(kFALSE);
+ f3pCumulants->SetMarkerStyle(kFullSquare);
+ f3pCumulants->SetMarkerColor(kGreen+2);
+ f3pCumulants->SetLineColor(kGreen+2);
+ fMixedHarmonicsResults->Add(f3pCumulants);
+ // QC{4}:
+ f4pCumulants = f4pCorrelations->ProjectionX("f4pCumulants");
+ f4pCumulants->SetTitle(Form("4-particle cumulants (n = %d)",fHarmonic));
+ f4pCumulants->SetStats(kFALSE);
+ f4pCumulants->SetMarkerStyle(kFullSquare);
+ f4pCumulants->SetMarkerColor(kRed);
+ f4pCumulants->SetLineColor(kRed);
+ fMixedHarmonicsResults->Add(f4pCumulants);
+ // QC{5}:
+ f5pCumulants = f5pCorrelations->ProjectionX("f5pCumulants");
+ f5pCumulants->SetTitle(Form("5-particle cumulants (n = %d)",fHarmonic));
+ f5pCumulants->SetStats(kFALSE);
+ f5pCumulants->SetMarkerStyle(kFullSquare);
+ f5pCumulants->SetMarkerColor(kBlue);
+ f5pCumulants->SetLineColor(kBlue);
+ fMixedHarmonicsResults->Add(f5pCumulants);
+
+ // d) Book all objects in TList fMixedHarmonicsErrorPropagation: 
+ // Sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]: 
+ TString mixedHarmonicEventWeightsName = "fMixedHarmonicEventWeights";
+ mixedHarmonicEventWeightsName += fAnalysisLabel->Data();
+ TString powerFlag[2] = {"linear","quadratic"}; 
+ for(Int_t power=0;power<2;power++)
+ {
+  fMixedHarmonicEventWeights[power] = new TH1D(Form("%s: %s",mixedHarmonicEventWeightsName.Data(),powerFlag[power].Data()),Form("Sum of %s event weights for correlations",powerFlag[power].Data()),8,0.,8.);
+  fMixedHarmonicEventWeights[power]->SetLabelSize(0.04);
+  fMixedHarmonicEventWeights[power]->SetMarkerStyle(25);
+  fMixedHarmonicEventWeights[power]->SetStats(kFALSE);
+  if(power == 0)
+  {
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(1,"#sum w_{#LT1#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(2,"#sum w_{#LT2#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(3,"#sum w_{#LT3#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(4,"#sum w_{#LT4#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(5,"#sum w_{#LT5#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(6,"#sum w_{#LT6#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(7,"#sum w_{#LT7#GT}");
+   (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(8,"#sum w_{#LT8#GT}");
+  } else if (power == 1) 
+    {
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(1,"#sum w_{#LT1#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(2,"#sum w_{#LT2#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(3,"#sum w_{#LT3#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(4,"#sum w_{#LT4#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(5,"#sum w_{#LT5#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(6,"#sum w_{#LT6#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(7,"#sum w_{#LT7#GT}^{2}");
+     (fMixedHarmonicEventWeights[power]->GetXaxis())->SetBinLabel(8,"#sum w_{#LT8#GT}^{2}");
+    }
+  fMixedHarmonicsErrorPropagation->Add(fMixedHarmonicEventWeights[power]);
+ } // end of for(Int_t power=0;power<2;power++)
+ 
+ // Sums of products of event weights for mixed harmonics:
+ TString mixedHarmonicProductOfEventWeightsName = "fMixedHarmonicProductOfEventWeights";
+ mixedHarmonicProductOfEventWeightsName += fAnalysisLabel->Data();
+ fMixedHarmonicProductOfEventWeights = new TH2D(mixedHarmonicProductOfEventWeightsName.Data(),"Sums of products of event weights",8,0.,8.,8,0.,8.);
+ fMixedHarmonicProductOfEventWeights->SetStats(kFALSE);
+ fMixedHarmonicProductOfEventWeights->GetXaxis()->SetLabelSize(0.05);
+ fMixedHarmonicProductOfEventWeights->GetYaxis()->SetLabelSize(0.05);
+ for(Int_t b=1;b<=8;b++)
+ {
+  fMixedHarmonicProductOfEventWeights->GetXaxis()->SetBinLabel(b,Form("w_{#LT%i#GT}",b)); 
+  fMixedHarmonicProductOfEventWeights->GetYaxis()->SetBinLabel(b,Form("w_{#LT%i#GT}",b)); 
+ } 
+ fMixedHarmonicsErrorPropagation->Add(fMixedHarmonicProductOfEventWeights);
+
+ // Averages of products of mixed harmonics correlations:
+ TString mixedHarmonicProductOfCorrelationsName = "fMixedHarmonicProductOfCorrelations";
+ mixedHarmonicProductOfCorrelationsName += fAnalysisLabel->Data();
+ fMixedHarmonicProductOfCorrelations = new TProfile2D(mixedHarmonicProductOfCorrelationsName.Data(),"Averages of products of mixed correlators",139,0.,139.,139,0.,139.);
+ fMixedHarmonicProductOfCorrelations->Sumw2();
+ fMixedHarmonicProductOfCorrelations->SetStats(kFALSE);
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetLabelSize(0.015);
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetLabelSize(0.015);
+ // x-axis:
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(1,Form("#LT#LT2#GT#GT_{%dn|%dn}",1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(2,Form("#LT#LT2#GT#GT_{%dn|%dn}",2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(3,Form("#LT#LT2#GT#GT_{%dn|%dn}",3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(4,Form("#LT#LT2#GT#GT_{%dn|%dn}",4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(5,Form("#LT#LT2#GT#GT_{%dn|%dn}",5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(6,Form("#LT#LT2#GT#GT_{%dn|%dn}",6*fHarmonic,6*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(7,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(8,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(9,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(10,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(11,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(12,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(13,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(14,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(15,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(16,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(17,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(18,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(19,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(20,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(21,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,6*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(22,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(23,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(24,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(25,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(26,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(27,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(28,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(29,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(30,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(31,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(32,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,6*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(33,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(34,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(35,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(36,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(37,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(38,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(39,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(40,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(41,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(42,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(43,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(44,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(45,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(46,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(47,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(48,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(49,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(50,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(51,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(52,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(53,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(54,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(55,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(56,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(57,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(58,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(59,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(60,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(61,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(62,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(63,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(64,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(65,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(66,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(67,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(68,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(69,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(70,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(71,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(72,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(73,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(74,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(75,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(76,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(77,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(78,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(79,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(80,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(81,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(82,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(83,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(84,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(85,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(86,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(87,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(88,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(89,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(90,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(91,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(92,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(93,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(94,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(95,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(96,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(97,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(98,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(99,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(100,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(101,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(102,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(103,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(104,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(105,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(106,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(107,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(108,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(109,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(110,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(111,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(112,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(113,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(114,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(115,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(116,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(117,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(118,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(119,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(120,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(121,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(122,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(123,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(124,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(125,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(126,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(127,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(128,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(129,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(130,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(131,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(132,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(133,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(134,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(135,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(136,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(137,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(138,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,1*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetXaxis()->SetBinLabel(139,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ // y-axis:
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(1,Form("#LT#LT2#GT#GT_{%dn|%dn}",1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(2,Form("#LT#LT2#GT#GT_{%dn|%dn}",2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(3,Form("#LT#LT2#GT#GT_{%dn|%dn}",3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(4,Form("#LT#LT2#GT#GT_{%dn|%dn}",4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(5,Form("#LT#LT2#GT#GT_{%dn|%dn}",5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(6,Form("#LT#LT2#GT#GT_{%dn|%dn}",6*fHarmonic,6*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(7,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(8,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(9,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(10,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(11,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(12,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(13,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(14,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(15,Form("#LT#LT3#GT#GT_{%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(16,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(17,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(18,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(19,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(20,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(21,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,6*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(22,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",2*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(23,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(24,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(25,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(26,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(27,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(28,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(29,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(30,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(31,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(32,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,6*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(33,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(34,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(35,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(36,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(37,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(38,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(39,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(40,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(41,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(42,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(43,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(44,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(45,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(46,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(47,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(48,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(49,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(50,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(51,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(52,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(53,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(54,Form("#LT#LT4#GT#GT_{%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(55,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(56,Form("#LT#LT4#GT#GT_{%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(57,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(58,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(59,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(60,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(61,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(62,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(63,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(64,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(65,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(66,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(67,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(68,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(69,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(70,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(71,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(72,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(73,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,4*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(74,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(75,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(76,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,5*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(77,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(78,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(79,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(80,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,6*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(81,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,6*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(82,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(83,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,6*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(84,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(85,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(86,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,6*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(87,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(88,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(89,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(90,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(91,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(92,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(93,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(94,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(95,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(96,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,1*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(97,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(98,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(99,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,1*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(100,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",4*fHarmonic,1*fHarmonic,1*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(101,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(102,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(103,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",4*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(104,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(105,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,2*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(106,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(107,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(108,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,1*fHarmonic,4*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(109,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(110,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(111,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(112,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(113,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(114,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,5*fHarmonic,5*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(115,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(116,Form("#LT#LT5#GT#GT_{%dn|%dn,%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(117,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(118,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,5*fHarmonic,1*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(119,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(120,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,4*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(121,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,2*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(122,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,5*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(123,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,5*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(124,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,4*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(125,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,6*fHarmonic,5*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(126,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,2*fHarmonic,3*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(127,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,1*fHarmonic,1*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(128,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",5*fHarmonic,3*fHarmonic,4*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(129,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",5*fHarmonic,2*fHarmonic,1*fHarmonic,4*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(130,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,1*fHarmonic,3*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(131,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,4*fHarmonic,4*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(132,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,1*fHarmonic,1*fHarmonic,5*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(133,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,3*fHarmonic,5*fHarmonic,2*fHarmonic,2*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(134,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,5*fHarmonic,4*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(135,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,3*fHarmonic,1*fHarmonic,5*fHarmonic,5*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(136,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,6*fHarmonic,5*fHarmonic,4*fHarmonic,3*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(137,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,2*fHarmonic,4*fHarmonic,3*fHarmonic,1*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(138,Form("#LT#LT5#GT#GT_{%dn,%dn,%dn|%dn,%dn}",6*fHarmonic,2*fHarmonic,1*fHarmonic,5*fHarmonic,4*fHarmonic));
+ fMixedHarmonicProductOfCorrelations->GetYaxis()->SetBinLabel(139,Form("#LT#LT5#GT#GT_{%dn,%dn|%dn,%dn,%dn}",6*fHarmonic,4*fHarmonic,5*fHarmonic,3*fHarmonic,2*fHarmonic));
+ fMixedHarmonicsErrorPropagation->Add(fMixedHarmonicProductOfCorrelations);
+
+} // end of void AliFlowAnalysisWithQCumulants::BookEverythingForMixedHarmonics()
+
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForNestedLoops()
 {
@@ -2581,7 +3274,20 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForNestedLoops()
 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForNestedLoops()
 
-//================================================================================================================================
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::InitializeArraysForMixedHarmonics()
+{
+ // Initialize arrays of all objects relevant for mixed harmonics.
+
+ for(Int_t power=0;power<2;power++) // linear or quadratic 
+ {
+  fMixedHarmonicEventWeights[power] = NULL;    
+ }
+
+} // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForMixedHarmonics()
+
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
 {
@@ -2598,6 +3304,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
  evaluateNestedLoopsName += fAnalysisLabel->Data();
  fEvaluateNestedLoops = new TProfile(evaluateNestedLoopsName.Data(),"Flags for nested loops",4,0,4);
  fEvaluateNestedLoops->SetLabelSize(0.03);
+ fEvaluateNestedLoops->SetStats(kFALSE);
  (fEvaluateNestedLoops->GetXaxis())->SetBinLabel(1,"fEvaluateIntFlowNestedLoops");
  (fEvaluateNestedLoops->GetXaxis())->SetBinLabel(2,"fEvaluateDiffFlowNestedLoops");
  (fEvaluateNestedLoops->GetXaxis())->SetBinLabel(3,"fCrossCheckInPtBinNo");
@@ -2630,6 +3337,14 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
    fIntFlowDirectCorrectionTermsForNUA[sc] = new TProfile(Form("%s: %s terms",intFlowDirectCorrectionTermsForNUAName.Data(),sinCosFlag[sc].Data()),Form("Correction terms for non-uniform acceptance (%s terms)",sinCosFlag[sc].Data()),10,0,10,"s");
    fNestedLoopsList->Add(fIntFlowDirectCorrectionTermsForNUA[sc]);
   } // end of for(Int_t sc=0;sc<2;sc++) 
+  // Mixed harmonics:
+  if(fCalculateMixedHarmonics)
+  {
+   TString mixedHarmonicsNestedLoopsName = "fMixedHarmonicsNestedLoops";
+   mixedHarmonicsNestedLoopsName += fAnalysisLabel->Data();
+   fMixedHarmonicsNestedLoops = new TProfile(mixedHarmonicsNestedLoopsName.Data(),"Mixed harmonics calculated with nested loops",200,0,200); // TBI hardwired 200
+   fNestedLoopsList->Add(fMixedHarmonicsNestedLoops);
+  } // end of if(fCalculateMixedHarmonics)
  } // end of if(fEvaluateIntFlowNestedLoops)
  
  // nested loops for differential flow: 
@@ -2651,7 +3366,6 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
     } // end of for(Int_t rci=0;rci<4;rci++) // correlation index
    } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
   } // end of for(Int_t t=0;t<2;t++) // type: RP or POI 
-  
   
   // correction terms for non-uniform acceptance:
   TString diffFlowDirectCorrectionTermsForNUAName = "fDiffFlowDirectCorrectionTermsForNUA";
@@ -2699,7 +3413,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
 
 } // end of AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
 
-//================================================================================================================================
+//=========================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 {
@@ -3661,8 +4375,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
                  - 4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+(dMult-10.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
                  + (dMult-10.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*(dMult-7.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
                  - 2.*dMult*(dMult-12.))
-                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));      
- 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));       
   // Peter Jochumzsen:
   five6n2n2n1n1n = (reQ6nQ2nstarQ2nstarQ1nstarQ1nstar
                  - 12.*pow(dReQ1n,2.)-12.*pow(dImQ1n,2.)
@@ -3678,27 +4391,20 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
                  + 2.*reQ5nQ4nstarQ1nstar - 2.*reQ5nQ2nstarQ2nstarQ1nstar 
                  + 4.*reQ4nQ3nstarQ1nstar + 4.*reQ5nQ3nstarQ2nstar
                  + 4.*reQ6nQ5nstarQ1nstar - 4.*reQ6nQ3nstarQ2nstarQ1nstar + 24.*dMult)
-                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-  
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));  
   // Peter Jochumzsen:
-  /*
-  five4n1n1n3n3n = (reQ6nQ2nstarQ2nstarQ1nstarQ1nstar
-                 - 12.*pow(dReQ1n,2.)-12.*pow(dImQ1n,2.)
-                 - 14.*pow(dReQ2n,2.)-14.*pow(dImQ2n,2.)
-                 - 8.*pow(dReQ3n,2.)-8.*pow(dImQ3n,2.)
-                 - 6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)
-                 - 4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)
-                 - 6.*pow(dReQ6n,2.)-6.*pow(dImQ6n,2.)
-                 + 2.*reQ2nQ1nstarQ1nstar + 8.*reQ3nQ2nstarQ1nstar
-                 + 5.*reQ6nQ4nstarQ2nstar - reQ6nQ4nstarQ1nstarQ1nstar
-                 + 2.*reQ6nQ3nstarQ3nstar - reQ6nQ2nstarQ2nstarQ2nstar
-                 + 4.*reQ4nQ2nstarQ2nstar - 2.*reQ4nQ2nstarQ1nstarQ1nstar
-                 + 2.*reQ5nQ4nstarQ1nstar - 2.*reQ5nQ2nstarQ2nstarQ1nstar
-                 + 4.*reQ4nQ3nstarQ1nstar + 4.*reQ5nQ3nstarQ2nstar
-                 + 4.*reQ6nQ5nstarQ1nstar - 4.*reQ6nQ3nstarQ2nstarQ1nstar + 24.*dMult)
+  five4n1n1n3n3n = (reQ4nQ1nQ1nQ3nstarQ3nstar-16.*pow(dReQ1n,2.)-16.*pow(dImQ1n,2.)
+                 - 10.*pow(dReQ2n,2.)-10.*pow(dImQ2n,2.)-12.*pow(dReQ3n,2.)-12.*pow(dImQ3n,2.)
+                 - 6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)-4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)
+                 - 2.*pow(dReQ6n,2.)-2.*pow(dImQ6n,2.)+6.*reQ2nQ1nstarQ1nstar 
+                 - 1.*reQ6nQ4nstarQ1nstarQ1nstar-1.*reQ4nQ2nQ3nstarQ3nstar 
+                 + 1.*reQ6nQ4nstarQ2nstar-2.*reQ5nQ1nQ3nstarQ3nstar 
+                 + 2.*reQ4nQ2nstarQ2nstar+4.*reQ4nQ3nstarQ1nstar 
+                 - 2.*reQ3nQ1nstarQ1nstarQ1nstar+10.*reQ3nQ2nstarQ1nstar 
+                 + 2.*reQ6nQ5nstarQ1nstar+2.*reQ6nQ3nstarQ3nstar 
+                 - 4.*reQ4nQ1nQ3nstarQ2nstar+4.*reQ5nQ4nstarQ1nstar
+                 + 4.*reQ5nQ3nstarQ2nstar + 24.*dMult)
                  / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-  */
-  
   // Average 5-particle correlations for all events:      
   fIntFlowCorrelationsAllPro->Fill(52.5,five3n3n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   fIntFlowCorrelationsAllPro->Fill(53.5,five4n2n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
@@ -3793,7 +4499,8232 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
-//================================================================================================================================
+//=====================================================================================================
+
+void AliFlowAnalysisWithQCumulants::CalculateMixedHarmonics()
+{
+ // Calculate in this method all multi-particle azimuthal correlations in mixed harmonics.
+ // (Remark: For completeness sake, we also calculate here again correlations in the same harmonic.) 
+
+ // a) Access Q-vectors and multiplicity of current event; 
+ // b) Determine multiplicity weights and fill some histos;
+ // c) Calculate 2-p correlations; 
+ // d) Calculate 3-p correlations; 
+ // e) Calculate 4-p correlations; 
+ // f) Calculate 5-p correlations; 
+ // g) Calculate 6-p correlations; 
+ // h) Calculate 7-p correlations; 
+ // i) Calculate 8-p correlations.
+
+ // a) Access Q-vectors and multiplicity of current event:
+ // Multiplicity of an event: 
+ Double_t dMult = (*fSpk)(0,0);
+ // Real parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n, 4n, 5n and 6n: 
+ Double_t dReQ1n = (*fReQ)(0,0);
+ Double_t dReQ2n = (*fReQ)(1,0);
+ Double_t dReQ3n = (*fReQ)(2,0);
+ Double_t dReQ4n = (*fReQ)(3,0);
+ Double_t dReQ5n = (*fReQ)(4,0); 
+ Double_t dReQ6n = (*fReQ)(5,0);
+ Double_t dReQ7n = (*fReQ)(6,0);
+ Double_t dReQ8n = (*fReQ)(7,0);
+ Double_t dReQ9n = (*fReQ)(8,0);
+ Double_t dReQ10n = (*fReQ)(9,0);
+ Double_t dReQ11n = (*fReQ)(10,0);
+ Double_t dReQ12n = (*fReQ)(11,0);
+ // Imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n, 4n, 5n and 6n:
+ Double_t dImQ1n = (*fImQ)(0,0);
+ Double_t dImQ2n = (*fImQ)(1,0);
+ Double_t dImQ3n = (*fImQ)(2,0);
+ Double_t dImQ4n = (*fImQ)(3,0);
+ Double_t dImQ5n = (*fImQ)(4,0); 
+ Double_t dImQ6n = (*fImQ)(5,0);
+ Double_t dImQ7n = (*fImQ)(6,0);
+ Double_t dImQ8n = (*fImQ)(7,0);
+ Double_t dImQ9n = (*fImQ)(8,0);
+ Double_t dImQ10n = (*fImQ)(9,0);
+ Double_t dImQ11n = (*fImQ)(10,0);
+ Double_t dImQ12n = (*fImQ)(11,0);
+ // All mixed correlators:
+ Double_t allMixedCorrelators[139] = {0.};
+
+ // Real parts of expressions involving various combinations of Q-vectors which appears
+ // simultaneously in several equations for multiparticle correlations bellow: 
+ // Re[Q_{2n}Q_{n}^*Q_{n}^*]
+ Double_t reQ2nQ1nstarQ1nstar = pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n; 
+ // Re[Q_{6n}Q_{3n}^*Q_{3n}^*]
+ Double_t reQ6nQ3nstarQ3nstar = pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n;  
+ // Re[Q_{4n}Q_{2n}^*Q_{2n}^*]
+ Double_t reQ4nQ2nstarQ2nstar = pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n;
+ // Re[Q_{4n}Q_{3n}^*Q_{n}^*]
+ Double_t reQ4nQ3nstarQ1nstar = dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n);
+ // Re[Q_{3n}Q_{2n}^*Q_{n}^*]
+ Double_t reQ3nQ2nstarQ1nstar = dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n
+                              + dImQ3n*dImQ2n*dReQ1n; 
+ // Re[Q_{5n}Q_{3n}^*Q_{2n}^*]
+ Double_t reQ5nQ3nstarQ2nstar = dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n
+                              + dImQ5n*dImQ2n*dReQ3n;                             
+ // Re[Q_{5n}Q_{4n}^*Q_{1n}^*]
+ Double_t reQ5nQ4nstarQ1nstar = dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n
+                              + dImQ5n*dImQ4n*dReQ1n;                              
+ // Re[Q_{6n}Q_{5n}^*Q_{1n}^*]                              
+ Double_t reQ6nQ5nstarQ1nstar = dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n
+                              + dImQ6n*dImQ5n*dReQ1n;
+ // Re[Q_{6n}Q_{4n}^*Q_{2n}^*]                       
+ Double_t reQ6nQ4nstarQ2nstar = dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+                              + dImQ6n*dImQ4n*dReQ2n;
+ // Re[Q_{3n}Q_{n}Q_{2n}^*Q_{2n}^*]
+ Double_t reQ3nQ1nQ2nstarQ2nstar = (pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n);                                
+ // Re[Q_{3n}Q_{n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ3nQ1nstarQ1nstarQ1nstar = dReQ3n*pow(dReQ1n,3)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2)
+                                     + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2)-dImQ3n*pow(dImQ1n,3);
+ // Re[Q_{6n}Q_{2n}^*Q_{2n}^*Q_{2n}^*]
+ Double_t reQ6nQ2nstarQ2nstarQ2nstar = dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                                     + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3);
+ // Re[Q_{4n}Q_{2n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ4nQ2nstarQ1nstarQ1nstar = (dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                                     + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n);  
+ // Re[Q_{4n}Q_{2n}^*Q_{3n}^*Q_{3n}^*]
+ Double_t reQ4nQ2nQ3nstarQ3nstar = (dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n;                    
+ // Re[Q_{4n}Q_{n}Q_{3n}^*Q_{2n}^*]
+ Double_t reQ4nQ1nQ3nstarQ2nstar = dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n;
+
+ // Re[Q_{5n}Q_{n}Q_{4n}^*Q_{2n}^*]
+ Double_t reQ5nQ1nQ4nstarQ2nstar = dImQ1n*dImQ2n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ1n*dReQ2n 
+                                 + dImQ2n*dImQ5n*dReQ1n*dReQ4n-dImQ1n*dImQ5n*dReQ2n*dReQ4n
+                                 - dImQ2n*dImQ4n*dReQ1n*dReQ5n+dImQ1n*dImQ4n*dReQ2n*dReQ5n 
+                                 + dImQ1n*dImQ2n*dReQ4n*dReQ5n+dReQ1n*dReQ2n*dReQ4n*dReQ5n;                                  
+ // Re[Q_{5n}Q_{n}Q_{3n}^*Q_{3n}^*]                                  
+ Double_t reQ5nQ1nQ3nstarQ3nstar = dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+                                 - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+                                 + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n;
+ // Re[Q_{5n}Q_{3n}^*Q_{n}^*Q_{n}^*]                                  
+ Double_t reQ5nQ3nstarQ1nstarQ1nstar = -pow(dImQ1n,2.)*dImQ3n*dImQ5n+dImQ3n*dImQ5n*pow(dReQ1n,2.)
+                                     + 2.*dImQ1n*dImQ5n*dReQ1n*dReQ3n-2.*dImQ1n*dImQ3n*dReQ1n*dReQ5n 
+                                     - pow(dImQ1n,2.)*dReQ3n*dReQ5n+pow(dReQ1n,2.)*dReQ3n*dReQ5n;                     
+ // Re[Q_{5n}Q_{2n}^*Q_{2n}^*Q_{n}^*]                                  
+ Double_t reQ5nQ2nstarQ2nstarQ1nstar = -pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+                                     + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+                                     - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n;                                     
+ // Re[Q_{6n}Q_{4n}^*Q_{n}^*Q_{n}^*]                                  
+ Double_t reQ6nQ4nstarQ1nstarQ1nstar = -pow(dImQ1n,2.)*dImQ4n*dImQ6n+dImQ4n*dImQ6n*pow(dReQ1n,2.) 
+                                     +  2.*dImQ1n*dImQ6n*dReQ1n*dReQ4n-2.*dImQ1n*dImQ4n*dReQ1n*dReQ6n 
+                                     -  pow(dImQ1n,2.)*dReQ4n*dReQ6n+pow(dReQ1n,2.)*dReQ4n*dReQ6n;
+ /*// |Q_{2n}|^2 |Q_{n}|^2
+ Double_t dQ2nQ1nQ2nstarQ1nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // |Q_{4n}|^2 |Q_{2n}|^2
+ Double_t dQ4nQ2nQ4nstarQ2nstar = (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.));
+ // |Q_{3n}|^2 |Q_{2n}|^2
+ Double_t dQ3nQ2nQ3nstarQ2nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.));
+ // |Q_{5n}|^2 |Q_{n}|^2
+ Double_t dQ5nQ1nQ5nstarQ1nstar = (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // |Q_{3n}|^2 |Q_{n}|^2
+ Double_t dQ3nQ1nQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));*/
+ // Re[Q_{2n}Q_{n}Q_{n}^*Q_{n}^*Q_{n}^*]
+ /*Double_t reQ2nQ1nQ1nstarQ1nstarQ1nstar = (dReQ2n*dReQ1n-dImQ2n*dImQ1n)*(pow(dReQ1n,3)-3.*dReQ1n*pow(dImQ1n,2))
+                                        + (dReQ2n*dImQ1n+dReQ1n*dImQ2n)*(3.*dImQ1n*pow(dReQ1n,2)-pow(dImQ1n,3));*/ 
+ // Re[Q_{2n}Q_{2n}Q_{2n}^*Q_{n}^*Q_{n}^*]
+ /*Double_t reQ2nQ2nQ2nstarQ1nstarQ1nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                                        * (dReQ2n*(pow(dReQ1n,2.)-pow(dImQ1n,2.)) + 2.*dImQ2n*dReQ1n*dImQ1n);*/
+ /*// Re[Q_{4n}Q_{n}^*Q_{n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ4nQ1nstarQ1nstarQ1nstarQ1nstar = pow(dReQ1n,4.)*dReQ4n-6.*pow(dReQ1n,2.)*dReQ4n*pow(dImQ1n,2.)
+                                            + pow(dImQ1n,4.)*dReQ4n+4.*pow(dReQ1n,3.)*dImQ1n*dImQ4n
+                                            - 4.*pow(dImQ1n,3.)*dReQ1n*dImQ4n;*/
+ // Re[Q_{3n}Q_{n}Q_{2n}^*Q_{n}^*Q_{n}^*]
+ /*Double_t reQ3nQ1nQ2nstarQ1nstarQ1nstar = (pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                                        * (dReQ1n*dReQ2n*dReQ3n-dReQ3n*dImQ1n*dImQ2n
+                                        + dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n);*/
+ // Re[Q_{6n}Q_{n}Q_{3n}^*Q_{2n}^*Q_{n}^*]
+ Double_t reQ6nQ3nstarQ2nstarQ1nstar = dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                                     - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                                     + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                                     + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n;
+ // Re[Q_{3n}Q_{3n}Q_{3n}^*Q_{2n}^*Q_{n}^*]
+ /*Double_t reQ3nQ3nQ3nstarQ2nstarQ1nstar = (pow(dImQ3n,2.)+pow(dReQ3n,2.))
+                                        * (dImQ2n*dImQ3n*dReQ1n+dImQ1n*dImQ3n*dReQ2n
+                                        - dImQ1n*dImQ2n*dReQ3n+dReQ1n*dReQ2n*dReQ3n);*/   
+ /*// Re[Q_{3n}Q_{3n}Q_{2n}^*Q_{2n}^*Q_{2n}^*]
+ Double_t reQ3nQ3nQ2nstarQ2nstarQ2nstar = pow(dReQ2n,3.)*pow(dReQ3n,2.) 
+                                        - 3.*dReQ2n*pow(dReQ3n,2.)*pow(dImQ2n,2.)
+                                        + 6.*pow(dReQ2n,2.)*dReQ3n*dImQ2n*dImQ3n 
+                                        - 2.*dReQ3n*pow(dImQ2n,3.)*dImQ3n-pow(dReQ2n,3.)*pow(dImQ3n,2.) 
+                                        + 3.*dReQ2n*pow(dImQ2n,2.)*pow(dImQ3n,2.);*/
+ // Re[Q_{4n}Q_{2n}Q_{3n}^*Q_{2n}^*Q_{n}^*]
+ /*Double_t reQ4nQ2nQ3nstarQ2nstarQ1nstar = (pow(dImQ2n,2.)+pow(dReQ2n,2.))
+                                        * (dImQ3n*dImQ4n*dReQ1n+dImQ1n*dImQ4n*dReQ3n 
+                                        - dImQ1n*dImQ3n*dReQ4n+dReQ1n*dReQ3n*dReQ4n);*/
+ // Re[Q_{3n}Q_{2n}Q_{3n}^*Q_{n}^*Q_{n}^*]
+ /*Double_t reQ3nQ2nQ3nstarQ1nstarQ1nstar = -(pow(dImQ3n,2.)+pow(dReQ3n,2.))
+                                        * (-2.*dImQ1n*dImQ2n*dReQ1n+pow(dImQ1n,2.)*dReQ2n-pow(dReQ1n,2.)*dReQ2n);*/                              
+ // Re[Q_{3n}Q_{2n}Q_{2n}^*Q_{2n}^*Q_{n}^*]
+ /*Double_t reQ3nQ2nQ2nstarQ2nstarQ1nstar = (pow(dImQ2n,2.)+pow(dReQ2n,2.))
+                                        * (dImQ2n*dImQ3n*dReQ1n+dImQ1n*dImQ3n*dReQ2n 
+                                        - dImQ1n*dImQ2n*dReQ3n+dReQ1n*dReQ2n*dReQ3n);*/
+/* // Re[Q_{5n}Q_{n}Q_{3n}^*Q_{2n}^*Q_{n}^*]
+ Double_t reQ5nQ1nQ3nstarQ2nstarQ1nstar = (pow(dImQ1n,2.)+pow(dReQ1n,2.))
+                                        * (dImQ3n*dImQ5n*dReQ2n+dImQ2n*dImQ5n*dReQ3n 
+                                        - dImQ2n*dImQ3n*dReQ5n+dReQ2n*dReQ3n*dReQ5n);   
+ */
+ /*
+ // Re[Q_{2n}Q_{2n}Q_{n}^*Q_{n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ2nQ2nQ1nstarQ1nstarQ1nstarQ1nstar = (pow(dReQ1n,2.)*dReQ2n-2.*dReQ1n*dReQ2n*dImQ1n-dReQ2n*pow(dImQ1n,2.)
+                                               + dImQ2n*pow(dReQ1n,2.)+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dImQ2n)
+                                               * (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dReQ2n*dImQ1n-dReQ2n*pow(dImQ1n,2.)
+                                               - dImQ2n*pow(dReQ1n,2.)+2.*dReQ1n*dImQ1n*dImQ2n+pow(dImQ1n,2.)*dImQ2n); 
+ // Re[Q_{3n}Q_{n}Q_{n}^*Q_{n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ3nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = (pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                                               * (pow(dReQ1n,3.)*dReQ3n-3.*dReQ1n*dReQ3n*pow(dImQ1n,2.)
+                                               + 3.*pow(dReQ1n,2.)*dImQ1n*dImQ3n-pow(dImQ1n,3.)*dImQ3n);
+ */
+ // |Q_{2n}|^2 |Q_{n}|^4
+ //Double_t dQ2nQ1nQ1nQ2nstarQ1nstarQ1nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))*pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.); 
+ /*
+ // |Q_{3n}|^2 |Q_{2n}|^2 |Q_{n}|^2
+ Double_t dQ3nQ2nQ1nQ3nstarQ2nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                                          * (pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // Re[Q_{2n}Q_{n}Q_{n}Q_{n}^*Q_{n}^*Q_{n}^*Q_{n}^*]
+ Double_t reQ2nQ1nQ1nQ1nstarQ1nstarQ1nstarQ1nstar = pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)
+                                                  * (pow(dReQ1n,2.)*dReQ2n-dReQ2n*pow(dImQ1n,2.)
+                                                  + 2.*dReQ1n*dImQ1n*dImQ2n);                                                  
+ */
+ // Re[Q_{6n}Q_{2n}^*Q_{2n}^*Q_{n}^*Q_{n}^*]
+ /*Double_t reQ6nQ2nstarQ2nstarQ1nstarQ1nstar = pow(dReQ1n*dReQ2n,2.)*dReQ6n-pow(dReQ2n*dImQ1n,2.)*dReQ6n
+                                            - 4.*dReQ1n*dReQ2n*dReQ6n*dImQ1n*dImQ2n 
+                                            - pow(dReQ1n*dImQ2n,2.)*dReQ6n+pow(dImQ1n*dImQ2n,2.)*dReQ6n
+                                            + 2.*dReQ1n*pow(dReQ2n,2.)*dImQ1n*dImQ6n
+                                            + 2.*pow(dReQ1n,2.)*dReQ2n*dImQ2n*dImQ6n 
+                                            - 2.*dReQ2n*pow(dImQ1n,2.)*dImQ2n*dImQ6n 
+                                            - 2.*dReQ1n*dImQ1n*pow(dImQ2n,2.)*dImQ6n;
+ */											 
+ // Re[Q_{4n}Q_{1n}Q_{1n}Q_{3n}^*Q_{3n}^*]
+ /*
+ Double_t reQ4nQ1nQ1nQ3nstarQ3nstar = pow(dReQ1n*dReQ3n,2.)*dReQ4n-pow(dReQ3n*dImQ1n,2.)*dReQ4n  
+                                    + 4.*dReQ1n*dReQ3n*dReQ4n*dImQ1n*dImQ3n 
+                                    - pow(dReQ1n*dImQ3n,2.)*dReQ4n+pow(dImQ1n*dImQ3n,2.)*dReQ4n  
+                                    - 2.*dReQ1n*pow(dReQ3n,2.)*dImQ1n*dImQ4n 
+                                    + 2.*pow(dReQ1n,2.)*dReQ3n*dImQ3n*dImQ4n 
+                                    - 2.*dReQ3n*pow(dImQ1n,2.)*dImQ3n*dImQ4n 
+                                    + 2.*dReQ1n*dImQ1n*pow(dImQ3n,2.)*dImQ4n;*/
+ /* 
+ // Re[Q_{3n}Q_{3n}Q_{2n}^*Q_{2n}^*Q_{1n}^*Q_{1n}^*]
+ Double_t reQ3nQ3nQ2nstarQ2nstarQ1nstarQ1nstar = (dReQ1n*dReQ2n*dReQ3n-dReQ2n*dReQ3n*dImQ1n-dReQ1n*dReQ3n*dImQ2n 
+                                               - dReQ3n*dImQ1n*dImQ2n+dReQ1n*dReQ2n*dImQ3n+dReQ2n*dImQ1n*dImQ3n 
+                                               + dReQ1n*dImQ2n*dImQ3n-dImQ1n*dImQ2n*dImQ3n)*(dReQ1n*dReQ2n*dReQ3n 
+                                               + dReQ2n*dReQ3n*dImQ1n+dReQ1n*dReQ3n*dImQ2n-dReQ3n*dImQ1n*dImQ2n 
+                                               - dReQ1n*dReQ2n*dImQ3n+dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n 
+                                               + dImQ1n*dImQ2n*dImQ3n);
+ */
+
+ // b) Determine multiplicity weights and fill some histos:
+ Double_t d2pMultiplicityWeight = 0.; // weight for <2>_{...} to get <<2>>_{...}
+ Double_t d3pMultiplicityWeight = 0.; // weight for <3>_{...} to get <<3>>_{...}
+ Double_t d4pMultiplicityWeight = 0.; // weight for <4>_{...} to get <<4>>_{...}
+ Double_t d5pMultiplicityWeight = 0.; // weight for <5>_{...} to get <<5>>_{...}
+ Double_t d6pMultiplicityWeight = 0.; // weight for <6>_{...} to get <<6>>_{...}
+ Double_t d7pMultiplicityWeight = 0.; // weight for <7>_{...} to get <<7>>_{...}
+ Double_t d8pMultiplicityWeight = 0.; // weight for <8>_{...} to get <<8>>_{...}
+ if(!strcmp(fMultiplicityWeight->Data(),"combinations")) // default multiplicity weight
+ {
+  d2pMultiplicityWeight = dMult*(dMult-1.);
+  d3pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.);
+  d4pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.);
+  d5pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.);
+  d6pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.);
+  d7pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.);
+  d8pMultiplicityWeight = dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.);
+ } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+   {
+    d2pMultiplicityWeight = 1.;
+    d3pMultiplicityWeight = 1.;
+    d4pMultiplicityWeight = 1.;
+    d5pMultiplicityWeight = 1.;
+    d6pMultiplicityWeight = 1.;
+    d7pMultiplicityWeight = 1.;
+    d8pMultiplicityWeight = 1.;
+   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+     {
+      d2pMultiplicityWeight = dMult;
+      d3pMultiplicityWeight = dMult;
+      d4pMultiplicityWeight = dMult;
+      d5pMultiplicityWeight = dMult;
+      d6pMultiplicityWeight = dMult;
+      d7pMultiplicityWeight = dMult;
+      d8pMultiplicityWeight = dMult; 
+     }       
+ for(Int_t p=0;p<=1;p++) // power (0=linear,1=quadratic)
+ {
+  fMixedHarmonicEventWeights[p]->Fill(0.5,pow(dMult,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(1.5,pow(d2pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(2.5,pow(d3pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(3.5,pow(d4pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(4.5,pow(d5pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(5.5,pow(d6pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(6.5,pow(d7pMultiplicityWeight,p+1));
+  fMixedHarmonicEventWeights[p]->Fill(7.5,pow(d8pMultiplicityWeight,p+1));
+ } // end of for(Int_t p=0;p<=1;p++) // power (0=linear,1=quadratic)   
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,0.5,dMult*dMult);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,1.5,dMult*d2pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,2.5,dMult*d3pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,3.5,dMult*d4pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,4.5,dMult*d5pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,5.5,dMult*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,6.5,dMult*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(0.5,7.5,dMult*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,1.5,d2pMultiplicityWeight*d2pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,2.5,d2pMultiplicityWeight*d3pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,3.5,d2pMultiplicityWeight*d4pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,4.5,d2pMultiplicityWeight*d5pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,5.5,d2pMultiplicityWeight*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,6.5,d2pMultiplicityWeight*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(1.5,7.5,d2pMultiplicityWeight*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,2.5,d3pMultiplicityWeight*d3pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,3.5,d3pMultiplicityWeight*d4pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,4.5,d3pMultiplicityWeight*d5pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,5.5,d3pMultiplicityWeight*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,6.5,d3pMultiplicityWeight*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(2.5,7.5,d3pMultiplicityWeight*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(3.5,3.5,d4pMultiplicityWeight*d4pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(3.5,4.5,d4pMultiplicityWeight*d5pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(3.5,5.5,d4pMultiplicityWeight*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(3.5,6.5,d4pMultiplicityWeight*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(3.5,7.5,d4pMultiplicityWeight*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(4.5,4.5,d5pMultiplicityWeight*d5pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(4.5,5.5,d5pMultiplicityWeight*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(4.5,6.5,d5pMultiplicityWeight*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(4.5,7.5,d5pMultiplicityWeight*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(5.5,5.5,d6pMultiplicityWeight*d6pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(5.5,6.5,d6pMultiplicityWeight*d7pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(5.5,7.5,d6pMultiplicityWeight*d8pMultiplicityWeight);
+ fMixedHarmonicProductOfEventWeights->Fill(6.5,6.5,d7pMultiplicityWeight*d7pMultiplicityWeight); 
+ fMixedHarmonicProductOfEventWeights->Fill(6.5,7.5,d7pMultiplicityWeight*d8pMultiplicityWeight); 
+ fMixedHarmonicProductOfEventWeights->Fill(7.5,7.5,d8pMultiplicityWeight*d8pMultiplicityWeight); 
+ 
+ // c) Calculate 2-p correlations:
+ Double_t two1n1n = 0.; // <2>_{1n|1n} = <cos(1n(phi1-phi2))>
+ Double_t two2n2n = 0.; // <2>_{2n|2n} = <cos(2n(phi1-phi2))>
+ Double_t two3n3n = 0.; // <2>_{3n|3n} = <cos(3n(phi1-phi2))>
+ Double_t two4n4n = 0.; // <2>_{4n|4n} = <cos(4n(phi1-phi2))>
+ Double_t two5n5n = 0.; // <2>_{5n|5n} = <cos(5n(phi1-phi2))>
+ Double_t two6n6n = 0.; // <2>_{6n|6n} = <cos(6n(phi1-phi2))>
+ if(dMult>1.)
+ {
+  two1n1n = (pow(dReQ1n,2.)+pow(dImQ1n,2.)-dMult)/(dMult*(dMult-1.)); 
+  two2n2n = (pow(dReQ2n,2.)+pow(dImQ2n,2.)-dMult)/(dMult*(dMult-1.)); 
+  two3n3n = (pow(dReQ3n,2.)+pow(dImQ3n,2.)-dMult)/(dMult*(dMult-1.)); 
+  two4n4n = (pow(dReQ4n,2.)+pow(dImQ4n,2.)-dMult)/(dMult*(dMult-1.)); 
+  two5n5n = (pow(dReQ5n,2.)+pow(dImQ5n,2.)-dMult)/(dMult*(dMult-1.)); 
+  two6n6n = (pow(dReQ6n,2.)+pow(dImQ6n,2.)-dMult)/(dMult*(dMult-1.));   
+  f2pCorrelations->Fill(0.5,two1n1n,d2pMultiplicityWeight);
+  f2pCorrelations->Fill(1.5,two2n2n,d2pMultiplicityWeight);
+  f2pCorrelations->Fill(2.5,two3n3n,d2pMultiplicityWeight);
+  f2pCorrelations->Fill(3.5,two4n4n,d2pMultiplicityWeight);
+  f2pCorrelations->Fill(4.5,two5n5n,d2pMultiplicityWeight);
+  f2pCorrelations->Fill(5.5,two6n6n,d2pMultiplicityWeight);
+  allMixedCorrelators[0]=two1n1n;
+  allMixedCorrelators[1]=two2n2n;
+  allMixedCorrelators[2]=two3n3n;
+  allMixedCorrelators[3]=two4n4n;
+  allMixedCorrelators[4]=two5n5n;
+  allMixedCorrelators[5]=two6n6n;
+ } // end of if(dMult>1.)
+
+ // d) Calculate 3-p correlations:
+ //  d1) Two distinct harmonics (3): 
+ Double_t three2n1n1n = 0.; // <3>_{2n|1n,1n} = <cos(n(2*phi1-1*phi2-1*phi3))>
+ Double_t three4n2n2n = 0.; // <3>_{4n|2n,2n} = <cos(n(4*phi1-2*phi2-2*phi3))>
+ Double_t three6n3n3n = 0.; // <3>_{6n|3n,3n} = <cos(n(6*phi1-3*phi2-3*phi3))> 
+ //  d2) Three distinct harmonics (6): 
+ Double_t three3n2n1n = 0.; // <3>_{3n|2n,1n} = <cos(n(3*phi1-2*phi2-1*phi3))>
+ Double_t three4n3n1n = 0.; // <3>_{4n|3n,1n} = <cos(n(4*phi1-3*phi2-1*phi3))> 
+ Double_t three5n3n2n = 0.; // <3>_{5n|3n,2n} = <cos(n(5*phi1-3*phi2-2*phi3))>
+ Double_t three5n4n1n = 0.; // <3>_{5n|4n,1n} = <cos(n(5*phi1-4*phi2-1*phi3))> 
+ Double_t three6n4n2n = 0.; // <3>_{6n|4n,2n} = <cos(n(6*phi1-4*phi2-2*phi3))> 
+ Double_t three6n5n1n = 0.; // <3>_{6n|5n,1n} = <cos(n(6*phi1-5*phi2-1*phi3))>
+ if(dMult>2.)
+ {
+  three2n1n1n = (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n
+              - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.)); 
+  three4n2n2n = (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n
+              - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-(pow(dReQ4n,2.)+pow(dImQ4n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.)); 
+  three6n3n3n = (reQ6nQ3nstarQ3nstar
+	      - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+              - (pow(dReQ6n,2.)+pow(dImQ6n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));  
+  three3n2n1n = (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n
+              + dImQ3n*dImQ2n*dReQ1n-(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+              - (pow(dReQ2n,2.)+pow(dImQ2n,2.))-(pow(dReQ1n,2.)+pow(dImQ1n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));
+  three4n3n1n = (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)
+              - (pow(dReQ4n,2.)+pow(dImQ4n,2.))-(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+              - (pow(dReQ1n,2.)+pow(dImQ1n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));  
+  three5n3n2n = (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n
+              + dImQ5n*dImQ2n*dReQ3n-(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+              - (pow(dReQ3n,2.)+pow(dImQ3n,2.))
+              - (pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.)); 
+  three5n4n1n = (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n
+              + dImQ5n*dImQ4n*dReQ1n-(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+              - (pow(dReQ4n,2.)+pow(dImQ4n,2.))
+              - (pow(dReQ1n,2.)+pow(dImQ1n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));
+  three6n4n2n = (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+              + dImQ6n*dImQ4n*dReQ2n-(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+              - (pow(dReQ4n,2.)+pow(dImQ4n,2.))-(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));
+  three6n5n1n = (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n
+              + dImQ6n*dImQ5n*dReQ1n-(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+              - (pow(dReQ5n,2.)+pow(dImQ5n,2.))
+              - (pow(dReQ1n,2.)+pow(dImQ1n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.)); 
+  f3pCorrelations->Fill(0.5,three2n1n1n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(1.5,three4n2n2n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(2.5,three6n3n3n,d3pMultiplicityWeight);
+  //f3pCorrelations->Fill(3.5,0.,d3pMultiplicityWeight); // empty TBI
+  f3pCorrelations->Fill(4.5,three3n2n1n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(5.5,three4n3n1n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(6.5,three5n3n2n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(7.5,three5n4n1n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(8.5,three6n4n2n,d3pMultiplicityWeight);
+  f3pCorrelations->Fill(9.5,three6n5n1n,d3pMultiplicityWeight);
+  allMixedCorrelators[6]=three2n1n1n;
+  allMixedCorrelators[7]=three4n2n2n;
+  allMixedCorrelators[8]=three6n3n3n;
+  allMixedCorrelators[9]=three3n2n1n;
+  allMixedCorrelators[10]=three4n3n1n;
+  allMixedCorrelators[11]=three5n3n2n;
+  allMixedCorrelators[12]=three5n4n1n;
+  allMixedCorrelators[13]=three6n4n2n;
+  allMixedCorrelators[14]=three6n5n1n;
+ } // end of if(dMult>2.)
+
+ // e) Calculate 4-p correlations:
+ //  e1) Single harmonic (6): 
+ Double_t four1n1n1n1n = 0.; // <4>_{1n,1n|1n,1n} = <cos(1*n(phi1+phi2-phi3-phi4))>
+ Double_t four2n2n2n2n = 0.; // <4>_{2n,2n|2n,2n} = <cos(2*n(phi1+phi2-phi3-phi4))>
+ Double_t four3n3n3n3n = 0.; // <4>_{3n,3n|3n,3n} = <cos(3*n(phi1+phi2-phi3-phi4))>
+ Double_t four4n4n4n4n = 0.; // <4>_{4n,4n|4n,4n} = <cos(4*n(phi1+phi2-phi3-phi4))>
+ Double_t four5n5n5n5n = 0.; // <4>_{5n,5n|5n,5n} = <cos(5*n(phi1+phi2-phi3-phi4))>
+ Double_t four6n6n6n6n = 0.; // <4>_{6n,6n|6n,6n} = <cos(6*n(phi1+phi2-phi3-phi4))>
+ //  e2) "Standard candles" (15):
+ Double_t four2n1n2n1n = 0.; // <4>_{2n,1n|2n,1n} = <cos(n(2*phi1+1*phi2-2*phi3-1*phi4))>
+ Double_t four3n1n3n1n = 0.; // <4>_{3n,1n|3n,1n} = <cos(n(3*phi1+1*phi2-3*phi3-1*phi4))>
+ Double_t four3n2n3n2n = 0.; // <4>_{3n,2n|3n,2n} = <cos(n(3*phi1+2*phi2-3*phi3-2*phi4))>
+ Double_t four4n1n4n1n = 0.; // <4>_{4n,1n|4n,1n} = <cos(n(4*phi1+1*phi2-4*phi3-1*phi4))>
+ Double_t four4n2n4n2n = 0.; // <4>_{4n,2n|4n,2n} = <cos(n(4*phi1+2*phi2-4*phi3-2*phi4))>
+ Double_t four4n3n4n3n = 0.; // <4>_{4n,3n|4n,3n} = <cos(n(4*phi1+3*phi2-4*phi3-3*phi4))>
+ Double_t four5n1n5n1n = 0.; // <4>_{5n,1n|5n,1n} = <cos(n(5*phi1+1*phi2-5*phi3-1*phi4))>
+ Double_t four5n2n5n2n = 0.; // <4>_{5n,2n|5n,2n} = <cos(n(5*phi1+2*phi2-5*phi3-2*phi4))>
+ Double_t four5n3n5n3n = 0.; // <4>_{5n,3n|5n,3n} = <cos(n(5*phi1+3*phi2-5*phi3-3*phi4))>
+ Double_t four5n4n5n4n = 0.; // <4>_{5n,4n|5n,4n} = <cos(n(5*phi1+4*phi2-5*phi3-4*phi4))>
+ Double_t four6n1n6n1n = 0.; // <4>_{6n,1n|6n,1n} = <cos(n(6*phi1+1*phi2-6*phi3-1*phi4))>
+ Double_t four6n2n6n2n = 0.; // <4>_{6n,2n|6n,2n} = <cos(n(6*phi1+2*phi2-6*phi3-2*phi4))>
+ Double_t four6n3n6n3n = 0.; // <4>_{6n,3n|6n,3n} = <cos(n(6*phi1+3*phi2-6*phi3-3*phi4))>
+ Double_t four6n4n6n4n = 0.; // <4>_{6n,4n|6n,4n} = <cos(n(6*phi1+4*phi2-6*phi3-4*phi4))>
+ Double_t four6n5n6n5n = 0.; // <4>_{6n,5n|6n,5n} = <cos(n(6*phi1+5*phi2-6*phi3-5*phi4))>
+ //  e3) Two distinct harmonics (2): 
+ Double_t four3n1n1n1n = 0.; // <4>_{3n|1n,1n,1n} = <cos(n(3*phi1-1*phi2-1*phi3-1*phi4))>
+ Double_t four6n2n2n2n = 0.; // <4>_{6n|2n,2n,2n} = <cos(n(6*phi1-2*phi2-2*phi3-2*phi4))>
+ //  e4) Three distinct harmonics (10): 
+ Double_t four3n1n2n2n = 0.; // <4>_{3n,1n|2n,2n} = <cos(n(3*phi1+1*phi2-2*phi3-2*phi4))>
+ Double_t four4n2n1n1n = 0.; // <4>_{4n|2n,1n,1n} = <cos(n(4*phi1-2*phi2-1*phi3-1*phi4))>
+ Double_t four4n2n3n3n = 0.; // <4>_{4n,2n|3n,3n} = <cos(n(4*phi1+2*phi2-3*phi3-3*phi4))>
+ Double_t four5n2n2n1n = 0.; // <4>_{5n|2n,2n,1n} = <cos(n(5*phi1-2*phi2-2*phi3-1*phi4))>
+ Double_t four5n3n1n1n = 0.; // <4>_{5n|3n,1n,1n} = <cos(n(5*phi1-3*phi2-1*phi3-1*phi4))>
+ Double_t four5n1n3n3n = 0.; // <4>_{5n,1n|3n,3n} = <cos(n(5*phi1+1*phi2-3*phi3-3*phi4))>
+ Double_t four5n3n4n4n = 0.; // <4>_{5n,3n|4n,4n} = <cos(n(5*phi1+3*phi2-4*phi3-4*phi4))>
+ Double_t four6n4n1n1n = 0.; // <4>_{6n|4n,1n,1n} = <cos(n(6*phi1-4*phi2-1*phi3-1*phi4))>
+ Double_t four6n2n4n4n = 0.; // <4>_{6n,2n|4n,4n} = <cos(n(6*phi1+2*phi2-4*phi3-4*phi4))>
+ Double_t four6n4n5n5n = 0.; // <4>_{6n,4n|5n,5n} = <cos(n(6*phi1+4*phi2-5*phi3-5*phi4))>
+ //  e5) Four distinct harmonics (8): 
+ Double_t four4n1n3n2n = 0.; // <4>_{4n,1n|3n,2n} = <cos(n(4*phi1+1*phi2-3*phi3-2*phi4))>
+ Double_t four5n1n4n2n = 0.; // <4>_{5n,1n|4n,2n} = <cos(n(5*phi1+1*phi2-4*phi3-2*phi4))>
+ Double_t four5n2n4n3n = 0.; // <4>_{5n,2n|4n,3n} = <cos(n(5*phi1+2*phi2-4*phi3-3*phi4))>
+ Double_t four6n1n4n3n = 0.; // <4>_{6n,1n|4n,3n} = <cos(n(6*phi1+1*phi2-4*phi3-3*phi4))>
+ Double_t four6n1n5n2n = 0.; // <4>_{6n,1n|5n,2n} = <cos(n(6*phi1+1*phi2-5*phi3-2*phi4))>
+ Double_t four6n3n2n1n = 0.; // <4>_{6n|3n,2n,1n} = <cos(n(6*phi1-3*phi2-2*phi3-1*phi4))>
+ Double_t four6n2n5n3n = 0.; // <4>_{6n,2n|5n,3n} = <cos(n(6*phi1+2*phi2-5*phi3-3*phi4))>
+ Double_t four6n3n5n4n = 0.; // <4>_{6n,3n|5n,4n} = <cos(n(6*phi1+3*phi2-5*phi3-4*phi4))>
+ if(dMult>3.)
+ {
+  // Single harmonic (6): 
+  four1n1n1n1n = (2.*dMult*(dMult-3.)+pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ1n,2.)
+               + pow(dImQ1n,2.))-2.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               + (pow(dReQ2n,2.)+pow(dImQ2n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.));     
+  four2n2n2n2n = (2.*dMult*(dMult-3.)+pow((pow(dReQ2n,2.)+pow(dImQ2n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ2n,2.)
+               + pow(dImQ2n,2.))-2.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               + (pow(dReQ4n,2.)+pow(dImQ4n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.)); 
+  four3n3n3n3n = (2.*dMult*(dMult-3.)+pow((pow(dReQ3n,2.)+pow(dImQ3n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ3n,2.)
+               + pow(dImQ3n,2.))-2.*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               + (pow(dReQ6n,2.)+pow(dImQ6n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.));     
+  four4n4n4n4n = (2.*dMult*(dMult-3.)+pow((pow(dReQ4n,2.)+pow(dImQ4n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ4n,2.)
+               + pow(dImQ4n,2.))-2.*(pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+               + (pow(dReQ8n,2.)+pow(dImQ8n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.));     
+  four5n5n5n5n = (2.*dMult*(dMult-3.)+pow((pow(dReQ5n,2.)+pow(dImQ5n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ5n,2.)
+               + pow(dImQ5n,2.))-2.*(pow(dReQ5n,2.)*dReQ10n+2.*dReQ5n*dImQ5n*dImQ10n-pow(dImQ5n,2.)*dReQ10n)
+               + (pow(dReQ10n,2.)+pow(dImQ10n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.));    
+  four6n6n6n6n = (2.*dMult*(dMult-3.)+pow((pow(dReQ6n,2.)+pow(dImQ6n,2.)),2.)-4.*(dMult-2.)*(pow(dReQ6n,2.)
+               + pow(dImQ6n,2.))-2.*(pow(dReQ6n,2.)*dReQ12n+2.*dReQ6n*dImQ6n*dImQ12n-pow(dImQ6n,2.)*dReQ12n)
+               + (pow(dReQ12n,2.)+pow(dImQ12n,2.)))
+               / (dMult*(dMult-1)*(dMult-2.)*(dMult-3.));  
+  // "Standard candles" (15):
+  four2n1n2n1n = ((pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n
+               + dImQ3n*dImQ2n*dReQ1n)-2.*(pow(dReQ1n,2.)*dReQ2n
+               + 2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - ((dMult-5.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               + (dMult-4.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-(pow(dReQ3n,2.)+pow(dImQ3n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               + (dMult-6.)/((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four3n1n3n1n = ((pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               - 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ4n,2.)+pow(dImQ4n,2.)-(dMult-4.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + pow(dReQ2n,2.)+pow(dImQ2n,2.)-(dMult-4.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four3n2n3n2n = ((pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               - 2.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)               
+               - (dMult-4.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));  
+  four4n1n4n1n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ1n*dImQ4n+dImQ5n*dImQ1n*dReQ4n)
+               - 2.*(dReQ3n*dReQ4n*dReQ1n+dImQ3n*dImQ4n*dReQ1n+dReQ3n*dImQ4n*dImQ1n-dImQ3n*dImQ1n*dReQ4n)
+               + pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)
+               - (dMult-4.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four4n2n4n2n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               - 2.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+               + dImQ6n*dImQ4n*dReQ2n)-2.*(pow(dReQ2n,2.)*dReQ4n
+               + 2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - ((dMult-5.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + (dMult-4.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-(pow(dReQ6n,2.)+pow(dImQ6n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               + (dMult-6.)/((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four4n3n4n3n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+               - 2.*(dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ3n*dImQ4n+dImQ7n*dImQ3n*dReQ4n)
+               - 2.*(dReQ1n*dReQ4n*dReQ3n+dImQ1n*dImQ4n*dReQ3n+dReQ1n*dImQ4n*dImQ3n-dImQ1n*dImQ3n*dReQ4n)
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)
+               - (dMult-4.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four5n1n5n1n = (((pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.)))
+               - 2.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               + pow(dReQ6n,2.)+pow(dImQ6n,2.)-(dMult-4.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+               + pow(dReQ4n,2.)+pow(dImQ4n,2.)-(dMult-4.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))+dMult*(dMult-6.))  
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four5n2n5n2n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+               - 2.*(dReQ7n*dReQ5n*dReQ2n-dReQ7n*dImQ5n*dImQ2n+dImQ7n*dReQ2n*dImQ5n+dImQ7n*dImQ2n*dReQ5n)
+               - 2.*(dReQ3n*dReQ5n*dReQ2n+dImQ3n*dImQ5n*dReQ2n+dReQ3n*dImQ5n*dImQ2n-dImQ3n*dImQ2n*dReQ5n)
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)
+               - (dMult-4.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four5n3n5n3n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+               - 2.*(dReQ8n*dReQ5n*dReQ3n-dReQ8n*dImQ5n*dImQ3n+dImQ8n*dReQ3n*dImQ5n+dImQ8n*dImQ3n*dReQ5n)
+               - 2.*(dReQ2n*dReQ5n*dReQ3n+dImQ2n*dImQ5n*dReQ3n+dReQ2n*dImQ5n*dImQ3n-dImQ2n*dImQ3n*dReQ5n)
+               + pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)
+               - (dMult-4.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four5n4n5n4n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+               - 2.*(dReQ9n*dReQ5n*dReQ4n-dReQ9n*dImQ5n*dImQ4n+dImQ9n*dReQ4n*dImQ5n+dImQ9n*dImQ4n*dReQ5n)
+               - 2.*(dReQ1n*dReQ5n*dReQ4n+dImQ1n*dImQ5n*dReQ4n+dReQ1n*dImQ5n*dImQ4n-dImQ1n*dImQ4n*dReQ5n)
+               + pow(dReQ9n,2.)+pow(dImQ9n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)
+               - (dMult-4.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four6n1n6n1n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+               - 2.*(dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ1n*dImQ6n+dImQ7n*dImQ1n*dReQ6n)
+               - 2.*(dReQ5n*dReQ6n*dReQ1n+dImQ5n*dImQ6n*dReQ1n+dReQ5n*dImQ6n*dImQ1n-dImQ5n*dImQ1n*dReQ6n)
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)
+               - (dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four6n2n6n2n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               - 2.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+               - 2.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               + pow(dReQ8n,2.)+pow(dImQ8n,2.)-(dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + pow(dReQ4n,2.)+pow(dImQ4n,2.)-(dMult-4.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n3n6n3n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               - 2.*(dReQ9n*dReQ6n*dReQ3n-dReQ9n*dImQ6n*dImQ3n+dImQ9n*dReQ6n*dImQ3n
+               + dImQ9n*dImQ6n*dReQ3n)-2.*(pow(dReQ3n,2.)*dReQ6n
+               + 2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - ((dMult-5.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + (dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-(pow(dReQ9n,2.)+pow(dImQ9n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               + (dMult-6.)/((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n4n6n4n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               - 2.*(dReQ10n*dReQ4n*dReQ6n-dReQ10n*dImQ4n*dImQ6n+dImQ10n*dReQ4n*dImQ6n+dImQ10n*dImQ4n*dReQ6n)
+               - 2.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               + pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)               
+               - (dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));  
+  four6n5n6n5n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+               - 2.*(dReQ11n*dReQ6n*dReQ5n-dReQ11n*dImQ6n*dImQ5n+dImQ11n*dReQ5n*dImQ6n+dImQ11n*dImQ5n*dReQ6n)
+               - 2.*(dReQ1n*dReQ6n*dReQ5n+dImQ1n*dImQ6n*dReQ5n+dReQ1n*dImQ6n*dImQ5n-dImQ1n*dImQ5n*dReQ6n)
+               + pow(dReQ11n,2.)+pow(dImQ11n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)
+               - (dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.))
+               + dMult*(dMult-6.))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  // Two distinct harmonics (2):
+  four3n1n1n1n = (dReQ3n*pow(dReQ1n,3)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2)
+               + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2)-dImQ3n*pow(dImQ1n,3)               
+               - 3.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               - 3.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               + 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+3.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + 6.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n2n2n2n = (dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+               + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3)               
+               - 3.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - 3.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               + 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+3.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  // Three distinct harmonics (10): 
+  four3n1n2n2n = ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+               + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)
+               - (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - (2.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               - (pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               - 4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - 6./((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four4n2n1n1n = ((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+               + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n)
+               - 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - ((pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               - 3.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - 6./((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four4n2n3n3n = ((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+               + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               - 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + (pow(dReQ6n,2.)+pow(dImQ6n,2.))+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 2.*(2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + (pow(dReQ1n,2.)+pow(dImQ1n,2.))-3.*dMult))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));  
+  four5n2n2n1n = (-pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+               + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+               - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n
+               - (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - 2.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+pow(dReQ4n,2.)+pow(dImQ4n,2.)
+               + 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  four5n3n1n1n = (-pow(dImQ1n,2.)*dImQ3n*dImQ5n+dImQ3n*dImQ5n*pow(dReQ1n,2.)
+               + 2.*dImQ1n*dImQ5n*dReQ1n*dReQ3n-2.*dImQ1n*dImQ3n*dReQ1n*dReQ5n 
+               - pow(dImQ1n,2.)*dReQ3n*dReQ5n+pow(dReQ1n,2.)*dReQ3n*dReQ5n
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+pow(dReQ2n,2.)+pow(dImQ2n,2.)
+               + 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult) 
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));  
+  four5n1n3n3n = (dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+               - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+               + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               - 2.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ6n,2.)+pow(dImQ6n,2.)+2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+               + 4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)                                  
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four5n3n4n4n = ((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ5n*dReQ3n-dImQ5n*dImQ3n) 
+               + 2.*dReQ4n*dImQ4n*(dReQ5n*dImQ3n+dImQ5n*dReQ3n)
+               - (dReQ8n*dReQ3n*dReQ5n-dReQ8n*dImQ3n*dImQ5n+dImQ8n*dReQ3n*dImQ5n+dImQ8n*dImQ3n*dReQ5n)
+               - (pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - 2.*(dReQ4n*dReQ3n*dReQ1n-dReQ4n*dImQ3n*dImQ1n+dImQ4n*dReQ3n*dImQ1n+dImQ4n*dImQ3n*dReQ1n)
+               + pow(dReQ8n,2.)+pow(dImQ8n,2.)+2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+               + 4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+               + 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult) 
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n4n1n1n = (-pow(dImQ1n,2.)*dImQ4n*dImQ6n+dImQ4n*dImQ6n*pow(dReQ1n,2.) 
+               + 2.*dImQ1n*dImQ6n*dReQ1n*dReQ4n-2.*dImQ1n*dImQ4n*dReQ1n*dReQ6n 
+               - pow(dImQ1n,2.)*dReQ4n*dReQ6n+pow(dReQ1n,2.)*dReQ4n*dReQ6n
+               - 2.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n) 
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n) 
+               - (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n) 
+               + 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)
+               + pow(dReQ4n,2.)+pow(dImQ4n,2.))+pow(dReQ2n,2.)+pow(dImQ2n,2.)
+               + 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n2n4n4n = ((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+               + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n)
+               - (pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+               - (dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+               - 2.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - (2.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - (pow(dReQ8n,2.)+pow(dImQ8n,2.))-2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               - 4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)))
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - 6./((dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n4n5n5n = ((pow(dReQ5n,2.)-pow(dImQ5n,2.))*(dReQ6n*dReQ4n-dImQ6n*dImQ4n) 
+               + 2.*dReQ5n*dImQ5n*(dReQ6n*dImQ4n+dImQ6n*dReQ4n)
+               - (dReQ10n*dReQ4n*dReQ6n-dReQ10n*dImQ4n*dImQ6n+dImQ10n*dReQ4n*dImQ6n+dImQ10n*dImQ4n*dReQ6n)
+               - (pow(dReQ5n,2.)*dReQ10n+2.*dReQ5n*dImQ5n*dImQ10n-pow(dImQ5n,2.)*dReQ10n)
+               - 2.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               + pow(dReQ10n,2.)+pow(dImQ10n,2.)+2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + 4.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))              
+               + 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+  // Four distinct harmonics (8): 
+  four4n1n3n2n = (dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+               + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+               - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+               + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n 
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               - (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               + pow(dReQ5n,2.)+pow(dImQ5n,2.)+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+3.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + 3.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult) 
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four5n1n4n2n = (dImQ1n*dImQ2n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ1n*dReQ2n 
+               + dImQ2n*dImQ5n*dReQ1n*dReQ4n-dImQ1n*dImQ5n*dReQ2n*dReQ4n
+               - dImQ2n*dImQ4n*dReQ1n*dReQ5n+dImQ1n*dImQ4n*dReQ2n*dReQ5n+dImQ1n*dImQ2n*dReQ4n*dReQ5n
+               + dReQ1n*dReQ2n*dReQ4n*dReQ5n
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+               + pow(dReQ6n,2.)+pow(dImQ6n,2.)
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + pow(dReQ3n,2.)+pow(dImQ3n,2.)+2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+               + 3.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four5n2n4n3n = (dImQ2n*dImQ3n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ2n*dReQ3n 
+               + dImQ3n*dImQ5n*dReQ2n*dReQ4n-dImQ2n*dImQ5n*dReQ3n*dReQ4n
+               - dImQ3n*dImQ4n*dReQ2n*dReQ5n+dImQ2n*dImQ4n*dReQ3n*dReQ5n 
+               + dImQ2n*dImQ3n*dReQ4n*dReQ5n+dReQ2n*dReQ3n*dReQ4n*dReQ5n
+               - (dReQ7n*dReQ5n*dReQ2n-dReQ7n*dImQ5n*dImQ2n+dImQ7n*dReQ5n*dImQ2n+dImQ7n*dImQ5n*dReQ2n)
+               - (dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n+dImQ7n*dImQ4n*dReQ3n)
+               - (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+               - (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+               + 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + 3.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+pow(dReQ1n,2.)+pow(dImQ1n,2.)-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n1n4n3n = (dImQ1n*dImQ3n*dImQ4n*dImQ6n+dImQ4n*dImQ6n*dReQ1n*dReQ3n 
+               + dImQ3n*dImQ6n*dReQ1n*dReQ4n-dImQ1n*dImQ6n*dReQ3n*dReQ4n
+               - dImQ3n*dImQ4n*dReQ1n*dReQ6n+dImQ1n*dImQ4n*dReQ3n*dReQ6n+dImQ1n*dImQ3n*dReQ4n*dReQ6n
+               + dReQ1n*dReQ3n*dReQ4n*dReQ6n
+               - (dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n+dImQ7n*dImQ6n*dReQ1n)
+               - (dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n+dImQ7n*dImQ4n*dReQ3n)
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               - (dReQ4n*dReQ1n*dReQ3n-dReQ4n*dImQ1n*dImQ3n+dImQ4n*dReQ1n*dImQ3n+dImQ4n*dImQ1n*dReQ3n)
+               - (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+3.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + pow(dReQ2n,2.)+pow(dImQ2n,2.)+2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n1n5n2n = (dImQ1n*dImQ2n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ1n*dReQ2n 
+               + dImQ2n*dImQ6n*dReQ1n*dReQ5n-dImQ1n*dImQ6n*dReQ2n*dReQ5n
+               - dImQ2n*dImQ5n*dReQ1n*dReQ6n+dImQ1n*dImQ5n*dReQ2n*dReQ6n+dImQ1n*dImQ2n*dReQ5n*dReQ6n
+               + dReQ1n*dReQ2n*dReQ5n*dReQ6n
+               - (dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n+dImQ7n*dImQ6n*dReQ1n)
+               - (dReQ7n*dReQ5n*dReQ2n-dReQ7n*dImQ5n*dImQ2n+dImQ7n*dReQ5n*dImQ2n+dImQ7n*dImQ5n*dReQ2n)
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+               - (pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n) 
+               + pow(dReQ7n,2.)+pow(dImQ7n,2.)+2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+pow(dReQ4n,2.)+pow(dImQ4n,2.)
+               + 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+3.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n3n2n1n = (dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+               - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+               + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+               + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+               - (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+pow(dReQ5n,2.)+pow(dImQ5n,2.)
+               + pow(dReQ4n,2.)+pow(dImQ4n,2.)+3.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n2n5n3n = (dImQ2n*dImQ3n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ2n*dReQ3n 
+               + dImQ3n*dImQ6n*dReQ2n*dReQ5n-dImQ2n*dImQ6n*dReQ3n*dReQ5n
+               - dImQ3n*dImQ5n*dReQ2n*dReQ6n+dImQ2n*dImQ5n*dReQ3n*dReQ6n+dImQ2n*dImQ3n*dReQ5n*dReQ6n
+               + dReQ2n*dReQ3n*dReQ5n*dReQ6n
+               - (dReQ8n*dReQ6n*dReQ2n-dReQ8n*dImQ6n*dImQ2n+dImQ8n*dReQ6n*dImQ2n+dImQ8n*dImQ6n*dReQ2n)
+               - (dReQ8n*dReQ5n*dReQ3n-dReQ8n*dImQ5n*dImQ3n+dImQ8n*dReQ5n*dImQ3n+dImQ8n*dImQ5n*dReQ3n)
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+               + pow(dReQ8n,2.)+pow(dImQ8n,2.)+2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+3.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+               + 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+pow(dReQ1n,2.)+pow(dImQ1n,2.)-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  four6n3n5n4n = (dImQ3n*dImQ4n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ3n*dReQ4n 
+               + dImQ4n*dImQ6n*dReQ3n*dReQ5n-dImQ3n*dImQ6n*dReQ4n*dReQ5n
+               - dImQ4n*dImQ5n*dReQ3n*dReQ6n+dImQ3n*dImQ5n*dReQ4n*dReQ6n+dImQ3n*dImQ4n*dReQ5n*dReQ6n
+               + dReQ3n*dReQ4n*dReQ5n*dReQ6n
+               - (dReQ9n*dReQ6n*dReQ3n-dReQ9n*dImQ6n*dImQ3n+dImQ9n*dReQ6n*dImQ3n+dImQ9n*dImQ6n*dReQ3n)
+               - (dReQ9n*dReQ5n*dReQ4n-dReQ9n*dImQ5n*dImQ4n+dImQ9n*dReQ5n*dImQ4n+dImQ9n*dImQ5n*dReQ4n)
+               - (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+               - (dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+               - (dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+               - (dReQ4n*dReQ3n*dReQ1n-dReQ4n*dImQ3n*dImQ1n+dImQ4n*dReQ3n*dImQ1n+dImQ4n*dImQ3n*dReQ1n)
+               + pow(dReQ9n,2.)+pow(dImQ9n,2.)+2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+               + 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+pow(dReQ2n,2.)+pow(dImQ2n,2.)
+               + pow(dReQ1n,2.)+pow(dImQ1n,2.)-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+  f4pCorrelations->Fill(0.5,four1n1n1n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(1.5,four2n2n2n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(2.5,four3n3n3n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(3.5,four4n4n4n4n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(4.5,four5n5n5n5n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(5.5,four6n6n6n6n,d4pMultiplicityWeight);
+  //f4pCorrelations->Fill(6.5,0.,d4pMultiplicityWeight); // empty
+  f4pCorrelations->Fill(7.5,four2n1n2n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(8.5,four3n1n3n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(9.5,four3n2n3n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(10.5,four4n1n4n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(11.5,four4n2n4n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(12.5,four4n3n4n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(13.5,four5n1n5n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(14.5,four5n2n5n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(15.5,four5n3n5n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(16.5,four5n4n5n4n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(17.5,four6n1n6n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(18.5,four6n2n6n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(19.5,four6n3n6n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(20.5,four6n4n6n4n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(21.5,four6n5n6n5n,d4pMultiplicityWeight);
+  //f4pCorrelations->Fill(22.5,0.,d4pMultiplicityWeight); // empty
+  f4pCorrelations->Fill(23.5,four3n1n1n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(24.5,four6n2n2n2n,d4pMultiplicityWeight);
+  //f4pCorrelations->Fill(25.5,0.,d4pMultiplicityWeight); // empty
+  f4pCorrelations->Fill(26.5,four3n1n2n2n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(27.5,four4n2n1n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(28.5,four4n2n3n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(29.5,four5n2n2n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(30.5,four5n3n1n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(31.5,four5n1n3n3n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(32.5,four5n3n4n4n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(33.5,four6n4n1n1n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(34.5,four6n2n4n4n,d4pMultiplicityWeight);
+  f4pCorrelations->Fill(35.5,four6n4n5n5n,d4pMultiplicityWeight);
+  //f4pCorrelations->Fill(36.5,0.,d4pMultiplicityWeight); // empty
+  f4pCorrelations->Fill(37.5,four4n1n3n2n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(38.5,four5n1n4n2n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(39.5,four5n2n4n3n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(40.5,four6n1n4n3n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(41.5,four6n1n5n2n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(42.5,four6n3n2n1n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(43.5,four6n2n5n3n,d4pMultiplicityWeight); 
+  f4pCorrelations->Fill(44.5,four6n3n5n4n,d4pMultiplicityWeight); 
+  allMixedCorrelators[15]=four1n1n1n1n;
+  allMixedCorrelators[16]=four2n2n2n2n;
+  allMixedCorrelators[17]=four3n3n3n3n;
+  allMixedCorrelators[18]=four4n4n4n4n;
+  allMixedCorrelators[19]=four5n5n5n5n;
+  allMixedCorrelators[20]=four6n6n6n6n;
+  allMixedCorrelators[21]=four2n1n2n1n;
+  allMixedCorrelators[22]=four3n1n3n1n;
+  allMixedCorrelators[23]=four3n2n3n2n;
+  allMixedCorrelators[24]=four4n1n4n1n;
+  allMixedCorrelators[25]=four4n2n4n2n;
+  allMixedCorrelators[26]=four4n3n4n3n;
+  allMixedCorrelators[27]=four5n1n5n1n;
+  allMixedCorrelators[28]=four5n2n5n2n;
+  allMixedCorrelators[29]=four5n3n5n3n;
+  allMixedCorrelators[30]=four5n4n5n4n;
+  allMixedCorrelators[31]=four6n1n6n1n;
+  allMixedCorrelators[32]=four6n2n6n2n;
+  allMixedCorrelators[33]=four6n3n6n3n;
+  allMixedCorrelators[34]=four6n4n6n4n;
+  allMixedCorrelators[35]=four6n5n6n5n;
+  allMixedCorrelators[36]=four3n1n1n1n;
+  allMixedCorrelators[37]=four6n2n2n2n;
+  allMixedCorrelators[38]=four3n1n2n2n;
+  allMixedCorrelators[39]=four4n2n1n1n;
+  allMixedCorrelators[40]=four4n2n3n3n;
+  allMixedCorrelators[41]=four5n2n2n1n;
+  allMixedCorrelators[42]=four5n3n1n1n;
+  allMixedCorrelators[43]=four5n1n3n3n;
+  allMixedCorrelators[44]=four5n3n4n4n;
+  allMixedCorrelators[45]=four6n4n1n1n;
+  allMixedCorrelators[46]=four6n2n4n4n;
+  allMixedCorrelators[47]=four6n4n5n5n;
+  allMixedCorrelators[48]=four4n1n3n2n;
+  allMixedCorrelators[49]=four5n1n4n2n;
+  allMixedCorrelators[50]=four5n2n4n3n;
+  allMixedCorrelators[51]=four6n1n4n3n;
+  allMixedCorrelators[52]=four6n1n5n2n;
+  allMixedCorrelators[53]=four6n3n2n1n;
+  allMixedCorrelators[54]=four6n2n5n3n;
+  allMixedCorrelators[55]=four6n3n5n4n;
+ } // end of if(dMult>3.)
+
+ // f) Calculate 5-p correlations:
+ //  f1) "Standard candles" (30):
+ Double_t five3n2n3n1n1n = 0.; // <5>_{3n,2n|3n,1n,1n} = <cos(n(3*phi1+2*phi2-3*phi3-1*phi4-1*phi5))>
+ Double_t five4n1n2n2n1n = 0.; // <5>_{4n,1n|2n,2n,1n} = <cos(n(4*phi1+1*phi2-2*phi3-2*phi4-1*phi5))>
+ Double_t five4n2n3n2n1n = 0.; // <5>_{4n,2n|3n,2n,1n} = <cos(n(4*phi1+2*phi2-3*phi3-2*phi4-1*phi5))>
+ Double_t five4n3n3n2n2n = 0.; // <5>_{4n,3n|3n,2n,2n} = <cos(n(4*phi1+3*phi2-3*phi3-2*phi4-2*phi5))>
+ Double_t five4n2n4n1n1n = 0.; // <5>_{4n,2n|4n,1n,1n} = <cos(n(4*phi1+2*phi2-4*phi3-1*phi4-1*phi5))>
+ Double_t five4n3n4n2n1n = 0.; // <5>_{4n,3n|4n,2n,1n} = <cos(n(4*phi1+3*phi2-4*phi3-2*phi4-1*phi5))>
+ Double_t five5n1n3n2n1n = 0.; // <5>_{5n,1n|3n,2n,1n} = <cos(n(5*phi1+1*phi2-3*phi3-2*phi4-1*phi5))>
+ Double_t five5n2n5n1n1n = 0.; // <5>_{5n,2n|5n,1n,1n} = <cos(n(5*phi1+2*phi2-5*phi3-1*phi4-1*phi5))>
+ Double_t five5n2n4n2n1n = 0.; // <5>_{5n,2n|4n,2n,1n} = <cos(n(5*phi1+2*phi2-4*phi3-2*phi4-1*phi5))>
+ Double_t five5n3n4n3n1n = 0.; // <5>_{5n,3n|4n,3n,1n} = <cos(n(5*phi1+3*phi2-4*phi3-3*phi4-1*phi5))>
+ Double_t five5n4n4n3n2n = 0.; // <5>_{5n,4n|4n,3n,2n} = <cos(n(5*phi1+4*phi2-4*phi3-3*phi4-2*phi5))>
+ Double_t five5n3n5n2n1n = 0.; // <5>_{5n,3n|5n,2n,1n} = <cos(n(5*phi1+3*phi2-5*phi3-2*phi4-1*phi5))>
+ Double_t five5n4n5n2n2n = 0.; // <5>_{5n,4n|5n,2n,2n} = <cos(n(5*phi1+4*phi2-5*phi3-2*phi4-2*phi5))>
+ Double_t five5n4n5n3n1n = 0.; // <5>_{5n,4n|5n,3n,1n} = <cos(n(5*phi1+4*phi2-5*phi3-3*phi4-1*phi5))>
+ Double_t five6n1n3n3n1n = 0.; // <5>_{6n,1n|3n,3n,1n} = <cos(n(6*phi1+1*phi2-3*phi3-3*phi4-1*phi5))>
+ Double_t five6n2n3n3n2n = 0.; // <5>_{6n,2n|3n,3n,2n} = <cos(n(6*phi1+2*phi2-3*phi3-3*phi4-2*phi5))>
+ Double_t five6n1n4n2n1n = 0.; // <5>_{6n,1n|4n,2n,1n} = <cos(n(6*phi1+1*phi2-4*phi3-2*phi4-1*phi5))>
+ Double_t five6n3n4n3n2n = 0.; // <5>_{6n,3n|4n,3n,2n} = <cos(n(6*phi1+3*phi2-4*phi3-3*phi4-2*phi5))>
+ Double_t five6n4n4n3n3n = 0.; // <5>_{6n,4n|4n,3n,3n} = <cos(n(6*phi1+4*phi2-4*phi3-3*phi4-3*phi5))>
+ Double_t five6n2n5n2n1n = 0.; // <5>_{6n,2n|5n,2n,1n} = <cos(n(6*phi1+2*phi2-5*phi3-2*phi4-1*phi5))>
+ Double_t five6n3n5n3n1n = 0.; // <5>_{6n,3n|5n,3n,1n} = <cos(n(6*phi1+3*phi2-5*phi3-3*phi4-1*phi5))>
+ Double_t five6n4n5n4n1n = 0.; // <5>_{6n,4n|5n,4n,1n} = <cos(n(6*phi1+4*phi2-5*phi3-4*phi4-1*phi5))>
+ Double_t five6n5n5n3n3n = 0.; // <5>_{6n,5n|5n,3n,3n} = <cos(n(6*phi1+5*phi2-5*phi3-3*phi4-3*phi5))>
+ Double_t five6n2n6n1n1n = 0.; // <5>_{6n,2n|6n,1n,1n} = <cos(n(6*phi1+2*phi2-6*phi3-1*phi4-1*phi5))>
+ Double_t five6n3n6n2n1n = 0.; // <5>_{6n,3n|6n,2n,1n} = <cos(n(6*phi1+3*phi2-6*phi3-2*phi4-1*phi5))>
+ Double_t five6n4n6n2n2n = 0.; // <5>_{6n,4n|6n,2n,2n} = <cos(n(6*phi1+4*phi2-6*phi3-2*phi4-2*phi5))>
+ Double_t five6n4n6n3n1n = 0.; // <5>_{6n,4n|6n,3n,1n} = <cos(n(6*phi1+4*phi2-6*phi3-3*phi4-1*phi5))>
+ Double_t five6n5n5n4n2n = 0.; // <5>_{6n,5n|5n,4n,2n} = <cos(n(6*phi1+5*phi2-5*phi3-4*phi4-2*phi5))>
+ Double_t five6n5n6n3n2n = 0.; // <5>_{6n,5n|6n,3n,2n} = <cos(n(6*phi1+5*phi2-6*phi3-3*phi4-2*phi5))> // TBI swap with previous
+ Double_t five6n5n6n4n1n = 0.; // <5>_{6n,5n|6n,4n,1n} = <cos(n(6*phi1+5*phi2-6*phi3-4*phi4-1*phi5))>
+ //  f2) Two distinct harmonics (9):
+ Double_t five2n1n1n1n1n = 0.; // <5>_{2n,1n|1n,1n,1n} = <cos(n(2*phi1+1*phi2-1*phi3-1*phi4-1*phi5))>
+ Double_t five2n2n2n1n1n = 0.; // <5>_{2n,2n|2n,1n,1n} = <cos(n(2*phi1+2*phi2-2*phi3-1*phi4-1*phi5))>
+ Double_t five3n3n2n2n2n = 0.; // <5>_{3n,3n|2n,2n,2n} = <cos(n(3*phi1+3*phi2-2*phi3-2*phi4-2*phi5))>
+ Double_t five4n1n1n1n1n = 0.; // <5>_{4n|1n,1n,1n,1n} = <cos(n(4*phi1-1*phi2-1*phi3-1*phi4-1*phi5))>
+ Double_t five4n2n2n2n2n = 0.; // <5>_{4n,2n|2n,2n,2n} = <cos(n(4*phi1+2*phi2-2*phi3-2*phi4-2*phi5))>
+ Double_t five4n4n4n2n2n = 0.; // <5>_{4n,4n|4n,2n,2n} = <cos(n(4*phi1+4*phi2-4*phi3-2*phi4-2*phi5))>
+ Double_t five6n3n3n3n3n = 0.; // <5>_{6n,3n|3n,3n,3n} = <cos(n(6*phi1+3*phi2-3*phi3-3*phi4-3*phi5))>
+ Double_t five6n6n4n4n4n = 0.; // <5>_{6n,6n|4n,4n,4n} = <cos(n(6*phi1+6*phi2-4*phi3-4*phi4-4*phi5))>
+ Double_t five6n6n6n3n3n = 0.; // <5>_{6n,6n|6n,3n,3n} = <cos(n(6*phi1+6*phi2-6*phi3-3*phi4-3*phi5))>
+ //  f3) Three distinct harmonics (30):
+ Double_t five3n1n2n1n1n = 0.; // <5>_{3n,1n|2n,1n,1n} = <cos(n(3*phi1+1*phi2-2*phi3-1*phi4-1*phi5))>
+ Double_t five3n2n2n2n1n = 0.; // <5>_{3n,2n|2n,2n,1n} = <cos(n(3*phi1+2*phi2-2*phi3-2*phi4-1*phi5))>
+ Double_t five3n3n3n2n1n = 0.; // <5>_{3n,3n|3n,2n,1n} = <cos(n(3*phi1+3*phi2-3*phi3-2*phi4-1*phi5))>
+ Double_t five4n1n3n1n1n = 0.; // <5>_{4n,1n|3n,1n,1n} = <cos(n(4*phi1+1*phi2-3*phi3-1*phi4-1*phi5))>
+ Double_t five4n1n1n3n3n = 0.; // <5>_{4n,1n,1n|3n,3n} = <cos(n(4*phi1+1*phi2+1*phi3-3*phi4-3*phi5))>
+ Double_t five4n3n3n3n1n = 0.; // <5>_{4n,3n|3n,3n,1n} = <cos(n(4*phi1+3*phi2-3*phi3-3*phi4-1*phi5))>
+ Double_t five4n4n3n3n2n = 0.; // <5>_{4n,4n|3n,3n,2n} = <cos(n(4*phi1+4*phi2-3*phi3-3*phi4-2*phi5))>
+ Double_t five4n4n4n3n1n = 0.; // <5>_{4n,4n|4n,3n,1n} = <cos(n(4*phi1+4*phi2-4*phi3-3*phi4-1*phi5))>
+ Double_t five5n2n1n1n1n = 0.; // <5>_{5n|2n,1n,1n,1n} = <cos(n(5*phi1-2*phi2-1*phi3-1*phi4-1*phi5))>
+ Double_t five5n1n2n2n2n = 0.; // <5>_{5n,1n|2n,2n,2n} = <cos(n(5*phi1+1*phi2-2*phi3-2*phi4-2*phi5))>
+ Double_t five5n2n3n2n2n = 0.; // <5>_{5n,2n|3n,2n,2n} = <cos(n(5*phi1+2*phi2-3*phi3-2*phi4-2*phi5))>
+ Double_t five5n3n3n3n2n = 0.; // <5>_{5n,3n|3n,3n,2n} = <cos(n(5*phi1+3*phi2-3*phi3-3*phi4-2*phi5))>
+ Double_t five5n1n4n1n1n = 0.; // <5>_{5n,1n|4n,1n,1n} = <cos(n(5*phi1+1*phi2-4*phi3-1*phi4-1*phi5))>
+ Double_t five5n4n3n3n3n = 0.; // <5>_{5n,4n|3n,3n,3n} = <cos(n(5*phi1+4*phi2-3*phi3-3*phi4-3*phi5))>
+ Double_t five5n4n4n4n1n = 0.; // <5>_{5n,4n|4n,4n,1n} = <cos(n(5*phi1+4*phi2-4*phi3-4*phi4-1*phi5))>
+ Double_t five5n5n4n3n3n = 0.; // <5>_{5n,5n|4n,3n,3n} = <cos(n(5*phi1+5*phi2-4*phi3-3*phi4-3*phi5))>
+ Double_t five5n5n4n4n2n = 0.; // <5>_{5n,5n|4n,4n,2n} = <cos(n(5*phi1+5*phi2-4*phi3-4*phi4-2*phi5))>
+ Double_t five5n5n5n3n2n = 0.; // <5>_{5n,5n|5n,3n,2n} = <cos(n(5*phi1+5*phi2-5*phi3-3*phi4-2*phi5))>
+ Double_t five5n5n5n4n1n = 0.; // <5>_{5n,5n|5n,4n,1n} = <cos(n(5*phi1+5*phi2-5*phi3-4*phi4-1*phi5))>
+ Double_t five6n2n2n1n1n = 0.; // <5>_{6n|2n,2n,1n,1n} = <cos(n(6*phi1-2*phi2-2*phi3-1*phi4-1*phi5))>
+ Double_t five6n3n1n1n1n = 0.; // <5>_{6n|3n,1n,1n,1n} = <cos(n(6*phi1-3*phi2-1*phi3-1*phi4-1*phi5))>
+ Double_t five6n1n1n4n4n = 0.; // <5>_{6n,1n,1n|4n,4n} = <cos(n(6*phi1+1*phi2+1*phi3-4*phi4-4*phi5))>
+ Double_t five6n1n5n1n1n = 0.; // <5>_{6n,1n|5n,1n,1n} = <cos(n(6*phi1+1*phi2-5*phi3-1*phi4-1*phi5))>
+ Double_t five6n2n4n2n2n = 0.; // <5>_{6n,2n|4n,2n,2n} = <cos(n(6*phi1+2*phi2-4*phi3-2*phi4-2*phi5))>
+ Double_t five6n4n4n4n2n = 0.; // <5>_{6n,4n|4n,4n,2n} = <cos(n(6*phi1+4*phi2-4*phi3-4*phi4-2*phi5))>
+ Double_t five6n2n2n5n5n = 0.; // <5>_{6n,2n,2n|5n,5n} = <cos(n(6*phi1+2*phi2+2*phi3-5*phi4-5*phi5))>
+ Double_t five6n5n5n5n1n = 0.; // <5>_{6n,5n|5n,5n,1n} = <cos(n(6*phi1+5*phi2-5*phi3-5*phi4-1*phi5))>
+ Double_t five6n6n5n5n2n = 0.; // <5>_{6n,6n|5n,5n,2n} = <cos(n(6*phi1+6*phi2-5*phi3-5*phi4-2*phi5))>
+ Double_t five6n6n6n4n2n = 0.; // <5>_{6n,6n|6n,4n,2n} = <cos(n(6*phi1+6*phi2-6*phi3-4*phi4-2*phi5))>
+ Double_t five6n6n6n5n1n = 0.; // <5>_{6n,6n|6n,5n,1n} = <cos(n(6*phi1+6*phi2-6*phi3-5*phi4-1*phi5))> // TBI swap with the one above
+ // Four distinct harmonics (11):
+ Double_t five5n2n3n3n1n = 0.; // <5>_{5n,2n|3n,3n,1n} = <cos(n(5*phi1+2*phi2-3*phi3-3*phi4-1*phi5))>
+ Double_t five5n1n1n4n3n = 0.; // <5>_{5n,1n,1n|4n,3n} = <cos(n(5*phi1+1*phi2+1*phi3-4*phi4-3*phi5))>
+ Double_t five5n3n4n2n2n = 0.; // <5>_{5n,3n|4n,2n,2n} = <cos(n(5*phi1+3*phi2-4*phi3-2*phi4-2*phi5))>
+ Double_t five5n2n1n4n4n = 0.; // <5>_{5n,2n,1n|4n,4n} = <cos(n(5*phi1+2*phi2+1*phi3-4*phi4-4*phi5))>
+ Double_t five6n1n3n2n2n = 0.; // <5>_{6n,1n|3n,2n,2n} = <cos(n(6*phi1+1*phi2-3*phi3-2*phi4-2*phi5))>
+ Double_t five6n3n4n4n1n = 0.; // <5>_{6n,3n|4n,4n,1n} = <cos(n(6*phi1+3*phi2-4*phi3-4*phi4-1*phi5))>
+ Double_t five6n1n1n5n3n = 0.; // <5>_{6n,1n,1n|5n,3n} = <cos(n(6*phi1+1*phi2+1*phi3-5*phi4-3*phi5))>
+ Double_t five6n3n5n2n2n = 0.; // <5>_{6n,3n|5n,2n,2n} = <cos(n(6*phi1+3*phi2-5*phi3-2*phi4-2*phi5))>
+ Double_t five6n5n4n4n3n = 0.; // <5>_{6n,5n|4n,4n,3n} = <cos(n(6*phi1+5*phi2-4*phi3-4*phi4-3*phi5))>
+ Double_t five6n3n1n5n5n = 0.; // <5>_{6n,3n,1n|5n,5n} = <cos(n(6*phi1+3*phi2+1*phi3-5*phi4-5*phi5))>
+ Double_t five6n6n5n4n3n = 0.; // <5>_{6n,6n|5n,4n,3n} = <cos(n(6*phi1+6*phi2-5*phi3-4*phi4-3*phi5))>
+ // Five distinct harmonics (3):
+ Double_t five6n2n4n3n1n = 0.; // <5>_{6n,2n|4n,3n,1n} = <cos(n(6*phi1+2*phi2-4*phi3-3*phi4-1*phi5))>
+ Double_t five6n2n1n5n4n = 0.; // <5>_{6n,2n,1n|5n,4n} = <cos(n(6*phi1+2*phi2+1*phi3-5*phi4-4*phi5))>
+ Double_t five6n4n5n3n2n = 0.; // <5>_{6n,4n|5n,3n,2n} = <cos(n(6*phi1+4*phi2-5*phi3-3*phi4-2*phi5))>
+ if(dMult>4.)
+ {
+  five3n2n3n1n1n = (-(pow(dImQ3n,2.)+pow(dReQ3n,2.))
+                 * (-2.*dImQ1n*dImQ2n*dReQ1n+pow(dImQ1n,2.)*dReQ2n-pow(dReQ1n,2.)*dReQ2n)
+                 - (-pow(dImQ1n,2.)*dImQ3n*dImQ5n+dImQ3n*dImQ5n*pow(dReQ1n,2.)
+                 + 2.*dImQ1n*dImQ5n*dReQ1n*dReQ3n-2.*dImQ1n*dImQ3n*dReQ1n*dReQ5n 
+                 - pow(dImQ1n,2.)*dReQ3n*dReQ5n+pow(dReQ1n,2.)*dReQ3n*dReQ5n)
+                 - 2.*(dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 - (dReQ3n*pow(dReQ1n,3.)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2.)
+                 + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2.)-dImQ3n*pow(dImQ1n,3.))
+                 - 2.*((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 3.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 6.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 2.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 9.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 - (dMult-8.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+(dMult-12.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-9.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n1n2n2n1n = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 * (pow(dReQ2n,2.)*dReQ4n-pow(dImQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n)
+                 - 2.*(dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)    
+                 - 2.*((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2.)-pow(dImQ1n,2.)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n))
+                 - (-pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+                 + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+                 - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n)
+                 - ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 2.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 2.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 + 3.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 4.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 + 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 6.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 - (dMult-6.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+(dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*dMult*(dMult-12.))
+                  / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n2n3n2n1n = ((pow(dImQ2n,2.)+pow(dReQ2n,2.))*(dImQ3n*dImQ4n*dReQ1n+dImQ1n*dImQ4n*dReQ3n 
+                 - dImQ1n*dImQ3n*dReQ4n+dReQ1n*dReQ3n*dReQ4n)
+                 - (dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - (dImQ1n*dImQ2n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ5n*dReQ1n*dReQ4n-dImQ1n*dImQ5n*dReQ2n*dReQ4n
+                 - dImQ2n*dImQ4n*dReQ1n*dReQ5n+dImQ1n*dImQ4n*dReQ2n*dReQ5n 
+                 + dImQ1n*dImQ2n*dReQ4n*dReQ5n+dReQ1n*dReQ2n*dReQ4n*dReQ5n)
+                 - ((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n)
+                 - (dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 - ((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2.)-pow(dImQ1n,2.)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n))
+                 - ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 3.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + (dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+                 + pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n
+                 + dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n
+                 + 3.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 - (dMult-7.)*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 3.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 7.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 4.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+(dMult-10.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + 2.*(dMult-7.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+(dMult-12.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+
+  // *********************************************************************
+  Double_t reQ7nQ3nstarQ2nstarQ2nstar = (dReQ7n*dReQ3n+dImQ7n*dImQ3n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                                      + 2.*dReQ2n*dImQ2n*(dImQ7n*dReQ3n-dReQ7n*dImQ3n); 
+  Double_t reQ5nQ2nQ4nstarQ3nstar = dImQ2n*dImQ3n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ2n*dReQ3n 
+                                  + dImQ3n*dImQ5n*dReQ2n*dReQ4n-dImQ2n*dImQ5n*dReQ3n*dReQ4n
+                                  - dImQ3n*dImQ4n*dReQ2n*dReQ5n+dImQ2n*dImQ4n*dReQ3n*dReQ5n 
+                                  + dImQ2n*dImQ3n*dReQ4n*dReQ5n+dReQ2n*dReQ3n*dReQ4n*dReQ5n;
+  Double_t reQ7nQ4nstarQ3nstar = dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n
+                               + dImQ7n*dImQ4n*dReQ3n; 
+
+
+  Double_t reQ7nQ5nstarQ2nstar = dReQ7n*dReQ5n*dReQ2n-dReQ7n*dImQ5n*dImQ2n+dImQ7n*dReQ5n*dImQ2n
+                               + dImQ7n*dImQ5n*dReQ2n;
+
+  // <5>_{6n,4n|4n,3n,3n}:
+  Double_t reQ10nQ4nstarQ3nstarQ3nstar = (dReQ10n*dReQ4n+dImQ10n*dImQ4n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                                      + 2.*dReQ3n*dImQ3n*(dImQ10n*dReQ4n-dReQ10n*dImQ4n); 
+  Double_t reQ7nQ3nQ6nstarQ4nstar = dImQ3n*dImQ4n*dImQ6n*dImQ7n+dImQ6n*dImQ7n*dReQ3n*dReQ4n 
+                                  + dImQ4n*dImQ7n*dReQ3n*dReQ6n-dImQ3n*dImQ7n*dReQ4n*dReQ6n
+                                  - dImQ4n*dImQ6n*dReQ3n*dReQ7n+dImQ3n*dImQ6n*dReQ4n*dReQ7n 
+                                  + dImQ3n*dImQ4n*dReQ6n*dReQ7n+dReQ3n*dReQ4n*dReQ6n*dReQ7n;
+  Double_t reQ10nQ7nstarQ3nstar = dReQ10n*dReQ7n*dReQ3n-dReQ10n*dImQ7n*dImQ3n+dImQ10n*dReQ7n*dImQ3n
+                                + dImQ10n*dImQ7n*dReQ3n; 
+  Double_t reQ10nQ6nstarQ4nstar = dReQ10n*dReQ6n*dReQ4n-dReQ10n*dImQ6n*dImQ4n+dImQ10n*dReQ6n*dImQ4n
+                                + dImQ10n*dImQ6n*dReQ4n; 
+  Double_t reQ6nQ1nQ4nstarQ3nstar = dImQ1n*dImQ3n*dImQ4n*dImQ6n+dImQ4n*dImQ6n*dReQ1n*dReQ3n 
+                                  + dImQ3n*dImQ6n*dReQ1n*dReQ4n-dImQ1n*dImQ6n*dReQ3n*dReQ4n
+                                  - dImQ3n*dImQ4n*dReQ1n*dReQ6n+dImQ1n*dImQ4n*dReQ3n*dReQ6n 
+                                  + dImQ1n*dImQ3n*dReQ4n*dReQ6n+dReQ1n*dReQ3n*dReQ4n*dReQ6n;
+  Double_t reQ7nQ6nstarQ1nstar = dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n
+                               + dImQ7n*dImQ6n*dReQ1n;
+ // <5>_{6n,5n|5n,3n,3n}:
+ /*Double_t reQ11nQ5nstarQ3nstarQ3nstar = (dReQ11n*dReQ5n+dImQ11n*dImQ5n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                                      + 2.*dReQ3n*dImQ3n*(dImQ11n*dReQ5n-dReQ11n*dImQ5n); */
+ Double_t reQ6nQ2nQ5nstarQ3nstar = dImQ2n*dImQ3n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ2n*dReQ3n 
+                                 + dImQ3n*dImQ6n*dReQ2n*dReQ5n-dImQ2n*dImQ6n*dReQ3n*dReQ5n
+                                 - dImQ3n*dImQ5n*dReQ2n*dReQ6n+dImQ2n*dImQ5n*dReQ3n*dReQ6n 
+                                 + dImQ2n*dImQ3n*dReQ5n*dReQ6n+dReQ2n*dReQ3n*dReQ5n*dReQ6n;
+ Double_t reQ8nQ3nQ6nstarQ5nstar = dImQ3n*dImQ5n*dImQ6n*dImQ8n+dImQ6n*dImQ8n*dReQ3n*dReQ5n 
+                                 + dImQ5n*dImQ8n*dReQ3n*dReQ6n-dImQ3n*dImQ8n*dReQ5n*dReQ6n
+                                 - dImQ5n*dImQ6n*dReQ3n*dReQ8n+dImQ3n*dImQ6n*dReQ5n*dReQ8n 
+                                 + dImQ3n*dImQ5n*dReQ6n*dReQ8n+dReQ3n*dReQ5n*dReQ6n*dReQ8n;
+ Double_t reQ11nQ6nstarQ5nstar = dReQ11n*dReQ6n*dReQ5n-dReQ11n*dImQ6n*dImQ5n+dImQ11n*dReQ6n*dImQ5n
+                               + dImQ11n*dImQ6n*dReQ5n;
+ Double_t reQ8nQ6nstarQ2nstar = dReQ8n*dReQ6n*dReQ2n-dReQ8n*dImQ6n*dImQ2n+dImQ8n*dReQ6n*dImQ2n
+                              + dImQ8n*dImQ6n*dReQ2n; 
+ Double_t reQ11nQ8nstarQ3nstar = dReQ11n*dReQ8n*dReQ3n-dReQ11n*dImQ8n*dImQ3n+dImQ11n*dReQ8n*dImQ3n
+                               + dImQ11n*dImQ8n*dReQ3n;
+ Double_t reQ8nQ5nstarQ3nstar = dReQ8n*dReQ5n*dReQ3n-dReQ8n*dImQ5n*dImQ3n+dImQ8n*dReQ5n*dImQ3n
+                              + dImQ8n*dImQ5n*dReQ3n; 
+ // <5>_{5n,2n|5n,1n,1n}
+ Double_t reQ7nQ5nstarQ1nstarQ1nstar = (dReQ7n*dReQ5n+dImQ7n*dImQ5n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                                      + 2.*dReQ1n*dImQ1n*(dImQ7n*dReQ5n-dReQ7n*dImQ5n); 
+ Double_t reQ6nQ1nQ5nstarQ2nstar = dImQ1n*dImQ2n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ1n*dReQ2n 
+                                 + dImQ2n*dImQ6n*dReQ1n*dReQ5n-dImQ1n*dImQ6n*dReQ2n*dReQ5n
+                                 - dImQ2n*dImQ5n*dReQ1n*dReQ6n+dImQ1n*dImQ5n*dReQ2n*dReQ6n 
+                                 + dImQ1n*dImQ2n*dReQ5n*dReQ6n+dReQ1n*dReQ2n*dReQ5n*dReQ6n;
+ // <5>_{5n,4n|5n,2n,2n}
+ Double_t reQ9nQ5nstarQ2nstarQ2nstar = (dReQ9n*dReQ5n+dImQ9n*dImQ5n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                                     + 2.*dReQ2n*dImQ2n*(dImQ9n*dReQ5n-dReQ9n*dImQ5n);
+ Double_t reQ7nQ2nQ5nstarQ4nstar = dImQ2n*dImQ4n*dImQ5n*dImQ7n+dImQ5n*dImQ7n*dReQ2n*dReQ4n 
+                                 + dImQ4n*dImQ7n*dReQ2n*dReQ5n-dImQ2n*dImQ7n*dReQ4n*dReQ5n
+                                 - dImQ4n*dImQ5n*dReQ2n*dReQ7n+dImQ2n*dImQ5n*dReQ4n*dReQ7n 
+                                 + dImQ2n*dImQ4n*dReQ5n*dReQ7n+dReQ2n*dReQ4n*dReQ5n*dReQ7n;
+ Double_t reQ9nQ5nstarQ4nstar = dReQ9n*dReQ5n*dReQ4n-dReQ9n*dImQ5n*dImQ4n+dImQ9n*dReQ5n*dImQ4n
+                              + dImQ9n*dImQ5n*dReQ4n; 
+ Double_t reQ9nQ7nstarQ2nstar = dReQ9n*dReQ7n*dReQ2n-dReQ9n*dImQ7n*dImQ2n+dImQ9n*dReQ7n*dImQ2n
+                              + dImQ9n*dImQ7n*dReQ2n; 
+ // <5>_{6n,2n|6n,1n,1n}
+ Double_t reQ8nQ6nstarQ1nstarQ1nstar = (dReQ8n*dReQ6n+dImQ8n*dImQ6n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                                     + 2.*dReQ1n*dImQ1n*(dImQ8n*dReQ6n-dReQ8n*dImQ6n);
+ Double_t reQ7nQ1nQ6nstarQ2nstar = dImQ1n*dImQ2n*dImQ6n*dImQ7n+dImQ6n*dImQ7n*dReQ1n*dReQ2n 
+                                 + dImQ2n*dImQ7n*dReQ1n*dReQ6n-dImQ1n*dImQ7n*dReQ2n*dReQ6n
+                                 - dImQ2n*dImQ6n*dReQ1n*dReQ7n+dImQ1n*dImQ6n*dReQ2n*dReQ7n 
+                                 + dImQ1n*dImQ2n*dReQ6n*dReQ7n+dReQ1n*dReQ2n*dReQ6n*dReQ7n;
+ Double_t reQ8nQ7nstarQ1nstar = dReQ8n*dReQ7n*dReQ1n-dReQ8n*dImQ7n*dImQ1n+dImQ8n*dReQ7n*dImQ1n
+                              + dImQ8n*dImQ7n*dReQ1n;
+ // <5>_{5n,2n|4n,2n,1n}
+ Double_t reQ5nQ2nQ4nstarQ2nstarQ1nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                                        * (dReQ1n*dReQ4n*dReQ5n-dReQ5n*dImQ1n*dImQ4n 
+                                        + dReQ4n*dImQ1n*dImQ5n+dReQ1n*dImQ4n*dImQ5n);
+ Double_t reQ7nQ4nstarQ2nstarQ1nstar = dReQ1n*dReQ2n*dReQ4n*dReQ7n-dReQ4n*dReQ7n*dImQ1n*dImQ2n 
+                                     - dReQ2n*dReQ7n*dImQ1n*dImQ4n-dReQ1n*dReQ7n*dImQ2n*dImQ4n 
+                                     + dReQ2n*dReQ4n*dImQ1n*dImQ7n+dReQ1n*dReQ4n*dImQ2n*dImQ7n 
+                                     + dReQ1n*dReQ2n*dImQ4n*dImQ7n-dImQ1n*dImQ2n*dImQ4n*dImQ7n;
+ // <5>_{4n,3n|4n,2n,1n}:
+ Double_t reQ4nQ3nQ4nstarQ2nstarQ1nstar = (dReQ1n*dReQ2n*dReQ3n-dReQ3n*dImQ1n*dImQ2n 
+	                                + dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n) 
+					* (pow(dReQ4n,2.)+pow(dImQ4n,2.));	  
+ /*
+ Double_t reQ4nQ1nQ3nstarQ2nstar = dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n;
+ */
+ // <5>_{5n,3n|4n,3n,1n}:
+ Double_t reQ5nQ3nQ4nstarQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                                        * (dReQ1n*dReQ4n*dReQ5n-dReQ5n*dImQ1n*dImQ4n 
+                                        + dReQ4n*dImQ1n*dImQ5n+dReQ1n*dImQ4n*dImQ5n);
+ Double_t reQ5nQ3nQ4nstarQ4nstar = dReQ3n*pow(dReQ4n,2.)*dReQ5n+2.*dReQ4n*dReQ5n*dImQ3n*dImQ4n 
+	                         - dReQ3n*dReQ5n*pow(dImQ4n,2.)-pow(dReQ4n,2.)*dImQ3n*dImQ5n
+				 + 2.*dReQ3n*dReQ4n*dImQ4n*dImQ5n+dImQ3n*pow(dImQ4n,2.)*dImQ5n;
+ Double_t reQ7nQ1nQ5nstarQ3nstar = dImQ1n*dImQ3n*dImQ5n*dImQ7n+dImQ5n*dImQ7n*dReQ1n*dReQ3n 
+                                 + dImQ3n*dImQ7n*dReQ1n*dReQ5n-dImQ1n*dImQ7n*dReQ3n*dReQ5n
+                                 - dImQ3n*dImQ5n*dReQ1n*dReQ7n+dImQ1n*dImQ5n*dReQ3n*dReQ7n 
+                                 + dImQ1n*dImQ3n*dReQ5n*dReQ7n+dReQ1n*dReQ3n*dReQ5n*dReQ7n;		
+ Double_t reQ8nQ4nstarQ3nstarQ1nstar = dReQ1n*dReQ3n*dReQ4n*dReQ8n-dReQ4n*dReQ8n*dImQ1n*dImQ3n 
+	                             - dReQ3n*dReQ8n*dImQ1n*dImQ4n-dReQ1n*dReQ8n*dImQ3n*dImQ4n 
+				     + dReQ3n*dReQ4n*dImQ1n*dImQ8n+dReQ1n*dReQ4n*dImQ3n*dImQ8n 
+				     + dReQ1n*dReQ3n*dImQ4n*dImQ8n-dImQ1n*dImQ3n*dImQ4n*dImQ8n;
+ Double_t reQ8nQ4nstarQ4nstar = pow(dReQ4n,2.)*dReQ8n-dReQ8n*pow(dImQ4n,2.)+2.*dReQ4n*dImQ4n*dImQ8n;
+ // <5>_{5n,4n|4n,3n,2n}:
+ Double_t reQ5nQ4nQ4nstarQ3nstarQ2nstar = (pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                                        * (dReQ2n*dReQ3n*dReQ5n-dReQ5n*dImQ2n*dImQ3n 
+                                        + dReQ3n*dImQ2n*dImQ5n+dReQ2n*dImQ3n*dImQ5n);
+ Double_t reQ6nQ3nQ5nstarQ4nstar = dImQ4n*dImQ3n*dImQ6n*dImQ5n+dImQ6n*dImQ5n*dReQ4n*dReQ3n 
+                                 + dImQ3n*dImQ5n*dReQ4n*dReQ6n-dImQ4n*dImQ5n*dReQ3n*dReQ6n
+                                 - dImQ3n*dImQ6n*dReQ4n*dReQ5n+dImQ4n*dImQ6n*dReQ3n*dReQ5n 
+                                 + dImQ4n*dImQ3n*dReQ6n*dReQ5n+dReQ4n*dReQ3n*dReQ6n*dReQ5n;
+ Double_t reQ9nQ4nstarQ3nstarQ2nstar = dReQ2n*dReQ3n*dReQ4n*dReQ9n-dReQ4n*dReQ9n*dImQ2n*dImQ3n 
+	                             - dReQ3n*dReQ9n*dImQ2n*dImQ4n-dReQ2n*dReQ9n*dImQ3n*dImQ4n 
+				     + dReQ3n*dReQ4n*dImQ2n*dImQ9n+dReQ2n*dReQ4n*dImQ3n*dImQ9n 
+				     + dReQ2n*dReQ3n*dImQ4n*dImQ9n-dImQ2n*dImQ3n*dImQ4n*dImQ9n;	  
+ Double_t reQ9nQ6nstarQ3nstar = dReQ9n*dReQ6n*dReQ3n-dReQ9n*dImQ6n*dImQ3n+dImQ9n*dReQ6n*dImQ3n
+                              + dImQ9n*dImQ6n*dReQ3n; 
+ // <5>_{5n,3n|5n,2n,1n}:
+ Double_t reQ5nQ3nQ5nstarQ2nstarQ1nstar = (dReQ1n*dReQ2n*dReQ3n-dReQ3n*dImQ1n*dImQ2n 
+	                                + dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n) 
+					* (pow(dReQ5n,2.)+pow(dImQ5n,2.));
+ Double_t reQ8nQ5nstarQ2nstarQ1nstar = dReQ1n*dReQ2n*dReQ5n*dReQ8n-dReQ5n*dReQ8n*dImQ1n*dImQ2n 
+	                             - dReQ2n*dReQ8n*dImQ1n*dImQ5n-dReQ1n*dReQ8n*dImQ2n*dImQ5n 
+				     + dReQ2n*dReQ5n*dImQ1n*dImQ8n+dReQ1n*dReQ5n*dImQ2n*dImQ8n 
+				     + dReQ1n*dReQ2n*dImQ5n*dImQ8n-dImQ1n*dImQ2n*dImQ5n*dImQ8n;
+ // <5>_{5n,4n|5n,3n,1n}:
+ Double_t reQ5nQ4nQ5nstarQ3nstarQ1nstar = (dReQ1n*dReQ3n*dReQ4n-dReQ4n*dImQ1n*dImQ3n 
+	                                + dReQ3n*dImQ1n*dImQ4n+dReQ1n*dImQ3n*dImQ4n) 
+					* (pow(dReQ5n,2.)+pow(dImQ5n,2.));
+ Double_t reQ8nQ1nQ5nstarQ4nstar = dImQ4n*dImQ1n*dImQ8n*dImQ5n+dImQ8n*dImQ5n*dReQ4n*dReQ1n 
+                                 + dImQ1n*dImQ5n*dReQ4n*dReQ8n-dImQ4n*dImQ5n*dReQ1n*dReQ8n
+                                 - dImQ1n*dImQ8n*dReQ4n*dReQ5n+dImQ4n*dImQ8n*dReQ1n*dReQ5n 
+                                 + dImQ4n*dImQ1n*dReQ8n*dReQ5n+dReQ4n*dReQ1n*dReQ8n*dReQ5n;			 
+ Double_t reQ9nQ5nstarQ3nstarQ1nstar = dReQ1n*dReQ3n*dReQ5n*dReQ9n-dReQ5n*dReQ9n*dImQ1n*dImQ3n 
+	                             - dReQ3n*dReQ9n*dImQ1n*dImQ5n-dReQ1n*dReQ9n*dImQ3n*dImQ5n 
+				     + dReQ3n*dReQ5n*dImQ1n*dImQ9n+dReQ1n*dReQ5n*dImQ3n*dImQ9n 
+				     + dReQ1n*dReQ3n*dImQ5n*dImQ9n-dImQ1n*dImQ3n*dImQ5n*dImQ9n;
+ Double_t reQ9nQ8nstarQ1nstar = dReQ9n*dReQ8n*dReQ1n-dReQ9n*dImQ8n*dImQ1n+dImQ9n*dReQ8n*dImQ1n
+                              + dImQ9n*dImQ8n*dReQ1n; 
+ // <5>_{6n,1n|4n,2n,1n}:
+ Double_t reQ6nQ1nQ4nstarQ2nstarQ1nstar = (dReQ2n*dReQ4n*dReQ6n-dReQ6n*dImQ2n*dImQ4n 
+	                                + dReQ4n*dImQ2n*dImQ6n+dReQ2n*dImQ4n*dImQ6n) 
+				        * (pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // <5>_{6n,3n|4n,3n,2n}:
+ Double_t reQ6nQ3nQ4nstarQ3nstarQ2nstar = (dReQ2n*dReQ4n*dReQ6n-dReQ6n*dImQ2n*dImQ4n 
+	                                + dReQ4n*dImQ2n*dImQ6n+dReQ2n*dImQ4n*dImQ6n) 
+			  	        * (pow(dReQ3n,2.)+pow(dImQ3n,2.));
+ Double_t reQ7nQ2nQ6nstarQ3nstar = dImQ3n*dImQ2n*dImQ7n*dImQ6n+dImQ7n*dImQ6n*dReQ3n*dReQ2n 
+                                 + dImQ2n*dImQ6n*dReQ3n*dReQ7n-dImQ3n*dImQ6n*dReQ2n*dReQ7n
+                                 - dImQ2n*dImQ7n*dReQ3n*dReQ6n+dImQ3n*dImQ7n*dReQ2n*dReQ6n 
+                                 + dImQ3n*dImQ2n*dReQ7n*dReQ6n+dReQ3n*dReQ2n*dReQ7n*dReQ6n;			 
+ // <5>_{6n,2n|5n,2n,1n}:
+ Double_t reQ6nQ2nQ5nstarQ2nstarQ1nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                                        * (dReQ1n*dReQ5n*dReQ6n-dReQ6n*dImQ1n*dImQ5n 
+                                        + dReQ5n*dImQ1n*dImQ6n+dReQ1n*dImQ5n*dImQ6n);
+ // <5>_{6n,3n|5n,3n,1n}:
+ Double_t reQ6nQ3nQ5nstarQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                                        * (dReQ1n*dReQ5n*dReQ6n-dReQ6n*dImQ1n*dImQ5n 
+                                        + dReQ5n*dImQ1n*dImQ6n+dReQ1n*dImQ5n*dImQ6n);
+ Double_t reQ8nQ1nQ6nstarQ3nstar = dImQ3n*dImQ1n*dImQ8n*dImQ6n+dImQ8n*dImQ6n*dReQ3n*dReQ1n 
+                                 + dImQ1n*dImQ6n*dReQ3n*dReQ8n-dImQ3n*dImQ6n*dReQ1n*dReQ8n
+                                 - dImQ1n*dImQ8n*dReQ3n*dReQ6n+dImQ3n*dImQ8n*dReQ1n*dReQ6n 
+                                 + dImQ3n*dImQ1n*dReQ8n*dReQ6n+dReQ3n*dReQ1n*dReQ8n*dReQ6n;			 
+ // <5>_{6n,4n|5n,4n,1n}:
+ Double_t reQ6nQ4nQ5nstarQ4nstarQ1nstar = (pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                                        * (dReQ1n*dReQ5n*dReQ6n-dReQ6n*dImQ1n*dImQ5n 
+                                        + dReQ5n*dImQ1n*dImQ6n+dReQ1n*dImQ5n*dImQ6n);
+ Double_t reQ6nQ4nQ5nstarQ5nstar = dReQ4n*pow(dReQ5n,2.)*dReQ6n+2.*dReQ5n*dReQ6n*dImQ4n*dImQ5n 
+	                         - dReQ4n*dReQ6n*pow(dImQ5n,2.)-pow(dReQ5n,2.)*dImQ4n*dImQ6n
+				 + 2.*dReQ4n*dReQ5n*dImQ5n*dImQ6n+dImQ4n*pow(dImQ5n,2.)*dImQ6n;
+ Double_t reQ9nQ1nQ6nstarQ4nstar = dImQ4n*dImQ1n*dImQ9n*dImQ6n+dImQ9n*dImQ6n*dReQ4n*dReQ1n 
+                                 + dImQ1n*dImQ6n*dReQ4n*dReQ9n-dImQ4n*dImQ6n*dReQ1n*dReQ9n
+                                 - dImQ1n*dImQ9n*dReQ4n*dReQ6n+dImQ4n*dImQ9n*dReQ1n*dReQ6n 
+                                 + dImQ4n*dImQ1n*dReQ9n*dReQ6n+dReQ4n*dReQ1n*dReQ9n*dReQ6n;
+ Double_t reQ10nQ5nstarQ4nstarQ1nstar = dReQ1n*dReQ4n*dReQ5n*dReQ10n-dReQ5n*dReQ10n*dImQ1n*dImQ4n 
+	                              - dReQ4n*dReQ10n*dImQ1n*dImQ5n-dReQ1n*dReQ10n*dImQ4n*dImQ5n 
+				      + dReQ4n*dReQ5n*dImQ1n*dImQ10n+dReQ1n*dReQ5n*dImQ4n*dImQ10n 
+				      + dReQ1n*dReQ4n*dImQ5n*dImQ10n-dImQ1n*dImQ4n*dImQ5n*dImQ10n;
+ Double_t reQ10nQ9nstarQ1nstar = dReQ10n*dReQ9n*dReQ1n-dReQ10n*dImQ9n*dImQ1n+dImQ10n*dReQ9n*dImQ1n
+                               + dImQ10n*dImQ9n*dReQ1n;
+ Double_t reQ10nQ5nstarQ5nstar = pow(dReQ5n,2.)*dReQ10n-dReQ10n*pow(dImQ5n,2.)+2.*dReQ5n*dImQ5n*dImQ10n;
+ // <5>_{6n,3n|6n,2n,1n}:
+ Double_t reQ6nQ3nQ6nstarQ2nstarQ1nstar = (dReQ1n*dReQ2n*dReQ3n-dReQ3n*dImQ1n*dImQ2n 
+	                                + dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n) 
+				        * (pow(dReQ6n,2.)+pow(dImQ6n,2.));
+ Double_t reQ9nQ6nstarQ2nstarQ1nstar = dReQ1n*dReQ2n*dReQ6n*dReQ9n-dReQ6n*dReQ9n*dImQ1n*dImQ2n 
+	                             - dReQ2n*dReQ9n*dImQ1n*dImQ6n-dReQ1n*dReQ9n*dImQ2n*dImQ6n 
+				     + dReQ2n*dReQ6n*dImQ1n*dImQ9n+dReQ1n*dReQ6n*dImQ2n*dImQ9n 
+				     + dReQ1n*dReQ2n*dImQ6n*dImQ9n-dImQ1n*dImQ2n*dImQ6n*dImQ9n;
+ // <5>_{6n,4n|6n,3n,1n}:
+ Double_t reQ6nQ4nQ6nstarQ3nstarQ1nstar = (dReQ1n*dReQ3n*dReQ4n-dReQ4n*dImQ1n*dImQ3n 
+	                                + dReQ3n*dImQ1n*dImQ4n+dReQ1n*dImQ3n*dImQ4n) 
+					* (pow(dReQ6n,2.)+pow(dImQ6n,2.));
+ Double_t reQ10nQ6nstarQ3nstarQ1nstar = dReQ1n*dReQ3n*dReQ6n*dReQ10n-dReQ6n*dReQ10n*dImQ1n*dImQ3n 
+	                              - dReQ3n*dReQ10n*dImQ1n*dImQ6n-dReQ1n*dReQ10n*dImQ3n*dImQ6n 
+				      + dReQ3n*dReQ6n*dImQ1n*dImQ10n+dReQ1n*dReQ6n*dImQ3n*dImQ10n 
+				      + dReQ1n*dReQ3n*dImQ6n*dImQ10n-dImQ1n*dImQ3n*dImQ6n*dImQ10n;
+ // <5>_{6n,5n|5n,4n,2n}:
+ Double_t reQ6nQ5nQ5nstarQ4nstarQ2nstar = (dReQ2n*dReQ4n*dReQ6n-dReQ6n*dImQ2n*dImQ4n 
+	                                + dReQ4n*dImQ2n*dImQ6n+dReQ2n*dImQ4n*dImQ6n) 
+				        * (pow(dReQ5n,2.)+pow(dImQ5n,2.));
+ Double_t reQ7nQ4nQ6nstarQ5nstar = dImQ5n*dImQ4n*dImQ7n*dImQ6n+dImQ7n*dImQ6n*dReQ5n*dReQ4n 
+                                 + dImQ4n*dImQ6n*dReQ5n*dReQ7n-dImQ5n*dImQ6n*dReQ4n*dReQ7n
+                                 - dImQ4n*dImQ7n*dReQ5n*dReQ6n+dImQ5n*dImQ7n*dReQ4n*dReQ6n 
+                                 + dImQ5n*dImQ4n*dReQ7n*dReQ6n+dReQ5n*dReQ4n*dReQ7n*dReQ6n;
+ Double_t reQ9nQ2nQ6nstarQ5nstar = dImQ5n*dImQ2n*dImQ9n*dImQ6n+dImQ9n*dImQ6n*dReQ5n*dReQ2n 
+                                 + dImQ2n*dImQ6n*dReQ5n*dReQ9n-dImQ5n*dImQ6n*dReQ2n*dReQ9n
+                                 - dImQ2n*dImQ9n*dReQ5n*dReQ6n+dImQ5n*dImQ9n*dReQ2n*dReQ6n 
+                                 + dImQ5n*dImQ2n*dReQ9n*dReQ6n+dReQ5n*dReQ2n*dReQ9n*dReQ6n;
+ Double_t reQ11nQ5nstarQ4nstarQ2nstar = dReQ2n*dReQ4n*dReQ5n*dReQ11n-dReQ5n*dReQ11n*dImQ2n*dImQ4n 
+	                              - dReQ4n*dReQ11n*dImQ2n*dImQ5n-dReQ2n*dReQ11n*dImQ4n*dImQ5n 
+				      + dReQ4n*dReQ5n*dImQ2n*dImQ11n+dReQ2n*dReQ5n*dImQ4n*dImQ11n 
+				      + dReQ2n*dReQ4n*dImQ5n*dImQ11n-dImQ2n*dImQ4n*dImQ5n*dImQ11n;
+ Double_t reQ11nQ9nstarQ2nstar = dReQ11n*dReQ9n*dReQ2n-dReQ11n*dImQ9n*dImQ2n+dImQ11n*dReQ9n*dImQ2n
+                               + dImQ11n*dImQ9n*dReQ2n;
+ Double_t reQ11nQ7nstarQ4nstar = dReQ11n*dReQ7n*dReQ4n-dReQ11n*dImQ7n*dImQ4n+dImQ11n*dReQ7n*dImQ4n
+                               + dImQ11n*dImQ7n*dReQ4n;
+ // <5>_{6n,5n|6n,3n,2n}:
+ Double_t reQ6nQ5nQ6nstarQ3nstarQ2nstar = (dReQ2n*dReQ3n*dReQ5n-dReQ5n*dImQ2n*dImQ3n 
+	                                + dReQ3n*dImQ2n*dImQ5n+dReQ2n*dImQ3n*dImQ5n) 
+				        * (pow(dReQ6n,2.)+pow(dImQ6n,2.));
+ Double_t reQ11nQ6nstarQ3nstarQ2nstar = dReQ2n*dReQ3n*dReQ6n*dReQ11n-dReQ6n*dReQ11n*dImQ2n*dImQ3n 
+	                              - dReQ3n*dReQ11n*dImQ2n*dImQ6n-dReQ2n*dReQ11n*dImQ3n*dImQ6n 
+				      + dReQ3n*dReQ6n*dImQ2n*dImQ11n+dReQ2n*dReQ6n*dImQ3n*dImQ11n 
+				      + dReQ2n*dReQ3n*dImQ6n*dImQ11n-dImQ2n*dImQ3n*dImQ6n*dImQ11n;
+ // <5>_{6n,5n|6n,4n,1n}:
+ Double_t reQ6nQ5nQ6nstarQ4nstarQ1nstar = (dReQ1n*dReQ4n*dReQ5n-dReQ5n*dImQ1n*dImQ4n 
+	                                + dReQ4n*dImQ1n*dImQ5n+dReQ1n*dImQ4n*dImQ5n) 
+					* (pow(dReQ6n,2.)+pow(dImQ6n,2.));
+ Double_t reQ10nQ1nQ6nstarQ5nstar = dImQ5n*dImQ1n*dImQ10n*dImQ6n+dImQ10n*dImQ6n*dReQ5n*dReQ1n 
+                                  + dImQ1n*dImQ6n*dReQ5n*dReQ10n-dImQ5n*dImQ6n*dReQ1n*dReQ10n
+                                  - dImQ1n*dImQ10n*dReQ5n*dReQ6n+dImQ5n*dImQ10n*dReQ1n*dReQ6n 
+                                  + dImQ5n*dImQ1n*dReQ10n*dReQ6n+dReQ5n*dReQ1n*dReQ10n*dReQ6n;
+ Double_t reQ11nQ10nstarQ1nstar = dReQ11n*dReQ10n*dReQ1n-dReQ11n*dImQ10n*dImQ1n+dImQ11n*dReQ10n*dImQ1n
+                                + dImQ11n*dImQ10n*dReQ1n;
+ Double_t reQ11nQ6nstarQ4nstarQ1nstar = dReQ1n*dReQ4n*dReQ6n*dReQ11n-dReQ6n*dReQ11n*dImQ1n*dImQ4n 
+	                              - dReQ4n*dReQ11n*dImQ1n*dImQ6n-dReQ1n*dReQ11n*dImQ4n*dImQ6n 
+				      + dReQ4n*dReQ6n*dImQ1n*dImQ11n+dReQ1n*dReQ6n*dImQ4n*dImQ11n 
+				      + dReQ1n*dReQ4n*dImQ6n*dImQ11n-dImQ1n*dImQ4n*dImQ6n*dImQ11n;
+ // <5>_{4n,1n|3n,1n,1n}:
+ Double_t reQ4nQ1nQ3nstarQ1nstarQ1nstar = (pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                                        * (dReQ1n*dReQ3n*dReQ4n-dReQ4n*dImQ1n*dImQ3n
+                                        + dReQ3n*dImQ1n*dImQ4n+dReQ1n*dImQ3n*dImQ4n);
+ Double_t reQ4nQ1nQ4nstarQ1nstar = (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ Double_t reQ3nQ1nQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.));
+ // <5>_{4n,3n|3n,3n,1n}:
+ Double_t reQ4nQ3nQ3nstarQ3nstarQ1nstar = (pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                                        * (dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)); 
+ Double_t reQ7nQ3nstarQ3nstarQ1nstar = (dReQ7n*dReQ1n+dImQ7n*dImQ1n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                                     + 2.*dReQ3n*dImQ3n*(dImQ7n*dReQ1n-dReQ7n*dImQ1n); 
+ // <5>_{4n,4n|4n,3n,1n}:
+ Double_t reQ4nQ4nQ4nstarQ3nstarQ1nstar = (pow(dReQ4n,2.)+pow(dImQ4n,2.))
+	                                * reQ4nQ3nstarQ1nstar;
+ Double_t reQ7nQ1nQ4nstarQ4nstar = dReQ1n*pow(dReQ4n,2.)*dReQ7n+2.*dReQ4n*dReQ7n*dImQ1n*dImQ4n 
+	                         - dReQ1n*dReQ7n*pow(dImQ4n,2.)-pow(dReQ4n,2.)*dImQ1n*dImQ7n
+				 + 2.*dReQ1n*dReQ4n*dImQ4n*dImQ7n+dImQ1n*pow(dImQ4n,2.)*dImQ7n;
+ // <5>_{5n,2n|3n,2n,2n}:
+ Double_t reQ5nQ2nQ3nstarQ2nstarQ2nstar = (pow(dReQ2n,2.)+pow(dImQ2n,2.))
+	                                * reQ5nQ3nstarQ2nstar;
+ // <5>_{5n,3n|3n,3n,2n}:
+ Double_t reQ5nQ3nQ3nstarQ3nstarQ2nstar = (pow(dImQ3n,2.)+pow(dReQ3n,2.))
+                                        * (dImQ3n*dImQ5n*dReQ2n+dImQ2n*dImQ5n*dReQ3n 
+                                        - dImQ2n*dImQ3n*dReQ5n+dReQ2n*dReQ3n*dReQ5n);
+ Double_t reQ8nQ3nstarQ3nstarQ2nstar = (dReQ8n*dReQ2n+dImQ8n*dImQ2n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                                     + 2.*dReQ3n*dImQ3n*(dImQ8n*dReQ2n-dReQ8n*dImQ2n);
+ /*
+ Double_t reQ5nQ1nQ3nstarQ2nstar = dImQ2n*dImQ1n*dImQ5n*dImQ3n+dImQ5n*dImQ3n*dReQ2n*dReQ1n 
+                                 + dImQ1n*dImQ3n*dReQ2n*dReQ5n-dImQ2n*dImQ3n*dReQ1n*dReQ5n
+                                 - dImQ1n*dImQ5n*dReQ2n*dReQ3n+dImQ2n*dImQ5n*dReQ1n*dReQ3n 
+                                 + dImQ2n*dImQ1n*dReQ5n*dReQ3n+dReQ2n*dReQ1n*dReQ5n*dReQ3n;
+ */
+ // <5>_{5n,1n|4n,1n,1n}:
+ Double_t reQ5nQ1nQ4nstarQ1nstarQ1nstar = (pow(dImQ1n,2.)+pow(dReQ1n,2.))
+                                        * (dImQ1n*dImQ5n*dReQ4n+dImQ4n*dImQ5n*dReQ1n 
+                                        - dImQ4n*dImQ1n*dReQ5n+dReQ4n*dReQ1n*dReQ5n);
+ // <5>_{5n,4n|4n,4n,1n}:
+ Double_t reQ5nQ4nQ4nstarQ4nstarQ1nstar = (pow(dImQ4n,2.)+pow(dReQ4n,2.))
+                                        * (dImQ4n*dImQ5n*dReQ1n+dImQ1n*dImQ5n*dReQ4n 
+                                        - dImQ1n*dImQ4n*dReQ5n+dReQ1n*dReQ4n*dReQ5n);
+ Double_t reQ9nQ4nstarQ4nstarQ1nstar = (dReQ9n*dReQ1n+dImQ9n*dImQ1n)*(pow(dReQ4n,2)-pow(dImQ4n,2)) 
+                                     + 2.*dReQ4n*dImQ4n*(dImQ9n*dReQ1n-dReQ9n*dImQ1n);
+ // <5>_{5n,5n|5n,3n,2n}:
+ Double_t reQ5nQ5nQ5nstarQ3nstarQ2nstar = (pow(dImQ5n,2.)+pow(dReQ5n,2.))
+                                        * (dImQ3n*dImQ5n*dReQ2n+dImQ2n*dImQ5n*dReQ3n
+                                        - dImQ2n*dImQ3n*dReQ5n+dReQ2n*dReQ3n*dReQ5n);
+ Double_t reQ7nQ3nQ5nstarQ5nstar = dReQ3n*pow(dReQ5n,2.)*dReQ7n+2.*dReQ5n*dReQ7n*dImQ3n*dImQ5n 
+	                         - dReQ3n*dReQ7n*pow(dImQ5n,2.)-pow(dReQ5n,2.)*dImQ3n*dImQ7n
+				 + 2.*dReQ3n*dReQ5n*dImQ5n*dImQ7n+dImQ3n*pow(dImQ5n,2.)*dImQ7n;
+ Double_t reQ8nQ2nQ5nstarQ5nstar = dReQ2n*pow(dReQ5n,2.)*dReQ8n+2.*dReQ5n*dReQ8n*dImQ2n*dImQ5n 
+	                         - dReQ2n*dReQ8n*pow(dImQ5n,2.)-pow(dReQ5n,2.)*dImQ2n*dImQ8n
+				 + 2.*dReQ2n*dReQ5n*dImQ5n*dImQ8n+dImQ2n*pow(dImQ5n,2.)*dImQ8n;
+ Double_t reQ10nQ5nstarQ3nstarQ2nstar = dReQ2n*dReQ3n*dReQ5n*dReQ10n-dReQ5n*dReQ10n*dImQ2n*dImQ3n 
+	                              - dReQ3n*dReQ10n*dImQ2n*dImQ5n-dReQ2n*dReQ10n*dImQ3n*dImQ5n 
+			              + dReQ3n*dReQ5n*dImQ2n*dImQ10n+dReQ2n*dReQ5n*dImQ3n*dImQ10n 
+				      + dReQ2n*dReQ3n*dImQ5n*dImQ10n-dImQ2n*dImQ3n*dImQ5n*dImQ10n;
+ Double_t reQ10nQ8nstarQ2nstar = dReQ10n*dReQ8n*dReQ2n-dReQ10n*dImQ8n*dImQ2n+dImQ10n*dReQ8n*dImQ2n
+                               + dImQ10n*dImQ8n*dReQ2n;
+ // <5>_{5n,5n|5n,4n,1n}:
+ Double_t reQ5nQ5nQ5nstarQ4nstarQ1nstar = (pow(dImQ5n,2.)+pow(dReQ5n,2.))
+                                        * (dImQ4n*dImQ5n*dReQ1n+dImQ1n*dImQ5n*dReQ4n
+                                        - dImQ1n*dImQ4n*dReQ5n+dReQ1n*dReQ4n*dReQ5n);
+ Double_t reQ9nQ1nQ5nstarQ5nstar = dReQ1n*pow(dReQ5n,2.)*dReQ9n+2.*dReQ5n*dReQ9n*dImQ1n*dImQ5n 
+	                         - dReQ1n*dReQ9n*pow(dImQ5n,2.)-pow(dReQ5n,2.)*dImQ1n*dImQ9n
+			         + 2.*dReQ1n*dReQ5n*dImQ5n*dImQ9n+dImQ1n*pow(dImQ5n,2.)*dImQ9n;
+ // <5>_{6n,1n|5n,1n,1n}:
+ Double_t reQ6nQ1nQ5nstarQ1nstarQ1nstar = (pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                                        * (dReQ1n*dReQ5n*dReQ6n-dReQ6n*dImQ1n*dImQ5n
+                                        + dReQ5n*dImQ1n*dImQ6n+dReQ1n*dImQ5n*dImQ6n);
+ // <5>_{6n,5n|5n,5n,1n}:
+ Double_t reQ6nQ5nQ5nstarQ5nstarQ1nstar = (pow(dImQ5n,2.)+pow(dReQ5n,2.))
+                                        * (dImQ5n*dImQ6n*dReQ1n+dImQ1n*dImQ6n*dReQ5n 
+                                        - dImQ1n*dImQ5n*dReQ6n+dReQ1n*dReQ5n*dReQ6n);
+ Double_t reQ11nQ5nstarQ5nstarQ1nstar = (dReQ11n*dReQ1n+dImQ11n*dImQ1n)*(pow(dReQ5n,2)-pow(dImQ5n,2)) 
+                                      + 2.*dReQ5n*dImQ5n*(dImQ11n*dReQ1n-dReQ11n*dImQ1n);
+ // <5>_{6n,6n|6n,5n,1n}:
+ Double_t reQ6nQ6nQ6nstarQ5nstarQ1nstar = (pow(dReQ6n,2.)+pow(dImQ6n,2.))
+	                                * reQ6nQ5nstarQ1nstar;
+ Double_t reQ7nQ5nQ6nstarQ6nstar = dReQ5n*pow(dReQ6n,2.)*dReQ7n+2.*dReQ6n*dReQ7n*dImQ5n*dImQ6n 
+	                         - dReQ5n*dReQ7n*pow(dImQ6n,2.)-pow(dReQ6n,2.)*dImQ5n*dImQ7n
+				 + 2.*dReQ5n*dReQ6n*dImQ6n*dImQ7n+dImQ5n*pow(dImQ6n,2.)*dImQ7n;
+ Double_t reQ11nQ1nQ6nstarQ6nstar = dReQ1n*pow(dReQ6n,2.)*dReQ11n+2.*dReQ6n*dReQ11n*dImQ1n*dImQ6n 
+ 	                          - dReQ1n*dReQ11n*pow(dImQ6n,2.)-pow(dReQ6n,2.)*dImQ1n*dImQ11n
+ 				  + 2.*dReQ1n*dReQ6n*dImQ6n*dImQ11n+dImQ1n*pow(dImQ6n,2.)*dImQ11n;
+ Double_t reQ12nQ6nstarQ6nstar = pow(dReQ6n,2.)*dReQ12n-dReQ12n*pow(dImQ6n,2.)+2.*dReQ6n*dImQ6n*dImQ12n;
+ Double_t reQ12nQ11nstarQ1nstar = dReQ12n*dReQ11n*dReQ1n-dReQ12n*dImQ11n*dImQ1n+dImQ12n*dReQ11n*dImQ1n
+                                + dImQ12n*dImQ11n*dReQ1n;
+ Double_t reQ12nQ6nstarQ5nstarQ1nstar = dReQ1n*dReQ5n*dReQ6n*dReQ12n-dReQ6n*dReQ12n*dImQ1n*dImQ5n 
+	                              - dReQ5n*dReQ12n*dImQ1n*dImQ6n-dReQ1n*dReQ12n*dImQ5n*dImQ6n 
+			              + dReQ5n*dReQ6n*dImQ1n*dImQ12n+dReQ1n*dReQ6n*dImQ5n*dImQ12n 
+			              + dReQ1n*dReQ5n*dImQ6n*dImQ12n-dImQ1n*dImQ5n*dImQ6n*dImQ12n;
+ Double_t reQ12nQ7nstarQ5nstar = dReQ12n*dReQ7n*dReQ5n-dReQ12n*dImQ7n*dImQ5n+dImQ12n*dReQ7n*dImQ5n
+                               + dImQ12n*dImQ7n*dReQ5n;
+ // <5>_{6n,2n|4n,3n,1n}:
+ Double_t reQ6nQ2nQ4nstarQ3nstarQ1nstar = dReQ1n*dReQ2n*dReQ3n*dReQ4n*dReQ6n+dReQ3n*dReQ4n*dReQ6n*dImQ1n*dImQ2n 
+	                                - dReQ2n*dReQ4n*dReQ6n*dImQ1n*dImQ3n+dReQ1n*dReQ4n*dReQ6n*dImQ2n*dImQ3n 
+					- dReQ2n*dReQ3n*dReQ6n*dImQ1n*dImQ4n+dReQ1n*dReQ3n*dReQ6n*dImQ2n*dImQ4n
+					- dReQ1n*dReQ2n*dReQ6n*dImQ3n*dImQ4n-dReQ6n*dImQ1n*dImQ2n*dImQ3n*dImQ4n 
+					+ dReQ2n*dReQ3n*dReQ4n*dImQ1n*dImQ6n-dReQ1n*dReQ3n*dReQ4n*dImQ2n*dImQ6n 
+					+ dReQ1n*dReQ2n*dReQ4n*dImQ3n*dImQ6n+dReQ4n*dImQ1n*dImQ2n*dImQ3n*dImQ6n 
+					+ dReQ1n*dReQ2n*dReQ3n*dImQ4n*dImQ6n+dReQ3n*dImQ1n*dImQ2n*dImQ4n*dImQ6n 
+					- dReQ2n*dImQ1n*dImQ3n*dImQ4n*dImQ6n+dReQ1n*dImQ2n*dImQ3n*dImQ4n*dImQ6n;
+ Double_t reQ6nQ2nQ4nstarQ4nstar = dReQ2n*pow(dReQ4n,2.)*dReQ6n+2.*dReQ4n*dReQ6n*dImQ2n*dImQ4n 
+	                         - dReQ2n*dReQ6n*pow(dImQ4n,2.)-pow(dReQ4n,2.)*dImQ2n*dImQ6n
+				 + 2.*dReQ2n*dReQ4n*dImQ4n*dImQ6n+dImQ2n*pow(dImQ4n,2.)*dImQ6n;
+ // <5>_{6n,2n,1n|5n,4n}:
+ Double_t reQ6nQ2nQ1nQ5nstarQ4nstar = dReQ1n*dReQ2n*dReQ4n*dReQ6n*dReQ5n - dReQ4n*dReQ6n*dReQ5n*dImQ1n*dImQ2n 
+	                            + dReQ2n*dReQ6n*dReQ5n*dImQ1n*dImQ4n + dReQ1n*dReQ6n*dReQ5n*dImQ2n*dImQ4n
+				    - dReQ2n*dReQ4n*dReQ5n*dImQ1n*dImQ6n - dReQ1n*dReQ4n*dReQ5n*dImQ2n*dImQ6n 
+				    + dReQ1n*dReQ2n*dReQ5n*dImQ4n*dImQ6n - dReQ5n*dImQ1n*dImQ2n*dImQ4n*dImQ6n 
+				    + dReQ2n*dReQ4n*dReQ6n*dImQ1n*dImQ5n + dReQ1n*dReQ4n*dReQ6n*dImQ2n*dImQ5n 
+				    - dReQ1n*dReQ2n*dReQ6n*dImQ4n*dImQ5n + dReQ6n*dImQ1n*dImQ2n*dImQ4n*dImQ5n 
+			            + dReQ1n*dReQ2n*dReQ4n*dImQ6n*dImQ5n - dReQ4n*dImQ1n*dImQ2n*dImQ6n*dImQ5n 
+				    + dReQ2n*dImQ1n*dImQ4n*dImQ6n*dImQ5n + dReQ1n*dImQ2n*dImQ4n*dImQ6n*dImQ5n;
+
+ // <5>_{6n,4n|5n,3n,2n}:
+ Double_t reQ6nQ4nQ5nstarQ3nstarQ2nstar = dReQ2n*dReQ3n*dReQ4n*dReQ5n*dReQ6n - dReQ4n*dReQ5n*dReQ6n*dImQ2n*dImQ3n 
+	                                + dReQ3n*dReQ5n*dReQ6n*dImQ2n*dImQ4n + dReQ2n*dReQ5n*dReQ6n*dImQ3n*dImQ4n
+					- dReQ3n*dReQ4n*dReQ6n*dImQ2n*dImQ5n - dReQ2n*dReQ4n*dReQ6n*dImQ3n*dImQ5n 
+				        + dReQ2n*dReQ3n*dReQ6n*dImQ4n*dImQ5n - dReQ6n*dImQ2n*dImQ3n*dImQ4n*dImQ5n 
+					+ dReQ3n*dReQ4n*dReQ5n*dImQ2n*dImQ6n + dReQ2n*dReQ4n*dReQ5n*dImQ3n*dImQ6n 
+					- dReQ2n*dReQ3n*dReQ5n*dImQ4n*dImQ6n + dReQ5n*dImQ2n*dImQ3n*dImQ4n*dImQ6n 
+					+ dReQ2n*dReQ3n*dReQ4n*dImQ5n*dImQ6n - dReQ4n*dImQ2n*dImQ3n*dImQ5n*dImQ6n 
+					+ dReQ3n*dImQ2n*dImQ4n*dImQ5n*dImQ6n + dReQ2n*dImQ3n*dImQ4n*dImQ5n*dImQ6n;
+ Double_t reQ8nQ2nQ6nstarQ4nstar = dImQ4n*dImQ2n*dImQ8n*dImQ6n+dImQ8n*dImQ6n*dReQ4n*dReQ2n 
+                                 + dImQ2n*dImQ6n*dReQ4n*dReQ8n-dImQ4n*dImQ6n*dReQ2n*dReQ8n
+                                 - dImQ2n*dImQ8n*dReQ4n*dReQ6n+dImQ4n*dImQ8n*dReQ2n*dReQ6n 
+                                 + dImQ4n*dImQ2n*dReQ8n*dReQ6n+dReQ4n*dReQ2n*dReQ8n*dReQ6n;
+
+ // <5>_{4n,4n|3n,3n,2n}:
+ Double_t reQ4nQ4nQ3nstarQ3nstarQ2nstar = dReQ2n*pow(dReQ3n,2.)*pow(dReQ4n,2.)-2.*dReQ3n*pow(dReQ4n,2.)*dImQ2n*dImQ3n 
+	                                - dReQ2n*pow(dReQ4n,2.)*pow(dImQ3n,2.)+2.*pow(dReQ3n,2.)*dReQ4n*dImQ2n*dImQ4n 
+					+ 4.*dReQ2n*dReQ3n*dReQ4n*dImQ3n*dImQ4n - 2.*dReQ4n*dImQ2n*pow(dImQ3n,2.)*dImQ4n
+					- dReQ2n*pow(dReQ3n,2.)*pow(dImQ4n,2.) + 2.*dReQ3n*dImQ2n*dImQ3n*pow(dImQ4n,2.) 
+					+ dReQ2n*pow(dImQ3n,2.)*pow(dImQ4n,2.);
+
+ // <5>_{5n|2n,1n,1n,1n}:
+ Double_t reQ5nQ2nstarQ1nstarQ1nstarQ1nstar = pow(dReQ1n,3.)*dReQ2n*dReQ5n-3.*dReQ1n*dReQ2n*dReQ5n*pow(dImQ1n,2.) 
+	                                    - 3.*pow(dReQ1n,2.)*dReQ5n*dImQ1n*dImQ2n+dReQ5n*pow(dImQ1n,3.)*dImQ2n 
+					    + 3.*pow(dReQ1n,2.)*dReQ2n*dImQ1n*dImQ5n-dReQ2n*pow(dImQ1n,3.)*dImQ5n
+					    + pow(dReQ1n,3.)*dImQ2n*dImQ5n-3.*dReQ1n*pow(dImQ1n,2.)*dImQ2n*dImQ5n;
+
+ // <5>_{5n,1n|2n,2n,2n}:
+ Double_t reQ5nQ1nQ2nstarQ2nstarQ2nstar = dReQ1n*pow(dReQ2n,3.)*dReQ5n+3.*pow(dReQ2n,2.)*dReQ5n*dImQ1n*dImQ2n
+	                                - 3.*dReQ1n*dReQ2n*dReQ5n*pow(dImQ2n,2.)-dReQ5n*dImQ1n*pow(dImQ2n,3.) 
+					- pow(dReQ2n,3.)*dImQ1n*dImQ5n+3.*dReQ1n*pow(dReQ2n,2.)*dImQ2n*dImQ5n 
+					+ 3.*dReQ2n*dImQ1n*pow(dImQ2n,2.)*dImQ5n-dReQ1n*pow(dImQ2n,3.)*dImQ5n;
+
+
+ // <5>_{5n,4n|3n,3n,3n}:
+ Double_t reQ5nQ4nQ3nstarQ3nstarQ3nstar = dReQ4n*pow(dReQ3n,3.)*dReQ5n+3.*pow(dReQ3n,2.)*dReQ5n*dImQ4n*dImQ3n
+	                                - 3.*dReQ4n*dReQ3n*dReQ5n*pow(dImQ3n,2.)-dReQ5n*dImQ4n*pow(dImQ3n,3.) 
+					- pow(dReQ3n,3.)*dImQ4n*dImQ5n+3.*dReQ4n*pow(dReQ3n,2.)*dImQ3n*dImQ5n 
+					+ 3.*dReQ3n*dImQ4n*pow(dImQ3n,2.)*dImQ5n-dReQ4n*pow(dImQ3n,3.)*dImQ5n;
+
+ Double_t reQ9nQ3nstarQ3nstarQ3nstar = dReQ9n*pow(dReQ3n,3)-3.*dReQ3n*dReQ9n*pow(dImQ3n,2)
+                                     + 3.*dImQ3n*dImQ9n*pow(dReQ3n,2)-dImQ9n*pow(dImQ3n,3); 
+ // <5>_{5n,5n|4n,3n,3n}:
+ Double_t reQ5nQ5nQ4nstarQ3nstarQ3nstar = dReQ4n*pow(dReQ3n,2.)*pow(dReQ5n,2.) - 2.*dReQ3n*pow(dReQ5n,2.)*dImQ4n*dImQ3n
+ 	                                - dReQ4n*pow(dReQ5n,2.)*pow(dImQ3n,2.) + 2.*pow(dReQ3n,2.)*dReQ5n*dImQ4n*dImQ5n 
+ 				        + 4.*dReQ4n*dReQ3n*dReQ5n*dImQ3n*dImQ5n - 2.*dReQ5n*dImQ4n*pow(dImQ3n,2.)*dImQ5n
+ 				        - dReQ4n*pow(dReQ3n,2.)*pow(dImQ5n,2.) + 2.*dReQ3n*dImQ4n*dImQ3n*pow(dImQ5n,2.) 
+ 				        + dReQ4n*pow(dImQ3n,2.)*pow(dImQ5n,2.);
+
+ // <5>_{5n,5n|4n,4n,2n}:   
+ Double_t reQ5nQ5nQ4nstarQ4nstarQ2nstar = dReQ2n*pow(dReQ4n,2.)*pow(dReQ5n,2.) - 2.*dReQ4n*pow(dReQ5n,2.)*dImQ2n*dImQ4n
+ 	                                - dReQ2n*pow(dReQ5n,2.)*pow(dImQ4n,2.) + 2.*pow(dReQ4n,2.)*dReQ5n*dImQ2n*dImQ5n 
+ 					+ 4.*dReQ2n*dReQ4n*dReQ5n*dImQ4n*dImQ5n - 2.*dReQ5n*dImQ2n*pow(dImQ4n,2.)*dImQ5n
+ 					- dReQ2n*pow(dReQ4n,2.)*pow(dImQ5n,2.) + 2.*dReQ4n*dImQ2n*dImQ4n*pow(dImQ5n,2.) 
+ 					+ dReQ2n*pow(dImQ4n,2.)*pow(dImQ5n,2.);
+ Double_t reQ10nQ4nstarQ4nstarQ2nstar = (dReQ10n*dReQ2n+dImQ10n*dImQ2n)*(pow(dReQ4n,2)-pow(dImQ4n,2)) 
+                                      + 2.*dReQ4n*dImQ4n*(dImQ10n*dReQ2n-dReQ10n*dImQ2n);
+ // <5>_{6n|3n,1n,1n,1n}:
+ Double_t reQ6nQ3nstarQ1nstarQ1nstarQ1nstar = pow(dReQ1n,3.)*dReQ3n*dReQ6n-3.*dReQ1n*dReQ3n*dReQ6n*pow(dImQ1n,2.) 
+	                                    - 3.*pow(dReQ1n,2.)*dReQ6n*dImQ1n*dImQ3n+dReQ6n*pow(dImQ1n,3.)*dImQ3n 
+				            + 3.*pow(dReQ1n,2.)*dReQ3n*dImQ1n*dImQ6n-dReQ3n*pow(dImQ1n,3.)*dImQ6n
+					    + pow(dReQ1n,3.)*dImQ3n*dImQ6n-3.*dReQ1n*pow(dImQ1n,2.)*dImQ3n*dImQ6n;
+ // <5>_{6n,1n,1n|4n,4n}:
+ Double_t reQ6nQ1nQ1nQ4nstarQ4nstar = pow(dReQ1n,2.)*pow(dReQ4n,2.)*dReQ6n - pow(dReQ4n,2.)*dReQ6n*pow(dImQ1n,2.)
+	                            + 4.*dReQ1n*dReQ4n*dReQ6n*dImQ1n*dImQ4n - pow(dReQ1n,2.)*dReQ6n*pow(dImQ4n,2.)
+                                    + dReQ6n*pow(dImQ1n,2.)*pow(dImQ4n,2.) - 2.*dReQ1n*pow(dReQ4n,2.)*dImQ1n*dImQ6n 
+			            + 2.*pow(dReQ1n,2.)*dReQ4n*dImQ4n*dImQ6n - 2.*dReQ4n*pow(dImQ1n,2.)*dImQ4n*dImQ6n
+				    + 2.*dReQ1n*dImQ1n*pow(dImQ4n,2.)*dImQ6n;
+
+
+ // <5>_{6n,2n,2n|5n,5n}:
+ Double_t reQ6nQ2nQ2nQ5nstarQ5nstar = pow(dReQ2n,2.)*pow(dReQ5n,2.)*dReQ6n - pow(dReQ5n,2.)*dReQ6n*pow(dImQ2n,2.)
+	                            + 4.*dReQ2n*dReQ5n*dReQ6n*dImQ2n*dImQ5n - pow(dReQ2n,2.)*dReQ6n*pow(dImQ5n,2.)
+                                    + dReQ6n*pow(dImQ2n,2.)*pow(dImQ5n,2.) - 2.*dReQ2n*pow(dReQ5n,2.)*dImQ2n*dImQ6n 
+				    + 2.*pow(dReQ2n,2.)*dReQ5n*dImQ5n*dImQ6n - 2.*dReQ5n*pow(dImQ2n,2.)*dImQ5n*dImQ6n
+			            + 2.*dReQ2n*dImQ2n*pow(dImQ5n,2.)*dImQ6n;
+ Double_t reQ10nQ6nstarQ2nstarQ2nstar = (dReQ10n*dReQ6n+dImQ10n*dImQ6n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                                      + 2.*dReQ2n*dImQ2n*(dImQ10n*dReQ6n-dReQ10n*dImQ6n);
+ // <5>_{6n,6n|5n,5n,2n}:
+ Double_t reQ6nQ6nQ5nstarQ5nstarQ2nstar = dReQ2n*pow(dReQ5n,2.)*pow(dReQ6n,2.) - 2.*dReQ5n*pow(dReQ6n,2.)*dImQ2n*dImQ5n
+ 	                                - dReQ2n*pow(dReQ6n,2.)*pow(dImQ5n,2.) + 2.*pow(dReQ5n,2.)*dReQ6n*dImQ2n*dImQ6n 
+ 				        + 4.*dReQ2n*dReQ5n*dReQ6n*dImQ5n*dImQ6n - 2.*dReQ6n*dImQ2n*pow(dImQ5n,2.)*dImQ6n
+ 				        - dReQ2n*pow(dReQ5n,2.)*pow(dImQ6n,2.) + 2.*dReQ5n*dImQ2n*dImQ5n*pow(dImQ6n,2.) 
+ 				        + dReQ2n*pow(dImQ5n,2.)*pow(dImQ6n,2.);
+ Double_t reQ10nQ2nQ6nstarQ6nstar = dImQ2n*pow(dImQ6n,2.)*dImQ10n+2.*dImQ6n*dImQ10n*dReQ2n*dReQ6n
+                                  - dImQ2n*dImQ10n*pow(dReQ6n,2.)-pow(dImQ6n,2.)*dReQ2n*dReQ10n 
+                                  + 2.*dImQ2n*dImQ6n*dReQ6n*dReQ10n+dReQ2n*pow(dReQ6n,2.)*dReQ10n;
+ Double_t reQ12nQ5nstarQ5nstarQ2nstar = (dReQ12n*dReQ2n+dImQ12n*dImQ2n)*(pow(dReQ5n,2)-pow(dImQ5n,2)) 
+                                      + 2.*dReQ5n*dImQ5n*(dImQ12n*dReQ2n-dReQ12n*dImQ2n);
+ Double_t reQ12nQ10nstarQ2nstar = dReQ12n*dReQ10n*dReQ2n-dReQ12n*dImQ10n*dImQ2n+dImQ12n*dReQ10n*dImQ2n
+                                + dImQ12n*dImQ10n*dReQ2n;
+ // <5>_{5n,2n|3n,3n,1n}: 
+ Double_t reQ5nQ2nQ3nstarQ3nstarQ1nstar = dReQ1n*dReQ2n*pow(dReQ3n,2.)*dReQ5n + pow(dReQ3n,2.)*dReQ5n*dImQ1n*dImQ2n 
+	                                - 2.*dReQ2n*dReQ3n*dReQ5n*dImQ1n*dImQ3n + 2.*dReQ1n*dReQ3n*dReQ5n*dImQ2n*dImQ3n 
+					- dReQ1n*dReQ2n*dReQ5n*pow(dImQ3n,2.) - dReQ5n*dImQ1n*dImQ2n*pow(dImQ3n,2.) 
+					+ dReQ2n*pow(dReQ3n,2.)*dImQ1n*dImQ5n - dReQ1n*pow(dReQ3n,2.)*dImQ2n*dImQ5n
+					+ 2.*dReQ1n*dReQ2n*dReQ3n*dImQ3n*dImQ5n + 2.*dReQ3n*dImQ1n*dImQ2n*dImQ3n*dImQ5n
+					- dReQ2n*dImQ1n*pow(dImQ3n,2.)*dImQ5n + dReQ1n*dImQ2n*pow(dImQ3n,2.)*dImQ5n;
+ // <5>_{5n,1n,1n|4n,3n}:
+ Double_t reQ5nQ1nQ1nQ4nstarQ3nstar = pow(dReQ1n,2.)*dReQ3n*dReQ4n*dReQ5n - dReQ3n*dReQ4n*dReQ5n*pow(dImQ1n,2.)
+	                            + 2.*dReQ1n*dReQ4n*dReQ5n*dImQ1n*dImQ3n + 2.*dReQ1n*dReQ3n*dReQ5n*dImQ1n*dImQ4n
+			            - pow(dReQ1n,2.)*dReQ5n*dImQ3n*dImQ4n + dReQ5n*pow(dImQ1n,2.)*dImQ3n*dImQ4n
+				    - 2.*dReQ1n*dReQ3n*dReQ4n*dImQ1n*dImQ5n + pow(dReQ1n,2.)*dReQ4n*dImQ3n*dImQ5n
+				    - dReQ4n*pow(dImQ1n,2.)*dImQ3n*dImQ5n + pow(dReQ1n,2.)*dReQ3n*dImQ4n*dImQ5n
+                                    - dReQ3n*pow(dImQ1n,2.)*dImQ4n*dImQ5n + 2.*dReQ1n*dImQ1n*dImQ3n*dImQ4n*dImQ5n;
+ // <5>_{5n,3n|4n,2n,2n}:
+ Double_t reQ5nQ3nQ4nstarQ2nstarQ2nstar = dReQ4n*dReQ3n*pow(dReQ2n,2.)*dReQ5n + pow(dReQ2n,2.)*dReQ5n*dImQ4n*dImQ3n 
+	                                - 2.*dReQ3n*dReQ2n*dReQ5n*dImQ4n*dImQ2n + 2.*dReQ4n*dReQ2n*dReQ5n*dImQ3n*dImQ2n 
+					- dReQ4n*dReQ3n*dReQ5n*pow(dImQ2n,2.) - dReQ5n*dImQ4n*dImQ3n*pow(dImQ2n,2.) 
+					+ dReQ3n*pow(dReQ2n,2.)*dImQ4n*dImQ5n - dReQ4n*pow(dReQ2n,2.)*dImQ3n*dImQ5n
+					+ 2.*dReQ4n*dReQ3n*dReQ2n*dImQ2n*dImQ5n + 2.*dReQ2n*dImQ4n*dImQ3n*dImQ2n*dImQ5n
+					- dReQ3n*dImQ4n*pow(dImQ2n,2.)*dImQ5n + dReQ4n*dImQ3n*pow(dImQ2n,2.)*dImQ5n;
+ Double_t reQ8nQ4nstarQ2nstarQ2nstar = (dReQ8n*dReQ4n+dImQ8n*dImQ4n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                                     + 2.*dReQ2n*dImQ2n*(dImQ8n*dReQ4n-dReQ8n*dImQ4n);
+ // <5>_{5n,2n,1n|4n,4n}:
+ Double_t reQ5nQ2nQ1nQ4nstarQ4nstar = dReQ1n*dReQ2n*pow(dReQ4n,2.)*dReQ5n - pow(dReQ4n,2.)*dReQ5n*dImQ1n*dImQ2n
+	                            + 2.*dReQ2n*dReQ4n*dReQ5n*dImQ1n*dImQ4n + 2.*dReQ1n*dReQ4n*dReQ5n*dImQ2n*dImQ4n
+				    - dReQ1n*dReQ2n*dReQ5n*pow(dImQ4n,2.) + dReQ5n*dImQ1n*dImQ2n*pow(dImQ4n,2.)
+				    - dReQ2n*pow(dReQ4n,2.)*dImQ1n*dImQ5n - dReQ1n*pow(dReQ4n,2.)*dImQ2n*dImQ5n
+				    + 2.*dReQ1n*dReQ2n*dReQ4n*dImQ4n*dImQ5n - 2.*dReQ4n*dImQ1n*dImQ2n*dImQ4n*dImQ5n
+				    + dReQ2n*dImQ1n*pow(dImQ4n,2.)*dImQ5n + dReQ1n*dImQ2n*pow(dImQ4n,2.)*dImQ5n;
+ // <5>_{6n,1n|3n,2n,2n}:
+ Double_t reQ6nQ1nQ3nstarQ2nstarQ2nstar = dReQ3n*dReQ1n*pow(dReQ2n,2.)*dReQ6n + pow(dReQ2n,2.)*dReQ6n*dImQ3n*dImQ1n 
+	                                - 2.*dReQ1n*dReQ2n*dReQ6n*dImQ3n*dImQ2n + 2.*dReQ3n*dReQ2n*dReQ6n*dImQ1n*dImQ2n 
+					- dReQ3n*dReQ1n*dReQ6n*pow(dImQ2n,2.) - dReQ6n*dImQ3n*dImQ1n*pow(dImQ2n,2.) 
+					+ dReQ1n*pow(dReQ2n,2.)*dImQ3n*dImQ6n - dReQ3n*pow(dReQ2n,2.)*dImQ1n*dImQ6n
+					+ 2.*dReQ3n*dReQ1n*dReQ2n*dImQ2n*dImQ6n + 2.*dReQ2n*dImQ3n*dImQ1n*dImQ2n*dImQ6n
+					- dReQ1n*dImQ3n*pow(dImQ2n,2.)*dImQ6n + dReQ3n*dImQ1n*pow(dImQ2n,2.)*dImQ6n;
+
+ // <5>_{6n,3n|4n,4n,1n}:
+ Double_t reQ6nQ3nQ4nstarQ4nstarQ1nstar = dReQ1n*dReQ3n*pow(dReQ4n,2.)*dReQ6n + pow(dReQ4n,2.)*dReQ6n*dImQ1n*dImQ3n 
+	                                - 2.*dReQ3n*dReQ4n*dReQ6n*dImQ1n*dImQ4n + 2.*dReQ1n*dReQ4n*dReQ6n*dImQ3n*dImQ4n 
+					- dReQ1n*dReQ3n*dReQ6n*pow(dImQ4n,2.) - dReQ6n*dImQ1n*dImQ3n*pow(dImQ4n,2.) 
+					+ dReQ3n*pow(dReQ4n,2.)*dImQ1n*dImQ6n - dReQ1n*pow(dReQ4n,2.)*dImQ3n*dImQ6n
+					+ 2.*dReQ1n*dReQ3n*dReQ4n*dImQ4n*dImQ6n + 2.*dReQ4n*dImQ1n*dImQ3n*dImQ4n*dImQ6n
+					- dReQ3n*dImQ1n*pow(dImQ4n,2.)*dImQ6n + dReQ1n*dImQ3n*pow(dImQ4n,2.)*dImQ6n;
+
+ // five6n1n1n5n3n = 0.; // <5>_{6n,1n,1n|5n,3n} = <cos(n(6*phi1+1*phi2+1*phi3-5*phi4-3*phi5))>
+ Double_t reQ6nQ1nQ1nQ5nstarQ3nstar = pow(dReQ1n,2.)*dReQ3n*dReQ5n*dReQ6n - dReQ3n*dReQ5n*dReQ6n*pow(dImQ1n,2.)
+	                            + 2.*dReQ1n*dReQ5n*dReQ6n*dImQ1n*dImQ3n + 2.*dReQ1n*dReQ3n*dReQ6n*dImQ1n*dImQ5n
+				    - pow(dReQ1n,2.)*dReQ6n*dImQ3n*dImQ5n + dReQ6n*pow(dImQ1n,2.)*dImQ3n*dImQ5n
+				    - 2.*dReQ1n*dReQ3n*dReQ5n*dImQ1n*dImQ6n + pow(dReQ1n,2.)*dReQ5n*dImQ3n*dImQ6n
+				    - dReQ5n*pow(dImQ1n,2.)*dImQ3n*dImQ6n + pow(dReQ1n,2.)*dReQ3n*dImQ5n*dImQ6n
+                                    - dReQ3n*pow(dImQ1n,2.)*dImQ5n*dImQ6n + 2.*dReQ1n*dImQ1n*dImQ3n*dImQ5n*dImQ6n;
+
+ // <5>_{6n,3n|5n,2n,2n}:
+ Double_t reQ6nQ3nQ5nstarQ2nstarQ2nstar = dReQ5n*dReQ3n*pow(dReQ2n,2.)*dReQ6n + pow(dReQ2n,2.)*dReQ6n*dImQ5n*dImQ3n 
+	                                - 2.*dReQ3n*dReQ2n*dReQ6n*dImQ5n*dImQ2n + 2.*dReQ5n*dReQ2n*dReQ6n*dImQ3n*dImQ2n 
+					- dReQ5n*dReQ3n*dReQ6n*pow(dImQ2n,2.) - dReQ6n*dImQ5n*dImQ3n*pow(dImQ2n,2.) 
+					+ dReQ3n*pow(dReQ2n,2.)*dImQ5n*dImQ6n - dReQ5n*pow(dReQ2n,2.)*dImQ3n*dImQ6n
+					+ 2.*dReQ5n*dReQ3n*dReQ2n*dImQ2n*dImQ6n + 2.*dReQ2n*dImQ5n*dImQ3n*dImQ2n*dImQ6n
+					- dReQ3n*dImQ5n*pow(dImQ2n,2.)*dImQ6n + dReQ5n*dImQ3n*pow(dImQ2n,2.)*dImQ6n;
+
+ // <5>_{6n,5n|4n,4n,3n}:
+ Double_t reQ6nQ5nQ4nstarQ4nstarQ3nstar = dReQ3n*dReQ5n*pow(dReQ4n,2.)*dReQ6n + pow(dReQ4n,2.)*dReQ6n*dImQ3n*dImQ5n 
+	                                - 2.*dReQ5n*dReQ4n*dReQ6n*dImQ3n*dImQ4n + 2.*dReQ3n*dReQ4n*dReQ6n*dImQ5n*dImQ4n 
+					- dReQ3n*dReQ5n*dReQ6n*pow(dImQ4n,2.) - dReQ6n*dImQ3n*dImQ5n*pow(dImQ4n,2.) 
+					+ dReQ5n*pow(dReQ4n,2.)*dImQ3n*dImQ6n - dReQ3n*pow(dReQ4n,2.)*dImQ5n*dImQ6n
+					+ 2.*dReQ3n*dReQ5n*dReQ4n*dImQ4n*dImQ6n + 2.*dReQ4n*dImQ3n*dImQ5n*dImQ4n*dImQ6n
+					- dReQ5n*dImQ3n*pow(dImQ4n,2.)*dImQ6n + dReQ3n*dImQ5n*pow(dImQ4n,2.)*dImQ6n;
+ Double_t reQ11nQ4nstarQ4nstarQ3nstar = (dReQ11n*dReQ3n+dImQ11n*dImQ3n)*(pow(dReQ4n,2)-pow(dImQ4n,2)) 
+                                      + 2.*dReQ4n*dImQ4n*(dImQ11n*dReQ3n-dReQ11n*dImQ3n);
+
+ // <5>_{6n,3n,1n|5n,5n}:
+ Double_t reQ6nQ3nQ1nQ5nstarQ5nstar = dReQ1n*dReQ3n*pow(dReQ5n,2.)*dReQ6n - pow(dReQ5n,2.)*dReQ6n*dImQ1n*dImQ3n
+	                            + 2.*dReQ3n*dReQ5n*dReQ6n*dImQ1n*dImQ5n + 2.*dReQ1n*dReQ5n*dReQ6n*dImQ3n*dImQ5n
+				    - dReQ1n*dReQ3n*dReQ6n*pow(dImQ5n,2.) + dReQ6n*dImQ1n*dImQ3n*pow(dImQ5n,2.)
+				    - dReQ3n*pow(dReQ5n,2.)*dImQ1n*dImQ6n - dReQ1n*pow(dReQ5n,2.)*dImQ3n*dImQ6n
+				    + 2.*dReQ1n*dReQ3n*dReQ5n*dImQ5n*dImQ6n - 2.*dReQ5n*dImQ1n*dImQ3n*dImQ5n*dImQ6n
+				    + dReQ3n*dImQ1n*pow(dImQ5n,2.)*dImQ6n + dReQ1n*dImQ3n*pow(dImQ5n,2.)*dImQ6n;
+
+ // <5>_{6n,6n|5n,4n,3n}:
+ Double_t reQ6nQ6nQ5nstarQ4nstarQ3nstar = dReQ3n*dReQ4n*dReQ5n*pow(dReQ6n,2.) - dReQ5n*pow(dReQ6n,2.)*dImQ3n*dImQ4n
+	                                - dReQ4n*pow(dReQ6n,2.)*dImQ3n*dImQ5n - dReQ3n*pow(dReQ6n,2.)*dImQ4n*dImQ5n
+					+ 2.*dReQ4n*dReQ5n*dReQ6n*dImQ3n*dImQ6n + 2.*dReQ3n*dReQ5n*dReQ6n*dImQ4n*dImQ6n
+					+ 2.*dReQ3n*dReQ4n*dReQ6n*dImQ5n*dImQ6n - 2.*dReQ6n*dImQ3n*dImQ4n*dImQ5n*dImQ6n
+					- dReQ3n*dReQ4n*dReQ5n*pow(dImQ6n,2.) + dReQ5n*dImQ3n*dImQ4n*pow(dImQ6n,2.)
+					+ dReQ4n*dImQ3n*dImQ5n*pow(dImQ6n,2.) + dReQ3n*dImQ4n*dImQ5n*pow(dImQ6n,2.);
+
+
+ Double_t reQ8nQ4nQ6nstarQ6nstar = dImQ4n*pow(dImQ6n,2.)*dImQ8n+2.*dImQ6n*dImQ8n*dReQ4n*dReQ6n
+                                 - dImQ4n*dImQ8n*pow(dReQ6n,2.)-pow(dImQ6n,2.)*dReQ4n*dReQ8n 
+                                 + 2.*dImQ4n*dImQ6n*dReQ6n*dReQ8n+dReQ4n*pow(dReQ6n,2.)*dReQ8n;
+
+
+ Double_t reQ9nQ3nQ6nstarQ6nstar = dImQ3n*pow(dImQ6n,2.)*dImQ9n+2.*dImQ6n*dImQ9n*dReQ3n*dReQ6n
+                                 - dImQ3n*dImQ9n*pow(dReQ6n,2.)-pow(dImQ6n,2.)*dReQ3n*dReQ9n 
+                                 + 2.*dImQ3n*dImQ6n*dReQ6n*dReQ9n+dReQ3n*pow(dReQ6n,2.)*dReQ9n;
+
+
+ Double_t reQ12nQ5nstarQ4nstarQ3nstar = dReQ3n*dReQ5n*dReQ4n*dReQ12n-dReQ4n*dReQ12n*dImQ3n*dImQ5n 
+	                              - dReQ5n*dReQ12n*dImQ3n*dImQ4n-dReQ3n*dReQ12n*dImQ5n*dImQ4n 
+				      + dReQ5n*dReQ4n*dImQ3n*dImQ12n+dReQ3n*dReQ4n*dImQ5n*dImQ12n 
+				      + dReQ3n*dReQ5n*dImQ4n*dImQ12n-dImQ3n*dImQ5n*dImQ4n*dImQ12n;
+ Double_t reQ12nQ9nstarQ3nstar = dReQ12n*dReQ9n*dReQ3n-dReQ12n*dImQ9n*dImQ3n+dImQ12n*dReQ9n*dImQ3n
+                               + dImQ12n*dImQ9n*dReQ3n;
+ Double_t reQ12nQ8nstarQ4nstar = dReQ12n*dReQ8n*dReQ4n-dReQ12n*dImQ8n*dImQ4n+dImQ12n*dReQ8n*dImQ4n
+                               + dImQ12n*dImQ8n*dReQ4n;
+
+   
+  five4n3n3n2n2n = ((pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 * (pow(dReQ2n,2.)*dReQ4n-pow(dImQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n)
+                 - ((dReQ7n*dReQ3n+dImQ7n*dImQ3n)*(pow(dReQ2n,2.)-pow(dImQ2n,2.)) 
+                 + 2.*dReQ2n*dImQ2n*(dImQ7n*dReQ3n-dReQ7n*dImQ3n))
+                 - ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 - 2.*(dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 - 2.*(dImQ2n*dImQ3n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ2n*dReQ3n 
+                 + dImQ3n*dImQ5n*dReQ2n*dReQ4n-dImQ2n*dImQ5n*dReQ3n*dReQ4n
+                 - dImQ3n*dImQ4n*dReQ2n*dReQ5n+dImQ2n*dImQ4n*dReQ3n*dReQ5n 
+                 + dImQ2n*dImQ3n*dReQ4n*dReQ5n+dReQ2n*dReQ3n*dReQ4n*dReQ5n)
+                 + 2.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 + 1.*(dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n+dImQ7n*dImQ4n*dReQ3n)
+                 + 3.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 2.*(dReQ7n*dReQ5n*dReQ2n-dReQ7n*dImQ5n*dImQ2n+dImQ7n*dReQ5n*dImQ2n+dImQ7n*dImQ5n*dReQ2n)
+                 + 2.*(dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n+dImQ7n*dImQ4n*dReQ3n)
+                 + 6.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 6.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 - (dMult-6.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 4.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n2n4n1n1n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 * (pow(dReQ1n,2.)*dReQ2n-pow(dImQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n)
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 - reQ4nQ2nstarQ1nstarQ1nstar
+                 - 2.*reQ4nQ1nQ3nstarQ2nstar
+                 - 2.*reQ5nQ1nQ4nstarQ2nstar
+                 + 2.*reQ3nQ2nstarQ1nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + 3.*reQ4nQ2nstarQ2nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ6nQ4nstarQ2nstar
+                 + 6.*reQ4nQ3nstarQ1nstar
+                 + 6.*reQ5nQ4nstarQ1nstar
+                 - (dMult-6.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-4.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five4n3n4n2n1n = (reQ4nQ3nQ4nstarQ2nstarQ1nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 - reQ4nQ1nQ3nstarQ2nstar
+                 - reQ7nQ4nstarQ2nstarQ1nstar
+                 - reQ4nQ2nstarQ1nstarQ1nstar
+                 - reQ4nQ2nQ3nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + 2.*reQ7nQ4nstarQ3nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ6nQ3nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ3nQ2nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + 2.*reQ4nQ2nstarQ2nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ4nQ2nstarQ2nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five5n1n3n2n1n = ((pow(dImQ1n,2.)+pow(dReQ1n,2.))*(dImQ3n*dImQ5n*dReQ2n+dImQ2n*dImQ5n*dReQ3n 
+                 - dImQ2n*dImQ3n*dReQ5n+dReQ2n*dReQ3n*dReQ5n)
+                 - (dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - (dImQ1n*dImQ2n*dImQ4n*dImQ5n+dImQ4n*dImQ5n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ5n*dReQ1n*dReQ4n-dImQ1n*dImQ5n*dReQ2n*dReQ4n
+                 - dImQ2n*dImQ4n*dReQ1n*dReQ5n+dImQ1n*dImQ4n*dReQ2n*dReQ5n 
+                 + dImQ1n*dImQ2n*dReQ4n*dReQ5n+dReQ1n*dReQ2n*dReQ4n*dReQ5n)
+                 - (dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+                 - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+                 + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n)
+                 - (dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 - (-pow(dImQ1n,2.)*dImQ3n*dImQ5n+dImQ3n*dImQ5n*pow(dReQ1n,2.)
+                 + 2.*dImQ1n*dImQ5n*dReQ1n*dReQ3n-2.*dImQ1n*dImQ3n*dReQ1n*dReQ5n 
+                 - pow(dImQ1n,2.)*dReQ3n*dReQ5n+pow(dReQ1n,2.)*dReQ3n*dReQ5n)
+                 - (-pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+                 + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+                 - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n)
+                 + 3.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+                 + dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n
+                 + pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n
+                 + 4.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 - (dMult-7.)*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 4.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n
+                 + 6.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 3.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+(dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))  
+                 - 4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+(dMult-10.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-10.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*(dMult-7.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+  // to be polished:
+  five5n2n5n1n1n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 * (pow(dReQ1n,2.)*dReQ2n-pow(dImQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n)
+                 - reQ7nQ5nstarQ1nstarQ1nstar
+                 - reQ5nQ3nstarQ1nstarQ1nstar
+                 - 2.*reQ5nQ1nQ4nstarQ2nstar
+                 - 2.*reQ6nQ1nQ5nstarQ2nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ6nQ4nstarQ2nstar
+                 + 2.*reQ7nQ6nstarQ1nstar
+                 + 2.*reQ7nQ5nstarQ2nstar
+                 + 6.*reQ5nQ4nstarQ1nstar
+                 + 6.*reQ6nQ5nstarQ1nstar
+                 - (dMult-6.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))-4.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n2n4n2n1n = (reQ5nQ2nQ4nstarQ2nstarQ1nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 - reQ5nQ2nstarQ2nstarQ1nstar
+                 - reQ7nQ4nstarQ2nstarQ1nstar
+                 - reQ4nQ1nQ3nstarQ2nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ7nQ5nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ3nQ2nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + 2.*reQ4nQ2nstarQ2nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ4nQ2nstarQ2nstar
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished: 
+  five5n3n4n3n1n = (reQ5nQ3nQ4nstarQ3nstarQ1nstar
+                 - reQ5nQ3nQ4nstarQ4nstar
+                 - reQ7nQ1nQ5nstarQ3nstar
+                 - reQ5nQ3nstarQ1nstarQ1nstar
+                 - reQ8nQ4nstarQ3nstarQ1nstar
+                 - reQ4nQ1nQ3nstarQ2nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ8nQ5nstarQ3nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ8nQ4nstarQ4nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ8nQ7nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ7nQ4nstarQ3nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished: 
+  five5n4n4n3n2n = (reQ5nQ4nQ4nstarQ3nstarQ2nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 - reQ7nQ2nQ5nstarQ4nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ9nQ4nstarQ3nstarQ2nstar
+                 - reQ4nQ1nQ3nstarQ2nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + 2.*reQ9nQ5nstarQ4nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + reQ9nQ7nstarQ2nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ7nQ4nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished: 
+  five5n3n5n2n1n = (reQ5nQ3nQ5nstarQ2nstarQ1nstar
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 - reQ7nQ1nQ5nstarQ3nstar
+                 - reQ5nQ1nQ3nstarQ3nstar
+                 - reQ8nQ5nstarQ2nstarQ1nstar
+                 - reQ5nQ2nstarQ2nstarQ1nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ8nQ5nstarQ3nstar
+                 + reQ6nQ3nstarQ3nstar
+                 + reQ8nQ6nstarQ2nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ8nQ7nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ3nQ2nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ7nQ5nstarQ2nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n4n5n2n2n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 * (pow(dReQ2n,2.)*dReQ4n-pow(dImQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n)
+                 - reQ9nQ5nstarQ2nstarQ2nstar
+                 - reQ5nQ2nstarQ2nstarQ1nstar
+                 - 2.*reQ5nQ2nQ4nstarQ3nstar
+                 - 2.*reQ7nQ2nQ5nstarQ4nstar
+                 + 2.*reQ3nQ2nstarQ1nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + 2.*reQ7nQ4nstarQ3nstar
+                 + 2.*reQ9nQ7nstarQ2nstar
+                 + 2.*reQ9nQ5nstarQ4nstar
+                 + 6.*reQ5nQ3nstarQ2nstar
+                 + 6.*reQ7nQ5nstarQ2nstar
+                 - (dMult-6.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))-4.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n4n5n3n1n = (reQ5nQ4nQ5nstarQ3nstarQ1nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 - reQ8nQ1nQ5nstarQ4nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ9nQ5nstarQ3nstarQ1nstar
+                 - reQ5nQ3nstarQ1nstarQ1nstar
+                 - reQ5nQ3nQ4nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + 2.*reQ9nQ5nstarQ4nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + reQ8nQ4nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ9nQ8nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ8nQ5nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+  five6n1n3n3n1n = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 * (pow(dReQ3n,2.)*dReQ6n-pow(dImQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n)
+                 - 2.*(dImQ1n*dImQ3n*dImQ4n*dImQ6n+dImQ4n*dImQ6n*dReQ1n*dReQ3n 
+                 + dImQ3n*dImQ6n*dReQ1n*dReQ4n-dImQ1n*dImQ6n*dReQ3n*dReQ4n
+                 - dImQ3n*dImQ4n*dReQ1n*dReQ6n+dImQ1n*dImQ4n*dReQ3n*dReQ6n 
+                 + dImQ1n*dImQ3n*dReQ4n*dReQ6n+dReQ1n*dReQ3n*dReQ4n*dReQ6n)   
+                 - 2.*(dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - (-pow(dImQ3n,2.)*dImQ1n*dImQ7n+dImQ1n*dImQ7n*pow(dReQ3n,2.)
+                 + 2.*dImQ3n*dImQ7n*dReQ3n*dReQ1n-2.*dImQ3n*dImQ1n*dReQ3n*dReQ7n 
+                 - pow(dImQ3n,2.)*dReQ1n*dReQ7n+pow(dReQ3n,2.)*dReQ1n*dReQ7n)
+                 - ((pow(dReQ3n,2.)-pow(dImQ3n,2.))*(dReQ5n*dReQ1n-dImQ5n*dImQ1n) 
+                 + 2.*dReQ3n*dImQ3n*(dReQ5n*dImQ1n+dImQ5n*dReQ1n))
+                 + 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + (dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n+dImQ7n*dImQ6n*dReQ1n)
+                 + 2.*(dReQ7n*dReQ3n*dReQ4n-dReQ7n*dImQ3n*dImQ4n+dImQ7n*dReQ3n*dImQ4n+dImQ7n*dImQ3n*dReQ4n)
+                 + 2.*(dReQ6n*(dReQ4n*dReQ2n-dImQ4n*dImQ2n)+dImQ6n*(dReQ4n*dImQ2n+dImQ4n*dReQ2n))
+                 + 3.*(dReQ6n*(dReQ5n*dReQ1n-dImQ5n*dImQ1n)+dImQ6n*(dReQ5n*dImQ1n+dImQ5n*dReQ1n))
+                 + 4.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 2.*(dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n+dImQ7n*dImQ6n*dReQ1n)
+                 + 6.*(dReQ4n*dReQ3n*dReQ1n-dReQ4n*dImQ3n*dImQ1n+dImQ4n*dReQ3n*dImQ1n+dImQ4n*dImQ3n*dReQ1n)
+                 + 2.*(dReQ5n*dReQ3n*dReQ2n-dReQ5n*dImQ3n*dImQ2n+dImQ5n*dReQ3n*dImQ2n+dImQ5n*dImQ3n*dReQ2n)
+                 - (dMult-6.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - 4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 4.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))+(dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n2n3n3n2n = ((pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 * (pow(dReQ3n,2.)*dReQ6n-pow(dImQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n)
+                 - 2.*(dImQ2n*dImQ3n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ2n*dReQ3n 
+                 + dImQ3n*dImQ6n*dReQ2n*dReQ5n-dImQ2n*dImQ6n*dReQ3n*dReQ5n
+                 - dImQ3n*dImQ5n*dReQ2n*dReQ6n+dImQ2n*dImQ5n*dReQ3n*dReQ6n 
+                 + dImQ2n*dImQ3n*dReQ5n*dReQ6n+dReQ2n*dReQ3n*dReQ5n*dReQ6n) 
+                 - 2.*(dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - (-pow(dImQ3n,2.)*dImQ2n*dImQ8n+dImQ2n*dImQ8n*pow(dReQ3n,2.)
+                 + 2.*dImQ3n*dImQ8n*dReQ3n*dReQ2n-2.*dImQ3n*dImQ2n*dReQ3n*dReQ8n 
+                 - pow(dImQ3n,2.)*dReQ2n*dReQ8n+pow(dReQ3n,2.)*dReQ2n*dReQ8n)
+                 - ((pow(dReQ3n,2.)-pow(dImQ3n,2.))*(dReQ4n*dReQ2n-dImQ4n*dImQ2n) 
+                 + 2.*dReQ3n*dImQ3n*(dReQ4n*dImQ2n+dImQ4n*dReQ2n))
+                 + 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + (dReQ8n*dReQ6n*dReQ2n-dReQ8n*dImQ6n*dImQ2n+dImQ8n*dReQ6n*dImQ2n+dImQ8n*dImQ6n*dReQ2n)
+                 + 2.*(dReQ8n*dReQ3n*dReQ5n-dReQ8n*dImQ3n*dImQ5n+dImQ8n*dReQ3n*dImQ5n+dImQ8n*dImQ3n*dReQ5n)
+                 + 2.*(dReQ6n*(dReQ5n*dReQ1n-dImQ5n*dImQ1n)+dImQ6n*(dReQ5n*dImQ1n+dImQ5n*dReQ1n))
+                 + 3.*(dReQ6n*(dReQ4n*dReQ2n-dImQ4n*dImQ2n)+dImQ6n*(dReQ4n*dImQ2n+dImQ4n*dReQ2n))
+                 + 4.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 2.*(dReQ8n*dReQ6n*dReQ2n-dReQ8n*dImQ6n*dImQ2n+dImQ8n*dReQ6n*dImQ2n+dImQ8n*dImQ6n*dReQ2n)
+                 + 6.*(dReQ5n*dReQ3n*dReQ2n-dReQ5n*dImQ3n*dImQ2n+dImQ5n*dReQ3n*dImQ2n+dImQ5n*dImQ3n*dReQ2n)
+                 + 2.*(dReQ4n*dReQ3n*dReQ1n-dReQ4n*dImQ3n*dImQ1n+dImQ4n*dReQ3n*dImQ1n+dImQ4n*dImQ3n*dReQ1n)
+                 - (dMult-6.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 4.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+(dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n1n4n2n1n = (reQ6nQ1nQ4nstarQ2nstarQ1nstar
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ7nQ4nstarQ2nstarQ1nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ3nstarQ3nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 - (dMult-6.)*reQ6nQ4nstarQ2nstar
+                 + 3.*reQ3nQ2nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+  // to be polished: 
+  five6n3n4n3n2n = (reQ6nQ3nQ4nstarQ3nstarQ2nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 - reQ7nQ2nQ6nstarQ3nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ9nQ4nstarQ3nstarQ2nstar
+                 - reQ4nQ2nQ3nstarQ3nstar
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + 3.*reQ6nQ3nstarQ3nstar
+                 + 2.*reQ9nQ6nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ9nQ7nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ4nstarQ2nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ7nQ4nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n4n4n3n3n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 * (pow(dReQ3n,2.)*dReQ6n-pow(dImQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n)
+                 - ((dReQ10n*dReQ4n+dImQ10n*dImQ4n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                 + 2.*dReQ3n*dImQ3n*(dImQ10n*dReQ4n-dReQ10n*dImQ4n))
+                 - ((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n)
+                 - 2.*(dImQ1n*dImQ3n*dImQ4n*dImQ6n+dImQ4n*dImQ6n*dReQ1n*dReQ3n 
+                 + dImQ3n*dImQ6n*dReQ1n*dReQ4n-dImQ1n*dImQ6n*dReQ3n*dReQ4n
+                 - dImQ3n*dImQ4n*dReQ1n*dReQ6n+dImQ1n*dImQ4n*dReQ3n*dReQ6n 
+                 + dImQ1n*dImQ3n*dReQ4n*dReQ6n+dReQ1n*dReQ3n*dReQ4n*dReQ6n)
+                 - 2.*(dImQ3n*dImQ4n*dImQ6n*dImQ7n+dImQ6n*dImQ7n*dReQ3n*dReQ4n 
+                 + dImQ4n*dImQ7n*dReQ3n*dReQ6n-dImQ3n*dImQ7n*dReQ4n*dReQ6n
+                 - dImQ4n*dImQ6n*dReQ3n*dReQ7n+dImQ3n*dImQ6n*dReQ4n*dReQ7n 
+                 + dImQ3n*dImQ4n*dReQ6n*dReQ7n+dReQ3n*dReQ4n*dReQ6n*dReQ7n)
+                 + 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 1.*(dReQ10n*dReQ6n*dReQ4n-dReQ10n*dImQ6n*dImQ4n+dImQ10n*dReQ6n*dImQ4n+dImQ10n*dImQ6n*dReQ4n)
+                 + 3.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + 2.*(dReQ7n*dReQ6n*dReQ1n-dReQ7n*dImQ6n*dImQ1n+dImQ7n*dReQ6n*dImQ1n+dImQ7n*dImQ6n*dReQ1n)
+                 + 2.*(dReQ10n*dReQ7n*dReQ3n-dReQ10n*dImQ7n*dImQ3n+dImQ10n*dReQ7n*dImQ3n+dImQ10n*dImQ7n*dReQ3n)
+                 + 2.*(dReQ10n*dReQ6n*dReQ4n-dReQ10n*dImQ6n*dImQ4n+dImQ10n*dReQ6n*dImQ4n+dImQ10n*dImQ6n*dReQ4n)
+                 + 6.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 6.*(dReQ7n*dReQ4n*dReQ3n-dReQ7n*dImQ4n*dImQ3n+dImQ7n*dReQ4n*dImQ3n+dImQ7n*dImQ4n*dReQ3n)
+                 - (dMult-6.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))-4.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n2n5n2n1n = (reQ6nQ2nQ5nstarQ2nstarQ1nstar
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 - reQ7nQ1nQ6nstarQ2nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ8nQ5nstarQ2nstarQ1nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ8nQ6nstarQ2nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + 2.*reQ8nQ6nstarQ2nstar
+                 + reQ6nQ3nstarQ3nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + reQ8nQ7nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ3nQ2nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ7nQ5nstarQ2nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n3n5n3n1n = (reQ6nQ3nQ5nstarQ3nstarQ1nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 - reQ8nQ1nQ6nstarQ3nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ9nQ5nstarQ3nstarQ1nstar
+                 - reQ5nQ1nQ3nstarQ3nstar
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + 3.*reQ6nQ3nstarQ3nstar
+                 + 2.*reQ9nQ6nstarQ3nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ8nQ6nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ9nQ8nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ8nQ5nstarQ3nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n4n5n4n1n = (reQ6nQ4nQ5nstarQ4nstarQ1nstar
+                 - reQ6nQ4nQ5nstarQ5nstar
+                 - reQ9nQ1nQ6nstarQ4nstar
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 - reQ10nQ5nstarQ4nstarQ1nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ10nQ6nstarQ4nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + 2.*reQ10nQ6nstarQ4nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ10nQ5nstarQ5nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ10nQ9nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ9nQ5nstarQ4nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ5nQ4nstarQ1nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n5n5n3n3n = ((pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 * (pow(dReQ3n,2.)*dReQ6n-pow(dImQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n)
+                 - ((dReQ11n*dReQ5n+dImQ11n*dImQ5n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                 + 2.*dReQ3n*dImQ3n*(dImQ11n*dReQ5n-dReQ11n*dImQ5n))
+                 - (dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+                 - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+                 + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n)
+                 - 2.*(dImQ2n*dImQ3n*dImQ5n*dImQ6n+dImQ5n*dImQ6n*dReQ2n*dReQ3n 
+                 + dImQ3n*dImQ6n*dReQ2n*dReQ5n-dImQ2n*dImQ6n*dReQ3n*dReQ5n
+                 - dImQ3n*dImQ5n*dReQ2n*dReQ6n+dImQ2n*dImQ5n*dReQ3n*dReQ6n 
+                 + dImQ2n*dImQ3n*dReQ5n*dReQ6n+dReQ2n*dReQ3n*dReQ5n*dReQ6n)
+                 - 2.*(dImQ3n*dImQ5n*dImQ6n*dImQ8n+dImQ6n*dImQ8n*dReQ3n*dReQ5n 
+                 + dImQ5n*dImQ8n*dReQ3n*dReQ6n-dImQ3n*dImQ8n*dReQ5n*dReQ6n
+                 - dImQ5n*dImQ6n*dReQ3n*dReQ8n+dImQ3n*dImQ6n*dReQ5n*dReQ8n 
+                 + dImQ3n*dImQ5n*dReQ6n*dReQ8n+dReQ3n*dReQ5n*dReQ6n*dReQ8n)
+                 + 2.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 1.*(dReQ11n*dReQ6n*dReQ5n-dReQ11n*dImQ6n*dImQ5n+dImQ11n*dReQ6n*dImQ5n+dImQ11n*dImQ6n*dReQ5n)
+                 + 3.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+                 + 2.*(dReQ8n*dReQ6n*dReQ2n-dReQ8n*dImQ6n*dImQ2n+dImQ8n*dReQ6n*dImQ2n+dImQ8n*dImQ6n*dReQ2n)
+                 + 2.*(dReQ11n*dReQ8n*dReQ3n-dReQ11n*dImQ8n*dImQ3n+dImQ11n*dReQ8n*dImQ3n+dImQ11n*dImQ8n*dReQ3n)
+                 + 2.*(dReQ11n*dReQ6n*dReQ5n-dReQ11n*dImQ6n*dImQ5n+dImQ11n*dReQ6n*dImQ5n+dImQ11n*dImQ6n*dReQ5n)
+                 + 6.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 6.*(dReQ8n*dReQ5n*dReQ3n-dReQ8n*dImQ5n*dImQ3n+dImQ8n*dReQ5n*dImQ3n+dImQ8n*dImQ5n*dReQ3n)
+                 - (dMult-6.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.))-4.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n2n6n1n1n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 * (pow(dReQ1n,2.)*dReQ2n-pow(dImQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n)
+                 - reQ8nQ6nstarQ1nstarQ1nstar
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 - 2.*reQ6nQ1nQ5nstarQ2nstar
+                 - 2.*reQ7nQ1nQ6nstarQ2nstar
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + reQ8nQ6nstarQ2nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + 2.*reQ7nQ5nstarQ2nstar
+                 + 2.*reQ8nQ7nstarQ1nstar
+                 + 2.*reQ8nQ6nstarQ2nstar
+                 + 6.*reQ6nQ5nstarQ1nstar
+                 + 6.*reQ7nQ6nstarQ1nstar
+                 - (dMult-6.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))-4.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-4.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n3n6n2n1n = (reQ6nQ3nQ6nstarQ2nstarQ1nstar
+                 - reQ7nQ2nQ6nstarQ3nstar
+                 - reQ8nQ1nQ6nstarQ3nstar
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 - reQ9nQ6nstarQ2nstarQ1nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + 3.*reQ6nQ3nstarQ3nstar
+                 + 2.*reQ9nQ6nstarQ3nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ9nQ7nstarQ2nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ9nQ8nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (dMult-6.)*reQ3nQ2nstarQ1nstar
+                 + 3.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + 2.*reQ6nQ4nstarQ2nstar
+                 + 3.*reQ8nQ6nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ6nQ4nstarQ2nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n4n6n2n2n = (-(pow(dImQ6n,2.)+pow(dReQ6n,2.))
+                 * (-2.*dImQ2n*dImQ4n*dReQ2n+pow(dImQ2n,2.)*dReQ4n-pow(dReQ2n,2.)*dReQ4n)
+                 - (-pow(dImQ2n,2.)*dImQ6n*dImQ10n+dImQ6n*dImQ10n*pow(dReQ2n,2.)
+                 + 2.*dImQ2n*dImQ10n*dReQ2n*dReQ6n-2.*dImQ2n*dImQ6n*dReQ2n*dReQ10n 
+                 - pow(dImQ2n,2.)*dReQ6n*dReQ10n+pow(dReQ2n,2.)*dReQ6n*dReQ10n)
+                 - 2.*(dImQ2n*dImQ4n*dImQ6n*dImQ8n+dImQ6n*dImQ8n*dReQ2n*dReQ4n 
+                 + dImQ4n*dImQ8n*dReQ2n*dReQ6n-dImQ2n*dImQ8n*dReQ4n*dReQ6n
+                 - dImQ4n*dImQ6n*dReQ2n*dReQ8n+dImQ2n*dImQ6n*dReQ4n*dReQ8n 
+                 + dImQ2n*dImQ4n*dReQ6n*dReQ8n+dReQ2n*dReQ4n*dReQ6n*dReQ8n)
+                 - (dReQ6n*pow(dReQ2n,3.)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2.)
+                 + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2.)-dImQ6n*pow(dImQ2n,3.))
+                 - 2.*((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+                 + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 2.*(dReQ10n*dReQ8n*dReQ2n-dReQ10n*dImQ8n*dImQ2n+dImQ10n*dReQ8n*dImQ2n+dImQ10n*dImQ8n*dReQ2n)
+                 + 3.*(dReQ10n*dReQ4n*dReQ6n-dReQ10n*dImQ4n*dImQ6n+dImQ10n*dReQ4n*dImQ6n+dImQ10n*dImQ4n*dReQ6n)
+                 + 6.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 2.*(pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+                 + 9.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 - (dMult-8.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))-4.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+(dMult-12.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-9.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*dMult*(dMult-12.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n4n6n3n1n = (reQ6nQ4nQ6nstarQ3nstarQ1nstar
+                 - reQ7nQ3nQ6nstarQ4nstar
+                 - reQ9nQ1nQ6nstarQ4nstar
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 - reQ10nQ6nstarQ3nstarQ1nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ10nQ6nstarQ4nstar
+                 + 3.*reQ6nQ4nstarQ2nstar
+                 + 2.*reQ10nQ6nstarQ4nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ10nQ7nstarQ3nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ10nQ9nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + 2.*reQ6nQ3nstarQ3nstar
+                 + 3.*reQ9nQ6nstarQ3nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ6nQ3nstarQ3nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n5n5n4n2n = (reQ6nQ5nQ5nstarQ4nstarQ2nstar
+                 - reQ7nQ4nQ6nstarQ5nstar
+                 - reQ9nQ2nQ6nstarQ5nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 - reQ11nQ5nstarQ4nstarQ2nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ11nQ6nstarQ5nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ11nQ6nstarQ5nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ11nQ7nstarQ4nstar
+                 + reQ9nQ6nstarQ3nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ11nQ9nstarQ2nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ4nstarQ2nstar
+                 + 3.*reQ7nQ5nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ9nQ5nstarQ4nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n5n6n3n2n = (reQ6nQ5nQ6nstarQ3nstarQ2nstar
+                 - reQ8nQ3nQ6nstarQ5nstar
+                 - reQ9nQ2nQ6nstarQ5nstar
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 - reQ11nQ6nstarQ3nstarQ2nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar
+                 - reQ6nQ3nQ5nstarQ4nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ11nQ6nstarQ5nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ11nQ6nstarQ5nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ11nQ8nstarQ3nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ11nQ9nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ8nQ6nstarQ2nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + 2.*reQ6nQ3nstarQ3nstar
+                 + 3.*reQ9nQ6nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ6nQ3nstarQ3nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n5n6n4n1n = (reQ6nQ5nQ6nstarQ4nstarQ1nstar
+                 - reQ7nQ4nQ6nstarQ5nstar
+                 - reQ10nQ1nQ6nstarQ5nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 - reQ11nQ6nstarQ4nstarQ1nstar
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 - reQ6nQ4nQ5nstarQ5nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ11nQ6nstarQ5nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ11nQ6nstarQ5nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ11nQ7nstarQ4nstar
+                 + reQ10nQ5nstarQ5nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ11nQ10nstarQ1nstar
+                 + reQ2nQ1nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + 2.*reQ6nQ4nstarQ2nstar
+                 + 3.*reQ10nQ6nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ6nQ4nstarQ2nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  //  f2) Two distinct harmonics (9):
+  five2n1n1n1n1n = ((dReQ2n*dReQ1n-dImQ2n*dImQ1n)*(pow(dReQ1n,3)-3.*dReQ1n*pow(dImQ1n,2))
+                 + (dReQ2n*dImQ1n+dReQ1n*dImQ2n)*(3.*dImQ1n*pow(dReQ1n,2)-pow(dImQ1n,3))
+                 - (dReQ3n*pow(dReQ1n,3)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2)
+                 + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2)-dImQ3n*pow(dImQ1n,3))
+                 + 5.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 - 3.*(dMult-5.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 3.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))     
+                 + 3.*(dMult-4.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 3.*pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)
+                 + 6.*(2.*dMult-5.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-6.*dMult*(dMult-4.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five2n2n2n1n1n = ((pow(dReQ2n,2.)+pow(dImQ2n,2.))*(dReQ2n*(pow(dReQ1n,2.)-pow(dImQ1n,2.))+2.*dImQ2n*dReQ1n*dImQ1n)
+                 - ((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n))
+                 - 2.*((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 3.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 8.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 2.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 - 2.*(dMult-6.)*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - pow((pow(dReQ2n,2.)+pow(dImQ2n,2.)),2.)
+                 + 2.*(3.*dMult-10.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 4.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 4.*(dMult-5.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five3n3n2n2n2n = (pow(dReQ2n,3.)*pow(dReQ3n,2.)-3.*dReQ2n*pow(dReQ3n,2.)*pow(dImQ2n,2.)
+                 + 6.*pow(dReQ2n,2.)*dReQ3n*dImQ2n*dImQ3n-2.*dReQ3n*pow(dImQ2n,3.)*dImQ3n
+                 - pow(dReQ2n,3.)*pow(dImQ3n,2.)+3.*dReQ2n*pow(dImQ2n,2.)*pow(dImQ3n,2.)
+                 - (dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                 + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3))
+                 - 3.*((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n)
+                 - 6.*((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 2.*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 + 3.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + 6.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 6.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 12.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 6.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 2.*((pow(dReQ6n,2.)+pow(dImQ6n,2.))+3.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))+9.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 6.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-12.*dMult))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n1n1n1n1n = (pow(dReQ1n,4.)*dReQ4n-6.*pow(dReQ1n,2.)*dReQ4n*pow(dImQ1n,2.)
+                 + pow(dImQ1n,4.)*dReQ4n+4.*pow(dReQ1n,3.)*dImQ1n*dImQ4n-4.*pow(dImQ1n,3.)*dReQ1n*dImQ4n
+                 - 6.*((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n))
+                 - 4.*(dReQ3n*pow(dReQ1n,3)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2)
+                 + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2)-dImQ3n*pow(dImQ1n,3))
+                 + 8.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 3.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 12.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n) 
+                 + 12.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-8.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 12.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-24.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))+24.*dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n2n2n2n2n = ((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(pow(dReQ2n,3)-3.*dReQ2n*pow(dImQ2n,2))
+                 + (dReQ4n*dImQ2n+dReQ2n*dImQ4n)*(3.*dImQ2n*pow(dReQ2n,2)-pow(dImQ2n,3))
+                 - (dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                 + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3))
+                 + 5.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 - 3.*(dMult-5.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 3.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))     
+                 + 3.*(dMult-4.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 3.*pow((pow(dReQ2n,2.)+pow(dImQ2n,2.)),2.)
+                 + 6.*(2.*dMult-5.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-6.*dMult*(dMult-4.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n4n4n2n2n = ((pow(dReQ4n,2.)+pow(dImQ4n,2.))*(dReQ4n*(pow(dReQ2n,2.)-pow(dImQ2n,2.))+2.*dImQ4n*dReQ2n*dImQ2n)
+                 - ((dReQ8n*dReQ4n+dImQ8n*dImQ4n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                 + 2.*dReQ2n*dImQ2n*(dImQ8n*dReQ4n-dReQ8n*dImQ4n))
+                 - 2.*((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+                 + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 3.*(pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+                 + 8.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + 2.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 - 2.*(dMult-6.)*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))-4.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - pow((pow(dReQ4n,2.)+pow(dImQ4n,2.)),2.)
+                 + 2.*(3.*dMult-10.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 4.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 4.*(dMult-5.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n3n3n3n3n = ((dReQ6n*dReQ3n-dImQ6n*dImQ3n)*(pow(dReQ3n,3)-3.*dReQ3n*pow(dImQ3n,2))
+                 + (dReQ6n*dImQ3n+dReQ3n*dImQ6n)*(3.*dImQ3n*pow(dReQ3n,2)-pow(dImQ3n,3))
+                 - (dReQ9n*pow(dReQ3n,3)-3.*dReQ3n*dReQ9n*pow(dImQ3n,2)
+                 + 3.*dImQ3n*dImQ9n*pow(dReQ3n,2)-dImQ9n*pow(dImQ3n,3))
+                 + 5.*(dReQ9n*dReQ6n*dReQ3n-dReQ9n*dImQ6n*dImQ3n+dImQ9n*dReQ6n*dImQ3n+dImQ9n*dImQ6n*dReQ3n)
+                 - 3.*(dMult-5.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 3.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))     
+                 + 3.*(dMult-4.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 3.*pow((pow(dReQ3n,2.)+pow(dImQ3n,2.)),2.)
+                 + 6.*(2.*dMult-5.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-6.*dMult*(dMult-4.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n6n4n4n4n = (pow(dReQ4n,3.)*pow(dReQ6n,2.)-3.*dReQ4n*pow(dReQ6n,2.)*pow(dImQ4n,2.)
+                 + 6.*pow(dReQ4n,2.)*dReQ6n*dImQ4n*dImQ6n-2.*dReQ6n*pow(dImQ4n,3.)*dImQ6n
+                 - pow(dReQ4n,3.)*pow(dImQ6n,2.)+3.*dReQ4n*pow(dImQ4n,2.)*pow(dImQ6n,2.)
+                 - (dReQ12n*pow(dReQ4n,3)-3.*dReQ4n*dReQ12n*pow(dImQ4n,2)
+                 + 3.*dImQ4n*dImQ12n*pow(dReQ4n,2)-dImQ12n*pow(dImQ4n,3))
+                 - 3.*((dReQ8n*dReQ4n-dImQ8n*dImQ4n)*(dReQ6n*dReQ6n-dImQ6n*dImQ6n)
+                 + 2.*(dReQ8n*dImQ4n+dImQ8n*dReQ4n)*dReQ6n*dImQ6n)
+                 - 6.*((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+                 + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 2.*(pow(dReQ6n,2.)*dReQ12n+2.*dReQ6n*dImQ6n*dImQ12n-pow(dImQ6n,2.)*dReQ12n)
+                 + 3.*(dReQ12n*dReQ8n*dReQ4n-dReQ12n*dImQ8n*dImQ4n+dImQ12n*dReQ8n*dImQ4n+dImQ12n*dImQ8n*dReQ4n)
+                 + 6.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 6.*(pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+                 + 12.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + 6.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*((pow(dReQ12n,2.)+pow(dImQ12n,2.))+3.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 + 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+9.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-12.*dMult))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n6n6n3n3n = ((pow(dReQ6n,2.)+pow(dImQ6n,2.))*(dReQ6n*(pow(dReQ3n,2.)-pow(dImQ3n,2.))+2.*dImQ6n*dReQ3n*dImQ3n)
+                 - ((dReQ12n*dReQ6n+dImQ12n*dImQ6n)*(pow(dReQ3n,2)-pow(dImQ3n,2)) 
+                 + 2.*dReQ3n*dImQ3n*(dImQ12n*dReQ6n-dReQ12n*dImQ6n))
+                 - 2.*((pow(dReQ6n,2.)-pow(dImQ6n,2.))*(dReQ9n*dReQ3n-dImQ9n*dImQ3n) 
+                 + 2.*dReQ6n*dImQ6n*(dReQ9n*dImQ3n+dImQ9n*dReQ3n))
+                 + 3.*(pow(dReQ6n,2.)*dReQ12n+2.*dReQ6n*dImQ6n*dImQ12n-pow(dImQ6n,2.)*dReQ12n)
+                 + 8.*(dReQ9n*dReQ6n*dReQ3n-dReQ9n*dImQ6n*dImQ3n+dImQ9n*dReQ6n*dImQ3n+dImQ9n*dImQ6n*dReQ3n)
+                 + 2.*(dReQ12n*(dReQ9n*dReQ3n-dImQ9n*dImQ3n)+dImQ12n*(dReQ9n*dImQ3n+dImQ9n*dReQ3n))
+                 - 2.*(dMult-6.)*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 - 2.*(pow(dReQ12n,2.)+pow(dImQ12n,2.))-4.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - pow((pow(dReQ6n,2.)+pow(dImQ6n,2.)),2.)
+                 + 2.*(3.*dMult-10.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 4.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 4.*(dMult-5.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  //  f3) Three distinct harmonics (30):
+  five3n1n2n1n1n = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))*(dReQ1n*dReQ2n*dReQ3n-dReQ3n*dImQ1n*dImQ2n
+                 + dReQ2n*dImQ1n*dImQ3n+dReQ1n*dImQ2n*dImQ3n)
+                 - ((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2)-pow(dImQ1n,2)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n)) 
+                 - (dReQ3n*pow(dReQ1n,3)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2)
+                 + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2)-dImQ3n*pow(dImQ1n,3))
+                 - ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + 4.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 + pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n
+                 - (2.*dMult-13.)*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n
+                 + dImQ3n*dImQ2n*dReQ1n)
+                 + 7.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-5.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - pow((pow(dReQ1n,2.)+pow(dImQ1n,2.)),2.)
+                 + 2.*(3.*dMult-11.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five3n2n2n2n1n = ((pow(dImQ2n,2.)+pow(dReQ2n,2.))*(dImQ2n*dImQ3n*dReQ1n+dImQ1n*dImQ3n*dReQ2n 
+                 - dImQ1n*dImQ2n*dReQ3n+dReQ1n*dReQ2n*dReQ3n)
+                 - (-pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+                 + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+                 - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n)
+                 - (dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 - ((pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                 + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + (dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 4.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)
+                 + 3.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*(dMult-6.)*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 4.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+2.*(dMult-5.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - pow((pow(dReQ2n,2.)+pow(dImQ2n,2.)),2.)+2.*(3.*dMult-10.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+  five3n3n3n2n1n = ((pow(dImQ3n,2.)+pow(dReQ3n,2.))*(dImQ2n*dImQ3n*dReQ1n+dImQ1n*dImQ3n*dReQ2n
+                 - dImQ1n*dImQ2n*dReQ3n+dReQ1n*dReQ2n*dReQ3n)
+                 - (dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - (dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+                 - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+                 + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n)
+                 - ((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n)
+                 + dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n
+                 + dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n
+                 + 3.*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n)
+                 + 4.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 4.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n))
+                 - 2.*(dMult-6.)*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))+2.*(3.*dMult-10.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - pow((pow(dReQ3n,2.)+pow(dImQ3n,2.)),2.)+2.*(dMult-5.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-5.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n1n3n1n1n = (reQ4nQ1nQ3nstarQ1nstarQ1nstar
+                 - reQ4nQ1nQ3nstarQ2nstar
+                 - reQ4nQ1nQ4nstarQ1nstar
+                 - reQ4nQ2nstarQ1nstarQ1nstar
+                 - reQ5nQ3nstarQ1nstarQ1nstar
+                 - reQ3nQ1nQ3nstarQ1nstar
+                 - dMult*reQ4nQ3nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ5nQ4nstarQ1nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + reQ4nQ2nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ2nQ1nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*reQ3nQ2nstarQ1nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ3nQ2nstarQ1nstar
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*dMult*dMult 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five4n1n1n3n3n = // calculated by Peter Jochumzsen
+                 (pow(dReQ1n*dReQ3n,2.)*dReQ4n-pow(dReQ3n*dImQ1n,2.)*dReQ4n  
+                 + 4.*dReQ1n*dReQ3n*dReQ4n*dImQ1n*dImQ3n 
+                 - pow(dReQ1n*dImQ3n,2.)*dReQ4n+pow(dImQ1n*dImQ3n,2.)*dReQ4n  
+                 - 2.*dReQ1n*pow(dReQ3n,2.)*dImQ1n*dImQ4n+2.*pow(dReQ1n,2.)*dReQ3n*dImQ3n*dImQ4n 
+                 - 2.*dReQ3n*pow(dImQ1n,2.)*dImQ3n*dImQ4n+2.*dReQ1n*dImQ1n*pow(dImQ3n,2.)*dImQ4n
+                 + 6.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n)
+                 - 1.*(-pow(dImQ1n,2.)*dImQ4n*dImQ6n+dImQ4n*dImQ6n*pow(dReQ1n,2.) 
+                 + 2.*dImQ1n*dImQ6n*dReQ1n*dReQ4n-2.*dImQ1n*dImQ4n*dReQ1n*dReQ6n 
+                 - pow(dImQ1n,2.)*dReQ4n*dReQ6n+pow(dReQ1n,2.)*dReQ4n*dReQ6n) 
+                 - 1.*((dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n) 
+                 + 1.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 - 2.*(dImQ1n*pow(dImQ3n,2.)*dImQ5n+2.*dImQ3n*dImQ5n*dReQ1n*dReQ3n
+                 - dImQ1n*dImQ5n*pow(dReQ3n,2.)-pow(dImQ3n,2.)*dReQ1n*dReQ5n 
+                 + 2.*dImQ1n*dImQ3n*dReQ3n*dReQ5n+dReQ1n*pow(dReQ3n,2.)*dReQ5n) 
+                 + 2.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 + 4.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)) 
+                 - 2.*(dReQ3n*pow(dReQ1n,3.)-3.*dReQ1n*dReQ3n*pow(dImQ1n,2.)
+                 + 3.*dImQ1n*dImQ3n*pow(dReQ1n,2.)-dImQ3n*pow(dImQ1n,3.))
+                 + 10.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n) 
+                 + 2.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+                 + 2.*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n) 
+                 - 4.*(dImQ1n*dImQ2n*dImQ3n*dImQ4n+dImQ3n*dImQ4n*dReQ1n*dReQ2n 
+                 + dImQ2n*dImQ4n*dReQ1n*dReQ3n-dImQ1n*dImQ4n*dReQ2n*dReQ3n
+                 - dImQ2n*dImQ3n*dReQ1n*dReQ4n+dImQ1n*dImQ3n*dReQ2n*dReQ4n 
+                 + dImQ1n*dImQ2n*dReQ3n*dReQ4n+dReQ1n*dReQ2n*dReQ3n*dReQ4n)
+                 + 4.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 + 4.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 - 16.*pow(dReQ1n,2.)-16.*pow(dImQ1n,2.)
+                 - 10.*pow(dReQ2n,2.)-10.*pow(dImQ2n,2.)-12.*pow(dReQ3n,2.)-12.*pow(dImQ3n,2.)
+                 - 6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)-4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)
+                 - 2.*pow(dReQ6n,2.)-2.*pow(dImQ6n,2.)+24.*dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five4n3n3n3n1n = (reQ4nQ3nQ3nstarQ3nstarQ1nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - reQ6nQ1nQ4nstarQ3nstar
+                 - dMult*reQ4nQ3nstarQ1nstar
+                 - reQ7nQ3nstarQ3nstarQ1nstar
+                 - reQ3nQ1nQ3nstarQ1nstar
+                 - reQ4nQ2nQ3nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + 2.*reQ7nQ4nstarQ3nstar
+                 + dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ4nQ3nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + 2.*dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + 3.*reQ6nQ3nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*dMult*dMult 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+  // to be polished:
+  five4n4n3n3n2n = (reQ4nQ4nQ3nstarQ3nstarQ2nstar
+                 - reQ5nQ3nQ4nstarQ4nstar-reQ5nQ3nQ4nstarQ4nstar-reQ6nQ2nQ4nstarQ4nstar
+                 - reQ4nQ1nQ3nstarQ2nstar-reQ4nQ1nQ3nstarQ2nstar-reQ4nQ2nQ3nstarQ3nstar		     	 
+				 - reQ8nQ3nstarQ3nstarQ2nstar-reQ4nQ2nQ3nstarQ3nstar-reQ4nQ1nQ3nstarQ2nstar-reQ4nQ1nQ3nstarQ2nstar
+                 + 2.*(reQ4nQ3nstarQ1nstar+reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ8nQ4nstarQ4nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ6nQ4nstarQ2nstar
+                 + reQ8nQ6nstarQ2nstar+reQ8nQ5nstarQ3nstar+reQ8nQ5nstarQ3nstar
+				 + reQ5nQ4nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar				 				 
+				 + reQ5nQ4nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar				 				 
+				 + reQ6nQ4nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+                 + 2.*(reQ6nQ3nstarQ3nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar)
+                 + 2.*(reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ2nstarQ2nstar)
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))				 
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+  /*
+  // correct recursive formula, not needed for the time being.
+  five4n4n3n3n2n = (reQ4nQ4nQ3nstarQ3nstarQ2nstar
+                 - dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)
+                 * (2.*four4n2n3n3n+4.*four4n1n3n2n+1.*four8n3n3n2n+1.*four6n2n4n4n+2.*four5n3n4n4n)
+                 - dMult*(dMult-1.)*(dMult-2.)
+                 * (4.*three4n3n1n+2.*three4n2n2n+2.*three5n3n2n+1.*three6n3n3n+1.*three8n4n4n
+				 + 4.*three3n2n1n+2.*three2n1n1n+1.*three8n6n2n+2.*three8n5n3n+2.*three6n4n2n+4.*three5n4n1n)
+                 - dMult*(dMult-1.)
+				 * (1.*two2n2n+2.*two3n3n+2.*two4n4n+2.*two5n5n+1.*two6n6n+4.*two1n1n+2.*two2n2n+1.*two8n8n)
+				 - dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)); 
+  */
+
+  // to be polished:
+  five4n4n4n3n1n = (reQ4nQ4nQ4nstarQ3nstarQ1nstar
+                 - reQ5nQ3nQ4nstarQ4nstar
+                 - reQ7nQ1nQ4nstarQ4nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ8nQ4nstarQ3nstarQ1nstar
+                 - dMult*reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ8nQ4nstarQ4nstar
+                 + 3.*dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*reQ8nQ4nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ8nQ7nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ7nQ4nstarQ3nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*dMult*dMult 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n2n1n1n1n = (reQ5nQ2nstarQ1nstarQ1nstarQ1nstar
+	             - reQ5nQ2nstarQ2nstarQ1nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ5nQ2nstarQ2nstarQ1nstar
+				 - reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar
+				 - reQ3nQ1nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ4nQ2nstarQ1nstarQ1nstar
+                 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar)
+				 + reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar
+				 + reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+                 + 2.*(reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+                 + 2.*(reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n1n2n2n2n = (reQ5nQ1nQ2nstarQ2nstarQ2nstar
+                 - reQ5nQ1nQ4nstarQ2nstar-reQ5nQ1nQ4nstarQ2nstar-reQ5nQ1nQ4nstarQ2nstar
+				 - reQ5nQ2nstarQ2nstarQ1nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ5nQ2nstarQ2nstarQ1nstar
+				 - reQ6nQ2nstarQ2nstarQ2nstar-reQ3nQ1nQ2nstarQ2nstar-reQ3nQ1nQ2nstarQ2nstar-reQ3nQ1nQ2nstarQ2nstar
+				 + 2.*(reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ6nQ5nstarQ1nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar
+				 + reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar
+				 + reQ4nQ3nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ4nQ3nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ4nQ3nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+                 + 2.*(reQ4nQ2nstarQ2nstar+reQ4nQ2nstarQ2nstar+reQ4nQ2nstarQ2nstar)
+                 + 2.*(reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n2n3n2n2n = (reQ5nQ2nQ3nstarQ2nstarQ2nstar
+                 - reQ5nQ2nQ4nstarQ3nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - reQ5nQ2nstarQ2nstarQ1nstar
+                 - reQ7nQ3nstarQ2nstarQ2nstar
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - dMult*reQ5nQ3nstarQ2nstar
+                 + dMult*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + reQ7nQ5nstarQ2nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ7nQ5nstarQ2nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ7nQ4nstarQ3nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + dMult*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ4nQ2nstarQ2nstar
+                 + dMult*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*reQ3nQ2nstarQ1nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ3nQ2nstarQ1nstar
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ2n,2.)+pow(dImQ2n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*dMult*dMult
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n3n3n3n2n = (reQ5nQ3nQ3nstarQ3nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - reQ6nQ2nQ5nstarQ3nstar
+                 - dMult*reQ5nQ3nstarQ2nstar
+                 - reQ8nQ3nstarQ3nstarQ2nstar 
+				 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - reQ5nQ1nQ3nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + 2.*reQ8nQ5nstarQ3nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + reQ8nQ6nstarQ2nstar
+                 + dMult*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (dMult-6.)*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ5nQ3nstarQ2nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + 2.*dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + 3.*reQ6nQ3nstarQ3nstar
+                 + reQ3nQ2nstarQ1nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ3n,2.)+pow(dImQ3n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*dMult*dMult 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n1n4n1n1n = (reQ5nQ1nQ4nstarQ1nstarQ1nstar
+                 - reQ5nQ1nQ4nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ5nQ3nstarQ1nstarQ1nstar
+                 - reQ6nQ4nstarQ1nstarQ1nstar 
+				 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - dMult*reQ5nQ4nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ6nQ5nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + 2.*reQ6nQ5nstarQ1nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ2nQ1nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*reQ4nQ3nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + reQ4nQ3nstarQ1nstar
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*dMult*dMult
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n4n3n3n3n = (reQ5nQ4nQ3nstarQ3nstarQ3nstar
+                 - reQ6nQ3nQ5nstarQ4nstar-reQ6nQ3nQ5nstarQ4nstar-reQ6nQ3nQ5nstarQ4nstar
+				 - reQ5nQ1nQ3nstarQ3nstar-reQ5nQ1nQ3nstarQ3nstar-reQ5nQ1nQ3nstarQ3nstar
+		     	 - reQ9nQ3nstarQ3nstarQ3nstar-reQ4nQ2nQ3nstarQ3nstar-reQ4nQ2nQ3nstarQ3nstar-reQ4nQ2nQ3nstarQ3nstar
+				 + 2.*(reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ9nQ5nstarQ4nstar)
+				 + reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar
+				 + reQ9nQ6nstarQ3nstar+reQ9nQ6nstarQ3nstar+reQ9nQ6nstarQ3nstar
+				 + reQ6nQ4nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ6nQ4nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ6nQ4nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+                 + 2.*(reQ6nQ3nstarQ3nstar+reQ6nQ3nstarQ3nstar+reQ6nQ3nstarQ3nstar)
+                 + 2.*(reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n4n4n4n1n = (reQ5nQ4nQ4nstarQ4nstarQ1nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - reQ8nQ1nQ5nstarQ4nstar
+                 - dMult*reQ5nQ4nstarQ1nstar
+                 - reQ9nQ4nstarQ4nstarQ1nstar 
+				 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ5nQ3nQ4nstarQ4nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + 2.*reQ9nQ5nstarQ4nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + reQ9nQ8nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ5nQ4nstarQ1nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + 2.*dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 3.*reQ8nQ4nstarQ4nstar
+                 + reQ4nQ3nstarQ1nstar
+                 + dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*dMult*dMult 
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n5n4n3n3n = (reQ5nQ5nQ4nstarQ3nstarQ3nstar
+                 - reQ6nQ4nQ5nstarQ5nstar-reQ7nQ3nQ5nstarQ5nstar-reQ7nQ3nQ5nstarQ5nstar
+				 - reQ5nQ2nQ4nstarQ3nstar-reQ5nQ1nQ3nstarQ3nstar-reQ5nQ2nQ4nstarQ3nstar		     	 
+				 - reQ10nQ4nstarQ3nstarQ3nstar-reQ5nQ2nQ4nstarQ3nstar-reQ5nQ1nQ3nstarQ3nstar-reQ5nQ2nQ4nstarQ3nstar
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ10nQ5nstarQ5nstar)
+				 + reQ6nQ5nstarQ1nstar+reQ7nQ5nstarQ2nstar+reQ7nQ5nstarQ2nstar
+				 + reQ10nQ7nstarQ3nstar+reQ10nQ6nstarQ4nstar+reQ10nQ7nstarQ3nstar
+				 + reQ6nQ5nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ7nQ5nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ4nQ2nstarQ2nstar
+				 + reQ7nQ5nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ4nQ2nstarQ2nstar
+				 + 2.*(reQ7nQ4nstarQ3nstar+reQ7nQ4nstarQ3nstar+reQ6nQ3nstarQ3nstar)
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.))
+				 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n5n4n4n2n = (reQ5nQ5nQ4nstarQ4nstarQ2nstar
+                 - reQ6nQ4nQ5nstarQ5nstar-reQ6nQ4nQ5nstarQ5nstar-reQ8nQ2nQ5nstarQ5nstar
+				 - reQ5nQ1nQ4nstarQ2nstar-reQ5nQ1nQ4nstarQ2nstar-reQ5nQ3nQ4nstarQ4nstar		     	 
+				 - reQ10nQ4nstarQ4nstarQ2nstar-reQ5nQ3nQ4nstarQ4nstar-reQ5nQ1nQ4nstarQ2nstar-reQ5nQ1nQ4nstarQ2nstar
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar+reQ10nQ5nstarQ5nstar)
+				 + reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ8nQ5nstarQ3nstar
+				 + reQ10nQ8nstarQ2nstar+reQ10nQ6nstarQ4nstar+reQ10nQ6nstarQ4nstar
+				 + reQ6nQ5nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ6nQ5nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ8nQ5nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + 2.*(reQ8nQ4nstarQ4nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar)
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.))
+				 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n5n5n3n2n = (reQ5nQ5nQ5nstarQ3nstarQ2nstar
+                 - reQ7nQ3nQ5nstarQ5nstar
+                 - reQ8nQ2nQ5nstarQ5nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - reQ10nQ5nstarQ3nstarQ2nstar 
+				 - dMult*reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ10nQ5nstarQ5nstar
+                 + 3.*dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + 2.*reQ10nQ5nstarQ5nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + reQ10nQ7nstarQ3nstar
+                 + reQ8nQ5nstarQ3nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + reQ10nQ8nstarQ2nstar
+                 + dMult*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (dMult-6.)*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ7nQ5nstarQ2nstar
+                 + reQ5nQ3nstarQ2nstar
+                 + 2.*reQ5nQ3nstarQ2nstar
+                 + 3.*reQ8nQ5nstarQ3nstar
+                 + dMult*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + reQ5nQ3nstarQ2nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*dMult*dMult 
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 + (dMult-8.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n5n5n4n1n = (reQ5nQ5nQ5nstarQ4nstarQ1nstar
+                 - reQ6nQ4nQ5nstarQ5nstar
+                 - reQ9nQ1nQ5nstarQ5nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ10nQ5nstarQ4nstarQ1nstar 
+				 - dMult*reQ5nQ4nstarQ1nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ10nQ5nstarQ5nstar
+                 + 3.*dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + 2.*reQ10nQ5nstarQ5nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ10nQ6nstarQ4nstar
+                 + reQ9nQ5nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ10nQ9nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ9nQ5nstarQ4nstar
+                 + dMult*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + reQ5nQ4nstarQ1nstar
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*dMult*dMult 
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n2n2n1n1n = // calculated by Peter Jochumzsen 
+                 (pow(dReQ1n*dReQ2n,2.)*dReQ6n-pow(dReQ2n*dImQ1n,2.)*dReQ6n
+                 - 4.*dReQ1n*dReQ2n*dReQ6n*dImQ1n*dImQ2n 
+                 - pow(dReQ1n*dImQ2n,2.)*dReQ6n+pow(dImQ1n*dImQ2n,2.)*dReQ6n
+                 + 2.*dReQ1n*pow(dReQ2n,2.)*dImQ1n*dImQ6n+2.*pow(dReQ1n,2.)*dReQ2n*dImQ2n*dImQ6n 
+                 - 2.*dReQ2n*pow(dImQ1n,2.)*dImQ2n*dImQ6n-2.*dReQ1n*dImQ1n*pow(dImQ2n,2.)*dImQ6n
+                 + 2.*(pow(dReQ1n,2.)*dReQ2n+2.*dReQ1n*dImQ1n*dImQ2n-pow(dImQ1n,2.)*dReQ2n) 
+                 + 8.*(dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n+dImQ3n*dImQ2n*dReQ1n)
+                 + 5.*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 - (-pow(dImQ1n,2.)*dImQ4n*dImQ6n+dImQ4n*dImQ6n*pow(dReQ1n,2.) 
+                 + 2.*dImQ1n*dImQ6n*dReQ1n*dReQ4n-2.*dImQ1n*dImQ4n*dReQ1n*dReQ6n 
+                 - pow(dImQ1n,2.)*dReQ4n*dReQ6n+pow(dReQ1n,2.)*dReQ4n*dReQ6n)
+                 + 2.*(pow(dReQ3n,2.)*dReQ6n+2.*dReQ3n*dImQ3n*dImQ6n-pow(dImQ3n,2.)*dReQ6n) 
+                 - (dReQ6n*pow(dReQ2n,3.)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2.)
+                 + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2.)-dImQ6n*pow(dImQ2n,3.))
+                 + 4.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n) 
+                 - 2.*((dReQ4n*dReQ2n+dImQ4n*dImQ2n)*(pow(dReQ1n,2.)-pow(dImQ1n,2.)) 
+                 + 2.*dReQ1n*dImQ1n*(dImQ4n*dReQ2n-dReQ4n*dImQ2n))
+                 + 2.*(dReQ5n*dReQ4n*dReQ1n-dReQ5n*dImQ4n*dImQ1n+dImQ5n*dReQ4n*dImQ1n+dImQ5n*dImQ4n*dReQ1n)
+                 - 2.*(-pow(dImQ2n,2.)*dImQ1n*dImQ5n+dImQ1n*dImQ5n*pow(dReQ2n,2.)
+                 + 2.*dImQ2n*dImQ5n*dReQ2n*dReQ1n-2.*dImQ2n*dImQ1n*dReQ2n*dReQ5n 
+                 - pow(dImQ2n,2.)*dReQ1n*dReQ5n+pow(dReQ2n,2.)*dReQ1n*dReQ5n) 
+                 + 4.*(dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n)) 
+                 + 4.*(dReQ5n*dReQ2n*dReQ3n-dReQ5n*dImQ2n*dImQ3n+dImQ5n*dReQ2n*dImQ3n+dImQ5n*dImQ2n*dReQ3n)
+                 + 4.*(dReQ6n*dReQ5n*dReQ1n-dReQ6n*dImQ5n*dImQ1n+dImQ6n*dReQ5n*dImQ1n+dImQ6n*dImQ5n*dReQ1n)
+                 - 4.*(dReQ1n*dReQ2n*dReQ3n*dReQ6n-dReQ3n*dReQ6n*dImQ1n*dImQ2n
+                 - dReQ2n*dReQ6n*dImQ1n*dImQ3n-dReQ1n*dReQ6n*dImQ2n*dImQ3n
+                 + dReQ2n*dReQ3n*dImQ1n*dImQ6n+dReQ1n*dReQ3n*dImQ2n*dImQ6n 
+                 + dReQ1n*dReQ2n*dImQ3n*dImQ6n-dImQ1n*dImQ2n*dImQ3n*dImQ6n)
+                 - 12.*pow(dReQ1n,2.)-12.*pow(dImQ1n,2.)-14.*pow(dReQ2n,2.)-14.*pow(dImQ2n,2.)
+                 - 8.*pow(dReQ3n,2.)-8.*pow(dImQ3n,2.)-6.*pow(dReQ4n,2.)-6.*pow(dImQ4n,2.)
+                 - 4.*pow(dReQ5n,2.)-4.*pow(dImQ5n,2.)-6.*pow(dReQ6n,2.)-6.*pow(dImQ6n,2.)+24.*dMult)
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n3n1n1n1n = (reQ6nQ3nstarQ1nstarQ1nstarQ1nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar-reQ6nQ3nstarQ2nstarQ1nstar-reQ6nQ3nstarQ2nstarQ1nstar
+				 - reQ6nQ4nstarQ1nstarQ1nstar-reQ6nQ4nstarQ1nstarQ1nstar-reQ6nQ4nstarQ1nstarQ1nstar
+				 - reQ3nQ1nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ6nQ3nstarQ3nstar)
+				 + reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar
+				 + reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar
+				 + reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar
+				 + reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar
+                 + 2.*(reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+                 + 2.*(reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+  // to be polished:
+  five6n1n1n4n4n = (reQ6nQ1nQ1nQ4nstarQ4nstar
+	             - reQ6nQ2nQ4nstarQ4nstar-reQ7nQ1nQ4nstarQ4nstar-reQ7nQ1nQ4nstarQ4nstar
+				 - reQ6nQ1nQ4nstarQ3nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar
+                 - reQ8nQ6nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar
+				 + 2.*(reQ6nQ4nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ8nQ4nstarQ4nstar)
+				 + reQ4nQ2nstarQ2nstar+reQ7nQ4nstarQ3nstar+reQ7nQ4nstarQ3nstar // ?? 1st term
+                 + reQ8nQ7nstarQ1nstar+reQ8nQ6nstarQ2nstar+reQ8nQ7nstarQ1nstar
+				 + reQ4nQ2nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ7nQ4nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ6nQ3nstarQ3nstar				 				 
+                 + reQ7nQ4nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ6nQ3nstarQ3nstar				 
+                 + 2.*(reQ7nQ6nstarQ1nstar+reQ7nQ6nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+                 + 2.*(reQ6nQ4nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.))
+				 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))				 
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  
+  // to be polished:
+  five6n1n5n1n1n = (reQ6nQ1nQ5nstarQ1nstarQ1nstar
+                 - reQ6nQ1nQ5nstarQ2nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ6nQ4nstarQ1nstarQ1nstar
+                 - reQ7nQ5nstarQ1nstarQ1nstar 
+ 			     - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - dMult*reQ6nQ5nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ7nQ6nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ4nstarQ2nstar
+                 + reQ7nQ5nstarQ2nstar
+                 + dMult*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ2nQ1nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*reQ5nQ4nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + reQ5nQ4nstarQ1nstar
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ1n,2.)+pow(dImQ1n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*dMult*dMult
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n2n4n2n2n = ((pow(dReQ2n,2.)+pow(dImQ2n,2.))*(dReQ2n*dReQ4n*dReQ6n-dReQ6n*dImQ2n*dImQ4n
+                 + dReQ4n*dImQ2n*dImQ6n+dReQ2n*dImQ4n*dImQ6n)
+                 - ((dReQ8n*dReQ4n+dImQ8n*dImQ4n)*(pow(dReQ2n,2)-pow(dImQ2n,2)) 
+                 + 2.*dReQ2n*dImQ2n*(dImQ8n*dReQ4n-dReQ8n*dImQ4n)) 
+                 - (dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                 + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3))
+                 - ((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+                 + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + 4.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 + pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n
+                 - (2.*dMult-13.)*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+                 + dImQ6n*dImQ4n*dReQ2n)
+                 + 7.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 + 2.*(dMult-5.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - pow((pow(dReQ2n,2.)+pow(dImQ2n,2.)),2.)
+                 + 2.*(3.*dMult-11.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n4n4n4n2n = ((pow(dImQ4n,2.)+pow(dReQ4n,2.))*(dImQ4n*dImQ6n*dReQ2n+dImQ2n*dImQ6n*dReQ4n 
+                 - dImQ2n*dImQ4n*dReQ6n+dReQ2n*dReQ4n*dReQ6n)
+                 - (-pow(dImQ4n,2.)*dImQ2n*dImQ10n+dImQ2n*dImQ10n*pow(dReQ4n,2.)
+                 + 2.*dImQ4n*dImQ10n*dReQ4n*dReQ2n-2.*dImQ4n*dImQ2n*dReQ4n*dReQ10n 
+                 - pow(dImQ4n,2.)*dReQ2n*dReQ10n+pow(dReQ4n,2.)*dReQ2n*dReQ10n)
+                 - (dImQ2n*dImQ4n*dImQ6n*dImQ8n+dImQ6n*dImQ8n*dReQ2n*dReQ4n 
+                 + dImQ4n*dImQ8n*dReQ2n*dReQ6n-dImQ2n*dImQ8n*dReQ4n*dReQ6n
+                 - dImQ4n*dImQ6n*dReQ2n*dReQ8n+dImQ2n*dImQ6n*dReQ4n*dReQ8n 
+                 + dImQ2n*dImQ4n*dReQ6n*dReQ8n+dReQ2n*dReQ4n*dReQ6n*dReQ8n)
+                 - ((pow(dReQ4n,2.)-pow(dImQ4n,2.))*(dReQ6n*dReQ2n-dImQ6n*dImQ2n) 
+                 + 2.*dReQ4n*dImQ4n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + (dReQ10n*dReQ8n*dReQ2n-dReQ10n*dImQ8n*dImQ2n+dImQ10n*dReQ8n*dImQ2n+dImQ10n*dImQ8n*dReQ2n)
+                 + 4.*(dReQ10n*dReQ4n*dReQ6n-dReQ10n*dImQ4n*dImQ6n+dImQ10n*dReQ4n*dImQ6n+dImQ10n*dImQ4n*dReQ6n)
+                 + dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n)
+                 + 3.*(pow(dReQ4n,2.)*dReQ8n+2.*dReQ4n*dImQ4n*dImQ8n-pow(dImQ4n,2.)*dReQ8n)
+                 - 2.*(dMult-6.)*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 + 4.*(pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n)
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))+2.*(dMult-5.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - pow((pow(dReQ4n,2.)+pow(dImQ4n,2.)),2.)+2.*(3.*dMult-10.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n2n2n5n5n = (reQ6nQ2nQ2nQ5nstarQ5nstar
+                 - reQ6nQ4nQ5nstarQ5nstar-reQ8nQ2nQ5nstarQ5nstar-reQ8nQ2nQ5nstarQ5nstar
+				 - reQ6nQ2nQ5nstarQ3nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ6nQ2nQ5nstarQ3nstar
+				 - reQ10nQ6nstarQ2nstarQ2nstar-reQ6nQ2nQ5nstarQ3nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ6nQ2nQ5nstarQ3nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ10nQ5nstarQ5nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ8nQ5nstarQ3nstar+reQ8nQ5nstarQ3nstar
+                 + reQ10nQ8nstarQ2nstar+reQ10nQ6nstarQ4nstar+reQ10nQ8nstarQ2nstar
+ 				 + reQ5nQ4nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ8nQ5nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ6nQ3nstarQ3nstar				 				 
+				 + reQ8nQ5nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ6nQ3nstarQ3nstar				 
+                 + 2.*(reQ8nQ6nstarQ2nstar+reQ8nQ6nstarQ2nstar+reQ4nQ2nstarQ2nstar)
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n5n5n5n1n = (reQ6nQ5nQ5nstarQ5nstarQ1nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - reQ10nQ1nQ6nstarQ5nstar
+                 - dMult*reQ6nQ5nstarQ1nstar
+                 - reQ11nQ5nstarQ5nstarQ1nstar 
+ 			     - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ6nQ4nQ5nstarQ5nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ11nQ6nstarQ5nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + 2.*reQ11nQ6nstarQ5nstar
+                 + dMult*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + reQ11nQ6nstarQ5nstar
+                 + reQ10nQ6nstarQ4nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + reQ11nQ10nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ6nQ5nstarQ1nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + 2.*dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + 3.*reQ10nQ5nstarQ5nstar
+                 + reQ5nQ4nstarQ1nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ5n,2.)+pow(dImQ5n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.))
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)) 
+                 - 2.*dMult*dMult
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n6n5n5n2n = (reQ6nQ6nQ5nstarQ5nstarQ2nstar
+                 - reQ7nQ5nQ6nstarQ6nstar-reQ7nQ5nQ6nstarQ6nstar-reQ10nQ2nQ6nstarQ6nstar
+                 - reQ6nQ1nQ5nstarQ2nstar-reQ6nQ1nQ5nstarQ2nstar-reQ6nQ4nQ5nstarQ5nstar
+				 - reQ12nQ5nstarQ5nstarQ2nstar-reQ6nQ4nQ5nstarQ5nstar-reQ6nQ1nQ5nstarQ2nstar-reQ6nQ1nQ5nstarQ2nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ12nQ6nstarQ6nstar)
+				 + reQ7nQ6nstarQ1nstar+reQ7nQ6nstarQ1nstar+reQ10nQ6nstarQ4nstar
+                 + reQ12nQ10nstarQ2nstar+reQ12nQ7nstarQ5nstar+reQ12nQ7nstarQ5nstar
+ 				 + reQ7nQ6nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ5nQ4nstarQ1nstar				 
+ 				 + reQ7nQ6nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ5nQ4nstarQ1nstar
+				 + reQ10nQ6nstarQ4nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar				 
+                 + 2.*(reQ10nQ5nstarQ5nstar+reQ7nQ5nstarQ2nstar+reQ7nQ5nstarQ2nstar)
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ12n,2.)+pow(dImQ12n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  five6n6n6n4n2n = ((pow(dImQ6n,2.)+pow(dReQ6n,2.))*(dImQ4n*dImQ6n*dReQ2n+dImQ2n*dImQ6n*dReQ4n
+                 - dImQ2n*dImQ4n*dReQ6n+dReQ2n*dReQ4n*dReQ6n)
+                 - (dReQ2n*dReQ4n*dReQ6n*dReQ12n-dReQ6n*dReQ12n*dImQ2n*dImQ4n
+                 - dReQ4n*dReQ12n*dImQ2n*dImQ6n-dReQ2n*dReQ12n*dImQ4n*dImQ6n
+                 + dReQ4n*dReQ6n*dImQ2n*dImQ12n+dReQ2n*dReQ6n*dImQ4n*dImQ12n 
+                 + dReQ2n*dReQ4n*dImQ6n*dImQ12n-dImQ2n*dImQ4n*dImQ6n*dImQ12n)
+                 - (dImQ2n*pow(dImQ6n,2.)*dImQ10n+2.*dImQ6n*dImQ10n*dReQ2n*dReQ6n
+                 - dImQ2n*dImQ10n*pow(dReQ6n,2.)-pow(dImQ6n,2.)*dReQ2n*dReQ10n 
+                 + 2.*dImQ2n*dImQ6n*dReQ6n*dReQ10n+dReQ2n*pow(dReQ6n,2.)*dReQ10n)
+                 - ((dReQ8n*dReQ4n-dImQ8n*dImQ4n)*(dReQ6n*dReQ6n-dImQ6n*dImQ6n)
+                 + 2.*(dReQ8n*dImQ4n+dImQ8n*dReQ4n)*dReQ6n*dImQ6n)
+                 + dReQ12n*dReQ10n*dReQ2n-dReQ12n*dImQ10n*dImQ2n+dImQ12n*dReQ10n*dImQ2n+dImQ12n*dImQ10n*dReQ2n
+                 + dReQ12n*dReQ8n*dReQ4n-dReQ12n*dImQ8n*dImQ4n+dImQ12n*dReQ8n*dImQ4n+dImQ12n*dImQ8n*dReQ4n
+                 + 3.*(pow(dReQ6n,2.)*dReQ12n+2.*dReQ6n*dImQ6n*dImQ12n-pow(dImQ6n,2.)*dReQ12n)
+                 + 4.*(dReQ10n*dReQ4n*dReQ6n-dReQ10n*dImQ4n*dImQ6n+dImQ10n*dReQ4n*dImQ6n+dImQ10n*dImQ4n*dReQ6n)
+                 + 4.*(dReQ8n*(dReQ6n*dReQ2n-dImQ6n*dImQ2n)+dImQ8n*(dReQ6n*dImQ2n+dImQ6n*dReQ2n))
+                 - 2.*(dMult-6.)*(dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n+dImQ6n*dImQ4n*dReQ2n)
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ4n,2.)+pow(dImQ4n,2.)) 
+                 - 2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 - 2.*(pow(dReQ12n,2.)+pow(dImQ12n,2.))-2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.))+2.*(3.*dMult-10.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - pow((pow(dReQ6n,2.)+pow(dImQ6n,2.)),2.)+2.*(dMult-5.)*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 2.*(dMult-5.)*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-4.*dMult*(dMult-6.))
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished (and  TBI swap with the one above):
+  five6n6n6n5n1n = (reQ6nQ6nQ6nstarQ5nstarQ1nstar
+                 - reQ7nQ5nQ6nstarQ6nstar
+                 - reQ11nQ1nQ6nstarQ6nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - reQ12nQ6nstarQ5nstarQ1nstar 
+ 			     - dMult*reQ6nQ5nstarQ1nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ12nQ6nstarQ6nstar
+                 + 3.*dMult*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + 2.*reQ12nQ6nstarQ6nstar
+                 + reQ7nQ6nstarQ1nstar
+                 + reQ12nQ7nstarQ5nstar
+                 + reQ11nQ6nstarQ5nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + reQ12nQ11nstarQ1nstar
+                 + dMult*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (dMult-6.)*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ7nQ6nstarQ1nstar
+                 + reQ6nQ5nstarQ1nstar
+                 + 2.*reQ6nQ5nstarQ1nstar
+                 + 3.*reQ11nQ6nstarQ5nstar
+                 + dMult*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + reQ6nQ5nstarQ1nstar
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - (pow(dReQ6n,2.)+pow(dImQ6n,2.))*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ12n,2.)+pow(dImQ12n,2.))
+                 - 2.*dMult*dMult
+                 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.)) 
+                 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + (dMult-8.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 + (dMult-8.)*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+                 + (dMult-8.)*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 2.*(dMult-6.)*(pow(dReQ6n,2.)+pow(dImQ6n,2.))-2.*dMult*(dMult-12.)) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // Four distinct harmonics (11):
+  // to be polished:
+  five5n2n3n3n1n = (reQ5nQ2nQ3nstarQ3nstarQ1nstar
+                 - reQ5nQ2nQ4nstarQ3nstar-reQ5nQ2nQ4nstarQ3nstar-reQ6nQ1nQ5nstarQ2nstar
+				 - reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ5nQ1nQ3nstarQ3nstar		     	 
+				 - reQ7nQ3nstarQ3nstarQ1nstar-reQ4nQ2nQ3nstarQ3nstar-reQ3nQ1nQ2nstarQ2nstar-reQ3nQ1nQ2nstarQ2nstar
+				 + 2.*(reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ7nQ5nstarQ2nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ6nQ5nstarQ1nstar
+				 + reQ7nQ6nstarQ1nstar+reQ7nQ4nstarQ3nstar+reQ7nQ4nstarQ3nstar
+				 + reQ4nQ2nstarQ2nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ4nQ2nstarQ2nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ6nQ4nstarQ2nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + 2.*(reQ6nQ3nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 + 2.*(reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n1n1n4n3n = (reQ5nQ1nQ1nQ4nstarQ3nstar
+                 - reQ5nQ2nQ4nstarQ3nstar-reQ6nQ1nQ4nstarQ3nstar-reQ6nQ1nQ4nstarQ3nstar
+				 - reQ5nQ1nQ4nstarQ2nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ5nQ1nQ4nstarQ2nstar
+				 - reQ7nQ5nstarQ1nstarQ1nstar-reQ5nQ1nQ3nstarQ3nstar-reQ3nQ1nstarQ1nstarQ1nstar-reQ5nQ1nQ3nstarQ3nstar
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ7nQ4nstarQ3nstar)
+				 + reQ4nQ2nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar
+                 + reQ7nQ6nstarQ1nstar+reQ7nQ5nstarQ2nstar+reQ7nQ6nstarQ1nstar
+ 				 + reQ3nQ2nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar
+				 + reQ6nQ3nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ5nQ3nstarQ2nstar				 				 				 
+				 + reQ6nQ3nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ5nQ3nstarQ2nstar				 				 
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+                 + 2.*(reQ5nQ3nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five5n3n4n2n2n = (reQ5nQ3nQ4nstarQ2nstarQ2nstar
+                 - reQ5nQ3nQ4nstarQ4nstar-reQ6nQ2nQ5nstarQ3nstar-reQ6nQ2nQ5nstarQ3nstar
+				 - reQ5nQ1nQ4nstarQ2nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ5nQ1nQ4nstarQ2nstar		     	 
+				 - reQ8nQ4nstarQ2nstarQ2nstar-reQ4nQ2nQ3nstarQ3nstar-reQ3nQ1nQ2nstarQ2nstar-reQ4nQ2nQ3nstarQ3nstar
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ8nQ5nstarQ3nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar
+                 + reQ8nQ6nstarQ2nstar+reQ8nQ4nstarQ4nstar+reQ8nQ6nstarQ2nstar
+				 + reQ4nQ3nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar
+				 + reQ6nQ3nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ6nQ3nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + 2.*(reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ4nQ2nstarQ2nstar)
+				 + 2.*(reQ4nQ3nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+  // to be polished!!!:
+  five5n2n1n4n4n = (reQ5nQ2nQ1nQ4nstarQ4nstar
+                 - reQ5nQ3nQ4nstarQ4nstar-reQ6nQ2nQ4nstarQ4nstar-reQ7nQ1nQ4nstarQ4nstar
+				 - reQ5nQ1nQ4nstarQ2nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ5nQ2nQ4nstarQ3nstar
+				 - reQ8nQ5nstarQ2nstarQ1nstar-reQ5nQ2nQ4nstarQ3nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ5nQ1nQ4nstarQ2nstar
+				 + 2.*(reQ5nQ4nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ2nstarQ2nstar+reQ8nQ4nstarQ4nstar)
+				 + reQ4nQ3nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ7nQ4nstarQ3nstar
+                 + reQ8nQ7nstarQ1nstar+reQ8nQ5nstarQ3nstar+reQ8nQ6nstarQ2nstar
+ 				 + reQ4nQ3nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ6nQ4nstarQ2nstar+reQ2nQ1nstarQ1nstar+reQ5nQ3nstarQ2nstar				 				 				 
+				 + reQ7nQ4nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ5nQ3nstarQ2nstar				 				 
+                 + 2.*(reQ7nQ5nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+                 + 2.*(reQ5nQ4nstarQ1nstar+reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.))
+                 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+  // to be polished:
+  five6n1n3n2n2n = (reQ6nQ1nQ3nstarQ2nstarQ2nstar
+                 - reQ6nQ1nQ4nstarQ3nstar-reQ6nQ1nQ5nstarQ2nstar-reQ6nQ1nQ5nstarQ2nstar
+                 - reQ6nQ3nstarQ2nstarQ1nstar-reQ6nQ2nstarQ2nstarQ2nstar-reQ6nQ3nstarQ2nstarQ1nstar		     	 
+				 - reQ7nQ3nstarQ2nstarQ2nstar-reQ4nQ1nQ3nstarQ2nstar-reQ3nQ1nQ2nstarQ2nstar-reQ4nQ1nQ3nstarQ2nstar
+				 + 2.*(reQ6nQ3nstarQ3nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ7nQ6nstarQ1nstar)
+				 + reQ6nQ4nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar
+                 + reQ7nQ5nstarQ2nstar+reQ7nQ4nstarQ3nstar+reQ7nQ5nstarQ2nstar
+				 + reQ4nQ3nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar
+				 + reQ5nQ4nstarQ1nstar+reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar
+				 + reQ5nQ4nstarQ1nstar+reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar
+				 + 2.*(reQ5nQ3nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ4nQ2nstarQ2nstar)
+				 + 2.*(reQ3nQ2nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))				 
+				 - 6.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+  // to be polished:
+  five6n3n4n4n1n = (reQ6nQ3nQ4nstarQ4nstarQ1nstar
+                 - reQ8nQ1nQ6nstarQ3nstar-reQ6nQ3nQ5nstarQ4nstar-reQ6nQ3nQ5nstarQ4nstar
+				 - reQ6nQ4nstarQ1nstarQ1nstar-reQ6nQ2nQ4nstarQ4nstar-reQ6nQ4nstarQ1nstarQ1nstar		     	 
+				 - reQ9nQ4nstarQ4nstarQ1nstar-reQ4nQ1nQ3nstarQ2nstar-reQ5nQ3nQ4nstarQ4nstar-reQ4nQ1nQ3nstarQ2nstar
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ9nQ6nstarQ3nstar)
+				 + reQ8nQ6nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ6nQ5nstarQ1nstar
+                 + reQ9nQ5nstarQ4nstar+reQ9nQ8nstarQ1nstar+reQ9nQ5nstarQ4nstar
+				 + reQ8nQ5nstarQ3nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar				 
+				 + reQ5nQ3nstarQ2nstar+reQ4nQ2nstarQ2nstar+reQ2nQ1nstarQ1nstar				 
+				 + reQ5nQ3nstarQ2nstar+reQ4nQ2nstarQ2nstar+reQ2nQ1nstarQ1nstar
+                 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ8nQ4nstarQ4nstar)
+                 + 2.*(reQ3nQ2nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))				 
+				 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+  // to be polished:
+  five6n1n1n5n3n = (reQ6nQ1nQ1nQ5nstarQ3nstar
+                 - reQ6nQ2nQ5nstarQ3nstar-reQ7nQ1nQ5nstarQ3nstar-reQ7nQ1nQ5nstarQ3nstar
+                 - reQ6nQ1nQ5nstarQ2nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ6nQ1nQ5nstarQ2nstar
+				 - reQ8nQ6nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar-reQ3nQ1nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ8nQ5nstarQ3nstar)
+				 + reQ5nQ3nstarQ2nstar+reQ7nQ5nstarQ2nstar+reQ7nQ5nstarQ2nstar
+                 + reQ8nQ7nstarQ1nstar+reQ8nQ6nstarQ2nstar+reQ8nQ7nstarQ1nstar
+ 				 + reQ3nQ2nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar
+				 + reQ7nQ4nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ6nQ4nstarQ2nstar				 				 				 
+				 + reQ7nQ4nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ6nQ4nstarQ2nstar				 				 				 
+                 + 2.*(reQ7nQ6nstarQ1nstar+reQ7nQ6nstarQ1nstar+reQ2nQ1nstarQ1nstar)
+                 + 2.*(reQ6nQ3nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.))
+				 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+                 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n3n5n2n2n = (reQ6nQ3nQ5nstarQ2nstarQ2nstar
+                 - reQ6nQ3nQ5nstarQ4nstar-reQ7nQ2nQ6nstarQ3nstar-reQ7nQ2nQ6nstarQ3nstar
+                 - reQ6nQ1nQ5nstarQ2nstar-reQ6nQ2nstarQ2nstarQ2nstar-reQ6nQ1nQ5nstarQ2nstar		     	 
+				 - reQ9nQ5nstarQ2nstarQ2nstar-reQ5nQ2nQ4nstarQ3nstar-reQ3nQ1nQ2nstarQ2nstar-reQ5nQ2nQ4nstarQ3nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ6nQ4nstarQ2nstar+reQ9nQ6nstarQ3nstar)
+				 + reQ6nQ4nstarQ2nstar+reQ7nQ6nstarQ1nstar+reQ7nQ6nstarQ1nstar
+                 + reQ9nQ7nstarQ2nstar+reQ9nQ5nstarQ4nstar+reQ9nQ7nstarQ2nstar
+				 + reQ4nQ3nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ2nQ1nstarQ1nstar				 
+				 + reQ7nQ4nstarQ3nstar+reQ4nQ2nstarQ2nstar+reQ5nQ4nstarQ1nstar				 
+				 + reQ7nQ4nstarQ3nstar+reQ4nQ2nstarQ2nstar+reQ5nQ4nstarQ1nstar
+                 + 2.*(reQ7nQ5nstarQ2nstar+reQ7nQ5nstarQ2nstar+reQ4nQ2nstarQ2nstar)
+                 + 2.*(reQ5nQ3nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.))
+				 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))				 
+				 - 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+  // to be polished 
+  five6n5n4n4n3n = (reQ6nQ5nQ4nstarQ4nstarQ3nstar
+                 - reQ7nQ4nQ6nstarQ5nstar-reQ7nQ4nQ6nstarQ5nstar-reQ8nQ3nQ6nstarQ5nstar
+                 - reQ6nQ1nQ4nstarQ3nstar-reQ6nQ1nQ4nstarQ3nstar-reQ6nQ2nQ4nstarQ4nstar		     	 
+				 - reQ11nQ4nstarQ4nstarQ3nstar-reQ5nQ3nQ4nstarQ4nstar-reQ5nQ2nQ4nstarQ3nstar-reQ5nQ2nQ4nstarQ3nstar
+				 + 2.*(reQ6nQ4nstarQ2nstar+reQ6nQ3nstarQ3nstar+reQ6nQ4nstarQ2nstar+reQ11nQ6nstarQ5nstar)
+				 + reQ7nQ6nstarQ1nstar+reQ7nQ6nstarQ1nstar+reQ8nQ6nstarQ2nstar
+                 + reQ11nQ8nstarQ3nstar+reQ11nQ7nstarQ4nstar+reQ11nQ7nstarQ4nstar
+				 + reQ7nQ5nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ4nQ2nstarQ2nstar				 				 
+				 + reQ7nQ5nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ4nQ2nstarQ2nstar				 
+				 + reQ8nQ5nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ4nQ3nstarQ1nstar
+                 + 2.*(reQ8nQ4nstarQ4nstar+reQ7nQ4nstarQ3nstar+reQ7nQ4nstarQ3nstar)
+                 + 2.*(reQ5nQ4nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ11n,2.)+pow(dImQ11n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.))
+				 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))				 
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n3n1n5n5n = (reQ6nQ3nQ1nQ5nstarQ5nstar
+                 - reQ6nQ4nQ5nstarQ5nstar-reQ7nQ3nQ5nstarQ5nstar-reQ9nQ1nQ5nstarQ5nstar      
+				 - reQ6nQ1nQ5nstarQ2nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ6nQ3nQ5nstarQ4nstar
+				 - reQ10nQ6nstarQ3nstarQ1nstar-reQ6nQ3nQ5nstarQ4nstar-reQ5nQ3nstarQ1nstarQ1nstar-reQ6nQ1nQ5nstarQ2nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ10nQ5nstarQ5nstar)
+				 + reQ5nQ4nstarQ1nstar+reQ7nQ5nstarQ2nstar+reQ9nQ5nstarQ4nstar
+                 + reQ10nQ9nstarQ1nstar+reQ10nQ6nstarQ4nstar+reQ10nQ7nstarQ3nstar
+ 				 + reQ5nQ4nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ4nQ3nstarQ1nstar
+				 + reQ7nQ5nstarQ2nstar+reQ2nQ1nstarQ1nstar+reQ6nQ4nstarQ2nstar				 				 				 
+				 + reQ9nQ5nstarQ4nstar+reQ4nQ3nstarQ1nstar+reQ6nQ4nstarQ2nstar				 				 				 
+                 + 2.*(reQ9nQ6nstarQ3nstar+reQ7nQ6nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ9n,2.)+pow(dImQ9n,2.))
+				 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // to be polished:
+  five6n6n5n4n3n = (reQ6nQ6nQ5nstarQ4nstarQ3nstar
+                 - reQ7nQ5nQ6nstarQ6nstar-reQ8nQ4nQ6nstarQ6nstar-reQ9nQ3nQ6nstarQ6nstar
+				 - reQ6nQ2nQ5nstarQ3nstar-reQ6nQ1nQ4nstarQ3nstar-reQ6nQ3nQ5nstarQ4nstar		     	 
+				 - reQ12nQ5nstarQ4nstarQ3nstar-reQ6nQ3nQ5nstarQ4nstar-reQ6nQ1nQ4nstarQ3nstar-reQ6nQ2nQ5nstarQ3nstar
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ3nstarQ3nstar+reQ6nQ4nstarQ2nstar+reQ12nQ6nstarQ6nstar)
+				 + reQ7nQ6nstarQ1nstar+reQ8nQ6nstarQ2nstar+reQ9nQ6nstarQ3nstar
+                 + reQ12nQ9nstarQ3nstar+reQ12nQ7nstarQ5nstar+reQ12nQ8nstarQ4nstar
+				 + reQ7nQ6nstarQ1nstar+reQ3nQ2nstarQ1nstar+reQ4nQ3nstarQ1nstar				 				 
+				 + reQ8nQ6nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ5nQ3nstarQ2nstar				 
+				 + reQ9nQ6nstarQ3nstar+reQ4nQ3nstarQ1nstar+reQ5nQ3nstarQ2nstar
+                 + 2.*(reQ9nQ5nstarQ4nstar+reQ8nQ5nstarQ3nstar+reQ7nQ4nstarQ3nstar)
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ6nQ3nstarQ3nstar)
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+				 - 2.*(pow(dReQ12n,2.)+pow(dImQ12n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ9n,2.)+pow(dImQ9n,2.))
+				 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))				 
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.))
+				 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // Five distinct harmonics (3):
+
+  // to be polished:
+  five6n2n4n3n1n = (reQ6nQ2nQ4nstarQ3nstarQ1nstar
+	             - reQ6nQ2nQ4nstarQ4nstar-reQ6nQ2nQ5nstarQ3nstar-reQ7nQ1nQ6nstarQ2nstar
+	             - reQ6nQ4nstarQ1nstarQ1nstar-reQ6nQ3nstarQ2nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar
+	             - reQ8nQ4nstarQ3nstarQ1nstar-reQ5nQ2nQ4nstarQ3nstar-reQ3nQ1nQ2nstarQ2nstar-reQ4nQ1nQ3nstarQ2nstar
+				 + 2.*(reQ6nQ4nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ6nQ3nstarQ3nstar+reQ8nQ6nstarQ2nstar)
+				 + 1.*(reQ6nQ4nstarQ2nstar+reQ6nQ5nstarQ1nstar+reQ7nQ6nstarQ1nstar)
+				 + 1.*(reQ8nQ7nstarQ1nstar+reQ8nQ4nstarQ4nstar+reQ8nQ5nstarQ3nstar)
+				 + 1.*(reQ4nQ2nstarQ2nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 + 1.*(reQ5nQ3nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+				 + 1.*(reQ7nQ5nstarQ2nstar+reQ5nQ3nstarQ2nstar+reQ5nQ4nstarQ1nstar)
+				 + 2.*(reQ7nQ4nstarQ3nstar+reQ5nQ4nstarQ1nstar+reQ4nQ3nstarQ1nstar)
+ 				 + 2.*(reQ4nQ2nstarQ2nstar+reQ3nQ2nstarQ1nstar+reQ2nQ1nstarQ1nstar) // 3 - 1
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ8n,2.)+pow(dImQ8n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 2.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)) 
+	     		 - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)) 
+                 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+  // to be polished:
+  five6n2n1n5n4n = (reQ6nQ2nQ1nQ5nstarQ4nstar
+                 - reQ6nQ3nQ5nstarQ4nstar-reQ7nQ2nQ5nstarQ4nstar-reQ8nQ1nQ5nstarQ4nstar
+				 - reQ6nQ1nQ5nstarQ2nstar-reQ5nQ2nstarQ2nstarQ1nstar-reQ6nQ2nQ5nstarQ3nstar		     	 
+				 - reQ9nQ6nstarQ2nstarQ1nstar-reQ6nQ2nQ4nstarQ4nstar-reQ4nQ2nstarQ1nstarQ1nstar-reQ6nQ1nQ4nstarQ3nstar
+                 + 2.*(reQ6nQ5nstarQ1nstar+reQ5nQ4nstarQ1nstar+reQ5nQ3nstarQ2nstar+reQ9nQ5nstarQ4nstar)
+				 + reQ5nQ3nstarQ2nstar+reQ7nQ5nstarQ2nstar+reQ8nQ5nstarQ3nstar
+                 + reQ9nQ8nstarQ1nstar+reQ9nQ6nstarQ3nstar+reQ9nQ7nstarQ2nstar
+				 + reQ4nQ3nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar				 
+				 + reQ7nQ4nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ6nQ3nstarQ3nstar				 
+				 + reQ8nQ4nstarQ4nstar+reQ4nQ2nstarQ2nstar+reQ6nQ4nstarQ2nstar
+                 + 2.*(reQ8nQ6nstarQ2nstar+reQ7nQ6nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+                 + 2.*(reQ6nQ4nstarQ2nstar+reQ4nQ2nstarQ2nstar+reQ4nQ3nstarQ1nstar)
+				 - 6.*(pow(dReQ5n,2.)+pow(dImQ5n,2.))
+				 - 2.*(pow(dReQ9n,2.)+pow(dImQ9n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+				 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.))
+				 - 2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.))				 
+				 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ6n,2.)+pow(dImQ6n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.))
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+
+  // to be polished:
+  five6n4n5n3n2n = (reQ6nQ4nQ5nstarQ3nstarQ2nstar
+	             - reQ6nQ4nQ5nstarQ5nstar-reQ7nQ3nQ6nstarQ4nstar-reQ8nQ2nQ6nstarQ4nstar
+	             - reQ6nQ1nQ5nstarQ2nstar-reQ6nQ3nstarQ2nstarQ1nstar-reQ6nQ2nQ5nstarQ3nstar
+	             - reQ10nQ5nstarQ3nstarQ2nstar-reQ5nQ3nQ4nstarQ4nstar-reQ4nQ1nQ3nstarQ2nstar-reQ5nQ2nQ4nstarQ3nstar
+				 + 2.*(reQ6nQ5nstarQ1nstar+reQ6nQ4nstarQ2nstar+reQ6nQ3nstarQ3nstar+reQ10nQ6nstarQ4nstar)
+				 + 1.*(reQ6nQ5nstarQ1nstar+reQ7nQ6nstarQ1nstar+reQ8nQ6nstarQ2nstar)
+				 + 1.*(reQ10nQ8nstarQ2nstar+reQ10nQ5nstarQ5nstar+reQ10nQ7nstarQ3nstar)
+				 + 1.*(reQ5nQ4nstarQ1nstar+reQ2nQ1nstarQ1nstar+reQ3nQ2nstarQ1nstar)
+				 + 1.*(reQ7nQ4nstarQ3nstar+reQ3nQ2nstarQ1nstar+reQ5nQ3nstarQ2nstar)
+				 + 1.*(reQ8nQ4nstarQ4nstar+reQ4nQ3nstarQ1nstar+reQ5nQ4nstarQ1nstar)
+				 + 2.*(reQ8nQ5nstarQ3nstar+reQ7nQ5nstarQ2nstar+reQ5nQ3nstarQ2nstar)
+ 				 + 2.*(reQ5nQ4nstarQ1nstar+reQ4nQ3nstarQ1nstar+reQ4nQ2nstarQ2nstar) // 3 - 1
+				 - 6.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+                 - 2.*(pow(dReQ10n,2.)+pow(dImQ10n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)+pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 2.*(pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ7n,2.)+pow(dImQ7n,2.)+pow(dReQ8n,2.)+pow(dImQ8n,2.)) 
+	     		 - 2.*(pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)+pow(dReQ1n,2.)+pow(dImQ1n,2.)) 
+                 - 6.*(pow(dReQ4n,2.)+pow(dImQ4n,2.)+pow(dReQ5n,2.)+pow(dImQ5n,2.)+pow(dReQ2n,2.)+pow(dImQ2n,2.)+pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + 24.*dMult) 
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+
+
+
+  f5pCorrelations->Fill(0.5,five3n2n3n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(1.5,five4n1n2n2n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(2.5,five4n2n3n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(3.5,five4n3n3n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(4.5,five4n2n4n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(5.5,five4n3n4n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(6.5,five5n1n3n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(7.5,five5n2n5n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(8.5,five5n2n4n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(9.5,five5n3n4n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(10.5,five5n4n4n3n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(11.5,five5n3n5n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(12.5,five5n4n5n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(13.5,five5n4n5n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(14.5,five6n1n3n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(15.5,five6n2n3n3n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(16.5,five6n1n4n2n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(17.5,five6n3n4n3n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(18.5,five6n4n4n3n3n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(19.5,five6n2n5n2n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(20.5,five6n3n5n3n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(21.5,five6n4n5n4n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(22.5,five6n5n5n3n3n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(23.5,five6n2n6n1n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(24.5,five6n3n6n2n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(25.5,five6n4n6n2n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(26.5,five6n4n6n3n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(27.5,five6n5n5n4n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(28.5,five6n5n6n3n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(29.5,five6n5n6n4n1n,d5pMultiplicityWeight);
+  //f5pCorrelations->Fill(30.5,-44.,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(31.5,five2n1n1n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(32.5,five2n2n2n1n1n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(33.5,five3n3n2n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(34.5,five4n1n1n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(35.5,five4n2n2n2n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(36.5,five4n4n4n2n2n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(37.5,five6n3n3n3n3n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(38.5,five6n6n4n4n4n,d5pMultiplicityWeight); 
+  f5pCorrelations->Fill(39.5,five6n6n6n3n3n,d5pMultiplicityWeight);
+  //f5pCorrelations->Fill(40.5,-44.,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(41.5,five3n1n2n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(42.5,five3n2n2n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(43.5,five3n3n3n2n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(44.5,five4n1n3n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(45.5,five4n1n1n3n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(46.5,five4n3n3n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(47.5,five4n4n3n3n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(48.5,five4n4n4n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(49.5,five5n2n1n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(50.5,five5n1n2n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(51.5,five5n2n3n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(52.5,five5n3n3n3n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(53.5,five5n1n4n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(54.5,five5n4n3n3n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(55.5,five5n4n4n4n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(56.5,five5n5n4n3n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(57.5,five5n5n4n4n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(58.5,five5n5n5n3n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(59.5,five5n5n5n4n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(60.5,five6n2n2n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(61.5,five6n3n1n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(62.5,five6n1n1n4n4n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(63.5,five6n1n5n1n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(64.5,five6n2n4n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(65.5,five6n4n4n4n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(66.5,five6n2n2n5n5n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(67.5,five6n5n5n5n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(68.5,five6n6n5n5n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(69.5,five6n6n6n4n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(70.5,five6n6n6n5n1n,d5pMultiplicityWeight);
+  //f5pCorrelations->Fill(71.5,-44.,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(72.5,five5n2n3n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(73.5,five5n1n1n4n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(74.5,five5n3n4n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(75.5,five5n2n1n4n4n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(76.5,five6n1n3n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(77.5,five6n3n4n4n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(78.5,five6n1n1n5n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(79.5,five6n3n5n2n2n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(80.5,five6n5n4n4n3n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(81.5,five6n3n1n5n5n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(82.5,five6n6n5n4n3n,d5pMultiplicityWeight);
+  //f5pCorrelations->Fill(83.5,-44.,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(84.5,five6n2n4n3n1n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(85.5,five6n2n1n5n4n,d5pMultiplicityWeight);
+  f5pCorrelations->Fill(86.5,five6n4n5n3n2n,d5pMultiplicityWeight);
+  allMixedCorrelators[56]=five3n2n3n1n1n;
+  allMixedCorrelators[57]=five4n1n2n2n1n;
+  allMixedCorrelators[58]=five4n2n3n2n1n;
+  allMixedCorrelators[59]=five4n3n3n2n2n;
+  allMixedCorrelators[60]=five4n2n4n1n1n;
+  allMixedCorrelators[61]=five4n3n4n2n1n;
+  allMixedCorrelators[62]=five5n1n3n2n1n;
+  allMixedCorrelators[63]=five5n2n5n1n1n;
+  allMixedCorrelators[64]=five5n2n4n2n1n;
+  allMixedCorrelators[65]=five5n3n4n3n1n;
+  allMixedCorrelators[66]=five5n4n4n3n2n;
+  allMixedCorrelators[67]=five5n3n5n2n1n;
+  allMixedCorrelators[68]=five5n4n5n2n2n;
+  allMixedCorrelators[69]=five5n4n5n3n1n;
+  allMixedCorrelators[70]=five6n1n3n3n1n;
+  allMixedCorrelators[71]=five6n2n3n3n2n;
+  allMixedCorrelators[72]=five6n1n4n2n1n;
+  allMixedCorrelators[73]=five6n3n4n3n2n;
+  allMixedCorrelators[74]=five6n4n4n3n3n;
+  allMixedCorrelators[75]=five6n2n5n2n1n;
+  allMixedCorrelators[76]=five6n3n5n3n1n;
+  allMixedCorrelators[77]=five6n4n5n4n1n;
+  allMixedCorrelators[78]=five6n5n5n3n3n;
+  allMixedCorrelators[79]=five6n2n6n1n1n;
+  allMixedCorrelators[80]=five6n3n6n2n1n;
+  allMixedCorrelators[81]=five6n4n6n2n2n;
+  allMixedCorrelators[82]=five6n4n6n3n1n;
+  allMixedCorrelators[83]=five6n5n5n4n2n;
+  allMixedCorrelators[84]=five6n5n6n3n2n;
+  allMixedCorrelators[85]=five6n5n6n4n1n;
+  allMixedCorrelators[86]=five2n1n1n1n1n;
+  allMixedCorrelators[87]=five2n2n2n1n1n;
+  allMixedCorrelators[88]=five3n3n2n2n2n;
+  allMixedCorrelators[89]=five4n1n1n1n1n;
+  allMixedCorrelators[90]=five4n2n2n2n2n;
+  allMixedCorrelators[91]=five4n4n4n2n2n;
+  allMixedCorrelators[92]=five6n3n3n3n3n;
+  allMixedCorrelators[93]=five6n6n4n4n4n;
+  allMixedCorrelators[94]=five6n6n6n3n3n;
+  allMixedCorrelators[95]=five3n1n2n1n1n;
+  allMixedCorrelators[96]=five3n2n2n2n1n;
+  allMixedCorrelators[97]=five3n3n3n2n1n;
+  allMixedCorrelators[98]=five4n1n3n1n1n;
+  allMixedCorrelators[99]=five4n1n1n3n3n;
+  allMixedCorrelators[100]=five4n3n3n3n1n;
+  allMixedCorrelators[101]=five4n4n3n3n2n;
+  allMixedCorrelators[102]=five4n4n4n3n1n;
+  allMixedCorrelators[103]=five5n2n1n1n1n;
+  allMixedCorrelators[104]=five5n1n2n2n2n;
+  allMixedCorrelators[105]=five5n2n3n2n2n;
+  allMixedCorrelators[106]=five5n3n3n3n2n;
+  allMixedCorrelators[107]=five5n1n4n1n1n;
+  allMixedCorrelators[108]=five5n4n3n3n3n;
+  allMixedCorrelators[109]=five5n4n4n4n1n;
+  allMixedCorrelators[110]=five5n5n4n3n3n;
+  allMixedCorrelators[111]=five5n5n4n4n2n;
+  allMixedCorrelators[112]=five5n5n5n3n2n;
+  allMixedCorrelators[113]=five5n5n5n4n1n;
+  allMixedCorrelators[114]=five6n2n2n1n1n;
+  allMixedCorrelators[115]=five6n3n1n1n1n;
+  allMixedCorrelators[116]=five6n1n1n4n4n;
+  allMixedCorrelators[117]=five6n1n5n1n1n;
+  allMixedCorrelators[118]=five6n2n4n2n2n;
+  allMixedCorrelators[119]=five6n4n4n4n2n;
+  allMixedCorrelators[120]=five6n2n2n5n5n;
+  allMixedCorrelators[121]=five6n5n5n5n1n;
+  allMixedCorrelators[122]=five6n6n5n5n2n;
+  allMixedCorrelators[123]=five6n6n6n4n2n;
+  allMixedCorrelators[124]=five6n6n6n5n1n;
+  allMixedCorrelators[125]=five5n2n3n3n1n;
+  allMixedCorrelators[126]=five5n1n1n4n3n;
+  allMixedCorrelators[127]=five5n3n4n2n2n;
+  allMixedCorrelators[128]=five5n2n1n4n4n;
+  allMixedCorrelators[129]=five6n1n3n2n2n;
+  allMixedCorrelators[130]=five6n3n4n4n1n;
+  allMixedCorrelators[131]=five6n1n1n5n3n;
+  allMixedCorrelators[132]=five6n3n5n2n2n;
+  allMixedCorrelators[133]=five6n5n4n4n3n;
+  allMixedCorrelators[134]=five6n3n1n5n5n;
+  allMixedCorrelators[135]=five6n6n5n4n3n;
+  allMixedCorrelators[136]=five6n2n4n3n1n;
+  allMixedCorrelators[137]=five6n2n1n5n4n;
+  allMixedCorrelators[138]=five6n4n5n3n2n;
+ } // end of if(dMult>4.)
+ 
+ // Products of mixed harmonics:
+ Double_t dwx=0.;
+ Double_t dwy=0.;
+ for(Int_t x=1;x<=139;x++)
+ {  
+  if(x>=1 && x<7)
+  {
+   dwx=d2pMultiplicityWeight;
+  } else if(x>=7 && x<16)
+    {
+     dwx=d3pMultiplicityWeight;
+    } else if(x>=16 && x<57)
+      {
+       dwx=d4pMultiplicityWeight;
+      } else if(x>=57 && x<140)
+        {
+         dwx=d5pMultiplicityWeight;
+        }
+  for(Int_t y=x+1;y<=139;y++)
+  {
+   if(y>=1 && y<7)
+   {
+    dwy=d2pMultiplicityWeight;
+   } else if(y>=7 && y<16)
+     {
+      dwy=d3pMultiplicityWeight;
+     } else if(y>=16 && y<57)
+       {
+        dwy=d4pMultiplicityWeight;
+       } else if(y>=57 && y<140)
+         {
+          dwy=d5pMultiplicityWeight;
+         }
+   fMixedHarmonicProductOfCorrelations->Fill(x-0.5,y-0.5,allMixedCorrelators[x-1]*allMixedCorrelators[y-1],dwx*dwy);
+  } // end of for(Int_t y=x+1;y<=139;y++)
+ } // end of for(Int_t x=1;x<=139;x++)
+
+} // end of void AliFlowAnalysisWithQCumulants::CalculateMixedHarmonics()
+
+//===================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::CalculateCumulantsMixedHarmonics()
+{
+ // Calculate in this method all multi-particle cumulants for azimuthal correlations in mixed harmonics.
+ // (Remark: For completeness sake, we also calculate here again cumulants in the same harmonic.) 
+
+ // a) Calculate 2-p cumulants; 
+ // b) Calculate 3-p cumulants; 
+ // c) Calculate 4-p cumulants; 
+ // d) Calculate 5-p cumulants. 
+
+ // a) Calculate 2-p cumulants: 
+ for(Int_t b=1;b<=6;b++)
+ {
+  f2pCumulants->SetBinContent(b,f2pCorrelations->GetBinContent(b)); 
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for error
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpread = f2pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f2pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=1;b<=6;b++)
+
+ // b) Calculate 3-p cumulants: 
+ for(Int_t b=1;b<=10;b++)
+ {
+  f3pCumulants->SetBinContent(b,f3pCorrelations->GetBinContent(b)); 
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpread = f3pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f3pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=1;b<=10;b++)
+
+ // c) Calculate 4-p cumulants: 
+ // c1) "Single harmonic":
+ for(Int_t b=1;b<=6;b++)
+ {
+  f4pCumulants->SetBinContent(b,f4pCorrelations->GetBinContent(b)-2.*pow(f2pCorrelations->GetBinContent(b),2.));
+  Double_t dSumWLinearTwo = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo = f2pCorrelations->GetBinError(b);
+  dSumWLinearFour = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour = f4pCorrelations->GetBinError(b);
+  if(pow(dSumWLinearTwo,2.)>dSumWQuadraticTwo && pow(dSumWLinearFour,2.)>dSumWQuadraticFour) 
+  {
+   Double_t dError = 16.*pow(f2pCorrelations->GetBinContent(b),2.)
+                   * pow((pow(dSumWQuadraticTwo,0.5)/dSumWLinearTwo)*dSpreadTwo*pow(pow(dSumWLinearTwo,2.)/(pow(dSumWLinearTwo,2.)-dSumWQuadraticTwo),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour,0.5)/dSumWLinearFour)*dSpreadFour*pow(pow(dSumWLinearFour,2.)/(pow(dSumWLinearFour,2.)-dSumWQuadraticFour),0.5),2.)
+                   - 8.*f2pCorrelations->GetBinContent(b)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(b,b+15))
+                   - f2pCorrelations->GetBinContent(b)*f4pCorrelations->GetBinContent(b))
+                   / (dSumWLinearTwo*dSumWLinearFour-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(b,pow(dError,0.5)); 
+   }
+  } // end of if(pow(dSumWLinearTwo,2.)>dSumWQuadraticTwo && pow(dSumWLinearFour,2.)>dSumWQuadraticFour) 
+ } // end of for(Int_t b=1;b<=6;b++)	 
+ // c2) "Standard candles":
+ // <4>_{2n,1n|2n,1n}:
+ f4pCumulants->SetBinContent(8,f4pCorrelations->GetBinContent(8)-f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour2n1n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour2n1n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour2n1n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearFour2n1n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour2n1n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour2n1n2n1n = f4pCorrelations->GetBinError(8);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearFour2n1n2n1n,2.)>dSumWQuadraticFour2n1n2n1n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour2n1n2n1n,0.5)/dSumWLinearFour2n1n2n1n)
+                   * dSpreadFour2n1n2n1n*pow(pow(dSumWLinearFour2n1n2n1n,2.)/(pow(dSumWLinearFour2n1n2n1n,2.)-dSumWQuadraticFour2n1n2n1n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,2))
+                   - f2pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo1n1n*dSumWLinearTwo2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,22))
+                   - f2pCorrelations->GetBinContent(1)*f4pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFour2n1n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,22))
+                   - f2pCorrelations->GetBinContent(2)*f4pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFour2n1n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(8,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{3n,1n|3n,1n}:
+ f4pCumulants->SetBinContent(9,f4pCorrelations->GetBinContent(9)-f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour3n1n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour3n1n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour3n1n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearFour3n1n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour3n1n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour3n1n3n1n = f4pCorrelations->GetBinError(9);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearFour3n1n3n1n,2.)>dSumWQuadraticFour3n1n3n1n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour3n1n3n1n,0.5)/dSumWLinearFour3n1n3n1n)
+                   * dSpreadFour3n1n3n1n*pow(pow(dSumWLinearFour3n1n3n1n,2.)/(pow(dSumWLinearFour3n1n3n1n,2.)-dSumWQuadraticFour3n1n3n1n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,3))
+                   - f2pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo1n1n*dSumWLinearTwo3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,23))
+                   - f2pCorrelations->GetBinContent(1)*f4pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFour3n1n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,23))
+                   - f2pCorrelations->GetBinContent(3)*f4pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFour3n1n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(9,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{3n,2n|3n,2n}:
+ f4pCumulants->SetBinContent(10,f4pCorrelations->GetBinContent(10)-f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour3n2n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour3n2n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour3n2n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearFour3n2n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour3n2n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour3n2n3n2n = f4pCorrelations->GetBinError(10);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearFour3n2n3n2n,2.)>dSumWQuadraticFour3n2n3n2n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour3n2n3n2n,0.5)/dSumWLinearFour3n2n3n2n)
+                   * dSpreadFour3n2n3n2n*pow(pow(dSumWLinearFour3n2n3n2n,2.)/(pow(dSumWLinearFour3n2n3n2n,2.)-dSumWQuadraticFour3n2n3n2n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,3))
+                   - f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo2n2n*dSumWLinearTwo3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,24))
+                   - f2pCorrelations->GetBinContent(2)*f4pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFour3n2n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,24))
+                   - f2pCorrelations->GetBinContent(3)*f4pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFour3n2n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(10,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{4n,1n|4n,1n}
+ f4pCumulants->SetBinContent(11,f4pCorrelations->GetBinContent(11)-f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour4n1n4n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour4n1n4n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour4n1n4n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearFour4n1n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour4n1n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour4n1n4n1n = f4pCorrelations->GetBinError(11);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearFour4n1n4n1n,2.)>dSumWQuadraticFour4n1n4n1n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour4n1n4n1n,0.5)/dSumWLinearFour4n1n4n1n)
+                   * dSpreadFour4n1n4n1n*pow(pow(dSumWLinearFour4n1n4n1n,2.)/(pow(dSumWLinearFour4n1n4n1n,2.)-dSumWQuadraticFour4n1n4n1n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,4))
+                   - f2pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(4))
+                   / (dSumWLinearTwo1n1n*dSumWLinearTwo4n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,25))
+                   - f2pCorrelations->GetBinContent(1)*f4pCorrelations->GetBinContent(11))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFour4n1n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,25))
+                   - f2pCorrelations->GetBinContent(4)*f4pCorrelations->GetBinContent(11))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFour4n1n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(11,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{4n,2n|4n,2n}
+ f4pCumulants->SetBinContent(12,f4pCorrelations->GetBinContent(12)-f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour4n2n4n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour4n2n4n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour4n2n4n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearFour4n2n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour4n2n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour4n2n4n2n = f4pCorrelations->GetBinError(12);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearFour4n2n4n2n,2.)>dSumWQuadraticFour4n2n4n2n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour4n2n4n2n,0.5)/dSumWLinearFour4n2n4n2n)
+                   * dSpreadFour4n2n4n2n*pow(pow(dSumWLinearFour4n2n4n2n,2.)/(pow(dSumWLinearFour4n2n4n2n,2.)-dSumWQuadraticFour4n2n4n2n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,4))
+                   - f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(4))
+                   / (dSumWLinearTwo2n2n*dSumWLinearTwo4n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,25))
+                   - f2pCorrelations->GetBinContent(2)*f4pCorrelations->GetBinContent(12))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFour4n2n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,25))
+                   - f2pCorrelations->GetBinContent(4)*f4pCorrelations->GetBinContent(12))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFour4n2n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(12,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{4n,3n|4n,3n}
+ f4pCumulants->SetBinContent(13,f4pCorrelations->GetBinContent(13)-f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour4n3n4n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour4n3n4n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour4n3n4n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearFour4n3n4n3n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour4n3n4n3n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour4n3n4n3n = f4pCorrelations->GetBinError(13);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearFour4n3n4n3n,2.)>dSumWQuadraticFour4n3n4n3n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour4n3n4n3n,0.5)/dSumWLinearFour4n3n4n3n)
+                   * dSpreadFour4n3n4n3n*pow(pow(dSumWLinearFour4n3n4n3n,2.)/(pow(dSumWLinearFour4n3n4n3n,2.)-dSumWQuadraticFour4n3n4n3n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,4))
+                   - f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(4))
+                   / (dSumWLinearTwo3n3n*dSumWLinearTwo4n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,26))
+                   - f2pCorrelations->GetBinContent(3)*f4pCorrelations->GetBinContent(13))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFour4n3n4n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,26))
+                   - f2pCorrelations->GetBinContent(4)*f4pCorrelations->GetBinContent(13))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFour4n3n4n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(13,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{5n,1n|5n,1n}
+ f4pCumulants->SetBinContent(14,f4pCorrelations->GetBinContent(14)-f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour5n1n5n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour5n1n5n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour5n1n5n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearFour5n1n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour5n1n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour5n1n5n1n = f4pCorrelations->GetBinError(14);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearFour5n1n5n1n,2.)>dSumWQuadraticFour5n1n5n1n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour5n1n5n1n,0.5)/dSumWLinearFour5n1n5n1n)
+                   * dSpreadFour5n1n5n1n*pow(pow(dSumWLinearFour5n1n5n1n,2.)/(pow(dSumWLinearFour5n1n5n1n,2.)-dSumWQuadraticFour5n1n5n1n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,5))
+                   - f2pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo1n1n*dSumWLinearTwo5n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,28))
+                   - f2pCorrelations->GetBinContent(1)*f4pCorrelations->GetBinContent(14))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFour5n1n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,28))
+                   - f2pCorrelations->GetBinContent(5)*f4pCorrelations->GetBinContent(14))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFour5n1n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(14,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{5n,2n|5n,2n}
+ f4pCumulants->SetBinContent(15,f4pCorrelations->GetBinContent(15)-f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour5n2n5n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour5n2n5n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour5n2n5n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearFour5n2n5n2n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour5n2n5n2n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour5n2n5n2n = f4pCorrelations->GetBinError(15);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearFour5n2n5n2n,2.)>dSumWQuadraticFour5n2n5n2n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour5n2n5n2n,0.5)/dSumWLinearFour5n2n5n2n)
+                   * dSpreadFour5n2n5n2n*pow(pow(dSumWLinearFour5n2n5n2n,2.)/(pow(dSumWLinearFour5n2n5n2n,2.)-dSumWQuadraticFour5n2n5n2n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,5))
+                   - f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo2n2n*dSumWLinearTwo5n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,29))
+                   - f2pCorrelations->GetBinContent(2)*f4pCorrelations->GetBinContent(15))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFour5n2n5n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,29))
+                   - f2pCorrelations->GetBinContent(5)*f4pCorrelations->GetBinContent(15))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFour5n2n5n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(15,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{5n,3n|5n,3n}
+ f4pCumulants->SetBinContent(16,f4pCorrelations->GetBinContent(16)-f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour5n3n5n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour5n3n5n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour5n3n5n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearFour5n3n5n3n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour5n3n5n3n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour5n3n5n3n = f4pCorrelations->GetBinError(16);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearFour5n3n5n3n,2.)>dSumWQuadraticFour5n3n5n3n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour5n3n5n3n,0.5)/dSumWLinearFour5n3n5n3n)
+                   * dSpreadFour5n3n5n3n*pow(pow(dSumWLinearFour5n3n5n3n,2.)/(pow(dSumWLinearFour5n3n5n3n,2.)-dSumWQuadraticFour5n3n5n3n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,5))
+                   - f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo3n3n*dSumWLinearTwo5n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,30))
+                   - f2pCorrelations->GetBinContent(3)*f4pCorrelations->GetBinContent(16))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFour5n3n5n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,30))
+                   - f2pCorrelations->GetBinContent(5)*f4pCorrelations->GetBinContent(16))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFour5n3n5n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(16,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{5n,4n|5n,4n}
+ f4pCumulants->SetBinContent(17,f4pCorrelations->GetBinContent(17)-f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour5n4n5n4n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour5n4n5n4n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour5n4n5n4n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearFour5n4n5n4n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour5n4n5n4n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour5n4n5n4n = f4pCorrelations->GetBinError(17);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearFour5n4n5n4n,2.)>dSumWQuadraticFour5n4n5n4n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour5n4n5n4n,0.5)/dSumWLinearFour5n4n5n4n)
+                   * dSpreadFour5n4n5n4n*pow(pow(dSumWLinearFour5n4n5n4n,2.)/(pow(dSumWLinearFour5n4n5n4n,2.)-dSumWQuadraticFour5n4n5n4n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,5))
+                   - f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo4n4n*dSumWLinearTwo5n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,31))
+                   - f2pCorrelations->GetBinContent(4)*f4pCorrelations->GetBinContent(17))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFour5n4n5n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,31))
+                   - f2pCorrelations->GetBinContent(5)*f4pCorrelations->GetBinContent(17))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFour5n4n5n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(17,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{6n,1n|6n,1n}
+ f4pCumulants->SetBinContent(18,f4pCorrelations->GetBinContent(18)-f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour6n1n6n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour6n1n6n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour6n1n6n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearFour6n1n6n1n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour6n1n6n1n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour6n1n6n1n = f4pCorrelations->GetBinError(18);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearFour6n1n6n1n,2.)>dSumWQuadraticFour6n1n6n1n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour6n1n6n1n,0.5)/dSumWLinearFour6n1n6n1n)
+                   * dSpreadFour6n1n6n1n*pow(pow(dSumWLinearFour6n1n6n1n,2.)/(pow(dSumWLinearFour6n1n6n1n,2.)-dSumWQuadraticFour6n1n6n1n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,6))
+                   - f2pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo1n1n*dSumWLinearTwo6n6n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,32))
+                   - f2pCorrelations->GetBinContent(1)*f4pCorrelations->GetBinContent(18))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFour6n1n6n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,32))
+                   - f2pCorrelations->GetBinContent(6)*f4pCorrelations->GetBinContent(18))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFour6n1n6n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(18,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{6n,2n|6n,2n}
+ f4pCumulants->SetBinContent(19,f4pCorrelations->GetBinContent(19)-f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour6n2n6n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour6n2n6n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour6n2n6n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearFour6n2n6n2n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour6n2n6n2n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour6n2n6n2n = f4pCorrelations->GetBinError(19);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearFour6n2n6n2n,2.)>dSumWQuadraticFour6n2n6n2n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour6n2n6n2n,0.5)/dSumWLinearFour6n2n6n2n)
+                   * dSpreadFour6n2n6n2n*pow(pow(dSumWLinearFour6n2n6n2n,2.)/(pow(dSumWLinearFour6n2n6n2n,2.)-dSumWQuadraticFour6n2n6n2n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,6))
+                   - f2pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo2n2n*dSumWLinearTwo6n6n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,33))
+                   - f2pCorrelations->GetBinContent(2)*f4pCorrelations->GetBinContent(19))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFour6n2n6n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,33))
+                   - f2pCorrelations->GetBinContent(6)*f4pCorrelations->GetBinContent(19))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFour6n2n6n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(19,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{6n,3n|6n,3n}
+ f4pCumulants->SetBinContent(20,f4pCorrelations->GetBinContent(20)-f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour6n3n6n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour6n3n6n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour6n3n6n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearFour6n3n6n3n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour6n3n6n3n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour6n3n6n3n = f4pCorrelations->GetBinError(20);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearFour6n3n6n3n,2.)>dSumWQuadraticFour6n3n6n3n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour6n3n6n3n,0.5)/dSumWLinearFour6n3n6n3n)
+                   * dSpreadFour6n3n6n3n*pow(pow(dSumWLinearFour6n3n6n3n,2.)/(pow(dSumWLinearFour6n3n6n3n,2.)-dSumWQuadraticFour6n3n6n3n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,6))
+                   - f2pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo3n3n*dSumWLinearTwo6n6n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,34))
+                   - f2pCorrelations->GetBinContent(3)*f4pCorrelations->GetBinContent(20))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFour6n3n6n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,34))
+                   - f2pCorrelations->GetBinContent(6)*f4pCorrelations->GetBinContent(20))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFour6n3n6n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(20,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{6n,4n|6n,4n}
+ f4pCumulants->SetBinContent(21,f4pCorrelations->GetBinContent(21)-f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour6n4n6n4n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour6n4n6n4n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour6n4n6n4n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearFour6n4n6n4n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour6n4n6n4n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour6n4n6n4n = f4pCorrelations->GetBinError(21);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearFour6n4n6n4n,2.)>dSumWQuadraticFour6n4n6n4n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour6n4n6n4n,0.5)/dSumWLinearFour6n4n6n4n)
+                   * dSpreadFour6n4n6n4n*pow(pow(dSumWLinearFour6n4n6n4n,2.)/(pow(dSumWLinearFour6n4n6n4n,2.)-dSumWQuadraticFour6n4n6n4n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,6))
+                   - f2pCorrelations->GetBinContent(4)*f2pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo4n4n*dSumWLinearTwo6n6n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,35))
+                   - f2pCorrelations->GetBinContent(4)*f4pCorrelations->GetBinContent(21))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFour6n4n6n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,35))
+                   - f2pCorrelations->GetBinContent(6)*f4pCorrelations->GetBinContent(21))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFour6n4n6n4n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(21,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // <4>_{6n,5n|6n,5n}
+ f4pCumulants->SetBinContent(22,f4pCorrelations->GetBinContent(22)-f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFour6n5n6n5n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFour6n5n6n5n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFour6n5n6n5n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearFour6n5n6n5n = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadraticFour6n5n6n5n = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpreadFour6n5n6n5n = f4pCorrelations->GetBinError(22);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearFour6n5n6n5n,2.)>dSumWQuadraticFour6n5n6n5n)
+  {
+   Double_t dError = pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFour6n5n6n5n,0.5)/dSumWLinearFour6n5n6n5n)
+                   * dSpreadFour6n5n6n5n*pow(pow(dSumWLinearFour6n5n6n5n,2.)/(pow(dSumWLinearFour6n5n6n5n,2.)-dSumWQuadraticFour6n5n6n5n),0.5),2.)
+                   + 2.*f2pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,6))
+                   - f2pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo5n5n*dSumWLinearTwo6n6n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,2)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,36))
+                   - f2pCorrelations->GetBinContent(5)*f4pCorrelations->GetBinContent(22))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFour6n5n6n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,36))
+                   - f2pCorrelations->GetBinContent(6)*f4pCorrelations->GetBinContent(22))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFour6n5n6n5n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,4)));
+   if(dError>0.)
+   {
+    f4pCumulants->SetBinError(22,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+
+ // c3) "Two distinct harmonics":
+ for(Int_t b=24;b<=25;b++)
+ {
+  f4pCumulants->SetBinContent(b,f4pCorrelations->GetBinContent(b));
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpread = f4pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f4pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=24;b<=25;b++)
+ // c4) "Three distinct harmonics":
+ for(Int_t b=27;b<=36;b++)
+ {
+  f4pCumulants->SetBinContent(b,f4pCorrelations->GetBinContent(b));
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpread = f4pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f4pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=27;b<=36;b++)
+ // c5) "Four distinct harmonics":
+ for(Int_t b=38;b<=45;b++)
+ {
+  f4pCumulants->SetBinContent(b,f4pCorrelations->GetBinContent(b));
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(4);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(4);
+  dSpread = f4pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f4pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=38;b<=45;b++)
+
+ // d) Calculate 5-p cumulants: 
+ // d1) "Standard candles":
+ f5pCumulants->SetBinContent(1,f5pCorrelations->GetBinContent(1)-f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive3n2n3n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive3n2n3n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive3n2n3n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive3n2n3n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive3n2n3n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive3n2n3n1n1n = f5pCorrelations->GetBinError(1);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive3n2n3n1n1n,2.)>dSumWQuadraticFive3n2n3n1n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive3n2n3n1n1n,0.5)/dSumWLinearFive3n2n3n1n1n)
+                   * dSpreadFive3n2n3n1n1n*pow(pow(dSumWLinearFive3n2n3n1n1n,2.)/(pow(dSumWLinearFive3n2n3n1n1n,2.)-dSumWQuadraticFive3n2n3n1n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,7))
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,57))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive3n2n3n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,57))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(1))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive3n2n3n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(1,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+
+ f5pCumulants->SetBinContent(2,f5pCorrelations->GetBinContent(2)-f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n1n2n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n1n2n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n1n2n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive4n1n2n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n1n2n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n1n2n2n1n = f5pCorrelations->GetBinError(2);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive4n1n2n2n1n,2.)>dSumWQuadraticFive4n1n2n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n1n2n2n1n,0.5)/dSumWLinearFive4n1n2n2n1n)
+                   * dSpreadFive4n1n2n2n1n*pow(pow(dSumWLinearFive4n1n2n2n1n,2.)/(pow(dSumWLinearFive4n1n2n2n1n,2.)-dSumWQuadraticFive4n1n2n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,8))
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,58))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive4n1n2n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,58))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(2))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive4n1n2n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(2,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(3,f5pCorrelations->GetBinContent(3)-f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n2n3n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n2n3n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n2n3n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive4n2n3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n2n3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n2n3n2n1n = f5pCorrelations->GetBinError(3);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive4n2n3n2n1n,2.)>dSumWQuadraticFive4n2n3n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n2n3n2n1n,0.5)/dSumWLinearFive4n2n3n2n1n)
+                   * dSpreadFive4n2n3n2n1n*pow(pow(dSumWLinearFive4n2n3n2n1n,2.)/(pow(dSumWLinearFive4n2n3n2n1n,2.)-dSumWQuadraticFive4n2n3n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,11))
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,59))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive4n2n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,59))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(3))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive4n2n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(3,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(4,f5pCorrelations->GetBinContent(4)-f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n3n3n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n3n3n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n3n3n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive4n3n3n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n3n3n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n3n3n2n2n = f5pCorrelations->GetBinError(4);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive4n3n3n2n2n,2.)>dSumWQuadraticFive4n3n3n2n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n3n3n2n2n,0.5)/dSumWLinearFive4n3n3n2n2n)
+                   * dSpreadFive4n3n3n2n2n*pow(pow(dSumWLinearFive4n3n3n2n2n,2.)/(pow(dSumWLinearFive4n3n3n2n2n,2.)-dSumWQuadraticFive4n3n3n2n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,8))
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,60))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(4))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive4n3n3n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5))
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,60))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(4))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive4n3n3n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(4,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(5,f5pCorrelations->GetBinContent(5)-f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n2n4n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n2n4n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n2n4n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive4n2n4n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n2n4n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n2n4n1n1n = f5pCorrelations->GetBinError(5);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive4n2n4n1n1n,2.)>dSumWQuadraticFive4n2n4n1n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n2n4n1n1n,0.5)/dSumWLinearFive4n2n4n1n1n)
+                   * dSpreadFive4n2n4n1n1n*pow(pow(dSumWLinearFive4n2n4n1n1n,2.)/(pow(dSumWLinearFive4n2n4n1n1n,2.)-dSumWQuadraticFive4n2n4n1n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,7)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,61))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive4n2n4n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,61))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(5))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive4n2n4n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(5,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(6,f5pCorrelations->GetBinContent(6)-f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n3n4n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n3n4n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n3n4n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive4n3n4n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n3n4n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n3n4n2n1n = f5pCorrelations->GetBinError(6);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive4n3n4n2n1n,2.)>dSumWQuadraticFive4n3n4n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n3n4n2n1n,0.5)/dSumWLinearFive4n3n4n2n1n)
+                   * dSpreadFive4n3n4n2n1n*pow(pow(dSumWLinearFive4n3n4n2n1n,2.)/(pow(dSumWLinearFive4n3n4n2n1n,2.)-dSumWQuadraticFive4n3n4n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,10)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,62))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive4n3n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,62))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(6))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive4n3n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(6,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(7,f5pCorrelations->GetBinContent(7)-f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n1n3n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n1n3n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n1n3n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive5n1n3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n1n3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n1n3n2n1n = f5pCorrelations->GetBinError(7);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive5n1n3n2n1n,2.)>dSumWQuadraticFive5n1n3n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n1n3n2n1n,0.5)/dSumWLinearFive5n1n3n2n1n)
+                   * dSpreadFive5n1n3n2n1n*pow(pow(dSumWLinearFive5n1n3n2n1n,2.)/(pow(dSumWLinearFive5n1n3n2n1n,2.)-dSumWQuadraticFive5n1n3n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,12)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,63))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive5n1n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,63))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(7))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive5n1n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(7,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(8,f5pCorrelations->GetBinContent(8)-f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n2n5n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n2n5n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n2n5n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive5n2n5n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n2n5n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n2n5n1n1n = f5pCorrelations->GetBinError(8);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive5n2n5n1n1n,2.)>dSumWQuadraticFive5n2n5n1n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n2n5n1n1n,0.5)/dSumWLinearFive5n2n5n1n1n)
+                   * dSpreadFive5n2n5n1n1n*pow(pow(dSumWLinearFive5n2n5n1n1n,2.)/(pow(dSumWLinearFive5n2n5n1n1n,2.)-dSumWQuadraticFive5n2n5n1n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,7)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,64))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n2n5n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,64))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(8))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive5n2n5n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(8,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(9,f5pCorrelations->GetBinContent(9)-f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n2n4n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n2n4n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n2n4n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive5n2n4n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n2n4n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n2n4n2n1n = f5pCorrelations->GetBinError(9);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive5n2n4n2n1n,2.)>dSumWQuadraticFive5n2n4n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n2n4n2n1n,0.5)/dSumWLinearFive5n2n4n2n1n)
+                   * dSpreadFive5n2n4n2n1n*pow(pow(dSumWLinearFive5n2n4n2n1n,2.)/(pow(dSumWLinearFive5n2n4n2n1n,2.)-dSumWQuadraticFive5n2n4n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,13)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,65))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive5n2n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,65))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(9))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive5n2n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(9,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(10,f5pCorrelations->GetBinContent(10)-f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n3n4n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n3n4n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n3n4n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive5n3n4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n3n4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n3n4n3n1n = f5pCorrelations->GetBinError(10);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive5n3n4n3n1n,2.)>dSumWQuadraticFive5n3n4n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n3n4n3n1n,0.5)/dSumWLinearFive5n3n4n3n1n)
+                   * dSpreadFive5n3n4n3n1n*pow(pow(dSumWLinearFive5n3n4n3n1n,2.)/(pow(dSumWLinearFive5n3n4n3n1n,2.)-dSumWQuadraticFive5n3n4n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,13)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,66))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive5n3n4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,66))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(10))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive5n3n4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(10,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(11,f5pCorrelations->GetBinContent(11)-f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n4n4n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n4n4n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n4n4n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive5n4n4n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n4n4n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n4n4n3n2n = f5pCorrelations->GetBinError(11);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive5n4n4n3n2n,2.)>dSumWQuadraticFive5n4n4n3n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n4n4n3n2n,0.5)/dSumWLinearFive5n4n4n3n2n)
+                   * dSpreadFive5n4n4n3n2n*pow(pow(dSumWLinearFive5n4n4n3n2n,2.)/(pow(dSumWLinearFive5n4n4n3n2n,2.)-dSumWQuadraticFive5n4n4n3n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,12)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,67))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(11))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive5n4n4n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,67))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(11))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive5n4n4n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(11,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(12,f5pCorrelations->GetBinContent(12)-f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n3n5n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n3n5n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n3n5n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive5n3n5n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n3n5n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n3n5n2n1n = f5pCorrelations->GetBinError(12);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive5n3n5n2n1n,2.)>dSumWQuadraticFive5n3n5n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n3n5n2n1n,0.5)/dSumWLinearFive5n3n5n2n1n)
+                   * dSpreadFive5n3n5n2n1n*pow(pow(dSumWLinearFive5n3n5n2n1n,2.)/(pow(dSumWLinearFive5n3n5n2n1n,2.)-dSumWQuadraticFive5n3n5n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,10)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,68))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(12))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n3n5n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,68))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(12))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive5n3n5n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(12,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(13,f5pCorrelations->GetBinContent(13)-f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n4n5n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n4n5n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n4n5n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive5n4n5n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n4n5n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n4n5n2n2n = f5pCorrelations->GetBinError(13);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive5n4n5n2n2n,2.)>dSumWQuadraticFive5n4n5n2n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n4n5n2n2n,0.5)/dSumWLinearFive5n4n5n2n2n)
+                   * dSpreadFive5n4n5n2n2n*pow(pow(dSumWLinearFive5n4n5n2n2n,2.)/(pow(dSumWLinearFive5n4n5n2n2n,2.)-dSumWQuadraticFive5n4n5n2n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,8)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,69))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(13))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n4n5n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,69))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(13))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive5n4n5n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(13,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(14,f5pCorrelations->GetBinContent(14)-f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n4n5n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n4n5n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n4n5n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive5n4n5n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n4n5n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n4n5n3n1n = f5pCorrelations->GetBinError(14);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive5n4n5n3n1n,2.)>dSumWQuadraticFive5n4n5n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n4n5n3n1n,0.5)/dSumWLinearFive5n4n5n3n1n)
+                   * dSpreadFive5n4n5n3n1n*pow(pow(dSumWLinearFive5n4n5n3n1n,2.)/(pow(dSumWLinearFive5n4n5n3n1n,2.)-dSumWQuadraticFive5n4n5n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,11)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,70))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(14))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n4n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,70))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(14))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive5n4n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(14,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(15,f5pCorrelations->GetBinContent(15)-f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n1n3n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n1n3n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n1n3n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n1n3n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n1n3n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n1n3n3n1n = f5pCorrelations->GetBinError(15);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n1n3n3n1n,2.)>dSumWQuadraticFive6n1n3n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n1n3n3n1n,0.5)/dSumWLinearFive6n1n3n3n1n)
+                   * dSpreadFive6n1n3n3n1n*pow(pow(dSumWLinearFive6n1n3n3n1n,2.)/(pow(dSumWLinearFive6n1n3n3n1n,2.)-dSumWQuadraticFive6n1n3n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,9)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,71))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(15))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive6n1n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,71))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(15))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n1n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(15,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(16,f5pCorrelations->GetBinContent(16)-f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n2n3n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n2n3n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n2n3n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n2n3n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n2n3n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n2n3n3n2n = f5pCorrelations->GetBinError(16);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n2n3n3n2n,2.)>dSumWQuadraticFive6n2n3n3n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n2n3n3n2n,0.5)/dSumWLinearFive6n2n3n3n2n)
+                   * dSpreadFive6n2n3n3n2n*pow(pow(dSumWLinearFive6n2n3n3n2n,2.)/(pow(dSumWLinearFive6n2n3n3n2n,2.)-dSumWQuadraticFive6n2n3n3n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,9)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,72))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(16))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive6n2n3n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,72))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(16))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n2n3n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(16,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(17,f5pCorrelations->GetBinContent(17)-f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(1));
+ {
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n1n4n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n1n4n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n1n4n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n1n4n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n1n4n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n1n4n2n1n = f5pCorrelations->GetBinError(17);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n1n4n2n1n,2.)>dSumWQuadraticFive6n1n4n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n1n4n2n1n,0.5)/dSumWLinearFive6n1n4n2n1n)
+                   * dSpreadFive6n1n4n2n1n*pow(pow(dSumWLinearFive6n1n4n2n1n,2.)/(pow(dSumWLinearFive6n1n4n2n1n,2.)-dSumWQuadraticFive6n1n4n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,14)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,73))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(17))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive6n1n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,73))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(17))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n1n4n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(17,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(18,f5pCorrelations->GetBinContent(18)-f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n3n4n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n3n4n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n3n4n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n3n4n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n3n4n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n3n4n3n2n = f5pCorrelations->GetBinError(18);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n3n4n3n2n,2.)>dSumWQuadraticFive6n3n4n3n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n3n4n3n2n,0.5)/dSumWLinearFive6n3n4n3n2n)
+                   * dSpreadFive6n3n4n3n2n*pow(pow(dSumWLinearFive6n3n4n3n2n,2.)/(pow(dSumWLinearFive6n3n4n3n2n,2.)-dSumWQuadraticFive6n3n4n3n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,14)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,74))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(18))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive6n3n4n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,74))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(18))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n3n4n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(18,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(19,f5pCorrelations->GetBinContent(19)-f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n4n4n3n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n4n4n3n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n4n4n3n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n4n4n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n4n4n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n4n4n3n3n = f5pCorrelations->GetBinError(19);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n4n4n3n3n,2.)>dSumWQuadraticFive6n4n4n3n3n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n4n4n3n3n,0.5)/dSumWLinearFive6n4n4n3n3n)
+                   * dSpreadFive6n4n4n3n3n*pow(pow(dSumWLinearFive6n4n4n3n3n,2.)/(pow(dSumWLinearFive6n4n4n3n3n,2.)-dSumWQuadraticFive6n4n4n3n3n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,9)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,75))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(19))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive6n4n4n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,75))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(19))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n4n4n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(19,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(20,f5pCorrelations->GetBinContent(20)-f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(2));
+ {
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n2n5n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n2n5n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n2n5n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n2n5n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n2n5n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n2n5n2n1n = f5pCorrelations->GetBinError(20);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n2n5n2n1n,2.)>dSumWQuadraticFive6n2n5n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n2n5n2n1n,0.5)/dSumWLinearFive6n2n5n2n1n)
+                   * dSpreadFive6n2n5n2n1n*pow(pow(dSumWLinearFive6n2n5n2n1n,2.)/(pow(dSumWLinearFive6n2n5n2n1n,2.)-dSumWQuadraticFive6n2n5n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,15)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,76))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(20))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive6n2n5n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,76))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(20))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n2n5n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(20,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(21,f5pCorrelations->GetBinContent(21)-f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(3));
+ {
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n3n5n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n3n5n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n3n5n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n3n5n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n3n5n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n3n5n3n1n = f5pCorrelations->GetBinError(21);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n3n5n3n1n,2.)>dSumWQuadraticFive6n3n5n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n3n5n3n1n,0.5)/dSumWLinearFive6n3n5n3n1n)
+                   * dSpreadFive6n3n5n3n1n*pow(pow(dSumWLinearFive6n3n5n3n1n,2.)/(pow(dSumWLinearFive6n3n5n3n1n,2.)-dSumWQuadraticFive6n3n5n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,15)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,77))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(21))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive6n3n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,77))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(21))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n3n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(21,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(22,f5pCorrelations->GetBinContent(22)-f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(4));
+ {
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n3n5n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n3n5n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n3n5n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n3n5n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n3n5n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n3n5n3n1n = f5pCorrelations->GetBinError(22);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n3n5n3n1n,2.)>dSumWQuadraticFive6n3n5n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n3n5n3n1n,0.5)/dSumWLinearFive6n3n5n3n1n)
+                   * dSpreadFive6n3n5n3n1n*pow(pow(dSumWLinearFive6n3n5n3n1n,2.)/(pow(dSumWLinearFive6n3n5n3n1n,2.)-dSumWQuadraticFive6n3n5n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,15)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,78))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(22))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive6n3n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,78))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(22))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n3n5n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(22,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(23,f5pCorrelations->GetBinContent(23)-f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n5n5n3n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n5n5n3n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n5n5n3n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n5n5n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n5n5n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n5n5n3n3n = f5pCorrelations->GetBinError(23);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n5n5n3n3n,2.)>dSumWQuadraticFive6n5n5n3n3n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n5n5n3n3n,0.5)/dSumWLinearFive6n5n5n3n3n)
+                   * dSpreadFive6n5n5n3n3n*pow(pow(dSumWLinearFive6n5n5n3n3n,2.)/(pow(dSumWLinearFive6n5n5n3n3n,2.)-dSumWQuadraticFive6n5n5n3n3n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,9)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,79))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(23))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive6n5n5n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,79))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(23))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n5n5n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(23,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(24,f5pCorrelations->GetBinContent(24)-f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(6));
+ {
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n2n6n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n2n6n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n2n6n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive6n2n6n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n2n6n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n2n6n1n1n = f5pCorrelations->GetBinError(24);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive6n2n6n1n1n,2.)>dSumWQuadraticFive6n2n6n1n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n2n6n1n1n,0.5)/dSumWLinearFive6n2n6n1n1n)
+                   * dSpreadFive6n2n6n1n1n*pow(pow(dSumWLinearFive6n2n6n1n1n,2.)/(pow(dSumWLinearFive6n2n6n1n1n,2.)-dSumWQuadraticFive6n2n6n1n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,7)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,80))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(24))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n2n6n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,80))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(24))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive6n2n6n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(24,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(25,f5pCorrelations->GetBinContent(25)-f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(6));
+ {
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n3n6n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n3n6n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n3n6n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive6n3n6n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n3n6n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n3n6n2n1n = f5pCorrelations->GetBinError(25);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive6n3n6n2n1n,2.)>dSumWQuadraticFive6n3n6n2n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n3n6n2n1n,0.5)/dSumWLinearFive6n3n6n2n1n)
+                   * dSpreadFive6n3n6n2n1n*pow(pow(dSumWLinearFive6n3n6n2n1n,2.)/(pow(dSumWLinearFive6n3n6n2n1n,2.)-dSumWQuadraticFive6n3n6n2n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,10)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,81))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(25))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n3n6n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,81))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(25))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive6n3n6n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(25,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(26,f5pCorrelations->GetBinContent(26)-f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(6));
+ {
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n4n6n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n4n6n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n4n6n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive6n4n6n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n4n6n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n4n6n2n2n = f5pCorrelations->GetBinError(26);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive6n4n6n2n2n,2.)>dSumWQuadraticFive6n4n6n2n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n4n6n2n2n,0.5)/dSumWLinearFive6n4n6n2n2n)
+                   * dSpreadFive6n4n6n2n2n*pow(pow(dSumWLinearFive6n4n6n2n2n,2.)/(pow(dSumWLinearFive6n4n6n2n2n,2.)-dSumWQuadraticFive6n4n6n2n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,8)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,82))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(26))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n4n6n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,82))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(26))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive6n4n6n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(26,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(27,f5pCorrelations->GetBinContent(27)-f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(6));
+ {
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n4n6n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n4n6n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n4n6n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive6n4n6n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n4n6n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n4n6n3n1n = f5pCorrelations->GetBinError(27);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive6n4n6n3n1n,2.)>dSumWQuadraticFive6n4n6n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n4n6n3n1n,0.5)/dSumWLinearFive6n4n6n3n1n)
+                   * dSpreadFive6n4n6n3n1n*pow(pow(dSumWLinearFive6n4n6n3n1n,2.)/(pow(dSumWLinearFive6n4n6n3n1n,2.)-dSumWQuadraticFive6n4n6n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,11)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,83))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(27))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n4n6n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,83))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(27))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive6n4n6n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(27,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(28,f5pCorrelations->GetBinContent(28)-f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(5));
+ {
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n4n6n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n4n6n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n4n6n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n4n6n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n4n6n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n4n6n3n1n = f5pCorrelations->GetBinError(28);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n4n6n3n1n,2.)>dSumWQuadraticFive6n4n6n3n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n4n6n3n1n,0.5)/dSumWLinearFive6n4n6n3n1n)
+                   * dSpreadFive6n4n6n3n1n*pow(pow(dSumWLinearFive6n4n6n3n1n,2.)/(pow(dSumWLinearFive6n4n6n3n1n,2.)-dSumWQuadraticFive6n4n6n3n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,14)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,84))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(28))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive6n4n6n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,84))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(28))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n4n6n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(28,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(29,f5pCorrelations->GetBinContent(29)-f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(6));
+ { 
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n5n6n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n5n6n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n5n6n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive6n5n6n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n5n6n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n5n6n3n2n = f5pCorrelations->GetBinError(29);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive6n5n6n3n2n,2.)>dSumWQuadraticFive6n5n6n3n2n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n5n6n3n2n,0.5)/dSumWLinearFive6n5n6n3n2n)
+                   * dSpreadFive6n5n6n3n2n*pow(pow(dSumWLinearFive6n5n6n3n2n,2.)/(pow(dSumWLinearFive6n5n6n3n2n,2.)-dSumWQuadraticFive6n5n6n3n2n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,12)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,85))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(29))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n5n6n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,85))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(29))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive6n5n6n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(29,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(30,f5pCorrelations->GetBinContent(30)-f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(6));
+ { 
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n5n6n4n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n5n6n4n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n5n6n4n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive6n5n6n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n5n6n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n5n6n4n1n = f5pCorrelations->GetBinError(30);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive6n5n6n4n1n,2.)>dSumWQuadraticFive6n5n6n4n1n)
+  {
+   Double_t dError = pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n5n6n4n1n,0.5)/dSumWLinearFive6n5n6n4n1n)
+                   * dSpreadFive6n5n6n4n1n*pow(pow(dSumWLinearFive6n5n6n4n1n,2.)/(pow(dSumWLinearFive6n5n6n4n1n,2.)-dSumWQuadraticFive6n5n6n4n1n),0.5),2.)
+                   + 2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,13)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,86))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(30))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n5n6n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,86))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(30))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive6n5n6n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(30,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // d2) "Two distinct harmonics":
+ f5pCumulants->SetBinContent(32,f5pCorrelations->GetBinContent(32)-3.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(1));
+ { 
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive2n1n1n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive2n1n1n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive2n1n1n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive2n1n1n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive2n1n1n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive2n1n1n1n1n = f5pCorrelations->GetBinError(32);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive2n1n1n1n1n,2.)>dSumWQuadraticFive2n1n1n1n1n)
+  {
+   Double_t dError = 9.*pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + 9.*pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive2n1n1n1n1n,0.5)/dSumWLinearFive2n1n1n1n1n)
+                   * dSpreadFive2n1n1n1n1n*pow(pow(dSumWLinearFive2n1n1n1n1n,2.)/(pow(dSumWLinearFive2n1n1n1n1n,2.)-dSumWQuadraticFive2n1n1n1n1n),0.5),2.)
+                   + 9.*2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,7)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 3.*2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,87))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(32))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive2n1n1n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 3.*2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,87))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(32))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive2n1n1n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(32,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(33,f5pCorrelations->GetBinContent(33)-2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(2));
+ { 
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree2n1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree2n1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree2n1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive2n2n2n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive2n2n2n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive2n2n2n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree2n1n1n = f3pCorrelations->GetBinError(1);
+  dSumWLinearFive2n2n2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive2n2n2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive2n2n2n1n1n = f5pCorrelations->GetBinError(33);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree2n1n1n,2.)>dSumWQuadraticThree2n1n1n &&
+     pow(dSumWLinearFive2n2n2n1n1n,2.)>dSumWQuadraticFive2n2n2n1n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree2n1n1n,0.5)/dSumWLinearThree2n1n1n)
+                   * dSpreadThree2n1n1n*pow(pow(dSumWLinearThree2n1n1n,2.)/(pow(dSumWLinearThree2n1n1n,2.)-dSumWQuadraticThree2n1n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive2n2n2n1n1n,0.5)/dSumWLinearFive2n2n2n1n1n)
+                   * dSpreadFive2n2n2n1n1n*pow(pow(dSumWLinearFive2n2n2n1n1n,2.)/(pow(dSumWLinearFive2n2n2n1n1n,2.)-dSumWQuadraticFive2n2n2n1n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(1)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,7)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(1))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,88))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(33))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive2n2n2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(7,88))
+                   - f3pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(33))
+                   / (dSumWLinearThree2n1n1n*dSumWLinearFive2n2n2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(33,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(34,f5pCorrelations->GetBinContent(34));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(34);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(34,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(35,f5pCorrelations->GetBinContent(35));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(35);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(35,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(36,f5pCorrelations->GetBinContent(36)-3.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(2));
+ { 
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n2n2n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n2n2n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n2n2n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive4n2n2n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n2n2n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n2n2n2n2n = f5pCorrelations->GetBinError(36);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive4n2n2n2n2n,2.)>dSumWQuadraticFive4n2n2n2n2n)
+  {
+   Double_t dError = 9.*pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + 9.*pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n2n2n2n2n,0.5)/dSumWLinearFive4n2n2n2n2n)
+                   * dSpreadFive4n2n2n2n2n*pow(pow(dSumWLinearFive4n2n2n2n2n,2.)/(pow(dSumWLinearFive4n2n2n2n2n,2.)-dSumWQuadraticFive4n2n2n2n2n),0.5),2.)
+                   + 9.*2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,8)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 3.*2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,91))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(36))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive4n2n2n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 3.*2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,91))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(36))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive4n2n2n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(36,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(37,f5pCorrelations->GetBinContent(37)-2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(4)); 
+ { 
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n4n4n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n4n4n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n4n4n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n2n2n = f3pCorrelations->GetBinError(2);
+  dSumWLinearFive4n4n4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n4n4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n4n4n2n2n = f5pCorrelations->GetBinError(37);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree4n2n2n,2.)>dSumWQuadraticThree4n2n2n &&
+     pow(dSumWLinearFive4n4n4n2n2n,2.)>dSumWQuadraticFive4n4n4n2n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree4n2n2n,0.5)/dSumWLinearThree4n2n2n)
+                   * dSpreadThree4n2n2n*pow(pow(dSumWLinearThree4n2n2n,2.)/(pow(dSumWLinearThree4n2n2n,2.)-dSumWQuadraticThree4n2n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n4n4n2n2n,0.5)/dSumWLinearFive4n4n4n2n2n)
+                   * dSpreadFive4n4n4n2n2n*pow(pow(dSumWLinearFive4n4n4n2n2n,2.)/(pow(dSumWLinearFive4n4n4n2n2n,2.)-dSumWQuadraticFive4n4n4n2n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(2)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,8)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(2))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,92))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(37))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive4n4n4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(8,92))
+                   - f3pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(37))
+                   / (dSumWLinearThree4n2n2n*dSumWLinearFive4n4n4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(37,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(38,f5pCorrelations->GetBinContent(38)-3.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(3)); 
+ { 
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n3n3n3n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n3n3n3n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n3n3n3n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n3n3n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n3n3n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n3n3n3n3n = f5pCorrelations->GetBinError(38);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n3n3n3n3n,2.)>dSumWQuadraticFive6n3n3n3n3n)
+  {
+   Double_t dError = 9.*pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + 9.*pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n3n3n3n3n,0.5)/dSumWLinearFive6n3n3n3n3n)
+                   * dSpreadFive6n3n3n3n3n*pow(pow(dSumWLinearFive6n3n3n3n3n,2.)/(pow(dSumWLinearFive6n3n3n3n3n,2.)-dSumWQuadraticFive6n3n3n3n3n),0.5),2.)
+                   + 9.*2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,9)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 3.*2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,93))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(38))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive6n3n3n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 3.*2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,93))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(38))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n3n3n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(38,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(39,f5pCorrelations->GetBinContent(39));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(39);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(39,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(40,f5pCorrelations->GetBinContent(40)-2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(6)); 
+ { 
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n6n6n3n3n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n6n6n3n3n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n6n6n3n3n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n3n3n = f3pCorrelations->GetBinError(3);
+  dSumWLinearFive6n6n6n3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n6n6n3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n6n6n3n3n = f5pCorrelations->GetBinError(40);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree6n3n3n,2.)>dSumWQuadraticThree6n3n3n &&
+     pow(dSumWLinearFive6n6n6n3n3n,2.)>dSumWQuadraticFive6n6n6n3n3n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree6n3n3n,0.5)/dSumWLinearThree6n3n3n)
+                   * dSpreadThree6n3n3n*pow(pow(dSumWLinearThree6n3n3n,2.)/(pow(dSumWLinearThree6n3n3n,2.)-dSumWQuadraticThree6n3n3n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n6n6n3n3n,0.5)/dSumWLinearFive6n6n6n3n3n)
+                   * dSpreadFive6n6n6n3n3n*pow(pow(dSumWLinearFive6n6n6n3n3n,2.)/(pow(dSumWLinearFive6n6n6n3n3n,2.)-dSumWQuadraticFive6n6n6n3n3n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(3)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,9)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(3))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,95))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(40))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n6n6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(9,95))
+                   - f3pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(40))
+                   / (dSumWLinearThree6n3n3n*dSumWLinearFive6n6n6n3n3n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(40,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+
+ // d2) "Three distinct harmonics":
+ f5pCumulants->SetBinContent(42,f5pCorrelations->GetBinContent(42)-2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(1)); 
+ { 
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive3n1n2n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive3n1n2n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive3n1n2n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive3n1n2n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive3n1n2n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive3n1n2n1n1n = f5pCorrelations->GetBinError(42);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive3n1n2n1n1n,2.)>dSumWQuadraticFive3n1n2n1n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive3n1n2n1n1n,0.5)/dSumWLinearFive3n1n2n1n1n)
+                   * dSpreadFive3n1n2n1n1n*pow(pow(dSumWLinearFive3n1n2n1n1n,2.)/(pow(dSumWLinearFive3n1n2n1n1n,2.)-dSumWQuadraticFive3n1n2n1n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,10)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,96))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(42))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive3n1n2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,96))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(42))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive3n1n2n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(42,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(43,f5pCorrelations->GetBinContent(43)-2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(2)); 
+ { 
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive3n2n2n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive3n2n2n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive3n2n2n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive3n2n2n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive3n2n2n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive3n2n2n2n1n = f5pCorrelations->GetBinError(43);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive3n2n2n2n1n,2.)>dSumWQuadraticFive3n2n2n2n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive3n2n2n2n1n,0.5)/dSumWLinearFive3n2n2n2n1n)
+                   * dSpreadFive3n2n2n2n1n*pow(pow(dSumWLinearFive3n2n2n2n1n,2.)/(pow(dSumWLinearFive3n2n2n2n1n,2.)-dSumWQuadraticFive3n2n2n2n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,10)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,97))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(43))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive3n2n2n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,97))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(43))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive3n2n2n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(43,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(44,f5pCorrelations->GetBinContent(44)-2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(3)); 
+ { 
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree3n2n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree3n2n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree3n2n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive3n3n3n2n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive3n3n3n2n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive3n3n3n2n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree3n2n1n = f3pCorrelations->GetBinError(5);
+  dSumWLinearFive3n3n3n2n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive3n3n3n2n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive3n3n3n2n1n = f5pCorrelations->GetBinError(44);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree3n2n1n,2.)>dSumWQuadraticThree3n2n1n &&
+     pow(dSumWLinearFive3n3n3n2n1n,2.)>dSumWQuadraticFive3n3n3n2n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree3n2n1n,0.5)/dSumWLinearThree3n2n1n)
+                   * dSpreadThree3n2n1n*pow(pow(dSumWLinearThree3n2n1n,2.)/(pow(dSumWLinearThree3n2n1n,2.)-dSumWQuadraticThree3n2n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive3n3n3n2n1n,0.5)/dSumWLinearFive3n3n3n2n1n)
+                   * dSpreadFive3n3n3n2n1n*pow(pow(dSumWLinearFive3n3n3n2n1n,2.)/(pow(dSumWLinearFive3n3n3n2n1n,2.)-dSumWQuadraticFive3n3n3n2n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(5)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,10)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(5))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,98))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(44))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive3n3n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(10,98))
+                   - f3pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(44))
+                   / (dSumWLinearThree3n2n1n*dSumWLinearFive3n3n3n2n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(44,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(45,f5pCorrelations->GetBinContent(45)-2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(1)); 
+ { 
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n1n3n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n1n3n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n1n3n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive4n1n3n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n1n3n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n1n3n1n1n = f5pCorrelations->GetBinError(45);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive4n1n3n1n1n,2.)>dSumWQuadraticFive4n1n3n1n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n1n3n1n1n,0.5)/dSumWLinearFive4n1n3n1n1n)
+                   * dSpreadFive4n1n3n1n1n*pow(pow(dSumWLinearFive4n1n3n1n1n,2.)/(pow(dSumWLinearFive4n1n3n1n1n,2.)-dSumWQuadraticFive4n1n3n1n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,11)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,99))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(45))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive4n1n3n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,99))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(45))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive4n1n3n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(45,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(46,f5pCorrelations->GetBinContent(46));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(46);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(46,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(47,f5pCorrelations->GetBinContent(47)-2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(3)); 
+ { 
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n3n3n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n3n3n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n3n3n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive4n3n3n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n3n3n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n3n3n3n1n = f5pCorrelations->GetBinError(47);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive4n3n3n3n1n,2.)>dSumWQuadraticFive4n3n3n3n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n3n3n3n1n,0.5)/dSumWLinearFive4n3n3n3n1n)
+                   * dSpreadFive4n3n3n3n1n*pow(pow(dSumWLinearFive4n3n3n3n1n,2.)/(pow(dSumWLinearFive4n3n3n3n1n,2.)-dSumWQuadraticFive4n3n3n3n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,11)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,101))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(47))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive4n3n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,101))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(47))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive4n3n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(47,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(48,f5pCorrelations->GetBinContent(48));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(48);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(48,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(49,f5pCorrelations->GetBinContent(49)-2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(4));  
+ { 
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree4n3n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree4n3n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree4n3n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive4n3n3n3n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive4n3n3n3n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive4n3n3n3n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree4n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree4n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree4n3n1n = f3pCorrelations->GetBinError(6);
+  dSumWLinearFive4n3n3n3n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive4n3n3n3n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive4n3n3n3n1n = f5pCorrelations->GetBinError(49);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree4n3n1n,2.)>dSumWQuadraticThree4n3n1n &&
+     pow(dSumWLinearFive4n3n3n3n1n,2.)>dSumWQuadraticFive4n3n3n3n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree4n3n1n,0.5)/dSumWLinearThree4n3n1n)
+                   * dSpreadThree4n3n1n*pow(pow(dSumWLinearThree4n3n1n,2.)/(pow(dSumWLinearThree4n3n1n,2.)-dSumWQuadraticThree4n3n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive4n3n3n3n1n,0.5)/dSumWLinearFive4n3n3n3n1n)
+                   * dSpreadFive4n3n3n3n1n*pow(pow(dSumWLinearFive4n3n3n3n1n,2.)/(pow(dSumWLinearFive4n3n3n3n1n,2.)-dSumWQuadraticFive4n3n3n3n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(6)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,11)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(6))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree4n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,103))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(49))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive4n3n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(11,103))
+                   - f3pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(49))
+                   / (dSumWLinearThree4n3n1n*dSumWLinearFive4n3n3n3n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(49,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(50,f5pCorrelations->GetBinContent(50));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(50);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(50,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(51,f5pCorrelations->GetBinContent(51));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(51);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(51,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(52,f5pCorrelations->GetBinContent(52)-2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(2));  
+ { 
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n2n3n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n2n3n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n2n3n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive5n2n3n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n2n3n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n2n3n2n2n = f5pCorrelations->GetBinError(52);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive5n2n3n2n2n,2.)>dSumWQuadraticFive5n2n3n2n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n2n3n2n2n,0.5)/dSumWLinearFive5n2n3n2n2n)
+                   * dSpreadFive5n2n3n2n2n*pow(pow(dSumWLinearFive5n2n3n2n2n,2.)/(pow(dSumWLinearFive5n2n3n2n2n,2.)-dSumWQuadraticFive5n2n3n2n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,12)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,106))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(52))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive5n2n3n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,106))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(52))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive5n2n3n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(52,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(53,f5pCorrelations->GetBinContent(53)-2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(3));  
+ { 
+  Double_t dSumWLinearTwo3n3n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo3n3n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo3n3n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n3n3n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n3n3n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n3n3n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo3n3n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo3n3n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo3n3n = f2pCorrelations->GetBinError(3);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive5n3n3n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n3n3n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n3n3n3n2n = f5pCorrelations->GetBinError(53);
+  if(pow(dSumWLinearTwo3n3n,2.)>dSumWQuadraticTwo3n3n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive5n3n3n3n2n,2.)>dSumWQuadraticFive5n3n3n3n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo3n3n,0.5)/dSumWLinearTwo3n3n)
+                   * dSpreadTwo3n3n*pow(pow(dSumWLinearTwo3n3n,2.)/(pow(dSumWLinearTwo3n3n,2.)-dSumWQuadraticTwo3n3n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(3),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n3n3n3n2n,0.5)/dSumWLinearFive5n3n3n3n2n)
+                   * dSpreadFive5n3n3n3n2n*pow(pow(dSumWLinearFive5n3n3n3n2n,2.)/(pow(dSumWLinearFive5n3n3n3n2n,2.)-dSumWQuadraticFive5n3n3n3n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,12)) 
+                   - f2pCorrelations->GetBinContent(3)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo3n3n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(3,107))
+                   - f2pCorrelations->GetBinContent(3)*f5pCorrelations->GetBinContent(53))
+                   / (dSumWLinearTwo3n3n*dSumWLinearFive5n3n3n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(3)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,107))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(53))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive5n3n3n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(53,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(54,f5pCorrelations->GetBinContent(54)-2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(1)); 
+ { 
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n1n4n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n1n4n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n1n4n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive5n1n4n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n1n4n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n1n4n1n1n = f5pCorrelations->GetBinError(54);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive5n1n4n1n1n,2.)>dSumWQuadraticFive5n1n4n1n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n1n4n1n1n,0.5)/dSumWLinearFive5n1n4n1n1n)
+                   * dSpreadFive5n1n4n1n1n*pow(pow(dSumWLinearFive5n1n4n1n1n,2.)/(pow(dSumWLinearFive5n1n4n1n1n,2.)-dSumWQuadraticFive5n1n4n1n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,13)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,108))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(54))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive5n1n4n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,108))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(54))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive5n1n4n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(54,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+
+ f5pCumulants->SetBinContent(55,f5pCorrelations->GetBinContent(55));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(55);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(55,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(56,f5pCorrelations->GetBinContent(56)-2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(4));
+ { 
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n4n4n4n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n4n4n4n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n4n4n4n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive5n4n4n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n4n4n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n4n4n4n1n = f5pCorrelations->GetBinError(56);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive5n4n4n4n1n,2.)>dSumWQuadraticFive5n4n4n4n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n4n4n4n1n,0.5)/dSumWLinearFive5n4n4n4n1n)
+                   * dSpreadFive5n4n4n4n1n*pow(pow(dSumWLinearFive5n4n4n4n1n,2.)/(pow(dSumWLinearFive5n4n4n4n1n,2.)-dSumWQuadraticFive5n4n4n4n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,13)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,110))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(56))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive5n4n4n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,110))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(56))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive5n4n4n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(56,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(57,f5pCorrelations->GetBinContent(57));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(57);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(57,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(58,f5pCorrelations->GetBinContent(58));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(58);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(58,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(59,f5pCorrelations->GetBinContent(59)-2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(5));  
+ { 
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n3n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n3n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n3n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n5n5n3n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n5n5n3n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n5n5n3n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n3n2n = f3pCorrelations->GetBinError(7);
+  dSumWLinearFive5n5n5n3n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n5n5n3n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n5n5n3n2n = f5pCorrelations->GetBinError(59);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree5n3n2n,2.)>dSumWQuadraticThree5n3n2n &&
+     pow(dSumWLinearFive5n5n5n3n2n,2.)>dSumWQuadraticFive5n5n5n3n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(7),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree5n3n2n,0.5)/dSumWLinearThree5n3n2n)
+                   * dSpreadThree5n3n2n*pow(pow(dSumWLinearThree5n3n2n,2.)/(pow(dSumWLinearThree5n3n2n,2.)-dSumWQuadraticThree5n3n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n5n5n3n2n,0.5)/dSumWLinearFive5n5n5n3n2n)
+                   * dSpreadFive5n5n5n3n2n*pow(pow(dSumWLinearFive5n5n5n3n2n,2.)/(pow(dSumWLinearFive5n5n5n3n2n,2.)-dSumWQuadraticFive5n5n5n3n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(7)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,12)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(7))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(7)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,113))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(59))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n5n5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(12,113))
+                   - f3pCorrelations->GetBinContent(7)*f5pCorrelations->GetBinContent(59))
+                   / (dSumWLinearThree5n3n2n*dSumWLinearFive5n5n5n3n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(59,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(60,f5pCorrelations->GetBinContent(60)-2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(5));  
+ { 
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree5n4n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree5n4n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree5n4n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive5n5n5n4n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive5n5n5n4n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive5n5n5n4n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree5n4n1n = f3pCorrelations->GetBinError(8);
+  dSumWLinearFive5n5n5n4n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive5n5n5n4n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive5n5n5n4n1n = f5pCorrelations->GetBinError(60);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree5n4n1n,2.)>dSumWQuadraticThree5n4n1n &&
+     pow(dSumWLinearFive5n5n5n4n1n,2.)>dSumWQuadraticFive5n5n5n4n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(8),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree5n4n1n,0.5)/dSumWLinearThree5n4n1n)
+                   * dSpreadThree5n4n1n*pow(pow(dSumWLinearThree5n4n1n,2.)/(pow(dSumWLinearThree5n4n1n,2.)-dSumWQuadraticThree5n4n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive5n5n5n4n1n,0.5)/dSumWLinearFive5n5n5n4n1n)
+                   * dSpreadFive5n5n5n4n1n*pow(pow(dSumWLinearFive5n5n5n4n1n,2.)/(pow(dSumWLinearFive5n5n5n4n1n,2.)-dSumWQuadraticFive5n5n5n4n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(8)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,13)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(8))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(8)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,114))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(60))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive5n5n5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(13,114))
+                   - f3pCorrelations->GetBinContent(8)*f5pCorrelations->GetBinContent(60))
+                   / (dSumWLinearThree5n4n1n*dSumWLinearFive5n5n5n4n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(60,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(61,f5pCorrelations->GetBinContent(61));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(61);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(61,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(62,f5pCorrelations->GetBinContent(62));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(62);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(62,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(63,f5pCorrelations->GetBinContent(63));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(63);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(63,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(64,f5pCorrelations->GetBinContent(64)-2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(1));  
+ { 
+  Double_t dSumWLinearTwo1n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo1n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo1n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n1n5n1n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n1n5n1n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n1n5n1n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo1n1n = f2pCorrelations->GetBinError(1);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n1n5n1n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n1n5n1n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n1n5n1n1n = f5pCorrelations->GetBinError(64);
+  if(pow(dSumWLinearTwo1n1n,2.)>dSumWQuadraticTwo1n1n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n1n5n1n1n,2.)>dSumWQuadraticFive6n1n5n1n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo1n1n,0.5)/dSumWLinearTwo1n1n)
+                   * dSpreadTwo1n1n*pow(pow(dSumWLinearTwo1n1n,2.)/(pow(dSumWLinearTwo1n1n,2.)-dSumWQuadraticTwo1n1n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(1),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n1n5n1n1n,0.5)/dSumWLinearFive6n1n5n1n1n)
+                   * dSpreadFive6n1n5n1n1n*pow(pow(dSumWLinearFive6n1n5n1n1n,2.)/(pow(dSumWLinearFive6n1n5n1n1n,2.)-dSumWQuadraticFive6n1n5n1n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,15)) 
+                   - f2pCorrelations->GetBinContent(1)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo1n1n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(1,118))
+                   - f2pCorrelations->GetBinContent(1)*f5pCorrelations->GetBinContent(64))
+                   / (dSumWLinearTwo1n1n*dSumWLinearFive6n1n5n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(1)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,118))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(64))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n1n5n1n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(64,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(65,f5pCorrelations->GetBinContent(65)-2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(2));  
+ { 
+  Double_t dSumWLinearTwo2n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo2n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo2n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n2n4n2n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n2n4n2n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n2n4n2n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo2n2n = f2pCorrelations->GetBinError(2);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n2n4n2n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n2n4n2n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n2n4n2n2n = f5pCorrelations->GetBinError(65);
+  if(pow(dSumWLinearTwo2n2n,2.)>dSumWQuadraticTwo2n2n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n2n4n2n2n,2.)>dSumWQuadraticFive6n2n4n2n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo2n2n,0.5)/dSumWLinearTwo2n2n)
+                   * dSpreadTwo2n2n*pow(pow(dSumWLinearTwo2n2n,2.)/(pow(dSumWLinearTwo2n2n,2.)-dSumWQuadraticTwo2n2n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(2),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n2n4n2n2n,0.5)/dSumWLinearFive6n2n4n2n2n)
+                   * dSpreadFive6n2n4n2n2n*pow(pow(dSumWLinearFive6n2n4n2n2n,2.)/(pow(dSumWLinearFive6n2n4n2n2n,2.)-dSumWQuadraticFive6n2n4n2n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,14)) 
+                   - f2pCorrelations->GetBinContent(2)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo2n2n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(2,119))
+                   - f2pCorrelations->GetBinContent(2)*f5pCorrelations->GetBinContent(65))
+                   / (dSumWLinearTwo2n2n*dSumWLinearFive6n2n4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(2)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,119))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(65))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n2n4n2n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(65,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(66,f5pCorrelations->GetBinContent(66)-2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(4));
+ { 
+  Double_t dSumWLinearTwo4n4n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo4n4n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo4n4n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n4n4n4n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n4n4n4n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n4n4n4n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo4n4n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo4n4n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo4n4n = f2pCorrelations->GetBinError(4);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n4n4n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n4n4n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n4n4n4n2n = f5pCorrelations->GetBinError(66);
+  if(pow(dSumWLinearTwo4n4n,2.)>dSumWQuadraticTwo4n4n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n4n4n4n2n,2.)>dSumWQuadraticFive6n4n4n4n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo4n4n,0.5)/dSumWLinearTwo4n4n)
+                   * dSpreadTwo4n4n*pow(pow(dSumWLinearTwo4n4n,2.)/(pow(dSumWLinearTwo4n4n,2.)-dSumWQuadraticTwo4n4n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(4),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n4n4n4n2n,0.5)/dSumWLinearFive6n4n4n4n2n)
+                   * dSpreadFive6n4n4n4n2n*pow(pow(dSumWLinearFive6n4n4n4n2n,2.)/(pow(dSumWLinearFive6n4n4n4n2n,2.)-dSumWQuadraticFive6n4n4n4n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,14)) 
+                   - f2pCorrelations->GetBinContent(4)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo4n4n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(4,120))
+                   - f2pCorrelations->GetBinContent(4)*f5pCorrelations->GetBinContent(66))
+                   / (dSumWLinearTwo4n4n*dSumWLinearFive6n4n4n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(4)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,120))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(66))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n4n4n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(66,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {  
+ f5pCumulants->SetBinContent(67,f5pCorrelations->GetBinContent(67));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(67);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(67,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ }  
+ f5pCumulants->SetBinContent(68,f5pCorrelations->GetBinContent(68)-2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(5));  
+ { 
+  Double_t dSumWLinearTwo5n5n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo5n5n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo5n5n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n5n5n5n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n5n5n5n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n5n5n5n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo5n5n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo5n5n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo5n5n = f2pCorrelations->GetBinError(5);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n5n5n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n5n5n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n5n5n5n1n = f5pCorrelations->GetBinError(68);
+  if(pow(dSumWLinearTwo5n5n,2.)>dSumWQuadraticTwo5n5n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n5n5n5n1n,2.)>dSumWQuadraticFive6n5n5n5n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo5n5n,0.5)/dSumWLinearTwo5n5n)
+                   * dSpreadTwo5n5n*pow(pow(dSumWLinearTwo5n5n,2.)/(pow(dSumWLinearTwo5n5n,2.)-dSumWQuadraticTwo5n5n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(5),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n5n5n5n1n,0.5)/dSumWLinearFive6n5n5n5n1n)
+                   * dSpreadFive6n5n5n5n1n*pow(pow(dSumWLinearFive6n5n5n5n1n,2.)/(pow(dSumWLinearFive6n5n5n5n1n,2.)-dSumWQuadraticFive6n5n5n5n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,15)) 
+                   - f2pCorrelations->GetBinContent(5)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo5n5n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(5,122))
+                   - f2pCorrelations->GetBinContent(5)*f5pCorrelations->GetBinContent(68))
+                   / (dSumWLinearTwo5n5n*dSumWLinearFive6n5n5n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(5)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,122))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(68))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n5n5n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(68,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ f5pCumulants->SetBinContent(69,f5pCorrelations->GetBinContent(69));
+ {
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(69);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(69,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } 
+ f5pCumulants->SetBinContent(70,f5pCorrelations->GetBinContent(70)-2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(6));  
+ { 
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n4n2n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n4n2n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n4n2n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n6n6n4n2n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n6n6n4n2n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n6n6n4n2n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n4n2n = f3pCorrelations->GetBinError(9);
+  dSumWLinearFive6n6n6n4n2n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n6n6n4n2n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n6n6n4n2n = f5pCorrelations->GetBinError(70);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree6n4n2n,2.)>dSumWQuadraticThree6n4n2n &&
+     pow(dSumWLinearFive6n6n6n4n2n,2.)>dSumWQuadraticFive6n6n6n4n2n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(9),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree6n4n2n,0.5)/dSumWLinearThree6n4n2n)
+                   * dSpreadThree6n4n2n*pow(pow(dSumWLinearThree6n4n2n,2.)/(pow(dSumWLinearThree6n4n2n,2.)-dSumWQuadraticThree6n4n2n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n6n6n4n2n,0.5)/dSumWLinearFive6n6n6n4n2n)
+                   * dSpreadFive6n6n6n4n2n*pow(pow(dSumWLinearFive6n6n6n4n2n,2.)/(pow(dSumWLinearFive6n6n6n4n2n,2.)-dSumWQuadraticFive6n6n6n4n2n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(9)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,14)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(9))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(9)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,124))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(70))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n6n6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(14,124))
+                   - f3pCorrelations->GetBinContent(9)*f5pCorrelations->GetBinContent(70))
+                   / (dSumWLinearThree6n4n2n*dSumWLinearFive6n6n6n4n2n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(70,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+
+
+
+
+
+ f5pCumulants->SetBinContent(71,f5pCorrelations->GetBinContent(71)-2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(6));  
+ { 
+  Double_t dSumWLinearTwo6n6n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticTwo6n6n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadTwo6n6n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearThree6n5n1n = 0.; // sum of linear event weights for <2>
+  Double_t dSumWQuadraticThree6n5n1n = 0.; // sum of quadratic event weights <2>
+  Double_t dSpreadThree6n5n1n = 0.; // weighted and biased estimator for sigma of <2>
+  Double_t dSumWLinearFive6n6n6n5n1n = 0.; // sum of linear event weights for <4>
+  Double_t dSumWQuadraticFive6n6n6n5n1n = 0.; // sum of quadratic event weights <4>
+  Double_t dSpreadFive6n6n6n5n1n = 0.; // weighted and biased estimator for sigma of <4>
+  dSumWLinearTwo6n6n = fMixedHarmonicEventWeights[0]->GetBinContent(2);
+  dSumWQuadraticTwo6n6n = fMixedHarmonicEventWeights[1]->GetBinContent(2);
+  dSpreadTwo6n6n = f2pCorrelations->GetBinError(6);
+  dSumWLinearThree6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(3);
+  dSumWQuadraticThree6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(3);
+  dSpreadThree6n5n1n = f3pCorrelations->GetBinError(10);
+  dSumWLinearFive6n6n6n5n1n = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadraticFive6n6n6n5n1n = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpreadFive6n6n6n5n1n = f5pCorrelations->GetBinError(71);
+  if(pow(dSumWLinearTwo6n6n,2.)>dSumWQuadraticTwo6n6n &&
+     pow(dSumWLinearThree6n5n1n,2.)>dSumWQuadraticThree6n5n1n &&
+     pow(dSumWLinearFive6n6n6n5n1n,2.)>dSumWQuadraticFive6n6n6n5n1n)
+  {
+   Double_t dError = 4.*pow(f3pCorrelations->GetBinContent(10),2.)
+                   * pow((pow(dSumWQuadraticTwo6n6n,0.5)/dSumWLinearTwo6n6n)
+                   * dSpreadTwo6n6n*pow(pow(dSumWLinearTwo6n6n,2.)/(pow(dSumWLinearTwo6n6n,2.)-dSumWQuadraticTwo6n6n),0.5),2.)
+                   + 4.*pow(f2pCorrelations->GetBinContent(6),2.)
+                   * pow((pow(dSumWQuadraticThree6n5n1n,0.5)/dSumWLinearThree6n5n1n)
+                   * dSpreadThree6n5n1n*pow(pow(dSumWLinearThree6n5n1n,2.)/(pow(dSumWLinearThree6n5n1n,2.)-dSumWQuadraticThree6n5n1n),0.5),2.)
+                   + pow((pow(dSumWQuadraticFive6n6n6n5n1n,0.5)/dSumWLinearFive6n6n6n5n1n)
+                   * dSpreadFive6n6n6n5n1n*pow(pow(dSumWLinearFive6n6n6n5n1n,2.)/(pow(dSumWLinearFive6n6n6n5n1n,2.)-dSumWQuadraticFive6n6n6n5n1n),0.5),2.)
+                   + 4.*2.*f3pCorrelations->GetBinContent(10)*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,15)) 
+                   - f2pCorrelations->GetBinContent(6)*f3pCorrelations->GetBinContent(10))
+                   / (dSumWLinearTwo6n6n*dSumWLinearThree6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,3)))
+                   - 2.*2.*f3pCorrelations->GetBinContent(10)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(6,125))
+                   - f2pCorrelations->GetBinContent(6)*f5pCorrelations->GetBinContent(71))
+                   / (dSumWLinearTwo6n6n*dSumWLinearFive6n6n6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(2,5)))
+                   - 2.*2.*f2pCorrelations->GetBinContent(6)
+                   * fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)) 
+                   * (fMixedHarmonicProductOfCorrelations->GetBinContent(fMixedHarmonicProductOfCorrelations->GetBin(15,125))
+                   - f3pCorrelations->GetBinContent(10)*f5pCorrelations->GetBinContent(71))
+                   / (dSumWLinearThree6n5n1n*dSumWLinearFive6n6n6n5n1n-fMixedHarmonicProductOfEventWeights->GetBinContent(fMixedHarmonicProductOfEventWeights->GetBin(3,5)));
+   if(dError>0.)
+   {
+    f5pCumulants->SetBinError(71,pow(dError,0.5)); 
+   }
+  } // end of if(...)
+ } // end of {
+ // d3) "Four distinct harmonics":
+ for(Int_t b=73;b<=83;b++)
+ {
+  f5pCumulants->SetBinContent(b,f5pCorrelations->GetBinContent(b));
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=73;b<=83;b++)
+ // d4) "Five distinct harmonics":
+ for(Int_t b=85;b<=87;b++)
+ {
+  f5pCumulants->SetBinContent(b,f5pCorrelations->GetBinContent(b));
+  Double_t dSumWLinear = 0.; // sum of linear event weights
+  Double_t dSumWQuadratic = 0.; // sum of quadratic event weights
+  Double_t dSpread = 0.; // weighted and biased estimator for sigma
+  Double_t dError = 0.; // weighted and unbiased estimator for sigma
+  dSumWLinear = fMixedHarmonicEventWeights[0]->GetBinContent(5);
+  dSumWQuadratic = fMixedHarmonicEventWeights[1]->GetBinContent(5);
+  dSpread = f5pCorrelations->GetBinError(b);
+  if(pow(dSumWLinear,2.)>dSumWQuadratic)
+  {
+   dError = (pow(dSumWQuadratic,0.5)/dSumWLinear)*dSpread*pow(pow(dSumWLinear,2.)/(pow(dSumWLinear,2.)-dSumWQuadratic),0.5);
+   f5pCumulants->SetBinError(b,dError); 
+  } // end of if(pow(dSumWLinear,2.)>dSumWQuadratic)
+ } // end of for(Int_t b=85;b<=87;b++)
+
+} // end of void AliFlowAnalysisWithQCumulants::CalculateCumulantsMixedHarmonics()
+
+//===================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEventSimple *anEvent)
 {
@@ -3830,7 +12761,7 @@ void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEvent
  
 } // end of void AliFlowAnalysisWithQCumulants::StorePhiDistributionForOneEvent(AliFlowEventSimple *anEvent)
 
-//================================================================================================================================
+//===================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 {
@@ -3866,7 +12797,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrectionTermsForNUA()
@@ -4040,7 +12971,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrectionTermsForN
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrectionTermsForNUA()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
 {
@@ -4173,7 +13104,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
   
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
 {
@@ -4867,7 +13798,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsIntFlow() 
 {
@@ -4977,7 +13908,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsIntFlow()
                                                                                                                            
 } // end of AliFlowAnalysisWithQCumulants::FinalizeCorrelationsIntFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FillAverageMultiplicities(Int_t nRP)
 {
@@ -5010,7 +13941,7 @@ void AliFlowAnalysisWithQCumulants::FillAverageMultiplicities(Int_t nRP)
  
 } // end of AliFlowAnalysisWithQCumulants::FillAverageMultiplicities(nRP)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
 { 
@@ -5680,7 +14611,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelationsUsingParticleWei
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelationsUsingParticleWeights()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
 {
@@ -5735,7 +14666,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
 
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
 {
@@ -5926,7 +14857,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
     
 } // end of AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, TString ptOrEta)
 {
@@ -5997,7 +14928,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, TSt
     
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, Bool_t useParticleWeights, TString eventWeights); 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCumulants(TString type)
 {
@@ -6036,7 +14967,7 @@ void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCumulants(TString type)
  
 } // end of void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCumulants(TString type)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFlow(TString type)
 {
@@ -6204,7 +15135,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
            
 } // end of AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFlow(TString type)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 {
@@ -6232,7 +15163,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
  
 } // end of void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::InitializeArraysForVarious()
 {
@@ -6245,7 +15176,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForVarious()
    
 } //  end of void AliFlowAnalysisWithQCumulants::InitializeArraysForVarious()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
 {
@@ -6262,6 +15193,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
  fDistributionsFlags->SetMarkerStyle(25);
  fDistributionsFlags->SetLabelSize(0.05);
  fDistributionsFlags->SetLabelOffset(0.02,"Y");
+ fDistributionsFlags->SetStats(kFALSE);
  fDistributionsFlags->GetXaxis()->SetBinLabel(1,"Store or not?");
  fDistributionsFlags->GetXaxis()->SetBinLabel(2,"<2>_{min}");
  fDistributionsFlags->GetXaxis()->SetBinLabel(3,"<2>_{max}");
@@ -6288,7 +15220,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
  
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForDistributions()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForVarious()
 {
@@ -6305,7 +15237,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForVarious()
  
 } // end of void AliFlowAnalysisWithQCumulants::BookEverythingForVarious()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
 {
@@ -6327,7 +15259,7 @@ void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
      
 } // end of void AliFlowAnalysisWithQCumulants::StoreFlagsForDistributions()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 {
@@ -6355,7 +15287,7 @@ void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreDistributionsOfCorrelations()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
 {
@@ -6365,7 +15297,9 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  //  c) Book and nest list for particle weights;
  //  d) Book and nest list for distributions;
  //  e) Book and nest list for various unclassified objects; 
- //  f) Book and nest list for nested loops.
+ //  f) Book and nest list for other differential correlators;
+ //  g) Book and nest list for nested loops;
+ //  h) Book and nest lists for mixed harmonics.
  
  // a) Book and nest all lists for integrated flow:
  //  Base list for integrated flow:
@@ -6426,10 +15360,32 @@ void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
  fNestedLoopsList->SetName("Nested Loops");
  fNestedLoopsList->SetOwner(kTRUE);
  fHistList->Add(fNestedLoopsList);
- 
+
+ // h) Book and nest lists for mixed harmonics:
+ //  Base list for mixed harmonics:
+ fMixedHarmonicsList = new TList();
+ fMixedHarmonicsList->SetName("Mixed Harmonics");
+ fMixedHarmonicsList->SetOwner(kTRUE);
+ fHistList->Add(fMixedHarmonicsList);
+ //  List holding profiles: 
+ fMixedHarmonicsProfiles = new TList();
+ fMixedHarmonicsProfiles->SetName("Profiles");
+ fMixedHarmonicsProfiles->SetOwner(kTRUE);
+ if(fCalculateMixedHarmonics){fMixedHarmonicsList->Add(fMixedHarmonicsProfiles);}
+ //  List holding histograms with results:
+ fMixedHarmonicsResults = new TList();
+ fMixedHarmonicsResults->SetName("Results");
+ fMixedHarmonicsResults->SetOwner(kTRUE);
+ if(fCalculateMixedHarmonics){fMixedHarmonicsList->Add(fMixedHarmonicsResults);}
+ //  List holding objects for statistical error propagation of mixed harmonics:
+ fMixedHarmonicsErrorPropagation = new TList();
+ fMixedHarmonicsErrorPropagation->SetName("Error Propagation");
+ fMixedHarmonicsErrorPropagation->SetOwner(kTRUE);
+ if(fCalculateMixedHarmonics){fMixedHarmonicsList->Add(fMixedHarmonicsErrorPropagation);}
+
 } // end of void AliFlowAnalysisWithQCumulants::BookAndNestAllLists()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookAndNestListsForDifferentialFlow()
 {
@@ -6542,7 +15498,7 @@ void AliFlowAnalysisWithQCumulants::BookAndNestListsForDifferentialFlow()
   
 } // end of void AliFlowAnalysisWithQCumulants::BookAndNestListsForDifferentialFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
 {
@@ -6626,7 +15582,7 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
  
 } // end of void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type, Bool_t useParticleWeights, TString eventWeights, Bool_t correctedForNUA)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CommonConstants(TString method)
 {
@@ -6701,7 +15657,7 @@ void AliFlowAnalysisWithQCumulants::CommonConstants(TString method)
 
 } // end of void AliFlowAnalysisWithQCumulants::CommonConstants(TString method)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 {
@@ -6719,7 +15675,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
  
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 {
@@ -6742,7 +15698,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
   
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
 {
@@ -6761,7 +15717,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
   
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 {
@@ -6791,7 +15747,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeightsNUA()
 {
@@ -6881,7 +15837,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeightsNU
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowIntFlowSumOfProductOfEventWeightsNUA()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, TString ptOrEta)
 {
@@ -7095,7 +16051,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, 
    
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, TString ptOrEta);
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateOtherDiffCorrelators(TString type, TString ptOrEta)
 {
@@ -7252,7 +16208,7 @@ void AliFlowAnalysisWithQCumulants::CalculateOtherDiffCorrelators(TString type, 
  
 } // end of void AliFlowAnalysisWithQCumulants::CalculateOtherDiffCorrelators(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCorrelations(TString type)
 {
@@ -7410,7 +16366,7 @@ void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCorrelations(TString type
       
 } // end of AliFlowAnalysisWithQCumulants::Calculate2DDiffFlowCorrelations(TString type)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfEventWeights(TString type, TString ptOrEta)
 {
@@ -7515,7 +16471,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfEventWeights(TString t
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfEventWeights()
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta)
@@ -7654,7 +16610,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfProductOfEventWeights(
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
 {
@@ -7758,7 +16714,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TS
  
 } // end of void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta)
 {
@@ -7903,7 +16859,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowProductOfCorrelations(TStri
      
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
     
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, TString ptOrEta) // to be improved (reimplemented)
 {
@@ -8113,7 +17069,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOrEta)
 {
@@ -8238,7 +17194,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t useParticleWeights)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlow(TString type)
 {
@@ -8286,7 +17242,7 @@ void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlow(TString type)
  
 } // end of void AliFlowAnalysisWithQCumulants::Calculate2DDiffFlow(TString type)  
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 {
@@ -8301,13 +17257,13 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  // particle weights used or not:
  fIntFlowFlags->Fill(0.5,(Int_t)fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights);
  // which event weights were used:
- if(strcmp(fMultiplicityWeight->Data(),"combinations"))
+ if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
  {
   fIntFlowFlags->Fill(1.5,0); // 0 = "combinations" (default)
- } else if(strcmp(fMultiplicityWeight->Data(),"unit"))
+ } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
    {
     fIntFlowFlags->Fill(1.5,1); // 1 = "unit"   
-   } else if(strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
      {
       fIntFlowFlags->Fill(1.5,2); // 2 = "multiplicity"        
      } 
@@ -8326,7 +17282,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(14.5,(Int_t)fCalculateAllCorrelationsVsM);  
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
 {
@@ -8347,7 +17303,37 @@ void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
      
 } // end of void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
 
-//================================================================================================================================
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::StoreMixedHarmonicsFlags()
+{
+ // Store all flags for mixed harmonics in profile fMixedHarmonicsFlags.
+ 
+ if(!fMixedHarmonicsFlags)
+ {
+  cout<<"WARNING: fMixedHarmonicsFlags is NULL in AFAWQC::SMHF() !!!!"<<endl;
+  exit(0);
+ } 
+
+ fMixedHarmonicsFlags->Fill(0.5,(Int_t)fCalculateMixedHarmonics);
+ fMixedHarmonicsFlags->Fill(1.5,(Int_t)fHarmonic);
+ fMixedHarmonicsFlags->Fill(2.5,(Int_t)fCalculateMixedHarmonicsVsM);
+ // Which multiplicity weight was used?:
+
+ if(!strcmp(fMultiplicityWeight->Data(),"combinations"))
+ {
+  fMixedHarmonicsFlags->Fill(3.5,0); // 0 = "combinations" (default)
+ } else if(!strcmp(fMultiplicityWeight->Data(),"unit"))
+   {
+    fMixedHarmonicsFlags->Fill(3.5,1); // 1 = "unit"   
+   } else if(!strcmp(fMultiplicityWeight->Data(),"multiplicity"))
+     {
+      fMixedHarmonicsFlags->Fill(3.5,2); // 2 = "multiplicity"        
+     } 
+
+} // end of void AliFlowAnalysisWithQCumulants::StoreMixedHarmonicsFlags()
+
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms() 
 {
@@ -8415,7 +17401,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms()
        
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms() 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms() 
 {
@@ -8437,7 +17423,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms()
  }
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms(); 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms() 
 {
@@ -8991,7 +17977,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms()
     
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersFor2DDiffFlowHistograms()
 {
@@ -9097,7 +18083,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersFor2DDiffFlowHistograms()
   
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersFor2DDiffFlowHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForOtherDiffCorrelators()
 {
@@ -9148,7 +18134,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForOtherDiffCorrelators()
   
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForOtherDiffCorrelators()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForDiffFlowHistograms()
 {
@@ -9601,7 +18587,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForDiffFlowHistograms()
 
 } // end void AliFlowAnalysisWithQCumulants::GetPointersForDiffFlowHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingFor2DDifferentialFlow()
 {
@@ -9681,7 +18667,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingFor2DDifferentialFlow()
 
 } // void AliFlowAnalysisWithQCumulants::BookEverythingFor2DDifferentialFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
 {
@@ -9700,6 +18686,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  fDiffFlowFlags->SetMarkerStyle(25);
  fDiffFlowFlags->SetLabelSize(0.04,"X");
  fDiffFlowFlags->SetLabelOffset(0.02,"Y");
+ fDiffFlowFlags->SetStats(kFALSE);
  fDiffFlowFlags->GetXaxis()->SetBinLabel(1,"Calculate diff. flow"); 
  fDiffFlowFlags->GetXaxis()->SetBinLabel(2,"Particle weights");
  fDiffFlowFlags->GetXaxis()->SetBinLabel(3,"Event weights");
@@ -9998,7 +18985,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
           
 } // end of AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
 {
@@ -10275,7 +19262,7 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
      
 } // end of void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
  
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUAIntFlow() 
 {
@@ -10326,7 +19313,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUAIntFlow()
                                                                                                                                                                                                
 } // end of void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUAIntFlow()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
 {
@@ -10404,6 +19391,21 @@ void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
        exit(0);
       }
    } // end of for(Int_t sc=0;sc<2;sc++) 
+   // Mixed harmonics:
+   if(fCalculateMixedHarmonics)
+   {
+    TString mixedHarmonicsNestedLoopsName = "fMixedHarmonicsNestedLoops";
+    mixedHarmonicsNestedLoopsName += fAnalysisLabel->Data();
+    TProfile *mixedHarmonicsNestedLoops = dynamic_cast<TProfile*>(nestedLoopsList->FindObject(mixedHarmonicsNestedLoopsName.Data()));
+    if(mixedHarmonicsNestedLoops) 
+    { 
+     this->SetMixedHarmonicsNestedLoops(mixedHarmonicsNestedLoops);
+    } else
+      {
+       cout<<"WARNING: mixedHarmonicsNestedLoops is NULL in AFAWQC::GPFNLH() !!!!"<<endl;
+       exit(0);
+      }
+   } // end of if(fCalculateMixedHarmonics)
   } // end of if(bEvaluateIntFlowNestedLoops)
     
   // nested loops relevant for differential flow:  
@@ -10508,7 +19510,250 @@ void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
 
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
 
-//================================================================================================================================
+//=======================================================================================================================
+
+void AliFlowAnalysisWithQCumulants::GetPointersForMixedHarmonicsHistograms()
+{
+ // Get pointers to all objects relevant for mixed harmonics.
+   
+ // a) Get pointer to base list for mixed harmonics;
+ // b) Get pointer to TProfile fMixedHarmonicsFlags holding all flags for mixed harmonics;
+ // c) Get pointer to list fMixedHarmonicsProfiles and pointers to all objects that she holds; 
+ // d) Get pointer to list fMixedHarmonicsResults and pointers to all objects that she holds;
+ // e) Get pointer to list fMixedHarmonicsErrorPropagation and pointers to all objects that she holds.
+
+ // a) Get pointer to base list for mixed harmonics:
+ TList *mixedHarmonicsList = dynamic_cast<TList*>(fHistList->FindObject("Mixed Harmonics"));
+ if(mixedHarmonicsList) 
+ {
+  this->SetMixedHarmonicsList(mixedHarmonicsList);
+ } else
+   {
+    cout<<"WARNING: mixedHarmonicsList is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+
+ // b) Get pointer to TProfile fMixedHarmonicsFlags holding all flags for mixed harmonics:
+ TString mixedHarmonicsFlagsName = "fMixedHarmonicsFlags";
+ mixedHarmonicsFlagsName += fAnalysisLabel->Data();
+ TProfile *mixedHarmonicsFlags = dynamic_cast<TProfile*>
+                                 (mixedHarmonicsList->FindObject(mixedHarmonicsFlagsName.Data()));
+ if(mixedHarmonicsFlags)
+ {
+  this->SetMixedHarmonicsFlags(mixedHarmonicsFlags);  
+  fCalculateMixedHarmonics = (Bool_t)mixedHarmonicsFlags->GetBinContent(1); 
+  fCalculateMixedHarmonicsVsM = (Bool_t)mixedHarmonicsFlags->GetBinContent(3); 
+ } else 
+   {
+    cout<<"WARNING: mixedHarmonicsFlags is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+  
+ if(!fCalculateMixedHarmonics){return;}
+
+ // c) Get pointer to list fMixedHarmonicsProfiles and pointers to all objects that she holds:
+ TList *mixedHarmonicsProfiles = NULL;
+ mixedHarmonicsProfiles = dynamic_cast<TList*>(mixedHarmonicsList->FindObject("Profiles"));
+ if(mixedHarmonicsProfiles)  
+ {
+  // 2p:
+  TString s2pCorrelationsName = "f2pCorrelations";
+  s2pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p2pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s2pCorrelationsName.Data()));
+  if(p2pCorrelations) 
+  {
+   this->Set2pCorrelations(p2pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p2pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 3p:
+  TString s3pCorrelationsName = "f3pCorrelations";
+  s3pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p3pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s3pCorrelationsName.Data()));
+  if(p3pCorrelations) 
+  {
+   this->Set3pCorrelations(p3pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p3pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 4p:
+  TString s4pCorrelationsName = "f4pCorrelations";
+  s4pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p4pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s4pCorrelationsName.Data()));
+  if(p4pCorrelations) 
+  {
+   this->Set4pCorrelations(p4pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p4pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 5p:
+  TString s5pCorrelationsName = "f5pCorrelations";
+  s5pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p5pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s5pCorrelationsName.Data()));
+  if(p5pCorrelations) 
+  {
+   this->Set5pCorrelations(p5pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p5pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  /* TBI not needed for the time being
+  // 6p:
+  TString s6pCorrelationsName = "f6pCorrelations";
+  s6pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p6pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s6pCorrelationsName.Data()));
+  if(p6pCorrelations) 
+  {
+   this->Set6pCorrelations(p6pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p6pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 7p:
+  TString s7pCorrelationsName = "f7pCorrelations";
+  s7pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p7pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s7pCorrelationsName.Data()));
+  if(p7pCorrelations) 
+  {
+   this->Set7pCorrelations(p7pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p7pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 8p:
+  TString s8pCorrelationsName = "f8pCorrelations";
+  s8pCorrelationsName += fAnalysisLabel->Data();
+  TProfile *p8pCorrelations = dynamic_cast<TProfile*>(mixedHarmonicsProfiles->FindObject(s8pCorrelationsName.Data()));
+  if(p8pCorrelations) 
+  {
+   this->Set8pCorrelations(p8pCorrelations);
+  } else 
+    {
+     cout<<"WARNING: p8pCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    }
+ */
+ } else // to if(mixedHarmonicsProfiles)
+   {
+    cout<<"WARNING: mixedHarmonicsProfiles is NULL in FAWQC::GPFMHH() !!!!"<<endl;
+    exit(0);
+   }
+
+ // d) Get pointer to list fMixedHarmonicsResults and pointers to all objects that she holds.
+ TList *mixedHarmonicsResults = NULL;
+ mixedHarmonicsResults = dynamic_cast<TList*>(mixedHarmonicsList->FindObject("Results"));
+ if(mixedHarmonicsResults)  
+ {
+  // 2p:
+  TString s2pCumulantsName = "f2pCumulants";
+  s2pCumulantsName += fAnalysisLabel->Data();
+  TH1D *p2pCumulants = dynamic_cast<TH1D*>(mixedHarmonicsResults->FindObject(s2pCumulantsName.Data()));
+  if(p2pCumulants) 
+  {
+   this->Set2pCumulants(p2pCumulants);
+  } else 
+    {
+     cout<<"WARNING: p2pCumulants is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 3p:
+  TString s3pCumulantsName = "f3pCumulants";
+  s3pCumulantsName += fAnalysisLabel->Data();
+  TH1D *p3pCumulants = dynamic_cast<TH1D*>(mixedHarmonicsResults->FindObject(s3pCumulantsName.Data()));
+  if(p3pCumulants) 
+  {
+   this->Set3pCumulants(p3pCumulants);
+  } else 
+    {
+     cout<<"WARNING: p3pCumulants is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 4p:
+  TString s4pCumulantsName = "f4pCumulants";
+  s4pCumulantsName += fAnalysisLabel->Data();
+  TH1D *p4pCumulants = dynamic_cast<TH1D*>(mixedHarmonicsResults->FindObject(s4pCumulantsName.Data()));
+  if(p4pCumulants) 
+  {
+   this->Set4pCumulants(p4pCumulants);
+  } else 
+    {
+     cout<<"WARNING: p4pCumulants is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  // 5p:
+  TString s5pCumulantsName = "f5pCumulants";
+  s5pCumulantsName += fAnalysisLabel->Data();
+  TH1D *p5pCumulants = dynamic_cast<TH1D*>(mixedHarmonicsResults->FindObject(s5pCumulantsName.Data()));
+  if(p5pCumulants) 
+  {
+   this->Set5pCumulants(p5pCumulants);
+  } else 
+    {
+     cout<<"WARNING: p5pCumulants is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+ } else // to if(mixedHarmonicsResults)
+   {
+    cout<<"WARNING: mixedHarmonicsResults is NULL in FAWQC::GPFMHH() !!!!"<<endl;
+   }
+
+ // e) Get pointer to list fMixedHarmonicsErrorPropagation and pointers to all objects that she holds:
+ TList *mixedHarmonicsErrorPropagation = NULL;
+ mixedHarmonicsErrorPropagation = dynamic_cast<TList*>(mixedHarmonicsList->FindObject("Error Propagation"));
+ if(mixedHarmonicsErrorPropagation)  
+ {   
+  TString sMixedHarmonicEventWeightsName = "fMixedHarmonicEventWeights";
+  sMixedHarmonicEventWeightsName += fAnalysisLabel->Data();
+  TString powerFlag[2] = {"linear","quadratic"};
+  for(Int_t power=0;power<2;power++)
+  {
+   TH1D *hMixedHarmonicEventWeights = dynamic_cast<TH1D*>(mixedHarmonicsErrorPropagation->FindObject(Form("%s: %s",sMixedHarmonicEventWeightsName.Data(),powerFlag[power].Data())));
+   if(hMixedHarmonicEventWeights) 
+   {
+    this->SetMixedHarmonicEventWeights(hMixedHarmonicEventWeights,power);
+   } else 
+     {
+      cout<<"WARNING: hMixedHarmonicEventWeights is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
+      cout<<"power = "<<power<<endl;
+      exit(0);
+     }                                   
+  } // end of for(Int_t power=0;power<2;power++)
+  TString sMixedHarmonicProductOfEventWeightsName = "fMixedHarmonicProductOfEventWeights";
+  sMixedHarmonicProductOfEventWeightsName += fAnalysisLabel->Data();
+  TH2D *hMixedHarmonicProductOfEventWeights = dynamic_cast<TH2D*>(mixedHarmonicsErrorPropagation->FindObject(sMixedHarmonicProductOfEventWeightsName.Data()));
+  if(hMixedHarmonicProductOfEventWeights) 
+  {
+   this->SetMixedHarmonicProductOfEventWeights(hMixedHarmonicProductOfEventWeights);
+  } else 
+    {
+     cout<<"WARNING: hMixedHarmonicProductOfEventWeights is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+  TString sMixedHarmonicProductOfCorrelationsName = "fMixedHarmonicProductOfCorrelations";
+  sMixedHarmonicProductOfCorrelationsName += fAnalysisLabel->Data();
+  TProfile2D *hMixedHarmonicProductOfCorrelations = dynamic_cast<TProfile2D*>(mixedHarmonicsErrorPropagation->FindObject(sMixedHarmonicProductOfCorrelationsName.Data()));
+  if(hMixedHarmonicProductOfCorrelations) 
+  {
+   this->SetMixedHarmonicProductOfCorrelations(hMixedHarmonicProductOfCorrelations);
+  } else 
+    {
+     cout<<"WARNING: hMixedHarmonicProductOfCorrelations is NULL in AFAWQC::GPFMHH() !!!!"<<endl;
+     exit(0);
+    } 
+ } // end of if(mixedHarmonicsErrorPropagation) 
+ 
+} // end of void AliFlowAnalysisWithQCumulants::GetPointersForMixedHarmonicsHistograms()
+
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::StoreHarmonic()
 {
@@ -10525,7 +19770,7 @@ void AliFlowAnalysisWithQCumulants::StoreHarmonic()
  
 } // end of void AliFlowAnalysisWithQCumulants::StoreHarmonic()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta) // type = RP or POI 
 {
@@ -10708,7 +19953,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWe
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimple *anEvent)
 {
@@ -10738,7 +19983,7 @@ void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimp
  
 } // end of void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimple *anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::ResetEventByEventQuantities()
 {
@@ -10838,7 +20083,7 @@ void AliFlowAnalysisWithQCumulants::ResetEventByEventQuantities()
 
 } // end of void AliFlowAnalysisWithQCumulants::ResetEventByEventQuantities();
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta)
 {
@@ -11014,7 +20259,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTerms(T
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta)
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTerms(TString type, TString ptOrEta)
@@ -11191,7 +20436,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTerms(T
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTerms(TString type, TString ptOrEta)
 
-//==================================================================================================================================
+//=========================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUADiffFlow(TString type, TString ptOrEta)
 {
@@ -11237,7 +20482,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUADiffFlow(TStrin
 
 }// end of void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUADiffFlow(TString type, TString ptOrEta)
 
-//==================================================================================================================================
+//=========================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulantsCorrectedForNUA(TString type, TString ptOrEta)
 { 
@@ -11392,7 +20637,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectedForNUA(TString typ
   
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectedForNUA(TString type, TString ptOrEta); 
 
-//==================================================================================================================================
+//=========================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple * const anEvent)
 {
@@ -11827,9 +21072,308 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(A
 
 } // end of AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent)
 
+//================================================================================================================
 
-//==================================================================================================================================
+void AliFlowAnalysisWithQCumulants::EvaluateMixedHarmonicsWithNestedLoops(AliFlowEventSimple * const anEvent)
+{
+ // Evaluate with nested loops multi-particle correlations for mixed harmonics. 
+  
+ Int_t nPrim = anEvent->NumberOfTracks(); 
+ AliFlowTrackSimple *aftsTrack = NULL; 
+ Double_t phi1=0.;
+ Double_t phi2=0.; 
+ Double_t phi3=0.;
+ Double_t phi4=0.;
+ Double_t phi5=0.;
+ /*Double_t phi6=0.;
+ Double_t phi7=0.;
+ Double_t phi8=0.;*/ 
+ Int_t n = fHarmonic; 
+ Int_t eventNo = (Int_t)fAvMultiplicity->GetBinEntries(1); // TBI: is such casting safe in general?
+ Double_t dMult = (*fSpk)(0,0);
+ cout<<endl;
+ cout<<"Multiparticle correlations: Event number: "<<eventNo<<", multiplicity is "<<dMult<<endl;
+ if(dMult<2)
+ {
+  cout<<"... skipping this event (multiplicity too low) ..."<<endl;
+ } else if (dMult>fMaxAllowedMultiplicity)
+   {
+    cout<<"... skipping this event (multiplicity too high) ..."<<endl;
+   } else 
+     { 
+      cout<<"... evaluating nested loops (without using particle weights)..."<<endl;
+     } 
+ 
+ // 2-particle correlations:       
+ if(nPrim>=2 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi(); 
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    if(nPrim==2) cout<<i1<<" "<<i2<<"\r"<<flush;
+    // Fill the profile fMixedHarmonicsNestedLoops with 2-p correlations: 
+    fMixedHarmonicsNestedLoops->Fill(0.5,cos(1.*n*(phi1-phi2)),1.); // <cos(1n*(phi1-phi2))>
+    fMixedHarmonicsNestedLoops->Fill(1.5,cos(2.*n*(phi1-phi2)),1.); // <cos(2n*(phi1-phi2))>
+    fMixedHarmonicsNestedLoops->Fill(2.5,cos(3.*n*(phi1-phi2)),1.); // <cos(3n*(phi1-phi2))>
+    fMixedHarmonicsNestedLoops->Fill(3.5,cos(4.*n*(phi1-phi2)),1.); // <cos(4n*(phi1-phi2))>   
+    fMixedHarmonicsNestedLoops->Fill(4.5,cos(5.*n*(phi1-phi2)),1.); // <cos(5n*(phi1-phi2))>
+    fMixedHarmonicsNestedLoops->Fill(5.5,cos(6.*n*(phi1-phi2)),1.); // <cos(6n*(phi1-phi2))>   
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=2)
+ 
+ // 3-particle correlations:         
+ if(nPrim>=3 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     if(nPrim==3) cout<<i1<<" "<<i2<<" "<<i3<<"\r"<<flush;
+     // Fill the profile fMixedHarmonicsNestedLoops with 3-p correlations:  
+     fMixedHarmonicsNestedLoops->Fill( 6.5,cos(2.*n*phi1-n*(phi2+phi3)),1.);       // <3>_{2n|1n,1n}
+     fMixedHarmonicsNestedLoops->Fill( 7.5,cos(4.*n*phi1-2.*n*phi2-2.*n*phi3),1.); // <3>_{4n|2n,2n}
+     fMixedHarmonicsNestedLoops->Fill( 8.5,cos(6.*n*phi1-3.*n*phi2-3.*n*phi3),1.); // <3>_{6n|3n,3n}
+     fMixedHarmonicsNestedLoops->Fill(10.5,cos(3.*n*phi1-2.*n*phi2-n*phi3),1.);    // <3>_{3n|2n,1n}   
+     fMixedHarmonicsNestedLoops->Fill(11.5,cos(4.*n*phi1-3.*n*phi2-1.*n*phi3),1.); // <3>_{4n|3n,1n}
+     fMixedHarmonicsNestedLoops->Fill(12.5,cos(5.*n*phi1-3.*n*phi2-2.*n*phi3),1.); // <3>_{5n|3n,2n}
+     fMixedHarmonicsNestedLoops->Fill(13.5,cos(5.*n*phi1-4.*n*phi2-1.*n*phi3),1.); // <3>_{5n|4n,1n}
+     fMixedHarmonicsNestedLoops->Fill(14.5,cos(6.*n*phi1-4.*n*phi2-2.*n*phi3),1.); // <3>_{6n|4n,2n}     
+     fMixedHarmonicsNestedLoops->Fill(15.5,cos(6.*n*phi1-5.*n*phi2-1.*n*phi3),1.); // <3>_{6n|5n,1n}
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=3)
 
+ // 4-particle correlations:
+ if(nPrim>=4 && nPrim<=fMaxAllowedMultiplicity)
+ {       
+  for(Int_t i1=0;i1<nPrim;i1++)
+  { 
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1=aftsTrack->Phi();
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     for(Int_t i4=0;i4<nPrim;i4++)
+     {
+      if(i4==i1||i4==i2||i4==i3)continue;
+      aftsTrack=anEvent->GetTrack(i4);
+      if(!(aftsTrack->InRPSelection())) continue;
+      phi4=aftsTrack->Phi();
+      if(nPrim==4) cout<<i1<<" "<<i2<<" "<<i3<<" "<<i4<<"\r"<<flush;
+      // fill the profile with 4-p correlations:   
+      fMixedHarmonicsNestedLoops->Fill(16.5,cos(1.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{1n,1n|1n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(17.5,cos(2.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{2n,2n|2n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(18.5,cos(3.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{3n,3n|3n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(19.5,cos(4.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{4n,4n|4n,4n} 
+      fMixedHarmonicsNestedLoops->Fill(20.5,cos(5.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{5n,5n|5n,5n} 
+      fMixedHarmonicsNestedLoops->Fill(21.5,cos(6.*n*(phi1+phi2-phi3-phi4)),1.); // <4>_{6n,6n|6n,6n} 
+      fMixedHarmonicsNestedLoops->Fill(23.5,cos(n*(2.*phi1+1.*phi2-2.*phi3-1.*phi4)),1.); // <4>_{2n,1n|2n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(24.5,cos(n*(3.*phi1+1.*phi2-3.*phi3-1.*phi4)),1.); // <4>_{3n,1n|3n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(25.5,cos(n*(3.*phi1+2.*phi2-3.*phi3-2.*phi4)),1.); // <4>_{3n,2n|3n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(26.5,cos(n*(4.*phi1+1.*phi2-4.*phi3-1.*phi4)),1.); // <4>_{4n,1n|4n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(27.5,cos(n*(4.*phi1+2.*phi2-4.*phi3-2.*phi4)),1.); // <4>_{4n,2n|4n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(28.5,cos(n*(4.*phi1+3.*phi2-4.*phi3-3.*phi4)),1.); // <4>_{4n,3n|4n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(29.5,cos(n*(5.*phi1+1.*phi2-5.*phi3-1.*phi4)),1.); // <4>_{5n,1n|5n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(30.5,cos(n*(5.*phi1+2.*phi2-5.*phi3-2.*phi4)),1.); // <4>_{5n,2n|5n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(31.5,cos(n*(5.*phi1+3.*phi2-5.*phi3-3.*phi4)),1.); // <4>_{5n,3n|5n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(32.5,cos(n*(5.*phi1+4.*phi2-5.*phi3-4.*phi4)),1.); // <4>_{5n,4n|5n,4n} 
+      fMixedHarmonicsNestedLoops->Fill(33.5,cos(n*(6.*phi1+1.*phi2-6.*phi3-1.*phi4)),1.); // <4>_{6n,1n|6n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(34.5,cos(n*(6.*phi1+2.*phi2-6.*phi3-2.*phi4)),1.); // <4>_{6n,2n|6n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(35.5,cos(n*(6.*phi1+3.*phi2-6.*phi3-3.*phi4)),1.); // <4>_{6n,3n|6n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(36.5,cos(n*(6.*phi1+4.*phi2-6.*phi3-4.*phi4)),1.); // <4>_{6n,4n|6n,4n} 
+      fMixedHarmonicsNestedLoops->Fill(37.5,cos(n*(6.*phi1+5.*phi2-6.*phi3-5.*phi4)),1.); // <4>_{6n,5n|6n,5n} 
+      fMixedHarmonicsNestedLoops->Fill(39.5,cos(n*(3.*phi1-1.*phi2-1.*phi3-1.*phi4)),1.); // <4>_{3n|1n,1n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(40.5,cos(n*(6.*phi1-2.*phi2-2.*phi3-2.*phi4)),1.); // <4>_{6n|2n,2n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(42.5,cos(n*(3.*phi1+1.*phi2-2.*phi3-2.*phi4)),1.); // <4>_{3n,1n|2n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(43.5,cos(n*(4.*phi1-2.*phi2-1.*phi3-1.*phi4)),1.); // <4>_{4n|2n,1n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(44.5,cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4)),1.); // <4>_{4n,2n|3n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(45.5,cos(n*(5.*phi1-2.*phi2-2.*phi3-1.*phi4)),1.); // <4>_{5n|2n,2n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(46.5,cos(n*(5.*phi1-3.*phi2-1.*phi3-1.*phi4)),1.); // <4>_{5n|3n,1n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(47.5,cos(n*(5.*phi1+1.*phi2-3.*phi3-3.*phi4)),1.); // <4>_{5n,1n|3n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(48.5,cos(n*(5.*phi1+3.*phi2-4.*phi3-4.*phi4)),1.); // <4>_{5n,3n|4n,4n} 
+      fMixedHarmonicsNestedLoops->Fill(49.5,cos(n*(6.*phi1-4.*phi2-1.*phi3-1.*phi4)),1.); // <4>_{6n|4n,1n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(50.5,cos(n*(6.*phi1+2.*phi2-4.*phi3-4.*phi4)),1.); // <4>_{6n,2n|4n,4n} 
+      fMixedHarmonicsNestedLoops->Fill(51.5,cos(n*(6.*phi1+4.*phi2-5.*phi3-5.*phi4)),1.); // <4>_{6n,4n|5n,5n} 
+      fMixedHarmonicsNestedLoops->Fill(53.5,cos(n*(4.*phi1+1.*phi2-3.*phi3-2.*phi4)),1.); // <4>_{4n,1n|3n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(54.5,cos(n*(5.*phi1+1.*phi2-4.*phi3-2.*phi4)),1.); // <4>_{5n,1n|4n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(55.5,cos(n*(5.*phi1+2.*phi2-4.*phi3-3.*phi4)),1.); // <4>_{5n,2n|4n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(56.5,cos(n*(6.*phi1+1.*phi2-4.*phi3-3.*phi4)),1.); // <4>_{6n,1n|4n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(57.5,cos(n*(6.*phi1+1.*phi2-5.*phi3-2.*phi4)),1.); // <4>_{6n,1n|5n,2n} 
+      fMixedHarmonicsNestedLoops->Fill(58.5,cos(n*(6.*phi1-3.*phi2-2.*phi3-1.*phi4)),1.); // <4>_{6n|3n,2n,1n} 
+      fMixedHarmonicsNestedLoops->Fill(59.5,cos(n*(6.*phi1+2.*phi2-5.*phi3-3.*phi4)),1.); // <4>_{6n,2n|5n,3n} 
+      fMixedHarmonicsNestedLoops->Fill(60.5,cos(n*(6.*phi1+3.*phi2-5.*phi3-4.*phi4)),1.); // <4>_{6n,3n|5n,4n} 
+     } // end of for(Int_t i4=0;i4<nPrim;i4++) 
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=)
+
+ // 5-particle correlations:      
+ if(nPrim>=5 && nPrim<=fMaxAllowedMultiplicity)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;  
+   phi1=aftsTrack->Phi();
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     for(Int_t i4=0;i4<nPrim;i4++)
+     {
+      if(i4==i1||i4==i2||i4==i3)continue;
+      aftsTrack=anEvent->GetTrack(i4);
+      if(!(aftsTrack->InRPSelection())) continue;
+      phi4=aftsTrack->Phi();
+      for(Int_t i5=0;i5<nPrim;i5++)
+      {
+       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+       aftsTrack=anEvent->GetTrack(i5);
+       if(!(aftsTrack->InRPSelection())) continue;
+       phi5=aftsTrack->Phi();
+       if(nPrim==5) cout<<i1<<" "<<i2<<" "<<i3<<" "<<i4<<" "<<i5<<"\r"<<flush;
+       // fill the profile with 5-p correlations:   
+       fMixedHarmonicsNestedLoops->Fill(61.5,cos(n*(3.*phi1+2.*phi2-3.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(3*phi1+2*phi2-3*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(62.5,cos(n*(4.*phi1+1.*phi2-2.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+1*phi2-2*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(63.5,cos(n*(4.*phi1+2.*phi2-3.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+2*phi2-3*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(64.5,cos(n*(4.*phi1+3.*phi2-3.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(4*phi1+3*phi2-3*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(65.5,cos(n*(4.*phi1+2.*phi2-4.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+2*phi2-4*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(66.5,cos(n*(4.*phi1+3.*phi2-4.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+3*phi2-4*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(67.5,cos(n*(5.*phi1+1.*phi2-3.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+1*phi2-3*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(68.5,cos(n*(5.*phi1+2.*phi2-5.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+2*phi2-5*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(69.5,cos(n*(5.*phi1+2.*phi2-4.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+2*phi2-4*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(70.5,cos(n*(5.*phi1+3.*phi2-4.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+3*phi2-4*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(71.5,cos(n*(5.*phi1+4.*phi2-4.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+4*phi2-4*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(72.5,cos(n*(5.*phi1+3.*phi2-5.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+3*phi2-5*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(73.5,cos(n*(5.*phi1+4.*phi2-5.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+4*phi2-5*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(74.5,cos(n*(5.*phi1+4.*phi2-5.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+4*phi2-5*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(75.5,cos(n*(6.*phi1+1.*phi2-3.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+1*phi2-3*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(76.5,cos(n*(6.*phi1+2.*phi2-3.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+2*phi2-3*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(77.5,cos(n*(6.*phi1+1.*phi2-4.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+1*phi2-4*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(78.5,cos(n*(6.*phi1+3.*phi2-4.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+3*phi2-4*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(79.5,cos(n*(6.*phi1+4.*phi2-4.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+4*phi2-4*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(80.5,cos(n*(6.*phi1+2.*phi2-5.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+2*phi2-5*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(81.5,cos(n*(6.*phi1+3.*phi2-5.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+3*phi2-5*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(82.5,cos(n*(6.*phi1+4.*phi2-5.*phi3-4.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+4*phi2-5*phi3-4*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(83.5,cos(n*(6.*phi1+5.*phi2-5.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+5*phi2-5*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(84.5,cos(n*(6.*phi1+2.*phi2-6.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+2*phi2-6*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(85.5,cos(n*(6.*phi1+3.*phi2-6.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+3*phi2-6*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(86.5,cos(n*(6.*phi1+4.*phi2-6.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+4*phi2-6*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(87.5,cos(n*(6.*phi1+4.*phi2-6.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+4*phi2-6*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(88.5,cos(n*(6.*phi1+5.*phi2-5.*phi3-4.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+5*phi2-5*phi3-4*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(89.5,cos(n*(6.*phi1+5.*phi2-6.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+5*phi2-6*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(90.5,cos(n*(6.*phi1+5.*phi2-6.*phi3-4.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+5*phi2-6*phi3-4*phi4-1*phi5))>
+       //fMixedHarmonicsNestedLoops->Fill(91.5,-44.,1.); // empty
+       fMixedHarmonicsNestedLoops->Fill(92.5,cos(n*(2.*phi1+1.*phi2-1.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(2*phi1+1*phi2-1*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(93.5,cos(n*(2.*phi1+2.*phi2-2.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(2*phi1+2*phi2-2*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(94.5,cos(n*(3.*phi1+3.*phi2-2.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(3*phi1+3*phi2-2*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(95.5,cos(n*(4.*phi1-1.*phi2-1.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(4*phi1-1*phi2-1*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(96.5,cos(n*(4.*phi1+2.*phi2-2.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(4*phi1+2*phi2-2*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(97.5,cos(n*(4.*phi1+4.*phi2-4.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(4*phi1+4*phi2-4*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(98.5,cos(n*(6.*phi1+3.*phi2-3.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+3*phi2-3*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(99.5,cos(n*(6.*phi1+6.*phi2-4.*phi3-4.*phi4-4.*phi5)),1.); // <cos(n(6*phi1+6*phi2-4*phi3-4*phi4-4*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(100.5,cos(n*(6.*phi1+6.*phi2-6.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+6*phi2-6*phi3-3*phi4-3*phi5))>
+       //fMixedHarmonicsNestedLoops->Fill(101.5,-44.,1.); // empty
+       fMixedHarmonicsNestedLoops->Fill(102.5,cos(n*(3.*phi1+1.*phi2-2.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(3*phi1+1*phi2-2*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(103.5,cos(n*(3.*phi1+2.*phi2-2.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(3*phi1+2*phi2-2*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(104.5,cos(n*(3.*phi1+3.*phi2-3.*phi3-2.*phi4-1.*phi5)),1.); // <cos(n(3*phi1+3*phi2-3*phi3-2*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(105.5,cos(n*(4.*phi1+1.*phi2-3.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+1*phi2-3*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(106.5,cos(n*(4.*phi1+1.*phi2+1.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(4*phi1+1*phi2+1*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(107.5,cos(n*(4.*phi1+3.*phi2-3.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+3*phi2-3*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(108.5,cos(n*(4.*phi1+4.*phi2-3.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(4*phi1+4*phi2-3*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(109.5,cos(n*(4.*phi1+4.*phi2-4.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(4*phi1+4*phi2-4*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(110.5,cos(n*(5.*phi1-2.*phi2-1.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(5*phi1-2*phi2-1*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(111.5,cos(n*(5.*phi1+1.*phi2-2.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+1*phi2-2*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(112.5,cos(n*(5.*phi1+2.*phi2-3.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+2*phi2-3*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(113.5,cos(n*(5.*phi1+3.*phi2-3.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+3*phi2-3*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(114.5,cos(n*(5.*phi1+1.*phi2-4.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+1*phi2-4*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(115.5,cos(n*(5.*phi1+4.*phi2-3.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(5*phi1+4*phi2-3*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(116.5,cos(n*(5.*phi1+4.*phi2-4.*phi3-4.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+4*phi2-4*phi3-4*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(117.5,cos(n*(5.*phi1+5.*phi2-4.*phi3-3.*phi4-3.*phi5)),1.); // <cos(n(5*phi1+5*phi2-4*phi3-3*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(118.5,cos(n*(5.*phi1+5.*phi2-4.*phi3-4.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+5*phi2-4*phi3-4*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(119.5,cos(n*(5.*phi1+5.*phi2-5.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+5*phi2-5*phi3-3*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(120.5,cos(n*(5.*phi1+5.*phi2-5.*phi3-4.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+5*phi2-5*phi3-4*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(121.5,cos(n*(6.*phi1-2.*phi2-2.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(6*phi1-2*phi2-2*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(122.5,cos(n*(6.*phi1-3.*phi2-1.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(6*phi1-3*phi2-1*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(123.5,cos(n*(6.*phi1+1.*phi2+1.*phi3-4.*phi4-4.*phi5)),1.); // <cos(n(6*phi1+1*phi2+1*phi3-4*phi4-4*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(124.5,cos(n*(6.*phi1+1.*phi2-5.*phi3-1.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+1*phi2-5*phi3-1*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(125.5,cos(n*(6.*phi1+2.*phi2-4.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+2*phi2-4*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(126.5,cos(n*(6.*phi1+4.*phi2-4.*phi3-4.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+4*phi2-4*phi3-4*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(127.5,cos(n*(6.*phi1+2.*phi2+2.*phi3-5.*phi4-5.*phi5)),1.); // <cos(n(6*phi1+2*phi2+2*phi3-5*phi4-5*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(128.5,cos(n*(6.*phi1+5.*phi2-5.*phi3-5.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+5*phi2-5*phi3-5*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(129.5,cos(n*(6.*phi1+6.*phi2-5.*phi3-5.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+6*phi2-5*phi3-5*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(130.5,cos(n*(6.*phi1+6.*phi2-6.*phi3-4.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+6*phi2-6*phi3-4*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(131.5,cos(n*(6.*phi1+6.*phi2-6.*phi3-5.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+6*phi2-6*phi3-5*phi4-1*phi5))> // TBI swap with the one above
+       //fMixedHarmonicsNestedLoops->Fill(132.5,-44.,1.); // empty
+       fMixedHarmonicsNestedLoops->Fill(133.5,cos(n*(5.*phi1+2.*phi2-3.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(5*phi1+2*phi2-3*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(134.5,cos(n*(5.*phi1+1.*phi2+1.*phi3-4.*phi4-3.*phi5)),1.); // <cos(n(5*phi1+1*phi2+1*phi3-4*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(135.5,cos(n*(5.*phi1+3.*phi2-4.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(5*phi1+3*phi2-4*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(136.5,cos(n*(5.*phi1+2.*phi2+1.*phi3-4.*phi4-4.*phi5)),1.); // <cos(n(5*phi1+2*phi2+1*phi3-4*phi4-4*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(137.5,cos(n*(6.*phi1+1.*phi2-3.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+1*phi2-3*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(138.5,cos(n*(6.*phi1+3.*phi2-4.*phi3-4.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+3*phi2-4*phi3-4*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(139.5,cos(n*(6.*phi1+1.*phi2+1.*phi3-5.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+1*phi2+1*phi3-5*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(140.5,cos(n*(6.*phi1+3.*phi2-5.*phi3-2.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+3*phi2-5*phi3-2*phi4-2*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(141.5,cos(n*(6.*phi1+5.*phi2-4.*phi3-4.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+5*phi2-4*phi3-4*phi4-3*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(142.5,cos(n*(6.*phi1+3.*phi2+1.*phi3-5.*phi4-5.*phi5)),1.); // <cos(n(6*phi1+3*phi2+1*phi3-5*phi4-5*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(143.5,cos(n*(6.*phi1+6.*phi2-5.*phi3-4.*phi4-3.*phi5)),1.); // <cos(n(6*phi1+6*phi2-5*phi3-4*phi4-3*phi5))>
+       //fMixedHarmonicsNestedLoops->Fill(144.5,-44.,1.); // empty
+       fMixedHarmonicsNestedLoops->Fill(145.5,cos(n*(6.*phi1+2.*phi2-4.*phi3-3.*phi4-1.*phi5)),1.); // <cos(n(6*phi1+2*phi2-4*phi3-3*phi4-1*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(146.5,cos(n*(6.*phi1+2.*phi2+1.*phi3-5.*phi4-4.*phi5)),1.); // <cos(n(6*phi1+2*phi2+1*phi3-5*phi4-4*phi5))>
+       fMixedHarmonicsNestedLoops->Fill(147.5,cos(n*(6.*phi1+4.*phi2-5.*phi3-3.*phi4-2.*phi5)),1.); // <cos(n(6*phi1+4*phi2-5*phi3-3*phi4-2*phi5))>
+      } // end of for(Int_t i5=0;i5<nPrim;i5++)
+     } // end of for(Int_t i4=0;i4<nPrim;i4++)  
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=5)
+
+ // QW44
+
+} // end of void AliFlowAnalysisWithQCumulants::EvaluateMixedHarmonicsWithNestedLoops(AliFlowEventSimple * const anEvent)
+
+//================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrelations()
 {
@@ -11866,10 +21410,65 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrelations()
   cout<<"from nested loops = "<<fIntFlowDirectCorrelations->GetBinContent(ci)<<endl;
   cout<<endl;
  }
-  
+
+ if(!fCalculateMixedHarmonics){return;}
+
+ cout<<endl;
+ cout<<endl;
+ cout<<"   *****************************************"<<endl;
+ cout<<"   **** cross-checking the correlations ****"<<endl;
+ cout<<"   ****       for mixed harmonics       ****"<<endl;
+ cout<<"   *****************************************"<<endl;
+ cout<<endl;
+ cout<<endl;
+
+ // 2-p:
+ for(Int_t ci=1;ci<=6;ci++)
+ {
+  cout<<(f2pCorrelations->GetXaxis())->GetBinLabel(ci)<<":"<<endl;
+  cout<<"from Q-vectors    = "<<f2pCorrelations->GetBinContent(ci)<<endl; 
+  cout<<"from nested loops = "<<fMixedHarmonicsNestedLoops->GetBinContent(ci)<<endl;
+  cout<<endl;
+ } // end of for(Int_t ci=1;ci<=6;ci++)
+
+ // 3-p:
+ for(Int_t ci=1;ci<=10;ci++)
+ {
+  if(4==ci){continue;} // skipping the empty bins
+  cout<<(f3pCorrelations->GetXaxis())->GetBinLabel(ci)<<":"<<endl;
+  cout<<"from Q-vectors    = "<<f3pCorrelations->GetBinContent(ci)<<endl; 
+  cout<<"from nested loops = "<<fMixedHarmonicsNestedLoops->GetBinContent(ci+6)<<endl;
+  cout<<endl;
+ } // end of for(Int_t ci=1;ci<=10;ci++)
+
+ // 4-p:
+ for(Int_t ci=1;ci<=45;ci++)
+ {
+  if(7==ci||23==ci||26==ci||37==ci){continue;} // skipping the empty bins
+  cout<<(f4pCorrelations->GetXaxis())->GetBinLabel(ci)<<":"<<endl;
+  cout<<"from Q-vectors    = "<<f4pCorrelations->GetBinContent(ci)<<endl; 
+  cout<<"from nested loops = "<<fMixedHarmonicsNestedLoops->GetBinContent(ci+6+10)<<endl;
+  //if(TMath::Abs(f4pCorrelations->GetBinContent(ci)-fMixedHarmonicsNestedLoops->GetBinContent(ci+6+10))
+  //   > 1.e-10){exit(0);}
+  cout<<endl;
+ } // end of for(Int_t ci=1;ci<=45;ci++)
+
+ for(Int_t ci=1;ci<=87;ci++)
+ {
+  if(31==ci||41==ci||72==ci||84==ci){continue;} // skipping the empty bins
+  cout<<(f5pCorrelations->GetXaxis())->GetBinLabel(ci)<<":"<<endl;
+  cout<<"from Q-vectors    = "<<f5pCorrelations->GetBinContent(ci)<<endl; 
+  cout<<"from nested loops = "<<fMixedHarmonicsNestedLoops->GetBinContent(ci+6+10+45)<<endl;
+  if(TMath::Abs(f5pCorrelations->GetBinContent(ci)-fMixedHarmonicsNestedLoops->GetBinContent(ci+6+10+45))
+     > 1.e-10){exit(0);}
+  cout<<endl;
+ } // end of for(Int_t ci=1;ci<=87;ci++)
+
+ return;
+
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrelations()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrectionTermsForNUA()
 {
@@ -11906,7 +21505,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrectionTermsForNUA()
   
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrectionTermsForNUA() 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent)
 {
@@ -12095,7 +21694,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoopsUs
 
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowExtraCorrelations()
 {
@@ -12122,7 +21721,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowExtraCorrelations()
 
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowExtraCorrelations()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple * const anEvent)
 {
@@ -12230,7 +21829,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLo
  cout<<endl;
 }
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
@@ -12432,7 +22031,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(
 
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateOtherDiffCorrelatorsWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
@@ -12522,7 +22121,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateOtherDiffCorrelatorsWithNestedLoops(
  }//end of for(Int_t i1=0;i1<nPrim;i1++)   
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateOtherDiffCorrelatorsWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta)
 {
@@ -12583,7 +22182,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type,
         
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta)
 {
@@ -12643,7 +22242,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckOtherDiffCorrelators(TString type,
         
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::PrintNumberOfParticlesInSelectedBin()
 {
@@ -12657,7 +22256,7 @@ void AliFlowAnalysisWithQCumulants::PrintNumberOfParticlesInSelectedBin()
  
 } // end of void AliFlowAnalysisWithQCumulants::PrintNumberOfParticlesInSelectedBin()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
@@ -12826,7 +22425,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsU
  
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
@@ -12998,7 +22597,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNes
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TString type, TString ptOrEta)
@@ -13071,7 +22670,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TStr
 
 } // end of void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights()
 {
@@ -13158,7 +22757,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsi
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights()
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights()
@@ -13246,7 +22845,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsi
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent)
 {
@@ -13410,7 +23009,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLo
 
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights(TString type, TString ptOrEta)
 {
@@ -13616,7 +23215,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUs
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUsingParticleWeights(TString type, TString ptOrEta)
 
 
-//================================================================================================================================
+//=======================================================================================================================
 
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta)
@@ -13818,7 +23417,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUs
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
    
 void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
@@ -13996,7 +23595,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNes
                
 } // end of void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
 {
@@ -14097,7 +23696,7 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  } 
- 
+
  // NUA stuff:
  for(Int_t sc=0;sc<2;sc++) // sin/cos
  { 
@@ -14162,6 +23761,55 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
   exit(0); 
  }
  
+ if(fCalculateMixedHarmonics)
+ {
+  if(!(fMixedHarmonicsFlags))
+  {
+   cout<<endl;
+   cout<<" WARNING (QC): fMixedHarmonicsFlags is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  if(!(f2pCorrelations && f3pCorrelations && f4pCorrelations && f5pCorrelations))
+  {
+   cout<<endl;
+   cout<<" WARNING (QC): f2pCorrelations && f3pCorrelations && f4pCorrelations && f5pCorrelations is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  if(!(f2pCumulants && f3pCumulants && f4pCumulants && f5pCumulants))
+  {
+   cout<<endl;
+   cout<<" WARNING (QC): f2pCumulants && f3pCumulants && f4pCumulants && f5pCumulants is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  for(Int_t power=0;power<2;power++)
+  { 
+   if(!fMixedHarmonicEventWeights[power]) 
+   {
+    cout<<endl;
+    cout<<Form(" WARNING (QC): fMixedHarmonicEventWeights[%d] is NULL in CheckPointersUsedInFinish() !!!!",power)<<endl;
+    cout<<endl;
+    exit(0);
+   }
+  } // end of for(Int_t power=0;power<2;power++)
+  if(!(fMixedHarmonicProductOfEventWeights))
+  {
+   cout<<endl;
+   cout<<" WARNING (QC): fMixedHarmonicProductOfEventWeights is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  if(!(fMixedHarmonicProductOfCorrelations))
+  {
+   cout<<endl;
+   cout<<" WARNING (QC): fMixedHarmonicProductOfCorrelations is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+ } // end of if(fCalculateMixedHarmonics)
+
  // Versus multiplicity:
  if(!fCalculateCumulantsVsM){return;}
  for(Int_t co=0;co<=3;co++) // cumulant order
@@ -14263,7 +23911,7 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
  
 } // end of void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
 
-//================================================================================================================================
+//=======================================================================================================================
 
 void AliFlowAnalysisWithQCumulants::CheckPointersUsedInMake()
 {

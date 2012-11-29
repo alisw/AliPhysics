@@ -716,7 +716,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
-  values[AliDielectronVarManager::kTRDpidQuality] = 0;
+  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
+  values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
   const UChar_t threshold = 5;
   TBits tpcClusterMap = particle->GetTPCClusterMap();
@@ -735,11 +736,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   //TODO: set correctly
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
-  values[AliDielectronVarManager::kTRDchi2]       = -1;
 
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
   values[AliDielectronVarManager::kTPCsignalNfrac]= 0;
-  
+
   // Fill AliAODTrack interface information
   //
   Int_t v0Index=-1;
@@ -789,7 +789,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   }
 
   AliAODPid *pid=const_cast<AliAODPid*>(particle->GetDetPid());
-  if (pid){
+  if (pid) {
     Double_t origdEdx=pid->GetTPCsignal();
     //overwrite signal
     pid->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(particle)/AliDielectronPID::GetCorrValdEdx());
@@ -814,8 +814,6 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTPCnSigmaKao]=tpcNsigmaKao;
     values[AliDielectronVarManager::kTPCnSigmaPro]=tpcNsigmaPro;
     
-    values[AliDielectronVarManager::kTRDntracklets] = 0;
-    values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
     Double_t prob[AliPID::kSPECIES];
     fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
     values[AliDielectronVarManager::kTRDprobEle]    = prob[AliPID::kElectron];

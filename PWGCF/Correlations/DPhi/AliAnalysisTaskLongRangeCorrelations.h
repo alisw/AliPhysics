@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 215 2012-10-31 16:57:09Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 232 2012-11-28 17:27:59Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -23,6 +23,7 @@
 
 class TList;
 class TObjArray;
+class TClonesArray;
 
 class AliAODEvent;
 class AliAODHeader;
@@ -54,6 +55,7 @@ public:
   void SetPhiRange(Double_t phiMin, Double_t phiMax) {
     fPhiMin = phiMin; fPhiMax = phiMax;
   }
+  void SetMaxAbsVertexZ(Double_t maxAbsVertexZ) { fMaxAbsVertexZ = maxAbsVertexZ; }
 
   TString GetOutputListName() const;
 
@@ -62,16 +64,19 @@ protected:
   // <n_1>(phi_1,eta_1)
   // <n_2>(phi_2,eta_2) 
   // <n_1, n_2>(phi_1,eta_1;phi_2,eta_2)
-  void CalculateMoments(TObjArray*, TObjArray*, Double_t weight=1.); 
-  void       ComputeN2ForThisEvent(THnSparse*, THnSparse*, const char*, Double_t weight=1);
+  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t); 
+  void       ComputeNXForThisEvent(TObjArray*, const char*, Double_t);
   THnSparse* ComputeNForThisEvent(TObjArray*, const char*) const;
+  void       FillNEtaHist(TString, THnSparse*, Double_t);
 
-  TObjArray* GetAcceptedTracks(AliAODEvent* , AliAODHeader*, Double_t);
+  TObjArray* GetAcceptedTracks(AliAODEvent*, Double_t);
+  TObjArray* GetAcceptedTracks(TClonesArray*, Double_t);
 
   // filling histograms by name
-  void Fill(const char* histName, Double_t x);                           // TH1 weight=1
-  void Fill(const char* histName, Double_t x, Double_t y);               // TH2 weight=1
-  void Fill(const char* histName, const Double_t* x, Double_t weight=1); // THnSparse
+  void Fill(const char*, Double_t);                           // TH1 weight=1
+  void Fill(const char*, Double_t, Double_t );                // TH2 weight=1
+  void Fill(const char*, Double_t, Double_t, Double_t);       // TH3 weight=1
+  void Fill(const char*, const Double_t*, Double_t weight=1); // THnSparse
 
   void SetupForMixing();
 
@@ -87,7 +92,7 @@ private:
   Double_t             fCentMin, fCentMax;  // centrality range
   Double_t             fPtMin, fPtMax;      // P_{T} range
   Double_t             fPhiMin, fPhiMax;    // #phi range
-
+  Double_t             fMaxAbsVertexZ;      // max abs(zvertex)
   // histogram data
   Int_t    fnBinsCent, fnBinsPt, fnBinsPhi, fnBinsEta;
   Double_t fxMinCent,  fxMinPt,  fxMinPhi,  fxMinEta;

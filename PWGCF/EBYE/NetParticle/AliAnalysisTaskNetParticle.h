@@ -65,44 +65,26 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
    * ---------------------------------------------------------------------------------
    */
 
-  void SetIsMC()                          {fIsMC             = kTRUE;}
-  void SetIsAOD(Bool_t b)                 {fIsAOD            = b;}
-  void SetUseQATHnSparse(Bool_t b)        {fUseQATHnSparse   = b;}
+  void SetIsMC()                             {fIsMC             = kTRUE;}
+  void SetIsAOD(Bool_t b)                    {fIsAOD            = b;}
   
-  void SetESDTrackCutMode(Int_t i)        {fESDTrackCutMode  = i;}
-  void SetModeEffCreation(Int_t i)        {fModeEffCreation  = i;}
-  void SetModeDCACreation(Int_t i)        {fModeDCACreation  = i;}
-  void SetModeDistCreation(Int_t i)       {fModeDistCreation = i;}
-
+  void SetESDTrackCutMode(Int_t i)           {fESDTrackCutMode  = i;}
+  void SetModeEffCreation(Int_t i)           {fModeEffCreation  = i;}
+  void SetModeDCACreation(Int_t i)           {fModeDCACreation  = i;}
+  void SetModeDistCreation(Int_t i)          {fModeDistCreation = i;}
+  void SetModeQACreation(Int_t i)            {fModeQACreation   = i;}
  
-  void SetEtaMax(Float_t f)               {fEtaMax           = f;}
-  void SetPtRange(Float_t f1, Float_t f2) {fPtRange[0] = f1; fPtRange[1] = f2;}
-  void SetPtRangeEff(Float_t f1, Float_t f2) {fPtRangeEff[0] = f1; fPtRangeEff[1] = f2;}
+  void SetEtaMax(Float_t f)                  {fEtaMax           = f;}
+  void SetPtRange(Float_t f1, Float_t f2)    {fPtRange[0]       = f1; fPtRange[1]    = f2;}
+  void SetPtRangeEff(Float_t f1, Float_t f2) {fPtRangeEff[0]    = f1; fPtRangeEff[1] = f2;}
 
-  void SetTrackFilterBit(Int_t i)         {fAODtrackCutBit   = i;}
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                               Setter - Pass-Through
-   * ---------------------------------------------------------------------------------
-   */
-
-  void SetCentralityBinMax(Int_t d)       {fHelper->SetCentralityBinMax(d);}
-  void SetVertexZMax(Float_t f)           {fHelper->SetVertexZMax(f);}  
-
-  void SetRapidityMax(Float_t f)          {fHelper->SetRapidityMax(f);}
-  void SetMinTrackLengthMC(Float_t f)     {fHelper->SetMinTrackLengthMC(f);}
-  void SetNSigmaMaxCdd(Float_t f)         {fHelper->SetNSigmaMaxCdd(f);}
-  void SetNSigmaMaxCzz(Float_t f)         {fHelper->SetNSigmaMaxCzz(f);}
-
-  void SetParticleSpecies(AliPID::EParticleType pid) {fHelper->SetParticleSpecies(pid);}
-  void SetControlParticleSpecies(Int_t pdgCode, Bool_t isNeutral, const Char_t *name) {
-    fHelper->SetControlParticleSpecies(pdgCode, isNeutral, name);
+  void SetTrackFilterBit(Int_t i)            {fAODtrackCutBit   = i;}
+  
+  void SetNetParticleHelper(AliAnalysisNetParticleHelper *helper) {
+    if (fHelper) 
+      delete fHelper;
+    fHelper = helper;
   }
-
-  void SetNSigmaMaxTPC(Float_t f)         {fHelper->SetNSigmaMaxTPC(f);}
-  void SetNSigmaMaxTOF(Float_t f)         {fHelper->SetNSigmaMaxTOF(f);}
-  void SetMinPtForTOFRequired(Float_t f)  {fHelper->SetMinPtForTOFRequired(f);}
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -131,7 +113,18 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
 
   /** Reset Event */
   void ResetEvent();
-    
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                           Helper Methods - private
+   * ---------------------------------------------------------------------------------
+   */
+  /** Create QA histograms */
+  void CreateQAHists();
+
+  /**  Process ESD tracks and fill QA histograms */
+  void FillQAHists();
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -174,6 +167,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   Int_t               fModeEffCreation ;       //  Correction creation mode : 1 = on | 0 = off
   Int_t               fModeDCACreation;        //  DCA creation mode        : 1 = on | 0 = off
   Int_t               fModeDistCreation;       //  Dist creation mode       : 1 = on | 0 = off
+  Int_t               fModeQACreation;         //  QA creation mode         : 1 = on | 0 = off
 
   // --- MC only -----------------------------------------------------------
 
@@ -182,14 +176,13 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
 
   // -----------------------------------------------------------------------
 
-  THnSparseF         *fHnQA;                   //!  THnSparseF : tracks for QA
-  Float_t             fUseQATHnSparse;         //  Usage of THnSparse for QA
+  THnSparseF         *fHnQA;                   //! THnSparseF : tracks for QA
   
   // -----------------------------------------------------------------------
 
   Float_t             fEtaMax;                 //  Max, absolut eta 
-  Float_t            *fPtRange;                //!  Array of pt [min,max]
-  Float_t            *fPtRangeEff;             //!  Array of pt [min,max] for efficiency
+  Float_t             fPtRange[2];             //  Array of pt [min,max]
+  Float_t             fPtRangeEff[2];          //  Array of pt [min,max] for efficiency
 
   Int_t               fAODtrackCutBit;         //  Track filter bit for AOD tracks
 

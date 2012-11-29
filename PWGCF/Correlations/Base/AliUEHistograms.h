@@ -52,7 +52,7 @@ class AliUEHistograms : public TNamed
   
   void SetRunNumber(Long64_t runNumber) { fRunNumber = runNumber; }
   
-  void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
+  void SetEfficiencyCorrection(THnF* hist, Bool_t correctTriggers) { fEfficiencyCorrection = hist; fCorrectTriggers = correctTriggers; }
   
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
@@ -60,6 +60,7 @@ class AliUEHistograms : public TNamed
   TH2F* GetCorrelationR()   { return fCorrelationR; }
   TH2F* GetCorrelationLeading2Phi() { return fCorrelationLeading2Phi; }
   TH2F* GetCorrelationMultiplicity() { return fCorrelationMultiplicity; }
+  TH3F* GetYield() { return fYields; }
   
   TH2F* GetEventCount()     { return fEventCount; }
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
@@ -68,6 +69,7 @@ class AliUEHistograms : public TNamed
   Long64_t GetRunNumber() { return fRunNumber; }
   Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
+  Bool_t GetWeightPerEvent() { return fWeightPerEvent; }
   
   void Correct(AliUEHistograms* corrections);
   
@@ -77,6 +79,7 @@ class AliUEHistograms : public TNamed
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   void SetTrackEtaCut(Float_t value);
+  void SetWeightPerEvent(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   void SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
@@ -128,6 +131,7 @@ protected:
   TH2F* fControlConvResoncances; // control histograms for cuts on conversions and resonances
   
   THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
+  Bool_t fCorrectTriggers;	// if true correct also trigger particles
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Int_t fTriggerSelectCharge;    // select charge of trigger particle
@@ -136,12 +140,13 @@ protected:
   Bool_t fCutConversions;        // cut on conversions (inv mass)
   Bool_t fCutResonances;         // cut on resonances (inv mass)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
   
   Long64_t fRunNumber;           // run number that has been processed
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 20)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 22)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

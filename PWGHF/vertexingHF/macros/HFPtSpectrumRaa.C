@@ -41,13 +41,16 @@
 //      9. MinHypo  = minimum energy loss hypothesis (Default 1./3.)
 //      10. MaxHypo = maximum energy loss hypothesis (Default 3.0)
 //      11. MaxRb = maximum Raa(b) hypothesis (Default 6.0, won't do anything)
-//      12. isRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//      12. RbHypo : flag to decide whether the Eloss hypothesis is Rb or Rb/Rc
+//      13. CentralHypo = central energy loss hypothesis, DEFAULT TO 1.0
+//      14. isRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//      15. ScaledAndExtrapRef: flag to tag scaled+reference pp-scaled-data
 //
 //  Complains to : Zaida Conesa del Valle
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum energy{ k276, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
@@ -95,7 +98,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t decay=1,
 		     Double_t sigmaABCINT1B=54.e9,
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
-		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0, 
+		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0,
+		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
 		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
 
@@ -119,19 +123,27 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   } else if ( cc == k010 ) {
     Tab = 23.48; TabSyst = 0.97;
   } else if ( cc == k1020 ) {
-    Tab = 14.4318; TabSyst = 0.573289;
+    Tab = 14.4318; TabSyst = 0.5733;
   } else if ( cc == k020 ) {
     Tab = 18.93; TabSyst = 0.74;
   } else if ( cc == k2040 ) {
     Tab = 6.86; TabSyst = 0.28;
+  } else if ( cc == k2030 ) {
+    Tab = 8.73769; TabSyst = 0.370219;
+  } else if ( cc == k3040 ) {
+    Tab = 5.02755; TabSyst = 0.22099;
+  } else if ( cc == k4050 ) {
+    Tab = 2.68327; TabSyst = 0.137073;
   } else if ( cc == k3050 ) {
     Tab = 3.87011; TabSyst = 0.183847;
   } else if ( cc == k4060 ) {
-    Tab = 2.00; TabSyst = 0.11;
-  } else if ( cc == k6080 ) {
-    Tab = 0.419; TabSyst = 0.033;
+    Tab = 2.00;  TabSyst= 0.11;
   } else if ( cc == k4080 ) {
     Tab = 1.20451; TabSyst = 0.071843;
+  } else if ( cc == k5060 ) {
+    Tab = 1.32884; TabSyst = 0.0929536;
+  } else if ( cc == k6080 ) {
+    Tab = 0.419; TabSyst = 0.033;
   } else if ( cc == k80100 ){
     Tab = 0.0690; TabSyst = 0.0062;
   }
@@ -203,11 +215,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   else if ( cc == k010 ) systematicsAB->SetCentrality("010");
   else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
   else if ( cc == k020 ) systematicsAB->SetCentrality("020");
-  else if ( cc == k2040 ) {
+  else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
     systematicsAB->SetCentrality("2040");
     systematicsAB->SetIsPbPb2010EnergyScan(true);
   }
-  else if ( cc == k4060 ) systematicsAB->SetCentrality("4060");
+  else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
   else if ( cc == k6080 ) systematicsAB->SetCentrality("6080");
   else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
   else if ( cc == k3050 ) {
@@ -357,15 +369,15 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t ElossHypo = 0.;
     if (fdMethod==kfc) { ElossHypo = 1. / Rcb; }
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty) ; }
-
+    if(isRbHypo) ElossHypo = RaaBeauty;
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
     //
     // Find the bin for the central Eloss hypo
     //
-    if( TMath::Abs( ElossHypo - 1.0 ) < 0.075 ){
+    if( TMath::Abs( ElossHypo - CentralHypo ) < 0.075 ){
       Int_t hABbin = hSigmaAB->FindBin( pt );
-      Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - 1.0 );
-      Double_t DeltaV = TMath::Abs( ElossHypo - 1.0 );
+      Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - CentralHypo );
+      Double_t DeltaV = TMath::Abs( ElossHypo - CentralHypo );
       //      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
       if ( DeltaV < DeltaIni ) ElossCentral[ hABbin ] = ElossHypo;
       //      cout << " final ECentral " << ElossCentral[ hABbin ] << endl;
@@ -503,6 +515,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t ElossHypo = 0.;
     if (fdMethod==kfc) { ElossHypo = 1./ Rcb; }
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty); }
+    if(isRbHypo) ElossHypo = RaaBeauty;
     hRCharmVsElossHypo[ptbin]->Fill( ElossHypo, RaaCharm );
 
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 

@@ -44,6 +44,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   mgr->ConnectInput (info, 0, mgr->GetCommonInputContainer());
   co[AliTRDpwgppHelper::kEventInfo] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kTracksBarrel] = mgr->CreateContainer("tracksBarrel", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwgppHelper::kTracksITS] = mgr->CreateContainer("tracksITS", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);

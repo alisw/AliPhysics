@@ -27,6 +27,7 @@ public:
   AliTRDtrendValue();
   AliTRDtrendValue(const Char_t *n, const Char_t *t);
   AliTRDtrendValue(const AliTRDtrendValue &ref);
+  virtual ~AliTRDtrendValue();
 
   Double_t    GetVal() const { return fValue;}
   Double_t    GetErr() const { return fSigma;}
@@ -36,8 +37,6 @@ public:
 protected: // only manager can fill these info !! 
   AliTRDtrendValue& operator/=(const AliTRDtrendValue &n);
   const char* GetAlarmMessage(Int_t ns) const;
-  const char* GetClassName() const;
-  const char* GetValueName() const;
   const char* GetResponsible() const;
   const char* GetNotifiable(Int_t in) const;
   void        SetAlarm(Int_t level, Char_t *m);

@@ -165,7 +165,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          fComputedValue = (fUseMCInfo ? refMC->Eta() : ref->Eta());
          return kTRUE;
       case kMass:
-	 fComputedValue = (fUseMCInfo ? refMC->M() : ref->M());
+         fComputedValue = (fUseMCInfo ? refMC->M() : ref->M());
          return kTRUE;
       case kPtpc:
          if (track) {
@@ -265,12 +265,12 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kNITSclusters:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		fComputedValue =  trackESD->GetITSclusters(0);
-         	} else {
-         		fComputedValue =  ((AliAODTrack*)track)->GetITSNcls();
-         	}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               fComputedValue =  trackESD->GetITSclusters(0);
+            } else {
+               fComputedValue =  ((AliAODTrack *)track)->GetITSNcls();
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get n ITS clusters for non-track object");
@@ -279,12 +279,12 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kNTPCclusters:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		fComputedValue =  trackESD->GetTPCclusters(0);
-         	} else {
-         		fComputedValue =  ((AliAODTrack*)track)->GetTPCNcls();
-         	}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               fComputedValue =  trackESD->GetTPCclusters(0);
+            } else {
+               fComputedValue =  ((AliAODTrack *)track)->GetTPCNcls();
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get n TPC clusters for non-track object");
@@ -293,13 +293,13 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kITSchi2:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		UShort_t nClustersITS = trackESD->GetITSclusters(0);
-         		fComputedValue =  trackESD->GetITSchi2()/Float_t(nClustersITS);
-         	} else {
-         		fComputedValue = ((AliAODTrack*)track)->Chi2perNDF();
-         	}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               UShort_t nClustersITS = trackESD->GetITSclusters(0);
+               fComputedValue =  trackESD->GetITSchi2()/Float_t(nClustersITS);
+            } else {
+               fComputedValue = ((AliAODTrack *)track)->Chi2perNDF();
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get ITS chi^2 for non-track object");
@@ -308,13 +308,13 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kTPCchi2:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		UShort_t nClustersTPC = trackESD->GetTPCclusters(0);
-         		fComputedValue =  trackESD->GetTPCchi2()/Float_t(nClustersTPC);
-         	} else {
-         		fComputedValue = ((AliAODTrack*)track)->Chi2perNDF();
-         	}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               UShort_t nClustersTPC = trackESD->GetTPCclusters(0);
+               fComputedValue =  trackESD->GetTPCchi2()/Float_t(nClustersTPC);
+            } else {
+               fComputedValue = ((AliAODTrack *)track)->Chi2perNDF();
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get TPC chi^2 for non-track object");
@@ -323,21 +323,21 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kDCAXY:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		Float_t b[2], bCov[3];
-         		trackESD->GetImpactParameters(b, bCov);
-         		fComputedValue =  b[0];
-         	} else {
-         		Double_t b[2]={-999,-999}, cov[3];
-         		AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
-         		if(vertex){
-         		  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
-         		  fComputedValue = b[0];
-         		} else {
-         		  fComputedValue = -999;
-         		}
-         	}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               Float_t b[2], bCov[3];
+               trackESD->GetImpactParameters(b, bCov);
+               fComputedValue =  b[0];
+            } else {
+               Double_t b[2]= {-999,-999}, cov[3];
+               AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+               if(vertex) {
+                  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
+                  fComputedValue = b[0];
+               } else {
+                  fComputedValue = -999;
+               }
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get TPC chi^2 for non-track object");
@@ -346,22 +346,22 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
          }
       case kDCAZ:
          if (track) {
-         	AliESDtrack *trackESD = dynamic_cast<AliESDtrack*>(track);
-         	if (trackESD) {
-         		Float_t b[2], bCov[3];
-         		trackESD->GetImpactParameters(b, bCov);
-         		fComputedValue =  b[1];
-         	} else {
-         		Double_t b[2]={-999,-999}, cov[3];
-         		AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
-         		if(vertex){
-         		  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
-         		  fComputedValue = b[1];
-         		} else {
-         		  fComputedValue = -999;
-         		}
+            AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
+            if (trackESD) {
+               Float_t b[2], bCov[3];
+               trackESD->GetImpactParameters(b, bCov);
+               fComputedValue =  b[1];
+            } else {
+               Double_t b[2]= {-999,-999}, cov[3];
+               AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+               if(vertex) {
+                  track->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
+                  fComputedValue = b[1];
+               } else {
+                  fComputedValue = -999;
+               }
 
-         	}
+            }
             return kTRUE;
          } else {
             AliWarning("Cannot get TPC chi^2 for non-track object");

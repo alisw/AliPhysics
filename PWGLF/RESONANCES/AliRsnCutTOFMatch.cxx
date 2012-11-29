@@ -3,16 +3,16 @@
 ClassImp(AliRsnCutTOFMatch)
 
 AliRsnCutTOFMatch::AliRsnCutTOFMatch() :
-AliRsnCut("cut", AliRsnTarget::kDaughter)
+   AliRsnCut("cut", AliRsnTarget::kDaughter)
 {
-  //Default constructor
+   //Default constructor
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutTOFMatch::AliRsnCutTOFMatch(const char *name) :
-  AliRsnCut(name, AliRsnTarget::kDaughter)
+   AliRsnCut(name, AliRsnTarget::kDaughter)
 {
-  //main constructor
+   //main constructor
 }
 
 //_________________________________________________________________________________________________
@@ -21,16 +21,16 @@ Bool_t AliRsnCutTOFMatch::IsSelected(TObject *object)
 //
 // Checks if the track has the status flags required for the TPC-TOF matching
 //
-  Bool_t accept = kFALSE;
-  if (!TargetOK(object)) return accept;
-  
-  AliVTrack *vtrack = fDaughter->Ref2Vtrack();
-  if (!vtrack) {
-    AliError("Referenced daughter is not a track");
-    return accept;
-  }
-  if (MatchTOF(vtrack)) accept = kTRUE;
-  return accept;
+   Bool_t accept = kFALSE;
+   if (!TargetOK(object)) return accept;
+
+   AliVTrack *vtrack = fDaughter->Ref2Vtrack();
+   if (!vtrack) {
+      AliError("Referenced daughter is not a track");
+      return accept;
+   }
+   if (MatchTOF(vtrack)) accept = kTRUE;
+   return accept;
 }
 
 //-----------------------------------------------------

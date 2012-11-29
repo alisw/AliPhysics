@@ -91,6 +91,10 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   FSI2D[1] = (TH2D*)inputFileFSI->Get("K2os");
   FSI3D[0] = (TH3D*)inputFileFSI->Get("K3ss");
   FSI3D[1] = (TH3D*)inputFileFSI->Get("K3os");
+  FSI2D[0]->SetDirectory(0);
+  FSI2D[1]->SetDirectory(0);
+  FSI3D[0]->SetDirectory(0);
+  FSI3D[1]->SetDirectory(0);
   ChaoticityTask->SetFSICorrelations( kTRUE, FSI2D , FSI3D);
   ////////////////////////////////////////////////////
    

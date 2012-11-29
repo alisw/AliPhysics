@@ -30,17 +30,16 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
 
+  // --- Cuts --------------------------------------------------------
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
-  Bool_t   mc  = (task->IsA() == AliForwardMCMultiplicityTask::Class());
-  Double_t nXi = mc ? 2 : 2;   //HHD test
+  Bool_t   mc           = (task->IsA()==AliForwardMCMultiplicityTask::Class());
+  Double_t nXi          = 2; 
   Bool_t   includeSigma = false; //true;
-
   // Sharing cut
   AliFMDMultCuts cSharing;
   Double_t factor = 1.;
   cSharing.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
- 
   // Density cut
   AliFMDMultCuts cDensity;
   cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
@@ -95,6 +94,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetCuts(cDensity);
   // Set lumping (nEta,nPhi)
   task->GetDensityCalculator().SetLumping(32,4);
+  // Recalculate phi taking (x,y) offset of IP into account 
+  task->GetDensityCalculator().SetRecalculatePhi(true);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch

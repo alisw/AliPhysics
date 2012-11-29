@@ -1,4 +1,4 @@
-AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const char *rsnCutStr,TString rsnQualityCutStr="") {
+AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const char *rsnCutStr,TString rsnQualityCutStr="",TString extraMacro="",TString extraMacroArgs="") {
    // rsnStr -> <Name>
    // rsnCutStr -> <CutName>
    // This will use AddRsnPairs<Name>.C
@@ -27,13 +27,24 @@ AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const 
    //pp_LHC11_p4_120
 
 
-   if (!RsnLoadMacroTrain("RsnTrainCommonSettings.C")) return kFALSE;
-   RsnTrainCommonSettings(commonStr);
-
+   if (!RsnLoadMacroTrain("RsnTrainCommonSettings.C")) return kFALSE; 
+   if (!extraMacro.IsNull()) {
+      if (!RsnLoadMacroTrain(extraMacro.Data())) return kFALSE;
+   }
+   RsnTrainCommonSettings(commonStr,rsnStr,extraMacro,extraMacroArgs);
+   
    rsnMgr->Print();
 
    if (!RsnLoadMacroTrain("AddRsnTask.C")) return kFALSE;
-   return AddRsnTask(rsnStr,rsnCutStr,"");
+   
+   // Generate Rsn Analysisa Task
+   AliAnalysisTask* task = AddRsnTask(rsnStr,rsnCutStr,"");
+   
+   // deleting AliRsnTrainManager to reset all previous settings
+   delete rsnMgr;
+   
+   return task;
+   
 }
 
 Bool_t RsnLoadMacroTrain(TString macro,TString path="") {

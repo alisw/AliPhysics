@@ -38,6 +38,7 @@
 #include <TH3.h>
 #include <THStack.h>
 #include "TTreeStream.h"
+#include "TPDGCode.h"
 
 #include "AliPID.h"
 #include "AliESDtrack.h"
@@ -127,25 +128,58 @@ TH1* AliTRDefficiency::PlotBasicEff(const AliTRDtrackV1 *track)
   }
   if(track) fkTrack = track;
 
-  Double_t val[7]; memset(val, 0, 7*sizeof(Double_t));
+  Double_t val[8]; memset(val, 0, 8*sizeof(Double_t));
   ULong_t status(fkESD->GetStatus());
+//     printf("  %3d ITS[%c] TPC[%c] TRDin[%c] TRDout[%c] TRDStop[%c]\n", fkESD->GetId(),
+//       (status&AliESDtrack::kITSout)?'y':'n',
+//       (status&AliESDtrack::kTPCout)?'y':'n',
+//       (status&AliESDtrack::kTRDin)?'y':'n',
+//       (status&AliESDtrack::kTRDout)?'y':'n',
+//       (status&AliESDtrack::kTRDStop)?'y':'n');
+
+
   val[0] =((status&AliESDtrack::kTRDin)?1:0) +
           ((status&AliESDtrack::kTRDStop)?1:0) +
           ((status&AliESDtrack::kTRDout)?2:0);
   val[1] = fkESD->Phi();
   val[2] = fkESD->Eta();
   val[3] = GetPtBin(fPt>0.?fPt:fkESD->Pt());
-  val[4] = 0.;
-  if(fkMC){
-    if(fkMC->GetLabel() == fkMC->GetTRDlabel()) val[4] = 0.;
-    else if(fkMC->GetLabel() == -fkMC->GetTRDlabel()) val[4] = 1.;
-    else val[4] = -1.;
+  val[4] = -2.; val[5] = fkMC?fkMC->GetPt():-1.;
+  if(fkMC && fkMC->GetNTrackRefs()>=2){ // TODO define trackable tracks more exactly
+    val[4] = -1.;
+    if(fkTrack && fkTrack->GetNumberOfTracklets()>0){ // TODO better define 
+      if(fkMC->GetLabel() == fkMC->GetTRDlabel()) val[4] = 0.;        // good tracks
+      else if(fkMC->GetLabel() == -fkMC->GetTRDlabel()) val[4] = 1.;  // acceptable tracks
+      else val[4] = 2.;                                               // wrongly matched tracks
+    }
+    val[5] = GetPtBin(fkMC->GetTrackRef()->Pt());
   }
-  val[5] = fkTrack?fkTrack->GetNumberOfTracklets():0;
+
+  val[6] = fkTrack?fkTrack->GetNumberOfTracklets():0;
   // down scale PID resolution
   Int_t spc(fSpecies); if(spc==-6) spc=0; if(spc==3) spc=2; if(spc==-3) spc=-2; if(spc>3) spc=3; if(spc<-3) spc=-3;
-  val[6] = spc;
+  val[7] = spc;
+  if(fkMC){
+    Int_t exactPID = 0;
+    switch(fkMC->GetPDG()){
+    case kElectron: exactPID = -1;break;
+    case kPositron: exactPID = 1;break;
+    case kPiPlus: exactPID = 2;break;
+    case kPiMinus: exactPID = -2;break;
+    case kProton: exactPID = 3;break;
+    case kProtonBar: exactPID = -3;break;
+    }
+    val[7] = exactPID;
+  }
+//     printf("%3d label[%2d %+2d] PDG[%+4d] TR[%d] Trklts[%d] species[%d %d] pt%d[%6.4f] MC_pt%d[%6.4f] in[%c] out[%c] stop[%c] flag[%d]\n",
+//     fkESD->GetId(), fkMC->GetLabel(), fkMC->GetTRDlabel(), fkMC->GetPDG(), fkMC->GetNTrackRefs(), Int_t(val[6]),
+//     fSpecies, spc, Int_t(val[3]), fPt>0.?fPt:fkESD->Pt(), Int_t(val[5]), fkMC->GetTrackRef()?fkMC->GetTrackRef()->Pt():fkMC->GetPt(),
+//     (status&AliESDtrack::kTRDin)?'x':'o', (status&AliESDtrack::kTRDout)?'x':'o', (status&AliESDtrack::kTRDStop)?'x':'o', Int_t(val[4]));
 
+/*  if(val[0]<0.5 && TMath::Abs(val[4]+1)<0.1){
+
+    if(fkTrack) printf("  Seed[%s] tracklets[%d]\n", fkTrack->IsTPCseeded()?"TPC":"ITS", Int_t(val[5]));
+  }*/
   if(fkTrack) AliDebug(2, Form("%3d[%s] tracklets[%d] label[%2d %+2d] species[%d %d] in[%c] out[%c] stop[%c]",
     fkESD->GetId(), fkTrack->IsTPCseeded()?"TPC":"ITS", Int_t(val[5]), fkMC->GetLabel(), fkMC->GetTRDlabel(), fSpecies, spc,
     (status&AliESDtrack::kTRDin)?'x':'o', (status&AliESDtrack::kTRDout)?'x':'o', (status&AliESDtrack::kTRDStop)?'x':'o'));
@@ -436,19 +470,17 @@ TObjArray* AliTRDefficiency::Histos()
   //++++++++++++++++++++++
   // cluster to detector
   if(!(H = (THnSparseI*)gROOT->FindObject("hEFF"))){
-    const Int_t mdim(7);
-    Int_t nlabel(1);
-    const Char_t *eTitle[mdim] = {"status", "#phi [rad]", "eta", "p_{t} [bin]", "label", "N_{trklt}", "chg*spec*rc"};
-    const Int_t eNbins[mdim]   = {   5,         144,        45,     fNpt-1,     nlabel, AliTRDgeometry::kNlayer-2, 5};
-    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -.9,       -0.5,       -0.5,        1.5,               -2.5},
-                   eMax[mdim]  = {  4.5,     TMath::Pi(),   .9,      fNpt-1.5,  nlabel-0.5,    5.5,                2.5};
+    const Int_t mdim(8);
+    Int_t nlabel(3);
+    const Char_t *eTitle[mdim] = {"status", "#phi [rad]", "eta", "p_{t} [bin]", "label", "p_{t}^{MC} [bin]", "N_{trklt}", "chg*spec*rc"};
+    const Int_t eNbins[mdim]   = {  5,         144,        45,     fNpt-1,      nlabel,     fNpt-1, AliTRDgeometry::kNlayer-2, 5};
+    const Double_t eMin[mdim]  = { -0.5,    -TMath::Pi(),  -.9,      -0.5,      -1.5,         -0.5,         1.5,             -2.5},
+                   eMax[mdim]  = {  4.5,     TMath::Pi(),   .9,    fNpt-1.5,     1.5,       fNpt-1.5,       5.5,              2.5};
     st = "basic efficiency;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?mdim:(HasMCdata()?5:4);
+    Int_t ndim=DebugLevel()>=1?mdim:(HasMCdata()?6:4);
     for(Int_t idim(0); idim<ndim; idim++){ st += eTitle[idim]; st+=";";}
     H = new THnSparseI("hEFF", st.Data(), ndim, eNbins, eMin, eMax);
-/*    TAxis *ax(H->GetAxis(0)); const Char_t *lTRDflag[] = {"!TRDin", "TRDin", "TRDin&TRDStop", "TRDin&TRDout", "TRDin&TRDout&TRDStop"};
-    for(Int_t ibin(1); ibin<=ax->GetNbins(); ibin++) ax->SetBinLabel(ibin, lTRDflag[ibin-1]);*/
   } else H->Reset();
   fContainer->AddAt(H, 0);
 
@@ -466,7 +498,7 @@ Bool_t AliTRDefficiency::PostProcess()
   }
   if(!fProj){
     AliInfo("Building array of projections ...");
-    fProj = new TObjArray(200); fProj->SetOwner(kTRUE);
+    fProj = new TObjArray(2000); fProj->SetOwner(kTRUE);
   }
   // set pt/p segmentation. guess from data
   THnSparse *H(NULL);
@@ -496,23 +528,30 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
     return kFALSE;
   }
   Int_t ndim(H->GetNdimensions()); //Bool_t debug(ndim>Int_t(kNdimCl));
-  TAxis *aa[11], *al(NULL); memset(aa, 0, sizeof(TAxis*) * 11);
+  TAxis *aa[11], *al(NULL), *apt(NULL); memset(aa, 0, sizeof(TAxis*) * 11);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(H->GetNdimensions() > 4) al = H->GetAxis(4);
-  Int_t nlab=al?3:1;
+  if(H->GetNdimensions() > 5) apt = H->GetAxis(5);
+  Int_t nlab=al?5:1;
 
   // define rebinning strategy
   //const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDrecoProjection hp[15];  TObjArray php(15);
+  const Int_t nprojs(50);
+  AliTRDrecoProjection hp[nprojs];  TObjArray php(nprojs);
   const Char_t *stat[] = {"!TRDin", "TRDin", "TRDin&TRDStop", "TRDin&TRDout", "TRDin&TRDout&TRDStop"};
-  const Char_t *lab[] = {"MC-Bad", "MC-Good", "MC-Accept"};
+  const Char_t *lab[] = {"MC-Miss", "MC-Trkble", "MC-Good", "MC-Accept", "MC-Wrong"};
   Int_t ih(0);
   for(Int_t ilab(0); ilab<nlab; ilab++){
     for(Int_t istat(0); istat<5; istat++){
-      hp[ih].Build(Form("HEff%d%d", ilab, istat),
+      hp[ih].Build(Form("HEff0%d%d", ilab, istat),
                     Form("Efficiency ::  Stat[#bf{%s}] %s", stat[istat], nlab>1?lab[ilab]:""), 2, 1, 3, aa);
       //hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php.AddLast(&hp[ih++]); //np[isel]++;
+      php.AddLast(&hp[ih++]);
+      if(!apt) continue;
+      hp[ih].Build(Form("HEff1%d%d", ilab, istat),
+                    Form("Efficiency [MC] ::  Stat[#bf{%s}] %s", stat[istat], lab[ilab]), 2, 1, 5, aa);
+      //hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+      php.AddLast(&hp[ih++]);
     }
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
@@ -521,26 +560,29 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   Int_t istatus, ilab(0), coord[11]; memset(coord, 0, sizeof(Int_t) * 11); Double_t v = 0.;
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord); if(v<1.) continue;
-    istatus = coord[0]-1;
-    ilab=al?0:coord[4];
-    Int_t isel = ilab*5+istatus;
+    istatus = coord[0]-1; if(istatus>4) continue;
+    ilab=al?coord[4]:0;
+    Int_t isel = (apt?2:1)*(ilab*5+istatus);
     if(isel>=ih){
-      AliError(Form("Wrong selection %d [%3d]", isel, ih));
+      AliError(Form("Wrong selection %d [%3d] {stat[%d] lab[%d]}", isel, ih, istatus, ilab));
       return kFALSE;
     }
     if(!(pr0=(AliTRDrecoProjection*)php.At(isel))) {
       AliError(Form("Missing projection %d", isel));
       return kFALSE;
     }
-    if(strcmp(pr0->H()->GetName(), Form("HEff%d%d", ilab, istatus))!=0){
-      AliError(Form("Projection mismatch :: request[HEff%d%d] found[%s]", ilab, istatus, pr0->H()->GetName()));
+    if(strcmp(pr0->H()->GetName(), Form("HEff0%d%d", ilab, istatus))!=0){
+      AliError(Form("Projection mismatch :: request[HEff0%d%d] found[%s]", ilab, istatus, pr0->H()->GetName()));
       return kFALSE;
     }
-    for(Int_t jh(0); jh<1/*np[isel]*/; jh++) ((AliTRDrecoProjection*)php.At(isel+jh))->Increment(coord, v);
+    //for(Int_t jh(0); jh<1/*np[isel]*/; jh++) ((AliTRDrecoProjection*)php.At(isel+jh))->Increment(coord, v);
+    AliDebug(2, Form("Found %s for selection stat[%d] lab[%d]", pr0->H()->GetName(), istatus, ilab));
+    ((AliTRDrecoProjection*)php.At(isel))->Increment(coord, v);
+    if(apt) ((AliTRDrecoProjection*)php.At(isel+1))->Increment(coord, v);
   }
   if(HasDump3D()){
     TDirectory *cwd = gDirectory;
-    TFile::Open(Form("EffDump_%s.root", H->GetName()), "RECREATE");
+    TFile::Open(Form("Dump%s_%s.root", GetName(), H->GetName()), "RECREATE");
     for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
       if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
       if(!pr0->H()) continue;
@@ -554,75 +596,139 @@ Bool_t AliTRDefficiency::MakeProjectionBasicEff()
   Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].H()) continue;
+    if(hp[ih].H()->Integral()<5.) continue;
     for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(hp[ih].Projection2Dbin(ipt), jh++);
   }
 
-/*  AliTRDrecoProjection prLab;  TH2 *hLab[3] = {0}; TH1 *hpLab[3] = {0};
-  for(ilab=0; ilab<nlab; ilab++){
-    if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", ilab, 3)))) continue;
-    prLab=(*pr0);
-    prLab.SetNameTitle(Form("HEffLb%d", ilab), "Sum over status");
-    prLab.H()->SetNameTitle(Form("HEffLb%d", ilab), Form("Efficiency :: #bf{%s} Propagated Tracks", lab[ilab]));
-    if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", ilab, 4)))) continue;
-    prLab+=(*pr1);
-    prLab.Projection2D(1, 10, -1, kFALSE);
-    if((hLab[ilab] = (TH2*)gDirectory->Get(Form("%sEn", prLab.H()->GetName())))) fProj->AddAt(hLab[ilab], jh++);
-    if((hpLab[ilab] = prLab.H()->Project3D("z"))) fProj->AddAt(hpLab[ilab], jh++);
-  }*/
-
-  for(Int_t istat(0); istat<5; istat++) {
-    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, istat)))) {
-      // sum over MC labels if available
-      for(ilab=1; ilab<nlab; ilab++){
-        if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", ilab, istat)))) continue;
-        (*pr0)+=(*pr1);
+  // PROCESS MC LABEL, CLONE 
+  if(nlab>1){
+    // MISSED TRACKS
+    for(Int_t imc(0); imc<(apt?2:1); imc++){
+      AliTRDrecoProjection prMis, prMisOK, prS, prSs, prTRDf;
+      for(Int_t istat(0); istat<5; istat++) {
+        if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d0%d", imc, istat)))) continue;
+        if(!prMis.H()){
+          prMis = (*pr0);
+          prMis.SetNameTitle(Form("HEff%dM", imc), "Missed tracks");
+          prMis.H()->SetNameTitle(Form("HEff%dM", imc), Form("Efficiency [%s] :: Missed tracks", imc?"MC":"REC"));
+        } else prMis+=(*pr0);
+        if(istat==0) {             // MC miss & !TRDin
+          prMisOK = (*pr0);
+          prMisOK.SetNameTitle(Form("HEff%dMok", imc), "Missed tracks/Not propagated");
+          prMisOK.H()->SetNameTitle(Form("HEff%dMok", imc), Form("Efficiency [%s] :: Missed tracks/Not propagated", imc?"MC":"REC"));
+        } else if(istat==1) {             // MC miss & TRDin
+          prS = (*pr0);
+          prS.SetNameTitle(Form("HEff%dMS", imc), "Missed seeded tracks");
+          prS.H()->SetNameTitle(Form("HEff%dMS", imc), Form("Efficiency [%s] :: Missed tracks/Seeder propagated", imc?"MC":"REC"));
+        } else if(istat==2) {             // MC miss & TRDstop
+          prSs = (*pr0);
+          prSs.SetNameTitle(Form("HEff%dMSs", imc), "Stop seeded tracks");
+          prSs.H()->SetNameTitle(Form("HEff%dMSs", imc), Form("Efficiency [%s] :: Missed tracks/Stop seeded tracks", imc?"MC":"REC"));
+        } else if(istat==3 || istat==4) {             // MC miss & (TRDout || TRDout+TRDstop)
+          prTRDf = (*pr0);
+          prTRDf.SetNameTitle(Form("HEff%dMTtrd", imc), "Missed tracks/TRD fooled");
+          prTRDf.H()->SetNameTitle(Form("HEff%dMTtrd", imc), Form("Efficiency [%s] :: Missed tracks/TRD fooled", imc?"MC":"REC"));
+        } else {
+          if(Int_t(pr0->H()->Integral()) > 0) AliWarning(Form("Detected %3d MISSED entries for %s[%s]", Int_t(pr0->H()->Integral()), stat[istat], imc?"MC":"REC"));
+        }
       }
-      pr0->H()->SetNameTitle(Form("HEff%d", istat), Form("Efficiency :: Stat[#bf{%s}]", stat[istat]));
-      for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
+      for(Int_t ipt(-1); ipt<=fNpt; ipt++){
+        fProj->AddAt(prMis.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prMisOK.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prS.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prSs.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prTRDf.Projection2Dbin(ipt, imc), jh++);
+      }
+    
+      // TRACKABLE TRACKS
+      AliTRDrecoProjection prAll, prTRDns, prTRDfail, prTRD, prTRDbad;//, prTRDstop;
+      for(ilab=1; ilab<=4; ilab++){
+        for(Int_t istat(0); istat<5; istat++) {
+          if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d%d", imc, ilab, istat)))){
+            AliError(Form("Missing prj. HEff%d%d%d", imc, ilab, istat));
+            continue;
+          }
+          if(!prAll.H()){
+            prAll = (*pr0);
+            prAll.SetNameTitle(Form("HEff%dAT", imc), "Trackable tracks");
+            prAll.H()->SetNameTitle(Form("HEff%dAT", imc), Form("Efficiency [%s] :: Trackable tracks", imc?"MC":"REC"));
+          } else prAll+=(*pr0);
+          if(ilab==1 && istat==0){      // MC trackable & !TRDin
+            prTRDns = (*pr0);
+            prTRDns.SetNameTitle(Form("HEff%dAnStrd", imc), "Trackable tracks/TRD not seeded");
+            prTRDns.H()->SetNameTitle(Form("HEff%dAnStrd", imc), Form("Efficiency [%s] :: Trackable tracks/TRD not seeded", imc?"MC":"REC"));
+          } else if(ilab==1 && istat==1){      // MC trackable & TRDin
+            prTRDfail = (*pr0);
+            prTRDfail.SetNameTitle(Form("HEff%dAFtrd", imc), "Trackable tracks/TRD failed");
+            prTRDfail.H()->SetNameTitle(Form("HEff%dAFtrd", imc), Form("Efficiency [%s] :: Trackable tracks/TRD failed", imc?"MC":"REC"));
+          } else if((ilab==2 && istat>=3) ||   // MC good & (TRDout || TRDout+TRDstop)
+                    (ilab==3 && istat>=3) ||   // MC accept & (TRDout || TRDout+TRDstop)
+                    (ilab==4 && istat==2)) {   // MC bad & TRDin+TRDstop
+            if(!prTRD.H()){
+              prTRD = (*pr0);
+              prTRD.SetNameTitle(Form("HEff%dAtrd", imc), "Trackable tracks/TRD OK");
+              prTRD.H()->SetNameTitle(Form("HEff%dAtrd", imc), Form("Efficiency [%s] :: Trackable tracks/TRD OK", imc?"MC":"REC"));
+            } else prTRD+=(*pr0);
+          } else if(ilab==4 && istat>=3){      // MC trackable & (TRDout (+TRDstop))
+            if(!prTRDbad.H()){
+              prTRDbad = (*pr0);
+              prTRDbad.SetNameTitle(Form("HEff%dABtrd", imc), "Trackable tracks/TRD bad");
+              prTRDbad.H()->SetNameTitle(Form("HEff%dABtrd", imc), Form("Efficiency [%s] :: Trackable tracks/TRD bad", imc?"MC":"REC"));
+            } else  prTRDbad+=(*pr0);
+          } else {
+            if(Int_t(pr0->H()->Integral()) > 0) AliWarning(Form("Detected %3d TRACKABLE entries for %s -> %s[%s]", Int_t(pr0->H()->Integral()), lab[ilab], stat[istat], imc?"MC":"REC"));
+          }
+        }
+      }
+      for(Int_t ipt(-1); ipt<=fNpt; ipt++){
+        fProj->AddAt(prAll.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prTRDns.Projection2Dbin(ipt), jh++);
+        fProj->AddAt(prTRDfail.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prTRD.Projection2Dbin(ipt, imc), jh++);
+        fProj->AddAt(prTRDbad.Projection2Dbin(ipt, imc), jh++);
+      }
+    } // END pt source LOOP
+  } // END PROCESS EFFICIENCY MC
 
-      if(istat>1 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff01"))) (*pr1)+=(*pr0);
-      if(istat>2 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff02"))) (*pr1)+=(*pr0);
-      if(istat>3 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff03"))) (*pr1)+=(*pr0);
+  // PROCESS EFFICIENCY NOMC
+  const char suffix[] = {'A', 'S', 'T'};
+  const char *sname[] = {"All", "Stopped", "Tracked [Stop]"};
+  for(Int_t istat(0); istat<5; istat++) {
+    if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff00%d", istat)))){
+      AliError(Form("Missing prj. HEff00%d", istat));
+      continue;
     }
+    // sum over MC labels if available
+    for(ilab=1; ilab<nlab; ilab++){
+      if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HEff0%d%d", ilab, istat)))){
+        AliError(Form("Missing prj. HEff0%d%d", ilab, istat));
+        continue;
+      }
+      (*pr0)+=(*pr1);
+    }
+    pr0->H()->SetNameTitle(Form("HEff%d", istat), Form("Efficiency :: Stat[#bf{%s}]", stat[istat]));
+    for(Int_t ipt(0); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
+
+    if(istat>1 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff001"))) (*pr1)+=(*pr0);
+    //if(istat>2 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff02"))) (*pr1)+=(*pr0);
+    if(istat>3 && (pr1 = (AliTRDrecoProjection*)php.FindObject("HEff003"))) (*pr1)+=(*pr0);
   }
   // Project 2D tracks
-  const char suffix[] = {'A', 'T', 'P'};
-  const char *sname[] = {"All", "Trk", "Prp"};
   for(Int_t istat(0); istat<3; istat++){
-    if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff%d%d", 0, istat+1)))) continue;
+    if(!(pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HEff00%d", istat+1)))){
+      AliError(Form("Missing prj. HEff00%d", istat+1));
+      continue;
+    }
     pr0->H()->SetNameTitle(Form("HEff%c", suffix[istat]), Form("Efficiency :: %s Tracks", sname[istat]));
     for(Int_t ipt(-1); ipt<=fNpt; ipt++) fProj->AddAt(pr0->Projection2Dbin(ipt), jh++);
   }
 
   // Efficiency
-  TH2F *h2T(NULL), *h2P(NULL);
+/*  TH2F *h2T(NULL), *h2P(NULL);
   for(Int_t ipt(-1); ipt<=fNpt; ipt++){
     if(!(h2T = (TH2F*)fProj->FindObject(Form("HEffT%d_2D", ipt)))) continue;
     if(!(h2P = (TH2F*)fProj->FindObject(Form("HEffP%d_2D", ipt)))) continue;
-    h2P->Divide(h2T);
-    PutTrendValue(ipt<0?"pt":(Form("pt%d", ipt)), GetMeanStat(h2P, 0.01, ">"));
-  }
-/*  // process MC label
-  if(hEff[2]){
-    for(ilab=0; ilab<nlab; ilab++){
-      if(!hLab[ilab]) continue;
-      // remove fakes
-      TH2 *hEff1 = (TH2*)hLab[ilab]->Clone(Form("%sN", hLab[ilab]->GetName()));
-      for(Int_t ix(1); ix<=hLab[ilab]->GetNbinsX(); ix++){
-        for(Int_t iy(1); iy<=hLab[ilab]->GetNbinsY(); iy++){
-          if(hLab[ilab]->GetBinContent(ix, iy)<5) hEff1->SetBinContent(ix, iy, 0.);
-      }}
-      hEff1->Divide(hEff[2]);
-      fProj->AddAt(hEff1, jh++);
-    }
-  }
-  if(hpEff[2]){
-    for(ilab=0; ilab<nlab; ilab++){
-      if(!hpLab[ilab]) continue;
-      TH1 *hpEff1 = (TH1*)hpLab[ilab]->Clone(Form("%sN", hpLab[ilab]->GetName()));
-      hpEff1->Divide(hpEff[2]);
-      fProj->AddAt(hpEff1, jh++);
-    }
+    h2P->Divide(h2T); PutTrendValue(ipt<0?"pt":(Form("pt%d", ipt)), GetMeanStat(h2P, 0.01, ">"));
   }*/
   AliInfo(Form("Done %3d 2D projections.", jh));
   return kTRUE;

@@ -13,8 +13,8 @@ Bool_t ConfigSigmaStar
    AliRsnMiniAnalysisTask *task,
    Bool_t		   isPP, 
    Bool_t                  isMC,
-   Int_t		  piPIDCut,	 
-   Int_t                  pPIDCut,
+   Float_t                 piPIDCut,
+   Float_t                 pPIDCut,
    Int_t                  aodFilterBit,
    const char             *suffix,
    AliRsnCutSet           *cutsPair
@@ -62,7 +62,7 @@ Bool_t ConfigSigmaStar
    cutLambda->SetMaxDCAVertex(0.3);
    cutLambda->SetMinCosPointingAngle(0.99);
    cutLambda->SetMaxDaughtersDCA(0.5);
-   cutLambda->SetMaxRapidity(0.8);
+   cutLambda->SetMaxRapidity(0.5);
    cutLambda->SetAODTestFilterBit(aodFilterBit);
    cutLambda->SetPIDCut1(pPIDCut);
    cutLambda->SetPIDCut2(piPIDCut);
@@ -84,7 +84,7 @@ Bool_t ConfigSigmaStar
    cutAntiLambda->SetMaxDCAVertex(0.3);
    cutAntiLambda->SetMinCosPointingAngle(0.99);
    cutAntiLambda->SetMaxDaughtersDCA(0.5);
-   cutAntiLambda->SetMaxRapidity(0.8);
+   cutAntiLambda->SetMaxRapidity(0.5);
    cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambda->SetPIDCut1(pPIDCut);
    cutAntiLambda->SetPIDCut2(piPIDCut);
@@ -122,7 +122,7 @@ Bool_t ConfigSigmaStar
    cutLambdaLoose->SetMaxDCAVertex(0.4);
    cutLambdaLoose->SetMinCosPointingAngle(0.82);
    cutLambdaLoose->SetMaxDaughtersDCA(0.67);
-   cutLambdaLoose->SetMaxRapidity(0.8);
+   cutLambdaLoose->SetMaxRapidity(0.5);
    cutLambdaLoose->SetAODTestFilterBit(aodFilterBit);
    cutLambdaLoose->SetPIDCut1(pPIDCut);
    cutLambdaLoose->SetPIDCut2(piPIDCut);
@@ -144,7 +144,7 @@ Bool_t ConfigSigmaStar
    cutAntiLambdaLoose->SetMaxDCAVertex(0.4);
    cutAntiLambdaLoose->SetMinCosPointingAngle(0.982);
    cutAntiLambdaLoose->SetMaxDaughtersDCA(0.67);
-   cutAntiLambdaLoose->SetMaxRapidity(0.8);
+   cutAntiLambdaLoose->SetMaxRapidity(0.5);
    cutAntiLambdaLoose->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambdaLoose->SetPIDCut1(pPIDCut);
    cutAntiLambdaLoose->SetPIDCut2(piPIDCut);
@@ -186,7 +186,7 @@ Bool_t ConfigSigmaStar
    cutLambdaTight->SetMaxDCAVertex(0.22);
    cutLambdaTight->SetMinCosPointingAngle(0.995);
    cutLambdaTight->SetMaxDaughtersDCA(0.35);
-   cutLambdaTight->SetMaxRapidity(0.8);
+   cutLambdaTight->SetMaxRapidity(0.5);
    cutLambdaTight->SetAODTestFilterBit(aodFilterBit);
    cutLambdaTight->SetPIDCut1(pPIDCut);
    cutLambdaTight->SetPIDCut2(piPIDCut);
@@ -208,7 +208,7 @@ Bool_t ConfigSigmaStar
    cutAntiLambdaTight->SetMaxDCAVertex(0.22);
    cutAntiLambdaTight->SetMinCosPointingAngle(0.995);
    cutAntiLambdaTight->SetMaxDaughtersDCA(0.35);
-   cutAntiLambdaTight->SetMaxRapidity(0.8);
+   cutAntiLambdaTight->SetMaxRapidity(0.5);
    cutAntiLambdaTight->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambdaTight->SetPIDCut1(pPIDCut);
    cutAntiLambdaTight->SetPIDCut2(piPIDCut);

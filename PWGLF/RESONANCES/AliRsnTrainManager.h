@@ -21,10 +21,10 @@ public:
    AliRsnTrainManager &operator=(const AliRsnTrainManager &copy);
    virtual ~AliRsnTrainManager();
 
-   static void         SetGlobalStr(const char *key, const char *value);
-   static void         SetGlobalInt(const char *key, Int_t value);
-   static void         SetGlobalDbl(const char *key, Double_t value);
-   static void         SetGlobalObj(const char *key, TObject *value);
+   static void         SetGlobalStr(const char *key, const char *value,Bool_t verbose=kTRUE);
+   static void         SetGlobalInt(const char *key, Int_t value,Bool_t verbose=kTRUE);
+   static void         SetGlobalDbl(const char *key, Double_t value,Bool_t verbose=kTRUE);
+   static void         SetGlobalObj(const char *key, TObject *value,Bool_t verbose=kTRUE);
 
    static const char  *GetGlobalStr(const char *key, Bool_t &valid);
    static Int_t        GetGlobalInt(const char *key, Bool_t &valid);

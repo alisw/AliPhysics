@@ -103,7 +103,11 @@ AliAnaPhoton::AliAnaPhoton() :
     fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
     fhTimeNPileUpVertContributors(0),
     fhTimePileUpMainVertexZDistance(0),   fhTimePileUpMainVertexZDiamond(0),
-    fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp()
+    fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp(),
+    fhEtaPhiBC0(0),  fhEtaPhiBCPlus(0),   fhEtaPhiBCMinus(0),
+    fhEtaPhiBC0PileUpSPD(0),
+    fhEtaPhiBCPlusPileUpSPD(0),
+    fhEtaPhiBCMinusPileUpSPD(0)
  {
   //default ctor
   
@@ -134,6 +138,20 @@ AliAnaPhoton::AliAnaPhoton() :
     fhDispEtaDispPhi[i] = 0;
     fhLambda0DispPhi[i] = 0;
     fhLambda0DispEta[i] = 0;
+    
+    fhPtPileUp       [i] = 0;
+    fhPtChargedPileUp[i] = 0;
+    fhPtPhotonPileUp [i] = 0;
+
+    fhLambda0PileUp       [i] = 0;
+    fhLambda0ChargedPileUp[i] = 0;
+    
+    fhClusterEFracLongTimePileUp  [i] = 0;
+    
+    fhClusterTimeDiffPileUp       [i] = 0;
+    fhClusterTimeDiffChargedPileUp[i] = 0;
+    fhClusterTimeDiffPhotonPileUp [i] = 0;
+
     for(Int_t j = 0; j < 6; j++)
     {
       fhMCDispEtaDispPhi[i][j] = 0;
@@ -199,21 +217,154 @@ AliAnaPhoton::AliAnaPhoton() :
 Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mom, const Int_t nMaxima) 
 {
   //Select clusters if they pass different cuts
-  if(GetDebug() > 2) 
-    printf("AliAnaPhoton::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
+  
+  Float_t ptcluster = mom.Pt();
+  Float_t ecluster  = mom.E();
+  Float_t l0cluster = calo->GetM02();
+  
+  if(GetDebug() > 2)
+    printf("AliAnaPhoton::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(),
-           calo->E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
-    
-  fhClusterCuts[1]->Fill(calo->E());
+           ecluster,ptcluster, mom.Phi()*TMath::RadToDeg(),mom.Eta());
+  
+  fhClusterCuts[1]->Fill(ecluster);
   
   //.......................................
   //If too small or big energy, skip it
-  if(calo->E() < GetMinEnergy() || calo->E() > GetMaxEnergy() ) return kFALSE ; 
+  if(ecluster < GetMinEnergy() || ecluster > GetMaxEnergy() ) return kFALSE ; 
   
   if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
   
-  fhClusterCuts[2]->Fill(calo->E());
+  fhClusterCuts[2]->Fill(ecluster);
 
+  if(fFillPileUpHistograms)
+  {
+    // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+    AliVCaloCells* cells = 0;
+    if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+    else                        cells = GetPHOSCells();
+    
+    Float_t maxCellFraction = 0.;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
+
+    Double_t tmax  = cells->GetCellTime(absIdMax);
+    GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    tmax*=1.e9;
+    
+    Bool_t okPhoton = kFALSE;
+    if( GetCaloPID()->GetIdentifiedParticleType(calo)== AliCaloPID::kPhoton) okPhoton = kTRUE;
+
+    Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
+    Float_t clusterLongTimeE = 0;
+    Float_t clusterOKTimeE   = 0;
+    //Loop on cells inside cluster
+    for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
+    {
+      Int_t absId  = calo->GetCellsAbsId()[ipos];
+      //if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
+      if(cells->GetCellAmplitude(absIdMax) > 0.1)
+      {
+        Double_t time  = cells->GetCellTime(absId);
+        Float_t  amp   = cells->GetCellAmplitude(absId);
+        Int_t    bc    = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+        GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,time,cells);
+        time*=1e9;
+        
+        Float_t diff = (tmax-time);
+      
+        if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimeE   += amp;
+        else                                      clusterLongTimeE += amp;
+        
+        if(GetReader()->IsPileUpFromSPD())
+        {
+          fhClusterTimeDiffPileUp[0]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[0]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[0]->Fill(ecluster, diff);
+          }
+        }
+        
+        if(GetReader()->IsPileUpFromEMCal())
+        {
+          fhClusterTimeDiffPileUp[1]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[1]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[1]->Fill(ecluster, diff);
+          }
+        }
+
+        if(GetReader()->IsPileUpFromSPDOrEMCal())
+        {
+          fhClusterTimeDiffPileUp[2]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[2]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[2]->Fill(ecluster, diff);
+          }
+        }
+        
+        if(GetReader()->IsPileUpFromSPDAndEMCal())
+        {
+          fhClusterTimeDiffPileUp[3]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[3]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[3]->Fill(ecluster, diff);
+          }
+        }
+        
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())
+        {
+          fhClusterTimeDiffPileUp[4]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[4]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[4]->Fill(ecluster, diff);
+          }
+        }
+        
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())
+        {
+          fhClusterTimeDiffPileUp[5]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[5]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[5]->Fill(ecluster, diff);
+          }
+        }
+
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
+        {
+          fhClusterTimeDiffPileUp[6]->Fill(ecluster, diff);
+          if(!matched)
+          {
+            fhClusterTimeDiffChargedPileUp[6]->Fill(ecluster, diff);
+            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[6]->Fill(ecluster, diff);
+          }
+        }
+      }// Not max
+    }//loop
+    
+    Float_t frac = 0;
+    if(clusterLongTimeE+clusterOKTimeE > 0.001)
+      frac = clusterLongTimeE/(clusterLongTimeE+clusterOKTimeE);
+    //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimeE,clusterOKTimeE,frac,ecluster);
+    
+    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
+    
+    if(tmax > -25 && tmax < 25) {fhEtaPhiBC0    ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(mom.Eta(),mom.Phi()); }
+    else if (tmax > 25)         {fhEtaPhiBCPlus ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(mom.Eta(),mom.Phi()); }
+    else if (tmax <-25)         {fhEtaPhiBCMinus->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(mom.Eta(),mom.Phi()); }
+  }
+  
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
@@ -221,19 +372,19 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
   
   if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
   
-  fhClusterCuts[3]->Fill(calo->E());
+  fhClusterCuts[3]->Fill(ecluster);
 
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
   
   if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
   
-  fhClusterCuts[4]->Fill(calo->E());
+  fhClusterCuts[4]->Fill(ecluster);
 
   if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
   if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
 
-  fhClusterCuts[5]->Fill(calo->E());
+  fhClusterCuts[5]->Fill(ecluster);
 
   //.......................................
   //Check acceptance selection
@@ -245,7 +396,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
   
   if(GetDebug() > 2) printf("Fiducial cut passed \n");
   
-  fhClusterCuts[6]->Fill(calo->E());
+  fhClusterCuts[6]->Fill(ecluster);
 
   //.......................................
   //Skip matched clusters with tracks
@@ -264,8 +415,19 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
       if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
   }// reject matched clusters
   
-  fhClusterCuts[7]->Fill(calo->E());
+  fhClusterCuts[7]->Fill(ecluster);
 
+  if(fFillPileUpHistograms)
+  {
+    if(GetReader()->IsPileUpFromSPD())               {fhPtChargedPileUp[0]->Fill(ptcluster); fhLambda0ChargedPileUp[0]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromEMCal())             {fhPtChargedPileUp[1]->Fill(ptcluster); fhLambda0ChargedPileUp[1]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtChargedPileUp[2]->Fill(ptcluster); fhLambda0ChargedPileUp[2]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtChargedPileUp[3]->Fill(ptcluster); fhLambda0ChargedPileUp[3]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtChargedPileUp[4]->Fill(ptcluster); fhLambda0ChargedPileUp[4]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtChargedPileUp[5]->Fill(ptcluster); fhLambda0ChargedPileUp[5]->Fill(ecluster,l0cluster); }
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtChargedPileUp[6]->Fill(ptcluster); fhLambda0ChargedPileUp[6]->Fill(ecluster,l0cluster); }
+  }
+  
   //.......................................
   //Check Distance to Bad channel, set bit.
   Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
@@ -276,12 +438,12 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mo
   }
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
   
-  fhClusterCuts[8]->Fill(calo->E());
+  fhClusterCuts[8]->Fill(ecluster);
   
   if(GetDebug() > 0) 
-    printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
+    printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(), 
-           calo->E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           ecluster, ptcluster,mom.Phi()*TMath::RadToDeg(),mom.Eta());
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -662,14 +824,22 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters)
 }
 
 
-//___________________________________________________________________
-void AliAnaPhoton::FillPileUpHistograms(const Float_t energy, const Float_t time) 
+//_________________________________________________________________________________________________
+void AliAnaPhoton::FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time)
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
   
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
+  
+  if(GetReader()->IsPileUpFromSPD())               fhPtPhotonPileUp[0]->Fill(pt);
+  if(GetReader()->IsPileUpFromEMCal())             fhPtPhotonPileUp[1]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPhotonPileUp[2]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPhotonPileUp[3]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPhotonPileUp[4]->Fill(pt);
+  if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPhotonPileUp[5]->Fill(pt);
+  if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPhotonPileUp[6]->Fill(pt);
   
   fhTimeENoCut->Fill(energy,time);
   if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
@@ -1309,6 +1479,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhi05Photon->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhi05Photon) ;
   }
+
   
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
                        nptbins,ptmin,ptmax,10,0,10); 
@@ -1819,7 +1990,101 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
-    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+    
+    TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+    
+    for(Int_t i = 0 ; i < 7 ; i++)
+    {
+      fhPtPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
+                                       Form("Cluster  p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPileUp[i]);
+      
+      fhPtChargedPileUp[i]  = new TH1F(Form("hPtChargedPileUp%s",pileUpName[i].Data()),
+                                      Form("Charged clusters p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtChargedPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtChargedPileUp[i]);
+
+      fhPtPhotonPileUp[i]  = new TH1F(Form("hPtPhotonPileUp%s",pileUpName[i].Data()),
+                                      Form("Selected photon p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPhotonPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPhotonPileUp[i]);
+      
+      
+      fhClusterEFracLongTimePileUp[i]  = new TH2F(Form("hClusterEFracLongTimePileUp%s",pileUpName[i].Data()),
+                                             Form("Cluster E vs fraction of cluster energy from large T cells, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,200,0,1);
+      fhClusterEFracLongTimePileUp[i]->SetXTitle("E (GeV)");
+      fhClusterEFracLongTimePileUp[i]->SetYTitle("E(large time) / E");
+      outputContainer->Add(fhClusterEFracLongTimePileUp[i]);
+      
+      fhClusterTimeDiffPileUp[i]  = new TH2F(Form("hClusterTimeDiffPileUp%s",pileUpName[i].Data()),
+                                Form("Cluster E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,200,-100,100);
+      fhClusterTimeDiffPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
+      outputContainer->Add(fhClusterTimeDiffPileUp[i]);
+      
+      fhClusterTimeDiffChargedPileUp[i]  = new TH2F(Form("hClusterTimeDiffChargedPileUp%s",pileUpName[i].Data()),
+                                       Form("Charged clusters E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                                    nptbins,ptmin,ptmax,200,-100,100);
+      fhClusterTimeDiffChargedPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffChargedPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
+      outputContainer->Add(fhClusterTimeDiffChargedPileUp[i]);
+      
+      fhClusterTimeDiffPhotonPileUp[i]  = new TH2F(Form("hClusterTimeDiffPhotonPileUp%s",pileUpName[i].Data()),
+                                      Form("Selected photon E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                                   nptbins,ptmin,ptmax,200,-100,100);
+      fhClusterTimeDiffPhotonPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffPhotonPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
+      outputContainer->Add(fhClusterTimeDiffPhotonPileUp[i]);
+
+      fhLambda0PileUp[i]  = new TH2F(Form("hLambda0PileUp%s",pileUpName[i].Data()),
+                                     Form("Cluster E vs #lambda^{2}_{0} in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLambda0PileUp[i]->SetXTitle("E (GeV)");
+      fhLambda0PileUp[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0PileUp[i]);
+      
+      fhLambda0ChargedPileUp[i]  = new TH2F(Form("hLambda0ChargedPileUp%s",pileUpName[i].Data()),
+                                                    Form("Charged clusters E vs #lambda^{2}_{0}in cluster, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLambda0ChargedPileUp[i]->SetXTitle("E (GeV)");
+      fhLambda0ChargedPileUp[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0ChargedPileUp[i]);
+
+    }
+    
+    fhEtaPhiBC0  = new TH2F ("hEtaPhiBC0","eta-phi for clusters tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBC0->SetXTitle("#eta ");
+    fhEtaPhiBC0->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBC0);
+    
+    fhEtaPhiBCPlus  = new TH2F ("hEtaPhiBCPlus","eta-phi for clusters tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCPlus->SetXTitle("#eta ");
+    fhEtaPhiBCPlus->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCPlus);
+    
+    fhEtaPhiBCMinus  = new TH2F ("hEtaPhiBCMinus","eta-phi for clusters tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCMinus->SetXTitle("#eta ");
+    fhEtaPhiBCMinus->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCMinus);
+    
+    fhEtaPhiBC0PileUpSPD  = new TH2F ("hEtaPhiBC0PileUpSPD","eta-phi for clusters tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBC0PileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBC0PileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBC0PileUpSPD);
+    
+    fhEtaPhiBCPlusPileUpSPD  = new TH2F ("hEtaPhiBCPlusPileUpSPD","eta-phi for clusters tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCPlusPileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBCPlusPileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCPlusPileUpSPD);
+    
+    fhEtaPhiBCMinusPileUpSPD  = new TH2F ("hEtaPhiBCMinusPileUpSPD","eta-phi for clusters tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiBCMinusPileUpSPD->SetXTitle("#eta ");
+    fhEtaPhiBCMinusPileUpSPD->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiBCMinusPileUpSPD);
+
+    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
     fhTimeENoCut->SetXTitle("E (GeV)");
     fhTimeENoCut->SetYTitle("time (ns)");
     outputContainer->Add(fhTimeENoCut);  
@@ -1837,7 +2102,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
     fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
-    outputContainer->Add(fhTimeNPileUpVertSPD);  
+    outputContainer->Add(fhTimeNPileUpVertSPD);
     
     fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 ); 
     fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
@@ -2470,7 +2735,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;			
       
     }
-    
+
     //...............................................
     // Data, PID check off
     else
@@ -2495,7 +2760,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
-    FillPileUpHistograms(calo->E(),calo->GetTOF()*1e9);    
+    FillPileUpHistograms(calo->E(),mom.Pt(),calo->GetTOF()*1e9);
     
     // Add number of local maxima to AOD, method name in AOD to be FIXED
     aodph.SetFiducialArea(nMaxima);
@@ -2553,9 +2818,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     fhPtPhoton  ->Fill(ptcluster);
     fhPhiPhoton ->Fill(ptcluster,phicluster);
     fhEtaPhoton ->Fill(ptcluster,etacluster);    
-    if     (ecluster > 0.5)   fhEtaPhiPhoton  ->Fill(etacluster, phicluster);
+    if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
-    
 
     //Get original cluster, to recover some information
     Int_t absID             = 0; 

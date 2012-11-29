@@ -108,7 +108,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
       "time="<<time<<
       "startTimeGRP="<<startTimeGRP<<
       "stopTimeGRP="<<stopTimeGRP<<
-      "duration="<<
+      "duration="<<duration<<
       "runType.="<<&runType;
     if (pTPC) {
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
@@ -690,25 +690,25 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     // dump values
     //
     (*pcstream)<<"tpcQA"<<
-        "offsetdRA="<< offsetdRA<<
-        "slopedRA="<< slopedRA<<
-        "offsetdRC="<< offsetdRC<<
-        "slopedRC="<<slopedRC<<
-        //
-        "offsetdRAErr="<< offsetdRAErr<<
-        "slopedRAErr="<< slopedRAErr<<
-        "offsetdRCErr="<< offsetdRCErr<<
-        "slopedRCErr="<<slopedRCErr<<
-        //
-        "offsetdRAchi2="<< offsetdRAchi2<<
-        "slopedRAchi2="<< slopedRAchi2<<
-        "offsetdRCchi2="<< offsetdRCchi2<<
-        "slopedRCchi2="<<slopedRCchi2<<
-        //
-        "dcarAP0="<<dcarAP0<<
-        "dcarAP1="<<dcarAP1<<
-        "dcarCP0="<<dcarCP0<<
-        "dcarCP1="<<dcarCP1;
+      "offsetdRA="<< offsetdRA<<                       // mean r-phi distortion fit A side (DCA_rphi=[0]+[1]*tgl(theta)) - parameter [0] offset
+      "slopedRA="<< slopedRA<<                         // mean r-phi distortion fit A side (DCA_rphi=[0]+[1]*tgl(theta)) - parameter [1] slope
+      "offsetdRC="<< offsetdRC<<                       // 
+      "slopedRC="<<slopedRC<<
+      //
+      "offsetdRAErr="<< offsetdRAErr<<
+      "slopedRAErr="<< slopedRAErr<<
+      "offsetdRCErr="<< offsetdRCErr<<
+      "slopedRCErr="<<slopedRCErr<<
+      //
+      "offsetdRAchi2="<< offsetdRAchi2<<
+      "slopedRAchi2="<< slopedRAchi2<<
+      "offsetdRCchi2="<< offsetdRCchi2<<
+      "slopedRCchi2="<<slopedRCchi2<<
+      //
+      "dcarAP0="<<dcarAP0<<
+      "dcarAP1="<<dcarAP1<<
+      "dcarCP0="<<dcarCP0<<
+      "dcarCP1="<<dcarCP1;
         
     return 0;
 }
@@ -786,20 +786,20 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
     // dump values
     //
     (*pcstream)<<"tpcQA"<<
-        "offsetdRAPos="<< offsetdRAPos<<
-        "slopedRAPos="<< slopedRAPos<<
-        "offsetdRCPos="<< offsetdRCPos<<
-        "slopedRCPos="<<slopedRCPos<<
-        //
-        "offsetdRAErrPos="<< offsetdRAErrPos<<
-        "slopedRAErrPos="<< slopedRAErrPos<<
-        "offsetdRCErrPos="<< offsetdRCErrPos<<
-        "slopedRCErrPos="<<slopedRCErrPos<<
-        //
-        "offsetdRAchi2Pos="<< offsetdRAchi2Pos<<
-        "slopedRAchi2Pos="<< slopedRAchi2Pos<<
-        "offsetdRCchi2Pos="<< offsetdRCchi2Pos<<
-        "slopedRCchi2Pos="<<slopedRCchi2Pos;
+      "offsetdRAPos="<< offsetdRAPos<<
+      "slopedRAPos="<< slopedRAPos<<
+      "offsetdRCPos="<< offsetdRCPos<<
+      "slopedRCPos="<<slopedRCPos<<
+      //
+      "offsetdRAErrPos="<< offsetdRAErrPos<<
+      "slopedRAErrPos="<< slopedRAErrPos<<
+      "offsetdRCErrPos="<< offsetdRCErrPos<<
+      "slopedRCErrPos="<<slopedRCErrPos<<
+      //
+      "offsetdRAchi2Pos="<< offsetdRAchi2Pos<<
+      "slopedRAchi2Pos="<< slopedRAchi2Pos<<
+      "offsetdRCchi2Pos="<< offsetdRCchi2Pos<<
+      "slopedRCchi2Pos="<<slopedRCchi2Pos;
         
     return 0;
 }
@@ -906,6 +906,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
  
     // variables:
     static Double_t meanTPCnclF=0;
+    static Double_t meanTPCnclFStat=0;
+    static Double_t meanTPCnclFErr=0;
     static Double_t rmsTPCnclF=0;
     static Double_t meanTPCChi2=0;
     static Double_t rmsTPCChi2=0;  
@@ -914,6 +916,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     static Double_t slopeATPCnclFErr=0;
     static Double_t slopeCTPCnclFErr=0;
     static Double_t meanTPCncl=0;
+    static Double_t meanTPCnclStat=0;
+    static Double_t meanTPCnclErr=0;
     static Double_t rmsTPCncl=0;
     static Double_t slopeATPCncl=0;
     static Double_t slopeCTPCncl=0;
@@ -962,7 +966,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     }
  
     meanTPCncl= his1D->GetMean();
+    meanTPCnclStat= his1D->GetEntries();
+    meanTPCnclErr= his1D->GetMeanError();
     rmsTPCncl= his1D->GetRMS();
+    
     delete his1D;
     
     if (his3D1 && !fgForceTHnSparse) {
@@ -1002,6 +1009,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     }    
         
     meanTPCnclF= his1D->GetMean();
+    meanTPCnclFStat= his1D->GetEntries();
+    meanTPCnclFErr= his1D->GetMeanError();
     rmsTPCnclF= his1D->GetRMS();
     delete his1D;
     
@@ -1038,20 +1047,24 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // dump results to the tree
     //
     (*pcstream)<<"tpcQA"<<
-      "meanTPCnclF="<<meanTPCnclF <<   
-      "rmsTPCnclF="<<rmsTPCnclF <<
-      "meanTPCChi2="<<meanTPCChi2 <<
-      "rmsTPCChi2="<<rmsTPCChi2 <<
-      "slopeATPCnclF="<< slopeATPCnclF<<
-      "slopeCTPCnclF="<< slopeCTPCnclF<<
-      "slopeATPCnclFErr="<< slopeATPCnclFErr<<
-      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<<
-      "meanTPCncl="<<meanTPCncl <<
-      "rmsTPCncl="<< rmsTPCncl<<
-      "slopeATPCncl="<< slopeATPCncl<<
-      "slopeCTPCncl="<< slopeCTPCncl<<
-      "slopeATPCnclErr="<< slopeATPCnclErr<<
-      "slopeCTPCnclErr="<< slopeCTPCnclErr;
+      "meanTPCnclF="<<meanTPCnclF <<   // mean number of cluster/number of findable cluster   
+      "meanTPCnclFStat="<<meanTPCnclFStat <<   // number of cluster/number of findable cluster   - number of etries
+      "meanTPCnclFErr="<<meanTPCnclFErr <<   // error of mean number of cluster/number of findable cluster   
+      "rmsTPCnclF="<<rmsTPCnclF <<     //  RMS of distribution of number of cluster/number of findable cluster   
+      "meanTPCChi2="<<meanTPCChi2 <<   // ????
+      "rmsTPCChi2="<<rmsTPCChi2 <<     // ????
+      "slopeATPCnclF="<< slopeATPCnclF<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
+      "slopeCTPCnclF="<< slopeCTPCnclF<<  // C side- fit of number of clusters/findable   (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
+      "slopeATPCnclFErr="<< slopeATPCnclFErr<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
+      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<< // C side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
+      "meanTPCncl="<<meanTPCncl <<   // mean number of cluster
+      "meanTPCnclStat="<<meanTPCnclStat <<   // number of cluster   - number of etries in histogram
+      "meanTPCnclErr="<<meanTPCnclErr <<   // error of mean number of cluster   
+      "rmsTPCncl="<< rmsTPCncl<<     // rms of mean number of cluster                     
+      "slopeATPCncl="<< slopeATPCncl<< // A side- fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope  
+      "slopeCTPCncl="<< slopeCTPCncl<< // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter 1 - slope
+      "slopeATPCnclErr="<< slopeATPCnclErr<<  // A  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
+      "slopeCTPCnclErr="<< slopeCTPCnclErr; // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
     
     return 0;
 }
@@ -1127,7 +1140,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTre
     // dump drift QA values
     //
     (*pcstream)<<"tpcQA"<<
-        "offsetdZA="<< offsetdZA<<
+      "offsetdZA="<< offsetdZA<<   //
         "slopedZA="<< slopedZA<<
         "offsetdZC="<< offsetdZC<<
         "slopedZC="<<slopedZC<<

@@ -5,7 +5,7 @@
  * 
  * @brief  
  * 
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  * 
  */
 
@@ -17,124 +17,137 @@
  * 
  *
  * @ingroup pwglf_forward_dndeta
- * @ingroup pwglf_forward_trains
+ * @ingroup pwglf_forward_trains_specific
  */
 class MakedNdetaTrain : public TrainSetup
 {
 public:
   /** 
-   * Constructor.  Date and time must be specified when running this
-   * in Termiante mode on Grid
+   * Constructor.  
    * 
    * @param name     Name of train (free form)
    */
   MakedNdetaTrain(const char* name)
-  : TrainSetup(name),
-      fTrig("INEL"), 
-      fVzMin(-10), 
-      fVzMax(+10),
-      fScheme(""),
-      fUseCent(false)
+  : TrainSetup(name)
   {
-    SetType(kAOD);
+    fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
+    fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
+    fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
+    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "");
+    fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
+    fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
+    fOptions.Add("cent",     "Use centrality");
+    fOptions.Add("cut-edges", "Cut acceptance edges");
+    fOptions.Add("corr-empty", "Correct for empty bins (deprecated)");
   }
-  /** 
-   * Set the trigger to use (INEL, INEL>0, NSD)
-   * 
-   * @param trig Trigger to use 
-   */
-  void SetTrigger(const char* trig) { fTrig = trig; }
-  /** 
-   * Set the vertex range to accept 
-   * 
-   * @param min Minimum 
-   * @param max Maximum 
-   */
-  void SetVertexRange(Double_t min, Double_t max) { fVzMin=min; fVzMax=max; }
-  /** 
-   * Set the normalisation scheme 
-   * 
-   * @param scheme Normalisation scheme options 
-   */
-  void SetNormalizationScheme(const char* scheme) { fScheme = scheme; }
-  /** 
-   * Whether to use centrality or not 
-   * 
-   * @param use To use the centrality 
-   */
-  void SetUseCentrality(Bool_t use) { fUseCent = use; }
 protected:
   /** 
    * Create the tasks 
    * 
    * @param par  Whether to use par files 
    */
-  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager*)
+  void CreateTasks(AliAnalysisManager*)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", par, true);
+    fHelper->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
+    // --- Get parameters --------------------------------------------
+    TString  trig   = fOptions.Get("trig");
+    TString  scheme = fOptions.Get("scheme");
+    Double_t vzMin  = fOptions.AsDouble("vzmin", -10);
+    Double_t vzMax  = fOptions.AsDouble("vzmax", +10);
+    Double_t effT   = fOptions.AsDouble("trigEff", 1);
+    Double_t effT0  = fOptions.AsDouble("trigEff0", 1);
+    Bool_t   cent   = fOptions.Has("cent");
+    Bool_t   edges  = fOptions.Has("cut-edges");
+    Bool_t   corrEm = fOptions.Has("corr-empty");
+
+    // --- Form arguments --------------------------------------------
+    TString args;
+    args.Form("\"%s\",%f,%f,%d,\"%s\",%d,%g,%g,%d",
+	      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
+	      edges, effT, effT0, corrEm);
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwarddNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
-		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
-
-    gROOT->Macro(Form("AddTaskCentraldNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
-		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
-
-    gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
-		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
+    gROOT->Macro(Form("AddTaskForwarddNdeta.C(%s);", args.Data()));
+    gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", args.Data()));
+    gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(%s);", args.Data()));
   }
+  //__________________________________________________________________
   /** 
    * Do not the centrality selection
    */
   void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  //__________________________________________________________________
   /** 
    * Crete output handler - we don't want one here. 
    * 
    * @return 0
    */
-  AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   //__________________________________________________________________
   const char* ClassName() const { return "MakedNdetaTrain"; }
   //__________________________________________________________________
-  void MakeOptions(Runner& r) 
+  /** 
+   * Overloaded to create new draw.C 
+   * 
+   * @param asShellScript 
+   */
+  void SaveSetup(Bool_t asShellScript)
   {
-    TrainSetup::MakeOptions(r);
-    r.Add(new Option("trig", "Trigger class", "INEL|INEL>0|NSD"));
-    r.Add(new Option("vzmin", "Low cut on IP z", "CENTIMETER"));
-    r.Add(new Option("vzmax", "High cut on IP z", "CENTIMETER"));
-    r.Add(new Option("scheme", "Normalization scheme", "NONE|FULL"));
-    r.Add(new Option("cent",   "Use centrality"));
-  }
-  //__________________________________________________________________
-  void SetOptions(Runner& r)
-  {
-    TrainSetup::SetOptions(r);
-    Option* trig	= r.FindOption("trig");
-    Option* vzmin	= r.FindOption("vzmin");
-    Option* vzmax	= r.FindOption("vzmax");
-    Option* scheme	= r.FindOption("scheme");
-    Option* cent	= r.FindOption("cent");
+    TrainSetup::SaveSetup(asShellScript);
 
-    if (trig   && trig->IsSet())   fTrig     = trig->AsString();
-    if (vzmin  && vzmin->IsSet())  fVzMin    = vzmin->AsDouble();
-    if (vzmax  && vzmax->IsSet())  fVzMax    = vzmax->AsDouble();
-    if (scheme && scheme->IsSet()) fScheme   = scheme->AsString();
-    if (cent)                      fUseCent  = cent->AsBool();
+    std::ofstream o("draw.C");
+    if (!o) { 
+      Error("MakedNdetaTrain::SaveSetup", "Failed to open draw.C");
+      return;
+    }
+
+    o << "// Created by " << ClassName() << "\n"
+      << "// \n"
+      << "// Will draw dN/deta results from produced file\n"
+      << "// \n"
+      << "// Options can be specified as needed. To get help, pass the\n"
+      << "// string \"help\" for the title\n"
+      << "// \n"
+      << "void draw(const TString& title="",\n"
+      << "          UShort_t       rebin=5,\n"
+      << "          UShort_t       others=0x7,\n"
+      << "          UShort_t       flags=0xD87,\n"
+      << "          UShort_t       sNN=0,\n"
+      << "          UShort_t       sys=0,\n"
+      << "          UShort_t       trg=0,\n"
+      << "          Float_t        vzMin=999,"
+      << "          Float_t        vzMax=-999)\n"
+      << "{\n"
+      << "   gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/"
+      << "DrawdNdeta.C++\");\n\n"
+      << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
+      << "    DrawdNdeta(\"help\"); // Get the help\n"
+      << "    return;\n"
+      << "  }\n\n"
+      << "  DrawdNdeta(\"forward_dndeta.root\",\n"
+      << "             title,\n"
+      << "             rebin,\n"
+      << "             others,\n"
+      << "             flags,\n"
+      << "             sNN,\n"
+      << "             sys,\n"
+      << "             trg,\n"
+      << "             vzMin,\n"
+      << "             vzMax);\n"
+      << "}\n"
+      << "//\n"
+      << "// EOF\n"
+      << "//" << std::endl;
+    o.close();
   }
-  //__________________________________________________________________
-  TString  fTrig;      // Trigger to use 
-  Double_t fVzMin;     // Least v_z
-  Double_t fVzMax;     // Largest v_z
-  TString  fScheme;    // Normalisation scheme 
-  Bool_t   fUseCent;   // Use centrality 
 };
 //
 // EOF

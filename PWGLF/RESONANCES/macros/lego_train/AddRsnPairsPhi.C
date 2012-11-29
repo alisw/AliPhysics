@@ -41,7 +41,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
-
+   
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
@@ -86,7 +86,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
 
-   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("rsnUseRapidity",valid);
+   Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
@@ -125,13 +125,14 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    TString outputType = "HIST";
    if (isFullOutput) outputType = "SPARSE";
 
-   Int_t nIM   = 300; Double_t minIM   = 0.9, maxIM =  1.2;
+   Int_t nIM   = 215; Double_t minIM   = 0.985, maxIM =  1.2;
 //    Int_t nEta   = 400; Double_t minEta   = -2.0, maxEta =  2.0;
    Int_t nEta   = 400; Double_t minEta   = -0.5, maxEta =  0.5;
-   Int_t nY   = 10; Double_t minY   = -0.5, maxY =  0.5;
+   Int_t nY   = 1; Double_t minY   = -0.5, maxY =  0.5;
 //   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
    Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
-   Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
+   if (collisionType==0) nPt = 240;minPt=0.0;maxPt=24.0;
+   Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
    // retrieve mass from PDG database

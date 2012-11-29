@@ -751,9 +751,10 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
   fTrials = 1;
 
   if(file.Contains("root_archive.zip#")){
-    Ssiz_t pos1 = file.Index("root_archive",12,TString::kExact);
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    file.Replace(pos+1,20,"");
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
   }
   else {
     // not an archive take the basename....

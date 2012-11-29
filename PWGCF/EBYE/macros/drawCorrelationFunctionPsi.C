@@ -1,63 +1,7 @@
-const Int_t numberOfCentralityBins = 8;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
+const Int_t numberOfCentralityBins = 9;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100"};
 
 const Int_t gRebin = 1;
-
-//____________________________________________________________//
-void drawCorrelationFunctionPsiAllPtCombinations(const char* filename = "AnalysisResults.root", 
-						 Int_t gCentrality = 1,
-						 Int_t gBit = -1,
-						 const char* gCentralityEstimator = 0x0,
-						 Bool_t kShowShuffled = kFALSE, 
-						 Bool_t kShowMixed = kTRUE, 
-						 Double_t psiMin = -0.5, 
-						 Double_t psiMax = 3.5){
-
-  // this could also be retrieved directly from AliBalancePsi
-  const Int_t kNPtBins = 16;
-  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-
-  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
-
-  for(Int_t iTrig = 0; iTrig < 2/*kNPtBins*/; iTrig++){
-    for(Int_t iAssoc = 0; iAssoc < 2/*kNPtBins*/; iAssoc++){
-      cout<<"================================================================="<<endl;
-      cout<<"PROCESS NOW: "<<endl; 
-      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
-      drawCorrelationFunctionPsi(filename,gCentrality,gBit,gCentralityEstimator,kShowShuffled,kShowMixed,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
-      cout<<"================================================================="<<endl;
-      cout<<endl;
-    }
-  }
-
-}
-
-//____________________________________________________________//
-void drawCorrelationFunctionsAllPtCombinations(const char* lhcPeriod = "LHC11h",
-					       Int_t gTrainID = 208,			      
-					       Int_t gCentrality = 1,
-					       Double_t psiMin = -0.5, Double_t psiMax = 3.5) 
-{
-
- // this could also be retrieved directly from AliBalancePsi
-  const Int_t kNPtBins = 16;
-  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-
-  cout<<"You have chosen to do all pT combinations --> this could take some time."<<endl;
-
-  for(Int_t iTrig = 0; iTrig < kNPtBins; iTrig++){
-    for(Int_t iAssoc = 0; iAssoc < kNPtBins; iAssoc++){
-      cout<<"================================================================="<<endl;
-      cout<<"FIT NOW: "<<endl; 
-      cout<<" -> "<< ptBins[iTrig]<<" < pTtrig < "<<ptBins[iTrig+1]<<"   "<<ptBins[iAssoc]<<" < pTassoc < "<<ptBins[iAssoc+1]<<endl;
-      drawCorrelationFunctions(lhcPeriod,gTrainID,gCentrality,psiMin,psiMax,ptBins[iTrig],ptBins[iTrig+1],ptBins[iAssoc],ptBins[iAssoc+1]);
-      cout<<"================================================================="<<endl;
-      cout<<endl;
-    }
-  }  
-
-}
-
 
 void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root", 
 				Int_t gCentrality = 1,
@@ -70,7 +14,10 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
 				Double_t ptTriggerMin = -1.,
 				Double_t ptTriggerMax = -1.,
 				Double_t ptAssociatedMin = -1.,
-				Double_t ptAssociatedMax = -1.) {
+				Double_t ptAssociatedMax = -1.,
+				Bool_t normToTrig = kFALSE,
+				Int_t rebinEta = 1,
+				Int_t rebinPhi = 1) {
   //Macro that draws the correlation functions from the balance function
   //analysis vs the reaction plane
   //Author: Panos.Christakoglou@nikhef.nl
@@ -98,8 +45,9 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
     return;
   }
   else 
-    draw(list,listShuffled,listMixed,gCentrality,psiMin,psiMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    draw(list,listShuffled,listMixed,
+	 gCentralityEstimator,gCentrality,psiMin,psiMax,
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,rebinEta,rebinPhi);
 }
 
 //______________________________________________________//
@@ -160,12 +108,14 @@ TList *GetListOfObjects(const char* filename,
     
     //Get the histograms
     TString histoName;
-    if(kData == 0)
-      histoName = "fHistPV0M";
+    if(kData == 0) 
+      histoName = "fHistP";  
     else if(kData == 1)
-      histoName = "fHistP_shuffleV0M";
+      histoName = "fHistP_shuffle";
     else if(kData == 2)
-      histoName = "fHistPV0M";
+      histoName = "fHistP";
+    if(gCentralityEstimator) 
+      histoName += gCentralityEstimator;   
     AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
     if(!fHistP) {
       Printf("fHistP %s not found!!!",histoName.Data());
@@ -174,11 +124,13 @@ TList *GetListOfObjects(const char* filename,
     fHistP->FillParent(); fHistP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNV0M";
+      histoName = "fHistN";
     if(kData == 1)
-      histoName = "fHistN_shuffleV0M";
+      histoName = "fHistN_shuffle";
     if(kData == 2)
-      histoName = "fHistNV0M";
+      histoName = "fHistN";
+    if(gCentralityEstimator)
+      histoName += gCentralityEstimator;
     AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistN) {
       Printf("fHistN %s not found!!!",histoName.Data());
@@ -187,11 +139,13 @@ TList *GetListOfObjects(const char* filename,
     fHistN->FillParent(); fHistN->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistPNV0M";
+      histoName = "fHistPN";
     if(kData == 1)
-      histoName = "fHistPN_shuffleV0M";
+      histoName = "fHistPN_shuffle";
     if(kData == 2)
-      histoName = "fHistPNV0M";
+      histoName = "fHistPN";
+    if(gCentralityEstimator)
+      histoName += gCentralityEstimator;
     AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistPN) {
       Printf("fHistPN %s not found!!!",histoName.Data());
@@ -200,11 +154,13 @@ TList *GetListOfObjects(const char* filename,
     fHistPN->FillParent(); fHistPN->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNPV0M";
+      histoName = "fHistNP";
     if(kData == 1)
-      histoName = "fHistNP_shuffleV0M";
+      histoName = "fHistNP_shuffle";
     if(kData == 2)
-      histoName = "fHistNPV0M";
+      histoName = "fHistNP";
+    if(gCentralityEstimator) 
+      histoName += gCentralityEstimator;    
     AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistNP) {
       Printf("fHistNP %s not found!!!",histoName.Data());
@@ -213,11 +169,13 @@ TList *GetListOfObjects(const char* filename,
     fHistNP->FillParent(); fHistNP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistPPV0M";
+      histoName = "fHistPP";
     if(kData == 1)
-      histoName = "fHistPP_shuffleV0M";
+      histoName = "fHistPP_shuffle";
     if(kData == 2)
-      histoName = "fHistPPV0M";
+      histoName = "fHistPP";
+    if(gCentralityEstimator)
+      histoName += gCentralityEstimator;   
     AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistPP) {
       Printf("fHistPP %s not found!!!",histoName.Data());
@@ -226,18 +184,20 @@ TList *GetListOfObjects(const char* filename,
     fHistPP->FillParent(); fHistPP->DeleteContainers();
     
     if(kData == 0)
-      histoName = "fHistNNV0M";
+      histoName = "fHistNN";
     if(kData == 1)
-      histoName = "fHistNN_shuffleV0M";
+      histoName = "fHistNN_shuffle";
     if(kData == 2)
-      histoName = "fHistNNV0M";
+      histoName = "fHistNN";
+    if(gCentralityEstimator) 
+      histoName += gCentralityEstimator;
     AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
     if(!fHistNN) {
       Printf("fHistNN %s not found!!!",histoName.Data());
       break;
     }
     fHistNN->FillParent(); fHistNN->DeleteContainers();
-    
+
     dir->cd();
     listBF->Write(Form("%s_histograms",listBFName.Data()), TObject::kSingleKey);
     
@@ -250,9 +210,11 @@ TList *GetListOfObjects(const char* filename,
 
 //______________________________________________________//
 void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, 
+	  const char *gCentralityEstimator,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
-	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {
+	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
+	  Bool_t normToTrig, Int_t rebinEta, Int_t rebinPhi) {
   //Draws the correlation functions for every centrality bin
   //(+-), (-+), (++), (--)  
   AliTHn *hP = NULL;
@@ -262,12 +224,25 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hPP = NULL;
   AliTHn *hNN = NULL;
   
-  hP = (AliTHn*) list->FindObject("fHistPV0M");
-  hN = (AliTHn*) list->FindObject("fHistNV0M");
-  hPN = (AliTHn*) list->FindObject("fHistPNV0M");
-  hNP = (AliTHn*) list->FindObject("fHistNPV0M");
-  hPP = (AliTHn*) list->FindObject("fHistPPV0M");
-  hNN = (AliTHn*) list->FindObject("fHistNNV0M");
+  TString gHistPname = "fHistP"; 
+  if(gCentralityEstimator) gHistPname += gCentralityEstimator;
+  TString gHistNname = "fHistN";
+  if(gCentralityEstimator) gHistNname += gCentralityEstimator;
+  TString gHistPNname = "fHistPN"; 
+  if(gCentralityEstimator) gHistPNname += gCentralityEstimator;
+  TString gHistNPname = "fHistNP";
+  if(gCentralityEstimator) gHistNPname += gCentralityEstimator;
+  TString gHistPPname = "fHistPP";
+  if(gCentralityEstimator) gHistPPname += gCentralityEstimator;
+  TString gHistNNname = "fHistNN";
+  if(gCentralityEstimator) gHistNNname += gCentralityEstimator;
+
+  hP = (AliTHn*) list->FindObject(gHistPname.Data());
+  hN = (AliTHn*) list->FindObject(gHistNname.Data());
+  hPN = (AliTHn*) list->FindObject(gHistPNname.Data());
+  hNP = (AliTHn*) list->FindObject(gHistNPname.Data());
+  hPP = (AliTHn*) list->FindObject(gHistPPname.Data());
+  hNN = (AliTHn*) list->FindObject(gHistNNname.Data());
 
   //Create the AliBalancePsi object and fill it with the AliTHn objects
   AliBalancePsi *b = new AliBalancePsi();
@@ -288,17 +263,30 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   if(listBFShuffled) {
     //listBFShuffled->ls();
     
-    hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
+    gHistPname = "fHistP_shuffle"; 
+    if(gCentralityEstimator) gHistPname += gCentralityEstimator;
+    gHistNname = "fHistN_shuffle";
+    if(gCentralityEstimator) gHistNname += gCentralityEstimator;
+    gHistPNname = "fHistPN_shuffle"; 
+    if(gCentralityEstimator) gHistPNname += gCentralityEstimator;
+    gHistNPname = "fHistNP_shuffle";
+    if(gCentralityEstimator) gHistNPname += gCentralityEstimator;
+    gHistPPname = "fHistPP_shuffle";
+    if(gCentralityEstimator) gHistPPname += gCentralityEstimator;
+    gHistNNname = "fHistNN_shuffle";
+    if(gCentralityEstimator) gHistNNname += gCentralityEstimator;
+
+    hPShuffled = (AliTHn*) listBFShuffled->FindObject(gHistPname.Data());
     hPShuffled->SetName("gHistPShuffled");
-    hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
+    hNShuffled = (AliTHn*) listBFShuffled->FindObject(gHistNname.Data());
     hNShuffled->SetName("gHistNShuffled");
-    hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
+    hPNShuffled = (AliTHn*) listBFShuffled->FindObject(gHistPNname.Data());
     hPNShuffled->SetName("gHistPNShuffled");
-    hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
+    hNPShuffled = (AliTHn*) listBFShuffled->FindObject(gHistNPname.Data());
     hNPShuffled->SetName("gHistNPShuffled");
-    hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
+    hPPShuffled = (AliTHn*) listBFShuffled->FindObject(gHistPPname.Data());
     hPPShuffled->SetName("gHistPPShuffled");
-    hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
+    hNNShuffled = (AliTHn*) listBFShuffled->FindObject(gHistNNname.Data());
     hNNShuffled->SetName("gHistNNShuffled");
     
     AliBalancePsi *bShuffled = new AliBalancePsi();
@@ -321,17 +309,29 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   if(listBFMixed) {
     //listBFMixed->ls();
 
-    hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
+    gHistPname = "fHistP"; 
+    if(gCentralityEstimator) gHistPname += gCentralityEstimator;
+    gHistNname = "fHistN";
+    if(gCentralityEstimator) gHistNname += gCentralityEstimator;
+    gHistPNname = "fHistPN"; 
+    if(gCentralityEstimator) gHistPNname += gCentralityEstimator;
+    gHistNPname = "fHistNP";
+    if(gCentralityEstimator) gHistNPname += gCentralityEstimator;
+    gHistPPname = "fHistPP";
+    if(gCentralityEstimator) gHistPPname += gCentralityEstimator;
+    gHistNNname = "fHistNN";
+    if(gCentralityEstimator) gHistNNname += gCentralityEstimator;
+    hPMixed = (AliTHn*) listBFMixed->FindObject(gHistPname.Data());
     hPMixed->SetName("gHistPMixed");
-    hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
+    hNMixed = (AliTHn*) listBFMixed->FindObject(gHistNname.Data());
     hNMixed->SetName("gHistNMixed");
-    hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
+    hPNMixed = (AliTHn*) listBFMixed->FindObject(gHistPNname.Data());
     hPNMixed->SetName("gHistPNMixed");
-    hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
+    hNPMixed = (AliTHn*) listBFMixed->FindObject(gHistNPname.Data());
     hNPMixed->SetName("gHistNPMixed");
-    hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
+    hPPMixed = (AliTHn*) listBFMixed->FindObject(gHistPPname.Data());
     hPPMixed->SetName("gHistPPMixed");
-    hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
+    hNNMixed = (AliTHn*) listBFMixed->FindObject(gHistNNname.Data());
     hNNMixed->SetName("gHistNNMixed");
     
     AliBalancePsi *bMixed = new AliBalancePsi();
@@ -368,6 +368,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(rebinEta > 1 || rebinPhi > 1) gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
   gHistPN[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistPN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPN[0]->SetTitle(histoTitle.Data());
@@ -398,6 +399,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistPN[1]->Rebin2D(rebinEta,rebinPhi);
     gHistPN[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistPN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPN[1]->SetTitle(histoTitle.Data());
@@ -429,7 +431,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
+    // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
+    
+    // normalization to 1 at (0,0) --> Jan Fietes method
+    if(normToTrig){
+      Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPN[2]->GetNbinsX());
+      mixedNorm /= gHistPN[2]->GetNbinsY()*(gHistPN[2]->GetXaxis()->FindBin(0.01) - gHistPN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      gHistPN[2]->Scale(1./mixedNorm);
+    } 
+
     gHistPN[2]->GetYaxis()->SetTitleOffset(1.5);
     gHistPN[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPN[2]->SetTitle(histoTitle.Data());
@@ -481,6 +493,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(rebinEta > 1 || rebinPhi > 1) gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
   gHistNP[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistNP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNP[0]->SetTitle(histoTitle.Data());
@@ -512,6 +525,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(rebinEta > 1 || rebinPhi > 1) gHistNP[1]->Rebin2D(rebinEta,rebinPhi);
     gHistNP[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistNP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNP[1]->SetTitle(histoTitle.Data());
@@ -542,8 +556,18 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
-    
+
+    // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
+
+    // normalization to 1 at (0,0) --> Jan Fietes method
+    if(normToTrig){
+      Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNP[2]->GetNbinsX());
+      mixedNorm /= gHistNP[2]->GetNbinsY()*(gHistNP[2]->GetXaxis()->FindBin(0.01) - gHistNP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      gHistNP[2]->Scale(1./mixedNorm);
+    } 
+
     gHistNP[2]->GetYaxis()->SetTitleOffset(1.5);
     gHistNP[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNP[2]->SetTitle(histoTitle.Data());
@@ -595,6 +619,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(rebinEta > 1 || rebinPhi > 1) gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
   gHistPP[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistPP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPP[0]->SetTitle(histoTitle.Data());
@@ -626,6 +651,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistPP[1]->Rebin2D(rebinEta,rebinPhi);
     gHistPP[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistPP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPP[1]->SetTitle(histoTitle.Data());
@@ -657,7 +683,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
+    // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
+
+    // normalization to 1 at (0,0) --> Jan Fietes method
+    if(normToTrig){
+      Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPP[2]->GetNbinsX());
+      mixedNorm /= gHistPP[2]->GetNbinsY()*(gHistPP[2]->GetXaxis()->FindBin(0.01) - gHistPP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      gHistPP[2]->Scale(1./mixedNorm);
+    } 
+
     gHistPP[2]->GetYaxis()->SetTitleOffset(1.5);
     gHistPP[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPP[2]->SetTitle(histoTitle.Data());
@@ -709,6 +745,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  if(rebinEta > 1 || rebinPhi > 1) gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
   gHistNN[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistNN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNN[0]->SetTitle(histoTitle.Data());
@@ -740,6 +777,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistNN[1]->Rebin2D(rebinEta,rebinPhi);
     gHistNN[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistNN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNN[1]->SetTitle(histoTitle.Data());
@@ -771,7 +809,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
+    // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    if(rebinEta > 1 || rebinPhi > 1) gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
+
+    // normalization to 1 at (0,0) --> Jan Fietes method
+    if(normToTrig){
+      Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNN[2]->GetNbinsX());
+      mixedNorm /= gHistNN[2]->GetNbinsY()*(gHistNN[2]->GetXaxis()->FindBin(0.01) - gHistNN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      gHistNN[2]->Scale(1./mixedNorm);
+    } 
+
     gHistNN[2]->GetYaxis()->SetTitleOffset(1.5);
     gHistNN[2]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNN[2]->SetTitle(histoTitle.Data());
@@ -1036,6 +1084,9 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".NegativePositive.png";
   cNP->SaveAs(pngName.Data());
 
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistNP);
   //============================================================//
   //Get the ++ correlation function
   TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
@@ -1075,6 +1126,9 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += ".PositivePositive.png";
   cPP->SaveAs(pngName.Data());
 
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistPP);
   //============================================================//
   //Get the -- correlation function
   TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
@@ -1113,7 +1167,147 @@ void drawCorrelationFunctions(const char* lhcPeriod = "LHC11h",
   pngName += Form("%.1f",ptAssociatedMax); 
   pngName += ".NegativeNegative.png";
   cNN->SaveAs(pngName.Data());
+
+  fitCorrelationFunctions(gCentrality, psiMin, psiMax,
+			  ptTriggerMin,ptTriggerMax,
+			  ptAssociatedMin, ptAssociatedMax,gHistNN);
 }
+
+// //____________________________________________________________//
+// void fitCorrelationFunctions(Int_t gCentrality = 1,
+// 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+// 			     Double_t ptTriggerMin = -1.,
+// 			     Double_t ptTriggerMax = -1.,
+// 			     Double_t ptAssociatedMin = -1.,
+// 			     Double_t ptAssociatedMax = -1.,
+// 			     TH2D *gHist) {
+
+//   cout<<"FITTING FUNCTION (MW style)"<<endl;
+
+//   //near side peak(s): [1]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[5])/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4])) + 
+//   //                        TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[5])/[6]),2)+0.5*TMath::Power((y/[3]),2)),[4])))
+//   //away side peak(s): [7]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[11])/[8]),2)+0.5*TMath::Power((y/[9]),2)),[10])) + 
+//   //                        TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[11])/[12]),2)+0.5*TMath::Power((y/[9]),2)),[10])))
+//   //flow contribution (v1 up to v4): 2.*[13]*([14]*TMath::Cos(y) + [15]*TMath::Cos(2.*y) + [16]*TMath::Cos(3.*y) + [17]*TMath::Cos(4.*y))
+
+
+
+//   TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[5])/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4])) + TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[5])/[6]),2)+0.5*TMath::Power((y/[3]),2)),[4]))) + [7]*(TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[11])/[8]),2)+0.5*TMath::Power(((y-TMath::Pi())/[9]),2)),[10])) + TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[11])/[12]),2)+0.5*TMath::Power(((y-TMath::Pi())/[9]),2)),[10]))) + 2.*[13]*([14]*TMath::Cos(y) + [15]*TMath::Cos(2.*y) + [16]*TMath::Cos(3.*y) + [17]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
+//   gFitFunction->SetName("gFitFunction");
+
+
+//   //Normalization
+//   gFitFunction->SetParName(0,"N1"); 
+//   //near side peak(s)
+//   gFitFunction->SetParName(1,"N_{near side}");gFitFunction->FixParameter(1,0.0);
+//   gFitFunction->SetParName(2,"Sigma_{near side}(delta eta 1)"); gFitFunction->FixParameter(2,0.0);
+//   gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(3,0.0);
+//   gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->FixParameter(4,1.0);
+//   gFitFunction->SetParName(5,"Offset_{near side}"); gFitFunction->FixParameter(5,0.0);
+//   gFitFunction->SetParName(6,"Sigma_{near side}(delta eta 2)"); gFitFunction->FixParameter(6,0.0);
+
+//   //away side peak(s)
+//   gFitFunction->SetParName(7,"N_{near side}");gFitFunction->FixParameter(7,0.0);
+//   gFitFunction->SetParName(8,"Sigma_{near side}(delta eta 1)"); gFitFunction->FixParameter(8,0.0);
+//   gFitFunction->SetParName(9,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(9,0.0);
+//   gFitFunction->SetParName(10,"Exponent_{near side}"); gFitFunction->FixParameter(10,1.0);
+//   gFitFunction->SetParName(11,"Offset_{near side}"); gFitFunction->FixParameter(11,0.0);
+//   gFitFunction->SetParName(12,"Sigma_{near side}(delta eta 2)"); gFitFunction->FixParameter(12,0.0);
+
+//   //flow contribution
+//   gFitFunction->SetParName(13,"N_{flow}"); gFitFunction->SetParameter(13,0.2);
+//   gFitFunction->SetParName(14,"V1"); gFitFunction->SetParameter(14,0.005);
+//   gFitFunction->SetParName(15,"V2"); gFitFunction->SetParameter(15,0.1);
+//   gFitFunction->SetParName(16,"V3"); gFitFunction->SetParameter(16,0.05);
+//   gFitFunction->SetParName(17,"V4"); gFitFunction->SetParameter(17,0.005);
+
+//   // flow parameters
+//   Double_t fNV = 0.;
+//   Double_t fV1 = 0.;
+//   Double_t fV2 = 0.;
+//   Double_t fV3 = 0.;
+//   Double_t fV4 = 0.;
+ 
+//   //Fitting the correlation function (first the edges to extract flow)
+//   gHist->Fit("gFitFunction","nm","",1.0,1.6);
+
+//   fNV += gFitFunction->GetParameter(13);
+//   fV1 += gFitFunction->GetParameter(14);
+//   fV2 += gFitFunction->GetParameter(15);
+//   fV3 += gFitFunction->GetParameter(16);
+//   fV4 += gFitFunction->GetParameter(17);
+
+//   gHist->Fit("gFitFunction","nm","",-1.6,-1.0);
+
+//   fNV += gFitFunction->GetParameter(13);
+//   fV1 += gFitFunction->GetParameter(14);
+//   fV2 += gFitFunction->GetParameter(15);
+//   fV3 += gFitFunction->GetParameter(16);
+//   fV4 += gFitFunction->GetParameter(17);
+
+//   // Now fit the whole with fixed flow
+//   gFitFunction->FixParameter(13,fNV/2.);
+//   gFitFunction->FixParameter(14,fV1/2.);
+//   gFitFunction->FixParameter(15,fV2/2.);
+//   gFitFunction->FixParameter(16,fV3/2.);
+//   gFitFunction->FixParameter(17,fV4/2.);
+  
+//   gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);
+//   gFitFunction->ReleaseParameter(2);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
+//   gFitFunction->ReleaseParameter(3);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
+//   gFitFunction->ReleaseParameter(5);gFitFunction->SetParameter(5,0.7);gFitFunction->SetParLimits(5,0.0,0.9);
+//   gFitFunction->ReleaseParameter(6);gFitFunction->SetParameter(6,0.3);gFitFunction->SetParLimits(6,0.01,1.7);
+
+//   gFitFunction->ReleaseParameter(7);gFitFunction->SetParameter(1,0.3);
+//   gFitFunction->ReleaseParameter(8);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
+//   gFitFunction->ReleaseParameter(9);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
+//   gFitFunction->ReleaseParameter(11);gFitFunction->SetParameter(5,0.7);gFitFunction->SetParLimits(5,0.0,0.9);
+//   gFitFunction->ReleaseParameter(12);gFitFunction->SetParameter(6,0.3);gFitFunction->SetParLimits(6,0.01,1.7);
+
+//   gHist->Fit("gFitFunction","nm");
+
+
+//   //Cloning the histogram
+//   TString histoName = gHist->GetName(); histoName += "Fit"; 
+//   TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
+//   TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
+//   gHistResidual->SetName("gHistResidual");
+//   gHistResidual->Sumw2();
+
+//   for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
+//     for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
+//       gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,gFitFunction->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
+//     }
+//   }
+//   gHistResidual->Add(gHistFit,-1);
+
+//   //Write to output file
+//   TString newFileName = "correlationFunctionFit";
+//   if(histoName.Contains("PN")) newFileName += "PN";
+//   else if(histoName.Contains("NP")) newFileName += "NP";
+//   else if(histoName.Contains("PP")) newFileName += "PP";
+//   else if(histoName.Contains("NN")) newFileName += "NN";
+//   newFileName += ".Centrality";  
+//   newFileName += gCentrality; newFileName += ".Psi";
+//   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+//   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+//   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+//   else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+//   else newFileName += "All.PttFrom";
+//   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+//   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptAssociatedMax); 
+//   newFileName += ".root";
+//   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+//   gHist->Write();
+//   gHistFit->Write();
+//   gHistResidual->Write();
+//   gFitFunction->Write();
+//   newFile->Close();
+  
+
+// }
 
 //____________________________________________________________//
 void fitCorrelationFunctions(Int_t gCentrality = 1,
@@ -1131,34 +1325,82 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   //longitudinal ridge: [8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))
   //wing structures: [11]*TMath::Power(x,2)
   //flow contribution (v1 up to v4): 2.*([12]*TMath::Cos(y) + [13]*TMath::Cos(2.*y) + [14]*TMath::Cos(3.*y) + [15]*TMath::Cos(4.*y))
-  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
+  TF2 *gFitFunction = new TF2("gFitFunction","[0]+[1]*TMath::Exp(-TMath::Power((0.5*TMath::Power((x/[2]),2)+0.5*TMath::Power((y/[3]),2)),[4]))+[5]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((y-TMath::Pi())/[6]),2)),[7]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x+[17])/[9]),2)),[10]))+[8]*TMath::Exp(-TMath::Power((0.5*TMath::Power(((x-[17])/[9]),2)),[10]))+[11]*TMath::Power(x,2)+2.*[12]*([13]*TMath::Cos(y) + [14]*TMath::Cos(2.*y) + [15]*TMath::Cos(3.*y) + [16]*TMath::Cos(4.*y))",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.); 
   gFitFunction->SetName("gFitFunction");
-  //Normalization
-  gFitFunction->SetParName(0,"N1"); gFitFunction->SetParameter(0,1.0);
-  //near side peak
-  gFitFunction->SetParName(1,"N_{near side}"); gFitFunction->SetParameter(1,0.3);
-  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->SetParameter(2,0.3);
-  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->SetParameter(3,0.1);
-  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->SetParameter(4,1.1);
-  //away side ridge
-  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->SetParameter(5,0.1);
-  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->SetParameter(6,1.1);
-  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->SetParameter(7,1.0);
-  //longitudianl ridge
-  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);
-  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->SetParameter(9,0.6);
-  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->SetParameter(10,1.0);
-  //wing structures
-  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->SetParameter(11,0.01);
-  //flow contribution
-  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->SetParameter(12,0.2);
-  gFitFunction->SetParName(13,"V1"); gFitFunction->SetParameter(13,0.005);
-  gFitFunction->SetParName(14,"V2"); gFitFunction->SetParameter(14,0.1);
-  gFitFunction->SetParName(15,"V3"); gFitFunction->SetParameter(15,0.05);
-  gFitFunction->SetParName(16,"V4"); gFitFunction->SetParameter(16,0.005);  
 
-  //Fitting the correlation function
+
+  //Normalization
+  gFitFunction->SetParName(0,"N1"); 
+  //near side peak
+  gFitFunction->SetParName(1,"N_{near side}");gFitFunction->FixParameter(1,0.0);
+  gFitFunction->SetParName(2,"Sigma_{near side}(delta eta)"); gFitFunction->FixParameter(2,0.0);
+  gFitFunction->SetParName(3,"Sigma_{near side}(delta phi)"); gFitFunction->FixParameter(3,0.0);
+  gFitFunction->SetParName(4,"Exponent_{near side}"); gFitFunction->FixParameter(4,1.0);
+  //away side ridge
+  gFitFunction->SetParName(5,"N_{away side}"); gFitFunction->FixParameter(5,0.0);
+  gFitFunction->SetParName(6,"Sigma_{away side}(delta phi)"); gFitFunction->FixParameter(6,0.0);
+  gFitFunction->SetParName(7,"Exponent_{away side}"); gFitFunction->FixParameter(7,1.0);
+  //longitudinal ridge
+  gFitFunction->SetParName(8,"N_{long. ridge}"); gFitFunction->SetParameter(8,0.05);//
+  gFitFunction->FixParameter(8,0.0);
+  gFitFunction->SetParName(9,"Sigma_{long. ridge}(delta eta)"); gFitFunction->FixParameter(9,0.0);
+  gFitFunction->SetParName(10,"Exponent_{long. ridge}"); gFitFunction->FixParameter(10,1.0);
+  //wing structures
+  gFitFunction->SetParName(11,"N_{wing}"); gFitFunction->FixParameter(11,0.0);
+  //flow contribution
+  gFitFunction->SetParName(12,"N_{flow}"); gFitFunction->SetParameter(12,0.2);gFitFunction->SetParLimits(12,0.0,10);
+  gFitFunction->SetParName(13,"V1"); gFitFunction->SetParameter(13,0.005);gFitFunction->SetParLimits(13,0.0,10);
+  gFitFunction->SetParName(14,"V2"); gFitFunction->SetParameter(14,0.1);gFitFunction->SetParLimits(14,0.0,10);
+  gFitFunction->SetParName(15,"V3"); gFitFunction->SetParameter(15,0.05);gFitFunction->SetParLimits(15,0.0,10);
+  gFitFunction->SetParName(16,"V4"); gFitFunction->SetParameter(16,0.005);gFitFunction->SetParLimits(16,0.0,10);
+  gFitFunction->SetParName(17,"Offset"); gFitFunction->FixParameter(17,0.0);
+
+  // flow parameters
+  Double_t fNV = 0.;
+  Double_t fV1 = 0.;
+  Double_t fV2 = 0.;
+  Double_t fV3 = 0.;
+  Double_t fV4 = 0.;
+ 
+  //Fitting the correlation function (first the edges to extract flow)
+  gHist->Fit("gFitFunction","nm","",1.0,1.6);
+
+  fNV += gFitFunction->GetParameter(12);
+  fV1 += gFitFunction->GetParameter(13);
+  fV2 += gFitFunction->GetParameter(14);
+  fV3 += gFitFunction->GetParameter(15);
+  fV4 += gFitFunction->GetParameter(16);
+
+  gHist->Fit("gFitFunction","nm","",-1.6,-1.0);
+
+  fNV += gFitFunction->GetParameter(12);
+  fV1 += gFitFunction->GetParameter(13);
+  fV2 += gFitFunction->GetParameter(14);
+  fV3 += gFitFunction->GetParameter(15);
+  fV4 += gFitFunction->GetParameter(16);
+
+  // Now fit the whole with fixed flow
+  gFitFunction->FixParameter(12,fNV/2.);
+  gFitFunction->FixParameter(13,fV1/2.);
+  gFitFunction->FixParameter(14,fV2/2.);
+  gFitFunction->FixParameter(15,fV3/2.);
+  gFitFunction->FixParameter(16,fV4/2.);
+  
+  gFitFunction->ReleaseParameter(0);gFitFunction->SetParameter(0,1.0);
+  gFitFunction->ReleaseParameter(1);gFitFunction->SetParameter(1,0.3);
+  gFitFunction->ReleaseParameter(2);gFitFunction->SetParameter(2,0.3);gFitFunction->SetParLimits(2,0.05,0.7);
+  gFitFunction->ReleaseParameter(3);gFitFunction->SetParameter(3,0.3);gFitFunction->SetParLimits(3,0.05,1.7);
+  //gFitFunction->ReleaseParameter(4);gFitFunction->SetParameter(4,1.0);gFitFunction->SetParLimits(4,0.0,2.0);
+  gFitFunction->ReleaseParameter(5);gFitFunction->SetParameter(5,1.0);//gFitFunction->SetParLimits(5,0.0,10);
+  gFitFunction->ReleaseParameter(6);gFitFunction->SetParameter(6,0.5);//gFitFunction->SetParLimits(6,0.0,10);
+  //gFitFunction->ReleaseParameter(7);gFitFunction->SetParameter(7,1.0);gFitFunction->SetParLimits(7,0.0,2.0);
+  //gFitFunction->ReleaseParameter(8);gFitFunction->SetParameter(8,0.05);
+  //gFitFunction->ReleaseParameter(9);gFitFunction->SetParameter(9,0.6);gFitFunction->SetParLimits(9,0.1,10.0);
+  //gFitFunction->ReleaseParameter(10);gFitFunction->SetParameter(10,1.0);gFitFunction->SetParLimits(10,0.0,2.0);
+  gFitFunction->ReleaseParameter(17);gFitFunction->SetParameter(17,0.7);gFitFunction->SetParLimits(17,0.0,0.9);
+
   gHist->Fit("gFitFunction","nm");
+
 
   //Cloning the histogram
   TString histoName = gHist->GetName(); histoName += "Fit"; 
@@ -1201,3 +1443,101 @@ void fitCorrelationFunctions(Int_t gCentrality = 1,
   
 
 }
+
+
+
+// //____________________________________________________________//
+// void fitCorrelationFunctions(Int_t gCentrality = 1,
+// 			     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+// 			     Double_t ptTriggerMin = -1.,
+// 			     Double_t ptTriggerMax = -1.,
+// 			     Double_t ptAssociatedMin = -1.,
+// 			     Double_t ptAssociatedMax = -1.,
+// 			     TH2D *gHist) {
+
+//   cout<<"FITTING FUNCTION (HOUSTON)"<<endl;
+
+//   // Fit Function
+//    //x axis = delta_eta
+//    //y axis = delta_phi
+//                                                                                                                                                                                         //  [9]*exp(-1*pow(((x/[10])^2 + (y/[10])^2),0.5)) Hyper expo
+//   TF2 *fit1 = new TF2("fit1","[0] + [1]*cos(y) + [2]*cos(2*y) + [3]*cos(3*y) + [4]*cos(4*y) +[5]*cos(5*y)+ [6]*exp(-0.5*pow(((x/[7])^2 + (y/[8])^2),[11])) + [6]*exp(-0.5*pow(((x/[7])^2 + ((y-6.283)/[8])^2),[11]))+ [9]*exp(-1*((x/[10])^2 + (y/[10])^2)) ",-2.0,2.0,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+ 
+  
+   
+//   Double_t Parameters[] = {0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.3,1.0,0.1,0.1};
+  	
+//   fit1->SetParameters(Parameters);  // input pars from macro arguments
+	
+//   fit1->SetParName(0,"offset");
+//   fit1->SetParName(1,"v1");
+//   fit1->SetParName(2,"v2");
+//   fit1->SetParName(3,"v3");
+//   fit1->SetParName(4,"v4");
+//   fit1->SetParName(5,"v5");
+//   fit1->SetParName(6,"Ridgeamp");
+//   fit1->SetParName(7,"Ridgesigx");
+//   fit1->SetParName(8,"Ridgesigy");
+//   fit1->SetParName(9,"Expoamp");
+//   fit1->SetParName(10,"Exposig");
+//   fit1->SetParName(11,"Gausspara");
+    
+
+//   //Fit Parameter Ranges
+//   fit1->SetParLimits(0,-2.0,2.0);   //offset
+//   fit1->SetParLimits(1,-1.0,0.1);   //v1
+//   fit1->SetParLimits(2,-1.6,0.9);   //v2
+//   fit1->SetParLimits(3,0.0,0.5);    //v3
+//   fit1->SetParLimits(4,0.0,0.9);    //v4
+//   fit1->SetParLimits(5,0.0,0.9);    //v5
+//   fit1->SetParLimits(6,0.0,1.5);    //Ridgeamp
+//   fit1->SetParLimits(7,0.1,3.0);    //Ridgesigx
+//   fit1->SetParLimits(8,0.1,2.0);    //Ridgesigy
+//   fit1->SetParLimits(9,0.0,6.0);      //Expoamp
+//   fit1->SetParLimits(10,0.05,0.5); //Exposig
+//   fit1->SetParLimits(11,0.0,2.0);    //Gausspara
+
+//   //Fitting the correlation function
+//   gHist->Fit("fit1","nm");
+
+//   //Cloning the histogram
+//   TString histoName = gHist->GetName(); histoName += "Fit"; 
+//   TH2D *gHistFit = new TH2D(histoName.Data(),";#Delta#eta;#Delta#varphi (rad);C(#Delta#eta,#Delta#varphi)",gHist->GetNbinsX(),gHist->GetXaxis()->GetXmin(),gHist->GetXaxis()->GetXmax(),gHist->GetNbinsY(),gHist->GetYaxis()->GetXmin(),gHist->GetYaxis()->GetXmax());
+//   TH2D *gHistResidual = dynamic_cast<TH2D *>(gHist->Clone());
+//   gHistResidual->SetName("gHistResidual");
+//   gHistResidual->Sumw2();
+
+//   for(Int_t iBinDeltaEta = 1; iBinDeltaEta <= gHist->GetNbinsX(); iBinDeltaEta++) {
+//     for(Int_t iBinDeltaPhi = 1; iBinDeltaPhi <= gHist->GetNbinsY(); iBinDeltaPhi++) {
+//       gHistFit->SetBinContent(iBinDeltaEta,iBinDeltaPhi,fit1->Eval(gHist->GetXaxis()->GetBinCenter(iBinDeltaEta),gHist->GetYaxis()->GetBinCenter(iBinDeltaPhi)));
+//     }
+//   }
+//   gHistResidual->Add(gHistFit,-1);
+
+//   //Write to output file
+//   TString newFileName = "correlationFunctionFit";
+//   if(histoName.Contains("PN")) newFileName += "PN";
+//   else if(histoName.Contains("NP")) newFileName += "NP";
+//   else if(histoName.Contains("PP")) newFileName += "PP";
+//   else if(histoName.Contains("NN")) newFileName += "NN";
+//   newFileName += ".Centrality";  
+//   newFileName += gCentrality; newFileName += ".Psi";
+//   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+//   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+//   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+//   else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+//   else newFileName += "All.PttFrom";
+//   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+//   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+//   newFileName += Form("%.1f",ptAssociatedMax); 
+//   newFileName += ".root";
+//   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
+//   gHist->Write();
+//   gHistFit->Write();
+//   gHistResidual->Write();
+//   fit1->Write();
+//   newFile->Close();
+  
+
+// }

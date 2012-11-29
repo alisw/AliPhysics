@@ -692,6 +692,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   if(binsDCA2D)             delete [] binsDCA2D;
   if(binsDCAZ)              delete [] binsDCAZ;
   if(binsNPointITS)         delete [] binsNPointITS;
+  if(binsITSClusterMap)     delete [] binsITSClusterMap;
   if(binsNSigmaToVertex)    delete [] binsNSigmaToVertex;
   if(binsChi2C)             delete [] binsChi2C;
   if(binsEta)               delete [] binsEta;
@@ -1210,7 +1211,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
   //
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
   if(!aod) return;
-  AliExternalTrackParam *exParam = new  AliExternalTrackParam();
+  AliExternalTrackParam exParam;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);
@@ -1251,13 +1252,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     Double_t xyz[3] = {0,};
     aodtrack->GetXYZ(xyz);
     Short_t sign = aodtrack->Charge();
-    exParam->Set(xyz,pxpypz,cov,sign);
+    exParam.Set(xyz,pxpypz,cov,sign);
 
-    fVariables->SetAt(exParam->GetSigmaY2(),13);
-    fVariables->SetAt(exParam->GetSigmaZ2(),14);
-    fVariables->SetAt(exParam->GetSigmaSnp2(),15);
-    fVariables->SetAt(exParam->GetSigmaTgl2(),16);
-    fVariables->SetAt(exParam->GetSigma1Pt2(),17);
+    fVariables->SetAt(exParam.GetSigmaY2(),13);
+    fVariables->SetAt(exParam.GetSigmaZ2(),14);
+    fVariables->SetAt(exParam.GetSigmaSnp2(),15);
+    fVariables->SetAt(exParam.GetSigmaTgl2(),16);
+    fVariables->SetAt(exParam.GetSigma1Pt2(),17);
 
     fVariables->SetAt(0.,18); //NClustersTPCIter1
     fVariables->SetAt(0.,19); //Chi2TPCIter1

@@ -22,6 +22,7 @@ class TH2F;
 class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
+class AliPIDResponse;
 
 
 class AliSelectNonHFE : public TNamed {
@@ -47,17 +48,34 @@ class AliSelectNonHFE : public TNamed {
   void SetHistMass(TH1F *HistMass) {fHistMass = HistMass;};
   void SetInvariantMassCut(Double_t MassCut) {fMassCut = MassCut;};
   void SetOpeningAngleCut(Double_t AngleCut) {fAngleCut = AngleCut;};
-  void SetTrackCuts(Double_t dEdxMin, Double_t dEdxMax) {fdEdxMin = dEdxMin; fdEdxMax = dEdxMax;};
-  void SetTrackCuts(Double_t dEdxMin, Double_t dEdxMax, AliESDtrackCuts* TrackCuts) 
-  {fdEdxMin = dEdxMin; fdEdxMax = dEdxMax; fTrackCuts = TrackCuts;};
+  void SetPIDresponse(AliPIDResponse* PIDResponse) {fPIDResponse = PIDResponse;};
+	
+	void SetTrackCuts(Double_t TPCnSigmaMin, Double_t TPCnSigmaMax, Double_t TOFnSigmaMin, Double_t TOFnSigmaMax) 
+	{
+		fTPCnSigmaMin = TPCnSigmaMin; 
+		fTPCnSigmaMax = TPCnSigmaMax; 
+		fTOFnSigmaMin = TOFnSigmaMin; 
+		fTOFnSigmaMax = TOFnSigmaMax;
+	};
+	
+	void SetTrackCuts(Double_t TPCnSigmaMin, Double_t TPCnSigmaMax, Double_t TOFnSigmaMin, Double_t TOFnSigmaMax, AliESDtrackCuts* TrackCuts) 
+	{
+		fTPCnSigmaMin = TPCnSigmaMin; 
+		fTPCnSigmaMax = TPCnSigmaMax; 
+		fTOFnSigmaMin = TOFnSigmaMin; 
+		fTOFnSigmaMax = TOFnSigmaMax; 
+		fTrackCuts = TrackCuts;
+	};
   
  private:
   AliESDtrackCuts	*fTrackCuts;		//! Track quality
   TString		fAlgorithm;       	//Algorithm choice: "MA" (Manual Algorithm) or "KF" (Kalman Filter Algorithm)
   Double_t 		fAngleCut; 		//Maximum opening angle between the tracks
   Double_t 		fdcaCut;   		//Maximum dca between the tracks
-  Double_t 		fdEdxMin; 		//Minimum partner dEdx value
-  Double_t 		fdEdxMax;  		//Maximum partner dEdx value
+  Double_t 		fTPCnSigmaMin; 		//Minimum partner TPCnSigma value
+  Double_t 		fTPCnSigmaMax;  		//Maximum partner TPCnSigma value
+  Double_t 		fTOFnSigmaMin; 		//Minimum partner TOFnSigma value
+  Double_t 		fTOFnSigmaMax;  		//Maximum partner TOFnSigma value
   Double_t 		fMassCut;		//Maximum Invariant Mass Value for Non-HF-Electrons
   Double_t		fChi2OverNDFCut;        //Maximum value of Chi2 over NDF in the case of KF Algorithm
   Bool_t		fIsLS;			//Unlike signal pairs Flag
@@ -72,6 +90,7 @@ class AliSelectNonHFE : public TNamed {
   TH1F			*fHistDCABack;	        //! DCA histogram for like sign pairs
   TH1F			*fHistAngle;	        //! Opening Angle histogram for Unlike sign pairs
   TH1F			*fHistAngleBack;        //! Opening Angle histogram for like sign pairs
+  AliPIDResponse *fPIDResponse;     //! PID response object
   
   AliSelectNonHFE(const AliSelectNonHFE&); // not implemented
   AliSelectNonHFE& operator=(const AliSelectNonHFE&); // not implemented

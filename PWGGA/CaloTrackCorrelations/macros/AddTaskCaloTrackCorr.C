@@ -309,15 +309,23 @@ AliCaloTrackReader * ConfigureReader()
   // Time cuts
   if(kSimulation) 
   {
-    reader->SetEMCALTimeCut(-1000,1000); // Open time cut
+    reader->SwitchOffUseTrackTimeCut();
     reader->SwitchOffUseParametrizedTimeCut();
+    reader->SwitchOffUseEMCALTimeCut();
+    reader->SetEMCALTimeCut(-1000,1000); // Open time cut
   }
   else
   {
     if(kCalibT)
     { 
-      //reader->SetEMCALTimeCut(-20,20); 
+      printf("Set time cut parameters for run %d\n",kRunNumber);
+      reader->SwitchOnUseEMCALTimeCut();
       reader->SwitchOnUseParametrizedTimeCut();
+      
+      //Absolute window
+      reader->SetEMCALTimeCut(-20,20);
+      
+      //Parametrization
       if     (kRunNumber >= 151636 && kRunNumber <= 155384 )
       {
         printf("Set time parameters for LHC11c");
@@ -330,11 +338,15 @@ AliCaloTrackReader * ConfigureReader()
         reader->SetEMCALParametrizedMinTimeCut(0,-5);  reader->SetEMCALParametrizedMinTimeCut(1,-1 );  reader->SetEMCALParametrizedMinTimeCut(2, 3.5 ); reader->SetEMCALParametrizedMinTimeCut(3, 1.  );   
         reader->SetEMCALParametrizedMaxTimeCut(0, 5);  reader->SetEMCALParametrizedMaxTimeCut(1, 50);  reader->SetEMCALParametrizedMaxTimeCut(2, 0.45); reader->SetEMCALParametrizedMaxTimeCut(3, 1.25);   
       }
-      else reader->SetEMCALTimeCut(-20,20);
-      
+      else
+      {
+        reader->SwitchOffUseParametrizedTimeCut();
+      }
     }
     else
     {
+      reader->SwitchOffUseParametrizedTimeCut();
+      reader->SwitchOffUseEMCALTimeCut();
       reader->SetEMCALTimeCut(-1000,1000); // Open time cut
     }
   }
@@ -354,7 +366,8 @@ AliCaloTrackReader * ConfigureReader()
   else if(kInputDataType=="AOD")
   {
     reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
-    reader->SetTrackFilterMask(128);           // Filter bit, not mask, use if off hybrid
+    //reader->SwitchOnTrackHitSPDSelection();    // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
+    //reader->SetTrackFilterMask(128);           // Filter bit, not mask, use if off hybrid
   }
   
   // Calorimeter
@@ -784,6 +797,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   ana->SetMinPt(0.5);
   ana->SwitchOnFiducialCut();
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ; //more restrictive cut in reader and after in isolation
+  ana->SwitchOffFillPileUpHistograms();
 
   // Input / output delta AOD settings
   
@@ -904,10 +918,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
   
   if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
-  
-  // NLM cut, used in all, exclude clusters with more than 2 maxima
-  ana->SetNLMCut(1, 2) ;
-  
+    
   if(analysis!=AliAnaPi0EbE::kSSCalo)
   {
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
@@ -931,11 +942,15 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     ana->SetMinEnergy(5); 
     ana->SetMaxEnergy(200.);   
     ana->SetTimeCut(-1000,1000); // Open time cut
+    
+    // NLM cut, used in all, exclude clusters with more than 2 maxima
+    ana->SetNLMCut(1, 2) ;
+    
     AliCaloPID* caloPID = ana->GetCaloPID();
     caloPID->SetPi0MassRange(0.10, 0.18);
     caloPID->SetEtaMassRange(0.40, 0.60);
     caloPID->SetPhotonMassRange(0.00, 0.08);
-    caloPID->SetClusterSplittingM02Cut(0.3,3); // Do the selection in the analysis class and not in the PID method to fill SS histograms
+    caloPID->SetClusterSplittingM02Cut(0.3,5); // Do the selection in the analysis class and not in the PID method to fill SS histograms
   }
   
   ana->SwitchOffSelectedClusterHistoFill(); 
@@ -1086,7 +1101,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
 
 //___________________________________________________________________________________
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle, 
-                                                                    Int_t bIsolated,                                                                    
+                                                                    Bool_t bIsolated,
                                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
                                                                     Float_t cone = 0.3,
@@ -1152,8 +1167,13 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
   // Mixing with own pool
-  if(kMix)ana->SwitchOnOwnMix();
-  else    ana->SwitchOffOwnMix();
+  if(kMix)
+  {
+    ana->SwitchOnOwnMix();
+    ana->SwitchOnFillNeutralInMixedEvent();
+  }
+  else
+    ana->SwitchOffOwnMix();
   
   ana->SetNZvertBin(20);
   
@@ -1203,7 +1223,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   // If trigger is photon, check if it was tagged as decay previously
   if(particle!="Hadron" )
   {
-    if(particle=="Pi0" || particle =="Eta") 
+    if(particle.Contains("Pi0") || particle.Contains("Eta"))
     {
       ana->SwitchOffPi0TriggerDecayCorr();
       ana->SwitchOffDecayTriggerDecayCorr();
@@ -1291,7 +1311,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffStudyClustersAsymmetry();
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
-  ana->SwitchOffFillAllCellTimeHisto() ;
+  ana->SwitchOnFillAllCellTimeHisto() ;
 
   if(kCalorimeter=="EMCAL")
   {
@@ -1393,8 +1413,8 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   
 }
 
-//_________________
-Int_t SetTriggerMaskFromName()
+//_____________________________
+UInt_t SetTriggerMaskFromName()
 {
   if(kTrig=="EMC7")
   {

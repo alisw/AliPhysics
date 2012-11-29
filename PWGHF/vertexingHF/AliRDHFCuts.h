@@ -30,6 +30,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
   enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening};
+  enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
+
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
   virtual ~AliRDHFCuts();
@@ -323,7 +325,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
   TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
 
-  ClassDef(AliRDHFCuts,28);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,29);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

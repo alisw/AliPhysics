@@ -173,6 +173,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,HphopTcheck(0)
   ,fpTCheck(0)
   ,fMomDtoE(0) 
+  ,fLabelCheck(0)
+  ,fgeoFake(0)
 {
   //Named constructor
   
@@ -281,6 +283,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,HphopTcheck(0)
   ,fpTCheck(0)
   ,fMomDtoE(0)
+  ,fLabelCheck(0)
+  ,fgeoFake(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -463,10 +467,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcWeight = -10.0;
 
     int iHijing = 1;
+    int mcLabel = -1;
 
     if(fmcData && fMC && stack)
       {
        Int_t label = TMath::Abs(track->GetLabel());
+       mcLabel = track->GetLabel();
+
+       //cout << "mcLabel -all = " << mcLabel << endl; 
 
        Bool_t MChijing = fMC->IsFromBGEvent(label);
        if(!MChijing)iHijing = 0;
@@ -697,8 +705,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      }
     
     // MC
+    // check label for electron candidiates
+
+    int idlabel = 1;
+    if(mcLabel==0)idlabel = 0;
+    fLabelCheck->Fill(pt,idlabel);
+    if(mcLabel==0)fgeoFake->Fill(phi,eta);
+
     if(mcele>0) // select MC electrons
       {
+       //cout << "MC label = " << mcLabel << endl;
 
           fIncpTMChfeAll->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
@@ -1091,6 +1107,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fMomDtoE = new TH2D("fMomDtoE","D->E pT correlations;e p_{T} GeV/c;D p_{T} GeV/c",400,0,40,400,0,40);
   fOutputList->Add(fMomDtoE);
 
+  fLabelCheck = new TH2D("fLabelCheck","MC label",50,0,50,5,-1.5,3.5);
+  fOutputList->Add(fLabelCheck);
+
+  fgeoFake = new TH2D("fgeoFake","Label==0 eta and phi",628,0,6.28,200,-1,1);
+  fOutputList->Add(fgeoFake);
+
   PostData(1,fOutputList);
 }
 
@@ -1298,7 +1320,7 @@ void AliAnalysisTaskHFECal::FindMother(TParticle* part, int &label, int &pid)
     label = part->GetFirstMother();
     pid = stack->Particle(label)->GetPdgCode();
    }
-   cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
+   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
 double AliAnalysisTaskHFECal::GetMCweight(double mcPi0pT)

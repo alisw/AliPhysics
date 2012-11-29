@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentPhiV");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -69,7 +69,8 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==6) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	//selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPC;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
@@ -92,9 +93,11 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 	}
 	else { //No Prefilter, no Pairfilter
 		die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
+/*
 		if ((cutDefinition >=6) &&  (cutDefinition <=7)) {
 		  die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
 		}
+*/
 
 	}
 	//Introduce NULL-check for pp?
@@ -194,6 +197,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
+  histos->UserHistogram("Track","Px","Px;Px [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPx);
+  histos->UserHistogram("Track","Py","Py;Py [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPy);
+  histos->UserHistogram("Track","Pz","Pz;Pz [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPz);
+
   histos->UserHistogram("Track","NclsSFracTPC","NclsSFracTPC; NclsSFracTPC;#tracks",200,0,10.,AliDielectronVarManager::kNclsSFracTPC);
   histos->UserHistogram("Track","TPCclsDiff","TPCclsDiff; TPCclsDiff;#tracks",200,0,10.,AliDielectronVarManager::kTPCclsDiff);
 
@@ -232,7 +239,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
 	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
-  histos->UserHistogram("Track","dXY_dZ","dXY; dZ ;dXY [cm];#tracks",200,-2.,2.,200,-2.,2.,AliDielectronVarManager::kImpactParXY,,AliDielectronVarManager::kImpactParXY,kTRUE);
+  histos->UserHistogram("Track","dXY_dZ","dXY dZ Map; dXY; dZ;#tracks",
+	  200,-2,2,200,-2,2.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
+
+
   histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
   histos->UserHistogram("Track","dZ","dZ;dZ [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParZ);
 
@@ -242,6 +252,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  histos->UserHistogram("Track","ITSnCls","Number of Clusters ITS;ITS number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsITS);
 
 	  histos->UserHistogram("Track","TPCchi2","TPC Chi2 value;TPC chi2;#tracks",100,0.,10.,AliDielectronVarManager::kTPCchi2Cl);
+	  histos->UserHistogram("Track","ITSchi2","ITS Chi2 value;ITS chi2;#tracks",100,0.,10.,AliDielectronVarManager::kITSchi2Cl);
 
 	  histos->UserHistogram("Track","TPCnCls_kNFclsTPCr","nTPC vs nTPCr;nTPC vs nTPCr;#tracks",159,0.,159.,159,0.,159.,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
 
