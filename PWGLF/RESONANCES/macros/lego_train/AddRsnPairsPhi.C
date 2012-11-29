@@ -86,7 +86,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
 
-   Int_t useRapidity = AliAnalysisManager::GetGlobalInt("RsnUseRapidity",valid);
+   Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
@@ -131,6 +131,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t nY   = 1; Double_t minY   = -0.5, maxY =  0.5;
 //   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
    Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
+   if (collisionType==0) nPt = 240;minPt=0.0;maxPt=24.0;
    Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 

@@ -37,10 +37,10 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   axisTPCchi2->SetBins(0.0, 10.0, 0.1);
   //DCA xy
   AliRsnValueDaughter *axisDCAxy = new AliRsnValueDaughter("DCAxy", AliRsnValueDaughter::kDCAXY);
-  axisDCAxy->SetBins(-10.0, 10.0, 0.1);
+  axisDCAxy->SetBins(-2.0, 2.0, 0.1);
   //DCA z
   AliRsnValueDaughter *axisDCAz = new AliRsnValueDaughter("DCAz", AliRsnValueDaughter::kDCAZ);
-  axisDCAxy->SetBins(-10.0, 10.0, 0.1);
+  axisDCAz->SetBins(-10.0, 10.0, 0.1);
 
   /* dEdx tpc */
   AliRsnValueDaughter *axisSigTPC = new AliRsnValueDaughter("sTPC", AliRsnValueDaughter::kTPCsignal);
@@ -109,7 +109,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   if (mon) mon->Add(outMonitorDCAxy);
   if (lm) lm->AddOutput(outMonitorDCAxy);
 
-  // output: 2D histogram of DCAz vs pt
+  // output: 2D histogram of DCAz vs P
   AliRsnListOutput *outMonitorDCAz = new AliRsnListOutput("DCAzVsP", AliRsnListOutput::kHistoDefault);
   outMonitorDCAz->AddValue(axisMomP);
   outMonitorDCAz->AddValue(axisDCAz);

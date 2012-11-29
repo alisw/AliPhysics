@@ -1,15 +1,3 @@
-#ifndef __CINT__
-#include <TSystem.h>
-#include <TROOT.h>
-#include <Rtypes.h>
-#include <TString.h>
-#include <TNamed.h>
-#include <TObjArray.h>
-#include <TObjString.h>
-#include <TList.h>
-#include <TStopwatch.h>
-#endif
-
 Bool_t RunALICE(TString anSrc = "grid",
                 TString anMode = "terminate",
                 TString input="aod" /*or "esd"*/,
@@ -18,14 +6,15 @@ Bool_t RunALICE(TString anSrc = "grid",
                 Long64_t nSkip = 0,
                 TString dsName="",
                 TString alirsnliteManagers ="AddAMRsn",
-                Bool_t useMultiHandler=kTRUE,
+                Bool_t useMultiHandler=kFALSE,
                 TString alirsnlitesrc ="$ALICE_ROOT",
                 TString alirsnlitetasks =""
-               ) {
+                ) {
 
    // some init work
    anSrc.ToLower(); anMode.ToLower(); input.ToLower(); inputMC.ToLower();
 
+//   TGrid::Connect("alien://");
    // loads libs and setup include paths
    if (LoadLibsBase(alirsnlitesrc)) return kFALSE;
 
@@ -58,8 +47,6 @@ Bool_t RunALICE(TString anSrc = "grid",
    // adds all tasks
    if (!AddAllManagers(listManagers, anSrc, anMode,input,inputMC)) { Printf("Error : AddAllManagers failed !!!"); return kFALSE;}
 
-   gSystem->ListLibraries("ls");
-
    TStopwatch timer;
    timer.Start();
    // runs analysis
@@ -68,6 +55,11 @@ Bool_t RunALICE(TString anSrc = "grid",
    timer.Stop();
    timer.Print();
    Printf("Working directory is %s ...", gSystem->WorkingDirectory());
+   TString outputDir =  gSystem->WorkingDirectory();
+   outputDir.ReplaceAll("alirsnlite","alirsnlite-out");
+   gSystem->Exec(TString::Format("mkdir -p %s",outputDir.Data()).Data());
+   gSystem->Exec(TString::Format("mv *.root %s/ > /dev/null 2>&1",outputDir.Data()).Data());
+//   gSystem->cd(outputDir.Data());
    Printf("Done OK");
    return kTRUE;
 
@@ -95,7 +87,11 @@ Int_t LoadLibsBase(TString alirsnlitesrc) {
 
 Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE,Bool_t useMultiHandler=kTRUE) {
 
+	input.ToLower();
+	inputMC.ToLower();
+
    Bool_t useMC = !inputMC.CompareTo("mc");
+
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) { Printf("Error [CreateInputHandlers] : mgr is null !!!"); return kFALSE; }
@@ -103,6 +99,7 @@ Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE
    if (useMultiHandler) {
       AliMultiInputEventHandler *inputHandler = new AliMultiInputEventHandler();
       if (!input.CompareTo("esd")) {
+      	Printf("Adding ESD Input Handler ...");
          inputHandler->AddInputEventHandler(new AliESDInputHandler());
          if (useMC) inputHandler->AddInputEventHandler(new AliMCEventHandler());
       } else if (!input.CompareTo("aod")) {
@@ -117,7 +114,6 @@ Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE
       } else if (!input.CompareTo("aod")) {
          mgr->SetInputEventHandler(new AliAODInputHandler());
       }
-      mgr->SetInputEventHandler(inputHandler);
    }
 
    if (useAODOut) {
@@ -127,7 +123,6 @@ Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE
    }
 
    return kTRUE;
-
 }
 
 TList *CreateListOfManagersFromDir(TString listManagersNames="",TString dir="") {
