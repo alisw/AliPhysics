@@ -26,6 +26,7 @@
 #include <AliLog.h>
 #include <AliPIDResponse.h>
 #include <AliESDpid.h>
+#include <AliProdInfo.h>
 
 #include "AliAnalysisTaskPIDResponse.h"
 
@@ -155,32 +156,46 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   //reset information
   fRecoPass=0;
   
-  //Get the current file to check the reconstruction pass (UGLY, but not stored in ESD... )
+  //Get UserInfo from the current tree 
   AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   if (!inputHandler) return;
-  
+
+  TList *uiList = inputHandler->GetUserInfo();
+  AliProdInfo prodInfo(uiList);
+  prodInfo.List();
+
   TTree *tree= (TTree*)inputHandler->GetTree();
   TFile *file= (TFile*)tree->GetCurrentFile();
-  
   if (!file) {
     AliError("Current file not found, cannot set reconstruction information");
     return;
-  }
-  
-  //find pass from file name (UGLY, but not stored in ESD... )
-  TString fileName(file->GetName());
-  if (fileName.Contains("pass1") ) {
-    fRecoPass=1;
-  } else if (fileName.Contains("pass2") ) {
-    fRecoPass=2;
-  } else if (fileName.Contains("pass3") ) {
-    fRecoPass=3;
-  } else if (fileName.Contains("pass4") ) {
-    fRecoPass=4;
-  } else if (fileName.Contains("pass5") ) {
-    fRecoPass=5;
+  } else {
+    TString fileName(file->GetName());
+    fPIDResponse->SetCurrentFile(fileName.Data());
   }
 
-  fPIDResponse->SetCurrentFile(fileName.Data());
+  if (!(prodInfo.IsMC())) {      // reco pass is needed only for data
+    fRecoPass = prodInfo.GetRecoPass();
+    if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
+      TString fileName(file->GetName());
+      if (fileName.Contains("pass1") ) {
+	fRecoPass=1;
+      } else if (fileName.Contains("pass2") ) {
+	fRecoPass=2;
+      } else if (fileName.Contains("pass3") ) {
+	fRecoPass=3;
+      } else if (fileName.Contains("pass4") ) {
+	fRecoPass=4;
+      } else if (fileName.Contains("pass5") ) {
+	fRecoPass=5;
+      }
+    } 
+    if (fRecoPass <= 0) {
+      AliError(" ******** Failed to find reconstruction pass number *********");
+      AliError(" ******** Insert pass number inside the path of your local file ******");
+      AliError(" ******** PID information loaded for 'pass 0': parameters unreliable ******");
+    }
+  }
+
 }
