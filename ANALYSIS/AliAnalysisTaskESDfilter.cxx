@@ -239,6 +239,39 @@ void AliAnalysisTaskESDfilter::Init()
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisTaskESDfilter::Notify()
+{
+// Notify method.
+   AddMetadataToUserInfo();
+   return kTRUE;
+}   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskESDfilter::AddMetadataToUserInfo()
+{
+// Copy metadata to AOD user info.
+  static Bool_t copyFirst = kFALSE;
+  if (!copyFirst) {
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+       AliError("AliAnalysisTaskESDfilter::AddMetadataToUserInfo() : No analysis manager !");
+       return kFALSE;
+    }   
+    TTree *esdTree = mgr->GetTree()->GetTree();
+    if (!esdTree) return kFALSE;
+    TNamed *alirootVersion = (TNamed*)esdTree->GetUserInfo()->FindObject("alirootVersion");
+    if (!alirootVersion) return kFALSE;    
+    AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
+	 if (!aodHandler) return kFALSE;
+    TTree *aodTree = aodHandler->GetTree();
+    if (!aodTree) return kFALSE;
+    aodTree->GetUserInfo()->Add(new TNamed(*alirootVersion));
+    copyFirst = kTRUE;
+  }
+  return kTRUE;
+}
+
+//______________________________________________________________________________
 void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 {
 // Print selection task information

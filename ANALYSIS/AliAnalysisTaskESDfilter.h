@@ -32,6 +32,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void   UserCreateOutputObjects();
     virtual void   Init();
     virtual void   LocalInit() {Init();}
+    virtual Bool_t Notify();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *option);
 
@@ -68,6 +69,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     void GetCascadeCuts(Double_t cuts[8]) const {for (Int_t icut = 0; icut<8; icut++) cuts[icut] = fCascadeCuts[icut];}
 
 
+  Bool_t AddMetadataToUserInfo();
   void PrintTask(Option_t *option="all", Int_t indent=0) const;
   
   void DisableVZERO() { fIsVZEROEnabled = kFALSE; }
