@@ -123,7 +123,7 @@ protected:
   void           CleanDigits(TClonesArray * digits) ;
   void           SetDistancesToBadChannels();
   virtual Float_t Calibrate(Float_t amp, Int_t absId) const ;  // Tranforms ADC counts to energy   
-  virtual Float_t CalibrateT(Float_t amp, Int_t absId) const ;  //Tranforms Sample counts to sec.
+  virtual Float_t CalibrateT(Float_t amp, Int_t absId, Bool_t isLG) const ;  //Tranforms Sample counts to sec.
   Bool_t CheckTimeGate(Float_t t1, Float_t amp1, Float_t t2, Float_t amp2)const ; //Checks if time difference is reasonable
    
 private:

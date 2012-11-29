@@ -85,7 +85,7 @@ public:
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
   virtual Float_t            Calibrate(Float_t amp, Int_t absId) const ;
-  virtual Float_t            CalibrateT(Float_t time, Int_t absId) const ;
+  virtual Float_t            CalibrateT(Float_t time, Int_t absId, Bool_t isLG) const ;
 
   void FillMisalMatrixes(AliESDEvent* esd)const ;
   

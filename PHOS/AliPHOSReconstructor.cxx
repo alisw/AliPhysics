@@ -272,9 +272,14 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
     if(dig->GetId() <= knEMC && 
        Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetEMCMinE() ){
+      Int_t primary = dig->GetPrimary(1) ;
+      //For real data always primary==-1, we use this field to mark cells with overflow
+      //in HG channel. This is not needed in MC simulations,
+      if(primary==-1 && dig->IsLG())
+	primary=-2 ;
       phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()),
-                                             CalibrateT(dig->GetTime(),dig->GetId()),
-                                             dig->GetPrimary(1)) ;
+                                             CalibrateT(dig->GetTime(),dig->GetId(),dig->IsLG()),
+                                             primary) ;
       idignew++;
     }
   }
@@ -510,7 +515,7 @@ Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{
   }
 }
 //==================================================================================
-Float_t AliPHOSReconstructor::CalibrateT(Float_t time, Int_t absId)const{
+Float_t AliPHOSReconstructor::CalibrateT(Float_t time, Int_t absId,Bool_t isLG)const{
   // Calibrate EMC digit, i.e. multiply its Amp by a factor read from CDB
 
   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
@@ -525,7 +530,10 @@ Float_t AliPHOSReconstructor::CalibrateT(Float_t time, Int_t absId)const{
     return 0. ;
   }
   else{ //EMC
-    time += fgCalibData->GetTimeShiftEmc(module,column,row);
+    if(isLG)
+      time += fgCalibData->GetLGTimeShiftEmc(module,column,row);
+    else
+      time += fgCalibData->GetTimeShiftEmc(module,column,row);
     return time ;
   }
 }

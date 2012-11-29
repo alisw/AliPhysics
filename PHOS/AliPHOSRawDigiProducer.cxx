@@ -310,6 +310,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
 	if(digHG->GetEnergy()<0.){ //This is overflow in HG
 	  digHG->SetTime(digLG->GetTime()) ;
 	  digHG->SetEnergy(digLG->GetEnergy()) ;
+	  digHG->SetLG(kTRUE) ;
 	}
       }
       else{ //no pair - remove

@@ -56,6 +56,7 @@ ClassImp(AliPHOSDigit)
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit() :
   AliDigitNew(),
+  fIsLG(0),
   fNprimary(0),  
   fPrimary(0x0),
   fEnergy(0.),
@@ -71,6 +72,7 @@ AliPHOSDigit::AliPHOSDigit() :
 
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t time, Int_t index) :
+  fIsLG(0),
   fNprimary(0),
   fPrimary(0),
   fEnergy(0.f),
@@ -89,6 +91,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
   fTimeR       = fTime ;
   fId          = id ;
   fIndexInList = index ; 
+
   if( primary != -1){
     fNprimary    = 1 ; 
     fPrimary = new Int_t[fNprimary] ;
@@ -102,6 +105,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
 
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time, Int_t index) :
+  fIsLG(0),
   fNprimary(0),
   fPrimary(0),
   fEnergy(0.f),
@@ -135,6 +139,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time
 AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : 
   AliDigitNew(digit),
   fNprimary(digit.fNprimary),
+  fIsLG(digit.fIsLG),
   fPrimary(0),
   fEnergy(digit.fEnergy),
   fTime(digit.fTime),
@@ -344,6 +349,9 @@ AliPHOSDigit& AliPHOSDigit::operator+=(AliPHOSDigit const & digit)
      for (i=0; i<fNSamplesLG; i++)
        fSamplesLG[i] = TMath::Max(1023,fSamplesLG[i] + (digit.fSamplesLG)[i]);
    }
+   
+   //If at least one digit in LG, then sum also
+   fIsLG=fIsLG||digit.fIsLG ;
 
    return *this ;
 }

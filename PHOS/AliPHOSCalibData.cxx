@@ -317,9 +317,34 @@ Float_t AliPHOSCalibData::GetTimeShiftEmc(Int_t module, Int_t column, Int_t row)
   if(fCalibDataEmc)
     return fCalibDataEmc->GetTimeShiftEmc(module,column,row);
   else
-    return 1.0; // default width of one EMC ADC channel in GeV
+    return 0.0; // by default no offset
+}
+//________________________________________________________________
+Float_t AliPHOSCalibData::GetLGTimeShiftEmc(Int_t module, Int_t column, Int_t row) const
+{ 
+  // Return EMC calibration coefficient 
+  // for channel defined by (module,column,row)                                
+  // module, column,raw should follow the internal PHOS convention:            
+  // module 1:5, column 1:56, row 1:64 
+  // if CBD instance exists, the value is taken from CDB. 
+  // Otherwise it is an ideal one  
+  
+  if(fCalibDataEmc)
+    return fCalibDataEmc->GetLGTimeShiftEmc(module,column,row);
+  else
+    return 0.0; // no offset by default
 }
  
+//________________________________________________________________
+void AliPHOSCalibData::SetLGTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  // Set EMC calibration coefficient for (module,column,row)
+ 
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+ 
+  fCalibDataEmc->SetLGTimeShiftEmc(module,column,row,value);
+}
 //________________________________________________________________
 void AliPHOSCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {

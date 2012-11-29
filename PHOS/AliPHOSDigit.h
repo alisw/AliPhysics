@@ -67,6 +67,7 @@ public:
   UShort_t *GetSamplesHG()          const {return fSamplesHG;}
   UShort_t *GetSamplesLG()          const {return fSamplesLG;}
   Bool_t    IsSortable()            const { return kTRUE ; }
+  Bool_t    IsLG()                  const {return fIsLG ;}
   void      Print(const Option_t * = "") const;
   void      SetAmp(Int_t Amp)      {fAmp   = Amp  ;} 
   void      SetEnergy(Float_t E)   {fEnergy= E    ;} 
@@ -75,12 +76,12 @@ public:
   void      SetALTROSamplesHG(Int_t nSamplesHG, Int_t *samplesHG);
   void      SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG);
   void      ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
-
+  void      SetLG(Bool_t inLG){fIsLG=inLG;} //mark digits produced from LG when HG in overflow
 private:
   AliPHOSDigit & operator = (const AliPHOSDigit & /*digit*/);
 
 private:
-
+  Bool_t      fIsLG;       //If this digit created from HG or LG channels
   Int_t       fNprimary ;  // Number of primaries
   Int_t *     fPrimary ;   //[fNprimary] Array of primaries      
   Float_t     fEnergy ;    // Deposited energy in ADC counts
@@ -91,7 +92,7 @@ private:
   UShort_t   *fSamplesHG;  //[fNSamplesHG] Array of high-gain ALTRO samples
   UShort_t   *fSamplesLG;  //[fNSamplesLG] Array of low-gain  ALTRO samples
 
-  ClassDef(AliPHOSDigit,6) // Digit in PHOS 
+  ClassDef(AliPHOSDigit,7) // Digit in PHOS 
 
 } ;
 

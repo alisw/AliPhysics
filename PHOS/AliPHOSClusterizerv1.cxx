@@ -606,7 +606,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         fEMCRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
         clu = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ; 
 	fNumberOfEmcClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetEnergy(),digit->GetId()),CalibrateT(digit->GetTime(),digit->GetId())) ;
+	clu->AddDigit(*digit, Calibrate(digit->GetEnergy(),digit->GetId()),CalibrateT(digit->GetTime(),digit->GetId(),digit->IsLG())) ;
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;
         iDigitInCluster++ ;
         fDigitsUsed[i]=kTRUE ; 
@@ -648,7 +648,7 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digitN->GetId()),CalibrateT(digitN->GetTime(),digitN->GetId())) ;
+	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digitN->GetId()),CalibrateT(digitN->GetTime(),digitN->GetId(),digit->IsLG())) ;
             clusterdigitslist[iDigitInCluster] = j ; 
             iDigitInCluster++ ; 
             fDigitsUsed[j]=kTRUE ;
@@ -862,7 +862,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 //      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) / efit[iDigit] ; 
       ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ; 
       eDigit = emcEnergies[iDigit] * ratio ;
-      emcRP->AddDigit( *digit, eDigit,CalibrateT(digit->GetTime(),digit->GetId()) ) ;
+      emcRP->AddDigit( *digit, eDigit,CalibrateT(digit->GetTime(),digit->GetId(),digit->IsLG()) ) ;
     }        
   }
  
@@ -1139,7 +1139,7 @@ Float_t AliPHOSClusterizerv1::Calibrate(Float_t amp, Int_t absId) const{
   }
 }
 //==================================================================================
-Float_t AliPHOSClusterizerv1::CalibrateT(Float_t time, Int_t absId)const{
+Float_t AliPHOSClusterizerv1::CalibrateT(Float_t time, Int_t absId,Bool_t isLG)const{
   // Calibrate time in EMC digit
 
   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
@@ -1154,7 +1154,10 @@ Float_t AliPHOSClusterizerv1::CalibrateT(Float_t time, Int_t absId)const{
     return 0. ;
   }
   else{ //EMC
-    time += fgCalibData->GetTimeShiftEmc(module,column,row);
+    if(isLG)
+      time += fgCalibData->GetLGTimeShiftEmc(module,column,row);
+    else
+      time += fgCalibData->GetTimeShiftEmc(module,column,row);
     return time ;
   }
 }
