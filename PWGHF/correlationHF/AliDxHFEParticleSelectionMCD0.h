@@ -17,6 +17,8 @@
 #include "AliDxHFEParticleSelectionD0.h"
 #include "AliDxHFEToolsMC.h"
 
+class TH1;
+
 /**
  * @class AliDxHFEParticleSelectionMCD0
  * Monte Carlo D0 selection for D-HFE correlations, implements the specific
@@ -34,9 +36,13 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
 
   virtual THnSparse* DefineTHnSparse();
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual AliVParticle* CreateParticle(AliVParticle* track);
 
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
+
+  /// Flag to run over MC "stack". Not used at the moment
+  void SetUseKine(bool kine){fUseKine=kine;}
 
   /// clear internal memory
   virtual void Clear(const char* option="");
@@ -50,10 +56,12 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   AliDxHFEParticleSelectionMCD0& operator=(const AliDxHFEParticleSelectionMCD0&);
 
   AliDxHFEToolsMC fMCTools;  // MC selction tools
+  TH1* fPDGnotMCD0;          // holds PDG of not MC truth D0s
   int fResultMC;             // Result on MC check
   int fOriginMother;         // Holds info on the original mother particle
+  bool fUseKine;             // Whether to run over MC particles (true) or Reco (false)
 
-  ClassDef(AliDxHFEParticleSelectionMCD0, 1);
+  ClassDef(AliDxHFEParticleSelectionMCD0, 2);
 };
 
 #endif

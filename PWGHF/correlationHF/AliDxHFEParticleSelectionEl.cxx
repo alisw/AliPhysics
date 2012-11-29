@@ -108,7 +108,7 @@ int AliDxHFEParticleSelectionEl::Init()
   iResult=AliDxHFEParticleSelection::Init();
   if (iResult<0) return iResult;
 
-  //--------Initialize correction Framework and Cuts
+  //--------Initialize correction Framework and Cuts-------------------------
   // Consider moving this, either to separate function or
   // add a set function for AliCFManager
   // Do we need this? Can we just call AliHFEcuts::CheckParticleCuts

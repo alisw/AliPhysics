@@ -35,6 +35,7 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual int InitControlObjects();
   virtual THnSparse* DefineTHnSparse();
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+  virtual AliVParticle* CreateParticle(AliVParticle* track);
 
   //Function for daughter control objects
   //TODO: move to AliDxHFEParticleSelection to be used for several particles?

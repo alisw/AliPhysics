@@ -33,6 +33,7 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "TObjArray.h"
 #include "THnSparse.h"
+#include "AliReducedParticle.h"
 #include "TAxis.h"
 #include "TString.h"
 #include <iostream>
@@ -113,8 +114,7 @@ int AliDxHFEParticleSelectionD0::InitControlObjects()
 THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse()
 {
   //
-  // Defines the THnSparse. For now, only calls CreateControlTHnSparse
-  // TODO: remove pt?? (Have ptbin)
+  // Defines the THnSparse. 
 
   // here is the only place to change the dimension
   const int thnSize2 = 5;
@@ -124,12 +124,12 @@ THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse()
   TString name;
   name.Form("%s info", GetName());
 
-  // 			             0    1      2      3          4    
+  // 			             0     1     2       3         4
   // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  
-  int         thnBins [thnSize2] = { 1000,  200, 21,     200,     500 };
-  double      thnMin  [thnSize2] = {    0,    0,  0,    1.5648,   -1. };
-  double      thnMax  [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1. };
-  const char* thnNames[thnSize2] = { "Pt","Phi","Ptbin","D0InvMass","Eta"};
+  int         thnBins [thnSize2] = {1000, 200,  15,     200,     500 };
+  double      thnMin  [thnSize2] = {  0,    0,   0,    1.5648,   -1. };
+  double      thnMax  [thnSize2] = { 100, 2*Pi, 14,    2.1648,    1. };
+  const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
 
   return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
 }
@@ -138,7 +138,6 @@ int AliDxHFEParticleSelectionD0::FillParticleProperties(AliVParticle* p, Double_
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
-  //  AliAODTrack *track=(AliAODTrack*)p;
   AliAODRecoDecayHF2Prong* track=dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
   if (!track) return -ENODATA;
   int i=0;
@@ -213,15 +212,16 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
     return 0;
   }
  
-  // Only D0s are filled 
-  // TODO: Also include D0bar
-  if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
-    fD0InvMass= part->InvMassD0();
-    fPtBin=fCuts->PtBin(part->Pt());
+  fD0InvMass= part->InvMassD0();
+  fPtBin=fCuts->PtBin(part->Pt());
+  
+  // TODO: avoid repeated allocation of the arrays
+  Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),fPtBin, fD0InvMass,prongneg->Eta()};
+  Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),fPtBin,fD0InvMass,prongpos->Eta()};
 
-    // TODO: avoid repeated allocation of the arrays
-    Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),fPtBin, fD0InvMass,prongneg->Eta()};
-    Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),fPtBin,fD0InvMass,prongpos->Eta()};
+
+  // Fills only for D0 or both.. 
+  if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
 
     if(fD0Properties && ParticleProperties()) {
       memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
@@ -231,7 +231,19 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
     if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
     if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
   }
+  else{
+    // If not D0 (or both), check for D0bar (actually now also checks for both, not sure if this is needed)
+    if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) {
 
+      if(fD0Properties && ParticleProperties()) {
+	memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
+	FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
+	fD0Properties->Fill(ParticleProperties());
+      }
+      if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
+      if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    }
+  }
   return 0;
 }
 
@@ -242,6 +254,7 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
   if (!pTracks) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
+  selectedTracks->SetOwner();
   TIter itrack(pTracks);
   TObject* pObj=NULL;
   while ((pObj=itrack())!=NULL) {
@@ -250,11 +263,18 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
     int selectionCode=IsSelected(track,pEvent);
     HistogramParticleProperties(track, selectionCode);
 
-    //TODO: Also add selection for D0bar
+    // This should make sure the array only gets filled with D0, D0bar or both:
+
     // Add track if it is either defined as D0(selectionCode==1) or both 
     // D0bar and a D0 (selectionCode==3)
-    if (! ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2)) continue;
-    selectedTracks->Add(track);
+    if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) 
+      selectedTracks->Add(CreateParticle(track));
+    else{
+      // Add track if it is either defined as D0bar(selectionCode==2) or both 
+      // D0bar and a D0 (selectionCode==3)
+      if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) 
+	selectedTracks->Add(CreateParticle(track));
+    }
   }
   return selectedTracks;
 }
@@ -279,7 +299,8 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
   AliRDHFCuts* cuts=const_cast<AliRDHFCuts*>(fCuts);
   if (!cuts) {
     selectionCode=0;
-  } else if(cuts->IsInFiducialAcceptance(d0->Pt(),d0->Y(421)) ) {
+  } 
+  else if(cuts->IsInFiducialAcceptance(d0->Pt(),d0->Y(421)) ) {
 
     Int_t ptbin=cuts->PtBin(d0->Pt());
     if(ptbin==-1) {
@@ -318,4 +339,16 @@ void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int /*level*/)
   if (!fCuts && cuts) {
     AliError(Form("cuts object is not of required type AliRDHFCuts but %s", cuts->ClassName()));
   }
+}
+
+AliVParticle *AliDxHFEParticleSelectionD0::CreateParticle(AliVParticle* track)
+{
+  //
+  // Creates object containing only the variables needed for correlation
+  // 
+
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),fD0InvMass,fPtBin);
+
+  return part;
+
 }

@@ -27,6 +27,8 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliVParticle.h"
+#include "AliReducedParticle.h"
+#include "TH1F.h"
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -39,8 +41,10 @@ ClassImp(AliDxHFEParticleSelectionMCD0)
 AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   : AliDxHFEParticleSelectionD0(opt)
   , fMCTools()
+  , fPDGnotMCD0(NULL)
   , fResultMC(0)
   , fOriginMother(0)
+  , fUseKine(kFALSE)
 {
   // constructor
   // 
@@ -63,29 +67,31 @@ THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
 {
   //
   // Defines the THnSparse.
-  // could/should remove Pt and leave Ptbin
 
   // here is the only place to change the dimension
-  const int thnSize2 = 7;
+  const int thnSize2 = 6;
   InitTHnSparseArray(thnSize2);
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
 
-  // 			             0    1      2      3          4     5         6      
-  // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  'stat D0'  mother 
-  int         thnBins [thnSize2] = { 1000,  200, 21,     200,     500,     2,       10  };
-  double      thnMin  [thnSize2] = {    0,    0,  0,    1.5648,   -1.,  -0.5,     -1.5  };
-  double      thnMax  [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1.,   1.5,      8.5  };
+  // 			             0     1      2       3        4     5
+  // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta   mother 
+  int         thnBins [thnSize2] = {1000, 200,   15,     200,     500,    10  };
+  double      thnMin  [thnSize2] = {   0,  0,     0,    1.5648,   -1.,  -1.5  };
+  double      thnMax  [thnSize2] = { 100, 2*Pi,  14,    2.1648,    1.,   8.5  };
   const char* thnNames[thnSize2] = {
     "Pt",
     "Phi",
     "Ptbin", 
     "D0InvMass", 
     "Eta",
-    "Statistics D0",
-    "Mother of D0"
+    "Mother of D0"  // Bin -1 = not MC truth D0, rest OK
   };
+
+  // Add Histo displaying pdg of D0 candidates not passing MatchToMC()
+  fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
+  AddControlObject(fPDGnotMCD0);
 
   return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
 }
@@ -106,7 +112,6 @@ int AliDxHFEParticleSelectionMCD0::FillParticleProperties(AliVParticle* p, Doubl
   data[i++]=AliDxHFEParticleSelectionMCD0::GetPtBin(); 
   data[i++]=AliDxHFEParticleSelectionMCD0::GetInvMass();
   data[i++]=track->Eta();
-  data[i++]=fResultMC;     // stat electron (MC electron or not)
   data[i++]=fOriginMother; // at the moment not included background. Should expand
 
   return i;
@@ -143,7 +148,7 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
   // if not mc selected, however skip this for the moment, because of
   // the logic outside
   fResultMC=CheckMC(p, pEvent);
- 
+
   return iResult;
 }
 
@@ -178,6 +183,25 @@ int AliDxHFEParticleSelectionMCD0::CheckMC(AliVParticle* p, const AliVEvent* pEv
   MClabel=particle->MatchToMC(AliDxHFEToolsMC::kPDGD0,fMCArray,2,pdgDgD0toKpi); 
   
   if(MClabel<0){
+    // Checking PDG of particle if not MC truth D0
+    // TODO: done the right way??
+    Int_t MCl = p->GetLabel();
+    if(MCl<0) {
+      fPDGnotMCD0->Fill(-2);
+      return 0;
+    }
+    int pdgPart=-1;
+    AliAODMCParticle* aodmcp=0;
+    aodmcp=dynamic_cast<AliAODMCParticle*>(fMCArray->At(MCl));
+    if (aodmcp)
+      pdgPart=TMath::Abs(aodmcp->GetPdgCode());
+    if (pdgPart<0){
+      fPDGnotMCD0->Fill(-1);
+      return 0;
+    }
+    else{
+      fPDGnotMCD0->Fill(pdgPart);
+    }
     fOriginMother=-1;
     return 0;
   }
@@ -193,4 +217,16 @@ void AliDxHFEParticleSelectionMCD0::Clear(const char* option)
 {
   /// clear internal memory
   fMCTools.Clear(option);
+}
+
+AliVParticle *AliDxHFEParticleSelectionMCD0::CreateParticle(AliVParticle* track)
+{
+  //
+  //Created object which contain variables needed for correlation. 
+  //
+
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),AliDxHFEParticleSelectionMCD0::GetInvMass(),AliDxHFEParticleSelectionMCD0::GetPtBin(), fOriginMother);
+
+  return part;
+
 }

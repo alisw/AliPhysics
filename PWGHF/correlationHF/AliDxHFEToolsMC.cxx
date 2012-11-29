@@ -48,6 +48,7 @@ AliDxHFEToolsMC::AliDxHFEToolsMC(const char* option)
   , fHistPDGMother(NULL)
   , fOriginMother(kOriginNone)
   , fMClabel(-1)
+  , fNrMCParticles(-1)
 {
   // constructor
   // 
@@ -168,7 +169,7 @@ int AliDxHFEToolsMC::InitMCParticles(const AliVEvent* pEvent)
     AliWarningClass(Form("ignoring MC info '%s' of wrong type '%s', expecting TObjArray", branchname.Data(), o->ClassName()));
     return -ENODATA;
   }
-
+  fNrMCParticles=fMCParticles->GetEntriesFast();
   return 0;
 }
 
@@ -184,7 +185,7 @@ bool AliDxHFEToolsMC::RejectByPDG(int pdg, const vector<int> &list) const
   return true;
 }
 
-bool AliDxHFEToolsMC::RejectByPDG(AliVParticle* p, bool doStatistics)
+bool AliDxHFEToolsMC::RejectByPDG(AliVParticle* p, bool doStatistics, int* pdgParticleResult)
 {
   // check if pdg should be rejected
   // always false if not pdg list is initialized
@@ -199,6 +200,9 @@ bool AliDxHFEToolsMC::RejectByPDG(AliVParticle* p, bool doStatistics)
   if (aodmcp)
     pdgPart=TMath::Abs(aodmcp->GetPdgCode());
   if (pdgPart<0) return 0;
+
+  if (pdgParticleResult)
+    *pdgParticleResult=pdgPart;
 
   bool bReject=RejectByPDG(pdgPart, fPDGs);
   if (doStatistics && fHistPDG) {
@@ -383,17 +387,44 @@ void AliDxHFEToolsMC::CheckOriginMother(int pdg)
     else if(fOriginMother==kOriginBeauty) fOriginMother=kOriginGluonBeauty;
     else fOriginMother=kOriginGluon;
     break;
-  case(kPDGd): 
-    fOriginMother=kOriginDown; break;
+  case(kPDGd):
+    if(!TestIfHFquark(fOriginMother))
+      fOriginMother=kOriginDown; 
+    break;
   case(kPDGu):
-    fOriginMother=kOriginUp; break;
+    if(!TestIfHFquark(fOriginMother))
+      fOriginMother=kOriginUp; 
+    break;
   case(kPDGs):
-    fOriginMother=kOriginStrange; break;
+    if(!TestIfHFquark(fOriginMother))
+      fOriginMother=kOriginStrange; 
+    break;
   }
+}
+
+Bool_t AliDxHFEToolsMC::TestIfHFquark(int origin)
+{
+
+  // Checking if particle has been marked as charm/beauty quark
+  
+  Bool_t test=kFALSE;
+  switch(origin){
+  case(kOriginCharm):
+    test=kTRUE; break;
+  case(kOriginBeauty): 
+    test=kTRUE; break;
+  case(kOriginGluonCharm): 
+    test=kTRUE; break;
+  case(kOriginGluonBeauty): 
+    test=kTRUE; break;
+  }
+  return test; 
 }
 
 void AliDxHFEToolsMC::Clear(const char* /*option*/)
 {
   // clear internal memory
   fMCParticles=NULL;
+  fNrMCParticles=-1;
 }
+
