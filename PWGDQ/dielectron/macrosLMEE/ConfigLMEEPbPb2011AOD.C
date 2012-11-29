@@ -38,6 +38,16 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 		("%s",name.Data()),
 		Form("Track cuts: %s",name.Data()));
 
+  // Set general options for ALL dielectron object:
+  // Correct treatment for PreFilter (i.e., mark in all pair combinations (++,--,+-) first,
+  // THEN delete from sample:
+  die->SetPreFilterAllSigns();
+
+  //pairing with TLorentzVector
+  die->SetUseKF(kFALSE);
+
+
+
 
   //Setup AnalysisSelection:
   if (cutDefinition==0) {
@@ -121,6 +131,8 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 
   // the last definition uses no cuts and only the QA histograms should be filled!
 //  InitCF(die,cutDefinition);
+
+
 
   return die;
 }
