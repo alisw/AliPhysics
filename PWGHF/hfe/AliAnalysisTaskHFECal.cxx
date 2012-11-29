@@ -166,6 +166,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTMCM20pho_eta(0)	
   ,fPhoElecPtMCM20_eta(0)
   ,fSameElecPtMCM20_eta(0)
+  ,fIncpTMCpho_pi0e_TPC(0)	
+  ,fPhoElecPtMC_pi0e_TPC(0)
+  ,fSameElecPtMC_pi0e_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
@@ -276,6 +279,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTMCM20pho_eta(0)	
   ,fPhoElecPtMCM20_eta(0)
   ,fSameElecPtMCM20_eta(0)
+  ,fIncpTMCpho_pi0e_TPC(0)	
+  ,fPhoElecPtMC_pi0e_TPC(0)
+  ,fSameElecPtMC_pi0e_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
@@ -664,7 +670,23 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(fTPCnSigma >= -1.0 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,eop);
 
     Int_t pidpassed = 1;
-    
+ 
+    // check reco eff. with TPC
+
+    double phoval[5];
+    phoval[0] = cent;
+    phoval[1] = pt;
+    phoval[2] = fTPCnSigma;
+    phoval[3] = iHijing;
+    phoval[4] = mcMompT;
+   
+    if((fTPCnSigma >= -1.0 && fTPCnSigma <= 3) && mcele>0 && mcPho && mcOrgPi0)
+      {
+        if(iHijing==1)mcWeight = 1.0; 
+        fIncpTMCpho_pi0e_TPC->Fill(phoval,mcWeight);    
+        if(fFlagPhotonicElec) fPhoElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+        if(fFlagConvinatElec) fSameElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+      }
 
     //--- track accepted
     AliHFEpidObject hfetrack;
@@ -728,12 +750,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       
        if(mcPho) // select photonic electrons
         {
-         double phoval[5];
-         phoval[0] = cent;
-         phoval[1] = pt;
-         phoval[2] = fTPCnSigma;
-         phoval[3] = iHijing;
-         phoval[4] = mcMompT;
 
          fIncpTMCpho->Fill(phoval);    
          if(fFlagPhotonicElec) fPhoElecPtMC->Fill(phoval);
@@ -750,21 +766,21 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                if(iHijing==1)mcWeight = 1.0; 
                if(mcOrgPi0)
                  {
-                  //fIncpTMCM20pho_pi0e->Fill(phoval,mcWeight);    
-                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
-                  //if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
-                  fIncpTMCM20pho_pi0e->Fill(phoval);    
-                  if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval);
-                  if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval);
+                  fIncpTMCM20pho_pi0e->Fill(phoval,mcWeight);    
+                  if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
+                  if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
+                  //fIncpTMCM20pho_pi0e->Fill(phoval);   // v5-04-02-AN & v5-04-06-AN 
+                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval);
+                  //if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval);
                  }
                if(mcOrgEta)
                  {
-                  //fIncpTMCM20pho_eta->Fill(phoval,mcWeight);    
-                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval,mcWeight);
-                  //if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval,mcWeight);
-                  fIncpTMCM20pho_eta->Fill(phoval);    
-                  if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval);
-                  if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval);
+                  fIncpTMCM20pho_eta->Fill(phoval,mcWeight);    
+                  if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval,mcWeight);
+                  if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval,mcWeight);
+                  //fIncpTMCM20pho_eta->Fill(phoval);    
+                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval);
+                  //if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval);
                  }
                // --- eta
               }
@@ -1072,7 +1088,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMCM20_pi0e = new THnSparseD("fSameElecPtMCM20_pi0e", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
   fSameElecPtMCM20_pi0e->Sumw2();
   fOutputList->Add(fSameElecPtMCM20_pi0e);
- //
+ // 
   fIncpTMCM20pho_eta = new THnSparseD("fIncpTMCM20pho_eta","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
   fIncpTMCM20pho_eta->Sumw2();
   fOutputList->Add(fIncpTMCM20pho_eta);
@@ -1084,7 +1100,19 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMCM20_eta = new THnSparseD("fSameElecPtMCM20_eta", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
   fSameElecPtMCM20_eta->Sumw2();
   fOutputList->Add(fSameElecPtMCM20_eta);
+  // ------------
+  fIncpTMCpho_pi0e_TPC = new THnSparseD("fIncpTMCpho_pi0e_TPC","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
+  fIncpTMCpho_pi0e_TPC->Sumw2();
+  fOutputList->Add(fIncpTMCpho_pi0e_TPC);
 
+  fPhoElecPtMC_pi0e_TPC = new THnSparseD("fPhoElecPtMC_pi0e_TPC", "MC Pho-inclusive electron pt with  pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMC_pi0e_TPC->Sumw2();
+  fOutputList->Add(fPhoElecPtMC_pi0e_TPC);
+
+  fSameElecPtMC_pi0e_TPC = new THnSparseD("fSameElecPtMC_pi0e_TPC", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMC_pi0e_TPC->Sumw2();
+  fOutputList->Add(fSameElecPtMC_pi0e_TPC);
+  //-------------
 
   CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
   fOutputList->Add(CheckNclust);
