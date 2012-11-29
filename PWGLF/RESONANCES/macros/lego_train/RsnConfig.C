@@ -380,7 +380,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    // kTOFnsigmaK
    AliRsnValueDaughter *axisTPCnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTPCnsigmaK);
-   axisTPCnsigmaK->SetBins(1001,-100,100);
+   axisTPCnsigmaK->SetBins(1000,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaK = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -393,7 +393,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    // kTPCnsigmaPi
    AliRsnValueDaughter *axisTPCnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTPCnsigmaPi);
-   axisTPCnsigmaPi->SetBins(1001,-100,100);
+   axisTPCnsigmaPi->SetBins(1000,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaPi = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -406,7 +406,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
    // kTPCnsigmaP
    AliRsnValueDaughter *axisTPCnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTPCnsigmaP);
-   axisTPCnsigmaP->SetBins(1001,-100,100);
+   axisTPCnsigmaP->SetBins(1000,-100,100);
 
    // output: 2D histogram of TPC signal vs. TPC momentum
    AliRsnListOutput *outMonitorTPCnsigmaP = new AliRsnListOutput("TPC_nsigma", AliRsnListOutput::kHistoDefault);
@@ -422,7 +422,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
       // kTOFnsigmaK
       AliRsnValueDaughter *axisTOFnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTOFnsigmaK);
-      axisTOFnsigmaK->SetBins(1001,-100,100);
+      axisTOFnsigmaK->SetBins(1000,-100,100);
 
       // output: 2D histogram of TPC signal vs. TPC momentum
       AliRsnListOutput *outMonitorTOFnsigmaK = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
@@ -435,7 +435,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
       // kTOFnsigmaPi
       AliRsnValueDaughter *axisTOFnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTOFnsigmaPi);
-      axisTOFnsigmaPi->SetBins(1001,-100,100);
+      axisTOFnsigmaPi->SetBins(1000,-100,100);
 
       // output: 2D histogram of TPC signal vs. TPC momentum
       AliRsnListOutput *outMonitorTOFnsigmaPi = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
@@ -448,7 +448,7 @@ void AddMonitorOutput(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 
       // kTOFnsigmaP
       AliRsnValueDaughter *axisTOFnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTOFnsigmaP);
-      axisTOFnsigmaP->SetBins(1001,-100,100);
+      axisTOFnsigmaP->SetBins(1000,-100,100);
 
       // output: 2D histogram of TPC signal vs. TPC momentum
       AliRsnListOutput *outMonitorTOFnsigmaP = new AliRsnListOutput("TOF_nsigma", AliRsnListOutput::kHistoDefault);
