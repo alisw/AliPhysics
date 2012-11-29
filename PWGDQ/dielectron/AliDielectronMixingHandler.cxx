@@ -48,7 +48,8 @@ AliDielectronMixingHandler::AliDielectronMixingHandler() :
   fAxes(kMaxCuts),
   fMixType(kOSonly),
   fMixIncomplete(kTRUE),
-  fMoveToSameVertex(kFALSE)
+  fMoveToSameVertex(kFALSE),
+  fPID(0x0)
 {
   //
   // Default Constructor
@@ -67,7 +68,8 @@ AliDielectronMixingHandler::AliDielectronMixingHandler(const char* name, const c
   fAxes(kMaxCuts),
   fMixType(kOSonly),
   fMixIncomplete(kTRUE),
-  fMoveToSameVertex(kFALSE)
+  fMoveToSameVertex(kFALSE),
+  fPID(0x0)
 {
   //
   // Named Constructor
@@ -85,6 +87,7 @@ AliDielectronMixingHandler::~AliDielectronMixingHandler()
   // Default Destructor
   //
   fAxes.Delete();
+  delete fPID;
 }
 
 //________________________________________________________________
@@ -165,6 +168,7 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   if(ev->IsA() == AliAODEvent::Class()) event->SetAOD();
   else event->SetESD();
 
+  event->SetProcessID(fPID);
   event->SetTracks(*diele->GetTrackArray(0), *diele->GetTrackArray(1), *diele->GetPairArray(1));
   event->SetEventData(values);
 
@@ -369,6 +373,10 @@ void AliDielectronMixingHandler::Init(const AliDielectron *diele)
     for (Int_t irow=0; irow<nRows; ++irow){
       values+=Form("%.2f, ",(*bins)[irow]);
     }
+  }
+  
+  if (!fPID){
+    fPID=TProcessID::AddProcessID();
   }
 
   AliDebug(10,values.Data());

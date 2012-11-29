@@ -52,6 +52,10 @@ public:
   void SetTracks(AliVTrack * const particle1, Int_t pid1,
                  AliVTrack * const particle2, Int_t pid2);
 
+  void SetGammaTracks(AliVTrack * const particle1, Int_t pid1,
+		      AliVTrack * const particle2, Int_t pid2);
+
+
   void SetTracks(const AliKFParticle * const particle1,
                  const AliKFParticle * const particle2,
                  AliVTrack * const refParticle1,
