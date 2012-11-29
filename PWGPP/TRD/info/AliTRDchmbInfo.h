@@ -17,6 +17,7 @@
 #endif
 
 class TBox;
+class TLatex;
 class TCollection;
 class AliTRDchmbInfo : public TNamed
 {
@@ -25,7 +26,7 @@ public:
   AliTRDchmbInfo(Int_t det, Int_t stat, Double_t p[4]);
   virtual ~AliTRDchmbInfo();
 
-  void        Draw(Option_t* option = "eta");
+  void        Draw(Option_t* option = "");  // *MENU*
   Short_t     GetDetector() const          { return fDet;}
   const Double_t*   GetPosition() const    { return &fPosition[0];}
   Char_t      GetStatus() const            { return fStatus;}
@@ -43,6 +44,8 @@ private:
   Char_t      fStatus;        // status of chamber
   Double_t    fPosition[4];   // eta-phi position
   TBox        *fBox;          //! graph representation of chmb info
+  TBox        *fShade;        //! graph representation of not OK status
+  TLatex      *fLabel;        //! detector name
   ClassDef(AliTRDchmbInfo, 1) // TRD chamber position/status representation
 };
 

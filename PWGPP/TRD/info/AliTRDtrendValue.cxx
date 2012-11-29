@@ -37,12 +37,9 @@ AliTRDtrendValue::AliTRDtrendValue(const Char_t *n, const Char_t *t)
   ,fResponsible(NULL)
 {
 //  Constructor. Define name and title for trend variable.
-  TString s(n);
-  TObjArray *names(s.Tokenize("_"));
-  if(names->GetEntriesFast()!=2){
+  if(strchr(GetName(),'_')!=strrchr(GetName(), '_')){
     AliError(Form("Wrong trend value name format. Trend value name should be of the form \"trendClass_trendValue\" with only one \"_\" character."));
   } else SetName(n);
-  names->Delete(); delete names;
 
   //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
   memset(fNotifiable, 0, kNnotifiable*sizeof(TNamed*));
@@ -69,6 +66,15 @@ AliTRDtrendValue::AliTRDtrendValue(const AliTRDtrendValue &ref)
 }
 
 //____________________________________________
+AliTRDtrendValue::~AliTRDtrendValue()
+{
+// destructor
+  if(fResponsible) delete fResponsible;
+  for(Int_t in(0); in<kNnotifiable; in++)
+    if(fNotifiable[in]) delete fNotifiable[in];
+}
+
+//____________________________________________
 AliTRDtrendValue& AliTRDtrendValue::operator/=(const AliTRDtrendValue &n)
 {
   fValue-=n.fValue;
@@ -82,36 +88,6 @@ const char* AliTRDtrendValue::GetAlarmMessage(Int_t ns) const
 // Check if value triggered alarm
   if(ns<0 || ns>kNlevels) return NULL;
   else return "not defined";//fAlarmMessage[ns];
-}
-
-//____________________________________________
-const char* AliTRDtrendValue::GetClassName() const
-{
-// Check task to which value belong. Return value on heap !
-  TString s(TNamed::GetName());
-  TObjArray *names(s.Tokenize("_"));
-  if(names->GetEntriesFast()!=2){
-    AliError(Form("Wrong trend value name format."));
-    return NULL;
-  }
-  char *cn=StrDup(((TObjString*)(*names)[0])->GetName());
-  names->Delete(); delete names;
-  return cn;
-}
-
-//____________________________________________
-const char* AliTRDtrendValue::GetValueName() const
-{
-// Value name.  Return value on heap !
-  TString s(TNamed::GetName());
-  TObjArray *names(s.Tokenize("_"));
-  if(names->GetEntriesFast()!=2){
-    AliError(Form("Wrong trend value name format."));
-    return NULL;
-  }
-  char *vn=StrDup(((TObjString*)(*names)[1])->GetName());
-  names->Delete(); delete names;
-  return vn;
 }
 
 //____________________________________________
@@ -177,7 +153,10 @@ void AliTRDtrendValue::Print(Option_t */*o*/) const
 //   alarm level, message
 //   responsible
 
-  printf("    %s [%s] - %s\n", GetValueName(), GetClassName(), GetTitle());
+  const char* vn = strchr(GetName(), '_')+1;
+  Int_t cnLength = vn-GetName();
+  char *cn = new char[cnLength]; memcpy(cn, GetName(), (cnLength-1)*sizeof(char)); cn[cnLength-1]=0;
+  printf("    %s [%s] - %s\n", vn, cn, GetTitle());
   printf("*** %f +- %f\n", fValue, fSigma);
   printf("*** Responsible %s <%s>\n", fResponsible?fResponsible->GetName():"", fResponsible?fResponsible->GetTitle():"");
   printf("*** Notifiable person(s) ***\n");
@@ -188,4 +167,5 @@ void AliTRDtrendValue::Print(Option_t */*o*/) const
   }
 /*  printf("*** Alarm messages \n");
   for(in=0; in<kNlevels; in++) printf("*** Alarm [%d] : %s\n", in, fAlarmMessage[in]?fAlarmMessage[in]:"not defined");*/
+  delete [] cn;
 }

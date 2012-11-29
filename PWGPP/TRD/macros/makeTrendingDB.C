@@ -25,7 +25,7 @@ void makeTrendingDB(const Char_t *fl)
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGmuon.so");
 
-  const Int_t nt(316);
+  const Int_t nt(322);
   const Char_t *tvn[nt][2] = {
     {"TRDcheckDET_NTracksEvent", "<N_{track}/Event>"},
     {"TRDcheckDET_NTracksEventRMS", "RMS(N_{track}/Event)"},
@@ -346,69 +346,84 @@ void makeTrendingDB(const Char_t *fl)
     {"TRDresolution_TrkInQ2", "TrkIn :: MPV(dQdl)^{Kp} [a.u.]"},
     {"TRDresolution_TrkInQS2", "TrkIn :: <dQdl>^{Kp} [a.u.]"},
     {"TRDresolution_TrkInRCZ", "TrkIn :: <#Deltaz> [cm]"},
-    {"TRDresolution_TrkInRCZS", "TrkIn :: #sigma(#Deltaz) [cm]"}
+    {"TRDresolution_TrkInRCZS", "TrkIn :: #sigma(#Deltaz) [cm]"},
+    {"TRDresolution_TrkInPtn0", "TrkIn :: <p_{t}>^{e-} [GeV/c]"},
+    {"TRDresolution_TrkInPtp0", "TrkIn :: <p_{t}>^{e+} [GeV/c]"},
+    {"TRDresolution_TrkInPtn1", "TrkIn :: <p_{t}>^{#mu#pi-} [GeV/c]"},
+    {"TRDresolution_TrkInPtp1", "TrkIn :: <p_{t}>^{#mu#pi+} [GeV/c]"},
+    {"TRDresolution_TrkInPtn2", "TrkIn :: <p_{t}>^{Kp-} [GeV/c]"},
+    {"TRDresolution_TrkInPtp2", "TrkIn :: <p_{t}>^{Kp+} [GeV/c]"}
   };
   const char *resName[] = {"Markus Fasel", "Alexandru Bercuci"},
              *resMail[] = {"M.Fasel@gsi.de", "A.Bercuci@gsi.de"};
   const char *notName[] = {"Julian Book", "Hans Beck", "Ionut Arsene", "Raphaelle Bailache", "Christoph Blume"},
              *notMail[] = {"jbook@ikf.uni-frankfurt.de", "hbeck@ikf.uni-frankfurt.de", "I.C.Arsene@gsi.de", "R.Bailhache@gsi.de", "blume@ikf.uni-frankfurt.de"};
-  Int_t ires(0);
+  Int_t nDet(0), nEff(0), nRes(0);
   for(Int_t jnt(0); jnt<nt; jnt++){
     //printf("%3d %s %s\n", jnt, tvn[jnt][0], tvn[jnt][1]);
-    if(!strstr(tvn[jnt][0], "TRDresolution")) ires=jnt;
+    if(strstr(tvn[jnt][0], "TRDcheckDET")) nDet++;
+    else if(strstr(tvn[jnt][0], "TRDefficiency")) nEff++;
+    else if(strstr(tvn[jnt][0], "TRDresolution")) nRes++;
+    else {
+      Error("makeTrendingDB", "Entry \"%s\" not registered as trending task.", tvn[jnt][0]);
+      return;
+    }
   }
-  ires++;
+  Info("makeTrendingDB", "Trends :: %3d = %3d[DET] %3d[EFF] %3d[RES]", nt, nDet, nEff, nRes);
 
   TFile *fDB = TFile::Open("TRD.TrendDB.root", "RECREATE");
   TTree *tDB = new TTree("trend", "Reference Trend Values");
-  Double_t val[nt+500];
-  for(Int_t it(0); it<nt; it++) tDB->Branch(tvn[it][0], &val[it], Form("%s/D", tvn[it][0]));
-  for(Int_t it(ires), jt(nt); it<nt; it++, jt++){
+  Double_t val[nt+1000]; Int_t jt(0);
+  TBranch *b(NULL);
+  for(Int_t it(0); it<nt; it++){  // ALL
+    b = tDB->Branch(tvn[it][0], &val[jt++], Form("%s/D", tvn[it][0]));
+    b->SetTitle(tvn[it][1]);
+  }
+  for(Int_t it(nDet); it<nDet+nEff; it++){ // extra EFF (MC)
+    TString stn("TRDefficiency_MC"); stn+=&tvn[it][0][14];
+    b = tDB->Branch(stn.Data(), &val[jt++], Form("%s/D", stn.Data()));
+    b->SetTitle(Form("[MC] %s", tvn[it][1]));
+  }
+  for(Int_t it(nDet+nEff); it<nDet+nEff+nRes; it++){ // extra RES (MC)
     TString stn("TRDresolution_MC"); stn+=&tvn[it][0][14];
-    tDB->Branch(stn.Data(), &val[jt], Form("%s/D", stn.Data()));
+    b= tDB->Branch(stn.Data(), &val[jt++], Form("%s/D", stn.Data()));
+    b->SetTitle(Form("[MC] %s", tvn[it][1]));
+  }
+  for(Int_t it(nDet+nEff); it<nDet+nEff+nRes; it++){ // extra RES (V0)
+    TString stn("TRDresolution_V0"); stn+=&tvn[it][0][14];
+    b = tDB->Branch(stn.Data(), &val[jt++], Form("%s/D", stn.Data()));
+    b->SetTitle(Form("[V0] %s", tvn[it][1]));
   }
   gROOT->cd();
-
+  Info("makeTrendingDB", "Trends :: Combined [%3d]", tDB->GetNbranches());
+  TIterator *ib = tDB->GetListOfBranches()->MakeIterator();
+  
   AliTRDtrendValue *tv(NULL);
   FILE *fp = fopen(fl, "rt");
   TString sfp;
   while(sfp.Gets(fp)){
     if(!TFile::Open(sfp.Data())) continue;
-    Int_t nmiss(0), nbads(0);
-    for(Int_t it(0); it<nt; it++){
-      val[it] = -999;
-      if(!(tv = (AliTRDtrendValue*)gFile->Get(tvn[it][0]))) {
-        //Warning("makeTrendingDB()", "Missing %s from %s", tvn[it][0], sfp.Data());
+    Int_t nmiss(0), nbads(0), it(-1); ib->Reset();
+    while((b=(TBranch*)ib->Next())){
+      val[++it] = -999;
+      if(!(tv = (AliTRDtrendValue*)gFile->Get(b->GetName()))) {
+        //Warning("makeTrendingDB()", "Missing %s from %s", b->GetName(), sfp.Data());
         nmiss++;
         continue;
       }
-      if((strstr(tvn[it][0], "TRDcheckDET") || strstr(tvn[it][0], "QS") || strstr(tvn[it][0], "YS")) && TMath::Abs(tv->GetVal()) < 1.e-5){
-        //Info("makeTrendingDB()", "Found bad value for %s[%f] in %s", tvn[it][0], tv->GetVal(), sfp.Data());
+      if((strstr(b->GetName(), "TRDcheckDET") ||
+          strstr(b->GetName(), "QS") ||
+          strstr(b->GetName(), "YS")) && TMath::Abs(tv->GetVal()) < 1.e-5){
+        //Info("makeTrendingDB()", "Found bad value for %s[%f] in %s", b->GetName(), tv->GetVal(), sfp.Data());
         nbads++;
         continue;
       }
       val[it] = tv->GetVal();
     }
-    for(Int_t it(ires), jt(nt); it<nt; it++, jt++){
-      val[jt] = -999;
-      TString stn("TRDresolution_MC"); stn+=&tvn[it][0][14];
-      if(!(tv = (AliTRDtrendValue*)gFile->Get(stn.Data()))) {
-        //Warning("makeTrendingDB()", "Missing %s from %s", stn.Data(), sfp.Data());
-        nmiss++;
-        continue;
-      }
-      if((strstr(stn.Data(), "QS") || strstr(stn.Data(), "YS")) && TMath::Abs(tv->GetVal()) < 1.e-5){
-        //Info("makeTrendingDB()", "Found bad value for %s[%f] in %s", stn.Data(), tv->GetVal(), sfp.Data());
-        nbads++;
-        continue;
-      }
-      val[jt] = tv->GetVal();
-    }
     Warning("makeTrendingDB()", "%s :: Missing[%d] Bads[%d]", sfp.Data(), nmiss, nbads);
     gFile->Close();
     tDB->Fill();
   }
-
 
 //   TFile *fDB = TFile::Open("TRD.TrendDB.root");
 //   TTree *tDB = (TTree*)gFile->Get("trend");
@@ -428,8 +443,7 @@ void makeTrendingDB(const Char_t *fl)
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
   TCanvas *c = new TCanvas("c", "Trend Distrib.", 10, 10, 500, 500);
   Int_t ntr=tDB->GetEntries();
-  TIterator *ib = tDB->GetListOfBranches()->MakeIterator();
-  TBranch *b(NULL); Int_t it(-1);
+  Int_t it(-1); ib->Reset();
   while((b=(TBranch*)ib->Next())){
     tDB->Draw(b->GetName(), "", "goff"); it++;
     Double_t *v = tDB->GetV1(), xmin(100.), xmax(-100);
@@ -445,7 +459,7 @@ void makeTrendingDB(const Char_t *fl)
       Warning("makeTrendingDB", "%s :: Couldn't create reference value out of %d entries.", b->GetName(), ntr0);
     } else {
       if((h =(TH1F*)gROOT->FindObject("hp"))){delete h; h = NULL;}
-      h = new TH1F("hp", Form("%s;%s;entries", it<nt?tvn[it][1]:Form("MC %s", tvn[it-nt+ires][1]), b->GetName()), 25, 0.5*(3*xmin-xmax), 0.5*(3*xmax - xmin));
+      h = new TH1F("hp", Form("%s;%s;entries", b->GetTitle(), b->GetName()), 25, 0.5*(3*xmin-xmax), 0.5*(3*xmax - xmin));
       tDB->Draw(Form("%s>>hp", b->GetName()), Form("%s>-100", b->GetName()));
       if(h->Integral() < 1) continue;
       f.SetParameter(0, h->Integral());
@@ -468,7 +482,7 @@ void makeTrendingDB(const Char_t *fl)
         m=f.GetParameter(1); s=h->GetRMS()/*f.GetParameter(2)*/;
   //    }
     }
-    tm->AddValue(b->GetName(), m, s, it<nt?tvn[it][1]:Form("MC %s", tvn[it-nt+ires][1]), res[it>13], notifiable);
+    tm->AddValue(b->GetName(), m, s, b->GetTitle(), res[it>13], notifiable);
   }
   tm->Terminate();
 
