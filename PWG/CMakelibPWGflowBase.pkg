@@ -53,6 +53,7 @@ set ( SRCS
       FLOW/Base/AliFlowAnalysisWithFittingQDistribution.cxx 
       FLOW/Base/AliFlowAnalysisWithMixedHarmonics.cxx 
       FLOW/Base/AliFlowAnalysisWithNestedLoops.cxx
+      FLOW/Base/AliFlowOnTheFlyEventGenerator.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
