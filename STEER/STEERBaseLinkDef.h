@@ -120,6 +120,7 @@
 #pragma link C++ class AliVCaloTrigger+;
 
 #pragma link C++ class AliTOFPIDParams+;
+#pragma link C++ class AliProdInfo+;
 
 #endif
 

@@ -52,6 +52,7 @@ enum EEventHandlerFlags {
     void                 UnLock();
     void                 Changed();
     virtual void         SetCacheSize(Long64_t) {}
+    virtual TList        *GetUserInfo() const {return 0x0;};
  private :
   ClassDef(AliVEventHandler, 1);
 };

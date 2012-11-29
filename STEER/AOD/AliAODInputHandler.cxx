@@ -155,6 +155,7 @@ Bool_t AliAODInputHandler::Notify(const char* path)
       fEvent->ReadFromTree(fTree, "reconnect");
   }
   fFriendsConnected = kFALSE;
+  fUserInfo=fTree->GetTree()->GetUserInfo();
     
   TTree *ttree = fTree->GetTree();
   if (!ttree) ttree = fTree;

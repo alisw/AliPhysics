@@ -67,6 +67,7 @@ class AliInputEventHandler : public AliVEventHandler {
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
     virtual UInt_t       IsEventSelected() 
         {return fIsSelectedResult;}
+    TList       *GetUserInfo() const                         {return fUserInfo;}
     // Mixing
     void SetMixingHandler(AliInputEventHandler* mixing) {Changed(); fMixingHandler = mixing;}
     AliInputEventHandler* MixingHandler()               {return fMixingHandler;}
@@ -93,6 +94,7 @@ class AliInputEventHandler : public AliVEventHandler {
     UInt_t          fIsSelectedResult; //  Selection result
     AliInputEventHandler* fMixingHandler; // Optionla plugin for mixing
     AliInputEventHandler* fParentHandler; // optional pointer to parent handlers (used in AliMultiInputEventHandler)
+    TList           *fUserInfo;     //! transient user info for current tree
     ClassDef(AliInputEventHandler, 6);
 };
 

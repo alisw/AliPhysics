@@ -39,7 +39,8 @@ AliInputEventHandler::AliInputEventHandler() :
     fEventCuts(0),
     fIsSelectedResult(0),
     fMixingHandler(0),
-    fParentHandler(0)
+    fParentHandler(0),
+    fUserInfo(0)
 {
   // default constructor
 }
@@ -60,7 +61,8 @@ AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   fEventCuts(0),
   fIsSelectedResult(0),
   fMixingHandler(0),
-  fParentHandler(0)
+  fParentHandler(0),
+  fUserInfo(0)
 {
 // Named constructor.
 }

@@ -208,6 +208,8 @@ Bool_t AliESDInputHandler::Notify(const char* path)
   SwitchOffBranches();
   SwitchOnBranches();
   fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+  fUserInfo=fTree->GetTree()->GetUserInfo();
+
   //
   if (fUseHLT) {
     // Get HLTesdTree from current file
@@ -514,4 +516,7 @@ void AliESDInputHandler::CreatePIDResponse(Bool_t isMC/*=kFALSE*/)
   fESDpid=new AliESDpid(isMC);
 
 }
+
+
+
 
