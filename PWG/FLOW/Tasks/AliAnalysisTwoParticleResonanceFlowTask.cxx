@@ -28,6 +28,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TMath.h"
+#include "TObject.h"
 #include "TObjArray.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
@@ -41,6 +42,7 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "TProfile.h"
+#include "TDirectoryFile.h"
 #include "AliFlowCandidateTrack.h"
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEventSimple.h"
@@ -83,7 +85,7 @@ AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask
    }
 }
 //_____________________________________________________________________________
-AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
+AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0),fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
 {
    // Constructor
   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -603,7 +605,7 @@ template <typename T> void AliAnalysisTwoParticleResonanceFlowTask::SetNullCuts(
 {
    // Set null cuts
    fCutsRP->SetEvent(event, MCEvent());
-   fNullCuts->SetParamType(AliFlowTrackCuts::kGlobal);
+   if(event) fNullCuts->SetParamType(AliFlowTrackCuts::kGlobal);
    fNullCuts->SetPtRange(+1, -1); // select nothing QUICK
    fNullCuts->SetEtaRange(+1, -1); // select nothing VZERO
    fNullCuts->SetEvent(event, MCEvent());
@@ -760,15 +762,63 @@ void AliAnalysisTwoParticleResonanceFlowTask::VZEROSubEventAnalysis()
     }
 }
 //_____________________________________________________________________________
-void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
+void AliAnalysisTwoParticleResonanceFlowTask::DoAnalysisOnTheFly(AliFlowEventSimple* event)
 {
-   // UserExec: called for each event. Commented where necessary
+    // initialize the task for on the fly analysis and call the user exec
+    if(fFlowEvent) delete fFlowEvent;           // clear out the old flow event 
+    fFlowEvent = (AliFlowEvent*)event;          // cast the input event to its derived type
+    UserExec("fly");                            // call the UserExec with flag 'on the fly'
+}
+//_____________________________________________________________________________
+void AliAnalysisTwoParticleResonanceFlowTask::DoAnalysisOnTheFly(TDirectoryFile* outputFile)
+{
+    // write the anlaysis to an output file
+    outputFile->Add(fOutputList);
+    outputFile->Write(outputFile->GetName(), TObject::kSingleKey);
+}
+//_____________________________________________________________________________
+void AliAnalysisTwoParticleResonanceFlowTask::DoAnalysisOnTheFly(TObjArray* MixingCandidates, TObjArray* SpeciesA, TObjArray* ocSpeciesA, TObjArray* SpeciesB, TObjArray* ocSpeciesB)
+{
+    // do the flow analysis on the fly. 
+     Int_t iTracks = fFlowEvent->NumberOfTracks();
+     fCandidates->SetLast(-1);                  // clean out candidate array
+     Int_t  charge(-1), tID(0);                 // we'll use this guy to store charge
+     if(fQA) fEventStats->Fill(0);              // event counter
+     for (Int_t i = 0; i < iTracks; i++) {      // track loop. iterator i is used as unique track id (necessary later on to avoid auto-correlations)
+        AliFlowTrackSimple* track = fFlowEvent->GetTrack(i);
+        tID = track->GetID();                    // store ID
+        (tID > 0) ? charge = 1 : charge = -1 ;          // get the charge of the track
+        Double_t pt(track->Pt()), phi(track->Phi()), px(pt*TMath::Cos(phi)), py(pt*TMath::Sin(phi)), pz(track->Weight()); // TODO ugly, but pz is stored as weight ...
+        if (charge == fChargeA && TMath::Abs(tID)==TMath::Abs(fSpeciesA)) {     // store species a
+            SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+            if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+        }
+        if (charge == -1*fChargeA && TMath::Abs(tID)==TMath::Abs(fSpeciesA)) { // store opposite charge species a
+           ocSpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i,fSpeciesA));                                             
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+        }
+        if (charge == fChargeB && TMath::Abs(tID)==TMath::Abs(fSpeciesB)) { // store species b
+           SpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+        }
+        if (charge == -1*fChargeB && TMath::Abs(tID)==TMath::Abs(fSpeciesB)) { // store opposite charge species b
+           ocSpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+        }
+        // at the end: convert the flow track to an 'actual' flow track with id and charge
+        track->SetID(i);                                // set the unique id
+        track->SetCharge(charge);                       // set charge
+     }
+}
+//_____________________________________________________________________________
+void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t * option)
+{
+  // UserExec: called for each event. Commented where necessary
    TObjArray* MixingCandidates = 0x0; // init null pointer for event mixing
    if(fEventMixing) {
        MixingCandidates = new TObjArray();
        MixingCandidates->SetOwner(kTRUE); // mixing candidates has ownership of objects in array
    }
-
    TObjArray* SpeciesA = new TObjArray(); // create arrays for the helper tracks
    SpeciesA->SetOwner(kTRUE);
    TObjArray* ocSpeciesA = new TObjArray(); // opposite charge particles
@@ -777,99 +827,112 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserExec(Option_t *)
    SpeciesB->SetOwner(kTRUE);
    TObjArray* ocSpeciesB = new TObjArray();
    ocSpeciesB->SetOwner(kTRUE);
-
-   if (!fPIDResponse) { // kill the event if there isn't a pid response
-      return;
+   // check the options
+   char chopt[128];
+   strlcpy(chopt,option,128); 
+   char *onTheFly;
+   onTheFly = strstr(chopt,"fly");
+   if(onTheFly) { // do the on the fly analysis
+       printf(" > we're ready to fly ... ! \n"); 
+       DoAnalysisOnTheFly(MixingCandidates, SpeciesA, ocSpeciesA, SpeciesB, ocSpeciesB); 
    }
-
-   fAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // check for aod data type
-   if (fAOD) {
-      if (!EventCut(fAOD)) return; // check for event cuts
-      InitializeBayesianPID(fAOD); // init event objects
-      SetNullCuts(fAOD);
-      Int_t iTracks = fAOD->GetNumberOfTracks();
-      PrepareFlowEvent(iTracks); // does number of tracks correspond to the set filterbit ??? FIXME !!!
-      fCandidates->SetLast(-1);
-      if(fIsMC) IsMC(); // launch mc stuff FIXME
-      if(fQA) fEventStats->Fill(0);
-      for (Int_t i = 0; i < iTracks; i++) { // select analysis candidates
-         AliAODTrack* track = fAOD->GetTrack(i);
-         if (!QualityCheck(track)) continue; // reject poor quality tracks
-         if (track->Charge() == fChargeA && AcceptTrack(track, fSpeciesA)) { // store species a
-             SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
-                                                           track->Pt(), track->Charge(), fMassA, track->GetID(), fSpeciesA));
-	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(),  track->Px(), 
-                                                                                    track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassA, 
-                                                                                    track->GetID(), fSpeciesA));
-	 }
-         if (track->Charge() == -1*fChargeA && AcceptTrack(track, fSpeciesA)) { // store opposite charge species a
-             ocSpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
-                                                             track->Pt(), track->Charge(), fMassA, track->GetID(), fSpeciesA));
-	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
-                                                                                    track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassA, 
-                                                                                    track->GetID(), fSpeciesA));
-	 }
-	 if (track->Charge() == fChargeB && AcceptTrack(track, fSpeciesB)) { // store species b
-             SpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
-                                                           track->Pt(), track->Charge(), fMassB, track->GetID(), fSpeciesB));
-	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
-                                                                                    track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassB, 
-                                                                                    track->GetID(), fSpeciesB));
-	 }
-         if (track->Charge() == -1*fChargeB && AcceptTrack(track, fSpeciesB)) { // store opposite charge species b
-             ocSpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
-                                                             track->Pt(), track->Charge(), fMassB, track->GetID(), fSpeciesB));
-	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
-                                                                                    track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassB, 
-                                                                                    track->GetID(), fSpeciesB));
-	 }
+   if(!onTheFly) { // do analysis in the regular way (with the manager, etc)
+      if (!fPIDResponse) { // kill the event if there isn't a pid response
+         return;
       }
-      // do the phi minus psi method if that's specified FIXME currenlty only supports event mixing
-      if (fPhiMinusPsiMethod) { // for the phi minus psi method, no need for flow package etc 
-          PhiMinusPsiMethod(MixingCandidates); // call the method
-          PostData(1, fOutputList); // save the output data
-          return; // return to retrieve next event
-      }
-      // start the resonance reconstruction, this fills the fCandidates array with flow tracks 
-      ResonanceSignal(SpeciesA, SpeciesB);
-      // 
-      if(fV0) VZEROSubEventAnalysis();
-      for (int iCand = 0; iCand != fCandidates->GetEntriesFast(); ++iCand) {
-         AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
-         if (!cand) continue;
-         for (int iDau = 0; iDau != cand->GetNDaughters(); ++iDau) {
-            for (int iRPs = 0; iRPs != fFlowEvent->NumberOfTracks(); ++iRPs) {
-               AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack(iRPs));
-               if (!iRP) continue;
-               if (!iRP->InRPSelection()) continue;
-               if (cand->GetIDDaughter(iDau) == iRP->GetID()) {
-                  iRP->SetForRPSelection(kFALSE);
-                  fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
-               }
+   
+      fAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // check for aod data type
+      if (fAOD) {
+         if (!EventCut(fAOD)) return; // check for event cuts
+         InitializeBayesianPID(fAOD); // init event objects
+         SetNullCuts(fAOD);
+         Int_t iTracks = fAOD->GetNumberOfTracks();
+         PrepareFlowEvent(iTracks); // does number of tracks correspond to the set filterbit ??? FIXME !!!
+         fCandidates->SetLast(-1);
+         if(fIsMC) IsMC(); // launch mc stuff FIXME
+         if(fQA) fEventStats->Fill(0);
+         for (Int_t i = 0; i < iTracks; i++) { // select analysis candidates
+            AliAODTrack* track = fAOD->GetTrack(i);
+            if (!QualityCheck(track)) continue; // reject poor quality tracks
+            if (track->Charge() == fChargeA && AcceptTrack(track, fSpeciesA)) { // store species a
+                SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
+                                                              track->Pt(), track->Charge(), fMassA, track->GetID(), fSpeciesA));
+   	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(),  track->Px(), 
+                                                                                       track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassA, 
+                                                                                       track->GetID(), fSpeciesA));
+   	 }
+            if (track->Charge() == -1*fChargeA && AcceptTrack(track, fSpeciesA)) { // store opposite charge species a
+                ocSpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
+                                                                track->Pt(), track->Charge(), fMassA, track->GetID(), fSpeciesA));
+   	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
+                                                                                       track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassA, 
+                                                                                       track->GetID(), fSpeciesA));
+    	 }
+   	 if (track->Charge() == fChargeB && AcceptTrack(track, fSpeciesB)) { // store species b
+                SpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
+                                                              track->Pt(), track->Charge(), fMassB, track->GetID(), fSpeciesB));
+   	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
+                                                                                       track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassB, 
+                                                                                       track->GetID(), fSpeciesB));
+   	 }
+            if (track->Charge() == -1*fChargeB && AcceptTrack(track, fSpeciesB)) { // store opposite charge species b
+                ocSpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), track->Py(), track->Pz(), 
+                                                                track->Pt(), track->Charge(), fMassB, track->GetID(), fSpeciesB));
+   	     if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), track->Phi(), track->P(), track->Px(), 
+                                                                                       track->Py(), track->Pz(), track->Pt(), track->Charge(), fMassB, 
+                                                                                       track->GetID(), fSpeciesB));
+   	     
             }
          }
-         cand->SetForPOISelection(kTRUE);
-         fFlowEvent->InsertTrack(((AliFlowTrack*) cand));
-      }
-      if(!fEventMixing) { // do the combinatorial background
-          ResonanceBackground(ocSpeciesA, SpeciesB); // mix opposite charge species A with species B
-          if(fSpeciesA!=fSpeciesB) ResonanceBackground(SpeciesA, ocSpeciesB); // mix species A with opposite charge species B
-      }
-      delete SpeciesA;
-      delete SpeciesB;
-      delete ocSpeciesA;
-      delete ocSpeciesB; // clean heap memory
-      if(fEventMixing) ReconstructionWithEventMixing(MixingCandidates);
-      PostData(1, fOutputList);
-      PostData(2, fFlowEvent);
+      } // end the loop for event manager's aod's
+   } // end of data loop
+   // do the phi minus psi method if that's specified FIXME currenlty only supports event mixing
+   if (fPhiMinusPsiMethod) { // for the phi minus psi method, no need for flow package etc 
+       PhiMinusPsiMethod(MixingCandidates); // call the method
+       PostData(1, fOutputList); // save the output data
+       return; // return to retrieve next event
    }
+   // start the resonance reconstruction, this fills the fCandidates array with flow tracks 
+   ResonanceSignal(SpeciesA, SpeciesB); 
+   if(fV0) VZEROSubEventAnalysis();
+   for (int iCand = 0; iCand != fCandidates->GetEntriesFast(); ++iCand) {
+      AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
+      if (!cand) continue;
+      for (int iDau = 0; iDau != cand->GetNDaughters(); ++iDau) {
+         for (int iRPs = 0; iRPs != fFlowEvent->NumberOfTracks(); ++iRPs) {
+            AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack(iRPs));
+            if (!iRP) continue;
+            if (!iRP->InRPSelection()) continue;
+            if (cand->GetIDDaughter(iDau) == iRP->GetID()) {
+               iRP->SetForRPSelection(kFALSE);
+               fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
+            }
+         }
+      }
+      cand->SetForPOISelection(kTRUE);
+      fFlowEvent->InsertTrack(((AliFlowTrack*) cand));
+   }
+   if(!fEventMixing) { // do the combinatorial background
+       ResonanceBackground(ocSpeciesA, SpeciesB); // mix opposite charge species A with species B
+       if(fSpeciesA!=fSpeciesB) ResonanceBackground(SpeciesA, ocSpeciesB); // mix species A with opposite charge species B
+   }
+   else ReconstructionWithEventMixing(MixingCandidates);
+   if(!onTheFly) {
+       PostData(1, fOutputList);
+       PostData(2, fFlowEvent);
+   }
+   delete SpeciesA;
+   delete SpeciesB;
+   delete ocSpeciesA;
+   delete ocSpeciesB; // clean heap memory
 }
 //_____________________________________________________________________________
 void AliAnalysisTwoParticleResonanceFlowTask::ResonanceSignal(TObjArray* SpeciesA, TObjArray* SpeciesB) const
 {
     // fill signal histograms
-      for (Int_t i(0); i < SpeciesA->GetEntriesFast(); i++) { //track loop over species A
-	for (Int_t j(0); j < SpeciesB->GetEntriesFast(); j++) { //track loop over species B
+    Int_t spA(SpeciesA->GetEntries()), spB(SpeciesB->GetEntries());
+      for (Int_t i(0); i < spA; i++) { //track loop over species A
+	for (Int_t j(0); j < spB; j++) { //track loop over species B
           AliResonanceFlowHelperTrack* trackA = (AliResonanceFlowHelperTrack*)SpeciesA->At(i);
           AliResonanceFlowHelperTrack* trackB = (AliResonanceFlowHelperTrack*)SpeciesB->At(j);
           if(!(trackA||trackB)) continue; // shouldn't happen

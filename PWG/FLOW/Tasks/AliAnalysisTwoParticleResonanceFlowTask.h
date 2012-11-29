@@ -14,6 +14,9 @@ class TH2F;
 class TProfile;
 class AliFlowTrackCuts;
 class AliFlowEvent;
+class AliFlowTrackSimple;
+class AliFlowEventSimple;
+class TDirectoryFile;
 class AliFlowCandidateTrack;
 class AliFlowBayesianPID;
 class AliEventPoolManager;
@@ -118,6 +121,7 @@ public:
                                                                                         etapt[1] = fCandidateMaxEta;
                                                                                         etapt[2] = fCandidateMinPt;
                                                                                         etapt[3] = fCandidateMaxPt; }
+   AliFlowEvent*                        GetFlowEvent() const {return fFlowEvent;}
    // the analysis itself
    AliEventPoolManager*                 InitializeEventMixing();
    template <typename T> Float_t        InvariantMass(const T* track1, const T* track2) const;
@@ -142,6 +146,9 @@ public:
    void                                 PhiMinusPsiMethod(TObjArray* MixingCandidates);
    void                                 PhiMinusPsiMethodWriteData(Bool_t signal, TObjArray* SpeciesA, TObjArray* SpeciesB, Float_t* abcPsi2);
    void                                 VZEROSubEventAnalysis();
+   void                                 DoAnalysisOnTheFly(AliFlowEventSimple* event);
+   void                                 DoAnalysisOnTheFly(TObjArray* MixingCandidates, TObjArray* SpeciesA, TObjArray* ocSpeciesA, TObjArray* SpeciesB, TObjArray* ocSpeciesB); 
+   void                                 DoAnalysisOnTheFly(TDirectoryFile* outputFile);
    virtual void                         UserExec(Option_t *option);
    void                                 ResonanceSignal(TObjArray* SpeciesA, TObjArray* SpeciesB) const;
    void                                 ResonanceBackground(TObjArray* SpeciesA, TObjArray* SpeciesB, Bool_t checkAutoCorrelations = kTRUE) const;
