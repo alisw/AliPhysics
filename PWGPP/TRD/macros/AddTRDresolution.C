@@ -19,12 +19,12 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
   //AliLog::SetClassDebugLevel("AliTRDresolution", 2);
   AliTRDresolution *res(NULL);
-  const Char_t *suffix[]={"", "SA", "K"};
+  const Char_t *suffix[]={"", "ITS", "K"};
   for(Int_t itq=0; itq<1/*3*/; itq++){
     mgr->AddTask(res = new AliTRDresolution(Form("TRDresolution%s", suffix[itq])));
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
-    //res->SetDebugLevel(3);
+    res->SetDebugLevel(0);
     res->SetPtThreshold(0.2);
     //res->SetTriggerList("CINT7WUHJT-S-NOPF-CENT CINT7WUHSE-S-NOPF-CENT CINT7WUHQU-S-NOPF-CENT CEMC7WU-S-NOPF-ALL");
     res->SetNameId(suffix[itq]);

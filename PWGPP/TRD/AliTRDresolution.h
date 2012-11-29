@@ -62,14 +62,15 @@ public:
 /*    ,kTrackOut        // tracklet - track residuals/pulls at lower TRD entrance during refit
     ,kMCtrackOut      // TOF/HMPID track monitor*/
     ,kNclasses        // total number of resolution classes
+    ,kV0TrackIn       // tracklet - track residuals/pulls at lower TRD entrance for V0 tagged tracks
   };
   enum ETRDresolutionClassProjs {
     kDetNproj=460      // detector projections
     ,kClNproj=2800     // cluster projections
     ,kTrkltNproj=8000  // tracklet projections
-    ,kTrkInNproj=300   // trackIn projections
+    ,kTrkInNproj=1440  // trackIn projections
     ,kTrkNproj=2500    // track projections
-    ,kMCTrkInNproj=260 // trackIn projections
+    ,kMCTrkInNproj=1260// trackIn projections
   };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
@@ -86,7 +87,6 @@ public:
     ,kNdimTrklt   = 4
     ,kNdimTrkIn   = 7
     ,kNbunchCross = 3  // no of classes for bunch crossing
-    ,kNpt         = 3  // no of log bins in pt spectrum
     ,kNspc        = 3  // no of species e, mu+pi, K+p
     ,kNcharge     = 2  // no of charges
     ,kNpads       = 4  // no of charges
@@ -114,12 +114,13 @@ public:
   TObjArray*      Results(ETRDresolutionClass c) const  { if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
   void            UserExec(Option_t * opt);
   void            InitExchangeContainers();
-  Bool_t          HasTrackRefit() const                 { return TestBit(kTrackRefit);}
-  Bool_t          HasTrackSelection() const             { return TestBit(kTrackSelect);}
+/*  Bool_t          HasTrackRefit() const                 { return TestBit(kTrackRefit);}
+  Bool_t          HasTrackSelection() const             { return TestBit(kTrackSelect);}*/
   Bool_t          IsVerbose() const                     { return TestBit(kVerbose);}
   Bool_t          IsVisual() const                      { return TestBit(kVisual);}
   Bool_t          UseBCselectTOF() const                { return fBCbinTOF>0;}
   Bool_t          UseBCselectFill() const               { return fBCbinFill>0;}
+  Bool_t          UseLYselectTrklt() const              { return fLYselect>=0;}
   Bool_t          UseExchangeContainers() const         { return TestBit(kXchange);}
   Bool_t          PostProcess();
 
@@ -135,19 +136,20 @@ public:
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b;}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
+  void            SetLYselect(Int_t ly=0)               { fLYselect = ly;}
   void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
   void            SetDump3D(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
-  void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
-  void            SetTrackSelection(Bool_t v = kTRUE)   { SetBit(kTrackSelect, v);}
+/*  void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
+  void            SetTrackSelection(Bool_t v = kTRUE)   { SetBit(kTrackSelect, v);}*/
   void            SetUseExchangeContainers(Bool_t v = kTRUE) { SetBit(kXchange, v);}
 
   void            Terminate(Option_t * opt);
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
 
   void        AdjustF1(TH1 *h, TF1 *f);
-  void        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1);
+  TH2*        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1);
   void        GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
@@ -157,7 +159,7 @@ protected:
   Bool_t      MakeProjectionDetector();
   Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
-  Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE);
+  Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE, Bool_t v0=kFALSE);
   Bool_t      MakeProjectionTrack();
   Bool_t      Process(TH2* const /*h2*/, TF1 */*f*/, Float_t /*k*/, TGraphErrors **/*g*/) { return kTRUE;}
   Bool_t      Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
@@ -168,6 +170,7 @@ protected:
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Int_t                 fBCbinTOF;        // set/select by TOF BC index
   Int_t                 fBCbinFill;       // set/select by Bunch Fill index
+  Int_t                 fLYselect;        // select layer for Tracklet projections (in debug mode)
   Bool_t                fBsign;           // sign of magnetic field (kFALSE[-] kTRUE[+])
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection

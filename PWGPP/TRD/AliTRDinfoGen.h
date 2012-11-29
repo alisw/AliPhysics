@@ -134,7 +134,8 @@ private:
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
   AliTRDeventInfo  *fEventInfo;	     //! Event info
   AliTRDv0Info     *fV0Info;         //! V0 info
-  TObjArray        *fTracksBarrel;   //! Array of barrel tracks
+  TObjArray        *fTracksBarrel;   //! Array of barrel(TPC) tracks
+  TObjArray        *fTracksITS;      //! Array of ITS seeded tracks
   TObjArray        *fTracksSA;       //! Array of stand alone tracks
   TObjArray        *fTracksKink;     //! Array of kink tracks
   TObjArray        *fV0List;         //! V0 container

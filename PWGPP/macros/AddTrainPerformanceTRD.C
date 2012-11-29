@@ -114,7 +114,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
     case AliTRDpwgppHelper::kEfficiency:
       // map slots
       ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
-      ce[1]=ci[AliTRDpwgppHelper::kTracksSA];
+      ce[1]=ci[AliTRDpwgppHelper::kTracksITS];
       ce[2]=ci[AliTRDpwgppHelper::kTracksKink];
       ce[3]=ci[AliTRDpwgppHelper::kEventInfo];
       ce[4]=ci[AliTRDpwgppHelper::kClusters];
@@ -123,7 +123,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
     case AliTRDpwgppHelper::kResolution:
       // map slots
       ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
-      ce[1]=ci[AliTRDpwgppHelper::kTracksSA];
+      ce[1]=ci[AliTRDpwgppHelper::kTracksITS];
       ce[2]=ci[AliTRDpwgppHelper::kTracksKink];
       ce[3]=ci[AliTRDpwgppHelper::kEventInfo];
       ce[4]=ci[AliTRDpwgppHelper::kClusters];

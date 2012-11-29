@@ -13,21 +13,23 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
 {
   Info("AddTRDefficiency", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName()));
 
+  //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);
   AliAnalysisDataContainer *evInfoContainer = ci[3];
   AliTRDrecoTask *eff(NULL);
-  mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));
-  eff->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
-  eff->SetDebugLevel(0);
-  //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);  
-  Int_t trackStatus = 0; // barrel tracks
-//                    = 1; // kink tracks
-//                    = 2; // SA tracks
-  mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  // connect main (ESD) container
-  mgr->ConnectInput(eff, 1, ci[trackStatus]);                 // conect track info container
-  mgr->ConnectInput(eff, 2, evInfoContainer);                 // conect event info container
-  mgr->ConnectInput(eff, 3, ci[4]);                 // conect clusters container
-  mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
-    
+//        trackStatus = 0; // barrel tracks
+//                    = 1; // ITS tracks
+//                    = 2; // Kink tracks
+  const Char_t *suffix[]={"", "ITS", "K"};
+  for(Int_t its(0); its<1; its++){
+    mgr->AddTask(eff = new AliTRDefficiency(Form("TRDefficiency%s", suffix[its])));
+    eff->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+    eff->SetDebugLevel(0);
+    mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  // connect main (ESD) container
+    mgr->ConnectInput(eff, 1, ci[its]);                 // conect track info container
+    mgr->ConnectInput(eff, 2, evInfoContainer);                 // conect event info container
+    mgr->ConnectInput(eff, 3, ci[4]);                 // conect clusters container
+    mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
+  }
 
   // TRD combined tracking efficiency
   if(mgr->GetMCtruthEventHandler() && TESTBIT(map, AliTRDpwgppHelper::kEfficiencyMC)) {
@@ -37,7 +39,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
 
     // Create containers for input/output
     mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
-    mgr->ConnectInput(eff, 1, ci[trackStatus]);
+    mgr->ConnectInput(eff, 1, ci[0]);
     mgr->ConnectInput(eff, 2, evInfoContainer);
     mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
   }

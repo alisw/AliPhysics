@@ -52,7 +52,6 @@ public:
     Float_t     GetTPCdedx() const               { return fTPCdedx;}
     AliTrackPointArray* GetTrackPointArray() const      { return fTPArray; }
     UChar_t     GetPidQuality() const            { return fTRDpidQuality;}
-
     Int_t       GetNSlices() const               { return fTRDnSlices;}
     Double32_t* GetSliceIter() const             { return fTRDslices;}
     const Double32_t* GetResponseIter() const    { return &fTRDr[0];}
@@ -109,31 +108,37 @@ public:
     AliMCinfo(const AliMCinfo &mc);
     virtual ~AliMCinfo();
     AliMCinfo& operator=(const AliMCinfo &mc);
-    Int_t   GetLabel() const {return fLabel;}
-    Int_t   GetTRDlabel() const {return fTRDlabel;}
-    Int_t   GetNTrackRefs() const {return fNTrackRefs;}
-    Int_t   GetPDG() const {return fPDG;}
+    Float_t GetEta() const                                  { return fEta;}
+    Int_t   GetLabel() const                                { return fLabel;}
+    Int_t   GetTRDlabel() const                             { return fTRDlabel;}
+    Int_t   GetNTrackRefs() const                           { return fNTrackRefs;}
+    Int_t   GetPDG() const                                  { return fPDG;}
     Int_t   GetPID() const ;
+    Float_t GetPhi() const                                  { return fPhi;}
+    Float_t GetPt() const                                   { return fPt;}
     Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &p, Float_t &eta, Float_t &phi, UChar_t &s) const;
-    AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
-    static Double_t GetKalmanStep() {return fgKalmanStep;}
-    static Bool_t IsKalmanUpdate() {return fgKalmanUpdate;}
+    AliTrackReference const* GetTrackRef(Int_t ref=0) const { return fTrackRefs[ref];}
+    static Double_t GetKalmanStep()                         { return fgKalmanStep;}
+    static Bool_t IsKalmanUpdate()                          { return fgKalmanUpdate;}
     Bool_t   PropagateKalman(
         TVectorD *x, TVectorD *y, TVectorD *z,
         TVectorD *dx, TVectorD *dy, TVectorD *dz,
         TVectorD *pt, TVectorD *dpt, TVectorD *budget, TVectorD *c, Double_t mass=-1) const;
-    static void SetKalmanStep(Double_t s) {fgKalmanStep = s;}
-    static void SetKalmanUpdate(Bool_t s=kTRUE) {fgKalmanUpdate = s;}
+    static void SetKalmanStep(Double_t s)                   { fgKalmanStep = s;}
+    static void SetKalmanUpdate(Bool_t s=kTRUE)             { fgKalmanUpdate = s;}
   protected:
     Int_t   fLabel;               // ESD label
     Int_t   fTRDlabel;            // TRD label
     Int_t   fPDG;                 // particle code
     Int_t   fNTrackRefs;    	    // number of track refs
+    Float_t fEta;                 // particle eta (vertex)
+    Float_t fPhi;                 // particle phi (vertex)
+    Float_t fPt;                  // particle pt (vertex)
     static Double_t fgKalmanStep; // Kalman step propagation
     static Bool_t fgKalmanUpdate; // Kalman update with TRD tracklets
     AliTrackReference  *fTrackRefs[kNTrackRefs];	// track refs array
 
-    ClassDef(AliMCinfo, 3)      // MC info related to TRD
+    ClassDef(AliMCinfo, 4)      // MC info related to TRD
   };
 
   AliTRDtrackInfo();
@@ -175,6 +180,9 @@ public:
   void               SetTRDlabel(Int_t lab)           { if(fMC) fMC->fTRDlabel = lab; }
   void               SetNumberOfClustersRefit(Int_t n){fNClusters = n;}
   inline void        SetMC();
+  void               SetMCeta(Float_t eta)            { if(fMC) fMC->fEta = eta; }
+  void               SetMCphi(Float_t phi)            { if(fMC) fMC->fPhi = phi; }
+  void               SetMCpt(Float_t pt)              { if(fMC) fMC->fPt = pt; }
   void               SetPDG(Int_t pdg)                { if(fMC) fMC->fPDG = pdg; }
   void               SetPrimary(Bool_t prim = kTRUE)  {SetBit(kPrim, prim);}
   void               SetOuterParam(const AliExternalTrackParam *op)  {fESD.SetOuterParam(op);}

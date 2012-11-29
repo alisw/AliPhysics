@@ -197,13 +197,13 @@ Int_t AliTRDpwgppHelper::MergeBatch(const Char_t *mark, const Char_t *files, con
       if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", Dirname(filename.c_str()), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
     }
     Info("AliTRDpwgppHelper::MergeBatch()", "%s", filename.c_str());
-    if(!fFM.AddFile(filename.c_str())) return NULL;
+    if(!fFM.AddFile(filename.c_str())) return 1;
     arr.Add(new TObjString(filename.c_str()));
     nbatch++;
     if(nbatch==nfiles) break;
   }
   if(!nbatch){
-    Warning("AliTRDpwgppHelper::MergeBatch()", "NOTHING TO MERGE"); return NULL;
+    Warning("AliTRDpwgppHelper::MergeBatch()", "NOTHING TO MERGE"); return 0;
   } else {
     Info("AliTRDpwgppHelper::MergeBatch()", "MERGING FILES[%d] START[%d] %s ... ", nbatch, first, ((nbatch<nfiles)?"INCOMPLETE":""));
   }
