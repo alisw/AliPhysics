@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 227 2012-11-15 11:18:34Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 232 2012-11-28 17:27:59Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -64,9 +64,10 @@ protected:
   // <n_1>(phi_1,eta_1)
   // <n_2>(phi_2,eta_2) 
   // <n_1, n_2>(phi_1,eta_1;phi_2,eta_2)
-  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t weight=1.); 
-  void       ComputeNXForThisEvent(TObjArray* hNs, const char* histName, Double_t weight=1);
+  void       CalculateMoments(TString, TObjArray*, TObjArray*, Double_t); 
+  void       ComputeNXForThisEvent(TObjArray*, const char*, Double_t);
   THnSparse* ComputeNForThisEvent(TObjArray*, const char*) const;
+  void       FillNEtaHist(TString, THnSparse*, Double_t);
 
   TObjArray* GetAcceptedTracks(AliAODEvent*, Double_t);
   TObjArray* GetAcceptedTracks(TClonesArray*, Double_t);

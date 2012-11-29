@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 229 2012-11-15 12:16:37Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 232 2012-11-28 17:27:59Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -91,6 +91,12 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
 			    2, -0.5, 1.5, fnBinsCent, fxMinCent, fxMaxCent, fnBinsPt, fxMinPt, fxMaxPt));
   fOutputList->Add(new TH3D("histQAPhiEta", ";charge;#phi (rad);#eta",
 			    2, -0.5, 1.5, 200, 0.0, TMath::TwoPi(), 300, -1.5, 1.5));
+
+  // N(eta) distributions with different binnings
+  fOutputList->Add(new TH2D("histNEta_300", ";#eta;N", 300, -1.5, 1.5, 1000, 0., 1000.));  // 0.01
+  fOutputList->Add(new TH2D("histNEta_120", ";#eta;N", 120, -1.5, 1.5, 1000, 0., 1000.));  // 0.025
+  fOutputList->Add(new TH2D("histNEta__30", ";#eta;N",  30, -1.5, 1.5, 1000, 0., 1000.));  // 0.1
+  fOutputList->Add(new TH2D("histNEta__15", ";#eta;N",  15, -1.5, 1.5, 1000, 0., 1000.));  // 0.2
 
   // Moments
   fOutputList->Add(MakeHistSparsePhiEta("histMoment1PhiEta_1"));
@@ -224,7 +230,7 @@ void AliAnalysisTaskLongRangeCorrelations::SetupForMixing() {
 
   Double_t centralityBins[] = { // centrality bins
     0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.
-//      0.,20.,100.
+//     0.,20.,100.
   };
   const Int_t nCentralityBins(sizeof(centralityBins)/sizeof(Double_t) - 1);
 
@@ -265,7 +271,7 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* 
   AliDebug(5, Form("#tracks= %6lld %f", N, centrality));
   for (Long64_t i(0); i<N; ++i) {
     AliAODTrack* pAODTrack(dynamic_cast<AliAODTrack*>(pAOD->GetTrack(i)));
-    if (NULL == pAODTrack) continue;    
+    if (NULL == pAODTrack) continue;
 
     // track filter selection
     if (!pAODTrack->TestFilterBit(fTrackFilter)) continue;
@@ -329,7 +335,13 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
   THnSparse* hN2(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_2")));
   hN2->Add(hN2ForThisEvent, weight);
 
-  TObjArray* hNs=new TObjArray;
+  // n(eta) distributions
+  FillNEtaHist(prefix+"histNEta_300", hN1ForThisEvent, weight);
+  FillNEtaHist(prefix+"histNEta_120", hN1ForThisEvent, weight);
+  FillNEtaHist(prefix+"histNEta__30", hN1ForThisEvent, weight);
+  FillNEtaHist(prefix+"histNEta__15", hN1ForThisEvent, weight);
+
+  TObjArray* hNs(new TObjArray);
 
   // <n_1 n_1>
   hNs->AddAt(hN1ForThisEvent, 0);
@@ -350,6 +362,37 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
   delete hN2ForThisEvent;
 }
 
+void AliAnalysisTaskLongRangeCorrelations::FillNEtaHist(TString name,
+							THnSparse* hs,
+							Double_t weight) {
+
+  TH2* hSum(dynamic_cast<TH2*>(fOutputList->FindObject(name)));
+  if (NULL == hSum) return;
+
+  TH2* hPerEvent(dynamic_cast<TH2*>(hSum->Clone("hPerEvent")));
+  if (NULL == hPerEvent) return;
+  hPerEvent->Reset();  
+
+  // fill hPerEvent
+  const Long64_t N(hs->GetNbins());
+  for (Long64_t i(0); i<N; ++i) {
+    Int_t coord[2] = { 0, 0 };
+    const Double_t n(hs->GetBinContent(i, coord));
+    const Double_t eta(hs->GetAxis(1)->GetBinCenter(coord[1]));
+    hPerEvent->Fill(eta, n);
+  }
+
+  // add zero counts for those eta bins with zero tracks
+  TH1* h(hPerEvent->ProjectionX());
+  for (Int_t i(1); i<=h->GetNbinsX(); ++i)
+    hPerEvent->SetBinContent(i,1, Double_t(h->GetBinContent(i) == 0));
+
+  hSum->Add(hPerEvent, weight);
+
+  delete h;
+  delete hPerEvent;
+}
+
 THnSparse* AliAnalysisTaskLongRangeCorrelations::ComputeNForThisEvent(TObjArray* tracks, const char* histName) const {
   THnSparse* hN(MakeHistSparsePhiEta(histName));
   const Long64_t nTracks(tracks->GetEntriesFast());
@@ -361,9 +404,9 @@ THnSparse* AliAnalysisTaskLongRangeCorrelations::ComputeNForThisEvent(TObjArray*
   return hN;
 }
 
-class MultiDimInterator {
+class MultiDimIterator {
 public:
-  MultiDimInterator(TObjArray* _fHs)
+  MultiDimIterator(TObjArray* _fHs)
     : fHs(_fHs)
     , fN(fHs->GetEntriesFast())
     , fDims(fN, 0)
@@ -384,7 +427,7 @@ public:
   }
   Bool_t end() const { return fj == fN; }
 
-  MultiDimInterator& operator++() {
+  MultiDimIterator& operator++() {
     Long64_t j(0);
     for (; j<fN; ++j) {
       ++fIdxs[j];
@@ -407,8 +450,8 @@ protected:
       fX[2*j+k] = hs->GetAxis(k)->GetBinCenter(coord[k]);
   }
 private:
-  MultiDimInterator(const MultiDimInterator&);
-  MultiDimInterator& operator=(const MultiDimInterator&);
+  MultiDimIterator(const MultiDimIterator&);
+  MultiDimIterator& operator=(const MultiDimIterator&);
 
   TObjArray*            fHs;
   const Long64_t        fN;
@@ -427,7 +470,7 @@ void AliAnalysisTaskLongRangeCorrelations::ComputeNXForThisEvent(TObjArray* hNs,
   THnSparse* hs(dynamic_cast<THnSparse*>(fOutputList->FindObject(histName)));
   if (hs == NULL) return;
 
-  for (MultiDimInterator mdi(hNs); !mdi.end(); ++mdi)
+  for (MultiDimIterator mdi(hNs); !mdi.end(); ++mdi)
     hs->Fill(mdi.GetX(), mdi.GetN()*weight);
 }
 
