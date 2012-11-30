@@ -226,11 +226,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TString selectionCent;
 	       
   Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
-  Int_t const colorNrFirst = 7;
-  Int_t colorTabFirst[colorNrFirst] = {1,4,2,3,6,7,12};
+  Int_t const colorNrFirst = 8;
+  Int_t colorIndex = 0;
+  Int_t colorTabFirst[colorNrFirst] = {kGray,kRed,kBlue,kGreen,kOrange,kCyan,kMagenta,kYellow};
   for (Int_t i = 0; i< triggersB->GetEntriesFast(); i++ ) {
-    if ( i < colorNrFirst ) colorTab[i] = colorTabFirst[i];
-    else colorTab[i] = 1;
+    colorTab[i] = colorTabFirst[i] + colorIndex;
+    if ( i%colorNrFirst == 0 ) colorIndex++;
   } 
   TArrayI *colorInd = new TArrayI( triggersB->GetEntriesFast() );
   for(Int_t i=0; i< triggersB->GetEntriesFast(); i++) colorInd->AddAt(colorTab[i],i); 
@@ -1130,7 +1131,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   hClusterChargeMeanInCh[0]->SetLabelSize(0.02);
   hClusterChargeMeanInCh[0]->SetTitle("Cluster charge mean (fC) per track in chamber i");
   hClusterChargeMeanInCh[0]->SetMaximum(150);
-  hClusterChargeMeanInCh[0]->SetMinimum(50);
+  hClusterChargeMeanInCh[0]->SetMinimum(30);
   for (Int_t ich=0; ich<10; ich++) {
     hClusterChargeMeanInCh[ich]->SetLineColor(ich+1+ich/9);
     hClusterChargeMeanInCh[ich]->SetLineWidth(2);
@@ -1147,7 +1148,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   //hClusterChargeInCh[0]->LabelsOption("u");                                                                               
   hClusterChargeSigmaInCh[0]->SetLabelSize(0.02);
   hClusterChargeSigmaInCh[0]->SetTitle("Cluster charge sigma per track in chamber i");
-  hClusterChargeSigmaInCh[0]->SetMaximum(150);
+  hClusterChargeSigmaInCh[0]->SetMaximum(250);
   hClusterChargeSigmaInCh[0]->SetMinimum(50);
   for (Int_t ich=0; ich<10; ich++) {
     hClusterChargeSigmaInCh[ich]->SetLineColor(ich+1+ich/9);

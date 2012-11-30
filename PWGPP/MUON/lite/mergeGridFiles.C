@@ -230,7 +230,7 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
     Int_t nPatterns = ( mergeFast ) ? 1 : 2;
     
     for ( Int_t ipattern=0; ipattern<nPatterns; ipattern++ ) {
-      TString command = ( prodDir.Contains("private") ) ? Form("find %s/ *%s/%s%s", baseDir.Data(), currRunString.Data(), filePattern[ipattern].Data(), outTaskFilename.Data()) : Form("find %s/*%s %s/%s%s", baseDir.Data(), currRunString.Data(), prodDir.Data(), filePattern[ipattern].Data(), outTaskFilename.Data());
+      TString command = ( prodDir.Contains("private") ) ? Form("find %s/ *%s/%s%s", baseDir.Data(), currRunString.Data(), filePattern[ipattern].Data(), outTaskFilename.Data()) : Form("find %s/*%s /%s/%s%s", baseDir.Data(), currRunString.Data(), prodDir.Data(), filePattern[ipattern].Data(), outTaskFilename.Data());
 
       printf("%s\n", command.Data());
 
