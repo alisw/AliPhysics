@@ -11,6 +11,7 @@
 #include "TRef.h"
 
 #include "AliESDTrdTracklet.h"
+#include "AliESDtrack.h"
 
 class AliESDTrdTrack : public TObject {
 
@@ -46,6 +47,7 @@ class AliESDTrdTrack : public TObject {
 
   AliESDTrdTracklet* GetTracklet(Int_t idx) const
     { return (GetLayerMask() & (1<<idx)) ? (AliESDTrdTracklet*) ((fTrackletRefs[idx]).GetObject()) : 0x0; }
+  AliESDtrack* GetTrackMatch() const { return (AliESDtrack*) fTrackMatch.GetObject(); }
 
   void SetA(Int_t a)            { fA = a; }
   void SetB(Int_t b)            { fB = b; }
@@ -62,6 +64,7 @@ class AliESDTrdTrack : public TObject {
   void SetTrackletIndex(const Char_t idx, const Int_t layer) { fTrackletIndex[layer] = idx; }
 
   void AddTrackletReference(AliESDTrdTracklet* trkl, Int_t layer) { fTrackletRefs[layer] = trkl; }
+  void SetTrackMatchReference(AliESDtrack *trk) { fTrackMatch = trk; }
 
   Bool_t IsSortable() const  { return kTRUE; }
   Int_t Compare(const TObject* obj) const;
@@ -88,9 +91,12 @@ class AliESDTrdTrack : public TObject {
 
   TRef fTrackletRefs[fgkNlayers];         // references to contributing tracklets
 
+  TRef fTrackMatch;                       // reference to matched global track
+					  // to reject TRD tracks from late conversions
+
   Int_t fLabel;				  // Track label
 
-  ClassDef(AliESDTrdTrack,5)
+  ClassDef(AliESDTrdTrack,6)
 };
 
 #endif
