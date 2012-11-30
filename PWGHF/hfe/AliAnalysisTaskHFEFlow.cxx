@@ -32,6 +32,9 @@
 #include "TParticle.h"
 #include "TF1.h"
 
+#include <TDirectory.h>
+#include <TTreeStream.h>
+
 #include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -109,6 +112,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fMaxNumberOfIterations(100),
   fPrecisionPhi(0.001),
   fUseMCReactionPlane(kFALSE),
+  fSP(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
   fChi2OverNDFCut(3.0),
@@ -176,7 +180,8 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fOppSignDeltaPhiMaps(0x0),
   fSameSignDeltaPhiMaps(0x0),
   fOppSignAngle(0x0),
-  fSameSignAngle(0x0)
+  fSameSignAngle(0x0),
+  fDebugStreamer(0)
 {
   // Constructor
 
@@ -219,6 +224,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fMaxNumberOfIterations(100),
   fPrecisionPhi(0.001),
   fUseMCReactionPlane(kFALSE),
+  fSP(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
   fChi2OverNDFCut(3.0),
@@ -286,7 +292,8 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fOppSignDeltaPhiMaps(0x0),
   fSameSignDeltaPhiMaps(0x0),
   fOppSignAngle(0x0),
-  fSameSignAngle(0x0)
+  fSameSignAngle(0x0),
+  fDebugStreamer(0)
 {
   //
   // named ctor
@@ -351,6 +358,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fMaxNumberOfIterations(ref.fMaxNumberOfIterations),
   fPrecisionPhi(ref.fPrecisionPhi),
   fUseMCReactionPlane(ref.fUseMCReactionPlane),
+  fSP(ref.fSP),
   fMCPID(ref.fMCPID),
   fNoPID(ref.fNoPID),
   fChi2OverNDFCut(ref.fChi2OverNDFCut),
@@ -418,7 +426,8 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fOppSignDeltaPhiMaps(NULL),
   fSameSignDeltaPhiMaps(NULL),
   fOppSignAngle(NULL),
-  fSameSignAngle(NULL)
+  fSameSignAngle(NULL),
+  fDebugStreamer(0)
 {
   //
   // Copy Constructor
@@ -468,6 +477,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fMaxNumberOfIterations = fMaxNumberOfIterations;
   target.fPrecisionPhi = fPrecisionPhi;
   target.fUseMCReactionPlane = fUseMCReactionPlane;
+  target.fSP = fSP;
   target.fMCPID = fMCPID;
   target.fNoPID = fNoPID;
   target.fChi2OverNDFCut = fChi2OverNDFCut;
@@ -497,7 +507,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
     target.fContamination[k] = fContamination[k];
     target.fv2contamination[k] = fv2contamination[k];
   }
- 
+  target.fDebugStreamer=fDebugStreamer;
 }
 //____________________________________________________________
 AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
@@ -518,7 +528,7 @@ AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
   if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   //if(fPIDBackgroundqa) delete fPIDBackgroundqa;
   //if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
- 
+  if ( fDebugStreamer ) delete fDebugStreamer;
 
 }
 //________________________________________________________________________
@@ -718,6 +728,12 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t maxCos = 1.0;
   Double_t binLimCos[nBinsCos+1];
   for(Int_t i=0; i<=nBinsCos; i++) binLimCos[i]=(Double_t)minCos + (maxCos-minCos)/nBinsCos*(Double_t)i ;
+
+  // Int_t nBinsCosSP = 50;
+  // Double_t minCosSP = -100.0;
+  // Double_t maxCosSP = 100.0;
+  // Double_t binLimCosSP[nBinsCosSP+1];
+  // for(Int_t i=0; i<=nBinsCosSP; i++) binLimCosSP[i]=(Double_t)minCosSP + (maxCosSP-minCosSP)/nBinsCosSP*(Double_t)i ;
  
   Int_t nBinsC = 11;
   Double_t minC = 0.0;
@@ -1426,10 +1442,11 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Float_t eventPlaneV0A = 0.0;
   Float_t eventPlaneV0C = 0.0;
   Float_t eventPlaneV0 = 0.0;
-  TVector2 *standardQ = 0x0;
+  TVector2 *qTPC = 0x0;
   TVector2 *qsub1a = 0x0;
   TVector2 *qsub2a = 0x0;
-
+  TVector2 qV0A,qV0C,qV0,*qAna;
+  
   // V0
 
   if(fHFEVZEROEventPlane && (!fAODAnalysis)){
@@ -1460,25 +1477,27 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   }
   else {
     
-    eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0", fInputEvent,2));
-    AliDebug(2,Form("eventPlaneV0 %f",eventPlaneV0));
+    Double_t qVx, qVy;  //TR: info
+    eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
-    AliDebug(2,Form("eventPlaneV0 %f",eventPlaneV0));
-    eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0A", fInputEvent,2));
+    qV0.Set(qVx,qVy);
+    eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,8,2,qVx,qVy));
     if(eventPlaneV0A > TMath::Pi()) eventPlaneV0A = eventPlaneV0A - TMath::Pi();
-    eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0C", fInputEvent,2));
+    qV0A.Set(qVx,qVy);
+    eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
     if(eventPlaneV0C > TMath::Pi()) eventPlaneV0C = eventPlaneV0C - TMath::Pi();
+    qV0C.Set(qVx,qVy);
   
   }
 
   // TPC
 
-  standardQ = vEPa->GetQVector(); 
+  qTPC = vEPa->GetQVector(); 
   Double_t qx = -1.0;
   Double_t qy = -1.0;
-  if(standardQ) {
-    qx = standardQ->X();
-    qy = standardQ->Y();
+  if(qTPC) {
+    qx = qTPC->X();
+    qy = qTPC->Y();
   }  
   TVector2 qVectorfortrack;
   qVectorfortrack.Set(qx,qy);
@@ -1486,10 +1505,22 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   // Choose the one used for v2
 
-  if(fVZEROEventPlane) eventPlanea = eventPlaneV0;
-  if(fVZEROEventPlaneA) eventPlanea = eventPlaneV0A;
-  if(fVZEROEventPlaneC) eventPlanea = eventPlaneV0C;
-  if(!fVZEROEventPlane) eventPlanea = eventPlaneTPC;
+  if(fVZEROEventPlane){ //TR: info
+    eventPlanea = eventPlaneV0;
+    qAna = &qV0;
+  }
+  if(fVZEROEventPlaneA){
+    eventPlanea = eventPlaneV0A;
+    qAna = &qV0A;
+  }
+  if(fVZEROEventPlaneC){
+    eventPlanea = eventPlaneV0C;
+    qAna = &qV0C;
+  }
+  if(!fVZEROEventPlane){
+    eventPlanea = eventPlaneTPC;
+    qAna = &qV0C;
+  }
 
   valuecossinephiep[0] = TMath::Cos(2*eventPlanea);
   valuecossinephiep[1] = TMath::Sin(2*eventPlanea);
@@ -1515,19 +1546,65 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     diffsub1sub2asin = TMath::Sin(2.*TVector2::Phi_0_2pi(qsub1a->Phi()/2.- qsub2a->Phi()/2.));
   }
 
+  // if ( !fDebugStreamer ) {
+  //   //debug stream
+  //   TDirectory *backup = gDirectory;
+  //   fDebugStreamer = new TTreeSRedirector("TaskHFEFlowdebug.root");
+  //   if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+  // }     
+
+  // {
+
+  //   double v0nrom = TMath::Sqrt(qV0.X()*qV0.X()+qV0.Y()*qV0.Y());
+  //   double v0Anrom = TMath::Sqrt(qV0A.X()*qV0A.X()+qV0A.Y()*qV0A.Y());
+  //   double v0Cnrom = TMath::Sqrt(qV0C.X()*qV0C.X()+qV0C.Y()*qV0C.Y());
+  //   double sub1nrom = TMath::Sqrt(qsub1a->X()*qsub1a->X()+qsub1a->Y()*qsub1a->Y());
+  //   double sub2nrom = TMath::Sqrt(qsub2a->X()*qsub2a->X()+qsub2a->Y()*qsub2a->Y());
+
+  //   (* fDebugStreamer) << "UserExec" <<
+  //     "binct="<<binct<<
+  //     "qV0="<<v0nrom<<
+  //     "qV0A="<<v0Anrom<<
+  //     "qV0C="<<v0Cnrom<<
+  //     "qsub1a="<<sub1nrom<<
+  //     "qsub2a="<<sub2nrom<<
+  //     "\n";
+  // }
+
   // three sub events in case of VZEROA and VZEROC
-  diffsubasubb = TMath::Cos(2.*(eventPlaneV0A - eventPlaneV0C));
-  diffsubasubc = TMath::Cos(2.*(eventPlaneV0A - eventPlaneTPC));
-  diffsubbsubc = TMath::Cos(2.*(eventPlaneV0C - eventPlaneTPC));
+  if(!fSP){
+    diffsubasubb = TMath::Cos(2.*(eventPlaneV0A - eventPlaneV0C));  //TR: 
+    diffsubasubc = TMath::Cos(2.*(eventPlaneV0A - eventPlaneTPC));  //TR: 
+    diffsubbsubc = TMath::Cos(2.*(eventPlaneV0C - eventPlaneTPC));  //TR: 
+  }
+  else{
+    if(fVZEROEventPlaneA){
+      diffsubasubb = qV0A.X()*qV0C.X()+qV0A.Y()*qV0C.Y();
+      diffsubasubc = qV0A.X()*qTPC->X()+qV0A.Y()*qTPC->Y();
+      diffsubbsubc = qV0C.X()*qTPC->X()+qV0C.Y()*qTPC->Y();
+    }
+    else if(fVZEROEventPlaneC){
+      diffsubasubb = qV0C.X()*qV0A.X()+qV0C.Y()*qV0A.Y();
+      diffsubasubc = qV0C.X()*qTPC->X()+qV0C.Y()*qTPC->Y();
+      diffsubbsubc = qV0A.X()*qTPC->X()+qV0A.Y()*qTPC->Y();
+    }
+  }
 
   diffsubasubbsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneV0C));
   diffsubasubcsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneTPC));
   diffsubbsubcsin = TMath::Sin(2.*(eventPlaneV0C - eventPlaneTPC));
   // three sub events in case of VZERO all
   if(fVZEROEventPlane && (!fVZEROEventPlaneA) && (!fVZEROEventPlaneC)) {
-    diffsubasubb = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub1a));
-    diffsubasubc = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub2a));
-    diffsubbsubc = TMath::Cos(2.*(eventPlanesub1a - eventPlanesub2a));
+    if(!fSP){
+      diffsubasubb = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub1a));     //TR: 
+      diffsubasubc = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub2a));     //TR: 
+      diffsubbsubc = TMath::Cos(2.*(eventPlanesub1a - eventPlanesub2a));  //TR: 
+    }
+    else{
+      diffsubasubb = qV0.X()*qsub1a->X()+qV0.Y()*qsub1a->Y();	       
+      diffsubasubc = qV0.X()*qsub2a->X()+qV0.Y()*qsub2a->Y();	 
+      diffsubbsubc = qsub1a->X()*qsub2a->X()+qsub1a->Y()*qsub2a->Y();
+    }
     
     diffsubasubbsin = TMath::Sin(2.*(eventPlaneV0 - eventPlanesub1a));
     diffsubasubcsin = TMath::Sin(2.*(eventPlaneV0 - eventPlanesub2a));
@@ -1540,14 +1617,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   ////////////////////////////////////////////////////////
   
   //if(!fVZEROEventPlane) {
-  // if(!standardQ) {
+  // if(!qTPC) {
   //  eventplanedefined = kFALSE;
-      //PostData(1, fListHist);
-      //return;
+  //PostData(1, fListHist);
+  //return;
   //}
   //}
 
-  if((!standardQ) || (!qsub1a) || (!qsub2a)) {
+  if((!qTPC) || (!qsub1a) || (!qsub2a)) {
     AliDebug(2,"No event plane");
     return;
   }
@@ -1623,16 +1700,16 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     }
     else {
       valuensparsefbis[0] = diffsubasubb;
-      valuensparsefbis[1] = diffsubbsubc;
-      valuensparsefbis[2] = diffsubasubc;
-      fCosResabc->Fill(&valuensparsefbis[0]);
+      valuensparsefbis[1] = diffsubasubc;     //TR: WTF!!!
+      valuensparsefbis[2] = diffsubbsubc;
+      fCosResabc->Fill(&valuensparsefbis[0]); //TR: info
       valuensparsefbissin[0] = diffsubasubbsin;
       valuensparsefbissin[1] = diffsubbsubcsin;
       valuensparsefbissin[2] = diffsubasubcsin;
       if(fMonitorEventPlane) fSinResabc->Fill(&valuensparsefbissin[0]);
       if(fMonitorEventPlane) {
 	fProfileCosResab->Fill(valuensparsefbis[3],valuensparsefbis[0]);
-	fProfileCosResac->Fill(valuensparsefbis[3],valuensparsefbis[1]);
+	fProfileCosResac->Fill(valuensparsefbis[3],valuensparsefbis[1]);  //TR: WTF!!!
 	fProfileCosResbc->Fill(valuensparsefbis[3],valuensparsefbis[2]);
       }
     }
@@ -1761,16 +1838,16 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	if(!(aodtrack->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
       }
     }
-    
+
     if(fApplyCut) {
 
       valuetrackingcuts[0] = track->Pt(); 
       valuetrackingcuts[1] = 0;
-
+ 
       // RecKine: ITSTPC cuts  
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
-      
+
       // Reject kink mother
       if(fRejectKinkMother) {
 	if(fAODAnalysis) {
@@ -1819,7 +1896,6 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
     }
-
     AliDebug(2,"Survived");
 
     /////////////////////////////////////////////////////////
@@ -1830,8 +1906,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     //if(eventplanedefined && (!fVZEROEventPlane)) {
     if(!fVZEROEventPlane) {
       // Subtract the tracks from the event plane
-      Double_t qX = standardQ->X() - vEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
-      Double_t qY = standardQ->Y() - vEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
+      Double_t qX = qTPC->X() - vEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
+      Double_t qY = qTPC->Y() - vEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
       TVector2 newQVectorfortrack;
       newQVectorfortrack.Set(qX,qY);
       eventplanesubtracted = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
@@ -1851,7 +1927,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	else fillEventPlane = kFALSE;
       }
     }
-    
+
     ///////////////
     // MC
     //////////////
@@ -2028,7 +2104,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     //
     valuensparseh[0] = TMath::Cos(2*TVector2::Phi_mpi_pi(phitrack-eventplanesubtracted));
     if(fillEventPlane) {
-      fCosPhiMaps->Fill(&valuensparseh[0]);
+      fCosPhiMaps->Fill(&valuensparseh[0]); //TR: fCosPhiQSum+=valuensparseh[0]*TMath:Sqrt(qAna->X()*qAna->X()+qAna->Y()*qAna->Y()); fCosPhiQN++;
       if((valuefractioncont[1] >=0) && (valuefractioncont[1] < 11)){
 	if(fContamination[((Int_t)valuefractioncont[1])]){
 	  Double_t weight = fContamination[((Int_t)valuefractioncont[1])]->Eval(track->P());
@@ -2046,7 +2122,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	}     
       }
       if(fMonitorEventPlane) {
-	fProfileCosPhiMaps->Fill(valuensparsehprofile[1],valuensparsehprofile[2],valuensparseh[0]);
+	if(fSP)
+	  valuensparseh[0] *= TMath::Sqrt(qAna->X()*qAna->X()+qAna->Y()*qAna->Y());
+	fProfileCosPhiMaps->Fill(valuensparsehprofile[1],valuensparsehprofile[2],valuensparseh[0]);  //TR: info
       }
     }
     

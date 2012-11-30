@@ -48,9 +48,9 @@ class TArrayI;
 class AliAODMCHeader;
 class TClonesArray;
 class AliHFENonPhotonicElectron;
+class TTreeSRedirector;
 
 class AliAnalysisTaskHFEFlow: public AliAnalysisTaskSE {
-  
 public:
 
   typedef enum{
@@ -122,6 +122,7 @@ public:
   void SetMaxNumberOfIterations(Int_t maxNumberOfIterations) { fMaxNumberOfIterations = maxNumberOfIterations; };
   void SetPrecisionPhi(Double_t precisionPhi) { fPrecisionPhi = precisionPhi;};
   void SetUseMCReactionPlane(Bool_t useMCReactionPlane) { fUseMCReactionPlane = useMCReactionPlane;};
+  void SetUseSP(Bool_t useSP) { fSP = useSP;}
   void SetMCPID(Bool_t mcPID) { fMCPID = mcPID;};
   void SetNoPID(Bool_t noPID) { fNoPID = noPID;};
 
@@ -180,6 +181,7 @@ private:
   Int_t     fMaxNumberOfIterations; // Max number of iteration for adding v2
   Double_t  fPrecisionPhi;  // precision phi for adding v2
   Bool_t    fUseMCReactionPlane; // use MC reaction plane
+  Bool_t    fSP;        // calculate using scalar product method (instead of event plane method)
 
   Bool_t    fMCPID; // MC PID for electrons
   Bool_t    fNoPID; // No PID for checks
@@ -300,7 +302,9 @@ private:
   THnSparseF *fOppSignAngle;         // ! Opening Angles
   THnSparseF *fSameSignAngle;        // ! Opening Angles
 
-  Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
+  TTreeSRedirector  *fDebugStreamer;               //!Debug streamer
+
+ Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
   Int_t CheckPdg(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherGamma(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherPi0(Int_t tr, AliMCEvent* mcEvent);

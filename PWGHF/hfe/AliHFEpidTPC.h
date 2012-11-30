@@ -61,10 +61,13 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void SetLowerSigmaCutDefault(const TF1 * const model) { fkLowerSigmaCut[0] = model; fHasCutModel = kTRUE; }
     void SetLowerSigmaCutCentrality(const TF1 * const model, Int_t centralityBin) { if(centralityBin < 11) fkLowerSigmaCut[centralityBin+1] = model; fHasCutModel = kTRUE; }
     void SetEtaCorrection(const TF1 *const param) { fkEtaCorrection = param; }
+    void SetCentralityCorrection(const TF1 *const param){ fkCentralityCorrection = param; }
     Bool_t HasEtaCorrection() const { return fkEtaCorrection != NULL; }
+    Bool_t HasCentralityCorrection() const { return fkCentralityCorrection != NULL; } 
 
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
+    void ApplyCentralityCorrection(AliVTrack *track, Double_t centralityEstimator, AliHFEpidObject::AnalysisType_t anatype) const;
     void UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
 
   protected:
@@ -83,6 +86,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     const TF1 *fkUpperSigmaCut[12];                         // Upper Sigma Cut
     const TF1 *fkLowerSigmaCut[12];                         // Lower Sigma Cut
     const TF1 *fkEtaCorrection;                             // Correction for the eta dependence
+    const TF1 *fkCentralityCorrection;                      // Correction for the centrality dependence
     Bool_t fHasCutModel;                                    // Has cut model functions
     Bool_t fUseOnlyOROC;                                    // Use only OROC
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut

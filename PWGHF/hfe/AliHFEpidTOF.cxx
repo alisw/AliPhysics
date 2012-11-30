@@ -148,6 +148,21 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   return pdg;
 }
 //___________________________________________________________________
+void AliHFEpidTOF::SetTOFnSigmaBand(Float_t lower, Float_t upper)
+{
+  //
+  // Lower and higher cut independant of the centrality
+  //
+
+  for(Int_t k=0; k < 12; k++) {
+    fSigmaBordersTOFLower[k] = lower;
+    fSigmaBordersTOFUpper[k] = upper;
+  }
+
+  SetBit(kSigmaBand, kTRUE);
+
+}
+//___________________________________________________________________
 void AliHFEpidTOF::SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin)
 {
   //
