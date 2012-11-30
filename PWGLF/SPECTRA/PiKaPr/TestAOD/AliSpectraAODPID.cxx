@@ -142,7 +142,7 @@ Int_t AliSpectraAODPID::GetParticleSpecie(AliSpectraAODHistoManager * hman,AliAO
 
 
   // select the nsigma to be used for the actual PID
-  Double_t nsigmaPion, nsigmaKaon, nsigmaProton;
+  Double_t nsigmaPion=0, nsigmaKaon=0, nsigmaProton=0;
 
   switch (fPIDType) {
   case kNSigmaTPC:
