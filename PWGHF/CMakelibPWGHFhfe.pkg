@@ -82,6 +82,10 @@ set (SRCS
     hfe/AliSelectNonHFE.cxx
     hfe/AliHFENonPhotonicElectron.cxx
     hfe/AliHFEdebugTreeTaskAOD.cxx
+    hfe/AliHFECorrectSpectrumBase.cxx
+    hfe/AliHFEInclusiveSpectrum.cxx
+    hfe/AliHFEInclusiveSpectrumQA.cxx 
+    hfe/AliHFEsmearDCA.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")

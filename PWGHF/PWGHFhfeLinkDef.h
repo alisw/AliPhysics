@@ -74,4 +74,9 @@
 #pragma link C++ class  AliHFENonPhotonicElectron+;
 #pragma link C++ class  AliHFEdebugTreeTaskAOD+;
 
+#pragma link C++ class  AliHFECorrectSpectrumBase+;
+#pragma link C++ class  AliHFEInclusiveSpectrum+;
+#pragma link C++ class  AliHFEInclusiveSpectrumQA+;
+#pragma link C++ class  AliHFEsmearDCA+;
+
 #endif
