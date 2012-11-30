@@ -30,6 +30,10 @@ class TList;
 class AliVEvent;
 class AliVParticle;
 class AliVTrack;
+class AliVVertex;
+class AliAODVertex;
+class AliAODEvent;
+class AliESDEvent;
 
 class AliHFEextraCuts: public AliCFCutBase{
   public:
@@ -96,6 +100,8 @@ class AliHFEextraCuts: public AliCFCutBase{
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
     void GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]);
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
+    const AliVVertex* RemoveDaughtersFromPrimaryVtx(AliESDEvent *esdevent, AliVTrack *track);
+    AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, AliVTrack *track);
     Int_t GetITSstatus(const AliVTrack * const track, Int_t layer) const;
     Bool_t CheckITSstatus(Int_t itsStatus) const;
     Bool_t CheckITSpattern(const AliVTrack *const track) const;

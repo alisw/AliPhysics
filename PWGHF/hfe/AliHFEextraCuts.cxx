@@ -30,6 +30,7 @@
 #include <TString.h>
 #include <TMath.h>
 
+#include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
@@ -44,6 +45,7 @@
 #include "AliVParticle.h"
 #include "AliVertexerTracks.h"
 #include "AliVVertex.h"
+#include "AliExternalTrackParam.h"
 
 #include "AliHFEextraCuts.h"
 
@@ -801,42 +803,38 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
   //
   // Get impact parameter
   //
+
+  const Double_t kBeampiperadius=3.;
+  Double_t dcaD[2]={-999.,-999.},
+           covD[3]={-999.,-999.,-999.};
   TClass *type = track->IsA();
   if(type == AliESDtrack::Class()){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
     esdtrack->GetImpactParameters(radial, z);
   }
   else if(type == AliAODTrack::Class()){
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-    if(aodtrack){
-      Double_t xyz[3];
-      aodtrack->XYZAtDCA(xyz);
-      //printf("xyz[0] %f, xyz[1] %f, xyz[2] %f\n",xyz[0], xyz[1],xyz[2]);
-      if(xyz[0]==-999. || xyz[1]==-999. ||  xyz[2]==-999.){
-	if(!fEvent) {
-	  z = xyz[2];
-	  radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
-	  //printf("No event\n");
-	}
-	else {
-	  // Propagate the global track to the DCA.
-	  const AliVVertex *vAOD = fEvent->GetPrimaryVertex();
-	  Double_t posAtDCA[2] = {-999,-999};
-	  Double_t covar[3] = {-999,-999,-999};
-	  AliAODTrack *copyaodtrack = new AliAODTrack(*aodtrack);
-	  if(copyaodtrack && copyaodtrack->PropagateToDCA(vAOD,fEvent->GetMagneticField(),100.,posAtDCA,covar)) {
-	    z = posAtDCA[1];
-	    radial = posAtDCA[0];
-	    //printf("Propagate z %f and radial %f\n",z,radial);
-	  }
-	  delete copyaodtrack;
-	}
-      }
-      else {
-	z = xyz[2];
-	radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
-      }
+
+    //case of AOD tracks
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fEvent);
+    if(!aodevent) {
+      AliDebug(1, "No aod event available\n");
+      return;
     }
+
+    //Case ESD track: take copy constructor
+    AliAODTrack *aodtrack = NULL;
+    AliAODTrack *tmptrack = dynamic_cast<AliAODTrack *>(track);
+    if(tmptrack) aodtrack = new AliAODTrack(*tmptrack);
+
+    AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
+    if(!vtxAODSkip) return;
+    AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
+    if(etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD)) {
+      radial = dcaD[0];
+      z = dcaD[1];
+    }
+    //if(vtxAODSkip) delete vtxAODSkip;
+    if(aodtrack) delete aodtrack;
   }
 }
 //______________________________________________________
@@ -907,7 +905,6 @@ Float_t AliHFEextraCuts::GetTRDchi(AliVTrack *track){
 
 }
 
-
 //______________________________________________________
 Int_t AliHFEextraCuts::GetITSNbOfcls(AliVTrack *track){
   //
@@ -930,85 +927,73 @@ Int_t AliHFEextraCuts::GetITSNbOfcls(AliVTrack *track){
 }
 //______________________________________________________
 void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy){
-	//
-	// Get HFE impact parameter (with recalculated primary vertex)
-	//
-	dcaxy=0;
-	dcansigmaxy=0;
+  //
+  // Get HFE impact parameter (with recalculated primary vertex)
+  //
+  dcaxy=0;
+  dcansigmaxy=0;
   if(!fEvent){
     AliDebug(1, "No Input event available\n");
     return;
   }
-  const Double_t kBeampiperadius=3.;
   TString type = track->IsA()->GetName();
-  Double_t dcaD[2]={-999.,-999.};
-  Double_t covD[3]={-999.,-999.,-999.};
-  Float_t dcaF[2]={-999.,-999.};
-  Float_t covF[3]={-999.,-999.,-999.};
-  
-  AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
-  if(!esdevent) {
-    AliDebug(1, "No esd event available\n");
-    return;
-  }
-  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
-  if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-   // recalculate primary vertex for peri. and pp
-   AliVertexerTracks vertexer(fEvent->GetMagneticField());
-   vertexer.SetITSMode();
-   vertexer.SetMinClusters(4);
-	 Int_t skipped[2];
-   skipped[0] = track->GetID();
-   vertexer.SetSkipTracks(1,skipped);
-   
- //----diamond constraint-----------------------------
-   vertexer.SetConstraintOn();
-   Float_t diamondcovxy[3];
-   esdevent->GetDiamondCovXY(diamondcovxy);
-   Double_t pos[3]={esdevent->GetDiamondX(),esdevent->GetDiamondY(),0.};
-   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-   AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-   vertexer.SetVtxStart(diamond);
-   delete diamond; diamond=NULL;
- //----------------------------------------------------
-    
-   vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
+  const Double_t kBeampiperadius=3.;
+  Double_t dcaD[2]={-999.,-999.},
+           covD[3]={-999.,-999.,-999.};
 
-   // Getting the DCA
-   // Propagation always done on a working copy to not disturb the track params of the original track
-   AliESDtrack *esdtrack = NULL;
-   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-     // Case ESD track: take copy constructor
-     AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
-     if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-   } else {
-    // Case AOD track: take different constructor
-    esdtrack = new AliESDtrack(track);
-   }
-   if(esdtrack && esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD)){
-    // protection
-    dcaxy = dcaD[0];
-    if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
-    if(!covD[0]) dcansigmaxy = -49.;
-   }
-   delete esdtrack;
-   delete vtxESDSkip;
-  } 
-  else{
-   AliESDtrack *esdtrack = NULL;
-   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-    // Case ESD track: take copy constructor
+  if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
+    //case of ESD tracks
+    AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
+    if(!esdevent) {
+      AliDebug(1, "No esd event available\n");
+      return;
+    }
+
+    //case ESD track: take copy constructor
+    AliESDtrack *esdtrack = NULL;
     AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
     if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-   } else {
-    // Case AOD track: take different constructor
-    esdtrack = new AliESDtrack(track);
-   }
-   if(esdtrack) esdtrack->GetImpactParameters(dcaF, covF); 
-   dcaxy = dcaF[0];
-   if(covF[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covF[0]);
-   if(!covF[0]) dcansigmaxy = -49.;
-   delete esdtrack;
+
+    const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+    if(!vtxESDSkip) return;
+    if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+      vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
+    }
+
+    if(!vtxESDSkip) return;
+    if(esdtrack && esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD)){
+      dcaxy = dcaD[0];
+      if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+    }
+    //delete vtxESDSkip;
+    delete esdtrack;
+  }
+  else {
+    //case of AOD tracks
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fEvent);
+    if(!aodevent) {
+      AliDebug(1, "No aod event available\n");
+      return;
+    }
+
+    //Case ESD track: take copy constructor
+    AliAODTrack *aodtrack = NULL;
+    AliAODTrack *tmptrack = dynamic_cast<AliAODTrack *>(track);
+    if(tmptrack) aodtrack = new AliAODTrack(*tmptrack);
+
+    AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
+    if(!vtxAODSkip) return;
+    if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+      vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
+    } 
+    if(!vtxAODSkip) return;
+    AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
+    if(etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD)) {
+      dcaxy = dcaD[0];
+      if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+    }
+    //if(vtxAODSkip) delete vtxAODSkip;
+    if(aodtrack) delete aodtrack;
   }
 }
 
@@ -1023,69 +1008,56 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2],
   }
   const Double_t kBeampiperadius=3.;
   TString type = track->IsA()->GetName();
-  Float_t dcaF[2]={-999.,-999.};
-  Float_t covF[3]={-999.,-999.,-999.};
   
-  AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
-  if(!esdevent) {
-    AliDebug(1, "No esd event available\n");
-    return;
-  }
-  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
-  if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-   // recalculate primary vertex for peri. and pp
-   AliVertexerTracks vertexer(fEvent->GetMagneticField());
-   vertexer.SetITSMode();
-   vertexer.SetMinClusters(4);
-	 Int_t skipped[2];
-   skipped[0] = track->GetID();
-   vertexer.SetSkipTracks(1,skipped);
-   
- //----diamond constraint-----------------------------
-   vertexer.SetConstraintOn();
-   Float_t diamondcovxy[3];
-   esdevent->GetDiamondCovXY(diamondcovxy);
-   Double_t pos[3]={esdevent->GetDiamondX(),esdevent->GetDiamondY(),0.};
-   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-   AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-   vertexer.SetVtxStart(diamond);
-   delete diamond; diamond=NULL;
- //----------------------------------------------------
-    
-   vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
+  if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
+    //case of ESD tracks
+    AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
+    if(!esdevent) {
+      AliDebug(1, "No esd event available\n");
+      return;
+    }
 
-   // Getting the DCA
-   // Propagation always done on a working copy to not disturb the track params of the original track
-   AliESDtrack *esdtrack = NULL;
-   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-     // Case ESD track: take copy constructor
-     AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
-     if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-   } else {
-    // Case AOD track: take different constructor
-    esdtrack = new AliESDtrack(track);
-   }
-   if(esdtrack) esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD);
-   delete esdtrack;
-   delete vtxESDSkip;
-  } 
-  else{
-   AliESDtrack *esdtrack = NULL;
-   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-    // Case ESD track: take copy constructor
+    //case ESD track: take copy constructor
+    AliESDtrack *esdtrack = NULL;
     AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
     if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-   } else {
-    // Case AOD track: take different constructor
-    esdtrack = new AliESDtrack(track);
-   }
-   if(esdtrack) esdtrack->GetImpactParameters(dcaF, covF); 
-   dcaD[0] = dcaF[0];
-   dcaD[1] = dcaF[1];
-   covD[0] = covF[0];
-   covD[1] = covF[1];
-   covD[2] = covF[2];
-   delete esdtrack;
+
+    const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+    if(!vtxESDSkip) return;
+    if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+      vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
+    }
+    if(!vtxESDSkip) return;
+
+    if(esdtrack) esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD);
+
+    //delete vtxESDSkip;
+    delete esdtrack;
+  }
+  else {
+    //case of AOD tracks
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fEvent);
+    if(!aodevent) {
+      AliDebug(1, "No aod event available\n");
+      return;
+    }
+
+    //Case ESD track: take copy constructor
+    AliAODTrack *aodtrack = NULL;
+    AliAODTrack *tmptrack = dynamic_cast<AliAODTrack *>(track);
+    if(tmptrack) aodtrack = new AliAODTrack(*tmptrack);
+
+    AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
+    if(!vtxAODSkip) return;
+    if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+      vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
+    }
+    if(!vtxAODSkip) return;
+    AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
+    etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD);
+
+    //delete vtxAODSkip;
+    delete aodtrack;
   }
 }
 
@@ -1157,4 +1129,102 @@ Bool_t AliHFEextraCuts::CheckITSpattern(const AliVTrack *const track) const {
     }
   }
   return patternOK;
+}
+
+//---------------------------------------------------------------------------
+const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliESDEvent *esdevent, AliVTrack *track) {
+  //
+  // This method returns a primary vertex without the daughter tracks of the 
+  // candidate and it recalculates the impact parameters and errors for ESD tracks.
+  // 
+  // The output vertex is created with "new". 
+  //
+
+  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+
+  AliVertexerTracks vertexer(fEvent->GetMagneticField());
+  vertexer.SetITSMode();
+  vertexer.SetMinClusters(4);
+  Int_t skipped[2];
+  skipped[0] = track->GetID();
+  vertexer.SetSkipTracks(1,skipped);
+
+  //diamond constraint
+  vertexer.SetConstraintOn();
+  Float_t diamondcovxy[3];
+  esdevent->GetDiamondCovXY(diamondcovxy);
+  Double_t pos[3]={esdevent->GetDiamondX(),esdevent->GetDiamondY(),0.};
+  Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+  AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
+  vertexer.SetVtxStart(diamond);
+  delete diamond; diamond=NULL;
+
+  vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
+
+  return vtxESDSkip;
+}
+
+//---------------------------------------------------------------------------
+AliAODVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, AliVTrack *track) {
+  //
+  // This method returns a primary vertex without the daughter tracks of the 
+  // candidate and it recalculates the impact parameters and errors for AOD tracks.
+  // The output vertex is created with "new". 
+  //
+
+  AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
+  if(!vtxAOD) return 0;
+  TString title=vtxAOD->GetTitle();
+  if(!title.Contains("VertexerTracks")) return 0;
+
+  AliVertexerTracks *vertexer = new AliVertexerTracks(aod->GetMagneticField());
+
+  vertexer->SetITSMode();
+  vertexer->SetMinClusters(3);
+  vertexer->SetConstraintOff();
+
+  if(title.Contains("WithConstraint")) {
+    Float_t diamondcovxy[3];
+    aod->GetDiamondCovXY(diamondcovxy);
+    Double_t pos[3]={aod->GetDiamondX(),aod->GetDiamondY(),0.};
+    Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+    AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
+    vertexer->SetVtxStart(diamond);
+    delete diamond; diamond=NULL;
+  }
+  Int_t skipped[2]; for(Int_t i=0;i<2;i++) skipped[i]=-1;
+  Int_t id = (Int_t)track->GetID();
+  if(!(id<0)) skipped[0] = id;
+
+  /*// exclude tracks with global constrained parameters
+  Int_t nTracks=aod->GetNumberOfTracks();
+  for(Int_t i=0; i<nTracks; i++){
+    t = aod->GetTrack(i);
+    if(t->TestFilterMask(512)){
+      id = (Int_t)t->GetID();
+      skipped[nTrksToSkip++] = id;
+    }
+  }*/
+
+  vertexer->SetSkipTracks(1,skipped);
+  AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(aod);
+
+  delete vertexer; vertexer=NULL;
+
+  if(!vtxESDNew) return 0;
+  if(vtxESDNew->GetNContributors()<=0) {
+    delete vtxESDNew; vtxESDNew=NULL;
+    return 0;
+  }
+
+  // convert to AliAODVertex
+  Double_t pos[3],cov[6],chi2perNDF;
+  vtxESDNew->GetXYZ(pos); // position
+  vtxESDNew->GetCovMatrix(cov); //covariance matrix
+  chi2perNDF = vtxESDNew->GetChi2toNDF();
+  delete vtxESDNew; vtxESDNew=NULL;
+
+  AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
+
+  return vtxAODNew;
 }

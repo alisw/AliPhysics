@@ -50,6 +50,7 @@ AliHFEpidTPC::AliHFEpidTPC() :
   AliHFEpidBase()
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
+  , fkCentralityCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
@@ -75,6 +76,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
+  , fkCentralityCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
@@ -98,6 +100,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
+  , fkCentralityCorrection(NULL)
   , fHasCutModel(ref.fHasCutModel)
   , fUseOnlyOROC(ref.fUseOnlyOROC)
   , fNsigmaTPC(2)
@@ -127,7 +130,8 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   //
   AliHFEpidTPC &target = dynamic_cast<AliHFEpidTPC &>(o);
 
-  target.fkEtaCorrection =fkEtaCorrection;
+  target.fkEtaCorrection = fkEtaCorrection;
+  target.fkCentralityCorrection = fkCentralityCorrection;
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fHasCutModel = fHasCutModel;
   target.fUseOnlyOROC = fUseOnlyOROC;
@@ -178,7 +182,7 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   const AliVTrack *rectrack;
   AliESDtrack esdtrack;
   AliAODTrack aodtrack;
-  if(fUseOnlyOROC && !fkEtaCorrection) {
+  /*if(fUseOnlyOROC && !(fkEtaCorrection || fkCentralityCorrection)) {
     if(track->IsESDanalysis()){
       esdtrack.~AliESDtrack();
       new(&esdtrack) AliESDtrack(*(static_cast<const AliESDtrack *>(track->GetRecTrack())));
@@ -191,18 +195,25 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
       rectrack = &aodtrack;
     }
   }
-  else if(fkEtaCorrection){
+  else if(fkEtaCorrection || fkCentralityCorrection){*/
+  if(fkEtaCorrection || fkCentralityCorrection){
     // Correction available
     // apply it on copy
     if(track->IsESDanalysis()){
       esdtrack.~AliESDtrack();
       new(&esdtrack) AliESDtrack(*(static_cast<const AliESDtrack *>(track->GetRecTrack())));
-      ApplyEtaCorrection(&esdtrack, anatype);
+      if(track->IsPbPb() && HasCentralityCorrection())
+        ApplyCentralityCorrection(&esdtrack, track->GetMultiplicity(), anatype);
+      if(HasEtaCorrection())
+        ApplyEtaCorrection(&esdtrack, anatype);
       rectrack = &esdtrack;
     } else {
       aodtrack.~AliAODTrack();
       new(&aodtrack) AliAODTrack(*(static_cast<const AliAODTrack *>(track->GetRecTrack())));
-      ApplyEtaCorrection(&aodtrack, anatype);
+      if(track->IsPbPb() && HasCentralityCorrection())
+        ApplyCentralityCorrection(&aodtrack, track->GetMultiplicity(), anatype);
+      if(HasEtaCorrection())
+        ApplyEtaCorrection(&aodtrack, anatype);
       rectrack = &aodtrack;
     }
   } else {
@@ -311,13 +322,32 @@ void AliHFEpidTPC::ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::Analysi
            eta = track->Eta();
   if(anatype == AliHFEpidObject::kESDanalysis){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
-    esdtrack->SetTPCsignal(original/fkEtaCorrection->Eval(eta), esdtrack->GetTPCsignalSigma(), esdtrack->GetTPCsignalN());
+    if(fkEtaCorrection->Eval(eta)>0.0) esdtrack->SetTPCsignal(original/fkEtaCorrection->Eval(eta), esdtrack->GetTPCsignalSigma(), esdtrack->GetTPCsignalN());
   } else {
     AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
     AliAODPid *pid = aodtrack->GetDetPid();
-    if(pid) pid->SetTPCsignal(original);
+    if(pid && fkEtaCorrection->Eval(eta)>0.0) pid->SetTPCsignal(original/fkEtaCorrection->Eval(eta));
   }
 }
+
+//___________________________________________________________________
+void AliHFEpidTPC::ApplyCentralityCorrection(AliVTrack *track, Double_t centralityEstimator, AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Apply correction for the eta dependence
+  // N.B. This correction has to be applied on a copy track
+  //
+  AliDebug(1, Form("Applying correction function %s\n", fkCentralityCorrection->GetName()));
+  Double_t original = track->GetTPCsignal();
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+    if(fkCentralityCorrection->Eval(centralityEstimator)>0.0) esdtrack->SetTPCsignal(original/fkCentralityCorrection->Eval(centralityEstimator), esdtrack->GetTPCsignalSigma(), esdtrack->GetTPCsignalN());
+  } else {
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+    AliAODPid *pid = aodtrack->GetDetPid();
+    if(pid && fkCentralityCorrection->Eval(centralityEstimator)>0.0) pid->SetTPCsignal(original/fkCentralityCorrection->Eval(centralityEstimator));
+  }
+}
+
 //___________________________________________________________________
 void AliHFEpidTPC::UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const{
   //

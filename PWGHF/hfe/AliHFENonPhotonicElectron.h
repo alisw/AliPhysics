@@ -66,17 +66,17 @@ class AliHFENonPhotonicElectron : public TNamed {
 
   void  SetMaxInvMass		(Double_t MaxInvMass)		{ fMaxInvMass		= MaxInvMass; };
   void  SetMaxOpening3D		(Double_t MaxOpening3D)		{ fMaxOpening3D		= MaxOpening3D; };
-  void  SetMaxOpeningTheta	(Double_t MaxOpeningTheta)	{ fMaxOpeningTheta	= MaxOpeningTheta; };
-  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
+//  void  SetMaxOpeningTheta	(Double_t MaxOpeningTheta)	{ fMaxOpeningTheta	= MaxOpeningTheta; };
+//  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
 
   TList      *GetListOutput()       const { return fListOutput; };
-  THnSparseF *GetMCSourceeeHisto() const { return fMCSourceee; };
-  THnSparseF *GetUSigneeHisto()    const { return fUSignee; };
-  THnSparseF *GetLSigneeHisto()    const { return fLSignee; };
-  THnSparseF *GetUSignAngleHisto() const { return fUSignAngle; };
-  THnSparseF *GetLSignAngleHisto() const { return fLSignAngle; };
+  THnSparseF *GetMCSourceHisto() const { return fMCSource; };
+  THnSparseF *GetUSignHisto()    const { return fUSign; };
+  THnSparseF *GetLSignHisto()    const { return fLSign; };
+//  THnSparseF *GetUSignAngleHisto() const { return fUSignAngle; };
+//  THnSparseF *GetLSignAngleHisto() const { return fLSignAngle; };
 
   void     Init				();
   void     InitRun			(const AliVEvent *inputEvent,const AliPIDResponse *pidResponse);
@@ -93,7 +93,7 @@ class AliHFENonPhotonicElectron : public TNamed {
 
 
  private:
-  AliMCEvent		*fMCEvent;			//! MC event esd
+  AliMCEvent		*fMCEvent;			//! MC event ESD
   TClonesArray		*fAODArrayMCInfo;		//! MC info particle AOD
   AliESDtrackCuts	*fHFEBackgroundCuts;		// HFE background cuts
   AliHFEpid		*fPIDBackground;		// PID background cuts
@@ -103,22 +103,22 @@ class AliHFENonPhotonicElectron : public TNamed {
   UInt_t		 fFilter;			// filter AOD status
   Double_t		 fChi2OverNDFCut;		// Limit chi2
   Double_t		 fMaxDCA;			// Limit dca
-  Double_t		 fMaxOpeningTheta;		// Limit opening angle in theta
-  Double_t		 fMaxOpeningPhi;		// Limit opening angle in phi
+//  Double_t		 fMaxOpeningTheta;		// Limit opening angle in theta
+//  Double_t		 fMaxOpeningPhi;		// Limit opening angle in phi
   Double_t		 fMaxOpening3D;			// Limit opening 3D
   Double_t		 fMaxInvMass;			// Limit invariant mass
   Bool_t		 fSetMassConstraint;		// Set mass constraint
   TArrayI		*fArraytrack;			//! list of tracks
   Int_t			 fCounterPoolBackground;	// number of tracks
   TList			*fListOutput;			// List of histos
-  THnSparseF		*fMCSourceee;			//! centrality, pt, Source MC
-  THnSparseF		*fUSignee;			//! delta phi, c, pt, inv, source
-  THnSparseF		*fLSignee;			//! delta phi, c, pt, inv, source
-  THnSparseF		*fUSignAngle;			//! angle, c, source
-  THnSparseF		*fLSignAngle;			//! angle, c, source
+  THnSparseF		*fMCSource;			//! centrality, pt, Source MC
+  THnSparseF		*fUSign;			//! delta phi, c, pt, inv, source
+  THnSparseF		*fLSign;			//! delta phi, c, pt, inv, source
+//  THnSparseF		*fUSignAngle;			//! angle, c, source
+//  THnSparseF		*fLSignAngle;			//! angle, c, source
 
 
-  AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron&); // not implemented
+  AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron&ref); 
 
   ClassDef(AliHFENonPhotonicElectron, 1); //!example of analysis
 };

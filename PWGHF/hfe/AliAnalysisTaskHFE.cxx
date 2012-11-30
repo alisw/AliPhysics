@@ -626,7 +626,11 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
-    if(GetPlugin(kNonPhotonicElectron) && fBackgroundSubtraction) fBackgroundSubtraction->SetMCEvent(fMCEvent);
+    // Background subtraction-------------------------------------------------------------------
+    if(GetPlugin(kNonPhotonicElectron) && fBackgroundSubtraction){
+      fBackgroundSubtraction->SetMCEvent(fMCEvent);
+    }
+    //------------------------------------------------------------------------------------------
   }
 
   if(IsAODanalysis() && HasMCData()){
@@ -963,6 +967,13 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   fCFM->SetRecEventInfo(fESD);
 
+  // Get Number of contributors to the primary vertex for multiplicity-dependent correction
+  Int_t ncontribVtx = 0;
+  const AliESDVertex *priVtx = fESD->GetPrimaryVertexTracks();
+  if(priVtx){
+    ncontribVtx = priVtx->GetNContributors();
+  }
+
   // minjung for IP QA(temporary ~ 2weeks)
   if(!fExtraCuts){
     fExtraCuts = new AliHFEextraCuts("hfetmpCuts","HFE tmp Cuts");
@@ -1226,6 +1237,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     hfetrack.SetRecTrack(track);
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
+    hfetrack.SetMulitplicity(ncontribVtx);
     if(IsPbPb()) hfetrack.SetPbPb();
     else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
@@ -1235,8 +1247,10 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Background subtraction------------------------------------------------------------------------------------------
     if (GetPlugin(kNonPhotonicElectron)) {
       Int_t indexmother = -1;
-      Int_t mcsource = 1;
-      if(HasMCData()) mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      Int_t mcsource = -1;
+      if(HasMCData()){
+	mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      }
       fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1, mcsource, indexmother);
     }
     //-----------------------------------------------------------------------------------------------------------------
@@ -1534,6 +1548,18 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
   fCFM->SetRecEventInfo(fAOD);
 
+  if(!fExtraCuts){
+    fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+  }
+  fExtraCuts->SetRecEventInfo(fAOD);
+
+  // Get Number of contributors to the primary vertex for multiplicity-dependent correction
+  Int_t ncontribVtx = 0;
+  AliAODVertex *priVtx = fAOD->GetPrimaryVertex();
+  if(priVtx){
+    ncontribVtx = priVtx->GetNContributors();
+  }
+
   // Look for kink mother
   Int_t numberofvertices = fAOD->GetNumberOfVertices();
   Double_t listofmotherkink[numberofvertices];
@@ -1562,6 +1588,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   AliAODTrack *track = NULL;
   AliAODMCParticle *mctrack = NULL;
   Double_t dataE[6]; // [pT, eta, Phi, Charge, type, 'C' or 'B']
+  Double_t dataDca[6]; // [source, pT, dca, centrality]
   Int_t nElectronCandidates = 0;
   Int_t pid;
   Bool_t signal;
@@ -1644,6 +1671,53 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepbeforePID"));
     }
 
+    if(HasMCData()){
+      Double_t hfeimpactR4all=0., hfeimpactnsigmaR4all=0.;
+      Int_t sourceDca =-1;
+      if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 211)){
+        if(track->Pt()>4.){
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4all, hfeimpactnsigmaR4all);
+          dataDca[0]=0; //pion
+          dataDca[1]=track->Pt();
+          dataDca[2]=hfeimpactR4all;
+          dataDca[3]=fCentralityF;
+          dataDca[4] = -1; // not store V0 for the moment
+          dataDca[5] = double(track->Charge());
+          fQACollection->Fill("Dca", dataDca);
+        }
+      }
+      else if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 11)){ // to increas statistics for Martin
+        if(signal){
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4all, hfeimpactnsigmaR4all);
+          if(fSignalCuts->IsCharmElectron(track)){
+            sourceDca=1;
+          }
+          else if(fSignalCuts->IsBeautyElectron(track)){
+            sourceDca=2;
+          }
+          else if(fSignalCuts->IsGammaElectron(track)){
+            sourceDca=3;
+          }
+          else if(fSignalCuts->IsNonHFElectron(track)){
+            sourceDca=4;
+          }
+          else if(fSignalCuts->IsJpsiElectron(track)){
+            sourceDca=5;
+          }
+          else {
+            sourceDca=6;
+          }
+          dataDca[0]=sourceDca;
+          dataDca[1]=track->Pt();
+          dataDca[2]=hfeimpactR4all;
+          dataDca[3]=fCentralityF;
+          dataDca[4] = -1; // not store V0 for the moment
+          dataDca[5] = double(track->Charge());
+          if(signal) fQACollection->Fill("Dca", dataDca);
+        }
+      }
+    }
+
     //printf("Will process to PID\n");
 
     // track accepted, do PID
@@ -1652,6 +1726,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     hfetrack.SetRecTrack(track);
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
+    hfetrack.SetMulitplicity(ncontribVtx); // for correction
     if(IsPbPb()) hfetrack.SetPbPb();
     else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
@@ -1661,8 +1736,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     // Background subtraction----------------------------------------------------------------------------------------------
     if (GetPlugin(kNonPhotonicElectron)) {
       Int_t indexmother = -1;
-      Int_t mcsource = 1;
-      if(HasMCData()) mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      Int_t mcsource = -1;
+      if(HasMCData())  mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
       fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1,mcsource, indexmother);
     }
     //---------------------------------------------------------------------------------------------------------------------
@@ -1728,6 +1803,33 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       if(dataE[4] > -1){
         AliDebug(1, Form("Entries: [%.3f|%.3f|%.3f|%f|%f|%f]\n", dataE[0],dataE[1],dataE[2],dataE[3],dataE[4],dataE[5]));
         fQACollection->Fill("PIDperformance", dataE);
+      }
+    }
+
+    if (GetPlugin(kDEstep)) {
+      if (!HasMCData()){
+        Double_t hfeimpactR=0., hfeimpactnsigmaR=0.;
+        fExtraCuts->GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
+        dataDca[0]=-1; //for data, don't know the origin
+        dataDca[1]=track->Pt();
+        dataDca[2]=hfeimpactR;
+        dataDca[3]=fCentralityF;
+        dataDca[4] = -1; // not store V0 for the moment
+        dataDca[5] = double(track->Charge());
+        fQACollection->Fill("Dca", dataDca);
+      }
+
+      // Fill Containers for impact parameter analysis
+      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
+      if(signal) {
+        // Apply weight for background contamination after ip cut
+        if(fBackGroundFactorApply) {
+              fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+              if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+              else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+              // weightBackGround as special weight
+              fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
+        }
       }
     }
   }
