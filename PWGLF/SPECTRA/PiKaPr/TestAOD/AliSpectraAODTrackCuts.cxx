@@ -162,7 +162,7 @@ Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
 Bool_t AliSpectraAODTrackCuts::CheckYCut(AODParticleSpecies_t species) 
 {
   // check if the rapidity is within the set range
-  Double_t y = 0.;
+  Double_t y=-1000;
   if (species == kSpProton) { y = fTrack->Y(9.38271999999999995e-01); }
   if ( species == kSpKaon ) { y = fTrack->Y(4.93676999999999977e-01); }
   if ( species == kSpPion)  { y = fTrack->Y(1.39570000000000000e-01); }
