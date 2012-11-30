@@ -144,7 +144,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
           continue;
       }
       label = track->GetLabel();
-      if (!fIncludeNoITS & label==2)
+      if (!fIncludeNoITS && (label==2))
 	continue;
       isEmc = track->IsEMCAL();
     } else {
