@@ -212,6 +212,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
 
   cDeltaPhi->SaveAs("InvMassDeltaPhi.eps");
   cDeltaPhifs->SaveAs("InvMassDeltaPhi_fs.eps");
+  cDeltaPhifs->SaveAs("InvMassDeltaPhi_fs.root");
   cPhiInteg->SaveAs("InvMassfullphi.eps");
 
   if(!gnopng){
@@ -220,7 +221,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     cPhiInteg->SaveAs("InvMassfullphi.png");
   }
   //cDeltaPhifs->DrawClone();
-  cDeltaPhifs->Close();
+  //cDeltaPhifs->Close();
  
 }
 //______________________________________________________________
@@ -383,6 +384,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
       ev2=eAnis*TMath::Pi()/4./resol;
       gv2fs->SetPoint(ipt,averagePt[ipt],v2);
       gv2fs->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
+      printf(" Bin %d <pt>=%.3f  v2=%f+-%f\n",ipt,averagePt[ipt],v2,ev2);
     }else{
       TF1 *flowFunc = new TF1("flow","[0]*(1.+2.*[1]*TMath::Cos(2.*x))");
       //v2 from fit to Deltaphi distribution
