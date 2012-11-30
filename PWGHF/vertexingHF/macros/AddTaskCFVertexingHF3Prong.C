@@ -638,28 +638,30 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="";;
+	TString output1name="", output2name="", output3name="", output4name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_Prompt";
 		output1name="CFHFhist_DplustoKpipi_Prompt";
+		output3name+="_Prompt";
 		output4name= "Cuts_DplustoKpipi_Prompt";
 	}
 	else  if(isKeepDfromBOnly){
    	        outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_FromB";
 	        output1name="CFHFhist_DplustoKpipi_FromB";
+		output3name+="_FromB";
 		output4name= "Cuts_DplustoKpipi_FromB";
 	}
 	else{
         	outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_All";
 		output1name="CFHFhist_DplustoKpipi_All";
+		output3name+="_All";
 		output4name= "Cuts_DplustoKpipi_All";
 	}
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
 	output4name += suffixName.Data();
-	
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -679,5 +681,5 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	mgr->ConnectOutput(task,4,coutput4);
 
 	return task;
-	}
+}
 
