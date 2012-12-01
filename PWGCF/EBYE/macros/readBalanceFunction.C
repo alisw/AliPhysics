@@ -68,12 +68,32 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
       // at the time of production the event mixing had no centrality info (all in most central bin, centarlity is selected before)
       hMixedEta[iCent][0] =  (TH1D*)fMixed[iCent]->Get(Form("hPN_eta_0"));
       hMixedPhi[iCent][0] =  (TH1D*)fMixed[iCent]->Get(Form("hPN_phi_0"));
-      hMixedEta[iCent][1] =  (TH1D*)fMixed[iCent]->Get(Form("hNP_eta_0"));
-      hMixedPhi[iCent][1] =  (TH1D*)fMixed[iCent]->Get(Form("hNP_phi_0"));
+      hMixedEta[iCent][1] =  (TH1D*)((TH1D*)fMixed[iCent]->Get(Form("hPN_eta_0")))->Clone("hNP_eta_0");
+      hMixedPhi[iCent][1] =  (TH1D*)((TH1D*)fMixed[iCent]->Get(Form("hPN_phi_0")))->Clone("hNP_phi_0");
       hMixedEta[iCent][2] =  (TH1D*)fMixed[iCent]->Get(Form("hNN_eta_0"));
       hMixedPhi[iCent][2] =  (TH1D*)fMixed[iCent]->Get(Form("hNN_phi_0"));
       hMixedEta[iCent][3] =  (TH1D*)fMixed[iCent]->Get(Form("hPP_eta_0"));
       hMixedPhi[iCent][3] =  (TH1D*)fMixed[iCent]->Get(Form("hPP_phi_0"));
+
+      // because NP = PN here
+      hMixedEta[iCent][0]->Scale(0.5);
+      hMixedPhi[iCent][0]->Scale(0.5);
+      hMixedEta[iCent][1]->Scale(0.5);
+      hMixedPhi[iCent][1]->Scale(0.5);
+
+      // normalize the distributions to 1:
+      // - in the integral for dphi (for averaging over sector structure)
+      // - in the maximum for deta   
+      hMixedPhi[iCent][0]->Scale(1./(Double_t)hMixedPhi[iCent][0]->Integral(hMixedPhi[iCent][0]->FindBin(0),hMixedPhi[iCent][0]->FindBin(180))*(Double_t)(hMixedPhi[iCent][0]->FindBin(180)-hMixedPhi[iCent][0]->FindBin(0)+1));
+      hMixedPhi[iCent][1]->Scale(1./(Double_t)hMixedPhi[iCent][1]->Integral(hMixedPhi[iCent][1]->FindBin(0),hMixedPhi[iCent][1]->FindBin(180))*(Double_t)(hMixedPhi[iCent][1]->FindBin(180)-hMixedPhi[iCent][1]->FindBin(0)+1));
+      hMixedPhi[iCent][2]->Scale(1./(Double_t)hMixedPhi[iCent][2]->Integral(hMixedPhi[iCent][2]->FindBin(0),hMixedPhi[iCent][2]->FindBin(180))*(Double_t)(hMixedPhi[iCent][2]->FindBin(180)-hMixedPhi[iCent][2]->FindBin(0)+1));
+      hMixedPhi[iCent][3]->Scale(1./(Double_t)hMixedPhi[iCent][3]->Integral(hMixedPhi[iCent][3]->FindBin(0),hMixedPhi[iCent][3]->FindBin(180))*(Double_t)(hMixedPhi[iCent][3]->FindBin(180)-hMixedPhi[iCent][3]->FindBin(0)+1));
+      
+      	hMixedEta[iCent][0]->Scale(0.8 * 20. /(Double_t)hMixedEta[iCent][0]->Integral(hMixedEta[iCent][0]->FindBin(0),hMixedEta[iCent][0]->FindBin(1.6)));
+	hMixedEta[iCent][1]->Scale(0.8 * 20. /(Double_t)hMixedEta[iCent][1]->Integral(hMixedEta[iCent][1]->FindBin(0),hMixedEta[iCent][1]->FindBin(1.6)));
+	hMixedEta[iCent][2]->Scale(0.8 * 20. /(Double_t)hMixedEta[iCent][2]->Integral(hMixedEta[iCent][2]->FindBin(0),hMixedEta[iCent][2]->FindBin(1.6)));
+	hMixedEta[iCent][3]->Scale(0.8 * 20. /(Double_t)hMixedEta[iCent][3]->Integral(hMixedEta[iCent][3]->FindBin(0),hMixedEta[iCent][3]->FindBin(1.6)));
+    
       
     }
   }

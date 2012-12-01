@@ -894,7 +894,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // withAcceptanceOnly: Data single distributions are normalized to 1 (efficiency not taken into account)
   // else : Data single distributions are normalized to give single particle efficiency of MC
   TFile *fEfficiencyMatrix = NULL;
-  if(correctWithEfficiency && !correctWithMixed){
+  if(correctWithEfficiency || correctWithMixed){
     if(correctWithAcceptanceOnly) fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/accOnlyFromConvolutionAllCent.root");
     else  fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
     if(!fEfficiencyMatrix){
@@ -1023,33 +1023,41 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
 
   // do the correction with the event mixing directly!
   if(correctWithMixed){
+  
+    // take the MC distributions (for average efficiency)
+    TH1F* hEffP = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffP_Cent%.0f-%.0f_MC",centrMin,centrMax));
+    TH1F* hEffN = (TH1F*)fEfficiencyMatrix->Get(Form("etaEffN_Cent%.0f-%.0f_MC",centrMin,centrMax));  
+
+    TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffNN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+    TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get(Form("phiEffPN_Cent%.0f-%.0f_Data",centrMin,centrMax));
+
+    if( !hEffP || !hEffN){
+      AliError(Form("Efficiency (eta) histograms not found: etaEffPP_Cent%.0f-%.0f_Data",centrMin,centrMax));
+      return NULL;
+    }
 
     if(hMixed[0] && hMixed[1] && hMixed[2] && hMixed[3]){
-
-      // scale that EM is 1 at 0 for Deta
-      //                    in the region 0-10degree (one 1/2 sector) for Dphi
-      if(iAnalysisType==6){
-	hMixed[0]->Scale(1./(Double_t)hMixed[0]->Integral(hMixed[0]->FindBin(0),hMixed[0]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
-	hMixed[2]->Scale(1./(Double_t)hMixed[2]->Integral(hMixed[2]->FindBin(0),hMixed[2]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
-	hMixed[3]->Scale(1./(Double_t)hMixed[3]->Integral(hMixed[3]->FindBin(0),hMixed[3]->FindBin(10))*(Double_t)(hMixed[0]->FindBin(10)-hMixed[0]->FindBin(0)+1));
-      }
-      else{
-	hMixed[0]->Scale(1./(Double_t)hMixed[0]->GetBinContent(1));
-	hMixed[2]->Scale(1./(Double_t)hMixed[2]->GetBinContent(1));
-	hMixed[3]->Scale(1./(Double_t)hMixed[3]->GetBinContent(1));
-      }
-
+    
       // scale to average efficiency in the pt region (0.3-1.5) and |eta| < 0.8
       // by multiplying the average single particle efficiencies from HIJING
-      Double_t normPMC = 0.847546;
-      Double_t normNMC = 0.83827;
-      hMixed[0]->Scale(normNMC*normPMC);
-      hMixed[2]->Scale(normNMC*normNMC);
-      hMixed[3]->Scale(normPMC*normPMC);
+      // here we assume that the distributions are 1:
+      // - in the integral for dphi (for averaging over sector structure)
+      // - in the maximum for deta
+      Double_t normPMC = (Double_t)hEffP->Integral()/(Double_t)hEffP->GetNbinsX();
+      Double_t normNMC = (Double_t)hEffN->Integral()/(Double_t)hEffN->GetNbinsX();
+      Double_t normPPMC = (Double_t)hEffPP->Integral()/(Double_t)hEffPP->GetNbinsX();
+      Double_t normNNMC = (Double_t)hEffNN->Integral()/(Double_t)hEffNN->GetNbinsX();
+      Double_t normPNMC = (Double_t)hEffPN->Integral()/(Double_t)hEffPN->GetNbinsX();
+
+      hMixed[0]->Scale(normPNMC);
+      hMixed[1]->Scale(normPNMC);
+      hMixed[2]->Scale(normNNMC);
+      hMixed[3]->Scale(normPPMC);
 
       // divide by event mixing
       hTemp1->Divide(hMixed[0]);
-      hTemp2->Divide(hMixed[0]);
+      hTemp2->Divide(hMixed[1]);
       hTemp3->Divide(hMixed[2]);
       hTemp4->Divide(hMixed[3]);
 
