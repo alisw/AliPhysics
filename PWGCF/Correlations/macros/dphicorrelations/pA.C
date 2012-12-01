@@ -219,7 +219,7 @@ TH1* GetProjections(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaBegi
   Float_t etaMax = 1.8;
   
   if (etaBegin > 0)
-    SubtractEtaGapNS(hist1, etaBegin, etaMax, kFALSE);
+    SubtractEtaGapNS(hist1, etaBegin, etaMax, kTRUE);
   
   tokens = TString(hist1->GetTitle()).Tokenize("-");
   centralityStr = new TString;
@@ -260,7 +260,10 @@ TH1* GetProjections(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaBegi
   }
   else
   {
-    zyam = (proj1x->GetBinContent(proj1x->FindBin(TMath::Pi()/2)) + proj1x->GetBinContent(proj1x->FindBin(-TMath::Pi()/2))) / 2;
+//     zyam = (proj1x->GetBinContent(proj1x->FindBin(TMath::Pi()/2)) + proj1x->GetBinContent(proj1x->FindBin(-TMath::Pi()/2))) / 2;
+//     zyam = proj1x->GetBinContent(proj1x->FindBin(TMath::Pi()/2));
+    zyam = proj1x->GetBinContent(proj1x->FindBin(1.3));
+//     zyam = proj1x->GetMinimum();
   }
     
   proj1x->Add(new TF1("func", "-1", -100, 100), zyam);
@@ -270,6 +273,100 @@ TH1* GetProjections(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaBegi
   
   if (etaProj != 0)
     *etaProj = proj1y;
+  return proj1x;
+}
+
+TH1* GetProjectionsNew(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaBegin = 1.0, TH1** etaProj = 0)
+{
+  TH2* hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, centr));
+  if (!hist1)
+    return 0;
+  hist1 = (TH2*) hist1->Clone(Form("%s_%.1f", hist1->GetName(), etaBegin));
+
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
+  
+  hist1->Rebin2D(2, 1); hist1->Scale(0.5);
+  
+//   new TCanvas; hist1->Draw("surf1");
+  
+  Float_t etaMax = 1.8;
+  
+  tokens = TString(hist1->GetTitle()).Tokenize("-");
+  centralityStr = new TString;
+  if (tokens->GetEntries() > 2)
+    *centralityStr = tokens->At(2)->GetName();
+  if (tokens->GetEntries() > 3)
+    *centralityStr = *centralityStr + "-" + tokens->At(3)->GetName();
+  *label = centralityStr->Data();
+//   Printf("%s", label);
+  
+  if (etaBegin > 0)
+  {
+    proj1x = ((TH2*) hist1)->ProjectionX(Form("proj1x_%d_%d_%d_%.1f", i, j, centr, etaBegin), hist1->GetYaxis()->FindBin(-etaMax+0.01), hist1->GetYaxis()->FindBin(etaMax-0.01));
+    proj1x->GetXaxis()->SetTitleOffset(1);
+    proj1x->Scale(hist1->GetYaxis()->GetBinWidth(1));
+
+    proj1xR1 = ((TH2*) hist1)->ProjectionX(Form("proj2x_%d_%d_%d_%.1f", i, j, centr, etaBegin), hist1->GetYaxis()->FindBin(-etaMax+0.01), hist1->GetYaxis()->FindBin(-etaBegin-0.01));
+    proj1xR2 = ((TH2*) hist1)->ProjectionX(Form("proj3x_%d_%d_%d_%.1f", i, j, centr, etaBegin), hist1->GetYaxis()->FindBin(etaBegin+0.01), hist1->GetYaxis()->FindBin(etaMax-0.01));
+    proj1xR1->Add(proj1xR2);
+    
+    proj1xR1->GetXaxis()->SetTitleOffset(1);
+    proj1xR1->Scale(hist1->GetYaxis()->GetBinWidth(1));
+    
+    proj1xR1->Scale((1.0 * hist1->GetYaxis()->FindBin(etaMax-0.01) - hist1->GetYaxis()->FindBin(-etaMax+0.01) + 1) / (hist1->GetYaxis()->FindBin(-etaBegin-0.01) - hist1->GetYaxis()->FindBin(-etaMax+0.01) + 1 + hist1->GetYaxis()->FindBin(etaMax-0.01) - hist1->GetYaxis()->FindBin(etaBegin+0.01) + 1));
+    
+    // mirror
+    for (Int_t i=1; i<=proj1xR1->GetNbinsX()/2; i++)
+    {
+  //     Printf("%d -> %d", i, etaGap->GetNbinsX()+1-i);
+      proj1xR1->SetBinContent(proj1xR1->GetNbinsX()+1-i, proj1xR1->GetBinContent(i));
+      proj1xR1->SetBinError(proj1xR1->GetNbinsX()+1-i, proj1xR1->GetBinError(i));
+    }
+    
+    proj1x->Add(proj1xR1, -1);
+    
+    proj1x->Scale(1.0 / (2.0 * etaMax));
+  
+//     new TCanvas; proj1xR1->DrawCopy();
+  }
+  else
+  {
+    proj1x = ((TH2*) hist1)->ProjectionX(Form("proj1x_%d_%d_%d_%.1f", i, j, centr, etaBegin), hist1->GetYaxis()->FindBin(-etaMax+0.01), hist1->GetYaxis()->FindBin(etaMax-0.01));
+    proj1x->GetXaxis()->SetTitleOffset(1);
+    proj1x->Scale(hist1->GetYaxis()->GetBinWidth(1));
+
+    proj1x->Scale(1.0 / (2.0 * etaMax));
+  }
+
+  if (gStudySystematic == 20)
+  {
+    Printf(">>>>>>>>>>>> Applying non-closure systematics <<<<<<<<<<<<");
+    file2 = TFile::Open("non_closure.root");
+    non_closure = (TH1*) file2->Get(Form("non_closure_all_%d_%d_%d", i, j, 0));
+    for (Int_t bin=1; bin<=non_closure->GetNbinsX(); bin++)
+      non_closure->SetBinError(bin, 0);
+    
+    proj1x->Multiply(non_closure);  
+  }
+  
+  Float_t zyam = 0;
+  if (0)
+  {  
+    clone = (TH1*) proj1x->Clone();
+    clone->Fit("pol0", "0", "", TMath::Pi()/2 - 0.2, TMath::Pi()/2);
+    zyam = clone->GetFunction("pol0")->GetParameter(0);
+  }
+  else
+  {
+//     zyam = (proj1x->GetBinContent(proj1x->FindBin(TMath::Pi()/2)) + proj1x->GetBinContent(proj1x->FindBin(-TMath::Pi()/2))) / 2;
+//     zyam = proj1x->GetBinContent(proj1x->FindBin(TMath::Pi()/2));
+    zyam = proj1x->GetBinContent(proj1x->FindBin(1.3));
+//     zyam = proj1x->GetMinimum();
+  }
+    
+  proj1x->Add(new TF1("func", "-1", -100, 100), zyam);
+  
   return proj1x;
 }
 
@@ -297,6 +394,202 @@ void DrawEtaDep(const char* fileName, Int_t i, Int_t j, Int_t centr)
   legend->Draw();
 }
 
+void DrawProjectionsTim(const char* fileName, Int_t i, Int_t j, Float_t eta = 1.0, Bool_t etaPhi = kFALSE)
+{
+    gStyle->SetErrorX(0.0);
+    c = new TCanvas;
+//    gPad->SetGridx();
+//    gPad->SetGridy();
+    gPad->SetTopMargin(0.025);
+    gPad->SetRightMargin(0.01);
+    gPad->SetBottomMargin(0.15);
+    gPad->SetLeftMargin(0.15);
+
+    TFile::Open(fileName);
+    
+//    TLegend *legend = new TLegend(0.45, 0.60, 0.65, 0.90);
+    TLegend *legend = new TLegend(0.45, 0.45, 0.65, 0.90);
+    legend->SetFillColor(0);
+    legend->SetBorderSize(0);
+    legend->SetTextFont(62);
+    legend->SetTextSize(0.04);
+    legend->SetFillStyle(0);
+    
+//    TLegend *legend2 = new TLegend(0.65, 0.75, 0.85, 0.90);
+//    legend2->SetFillColor(0);
+//    legend2->SetBorderSize(0);
+//    legend2->SetTextFont(62);
+//    legend2->SetTextSize(0.04);
+//    legend2->SetFillStyle(0);
+    
+//     Int_t colors[] = { 1, 2, 1, 4, 6, 2 };
+    Int_t colors[] = { kRed+1, kOrange+7, kBlack, kGreen+2, kAzure+2, kBlack };
+    Int_t markers[] = { 20, 21, 1, 22, 23, 1 };
+    
+    TH1* first = 0;
+    
+    Float_t min = 100;
+    Float_t max = -100;
+    
+    Int_t centSeq[] = { 0, 1, 3, 4, 2, 5 };
+    
+    for (Int_t otcentr=0; otcentr<6; otcentr++)
+    {
+        Int_t centr = centSeq[otcentr];
+        /*    if (centr >= 5)
+         continue;*/
+        const char* label = 0;
+        TH1* etaHist = 0;
+        TH1* hist = GetProjectionsNew(i, j, centr, &label, (centr == 2 || centr == 5 || centr == 4) ? -1 : eta, &etaHist);
+        if (!hist)
+            continue;
+        if (etaPhi)
+            hist = etaHist;
+        hist->SetStats(0);
+        hist->GetXaxis()->CenterTitle();
+        hist->GetXaxis()->SetLabelSize(0.05);
+        hist->GetXaxis()->SetTitleSize(0.05);
+        hist->GetXaxis()->SetTitleOffset(1.1);
+        hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+        hist->GetYaxis()->SetNdivisions(506);
+        hist->GetYaxis()->CenterTitle();
+        hist->GetYaxis()->SetLabelSize(0.05);
+        hist->GetYaxis()->SetTitleSize(0.05);
+        hist->GetYaxis()->SetTitleOffset(1.35);
+	
+	if (centr == 2 || centr == 5)
+	{
+	  hist->SetLineWidth(2);
+	  if (centr == 2)
+	    hist->SetLineStyle(2);
+	}
+	  
+//         hist->GetYaxis()->SetTitle("#frac{1}{#it{N}_{trig}}#frac{d#it{N}_{assoc}}{d#Delta#varphi} (rad^{-1})");
+	hist->GetYaxis()->SetTitle("1/#it{N}_{trig} d#it{N}_{assoc}/d#Delta#varphi per #Delta#eta - const (rad^{-1})");
+
+        hist->SetLineColor(colors[centr]);
+        hist->SetMarkerColor(colors[centr]);
+        hist->SetMarkerStyle(markers[centr]);
+        if (etaPhi)
+            hist->GetXaxis()->SetRangeUser(-1.79, 1.79);
+        c->cd();
+        
+        // -----
+        tokens = TString(hist->GetTitle()).Tokenize("-");
+        sPtTRange = new TString;
+        *sPtTRange = tokens->At(0)->GetName();
+        *sPtTRange = *sPtTRange + "GeV/#it{c}";
+        sPtTRange->ReplaceAll(".0", "");
+        sPtARange = new TString;
+        *sPtARange = tokens->At(1)->GetName();
+        *sPtARange = *sPtARange + "GeV/#it{c}";
+        sPtARange->ReplaceAll(".00", "");
+        sPtARange->ReplaceAll(".0", "");
+        sPtARange->ReplaceAll(" 1", "1");
+        sPtTRange->ReplaceAll("p_", "#it{p}_");
+        sPtARange->ReplaceAll("p_", "#it{p}_");
+        cout << sPtTRange->Data() << endl;
+        cout << sPtARange->Data() << endl;
+        hist->SetTitle("");
+        // -----
+        
+        if (centr == 0)
+	  hist->Draw("");
+	else if (centr == 2 || centr == 5)
+	  hist->Draw("HISTE SAME");
+	else
+	  hist->Draw("SAME");
+	
+        min = TMath::Min(min, hist->GetMinimum());
+        max = TMath::Max(max, hist->GetMaximum());
+        if (!first)
+            first = hist;
+        if (centr==2) legend->AddEntry(hist,"pp 2.76 TeV","l");
+        else if (centr==5) legend->AddEntry(hist,"pp 7 TeV","l");
+        else legend->AddEntry(hist, label, "p");
+        //     break;
+    }
+//    first->GetYaxis()->SetRangeUser(min * 1.1, max * 1.1);
+//     first->GetYaxis()->SetRangeUser(min * 1.1, 0.67/3.6);
+    first->GetYaxis()->SetRangeUser(-0.009, 0.2);
+    cout << max*1.1 << endl;
+    cout << 0.925*first->GetMaximum() << endl;
+    legend->Draw();
+//    legend2->Draw();
+    TLine * li = new TLine(first->GetXaxis()->GetXmin(),0.0,first->GetXaxis()->GetXmax(),0.0);
+    li->SetLineStyle(kDashed);
+    li->SetLineColor(kBlack);
+    li->Draw("same");
+
+    TLatex * tex_Pbp = new TLatex(0.65,0.945*first->GetMaximum(),"p-Pb #sqrt{#it{s}_{_{NN}}} = 5.02 TeV");
+    tex_Pbp->SetTextFont(62);
+    tex_Pbp->SetTextSize(0.05);
+    tex_Pbp->Draw();
+    
+    TLatex * tex_statu = new TLatex(2.3,0.65*first->GetMaximum(),"stat. uncertainties only");
+    tex_statu->SetTextFont(62);
+    tex_statu->SetTextSize(0.04);
+    tex_statu->Draw();
+    
+    if (eta > 0)
+    {
+      TLatex * tex_statu = new TLatex(2.3,0.56*first->GetMaximum(),"ridge subtracted");
+      tex_statu->SetTextFont(62);
+      tex_statu->SetTextSize(0.04);
+      tex_statu->Draw();
+    }
+
+    TLatex * tex_PtT = new TLatex(2.3,0.85*first->GetMaximum(),sPtTRange->Data());
+    tex_PtT->SetTextFont(62);
+    tex_PtT->SetTextSize(0.04);
+    tex_PtT->Draw();
+    
+    TLatex * tex_PtA = new TLatex(2.3,0.75*first->GetMaximum(),sPtARange->Data());
+    tex_PtA->SetTextFont(62);
+    tex_PtA->SetTextSize(0.04);
+    tex_PtA->Draw();
+
+    if (i == 2 && j == 2 && eta < 0)
+    {
+      c->SaveAs("fig2.eps");
+      c->SaveAs("fig2.png");
+    }
+    else if (i == 2 && j == 2 && eta > 0)
+    {
+      c->SaveAs("fig5.eps");
+      c->SaveAs("fig5.png");
+    }
+    
+//     c->SaveAs(Form("%s_%d_%d.png", (etaPhi) ? "eta" : "phi", i, j));
+//     c->SaveAs(Form("%s_%d_%d.eps", (etaPhi) ? "eta" : "phi", i, j));
+    
+    return;
+    
+    c = new TCanvas;
+//    gPad->SetGridx();
+//    gPad->SetGridy();
+    
+    ppHist = GetProjections(i, j, 2, &label);
+    
+    for (Int_t centr=0; centr<6; centr++)
+    {
+        if (centr >= 4 || centr == 2)
+            continue;
+        const char* label = 0;
+        TH1* hist = GetProjections(i, j, centr, &label);
+        hist->SetStats(0);
+        hist->SetLineColor(centr+1);
+        hist->Divide(ppHist);
+        hist->GetYaxis()->SetRangeUser(1, 3);
+        hist->Draw((centr == 0) ? "" : "SAME");
+    }
+    legend->Draw();
+    
+    c->SaveAs(Form("phi_%d_%d_ratio.png", i, j));
+    c->SaveAs(Form("phi_%d_%d_ratio.eps", i, j));
+}
+
+
 void DrawProjections(const char* fileName, Int_t i, Int_t j, Float_t eta = 1.0, Bool_t etaPhi = kFALSE)
 {
   c = new TCanvas;
@@ -322,7 +615,7 @@ void DrawProjections(const char* fileName, Int_t i, Int_t j, Float_t eta = 1.0, 
       continue;*/
     const char* label = 0;
     TH1* etaHist = 0;
-    TH1* hist = GetProjections(i, j, centr, &label, eta, &etaHist);
+    TH1* hist = GetProjectionsNew(i, j, centr, &label, eta, &etaHist);
     if (!hist)
       continue;
     if (etaPhi)
@@ -370,6 +663,31 @@ void DrawProjections(const char* fileName, Int_t i, Int_t j, Float_t eta = 1.0, 
   legend->Draw();
   
   c->SaveAs(Form("phi_%d_%d_ratio.png", i, j));
+}
+
+void CompareProjections(const char* fileName, Int_t i, Int_t j, Int_t centr)
+{
+  TFile::Open(fileName);
+
+  const char* label = 0;
+  TH1* etaHist = 0;
+  TH1* hist = GetProjections(i, j, centr, &label, -1, &etaHist);
+  if (!hist)
+    continue;
+  TH1* hist2 = GetProjections(i, j, centr, &label, 1.2, &etaHist);
+
+  c = new TCanvas;
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  hist->SetStats(0);
+  hist->SetMarkerStyle(20);
+  hist->Draw("");
+
+  hist2->SetMarkerStyle(21);
+  hist2->SetMarkerColor(2);
+  hist2->SetLineColor(2);
+  hist2->Draw("SAME");
 }
 
 void DrawProjectionsAll(const char* fileName, Float_t eta = 1, Bool_t etaPhi = kFALSE)
@@ -1203,6 +1521,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     etaProj->GetYaxis()->SetTitle(kProjYieldTitleEta);
     etaProj->GetYaxis()->SetTitleOffset(1.1);
     etaProj->SetStats(0);
+    etaProj->GetXaxis()->SetNdivisions(505);
     etaProj->Rebin(2); etaProj->Scale(0.5);
     etaProj2->Rebin(2); etaProj2->Scale(0.5);
     etaProj3->Rebin(2); etaProj3->Scale(0.5);
@@ -1225,10 +1544,10 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     legend5->SetBorderSize(0);
     legend5->SetTextSize(fontSize);
     legend5->SetFillColor(0);
-    legend5->AddEntry(etaProj,  "Near side (|#Delta#varphi| < #pi/3)", "P");
-    legend5->AddEntry(etaProj2, "Away side (|#Delta#varphi - #pi| < #pi/3)", "P");
+    legend5->AddEntry(etaProj,  "|#Delta#varphi| < #pi/3", "P");
+    legend5->AddEntry(etaProj2, "|#Delta#varphi - #pi| < #pi/3", "P");
 //     legend5->AddEntry(etaProj3, "#pi/3 < |#Delta#varphi| < 2#pi/3, #Delta#varphi > 4#pi/3", "P");
-    legend5->AddEntry(etaProj3, "Between near and away side", "P");
+    legend5->AddEntry(etaProj3, "Remaining #Delta#varphi", "P");
     legend5->Draw();
     
     gPad->GetCanvas()->SaveAs(Form("ridge_eta_%d_%d.png", i, j));
@@ -1262,11 +1581,11 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   fileProj->Close();
 
   TF1* v2 = new TF1("func", "[0]+2*[1]*cos(2*x)", -5, 5);
+  v2->SetLineStyle(2);
 //   v2->SetLineWidth(1);
   
   TF1* v2v3 = new TF1("func", "[0]+2*[1]*cos(2*x)+2*[2]*cos(3*x)", -5, 5);
   v2v3->SetLineColor(2);
-  v2v3->SetLineStyle(2);
   proj->Fit(v2, fitOption);
 //   return;
     
@@ -1286,14 +1605,14 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   {
     v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
     v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
-    if (symmetricpT)
+//     if (symmetricpT)
       AddPoint(graph[4], xValue1vn, v2value, 0, v2E);
   }
   if (v2v3->GetParameter(2) > 0)
   {
     v3 = TMath::Sqrt(v2v3->GetParameter(2) / (baseLine + diffMinParam0));
     v3E = 0.5 * v3 * TMath::Sqrt(v2v3->GetParError(2) * v2v3->GetParError(2) / v2v3->GetParameter(2) / v2v3->GetParameter(2) + baseLineE * baseLineE / baseLine / baseLine);
-    if (symmetricpT)
+//     if (symmetricpT)
       AddPoint(graph[5], xValue2vn, v3, 0, v3E);
   }
   if (v2v3->GetParameter(1) > 0 && v2v3->GetParameter(2) > 0 && symmetricpT)
@@ -1390,7 +1709,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     v2v3_v3->SetLineStyle(4);
     v2v3_v3->SetLineColor(2);
 //     v2v3_v3->Draw("SAME");
-
+    
     line = new TLine(-0.5 * TMath::Pi(), min, 1.5 * TMath::Pi(), min);
     line->SetLineWidth(2);
     line->SetLineColor(4);
@@ -1401,9 +1720,25 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     legend->SetBorderSize(0);
 
     legend->AddEntry(proj, "Data", "P");
-    legend->AddEntry(v2, "a_{0} + a_{2} cos(2#Delta#varphi)", "L");
     legend->AddEntry(v2v3, "a_{0} + a_{2} cos(2#Delta#varphi) + a_{3} cos(3#Delta#varphi)", "L");
+    legend->AddEntry(v2, "a_{0} + a_{2} cos(2#Delta#varphi)", "L");
     legend->AddEntry(line, "Baseline for yield extraction", "L");
+
+    if (1)
+    {
+      TFile::Open("dphi_proj_hijing.root");
+      hijing = (TH1*) gFile->Get(Form("proj_%d_%d_%d_0", i, j, centr));
+      if (hijing)
+      {
+	hijing->Add(new TF1("flat", "1", -5, 5), min - ((i == 1) ? 0.192078 : 0.373710));
+	hijing->SetMarkerColor(2);
+	hijing->SetLineColor(2);
+	hijing->SetMarkerStyle(25);
+	hijing->Draw("SAME E0X0");
+	legend->AddEntry(hijing, "HIJING shifted", "P");
+      }
+    }
+    
     legend->SetTextSize(fontSize);
     legend->Draw();
     
@@ -1416,7 +1751,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     paveText4 = (TPaveText*) paveText2->Clone();
     paveText4->SetTextSize(fontSize);
     paveText4->SetX1NDC(0.16);
-    paveText4->SetY1NDC(0.65);
+    paveText4->SetY1NDC(0.68);
     paveText4->SetX2NDC(0.42);
     paveText4->SetY2NDC(0.96);
     paveText4->AddText(Form("%sGeV/#it{c}", objArray->At(0)->GetName()));
@@ -1710,7 +2045,7 @@ void DrawRMS(const char* graphFile)
 
 void Drawv2v3(const char* graphFile)
 {
-  DrawGraph(graphFile, 4, 5, "v_{2} , v_{3}", "fig4a.eps");
+  DrawGraph(graphFile, 4, 5, "#it{v}_{2} , #it{v}_{3}", "fig4a.eps");
 }
 
 void AddSystUnc(TGraphErrors* graph, Float_t syst020, Float_t syst2060)
@@ -1777,6 +2112,8 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     
 //     graphs[0][id1]->Print();
   }
+  else
+    Printf(">>>>>>>>>>>> SKIPPING SYST");
   
   
   TCanvas* canvas = new TCanvas;
@@ -1805,12 +2142,12 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     dummy->GetXaxis()->SetTitleOffset(1);
   }
   
-  legend = new TLegend(0.32, (id1 == 4) ? 0.70 : 0.55, 0.95, 0.92);
+  legend = new TLegend(0.33, (id1 == 4) ? 0.70 : 0.55, 0.95, 0.92);
   legend->SetNColumns(2);
   if (id1 == 0 || id1 == 2)
     legend->SetHeader("Near side   Away side");
   else if (id1 == 4)
-    legend->SetHeader("    v_{2}            v_{3}");
+    legend->SetHeader("    #it{v}_{2}            #it{v}_{3}");
     
   legend->SetFillColor(0);
   legend->SetBorderSize(0);
@@ -2115,4 +2452,30 @@ void CMSPlot()
     }
     legend->Draw();
   }
+}
+
+void FourierFactorization(const char* fileName)
+{
+  ReadGraphs(fileName);
+  
+  Int_t n = 6;
+  Int_t is[] =    { 0, 1, 1, 2, 2, 2, 3 };
+  Int_t js[] =    { 1, 1, 2, 1, 2, 3, 3 };
+  Bool_t symm[] = { 1, 0, 1, 0, 0, 1, 0 };
+
+  Int_t graphID = 5;
+  
+  TGraphErrors** symmGraphs[] = { graphs[0], graphs[2], graphs[5] };
+  
+  for (Int_t i=0; i<symmGraphs[0][graphID]->GetN(); i++)
+  {
+    Printf("%d", i);
+    graphs[1][graphID]->GetY()[i] = TMath::Sqrt(symmGraphs[0][graphID]->GetY()[i] * symmGraphs[1][graphID]->GetY()[i]);
+    graphs[3][graphID]->GetY()[i] = TMath::Sqrt(symmGraphs[2][graphID]->GetY()[i] * symmGraphs[1][graphID]->GetY()[i]);
+    graphs[4][graphID]->GetY()[i] = TMath::Sqrt(symmGraphs[2][graphID]->GetY()[i] * symmGraphs[2][graphID]->GetY()[i]);
+  }
+  
+//   graphs[1][graphID]->Draw("A*");
+  
+  WriteGraphs();
 }

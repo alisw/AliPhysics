@@ -13824,12 +13824,12 @@ void GetRefMultiplicity(const char* fileNameESD, const char* tag = "")
   
   AliUEHistograms* esd = (AliUEHistograms*) GetUEHistogram(fileNameESD, 0, kFALSE, tag);
   
-//   Float_t centrBins[] = { 0, 20, 40, 60, 100 };
-  Float_t centrBins[] = { 0, 100 };
+  Float_t centrBins[] = { 0, 20, 40, 60, 100 };
+//   Float_t centrBins[] = { 0, 100 };
   
   // NOTE Run it on data with limited zvtx range so that there are no empty bins in the corrections!
   
-  for (Int_t i=0; i<1; i++)
+  for (Int_t i=0; i<4; i++)
   {
     Float_t centrBegin = centrBins[i] + 0.1;
     Float_t centrEnd   = centrBins[i+1] - 0.1;
@@ -13848,13 +13848,14 @@ void GetRefMultiplicity(const char* fileNameESD, const char* tag = "")
     
     Float_t events = centrDist->Integral(centrDist->FindBin(centrBegin), centrDist->FindBin(centrEnd));
     Double_t error = 0;
-    Float_t integral = ptDist->IntegralAndError(ptDist->FindBin(0.51), ptDist->FindBin(3.99), error);
+//     Float_t integral = ptDist->IntegralAndError(ptDist->FindBin(0.51), ptDist->FindBin(3.99), error);
+    Float_t integral = ptDist->IntegralAndError(ptDist->FindBin(0.51), ptDist->FindBin(7.99), error);
     Printf("%d: %f +- %f %f --> %f +- %F", i, integral, error, events, integral / events, error / events);
     
     ptDist->Scale(1.0 / events);
 //     ptDist->Scale(1.0 / integral);
   
-//     NormalizeToBinWidth(ptDist);
+    NormalizeToBinWidth(ptDist);
     ptDist->SetLineColor(i + 1);
     ptDist->DrawCopy((i == 0) ? "" : "SAME");
   }
@@ -13873,7 +13874,15 @@ void GetRefMultiplicity(const char* fileNameESD, const char* tag = "")
     comparison->SetBinContent(i, comparison->GetBinContent(i) * comparison->GetBinWidth(i));
     comparison->SetBinError(i, comparison->GetBinError(i) * comparison->GetBinWidth(i));
   }
+
+  Float_t integral = comparison->IntegralAndError(comparison->FindBin(0.51), comparison->FindBin(7.99), error);
+  Float_t integral2 = comparison->IntegralAndError(comparison->FindBin(0.51), comparison->FindBin(19.99), error);
+  Printf("%f %f", integral, integral2);
     
+  Float_t integral = comparison->IntegralAndError(comparison->FindBin(0.51), comparison->FindBin(7.99), error);
+  Float_t integral2 = comparison->IntegralAndError(comparison->FindBin(0.61), comparison->FindBin(7.99), error);
+  Printf("%f %f", integral, integral2);
+
   rebinned = comparison->Rebin(ptDist->GetNbinsX(), "rebinned", ptDist->GetXaxis()->GetXbins()->GetArray());
   
   
