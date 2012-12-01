@@ -119,6 +119,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fRMSBadCalibratedGain(20.0),
   fRMSBadCalibratedVdrift(20.0),
   fRMSBadCalibratedExB(20.0),
+  fMinTimeOffsetValidate(-1.6),
   fRobustFitDriftVelocity(kTRUE),
   fRobustFitExbAlt(kFALSE),
   fAlternativeVdrfitFit(kFALSE),
@@ -1529,7 +1530,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
      Double_t meanpad = calPad->GetMean();
      //Double_t rmspad = calPad->GetRMS();
      //printf("T0::minimum %f, rmsdet %f,meanpad %f, rmspad %f\n",meandet,rmsdet,meanpad,rmspad);
-     if((meandet > -1.5) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
+     if((meandet >   fMinTimeOffsetValidate) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
      else {
        fStatusPos = fStatusPos | kTimeOffsetErrorRange;
        return kFALSE;

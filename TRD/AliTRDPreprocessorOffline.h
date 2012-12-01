@@ -78,6 +78,7 @@ public:
   void     SetRMSBadCalibratedGain(Double_t rms)                     { fRMSBadCalibratedGain = rms;};
   void     SetRMSBadCalibratedVdrift(Double_t rms)                   { fRMSBadCalibratedVdrift = rms;};
   void     SetRMSBadCalibratedExB(Double_t rms)                      { fRMSBadCalibratedExB = rms;};
+  void     SetMinTimeOffsetValidate(Double_t min)                    { fMinTimeOffsetValidate = min;};
   void     SetRobustFitDriftVelocity(Bool_t robustFitDriftVelocity)  { fRobustFitDriftVelocity = robustFitDriftVelocity;};
   void     SetRobustFitExbAlt(Bool_t robustFitExbAlt)                { fRobustFitExbAlt = robustFitExbAlt;};
   void     SetAlternativeDriftVelocityFit(Bool_t alt)                { fAlternativeVdrfitFit = alt;};
@@ -235,7 +236,7 @@ public:
   Int_t    fMinStatsGain;                 // MinStats Gain
   Int_t    fMinStatsPRF;                  // MinStats PRF
   Int_t    fMinStatsChamberStatus;        // MinStats ChamberStatus
-	Double_t fMinSingleStatsChamberStatus;  // MinStats per chamber in % of mean (ChamberStatus)
+  Double_t fMinSingleStatsChamberStatus;  // MinStats per chamber in % of mean (ChamberStatus)
   Bool_t   fBackCorrectGain;              // Back correction afterwards gain  
   Bool_t   fBackCorrectVdrift;            // Back correction afterwards vdrift
   Bool_t   fNotEnoughStatisticsForTheGain;// Take the chamber per chamber distribution from the default distribution
@@ -249,6 +250,7 @@ public:
   Double_t fRMSBadCalibratedGain;         // value to decide when it is bad calibrated 
   Double_t fRMSBadCalibratedVdrift;       // value to decide when it is bad calibrated 
   Double_t fRMSBadCalibratedExB;          // value to decide when it is bad calibrated 
+  Double_t fMinTimeOffsetValidate;        // For validation of timeoffset min value  
   Bool_t   fRobustFitDriftVelocity;       // Robust fit for the drift velocity
   Bool_t   fRobustFitExbAlt;              // Robust fit for the exb alt 
   Bool_t   fAlternativeVdrfitFit;         // Alternative fitting method for vdrift calibration
