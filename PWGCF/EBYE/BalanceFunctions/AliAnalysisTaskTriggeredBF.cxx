@@ -707,10 +707,10 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t vCharge;
-  Double_t vEta;
-  Double_t vPhi;
-  Double_t vPt;
+  Double_t vCharge = 0.;
+  Double_t vEta    = 0.;
+  Double_t vPhi    = 0.;
+  Double_t vPt     = 0.;
   
   // Loop over tracks in event
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
