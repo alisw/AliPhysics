@@ -54,7 +54,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   if(minCen != -1 && maxCen != -1)
     arrayName+=Form("_Cen%d_%d",minCen,maxCen);
 
-  printf("Created Branch Name: \n",arrayName.Data());
+  printf("Created Branch Name: %s \n",arrayName.Data());
   
   
   //-------------------------------------------------------
@@ -100,18 +100,27 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   else
   {
-    if(bRecalT && !bMC)
+    if(!bMC)
     {
-      params->SetTimeMin(-250*1.e-9);
-      params->SetTimeMax( 250*1.e-9);
-      printf("default time window for calibrated time -250 ns < T < 250 ns\n");
+      if(bRecalT)
+      {
+        params->SetTimeMin(-250*1.e-9);
+        params->SetTimeMax( 250*1.e-9);
+        printf("default time window for calibrated time -250 ns < T < 250 ns\n");
+      }
+      else
+      {
+        // same as in reco, USE IF NO TIME RECALIBRATION
+        params->SetTimeMin(425*1.e-9);
+        params->SetTimeMax(825*1.e-9);
+        printf("default time window 425 ns < T < 825 ns\n");
+      }
     }
     else
     {
-      // same as in reco, USE IF NO TIME RECALIBRATION
-      params->SetTimeMin(425*1.e-9);
-      params->SetTimeMax(825*1.e-9);
-      printf("default time window 425 ns < T < 825 ns\n");
+      params->SetTimeMin(-100000000);
+      params->SetTimeMax( 100000000);
+      printf("open time cut\n");
     }
   }
 
