@@ -47,7 +47,8 @@ set ( CLASS_HDRS
     AliHLTTRDTrackHistoComponent.h
     AliHLTTRDHistoMergerComponent.h
     AliHLTTRDMonitorComponent.h
-    AliHLTTRDGlobalMonitorComponent.h
+    AliTRDonlineTrackingDataContainer.h
+    AliHLTTRDPreprocessorComponent.h
     )
 
 string (REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")

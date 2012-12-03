@@ -54,6 +54,7 @@
 //#include "AliHLTTriggerFastJet.h"
 #include "AliHLTFastJetMonitorComponent.h"
 #include "AliHLTEmcalElectronMonitorComponent.h"
+#include "AliHLTTRDTriggerComponent.h"
 
 /** global instance for agent registration */
 AliHLTTriggerAgent gAliHLTTriggerAgent;
@@ -100,6 +101,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   //pHandler->AddComponent(new AliHLTTriggerFastJet);
   pHandler->AddComponent(new AliHLTFastJetMonitorComponent);
   pHandler->AddComponent(new AliHLTEmcalElectronMonitorComponent);
+  pHandler->AddComponent(new AliHLTTRDTriggerComponent);
  return 0;
 }
 

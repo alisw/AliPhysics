@@ -43,8 +43,8 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 #include "AliHLTTRDHistoMergerComponent.h"
 #include "AliHLTTRDOfflineClusterizerComponent.h"
 #include "AliHLTTRDOfflineTrackerV1Component.h"
+#include "AliHLTTRDPreprocessorComponent.h"
 #include "AliHLTTRDMonitorComponent.h"
-#include "AliHLTTRDGlobalMonitorComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDAgent)
@@ -103,8 +103,8 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTRDHistoMergerComponent);
   pHandler->AddComponent(new AliHLTTRDOfflineClusterizerComponent);
   pHandler->AddComponent(new AliHLTTRDOfflineTrackerV1Component);
+  pHandler->AddComponent(new AliHLTTRDPreprocessorComponent);
   pHandler->AddComponent(new AliHLTTRDMonitorComponent);
-  pHandler->AddComponent(new AliHLTTRDGlobalMonitorComponent);
   return 0;
 }
 

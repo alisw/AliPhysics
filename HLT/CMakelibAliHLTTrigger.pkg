@@ -56,6 +56,7 @@ set ( CLASS_HDRS
     AliHLTTriggerCounters.h
     AliHLTTriggerCaloClusterEnergy.h
     AliHLTTriggerEmcalElectron.h	
+   AliHLTTRDTriggerComponent.h
 # uncomment if fastjet is installed
 #    AliHLTTriggerFastJet.h
 # ---------------------------------

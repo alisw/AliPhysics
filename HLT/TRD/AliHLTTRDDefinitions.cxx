@@ -35,6 +35,8 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkHiLvlClusterDataType = { 
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
 
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkOnlineDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','D','A','T'},{'T','R','D',' '}};;
+
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkHiLvlTracksDataType = { sizeof(AliHLTComponentDataType), {'H','I','T','R','A','C','K','S'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMtrackletDataType = { sizeof(AliHLTComponentDataType), {'M','C','M','T','R','L','E','T'},{'T','R','D',' '}};;
