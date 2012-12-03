@@ -102,9 +102,9 @@ void AliV0CutVariations::SlaveBegin(TTree * tree)
 
   Init(tree);
 
-  cout<<tree->GetEntries()<<endl;
+  //cout<<tree->GetEntries()<<endl;
 
-   TString option = GetOption();
+  TString option = GetOption();
 
   Int_t    lbins=100;  // number of bins in lt
   Int_t    kbins=33;  // number of bins in pt of Xi
@@ -389,7 +389,7 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
 
    fChain->GetTree()->GetEntry(entry);
 
-   cout<<entry<<'\r';
+   //cout<<entry<<'\r';
 
    if (fTreeVariableMultiplicity<fCMin) return kFALSE;
    if (fTreeVariableMultiplicity>fCMax) return kFALSE;
