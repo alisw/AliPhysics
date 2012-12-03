@@ -266,6 +266,25 @@ public:
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
   
+  
+  //Time Stamp
+  
+  Int_t            GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
+  Int_t            GetRunTimeStampMax()              const { return fTimeStampRunMax         ; }
+  
+  void             SetRunTimeStamp(Int_t a, Int_t b)       { fTimeStampRunMin = a            ;
+                                                             fTimeStampRunMax = b            ; } // seconds
+  
+  Float_t          GetEventTimeStampFractionMin()    const { return fTimeStampEventFracMin   ; }
+  Float_t          GetEventTimeStampFractionMax()    const { return fTimeStampEventFracMax   ; }
+  
+  void             SetEventTimeStampFraction(Float_t a, Float_t b) { fTimeStampEventFracMin = a ;
+                                                                     fTimeStampEventFracMax = b ; }
+  
+  void             SwitchOnSelectEventTimeStamp()          { fTimeStampEventSelect = kTRUE   ; }
+  void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
+  
+  
   Bool_t           IsPileUpFromSPD()               const ;
   Bool_t           IsPileUpFromEMCal()             const ;
   Bool_t           IsPileUpFromSPDAndEMCal()       const ;
@@ -559,11 +578,19 @@ public:
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
+  
+  Bool_t           fTimeStampEventSelect;        // Select events within a fraction of data taking time
+  Float_t          fTimeStampEventFracMin;       // Minimum value of time stamp fraction event
+  Float_t          fTimeStampEventFracMax;       // Maximum value of time stamp fraction event
+  Int_t            fTimeStampRunMin;             // Minimum value of time stamp in run
+  Int_t            fTimeStampRunMax;             // Maximum value of time stamp in run
+  
   Double_t         fPileUpParamSPD[5];           // Parameters to pass to method IsPileupFromSPD: Int_t minContributors,
                                                  // Double_t minZdist, 
                                                  // Double_t nSigmaZdist, 
                                                  // Double_t nSigmaDiamXY, 
                                                  // Double_t nSigmaDiamZ)
+  
   // Pile-up in EMCal
   Int_t            fNPileUpClusters;             // Number of clusters with time avobe 20 ns
   Int_t            fNNonPileUpClusters;          // Number of clusters with time below 20 ns
@@ -586,7 +613,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,47)
+  ClassDef(AliCaloTrackReader,48)
   
 } ;
 

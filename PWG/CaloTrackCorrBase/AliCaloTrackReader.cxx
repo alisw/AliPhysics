@@ -94,7 +94,9 @@ fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(k
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE), 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (0x0),
+fTriggerAnalysis (0x0),      fTimeStampEventSelect(0),
+fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
+fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
@@ -684,6 +686,23 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   FillVertexArray();
   //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
   if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;  
+  
+  //------------------------------------------------------
+  //Event rejection depending on vertex, pileup, v0and
+  //------------------------------------------------------
+  if(fDataType==kESD && fTimeStampEventSelect)
+  {
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+    Int_t timeStamp = esd->GetTimeStamp();
+    Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
+  
+    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, //timeStampFrac);
+    
+    if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
+  
+    //printf("\t accept time stamp\n");
+  }
+
   
   //------------------------------------------------------
   //Event rejection depending on vertex, pileup, v0and
