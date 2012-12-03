@@ -127,6 +127,7 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
 
+  void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;}
   Bool_t AcceptV0();
   Bool_t AcceptTracks();
   Bool_t AcceptPID(Int_t code);
@@ -183,7 +184,7 @@ private:
   TH2F* fXiBarM;         //! Mass for anti-Xis
   TH1F* fXiBarSiP;       //! Side-band subtracted Pt for reconstructed anti-Xi
 
-   ClassDef(AliV0CutVariations,0);
+   ClassDef(AliV0CutVariations,1);
 };
 
 #endif
