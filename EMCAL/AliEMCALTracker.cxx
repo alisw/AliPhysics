@@ -76,6 +76,7 @@ AliEMCALTracker::AliEMCALTracker()
   fClusterWindow(50),
   fCutEta(0.025),
   fCutPhi(0.05),
+  fITSTrackSA(kFALSE),
   fTracks(0),
   fClusters(0),
   fGeom(0)
@@ -101,6 +102,7 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
     fClusterWindow(copy.fClusterWindow),
     fCutEta(copy.fCutEta),
     fCutPhi(copy.fCutPhi),
+    fITSTrackSA(copy.fITSTrackSA), 
     fTracks((TObjArray*)copy.fTracks->Clone()),
     fClusters((TObjArray*)copy.fClusters->Clone()),
     fGeom(copy.fGeom)
@@ -257,7 +259,20 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   //
   // Load ESD tracks.
   //
-	
+
+  if (esd) { 
+    UInt_t mask1 = esd->GetESDRun()->GetDetectorsInDAQ();
+    UInt_t mask2 = esd->GetESDRun()->GetDetectorsInReco();
+    Bool_t desc1 = (mask1 >> 3) & 0x1;
+    Bool_t desc2 = (mask2 >> 3) & 0x1;
+    if (desc1==0 || desc2==0) { 
+      AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)", 
+      mask1, esd->GetESDRun()->GetDetectorsInReco(),
+      mask2, esd->GetESDRun()->GetDetectorsInDAQ()));
+      fITSTrackSA = kTRUE;
+    }
+  }
+  
   Clear("TRACKS");
   fTracks = new TObjArray(0);
 	
@@ -272,7 +287,8 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 
       //Select good quaulity tracks
       if(esdTrack->Pt()<fCutPt) continue;
-      if(esdTrack->GetNcls(1)<fCutNTPC)continue;
+      if(!fITSTrackSA)
+	if(esdTrack->GetNcls(1)<fCutNTPC)continue;
 
       //Loose geometric cut
       Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
@@ -377,14 +393,19 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   // If the esdFriend is available, use the TPCOuter point as the starting point of extrapolation
   // Otherwise use the TPCInner point
   AliExternalTrackParam *trkParam = 0;
-  const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
-  if(friendTrack && friendTrack->GetTPCOut())
-    trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
+  
+  if(!fITSTrackSA){ 
+    const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
+    if(friendTrack && friendTrack->GetTPCOut())
+      trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
+    else if(track->GetInnerParam())
+      trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+  }
   else
-    trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+    trkParam = new AliExternalTrackParam(*track);
+  
   if(!trkParam) return index;
-
-
+  
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi;
   if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(kTRUE), fStep, eta, phi))  return index;
@@ -400,6 +421,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
       Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
       Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
+//       printf("\n dR=%f,wind=%f\n",dR,fClusterWindow); //MARCEL
       if(dR > fClusterWindow) continue;
       
       AliExternalTrackParam trkParTmp(trkParamTmp);

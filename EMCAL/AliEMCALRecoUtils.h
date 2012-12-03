@@ -34,7 +34,7 @@ class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
 class AliExternalTrackParam;
-
+class AliESDtrackCuts;
 class AliEMCALRecoUtils : public TNamed {
   
 public:
@@ -52,8 +52,8 @@ public:
   enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7};
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
-  enum     { kNCuts = 11 }; //track matching
-  enum     TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1, kLooseCut=2};
+  enum     { kNCuts = 12 }; //track matching Marcel
+  enum     TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1, kLooseCut=2, kITSStandAlone=3};  //Marcel
 
   //-----------------------------------------------------
   //Position recalculation
@@ -312,6 +312,8 @@ public:
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
  
+  void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
+  
   // Exotic cells / clusters
   
   Bool_t   IsExoticCell(const Int_t absId, AliVCaloCells* cells, const Int_t bc =-1) ;
@@ -359,7 +361,8 @@ public:
   void     SetMaxDCAToVertexXY(Float_t dist=1e10)    { fCutMaxDCAToVertexXY     = dist ; }
   void     SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ; }
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
-
+  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
+  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
   Int_t    GetMinNClusterTPC()                 const { return fCutMinNClusterTPC       ; }
@@ -372,7 +375,7 @@ public:
   Float_t  GetMaxDCAToVertexXY()               const { return fCutMaxDCAToVertexXY     ; }
   Float_t  GetMaxDCAToVertexZ()                const { return fCutMaxDCAToVertexZ      ; }
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
-
+  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
 
 private:  
   //Position recalculation
@@ -438,7 +441,8 @@ private:
   Double_t   fMass;                      // Mass hypothesis of the track
   Double_t   fStepSurface;               // Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               // Length of step to extrapolate tracks to clusters
-
+  Bool_t     fITSTrackSA;                // If track matching is to be done with ITS tracks standing alone	
+ 
   // Track cuts  
   Int_t      fTrackCutsType;             // Esd track cuts type for matching
   Double_t   fCutMinTrackPt;             // Cut on track pT
@@ -452,6 +456,9 @@ private:
   Float_t    fCutMaxDCAToVertexXY;       // Track-to-vertex cut in max absolute distance in xy-plane
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
   Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
+  Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
+  Bool_t     fCutRequireITSpureSA; 	 // ITS pure standalone tracks
+  
   
   ClassDef(AliEMCALRecoUtils, 18)
   

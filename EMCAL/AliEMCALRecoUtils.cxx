@@ -58,7 +58,7 @@
 #include "AliTrackerBase.h"
 #include "AliEMCALPIDUtils.h"
 
-
+#include "AliESDtrackCuts.h" //MARCEL
 ClassImp(AliEMCALRecoUtils)
   
 //_____________________________________
@@ -78,10 +78,12 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
+  fITSTrackSA(kFALSE),
   fTrackCutsType(0),                      fCutMinTrackPt(0),                      fCutMinNClusterTPC(0), 
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
-  fCutMaxDCAToVertexXY(0),                fCutMaxDCAToVertexZ(0),                 fCutDCAToVertex2D(kFALSE)
+  fCutMaxDCAToVertexXY(0),                fCutMaxDCAToVertexZ(0),                 fCutDCAToVertex2D(kFALSE),
+  fCutRequireITSStandAlone(kFALSE),       fCutRequireITSpureSA(kFALSE) 
 {
 //
   // Constructor.
@@ -99,7 +101,6 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fResidualEta           = new TArrayF();
   fPIDUtils              = new AliEMCALPIDUtils();
 
-  InitTrackCuts();
 }
 
 //______________________________________________________________________
@@ -127,12 +128,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
   fMass(reco.fMass),        fStepSurface(reco.fStepSurface), fStepCluster(reco.fStepCluster),
+  fITSTrackSA(reco.fITSTrackSA),
   fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit),             fCutRequireITSRefit(reco.fCutRequireITSRefit),
   fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),     fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY),    
-  fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),             fCutDCAToVertex2D(reco.fCutDCAToVertex2D)
+  fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),             fCutDCAToVertex2D(reco.fCutDCAToVertex2D),
+  fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA) 
 {
   //Copy ctor
   
@@ -200,7 +203,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fMass                      = reco.fMass;
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
-
+  fITSTrackSA                = reco.fITSTrackSA;  
+  
   fTrackCutsType             = reco.fTrackCutsType;
   fCutMinTrackPt             = reco.fCutMinTrackPt;
   fCutMinNClusterTPC         = reco.fCutMinNClusterTPC;
@@ -213,7 +217,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutMaxDCAToVertexXY       = reco.fCutMaxDCAToVertexXY;
   fCutMaxDCAToVertexZ        = reco.fCutMaxDCAToVertexZ;
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
-  
+  fCutRequireITSStandAlone   = reco.fCutRequireITSStandAlone; 
+  fCutRequireITSpureSA       = reco.fCutRequireITSpureSA; 
   if(reco.fResidualEta)
   {
     // assign or copy construct
@@ -1022,6 +1027,8 @@ void AliEMCALRecoUtils::InitParameters()
   fCutMaxDCAToVertexZ  = 1e10;              
   fCutDCAToVertex2D    = kFALSE;
   
+  fCutRequireITSStandAlone = kFALSE; //MARCEL
+  fCutRequireITSpureSA     = kFALSE; //Marcel
   
   //Misalignment matrices
   for(Int_t i = 0; i < 15 ; i++) 
@@ -1774,6 +1781,19 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     
   } // Init mag field
   
+  if (esdevent) {
+    UInt_t mask1 = esdevent->GetESDRun()->GetDetectorsInDAQ();
+    UInt_t mask2 = esdevent->GetESDRun()->GetDetectorsInReco();
+    Bool_t desc1 = (mask1 >> 3) & 0x1;
+    Bool_t desc2 = (mask2 >> 3) & 0x1;
+    if (desc1==0 || desc2==0) { 
+      AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)", 
+      mask1, esdevent->GetESDRun()->GetDetectorsInReco(),
+      mask2, esdevent->GetESDRun()->GetDetectorsInDAQ()));
+      fITSTrackSA=kTRUE;
+    }
+  }
+
   TObjArray *clusterArray = 0x0;
   if(!clusterArr)
     {
@@ -1804,7 +1824,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       if(esdTrack->Pt()<fCutMinTrackPt) continue;
       Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
       if(TMath::Abs(esdTrack->Eta())>0.8 || phi <= 20 || phi >= 240 ) continue;
-      trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
+      if(!fITSTrackSA)
+	trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
+      else
+	trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
     }
     
     //If the input event is AOD, the starting point for extrapolation is at vertex
@@ -1908,7 +1931,12 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   Int_t index = -1;
   Double_t phiV = track->Phi()*TMath::RadToDeg();
   if(TMath::Abs(track->Eta())>0.8 || phiV <= 20 || phiV >= 240 ) return index;
-  AliExternalTrackParam *trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+  AliExternalTrackParam *trackParam = 0;
+  if(!fITSTrackSA)
+    trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  // If TPC
+  else
+    trackParam = new AliExternalTrackParam(*track);
+    
   if(!trackParam) return index;
   AliExternalTrackParam emcalParam(*trackParam);
   Float_t eta, phi;
@@ -2321,6 +2349,21 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   cuts[10] = kTRUE;
     }
 
+      // ITS
+  if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
+    if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){
+      // TPC tracks
+      cuts[11] = kTRUE; 
+    }else{
+      // ITS standalone tracks
+      if(fCutRequireITSStandAlone && !fCutRequireITSpureSA){
+	if(status & AliESDtrack::kITSpureSA) cuts[11] = kTRUE;
+      }else if(fCutRequireITSpureSA){
+	if(!(status & AliESDtrack::kITSpureSA)) cuts[11] = kTRUE;
+      }
+    }
+  }
+  
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++)
     if (cuts[i]) { cut = kTRUE ; }
@@ -2385,6 +2428,16 @@ void AliEMCALRecoUtils::InitTrackCuts()
       
       break;
     }
+
+    case kITSStandAlone:
+    {
+      AliInfo(Form("Track cuts for matching: ITS Stand Alone tracks cut w/o DCA cut"));
+      SetRequireITSRefit(kTRUE);
+      SetRequireITSStandAlone(kTRUE);
+      SetITSTrackSA(kTRUE);
+      break;
+    }
+    
   }
 }
 

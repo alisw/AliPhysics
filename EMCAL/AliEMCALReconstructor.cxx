@@ -731,13 +731,16 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   dEta = -999, dPhi = -999;
 
   AliExternalTrackParam *trkParam = 0;
+  
   const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
   if(friendTrack && friendTrack->GetTPCOut())
     trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
-  else
+  else if(track->GetInnerParam())
     trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+  else
+    trkParam = new AliExternalTrackParam(*track); //If there is ITSSa track 
   if(!trkParam) return kFALSE;
-
+  
   AliExternalTrackParam trkParamTmp (*trkParam);
   if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
 

@@ -100,7 +100,8 @@ private:
 	Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
 	Double_t    fCutEta;	      // cut on eta difference
 	Double_t    fCutPhi;	      // cut on phi difference
-
+	Bool_t	    fITSTrackSA;      // If ITS Tracks	
+	
 	TObjArray  *fTracks;          //! collection of tracks
 	TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
 	
