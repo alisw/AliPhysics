@@ -1284,7 +1284,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Bool_t mcthere = kTRUE;
   if(fAODAnalysis) {
     AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
-    if(aodE){
+    if(!aodE){
       //        printf("testd\n");
       AliError("No AOD Event");
       return;
