@@ -89,6 +89,7 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								fxsec(0.),
 								ftrial(1.),
 								fHistList(0x0), // Output list
+  fIfiles(0),
 								fH1Events(0x0),
 								fH1Xsec(0x0),
 								fH1Trials(0x0),
@@ -189,7 +190,7 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fxsec(0.),
 				ftrial(1.),
 				fHistList(0x0), // Output list
-
+				fIfiles(0),
 				fH1Events(0x0),
 				fH1Xsec(0x0),
 				fH1Trials(0x0),
