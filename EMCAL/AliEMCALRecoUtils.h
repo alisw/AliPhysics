@@ -34,7 +34,7 @@ class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
 class AliExternalTrackParam;
-class AliESDtrackCuts;
+
 class AliEMCALRecoUtils : public TNamed {
   
 public:

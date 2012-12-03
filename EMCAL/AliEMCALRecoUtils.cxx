@@ -58,7 +58,6 @@
 #include "AliTrackerBase.h"
 #include "AliEMCALPIDUtils.h"
 
-#include "AliESDtrackCuts.h" //MARCEL
 ClassImp(AliEMCALRecoUtils)
   
 //_____________________________________
