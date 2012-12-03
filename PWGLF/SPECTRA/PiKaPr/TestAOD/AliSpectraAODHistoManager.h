@@ -78,7 +78,6 @@ public:
    TH2F*   BookPtRecAllChHistogram(const char * name);
    TH2F*   BookPIDHistogram(const char * name);
    TH2F*   BookNSigHistogram(const char * name);
-   TH2F*   BookqVecHistogram(const char * name);
    TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);
    TH1F*   GetDCAHistogram1D(const char * name,Double_t minPt,Double_t maxPt);
    TH2*     GetHistogram(UInt_t id)      {      return (TH2*) fOutputList->At(id);   }
@@ -94,10 +93,7 @@ public:
    TH2*     GetNSigHistogram(UInt_t id)   {      return (TH2*) fOutputList->At(id);   }
    TH2*     GetNSigHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
    TH2*     GetNSigHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistName[id]);  }// Use this if you want to read a file saved with a different histo list
-   TH2*     GetqVecHistogram(UInt_t id)   {      return (TH2*) fOutputList->At(id);   }
-   TH2*     GetqVecHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
-   TH2*     GetqVecHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistName[id]);  }// Use this if you want to read a file saved with a different histo list
-  
+
    //TH1F*   GetTH1F(UInt_t id)            {      return (TH1F*) GetPtHistogram(id);   }
    //TH2F*   GetTH2F(UInt_t id)            {      return (TH2F*) GetPIDHistogram(id);   }
 
