@@ -42,12 +42,21 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=0.905;
     fBBtpcits[3]=1.2;
     fBBtpcits[4]=6.6;
-    fBBsa[0]=2.73198E7;
+    fBBsa[0]=2.73198E7; //pure PHOBOS parameterization
     fBBsa[1]=6.92389;
     fBBsa[2]=1.90088E-6;
     fBBsa[3]=1.90088E-6;
     fBBsa[4]=3.40644E-7;
-    fBBsaElectron[0]=4.05799E6;
+    fBBsaHybrid[0]=1.43505E7;  //PHOBOS+Polinomial parameterization
+    fBBsaHybrid[1]=49.3402;
+    fBBsaHybrid[2]=1.77741E-7;
+    fBBsaHybrid[3]=1.77741E-7;
+    fBBsaHybrid[4]=1.01311E-7;
+    fBBsaHybrid[5]=77.2777;
+    fBBsaHybrid[6]=33.4099;
+    fBBsaHybrid[7]=46.0089;
+    fBBsaHybrid[8]=-2.26583;
+    fBBsaElectron[0]=4.05799E6;  //electrons in the ITS
     fBBsaElectron[1]=38.5713;
     fBBsaElectron[2]=1.46462E-7;
     fBBsaElectron[3]=1.46462E-7;
@@ -64,12 +73,21 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=1.00;
     fBBtpcits[3]=0.964;
     fBBtpcits[4]=2.59;
-    fBBsa[0]=2.02078E7;
+    fBBsa[0]=2.02078E7; //pure PHOBOS parameterization
     fBBsa[1]=14.0724;
     fBBsa[2]=3.84454E-7;
     fBBsa[3]=3.84454E-7;
     fBBsa[4]=2.43913E-7;
-    fBBsaElectron[0]=2.26807E6;
+    fBBsaHybrid[0]=1.05381E7; //PHOBOS+Polinomial parameterization
+    fBBsaHybrid[1]=89.3933;
+    fBBsaHybrid[2]=2.4831E-7;
+    fBBsaHybrid[3]=2.4831E-7;
+    fBBsaHybrid[4]=7.80591E-8;
+    fBBsaHybrid[5]=62.9214;
+    fBBsaHybrid[6]=32.347;
+    fBBsaHybrid[7]=58.7661;
+    fBBsaHybrid[8]=-3.39869;
+    fBBsaElectron[0]=2.26807E6; //electrons in the ITS
     fBBsaElectron[1]=99.985;
     fBBsaElectron[2]=0.000714841;
     fBBsaElectron[3]=0.000259585;
@@ -127,6 +145,8 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   Double_t bg=p/mass;
   Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
   Double_t gamma=bg/beta;
+  Double_t bb=1.;
+  
   Double_t par[5];
   if(isSA){
     if(mass>0.0005 && mass<0.00052){
@@ -145,11 +165,46 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   else
     eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
   
-  Double_t bb=0.;
   if(gamma>=0. && beta>0.){
     bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
   }
   return bb;
+}
+
+//_________________________________________________________________________
+Double_t AliITSPIDResponse::BetheITSsaHybrid(Double_t p, Double_t mass) const {
+  //
+  // returns AliExternalTrackParam::BetheBloch normalized to 
+  // fgMIP at the minimum. The PHOBOS parameterization is used for beta*gamma>0.76. 
+  // For beta*gamma<0.76 a polinomial function is used
+  
+  Double_t bg=p/mass;
+  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+  Double_t gamma=bg/beta;
+  Double_t bb=1.;
+  
+  Double_t par[9];
+  //parameters for pi, K, p
+  for(Int_t ip=0; ip<9;ip++) par[ip]=fBBsaHybrid[ip];
+  //if it is an electron the PHOBOS part of the parameterization is tuned for e
+  //in the range used for identification beta*gamma is >0.76 for electrons
+  //To be used only between 100 and 160 MeV/c
+  if(mass>0.0005 && mass<0.00052)for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip]; 
+  
+  if(gamma>=0. && beta>0. && bg>0.1){
+    if(bg>0.76){//PHOBOS
+      Double_t eff=1.0;
+      if(bg<par[2])
+	eff=(bg-par[3])*(bg-par[3])+par[4];
+      else
+	eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
+      
+      bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
+    }else{//Polinomial
+      bb=par[5] + par[6]/bg + par[7]/(bg*bg) + par[8]/(bg*bg*bg);
+    }
+  }
+  return bb; 
 }
 
 //_________________________________________________________________________
