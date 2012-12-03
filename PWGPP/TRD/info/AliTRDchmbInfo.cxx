@@ -50,7 +50,7 @@ AliTRDchmbInfo::~AliTRDchmbInfo()
 {
 //  Destructor. 
   if(fLabel) delete fLabel;
-  if(fShade) delete fShade;
+  //if(fShade) delete fShade;
   if(fBox) delete fBox;
 }
 
