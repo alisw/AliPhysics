@@ -70,6 +70,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fMultiplicityCutMax=10000.0;
   fTrackBits=1;
   fCentFromV0=kFALSE;
+  fUseCentPatchAOD049=kFALSE;
 }
 
 //______________________________________________________
