@@ -91,6 +91,11 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
   // main event loop
   //Printf("ALIVE");
   fAOD = dynamic_cast<AliAODEvent*>(fInputEvent);
+  if (!fAOD) {
+    AliWarning("ERROR: AliAODEvent not available \n");
+    return;
+  }
+  
   if (strcmp(fAOD->ClassName(), "AliAODEvent"))
     {
       AliFatal("Not processing AODs");
