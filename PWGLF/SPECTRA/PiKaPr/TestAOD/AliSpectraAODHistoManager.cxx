@@ -72,9 +72,8 @@ AliSpectraAODHistoManager::AliSpectraAODHistoManager(const char *name,Int_t nreb
       if (ihist > kNPtRecHist && ihist <= kNPtRecAllChHist) BookPtRecAllChHistogram(kHistName[ihist]);  // PT histos
       if (ihist > kNPtRecAllChHist && ihist <= kNHistPID) BookPIDHistogram(kHistName[ihist]);  // PID histos
       if (ihist > kNHistPID && ihist <= kNHistNSig) BookNSigHistogram(kHistName[ihist]);  // NSigmaSep histos
-      if (ihist > kNHistNSig) BookqVecHistogram(kHistName[ihist]);  // qDistr histos
     }
-   
+  
   TH1::AddDirectory(oldStatus);
 }
 
@@ -202,23 +201,6 @@ TH2F* AliSpectraAODHistoManager::BookNSigHistogram(const char * name)
   
   return hist;
 }
-
-//_____________________________________________________________________________
-
-TH2F* AliSpectraAODHistoManager::BookqVecHistogram(const char * name)
-{
-  // Return a pt histogram with predefined binning, set the ID and add it to the output list
-  AliInfo(Form("Booking q Vector histogram %s", name));
-  
-  TH2F * hist = new TH2F(name, Form("q Vector distribution vs Centrality (%s)", name), 100, 0, 10, 100, 0, 100);
-  hist->GetXaxis()->SetTitle("q vector");
-  hist->GetYaxis()->SetTitle("Centrality (V0)");
-  //  hist->Sumw2();
-  fOutputList->Add(hist);
-  
-  return hist;
-}
-
 
 //_____________________________________________________________________________
 
