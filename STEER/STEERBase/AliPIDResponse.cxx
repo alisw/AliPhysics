@@ -718,7 +718,7 @@ void AliPIDResponse::SetRecoInfo()
   if (fRun >= 186636  ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
 
   //exception new pp MC productions from 2011
-  if ( (fBeamType=="PP" || fBeamType=="PPB") && reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11B2";
+  if ( (fBeamType=="PP" || fBeamType=="PPB") && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
 }
