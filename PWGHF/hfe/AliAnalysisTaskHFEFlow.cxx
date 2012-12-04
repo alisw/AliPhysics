@@ -17,6 +17,7 @@
 // 
 // Authors:
 //   Raphaelle Bailhache <R.Bailhache@gsi.de>
+//   Theodor Rascanu <trascanu@stud.uni-frankfurt.de>
 //
 #include "TROOT.h"
 #include "TH1D.h"
@@ -2113,10 +2114,10 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  fFractionContamination->Fill(&valuefractioncont[0],weight);
 	  if(fv2contamination[((Int_t)valuefractioncont[1])]){
 	    Double_t v2 =  fv2contamination[((Int_t)valuefractioncont[1])]->Eval(track->Pt());
-	    printf("value v2 %f, contamination %f and pt %f centrality %d\n",v2,weight,track->Pt(),(Int_t)valuefractioncont[1]);
-	    printf("Check for centrality 3: value v2 %f, contamination %f\n",fv2contamination[3]->Eval(track->Pt()),fContamination[3]->Eval(track->P()));
-	    printf("Check for centrality 4: value v2 %f, contamination %f\n",fv2contamination[4]->Eval(track->Pt()),fContamination[4]->Eval(track->P()));
-	    printf("Check for centrality 5: value v2 %f, contamination %f\n",fv2contamination[5]->Eval(track->Pt()),fContamination[5]->Eval(track->P()));
+	    AliDebug(2,Form("value v2 %f, contamination %f and pt %f centrality %d\n",v2,weight,track->Pt(),(Int_t)valuefractioncont[1]));
+	    AliDebug(2,Form("Check for centrality 3: value v2 %f, contamination %f\n",fv2contamination[3]->Eval(track->Pt()),fContamination[3]->Eval(track->P())));
+	    AliDebug(2,Form("Check for centrality 4: value v2 %f, contamination %f\n",fv2contamination[4]->Eval(track->Pt()),fContamination[4]->Eval(track->P())));
+	    AliDebug(2,Form("Check for centrality 5: value v2 %f, contamination %f\n",fv2contamination[5]->Eval(track->Pt()),fContamination[5]->Eval(track->P())));
 	    fContaminationv2->Fill(valuefractioncont[1],valuefractioncont[0],v2,weight);
 	  }
 	}     

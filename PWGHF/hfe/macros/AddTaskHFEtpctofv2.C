@@ -11,7 +11,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int
   // 0.156 30-40%, sigma=1.2
   // 0.19 40-50%, sigma=1.2
   // 0.2 50-60%
-  // 0.2 60-80% 
+  // 0.2 60-80% list_t65536f16TPC110r60p80s11km0ITS4C36Pi2DCAr100z200TOF30TPCe50V1D0er8i0t-20t50
   tpcdedx[0]=-0.2;
   tpcdedx[1]=-0.15;
   tpcdedx[2]=-0.1;
@@ -89,7 +89,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int
   //task->SetBinCentralityLess(7,80.0);
 
   task->SetHFEVZEROEventPlane(0x0);
-  task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
+  //task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
   //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);
   
   mgr->AddTask(task);
