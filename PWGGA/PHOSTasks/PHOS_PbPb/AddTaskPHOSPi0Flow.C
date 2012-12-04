@@ -19,13 +19,43 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 
   AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow(Form("%sTask", name));
 
-  // Reduce binning for reduece memory footprint
-  const int nbins = 3;
-  Double_t cbin[nbins+1] = {0., 10., 40., 80.};
-  TArrayD tbin(nbins+1, cbin);
-  Int_t    nMixed[nbins] = {4, 20, 50};
-  TArrayI tNMixed(nbins, nMixed);
-  task->SetCentralityBinning(tbin, tNMixed);
+  // Binning
+  // Central:
+  if( AliVEvent::kCentral == offlineTriggerMask ) {
+    const int nbins = 3;
+    Double_t cbin[nbins+1] = {0., 5., 10.};
+    TArrayD tbin(nbins+1, cbin);
+    Int_t    nMixed[nbins] = {6, 6};
+    TArrayI tNMixed(nbins, nMixed);
+    task->SetCentralityBinning(tbin, tNMixed);
+  }
+  // SemiCentral:
+  if( AliVEvent::kSemiCentral == offlineTriggerMask ) {
+    const int nbins = 4;
+    Double_t cbin[nbins+1] = {10., 20., 30., 40., 50.};
+    TArrayD tbin(nbins+1, cbin);
+    Int_t    nMixed[nbins] = {40, 40, 40, 40};
+    TArrayI tNMixed(nbins, nMixed);
+    task->SetCentralityBinning(tbin, tNMixed);
+  }
+  // MB:
+  if( AliVEvent::kMB == offlineTriggerMask ) {
+    const int nbins = 7;
+    Double_t cbin[nbins+1] = {0., 5., 10., 20, 30., 40., 50., 80.};
+    TArrayD tbin(nbins+1, cbin);
+    Int_t    nMixed[nbins] = {6, 6, 40, 40, 40, 40, 80};
+    TArrayI tNMixed(nbins, nMixed);
+    task->SetCentralityBinning(tbin, tNMixed);
+  }
+  // PHOS Trigger:
+  if( AliVEvent::kPHOSPb == offlineTriggerMask ) {
+    const int nbins = 7;
+    Double_t cbin[nbins+1] = {0., 5., 10., 20, 30., 40., 50., 80.};
+    TArrayD tbin(nbins+1, cbin);
+    Int_t    nMixed[nbins] = {6, 6, 40, 40, 40, 40, 80};
+    TArrayI tNMixed(nbins, nMixed);
+    task->SetCentralityBinning(tbin, tNMixed);
+  }
 
   //task->SetEventMixingRPBinning(9);
   //task->SetMixingArraysLength(10);
