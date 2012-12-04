@@ -8,7 +8,7 @@ class AliRDHFCutsDStartoKpipi;
 void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int_t myHarmonic, 
 		    Bool_t bDoQC, Bool_t bDoSPTPC, Bool_t bDoSPVZERO, Bool_t bDoEPTPC, Bool_t bDoEPVZERO, 
 		    Int_t ptBinWidth, Double_t gapTPC, Double_t etaVZERO1, Double_t etaVZERO2, Double_t etaVZERO3, Double_t etaVZERO4,
-		    Bool_t bOldApproach=kFALSE, Bool_t shrinkSP=kFALSE, Bool_t swapAssumption=kFALSE ) {
+		    Bool_t bOldApproach=kFALSE, Bool_t shrinkSP=kFALSE, Bool_t swapAssumption=kFALSE, Int_t nTPCClusters=70 ) {
   TFile *filecuts = TFile::Open( fileNameCuts.Data() );
   if( (!filecuts) || ( filecuts && !filecuts->IsOpen()) ){
     AliFatal("Could not open cuts file.");
@@ -29,7 +29,7 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
   cutsRFPTPC->SetParamType(AliFlowTrackCuts::kGlobal);
   cutsRFPTPC->SetPtRange(0.2,5.);
   cutsRFPTPC->SetEtaRange(-0.8,0.8);
-  cutsRFPTPC->SetMinNClustersTPC(70);
+  cutsRFPTPC->SetMinNClustersTPC(nTPCClusters);
   cutsRFPTPC->SetMinChi2PerClusterTPC(0.2);
   cutsRFPTPC->SetMaxChi2PerClusterTPC(4.0);
   cutsRFPTPC->SetAcceptKinkDaughters(kFALSE);
