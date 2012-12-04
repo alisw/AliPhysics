@@ -246,7 +246,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   
   PostData(1, fOutputList);
-  PostData(2, fTree);
+  //  PostData(2, fTree);
 }
 
 //________________________________________________________________________
@@ -350,7 +350,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fCaloClustersNew)
     fCaloClustersNew->Clear();
   PostData(1, fOutputList);
-  PostData(2, fTree);
+  //PostData(2, fTree);
 }      
 
 //________________________________________________________________________
