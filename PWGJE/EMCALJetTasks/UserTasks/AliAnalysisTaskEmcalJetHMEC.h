@@ -65,24 +65,24 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
 
   AliESDEvent           *fESD;    //! ESD object
-  AliEventPoolManager   *fPoolMgr;
+  AliEventPoolManager   *fPoolMgr; //!
   TList                 *fOutputList; //! Output list
   TH1                   *fHistTrackPt; //! Pt spectrum
-  TH1                   *fHistCentrality;
-  TH2                   *fHistJetEtaPhi;
-  TH2                   *fHistTrackEtaPhi[7];
-  TH2                   *fHistJetHEtaPhi;
+  TH1                   *fHistCentrality;//!
+  TH2                   *fHistJetEtaPhi;//!
+  TH2                   *fHistTrackEtaPhi[7];//!
+  TH2                   *fHistJetHEtaPhi;//!
 
-  TH1                   *fHistJetPt[6];
-  TH1                   *fHistJetPtBias[6];
-  TH1                   *fHistLeadJetPt[6];
-  TH1                   *fHistLeadJetPtBias[6];
-  TH1                   *fHistJetPtTT[6];
-  TH2                   *fHistJetH[6][5][3];
-  TH2                   *fHistJetHBias[6][5][3];
-  TH2                   *fHistJetHTT[6][5][3];
+  TH1                   *fHistJetPt[6]; //!
+  TH1                   *fHistJetPtBias[6];//!
+  TH1                   *fHistLeadJetPt[6];//!
+  TH1                   *fHistLeadJetPtBias[6];//!
+  TH1                   *fHistJetPtTT[6];//!
+  TH2                   *fHistJetH[6][5][3];//!
+  TH2                   *fHistJetHBias[6][5][3];//!
+  TH2                   *fHistJetHTT[6][5][3];//!
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
-  THnSparse             *fhnJH;      //Fg events matrix
+  THnSparse             *fhnJH;      //!Fg events matrix
 
  private:
    
