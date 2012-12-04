@@ -162,14 +162,14 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
 
   fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
 
-  fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,640,-3.2,3.2);
-  fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,640,-1.6,4.8);
+  fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
+  fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
   char name[200];
 
   for(Int_t ipta=0; ipta<7; ++ipta){
     sprintf(name, "fHistTrackEtaPhi_%i", ipta);
-    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,640,0.0,2.0*TMath::Pi());
+    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,720,0.0,2.0*TMath::Pi());
     fOutputList->Add(fHistTrackEtaPhi[ipta]);
 
   }
@@ -198,15 +198,15 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
 	sprintf(name,"fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
-	fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+	fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetH[icent][iptjet][ieta]);
 
 	sprintf(name,"fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
-	fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+	fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetHBias[icent][iptjet][ieta]);
 
 	sprintf(name,"fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);   
-	fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+	fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetHTT[icent][iptjet][ieta]);
 
       }
@@ -374,6 +374,12 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
     return;
   }
 
+  Double_t fvertex[3]={0,0,0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
+  Double_t zVtx=fvertex[2];
+
+  if(fabs(zVtx)>10.0)
+    return;
 
   fHistCentrality->Fill(fcent);
   Int_t centbin = GetCentBin(fcent);
@@ -392,6 +398,11 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   const Int_t Ntracks=tracks->GetEntries();
 
   jets= dynamic_cast<TClonesArray*>(list->FindObject(fJetsName));
+  if (!jets) {
+    AliError(Form("Pointer to tracks %s == 0", fJetsName.Data() ));
+    return;
+  }
+
   const Int_t Njets = jets->GetEntries();
  
   //Leticia's loop to find hardest track
@@ -547,9 +558,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
   //delete tracks;
 
-  Double_t fvertex[3]={0,0,0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
-  Double_t zVtx=fvertex[2];
 
   if(fDoEventMixing>0){
     
@@ -766,7 +774,7 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 
   case 5:
       label = "deltaPhi";
-      nbins = 64;
+      nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
       break;   
