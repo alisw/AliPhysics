@@ -60,7 +60,9 @@ Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
   iClu = iClu%1000; //GetHMPIDcluIdx -> 1e+6*ch + 1e+3*clusize + cluIdx;
   point.SetVolumeID(AliGeomManager::LayerToVolUID(AliGeomManager::kHMPID,iCham));//layer and chamber number
   TClonesArray *pArr=(TClonesArray*)(*fClu)[iCham];
+  if(!pArr) return kFALSE;
   AliHMPIDCluster *pClu=(AliHMPIDCluster*)pArr->UncheckedAt(iClu);//get pointer to cluster
+  if(!pClu) return kFALSE;
   Float_t xyz[3];
   pClu->GetGlobalXYZ(xyz);
   Float_t cov[6];
