@@ -46,9 +46,12 @@ ClassImp(AliAnaChargedParticles)
     AliAnaCaloTrackCorrBaseClass(),
     fPdg(0),           fFillPileUpHistograms(0),
     fhNtracks(0),      fhPt(0),
-    fhPhiNeg(0),       fhEtaNeg(0), 
+    fhPhiNeg(0),       fhEtaNeg(0),
     fhPhiPos(0),       fhEtaPos(0), 
     fhEtaPhiPos(0),    fhEtaPhiNeg(0),
+    fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
+    fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
+    fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
     //MC
     fhPtPion(0),       fhPhiPion(0),         fhEtaPion(0),
     fhPtProton(0),     fhPhiProton(0),       fhEtaProton(0),
@@ -74,6 +77,11 @@ ClassImp(AliAnaChargedParticles)
   for(Int_t i = 0; i < 3; i++)
   {
     fhPtDCA               [i] = 0 ;
+    
+    fhPtDCASPDRefit       [i] = 0 ;
+    fhPtDCANoSPDRefit     [i] = 0 ;
+    fhPtDCANoSPDNoRefit   [i] = 0 ;
+
     //fhPtDCAVtxOutBC0      [i] = 0 ;
     fhPtDCAPileUp         [i] = 0 ;
     //fhPtDCAVtxOutBC0PileUp[i] = 0 ;
@@ -147,6 +155,49 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiNeg->SetXTitle("#eta ");
   fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
+  
+  fhPtSPDRefit  = new TH1F ("hPtSPDRefit","p_T distribution of tracks with SPD and ITS refit", nptbins,ptmin,ptmax);
+  fhPtSPDRefit->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtSPDRefit);
+
+  fhEtaPhiSPDRefitPt02  = new TH2F ("hEtaPhiSPDRefitPt02","eta vs phi of tracks with SPD and ITS refit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiSPDRefitPt02->SetXTitle("#eta ");
+  fhEtaPhiSPDRefitPt02->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiSPDRefitPt02);
+  
+  fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","eta vs phi of tracks with SPD and ITS refit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiSPDRefitPt3->SetXTitle("#eta ");
+  fhEtaPhiSPDRefitPt3->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiSPDRefitPt3);
+
+  fhPtNoSPDRefit  = new TH1F ("hPtNoSPDRefit","p_T distribution of constrained tracks no SPD and with ITSRefit", nptbins,ptmin,ptmax);
+  fhPtNoSPDRefit->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNoSPDRefit);
+  
+  fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","eta vs phi of constrained tracks no SPD and with ITSRefit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDRefitPt02->SetXTitle("#eta ");
+  fhEtaPhiNoSPDRefitPt02->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDRefitPt02);
+  
+  fhEtaPhiNoSPDRefitPt3  = new TH2F ("hEtaPhiNoSPDRefitPt3","eta vs phi of of constrained tracks no SPD and with ITSRefit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDRefitPt3->SetXTitle("#eta ");
+  fhEtaPhiNoSPDRefitPt3->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDRefitPt3);
+  
+  fhPtNoSPDNoRefit  = new TH1F ("hPtNoSPDNoRefit","p_T distribution of constrained tracks with no SPD requierement and without ITSRefit", nptbins,ptmin,ptmax);
+  fhPtNoSPDNoRefit->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNoSPDNoRefit);
+  
+  fhEtaPhiNoSPDNoRefitPt02  = new TH2F ("hEtaPhiNoSPDNoRefitPt02","eta vs phi of constrained tracks with no SPD requierement and without ITSRefit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDNoRefitPt02->SetXTitle("#eta ");
+  fhEtaPhiNoSPDNoRefitPt02->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDNoRefitPt02);
+  
+  fhEtaPhiNoSPDNoRefitPt3  = new TH2F ("hEtaPhiNoSPDNoRefitPt3","eta vs phi of constrained tracks with no SPD requierement and without ITSRefit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDNoRefitPt3->SetXTitle("#eta ");
+  fhEtaPhiNoSPDNoRefitPt3->SetYTitle("#phi (rad)");
+  outputContainer->Add(fhEtaPhiNoSPDNoRefitPt3);
+
   
 //  fhProductionVertexBC      = new TH1F("hProductionVertexBC", "tracks production vertex bunch crossing ", 18 , -9 , 9 ) ;
 //  fhProductionVertexBC->SetYTitle("# tracks");
@@ -250,6 +301,27 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtDCA[i]->SetXTitle("p_{T} (GeV/c)");
     fhPtDCA[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCA[i]);
+    
+    fhPtDCASPDRefit[i]  = new TH2F(Form("hPtDCA%sSPDRefit",dcaName[i].Data()),
+                                        Form("Track DCA%s vs p_{T} distribution of tracks with SPD and ITS refit",dcaName[i].Data()),
+                                        nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+    fhPtDCASPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCASPDRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    outputContainer->Add(fhPtDCASPDRefit[i]);
+
+    fhPtDCANoSPDRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDRefit",dcaName[i].Data()),
+                                 Form("Track DCA%s vs p_{T} distributionof constrained tracks no SPD and with ITSRefit",dcaName[i].Data()),
+                                 nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+    fhPtDCANoSPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCANoSPDRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    outputContainer->Add(fhPtDCANoSPDRefit[i]);
+
+    fhPtDCANoSPDNoRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDNoRefit",dcaName[i].Data()),
+                           Form("Track DCA%s vs p_{T} distribution, constrained tracks with no SPD requierement and without ITSRefit",dcaName[i].Data()),
+                           nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+    fhPtDCANoSPDNoRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCANoSPDNoRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    outputContainer->Add(fhPtDCANoSPDNoRefit[i]);
     
     fhPtDCATOFBC0[i]  = new TH2F(Form("hPtDCA%sTOFBC0",dcaName[i].Data()),
                            Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
@@ -633,6 +705,59 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       fhPtTOFStatus0    ->Fill(track->Pt());
       fhEtaPhiTOFStatus0->Fill(track->Eta(),track->Phi());
+    }
+    
+    Bool_t bITSRefit    = (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
+    Bool_t bConstrained = kFALSE;
+    if(aodTrack) bConstrained = aodTrack->IsGlobalConstrained();
+    
+    //printf("Track %d, pt %2.2f, eta %2.2f, phi %2.2f, SPDRefit %d, refit %d, dcaCons %2.2f\n",
+    //       i, track->Pt(), track->Eta(), track->Phi(), bConstrained, bITSRefit, dcaCons);
+    
+    if(bConstrained)
+    {      
+      if(bITSRefit)
+      {
+        fhPtNoSPDRefit->Fill(track->Pt());
+        if(track->Pt() < 2)fhEtaPhiNoSPDRefitPt02->Fill(track->Eta(),track->Phi());
+        if(track->Pt() > 3)fhEtaPhiNoSPDRefitPt3 ->Fill(track->Eta(),track->Phi());
+        
+        if(dcaCons == -999)
+        {
+          fhPtDCANoSPDRefit[0]->Fill(p3.Pt(), dca[0]);
+          fhPtDCANoSPDRefit[1]->Fill(p3.Pt(), dca[1]);
+        }
+        else
+          fhPtDCANoSPDRefit[2]->Fill(p3.Pt(), dcaCons);
+        
+      }
+      else
+      {
+        fhPtNoSPDNoRefit->Fill(track->Pt());
+        if(track->Pt() < 2)fhEtaPhiNoSPDNoRefitPt02->Fill(track->Eta(),track->Phi());
+        if(track->Pt() > 3)fhEtaPhiNoSPDNoRefitPt3 ->Fill(track->Eta(),track->Phi());
+        if(dcaCons == -999)
+        {
+          fhPtDCANoSPDNoRefit[0]->Fill(p3.Pt(), dca[0]);
+          fhPtDCANoSPDNoRefit[1]->Fill(p3.Pt(), dca[1]);
+        }
+        else
+          fhPtDCANoSPDNoRefit[2]->Fill(p3.Pt(), dcaCons);
+
+      }
+    }
+    else
+    {
+      fhPtSPDRefit->Fill(track->Pt());
+      if(track->Pt() < 2)fhEtaPhiSPDRefitPt02->Fill(track->Eta(),track->Phi());
+      if(track->Pt() > 3)fhEtaPhiSPDRefitPt3 ->Fill(track->Eta(),track->Phi());
+      if(dcaCons == -999)
+      {
+        fhPtDCASPDRefit[0]->Fill(p3.Pt(), dca[0]);
+        fhPtDCASPDRefit[1]->Fill(p3.Pt(), dca[1]);
+      }
+      else
+        fhPtDCASPDRefit[2]->Fill(p3.Pt(), dcaCons);
     }
     
     //Keep only particles identified with fPdg
