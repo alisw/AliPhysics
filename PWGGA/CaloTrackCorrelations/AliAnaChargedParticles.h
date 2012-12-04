@@ -57,6 +57,18 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiPos;   //! eta vs phi distribution of positive charge  
   TH2F * fhEtaPhiNeg;   //! eta vs phi distribution of negative charge
   
+  TH1F * fhPtSPDRefit;     //! pT distribution of tracks with SPD and ITS refit
+  TH1F * fhPtNoSPDRefit;   //! pT distribution of constrained tracks no SPD and with ITSRefit
+  TH1F * fhPtNoSPDNoRefit; //! pT distribution of constrained tracks with no SPD requierement and without ITSRefit
+
+  TH2F * fhEtaPhiSPDRefitPt02;     //! eta-phi distribution of tracks with SPD and ITS refit, 0 < pT < 2 GeV
+  TH2F * fhEtaPhiNoSPDRefitPt02;   //! eta-phi distribution of constrained tracks no SPD and with ITSRefit,  0 < pT < 2 GeV
+  TH2F * fhEtaPhiNoSPDNoRefitPt02; //! eta-phi distribution of constrained tracks with no SPD requierement and without ITSRefit,  0 < pT < 2 GeV
+
+  TH2F * fhEtaPhiSPDRefitPt3;     //! eta-phi distribution of tracks with SPD and ITS refit, pT > 3 GeV
+  TH2F * fhEtaPhiNoSPDRefitPt3;   //! eta-phi distribution of constrained tracks no SPD and with ITSRefit,  pT > 3 GeV
+  TH2F * fhEtaPhiNoSPDNoRefitPt3; //! eta-phi distribution of constrained tracks with no SPD requierement and without ITSRefit,  pT > 3 GeV
+
   //MC
   TH1F * fhPtPion;      //! pT distribution
   TH2F * fhPhiPion;     //! phi distribution vs pT
@@ -95,6 +107,11 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
 //  TH1F * fhProductionVertexBC;           //!  check BC of production vertex
 
   TH2F * fhPtDCA[3];                     //! DCA (xy,z,constrained) of all tracks
+  
+  TH2F * fhPtDCASPDRefit[3];             //! DCA (xy,z,constrained) of tracks with SPD and ITS refit
+  TH2F * fhPtDCANoSPDRefit[3];           //! DCA (xy,z,constrained) of constrained tracks no SPD and with ITSRefit
+  TH2F * fhPtDCANoSPDNoRefit[3];         //! DCA (xy,z,constrained) of constrained tracks with no SPD requierement and without ITSRefit
+
   //TH2F * fhPtDCAVtxOutBC0[3];            //! DCA (xy,z,constrained) of all tracks, vertex BC!=0
   TH2F * fhPtDCAPileUp[3];               //! DCA (xy,z,constrained) of all tracks, SPD pile-up
   //TH2F * fhPtDCAVtxOutBC0PileUp[3];      //! DCA (xy,z,constrained) of all tracks, vertex BC!=0, SPD pile-up
@@ -111,7 +128,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
-  ClassDef(AliAnaChargedParticles,5)
+  ClassDef(AliAnaChargedParticles,6)
 
 } ;
 
