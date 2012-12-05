@@ -517,8 +517,9 @@ void AliHMPIDv3::DefineOpticalProperties()
   AliDebug(1,"");    
 
 // Optical properties definition.
-  const Int_t kNbins=30;       //number of photon energy points
-  Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
+  const Int_t kNbins=30;                 //number of photon energy points
+  Float_t emin=5.5,emax=8.5;             //Photon energy range,[eV]
+  Float_t deltaE = (emax - emin)/kNbins;
   Float_t aEckov [kNbins]; 
   Double_t dEckov [kNbins]; 
   Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins];
@@ -541,7 +542,7 @@ void AliHMPIDv3::DefineOpticalProperties()
   Bool_t isFlatIdx=title.Contains("FlatIdx"); 
   
   for(Int_t i=0;i<kNbins;i++){
-    Float_t eV=emin+0.1*i;  //Ckov energy in eV
+    Float_t eV=emin+deltaE*i;  //Ckov energy in eV
     aEckov [i] =1e-9*eV;    //Ckov energy in GeV
     dEckov [i] = aEckov[i];
     aAbsRad[i]=pRaAF->Eval(eV); (isFlatIdx)? aIdxRad[i]=1.292: aIdxRad[i]=pRaIF->Eval(eV,20);     

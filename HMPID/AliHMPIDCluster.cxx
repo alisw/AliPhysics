@@ -39,7 +39,7 @@ void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
   //get L->T cs matrix for a given chamber
   const TGeoHMatrix *t2l= AliGeomManager::GetTracking2LocalMatrix(volId);
 
-  fparam = AliHMPIDParam::Instance();
+  fParam = AliHMPIDParam::Instance();
 
   //transformation from the pad cs to local
   xL -= 0.5*fParam->SizeAllX();      //size of all pads with dead zones included
