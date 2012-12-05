@@ -130,7 +130,7 @@ void AliAnalysisTaskSingleMu::MyUserCreateOutputObjects()
   
   Int_t nPtBins = 80;
   Double_t ptMin = 0., ptMax = 80.;
-  TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
+  TString ptName("Pt"), ptTitle("p_{T}"), ptUnits("GeV/c");
   
   Int_t nEtaBins = 25;
   Double_t etaMin = -4.5, etaMax = -2.;
@@ -341,7 +341,6 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
           canKine[igrid] = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
           canKine[igrid]->Divide(2,2);
           legKine[igrid] = new TLegend(0.6, 0.6, 0.8, 0.8);
-          igroup2++;
         }
         for ( Int_t iproj=0; iproj<4; ++iproj ) {
           canKine[igrid]->cd(iproj+1);
@@ -379,48 +378,56 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", 1, gridSparseArray[igrid]->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
   } // loop on container steps
 
-  // Plot charge asymmetry or mu+/mu-
-  TString basePlotName = plotChargeAsymmetry ? "ChargeAsymmetry" : "ChargeRatio";
-  for ( Int_t igrid=0; igrid<2; igrid++ ) {
-    if ( ! canKine[igrid] ) continue;
-    TList* padList = canKine[igrid]->GetListOfPrimitives();
-    currName = canKine[igrid]->GetName();
-    currName.Append(Form("_%s", basePlotName.Data()));
-    can = new TCanvas(currName.Data(),currName.Data(),canKine[igrid]->GetWindowTopX(),igroup2*yshift,600,600);
-    can->Divide(2,2);
-    for ( Int_t ipad=0; ipad<padList->GetEntries(); ipad++ ) {
-      TPad* pad = dynamic_cast<TPad*> (padList->At(ipad));
-      if ( ! pad ) continue;
-      TList* histoList = pad->GetListOfPrimitives();
-      can->cd(ipad+1);
-      for ( Int_t iobj=0; iobj<histoList->GetEntries(); iobj++ ) {
-        currName = histoList->At(iobj)->GetName();
-        if ( ! histoList->At(iobj)->InheritsFrom(TH1::Class()) || ! currName.Contains(fChargeKeys->At(1)->GetName()) ) continue;
-        histoName = currName;
-        histoName.ReplaceAll(fChargeKeys->At(1)->GetName(),"");
-        histoName.Append(Form("_%s", basePlotName.Data()));
-        currName.ReplaceAll(fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
-        TH1* auxHisto = dynamic_cast<TH1*> (histoList->FindObject(currName.Data()));
-        if ( ! auxHisto ) continue;        
-        TH1* histo = static_cast<TH1*> (histoList->At(iobj)->Clone(histoName.Data()));
-        if ( plotChargeAsymmetry ) {
-          histo->Add(auxHisto, -1.);
-          // h2 + h1 = 2xh2 + (h1-h2)
-          auxHisto->Add(auxHisto, histo, 2.);
-        }
-        histo->Divide(auxHisto);
-        histo->SetMarkerStyle(20);
-        TString axisTitle = plotChargeAsymmetry ? Form("(%s - %s) / (%s + %s)", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName(), fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName()) : Form("%s / %s", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
-        axisTitle.ReplaceAll("MuPlus","#mu^{+}");
-        axisTitle.ReplaceAll("MuMinus","#mu^{-}");
-        histo->GetYaxis()->SetTitle(axisTitle.Data());
-        histo->SetStats(kFALSE);
-        drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "e" : "esames";
-        histo->Draw(drawOpt.Data());
-      } // loop on histos
-      gPad->Update();
-    } // loop on pads
-  } // loop on container steps
+  // Plot summed histo and charge asymmetry or mu+/mu-
+  for ( Int_t itype=0; itype<2; itype++ ) {
+    TString basePlotName = "TotalCharge";
+    igroup2++;
+    if ( itype == 0 ) basePlotName = plotChargeAsymmetry ? "ChargeAsymmetry" : "ChargeRatio";
+    for ( Int_t igrid=0; igrid<2; igrid++ ) {
+      if ( ! canKine[igrid] ) continue;
+      TList* padList = canKine[igrid]->GetListOfPrimitives();
+      currName = canKine[igrid]->GetName();
+      currName.Append(Form("_%s", basePlotName.Data()));
+      can = new TCanvas(currName.Data(),currName.Data(),canKine[igrid]->GetWindowTopX(),igroup2*yshift,600,600);
+      can->Divide(2,2);
+      for ( Int_t ipad=0; ipad<padList->GetEntries(); ipad++ ) {
+        TPad* pad = dynamic_cast<TPad*> (padList->At(ipad));
+        if ( ! pad ) continue;
+        TList* histoList = pad->GetListOfPrimitives();
+        can->cd(ipad+1);
+        if ( itype == 1 ) gPad->SetLogy(pad->GetLogy());
+        for ( Int_t iobj=0; iobj<histoList->GetEntries(); iobj++ ) {
+          currName = histoList->At(iobj)->GetName();
+          if ( ! histoList->At(iobj)->InheritsFrom(TH1::Class()) || ! currName.Contains(fChargeKeys->At(1)->GetName()) ) continue;
+          histoName = currName;
+          histoName.ReplaceAll(fChargeKeys->At(1)->GetName(),"");
+          histoName.Append(Form("_%s", basePlotName.Data()));
+          currName.ReplaceAll(fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
+          TH1* auxHisto = dynamic_cast<TH1*> (histoList->FindObject(currName.Data()));
+          if ( ! auxHisto ) continue;
+          TH1* histo = static_cast<TH1*> (histoList->At(iobj)->Clone(histoName.Data()));
+          if ( itype == 0 ) {
+            if ( plotChargeAsymmetry ) {
+              histo->Add(auxHisto, -1.);
+              // h2 + h1 = 2xh2 + (h1-h2)
+              auxHisto->Add(auxHisto, histo, 2.);
+            }
+            histo->Divide(auxHisto);
+            TString axisTitle = plotChargeAsymmetry ? Form("(%s - %s) / (%s + %s)", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName(), fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName()) : Form("%s / %s", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
+            axisTitle.ReplaceAll("MuPlus","#mu^{+}");
+            axisTitle.ReplaceAll("MuMinus","#mu^{-}");
+            histo->GetYaxis()->SetTitle(axisTitle.Data());
+            histo->SetStats(kFALSE);
+          }
+          else histo->Add(auxHisto);
+          histo->SetMarkerStyle(20);
+          drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "e" : "esames";
+          histo->Draw(drawOpt.Data());
+        } // loop on histos
+        gPad->Update();
+      } // loop on pads
+    } // loop on container steps
+  } // loop on histo type
   
   
   //////////////////////
