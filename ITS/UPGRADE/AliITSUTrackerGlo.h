@@ -57,7 +57,6 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return (AliITSUSeed*)fSeedsLr[lr].UncheckedAt(sID);} //RS TOCHECK
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
-  void                   KillSeed(Int_t ilr, Int_t id) {} // todo
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
   void                   AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr);

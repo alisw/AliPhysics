@@ -58,7 +58,7 @@ void readClusters(){
       //
       for (int icl=0;icl<nClu;icl++) {
 	AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
-	cl->Print();
+	cl->Print("glo");
 	Double_t loc[3]={cl->GetX(),cl->GetY(),cl->GetZ()}; 
 	Double_t glob[3]; 
 	gm->LocalToGlobal(cl->GetVolumeId(),loc,glob);

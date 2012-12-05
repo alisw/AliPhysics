@@ -9,6 +9,8 @@ using namespace AliITSUAux;
 class AliITSUSeed: public AliExternalTrackParam
 {
  public:
+  enum {kKilled=BIT(14)};
+  //
   AliITSUSeed();
   AliITSUSeed(const AliITSUSeed& src);
   AliITSUSeed &operator=(const AliITSUSeed &src);
@@ -20,6 +22,7 @@ class AliITSUSeed: public AliExternalTrackParam
   void            SetLrClusterID(UInt_t id)              {fClID = id;}
   void            SetParent(TObject* par)                {fParent = par;}
   void            SetChi2Cl(Double_t v)                  {fChi2Glo += fChi2Cl= v;}
+  void            Kill(Bool_t v=kTRUE)                   {SetBit(kKilled, v);}
   //
   UInt_t          GetLrClusterID()                 const {return fClID;}
   Int_t           GetLrCluster(Int_t &lr)          const {return UnpackCluster(fClID,lr);}
@@ -30,8 +33,14 @@ class AliITSUSeed: public AliExternalTrackParam
   UShort_t        GetHitsPattern()                 const {return fHitsPattern;}
   Float_t         GetChi2Cl()                      const {return fChi2Cl;}
   Float_t         GetChi2Glo()                     const {return fChi2Glo;}
+  Float_t         GetChi2GloNrm()                  const;
+  Bool_t          IsKilled()                       const {return TestBit(kKilled);}
   //
   TObject*        GetParent()                      const {return fParent;}
+  //
+  virtual Bool_t  IsSortable()                     const {return kTRUE;}
+  virtual Bool_t  IsEqual(const TObject* obj)      const;
+  virtual Int_t	  Compare(const TObject* obj)      const;
   //
  protected:
   UShort_t              fHitsPattern;       // bit pattern of hits

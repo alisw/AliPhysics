@@ -34,8 +34,9 @@ const Double_t AliITSURecoParam::fgkNSigmaRoadY                   = 5.;
 const Double_t AliITSURecoParam::fgkNSigmaRoadZ                   = 5.; 
 const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1.;//1000e-4;
 const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1.;//1000e-4;
-const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;;
+const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;
 const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
+const Double_t AliITSURecoParam::fgkMissPenalty                   = 3.0;
 //
 // hardwired params for TPC-ITS border layer
 const Double_t AliITSURecoParam::fgkTPCITSWallRMin                = 50.;
@@ -64,6 +65,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
   ,fMaxTr2ClChi2(0)
+  ,fMissPenalty(0)
 {
   // def c-tor
   SetName("ITS");
@@ -84,6 +86,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
   ,fMaxTr2ClChi2(0)
+  ,fMissPenalty(0)
 {
   // def c-tor
   SetName("ITS");
@@ -99,6 +102,7 @@ AliITSURecoParam::~AliITSURecoParam()
   delete[] fSigmaY2;
   delete[] fSigmaZ2;
   delete[] fMaxTr2ClChi2;
+  delete[] fMissPenalty;
 }
 
 //_____________________________________________________________________________
@@ -140,12 +144,14 @@ void  AliITSURecoParam::SetNLayers(Int_t n)
   fSigmaY2 = new Double_t[n];
   fSigmaZ2 = new Double_t[n];
   fMaxTr2ClChi2 = new Double_t[n];
+  fMissPenalty  = new Double_t[n];
   //
   for (int i=n;i--;) {
     fTanLorentzAngle[i] = fgkTanLorentzAngle;
     fSigmaY2[i] = fgkSigmaRoadY*fgkSigmaRoadY;
     fSigmaZ2[i] = fgkSigmaRoadZ*fgkSigmaRoadZ;
     fMaxTr2ClChi2[i] = fgkMaxTr2ClChi2;
+    fMissPenalty[i]  = fgkMissPenalty;
   }
   //
 }
@@ -205,6 +211,7 @@ void AliITSURecoParam::Print(Option_t *opt) const
     printf("%-30s\t:","fSigmaY2");          for (int i=0;i<fNLayers;i++) printf(" %+.2e",fSigmaY2[i]); printf("\n");
     printf("%-30s\t:","fSigmaZ2");          for (int i=0;i<fNLayers;i++) printf(" %+.2e",fSigmaZ2[i]); printf("\n");
     printf("%-30s\t:","fMaxTr2ClChi2");     for (int i=0;i<fNLayers;i++) printf(" %+.2e",fMaxTr2ClChi2[i]); printf("\n");
+    printf("%-30s\t:","fMissPenalty");      for (int i=0;i<fNLayers;i++) printf(" %+.2e",fMissPenalty[i]); printf("\n");
   }
   //
 }

@@ -2,7 +2,8 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliLog.h"
 #include <TGeoMatrix.h>
-#include <TMath.h>
+#include <TString.h>
+
 using namespace TMath;
 
 ClassImp(AliITSUClusterPix)
@@ -57,16 +58,18 @@ TGeoHMatrix* AliITSUClusterPix::GetMatrix(Bool_t ) const
 }
 
 //______________________________________________________________________________
-void AliITSUClusterPix::Print(Option_t* /*option*/) const
+void AliITSUClusterPix::Print(Option_t* option) const
 {
   // Print cluster information.
+  TString str = option; 
+  str.ToLower();
   printf("Cl.in mod %5d, nx:%3d nz:%3d |Err^2:%.3e %.3e %+.3e |",GetVolumeId(),GetNx(),GetNz(),
 	 GetSigmaY2(),GetSigmaZ2(),GetSigmaYZ());
   printf("XYZ: (%+.4e %+.4e %+.4e ",GetX(),GetY(),GetZ());
   if      (IsFrameLoc()) printf("LOC)");
   else if (IsFrameGlo()) printf("GLO)");
   else if (IsFrameTrk()) printf("TRK)");
-  if (!IsFrameGlo() && fgGeom) {
+  if (str.Contains("glo") && !IsFrameGlo() && fgGeom) {
     Float_t g[3];
     GetGlobalXYZ(g);
     printf(" (%+.4e %+.4e %+.4e GLO)",g[0],g[1],g[2]);

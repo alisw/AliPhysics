@@ -28,8 +28,8 @@ using namespace TMath;
 
 
 const Double_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
-const Double_t  AliITSUSimuParam::fgkPixThreshDefault = 300.;
-const Double_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 30.;
+const Double_t  AliITSUSimuParam::fgkPixThreshDefault = 100.;
+const Double_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 10.;
 const Double_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 2.;
 const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kOldCouplingPix;
 const Double_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;

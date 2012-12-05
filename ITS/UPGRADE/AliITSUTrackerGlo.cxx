@@ -215,7 +215,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
     int nSeedsUp = GetNSeeds(ilaUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
       AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
-      seedUC = *seedU;
+      seedUC = *seedU;                          // its copy will be prolonged
       seedUC.SetParent(seedU);
       // go till next active layer
       AliInfo(Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
@@ -223,12 +223,12 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	//
 	AliInfo("Transport failed");
 	// Check if the seed satisfies to track definition
-	if (NeedToKill(&seedUC,kTransportFailed)) KillSeed(ilaUp,isd); 
+	if (NeedToKill(&seedUC,kTransportFailed)) seedU->Kill(); 
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
       }
       AliITSURecoLayer* lrA = fITS->GetLayerActive(ila);
       if (!GetRoadWidth(&seedUC, ila)) { // failed to find road width on the layer
-	if (NeedToKill(&seedUC,kRWCheckFailed)) KillSeed(ilaUp,isd); 
+	if (NeedToKill(&seedUC,kRWCheckFailed)) seedU->Kill(); 
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
@@ -394,18 +394,18 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
-      if (goodCl) printf("Loose good cl: Failed propagation\n");
+      if (goodCl) {printf("Loose good cl: Failed propagation. |"); cl->Print();}
       return kStopSearchOnSensor; // propagation failed, seedT is intact
     }
   }
-  double dy = cl->GetY() - track->GetY();
+  double dy = cl->GetY()-track->GetY();
   double dz = cl->GetZ()-track->GetZ();
   //
   double dy2 = dy*dy;
   double tol2 = (track->GetSigmaY2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY(); // RS TOOPTIMIZE
   if (dy2>tol2) {                          // the clusters are sorted in Z(col) then in Y(row). 
-    if (goodCl) printf("Loose good cl: dy2=%e > tol2=%e\n",dy2,tol2);
+    if (goodCl) {printf("Loose good cl: dy2=%e > tol2=%e |",dy2,tol2); cl->Print();}
     if (dy>0) return kStopSearchOnSensor;  // No chance that other cluster of this sensor will match (all Y's will be even larger)
     else      return kClusterNotMatching;   // Other clusters may match
   }
@@ -413,7 +413,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   tol2 = (track->GetSigmaZ2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(lr))*
     AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ()*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ(); // RS TOOPTIMIZE
   if (dz2>tol2) {
-    if (goodCl) printf("Loose good cl: dz2=%e > tol2=%e\n",dz2,tol2);
+    if (goodCl) {printf("Loose good cl: dz2=%e > tol2=%e |",dz2,tol2); cl->Print();}
     return kClusterNotMatching; // Other clusters may match
   }
   //
@@ -422,13 +422,17 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Double_t cov[3]={cl->GetSigmaY2(), cl->GetSigmaYZ(), cl->GetSigmaZ2()};
   double chi2 = track->GetPredictedChi2(p,cov);
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
-    if (goodCl) printf("Loose good cl: Chi2=%e > Chi2Max=%e\n",chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr));
+    if (goodCl) {
+      printf("Loose good cl: Chi2=%e > Chi2Max=%e \n",chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)); 
+      track->Print("etp");
+      cl->Print("");
+    }
     return kClusterNotMatching;
   }
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
   if (!track->Update(p,cov)) {
-    if (goodCl) printf("Loose good cl: Failed update\n");
+    if (goodCl) {printf("Loose good cl: Failed update |"); cl->Print();}
     return kClusterNotMatching;
   }
   track->SetChi2Cl(chi2);
