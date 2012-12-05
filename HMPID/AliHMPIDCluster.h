@@ -22,7 +22,7 @@ public:
   enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kAbn,kBig,kEmp=-1};      //status flags    
       AliHMPIDCluster():AliCluster3D(),
                           fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),
-                          fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0),fParam(AliHMPIDParam::Instance())
+                          fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0),fParam(AliHMPIDParam::InstanceNoGeo())
       {
       }//ctor
   
