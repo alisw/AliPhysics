@@ -123,9 +123,45 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   Int_t aliasNotFound(0);
   Int_t valueNotFound(0);
   
+  TObjArray temporaryOut; // due to a bug in PVSS some iMon aliases cause problem
+  // we remove them for the moment.
+  temporaryOut.SetOwner(kTRUE);
+  
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber06Left/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber06Left/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber06Left/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber07Left/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber07Left/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber07Left/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber08Left/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber08Left/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber08Left/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber09Left/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber09Left/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvLeft/Chamber09Left/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber06Right/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber06Right/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber06Right/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber07Right/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber07Right/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber07Right/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber08Right/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber08Right/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber08Right/Slat12.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber09Right/Slat10.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber09Right/Slat11.actual.iMon"));
+  temporaryOut.Add(new TObjString("MchHvLvRight/Chamber09Right/Slat12.actual.iMon"));
+  
   while ( ( alias = static_cast<TObjString*>(next()) ) ) 
   {
     TString aliasName(alias->String());
+    
+    if ( temporaryOut.FindObject(alias->String().Data() ) )
+    {
+      // skip problematic aliases
+      continue;
+    }
+    
     TPair* hvPair = static_cast<TPair*>(dcsAliasMap->FindObject(aliasName.Data()));
     if (!hvPair)
     {
