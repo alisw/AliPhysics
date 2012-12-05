@@ -169,14 +169,44 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	if (fEnablePriors){
 	  GetPriors(track,priors,response->GetCurrentCentrality());
 	  
-	  // for the moment we have three cases
+	  // for the moment we have four cases
 	  // TPC+TRD      --> apply TRD propagation factors
-	  // TPC+TOF      --> apply TOF propagation factors
-	  // TPC+TRD+TOF  --> apply TOF propagation factors
-	  // apply tof matching efficiency to priors if TOF joined PID for this track
+	  // TPC+TOF      --> apply TOF propagation factors (TRD may be present)
+	  // TPC+EMCAL    --> apply EMCAL propagation factors (TRD and TOF if present)
 	  if(fUseDefaultTPCPriors) {
 	     Double_t pt=TMath::Abs(track->Pt());
-	     if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){ // TOF is the outer having prop. factors for the moment
+	     if ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL ) { // EMCAL is the outer having prop. factors for the moment
+	       // EMCal case (for the moment only in combination with TPC)
+	       // propagation factors determined from LHC11d MC (LHC12a15f)
+	       // v2 clusterizer, dEta < 0.015, dPhi < 0.03, NonLinearityFunction = 6
+	       
+	       Float_t electronEMCALfactor=0.1;
+	       Float_t kaonEMCALfactor = 0.1;
+	       Float_t protonEMCALfactor = 0.1;
+	       
+	       if(track->Charge() > 0){
+		 // positiv charge (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
+		 if(pt > 0.75 && pt < 20.0){
+		   electronEMCALfactor =  ( 0.214159 * ( 1 - TMath::Exp(-TMath::Power(pt,0.484512)/0.700499)*TMath::Power(pt,-0.669644)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+		   kaonEMCALfactor =  ( 0.208686 * ( 1 - TMath::Exp(-TMath::Power(pt,-3.98149e-05)/1.28447)*TMath::Power(pt,-0.629191)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+		   protonEMCALfactor =  ( 0.27555 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.97226e-05)/1.52719)*TMath::Power(pt,-0.209068)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+		   
+		   }
+	       }
+	       
+	       if(track->Charge() < 0){
+		 // negative charge  (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
+		 if(pt > 0.75 && pt < 20.0){ 		   
+		   electronEMCALfactor =  ( 0.216895 * ( 1 - TMath::Exp(-TMath::Power(pt,0.000105924)/0.865938)*TMath::Power(pt,-1.32787)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+		   kaonEMCALfactor =  ( 0.204117 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.6853e-05)/1.61765)*TMath::Power(pt,-0.738355)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+		   protonEMCALfactor =  ( 0.215679 * ( 1 - TMath::Exp(-TMath::Power(pt,-4.10015e-05)/1.40921)*TMath::Power(pt,-0.533752)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+		 }
+		 }
+	       p[0] *= electronEMCALfactor;
+	       p[3] *= kaonEMCALfactor;
+	       p[4] *= protonEMCALfactor;	      
+	     } // end of EMCAL case
+	     else if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){
 	       Float_t kaonTOFfactor = 0.1;
 	       if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
 	       Float_t protonTOFfactor = 0.1;
@@ -186,11 +216,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 		 kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
 		 protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
 	       }
+	       // TODO: we may need an electron factor for TOF as well, especially if TRD is present!
 	       p[3] *= kaonTOFfactor;
 	       p[4] *= protonTOFfactor;
-	     }
-	     else {
-	       if ( (usedMask & AliPIDResponse::kDetTRD)==AliPIDResponse::kDetTRD ) {
+	     }  // end of TOF case
+	     else if ( (usedMask & AliPIDResponse::kDetTRD)==AliPIDResponse::kDetTRD ) {
 		 Float_t electronTRDfactor=0.1;
 		 Float_t kaonTRDfactor = 0.1;
 		 Float_t protonTRDfactor = 0.1;
@@ -212,9 +242,8 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 		 p[0] *= electronTRDfactor;
 		 p[3] *= kaonTRDfactor;
 		 p[4] *= protonTRDfactor;	      
-	       } // end of TRD case
-	     } // end of detectors inner than TOF
-	  } // end of fUseDefaultTPCPriors
+	     } // end of TRD case
+ 	  } // end of fUseDefaultTPCPriors
 	}   // end of use priors
 	else { for (Int_t i=0;i<fSelectedSpecies;i++) priors[i]=1.;}
 	ComputeBayesProbabilities(bayesProbabilities,p,priors);
