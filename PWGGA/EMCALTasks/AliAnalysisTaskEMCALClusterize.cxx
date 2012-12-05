@@ -609,7 +609,9 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
     
     // Do not include cells with too low energy, nor exotic cell
-    if(amp < fRecParam->GetMinECut() ) accept = kFALSE;
+    if( amp  < fRecParam->GetMinECut() ||
+        time > fRecParam->GetTimeMax() ||
+        time < fRecParam->GetTimeMin()    ) accept = kFALSE;
     
     // In case of old AOD analysis cell time is -1 s, approximate replacing by time of the cluster the digit belongs.
     if (fRecalibrateWithClusterTime)
@@ -620,10 +622,9 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       //printf("recal %f\n",time*1.e9);
     }
     
-    if(  accept && fRecoUtils->IsExoticCell(id,cells,bc))
-    {
-      accept = kFALSE;
-    }
+    //Exotic?
+    if (accept && fRecoUtils->IsExoticCell(id,cells,bc))
+        accept = kFALSE;
     
     if( !accept )
     {
