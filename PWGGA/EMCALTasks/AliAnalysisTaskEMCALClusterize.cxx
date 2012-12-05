@@ -77,8 +77,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
 , fRecoUtils(0),          fConfigName("")
-, fCellLabels(),          fCellSecondLabels()
+, fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),       fCellMatchdPhi()
+, fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),           fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
@@ -94,6 +95,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
+    fCellTime[j]         =  0.;    
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }  
@@ -117,8 +119,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
 , fRecoUtils(0),            fConfigName("")
-, fCellLabels(),            fCellSecondLabels()
+, fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),         fCellMatchdPhi()
+, fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),             fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
@@ -134,6 +137,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
+    fCellTime[j]         =  0.; 
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }
@@ -163,7 +167,7 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   if (fCaloClusterArr)
   {
     fCaloClusterArr->Delete();
-    delete fCaloClusterArr;
+    delete fCaloClusterArr; 
   }
   
   if(fClusterizer) delete fClusterizer;
@@ -578,6 +582,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       {
         fCellLabels[index[icell]]       = label;
         fCellSecondLabels[index[icell]] = label2;
+        fCellTime[index[icell]]         = clus->GetTOF();    
         fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
         fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
         //printf(" %d,", index[icell] );
@@ -603,22 +608,28 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     id = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
     
-    // Do not include cells with too low energy, nor exotic cell, nor too large time
-    if( amp  < fRecParam->GetMinECut() ||
-        time > fRecParam->GetTimeMax() ||
-        time < fRecParam->GetTimeMin()    ) accept = kFALSE;
+    // Do not include cells with too low energy, nor exotic cell
+    if(amp < fRecParam->GetMinECut() ) accept = kFALSE;
+    
+    // In case of old AOD analysis cell time is -1 s, approximate replacing by time of the cluster the digit belongs.
+    if (fRecalibrateWithClusterTime)
+    { 
+      time = fCellTime[id];
+      //printf("cell %d time org %f - ",id, time*1.e9);
+      fRecoUtils->RecalibrateCellTime(id,bc,time);
+      //printf("recal %f\n",time*1.e9);
+    }
     
     if(  accept && fRecoUtils->IsExoticCell(id,cells,bc))
     {
       accept = kFALSE;
     }
     
-    //printf("cell %d, amp %2.3f time %2.3f, accept %d\n",id, amp, time*1.e9,accept);
-    
     if( !accept )
     {
       fCellLabels[id]      =-1; //reset the entry in the array for next event
       fCellSecondLabels[id]=-1; //reset the entry in the array for next event
+      fCellTime[id]        = 0.; 
       fCellMatchdEta[id]   =-999;
       fCellMatchdPhi[id]   =-999;
       if( DebugLevel() > 2 )
@@ -718,6 +729,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
           {
             fCellLabels[cellNumber]      =-1; //reset the entry in the array for next event
             fCellSecondLabels[cellNumber]=-1; //reset the entry in the array for next event
+            fCellTime[cellNumber]        = 0.;   
             fCellMatchdEta[cellNumber]   =-999;
             fCellMatchdPhi[cellNumber]   =-999;
             continue;
@@ -943,7 +955,11 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
       Int_t absId0 = newCluster->GetCellsAbsId()[0]; // Assign match of first cell in cluster
       newCluster->SetTrackDistance(fCellMatchdPhi[absId0],fCellMatchdEta[absId0]);
     }
-        
+    
+    //printf("New cluster E %f, Time  %e, Id = ", newCluster->E(), newCluster->GetTOF() );
+    //for(Int_t icell=0; icell < newCluster->GetNCells(); icell++ ) printf(" %d,", newCluster->GetCellsAbsId() [icell] );
+    //printf("\n");
+    
     // Calculate distance to bad channel for new cluster. Make sure you give the list of bad channels.
     fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
     
@@ -1399,11 +1415,9 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
     clus->SetPosition(g);
     clus->SetNCells(ncellsTrue);
     clus->SetCellsAbsId(absIds);
-    
     clus->SetCellsAmplitudeFraction(ratios);
     clus->SetChi2(-1); //not yet implemented
     clus->SetTOF(recPoint->GetTime()) ; //time-of-flight
-    
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
     

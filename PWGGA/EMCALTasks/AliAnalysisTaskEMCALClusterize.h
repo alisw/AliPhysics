@@ -78,6 +78,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffFillAODHeader()                       { fFillAODHeader     = kFALSE  ; } 
   void           SwitchOnFillAODCaloCells()                     { fFillAODCaloCells  = kTRUE   ; }
   void           SwitchOffFillAODCaloCells()                    { fFillAODCaloCells  = kFALSE  ; } 
+
+  void           SwitchOnRecalibrateWithClusterTime()           { fRecalibrateWithClusterTime  = kTRUE   ; }
+  void           SwitchOffRecalibrateWithClusterTime()          { fRecalibrateWithClusterTime  = kFALSE  ; }
   
   //Algorithms settings
   
@@ -175,9 +178,12 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
   Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
+  Double_t               fCellTime[12672];         // Array with cluster time to be passed to digit in case of AODs 
   Float_t                fCellMatchdEta[12672];    // Array with cluster-track dPhi 
   Float_t                fCellMatchdPhi[12672];    // Array with cluster-track dEta 
 
+  Bool_t                 fRecalibrateWithClusterTime; // Use fCellTime to store time of cells in cluster
+  
   Int_t                  fMaxEvent;                // Set a maximum event
   
   Bool_t                 fDoTrackMatching;         // On/Off the matching recalulation to speed up analysis in PbPb
@@ -206,7 +212,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 23);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 24);
 
 };
 
