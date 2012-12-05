@@ -35,6 +35,8 @@ AliHLTDataInflaterHuffman::AliHLTDataInflaterHuffman()
   , fHuffmanCoderList(NULL)
   , fCurrentParameter(-1)
   , fLegacyMode(-1)
+  , fInput(0)
+  , fInputLength(0)
 {
   // see header file for class documentation
   // or
@@ -97,12 +99,14 @@ int AliHLTDataInflaterHuffman::InitDecoders(TList* decoderlist)
   TIter next(decoderlist);
   TObject* pObj=NULL;
   while ((pObj=next())!=NULL) {
-    if (dynamic_cast<AliHLTHuffman*>(pObj)==NULL) continue;
+    AliHLTHuffman* coder=NULL;
+    if ((coder=dynamic_cast<AliHLTHuffman*>(pObj))==NULL) continue;
     if (fHuffmanCoderList->FindObject(pObj->GetName())) {
       HLTError("duplicate entry of name '%s'", pObj->GetName());
       return -EEXIST;
     }
     fHuffmanCoderList->Add(pObj);
+    coder->InitMaxCodeLength();
   }
 
   return fHuffmanCoderList->GetEntries();
@@ -115,42 +119,56 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
   /// list, than it starts at the first parameter again
   value=0;
   length=0;
-  AliHLTUInt64_t input=0;
-  AliHLTUInt32_t inputLength=64;
-  if (GetRemainingBitDataSizeBytes()<=sizeof(AliHLTUInt64_t)) {
-    inputLength=8*GetRemainingBitDataSizeBytes();
-    inputLength-=(7-GetCurrentBitInputPosition());
-  }
-  if (!InputBits(input, inputLength)) return false;
   if (fLegacyMode!=0) {
   if ((++fCurrentParameter)>=(int)fHuffmanCoders.size()) fCurrentParameter=0;
   fLegacyMode=1;
   }
   if (fHuffmanCoders.size()==0 || fCurrentParameter<0) return false;
-  // the huffman code is decoded from bit 0 corresponding to the top node and then to
-  // the left. The bitstream stores the reversed huffman code from MSB to LSB to ensure
-  // a continous bit stream, that's why then input word needs to be reversed before
-  // decoding.
-  // TODO: introducing DecodeReverse into AliHLTHuffman can speed up the reading
-  std::bitset<64> bits;
-  for (unsigned bit=0; bit<inputLength; bit++) {bits[inputLength-1-bit]=input&0x1;input>>=1;}
+  if (fInputLength<fHuffmanCoders[fCurrentParameter]->GetMaxCodeLength() ||
+      fHuffmanCoders[fCurrentParameter]->GetMaxCodeLength()==0)
+  {
+    AliHLTUInt64_t input=0;
+    AliHLTUInt32_t inputLength=64-fInputLength;
+    if (GetRemainingBitDataSizeBytes()<=sizeof(AliHLTUInt64_t)) {
+      inputLength=8*GetRemainingBitDataSizeBytes();
+      inputLength-=(7-GetCurrentBitInputPosition());
+    }
+    if (64-fInputLength<inputLength) inputLength=64-fInputLength;
+    if (!InputBits(input, inputLength)) return false;
+    input<<=(64-inputLength);
+    input>>=fInputLength;
+    fInput|=input;
+    fInputLength+=inputLength;
+  }
   AliHLTUInt32_t codeLength=0;
-  if (!fHuffmanCoders[fCurrentParameter]->Decode(bits, value, length, codeLength)) return false;
-  if (inputLength<codeLength) {
+  if (!fHuffmanCoders[fCurrentParameter]->DecodeUp(fInput, value, length, codeLength)) return false;
+  if (fInputLength<codeLength) {
     HLTError("huffman decoder '%s' pretends to have %d bit(s) decoded, but only %d available",
-	     fHuffmanCoders[fCurrentParameter]->GetName(), codeLength, inputLength);
+	     fHuffmanCoders[fCurrentParameter]->GetName(), codeLength, fInputLength);
     return false;
   }
-  inputLength-=codeLength;
-  RewindBitPosition(inputLength);
+  fInput<<=codeLength;
+  fInputLength-=codeLength;
 
   return true;
+}
+
+void AliHLTDataInflaterHuffman::Print(Option_t* option) const
+{
+  /// Print info
+  for (vector<AliHLTHuffman*>::const_iterator coder=fHuffmanCoders.begin();
+       coder!=fHuffmanCoders.end(); coder++) {
+    if (!*coder) continue;
+    (*coder)->Print(option);
+  }
 }
 
 void AliHLTDataInflaterHuffman::Clear(Option_t * option)
 {
   /// clear the object
   fCurrentParameter=-1;
+  fInput=0;
+  fInputLength=0;
 
   if (strcmp(option, "all")==0) {
     fHuffmanCoders.clear();

@@ -42,6 +42,8 @@ public:
     return fCurrentParameter;
   }
 
+  /// Print info
+  void Print(Option_t* option = "") const;
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * option ="");
 
@@ -62,6 +64,10 @@ private:
   int fCurrentParameter; //!
   /// legacy mode to handle code not using NextParameter()
   int fLegacyMode;
+  /// buffered input
+  AliHLTUInt64_t fInput; //!
+  /// valid MSBs in the buffered input
+  AliHLTUInt32_t fInputLength; //!
 
   ClassDef(AliHLTDataInflaterHuffman, 0)
 };

@@ -120,7 +120,7 @@ AliHLTHuffmanTreeNode::AliHLTHuffmanTreeNode()
 }
 
 AliHLTHuffmanTreeNode::AliHLTHuffmanTreeNode(const AliHLTHuffmanTreeNode& other)
-	: AliHLTHuffmanNode()
+	: AliHLTHuffmanNode(other)
 	, fBinaryCodeLength(other.fBinaryCodeLength)
 	, fBinaryCode(other.fBinaryCode)
 	, fLeft(other.GetLeftChild())
@@ -176,7 +176,7 @@ AliHLTHuffmanLeaveNode::AliHLTHuffmanLeaveNode()
 }
 
 AliHLTHuffmanLeaveNode::AliHLTHuffmanLeaveNode(const AliHLTHuffmanLeaveNode& other)
-	: AliHLTHuffmanNode()
+	: AliHLTHuffmanNode(other)
 	, fBinaryCodeLength(other.fBinaryCodeLength)
 	, fBinaryCode(other.fBinaryCode)
 	, fLeft(other.GetLeftChild())
@@ -213,6 +213,7 @@ AliHLTHuffman::AliHLTHuffman()
 	, fNodes(0)
 	, fHuffTopNode(NULL)
 	, fReverseCode(true)
+	, fMaxCodeLength(0)
 {
         /// nop
 }
@@ -225,6 +226,7 @@ AliHLTHuffman::AliHLTHuffman(const AliHLTHuffman& other)
 	, fNodes(other.fNodes)
 	, fHuffTopNode(NULL)
 	, fReverseCode(other.fReverseCode)
+	, fMaxCodeLength(other.fMaxCodeLength)
 {
         /// nop
 }
@@ -236,6 +238,7 @@ AliHLTHuffman::AliHLTHuffman(const char* name, UInt_t maxBits)
 	, fNodes((((AliHLTUInt64_t) 1) << maxBits))
 	, fHuffTopNode(NULL)
 	, fReverseCode(true)
+	, fMaxCodeLength(0)
  {
         /// standard constructor
 	for (AliHLTUInt64_t i = 0; i <= fMaxValue; i++) {
@@ -267,9 +270,9 @@ const std::bitset<64>& AliHLTHuffman::Encode(const AliHLTUInt64_t v, AliHLTUInt6
 	return dummy;
 }
 
-Bool_t AliHLTHuffman::Decode(std::bitset<64> bits, AliHLTUInt64_t& value,
+Bool_t AliHLTHuffman::DecodeDown(std::bitset<64> bits, AliHLTUInt64_t& value,
 			     AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const {
-	// TODO: check decoding logic, righ now it is just as written
+	// huffman decoding
 	AliHLTHuffmanNode* currNode = fHuffTopNode;
 	if (!currNode) return kFALSE;
 	if (currNode->GetValue() >= 0) {
@@ -293,6 +296,46 @@ Bool_t AliHLTHuffman::Decode(std::bitset<64> bits, AliHLTUInt64_t& value,
 		if (!bits[0] && currNode->GetRightChild()) {
 			currNode = currNode->GetRightChild();
 			bits >>= 1;
+			if (currNode->GetValue() >= 0) {
+				value = currNode->GetValue();
+				length = fMaxBits;
+				codeLength = currNode->GetBinaryCodeLength();
+				return kTRUE;
+			}
+			continue;
+		}
+		break;
+	}
+	value = ((AliHLTUInt64_t)1) << 63;
+	return kFALSE;
+}
+
+Bool_t AliHLTHuffman::DecodeUp(std::bitset<64> bits, AliHLTUInt64_t& value,
+			     AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const {
+	// huffman decoding
+	AliHLTHuffmanNode* currNode = fHuffTopNode;
+	if (!currNode) return kFALSE;
+	if (currNode->GetValue() >= 0) {
+		// handle case with just one node - also quite unlikely
+		value = currNode->GetValue();
+		return kTRUE;
+	}
+	while (currNode) {
+		if (bits[63] && currNode->GetLeftChild()) {
+			// follow left branch
+			currNode = currNode->GetLeftChild();
+			bits <<= 1;
+			if (currNode->GetValue() >= 0) {
+				value = currNode->GetValue();
+				length = fMaxBits;
+				codeLength = currNode->GetBinaryCodeLength();
+				return kTRUE;
+			}
+			continue;
+		}
+		if (!bits[63] && currNode->GetRightChild()) {
+			currNode = currNode->GetRightChild();
+			bits <<= 1;
 			if (currNode->GetValue() >= 0) {
 				value = currNode->GetValue();
 				length = fMaxBits;
@@ -337,12 +380,13 @@ Bool_t AliHLTHuffman::GenerateHuffmanTree() {
 	//assign value
 	fHuffTopNode = *nodeCollection.begin();
 	fHuffTopNode->AssignCode(fReverseCode);
+	InitMaxCodeLength();
 	return kTRUE;
 }
 
 void AliHLTHuffman::Print(Option_t* option) const {
         std::cout << GetName() << endl;
-        bool bPrintShort=strcmp(option, "short")==0;
+        bool bPrintShort=strcmp(option, "full")!=0;
 	if (fHuffTopNode && !bPrintShort) {
 		std::cout << "Huffman tree:" << endl;
 		fHuffTopNode->Print();
@@ -374,6 +418,7 @@ AliHLTHuffman& AliHLTHuffman::operator =(const AliHLTHuffman& other) {
 	fMaxValue = other.fMaxValue;
 	fNodes = other.fNodes;
 	fHuffTopNode = NULL;
+	fMaxCodeLength = 0;
 	return *this;
 }
 
@@ -390,16 +435,16 @@ bool AliHLTHuffman::CheckConsistency() const
     AliHLTUInt32_t readbacklen=0;
     AliHLTUInt32_t readbackcodelen=0;
     if (fReverseCode) {
-      // reverse if needed
-      // Note: for optimized bit stream the huffman code is reversed, and
-      // that needs to be taken into account
-      std::bitset<64> rcode;
-      for (AliHLTUInt64_t i=0; i<codeLength; i++) {rcode<<=1; rcode[0]=code[i];}
-      code=rcode;
-    }
-    if (!Decode(code, readback, readbacklen, readbackcodelen)) {
+      code<<=64-codeLength;
+      if (!DecodeUp(code, readback, readbacklen, readbackcodelen)) {
+	cout << "Decode failed" << endl;
+	return false;
+      }
+    } else {
+    if (!DecodeDown(code, readback, readbacklen, readbackcodelen)) {
       cout << "Decode failed" << endl;
       return false;
+    }
     }
     if (v!=readback) {
       cout << "readback of value " << v << " code length " << codeLength << " failed: got " << readback << " code length " << readbackcodelen << endl;
@@ -407,6 +452,18 @@ bool AliHLTHuffman::CheckConsistency() const
     }
   }
   return true;
+}
+
+UInt_t AliHLTHuffman::InitMaxCodeLength()
+{
+  // loop over leave nodes and set maximum code length
+  fMaxCodeLength=0;
+  for (std::vector<AliHLTHuffmanLeaveNode>::const_iterator node=fNodes.begin();
+       node!=fNodes.end(); node++) {
+    if (fMaxCodeLength<node->GetBinaryCodeLength())
+      fMaxCodeLength=node->GetBinaryCodeLength();
+  }
+  return fMaxCodeLength;
 }
 
 ClassImp(AliHLTHuffman)
