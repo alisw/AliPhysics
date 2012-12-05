@@ -213,7 +213,7 @@ void AliMuonEventCuts::SetDefaultTrigClassPatterns ()
 {
   /// Set the default patterns
   /// (done in such a way to get all muon triggers)
-  fDefaultTrigClassPatterns = "CINT CMU CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE !PHS";
+  fDefaultTrigClassPatterns = "C !EMC !CS !CCUP !CTRUE !ABCE !-ACE- !-AC- !-E- !WU !EGA !EJE !PHS !0VG";
   SetTrigClassPatterns(fDefaultTrigClassPatterns);
 }
 
