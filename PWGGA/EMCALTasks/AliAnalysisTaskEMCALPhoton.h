@@ -44,6 +44,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   void         SetClusThreshold(Double_t et)                                     { fClusThresh         =    et;   }
   void         SetClusterizer(AliAnalysisTaskEMCALClusterizeFast *c)             { fClusterizer        =    c;    }
   void         SetMcMode(Bool_t mc)                                              { fIsMC               =    mc;   }
+  void         SetDebugMode(Bool_t d)                                            { fDebug              =    d;    }
   void         FindConversions();
   void         FillMyCells();
   void         FillMyClusters();
@@ -79,6 +80,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   TString                                fPeriod;                 // string to the LHC period
   Bool_t                                 fIsTrain;                //variable to set train mode
   Bool_t                                 fIsMC;                   //variable to switch mcparts branch on/off
+  Bool_t                                 fDebug;                 //variable to switch debug on/off
   Bool_t                                 fIsGrid;                //variable to set grid mode
   Double_t                               fClusThresh;            //!energy threshold for cluster be saved
   AliAnalysisTaskEMCALClusterizeFast    *fClusterizer;           //!pointer for alternative clusterizer

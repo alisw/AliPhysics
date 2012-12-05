@@ -72,6 +72,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() :
   fPeriod("LHC11d"),
   fIsTrain(0),
   fIsMC(0),
+  fDebug(0),
   fIsGrid(0),
   fClusThresh(2.0),
   fClusterizer(0),
@@ -115,6 +116,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   fPeriod("LHC11c"),
   fIsTrain(0),
   fIsMC(0),
+  fDebug(0),
   fIsGrid(0),
   fClusThresh(2.),
   fClusterizer(0),
@@ -470,12 +472,12 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     AliPhotonCellObj *mycell = static_cast<AliPhotonCellObj*>(fMyCells->New(mcel++));
     Float_t eta=-1, phi=-1;
     if(!fGeom){
-      cout<<"+++fGeom not found! MyCells branch will not be filled for this event!+++\n";
+      std::cout<<"+++fGeom not found! MyCells branch will not be filled for this event!+++\n";
       return;
     }
     if(!fGeom)
       return;
-    if(!fIsMC)fGeom->EtaPhiFromIndex(absID,eta,phi);
+    /*if(!fIsMC)*/fGeom->EtaPhiFromIndex(absID,eta,phi);
     Float_t theta = 2*TMath::ATan(TMath::Exp(-eta));
     mycell->fAbsID = absID;
     mycell->fE = fEMCalCells->GetCellAmplitude(absID);
