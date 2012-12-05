@@ -31,7 +31,7 @@ ClassImp(AliESDTrdTrack)
 
 //_____________________________________________________________________________
 AliESDTrdTrack::AliESDTrdTrack():
-  TObject(),
+  AliVTrdTrack(),
   fSector(-1),
   fStack(-1),
   fA(0),
@@ -54,7 +54,7 @@ AliESDTrdTrack::AliESDTrdTrack():
 }
 
 AliESDTrdTrack::AliESDTrdTrack(const AliESDTrdTrack& track):
-  TObject(track),
+  AliVTrdTrack(track),
   fSector(track.fSector),
   fStack(track.fStack),
   fA(track.fA),
@@ -89,7 +89,7 @@ AliESDTrdTrack& AliESDTrdTrack::operator=(const AliESDTrdTrack& track)
 
   if (this == &track)
     return *this;
-  TObject::operator=(track);
+  AliVTrdTrack::operator=(track);
   fSector       = track.fSector;
   fStack        = track.fStack;
   fA            = track.fA;
