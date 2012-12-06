@@ -104,6 +104,7 @@ set ( SRCS
     AliTRDhit.cxx
     AliTRDrecoParam.cxx
     AliTRDSimParam.cxx
+    AliTRDonlineTrackMatching.cxx
    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
