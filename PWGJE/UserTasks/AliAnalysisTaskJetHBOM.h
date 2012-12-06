@@ -157,7 +157,6 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     Double_t      randCone_Phi;           // phi for random Cone at fixed position
     Int_t         fNHBOM;                 // number of detector runs
     Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
-    //    Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
     Float_t       fMaxTrackPtInJet;       // maximum track pt within a jet for flagging...
@@ -198,7 +197,6 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     Double_t background; //background rho in the event
 
     TClonesArray  *fTCARandomConesOut;    //! TCA of output jets in randomized event
-    TClonesArray  *fTCARandomConesOutRan; //! TCA of output jets in randomized event
 
     TRandom3*     fRandom;   //! random number generator
     TProfile*     fh1Xsec;   //! pythia cross section and trials
@@ -213,7 +211,6 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     TH1F*         fh1DeltapT;        // pT of random Cone - background energy
     TH1F*         fh1Rho;            //background rho
     TH1F*         fh1PtRandCone;     //pT of random Cone
-    TH1F*         fh1Area;           //area of random jet
 
     TH1F*         fh1efficiencyPt;          //here efficiency is stored
     TH2D*         fh2efficiencyPhi;         //here efficiency is stored
