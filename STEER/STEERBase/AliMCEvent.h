@@ -133,6 +133,7 @@ public:
     virtual void      SetParticleArray(TClonesArray* mcParticles) 
 	{fMCParticles = mcParticles; fNparticles = fMCParticles->GetEntries(); fExternal = kTRUE;}
     
+  virtual AliGenEventHeader *FindHeader(Int_t ipart);
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}
   virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}

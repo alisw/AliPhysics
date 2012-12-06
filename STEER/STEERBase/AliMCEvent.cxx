@@ -594,6 +594,39 @@ void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event)
     fSubsidiaryEvents->Add(event);
 }
 
+AliGenEventHeader *AliMCEvent::FindHeader(Int_t ipart) {
+  //
+  // Get Header belonging to this track; 
+  // only works for primaries (i.e. particles coming from the Generator)
+  // Also sorts out the case of Cocktail event (get header of subevent in cocktail generetor header)  
+  //
+
+  AliMCEvent *event = this;
+
+  if (fSubsidiaryEvents) {
+    // Get pointer to subevent if needed
+    ipart = FindIndexAndEvent(ipart,event); 
+  }
+
+  AliGenEventHeader* header = event->GenEventHeader();
+  if (ipart >= header->NProduced()) {
+    AliWarning(Form("Not a primary -- returning 0 (idx %d, nPrimary %d)",ipart,header->NProduced()));
+    return 0;
+  }
+  AliGenCocktailEventHeader *coHeader = dynamic_cast<AliGenCocktailEventHeader*>(header);
+  if (coHeader) { // Cocktail event
+    TList* headerList = coHeader->GetHeaders();
+    TIter headIt(headerList);
+    Int_t nproduced = 0;
+    do { // Go trhough all headers and look for the correct one
+      header = (AliGenEventHeader*) headIt();
+      nproduced += header->NProduced();
+    } while (header && ipart >= nproduced);
+  }
+
+  return header;
+}
+
 Int_t AliMCEvent::FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const
 {
     // Find the index and event in case of composed events like signal + background
