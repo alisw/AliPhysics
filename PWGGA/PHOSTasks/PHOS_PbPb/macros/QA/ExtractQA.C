@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TF1.h>
 #include <TH1F.h>
+#include <TH1D.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TMath.h>
@@ -33,6 +34,8 @@ void QAWriteNPi0();
 
 TH1D *Pi0InvMass(TH2 *hMassPt, Float_t ptmin, Float_t ptmax);
 TH1F *AddWriteTH1F(const char *name, const char *title, Double_t* values, Double_t* errors);
+const TF1* GetPeriodRPFit(const char* histName = "phiRP");
+void AddNoise(TH1D* hist, double noise);
 void Fit1Pi0(TH1D *hMass,
 	     const Int_t polN,
 	     const Double_t mFitMin,
@@ -50,6 +53,7 @@ const Int_t kNCents = 1;
 const Int_t kNPID = 8+4;
 const char* kPIDNames[kNPID] = {"All", "Allwou", "Disp", "Disp2", "Dispwou", "CPV", "CPV2", "Both",
 				"Allcore", "Dispcore", "CPVcore", "Bothcore"};
+const char* fullMergeFileName = "AnalysisResults.root";
 
 Int_t runIndex;
 Int_t runNum[500];
@@ -73,7 +77,12 @@ Double_t mEnPIDHigh[kNCents][kNPID][500],   emEnPIDHigh[kNCents][kNPID][500];
 const int nRPD = 3;// Reaction Plane Detector
 enum RPD { V0A=0, V0C=1, TPC=2};
 const char* rpdNames[nRPD] = {"V0A", "V0C", "TPC" };
-Double_t constRPChi2[nRPD][2][500][2];// [rpd][flat][run][chi val/err]
+const char* rpdId[nRPD] = {"V0A", "V0C", "" };
+const char* flatId[2] = {"", "flat"};
+//Double_t 
+Double_t rpSE[nRPD][2][2][500];// [rpd][flat][val/err][run]
+Double_t rpSin[nRPD][2][4][2][500];// [rpd][flat][parameter][val/err][run]
+Double_t rpChi2[nRPD][2][2][500];// [rpd][flat][chi val/err][run]
 // Tracks:
 Double_t nTracks0[500], eTracks0[500];
 Double_t nTracks1[500], eTracks1[500];
@@ -85,8 +94,7 @@ Double_t nPi0Event[500], ePi0Event[500];
 
 //-----------------------------------------------------------------------------
 void ExtractQA(const TString runFile="runFile.txt",
-	       const TString outputFileName = "outputQA.root",
-	       const TString fullMerge = "AnalysisResults.root"
+	       const TString outputFileName = "outputQA.root"
 	       )
 {
   // Loop over per-run root files and run various QA functions
@@ -110,29 +118,31 @@ void ExtractQA(const TString runFile="runFile.txt",
     printf("root file is %s, run # = %d\n",rootFileName,runNumber);
     // char *runNum = strtok(rootFileName+35,".");
     rootFile = TFile::Open(rootFileName,"read");
-    listHist = (TList*)rootFile->Get("PHOSPi0Flow/PHOSPi0FlowCoutput1");
+    listHist = (TList*)rootFile->Get("PHOSPi0Flow_kCentral/PHOSPi0Flow_kCentralCoutput1");
 
     run[runIndex]            = runIndex+1;
-    QAFillEventSelection();
-    QAFillOccupancy();
-    QAFillClusters();
+    // QAFillEventSelection();
+    // QAFillOccupancy();
+    // QAFillClusters();
     QAFillRP();
-    QAFillTracks();
-    QAFillNPi0();
+    // QAFillTracks();
+    // QAFillNPi0();
 
     listHist->Clear();
     rootFile->Close();
     runIndex++;
+//     if(runIndex>3)
+//       break;
   }
 
 
   TFile *fileQA = TFile::Open(outputFileName.Data(), "recreate");
-  QAWriteEventSelection();
-  QAWriteOccupancy();
-  QAWriteClusters();
+  // QAWriteEventSelection();
+  // QAWriteOccupancy();
+  // QAWriteClusters();
   QAWriteRP();
-  QAWriteTracks();
-  QAWriteNPi0();
+  // QAWriteTracks();
+  // QAWriteNPi0();
   fileQA         ->Close();
 
 }
@@ -224,7 +234,6 @@ void QAFillClusters()
     }
   }
 }
-
 //-----------------------------------------------------------------------------
 void QAFillRP()
 {
@@ -238,7 +247,7 @@ void QAFillRP()
 
   //int nEvents = hev->GetBinContent(kNEventsBin);
 
-  TH1* phiRP1[nRPD][2] = {0};
+  TH1D* phiRP1[nRPD][2] = {0};
   phiRP1[V0A][0] = phiRPV0A->ProjectionX();
   phiRP1[V0C][0] = phiRPV0C->ProjectionX();
   phiRP1[TPC][0] = phiRP->ProjectionX();
@@ -246,25 +255,59 @@ void QAFillRP()
   phiRP1[V0C][1] = phiRPV0Cflat->ProjectionX();
   phiRP1[TPC][1] = phiRPflat->ProjectionX();
 
-
   for(int rpd=0; rpd<nRPD; ++rpd) {
     for(int flat=0; flat<2; ++flat) {
-      TH1* hist = phiRP1[rpd][flat];
+      TH1D* hist = phiRP1[rpd][flat];
       const int nEntries = hist->GetEntries();
       const int nBins = hist->GetNbinsX();
       if ( nEntries < 1000 ) {
 	//Printf("skipping RP: %s, very low number of entries", hist->GetName());
 	continue;
       }
+      
+      // rpSE
+      const Double_t* array = & hist->GetArray()[1]; 
+      Double_t mean = TMath::Mean(nBins, array);
+      Double_t rms = TMath::RMS(nBins, array) / mean * TMath::Sqrt(double(nBins)/(nBins-1));
+      rpSE[rpd][flat][0][runIndex] = rms; 
+      rpSE[rpd][flat][1][runIndex] = 0;
 
-      TFitResultPtr result = hist->Fit("pol0", "NS");
-      if( result.Get() ) {
+      // rpSin
+      const TF1* periodFunc = GetPeriodRPFit(Form("phiRP%s%s", rpdId[rpd], flatId[flat]));
+      for(int param=1; param < 4; ++param) {
+	TF1* func = (TF1*)periodFunc->Clone("newRPFunc");
+	for(int param2 = 1; param2 < 4; ++param2)
+	  if(param != param2 ) func->FixParameter(param2, periodFunc->GetParameter(param2));
+	if(1 == param ) func->SetParLimits(1, 0, 1);
+	if(2 == param ) func->SetParLimits(2, 0, 100);
+	if(3 == param ) func->SetParLimits(3, periodFunc->GetParameter(3)-TMath::Pi(), periodFunc->GetParameter(3)+TMath::Pi());
+	int error = hist->Fit(func, "0Q");
+	if( error ) {
+	  rpSin[rpd][flat][param][0][runIndex] = 0;
+	  if(3 == param) rpSin[rpd][flat][3][0][runIndex] = -2*TMath::Pi();
+	  rpSin[rpd][flat][param][1][runIndex] = 0;	  
+	}
+	else {
+	  rpSin[rpd][flat][param][0][runIndex] = func->GetParameter(param);
+	  if(3 == param) rpSin[rpd][flat][3][0][runIndex] = func->GetParameter(3) - periodFunc->GetParameter(3);
+	  rpSin[rpd][flat][param][1][runIndex] = func->GetParError(param);
+	}
+	delete func;
+      }
+
+      // rpChi2
+      if(flat)
+	AddNoise(hist, 0.01); // stricter if flattened
+      else
+	AddNoise(hist, 0.1);
+      TFitResultPtr result = hist->Fit("pol0", "NSQ");
+      if( result.Get() && !int(result) ) {
 	int ndf = result->Ndf();
-	constRPChi2[rpd][flat][runIndex][0] = result->Chi2()/ndf;
-	constRPChi2[rpd][flat][runIndex][1] = TMath::Sqrt(2*ndf)/ndf;
+	rpChi2[rpd][flat][0][runIndex] = result->Chi2()/ndf;
+	rpChi2[rpd][flat][1][runIndex] = TMath::Sqrt(2*ndf)/ndf;
       } else {
-	constRPChi2[rpd][flat][runIndex][0] = 0;
-	constRPChi2[rpd][flat][runIndex][1] = 0;
+	rpChi2[rpd][flat][0][runIndex] = 0;
+	rpChi2[rpd][flat][1][runIndex] = 0;
       }
     }
   }
@@ -539,6 +582,47 @@ void QAWriteRP()
     for(int flat=0; flat<2; ++flat) {
       TString name;
       TString title;
+      
+      //rpSE
+      name = Form("grSERP%s%s", rpdNames[rpd], flatId[flat]);
+      title = Form("RMS (SE) of RP of %s, %s", rpdNames[rpd], flatId[flat]);
+      TH1F* grSE = new TH1F(name.Data(), title.Data(), runIndex, 0, runIndex);
+      for (Int_t i=0; i<runIndex; i++) {
+	grSE          ->SetBinContent(i+1,  rpSE[rpd][flat][0][i]);
+	grSE          ->SetBinError(i+1,    rpSE[rpd][flat][1][i]);
+	grSE          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
+      }
+      grSE->GetYaxis()->SetTitle("Std. Err.");
+      grSE->LabelsOption("v");
+      grSE->SetMarkerStyle(33);
+      grSE->Write();
+      
+      // rpSin
+      for(int param=1; param < 4; ++param) {
+	if( flat ) {
+	  name = Form("grSinRP%sflat%d", rpdNames[rpd], param);
+	  title = Form("Parameter [%d] of fit constraining others, flat, %s ", param, rpdNames[rpd]);
+	} else {
+	  name = Form("grSinRP%s%d", rpdNames[rpd], param);
+	  title = Form("Parameter [%d] of fit constraining others, %s ", param, rpdNames[rpd]);
+	}
+	TH1F* grSin = new TH1F(name, title, runIndex, 0, runIndex);
+	Printf(name.Data());
+	for (Int_t i=0; i<runIndex; i++) {
+	  //Printf("  %d chi2/ndf: %f, \terror:%f", i, rpSin[rpd][flat][i][0],rpSin[rpd][flat][i][1]);
+	  grSin          ->SetBinContent(i+1,  rpSin[rpd][flat][param][0][i]);
+	  grSin          ->SetBinError(i+1,    rpSin[rpd][flat][param][1][i]);
+	  grSin          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
+	}
+	grSin->GetYaxis()->SetTitle(Form("p[%d]",param));
+	if( 1 == param ) grSin->GetYaxis()->SetTitle("s_{1}");
+	if( 2 == param ) grSin->GetYaxis()->SetTitle("#omega");
+	if( 3 == param ) grSin->GetYaxis()->SetTitle("#psi - #psi_{P}");
+	grSin->LabelsOption("v");
+	grSin->SetMarkerStyle(33);
+	grSin->Write();
+      }
+      // rpChi2
       if( flat ) {
 	name = Form("grChi2RP%sflat", rpdNames[rpd]);
 	title = Form("#Chi^2 / ndf to fit of pol0 of flattened RP of %s", rpdNames[rpd]);
@@ -546,18 +630,18 @@ void QAWriteRP()
 	name = Form("grChi2RP%s", rpdNames[rpd]);
 	title = Form("#Chi^2 / ndf to fit of pol0 of raw RP of %s", rpdNames[rpd]);
       }
-      TH1F* grHist = new TH1F(name, title, runIndex, 0, runIndex);
+      TH1F* grChi2 = new TH1F(name, title, runIndex, 0, runIndex);
       Printf(name.Data());
       for (Int_t i=0; i<runIndex; i++) {
-	//Printf("  %d chi2/ndf: %f, \terror:%f", i, constRPChi2[rpd][flat][i][0],constRPChi2[rpd][flat][i][1]);
-	grHist          ->SetBinContent(i+1,  constRPChi2[rpd][flat][i][0]);
-	grHist          ->SetBinError(i+1, constRPChi2[rpd][flat][i][1]);
-	grHist          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
+	//Printf("  %d chi2/ndf: %f, \terror:%f", i, rpChi2[rpd][flat][i][0],rpChi2[rpd][flat][i][1]);
+	grChi2          ->SetBinContent(i+1,  rpChi2[rpd][flat][0][i]);
+	grChi2          ->SetBinError(i+1,    rpChi2[rpd][flat][1][i]);
+	grChi2          ->GetXaxis()->SetBinLabel(i+1,Form("%d",runNum[i]));
       }
-      grHist->GetYaxis()->SetTitle("#Chi^2 / ndf");
-      grHist->LabelsOption("v");
-      grHist->SetMarkerStyle(33);
-      grHist->Write();
+      grChi2->GetYaxis()->SetTitle("#Chi^2 / ndf");
+      grChi2->LabelsOption("v");
+      grChi2->SetMarkerStyle(33);
+      grChi2->Write();
     }
   }
 }
@@ -663,6 +747,71 @@ TH1F *AddWriteTH1F(const char *name, const char *title, Double_t* values, Double
     hist->GetYaxis()->SetTitle("#LTN#GT");
 
   return hist;
+}
+
+const TF1* GetPeriodRPFit(const char* histName)
+{
+  TString name = Form("f1RPFit%s", histName);
+  
+  // if created earlier, find in list
+  static THashList* list = new THashList;
+  TF1* func = (TF1*) list->FindObject(name.Data());
+  if( func ) return func;
+
+  TFile* file = TFile::Open(fullMergeFileName, "read");
+  TList* hlist = (TList*) file->Get("PHOSPi0Flow_kCentral/PHOSPi0Flow_kCentralCoutput1");
+  TH2F* hist2d = (TH2F*) hlist->FindObject(histName);
+  TH1D* hist = hist2d->ProjectionX();
+  int nBins = hist->GetNbinsX();
+  const Double_t* array = & hist->GetArray()[1]; 
+  
+  //TCanvas* canv = new TCanvas;
+  func = new TF1(name.Data(), "[0]*(1. + [1]*sin([2]*x + [3]))", 0, TMath::Pi());
+  double mean = TMath::Mean(nBins, array);
+  double rms = TMath::RMS(nBins, array) / mean;
+  func->SetParameters(mean, rms, 0.6*TMath::Pi(), -0.2*TMath::Pi());
+  func->SetParLimits(0, 0, 2*mean);
+  func->SetParLimits(1, 0, 1);
+  func->SetParLimits(2, 0, 100);
+  func->SetParLimits(3, -TMath::Pi(), TMath::Pi());
+  func->SetParNames("s_{0}", "s_{1}", "#omega", "#psi");
+  hist->GetXaxis()->SetTitle("#phi");
+  int error = 0;
+  TCanvas* canv = new TCanvas(name.Data());
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
+  int error = hist->Fit(func, "Q");
+  if( ! name.Contains("flat") ) {
+    gStyle->SetOptFit(1);
+  } else {
+    gStyle->SetOptFit(1);
+  }
+  hist->Draw("E");
+  canv->SaveAs(Form("imgs/%s.pdf", name.Data()));
+  if( error )
+    Printf("GetPeriodRPFit::ERROR, could not fit %s, error:%d", histName, error);
+
+  //hist->Draw();
+  //func->Draw("same");
+  //canv->SaveAs("rpfit.pdf");
+  
+  // Fit
+  list->Add(func);
+  return func;
+}
+
+
+//-----------------------------------------------------------------------------
+void AddNoise(TH1D* hist, double noise)
+{
+  int nBins = hist->GetNbinsX();
+  double mean = TMath::Mean(nBins, &((hist->GetArray())[1]) );
+  //Printf("Adding noise to: %s", hist->GetName());
+  for(int bin=1; bin<=nBins; ++bin) {
+    hist->SetBinContent( bin, hist->GetBinContent(bin) + gRandom->Gaus(0, noise) );
+    double err = hist->GetBinError(bin);
+    hist->SetBinError( bin, TMath::Sqrt( err**2 + noise**2 ) );
+  }
 }
 
 //-----------------------------------------------------------------------------
