@@ -1,6 +1,7 @@
 AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kFALSE, 
                                             Bool_t lSwitchIsLowEnergyPP = kFALSE,
-                                            Bool_t lSwitchUseOnTheFly   = kFALSE, 
+                                            Bool_t lSwitchUseOnTheFly   = kFALSE,
+                                            Bool_t lSwitchTakeAllTracks  = kFALSE, 
                                             const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
@@ -27,6 +28,7 @@ AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kFALSE
    taskv0extract -> SetIsNuclear     ( lSwitchIsNuclear     );
    taskv0extract -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
    taskv0extract -> SetUseOnTheFly   ( lSwitchUseOnTheFly   );
+   taskv0extract -> SetTakeAllTracks ( lSwitchTakeAllTracks );
 
    mgr->AddTask(taskv0extract);
 
