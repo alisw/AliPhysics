@@ -94,6 +94,9 @@ fFlagOnlyHardest(1),
 fTrackTypeRec(kTrackUndef),
 fRPAngle(0),
 fNRPBins(50),
+fSemigoodCorrect(0),
+fHolePos(4.71),
+fHoleWidth(0.2),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
 fNevents(0),
@@ -212,6 +215,9 @@ fFlagOnlyHardest(1),
 fTrackTypeRec(kTrackUndef),
 fRPAngle(0),
 fNRPBins(50),
+fSemigoodCorrect(0),
+fHolePos(4.71),
+fHoleWidth(0.2),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
 fNevents(0),
@@ -408,10 +414,10 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
     fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
     fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
-    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,35,100,0.,100.);
-    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,35,100,0.,100.); 
-    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,35,50,0.,50.); 
-    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,35,50,0.,50.);  
+    fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,3.5,100,0.,100.);
+    fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,3.5,100,0.,100.); 
+    fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,3.5,50,0.,50.); 
+    fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,3.5,50,0.,50.);  
 
 
     
@@ -706,6 +712,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Double_t accep=2.*TMath::Pi()*1.8;
    Int_t injet4=0;
    Int_t injet=0; 
+   if(fSemigoodCorrect){
+   Double_t disthole=RelativePhi(partback->Phi(),fHolePos);
+   if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-0.6){ 
+   PostData(1, fOutputList);
+   return;}
+
+   }
 
    for(Int_t i=0; i<fListJets[0]->GetEntries(); ++i){
            AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
