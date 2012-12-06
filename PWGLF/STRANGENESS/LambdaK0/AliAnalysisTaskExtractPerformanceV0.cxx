@@ -100,7 +100,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
-
+   fkTakeAllTracks ( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -266,7 +266,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
-     
+   fkTakeAllTracks ( kFALSE ),
 //------------------------------------------------
 // Tree Variables 
 
@@ -1545,7 +1545,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;      
       if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
-      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) )&&(fkTakeAllTracks==kFALSE) ) continue;
 	
       //GetKinkIndex condition
       if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
@@ -1565,7 +1565,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
 
       //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-      if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
+      if ( (fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8)&&(fkTakeAllTracks==kFALSE) ) continue;
 
       //End track Quality Cuts
       //________________________________________________________________________
