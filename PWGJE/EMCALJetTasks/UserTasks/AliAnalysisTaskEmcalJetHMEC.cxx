@@ -624,8 +624,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 		  AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
 		  if(!part) continue;
   
-		  Double_t DPhi = jetphi - part->Phi();
-		  Double_t DEta = jeteta - part->Eta();
+		  Double_t DEta = part->Eta()-jeteta;
+		  Double_t DPhi = RelativePhi(jetphi,part->Phi());
+
 		  Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
 		  if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
 		  if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
