@@ -4,7 +4,6 @@ TFile* file;
 const char* prefixToName = "imgs/";
 const char* appendToName = ".pdf";
 const int kNCents = 1;
-const int kFirstBinTo = 64;
 
 void Draw(const char* name, const char* options = "", double yFrom=0., double yTo=-1.)
 {
@@ -12,10 +11,15 @@ void Draw(const char* name, const char* options = "", double yFrom=0., double yT
   //hist->SetAxisRange(0, 30 );
   hist->GetXaxis()->SetLabelSize(0.011);
   //hist->GetXaxis()->SetTitle("Run");
-  hist->GetXaxis()->SetRange(1,kFirstBinTo);
-  if( yFrom < yTo )
-    hist->GetYaxis()->SetRangeUser(yFrom, yTo);
+  //hist->GetXaxis()->SetRange(1, );
+  if( yFrom < yTo ) {
+    if(yFrom > hist->GetMinimum())
+      Printf("in hist %s, yFrom (%f), is larger then hist min (%f)", name, yFrom, hist->GetMinimum());
+    if(yTo < hist->GetMaximum())
+      Printf("in hist %s, yTo (%f), is smaller then hist max (%f)", name, yTo, hist->GetMaximum());
 
+    hist->GetYaxis()->SetRangeUser(yFrom, yTo);
+  }
 
   //if( ! TString(options).Contains("same") )
   TCanvas* canv = new TCanvas;
@@ -32,13 +36,13 @@ void Draw(const char* name, const char* options = "", double yFrom=0., double yT
   canv->cd(1);
   if( TString(name).Contains("grChi2RP") )
     gPad->SetLogy();
-  hist->GetXaxis()->SetRange(1,kFirstBinTo);
+  hist->GetXaxis()->SetRange(1, hist->GetNbinsX()/2);
   hist->DrawCopy(options);
 
   canv->cd(2);
   if( TString(name).Contains("grChi2RP") )
     gPad->SetLogy();
-  hist->GetXaxis()->SetRange(85,200);
+  hist->GetXaxis()->SetRange(hist->GetNbinsX()/2+1,200);
   hist->DrawCopy(options);
 
 
@@ -281,19 +285,33 @@ void DrawQA()
 
   // DrawPID();
   // DrawCPVRatio();
-  DrawNPhotAllAndHigh();
+  //  DrawNPhotAllAndHigh();
   //DrawPIDRatios();
 
-  Draw("grMPi0", "LINFIT", 0.13, 0.15 );
-  Draw("grWPi0", "LINFIT");
-  Draw("grNPi0", "LINFIT");
+  // Draw("grMPi0", "LINFIT", 0.13, 0.15 );
+  // Draw("grWPi0", "LINFIT");
+  // Draw("grNPi0", "LINFIT");
 
-  // Draw("grChi2RPV0A");
-  // Draw("grChi2RPV0C");
-  // Draw("grChi2RPTPC");
-  // Draw("grChi2RPV0Aflat");
-  // Draw("grChi2RPV0Cflat");
-  // Draw("grChi2RPTPCflat");
+  // Draw("grSERPV0Aflat", "", 0, 0.4);
+  // Draw("grSERPV0Cflat", "", 0, 0.4);
+  // Draw("grSERPTPCflat", "", 0, 0.4);
 
+  // Draw("grChi2RPV0A", "", 0.1, 500);
+  // Draw("grChi2RPV0C", "", 0.1, 500);
+  // Draw("grChi2RPTPC", "", 0.1, 500);
+  // Draw("grChi2RPV0Aflat", "", 0.1, 500);
+  // Draw("grChi2RPV0Cflat", "", 0.1, 500);
+  // Draw("grChi2RPTPCflat", "", 0.1, 500);
+
+  Draw("grSinRPV0A1", "", 0, 0.7);
+  Draw("grSinRPV0A2", "", 0, 10);
+  Draw("grSinRPV0A3", "", -TMath::Pi(), TMath::Pi());
+  Draw("grSinRPV0C1", "", 0, 0.7);
+  Draw("grSinRPV0C2", "", 0, 10);
+  Draw("grSinRPV0C3", "", -TMath::Pi(), TMath::Pi());
+  Draw("grSinRPTPC1", "", 0, 0.7);
+  Draw("grSinRPTPC2", "", 0, 10);
+  Draw("grSinRPTPC3", "", -TMath::Pi(), TMath::Pi());
+ 
   file->Close();
 }
