@@ -102,6 +102,88 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    fkUseOnTheFly ( kFALSE ),
 
 //------------------------------------------------
+// Tree Variables 
+
+  fTreeVariablePrimaryStatus(0),
+  fTreeVariablePrimaryStatusMother(0),
+  fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariablePtMC(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableRapMC(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegTotMomentum(0),
+	fTreeVariablePosTotMomentum(0),
+	fTreeVariableNegTransvMomentum(0),
+	fTreeVariablePosTransvMomentum(0),
+	fTreeVariableNegTransvMomentumMC(0),
+	fTreeVariablePosTransvMomentumMC(0),
+   
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+
+	fTreeVariablePtMother(0),
+	fTreeVariableV0CreationRadius(0),
+  fTreeVariablePID(0),
+  fTreeVariablePIDPositive(0),
+  fTreeVariablePIDNegative(0),
+  fTreeVariablePIDMother(0),
+  fTreeVariableIndexStatus(0),
+  fTreeVariableIndexStatusMother(0),
+
+  fTreeVariableRunNumber(0),
+  fTreeVariableEventNumber(0),
+
+	fTreeVariableDistOverTotMom(0),
+
+	fTreeVariablePosEta(0),
+	fTreeVariableNegEta(0),
+
+	fTreeVariableVertexZ(0),
+
+  fTreeVariableLeastNbrCrossedRows(0),
+  fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+  fTreeVariableMultiplicity(0),
+  fTreeVariableMultiplicityMC(0),
+
+  fTreeVariableV0x(0),
+  fTreeVariableV0y(0),
+  fTreeVariableV0z(0),
+
+  fTreeVariableV0Px(0),
+  fTreeVariableV0Py(0),
+  fTreeVariableV0Pz(0),
+
+  fTreeVariableMCV0x(0),
+  fTreeVariableMCV0y(0),
+  fTreeVariableMCV0z(0),
+
+  fTreeVariableMCV0Px(0),
+  fTreeVariableMCV0Py(0),
+  fTreeVariableMCV0Pz(0),
+
+  fTreeVariablePVx(0),
+  fTreeVariablePVy(0),
+  fTreeVariablePVz(0),
+
+  fTreeVariableMCPVx(0),
+  fTreeVariableMCPVy(0),
+  fTreeVariableMCPVz(0),
+
+//------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
 //------------------------------------------------
@@ -185,6 +267,88 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
      
+//------------------------------------------------
+// Tree Variables 
+
+  fTreeVariablePrimaryStatus(0),
+  fTreeVariablePrimaryStatusMother(0),
+  fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariablePtMC(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableRapMC(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegTotMomentum(0),
+	fTreeVariablePosTotMomentum(0),
+	fTreeVariableNegTransvMomentum(0),
+	fTreeVariablePosTransvMomentum(0),
+	fTreeVariableNegTransvMomentumMC(0),
+	fTreeVariablePosTransvMomentumMC(0),
+   
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+
+	fTreeVariablePtMother(0),
+	fTreeVariableV0CreationRadius(0),
+  fTreeVariablePID(0),
+  fTreeVariablePIDPositive(0),
+  fTreeVariablePIDNegative(0),
+  fTreeVariablePIDMother(0),
+  fTreeVariableIndexStatus(0),
+  fTreeVariableIndexStatusMother(0),
+
+  fTreeVariableRunNumber(0),
+  fTreeVariableEventNumber(0),
+
+	fTreeVariableDistOverTotMom(0),
+
+	fTreeVariablePosEta(0),
+	fTreeVariableNegEta(0),
+
+	fTreeVariableVertexZ(0),
+
+  fTreeVariableLeastNbrCrossedRows(0),
+  fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+  fTreeVariableMultiplicity(0),
+  fTreeVariableMultiplicityMC(0),
+
+  fTreeVariableV0x(0),
+  fTreeVariableV0y(0),
+  fTreeVariableV0z(0),
+
+  fTreeVariableV0Px(0),
+  fTreeVariableV0Py(0),
+  fTreeVariableV0Pz(0),
+
+  fTreeVariableMCV0x(0),
+  fTreeVariableMCV0y(0),
+  fTreeVariableMCV0z(0),
+
+  fTreeVariableMCV0Px(0),
+  fTreeVariableMCV0Py(0),
+  fTreeVariableMCV0Pz(0),
+
+  fTreeVariablePVx(0),
+  fTreeVariablePVy(0),
+  fTreeVariablePVz(0),
+
+  fTreeVariableMCPVx(0),
+  fTreeVariableMCPVy(0),
+  fTreeVariableMCPVz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis

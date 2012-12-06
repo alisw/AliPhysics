@@ -91,9 +91,58 @@ ClassImp(AliAnalysisTaskExtractV0)
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0() 
   : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
-   fkIsNuclear   ( kFALSE ), 
-   fkLowEnergyPP ( kFALSE ),
-   fkUseOnTheFly ( kFALSE ),
+   fkIsNuclear     ( kFALSE ), 
+   fkLowEnergyPP   ( kFALSE ),
+   fkUseOnTheFly   ( kFALSE ),
+   fkTakeAllTracks ( kFALSE ),
+//------------------------------------------------
+// Initialize 
+	fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegTotMomentum(0),
+	fTreeVariablePosTotMomentum(0),
+	fTreeVariableNegdEdxSig(0),
+	fTreeVariablePosdEdxSig(0),
+	fTreeVariableNegEta(0),
+	fTreeVariablePosEta(0),
+
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+	
+	fTreeVariableDistOverTotMom(0),
+	fTreeVariableLeastNbrCrossedRows(0),
+	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+	fTreeVariableMultiplicity(0),
+  
+  fTreeVariableRunNumber(0),
+  fTreeVariableEventNumber(0),
+  
+  fTreeVariableV0x(0),
+  fTreeVariableV0y(0),
+  fTreeVariableV0z(0),
+
+  fTreeVariableV0Px(0),
+  fTreeVariableV0Py(0),
+  fTreeVariableV0Pz(0),
+
+  fTreeVariablePVx(0),
+  fTreeVariablePVy(0),
+  fTreeVariablePVz(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -130,10 +179,60 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name) 
   : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
-   fkIsNuclear   ( kFALSE ), 
-   fkLowEnergyPP ( kFALSE ),
-   fkUseOnTheFly ( kFALSE ),
+   fkIsNuclear     ( kFALSE ), 
+   fkLowEnergyPP   ( kFALSE ),
+   fkUseOnTheFly   ( kFALSE ),
+   fkTakeAllTracks ( kFALSE ),
      
+//------------------------------------------------
+// Initialize 
+	fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegTotMomentum(0),
+	fTreeVariablePosTotMomentum(0),
+	fTreeVariableNegdEdxSig(0),
+	fTreeVariablePosdEdxSig(0),
+	fTreeVariableNegEta(0),
+	fTreeVariablePosEta(0),
+
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+	
+	fTreeVariableDistOverTotMom(0),
+	fTreeVariableLeastNbrCrossedRows(0),
+	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+	fTreeVariableMultiplicity(0),
+  
+  fTreeVariableRunNumber(0),
+  fTreeVariableEventNumber(0),
+  
+  fTreeVariableV0x(0),
+  fTreeVariableV0y(0),
+  fTreeVariableV0z(0),
+
+  fTreeVariableV0Px(0),
+  fTreeVariableV0Py(0),
+  fTreeVariableV0Pz(0),
+
+  fTreeVariablePVx(0),
+  fTreeVariablePVy(0),
+  fTreeVariablePVz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -700,7 +799,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
       if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
-      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) )&&(fkTakeAllTracks==kFALSE) ) continue;
 	
       //GetKinkIndex condition
       if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
@@ -718,7 +817,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
          fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
 
       //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-      if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
+      if ( (fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8)&&(fkTakeAllTracks==kFALSE) ) continue;
 
       //End track Quality Cuts
       //________________________________________________________________________
