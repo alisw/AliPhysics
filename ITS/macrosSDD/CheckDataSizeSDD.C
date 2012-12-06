@@ -1,0 +1,115 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TH2F.h>
+#include <TGrid.h>
+#include <TCanvas.h>
+#include <TStopwatch.h>
+#include <TStyle.h>
+#include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
+#include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
+#endif
+
+
+void CheckDataSizeSDD(TString datafil="12000188359075.10.root", 
+		      Int_t firstEv=0, 
+		      Int_t lastEv=123456){
+
+  gStyle->SetOptStat(0);
+  gStyle->SetTitleFont(42,"XY");
+  gStyle->SetLabelFont(42,"XYZ");
+
+  Double_t maxOcc=2500.;
+  TH2F* hCellsOnMod=new TH2F("hCellsOn","",260,239.5,499.5,500,0.,maxOcc);
+  TH2F* hCellsOnDDL=new TH2F("hCellsOnDDL","",24,-0.5,23.5,500,0.,maxOcc*12);
+  TH1F* hMaxOccMod=new TH1F("hMaxOccMod","",260,239.5,499.5);
+  TH1F* hMaxOccDDL=new TH1F("hMaxOccDDL","",24,-0.5,23.5);
+
+  AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
+  dmap->SetJun09Map();
+
+
+  Int_t iev=firstEv;
+  AliRawReader *rd; 
+  if(datafil.Contains(".root")){
+    rd=new AliRawReaderRoot(datafil.Data(),iev);
+  }else{
+    rd=new AliRawReaderDate(datafil.Data(),iev);
+  }
+
+  Bool_t writtenoutput=kFALSE;
+  Int_t countMod[260],countDDL[24];
+  Int_t maxOccMod[260],maxOccDDL[24];
+  for(Int_t im=0; im<260; im++) maxOccMod[im]=0;
+  for(Int_t id=0; id<24; id++) maxOccDDL[id]=0;
+
+  do{
+
+    printf("Event # %d\n",iev);
+    for(Int_t im=0; im<260; im++) countMod[im]=0;
+    for(Int_t id=0; id<24; id++) countDDL[id]=0;
+    rd->Reset();
+    UChar_t cdhAttr=AliITSRawStreamSDD::ReadBlockAttributes(rd);
+    UInt_t amSamplFreq=AliITSRawStreamSDD::ReadAMSamplFreqFromCDH(cdhAttr);
+    AliITSRawStream* s=AliITSRawStreamSDD::CreateRawStreamSDD(rd,cdhAttr);
+    if(!writtenoutput){
+      printf("Use %s raw stream, sampling frequency %d MHz\n",s->ClassName(),amSamplFreq);
+      writtenoutput=kTRUE;
+    }
+
+    while(s->Next()){
+      if(s->IsCompletedModule()==kFALSE && s->IsCompletedDDL()==kFALSE){
+	Int_t counts=s->GetSignal();
+	if(counts>0){
+	  Int_t iDDL=rd->GetDDLID();
+	  ++countDDL[iDDL];
+	  Int_t iMod=s->GetCarlosId();
+	  Int_t modInd=dmap->GetModuleNumber(iDDL,iMod)-240;
+	  if(modInd>=0 && modInd<260) ++countMod[modInd];
+	}
+      }
+    }
+    for(Int_t im=0; im<260; im++){
+      hCellsOnMod->Fill(im+240,countMod[im]);
+      if(countMod[im]>maxOccMod[im]) maxOccMod[im]=countMod[im];
+    }
+    for(Int_t id=0; id<24; id++){\
+      hCellsOnDDL->Fill(id,countDDL[id]);
+      if(countDDL[id]>maxOccDDL[id]) maxOccDDL[id]=countDDL[id];
+    }
+    iev++;
+    
+  }while(rd->NextEvent()&&iev<=lastEv);
+
+  for(Int_t im=0; im<260; im++) hMaxOccMod->SetBinContent(im+1,maxOccMod[im]);
+  for(Int_t id=0; id<24; id++) hMaxOccDDL->SetBinContent(id+1,maxOccDDL[id]);
+
+  TCanvas* c1= new TCanvas("c1","Module occupancy",600,750);
+  c1->Divide(1,2);
+  c1->cd(1);
+  gPad->SetLogz();
+  hCellsOnMod->GetXaxis()->SetTitle("Module Id");
+  hCellsOnMod->GetYaxis()->SetTitle("Number of cells on per event");
+  hCellsOnMod->GetYaxis()->SetTitleOffset(1.3);
+  hCellsOnMod->Draw("colz");
+  c1->cd(2);
+  hMaxOccMod->GetXaxis()->SetTitle("Module Id");
+  hMaxOccMod->GetYaxis()->SetTitle("Maximum Occupancy");
+  hMaxOccMod->GetYaxis()->SetTitleOffset(1.3);
+  hMaxOccMod->Draw();
+
+  TCanvas* c2= new TCanvas("c2","DDL occupancy",600,750);
+  c2->Divide(1,2);
+  c2->cd(1);
+  gPad->SetLogz();
+  hCellsOnDDL->GetXaxis()->SetTitle("DDL Number");
+  hCellsOnDDL->GetYaxis()->SetTitle("Number of cells on per event");
+  hCellsOnDDL->GetYaxis()->SetTitleOffset(1.3);
+  hCellsOnDDL->Draw("colz");
+  c2->cd(2);
+  hMaxOccDDL->GetXaxis()->SetTitle("DDL Number");
+  hMaxOccDDL->GetYaxis()->SetTitle("Maximum Occupancy");
+  hMaxOccDDL->GetYaxis()->SetTitleOffset(1.3);
+  hMaxOccDDL->Draw();
+  
+}
