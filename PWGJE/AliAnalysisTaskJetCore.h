@@ -87,6 +87,9 @@ public:
    virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagOnlyRecoil=yesno;}
    virtual void     SetFlagOnlyHardest(Int_t yesno){fFlagOnlyHardest=yesno;} 
    virtual void     SetNRPBins(Int_t bins){fNRPBins=bins;}
+   virtual void     SetSemigoodCorrect(Int_t yesno){fSemigoodCorrect=yesno;}
+   virtual void     SetHolePos(Float_t poshole) { fHolePos = poshole; }
+   virtual void     SetHoleWidth(Float_t holewidth) { fHoleWidth = holewidth; }
    virtual void     SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
@@ -143,6 +146,9 @@ private:
    Int_t   fTrackTypeRec;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
+   Int_t   fSemigoodCorrect;
+   Float_t fHolePos;
+   Float_t fHoleWidth; 
    Float_t fJetEtaMin;        // lower bound on eta for found jets
    Float_t fJetEtaMax;        // upper bound on eta for found jets
    Int_t   fNevents;          // number of events
