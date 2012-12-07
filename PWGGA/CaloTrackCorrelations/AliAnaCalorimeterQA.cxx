@@ -1070,7 +1070,6 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
         if( iParent < 0 )
         {
           iParent = iMother;
-          printf("break\n");
           break;
         }
         
