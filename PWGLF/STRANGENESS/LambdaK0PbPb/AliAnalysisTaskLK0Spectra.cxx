@@ -2163,7 +2163,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   // ESD loop 
   //************************************
 
-  Double_t  lLambdaMass = 1.115683;  //PDG
+ // Double_t  lLambdaMass = 1.115683;  //PDG
   Double_t lPLambda = 0;
   Double_t lPAntiLambda = 0;
   Double_t lPK0s = 0;
@@ -2224,15 +2224,15 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   Int_t lPdgcodeMotherOfMother = 0;
 
   // Reconstructed position
-  Double_t rcPosXK0s        = 0,  rcPosYK0s        = 0, rcPosZK0s        = 0;
+  //Double_t rcPosXK0s        = 0,  rcPosYK0s        = 0, rcPosZK0s        = 0;
   Double_t rcPosRK0s        = 0;
-  Double_t rcPosXLambda     = 0,  rcPosYLambda     = 0, rcPosZLambda     = 0;
+  //Double_t rcPosXLambda     = 0,  rcPosYLambda     = 0, rcPosZLambda     = 0;
   Double_t rcPosRLambda     = 0;
-    Double_t rcPosXAntiLambda = 0,  rcPosYAntiLambda = 0, rcPosZAntiLambda = 0;
+  //  Double_t rcPosXAntiLambda = 0,  rcPosYAntiLambda = 0, rcPosZAntiLambda = 0;
    Double_t rcPosRAntiLambda = 0;
 
   // Pt resolution
-   Double_t deltaPtK0s  = 0, deltaPtLambda  = 0, deltaPtAntiLambda  = 0;
+  // Double_t deltaPtK0s  = 0, deltaPtLambda  = 0, deltaPtAntiLambda  = 0;
 
   // Daughters
   AliESDtrack  *myTrackPos  = NULL;
@@ -2292,7 +2292,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   //const AliVVertex *mySPDPrimaryVertex = NULL;
 
      
-  const AliMultiplicity *myMultiplicty = ((AliESDEvent*)fESD)->GetMultiplicity();
+  //const AliMultiplicity *myMultiplicty = ((AliESDEvent*)fESD)->GetMultiplicity();
 
   if(fAnalysisType == "ESD") {  
   
