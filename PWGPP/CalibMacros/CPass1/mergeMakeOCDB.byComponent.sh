@@ -43,7 +43,7 @@ fi
 
 # init
 path=$1
-run=$2
+run=$(echo "$2" | sed 's/^0*//')
 ocdb=$3
 defaultOCDB="raw://"
 [[ -n $4 ]] && defaultOCDB=$4

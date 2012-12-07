@@ -16,7 +16,7 @@
 # $3 = OCDB path
 
 path=$1
-runNumber=$2
+runNumber=`echo "$2" | sed 's/^0*//'`
 outputOCDB=$3
 
 # if fourth argument given, its the default OCDB, otherwise use the default raw://
