@@ -39,7 +39,7 @@ public:
 // Getters
 
     TF1 EnergyCorrection() const {
-        return fEnergyCorrection;
+        return *fEnergyCorrection;
     }
 
     Double_t MaxEnergy() const {
@@ -49,7 +49,7 @@ public:
 // Setters
 
     void SetCorrections(const TF1 &corrections) {
-        fEnergyCorrection = corrections;
+        *fEnergyCorrection = corrections;
     }
 
     void SetMaxenergy(Double_t maxEnergy) {
@@ -62,7 +62,7 @@ public:
 private:
 
     // Energy correction function
-    TF1 fEnergyCorrection;
+    TF1 *fEnergyCorrection;
     
     
     

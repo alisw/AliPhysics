@@ -16,7 +16,23 @@
 TCanvas *c1 = 0;
 
 TF1 * generateRecEffFunction(Double_t p0, Double_t p1);
+int createDummy(Double_t p0 = 0.366, Double_t p1 = 0.0)
+{
+  TFile *outfile = TFile::Open("calocorrections.root","RECREATE");
+  TF1 fitneutral("fitneutral","0", 0, 100);
+  TF1 fitcharged("fitcharged","0", 0, 100);
+  TF1 fitgamma("fitgamma","0", 0, 100);
+  TF1 fitsecondary("fitsecondary","0", 0, 100);
+  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections("TmCorrectionsPhos", fitcharged, fitneutral, fitgamma, fitsecondary,0,0,0,0);
+  TF1 *func = generateRecEffFunction(p0, p1);
+  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection("ReCorrectionsPhos", *func, 1000);
 
+  cor->Write();
+  recor->Write();
+  outfile->Close();
+
+
+}
 int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p0 = 0.366, Double_t p1 = 0.0)
 {
   c1 = new TCanvas;
