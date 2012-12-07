@@ -28,4 +28,10 @@
 #pragma link C++ class AliSpectraAODTrackCuts+;
 #pragma link C++ class AliAnalysisKinkESDat+;
 
+#pragma link C++ class AliAnalysisTaskSpectraBoth+;
+#pragma link C++ class AliSpectraBothEventCuts+;
+#pragma link C++ class AliSpectraBothHistoManager+;
+#pragma link C++ class AliSpectraBothPID+;
+#pragma link C++ class AliSpectraBothTrackCuts+;
+
 #endif
