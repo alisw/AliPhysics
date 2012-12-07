@@ -189,6 +189,7 @@ AliFlowEventSimple* AliFlowOnTheFlyEventGenerator::ConvertTClonesToFlowEvent(TCl
     if(!fFlowEvent) fFlowEvent = new AliFlowEventSimple(totalMultiplicity, (AliFlowEventSimple::ConstructionMethod)0, 0x0, 0, TMath::TwoPi(), -.9, .9);
     // if there is a flow event, clear the members without releasing the allocated memory
     else fFlowEvent->ClearFast();
+    fFlowEvent->SetMCReactionPlaneAngle(fPsi2);
     // prepare a track
     TParticle* pParticle = 0x0;
     Int_t iSelParticlesRP(0);
@@ -322,8 +323,8 @@ void AliFlowOnTheFlyEventGenerator::DecayOnTheFlyTracks(TClonesArray *event)
                 if(nDaughter==1) part->SetFirstDaughter(nTracks+secondaries);
                 else if ((nDaughters-1)==nDaughter) part->SetLastDaughter(nTracks+secondaries);
                 else part->SetDaughter(nDaughter,nTracks+secondaries);
+                }
             }
-        }
         nStart = nTracks;
         nTracks = event->GetEntries();
     }

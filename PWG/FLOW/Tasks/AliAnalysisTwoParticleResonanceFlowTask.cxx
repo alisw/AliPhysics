@@ -788,22 +788,22 @@ void AliAnalysisTwoParticleResonanceFlowTask::DoAnalysisOnTheFly(TObjArray* Mixi
         AliFlowTrackSimple* track = fFlowEvent->GetTrack(i);
         tID = track->GetID();                    // store ID
         (tID > 0) ? charge = 1 : charge = -1 ;          // get the charge of the track
-        Double_t pt(track->Pt()), phi(track->Phi()), px(pt*TMath::Cos(phi)), py(pt*TMath::Sin(phi)), pz(track->Weight()); // TODO ugly, but pz is stored as weight ...
+        Double_t pt(track->Pt()), phi(track->Phi()), px(pt*TMath::Cos(phi)), py(pt*TMath::Sin(phi)), pz(track->Weight()), p(TMath::Sqrt(px*px+py*py+pz*pz)); // TODO ugly, but pz is stored as weight ...
         if (charge == fChargeA && TMath::Abs(tID)==TMath::Abs(fSpeciesA)) {     // store species a
-            SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
-            if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+            SpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+            if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassA, i, fSpeciesA));
         }
         if (charge == -1*fChargeA && TMath::Abs(tID)==TMath::Abs(fSpeciesA)) { // store opposite charge species a
-           ocSpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i,fSpeciesA));                                             
-           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassA, i, fSpeciesA));
+           ocSpeciesA->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassA, i,fSpeciesA));                                             
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassA, i, fSpeciesA));
         }
         if (charge == fChargeB && TMath::Abs(tID)==TMath::Abs(fSpeciesB)) { // store species b
-           SpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
-           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           SpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassB, i, fSpeciesB));
         }
         if (charge == -1*fChargeB && TMath::Abs(tID)==TMath::Abs(fSpeciesB)) { // store opposite charge species b
-           ocSpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
-           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, TMath::Sqrt(px*px+py*py), px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           ocSpeciesB->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassB, i, fSpeciesB));
+           if(fEventMixing) MixingCandidates->Add(new AliResonanceFlowHelperTrack(track->Eta(), phi, p, px, py, pz, pt, charge, fMassB, i, fSpeciesB));
         }
         // at the end: convert the flow track to an 'actual' flow track with id and charge
         track->SetID(i);                                // set the unique id
