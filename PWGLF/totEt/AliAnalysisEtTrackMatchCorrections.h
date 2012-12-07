@@ -14,7 +14,7 @@ public:
     AliAnalysisEtTrackMatchCorrections();
 
 //! Constructor
-    AliAnalysisEtTrackMatchCorrections(TString name, TF1 chargedContr, TF1 neutralContr, TF1 gammaContr, TF1 secondaryContr, Double_t meanCharged, Double_t meanNeutral, Double_t meanGammas, Double_t meanSecondary);
+    AliAnalysisEtTrackMatchCorrections(const TString name, const TF1 &chargedContr, const TF1 &neutralContr, const TF1 &gammaContr, const TF1 &secondaryContr, Double_t meanCharged, Double_t meanNeutral, Double_t meanGammas, Double_t meanSecondary);
 
 //! Copy constructor
     AliAnalysisEtTrackMatchCorrections(const AliAnalysisEtTrackMatchCorrections &obj);
@@ -28,67 +28,67 @@ public:
 // Getters
 
     TF1 ChargedContr() const {
-        return fChargedContr;
+        return *fChargedContr;
     }
 
     TF1 NeutralContr() const {
-        return fNeutralContr;
+        return *fNeutralContr;
     }
 
     TF1 GammaContr() const {
-        return fGammaContr;
+        return *fGammaContr;
     }
 
     TF1 SecondaryContr() const {
-        return fSecondaryContr;
+        return *fSecondaryContr;
     }
     
     Double_t ChargedContr(int mult) const {
-        return fChargedContr.Eval(mult)*fMeanCharged;
+        return fChargedContr->Eval(mult)*fMeanCharged;
     }
 
     Double_t NeutralContr(int mult) const {
-        return fNeutralContr.Eval(mult)*fMeanNeutral;
+        return fNeutralContr->Eval(mult)*fMeanNeutral;
     }
 
     Double_t GammaContr(int mult) const {
-        return -fGammaContr.Eval(mult)*fMeanGamma;
+        return -fGammaContr->Eval(mult)*fMeanGamma;
     }
 
     Double_t SecondaryContr(int mult) const {
-        return fSecondaryContr.Eval(mult)*fMeanSecondary;
+        return fSecondaryContr->Eval(mult)*fMeanSecondary;
     }
 
 
 // Setters
 
-    void SetChargedcontr(TF1 chargedContr) {
-        fChargedContr = chargedContr;
+    void SetChargedcontr(const TF1 &chargedContr) {
+        *fChargedContr = chargedContr;
     }
 
-    void SetNeutralcontr(TF1 neutralContr) {
-        fNeutralContr = neutralContr;
+    void SetNeutralcontr(const TF1 &neutralContr) {
+        *fNeutralContr = neutralContr;
     }
 
-    void SetGammacontr(TF1 gammaContr) {
-        fGammaContr = gammaContr;
+    void SetGammacontr(const TF1 &gammaContr) {
+        *fGammaContr = gammaContr;
     }
 
-    void SetSecondarycontr(TF1 secondaryContr) {
-        fSecondaryContr = secondaryContr;
+    void SetSecondarycontr(const TF1 &secondaryContr) {
+        *fSecondaryContr = secondaryContr;
     }
 
 
 private:
 
     // ChargedContr
-    TF1 fChargedContr;
+    TF1 *fChargedContr;
     // NeutralContr
-    TF1 fNeutralContr;
+    TF1 *fNeutralContr;
     // GammaContr
-    TF1 fGammaContr;	
+    TF1 *fGammaContr;	
     // SecondaryContr
-    TF1 fSecondaryContr;
+    TF1 *fSecondaryContr;
     
     // Mean deposited energy from charged particles
     Double_t fMeanCharged;
@@ -102,7 +102,7 @@ private:
     // Prohibited
 //! Equality operator
     bool operator==(const AliAnalysisEtTrackMatchCorrections &other) const;
-    ClassDef(AliAnalysisEtTrackMatchCorrections, 1);
+    ClassDef(AliAnalysisEtTrackMatchCorrections, 2);
 };
 
 #endif //ALIANALYSISETTRACKMATCHCORRECTIONS_H
