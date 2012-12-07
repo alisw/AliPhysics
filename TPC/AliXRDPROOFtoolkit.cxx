@@ -499,4 +499,180 @@ Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, co
 
 
 
+void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * outputTree, const char *indexName, const char *inputTrees, Int_t debugLevel){
+  //
+  // Join together several tree according to the index
+  // 
+  // Parameters:
+  // Output:
+  //     outputFile : name of the output file
+  //     outputTree : name of the output Tree
+  //     indexName  : name of the branch to be used as an index
+  // Input:
+  //     inputTrees : decription of the input trees setup
+  /*
+    Example usage:
+    
+    AliXRDPROOFtoolkit::JoinTreesIndex("outAll.root","joinAll","run","1#CPass1#run#tpcQA#TPCCPass1.root+1#VPass1#run#tpcQA#TPCVPass1.root+1#Pass1#run#tpcQA#TPCPass1.root+0#DAQ#run#joinTree#fproductionJoin.root+0#C#run#dcs#OCDBscan.root+0#CE#run#Fits#CEtrend.root");
+    ==>
+    Combine information form the Cpass1,VPass, and Pass1QA, calibration tree, DAQ information, trigger information 
+    Make a File "outAll.root",  with tree "joinAll", index of tree with name "run"
+    //
+    // Input tree configuration string:
+    //
+    const char *inputTrees="1#CPass1#run#tpcQA#TPCCPass1.root+1#VPass1#run#tpcQA#TPCVPass1.root+1#Pass1#run#tpcQA#TPCPass1.root+0#DAQ#run#joinTree#/home/miranov/test/dbQueries/fproductionJoin.root+0#C#run#dcs#OCDBscan.root+0#CE#run#Fits#CEtrend.root"
+    Describe 6 trees to be merged (string separated be +):
+      TObjArray *arrayInput = TString(inputTrees).Tokenize("+");
+      TObjString = 1#CPass1#run#tpcQA#TPCCPass1.root
+      TObjString = 1#VPass1#run#tpcQA#TPCVPass1.root
+      TObjString = 1#Pass1#run#tpcQA#TPCPass1.root
+      TObjString = 0#DAQ#run#joinTree#/home/miranov/test/dbQueries/fproductionJoin.root
+      TObjString = 0#C#run#dcs#OCDBscan.root
+      TObjString = 0#CE#run#Fits#CEtrend.root
+    //  
+    Each tree is characterize by 5 parameters - separate by #
+       description="1#CPass1#run#tpcQA#TPCCPass1.root"
+       TString(description)->Tokenize("#").Print()
+       Collection name='TObjArray', class='TObjArray', size=16
+       TObjString = 1                    ==> (0/1) index is used 
+       TObjString = CPass1               ==> name of output branch  in output tree
+       TObjString = run                  ==> name of the index
+       TObjString = tpcQA                ==> name of the input tree in the input file
+       TObjString = TPCCPass1.root       ==> name of the input file
+  */
+  //
+  //
+  //
+                
+  TFile * fout = new TFile(outputFile,"recreate");
+  fout->cd();
+  TTree *joinTree=new TTree(outputTree,outputTree);
+  //
+  // 1. Define setup. parse definition string
+  //
+  TObjArray *arrayInput = TString(inputTrees).Tokenize("+");
+  Int_t nTrees = arrayInput->GetEntries();
+  TObjArray * arrayFile  = new TObjArray(nTrees);    // array of TFiles with trees
+  TObjArray * arrayTrees = new TObjArray(nTrees);    // array of trees 
+  TObjArray * arrayNames = new TObjArray(nTrees);    // name of tree
+  TObjArray * arrayRunID = new TObjArray(nTrees);    // name of tree
+  TArrayI arrayEnableTree(nTrees);  
+  for (Int_t i=0; i<2; i++) printf("\n");
+  printf("Joing query\n");
+  arrayInput->Print();
+  for (Int_t i=0; i<2; i++) printf("\n");
+  {for (Int_t itree=0; itree<nTrees; itree++){
+      //
+      TObjArray *description = TString(arrayInput->At(itree)->GetName()).Tokenize("#");
+      if (description->GetEntries()<4) {
+	printf("Fatal: Invalid description:  %s\n", arrayInput->At(itree)->GetName());
+	continue;
+      }
+      TFile * f = TFile::Open(description->At(4)->GetName());
+      if (!f){
+	printf("Fatal: Invalid description: fileName %s\n", description->At(4)->GetName());
+	return;
+      }
+      arrayFile->AddAt(f,itree);
+      TTree * tree = (TTree*)f->Get(description->At(3)->GetName());
+      if (!tree){
+	printf("Fatal: Invalid description. Tree name\t%s\n", description->At(3)->GetName());
+	return;
+      }
+      tree->SetCacheSize(400000000);
+      //    
+      arrayTrees->AddAt(tree,itree);
+      //
+      arrayRunID->AddAt(new TObjString(description->At(2)->GetName()),itree);
+      arrayNames->AddAt(new TObjString(description->At(1)->GetName()),itree);
+      arrayEnableTree[itree]=atoi(description->At(0)->GetName());    
+
+    }}
+  //  
+  // 2. Make the run list
+  //
+  //
+  map<int, int> runMap;
+  map<int, int> runMapTree[nTrees];
+  {for (Int_t itree=0; itree<nTrees; itree++){
+      TTree * tree = (TTree*)arrayTrees->At(itree);
+      Int_t entries=tree->GetEntries();
+      char query[2000];
+      snprintf(query,2000,"%s:Entry$", arrayRunID->At(itree)->GetName());
+      entries = tree->Draw(query,"","goff");      
+      for (Int_t ientry=0;ientry<entries; ientry++){
+	Int_t irun=Int_t(tree->GetV1()[ientry]);
+	//	Int_t entryNr=Int_t(tree->GetV2()[ientry]);
+ 	if (arrayEnableTree[itree]>0) runMap[irun]+=1;
+ 	runMapTree[itree][irun]=ientry;
+ 	if (debugLevel>0) printf("%s\t%d\t%d\n",tree->GetName(), irun, 	runMapTree[itree][irun]);
+      }
+    }
+  }
+  //
+  // 3. Make join tree
+  //
+  Int_t jrun=0;
+  joinTree->Branch(indexName, &jrun,Form("%s/I",indexName));
+  Int_t *status=new Int_t[nTrees];
+  char *brName = new char[10000];
+  char *brTitle= new char[10000];
+  //
+  
+  {for (Int_t itree=0; itree<nTrees; itree++){
+      TTree * tree = (TTree*)arrayTrees->At(itree);      
+      tree->GetEntry(1);
+      joinTree->Branch(Form("%s.status",arrayNames->At(itree)->GetName()), &status[itree],Form("%s.status/I",arrayNames->At(itree)->GetName()));
+      //
+      Int_t nbranches= tree->GetListOfBranches()->GetEntries();
+      for (Int_t ibr=0; ibr<nbranches; ibr++){
+	TBranch * br = (TBranch*)(tree->GetListOfBranches()->At(ibr));
+	sprintf(brName,"%s.%s",arrayNames->At(itree)->GetName(), br->GetName());
+	sprintf(brTitle,"%s.%s",arrayNames->At(itree)->GetName(), br->GetTitle());
+	void* addr = 0;
+	TString className=br->GetClassName();
+	if (className.Length()==0){
+	  TString str(br->GetTitle());
+	  if (str[str.Length()-1]=='I') addr=new Int_t;
+	  if (str[str.Length()-1]=='F') addr=new Float_t;
+	  if (str[str.Length()-1]=='D') addr=new Double_t;
+	  if (str[str.Length()-1]=='C') addr=new Char_t[10000];
+	  if (addr) joinTree->Branch(brName, addr, brTitle);
+	  br->SetAddress(addr);
+	}else{
+	  TClass cclass(className);
+	  TObject **addrClass =  new TObject *;
+	  (*addrClass)=0;
+	  printf("%s\t%s\n",br->GetName(), className.Data());
+	  br->SetAddress(addrClass);	  
+	  br->GetEntry(0);	  
+	  joinTree->Branch(brName,addrClass);	  	  
+	}	
+      }
+    }
+  }
+  joinTree->Write();
+  //
+  // 4. Fill the trees
+  //
+  map<int, int>::iterator riter;   
+  {for (riter=runMap.begin(); riter != runMap.end(); ++riter){
+      printf("%d\t%d\t", riter->first, riter->second);
+      jrun=riter->first;
+      for (Int_t itree=0; itree<nTrees; itree++){
+	TTree * tree = (TTree*)arrayTrees->At(itree); 
+	Int_t entry= runMapTree[itree][jrun];
+	status[itree]=(entry>0)?1:0;
+	if (entry>=0) tree->GetEntry(entry);
+	printf("%d\t",entry);
+	//
+      }
+      joinTree->Fill();
+      printf("\n");
+    }}
+  joinTree->Write("joinTree");
+  fout->Close();
+
+}
+
 

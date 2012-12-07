@@ -29,6 +29,7 @@ class AliXRDPROOFtoolkit : public TObject
   static Bool_t FilterListZip(const char*inputList, const char*fileList, Int_t checkLevel);
   Bool_t  XRDCopyDir(const char * idir, const char * files, const char *odir, Bool_t zip); 
   static Int_t  CheckTreeInFile(const char*fileName,const char*treeName, Int_t debugLevel=0, const char *branchName=0);
+  static void JoinTreesIndex(const char * outputFile, const char * outputTree, const char *indexName, const char *inputTrees, Int_t debugLevel);
  private:
   Int_t         fVerbose;          // verbso mode  - print command 
   TString       fUserName;         // user name
