@@ -512,7 +512,7 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 	AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 	AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
 	fPIDResponse = inputHandler->GetPIDResponse();
-	maskIsSelected = inputHandler->IsEventSelected();
+	Bool_t maskIsSelected = inputHandler->IsEventSelected();
     
 	// Create histograms
     Int_t ptbins = 15;
@@ -937,7 +937,7 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-
+/*
 static Bool_t checkPrimaryStatus(const AliAODMCParticle *mcPart, double pVx, double pVy, double pVz) 
 {
 	double dx = pVx - mcPart->Xv();
@@ -949,7 +949,7 @@ static Bool_t checkPrimaryStatus(const AliAODMCParticle *mcPart, double pVx, dou
 	
 	return false;
 }
-
+*/
 
 //________________________________________________________________________
 
@@ -1032,7 +1032,7 @@ static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double fcutcTauMi
 }
 
 //________________________________________________________________________
-static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double fcutBetheBloch, Double_t decayL, bool fIsMonteCarlo) 
+static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double fcutBetheBloch, bool fIsMonteCarlo) 
 {
 	
 	int nnum = 1, pnum = 0;
@@ -1494,11 +1494,11 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		
 		if(TMath::Sqrt(v0->Pt2V0())<2)
 		{
-			if(!AcceptV0_lowpt(v0,fPIDResponse,1,fcutBetheBloch,decayL,fIsMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,1,fcutBetheBloch,fIsMonteCarlo))
 			{ lambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,2,fcutBetheBloch,decayL,fIsMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,2,fcutBetheBloch,fIsMonteCarlo))
 			{ antilambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,0,fcutBetheBloch,decayL,fIsMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,0,fcutBetheBloch,fIsMonteCarlo))
 			{ k0Candidate = kFALSE; }
 		}
 		
