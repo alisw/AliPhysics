@@ -52,6 +52,12 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/PiKaPr/TestAOD/AliSpectraAODPID.cxx
 	SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx
         SPECTRA/Kinks/AliAnalysisKinkESDat.cxx
+	SPECTRA/PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
+        SPECTRA/PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
+        SPECTRA/PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
+        SPECTRA/PiKaPr/TestAOD/AliSpectraBothPID.cxx
+        SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraBoth.cxx
+
  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
