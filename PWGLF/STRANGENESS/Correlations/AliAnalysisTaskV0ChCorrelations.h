@@ -36,7 +36,9 @@ public:
 
    Bool_t IsMyGoodPrimaryTrack(const AliAODTrack* aodtrack);
    Bool_t IsMyGoodDaughterTrack(const AliAODTrack* aodtrack);
-   Bool_t IsMyGoodV0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
+   Bool_t IsMyGoodV0CutSet0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
+   Bool_t IsMyGoodV0CutSet1(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
+   Bool_t IsMyGoodV0CutSet2(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
 
 private:
    Bool_t          fFillMixed;  // enable event mixing (default: ON)
