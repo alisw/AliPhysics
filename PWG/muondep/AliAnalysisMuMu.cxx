@@ -2288,7 +2288,7 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
           }
           else
           {
-            fills[fill] = make_pair<int,int>(runnumber,runnumber);
+            fills[fill] = std::make_pair<int,int>(runnumber,runnumber);
           }
         }
         
