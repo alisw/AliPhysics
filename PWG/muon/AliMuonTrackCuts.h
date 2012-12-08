@@ -38,7 +38,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   void SetDefaultFilterMask();
   void SetPassNumber ( Int_t passNumber ) { fPassNumber = passNumber; }
   void SetIsMC ( Bool_t isMC = kTRUE ) { fIsMC = isMC; }
-  void SetAllowDefaultParams ( Bool_t allowDefaultParams = kTRUE ) { fAllowDefaultParams = allowDefaultParams; }
+  void SetAllowDefaultParams ( Bool_t allowDefaultParams = kTRUE, Int_t passNumber = -1 ) { fAllowDefaultParams = allowDefaultParams; fPassNumber = passNumber; }
   void SetCustomParamFromRun ( Int_t runNumber = -1, Int_t passNumber = -1 );
   
   /// Get pass number
@@ -65,7 +65,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
 
  private:
   
-  Bool_t ReadParamFromOADB ( Int_t runNumber );
+  Bool_t ReadParamFromOADB ( Int_t runNumber, Int_t passNumber );
 
   Bool_t fIsMC;               ///< Monte Carlo analysis
   Bool_t fUseCustomParam;     ///< Use custom parameters (do not search in OADB)
