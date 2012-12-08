@@ -47,6 +47,7 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
     taskTrigChEff->SetTrigClassPatterns(trigClassPatterns);
   }
   taskTrigChEff->GetMuonEventCuts()->SetFilterMask(AliMuonEventCuts::kSelectedTrig);
+  taskTrigChEff->GetMuonTrackCuts()->SetAllowDefaultParams();
   mgr->AddTask(taskTrigChEff);
 
   // Create container
