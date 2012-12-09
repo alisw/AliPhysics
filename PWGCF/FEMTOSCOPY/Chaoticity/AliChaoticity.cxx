@@ -44,7 +44,6 @@ AliChaoticity::AliChaoticity():
 AliAnalysisTaskSE(),
   fname(0),
   fAOD(0x0), 
-//fESD(0x0), 
   fOutputList(0x0),
   fPIDResponse(0x0),
   fEC(0x0),
@@ -87,12 +86,6 @@ AliAnalysisTaskSE(),
   fQmean(),
   fDampStart(0),
   fDampStep(0),
-  fMomResC2(),
-  fMomRes3DTerm1(),
-  fMomRes3DTerm2(),
-  fMomRes3DTerm3(),
-  fMomRes3DTerm4(),
-  fMomRes3DTerm5(),
   fTPCTOFboundry(0),
   fTOFboundry(0),
   fSigmaCutTPC(0),
@@ -117,8 +110,6 @@ AliAnalysisTaskSE(),
   fQlbinL(0),
   fQlbinH(0),
   fDummyB(0),
-  fNormWeight(0x0),
-  fNormWeightErr(0x0),
   fDefaultsCharMult(),
   fDefaultsCharSE(),
   fDefaultsCharME(),
@@ -135,7 +126,15 @@ AliAnalysisTaskSE(),
   fFSI2SS(),
   fFSI2OS(),
   fFSIOmega0SS(),
-  fFSIOmega0OS()
+  fFSIOmega0OS(),
+  fMomResC2(),
+  fMomRes3DTerm1(),
+  fMomRes3DTerm2(),
+  fMomRes3DTerm3(),
+  fMomRes3DTerm4(),
+  fMomRes3DTerm5(),
+  fNormWeight(0x0),
+  fNormWeightErr(0x0)
 {
   // Default constructor
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -233,12 +232,6 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fQmean(),
   fDampStart(0),
   fDampStep(0),
-  fMomResC2(),
-  fMomRes3DTerm1(),
-  fMomRes3DTerm2(),
-  fMomRes3DTerm3(),
-  fMomRes3DTerm4(),
-  fMomRes3DTerm5(),
   fTPCTOFboundry(0),
   fTOFboundry(0),
   fSigmaCutTPC(0),
@@ -263,8 +256,6 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fQlbinL(0),
   fQlbinH(0),
   fDummyB(0),
-  fNormWeight(0x0),
-  fNormWeightErr(0x0),
   fDefaultsCharMult(),
   fDefaultsCharSE(),
   fDefaultsCharME(),
@@ -281,7 +272,15 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fFSI2SS(),
   fFSI2OS(),
   fFSIOmega0SS(),
-  fFSIOmega0OS()
+  fFSIOmega0OS(),
+  fMomResC2(),
+  fMomRes3DTerm1(),
+  fMomRes3DTerm2(),
+  fMomRes3DTerm3(),
+  fMomRes3DTerm4(),
+  fMomRes3DTerm5(),
+  fNormWeight(0x0),
+  fNormWeightErr(0x0)
 {
   // Main constructor
   fLEGO = lego;
@@ -391,12 +390,6 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fQmean(),
     fDampStart(obj.fDampStart),
     fDampStep(obj.fDampStep),
-    fMomResC2(),
-    fMomRes3DTerm1(),
-    fMomRes3DTerm2(),
-    fMomRes3DTerm3(),
-    fMomRes3DTerm4(),
-    fMomRes3DTerm5(),
     fTPCTOFboundry(obj.fTPCTOFboundry),
     fTOFboundry(obj.fTOFboundry),
     fSigmaCutTPC(obj.fSigmaCutTPC),
@@ -421,8 +414,6 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fQlbinL(obj.fQlbinL),
     fQlbinH(obj.fQlbinH),
     fDummyB(obj.fDummyB),
-    fNormWeight(),
-    fNormWeightErr(),
     fDefaultsCharMult(),
     fDefaultsCharSE(),
     fDefaultsCharME(),
@@ -439,7 +430,15 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fFSI2SS(),
     fFSI2OS(),
     fFSIOmega0SS(),
-    fFSIOmega0OS()
+    fFSIOmega0OS(),
+    fMomResC2(),
+    fMomRes3DTerm1(),
+    fMomRes3DTerm2(),
+    fMomRes3DTerm3(),
+    fMomRes3DTerm4(),
+    fMomRes3DTerm5(),
+    fNormWeight(),
+    fNormWeightErr()
 {
   // Copy constructor  
 }
@@ -546,6 +545,8 @@ AliChaoticity::~AliChaoticity()
   if(fMomRes3DTerm3) delete fMomRes3DTerm3;
   if(fMomRes3DTerm4) delete fMomRes3DTerm4;
   if(fMomRes3DTerm5) delete fMomRes3DTerm5;
+  if(fNormWeight) delete fNormWeight;
+  if(fNormWeightErr) delete fNormWeightErr;
 
   for(int i=0; i<fMultLimit; i++){
     if(fPairLocationSE[i]) delete [] fPairLocationSE[i];
