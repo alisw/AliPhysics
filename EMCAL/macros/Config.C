@@ -1,3 +1,4 @@
+// Config modified from production LHC12a11a
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
 // root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
@@ -44,6 +45,7 @@
 
 Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
+AliGenerator *GenParamCalo(Int_t nPart, Int_t type, TString calo);
 
 Int_t  year = 2012;
 Bool_t checkGeoAndRun = kFALSE;
@@ -82,7 +84,7 @@ void Config()
     return;
   }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(100);
+  rl->SetNumberOfEventsPerFile(10000);
   gAlice->SetRunLoader(rl);
   
   // Set the trigger configuration
@@ -133,32 +135,77 @@ void Config()
   gMC->SetCut("TOFMAX", tofmax); 
   
   
-  int     nParticles = 2;
-  if (gSystem->Getenv("CONFIG_NPARTICLES"))
-  {
-    nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-  }
+//  int     nParticles = 1;
+//  if (gSystem->Getenv("CONFIG_NPARTICLES"))
+//  {
+//    nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
+//  }
+//  
+//  if (gSystem->Getenv("CONFIG_YEAR"))
+//  {
+//    year = atoi(gSystem->Getenv("CONFIG_YEAR"));
+//  }
+//  
+//  AliGenBox *gener = new AliGenBox(nParticles);
+//  gener->SetMomentumRange(1.,10.);
+//  
+//  if     (year == 2010)
+//    gener->SetPhiRange(80.0,120.0);
+//  else if(year == 2011)
+//    gener->SetPhiRange(80.0,180.0);
+//  else
+//    gener->SetPhiRange(80.0,190.0);
+//  
+//  gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
+//  
+//  gener->SetOrigin(0,0,0);        //vertex position
+//  gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
+//  gener->SetPart(221);
+//  gener->SetDecayParticle(22);
+//  gener->SetNeutralMesonDecayInto2Photon(kTRUE);
+//  gener->SetDecayPhiRange(80,180);
+//  gener->SetDecayEtaRange(-0.7,0.7);
+//  gener->SetDecayERange(0.5,10000);
+//  gener->SetDecayPtRange(0.5,10000);
   
-  if (gSystem->Getenv("CONFIG_YEAR"))
-  {
-    year = atoi(gSystem->Getenv("CONFIG_YEAR"));
-  }
+//  AliGenLib* lib   = new AliGenPHOSlib();
+//  Int_t      type  = AliGenPHOSlib::kEtaFlat;
+//  AliGenParam *gener = new AliGenParam(1,lib,type,"");
+//	gener->SetMomentumRange(0,999);
+//	gener->SetPtRange(1,30);
+//	gener->SetPhiRange(80, 200.);
+//	gener->SetYRange(-2,2);
+//	gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+//	gener->SetCutOnChild(1);
+//  gener->SetChildPtRange(0.1,30);
+//	gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+//  gener->SetChildPhiRange(80, 180.);
+//	gener->SetOrigin(0,0,0);        //vertex position
+//	gener->SetSigma(0,0,5.3);       //Sigma in (X,Y,Z) (cm) on IP position
+//	gener->SetForceDecay(kGammaEM);
+//
+//  gener->SetTrackingFlag(0);
   
-  AliGenBox *gener = new AliGenBox(nParticles);
-  gener->SetMomentumRange(1.,10.);
+  AliGenCocktail *gener = new AliGenCocktail();
+  gener->SetProjectile("A", 208, 82);
+  gener->SetTarget    ("A", 208, 82);
   
-  if     (year == 2010)
-    gener->SetPhiRange(80.0,120.0);
-  else if(year == 2011)
-    gener->SetPhiRange(80.0,180.0);
-  else
-    gener->SetPhiRange(80.0,190.0);
+  // 1 Pi0 in EMCAL, 2010 configuration, 4 SM
+  AliGenParam *gEMCPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "EMCAL");
+  gener->AddGenerator(gEMCPi0,"pi0EMC", 1);
   
-  gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
+  // 1 Pi0 in PHOS
+  AliGenParam *gPHSPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "PHOS");
+  gener->AddGenerator(gPHSPi0,"pi0PHS", 1);
   
-  gener->SetOrigin(0,0,0);        //vertex position
-  gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-  gener->SetPart(kGamma);
+  // 1 Eta in EMCAL, 2010 configuration, 4 SM
+  AliGenParam *gEMCEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "EMCAL");
+  gener->AddGenerator(gEMCEta,"etaEMC", 1);
+  
+  // 1 Pi0 in PHOS
+  AliGenParam *gPHSEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "PHOS");
+  gener->AddGenerator(gPHSEta,"etaPHS", 1);
+  
   gener->Init();
   
   // 
@@ -169,27 +216,27 @@ void Config()
   // Field (L3 0.5 T)
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
   
-  Int_t   iABSO  =  1;
-  Int_t   iDIPO  =  1;
-  Int_t   iFMD   =  1;
-  Int_t   iFRAME =  1;
-  Int_t   iHALL  =  1;
-  Int_t   iITS   =  1;
-  Int_t   iMAG   =  1;
-  Int_t   iMUON  =  1;
+  Int_t   iABSO  =  0;
+  Int_t   iDIPO  =  0;
+  Int_t   iFMD   =  0;
+  Int_t   iFRAME =  0;
+  Int_t   iHALL  =  0;
+  Int_t   iITS   =  0;
+  Int_t   iMAG   =  0;
+  Int_t   iMUON  =  0;
   Int_t   iPHOS  =  1;
-  Int_t   iPIPE  =  1;
-  Int_t   iPMD   =  1;
-  Int_t   iHMPID =  1;
-  Int_t   iSHIL  =  1;
-  Int_t   iT0    =  1;
-  Int_t   iTOF   =  1;
-  Int_t   iTPC   =  1;
-  Int_t   iTRD   =  1;
-  Int_t   iZDC   =  1;
+  Int_t   iPIPE  =  0;
+  Int_t   iPMD   =  0;
+  Int_t   iHMPID =  0;
+  Int_t   iSHIL  =  0;
+  Int_t   iT0    =  0;
+  Int_t   iTOF   =  0;
+  Int_t   iTPC   =  0;
+  Int_t   iTRD   =  0;
+  Int_t   iZDC   =  0;
   Int_t   iEMCAL =  1;
   Int_t   iACORDE=  0;
-  Int_t   iVZERO =  1;
+  Int_t   iVZERO =  0;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -386,3 +433,45 @@ void LoadPythia()
   gSystem->Load("libAliPythia6.so");  // ALICE specific
   // implementations                           
 }
+
+
+AliGenerator * GenParamCalo(Int_t nPart, Int_t type, TString calo)
+{
+  // nPart of type (Pi0, Eta, Pi0Flat, EtaFlat, ...) in EMCAL or PHOS
+  // CAREFUL EMCAL year 2010 configuration
+  AliGenParam *gener = new AliGenParam(nPart,new AliGenPHOSlib(),type,"");
+  
+  // meson cuts
+  gener->SetMomentumRange(0,999);
+  gener->SetYRange(-2,2);
+  gener->SetPtRange(1,30);
+  // photon cuts
+  gener->SetForceDecay(kGammaEM); // Ensure the decays are photons
+  gener->SetCutOnChild(1);
+  gener->SetChildPtRange(0.,30);
+  
+  if(calo=="EMCAL")
+  {
+    //meson acceptance
+    gener->SetPhiRange(80., 100.); // year 2010
+    //gener->SetPhiRange(80., 180.); // year 2011
+    gener->SetThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+    //decay acceptance
+    gener->SetChildThetaRange(EtaToTheta(0.7),EtaToTheta(-0.7));
+    gener->SetChildPhiRange(80., 100.); // year 2010
+    //gener->SetChildPhiRange(80., 180.); // year 2011
+  }
+  else if(calo=="PHOS")
+  {
+    //meson acceptance
+    gener->SetPhiRange(260., 320.);
+    gener->SetThetaRange(EtaToTheta(0.13),EtaToTheta(-0.13));
+    //decay acceptance
+    gener->SetChildThetaRange(EtaToTheta(0.13),EtaToTheta(-0.13));
+    gener->SetChildPhiRange(260., 320.);
+  }
+  
+  return gener;
+  
+}
+

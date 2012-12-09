@@ -7,7 +7,7 @@ LLNL
  
 */
 
-void TestEMCALSimulation(Int_t nev =1, Bool_t raw = kFALSE) {
+void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE) {
 
   AliSimulation simulator;
   simulator.SetConfigFile("Config.C");

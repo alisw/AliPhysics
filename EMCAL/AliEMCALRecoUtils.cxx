@@ -652,10 +652,10 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
   
   Float_t energy = cluster->E();
 
-  if(energy < 0.1)
+  if(energy < 0.05)
   {
-    // Clusters with less than 100 MeV or negative are not possible
-    AliInfo(Form("Too Low Cluster energy!, E = %f < 0.1 GeV",energy));
+    // Clusters with less than 50 MeV or negative are not possible
+    AliInfo(Form("Too Low Cluster energy!, E = %f < 0.05 GeV",energy));
     return 0;
   }
   
