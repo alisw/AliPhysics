@@ -1,4 +1,3 @@
-// Config modified from production LHC12a11a
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
 // root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
@@ -135,38 +134,28 @@ void Config()
   gMC->SetCut("TOFMAX", tofmax); 
   
   
-//  int     nParticles = 1;
-//  if (gSystem->Getenv("CONFIG_NPARTICLES"))
-//  {
-//    nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-//  }
-//  
-//  if (gSystem->Getenv("CONFIG_YEAR"))
-//  {
-//    year = atoi(gSystem->Getenv("CONFIG_YEAR"));
-//  }
-//  
-//  AliGenBox *gener = new AliGenBox(nParticles);
-//  gener->SetMomentumRange(1.,10.);
-//  
-//  if     (year == 2010)
-//    gener->SetPhiRange(80.0,120.0);
-//  else if(year == 2011)
-//    gener->SetPhiRange(80.0,180.0);
-//  else
-//    gener->SetPhiRange(80.0,190.0);
-//  
-//  gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
-//  
-//  gener->SetOrigin(0,0,0);        //vertex position
-//  gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-//  gener->SetPart(221);
-//  gener->SetDecayParticle(22);
-//  gener->SetNeutralMesonDecayInto2Photon(kTRUE);
-//  gener->SetDecayPhiRange(80,180);
-//  gener->SetDecayEtaRange(-0.7,0.7);
-//  gener->SetDecayERange(0.5,10000);
-//  gener->SetDecayPtRange(0.5,10000);
+  int     nParticles = 1;
+  if (gSystem->Getenv("CONFIG_NPARTICLES"))
+  {
+    nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
+  }
+  
+  if (gSystem->Getenv("CONFIG_YEAR"))
+  {
+    year = atoi(gSystem->Getenv("CONFIG_YEAR"));
+  }
+  
+  AliGenBox *gener = new AliGenBox(nParticles);
+  gener->SetMomentumRange(1.,10.);
+  
+  if     (year == 2010)
+    gener->SetPhiRange(80.0,120.0);
+  else if(year == 2011)
+    gener->SetPhiRange(80.0,180.0);
+  else
+    gener->SetPhiRange(80.0,190.0);
+  
+  gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
   
 //  AliGenLib* lib   = new AliGenPHOSlib();
 //  Int_t      type  = AliGenPHOSlib::kEtaFlat;
@@ -184,28 +173,21 @@ void Config()
 //	gener->SetSigma(0,0,5.3);       //Sigma in (X,Y,Z) (cm) on IP position
 //	gener->SetForceDecay(kGammaEM);
 //
-//  gener->SetTrackingFlag(0);
+//  //gener->SetTrackingFlag(0);
   
-  AliGenCocktail *gener = new AliGenCocktail();
-  gener->SetProjectile("A", 208, 82);
-  gener->SetTarget    ("A", 208, 82);
-  
-  // 1 Pi0 in EMCAL, 2010 configuration, 4 SM
-  AliGenParam *gEMCPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "EMCAL");
-  gener->AddGenerator(gEMCPi0,"pi0EMC", 1);
-  
-  // 1 Pi0 in PHOS
-  AliGenParam *gPHSPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "PHOS");
-  gener->AddGenerator(gPHSPi0,"pi0PHS", 1);
-  
-  // 1 Eta in EMCAL, 2010 configuration, 4 SM
-  AliGenParam *gEMCEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "EMCAL");
-  gener->AddGenerator(gEMCEta,"etaEMC", 1);
-  
-  // 1 Pi0 in PHOS
-  AliGenParam *gPHSEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "PHOS");
-  gener->AddGenerator(gPHSEta,"etaPHS", 1);
-  
+//  AliGenCocktail *gener = new AliGenCocktail();
+//  gener->SetProjectile("A", 208, 82);
+//  gener->SetTarget    ("A", 208, 82);
+//  
+//  // 1 Pi0 in EMCAL, 2010 configuration, 4 SM
+//  AliGenParam *gEMCPi0 = GenParamCalo(1, AliGenPHOSlib::kPi0Flat, "EMCAL");
+//  gener->AddGenerator(gEMCPi0,"pi0EMC", 1);
+//  
+//  // 1 Eta in EMCAL, 2010 configuration, 4 SM
+//  AliGenParam *gEMCEta = GenParamCalo(1, AliGenPHOSlib::kEtaFlat, "EMCAL");
+//  gener->AddGenerator(gEMCEta,"etaEMC", 1);
+//  
+ 
   gener->Init();
   
   // 
@@ -224,7 +206,7 @@ void Config()
   Int_t   iITS   =  0;
   Int_t   iMAG   =  0;
   Int_t   iMUON  =  0;
-  Int_t   iPHOS  =  1;
+  Int_t   iPHOS  =  0;
   Int_t   iPIPE  =  0;
   Int_t   iPMD   =  0;
   Int_t   iHMPID =  0;
