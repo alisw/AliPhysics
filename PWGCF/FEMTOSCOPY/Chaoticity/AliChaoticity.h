@@ -73,6 +73,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3D[5]=0x0);
+  //
+
 
  private:
 
@@ -222,14 +224,6 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t fDampStart;
   Float_t fDampStep;
   
-
-  TH2D *fMomResC2;//!
-  TH3D *fMomRes3DTerm1;//!
-  TH3D *fMomRes3DTerm2;//!
-  TH3D *fMomRes3DTerm3;//!
-  TH3D *fMomRes3DTerm4;//!
-  TH3D *fMomRes3DTerm5;//!
-
   Float_t fTPCTOFboundry;
   Float_t fTOFboundry;
   Float_t fSigmaCutTPC;
@@ -251,9 +245,6 @@ class AliChaoticity : public AliAnalysisTaskSE {
 
   Bool_t fDummyB;
 
-  Float_t *******fNormWeight;//! osl kt binning
-  Float_t *******fNormWeightErr;//! osl kt binning
-
   
   Char_t fDefaultsCharMult[kMultLimitPbPb];//!
   Char_t fDefaultsCharSE[kPairLimit];//!
@@ -269,14 +260,24 @@ class AliChaoticity : public AliAnalysisTaskSE {
   TArrayC *fPairSplitCut[4][kMultLimitPbPb];//!
   
   AliChaoticityNormPairStruct *fNormPairs[3];//!
- 
-  TH2D *fFSI2SS;//!
-  TH2D *fFSI2OS;//!
-  TH3D *fFSIOmega0SS;//!
-  TH3D *fFSIOmega0OS;//!
+  
+ public:
+  TH2D *fFSI2SS;
+  TH2D *fFSI2OS;
+  TH3D *fFSIOmega0SS;
+  TH3D *fFSIOmega0OS;
   //
+  TH2D *fMomResC2;
+  TH3D *fMomRes3DTerm1;
+  TH3D *fMomRes3DTerm2;
+  TH3D *fMomRes3DTerm3;
+  TH3D *fMomRes3DTerm4;
+  TH3D *fMomRes3DTerm5;
+  //
+  Float_t *******fNormWeight;//! osl kt binning
+  Float_t *******fNormWeightErr;//! osl kt binning
+  
 
-   
   ClassDef(AliChaoticity, 1); 
 };
 
