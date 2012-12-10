@@ -25,7 +25,6 @@ Bool_t ConfigTOFanalysisKStar
     Float_t                nsigmaKa = 2.0,
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
-    Int_t                  aodN = 0,
     Bool_t                 useMixLS = 0,
     Int_t                  signedPdg = 313
 )
