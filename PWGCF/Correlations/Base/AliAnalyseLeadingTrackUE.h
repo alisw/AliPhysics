@@ -29,6 +29,7 @@ class TClonesArray;
 class TObject;
 class TROOT;
 class TVector3;
+class AliVTrack;
 
 class AliAnalyseLeadingTrackUE : public TObject {
 
@@ -60,6 +61,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
   void 		 RemoveInjectedSignals(TObjArray* tracks, TObject* arrayMC, Int_t maxLabel);
   void 		 RemoveWeakDecays(TObjArray* tracks, TObject* mcObj);
+  Int_t          GetParticleSpecies(AliVTrack      * trk);// PID
   
  private:
   Int_t          fDebug;             // debug flag

@@ -54,6 +54,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
+#include "AliPIDResponse.h"
 
 
 ////////////////////////////////////////////////
@@ -171,6 +172,11 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_SPD", "Reject tracks with cluster in SPD");
     fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
+  }
+  else if (filterbit == 4096) // require TOF matching
+  {
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
+    // FIXME: TOF REQUIREMENTS ARE IN GetParticleSpecies FOR THE MOMENT
   }
   else
   {
@@ -766,6 +772,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
         	if (!isHadron) return 0;				  
 		}
 	*/	
+	if (particleSpecies != -1 && GetParticleSpecies((AliVTrack*) part) != particleSpecies) return 0; // If it is -1 you take all the particles
+
   }else {
   	if (fDebug > 1) AliFatal(" Analysis type not defined !!! ");
 	return 0;
@@ -991,4 +999,140 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
        }
 	
   return kTRUE;
+}
+
+
+Int_t AliAnalyseLeadingTrackUE::GetParticleSpecies(AliVTrack      * trk) 
+{
+  // return PID according to detectors
+  // Get PID response object, if needed
+  // FIXME: THIS IS UGLY!! THE CODE IS COPIED AND ADAPTED FROM PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraBothPID.cxx
+  // TO BE REPLACED BY THE PROPER CLASS ASAP
+  // MF 10/12/12
+
+
+  enum BothPIDType_t {kNSigmaTPC,kNSigmaTOF,kNSigmaTPCTOF};
+
+  enum BothParticleSpecies_t
+  {
+    kSpPion = 0,     kSpKaon,     kSpProton,
+    kNSpecies,
+    kSpUndefined,
+  }; // Particle species used in plotting
+
+  UInt_t fPIDType = kNSigmaTPCTOF;
+
+  // Check TOF matching & PID
+  // FIXME: this should go in the track selection!!
+  UInt_t status; 
+  status=trk->GetStatus();
+  if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){//kTOFout and kTIME
+    return kSpUndefined; 
+  } 
+  
+
+
+  // guess the particle based on the smaller nsigma
+  
+  // rec[kSpPion]=false;
+  // rec[kSpKaon]=false;
+  // rec[kSpProton]=false;
+
+  static AliPIDResponse * fPIDResponse = 0;
+
+  if(!fPIDResponse) 
+    {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+      fPIDResponse = inputHandler->GetPIDResponse();
+    }
+
+  if(!fPIDResponse) 
+    {
+      AliFatal("Cannot get pid response");
+      return 0;
+    }
+  
+
+  // Compute nsigma for each hypthesis
+  AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(trk);
+  
+  const Double_t fshiftTPC = 0, fshiftTOF=0;
+  const Double_t fNSigmaPID = 3; // FIXME
+  // --- TPC
+  Double_t nsigmaTPCkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton)+fshiftTPC);
+  Double_t nsigmaTPCkKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kKaon)+fshiftTPC); 
+  Double_t nsigmaTPCkPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kPion)+fshiftTPC);
+  
+
+  Double_t nsigmaTOFkProton=100.0,nsigmaTOFkKaon=100.0,nsigmaTOFkPion=100.0;
+
+  Double_t nsigmaTPCTOFkProton = TMath::Abs(nsigmaTPCkProton);
+  Double_t nsigmaTPCTOFkKaon   = TMath::Abs(nsigmaTPCkKaon);
+  Double_t nsigmaTPCTOFkPion   = TMath::Abs(nsigmaTPCkPion);
+  if(fPIDType==kNSigmaTOF)
+    {
+      nsigmaTPCTOFkProton = 100.0;
+      nsigmaTPCTOFkKaon   = 100.0;
+      nsigmaTPCTOFkPion   = 100.0;
+      
+    }
+
+  
+  nsigmaTOFkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton)+fshiftTOF);
+  nsigmaTOFkKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon)+fshiftTOF); 
+  nsigmaTOFkPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion)+fshiftTOF); 
+  // the TOF info is used in combined
+  nsigmaTPCTOFkProton = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2.);
+  nsigmaTPCTOFkKaon   = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2.);
+  nsigmaTPCTOFkPion   = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2.);
+  
+  // select the nsigma to be used for the actual PID
+  Double_t nsigmaPion=100; 
+  Double_t nsigmaKaon=100; 
+  Double_t nsigmaProton=100;
+  
+  switch (fPIDType) 
+    {
+    case kNSigmaTPC:
+      nsigmaProton  =  nsigmaTPCkProton;
+      nsigmaKaon    =  nsigmaTPCkKaon  ;
+      nsigmaPion    =  nsigmaTPCkPion  ;
+      break;
+    case kNSigmaTOF:
+      nsigmaProton  =  nsigmaTOFkProton;
+      nsigmaKaon    =  nsigmaTOFkKaon  ;
+      nsigmaPion    =  nsigmaTOFkPion  ;
+      break;
+    case kNSigmaTPCTOF:
+      nsigmaProton  =  nsigmaTPCTOFkProton;
+      nsigmaKaon    =  nsigmaTPCTOFkKaon  ;
+      nsigmaPion    =  nsigmaTPCTOFkPion  ;
+      break;
+    }	
+  
+  // if(nsigmaPion   < fNSigmaPID)
+  //   rec[kSpPion]=true;
+  // if(nsigmaKaon   < fNSigmaPID)
+  //   rec[kSpKaon]=true;
+  // if(nsigmaProton   < fNSigmaPID)
+  //   rec[kSpProton]=true;
+  
+  if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) 
+    return kSpUndefined;//if is the default value for the three
+  if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon   < fNSigmaPID))
+    {
+      return kSpKaon;
+    }
+  if( ( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fNSigmaPID))
+    {
+      return kSpPion;
+    }
+  if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID))
+    {
+      return kSpProton;
+    }
+  // else, return undefined
+  return kSpUndefined;
+  
 }
