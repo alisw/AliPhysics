@@ -27,7 +27,7 @@ class AliSpectraBothTrackCuts;
 #include "TParticle.h"
 #include "AliSpectraBothHistoManager.h" 
 
-namespace AliSpectraNameSpaceBoth {
+/*namespace AliSpectraNameSpaceBoth {
 
   enum BothPIDType_t
    {
@@ -38,13 +38,15 @@ namespace AliSpectraNameSpaceBoth {
 
 
 
-}
+}*/
 
 using namespace AliSpectraNameSpaceBoth;
 
 class AliSpectraBothPID : public TNamed
 {
 public:
+   enum BothPIDType_t {kNSigmaTPC,kNSigmaTOF,kNSigmaTPCTOF};
+
   AliSpectraBothPID() ;
   AliSpectraBothPID(BothPIDType_t pidType);
   virtual  ~AliSpectraBothPID() {}
@@ -76,7 +78,7 @@ private:
   AliSpectraBothPID(const AliSpectraBothPID&);
   AliSpectraBothPID& operator=(const AliSpectraBothPID&);
 
-  ClassDef(AliSpectraBothPID, 1);
+  ClassDef(AliSpectraBothPID, 2);
 
 };
 #endif
