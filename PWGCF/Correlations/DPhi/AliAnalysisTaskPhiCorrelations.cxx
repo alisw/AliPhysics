@@ -122,6 +122,7 @@ fPtMin(0.5),
 fFilterBit(0xFF),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
 fUseChargeHadrons(kFALSE),
+fSelectParticleSpecies(-1),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fTriggerRestrictEta(-1),
@@ -352,6 +353,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
+  settingsTree->Branch("fSelectParticleSpecies", &fSelectParticleSpecies,"ParticleSpecies/I");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
@@ -892,7 +894,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality < 0 && !fCompareCentralities)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fSelectParticleSpecies, kTRUE);
   
   // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
   Bool_t reject = kFALSE;
