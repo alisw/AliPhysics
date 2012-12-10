@@ -284,6 +284,7 @@ public:
   void             SwitchOnSelectEventTimeStamp()          { fTimeStampEventSelect = kTRUE   ; }
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
+  Bool_t           IsSelectEventTimeStampOn()              {return  fTimeStampEventSelect    ; }
   
   Bool_t           IsPileUpFromSPD()               const ;
   Bool_t           IsPileUpFromEMCal()             const ;

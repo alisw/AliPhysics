@@ -455,7 +455,13 @@ void AliCaloTrackReader::InitParameters()
 
   // Parametrized time cut (LHC11c)
   //fEMCALParamTimeCutMin[0] =-5;   fEMCALParamTimeCutMin[1] =-1 ; fEMCALParamTimeCutMin[2] = 1.87; fEMCALParamTimeCutMin[3] = 0.4;   
-  //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;   
+  //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;
+  
+  fTimeStampRunMin = -1;
+  fTimeStampRunMax = 1e12;
+  fTimeStampEventFracMin = -1;
+  fTimeStampEventFracMax = 2;
+
 }
 
 //___________________________________________________________
@@ -696,7 +702,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     Int_t timeStamp = esd->GetTimeStamp();
     Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
   
-    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, //timeStampFrac);
+    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
     
     if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
   

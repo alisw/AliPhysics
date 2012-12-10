@@ -34,6 +34,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    AddAnalysis(TObject* ana, Int_t n) ;
 
+  void    FillControlHistograms();
+  
   TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
   TList * GetListOfAnalysisCuts();
   TList * GetOutputContainer() ;
@@ -97,8 +99,6 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1F *   fhPileUpClusterMult; //! N clusters with high time
   TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
-  TH2F *   fh2PileUpClusterMult; //! N clusters with high time vs N clusterd with small time
-  TH2F *   fh2PileUpClusterMultAndSPDPileUp; //! N clusters with high time vs N clusterd with small time in events tagged as pile-up by SPD
   TH1F *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
@@ -109,10 +109,11 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhTrackBCEvent;      //! N events depending on the existance of a track in a given bunch crossing
   TH1F *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
   TH1F *   fhPrimaryVertexBC;   //! Primary vertex BC
-
+  TH1F *   fhTimeStampFraction; //! event fraction depending on Time Stamp, only if activated on reader
+  
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,14)
+  ClassDef(AliAnaCaloTrackCorrMaker,15)
 } ;
  
 
