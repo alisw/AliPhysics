@@ -28,6 +28,13 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
    Double_t nSigmaTOF_K=3.0;
    Double_t etaRange=0.8;
 
+   //defaults
+   Double_t trackPtMin=0.15;
+   Double_t trackPtMax=1.e20;
+   Int_t NclTPC=70;
+   Char_t DCAxyFormula[100]="0.0182+0.035/pt^1.01";
+   Bool_t useTrackPtCut=kFALSE;
+
    Bool_t useTPC_Pi=kFALSE;
    Bool_t useTOF_Pi=kFALSE;
    Bool_t useTPC_K=kFALSE;
@@ -87,6 +94,37 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
       useEta = kTRUE;
    }
 
+   if (opt.Contains("trackPt")) {
+      useTrackPtCut = kTRUE;
+      if (opt.Contains("trackPtMin015")) trackPtMin = 0.15;
+      if (opt.Contains("trackPtMin02")) trackPtMin = 0.2;
+      if (opt.Contains("trackPtMin05")) trackPtMin = 0.5;
+      if (opt.Contains("trackPtMin06")) trackPtMin = 0.6;
+
+      if (opt.Contains("trackPtMax18")) trackPtMax = 1.8;
+      if (opt.Contains("trackPtMax20")) trackPtMax = 2.0;
+      if (opt.Contains("trackPtMax25")) trackPtMax = 2.5;
+   }
+
+   Bool_t useNclTPC = kFALSE;
+   if (opt.Contains("NclTPC")) {
+      if (opt.Contains("NclTPC70")) NclTPC=70;
+      if (opt.Contains("NclTPC75")) NclTPC=75;
+      if (opt.Contains("NclTPC80")) NclTPC=80;
+      if (opt.Contains("NclTPC85")) NclTPC=85;
+      if (opt.Contains("NclTPC90")) NclTPC=90;
+      if (opt.Contains("NclTPC100")) NclTPC=100;
+      useNclTPC = kTRUE;
+   }
+
+   Bool_t useDCAxy = kFALSE;
+   if (opt.Contains("DCAxy")) {
+      if (opt.Contains("DCAxyFormula7s")) sprintf(DCAxyFormula,"0.0182+0.035/pt^1.01");
+      if (opt.Contains("DCAxyFormula6s")) sprintf(DCAxyFormula,"0.0156+0.03/pt^1.01");
+      if (opt.Contains("DCAxyFormula5s")) sprintf(DCAxyFormula,"0.013+0.025/pt^1.01");
+      useDCAxy = kTRUE;
+   }
+
    // KAON SETTINGS =======================================
    TString scheme="";
    TString cutname = "K_Kstar";
@@ -96,8 +134,10 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
    AliRsnCutTrackQuality *qualityCutK = new AliRsnCutTrackQuality("cutQuatityK");
    if (useCommonQualityCut>=0) {
       qualityCutK->SetAODTestFilterBit(useCommonQualityCut);
+      if(useDCAxy) {qualityCutK->SetCheckOnlyFilterBit(kFALSE); qualityCutK->SetDCARPtFormula(DCAxyFormula);}
    } else {
       qualityCutK->SetDefaults2010();
+      if(useDCAxy) qualityCutK->SetDCARPtFormula(DCAxyFormula);
    }
    cutsK->AddCut(qualityCutK);
    if (!scheme.IsNull()) scheme += "&";
@@ -127,6 +167,30 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutEtaK->GetName();
    }
+
+   if (useTrackPtCut) {
+      Printf("Adding K Pt min=%.3f max=%.3f ...",trackPtMin,trackPtMax);
+      AliRsnValueDaughter *valTrackPtK = new AliRsnValueDaughter(Form("val%sTrackPt%s",AliPID::ParticleName(type2),opt.Data()),AliRsnValueDaughter::kPt);
+
+      AliRsnCutValue *cutTrackPtK = new AliRsnCutValue(Form("cut%sTrackPt%s",AliPID::ParticleName(type2),opt.Data()),trackPtMin,trackPtMax);
+      cutTrackPtK->SetTargetType(AliRsnTarget::kDaughter);
+      cutTrackPtK->SetValueObj(valTrackPtK);
+      cutsK->AddCut(cutTrackPtK);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutTrackPtK->GetName();
+   }
+
+   if (useNclTPC) {
+      Printf("Adding NclTPC >= %i",NclTPC);
+      AliRsnValueDaughter *valNclTPCK = new AliRsnValueDaughter(Form("val%sNclTPC%s",AliPID::ParticleName(type2),opt.Data()),AliRsnValueDaughter::kNTPCclusters);
+      AliRsnCutValue *cutNclTPCK = new AliRsnCutValue(Form("cut%sNclTPC%s",AliPID::ParticleName(type2),opt.Data()),NclTPC,1000.);
+      cutNclTPCK->SetTargetType(AliRsnTarget::kDaughter);
+      cutNclTPCK->SetValueObj(valNclTPCK);
+      cutsK->AddCut(cutNclTPCK);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutNclTPCK->GetName();
+   }
+
    if (usePDG) {
       AliRsnCutPID *cutPDGK = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type2),opt.Data()),type2,0.0,kTRUE);
       cutsK->AddCut(cutPDGK);
@@ -149,8 +213,10 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
    AliRsnCutTrackQuality *qualityCutPi = new AliRsnCutTrackQuality("cutQuatityPi");
    if (useCommonQualityCut>=0) {
       qualityCutPi->SetAODTestFilterBit(useCommonQualityCut);
+      if(useDCAxy) {qualityCutPi->SetCheckOnlyFilterBit(kFALSE); qualityCutPi->SetDCARPtFormula(DCAxyFormula);}
    } else {
       qualityCutPi->SetDefaults2010();
+      if(useDCAxy) qualityCutPi->SetDCARPtFormula(DCAxyFormula);
    }
    cutsP->AddCut(qualityCutPi);
    if (!scheme.IsNull()) scheme += "&";
@@ -177,6 +243,29 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
       cutsP->AddCut(cutEtaP);
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutEtaP->GetName();
+   }
+
+   if (useTrackPtCut) {
+      Printf("Adding Pi Pt min=%.3f max=%.3f ...",trackPtMin,trackPtMax);
+      AliRsnValueDaughter *valTrackPtP = new AliRsnValueDaughter(Form("val%sTrackPt%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kPt);
+
+      AliRsnCutValue *cutTrackPtP = new AliRsnCutValue(Form("cut%sTrackPt%s",AliPID::ParticleName(type1),opt.Data()),trackPtMin,trackPtMax);
+      cutTrackPtP->SetTargetType(AliRsnTarget::kDaughter);
+      cutTrackPtP->SetValueObj(valTrackPtP);
+      cutsP->AddCut(cutTrackPtP);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutTrackPtP->GetName();
+   }
+
+   if (useNclTPC) {
+      Printf("Adding NclTPC Pi >= %i",NclTPC);
+      AliRsnValueDaughter *valNclTPCP = new AliRsnValueDaughter(Form("val%sNclTPC%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kNTPCclusters);
+      AliRsnCutValue *cutNclTPCP = new AliRsnCutValue(Form("cut%sNclTPC%s",AliPID::ParticleName(type1),opt.Data()),NclTPC,1000.);
+      cutNclTPCP->SetTargetType(AliRsnTarget::kDaughter);
+      cutNclTPCP->SetValueObj(valNclTPCP);
+      cutsP->AddCut(cutNclTPCP);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutNclTPCP->GetName();
    }
    if (usePDG) {
       AliRsnCutPID *cutPDGP = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type1),opt.Data()),type1,0.0,kTRUE);
@@ -205,7 +294,7 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
       }
    } else {
       AliRsnDaughterSelector *sel = rsnIH->GetSelector();
-//       sel->SetLabelCheck(kFALSE);
+      //       sel->SetLabelCheck(kFALSE);
       sel->Add(cutsP, kTRUE);
       sel->Add(cutsK, kTRUE);
    }
