@@ -1475,8 +1475,13 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     paveText->SetShadowColor(0);
     paveText->SetBorderSize(0);
     paveText->SetFillStyle(0);
-    paveText->AddText(TString(objArray->At(0)->GetName()) + "GeV/#it{c}");
-    paveText->AddText(TString(objArray->At(1)->GetName()) + "GeV/#it{c}");
+    TString tmpStr(objArray->At(0)->GetName());
+    tmpStr.ReplaceAll("p_", "#it{p}_");
+    paveText->AddText(tmpStr + "GeV/#it{c}");
+
+    TString tmpStr(objArray->At(1)->GetName());
+    tmpStr.ReplaceAll("p_", "#it{p}_");
+    paveText->AddText(tmpStr + "GeV/#it{c}");
   
     TString label2(hist2->GetTitle());
     TObjArray* objArray2 = label2.Tokenize("-");
@@ -1754,8 +1759,15 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     paveText4->SetY1NDC(0.68);
     paveText4->SetX2NDC(0.42);
     paveText4->SetY2NDC(0.96);
-    paveText4->AddText(Form("%sGeV/#it{c}", objArray->At(0)->GetName()));
-    paveText4->AddText(Form("%sGeV/#it{c}", objArray->At(1)->GetName()));
+
+    TString tmpStr(objArray->At(0)->GetName());
+    tmpStr.ReplaceAll("p_", "#it{p}_");
+    paveText4->AddText(tmpStr + "GeV/#it{c}");
+
+    TString tmpStr(objArray->At(1)->GetName());
+    tmpStr.ReplaceAll("p_", "#it{p}_");
+    paveText4->AddText(tmpStr + "GeV/#it{c}");
+    
     paveText4->Draw();
     
 //     DrawLatex(0.27, 0.19, 1, Form("%sGeV/#it{c}       %sGeV/#it{c}", objArray->At(0)->GetName(), objArray->At(1)->GetName()), fontSize);
@@ -2147,7 +2159,7 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   if (id1 == 0 || id1 == 2)
     legend->SetHeader("Near side   Away side");
   else if (id1 == 4)
-    legend->SetHeader("    #it{v}_{2}            #it{v}_{3}");
+    legend->SetHeader("    #it{v}_{2}          #it{v}_{3}");
     
   legend->SetFillColor(0);
   legend->SetBorderSize(0);
@@ -2155,13 +2167,13 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   for (Int_t i=0; i<NGraphs; i++)
   {
     graphs[i][id1]->SetMarkerStyle(markers[i]);
-    graphs[i][id1]->SetMarkerSize(1.5);
+    graphs[i][id1]->SetMarkerSize(1.7);
     graphs[i][id1]->SetMarkerColor(1);
     graphs[i][id1]->SetLineColor(1);
     graphs[i][id1]->Draw("PSAME");
 
     graphs[i][id2]->SetMarkerStyle(markers2[i]);
-    graphs[i][id2]->SetMarkerSize(1.5);
+    graphs[i][id2]->SetMarkerSize(1.7);
     graphs[i][id2]->SetMarkerColor(2);
     graphs[i][id2]->SetLineColor(2);
     graphs[i][id2]->Draw("PSAME");
@@ -2174,11 +2186,12 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     TObjArray* objArray = label.Tokenize("-");
     label.Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName());
     label.ReplaceAll("-", ";");
+    label.ReplaceAll("p_", "#it{p}_");
     label += "GeV/c";
 
     if (graphs[i][id1]->GetN() > 0)
     {
-      legend->AddEntry(graphs[i][id1], "    ", "P");
+      legend->AddEntry(graphs[i][id1], (id1 == 4) ? " " : "    ", "P");
       legend->AddEntry(graphs[i][id2], label, "P");
     }
   }
@@ -2221,6 +2234,7 @@ void PaperCorrFunc(const char* fileName, Int_t centr)
 
   hist1 = (TH2*) hist1->Clone();
   hist1->Rebin2D(2, 2); hist1->Scale(0.25);
+//   hist1->Rebin2D(2, 1); hist1->Scale(0.5);
   
   hist1->GetYaxis()->SetRangeUser(-1.99, 1.99);
   hist1->GetXaxis()->SetTitleOffset(1.5);
@@ -2253,8 +2267,14 @@ void PaperCorrFunc(const char* fileName, Int_t centr)
   paveText->SetShadowColor(0);
   paveText->SetBorderSize(0);
   paveText->SetFillStyle(0);
-  paveText->AddText(TString(objArray->At(0)->GetName()) + "GeV/#it{c}");
-  paveText->AddText(TString(objArray->At(1)->GetName()) + "GeV/#it{c}");
+  
+  TString tmpStr(objArray->At(0)->GetName());
+  tmpStr.ReplaceAll("p_", "#it{p}_");
+  paveText->AddText(tmpStr + "GeV/#it{c}");
+
+  TString tmpStr(objArray->At(1)->GetName());
+  tmpStr.ReplaceAll("p_", "#it{p}_");
+  paveText->AddText(tmpStr + "GeV/#it{c}");
 //   paveText->AddText(objArray->At(1)->GetName());
 
   TPaveText* paveText2 = new TPaveText(0.63, 0.86, 0.97, 0.97, "BRNDC");
