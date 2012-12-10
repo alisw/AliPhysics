@@ -50,7 +50,7 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
 		  //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
 		  //           eventCuts->SetCentralityRange(0.0,80.0);
 		  eventCuts->SetRequireVertex();
@@ -214,14 +214,12 @@ class LMEECutLib {
 		  //cgSecondTrackFilterPIDTPC1->AddCut(pidTPChardTOF);
 		  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
 		  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignal);
-		  cgSecondTrackFilterPIDTPC1->AddCut(GetTrackCutsAna(cutSet));
 		  anaCuts = cgSecondTrackFilterPIDTPC1;
 		  break;
 		case kPbPb2011TPC :
                   AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
                   cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
                   cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignalWide);
-                  cgSecondTrackFilterPIDTPC1->AddCut(GetTrackCutsAna(cutSet));
                   anaCuts = cgSecondTrackFilterPIDTPC1;
                   break;
 
@@ -230,7 +228,6 @@ class LMEECutLib {
                   cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
                   cgSecondTrackFilterPIDTPC1->AddCut(pidTPCandTOF);
                   cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignalWide);
-                  cgSecondTrackFilterPIDTPC1->AddCut(GetTrackCutsAna(cutSet));
                   anaCuts = cgSecondTrackFilterPIDTPC1;
                   break;
 
@@ -239,7 +236,6 @@ class LMEECutLib {
 		  cgSecondTrackFilterPIDTPC2->AddCut(pMin);
 		  cgSecondTrackFilterPIDTPC2->AddCut(pidTT);
 		  cgSecondTrackFilterPIDTPC2->AddCut(pidTPCsignal);
-		  cgSecondTrackFilterPIDTPC2->AddCut(GetTrackCutsAna(cutSet));
 		  anaCuts = cgSecondTrackFilterPIDTPC2;
 		  break;
 		case kpp2010TPCandTOF :
@@ -274,15 +270,12 @@ class LMEECutLib {
 		  AliDielectronPID *pidITSTPC = new AliDielectronPID("TPCpre","TPCpre");
 		  pidITSTPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
 		  cgITSTPC->AddCut(pidITSTPC);
-		  cgITSTPC->AddCut(GetTrackCutsAna(cutSet));
 
-		  //	  cgITSTPC->AddCut(GetTrackCutsAna(cutSet));
 
 		  AliDielectronCutGroup* cgITSSA = new AliDielectronCutGroup("cgITSSA","cgITSSA",AliDielectronCutGroup::kCompAND);
 		  AliDielectronPID *pidITSSA = new  AliDielectronPID("pidITSSA","pidITSSA");
 		  pidITSSA->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-3.,3.);
 		  cgITSSA->AddCut(pidITSSA);
-		  cgITSSA->AddCut(GetTrackCutsAna(cutSet));
 		  //	  cgITSSA->AddCut(GetTrackCutsPre(cutSet));
 
 		  AliDielectronCutGroup* cgInitialTrackFilter = new AliDielectronCutGroup("cgInitialTrackFilter","cgInitialTrackFilter",AliDielectronCutGroup::kCompOR);
@@ -358,6 +351,39 @@ class LMEECutLib {
 	  return pairCuts;
 	}
 
+	AliAnalysisCuts* GetESDTrackCutsAna(Int_t cutSet) {
+	  AliESDtrackCuts* esdTrackCutsH = 0x0;
+	  switch (cutSet) {
+		case kPbPb2011TPCandTOF :
+		case kPbPb2011TPC :
+		case kPbPb2011TPCandTOFwide :
+		case kPbPb2011TPCorTOF  :
+		case kpp2010TPCandTOF :
+		case kpp2010TPCorTOF  :
+			// standard cuts with very loose DCA: Bit4 (Int: 16), AOD095&115
+		  
+			 esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+			 esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
+			 esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
+			 esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+		/* 
+
+		  esdTrackCutsH = new AliESDtrackCuts();
+		  esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
+		  //Not done so far via dielectron cuts:
+		  */
+		  /*
+		  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+		  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+		  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+		   */
+
+		  break;
+		default: cout << "No Analysis Track Cut defined " << endl;
+	  }
+	  return esdTrackCutsH;
+	} 
+
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet) {
 	  AliDielectronCutGroup* trackCuts=0x0;
 	  switch (cutSet) {
@@ -368,55 +394,27 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 			trackCuts = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
-			AliESDtrackCuts* trackCutsESD ;
 
-			/*
-  			trackCutsESD = new AliESDtrackCuts();
-			trackCutsESD->SetDCAToVertex2D(kTRUE);
-			trackCutsESD->SetMaxDCAToVertexZ(3.0);
-			trackCutsESD->SetMaxDCAToVertexXY(1.0);
-			*/
 			trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-		        //Not necessary for AOD?
-		        //-AOD-trackCuts->SetDCAToVertex2D(kTRUE);
-
-				//Legacy cut: Use Crossed Rows in ESD, in AOD ASAP
-			//New: See below
-
-			trackCutsAOD->AddCut(AliDielectronVarManager::kPt,0.05,200.);
+			trackCutsAOD->AddCut(AliDielectronVarManager::kPt,0.05,6.);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kEta,-0.84,0.84);
-		        //DCA Cut
-
+			//DCA Cut
 			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-
 			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,     3.0, 100.0);
-
-			trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
 			AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-			//trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
-//			trackCutsDiel->SetAODFilterBit(1<<4);
-//			trackCutsDiel->SetAODFilterBit(4); //Relatively loose, TPConly + kSPD first
-			trackCutsDiel->SetAODFilterBit(16); 
+			trackCutsDiel->SetAODFilterBit(16); //does nothing for ESDs
 			trackCutsDiel->SetRequireITSRefit(kTRUE);
 			trackCutsDiel->SetRequireTPCRefit(kTRUE);
-			//-AOD-trackCuts->SetMinNClustersITS(3);
-			//trackCutsDiel->SetITSclusterCut(AliDielectronTrackCuts::kAtLeast,7); //>=3
-			
+
 			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-			// trackCutsAOD->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
-			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);
-			//-AOD-trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
-			//'old' cut
-			//trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,     110.0, 170.0);
+//			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,     80., 140.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     110.0, 160.0);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.0);
-			//	trackCutsDiel->SetTPCNclFRobust(110);
-			//	trackCutsDiel->SetMinNCrossedRowsOverFindable(0.8);
+			trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.0);//tighter than before,
+																						 //due to AOD production
 			trackCuts->AddCut(trackCutsDiel);
 			trackCuts->AddCut(trackCutsAOD);
-			//trackCuts->AddCut(trackCutsESD);
 		  break;
 		default: cout << "No Analysis Track Cut defined " << endl;
 	  }

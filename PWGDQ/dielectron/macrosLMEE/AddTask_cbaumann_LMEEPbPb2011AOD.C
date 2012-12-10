@@ -1,4 +1,6 @@
 AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE){
+
+  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -33,6 +35,11 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
 	::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
   }
+  else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+	::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code");
+	bESDANA=kTRUE;
+  }
+
 
   //Do we have an MC handler?
   Bool_t hasMC=setMC;
@@ -51,18 +58,20 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-  
-task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
+//  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+//  task->SetRejectPileup();
+  task->SelectCollisionCandidates(AliVEvent::kAny);  
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
 
   //load dielectron configuration file
 
   //add dielectron analysis with different cuts to the task
-  AliDielectron *lowmass4=ConfigLMEEPbPb2011AOD(4,hasMC);
+  AliDielectron *lowmass4=ConfigLMEEPbPb2011AOD(4,hasMC,bESDANA);
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
 
-  AliDielectron *lowmass6=ConfigLMEEPbPb2011AOD(6,hasMC);
+  AliDielectron *lowmass6=ConfigLMEEPbPb2011AOD(6,hasMC,bESDANA);
   task->AddDielectron(lowmass6);
   printf("add: %s\n",lowmass6->GetName());
 
