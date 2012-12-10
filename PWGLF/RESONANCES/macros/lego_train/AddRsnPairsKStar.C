@@ -97,9 +97,9 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
    Int_t nIM   = 90; Double_t minIM   = 0.6, maxIM =  1.5;
    Int_t nRes   = 200; Double_t minRes   = -0.02, maxRes =  0.02;
    Int_t nEta   = 400; Double_t minEta   = -0.5, maxEta =  0.5;
-   Int_t nY   = 16; Double_t minY   = -0.8, maxY =  0.8;
+   Int_t nY   = 32; Double_t minY   = -0.8, maxY =  0.8;
    Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
-   Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
+   Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
    //
    // -- Create all needed outputs -----------------------------------------------------------------
    //

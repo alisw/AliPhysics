@@ -41,7 +41,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
-   
+
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);

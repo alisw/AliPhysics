@@ -9,7 +9,7 @@ Bool_t RunALICE(TString anSrc = "grid",
                 Bool_t useMultiHandler=kFALSE,
                 TString alirsnlitesrc ="$ALICE_ROOT",
                 TString alirsnlitetasks =""
-                ) {
+               ) {
 
    // some init work
    anSrc.ToLower(); anMode.ToLower(); input.ToLower(); inputMC.ToLower();
@@ -87,8 +87,8 @@ Int_t LoadLibsBase(TString alirsnlitesrc) {
 
 Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE,Bool_t useMultiHandler=kTRUE) {
 
-	input.ToLower();
-	inputMC.ToLower();
+   input.ToLower();
+   inputMC.ToLower();
 
    Bool_t useMC = !inputMC.CompareTo("mc");
 
@@ -99,7 +99,7 @@ Bool_t CreateInputHandlers(TString input,TString inputMC,Bool_t useAODOut=kFALSE
    if (useMultiHandler) {
       AliMultiInputEventHandler *inputHandler = new AliMultiInputEventHandler();
       if (!input.CompareTo("esd")) {
-      	Printf("Adding ESD Input Handler ...");
+         Printf("Adding ESD Input Handler ...");
          inputHandler->AddInputEventHandler(new AliESDInputHandler());
          if (useMC) inputHandler->AddInputEventHandler(new AliMCEventHandler());
       } else if (!input.CompareTo("aod")) {

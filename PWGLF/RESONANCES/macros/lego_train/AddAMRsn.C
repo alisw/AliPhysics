@@ -10,7 +10,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
    TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
 //   legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
    AliAnalysisManager::SetGlobalStr("RsnLegoTrainPath",legoTrainPath.Data());
-   
+
    AliAnalysisManager *mrg = AliAnalysisManager::GetAnalysisManager();
 
    TString rsnBaseSettings = "Rsn_pp";
@@ -33,22 +33,22 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
    rsnCutStr="PhiNsigma:KTPCnsig30";
 
    if ((rsnCutStr.IsNull())&&(!postfix.IsNull())) {
-     rsnCutStr = "PhiNsigma:";
-     rsnCutStr.Append(postfix.Data());
+      rsnCutStr = "PhiNsigma:";
+      rsnCutStr.Append(postfix.Data());
    }
 
    // Rsn Quality Cut
    TString rsnQualityCutStr = "";
 //   rsnQualityCutStr = "pp_LHC11a_p4_120";
 //   rsnQualityCutStr = "pp_LHC11a_p4_70";
-   
+
 
    TString extraMacro = "";
    TString extraMacroArgs = "";
 //   extraMacro = "RsnTrainSettingsExtra.C";
 //   extraMacroArgs = "10.0,10,1,1,1,1,1,1,1";
 //   extraMacroArgs = "10, 5, 5, -1, 1, 0, 1, 1, 1";
-   
+
    input.ToLower();
    inputMC.ToLower();
    Bool_t useMC = !inputMC.CompareTo("mc");
@@ -112,7 +112,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
             if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
             AddPIDResponseInputHandler(multiInputHandler,useMC);
          } else {
-         	Printf("Adding PIDResponse task ...");
+            Printf("Adding PIDResponse task ...");
             gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
             AddTaskPIDResponse(useMC);
          }

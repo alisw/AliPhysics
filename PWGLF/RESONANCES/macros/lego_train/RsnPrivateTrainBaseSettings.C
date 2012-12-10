@@ -4,7 +4,7 @@ TList *RsnPrivateTrainBaseSettings() {
    TString legoTrainPath = AliAnalysisManager::GetGlobalStr("RsnLegoTrainPath",valid);
    Int_t usePhysSel        = -1;
 //   usePhysSel              = AliVEvent::kMB;
-   
+
    Int_t usePIDResponseTask      = 1;
    Int_t useCentralityTask       = 0;
    Int_t useEventPlaneTask       = 1;
