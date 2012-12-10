@@ -253,10 +253,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("fESD is ok\n");
   
   AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
-  if(!pv) {
-    fRecoPV->Fill(0);
+  if(!pv)
     return;
-  }
+  if(!pv->GetStatus())
+    fRecoPV->Fill(0);
   else
     fRecoPV->Fill(1);
   fPVtxZ->Fill(pv->GetZ());
