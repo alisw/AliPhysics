@@ -55,7 +55,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   void SetTrackType(TString tracktype);
   void SetPhiDist();
   void SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts);
-  void SetPersonalAODtrackCuts(UInt_t filterbit = 1, Float_t etalow = -0.8, Float_t etaup = 0.8, Float_t ptlow = 0.5, Float_t ptup = 20.);
+  void SetPersonalAODtrackCuts(UInt_t filterbit = 1, Float_t etalow = -0.8, Float_t etaup = 0.8, Float_t ptlow = 0.15, Float_t ptup = 20., Int_t ntpc = 50);
   void SetPersonalPhiDistribution(const char* filename, char* listname);
   void SetEtaGap(Float_t etagap)             {fEtaGap = etagap;}
   void SetSubeventsSplitMethod(Int_t method) {fSplitMethod = method;}
