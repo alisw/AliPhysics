@@ -86,6 +86,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   //histograms for events with 1+ track pt>1
   TH1F        *fEvtSel;                    //!evt selection counter: 0=all trg, 1=pv cut 
   TH1F        *fNClusEt10;                 //!number of clusters w/ Et>10 in the event
+  TH1F        *fRecoPV;                    //!histogram to record if an event has a prim. vert.
   TH1F        *fPVtxZ;                     //!primary vertex Z before cut
   TH1F        *fTrMultDist;                //!track multiplicity distribution
   TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt
