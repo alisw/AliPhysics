@@ -52,13 +52,12 @@ fScaleFactor(-1),
 fhNEvents(0),                 fhNPileUpEvents(0),
 fhZVertex(0),                 
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
-fh2PileUpClusterMult(0),      fh2PileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
 fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
 fhTrackBCEvent(0),            fhTrackBCEventCut(0),
-fhPrimaryVertexBC(0)
+fhPrimaryVertexBC(0),         fhTimeStampFraction(0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -81,8 +80,6 @@ fhNPileUpEvents(maker.fhNPileUpEvents),
 fhZVertex(maker.fhZVertex),    
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
-fh2PileUpClusterMult(maker.fh2PileUpClusterMult),
-fh2PileUpClusterMultAndSPDPileUp(maker.fh2PileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
@@ -159,6 +156,77 @@ TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
 	
 	return aodBranchList ;
 	
+}
+
+//_________________________________________________________
+void AliAnaCaloTrackCorrMaker::FillControlHistograms()
+{
+  // Event control histograms
+  
+  fhNEvents        ->Fill(0); // Number of events analyzed
+  
+  if( fReader->IsPileUpFromSPD())
+    fhNPileUpEvents->Fill(0.5);
+  if( fReader->GetInputEvent()->IsPileupFromSPDInMultBins())
+    fhNPileUpEvents->Fill(1.5);
+  if( fReader->IsPileUpFromEMCal())
+    fhNPileUpEvents->Fill(2.5);
+  if( fReader->IsPileUpFromSPDOrEMCal() )
+    fhNPileUpEvents->Fill(3.5);
+  if( fReader->IsPileUpFromSPDAndEMCal() )
+    fhNPileUpEvents->Fill(4.5);
+  if( fReader->IsPileUpFromSPDAndNotEMCal() )
+    fhNPileUpEvents->Fill(5.5);
+  if( fReader->IsPileUpFromEMCalAndNotSPD() )
+    fhNPileUpEvents->Fill(6.5);
+  if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
+    fhNPileUpEvents->Fill(7.5);
+  
+  if(fReader->IsPileUpFromSPD())
+    fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
+  
+  fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
+  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
+  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
+  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
+  
+  
+  for(Int_t i = 0; i < 19; i++)
+  {
+    if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
+    if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
+    if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
+    if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
+  }
+  
+  Double_t v[3];
+  fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+  fhZVertex->Fill(v[2]);
+  
+  Int_t primaryBC = -1000;
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (fReader->GetInputEvent());
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (fReader->GetInputEvent());
+  
+  if     (esdevent)
+    primaryBC = esdevent->GetPrimaryVertex()->GetBC();
+  else if(aodevent)
+    primaryBC = aodevent->GetPrimaryVertex()->GetBC();
+  
+  fhPrimaryVertexBC->Fill(primaryBC);
+  
+  // Time stamp
+  if(fReader->IsSelectEventTimeStampOn() && esdevent)
+  {
+    Int_t timeStamp = esdevent->GetTimeStamp();
+    Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
+                               (fReader->GetRunTimeStampMax()-fReader->GetRunTimeStampMin());
+    
+    //printf("stamp %d, min %d, max %d, frac %f\n", timeStamp, fReader->GetRunTimeStampMin(), fReader->GetRunTimeStampMax(), timeStampFrac);
+
+    fhTimeStampFraction->Fill(timeStampFrac);
+  }
+  
+  
 }
 
 //_______________________________________________________
@@ -256,16 +324,6 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
   fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
   
-  fh2PileUpClusterMult = new TH2F("h2PileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100 , 100 , 0 , 100 ) ;
-  fh2PileUpClusterMult->SetXTitle("# clusters (large t)");
-  fh2PileUpClusterMult->SetYTitle("# clusters (small t)");
-  fOutputContainer->Add(fh2PileUpClusterMult);
-  
-  fh2PileUpClusterMultAndSPDPileUp = new TH2F("h2PileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 , 100 , 0 , 100) ;
-  fh2PileUpClusterMultAndSPDPileUp->SetXTitle("# clusters (large t)");
-  fh2PileUpClusterMultAndSPDPileUp->SetYTitle("# clusters (small t)");
-  fOutputContainer->Add(fh2PileUpClusterMultAndSPDPileUp);
-  
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;  
@@ -273,6 +331,13 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane",100,0.,TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
+  
+  if(fReader->IsSelectEventTimeStampOn())
+  {
+    fhTimeStampFraction = new TH1F("hTimeStampFraction","Fraction of events within a given time stamp range",150, -1, 2) ;
+    fhTimeStampFraction->SetXTitle("fraction");
+    fOutputContainer->Add(fhTimeStampFraction) ;
+  }
   
   if(fScaleFactor > 0)
   {
@@ -495,63 +560,8 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     }
   }
   
-  // Event control histograms
- 
-  fhNEvents        ->Fill(0); // Number of events analyzed
+  FillControlHistograms();
   
-  if( fReader->IsPileUpFromSPD()) 
-    fhNPileUpEvents->Fill(0.5);
-  if( fReader->GetInputEvent()->IsPileupFromSPDInMultBins()) 
-    fhNPileUpEvents->Fill(1.5);
-  if( fReader->IsPileUpFromEMCal())
-    fhNPileUpEvents->Fill(2.5);
-  if( fReader->IsPileUpFromSPDOrEMCal() )
-    fhNPileUpEvents->Fill(3.5);
-  if( fReader->IsPileUpFromSPDAndEMCal() )
-    fhNPileUpEvents->Fill(4.5);
-  if( fReader->IsPileUpFromSPDAndNotEMCal() )
-    fhNPileUpEvents->Fill(5.5);
-  if( fReader->IsPileUpFromEMCalAndNotSPD() )
-    fhNPileUpEvents->Fill(6.5);
-  if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
-    fhNPileUpEvents->Fill(7.5);
-  
-  if(fReader->IsPileUpFromSPD())
-  {
-    fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
-    fh2PileUpClusterMultAndSPDPileUp->Fill(fReader->GetNPileUpClusters(),fReader->GetNNonPileUpClusters());
-  }
-  
-  fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
-  fh2PileUpClusterMult->Fill(fReader->GetNPileUpClusters  (),fReader->GetNNonPileUpClusters());
-  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
-  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
-  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
-
-  
-  for(Int_t i = 0; i < 19; i++)
-  {
-    if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
-    if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
-    if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
-    if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
-  }
-  
-  Double_t v[3];
-  fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
-  fhZVertex->Fill(v[2]);
-  
-  Int_t primaryBC = -1000;
-  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (fReader->GetInputEvent());
-  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (fReader->GetInputEvent());
-
-  if     (esdevent)
-    primaryBC = esdevent->GetPrimaryVertex()->GetBC();
-  else if(aodevent)
-    primaryBC = aodevent->GetPrimaryVertex()->GetBC();
-
-  fhPrimaryVertexBC->Fill(primaryBC);
-
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
 	
