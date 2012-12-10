@@ -27,6 +27,8 @@
 #include "TFile.h"
 
 #include <AliLog.h>
+#include <AliVEvent.h>
+#include <AliAODEvent.h>
 #include <AliESDEvent.h>
 #include <AliAnalysisManager.h>
 #include <AliTender.h>
@@ -34,11 +36,12 @@
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 
-#include "AliESDCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliPHOSTenderSupply.h"
 #include "AliPHOSCalibData.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEsdCluster.h"
+#include "AliPHOSAodCluster.h"
 #include "AliOADBContainer.h"
 
 ClassImp(AliPHOSTenderSupply)
@@ -48,11 +51,11 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(0)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
+  ,fTask(0x0)
 {
 	//
 	// default ctor
@@ -67,11 +70,11 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(0)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
+  ,fTask(0x0)
 {
 	//
 	// named ctor
@@ -95,10 +98,19 @@ void AliPHOSTenderSupply::InitTender()
   //
   // Initialise PHOS tender
   //
-  AliESDEvent *event=fTender->GetEvent();
-  if (!event) return;
-	      
-  fRunNumber=event->GetRunNumber();	      
+  Int_t runNumber = 0;
+  if(fTender)
+    runNumber = fTender->GetRun();
+  else{
+    AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
+    if(aod)
+      runNumber = aod->GetRunNumber() ;
+    else{
+      AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fTask->InputEvent()) ;
+      runNumber = esd->GetRunNumber() ;
+    }   
+  }
+    
   if(fRecoPass<0){ //not defined yet
     // read if from filename.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -126,7 +138,7 @@ void AliPHOSTenderSupply::InitTender()
   if(!fPHOSGeo){
     AliOADBContainer geomContainer("phosGeo");
     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) continue;
@@ -139,9 +151,9 @@ void AliPHOSTenderSupply::InitTender()
   if(!fUsePrivateBadMap){
    AliOADBContainer badmapContainer(Form("phosBadMap"));
     badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
+    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosBadMap");
     if(!maps){
-      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;    
+      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",runNumber)) ;    
     }
     else{
       AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
@@ -160,14 +172,14 @@ void AliPHOSTenderSupply::InitTender()
     //Check the pass1-pass2-pass3 reconstruction
     AliOADBContainer calibContainer("phosRecalibration");
     calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
-    TObjArray *recalib = (TObjArray*)calibContainer.GetObject(fRunNumber,"PHOSRecalibration");
+    TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
     if(!recalib){
-      AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",fRunNumber)) ;
+      AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
     }
     else{
       fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
       if(!fPHOSCalibData) {
-        AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
+        AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
       }
     }
   }
@@ -181,74 +193,162 @@ void AliPHOSTenderSupply::ProcessEvent()
   //that it recalculate energy, position and distance 
   //to closest track extrapolation	
 
-  AliESDEvent *event=fTender->GetEvent();
-  if (!event) return;
-	      
-  fRunNumber=event->GetRunNumber();	      
-
-  if(!fPHOSCalibData || fTender->RunChanged()){
+  AliESDEvent *esd = 0x0 ; 
+  AliAODEvent *aod = 0x0 ;
+  if(fTender){
+    esd = fTender->GetEvent();
+    if(!esd)
+      return ;
+  }
+  else{
+    if(!fTask){
+      return ;
+    }
+    esd = dynamic_cast<AliESDEvent*>(fTask->InputEvent()) ;
+    aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
+    if(!esd && !aod)
+      return ;
+  }
+    
+  if(!fPHOSCalibData 
+    || (fTender && fTender->RunChanged())){ //In case of Task init called automatically
     InitTender();
     
   }
 
-
-  const AliESDVertex *esdVertex = event->GetPrimaryVertex();
-  AliESDCaloCells * cells = event->GetPHOSCells() ;
-  TVector3 vertex(esdVertex->GetX(),esdVertex->GetY(),esdVertex->GetZ());
+  TVector3 vertex ;
+  if(esd){
+    const AliESDVertex *esdVertex = esd->GetPrimaryVertex();
+    vertex.SetXYZ(esdVertex->GetX(),esdVertex->GetY(),esdVertex->GetZ());
+  }
+  else{//AOD
+    const AliAODVertex *aodVertex = aod->GetPrimaryVertex();
+    vertex.SetXYZ(aodVertex->GetX(),aodVertex->GetY(),aodVertex->GetZ());
+  }
   if(vertex.Mag()>99.) //vertex not defined?
     vertex.SetXYZ(0.,0.,0.) ;
 
+
+  
   //For re-calibration
   const Double_t logWeight=4.5 ;  
 
-  Int_t multClust = event->GetNumberOfCaloClusters();
-  for (Int_t i=0; i<multClust; i++) {
-    AliESDCaloCluster *clu = event->GetCaloCluster(i);
-    if ( !clu->IsPHOS()) continue;
+  if(esd){ //To avoid multiple if in loops we made 
+           //almost identical pecies of code. Please apply changes to both!!!
+    Int_t multClust=esd->GetNumberOfCaloClusters();
+    AliESDCaloCells * cells = esd->GetPHOSCells() ;
+ 
+    for (Int_t i=0; i<multClust; i++) {
+      AliESDCaloCluster *clu = esd->GetCaloCluster(i);    
+      if ( !clu->IsPHOS()) continue;
+      
+      Float_t  position[3];
+      clu->GetPosition(position);
+      TVector3 global(position) ;
+      Int_t relId[4] ;
+      fPHOSGeo->GlobalPos2RelId(global,relId) ;
+      Int_t mod  = relId[0] ;
+      Int_t cellX = relId[2];
+      Int_t cellZ = relId[3] ;
+      if ( !IsGoodChannel(mod,cellX,cellZ) ) {
+        clu->SetE(0.) ;
+        continue ;
+      }  
     
-    Float_t  position[3];
-    clu->GetPosition(position);
-    TVector3 global(position) ;
-    Int_t relId[4] ;
-    fPHOSGeo->GlobalPos2RelId(global,relId) ;
-    Int_t mod  = relId[0] ;
-    Int_t cellX = relId[2];
-    Int_t cellZ = relId[3] ;
-    if ( !IsGoodChannel(mod,cellX,cellZ) ) {
-      clu->SetE(0.) ;
-      continue ;
-    }  
-   //Apply re-Calibreation
-    AliPHOSEsdCluster cluPHOS1(*clu);
-    cluPHOS1.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
-    cluPHOS1.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
-    cluPHOS1.SetE(CorrectNonlinearity(cluPHOS1.E()));// Users's nonlinearity
-    
-    Float_t  xyz[3];
-    cluPHOS1.GetPosition(xyz);
-    clu->SetPosition(xyz);                       //rec.point position in MARS
-    clu->SetE(cluPHOS1.E());                           //total or core particle energy
-    clu->SetDispersion(cluPHOS1.GetDispersion());  //cluster dispersion
-    //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
-    clu->SetM02(cluPHOS1.GetM02()) ;               //second moment M2x
-    clu->SetM20(cluPHOS1.GetM20()) ;               //second moment M2z
-    Double_t dx=0.,dz=0. ;
-    fPHOSGeo->GlobalPos2RelId(global,relId) ;
-    TVector3 locPos;
-    fPHOSGeo->Global2Local(locPos,global,mod) ;
+      //Apply re-Calibreation
+      AliPHOSEsdCluster cluPHOS(*clu);
+      cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
+      cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
+      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
-    Double_t pttrack=0.;
-    Int_t charge=0;
-    FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
-    Double_t r=TestCPV(dx, dz, pttrack,charge) ;
-    clu->SetTrackDistance(dx,dz); 
-    
-    clu->SetEmcCpvDistance(r);    
-    clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-    clu->SetTOF(cluPHOS1.GetTOF());       
+      //Correct Misalignment
+      CorrectPHOSMisalignment(global,mod) ;
+      position[0]=global.X() ;
+      position[1]=global.Y() ;
+      position[2]=global.Z() ;
+      cluPHOS.SetPosition(position) ; 
 
+      //Eval CoreDispersion
+      Double_t m02=0.,m20=0.;
+      EvalLambdas(&cluPHOS,m02, m20);   
+      clu->SetDispersion(TestLambda(clu->E(),m20,m02)) ;
+      
+      Float_t  xyz[3];
+      cluPHOS.GetPosition(xyz);
+      clu->SetPosition(xyz);                       //rec.point position in MARS
+      clu->SetE(cluPHOS.E());                           //total or core particle energy
+      //    clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
+      //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
+      clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
+      clu->SetM20(cluPHOS.GetM20()) ;               //second moment M2z
+      Double_t dx=0.,dz=0. ;
+      fPHOSGeo->GlobalPos2RelId(global,relId) ;
+      TVector3 locPos;
+      fPHOSGeo->Global2Local(locPos,global,mod) ;
+
+      Double_t pttrack=0.;
+      Int_t charge=0;
+      FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      Double_t r=TestCPV(dx, dz, pttrack,charge) ;
+      clu->SetTrackDistance(dx,dz); 
+     
+      clu->SetEmcCpvDistance(r);    
+      clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
+      clu->SetTOF(cluPHOS.GetTOF());       
+
+    }
   }
+  else{//AOD
+    Int_t multClust=aod->GetNumberOfCaloClusters();
+    AliAODCaloCells * cells = aod->GetPHOSCells() ;
+  
+    for (Int_t i=0; i<multClust; i++) {
+      AliAODCaloCluster *clu = aod->GetCaloCluster(i);    
+      if ( !clu->IsPHOS()) continue;
+      
+      Float_t  position[3];
+      clu->GetPosition(position);
+      TVector3 global(position) ;
+      Int_t relId[4] ;
+      fPHOSGeo->GlobalPos2RelId(global,relId) ;
+      Int_t mod  = relId[0] ;
+      Int_t cellX = relId[2];
+      Int_t cellZ = relId[3] ;
+      if ( !IsGoodChannel(mod,cellX,cellZ) ) {
+        clu->SetE(0.) ;
+        continue ;
+      }  
+    
+      //Apply re-Calibreation
+      AliPHOSAodCluster cluPHOS(*clu);
+      cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
+      cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
+      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
+    
+      Float_t  xyz[3];
+      cluPHOS.GetPosition(xyz);
+      clu->SetPosition(xyz);                       //rec.point position in MARS
+      clu->SetE(cluPHOS.E());                           //total or core particle energy
+      clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
+      //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
+      clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
+      clu->SetM20(cluPHOS.GetM20()) ;               //second moment M2z
+      Double_t dx=0.,dz=0. ;
+      fPHOSGeo->GlobalPos2RelId(global,relId) ;
+      TVector3 locPos;
+      fPHOSGeo->Global2Local(locPos,global,mod) ;
 
+      Double_t pttrack=0.;
+      Int_t charge=0;
+      FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      Double_t r=TestCPV(dx, dz, pttrack,charge) ;
+      clu->SetTrackDistance(dx,dz); 
+     
+      clu->SetEmcCpvDistance(r);    
+      clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
+      clu->SetTOF(cluPHOS.GetTOF());       
+    }
+  }
 
 }
 //___________________________________________________________________________________________________
@@ -256,9 +356,19 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &dx, Double_t &dz,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
+  AliESDEvent *esd = 0x0 ;
+  AliAODEvent *aod = 0x0 ;
+  if(fTender)
+    esd= fTender->GetEvent();
+  else{ 
+    esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+    aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
+  }
   
-  AliESDEvent *event= fTender->GetEvent();
-  Double_t  magF = event->GetMagneticField();
+  Double_t  magF = 0;
+  if(esd) magF = esd->GetMagneticField();
+  else  magF = aod->GetMagneticField();
+  
   Double_t magSign = 1.0;
   if(magF<0)magSign = -1.0;
   
@@ -268,7 +378,9 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   }
 
   // *** Start the matching
-  Int_t nt=event->GetNumberOfTracks();
+  Int_t nt=0;
+  if(esd)nt = esd->GetNumberOfTracks();
+  else nt = aod->GetNumberOfTracks();
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -286,54 +398,101 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 
   Double_t b[3]; 
-  for (Int_t i=0; i<nt; i++) {
-    AliESDtrack *esdTrack=event->GetTrack(i);
+  if(esd){
+    for (Int_t i=0; i<nt; i++) {
+      AliESDtrack *esdTrack=esd->GetTrack(i);
 
-    // Skip the tracks having "wrong" status (has to be checked/tuned)
-    ULong_t status = esdTrack->GetStatus();
-    if ((status & AliESDtrack::kTPCout)   == 0) continue;
-    //     if ((status & AliESDtrack::kTRDout)   == 0) continue;
-    //     if ((status & AliESDtrack::kTRDrefit) == 1) continue;
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      ULong_t status = esdTrack->GetStatus();
+      if ((status & AliESDtrack::kTPCout)   == 0) continue;
+     
+      //Continue extrapolation from TPC outer surface
+      const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
+      if (!outerParam) continue;
+      AliExternalTrackParam t(*outerParam);
+     
+      t.GetBxByBz(b) ;
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0-kAlpha*mod ;
+      if(!t.Rotate(phiMod))
+        continue ;
     
-    //Continue extrapolation from TPC outer surface
-    const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
-    if (!outerParam) continue;
-    AliExternalTrackParam t(*outerParam);
-    
-    t.GetBxByBz(b) ;
-    //Direction to the current PHOS module
-    Double_t phiMod=kAlpha0-kAlpha*mod ;
-    if(!t.Rotate(phiMod))
-      continue ;
-    
-    Double_t y;                       // Some tracks do not reach the PHOS
-    if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
-    
-    Double_t z; 
-    if(!t.GetZAt(rPHOS,bz,z))
-      continue ;
-    if (TMath::Abs(z) > kZmax) 
-      continue; // Some tracks miss the PHOS in Z
-    if(TMath::Abs(y) < kYmax){
-      t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-      //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-      t.GetXYZ(gposTrack) ;
-      TVector3 globalPositionTr(gposTrack) ;
-      TVector3 localPositionTr ;
-      fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
-      Double_t ddx = locpos->X()-localPositionTr.X();
-      Double_t ddz = locpos->Z()-localPositionTr.Z();
-      Double_t d2 = ddx*ddx + ddz*ddz;
-      if(d2 < minDistance) {
-	dx = ddx ;
-	dz = ddz ;
-	minDistance=d2 ;
-	pt=esdTrack->Pt() ;
-	charge=esdTrack->Charge() ;
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      
+      Double_t z; 
+      if(!t.GetZAt(rPHOS,bz,z))
+        continue ;
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+      if(TMath::Abs(y) < kYmax){
+        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        t.GetXYZ(gposTrack) ;
+        TVector3 globalPositionTr(gposTrack) ;
+        TVector3 localPositionTr ;
+        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
+        Double_t ddx = locpos->X()-localPositionTr.X();
+        Double_t ddz = locpos->Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  dx = ddx ;
+  	  dz = ddz ;
+	  minDistance=d2 ;
+	  pt=esdTrack->Pt() ;
+	  charge=esdTrack->Charge() ;
+        }
       }
-    }
-  } //Scanned all tracks
-  
+    }//Scanned all tracks
+  }
+  else{
+    for (Int_t i=0; i<nt; i++) {
+      AliAODTrack *aodTrack=aod->GetTrack(i);
+
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      ULong_t status = aodTrack->GetStatus();
+      if ((status & AliESDtrack::kTPCout)   == 0) continue;
+     
+      //Continue extrapolation from TPC outer surface
+      const AliExternalTrackParam *outerParam=aodTrack->GetOuterParam();
+      if (!outerParam) continue;
+      AliExternalTrackParam t(*outerParam);
+     
+      t.GetBxByBz(b) ;
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0-kAlpha*mod ;
+      if(!t.Rotate(phiMod))
+        continue ;
+    
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      
+      Double_t z; 
+      if(!t.GetZAt(rPHOS,bz,z))
+        continue ;
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+      if(TMath::Abs(y) < kYmax){
+        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        t.GetXYZ(gposTrack) ;
+        TVector3 globalPositionTr(gposTrack) ;
+        TVector3 localPositionTr ;
+        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
+        Double_t ddx = locpos->X()-localPositionTr.X();
+        Double_t ddz = locpos->Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  dx = ddx ;
+  	  dz = ddz ;
+	  minDistance=d2 ;
+	  pt=aodTrack->Pt() ;
+	  charge=aodTrack->Charge() ;
+        }
+      }
+    }//Scanned all tracks
+    
+  }
 }
 //____________________________________________________________
 Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
@@ -357,16 +516,26 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
 }
 //_____________________________________________________________________________
 Double_t AliPHOSTenderSupply::TestLambda(Double_t pt,Double_t l1,Double_t l2){
-  
+//Parameterization for core dispersion   
+//For R=4.5
+  Double_t   l1Mean  = 1.150200 + 0.097886/(1.+1.486645*pt+0.000038*pt*pt) ;
+  Double_t   l2Mean = 1.574706 + 0.997966*exp(-0.895075*pt)-0.010666*pt ;
+  Double_t   l1Sigma = 0.100255 + 0.337177*exp(-0.517684*pt)+0.001170*pt ;
+  Double_t   l2Sigma = 0.232580 + 0.573401*exp(-0.735903*pt)-0.002325*pt ;
+  Double_t   c = -0.110983 -0.017353/(1.-1.836995*pt+0.934517*pt*pt) ;
+
+/*
+  //Parameterizatino for full dispersion
   Double_t l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
   Double_t l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
   Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
   Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
   Double_t c=-0.35-0.550*TMath::Exp(-0.390730*pt) ;
+*/
   Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
               0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
               0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
-  return (R2<2.5*2.5) ;
+  return R2 ;
   
 }
 //____________________________________________________________________________
@@ -379,9 +548,22 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
   Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
               6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
-  AliESDEvent *event=fTender->GetEvent();
-  Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
-
+  
+  Double_t mf = 0.; //Positive for ++ and negative for --
+  if(fTender){
+    AliESDEvent *esd = fTender->GetEvent();
+    mf = esd->GetMagneticField();
+  }
+  else{ 
+    AliESDEvent *esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+    if(esd)
+      mf = esd->GetMagneticField();
+    else{  
+      AliAODEvent *aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
+      mf = aod->GetMagneticField();
+    }    
+  }
+  
   if(mf<0.){ //field --
     meanZ = -0.468318 ;
     if(charge>0)
@@ -425,7 +607,7 @@ void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
   //Read TH2I histograms with bad maps from local or alien file 
   TFile * fbm = TFile::Open(filename) ;
   if(!fbm || !fbm->IsOpen()){
-    AliError(Form("Can not open BadMaps file %s \n",filename)) ;
+    AliError(Form("Can not open BadMaps file %s",filename)) ;
     return ;
   }
   gROOT->cd() ;
@@ -445,15 +627,96 @@ void AliPHOSTenderSupply::ForceUsingCalibration(const char * filename){
   //We assume that file contains single entry: AliPHOSCalibData
   TFile * fc = TFile::Open(filename) ;
   if(!fc || !fc->IsOpen()){
-    AliFatal(Form("Can not open Calibration file %s \n",filename)) ;
+    AliFatal(Form("Can not open Calibration file %s",filename)) ;
     return ;
   }
   fPHOSCalibData = (AliPHOSCalibData*)fc->Get("PHOSCalibration") ;
   fc->Close() ;
   fUsePrivateCalib=kTRUE; 
 }
+//________________________________________________________________________
+void AliPHOSTenderSupply::CorrectPHOSMisalignment(TVector3 &global,Int_t mod){
+   //Correct for PHOS modules misalignment 
+  
+    //correct misalignment
+    const Float_t shiftX[6]={0.,-2.3,-2.11,-1.53,0.,0.} ;
+    const Float_t shiftZ[6]={0.,-0.4, 0.52, 0.8,0.,0.} ;
+    TVector3 localPos ;
+    fPHOSGeo->Global2Local(localPos,global,mod) ;
+    fPHOSGeo->Local2Global(mod,localPos.X()+shiftX[mod],localPos.Z()+shiftZ[mod],global);  
+}
+//________________________________________________________________________
+void AliPHOSTenderSupply::EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20){ 
+  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
+    
+  const Double_t rCut=4.5 ;
+  
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+// Calculates the center of gravity in the local PHOS-module coordinates
+  Float_t wtot = 0;
+  Double_t xc[100]={0} ;
+  Double_t zc[100]={0} ;
+  Double_t x = 0 ;
+  Double_t z = 0 ;
+  Int_t mulDigit=TMath::Min(100,clu->GetNCells()) ;
+  const Double_t logWeight=4.5 ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t relid[4] ;
+    Float_t xi ;
+    Float_t zi ;
+    fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(iDigit), relid) ;
+    fPHOSGeo->RelPosInModule(relid, xi, zi);
+    xc[iDigit]=xi ;
+    zc[iDigit]=zi ;
+    if (clu->E()>0 && elist[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( elist[iDigit] / clu->E() ) ) ;
+      x    += xc[iDigit] * w ;
+      z    += zc[iDigit] * w ;
+      wtot += w ;
+    }
+  }
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+     
+  wtot = 0. ;
+  Double_t dxx  = 0.;
+  Double_t dzz  = 0.;
+  Double_t dxz  = 0.;
+  Double_t xCut = 0. ;
+  Double_t zCut = 0. ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    if (clu->E()>0 && elist[iDigit]>0.) {
+        Double_t w = TMath::Max( 0., logWeight + TMath::Log( elist[iDigit] / clu->E() ) ) ;
+        Double_t xi= xc[iDigit] ;
+        Double_t zi= zc[iDigit] ;
+	if((xi-x)*(xi-x)+(zi-z)*(zi-z) < rCut*rCut){
+          xCut += w * xi ;
+          zCut += w * zi ; 
+          dxx  += w * xi * xi ;
+          dzz  += w * zi * zi ;
+          dxz  += w * xi * zi ; 
+          wtot += w ;
+	}
+    }
+    
+  }
+  if (wtot>0) {
+    xCut/= wtot ;
+    zCut/= wtot ;
+    dxx /= wtot ;
+    dzz /= wtot ;
+    dxz /= wtot ;
+    dxx -= xCut * xCut ;
+    dzz -= zCut * zCut ;
+    dxz -= xCut * zCut ;
 
+    m02 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    m20 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  }
+  else {
+    m20=m02=0.;
+  }
 
-
-
-
+}
