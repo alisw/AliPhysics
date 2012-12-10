@@ -269,10 +269,10 @@ public:
   
   //Time Stamp
   
-  Int_t            GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
-  Int_t            GetRunTimeStampMax()              const { return fTimeStampRunMax         ; }
+  Long_t           GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
+  Long_t           GetRunTimeStampMax()              const { return fTimeStampRunMax         ; }
   
-  void             SetRunTimeStamp(Int_t a, Int_t b)       { fTimeStampRunMin = a            ;
+  void             SetRunTimeStamp(Long_t a, Long_t b)     { fTimeStampRunMin = a            ;
                                                              fTimeStampRunMax = b            ; } // seconds
   
   Float_t          GetEventTimeStampFractionMin()    const { return fTimeStampEventFracMin   ; }
@@ -583,8 +583,8 @@ public:
   Bool_t           fTimeStampEventSelect;        // Select events within a fraction of data taking time
   Float_t          fTimeStampEventFracMin;       // Minimum value of time stamp fraction event
   Float_t          fTimeStampEventFracMax;       // Maximum value of time stamp fraction event
-  Int_t            fTimeStampRunMin;             // Minimum value of time stamp in run
-  Int_t            fTimeStampRunMax;             // Maximum value of time stamp in run
+  Long_t           fTimeStampRunMin;             // Minimum value of time stamp in run
+  Long_t           fTimeStampRunMax;             // Maximum value of time stamp in run
   
   Double_t         fPileUpParamSPD[5];           // Parameters to pass to method IsPileupFromSPD: Int_t minContributors,
                                                  // Double_t minZdist, 
