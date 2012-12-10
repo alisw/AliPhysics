@@ -89,7 +89,8 @@ fhEMCalBCEvent(maker.fhEMCalBCEvent),
 fhEMCalBCEventCut(maker.fhEMCalBCEventCut),
 fhTrackBCEvent(maker.fhTrackBCEvent),
 fhTrackBCEventCut(maker.fhTrackBCEventCut),
-fhPrimaryVertexBC(maker.fhPrimaryVertexBC)
+fhPrimaryVertexBC(maker.fhPrimaryVertexBC),
+fhTimeStampFraction(maker.fhTimeStampFraction)
 {
   // cpy ctor
 }
