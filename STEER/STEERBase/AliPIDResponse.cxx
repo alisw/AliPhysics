@@ -715,12 +715,14 @@ void AliPIDResponse::SetRecoInfo()
 //   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
 // for the moment use 12g parametrisation for all full gain runs (LHC12f+)
-  if (fRun >= 186636  ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
+  if (fRun >= 186636  ) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
 
   //exception new pp MC productions from 2011
-  if ( (fBeamType=="PP" || fBeamType=="PPB") && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
+  if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
+  // exception for 12f1a and 12f1b
+  if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")) fMCperiodTPC="LHC12F1";
 }
 
 //______________________________________________________________________________
@@ -761,10 +763,10 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
   
   Double_t upperMapBoundY = h->GetYaxis()->GetBinUpEdge(h->GetYaxis()->GetNbins());
   Double_t lowerMapBoundY = h->GetYaxis()->GetBinLowEdge(1);
-  Int_t nBinsX = 20;
+  Int_t nBinsX = 30;
   // Binning was find to yield good results, if 40 bins are chosen for the range 0.0016 to 0.02. For the new variable range,
   // scale the number of bins correspondingly
-  Int_t nBinsY = TMath::Nint((upperMapBoundY - lowerMapBoundY) / (0.02 - lowerMapBoundY) * 40);
+  Int_t nBinsY = TMath::Nint((upperMapBoundY - lowerMapBoundY) / (0.02 - 0.0016) * 40);
   Int_t nBinsXrefined = nBinsX * refineFactorX;
   Int_t nBinsYrefined = nBinsY * refineFactorY; 
   
@@ -780,7 +782,7 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
       Double_t centerX = hRefined->GetXaxis()->GetBinCenter(binX);
       Double_t centerY = hRefined->GetYaxis()->GetBinCenter(binY);
       
-      /*
+      /*OLD
       linExtrapolation->ClearPoints();
       
       // For interpolation: Just take the corresponding bin from the old histo.
@@ -852,6 +854,51 @@ TH2D* AliPIDResponse::RefineHistoViaLinearInterpolation(TH2D* h, Double_t refine
     }
   } 
   
+  
+  // Problem: Interpolation does not work before/beyond center of first/last bin (as the name suggests).
+  // Therefore, for each row in dEdx: Take last bin from old map and interpolate values from center and edge.
+  // Assume line through these points and extropolate to last bin of refined map
+  const Double_t firstOldXbinUpEdge = h->GetXaxis()->GetBinUpEdge(1);
+  const Double_t firstOldXbinCenter = h->GetXaxis()->GetBinCenter(1);
+  
+  const Double_t oldXbinHalfWidth = firstOldXbinUpEdge - firstOldXbinCenter;
+  
+  const Double_t lastOldXbinLowEdge = h->GetXaxis()->GetBinLowEdge(h->GetNbinsX());
+  const Double_t lastOldXbinCenter = h->GetXaxis()->GetBinCenter(h->GetNbinsX());
+  
+  for (Int_t binY = 1; binY <= nBinsYrefined; binY++)  {
+    Double_t centerY = hRefined->GetYaxis()->GetBinCenter(binY);
+    
+    const Double_t interpolatedCenterFirstXbin = h->Interpolate(firstOldXbinCenter, centerY);
+    const Double_t interpolatedUpEdgeFirstXbin = h->Interpolate(firstOldXbinUpEdge, centerY);
+    
+    const Double_t extrapolationSlopeFirstXbin = (interpolatedUpEdgeFirstXbin - interpolatedCenterFirstXbin) / oldXbinHalfWidth;
+    const Double_t extrapolationOffsetFirstXbin = interpolatedCenterFirstXbin;
+    
+    
+    const Double_t interpolatedCenterLastXbin = h->Interpolate(lastOldXbinCenter, centerY);
+    const Double_t interpolatedLowEdgeLastXbin = h->Interpolate(lastOldXbinLowEdge, centerY);
+    
+    const Double_t extrapolationSlopeLastXbin = (interpolatedCenterLastXbin - interpolatedLowEdgeLastXbin) / oldXbinHalfWidth;
+    const Double_t extrapolationOffsetLastXbin = interpolatedCenterLastXbin;
+
+    for (Int_t binX = 1; binX <= nBinsXrefined; binX++)  {
+      Double_t centerX = hRefined->GetXaxis()->GetBinCenter(binX);
+     
+      if (centerX < firstOldXbinCenter) {
+        Double_t extrapolatedValue = extrapolationOffsetFirstXbin + (centerX - firstOldXbinCenter) * extrapolationSlopeFirstXbin;
+        hRefined->SetBinContent(binX, binY, extrapolatedValue);      
+      }
+      else if (centerX <= lastOldXbinCenter) {
+        continue;
+      }
+      else {
+        Double_t extrapolatedValue = extrapolationOffsetLastXbin + (centerX - lastOldXbinCenter) * extrapolationSlopeLastXbin;
+        hRefined->SetBinContent(binX, binY, extrapolatedValue);     
+      }
+    }
+  } 
+  
   delete linExtrapolation;
   
   return hRefined;
@@ -868,18 +915,18 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   if (fUseTPCEtaCorrection == kFALSE) {
     // Disable eta correction via setting no maps
     if (!fTPCResponse.SetEtaCorrMap(0x0))
-      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled");
+      AliInfo("Request to disable TPC eta correction -> Eta correction has been disabled"); 
     else
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the correction maps");
     
     if (!fTPCResponse.SetSigmaParams(0x0, 0))
-      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma");
-    else  
+      AliInfo("Request to disable TPC eta correction -> Using old parametrisation for sigma"); 
+    else
       AliError("Request to disable TPC eta correction -> Some error occured when unloading the sigma maps");
     
     return;
   }
-
+  
   TString dataType = "DATA";
   TString period = fLHCperiod.IsNull() ? "No period information" : fLHCperiod;
   

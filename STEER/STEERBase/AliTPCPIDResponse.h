@@ -30,7 +30,7 @@ class TSpline3;
 class AliTPCPIDResponse: public TNamed {
 public:
   AliTPCPIDResponse();
-  AliTPCPIDResponse(const Double_t *param);
+  //TODO Remove? AliTPCPIDResponse(const Double_t *param);
   AliTPCPIDResponse(const AliTPCPIDResponse&);
   AliTPCPIDResponse& operator=(const AliTPCPIDResponse&);
   virtual ~AliTPCPIDResponse();
@@ -67,6 +67,7 @@ public:
                                Double_t kp4,
                                Double_t kp5
                                );
+  //Better prevent user from setting fMIP != 50. because fMIP set fix to 50 for much other code:
   void SetMip(Float_t mip) { fMIP = mip; } // Set overall normalisation; mean dE/dx for MIP
   Double_t Bethe(Double_t bg) const;
   void SetUseDatabase(Bool_t useDatabase) { fUseDatabase = useDatabase;}
