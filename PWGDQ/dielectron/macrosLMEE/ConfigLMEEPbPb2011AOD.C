@@ -11,7 +11,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;
 
 
-AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
+AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t ESDanalysis=kFALSE)
 {
 
   Int_t selectedPID=-1;
@@ -37,16 +37,6 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 	new AliDielectron(Form
 		("%s",name.Data()),
 		Form("Track cuts: %s",name.Data()));
-
-  // Set general options for ALL dielectron object:
-  // Correct treatment for PreFilter (i.e., mark in all pair combinations (++,--,+-) first,
-  // THEN delete from sample:
-  die->SetPreFilterAllSigns();
-
-  //pairing with TLorentzVector
-  die->SetUseKF(kFALSE);
-
-
 
 
   //Setup AnalysisSelection:
@@ -96,14 +86,23 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   //Apply correct Pre-Filter Scheme, if necessary
   die->SetPreFilterAllSigns();
 
+  //switch off KF PArticle:
+  die->SetUseKF(kFALSE);
+
 	if (rejectionStep) {
 		die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
 		die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
 		die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
 	}
 	else { //No Prefilter, no Pairfilter
-		die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
-/*
+	  
+	  if (ESDanalysis) {
+		die->GetTrackFilter().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
+	  }
+	  
+	  die->GetTrackFilter().AddCuts( LMCL->GetTrackCutsAna(selectedPID) );
+	  die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
+	  /*
 		if ((cutDefinition >=6) &&  (cutDefinition <=7)) {
 		  die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
 		}
@@ -131,8 +130,6 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 
   // the last definition uses no cuts and only the QA histograms should be filled!
 //  InitCF(die,cutDefinition);
-
-
 
   return die;
 }
