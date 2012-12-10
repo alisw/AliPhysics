@@ -63,6 +63,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
+  fRecoPV(0),
   fPVtxZ(0),
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
@@ -110,6 +111,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
+  fRecoPV(0),
   fPVtxZ(0),            
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
@@ -153,6 +155,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fNClusEt10 = new TH1F("hNClusEt10","# of cluster with E_{T}>10 per event;E;",101,-0.5,100.5);
   fOutputList->Add(fNClusEt10);
   
+  fRecoPV = new TH1F("hRecoPV","Prim. vert. reconstruction (yes or no);reco (0=no, 1=yes) ;",2,-0.5,1.5);
+  fOutputList->Add(fRecoPV);
+
   fPVtxZ = new TH1F("hPVtxZ","primary vertex Z before cut;prim-vz(cm) ;",200,-100,100);
   fOutputList->Add(fPVtxZ);
 
@@ -248,8 +253,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("fESD is ok\n");
   
   AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
-  if(!pv) 
+  if(!pv) {
+    fRecoPV->Fill(0);
     return;
+  }
+  else
+    fRecoPV->Fill(1);
   fPVtxZ->Fill(pv->GetZ());
   if(TMath::Abs(pv->GetZ())>15)
     return;

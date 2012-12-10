@@ -41,6 +41,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t		GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const;
     Bool_t		IsWithinFiducialVolume(Short_t id) const;
     Bool_t		IsGoodCluster(const AliESDCaloCluster *c) const;
+    Bool_t		IsGoodClusterV1(const AliESDCaloCluster *c) const;
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
     void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
@@ -132,6 +133,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH2F			*hdifV0A_TPC;		//! 2-D histo diff V0A - TPC
     TH2F			*hdifV0C_TPC;		//! 2-D histo diff V0C - TPC
     TH2F			*hdifV0C_V0A;		//! 2-D histo diff V0C - V0A
+
+    TH2F			*hM02vsPtA;		//! 2-D histo clus M02 vs Pt before cut
+    TH2F			*hM02vsPtB;		//! 2-D histo clus M02 vs Pt after cut
+    TH2F			*hClusDxDZ;		//! 2-D histo clus Dx vs Dz
 
     TH3F			*hdifEMC_EPV0;		//! 3-D histo dif phi in EMC with EPV0
     TH3F			*hdifEMC_EPV0A;		//! 3-D histo dif phi in EMC with EPV0A

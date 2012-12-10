@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1, TString trackName="PicoTrack")
+AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=2, TString trackName="PicoTrack", Double_t Ecut = 1, Double_t M02cut = 0.5)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -40,21 +40,23 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1, TString trackN
   containerName3 += ":PWGGA_pi0v2CalEventPlane";
   
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStatTPC",TList::Class(), AliAnalysisManager::kOutputContainer,containerName3.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("EPStatTPC_E%1.0f_M02%1.0f", Ecut, M02cut),TList::Class(), AliAnalysisManager::kOutputContainer,containerName3.Data());
   mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
   //analysis task 
 
- AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
- taskMB->SetEventMethod(EvtMthod);
- taskMB->SetTracksName(trackName.Data());
-  
+  AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
+  taskMB->SetEventMethod(EvtMthod);
+  taskMB->SetTracksName(trackName.Data());
+  taskMB->SetClusE(Ecut);
+  taskMB->SetClusM02(M02cut);
+
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_pi0v2CalSemiCentral";
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histv2task", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("histv2task_E%1.0f_M02%1.0f", Ecut, M02cut), TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
   mgr->ConnectInput(taskMB, 0, cinput);
   mgr->ConnectOutput(taskMB, 1, coutput2);
   

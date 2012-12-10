@@ -79,6 +79,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0), 
+    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZ(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
@@ -113,6 +114,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),  
+    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZ(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
@@ -290,6 +292,46 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
   if(c->GetM02() >fM02Cut)
     return kFALSE;
 
+
+  return kTRUE;
+
+}
+//________________________________________________________________________________________________
+Bool_t AliAnalysisTaskPi0V2::IsGoodClusterV1(const AliESDCaloCluster *c) const
+{
+
+  if(!c)
+    return kFALSE;
+
+  if(c->GetNCells() < fNcellCut)
+   return kFALSE;
+
+  if(c->E() < fECut)
+   return kFALSE;
+
+  Short_t id = -1;
+  Double_t maxE = GetMaxCellEnergy(c, id);
+     if((1. - double(GetCrossEnergy(c,id))/maxE) > 0.97)
+    return kFALSE;
+
+
+  Float_t pos1[3];
+  c->GetPosition(pos1);
+  TVector3 clsPos(pos1);
+  Double_t eta = clsPos.Eta();
+
+  if(TMath::Abs(eta) > fEtaCut)
+    return kFALSE;
+
+  if (!IsWithinFiducialVolume(id))
+    return kFALSE;
+
+  if(c->GetM02() <0.5)
+    return kFALSE;
+
+  Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
+  if(dr>0.025)
+    return kFALSE;
 
   return kTRUE;
 
@@ -554,6 +596,14 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(h2DcosTPC);
     fOutput->Add(h2DsinTPC);
 
+    hM02vsPtA = new TH2F("hM02vsPtA", "M02 vs Pt before cut", 50, 0, 50, 40, 0, 4);
+    hM02vsPtB = new TH2F("hM02vsPtB", "M02 vs Pt before cut", 50, 0, 50, 40, 0, 4);
+    fOutput->Add(hM02vsPtA);
+    fOutput->Add(hM02vsPtB);
+
+    hClusDxDZ = new TH2F("hClusDxDZ", "clus Dx vs Dz", 50, -1., 1., 50, -1., 1);
+    fOutput->Add(hClusDxDZ);
+
     const Int_t ndims = 5;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
     Int_t bins[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
@@ -735,11 +785,19 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
    for(Int_t i=0; i<nCluster; ++i){
      AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
+     hClusDxDZ->Fill(c1->GetTrackDz(), c1->GetTrackDx());
+     Float_t clsPos[3] = {0,0,0};
+     c1->GetPosition(clsPos);
+     TVector3 clsVec(clsPos);
+     Double_t Et = c1->E()*TMath::Sin(clsVec.Theta());
+     hM02vsPtA->Fill(Et, c1->GetM02());
      if(!c1->IsEMCAL()) continue;
-     if(!IsGoodCluster(c1)) continue;
+     if(!IsGoodClusterV1(c1)) continue;
+     hM02vsPtB->Fill(Et, c1->GetM02());	
      TLorentzVector p1;
      GetMom(p1, c1, vertex);
      FillCluster(p1, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+     if(!IsGoodCluster(c1)) continue;
      for(Int_t j=i+1; j<nCluster; ++j){
        AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
        if(!c2->IsEMCAL()) continue;
