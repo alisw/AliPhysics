@@ -22,7 +22,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
   // Binning
   // Central:
   if( AliVEvent::kCentral == offlineTriggerMask ) {
-    const int nbins = 3;
+    const int nbins = 2;
     Double_t cbin[nbins+1] = {0., 5., 10.};
     TArrayD tbin(nbins+1, cbin);
     Int_t    nMixed[nbins] = {6, 6};
@@ -38,19 +38,10 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
     TArrayI tNMixed(nbins, nMixed);
     task->SetCentralityBinning(tbin, tNMixed);
   }
-  // MB:
-  if( AliVEvent::kMB == offlineTriggerMask ) {
+  // MB or PHOS Trigger:
+  if( AliVEvent::kMB == offlineTriggerMask || AliVEvent::kPHOSPb == offlineTriggerMask ) {
     const int nbins = 7;
-    Double_t cbin[nbins+1] = {0., 5., 10., 20, 30., 40., 50., 80.};
-    TArrayD tbin(nbins+1, cbin);
-    Int_t    nMixed[nbins] = {6, 6, 40, 40, 40, 40, 80};
-    TArrayI tNMixed(nbins, nMixed);
-    task->SetCentralityBinning(tbin, tNMixed);
-  }
-  // PHOS Trigger:
-  if( AliVEvent::kPHOSPb == offlineTriggerMask ) {
-    const int nbins = 7;
-    Double_t cbin[nbins+1] = {0., 5., 10., 20, 30., 40., 50., 80.};
+    Double_t cbin[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 80.};
     TArrayD tbin(nbins+1, cbin);
     Int_t    nMixed[nbins] = {6, 6, 40, 40, 40, 40, 80};
     TArrayI tNMixed(nbins, nMixed);
