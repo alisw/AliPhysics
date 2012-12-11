@@ -31,6 +31,7 @@ public:
   Bool_t GetSatellite()      const {return fSattelite;}
   
   Float_t GetT0VertexRaw()      const {return fT0VertexRaw;}
+  Double32_t GetT0zVertex()      const {return fT0zVertex;}
   
   //Setters
   void SetT0TOF(Int_t icase, Double32_t time) { fT0TOF[icase] = time;}
@@ -41,6 +42,7 @@ public:
   void SetSatelliteFlag(Bool_t sat = false) { fSattelite = sat;}
   
   void SetT0VertexRaw(Float_t vtx) { fT0VertexRaw = vtx;}
+  void SetT0zVertex(Double32_t z) {fT0zVertex = z;}
        
   
 protected:
@@ -50,8 +52,9 @@ protected:
   Bool_t       fBackground;  // sattelite flag
   Double32_t   fT0TOFbest[3];// interaction time in ps ( A&C, A, C) with best time
   Float_t      fT0VertexRaw; // raw T0 vertex without any cuts 
+  Double32_t   fT0zVertex;    // reconstructed T0 vertex
 
-  ClassDef(AliAODTZERO,2)
+  ClassDef(AliAODTZERO,3)
 };
 
 #endif

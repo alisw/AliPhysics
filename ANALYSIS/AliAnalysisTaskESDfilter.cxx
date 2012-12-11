@@ -2025,6 +2025,7 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
     aodTzero->SetT0VertexRaw(99999);
   }
 
+  aodTzero->SetT0zVertex(esdTzero->GetT0zVertex());
 }
 
 
