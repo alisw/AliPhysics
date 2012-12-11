@@ -45,12 +45,14 @@ class AliAnalysisMuonUtility : public TObject {
   static Bool_t MatchLpt ( const AliVParticle* track ) { return GetMatchTrigger(track) >= 2; }
   static Bool_t MatchHpt ( const AliVParticle* track ) { return GetMatchTrigger(track) >= 3; }
   static Double_t GetChi2perNDFtracker ( const AliVParticle* track );
+  static Double_t GetChi2MatchTrigger ( const AliVParticle* track );
   static Double_t GetXatVertex ( const AliVParticle* track );
   static Double_t GetYatVertex ( const AliVParticle* track );
   static Double_t GetZatVertex ( const AliVParticle* track );
   static Double_t GetXatDCA ( const AliVParticle* track );
   static Double_t GetYatDCA ( const AliVParticle* track );
   static Double_t GetZatDCA ( const AliVParticle* track ) { return GetZatVertex(track); }
+  static Bool_t IsTrkChamberHit( Int_t chamber, const AliVParticle* track );
   static UInt_t GetMUONTrigHitsMapTrk ( const AliVParticle* track );
   static UInt_t GetMUONTrigHitsMapTrg ( const AliVParticle* track );
   static Int_t GetLoCircuit ( const AliVParticle* track );
