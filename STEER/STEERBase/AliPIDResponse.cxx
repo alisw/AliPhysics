@@ -1978,7 +1978,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
 AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   //
-  // Compute PID response for the
+  // Compute PID probabilities for TOF
   //
   
   Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
@@ -2010,6 +2010,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     
     if (TMath::Abs(nsigmas)<5.){
       Double_t nsigmasTPC=GetNumberOfSigmasTPC(track,type);
+      if (TMath::Abs(nsigmasTPC)>998) mismatch=kFALSE; // if TPC not available we can't check mismatch
       if (TMath::Abs(nsigmasTPC)<5.) mismatch=kFALSE;
     }
   }
