@@ -88,7 +88,7 @@ class AliCDBManager: public TObject {
 				 Int_t version = -1, Int_t subVersion = -1); 
 
 	Bool_t Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData,
-			const char* mirrors="", const DataType type=kPrivate);
+			const char* mirrors="", DataType type=kPrivate);
 	Bool_t Put(AliCDBEntry* entry, const char* mirrors="", DataType type=kPrivate);
 
 	void SetCacheFlag(Bool_t cacheFlag) {fCache=cacheFlag;}

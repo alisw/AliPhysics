@@ -1212,7 +1212,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData, const char* mirrors, const DataType type){
+Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData, const char* mirrors, DataType type){
 // store an AliCDBEntry object into the database
 
 	if (object==0x0) {
