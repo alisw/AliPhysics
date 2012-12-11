@@ -27,33 +27,33 @@ class AliTRDonlineTrackMatching {
   inline static Short_t TrdSecSiLsi(Short_t sec, Short_t si) { return 5*sec + si; }          // convert sector (0-17) and local stack index (0-4) to linear stack index 0-89
 
   static Short_t EstimateSector(const Double_t globalCoords[3]);
-  static Short_t EstimateLayer(const Double_t radius);
+  static Short_t EstimateLayer(Double_t radius);
   static Short_t EstimateLocalStack(const Double_t globalCoords[3]);
   static Short_t EstimateStack(const Double_t globalCoords[3]);
 
-  static Bool_t StackToTrack(const AliExternalTrackParam* track, Short_t &stack, UShort_t &layersWithTracklet, const Double_t magFieldinKiloGauss);
-  static Bool_t StackToTrack(const AliESDtrack* track, Short_t &stack, UShort_t &layersWithTracklet, const Double_t magFieldinKiloGauss);
+  static Bool_t StackToTrack(const AliExternalTrackParam* track, Short_t &stack, UShort_t &layersWithTracklet, Double_t magFieldinKiloGauss);
+  static Bool_t StackToTrack(const AliESDtrack* track, Short_t &stack, UShort_t &layersWithTracklet, Double_t magFieldinKiloGauss);
 
   static Bool_t TrackPlaneIntersect(AliExternalTrackParam *trk, Double_t pnt[3], Double_t norm[3], Double_t mag);
   Int_t EstimateTrackDistance(AliESDtrack *esd_track, AliESDTrdTrack* gtu_track, Double_t mag, Double_t *ydist, Double_t *zdist);
-  static Double_t RateTrackMatch(const Double_t distY, const Double_t distZ, const Double_t rpt, const Double_t gpt);
+  static Double_t RateTrackMatch(Double_t distY, Double_t distZ, Double_t rpt, Double_t gpt);
 
-  static void SetEsdTrackCutMinTPCrows(const Double_t setting) { fEsdTrackCutMinTPCrows = setting; };
-  static void SetEsdTrackCutMinRatioRowsFindableClusters(const Double_t setting) { fEsdTrackCutMinRatioRowsFindableClusters = setting; };
-  static void SetEsdTrackCutMaxChi2TPCclusters(const Float_t setting) { fEsdTrackCutMaxChi2TPCclusters = setting; };
-  static void SetEsdTrackCutMaxChi2ITSclusters(const Float_t setting) { fEsdTrackCutMaxChi2ITSclusters = setting; };
-  static void SetEsdTrackCutMaxDCAtoVertexXY(const Float_t setting) { fEsdTrackCutMaxDCAtoVertexXY = setting; };
-  static void SetEsdTrackCutMaxDCAtoVertexZ(const Float_t setting) { fEsdTrackCutMaxDCAtoVertexZ = setting; };
-  static void SetEsdTrackCutITSlayerMask(const UShort_t setting) { fEsdTrackCutsITSlayerMask = setting; };
-  static void SetEsdTrackCutsChi2TPCconstrainedVsGlobal(const Float_t setting) { fEsdTrackVCutsChi2TPCconstrainedVsGlobal = setting; };
-  static void SetEsdTrackCutMinimal(const Bool_t setting) { fEsdTrackCutMinimal = setting; };
-  static void SetEsdTrackCutRequireITSrefit(const Bool_t setting) { fEsdTrackCutRequireITSrefit = setting; };
-  static void SetEsdTrackCutRequireTPCrefit(const Bool_t setting) { fEsdTrackCutRequireTPCrefit = setting; };
-  static void SetEsdTrackCutPrim(const Bool_t setting) { fEsdTrackCutPrim = setting; };
+  static void SetEsdTrackCutMinTPCrows(Double_t setting) { fEsdTrackCutMinTPCrows = setting; };
+  static void SetEsdTrackCutMinRatioRowsFindableClusters(Double_t setting) { fEsdTrackCutMinRatioRowsFindableClusters = setting; };
+  static void SetEsdTrackCutMaxChi2TPCclusters(Float_t setting) { fEsdTrackCutMaxChi2TPCclusters = setting; };
+  static void SetEsdTrackCutMaxChi2ITSclusters(Float_t setting) { fEsdTrackCutMaxChi2ITSclusters = setting; };
+  static void SetEsdTrackCutMaxDCAtoVertexXY(Float_t setting) { fEsdTrackCutMaxDCAtoVertexXY = setting; };
+  static void SetEsdTrackCutMaxDCAtoVertexZ( Float_t setting) { fEsdTrackCutMaxDCAtoVertexZ = setting; };
+  static void SetEsdTrackCutITSlayerMask(UShort_t setting) { fEsdTrackCutsITSlayerMask = setting; };
+  static void SetEsdTrackCutsChi2TPCconstrainedVsGlobal(Float_t setting) { fEsdTrackVCutsChi2TPCconstrainedVsGlobal = setting; };
+  static void SetEsdTrackCutMinimal(Bool_t setting) { fEsdTrackCutMinimal = setting; };
+  static void SetEsdTrackCutRequireITSrefit(Bool_t setting) { fEsdTrackCutRequireITSrefit = setting; };
+  static void SetEsdTrackCutRequireTPCrefit(Bool_t setting) { fEsdTrackCutRequireTPCrefit = setting; };
+  static void SetEsdTrackCutPrim(Bool_t setting) { fEsdTrackCutPrim = setting; };
 
   static void SetEsdTrackDefaultCuts(const char* cutIdent = "minimal");
 
-  void SetMinMatchRating(const Float_t setting) { fMinMatchRating = setting; };
+  void SetMinMatchRating(Float_t setting) { fMinMatchRating = setting; };
   void SetHistMatchRating(TH1* hist) { fHistMatchRating = hist; };
 
   static Bool_t AcceptTrack(const AliESDtrack* esdTrack, const AliESDEvent* esdEvent);
@@ -61,7 +61,7 @@ class AliTRDonlineTrackMatching {
 
  protected:
 
-  inline static Double_t PtDiffRel(const Double_t refPt, const Double_t gtuPt);
+  inline static Double_t PtDiffRel(Double_t refPt, Double_t gtuPt);
 
   static const unsigned int fgkMaxEsdTracksPerStack = 20000; // max no. of tracks per stack
   static const unsigned int fgkTrdStacks = 90;		     // no. of TRD stacks (0-89)
