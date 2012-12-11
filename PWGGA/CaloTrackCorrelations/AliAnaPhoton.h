@@ -51,11 +51,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, const TLorentzVector mom, const Int_t nlm) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nlm) ;
   
   void         FillAcceptanceHistograms();
 
-  void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
@@ -63,12 +63,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
   
-  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, const Int_t cut);
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut);
   
   void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
 
-  void         FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time) ;
+  void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
   void         FillPileUpHistogramsPerEvent(TObjArray * clusters) ;
 
   void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms = kTRUE  ; }

@@ -39,7 +39,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FillMcHists();
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
-  void                   GetDaughtersInfo(const int firstd, const int lastd, const int selfid, const char *indputindent);
+  void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }

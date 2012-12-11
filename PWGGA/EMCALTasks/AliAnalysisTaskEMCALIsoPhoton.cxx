@@ -692,7 +692,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
   fDirPhoPt = md->Pt();
 }
 //________________________________________________________________________
-void AliAnalysisTaskEMCALIsoPhoton::GetDaughtersInfo(const int firstd, const int lastd, const int selfid, const char *inputind)
+void AliAnalysisTaskEMCALIsoPhoton::GetDaughtersInfo(int firstd, int lastd, int selfid, const char *inputind)
 {
   int nmcp = fStack->GetNtrack();
   if(firstd<0 || firstd>nmcp)

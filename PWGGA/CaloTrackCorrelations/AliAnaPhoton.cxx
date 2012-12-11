@@ -214,7 +214,7 @@ AliAnaPhoton::AliAnaPhoton() :
 }
 
 //_____________________________________________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, const TLorentzVector mom, const Int_t nMaxima) 
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int_t nMaxima) 
 {
   //Select clusters if they pass different cuts
   
@@ -825,7 +825,7 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters)
 
 
 //_________________________________________________________________________________________________
-void AliAnaPhoton::FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time)
+void AliAnaPhoton::FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time)
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -906,7 +906,7 @@ void AliAnaPhoton::FillPileUpHistograms(const Float_t energy, const Float_t pt, 
 }
 
 //____________________________________________________________________________________
-void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t mcTag)
+void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
 {
     //Fill cluster Shower Shape histograms
   
@@ -1235,7 +1235,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
 
 //__________________________________________________________________________
 void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster, 
-                                                       const Int_t cut)
+                                                       Int_t cut)
 {
   // If selected, fill histograms with residuals of matched clusters, help to define track matching cut
   // Residual filled for different cuts 0 (No cut), after 1 PID cut
