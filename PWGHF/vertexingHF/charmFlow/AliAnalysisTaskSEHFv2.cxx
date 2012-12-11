@@ -323,10 +323,10 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     // histos for EP resolution
     TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
     fOutput->Add(hEvPlaneReso);
-    if(fEventPlaneMeth>kTPCVZERO){
-      TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
+    if(fEventPlaneMeth>=kTPCVZERO){
+      TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
       fOutput->Add(hEvPlaneReso2);
-      TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
+      TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{B}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
       fOutput->Add(hEvPlaneReso3);
     }
 
