@@ -62,7 +62,7 @@ public:
 		kBitTPCC  = (1<<8),
 	};
 
-	static Int_t GetGapBin(const TString tag, Int_t gapcg);
+	static Int_t GetGapBin(TString tag, Int_t gapcg);
 	static TH1F* GetHistStatsFlow();
 };
 
