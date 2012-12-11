@@ -174,10 +174,10 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
 }  
 
 //_______________________________________________________________________________________________________________
-void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(const Int_t triggerNumber, const Bool_t max,
-                                                          const Float_t e,  const Float_t eta, const Float_t phi,
-                                                          const Float_t ieta, const Float_t iphi,
-                                                          const Float_t centrality, const Float_t v0AC)
+void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, Bool_t max,
+                                                          Float_t e,  Float_t eta, Float_t phi,
+                                                          Float_t ieta, Float_t iphi,
+                                                          Float_t centrality, Float_t v0AC)
 {
   //Fill normal cluster related histograms depending on the trigger selection
   if(!max)

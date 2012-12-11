@@ -25,10 +25,10 @@ public:
   
   virtual ~AliAnalysisTaskEMCALTriggerQA() { ; }     // destructor
   
-  void   FillClusterHistograms(const Int_t triggerNumber, const Bool_t maxCluster,
-                               const Float_t e,const Float_t eta,const Float_t phi,
-                               const Float_t ietamax,const Float_t iphimax,
-                               const Float_t centrality, const Float_t v0AC);
+  void   FillClusterHistograms(Int_t triggerNumber, Bool_t maxCluster,
+                               Float_t e,Float_t eta,Float_t phi,
+                               Float_t ietamax,Float_t iphimax,
+                               Float_t centrality, Float_t v0AC);
   
   void   Init() ;
 
