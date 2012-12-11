@@ -106,8 +106,15 @@ Int_t AliAnalysisMuonUtility::GetMatchTrigger ( const AliVParticle* track )
 //________________________________________________________________________
 Double_t AliAnalysisMuonUtility::GetChi2perNDFtracker ( const AliVParticle* track )
 {
-  /// Get Theta at absorber end (in deg)
+  /// Get the normalized chi2 of the tracker track
   return IsAODTrack(track) ? static_cast<const AliAODTrack*>(track)->Chi2perNDF() : static_cast<const AliESDMuonTrack*>(track)->GetNormalizedChi2();
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisMuonUtility::GetChi2MatchTrigger ( const AliVParticle* track )
+{
+  /// Get the normalized chi2 of the tracker-trigger track matching
+  return IsAODTrack(track) ? static_cast<const AliAODTrack*>(track)->GetChi2MatchTrigger() : static_cast<const AliESDMuonTrack*>(track)->GetChi2MatchTrigger();
 }
 
 //________________________________________________________________________
@@ -167,6 +174,14 @@ Double_t AliAnalysisMuonUtility::GetYatDCA ( const AliVParticle* track )
 {
   /// Get Y at DCA
   return IsAODTrack(track) ? static_cast<const AliAODTrack*>(track)->YAtDCA() : static_cast<const AliESDMuonTrack*>(track)->GetBendingCoorAtDCA();
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisMuonUtility::IsTrkChamberHit( Int_t chamber, const AliVParticle* track )
+{
+  /// Check if the given tracking chamber has been fired
+  if (chamber < 0 || chamber > 9) return kFALSE;
+  return IsAODTrack(track) ? static_cast<const AliAODTrack*>(track)->HitsMuonChamber(chamber) : static_cast<const AliESDMuonTrack*>(track)->IsInMuonClusterMap(chamber);
 }
 
 //________________________________________________________________________
