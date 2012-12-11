@@ -593,7 +593,8 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
   //
   //
   map<int, int> runMap;
-  map<int, int> runMapTree[nTrees];
+  map<int, int> *runMapTree = new map<int, int>[nTrees];
+  //map<int, int> runMapTree[nTrees];
   {for (Int_t itree=0; itree<nTrees; itree++){
       TTree * tree = (TTree*)arrayTrees->At(itree);
       Int_t entries=tree->GetEntries();
@@ -622,13 +623,23 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
   {for (Int_t itree=0; itree<nTrees; itree++){
       TTree * tree = (TTree*)arrayTrees->At(itree);      
       tree->GetEntry(1);
-      joinTree->Branch(Form("%s.status",arrayNames->At(itree)->GetName()), &status[itree],Form("%s.status/I",arrayNames->At(itree)->GetName()));
+      TString treeName=arrayNames->At(itree)->GetName();
+      if (treeName.Length()>0){
+	joinTree->Branch(Form("%s.status",treeName.Data()), &status[itree],Form("%s.status/I",treeName.Data()));
+      }else{
+	joinTree->Branch("status", &status[itree],"status/I");
+      }
       //
       Int_t nbranches= tree->GetListOfBranches()->GetEntries();
       for (Int_t ibr=0; ibr<nbranches; ibr++){
 	TBranch * br = (TBranch*)(tree->GetListOfBranches()->At(ibr));
-	sprintf(brName,"%s.%s",arrayNames->At(itree)->GetName(), br->GetName());
-	sprintf(brTitle,"%s.%s",arrayNames->At(itree)->GetName(), br->GetTitle());
+	if (treeName.Length()>0){
+	  sprintf(brName,"%s.%s",treeName.Data(), br->GetName());
+	  sprintf(brTitle,"%s.%s",treeName.Data(), br->GetTitle());
+	}else{
+	  sprintf(brName,"%s",br->GetName());
+	  sprintf(brTitle,"%s",br->GetTitle());
+	}
 	void* addr = 0;
 	TString className=br->GetClassName();
 	if (className.Length()==0){
