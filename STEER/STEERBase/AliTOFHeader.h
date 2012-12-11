@@ -24,6 +24,7 @@
 #include "TObject.h"
 //#include "TArrayF.h"
 //#include "TArrayI.h"
+#include "AliTOFTriggerMask.h"
 
 class TArrayI;
 class TArrayF;
@@ -54,6 +55,10 @@ class AliTOFHeader : public TObject {
   TArrayF *GetEventTimeRes()       const {return fEventTimeRes;}
   TArrayI *GetNvalues()            const {return fNvalues;}
   Int_t GetNbins()                 const {return fNvalues ? fNvalues->GetSize() : 0;}
+  Int_t GetNumberOfTOFclusters()   const {return fNumberOfTOFclusters;}
+  Int_t GetNumberOfTOFtrgPads()    const {return fNumberOfTOFtrgPads;}
+  Int_t GetNumberOfTOFmaxipad()    const {if(fTrigMask) return fTrigMask->GetNumberMaxiPadOn(); else return 0;}
+  AliTOFTriggerMask *GetTriggerMask() const {return fTrigMask;}
 
   void SetDefaultEventTimeVal(Float_t val) {fDefaultEventTimeValue=val;}
   void SetDefaultEventTimeRes(Float_t res) {fDefaultEventTimeRes=res;}
@@ -61,6 +66,9 @@ class AliTOFHeader : public TObject {
   void SetEventTimeRes(TArrayF *arr);
   void SetNvalues(TArrayI *arr);
   void SetNbins(Int_t nbins);
+  void SetNumberOfTOFclusters(Int_t a) {fNumberOfTOFclusters=a;}
+  void SetNumberOfTOFtrgPads(Int_t a) {fNumberOfTOFtrgPads=a;}
+  void SetTriggerMask(AliTOFTriggerMask *trigmask) {if(fTrigMask) *fTrigMask=*trigmask; else fTrigMask=new AliTOFTriggerMask(*trigmask);}
 
  protected:
 
@@ -75,10 +83,13 @@ class AliTOFHeader : public TObject {
   TArrayI *fNvalues;               // array for order numbers of momentum bin
   Float_t fTOFtimeResolution;      // TOF time resolution as written in TOF OCDB
   Float_t fT0spread;               // t0spread as written in TOF OCDB
+  Int_t fNumberOfTOFclusters;      //[0,170000,18] number of reconstructed TOF clusters
+  Int_t fNumberOfTOFtrgPads;       //[0,170000,18] number of reconstructed TOF trigger pads
+  AliTOFTriggerMask *fTrigMask;    // Trigger mask
 
  private:
 
-  ClassDef(AliTOFHeader,2)  // Class for TOF event times and so on
+  ClassDef(AliTOFHeader,3)  // Class for TOF event times and so on
 };
 
 #endif

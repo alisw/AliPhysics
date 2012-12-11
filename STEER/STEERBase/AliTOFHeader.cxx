@@ -42,7 +42,10 @@ AliTOFHeader::AliTOFHeader() :
   fEventTimeRes(0),
   fNvalues(0),
   fTOFtimeResolution(0.),
-  fT0spread(0.)
+  fT0spread(0.),
+  fNumberOfTOFclusters(-1),
+  fNumberOfTOFtrgPads(-1),
+  fTrigMask(new AliTOFTriggerMask())
 {
   //
   // Default Constructor
@@ -62,7 +65,10 @@ AliTOFHeader::AliTOFHeader(Float_t defEvTime, Float_t defResEvTime,
   fEventTimeRes(0),
   fNvalues(0),
   fTOFtimeResolution(tofTimeRes),
-  fT0spread(t0spread)
+  fT0spread(t0spread),
+  fNumberOfTOFclusters(-1),
+  fNumberOfTOFtrgPads(-1),
+  fTrigMask(new AliTOFTriggerMask())
 {
   //
   // Constructor for TOF header
@@ -91,7 +97,10 @@ AliTOFHeader::AliTOFHeader(const AliTOFHeader &source):
   fEventTimeRes(0),
   fNvalues(0),
   fTOFtimeResolution(source.fTOFtimeResolution),
-  fT0spread(source.fT0spread)
+  fT0spread(source.fT0spread),
+  fNumberOfTOFclusters(source.fNumberOfTOFclusters),
+  fNumberOfTOFtrgPads(source.fNumberOfTOFtrgPads),
+  fTrigMask(NULL)
 {
   //
   // Copy constructor
@@ -108,7 +117,8 @@ AliTOFHeader::AliTOFHeader(const AliTOFHeader &source):
     }
   }
 
-
+  if(source.fTrigMask) fTrigMask = new AliTOFTriggerMask(*(source.fTrigMask));
+  else fTrigMask = new AliTOFTriggerMask();
 }
 //--------------------------------------------------------------------------
 AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
@@ -123,7 +133,9 @@ AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
     fNbins=source.fNbins;
     fTOFtimeResolution=source.fTOFtimeResolution;
     fT0spread=source.fT0spread;
-
+    fNumberOfTOFclusters=source.fNumberOfTOFclusters;
+    fNumberOfTOFtrgPads=source.fNumberOfTOFtrgPads;
+    
     if (fNbins>0) {
       fEventTimeValues = new TArrayF(fNbins);
       fEventTimeRes = new TArrayF(fNbins);
@@ -139,6 +151,8 @@ AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
       fNvalues = 0;
     }
 
+    if(source.fTrigMask && fTrigMask) *fTrigMask = *(source.fTrigMask);
+    else if(! fTrigMask) fTrigMask = new AliTOFTriggerMask();
   }
   return *this;
 }
@@ -172,6 +186,10 @@ AliTOFHeader::~AliTOFHeader()
   if (fNvalues) {
     delete fNvalues;
     fNvalues=0;
+  }
+  if(fTrigMask){
+    delete fTrigMask;
+    fTrigMask=NULL;
   }
 
 }

@@ -74,7 +74,6 @@ set ( SRCS
     AliTOFTDCHit.cxx 
     AliTOFTDCHitBuffer.cxx 
     AliTOFReadoutInfo.cxx 
-    AliTOFTriggerMask.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

@@ -103,6 +103,7 @@
 #pragma link C++ class AliPIDValues+;
 #pragma link C++ class AliDetectorPID+;
 #pragma link C++ class AliTOFHeader+;
+#pragma link C++ class AliTOFTriggerMask+;
 
 #pragma link C++ class AliDAQ+;
 #pragma link C++ class AliRefArray+;

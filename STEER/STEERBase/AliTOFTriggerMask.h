@@ -36,14 +36,19 @@ public TObject
 
   void SetTriggerMaskArray(UInt_t *array); // set trigger mask array
 
+  void ResetMask();
+  void SetON(Int_t icrate,Int_t ich);
+  Bool_t IsON(Int_t icrate,Int_t ich);
+
   Int_t GetNumberMaxiPadOn(); // return number of active MP
   TH2F *GetHistoMask(); // return active MP map
 
  private:
+  static Int_t fPowerMask[24]; // 2-power mask table
 
-  UInt_t fTriggerMask[72]; // trigger mask array
+  UInt_t fTriggerMask[72]; //[0,16777215,23] trigger mask array
 
-  ClassDef(AliTOFTriggerMask, 1);
+  ClassDef(AliTOFTriggerMask, 2);
 };
 
 #endif /* ALITOFTRIGGERMASK_H */

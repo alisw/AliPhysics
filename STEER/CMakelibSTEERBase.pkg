@@ -83,6 +83,7 @@ set ( SRCS
     STEERBase/AliTPCdEdxInfo.cxx
     STEERBase/AliCounterCollection.cxx
     STEERBase/AliTOFHeader.cxx
+    STEERBase/AliTOFTriggerMask.cxx
     STEERBase/AliVCaloTrigger.cxx
     STEERBase/AliProdInfo.cxx
     STEERBase/AliVTrdTrack.cxx

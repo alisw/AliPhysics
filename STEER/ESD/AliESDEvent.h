@@ -289,7 +289,7 @@ public:
 
 
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
-  const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
+  AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
 

@@ -26,8 +26,9 @@
 
 #include "AliTOFTriggerMask.h"
 
-ClassImp(AliTOFTriggerMask)
+Int_t AliTOFTriggerMask::fPowerMask[24];
 
+ClassImp(AliTOFTriggerMask)
 //_________________________________________________________
 
 AliTOFTriggerMask::AliTOFTriggerMask() :
@@ -39,6 +40,12 @@ AliTOFTriggerMask::AliTOFTriggerMask() :
    */
 
   for (Int_t iddl = 0; iddl < 72; iddl++) fTriggerMask[iddl] = 0;
+
+  fPowerMask[0] = 1;
+  for(Int_t i=1;i <= 23;i++){
+      fPowerMask[i] = fPowerMask[i-1]*2;
+  }
+
 }
 
 //_________________________________________________________
@@ -98,15 +105,28 @@ Int_t AliTOFTriggerMask::GetNumberMaxiPadOn() {
   Int_t n=0;
   for(Int_t j=0;j<72;j++) 
     for(Int_t i=22;i>=0;i--) 
-      n += (fTriggerMask[j]%Int_t(TMath::Power(2.,i+1.)))/Int_t(TMath::Power(2.,i+0.));
+      n += (fTriggerMask[j]%fPowerMask[i+1])/fPowerMask[i];
   return n;
 };
+//_________________________________________________________
+void AliTOFTriggerMask::SetON(Int_t icrate,Int_t ich){
+  if(ich < 24 && icrate < 73) fTriggerMask[icrate] += fPowerMask[ich];
+}
+//_________________________________________________________
+Bool_t AliTOFTriggerMask::IsON(Int_t icrate,Int_t ich){
+  if(ich < 24 && icrate < 73) return (fTriggerMask[icrate] & fPowerMask[ich]);
+  else return kFALSE;
+}
 //_________________________________________________________
 
 TH2F *AliTOFTriggerMask::GetHistoMask() {
   TH2F *h = new TH2F("hTOFTriggerMask","TOF trigger mask;crate;MaxiPad",72,0,72,23,0,23);
   for(Int_t j=0;j<72;j++) 
     for(Int_t i=22;i>=0;i--) 
-      h->SetBinContent(j+1,i+1,(fTriggerMask[j]%Int_t(TMath::Power(2.,i+1.)))/Int_t(TMath::Power(2.,i+0.)));
+      h->SetBinContent(j+1,i+1,(fTriggerMask[j]%fPowerMask[i+1])/fPowerMask[i]);
   return h;
 };
+//_________________________________________________________
+void AliTOFTriggerMask::ResetMask() {
+  for (Int_t iddl = 0; iddl < 72; iddl++) fTriggerMask[iddl] = 0;
+}
