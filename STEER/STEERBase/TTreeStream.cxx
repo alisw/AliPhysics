@@ -90,7 +90,53 @@ void TTreeStream::Test()
   //5.) and now see results  in file tteststreamer.root
 }
 
-
+void TTreeSRedirector::Test2()
+{
+  //
+  //Example test function to show functionality of TTreeSRedirector
+  //
+  //
+  //1.)create the  redirector associated with file (testredirector.root)
+  //
+  //
+  TFile* file = new TFile("test.root","recreate");
+  TTreeSRedirector *pmistream= new TTreeSRedirector();
+  TTreeSRedirector &mistream = *pmistream;
+  Char_t ch='s';
+  Float_t f=3.;
+  Float_t f2=1;
+  TObject *po  = new TObject;
+  TObject *po2 = new TObject;
+  for (Int_t i=0;i<100000;i++) {
+    f=i*100;
+    po->SetUniqueID(i);
+    po2->SetUniqueID(i*100);
+    ch=i%120;
+    //
+    //2.) create the tree with identifier specified by first argument
+    //                                layout specified by sequence of arguments
+    //                                Tree identifier has to be specified as first argument !!! 
+    //    if the tree and layout was already defined the consistency if layout is checked
+    //                                if the data are consisten fill given tree 
+    //    the name of branch can be specified using strings with = at the the end
+    //    if string is not specified use automatic convention  B0, B1, ...Bn
+    mistream<<"TreeIdentifier"<<"i="<<i<<"ch="<<ch<<"f="<<f<<"po="<<po<<"\n";
+    f  = 1./(100.1+i);
+    f2 = -f; 
+    
+    //3.) just another example - we can fill the same tree with different objects
+    //
+    mistream<<"TreeK"<<f<<po<<"\n";
+    mistream<<"TreeK"<<f2<<po2<<"\n";
+  }
+  //
+  //4.) write the streamed tree's to the file and close the corresponding file in destructor
+  //
+  delete pmistream;
+  delete file;
+  //
+  //5.) and now see results in file testredirector.root 
+}
 
 void TTreeSRedirector::Test()
 {
@@ -140,18 +186,23 @@ void TTreeSRedirector::Test()
 
 
 TTreeSRedirector::TTreeSRedirector(const char *fname,const char * option) :
-  fFile(new TFile(fname,option)),
-  fDataLayouts(0)
+  fDirectory(NULL),
+  fDirectoryOwner(kTRUE),
+  fDataLayouts(NULL)
 {
   //
   // Constructor
   //
-  if (!fFile){
-    fFile = new TFile(fname,option);
+  TString name(fname);
+  if (!name.IsNull()){
+    fDirectory = new TFile(fname,option);
+  }
+  else
+  {
+    fDirectory = gDirectory;
+    fDirectoryOwner = kFALSE;
   }
 }
-
-
 
 TTreeSRedirector::~TTreeSRedirector()
 {
@@ -159,32 +210,33 @@ TTreeSRedirector::~TTreeSRedirector()
   // Destructor
   //
   Close();       //write the tree to the selected file
-  fFile->Close();
-  delete fFile;
+  if (fDirectoryOwner)
+  {
+    fDirectory->Close();
+    delete fDirectory;
+  }
 }
 void TTreeSRedirector::StoreObject(TObject* object){
   //
   //
   //
   TDirectory * backup = gDirectory;
-  fFile->cd();
+  fDirectory->cd();
   object->Write();
   if (backup) backup->cd();
 }
 
-
-void  TTreeSRedirector::SetFile(TFile *sfile){
+void  TTreeSRedirector::SetDirectory(TDirectory *sfile){
   //
   // Set the external file 
   // In case other file already attached old file is closed before
   // Redirector will be the owner of file ?
-  if (fFile) {
-    fFile->Close();
-    delete fFile;
+  if (fDirectory && fDirectoryOwner) {
+    fDirectory->Close();
+    delete fDirectory;
   }
-  fFile=sfile;
+  fDirectory=sfile;
 }
-
 
 TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
 {
@@ -204,7 +256,7 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
   }
   if (!clayout){
     TDirectory * backup = gDirectory;
-    fFile->cd();
+    fDirectory->cd();
     char chname[100];
     snprintf(chname,100,"Tree%d",id);
     clayout = new TTreeStream(chname);
@@ -213,6 +265,24 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
     if (backup) backup->cd();
   }
   return *clayout;
+}
+
+void TTreeSRedirector::SetExternalTree(const char* name, TTree* externalTree)
+{
+  TTreeStream *clayout=(TTreeStream*)fDataLayouts->FindObject(name);
+
+  if (!clayout){
+    TDirectory * backup = gDirectory;
+    fDirectory->cd();
+    clayout = new TTreeStream(name,externalTree);
+    clayout->fId=-1;
+    clayout->SetName(name);
+    Int_t entries = fDataLayouts->GetEntriesFast();
+    fDataLayouts->AddAt(clayout,entries);
+    if (backup) backup->cd();
+  }
+  //else
+  //  AliError(Form("identifier %s already associated",name));
 }
 
 
@@ -227,7 +297,7 @@ TTreeStream  & TTreeSRedirector::operator<<(const char* name)
 
   if (!clayout){
     TDirectory * backup = gDirectory;
-    fFile->cd();
+    fDirectory->cd();
     clayout = new TTreeStream(name);
     clayout->fId=-1;
     clayout->SetName(name);
@@ -244,7 +314,7 @@ void TTreeSRedirector::Close(){
   //
   //
   TDirectory * backup = gDirectory;
-  fFile->cd();
+  fDirectory->cd();
   if (fDataLayouts){
     Int_t entries = fDataLayouts->GetEntriesFast();
     for (Int_t i=0;i<entries;i++){
@@ -258,8 +328,6 @@ void TTreeSRedirector::Close(){
   }
   if (backup) backup->cd();
 }
-
-
 
 //-------------------------------------------------------------
 TTreeDataElement:: TTreeDataElement(Char_t type) :
@@ -299,11 +367,11 @@ TTreeDataElement:: TTreeDataElement(TClass* cl) :
 }
 
 //-------------------------------------------------------------------
-TTreeStream::TTreeStream(const char *treename):
+TTreeStream::TTreeStream(const char *treename, TTree* externalTree):
   TNamed(treename,treename),
   fElements(0),
   fBranches(0),
-  fTree(new TTree(treename, treename)),
+  fTree(externalTree),
   fCurrentIndex(0),
   fId(0),
   fNextName(),
@@ -313,6 +381,7 @@ TTreeStream::TTreeStream(const char *treename):
   //
   // Standard ctor
   //
+  if (!fTree) fTree = new TTree(treename, treename);
 }
 
 TTreeStream::~TTreeStream()

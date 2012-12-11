@@ -7,7 +7,8 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TTree.h"
-class TFile;
+#include "TDirectory.h"
+#include "TFile.h"
 class TObjArray;
 class TTree;
 class TDataType;
@@ -35,7 +36,7 @@ class TTreeDataElement: public TNamed {
 class TTreeStream: public TNamed {
   friend class TTreeSRedirector;
 public:
-  TTreeStream(const char *treename);
+  TTreeStream(const char *treename, TTree* externalTree=NULL);
   ~TTreeStream();
   void Close();
   static void Test();
@@ -84,23 +85,29 @@ public:
 
 class TTreeSRedirector: public TObject { 
 public:
-  TTreeSRedirector(const char *fname, const char * option="new");
+  TTreeSRedirector(const char *fname="", const char * option="new");
   virtual ~TTreeSRedirector();
   void Close();
   static void Test();
+  static void Test2();
   void StoreObject(TObject* object);
-  TFile * GetFile() {return fFile;};
+  TFile * GetFile() {return fDirectory->GetFile();}
+  TDirectory * GetDirectory() {return fDirectory;}
   virtual   TTreeStream  &operator<<(Int_t id);
   virtual   TTreeStream  &operator<<(const char *name);
-  void      SetFile(TFile *sfile); 
- private:
+  void      SetDirectory(TDirectory *sfile); 
+  void      SetFile(TFile *sfile) {SetDirectory(sfile);} 
+  void SetExternalTree(const char* name, TTree* externalTree);
+ 
+private:
 
   TTreeSRedirector(const TTreeSRedirector & tsr);
   TTreeSRedirector & operator=(const TTreeSRedirector & tsr);
 
-  TFile* fFile;        //file
+  TDirectory* fDirectory;        //file
+  Bool_t      fDirectoryOwner;   //do we own the directory?
   TObjArray *fDataLayouts;   //array of data layouts
-  ClassDef(TTreeSRedirector,1) 
+  ClassDef(TTreeSRedirector,2) 
 };
 
 
