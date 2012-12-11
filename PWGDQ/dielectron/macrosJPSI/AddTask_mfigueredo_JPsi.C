@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
+AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE){
+  
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -21,7 +22,8 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
   TString configFile("");
   printf("%s \n",gSystem->pwd());
   
-
+  configFile="ConfigJpsi_mf_PbPb.C";
+ 
   if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/mfiguere/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C ."))
     configFile=Form("%s/ConfigJpsi_mf_PbPb.C",gSystem->pwd());                        // alien config                                                                                            
   else
@@ -30,9 +32,25 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
-  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
-  mgr->AddTask(task);
+//   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
+ 
+  // trigger selection
+  ULong64_t triggerSets[]={AliVEvent::kEMCEGA ,AliVEvent::kEMCEJE};
+  const char* triggerNames[]={"EMCEGA","EMCEJE"};
+
+  // find out the configured triggers
+  Int_t j=0;
+  for(j=0; j<2; j++) {
+    if(triggers!=triggerSets[j]) continue;
+    else break;
+  }
   
+    // print task configuration
+  printf("production: %s MC: %d \n",  list.Data(),hasMC);
+  printf("triggers:   %s \n",         triggerNames[j]  );
+
+  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
+   
   //load dielectron configuration file
   TString checkconfig="ConfigJpsi_mf_pp";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
@@ -43,6 +61,7 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
     AliDielectron *jpsi; 
     jpsi=ConfigJpsi_mf_PbPb(i,isAOD);
     if (jpsi) task->AddDielectron(jpsi);
+    if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
 
   //Add event filter
@@ -56,9 +75,11 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
   task->SetEventFilter(eventCuts);
 
   // pileup rejection
-//   task->SetRejectPileup();
-   if(!hasMC)  task->SetTriggerMask(AliVEvent::kEMCEGA);
-   task->UsePhysicsSelection();
+  task->SetTriggerMask(triggers);
+  task->UsePhysicsSelection();
+   
+  mgr->AddTask(task);
+  
   //----------------------
   //create data containers
   //----------------------
@@ -67,19 +88,26 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod=""){
   containerName += ":PWGDQ_dielectron";
     
   //create output container
-  
+    //create output container
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("mfigueredo_QA", TList::Class(), AliAnalysisManager::kOutputContainer,
-                         containerName.Data());
-  
+    mgr->CreateContainer(Form("mfigueredo_QA_%s",triggerNames[j]),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("mfig_%s.root",triggerNames[j]));
+
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("mfigueredo_CF", TList::Class(), AliAnalysisManager::kOutputContainer,
-                         containerName.Data());
+    mgr->CreateContainer(Form("mfigueredo_CF_%s",triggerNames[j]),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("mfig_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("mfigueredo_EventStat", TH1D::Class(), AliAnalysisManager::kOutputContainer,
-                         containerName.Data());
+    mgr->CreateContainer(Form("mfigueredo_EventStat_%s",triggerNames[j]),
+			 TH1D::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("mfig_%s.root",triggerNames[j]));
   
+ 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
