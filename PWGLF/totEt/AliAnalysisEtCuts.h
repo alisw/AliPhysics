@@ -99,70 +99,70 @@ class AliAnalysisEtCuts : public TNamed
 
   // Setters
   // Common
-  void SetCommonEtaCut(const Double_t val) { fCommonEtaCut = val; }
-  void SetCommonClusterEnergyCut(const Double_t val) { fCommonClusterEnergyCut = val; }
-  void SetCommonTrackPtCut(const Double_t val) { fCommonTrackPtCut = val; }
-  void SetCommonSingleCell(const Int_t val) { fCommonSingleCell = val;}
+  void SetCommonEtaCut(Double_t val) { fCommonEtaCut = val; }
+  void SetCommonClusterEnergyCut(Double_t val) { fCommonClusterEnergyCut = val; }
+  void SetCommonTrackPtCut(Double_t val) { fCommonTrackPtCut = val; }
+  void SetCommonSingleCell(Int_t val) { fCommonSingleCell = val;}
   // GeometryPhos
-  void SetGeometryPhosEtaAccCut(const Double_t val) { fGeometryPhosEtaAccCut = val; }
-  void SetGeometryPhosPhiAccMinCut(const Double_t val) { fGeometryPhosPhiAccMinCut = val; }
-  void SetGeometryPhosPhiAccMaxCut(const Double_t val) { fGeometryPhosPhiAccMaxCut = val; }
-  void SetGeometryPhosDetectorRadius(const Double_t val) { fGeometryPhosDetectorRadius = val; }
+  void SetGeometryPhosEtaAccCut(Double_t val) { fGeometryPhosEtaAccCut = val; }
+  void SetGeometryPhosPhiAccMinCut(Double_t val) { fGeometryPhosPhiAccMinCut = val; }
+  void SetGeometryPhosPhiAccMaxCut(Double_t val) { fGeometryPhosPhiAccMaxCut = val; }
+  void SetGeometryPhosDetectorRadius(Double_t val) { fGeometryPhosDetectorRadius = val; }
   // GeometryEmcal
-  void SetGeometryEmcalEtaAccCut(const Double_t val) { fGeometryEmcalEtaAccCut = val; }
-  void SetGeometryEmcalPhiAccMinCut(const Double_t val) { fGeometryEmcalPhiAccMinCut = val; }
-  void SetGeometryEmcalPhiAccMaxCut(const Double_t val) { fGeometryEmcalPhiAccMaxCut = val; }
-  void SetGeometryEmcalDetectorRadius(const Double_t val) { fGeometryEmcalDetectorRadius = val; }
+  void SetGeometryEmcalEtaAccCut(Double_t val) { fGeometryEmcalEtaAccCut = val; }
+  void SetGeometryEmcalPhiAccMinCut(Double_t val) { fGeometryEmcalPhiAccMinCut = val; }
+  void SetGeometryEmcalPhiAccMaxCut(Double_t val) { fGeometryEmcalPhiAccMaxCut = val; }
+  void SetGeometryEmcalDetectorRadius(Double_t val) { fGeometryEmcalDetectorRadius = val; }
   // Reconstructed
-  void SetReconstructedVertexXCut(const Double_t val) { fReconstructedVertexXCut = val; }
-  void SetReconstructedVertexYCut(const Double_t val) { fReconstructedVertexYCut = val; }
-  void SetReconstructedVertexZCut(const Double_t val) { fReconstructedVertexZCut = val; }
-  void SetReconstructedIPxyCut(const Double_t val) { fReconstructedIPxyCut = val; }
-  void SetReconstructedIPzCut(const Double_t val) { fReconstructedIPzCut = val; }
-  void SetReconstructedNTpcClustersCut(const Int_t val) { fReconstructedNTpcClustersCut = val; }
-  void SetReconstructedNItsClustersCut(const Int_t val) { fReconstructedNItsClustersCut = val; }
-  void SetReconstrucedPidCut(const Double_t val) { fReconstructedPidCut = val; }
+  void SetReconstructedVertexXCut(Double_t val) { fReconstructedVertexXCut = val; }
+  void SetReconstructedVertexYCut(Double_t val) { fReconstructedVertexYCut = val; }
+  void SetReconstructedVertexZCut(Double_t val) { fReconstructedVertexZCut = val; }
+  void SetReconstructedIPxyCut(Double_t val) { fReconstructedIPxyCut = val; }
+  void SetReconstructedIPzCut(Double_t val) { fReconstructedIPzCut = val; }
+  void SetReconstructedNTpcClustersCut(Int_t val) { fReconstructedNTpcClustersCut = val; }
+  void SetReconstructedNItsClustersCut(Int_t val) { fReconstructedNItsClustersCut = val; }
+  void SetReconstrucedPidCut(Double_t val) { fReconstructedPidCut = val; }
   // ReconstructedPhos
-  void SetReconstructedPhosClusterType(const Char_t val) { fReconstructedPhosClusterType = val; }
-  void SetReconstructedPhosClusterEnergyCut(const Double_t val) { fReconstructedPhosClusterEnergyCut = val; }
-  void SetReconstructedPhosSingleCellEnergyCut(const Double_t val) { fReconstructedPhosSingleCellEnergyCut = val; }
-  void SetPhosTrackDistanceCut(const Double_t val) { fPhosTrackDistanceCut = val; }
-  void SetPhosTrackDxCut(const Double_t val) { fPhosTrackDxCut = val; }
-  void SetPhosTrackDzCut(const Double_t val) { fPhosTrackDzCut = val; }
-  void SetPhosTrackRCut(const Double_t val) { std::cout << "Setting: " << val << std::endl; fPhosTrackRCut = val; }
+  void SetReconstructedPhosClusterType(Char_t val) { fReconstructedPhosClusterType = val; }
+  void SetReconstructedPhosClusterEnergyCut(Double_t val) { fReconstructedPhosClusterEnergyCut = val; }
+  void SetReconstructedPhosSingleCellEnergyCut(Double_t val) { fReconstructedPhosSingleCellEnergyCut = val; }
+  void SetPhosTrackDistanceCut(Double_t val) { fPhosTrackDistanceCut = val; }
+  void SetPhosTrackDxCut(Double_t val) { fPhosTrackDxCut = val; }
+  void SetPhosTrackDzCut(Double_t val) { fPhosTrackDzCut = val; }
+  void SetPhosTrackRCut(Double_t val) { std::cout << "Setting: " << val << std::endl; fPhosTrackRCut = val; }
   
-  void SetPhosBadDistanceCut(const Double_t val) { fPhosBadDistanceCut = val; }
+  void SetPhosBadDistanceCut(Double_t val) { fPhosBadDistanceCut = val; }
   
   // ReconstructedEmcal
-  void SetReconstructedEmcalClusterType(const Char_t val) { fReconstructedEmcalClusterType = val; }
-  void SetReconstructedEmcalClusterEnergyCut(const Double_t val) { fReconstructedEmcalClusterEnergyCut = val; }
-  void SetReconstructedEmcalSingleCellEnergyCut(const Double_t val) { fReconstructedEmcalSingleCellEnergyCut = val; }
-  void SetEmcalTrackDistanceCut(const Double_t val) { fEmcalTrackDistanceCut = val; }
+  void SetReconstructedEmcalClusterType(Char_t val) { fReconstructedEmcalClusterType = val; }
+  void SetReconstructedEmcalClusterEnergyCut(Double_t val) { fReconstructedEmcalClusterEnergyCut = val; }
+  void SetReconstructedEmcalSingleCellEnergyCut(Double_t val) { fReconstructedEmcalSingleCellEnergyCut = val; }
+  void SetEmcalTrackDistanceCut(Double_t val) { fEmcalTrackDistanceCut = val; }
   // MonteCarlo
-  void SetMonteCarloSingleChargedParticle(const Double_t val) { fMonteCarloSingleChargedParticle = val; }
-  void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
+  void SetMonteCarloSingleChargedParticle(Double_t val) { fMonteCarloSingleChargedParticle = val; }
+  void SetMonteCarloNeutralParticle(Double_t val) { fMonteCarloNeutralParticle = val; }
   // Hist: TTree and histogram info
-  void SetHistMakeTree(const Bool_t val) { fHistMakeTree = val; }
-  void SetHistMakeTreeDeposit(const Bool_t val) { fHistMakeTreeDeposit = val; }
+  void SetHistMakeTree(Bool_t val) { fHistMakeTree = val; }
+  void SetHistMakeTreeDeposit(Bool_t val) { fHistMakeTreeDeposit = val; }
   //
-  void SetHistNbinsMult(const Int_t val) { fHistNbinsMult = val; }
-  void SetHistMinMult(const Double_t val) { fHistMinMult = val; }
-  void SetHistMaxMult(const Double_t val) { fHistMaxMult = val; }
+  void SetHistNbinsMult(Int_t val) { fHistNbinsMult = val; }
+  void SetHistMinMult(Double_t val) { fHistMinMult = val; }
+  void SetHistMaxMult(Double_t val) { fHistMaxMult = val; }
   //
-  void SetHistNbinsTotEt(const Int_t val) { fHistNbinsTotEt = val; }
-  void SetHistMinTotEt(const Double_t val) { fHistMinTotEt = val; }
-  void SetHistMaxTotEt(const Double_t val) { fHistMaxTotEt = val; }
+  void SetHistNbinsTotEt(Int_t val) { fHistNbinsTotEt = val; }
+  void SetHistMinTotEt(Double_t val) { fHistMinTotEt = val; }
+  void SetHistMaxTotEt(Double_t val) { fHistMaxTotEt = val; }
   //
-  void SetHistNbinsParticleEt(const Int_t val) { fHistNbinsParticleEt = val; }
-  void SetHistMinParticleEt(const Double_t val) { fHistMinParticleEt = val; }
-  void SetHistMaxParticleEt(const Double_t val) { fHistMaxParticleEt = val; }
+  void SetHistNbinsParticleEt(Int_t val) { fHistNbinsParticleEt = val; }
+  void SetHistMinParticleEt(Double_t val) { fHistMinParticleEt = val; }
+  void SetHistMaxParticleEt(Double_t val) { fHistMaxParticleEt = val; }
   //
-  void SetHistNbinsParticlePt(const Int_t val) { fHistNbinsParticlePt = val; }
-  void SetHistMinParticlePt(const Double_t val) { fHistMinParticlePt = val; }
-  void SetHistMaxParticlePt(const Double_t val) { fHistMaxParticlePt = val; }
+  void SetHistNbinsParticlePt(Int_t val) { fHistNbinsParticlePt = val; }
+  void SetHistMinParticlePt(Double_t val) { fHistMinParticlePt = val; }
+  void SetHistMaxParticlePt(Double_t val) { fHistMaxParticlePt = val; }
 
-  void SetPrimaryVertexCutXY(const Double_t val) { fPrimaryVertexCutXY = val; }
-  void SetPrimaryVertexCutZ(const Double_t val) { fPrimaryVertexCutZ = val; }
+  void SetPrimaryVertexCutXY(Double_t val) { fPrimaryVertexCutXY = val; }
+  void SetPrimaryVertexCutZ(Double_t val) { fPrimaryVertexCutZ = val; }
   
   
   

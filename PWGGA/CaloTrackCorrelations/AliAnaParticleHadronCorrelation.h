@@ -47,9 +47,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       GetDecayPhotonMomentum(const AliAODPWG4Particle* trigger, TLorentzVector & mom1,TLorentzVector & mom2);
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
+  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
+  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
   
   void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
   
@@ -57,49 +57,49 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   // Filling histogram methods
   
-  void         FillChargedAngularCorrelationHistograms  (const Float_t ptAssoc,  const Float_t ptTrig,      const Int_t   assocBin,
-                                                         const Float_t phiAssoc, const Float_t phiTrig,     Float_t &     deltaPhi,
-                                                         const Float_t etaAssoc, const Float_t etaTrig,  
-                                                         const Bool_t  decay,    const Float_t hmpidSignal, const Int_t outTOF,
-                                                         const Int_t nTracks,    const Int_t   mcTag);
+  void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
+                                                         Float_t phiAssoc, Float_t phiTrig,     Float_t &     deltaPhi,
+                                                         Float_t etaAssoc, Float_t etaTrig,  
+                                                         Bool_t  decay,    Float_t hmpidSignal, Int_t outTOF,
+                                                         Int_t nTracks,    Int_t   mcTag);
   
   void         FillChargedEventMixPool();
   
-  Bool_t       FillChargedMCCorrelationHistograms       (const Float_t mcAssocPt,      Float_t mcAssocPhi, const Float_t mcAssocEta,
-                                                         const Float_t mcTrigPt, const Float_t mcTrigPhi,  const Float_t mcTrigEta  );
+  Bool_t       FillChargedMCCorrelationHistograms       (Float_t mcAssocPt,      Float_t mcAssocPhi, Float_t mcAssocEta,
+                                                         Float_t mcTrigPt, Float_t mcTrigPhi,  Float_t mcTrigEta  );
 
   
-  void         FillChargedMomentumImbalanceHistograms   (const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                         const Float_t xE,       const Float_t hbpXE, 
-                                                         const Float_t zT,       const Float_t hbpZT, 
-                                                         const Float_t pout,     const Int_t   nTracks,  const Int_t charge,
-                                                         const Int_t   assocBin, const Bool_t  decay,
-                                                         const Int_t outTOF,    const Int_t mcTag );
+  void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
+                                                         Float_t xE,       Float_t hbpXE, 
+                                                         Float_t zT,       Float_t hbpZT, 
+                                                         Float_t pout,     Int_t   nTracks,  Int_t charge,
+                                                         Int_t   assocBin, Bool_t  decay,
+                                                         Int_t outTOF,    Int_t mcTag );
   
-  void         FillChargedUnderlyingEventHistograms     (const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                         const Float_t deltaPhi, const Int_t nTracks,    const Int_t outTOF);
+  void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, 
+                                                         Float_t deltaPhi, Int_t nTracks,    Int_t outTOF);
   
-  void         FillChargedUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                         const Float_t deltaPhi);
+  void         FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
+                                                         Float_t deltaPhi);
   
-  void         FillDecayPhotonCorrelationHistograms     (const Float_t ptAssoc,     const Float_t phiAssoc, 
-                                                         const TLorentzVector mom1, const TLorentzVector mom2, 
-                                                         const Bool_t bChargedOrNeutral); 
+  void         FillDecayPhotonCorrelationHistograms     (Float_t ptAssoc,     Float_t phiAssoc, 
+                                                         TLorentzVector mom1, TLorentzVector mom2, 
+                                                         Bool_t bChargedOrNeutral); 
   
   
-  void         FillNeutralAngularCorrelationHistograms  (const Float_t ptAssoc,  const Float_t ptTrig,
-                                                         const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
-                                                         const Float_t etaAssoc, const Float_t etaTrig);
+  void         FillNeutralAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,
+                                                         Float_t phiAssoc, Float_t phiTrig,  Float_t &     deltaPhi,
+                                                         Float_t etaAssoc, Float_t etaTrig);
   
   void         FillNeutralEventMixPool();
   
   
-  void         FillNeutralUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                         const Float_t xE,       const Float_t hbpXE, 
-                                                         const Float_t zT,       const Float_t hbpZT, 
-                                                         const Float_t deltaPhi);  
+  void         FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
+                                                         Float_t xE,       Float_t hbpXE, 
+                                                         Float_t zT,       Float_t hbpZT, 
+                                                         Float_t deltaPhi);  
     
-  Int_t        GetMCTagHistogramIndex(const Int_t tag);
+  Int_t        GetMCTagHistogramIndex(Int_t tag);
   
   // Parameter setter and getter
   

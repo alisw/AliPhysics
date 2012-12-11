@@ -243,11 +243,11 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 }
 
 //______________________________________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,      const Int_t   bin,
-                                                                              const Float_t phiAssoc, const Float_t phiTrig,     Float_t &     deltaPhi,
-                                                                              const Float_t etaAssoc, const Float_t etaTrig,  
-                                                                              const Bool_t  decay,    const Float_t hmpidSignal, const Int_t  outTOF,
-                                                                              const Int_t nTracks,       const Int_t   mcTag)
+void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Float_t ptAssoc,  Float_t ptTrig,      Int_t   bin,
+                                                                              Float_t phiAssoc, Float_t phiTrig,     Float_t &     deltaPhi,
+                                                                              Float_t etaAssoc, Float_t etaTrig,  
+                                                                              Bool_t  decay,    Float_t hmpidSignal, Int_t  outTOF,
+                                                                              Int_t nTracks,       Int_t   mcTag)
 {
   // Fill angular correlation related histograms
   
@@ -380,8 +380,8 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
 }
 
 //____________________________________________________________________________________________________________________________________________________
-Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(const Float_t mcAssocPt,      Float_t mcAssocPhi, const Float_t mcAssocEta,
-                                                                           const Float_t mcTrigPt, const Float_t mcTrigPhi,  const Float_t mcTrigEta)
+Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float_t mcAssocPt,      Float_t mcAssocPhi, Float_t mcAssocEta,
+                                                                           Float_t mcTrigPt, Float_t mcTrigPhi,  Float_t mcTrigEta)
 {
   // Fill MC histograms independently of AOD or ESD
   
@@ -462,13 +462,13 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(const
 } 
 
 //___________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                                             const Float_t xE,       const Float_t hbpXE, 
-                                                                             const Float_t zT,       const Float_t hbpZT, 
-                                                                             const Float_t pout,
-                                                                             const Int_t   nTracks,  const Int_t   charge,
-                                                                             const Int_t   bin,      const Bool_t  decay,
-                                                                             const Int_t   outTOF,   const Int_t   mcTag)
+void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Float_t ptTrig,   Float_t ptAssoc, 
+                                                                             Float_t xE,       Float_t hbpXE, 
+                                                                             Float_t zT,       Float_t hbpZT, 
+                                                                             Float_t pout,
+                                                                             Int_t   nTracks,  Int_t   charge,
+                                                                             Int_t   bin,      Bool_t  decay,
+                                                                             Int_t   outTOF,   Int_t   mcTag)
 
 {
   // Fill mostly momentum imbalance related histograms
@@ -555,8 +555,8 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
 } 
 
 //_______________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const Float_t ptTrig,   const Float_t ptAssoc,
-                                                                           const Float_t deltaPhi, const Int_t nTracks, const Int_t outTOF)
+void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float_t ptTrig,   Float_t ptAssoc,
+                                                                           Float_t deltaPhi, Int_t nTracks, Int_t outTOF)
 {
   // Fill underlying event histograms
   
@@ -612,9 +612,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
 }
 
 //_____________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(const Float_t ptTrig, 
-                                                                                const Float_t ptAssoc, 
-                                                                                const Float_t deltaPhi)
+void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig, 
+                                                                                Float_t ptAssoc, 
+                                                                                Float_t deltaPhi)
 {
  // Fill underlying event histograms to the left and right of trigger
   if((deltaPhi<-fUeDeltaPhiMinCut) || (deltaPhi >2*fUeDeltaPhiMaxCut))
@@ -697,9 +697,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
 } 
 
 //______________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(const Float_t ptAssoc,     const Float_t phiAssoc, 
-                                                                           const TLorentzVector mom1, const TLorentzVector mom2,
-                                                                           const Bool_t bChargedOrNeutral)
+void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(Float_t ptAssoc,     Float_t phiAssoc, 
+                                                                           TLorentzVector mom1, TLorentzVector mom2,
+                                                                           Bool_t bChargedOrNeutral)
 {
   // Do correlation with decay photons of triggered pi0 or eta
   
@@ -761,9 +761,9 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(const
 }
 
 //______________________________________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillNeutralAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,  
-                                                                              const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
-                                                                              const Float_t etaAssoc, const Float_t etaTrig)
+void AliAnaParticleHadronCorrelation::FillNeutralAngularCorrelationHistograms(Float_t ptAssoc,  Float_t ptTrig,  
+                                                                              Float_t phiAssoc, Float_t phiTrig,  Float_t &     deltaPhi,
+                                                                              Float_t etaAssoc, Float_t etaTrig)
 {
   // Fill angular correlation related histograms
   
@@ -783,10 +783,10 @@ void AliAnaParticleHadronCorrelation::FillNeutralAngularCorrelationHistograms(co
 }
 
 //_____________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                                                const Float_t xE,       const Float_t hbpXE, 
-                                                                                const Float_t zT,       const Float_t hbpZT, 
-                                                                                const Float_t deltaPhi)
+void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
+                                                                                Float_t xE,       Float_t hbpXE, 
+                                                                                Float_t zT,       Float_t hbpZT, 
+                                                                                Float_t deltaPhi)
 {
   // Fill underlying event histograms to the left and right of trigger
   
@@ -2472,7 +2472,7 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(const AliAODPWG4P
 } 
 
 //_____________________________________________________________
-Int_t AliAnaParticleHadronCorrelation::GetMCTagHistogramIndex(const Int_t mcTag)
+Int_t AliAnaParticleHadronCorrelation::GetMCTagHistogramIndex(Int_t mcTag)
 {
   // Index of MC histograms depending on MC origin
   
@@ -2793,7 +2793,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 
 //___________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, 
-                                                                const TObjArray* pl, const Bool_t bFillHisto)
+                                                                const TObjArray* pl, Bool_t bFillHisto)
 {  
   // Charged Hadron Correlation Analysis
   if(GetDebug() > 1) 
@@ -3261,7 +3261,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
 
 //________________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * const aodParticle, 
-                                                                const TObjArray* pi0list, const Bool_t bFillHisto)  
+                                                                const TObjArray* pi0list, Bool_t bFillHisto)  
 {  
   // Neutral Pion Correlation Analysis
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Make trigger particle - pi0 correlation, %d pi0's \n",
