@@ -61,7 +61,7 @@ void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t 
   AliKFParticleBase::Initialize( Param, C, Charge, mass );
 }
 
-void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, const Double_t Mass )
+void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, Double_t Mass )
 {
   // Constructor from "cartesian" track, PID hypothesis should be provided
   //
@@ -91,7 +91,7 @@ AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
   Create(fP,fC,fQ,PID);
 }
 
-AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, const Double_t Mass, Int_t Charge )
+AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Double_t Mass, Int_t Charge )
 {
   // Constructor from ALICE track, Mass and Charge hypothesis should be provided
 
