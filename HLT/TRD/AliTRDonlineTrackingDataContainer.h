@@ -12,67 +12,67 @@ class AliTRDonlineTrackingDataContainer : public AliHLTLogging {
   ~AliTRDonlineTrackingDataContainer();
 
   void SetLogPrefix(const char* prefix) { *fLogPrefix = prefix; };
-  void SetGtuPtMultiplier(const Double_t mult) { fGtuPtMultiplier = mult; }
-  void SetGtuPtMultiplierFromMagField(const Double_t magField);
+  void SetGtuPtMultiplier(Double_t mult) { fGtuPtMultiplier = mult; }
+  void SetGtuPtMultiplierFromMagField(Double_t magField);
 
   void Clear(const Option_t* = "");
-  Int_t AddTracklet(const UInt_t HCId, const UInt_t trackletWord);
+  Int_t AddTracklet(UInt_t HCId, UInt_t trackletWord);
   Int_t AddTracklet(const AliESDTrdTracklet* tracklet);
-  Int_t AddTrack(const UShort_t stack, const ULong64_t trackWord, const ULong64_t extTrackWord, const UInt_t trackletWords[6], const Int_t addInfo = -1);
-  Int_t AddTrack(const AliESDTrdTrack* track, const Int_t addInfo = -1);
+  Int_t AddTrack(UShort_t stack, ULong64_t trackWord, ULong64_t extTrackWord, const UInt_t trackletWords[6], Int_t addInfo = -1);
+  Int_t AddTrack(const AliESDTrdTrack* track, Int_t addInfo = -1);
 
-  void SetTrackAddInfo(const UShort_t stack, const UInt_t trackIndex, const Int_t addInfo);
-  void SetSectorTrgWord(const UShort_t sector, const UInt_t trgWord) { fSectorTrgWords[sector] = trgWord; };
-  void SetStackTrgWord(const UShort_t sector, const UShort_t stack, const ULong64_t trgWord) { fStackTrgWords[sector][stack] = trgWord; };
+  void SetTrackAddInfo(UShort_t stack, UInt_t trackIndex, Int_t addInfo);
+  void SetSectorTrgWord(UShort_t sector, UInt_t trgWord) { fSectorTrgWords[sector] = trgWord; };
+  void SetStackTrgWord(UShort_t sector, UShort_t stack, ULong64_t trgWord) { fStackTrgWords[sector][stack] = trgWord; };
 
   Int_t GetNumTracklets();
-  Int_t GetNumTracklets(const UInt_t det);
+  Int_t GetNumTracklets(UInt_t det);
   Int_t GetNumTracks();
-  Int_t GetNumTracks(const UShort_t stack);
+  Int_t GetNumTracks(UShort_t stack);
 
-  Int_t GetTrackletHCId(const UInt_t det, const UInt_t trackletIndex) { return fTrackletHCId[det][trackletIndex]; };
-  Int_t GetTrackletBinY(const UInt_t det, const UInt_t trackletIndex);
-  Int_t GetTrackletBinDy(const UInt_t det, const UInt_t trackletIndex);
-  Int_t GetTrackletBinZ(const UInt_t det, const UInt_t trackletIndex);
-  Int_t GetTrackletPID(const UInt_t det, const UInt_t trackletIndex);
-  Float_t GetTrackletLocalY(const UInt_t det, const UInt_t trackletIndex);
+  Int_t GetTrackletHCId(UInt_t det, UInt_t trackletIndex) { return fTrackletHCId[det][trackletIndex]; };
+  Int_t GetTrackletBinY(UInt_t det, UInt_t trackletIndex);
+  Int_t GetTrackletBinDy(UInt_t det, UInt_t trackletIndex);
+  Int_t GetTrackletBinZ(UInt_t det, UInt_t trackletIndex);
+  Int_t GetTrackletPID(UInt_t det, UInt_t trackletIndex);
+  Float_t GetTrackletLocalY(UInt_t det, UInt_t trackletIndex);
 
-  AliESDTrdTracklet* GetTracklet(const UInt_t det, const UInt_t trackletIndex);
-  AliESDTrdTrack* GetTrack(const UInt_t stack, const UInt_t trackIndex, const Bool_t constructTracklets = kTRUE);
-  Int_t GetTrackAddInfo(const UShort_t stack, const UInt_t trackIndex);
+  AliESDTrdTracklet* GetTracklet(UInt_t det, UInt_t trackletIndex);
+  AliESDTrdTrack* GetTrack(UInt_t stack, UInt_t trackIndex, Bool_t constructTracklets = kTRUE);
+  Int_t GetTrackAddInfo(UShort_t stack, UInt_t trackIndex);
 
-  inline Int_t GetTrackLayerMask(const UInt_t stack, const UInt_t trackIndex){
+  inline Int_t GetTrackLayerMask(UInt_t stack, UInt_t trackIndex){
     return (fTrackWords[stack][trackIndex] >> 56) & 0x3f;
   }
 
-  inline Int_t GetTrackA(const UInt_t stack, const UInt_t trackIndex){
+  inline Int_t GetTrackA(UInt_t stack, UInt_t trackIndex){
     return (((fTrackWords[stack][trackIndex] >> 38) & 0x3ffff) ^ 0x20000) - 0x20000;
   }
 
-  inline Int_t GetTrackPID(const UInt_t stack, const UInt_t trackIndex){
+  inline Int_t GetTrackPID(UInt_t stack, UInt_t trackIndex){
     return fTrackWords[stack][trackIndex] & 0xff;
   }
 
-  Double_t GetTrackPt(const UInt_t stack, const UInt_t trackIndex);
-  UShort_t GetTrackLayerNum(const UInt_t stack, const UInt_t trackIndex);
-  UInt_t GetTrackTrackletWord(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer);
-  Int_t GetTrackTrackletBinY(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer);
-  Float_t GetTrackTrackletLocalY(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer);
-  Int_t GetTrackTrackletBinZ(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer);
-  UShort_t GetTrackTrackletPID(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer);
+  Double_t GetTrackPt(UInt_t stack, UInt_t trackIndex);
+  UShort_t GetTrackLayerNum(UInt_t stack, UInt_t trackIndex);
+  UInt_t GetTrackTrackletWord(UInt_t stack, UInt_t trackIndex, UShort_t layer);
+  Int_t GetTrackTrackletBinY(UInt_t stack, UInt_t trackIndex, UShort_t layer);
+  Float_t GetTrackTrackletLocalY(UInt_t stack, UInt_t trackIndex, UShort_t layer);
+  Int_t GetTrackTrackletBinZ(UInt_t stack, UInt_t trackIndex, UShort_t layer);
+  UShort_t GetTrackTrackletPID(UInt_t stack, UInt_t trackIndex, UShort_t layer);
 
-  UInt_t GetSectorTrgWord(const UShort_t sector) { return fSectorTrgWords[sector]; };
-  ULong64_t GetStackTrgWord(const UShort_t sector, const UShort_t stack) { return fStackTrgWords[sector][stack]; };
-  UInt_t GetSectorTrgContribs(const UShort_t sector) { return fSectorTrgWords[sector] & 0x3ff; };
-  Float_t GetTrackletStartTime(const UShort_t sector, const UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 20) & 0x3ff)*1./125.; };
-  Float_t GetTrackletEndTime(const UShort_t sector, const UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 10) & 0x3ff)*1./125.; };
-  Float_t GetTMUTrackingDoneTime(const UShort_t sector, const UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 0) & 0x3ff)*1./50.; };
-  Float_t GetSMUTrackingDoneTime(const UShort_t sector) { return ((fSectorTrgWords[sector] >> 12) & 0x3ff)*1./120.; };
+  UInt_t GetSectorTrgWord(UShort_t sector) { return fSectorTrgWords[sector]; };
+  ULong64_t GetStackTrgWord(UShort_t sector, UShort_t stack) { return fStackTrgWords[sector][stack]; };
+  UInt_t GetSectorTrgContribs(UShort_t sector) { return fSectorTrgWords[sector] & 0x3ff; };
+  Float_t GetTrackletStartTime(UShort_t sector, UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 20) & 0x3ff)*1./125.; };
+  Float_t GetTrackletEndTime(UShort_t sector, UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 10) & 0x3ff)*1./125.; };
+  Float_t GetTMUTrackingDoneTime(UShort_t sector, UShort_t stack) { return ((fStackTrgWords[sector][stack] >> 0) & 0x3ff)*1./50.; };
+  Float_t GetSMUTrackingDoneTime(UShort_t sector) { return ((fSectorTrgWords[sector] >> 12) & 0x3ff)*1./120.; };
 
   Bool_t Compress(void* &buffer, UInt_t &sizeInBytes);
-  Bool_t Decompress(const void* buffer, const UInt_t sizeInBytes, const Bool_t cumulative = kFALSE, const Bool_t verbose = kFALSE);
+  Bool_t Decompress(const void* buffer, UInt_t sizeInBytes, Bool_t cumulative = kFALSE, Bool_t verbose = kFALSE);
 
-  void PrintBuffer(const void* buffer, const UInt_t sizeInBytes, const char* identifier);
+  void PrintBuffer(const void* buffer, UInt_t sizeInBytes, const char* identifier);
   void PrintSummary(const char* identifier = "none");
 
  protected:
@@ -117,20 +117,20 @@ class AliTRDonlineTrackingDataContainer : public AliHLTLogging {
 
   UInt_t DataWordsNeeded();
   UInt_t MakeDataHeader();
-  UInt_t MakeStackHeader(const UShort_t stack, const Bool_t trackletsPresent,
-			 const Bool_t tracksPresent, const UInt_t size);
-  UInt_t MakeTrackletHeader(const UShort_t det);
-  UInt_t MakeTrackHeader(const UShort_t stack);
-  UInt_t MakeGtuHeader(const Bool_t storeInfo);
+  UInt_t MakeStackHeader(UShort_t stack, Bool_t trackletsPresent,
+			 Bool_t tracksPresent, UInt_t size);
+  UInt_t MakeTrackletHeader(UShort_t det);
+  UInt_t MakeTrackHeader(UShort_t stack);
+  UInt_t MakeGtuHeader(Bool_t storeInfo);
 
-  Int_t StackFromStackHeader(const UInt_t stackHeader);
-  UInt_t SizeFromStackHeader(const UInt_t stackHeader);
-  Int_t HCIdFromTrackletHeader(const UInt_t trackletHeader);
-  Bool_t StoreGtuInfoFromDataHeader(const UInt_t dataHeader);
-  Bool_t GtuInfoPresentFromGtuHeader(const UInt_t gtuHeader);
+  Int_t StackFromStackHeader(UInt_t stackHeader);
+  UInt_t SizeFromStackHeader(UInt_t stackHeader);
+  Int_t HCIdFromTrackletHeader(UInt_t trackletHeader);
+  Bool_t StoreGtuInfoFromDataHeader(UInt_t dataHeader);
+  Bool_t GtuInfoPresentFromGtuHeader(UInt_t gtuHeader);
 
-  UShort_t ExtractTrackLayerMask(const ULong64_t trackWord);
-  UShort_t ExtractTrackPID(const ULong64_t trackWord);
+  UShort_t ExtractTrackLayerMask(ULong64_t trackWord);
+  UShort_t ExtractTrackPID(ULong64_t trackWord);
 
   ClassDef(AliTRDonlineTrackingDataContainer, 1);
 };

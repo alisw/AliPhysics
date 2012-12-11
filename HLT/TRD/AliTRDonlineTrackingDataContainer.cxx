@@ -54,7 +54,7 @@ Int_t AliTRDonlineTrackingDataContainer::GetNumTracklets() {
   return count;
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetNumTracklets(const UInt_t det) {
+Int_t AliTRDonlineTrackingDataContainer::GetNumTracklets(UInt_t det) {
   return fNumTracklets[det];
 }
 
@@ -65,11 +65,11 @@ Int_t AliTRDonlineTrackingDataContainer::GetNumTracks() {
   return count;
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetNumTracks(const UShort_t stack){
+Int_t AliTRDonlineTrackingDataContainer::GetNumTracks(UShort_t stack){
   return fNumTracks[stack];
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinY(const UInt_t det, const UInt_t trackletIndex) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinY(UInt_t det, UInt_t trackletIndex) {
   UInt_t trackletWord = fTrackletWords[det][trackletIndex];
   if (trackletWord & 0x1000) {
     return -((~(trackletWord - 1)) & 0x1fff);
@@ -79,7 +79,7 @@ Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinY(const UInt_t det, const
   }
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinDy(const UInt_t det, const UInt_t trackletIndex) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinDy(UInt_t det, UInt_t trackletIndex) {
   UInt_t trackletWord = fTrackletWords[det][trackletIndex];
   if (trackletWord & (1 << 19))
     return -((~((trackletWord >> 13) - 1)) & 0x7f);
@@ -87,19 +87,19 @@ Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinDy(const UInt_t det, cons
     return ((trackletWord >> 13) & 0x7f);
 };
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinZ(const UInt_t det, const UInt_t trackletIndex) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackletBinZ(UInt_t det, UInt_t trackletIndex) {
   return ((fTrackletWords[det][trackletIndex] >> 20) & 0xf);
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackletPID(const UInt_t det, const UInt_t trackletIndex) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackletPID(UInt_t det, UInt_t trackletIndex) {
   return ((fTrackletWords[det][trackletIndex] >> 24) & 0xff);
 };
 
-Float_t AliTRDonlineTrackingDataContainer::GetTrackletLocalY(const UInt_t det, const UInt_t trackletIndex) {
+Float_t AliTRDonlineTrackingDataContainer::GetTrackletLocalY(UInt_t det, UInt_t trackletIndex) {
   return GetTrackletBinY(det, trackletIndex) * fgkBinWidthY;
 }
 
-AliESDTrdTracklet* AliTRDonlineTrackingDataContainer::GetTracklet(const UInt_t det, const UInt_t trackletIndex) {
+AliESDTrdTracklet* AliTRDonlineTrackingDataContainer::GetTracklet(UInt_t det, UInt_t trackletIndex) {
   AliESDTrdTracklet* trkl = NULL;
   if ((det < fgkNumChambers) && (trackletIndex < fNumTracklets[det])){
     trkl = new AliESDTrdTracklet(fTrackletWords[det][trackletIndex], fTrackletHCId[det][trackletIndex], -1);
@@ -107,7 +107,7 @@ AliESDTrdTracklet* AliTRDonlineTrackingDataContainer::GetTracklet(const UInt_t d
   return trkl;
 }
 
-AliESDTrdTrack* AliTRDonlineTrackingDataContainer::GetTrack(const UInt_t stack, const UInt_t trackIndex, const Bool_t constructTracklets){
+AliESDTrdTrack* AliTRDonlineTrackingDataContainer::GetTrack(UInt_t stack, UInt_t trackIndex, Bool_t constructTracklets){
   AliESDTrdTrack* trk = NULL;
   if ((stack < fgkNumStacks) && (trackIndex < fNumTracks[stack])){
     trk = new AliESDTrdTrack();
@@ -144,7 +144,7 @@ AliESDTrdTrack* AliTRDonlineTrackingDataContainer::GetTrack(const UInt_t stack, 
   return trk;
 }
 
-Double_t AliTRDonlineTrackingDataContainer::GetTrackPt(const UInt_t stack, const UInt_t trackIndex){
+Double_t AliTRDonlineTrackingDataContainer::GetTrackPt(UInt_t stack, UInt_t trackIndex){
 
   // calculate pt from a as done in hardware
   const Int_t maskIdLut[64] = {
@@ -179,7 +179,7 @@ Double_t AliTRDonlineTrackingDataContainer::GetTrackPt(const UInt_t stack, const
 
 }
 
-UShort_t AliTRDonlineTrackingDataContainer::GetTrackLayerNum(const UInt_t stack, const UInt_t trackIndex) {
+UShort_t AliTRDonlineTrackingDataContainer::GetTrackLayerNum(UInt_t stack, UInt_t trackIndex) {
   UShort_t num = 0;
   UShort_t layerMask = GetTrackLayerMask(stack, trackIndex);
   for (UShort_t iLayer = 0; iLayer < fgkNumLayers; ++iLayer)
@@ -188,12 +188,12 @@ UShort_t AliTRDonlineTrackingDataContainer::GetTrackLayerNum(const UInt_t stack,
   return num;
 }
 
-UInt_t AliTRDonlineTrackingDataContainer::GetTrackTrackletWord(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer) {
+UInt_t AliTRDonlineTrackingDataContainer::GetTrackTrackletWord(UInt_t stack, UInt_t trackIndex, UShort_t layer) {
   return fTrackTrackletWords[stack][trackIndex][layer];
 }
 
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackTrackletBinY(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackTrackletBinY(UInt_t stack, UInt_t trackIndex, UShort_t layer) {
   UInt_t trackletWord = fTrackTrackletWords[stack][trackIndex][layer];
   if (trackletWord & 0x1000) {
     return -((~(trackletWord - 1)) & 0x1fff);
@@ -203,23 +203,23 @@ Int_t AliTRDonlineTrackingDataContainer::GetTrackTrackletBinY(const UInt_t stack
   }
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackAddInfo(const UShort_t stack, const UInt_t trackIndex) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackAddInfo(UShort_t stack, UInt_t trackIndex) {
   return fTrackAddInfo[stack][trackIndex];
 }
 
-Float_t AliTRDonlineTrackingDataContainer::GetTrackTrackletLocalY(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer) {
+Float_t AliTRDonlineTrackingDataContainer::GetTrackTrackletLocalY(UInt_t stack, UInt_t trackIndex, UShort_t layer) {
   return GetTrackTrackletBinY(stack, trackIndex, layer) * fgkBinWidthY;
 }
 
-Int_t AliTRDonlineTrackingDataContainer::GetTrackTrackletBinZ(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer) {
+Int_t AliTRDonlineTrackingDataContainer::GetTrackTrackletBinZ(UInt_t stack, UInt_t trackIndex, UShort_t layer) {
   return ((fTrackTrackletWords[stack][trackIndex][layer] >> 20) & 0xf);
 }
 
-UShort_t AliTRDonlineTrackingDataContainer::GetTrackTrackletPID(const UInt_t stack, const UInt_t trackIndex, const UShort_t layer) {
+UShort_t AliTRDonlineTrackingDataContainer::GetTrackTrackletPID(UInt_t stack, UInt_t trackIndex, UShort_t layer) {
   return ((fTrackTrackletWords[stack][trackIndex][layer] >> 24) & 0xff);
 }
 
-Int_t AliTRDonlineTrackingDataContainer::AddTracklet(const UInt_t HCId, const UInt_t trackletWord) {
+Int_t AliTRDonlineTrackingDataContainer::AddTracklet(UInt_t HCId, UInt_t trackletWord) {
   UShort_t det = HCId/2;
   Int_t pos = fNumTracklets[det]++;
   fTrackletWords[det][pos] = trackletWord;
@@ -231,8 +231,8 @@ Int_t AliTRDonlineTrackingDataContainer::AddTracklet(const AliESDTrdTracklet* tr
   return AddTracklet(tracklet->GetHCId(), tracklet->GetTrackletWord());
 }
 
-Int_t AliTRDonlineTrackingDataContainer::AddTrack(const UShort_t stack,
-						  const ULong64_t trackWord, const ULong64_t extTrackWord,
+Int_t AliTRDonlineTrackingDataContainer::AddTrack(UShort_t stack,
+						  ULong64_t trackWord, ULong64_t extTrackWord,
 						  const UInt_t trackletWords[6], const Int_t addInfo){
   Int_t pos = fNumTracks[stack]++;
   fTrackWords[stack][pos] = trackWord;
@@ -244,7 +244,7 @@ Int_t AliTRDonlineTrackingDataContainer::AddTrack(const UShort_t stack,
   return pos;
 }
 
-Int_t AliTRDonlineTrackingDataContainer::AddTrack(const AliESDTrdTrack* track, const Int_t addInfo) {
+Int_t AliTRDonlineTrackingDataContainer::AddTrack(const AliESDTrdTrack* track, Int_t addInfo) {
 
   UInt_t trackletWords[fgkNumLayers];
   UShort_t lm = track->GetLayerMask();
@@ -270,18 +270,18 @@ Int_t AliTRDonlineTrackingDataContainer::AddTrack(const AliESDTrdTrack* track, c
 
 }
 
-void AliTRDonlineTrackingDataContainer::SetTrackAddInfo(const UShort_t stack, const UInt_t trackIndex, const Int_t addInfo) {
+void AliTRDonlineTrackingDataContainer::SetTrackAddInfo(UShort_t stack, UInt_t trackIndex, Int_t addInfo) {
   fTrackAddInfo[stack][trackIndex] = addInfo;
 }
 
-void AliTRDonlineTrackingDataContainer::SetGtuPtMultiplierFromMagField(const Double_t magField) {
+void AliTRDonlineTrackingDataContainer::SetGtuPtMultiplierFromMagField(Double_t magField) {
   if (magField > 0)
     fGtuPtMultiplier = -1.;
   else
     fGtuPtMultiplier = 1.;
 }
 
-void AliTRDonlineTrackingDataContainer::PrintBuffer(const void* buffer, const UInt_t sizeInBytes, const char* identifier) {
+void AliTRDonlineTrackingDataContainer::PrintBuffer(const void* buffer, UInt_t sizeInBytes, const char* identifier) {
 
   UInt_t* buf = (UInt_t*)buffer;
   UInt_t currPos = 0;
@@ -336,10 +336,10 @@ inline UInt_t AliTRDonlineTrackingDataContainer::MakeDataHeader(){
     return (fgkHeaderTypeData << 28) | DataWordsNeeded();
 }
 
-inline UInt_t AliTRDonlineTrackingDataContainer::MakeStackHeader(const UShort_t stack,
-								 const Bool_t trackletsPresent,
-								 const Bool_t tracksPresent,
-								 const UInt_t size){
+inline UInt_t AliTRDonlineTrackingDataContainer::MakeStackHeader(UShort_t stack,
+								 Bool_t trackletsPresent,
+								 Bool_t tracksPresent,
+								 UInt_t size){
   return
     (fgkHeaderTypeStack << 28) |
     (((tracksPresent) ? 1 : 0) << 27) |
@@ -347,38 +347,38 @@ inline UInt_t AliTRDonlineTrackingDataContainer::MakeStackHeader(const UShort_t 
     ((stack & 0xff) << 16) | (size & 0xffff);
 }
 
-inline Int_t AliTRDonlineTrackingDataContainer::StackFromStackHeader(const UInt_t stackHeader) {
+inline Int_t AliTRDonlineTrackingDataContainer::StackFromStackHeader(UInt_t stackHeader) {
   return (stackHeader >> 16) & 0xff;
 }
 
-inline UInt_t AliTRDonlineTrackingDataContainer::SizeFromStackHeader(const UInt_t stackHeader) {
+inline UInt_t AliTRDonlineTrackingDataContainer::SizeFromStackHeader(UInt_t stackHeader) {
   return stackHeader & 0xffff;
 }
 
-inline UInt_t AliTRDonlineTrackingDataContainer::MakeTrackletHeader(const UShort_t halfChamber){
+inline UInt_t AliTRDonlineTrackingDataContainer::MakeTrackletHeader(UShort_t halfChamber){
   return (fgkHeaderTypeTracklet << 28) | ((halfChamber & 0xfff) << 16) | 0x2;
 }
 
-inline Int_t AliTRDonlineTrackingDataContainer::HCIdFromTrackletHeader(const UInt_t trackletHeader) {
+inline Int_t AliTRDonlineTrackingDataContainer::HCIdFromTrackletHeader(UInt_t trackletHeader) {
   return (trackletHeader >> 16) & 0xfff;
 }
 
-inline UInt_t AliTRDonlineTrackingDataContainer::MakeTrackHeader(const UShort_t stack){
+inline UInt_t AliTRDonlineTrackingDataContainer::MakeTrackHeader(UShort_t stack){
   return (fgkHeaderTypeTrack << 28) | ((stack & 0xff) << 16) | 12;
 }
 
-inline UInt_t AliTRDonlineTrackingDataContainer::MakeGtuHeader(const Bool_t storeInfo){
+inline UInt_t AliTRDonlineTrackingDataContainer::MakeGtuHeader(Bool_t storeInfo){
   if (storeInfo)
     return (fgkHeaderTypeGtu << 28) | (1 << 16) | (1 + 18 + 2*90);
   else
     return (fgkHeaderTypeGtu << 28) | 1;
 }
 
-inline Bool_t AliTRDonlineTrackingDataContainer::StoreGtuInfoFromDataHeader(const UInt_t dataHeader){
+inline Bool_t AliTRDonlineTrackingDataContainer::StoreGtuInfoFromDataHeader(UInt_t dataHeader){
   return ((dataHeader >> 16) & 1);
 }
 
-inline Bool_t AliTRDonlineTrackingDataContainer::GtuInfoPresentFromGtuHeader(const UInt_t gtuHeader){
+inline Bool_t AliTRDonlineTrackingDataContainer::GtuInfoPresentFromGtuHeader(UInt_t gtuHeader){
   return ((gtuHeader >> 16) & 1);
 }
 
@@ -402,7 +402,7 @@ inline UInt_t AliTRDonlineTrackingDataContainer::DataWordsNeeded() {
   return size;
 }
 
-inline UInt_t calcCheck(const UInt_t prevCrc, const UInt_t c) {
+inline UInt_t calcCheck(UInt_t prevCrc, UInt_t c) {
   // CCITT 16 bit (X^16 + X^12 + X^5 + 1).
   UInt_t crc = prevCrc;
   crc  = (unsigned char)(crc >> 8) | (crc << 8);
@@ -506,7 +506,7 @@ Bool_t AliTRDonlineTrackingDataContainer::Compress(void* &buffer, UInt_t &sizeIn
   return kFALSE;
 }
 
-Bool_t AliTRDonlineTrackingDataContainer::Decompress(const void* buffer, const UInt_t sizeInBytes, const Bool_t cumulative, const Bool_t verbose) {
+Bool_t AliTRDonlineTrackingDataContainer::Decompress(const void* buffer, UInt_t sizeInBytes, Bool_t cumulative, Bool_t verbose) {
 
   // TString ptrInfo(Form("DECOMPRESS CALLED: [buf: %p, size: %d - %p - %p, ", buffer, sizeInBytes, buffer, (char*)buffer + sizeInBytes));
 
