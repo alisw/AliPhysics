@@ -129,6 +129,8 @@ ClassImp(AliTRDPreprocessorOffline)
   fOutliersFitChargeLow(0.03),
   fOutliersFitChargeHigh(0.7),
   fBeginFitCharge(3.5),
+  fT0Shift0(0.124797),
+  fT0Shift1(0.267451),
   fPHQon(kTRUE),
   fDebugPHQon(kFALSE)
 {
@@ -726,8 +728,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
+  calibra->SetT0Shift0(fT0Shift0);
+  calibra->SetT0Shift1(fT0Shift1);
   calibra->SetMinEntries(fMinStatsVdriftT0PH); // If there is less than 1000 entries in the histo: no fit
-  calibra->AnalysePH(fPH2d);
+  calibra->AnalysePH(fPH2d); 
+  //calibra->SetDebugLevel(2);
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
     + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
@@ -740,6 +745,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   Bool_t ok = kFALSE;
   if ((nbtg >                  0) && 
       (nbfit        >= 0.5*nbE) && (nbE > 30) && (nbfitSuccess > 30)) {
+    //printf("nbtg %d, nbfit %d, nbE %d, nbfitSucess %d\n",nbtg,nbfit,nbE,nbfitSuccess);
     //printf("Pass the cut for VdriftT0\n");
     // create the cal objects
     calibra->RemoveOutliers(1,kFALSE);
@@ -790,7 +796,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetCalDetVdriftExB(fCalDetVdriftUsed,fCalDetExBUsed);
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
-  printf("The mean stat is by %d for VdriftLinear\n",fMinStatsVdriftLinear);
+  //printf("The mean stat is by %d for VdriftLinear\n",fMinStatsVdriftLinear);
   //fAliTRDCalibraVdriftLinearFit->SetSeeDetector(0);
   //fAliTRDCalibraVdriftLinearFit->SetDebugLevel(1);
   //printf("Fill PE Array\n");
@@ -1529,7 +1535,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
      Double_t rmsdet = calDet->GetRMSRobust();
      Double_t meanpad = calPad->GetMean();
      //Double_t rmspad = calPad->GetRMS();
-     //printf("T0::minimum %f, rmsdet %f,meanpad %f, rmspad %f\n",meandet,rmsdet,meanpad,rmspad);
+     printf("T0::meandet %f, rmsdet %f,meanpad %f\n",meandet,rmsdet,meanpad);
      if((meandet >   fMinTimeOffsetValidate) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
      else {
        fStatusPos = fStatusPos | kTimeOffsetErrorRange;

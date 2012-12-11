@@ -1734,9 +1734,9 @@ void AliTRDCalibraFit::RemoveOutliers(Int_t type, Bool_t perdetector){
   // Initialisation
   ////////////////////////
   Double_t meanAll = 0.0;
-   Double_t rmsAll = 0.0;
-   Int_t countAll = 0;
-   ////////////
+  Double_t rmsAll = 0.0;
+  Int_t countAll = 0;
+  ////////////
   // compute
   ////////////
   for (Int_t k = 0; k < loop; k++) {
@@ -4787,7 +4787,9 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   
   Bool_t put = kTRUE;
 
+  ///////////////////////////////
   // Beginning of the signal
+  //////////////////////////////
   TH1D *pentea = new TH1D("pentea","pentea",projPH->GetNbinsX(),0,(Float_t) limit);
   for (Int_t k = 1; k <  projPH->GetNbinsX(); k++) {
     pentea->SetBinContent(k,(Double_t) (projPH->GetBinContent(k+1) - projPH->GetBinContent(k)));
@@ -4898,7 +4900,9 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     fPhd[0] = placemaximum;
   }
   
+  /////////////////////////////
   // Amplification region
+  /////////////////////////////
   binmax = 0;
   ju     = 0;
   for (Int_t kbin = 1; kbin < projPH->GetNbinsX(); kbin ++) {
@@ -5020,8 +5024,11 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     }
     fPhd[1] = placemaximum;
   }
-  
+
+  //////////////////  
   // Drift region
+  //////////////////
+  Bool_t putd = kTRUE;
   TH1D *pente = new TH1D("pente","pente", projPH->GetNbinsX(),0,(Float_t) limit);
   for (Int_t k = TMath::Min(binmax+4, projPH->GetNbinsX()); k <  projPH->GetNbinsX(); k++) {
     pente->SetBinContent(k,(Double_t) (projPH->GetBinContent(k+1) - projPH->GetBinContent(k)));
@@ -5032,18 +5039,18 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   //should not happen
   if (binmin <= 1) {
     binmin = 2;
-    put = 1;
+    putd = 1;
     //AliInfo("Put the binmax from 1 to 2 to enable the fit");
   }
   
   //check
   if((projPH->GetBinContent(binmin)-projPH->GetBinError(binmin)) < (projPH->GetBinContent(binmin+1))) {
     //AliInfo("Too many fluctuations at the end!");
-    put = kFALSE;
+    putd = kFALSE;
   }
   if((projPH->GetBinContent(binmin)+projPH->GetBinError(binmin)) > (projPH->GetBinContent(binmin-1))) {
     //AliInfo("Too many fluctuations at the end!");
-    put = kFALSE;
+    putd = kFALSE;
   }
   if(TMath::Abs(pente->GetBinContent(binmin+1)) <= 0.0000000000001){
     //AliInfo("No entries for the next bin!");
@@ -5090,14 +5097,14 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1)) &&
        (pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
       //AliInfo("polynome 4 false 1");
-      put = kFALSE;
+      putd = kFALSE;
     }
     if(((binmin+3) <= (nbins-1)) &&
        (pente->GetBinContent(binmin+3) <= pente->GetBinContent(binmin+2)) &&
        ((binmin-3) >= TMath::Min(binmax+4, projPH->GetNbinsX())) &&
        (pente->GetBinContent(binmin-3) <= pente->GetBinContent(binmin-2))) {
       //AliInfo("polynome 4 false 2");
-      put = kFALSE;
+      putd = kFALSE;
     }
     // poly 3
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1)) &&
@@ -5171,7 +5178,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     //richtung +
     if((pente->GetBinContent(binmin+2) <= pente->GetBinContent(binmin+1))) {
       //AliInfo("polynome 2+ false");
-      put = kFALSE;
+      putd = kFALSE;
     }
   }
   //pol2 case 2
@@ -5209,26 +5216,26 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     //richtung -
     if((pente->GetBinContent(binmin-2) <= pente->GetBinContent(binmin-1))) {
       //AliInfo("polynome 2- false ");
-      put = kFALSE;
+      putd = kFALSE;
     }
   }
   if((binmin == (nbins-1)) && ((binmin-2) < TMath::Min(binmax+4, projPH->GetNbinsX()))) {
-    put = kFALSE;
+    putd = kFALSE;
     //AliInfo("At the limit for the drift and not usable!");
   }
 
   //pass
   if((binmin == (nbins-2)) && ((binmin-1) < TMath::Min(binmax+4, projPH->GetNbinsX()))){
-    put = kFALSE;
+    putd = kFALSE;
     //AliInfo("For the drift...problem!");
   }
   //pass but should not happen
   if((binmin <= (nbins-3)) && (binmin < TMath::Min(binmax+6, projPH->GetNbinsX()))){
-    put = kFALSE;
+    putd = kFALSE;
     //AliInfo("For the drift...problem!");
   }
   
-  if(put) {
+  if(putd) {
     polynome = new TF1("pol","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x",min,max);
     polynome->SetParameters(c0,c1,c2,c3,c4);
     //AliInfo(Form("GetMinimum of the function %f",polynome->GetMinimumX()));
@@ -5264,7 +5271,8 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   if ((fPhd[2] > fPhd[0]) && 
       (fPhd[2] > fPhd[1]) && 
       (fPhd[1] > fPhd[0]) &&
-      (put)) {
+      (put) &&
+      (putd)) {
     fCurrentCoef[0] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     if(fCurrentCoef[0] > 2.5) fCurrentCoef[0] =  -TMath::Abs(fCurrentCoef[1]);
     else fNumberFitSuccess++;
@@ -5290,6 +5298,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
 	if (fCurrentCoef2[0] < -3.0) {
 	  fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
 	}
+	else fNumberFitSuccess++;
       }
       else {
 	fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
@@ -5305,6 +5314,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     TCanvas *cpentei = new TCanvas("cpentei","cpentei",50,50,600,800);
     cpentei->cd();
     projPH->Draw();
+    if(polynomea) polynomea->Draw("same");
     line->SetLineColor(2);
     line->DrawLine(fPhd[0],0,fPhd[0],projPH->GetMaximum());
     line->DrawLine(fPhd[1],0,fPhd[1],projPH->GetMaximum());
@@ -5312,7 +5322,8 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     AliInfo(Form("fPhd[0] (beginning of the signal): %f"                  ,(Float_t) fPhd[0]));
     AliInfo(Form("fPhd[1] (end of the amplification region): %f"          ,(Float_t) fPhd[1]));
     AliInfo(Form("fPhd[2] (end of the drift region): %f"                  ,(Float_t) fPhd[2]));
-    AliInfo(Form("fVriftCoef[3] (with only the drift region(default)): %f",(Float_t) fCurrentCoef[0]));
+    AliInfo(Form("Vdrift (with only the drift region(default)): %f",(Float_t) fCurrentCoef[0]));
+    AliInfo(Form("Timeoffset (with only the drift region(default)): %f",(Float_t) fCurrentCoef2[0]));
     TCanvas *cpentei2 = new TCanvas("cpentei2","cpentei2",50,50,600,800);
     cpentei2->cd();
     pentea->Draw();

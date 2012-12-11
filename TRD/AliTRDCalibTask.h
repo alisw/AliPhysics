@@ -57,6 +57,11 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetExbAlt(Bool_t exbalt)                                     {fExbAlt = exbalt;};
   void SetNbTimeBins(Int_t nbTimeBins)                              {fNbTimeBins=nbTimeBins;};  
   void SetNumberBinCharge(Short_t nbBinCharge)                      {fNumberBinCharge=nbBinCharge;};  
+  void SetRangeCharge(Float_t rangeCharge)                          {fRangeCharge=rangeCharge;};
+  void SetVdBindx(Short_t vdBindx)                                  {fVdBindx=vdBindx;};  
+  void SetVdBindy(Short_t vdBindy)                                  {fVdBindy=vdBindy;};    
+  void SetVdRangedx(Double_t vdRangex)                               {fVdRangex=vdRangex;};  
+  void SetVdRangedy(Double_t vdRangey)                               {fVdRangey=vdRangey;};    
   void SetDebugLevelTRDCalibraFillHisto(Short_t debugLevelTRDCalibraFillHisto) {fDebugLevelTRDCalibraFillHisto = debugLevelTRDCalibraFillHisto;};
 
   
@@ -157,6 +162,11 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Short_t     fDebugLevelTRDCalibraFillHisto;    // Debug Level Fill Histo
   Int_t       fNbTimeBins;                       // number of timebins 
   Short_t     fNumberBinCharge;                  // Number of bins for the gain factor
+  Float_t     fRangeCharge;                      // Range Charge
+  Short_t     fVdBindx;                          // Nb of bin in vd histos x
+  Short_t     fVdBindy;                          // Nb of bin in vd histos y
+  Double_t    fVdRangex;                         // Range vd histos x
+  Double_t    fVdRangey;                         // Range vd histos y
 
   Short_t     fNz[3];                            // Nz mode 
   Short_t     fNrphi[3];                         // Nrphi mode
@@ -211,7 +221,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 3); 
+  ClassDef(AliTRDCalibTask, 4); 
 };
 
 #endif

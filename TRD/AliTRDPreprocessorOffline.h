@@ -88,6 +88,8 @@ public:
   void     SetOutliersFitChargeLow(Float_t outliersFitChargeLow)     { fOutliersFitChargeLow = outliersFitChargeLow; }
   void     SetOutliersFitChargeHigh(Float_t outliersFitChargeHigh)   { fOutliersFitChargeHigh = outliersFitChargeHigh; }
   void     SetBeginFitCharge(Float_t beginFitCharge)                 { fBeginFitCharge = beginFitCharge;};
+  void     SetT0Shift0(Float_t t0Shift0)                             { fT0Shift0 = t0Shift0;};
+  void     SetT0Shift1(Float_t t0Shift1)                             { fT0Shift1 = t0Shift1;};
 
 
 
@@ -260,6 +262,8 @@ public:
   Float_t  fOutliersFitChargeLow;         // The fit starts at fOutliersFitChargeLow procent number of entries
   Float_t  fOutliersFitChargeHigh;        // The fit starts at fOutliersFitChargeHigh procent number of entries
   Float_t  fBeginFitCharge;               // Fit Begin Charge starts at mean/fBeginFitCharge
+  Float_t  fT0Shift0;                    // T0 Shift with the maximum positive slope
+  Float_t  fT0Shift1;                    // T0 Shift with the maximum of the amplification region
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;

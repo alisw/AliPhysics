@@ -182,6 +182,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNumberTrack(0)
   ,fTimeMax(0)
   ,fSf(10.0)
+  ,fRangeHistoCharge(150)
   ,fNumberBinCharge(50)
   ,fNumberBinPRF(10)
   ,fNgroupprf(3)
@@ -273,6 +274,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNumberTrack(c.fNumberTrack)
   ,fTimeMax(c.fTimeMax)
   ,fSf(c.fSf)
+  ,fRangeHistoCharge(c.fRangeHistoCharge)
   ,fNumberBinCharge(c.fNumberBinCharge)
   ,fNumberBinPRF(c.fNumberBinPRF)
   ,fNgroupprf(c.fNgroupprf)
@@ -2728,7 +2730,7 @@ void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
   name += fCalibraMode->GetNrphi(0);
   
   fCH2d = new TH2I("CH2d",(const Char_t *) name
-		   ,fNumberBinCharge,0,300,nn,0,nn);
+		   ,(Int_t)fNumberBinCharge,0,fRangeHistoCharge,nn,0,nn);
   fCH2d->SetYTitle("Det/pad groups");
   fCH2d->SetXTitle("charge deposit [a.u]");
   fCH2d->SetZTitle("counts");
@@ -2744,7 +2746,7 @@ void AliTRDCalibraFillHisto::SetRelativeScale(Float_t RelativeScale)
 {
   //
   // Set the factor that will divide the deposited charge
-  // to fit in the histo range [0,300]
+  // to fit in the histo range [0,fRangeHistoCharge]
   //
  
   if (RelativeScale > 0.0) {
@@ -2766,10 +2768,11 @@ void  AliTRDCalibraFillHisto::FillCH2d(Int_t x, Float_t y)
   // 
   
   //skip simply the value out of range
-  if((y>=300.0) || (y<0.0)) return;
+  if((y>=fRangeHistoCharge) || (y<0.0)) return;
+  if(fRangeHistoCharge < 0.0) return;
   
   //Calcul the y place
-  Int_t yplace = (Int_t) (fNumberBinCharge*y/300.0)+1;
+  Int_t yplace = (Int_t) (fNumberBinCharge*y/fRangeHistoCharge)+1;
   Int_t place = (fNumberBinCharge+2)*(x+1)+yplace;
   
   //Fill

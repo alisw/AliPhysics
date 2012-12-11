@@ -163,6 +163,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetThresholdClustersDAQ(Float_t thresholdClustersDAQ)     { fThresholdClustersDAQ = thresholdClustersDAQ;                         }
 	  void     SetNumberRowDAQ(Short_t numberRowDAQ)                     { fNumberRowDAQ         = numberRowDAQ;         }
 	  void     SetNumberColDAQ(Short_t numberColDAQ)                     { fNumberColDAQ         = numberColDAQ;         }
+	  void     SetRangeHistoCharge(Float_t rangeHistoCharge)             { fRangeHistoCharge     = rangeHistoCharge;     }
 	  void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
 	  void     SetNumberGroupsPRF(Short_t numberGroupsPRF);
@@ -262,6 +263,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Int_t    fNumberUsedPh[2];        // How many tracks have been really used for the drift velocity (0, strict; 1 with fDifference)
 	  Int_t    fTimeMax;                // Number of time bins
           Float_t  fSf;                     // Sampling frequence
+	  Float_t  fRangeHistoCharge;       // Range of the histo for the charge
 	  Short_t  fNumberBinCharge;        // Number of bins for the gain factor
 	  Short_t  fNumberBinPRF;           // Number of bin for the PRF
 	  Short_t  fNgroupprf;              // Number of groups in tnp bins for PRF /2.0
@@ -346,7 +348,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   AliTRDCalibraFillHisto();
   virtual ~AliTRDCalibraFillHisto(); 
     
-  ClassDef(AliTRDCalibraFillHisto,6)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,7)                         // TRD Calibration class
 
 };
   

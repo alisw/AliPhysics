@@ -57,6 +57,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
   fMinNpointsFit(11),
+  fNbBindx(32),
+  fNbBindy(70),
+  fRangedx(0.8),
+  fRangedy(1.4),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -75,6 +79,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
   fMinNpointsFit(10),
+  fNbBindx(32),
+  fNbBindy(70),
+  fRangedx(0.8),
+  fRangedy(1.4),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -107,6 +115,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja
   fLinearFitterEArray(540),
   fRobustFit(kTRUE),
   fMinNpointsFit(10),
+  fNbBindx(32),
+  fNbBindy(70),
+  fRangedx(0.8),
+  fRangedy(1.4),
   fDebugStreamer(0x0),
   fDebugLevel(0),
   fSeeDetector(0)
@@ -230,6 +242,26 @@ void AliTRDCalibraVdriftLinearFit::Add(const AliTRDCalibraVdriftLinearFit *ped)
   }
 }
 //______________________________________________________________________________________
+TH2S* AliTRDCalibraVdriftLinearFit::AddAll() 
+{
+    //
+    // return pointer to TH2S of all added histos 
+  //
+
+  TH2S *histo = 0x0;
+  for(Int_t k=0; k < 540; k++) {
+    TH2S * u = GetLinearFitterHistoForce(k);
+    if(k == 0) {
+      histo = new TH2S(*u);
+      histo->SetName("sum");
+    }
+    else histo->Add(u);
+  }
+
+  return histo;
+
+}
+//______________________________________________________________________________________
 TH2S* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t force)
 {
     //
@@ -261,8 +293,8 @@ TH2S* AliTRDCalibraVdriftLinearFit::GetLinearFitterHistoForce(Int_t detector)
   name +=  fVersion;
   
   TH2S *lfdv = new TH2S((const Char_t *)name,(const Char_t *) name
-			,36,-0.9,0.9,48
-			,-1.2,1.2);
+			,(Int_t)fNbBindx,-fRangedx,fRangedx,(Int_t)fNbBindy
+			,-fRangedy,fRangedy);
   lfdv->SetXTitle("tan(phi_{track})");
   lfdv->SetYTitle("dy/dt");
   lfdv->SetZTitle("Number of clusters");
