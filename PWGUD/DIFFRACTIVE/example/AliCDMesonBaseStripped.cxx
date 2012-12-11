@@ -25,7 +25,7 @@
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonBaseStripped::GetGapBin(TString tag, const Int_t gapcg)
+Int_t AliCDMesonBaseStripped::GetGapBin(TString tag, Int_t gapcg)
 {
 	//
 	// retrieve gap topology for a given string
