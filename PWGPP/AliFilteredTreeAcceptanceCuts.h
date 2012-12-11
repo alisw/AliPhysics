@@ -21,16 +21,16 @@ public:
   virtual ~AliFilteredTreeAcceptanceCuts(); 
  
   // setters 
-  void SetEtaRange(const Float_t min=-1e99, const Float_t max=1e99)  { fMinEta=min; fMaxEta=max; }
-  void SetPhiRange(const Float_t min=-1e99, const Float_t max=1e99)  { fMinPhi=min; fMaxPhi=max;}
-  void SetPtRange(const Float_t min=-1e99, const Float_t max=1e99)   { fMinPt=min;  fMaxPt=max;}
-  void SetExcludeEtaPhiRange(const Float_t etaMin, const Float_t etaMax, const Float_t phiMin, const Float_t phiMax)
+  void SetEtaRange(Float_t min=-1e99, Float_t max=1e99)  { fMinEta=min; fMaxEta=max; }
+  void SetPhiRange(Float_t min=-1e99, Float_t max=1e99)  { fMinPhi=min; fMaxPhi=max;}
+  void SetPtRange(Float_t min=-1e99, Float_t max=1e99)   { fMinPt=min;  fMaxPt=max;}
+  void SetExcludeEtaPhiRange(Float_t etaMin, Float_t etaMax, Float_t phiMin, Float_t phiMax)
   	{ fExcludeMinEta = etaMin; fExcludeMaxEta = etaMax; fExcludeMinPhi = phiMin; fExcludeMaxPhi = phiMax; fCheckRange=kTRUE; }
-  void SetExcludeEtaPhiRange2(const Float_t etaMin, const Float_t etaMax, const Float_t phiMin, const Float_t phiMax)
+  void SetExcludeEtaPhiRange2(Float_t etaMin, Float_t etaMax, Float_t phiMin, Float_t phiMax)
   	{ fExcludeMinEta2 = etaMin; fExcludeMaxEta2 = etaMax; fExcludeMinPhi2 = phiMin; fExcludeMaxPhi2 = phiMax; fCheckRange=kTRUE; }  	
 
-  void SetMaxDCAr(const Float_t max=1e99) { fMaxDCAr=max;}
-  void SetMaxDCAz(const Float_t max=1e99) { fMaxDCAz=max;}
+  void SetMaxDCAr(Float_t max=1e99) { fMaxDCAr=max;}
+  void SetMaxDCAz(Float_t max=1e99) { fMaxDCAz=max;}
 
   // getters 
   Float_t GetMinEta() const {return fMinEta;}
