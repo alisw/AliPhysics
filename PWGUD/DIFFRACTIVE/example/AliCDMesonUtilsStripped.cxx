@@ -225,7 +225,7 @@ Int_t AliCDMesonUtilsStripped::GetTPC(const AliESDEvent * ESDEvent)
 
 //==============================================================================
 //------------------------------------------------------------------------------
-void AliCDMesonUtilsStripped::SPDLoadGeom(const Int_t run)
+void AliCDMesonUtilsStripped::SPDLoadGeom(Int_t run)
 {
 	// method to get the gGeomanager
 	// it is called at the CreatedOutputObject stage
@@ -259,7 +259,7 @@ void AliCDMesonUtilsStripped::SPDLoadGeom(const Int_t run)
 }
 
 //------------------------------------------------------------------------------
-Bool_t AliCDMesonUtilsStripped::SPDLoc2Glo(const Int_t id, const Double_t *loc,
+Bool_t AliCDMesonUtilsStripped::SPDLoc2Glo(Int_t id, const Double_t *loc,
                                            Double_t *glo)
 {
 	//
@@ -279,8 +279,8 @@ Bool_t AliCDMesonUtilsStripped::SPDLoc2Glo(const Int_t id, const Double_t *loc,
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonUtilsStripped::CheckChipEta(const Int_t chipKey,
-                                            const TString scut,
+Int_t AliCDMesonUtilsStripped::CheckChipEta(Int_t chipKey,
+                                            TString scut,
                                             const Double_t vtxPos[])
 {
 	//
@@ -355,7 +355,7 @@ Int_t AliCDMesonUtilsStripped::CheckChipEta(const Int_t chipKey,
 
 //------------------------------------------------------------------------------
 void AliCDMesonUtilsStripped::GetNFO(const AliESDEvent *ESDEvent,
-                                     const TString etacut, Int_t ctr[])
+                                     TString etacut, Int_t ctr[])
 {
 	//
 	// GetNFO

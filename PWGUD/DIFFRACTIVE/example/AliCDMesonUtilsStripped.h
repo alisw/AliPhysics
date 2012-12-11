@@ -55,7 +55,7 @@ public:
 	// gap determination
 	static Int_t GetGapConfig(const AliESDEvent *ESDEvent);
 
-	static void SPDLoadGeom(const Int_t run); // only needed for ESDs, not in AODs
+	static void SPDLoadGeom(Int_t run); // only needed for ESDs, not in AODs
 
 	// AOD only
 	//---------
@@ -73,10 +73,10 @@ private:
 	static Int_t GetZDC(const AliESDEvent *ESDEvent); // not used so far
 
 	// helpers for the SPD gap determination
-	static Bool_t SPDLoc2Glo(const Int_t id, const Double_t *loc, Double_t *glo);
-	static Int_t CheckChipEta(const Int_t chipKey, const TString scut,
+	static Bool_t SPDLoc2Glo(Int_t id, const Double_t *loc, Double_t *glo);
+	static Int_t CheckChipEta(Int_t chipKey, TString scut,
 	                          const Double_t vtxPos[]);
-	static void GetNFO(const AliESDEvent *ESDEvent, const TString etacut,
+	static void GetNFO(const AliESDEvent *ESDEvent, TString etacut,
 	                   Int_t ctr[]);
 	// AOD only
 	//---------
