@@ -28,25 +28,25 @@ public:
   enum DiffTreatment { kMCFlags = 0, kUA5Cuts = 1, kE710Cuts, kALICEHadronLevel };
   
   // setters 
-  void SetTriggerRequired(const Bool_t bFlag=kTRUE)  {fTriggerRequired=bFlag;}
-  void SetRecVertexRequired(const Bool_t bFlag=kTRUE)  {fRecVertexRequired=bFlag;}
+  void SetTriggerRequired(Bool_t bFlag=kTRUE)  {fTriggerRequired=bFlag;}
+  void SetRecVertexRequired(Bool_t bFlag=kTRUE)  {fRecVertexRequired=bFlag;}
   void SetEventProcessType(MCProcessType type=kInvalidProcess)  {fEventProcessType=type;}
-  void SetNContributorsRange(const Float_t min=0.,const Float_t max=1e99) {fMinNContributors=min; fMaxNContributors=max;}
-  void SetMaxR(const Float_t max=1e99) {fMaxR=max;}
-  void SetZvRange(const Float_t min=-1e99, const Float_t max=1e99) {fMinZv=min; fMaxZv=max;}
+  void SetNContributorsRange(Float_t min=0.,Float_t max=1e99) {fMinNContributors=min; fMaxNContributors=max;}
+  void SetMaxR(Float_t max=1e99) {fMaxR=max;}
+  void SetZvRange(Float_t min=-1e99, Float_t max=1e99) {fMinZv=min; fMaxZv=max;}
 
-  void SetMeanXYZv(const Float_t xv=0.0, const Float_t yv=0.0, const Float_t zv=0.0) {
+  void SetMeanXYZv(Float_t xv=0.0, Float_t yv=0.0, Float_t zv=0.0) {
     fMeanXv = xv; fMeanYv = yv; fMeanZv = zv;
   }
 
-  void SetSigmaMeanXYZv(const Float_t sxv=1.0, const Float_t syv=1.0, const Float_t szv=10.0) {
+  void SetSigmaMeanXYZv(Float_t sxv=1.0, Float_t syv=1.0, Float_t szv=10.0) {
     fSigmaMeanXv = sxv; fSigmaMeanYv = syv; fSigmaMeanZv = szv;
   }
 
 
-  void SetRedoTPCVertex(const Bool_t redo = kTRUE) {fRedoTPCVertex = redo;}
-  void SetUseBeamSpotConstraint(const Bool_t useConstr = kTRUE) {fUseBeamSpotConstraint = useConstr;}
-  void SetEventSelectedRequired(const Bool_t evtSel = kTRUE) {fEventSelectedRequired = evtSel;} 
+  void SetRedoTPCVertex(Bool_t redo = kTRUE) {fRedoTPCVertex = redo;}
+  void SetUseBeamSpotConstraint(Bool_t useConstr = kTRUE) {fUseBeamSpotConstraint = useConstr;}
+  void SetEventSelectedRequired(Bool_t evtSel = kTRUE) {fEventSelectedRequired = evtSel;} 
 
 
   // getters 
