@@ -143,7 +143,7 @@ using std::ios;
 ClassImp(AliTOFClusterFinder)
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
-  TNamed("AliTOFClusterFinder",""),
+  TTask("AliTOFClusterFinder",""),
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -151,6 +151,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
+  fNumberOfTofTrgPads(0),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
@@ -174,7 +175,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 //______________________________________________________________________________
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *calib):
-  TNamed("AliTOFClusterFinder",""),
+  TTask("AliTOFClusterFinder",""),
   fRunLoader(runLoader),
   fTOFLoader(runLoader->GetLoader("TOFLoader")),
   fTreeD(0),
@@ -182,6 +183,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
+  fNumberOfTofTrgPads(0),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
@@ -204,7 +206,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
 
 //------------------------------------------------------------------------
 AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source) :
-  TNamed(source),
+  TTask(source),
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -212,6 +214,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source) :
   fDigits(source.fDigits),
   fRecPoints(source.fRecPoints),
   fNumberOfTofClusters(0),
+  fNumberOfTofTrgPads(0),
   fVerbose(0),
   fDecoderVersion(source.fDecoderVersion),
   fTOFcalib(source.fTOFcalib),
@@ -231,7 +234,7 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   if (this == &source)
     return *this;
 
-  TNamed::operator=(source);  
+  TTask::operator=(source);  
   fDigits=source.fDigits;
   fRecPoints=source.fRecPoints;
   fVerbose=source.fVerbose;
@@ -273,6 +276,8 @@ AliTOFClusterFinder::~AliTOFClusterFinder()
     }
     fNumberOfTofClusters=0;
    }
+
+   fNumberOfTofTrgPads=0;
 
 }
 //______________________________________________________________________________
@@ -363,7 +368,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   FillRecPoint();
 
   fTreeR->Fill();
-  ResetRecpoint();
+//  ResetRecpoint();
 
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");  
   fTOFLoader->WriteRecPoints("OVERWRITE");
@@ -452,7 +457,7 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   FillRecPoint();
 
   clusterTree->Fill();
-  ResetRecpoint();
+//  ResetRecpoint();
 
   AliDebug(1,Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 		  stopwatch.RealTime(),stopwatch.CpuTime()));
@@ -483,8 +488,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   TClonesArray * clonesRawData;
   Int_t dummy = -1;
 
-  Int_t detectorIndex[5];
-  Int_t parTOF[7];
+  Int_t detectorIndex[5]={-1,-1,-1,-1,-1};
+  Int_t parTOF[7]={-1,-1,-1,-1,-1,-1,-1};
 
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
@@ -535,6 +540,11 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	else         ftxt << " " << tofRawDatum->GetTDC();
 	ftxt << "  " << tofRawDatum->GetTDCchannel();
       }
+
+      if ( tofRawDatum->GetTRM()==3 &&
+         (tofRawDatum->GetTDC()> 11 && tofRawDatum->GetTDC()< 15) ) FillTOFtriggerMap(indexDDL, tofRawDatum);
+
+      for (Int_t aa=0; aa<5; aa++) detectorIndex[aa] = -1;
 
       fTOFRawStream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
 					 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
@@ -605,7 +615,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   clustersTree->Fill();
 
-  ResetRecpoint();
+//  ResetRecpoint();
 
   AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
@@ -765,7 +775,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   FillRecPoint();
 
   fTreeR->Fill();
-  ResetRecpoint();
+//  ResetRecpoint();
 
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   fTOFLoader->WriteRecPoints("OVERWRITE");
@@ -1214,6 +1224,7 @@ void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
 
     tdcCorr=(Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcCorr);
+
   } // loop on clusters
 
 }
@@ -1258,6 +1269,18 @@ void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
     tdcBin = TMath::Nint(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcBin);
 
+    // noferini
+    Float_t pos[3];
+    AliTOFGeometry::GetPosPar(detectorIndex, pos);
+    Float_t length = 0.;
+    for (Int_t ic = 0; ic < 3; ic++) length += pos[ic] * pos[ic];
+    length = TMath::Sqrt(length);
+    Float_t timealligned = tdcBin*24.4 - length * 0.0333564095198152043; // subtract the minimal time in
+
+    if(timealligned > -1000 && timealligned < 24000 && fTOFcalib->IsChannelEnabled(index)){
+      fNumberOfTofTrgPads++;
+    }
+
   } // loop on clusters
 
 }
@@ -1271,6 +1294,7 @@ void AliTOFClusterFinder::ResetRecpoint()
   //
 
   fNumberOfTofClusters = 0;
+  fNumberOfTofTrgPads = 0;
   if (fRecPoints) fRecPoints->Clear();
 
 }
@@ -1443,3 +1467,58 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   return;
 
 }
+//-------------------------------------------------------------------------
+void AliTOFClusterFinder::FillTOFtriggerMap(Int_t iDDL, AliTOFrawData *tofRawDatum)
+{
+
+  /* get cluster info */
+  //Int_t trm = tofRawDatum->GetTRM();
+  // Int_t tdc = tofRawDatum->GetTDC();
+//   Int_t tdc_ch = tofRawDatum->GetTDCchannel();
+  Int_t chain = tofRawDatum->GetTRMchain();
+  Int_t l0l1 = tofRawDatum->GetL0L1Latency();
+  Double_t corr = l0l1 * AliTOFGeometry::BunchCrossingBinWidth();
+  AliTOFCTPLatency *ctpLatencyObj = fTOFcalib->GetCTPLatency();
+  Float_t ctpLatency = ctpLatencyObj->GetCTPLatency();
+  corr += ctpLatency;
+
+  Double_t timeTOF=tofRawDatum->GetTOF()*AliTOFGeometry::TdcBinWidth();
+  timeTOF-=corr;
+  //Int_t timeRaw_bc = Int_t(timeTOF/1000/24.4); // per ora non usata
+
+  //Int_t timeRaw_bc = Int_t((tofRawDatum->GetTOF()*AliTOFGeometry::TdcBinWidth())/1000/24.4); // per ora non usata
+
+  /*
+  const  Int_t crate_CTTM[72] = { 0,  1, 37, 36,  2,  3, 39, 38,  4,  5,
+                                 41, 40,  6,  7, 43, 42,  8,  9, 45, 44,
+                                 10, 11, 47, 46, 12, 13, 49, 48, 14, 15,
+                                 51, 50, 16, 17, 53, 52, 18, 19, 55, 54,
+                                 20, 21, 57, 56, 22, 23, 59, 58, 24, 25,
+                                 61, 60, 26, 27, 63, 62, 28, 29, 65, 64,
+                                 30, 31, 67, 66, 32, 33, 69, 68, 34, 35,
+                                 71, 70};
+  */
+
+  Int_t cttmCrate=-1;
+//   Int_t cttmBit = tdc_ch + (tdc-12)*AliTOFGeometry::NCh();
+  switch(iDDL%AliTOFGeometry::NDDL()){
+  case 1:
+    cttmCrate=1;
+    break;
+  case 3:
+    cttmCrate=36;
+    break;
+  default:
+    break;
+  }
+  cttmCrate+=2*(Int_t)(iDDL/AliTOFGeometry::NDDL());
+  if(chain==0) {
+    if (iDDL<36) cttmCrate--;
+    else cttmCrate++;
+  }
+
+
+
+
+}
+

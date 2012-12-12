@@ -6,7 +6,7 @@
 // Task: Transform digits/raw data to TOF Clusters, to fill TOF RecPoints
 // and feed TOF tracking 
 
-#include "TNamed.h"
+#include "TTask.h"
 
 #include "AliTOFRawStream.h"
 
@@ -17,12 +17,13 @@ class TTree;
 class AliLoader;
 class AliRunLoader;
 class AliRawReader;
+class AliTOFrawData;
 
 class AliTOFGeometry;
 class AliTOFcluster;
 class AliTOFcalib;
 
-class AliTOFClusterFinder : public TNamed
+class AliTOFClusterFinder : public TTask
 {
 
   enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
@@ -52,6 +53,8 @@ class AliTOFClusterFinder : public TNamed
   Int_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
   UShort_t  GetClusterVolIndex(const Int_t * const ind) const; //Volume Id getter
   void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
+  Int_t GetNumberOfTOFclusters() const {return fNumberOfTofClusters;} // number of clusters getter
+  Int_t GetNumberOfTOFtrgPads() const {return fNumberOfTofTrgPads;} // number of pads getter
 
  protected:
   AliRunLoader *fRunLoader;      // Pointer to Run Loader
@@ -66,8 +69,10 @@ class AliTOFClusterFinder : public TNamed
   TClonesArray *fRecPoints;      // List of reconstructed points
 
   Int_t fNumberOfTofClusters;    // Number of TOF Clusters
+  Int_t fNumberOfTofTrgPads;  // Number of TOF trigger pads
 
  private:
+  void  FillTOFtriggerMap(Int_t iDDL, AliTOFrawData *tofRawDatum);
 
   //Int_t InsertCluster(Int_t *aa, Double_t *bb);    // Fills TofClusters Array
   //Int_t InsertCluster(Int_t *aa, Double_t *bb, Int_t *cc, Int_t d); // Fills TofClusters Array
@@ -81,7 +86,7 @@ class AliTOFClusterFinder : public TNamed
   AliTOFcalib *fTOFcalib;         // pointer to the TOF calibration info
   AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
 
-  ClassDef(AliTOFClusterFinder,7) // To run TOF clustering
+  ClassDef(AliTOFClusterFinder,8) // To run TOF clustering
 };
 #endif
 

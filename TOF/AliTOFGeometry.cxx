@@ -147,6 +147,8 @@ const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC
 
 const Float_t AliTOFGeometry::fgkPhiSec= 20;//sector Phi width (deg)
 
+Bool_t  AliTOFGeometry::fgHoles  = 1;//logical for geometry version (w/wo holes)
+
 const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-of-flight bin width [ps]
 const Float_t AliTOFGeometry::fgkToTBin = 48.8;     // time-over-threshold bin width [ps]
 const Float_t AliTOFGeometry::fgkBunchCrossingBin = fgkTdcBin * 1024; // bunch-crossing bin width [ps]
@@ -255,8 +257,7 @@ const Float_t AliTOFGeometry::fgkDistances[kNPlates][kMaxNstrip] = {
   };
 */
 //_____________________________________________________________________________
-AliTOFGeometry::AliTOFGeometry():
-  fHoles(1)
+AliTOFGeometry::AliTOFGeometry()
 {
   //
   // AliTOFGeometry default constructor
@@ -276,7 +277,7 @@ void AliTOFGeometry::ImportGeometry(){
   TGeoManager::Import("geometry.root");
 }
 //_____________________________________________________________________________
-void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos) const
+void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos)
 {
 //
 // Returns space point coor (x,y,z) (cm)  for Detector 
@@ -289,7 +290,7 @@ void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos) const
   
 }
 //_____________________________________________________________________________
-void AliTOFGeometry::GetDetID( Float_t *pos, Int_t *det) const
+void AliTOFGeometry::GetDetID( Float_t *pos, Int_t *det)
 {
  //
  // Returns Detector Indices (iSect,iPlate,iStrip,iPadX,iPadZ) 
@@ -547,7 +548,7 @@ void AliTOFGeometry::GetVolumePath(const Int_t * const ind, Char_t *path ) {
   if( iplate==4) icopy=istrip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
   snprintf(string2,kSize,"FTOA_0/FLTA_0/FSTR_%i",icopy);
-  if(fHoles && (sector==13 || sector==14 || sector==15)){
+  if(fgHoles && (sector==13 || sector==14 || sector==15)){
     if(iplate<2)  snprintf(string2,kSize,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(iplate>2)  snprintf(string2,kSize,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
@@ -597,7 +598,7 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_
   if(plate==4) icopy=strip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
   snprintf(string2,kSize,"FTOA_0/FLTA_0/FSTR_%i",icopy);
-  if(fHoles && (sector==13 || sector==14 || sector==15)){
+  if(fgHoles && (sector==13 || sector==14 || sector==15)){
     if(plate<2)  snprintf(string2,kSize,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(plate>2)  snprintf(string2,kSize,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
@@ -628,7 +629,7 @@ void AliTOFGeometry::GetPos(Int_t *det, Float_t *pos)
   pos[2]=tr[2];
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPlate(const Float_t * const pos) const
+Int_t AliTOFGeometry::GetPlate(const Float_t * const pos)
 {
   //
   // Returns the Plate index 
@@ -724,7 +725,7 @@ Int_t AliTOFGeometry::GetPlate(const Float_t * const pos) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetSector(const Float_t * const pos) const
+Int_t AliTOFGeometry::GetSector(const Float_t * const pos)
 {
   //
   // Returns the Sector index 
@@ -752,7 +753,7 @@ Int_t AliTOFGeometry::GetSector(const Float_t * const pos) const
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
+Int_t AliTOFGeometry::GetStrip(const Float_t * const pos)
 {
   //
   // Returns the Strip index 
@@ -771,8 +772,8 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
    
   Float_t posLocal[3];
   for (Int_t ii=0; ii<3; ii++) posLocal[ii] = pos[ii];
-  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
-		  posLocal[0],posLocal[1],posLocal[2]));
+//   AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+// 		  posLocal[0],posLocal[1],posLocal[2]));
 
   Int_t isector = GetSector(posLocal);
   if(isector == -1){
@@ -805,13 +806,13 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
      90., (isector+0.5)*fgkPhiSec
     };
   Rotation(posLocal,angles);
-  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
-		  posLocal[0],posLocal[1],posLocal[2]));
+  //  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+  //		  posLocal[0],posLocal[1],posLocal[2]));
 
   Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
   Translation(posLocal,step);
-  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
-		  posLocal[0],posLocal[1],posLocal[2]));
+  //  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+  //		  posLocal[0],posLocal[1],posLocal[2]));
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA = FLTA reference frame
   angles[0] = 90.;
@@ -822,8 +823,8 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
   angles[5] =270.;
 
   Rotation(posLocal,angles);
-  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
-		  posLocal[0],posLocal[1],posLocal[2]));
+  //  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+  //		  posLocal[0],posLocal[1],posLocal[2]));
 
   // FTOA/B/C = FLTA/B/C reference frame -> FSTR reference frame
   Int_t totStrip=0;
@@ -861,8 +862,8 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
       angles[5] = 270.;
     }
     Rotation(posLoc2,angles);
-    AliDebug(1,Form(" strip %2d:  posLoc2[0] = %f, posLoc2[1] = %f, posLoc2[2] = %f ",
-		    istrip, posLoc2[0],posLoc2[1],posLoc2[2]));
+    //    AliDebug(1,Form(" strip %2d:  posLoc2[0] = %f, posLoc2[1] = %f, posLoc2[2] = %f ",
+    //		    istrip, posLoc2[0],posLoc2[1],posLoc2[2]));
 
     if ((TMath::Abs(posLoc2[0])<=klstripx*0.5) &&
 	(TMath::Abs(posLoc2[1])<=khstripy*0.5) &&
@@ -870,15 +871,15 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
       iStrip = istrip;
       totStrip++;
       for (Int_t jj=0; jj<3; jj++) posLocal[jj]=posLoc2[jj];
-      AliDebug(2,Form(" posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
-		      posLocal[0],posLocal[1],posLocal[2]));
+      //      AliDebug(2,Form(" posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+      //		      posLocal[0],posLocal[1],posLocal[2]));
 
-      AliDebug(2,Form(" GetAngles(%1i,%2i) = %f, pos[0] = %f, pos[1] = %f, pos[2] = %f",
-		      iplate, istrip, GetAngles(iplate,istrip), pos[0], pos[1], pos[2]));
+      //      AliDebug(2,Form(" GetAngles(%1i,%2i) = %f, pos[0] = %f, pos[1] = %f, pos[2] = %f",
+      //		      iplate, istrip, GetAngles(iplate,istrip), pos[0], pos[1], pos[2]));
       break;
     }
 
-    if (totStrip>1) AliInfo(Form("total strip number found %2i",totStrip));
+    //    if (totStrip>1) AliInfo(Form("total strip number found %2i",totStrip));
 
   }
 
@@ -886,7 +887,7 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos) const
   
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPadZ(const Float_t * const pos) const
+Int_t AliTOFGeometry::GetPadZ(const Float_t * const pos)
 {
   //
   // Returns the Pad index along Z 
@@ -979,7 +980,7 @@ Int_t AliTOFGeometry::GetPadZ(const Float_t * const pos) const
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPadX(const Float_t * const pos) const
+Int_t AliTOFGeometry::GetPadX(const Float_t * const pos)
 {
   //
   // Returns the Pad index along X 
@@ -1072,7 +1073,7 @@ Int_t AliTOFGeometry::GetPadX(const Float_t * const pos) const
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetX(const Int_t * const det) const
+Float_t AliTOFGeometry::GetX(const Int_t * const det)
 {
   //
   // Returns X coordinate (cm)
@@ -1183,7 +1184,7 @@ Float_t AliTOFGeometry::GetX(const Int_t * const det) const
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetY(const Int_t * const det) const
+Float_t AliTOFGeometry::GetY(const Int_t * const det)
 {
   //
   // Returns Y coordinate (cm)
@@ -1296,7 +1297,7 @@ Float_t AliTOFGeometry::GetY(const Int_t * const det) const
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetZ(const Int_t * const det) const
+Float_t AliTOFGeometry::GetZ(const Int_t * const det)
 {
   //
   // Returns Z coordinate (cm)
@@ -1762,7 +1763,7 @@ Float_t AliTOFGeometry::GetPadDz(const Float_t * const pos)
 }
 //_____________________________________________________________________________
 
-void AliTOFGeometry::Translation(Float_t *xyz, Float_t translationVector[3]) const
+void AliTOFGeometry::Translation(Float_t *xyz, Float_t translationVector[3])
 {
   //
   // Return the vector xyz translated by translationVector vector
@@ -1778,7 +1779,7 @@ void AliTOFGeometry::Translation(Float_t *xyz, Float_t translationVector[3]) con
 }
 //_____________________________________________________________________________
 
-void AliTOFGeometry::Rotation(Float_t *xyz, Double_t rotationAngles[6]) const
+void AliTOFGeometry::Rotation(Float_t *xyz, Double_t rotationAngles[6])
 {
   //
   // Return the vector xyz rotated according to the rotationAngles angles
@@ -1808,7 +1809,7 @@ void AliTOFGeometry::Rotation(Float_t *xyz, Double_t rotationAngles[6]) const
 
 }
 //_____________________________________________________________________________
-void AliTOFGeometry::InverseRotation(Float_t *xyz, Double_t rotationAngles[6]) const
+void AliTOFGeometry::InverseRotation(Float_t *xyz, Double_t rotationAngles[6])
 {
   //
   // Rotates the vector xyz acordint to the rotationAngles
@@ -1940,7 +1941,7 @@ Int_t AliTOFGeometry::NStrip(Int_t nPlate)
 }
 //-------------------------------------------------------------------------
 
-UShort_t AliTOFGeometry::GetAliSensVolIndex(Int_t isector, Int_t iplate, Int_t istrip) const
+UShort_t AliTOFGeometry::GetAliSensVolIndex(Int_t isector, Int_t iplate, Int_t istrip)
 {
   //
   // Get the index of the TOF alignable volume in the AliGeomManager order.

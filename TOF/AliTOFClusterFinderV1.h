@@ -7,7 +7,7 @@
 // and feed TOF tracking 
 
 #include "TObject.h"
-#include "TNamed.h"
+#include "TTask.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
@@ -72,7 +72,7 @@ class  AliTOFselectedDigit : public TObject {
 }; 
 
 
-class AliTOFClusterFinderV1 : public TNamed
+class AliTOFClusterFinderV1 : public TTask
 {
 
   enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
@@ -115,6 +115,8 @@ class AliTOFClusterFinderV1 : public TNamed
   void  SetMaxDeltaTime(Int_t a)   {fMaxDeltaTime = a;}; // to set deltaTime [bin number]
   void  SetMaxDeltaTime(Float_t a) {fMaxDeltaTime = (Int_t)(a/AliTOFGeometry::TdcBinWidth());}; // to set deltaTime [ps]
   Int_t GetMaxDeltaTime()     const {return fMaxDeltaTime;};
+  Int_t GetNumberOfTOFclusters() const {return fNumberOfTofClusters;}
+  Int_t GetNumberOfTOFtrgPads() const {return fNumberOfTofTrgPads;}
 
 
   void SetCalibrateFlag(Bool_t dummy) {fCalibrateTOFtimes = dummy;};
@@ -128,6 +130,7 @@ class AliTOFClusterFinderV1 : public TNamed
   TClonesArray *fRecPoints;   // List of reconstructed points
   Int_t fNumberOfTofClusters; // Number of TOF Clusters
   Int_t fNumberOfTofDigits;   // Number of TOF Digits
+  Int_t fNumberOfTofTrgPads;  // Number of TOF trigger pads
 
  private:
 
@@ -162,7 +165,7 @@ class AliTOFClusterFinderV1 : public TNamed
 
   Bool_t fCalibrateTOFtimes;     // used for check
 
-  ClassDef(AliTOFClusterFinderV1,5) // To run TOF clustering
+  ClassDef(AliTOFClusterFinderV1,6) // To run TOF clustering
 };
 #endif
 

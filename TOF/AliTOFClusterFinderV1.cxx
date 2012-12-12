@@ -68,12 +68,13 @@ ClassImp(AliTOFClusterFinderV1)
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
-  TNamed("AliTOFClusterFinderV1",""),
+  TTask("AliTOFClusterFinderV1",""),
   fRunLoader(0),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
+  fNumberOfTofTrgPads(0),
   fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
   fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
   fVerbose(0),
@@ -109,12 +110,13 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcalib *calib):
-  TNamed("AliTOFClusterFinderV1",""),
+  TTask("AliTOFClusterFinderV1",""),
   fRunLoader(runLoader),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
+  fNumberOfTofTrgPads(0),
   fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
   fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
   fVerbose(0),
@@ -150,12 +152,13 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 //_____________________________________________________________________________
 
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source)
-  :TNamed(source),
+  :TTask(source),
    fRunLoader(0),
    fDigits(source.fDigits),
    fRecPoints(source.fRecPoints),
    fNumberOfTofClusters(0),
    fNumberOfTofDigits(0),
+   fNumberOfTofTrgPads(0),
    fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
    fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
    fVerbose(0),
@@ -192,6 +195,9 @@ AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinde
   for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=source.fTofClusters[ii];
   fDigits=source.fDigits;
   fRecPoints=source.fRecPoints;
+  fNumberOfTofClusters=source.fNumberOfTofClusters;
+  fNumberOfTofTrgPads=source.fNumberOfTofTrgPads;
+  fNumberOfTofDigits=source.fNumberOfTofDigits;
   fVerbose=source.fVerbose;
   fDecoderVersion=source.fDecoderVersion;
   fTOFcalib=source.fTOFcalib;
@@ -251,6 +257,8 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   stopwatch.Start();
 
   Int_t inholes = 0;
+
+  ResetRecpoint();
 
   fDigits->Clear();
   TClonesArray &aDigits = *fDigits;
@@ -348,7 +356,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
 
   AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
-  ResetRecpoint();
+//  ResetRecpoint();
 
   fTOFdigitMap->Clear();
 
@@ -371,6 +379,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  ResetRecpoint();
 
   AliDebug(2, "TreeD re-creation");
   //TTree *digitsTree = new TTree();
@@ -389,7 +398,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
   AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
-  ResetRecpoint();
+//  ResetRecpoint();
 
   fTOFdigitMap->Clear();
 
@@ -485,6 +494,18 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       digit[2] = tofRawDatum->GetTOT();
       digit[3] = -1;//tofRawDatum->GetTOF(); //tofND
 
+      // noferini
+      Float_t pos[3];
+      AliTOFGeometry::GetPosPar(detectorIndex, pos);
+      Float_t length = 0.;
+      for (Int_t ic = 0; ic < 3; ic++) length += pos[ic] * pos[ic];
+      length = TMath::Sqrt(length);
+      Float_t timealligned = tdcCorr*24.4 - length * 0.0333564095198152043; // subtract the minimal time in
+      
+      if(status &&  timealligned > -1000 && timealligned < 24000){
+	fNumberOfTofTrgPads++;
+      }
+
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];//padx
       detectorIndex[4] = dummy;//padz
@@ -503,6 +524,7 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       last = fDigits->GetEntriesFast();
       new (aDigits[last]) AliTOFdigit(tracks, detectorIndex, digit);
       if (status) fTOFdigitMap->AddDigit(detectorIndex, last);
+      
 
       if (fVerbose==2) {
 	if (indexDDL<10) ftxt << "  " << indexDDL;
@@ -3212,6 +3234,7 @@ void AliTOFClusterFinderV1::ResetRecpoint()
   //
 
   fNumberOfTofClusters = 0;
+  fNumberOfTofTrgPads = 0;
   if (fRecPoints) fRecPoints->Clear();
 
 }
@@ -3224,6 +3247,7 @@ void AliTOFClusterFinderV1::ResetDigits()
   //
 
   fNumberOfTofDigits = 0;
+  fNumberOfTofTrgPads = 0;
   if (fDigits) fDigits->Clear();
 
 }

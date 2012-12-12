@@ -14,10 +14,10 @@
 
 #include "AliTriggerDetector.h"
 #include "AliLog.h"
+#include "TTree.h"
 
 class AliTOFrawData;
 class AliTOFTriggerMask;
-class AliTOFGeometry;
 
 class AliTOFTrigger : public AliTriggerDetector
 {
@@ -37,7 +37,7 @@ class AliTOFTrigger : public AliTriggerDetector
   Float_t Getdeltamaxro() const {return fdeltamaxro;}
   Int_t  GetstripWindow() const {return fstripWindow;}
 
-  void LoadActiveMask(); // Load active channel trigger mask
+  static void LoadActiveMask(); // Load active channel trigger mask
   void GetMapMatrix(Bool_t map[][24]) const;
   void GetMap(Bool_t **map) const;
   //void PrintMap(); // to be checked because of warning problems
@@ -81,6 +81,10 @@ class AliTOFTrigger : public AliTriggerDetector
   void   CreateLTMMatrix();
   void   CreateLTMMatrixFromDigits();
   void   CreateLTMMatrixFromRaw(AliRawReader *fRawReader);
+
+  static AliTOFTriggerMask *GetTOFTriggerMap() {return fTOFTrigMap;}
+  static void PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC=13600);
+  static void PrepareTOFMapFromDigit(TTree *treeD);
  private:
 
   enum{
@@ -91,13 +95,14 @@ class AliTOFTrigger : public AliTriggerDetector
     kNLTMtoTRDchannels = 8  //Number of channels in a CTTM
   };
 
-  static AliTOFGeometry *fgTofGeo; // TOF geometry needed to compute the minimal arrival time per channel
+  static AliTOFTriggerMask *fTOFTrigMap; // class with the TOF trigger map
+  static AliTOFTriggerMask *fTOFTrigMask; // class with the TOF trigger mask
 
   AliTOFTrigger& operator=(const AliTOFTrigger &/*source*/); // ass. op.
   AliTOFTrigger(const AliTOFTrigger & tr);
 
   void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
-  void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
+  static void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
   Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix 
   Bool_t  fLTMarray[kNCTTM];        //LTM array for UPpurposes
   Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels];//CTTM matrix for TOP FPGA 
@@ -119,13 +124,12 @@ class AliTOFTrigger : public AliTriggerDetector
   Int_t fNCrateOn; // number of crate fired
   Int_t fNMaxipadOn; // number of Maxipad fired
   Int_t fNMaxipadOnAll; // number of Maxipad fired w/o TDC dead mask
-  AliTOFTriggerMask *fTOFTrigMask; // class with the TOF trigger mask
 
   // aggiungere larghezza finestra temporale e tempo0 in ns
   Float_t fStartTimeHit;      // time window start after channel equalization (subtraction of the minimal time per channel default 0 ns)
   Float_t fTimeWidthTrigger;  // time window width (default 25 ns)
    
-  ClassDef(AliTOFTrigger,2)  // TOF Trigger Detector class
+  ClassDef(AliTOFTrigger,3)  // TOF Trigger Detector class
 };
 #endif
 

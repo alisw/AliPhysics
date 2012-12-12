@@ -39,16 +39,22 @@
 #include "AliTOFtrackerV1.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFReconstructor.h"
+#include "AliTOFTriggerMask.h"
+#include "AliTOFTrigger.h"
 
 class TTree;
 
 ClassImp(AliTOFReconstructor)
 
  //____________________________________________________________________
-AliTOFReconstructor::AliTOFReconstructor() 
-  : AliReconstructor(),
-    fTOFcalib(0)/*,
-		  fTOFT0maker(0)*/
+AliTOFReconstructor::AliTOFReconstructor() :
+  AliReconstructor(),
+  fTOFcalib(0),
+  /*fTOFT0maker(0),*/
+  fNumberOfTofClusters(0),
+  fNumberOfTofTrgPads(0),
+  fClusterFinder(0),
+  fClusterFinderV1(0)
 {
 //
 // ctor
@@ -57,6 +63,24 @@ AliTOFReconstructor::AliTOFReconstructor()
   //Retrieving the TOF calibration info  
   fTOFcalib = new AliTOFcalib();
   fTOFcalib->Init();
+  fClusterFinder = new AliTOFClusterFinder(fTOFcalib);
+  fClusterFinderV1 = new AliTOFClusterFinderV1(fTOFcalib);
+
+  TString optionString = GetOption();
+  if (optionString.Contains("DecoderV0")) {
+    fClusterFinder->SetDecoderVersion(0);
+    fClusterFinderV1->SetDecoderVersion(0);
+  }
+  else if (optionString.Contains("DecoderV1")) {
+    fClusterFinder->SetDecoderVersion(1);
+    fClusterFinderV1->SetDecoderVersion(1);
+  }
+  else {
+    fClusterFinder->SetDecoderVersion(2);
+    fClusterFinderV1->SetDecoderVersion(2);
+  }
+
+
 
 #if 0
   fTOFcalib->CreateCalObjects();
@@ -85,7 +109,11 @@ AliTOFReconstructor::~AliTOFReconstructor()
   delete fTOFcalib;
 
   //delete fTOFT0maker;
+  fNumberOfTofClusters = 0;
+  fNumberOfTofTrgPads = 0;
 
+  delete fClusterFinder;
+  delete fClusterFinderV1;
 }
 
 //_____________________________________________________________________________
@@ -100,7 +128,8 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 
   // use V1 cluster finder if selected
   if (optionString.Contains("ClusterizerV1")) {
-    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    /*
+    AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
@@ -112,12 +141,16 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     else {
       tofClus.SetDecoderVersion(2);
     }
-    
+
     tofClus.Digits2RecPoints(rawReader, clustersTree);
+    */
+
+    fClusterFinderV1->Digits2RecPoints(rawReader, clustersTree);    
   }
   else {
-    static AliTOFClusterFinder tofClus(fTOFcalib);
-    
+    /*
+    AliTOFClusterFinder tofClus(fTOFcalib);
+      
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
@@ -130,8 +163,12 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     }
 
     tofClus.Digits2RecPoints(rawReader, clustersTree);
-  }
 
+    */
+
+    fClusterFinder->Digits2RecPoints(rawReader, clustersTree);
+  }
+  AliTOFTrigger::PrepareTOFMapFromRaw(rawReader,13600); // 13600 +/- 400 is the value to select the richt bunch crossing (in future from OCDB)
 }
 
 //_____________________________________________________________________________
@@ -147,7 +184,8 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
   TString optionString = GetOption();
   // use V1 cluster finder if selected
   if (optionString.Contains("ClusterizerV1")) {
-    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    /*
+    AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
@@ -161,9 +199,12 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     }
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
+    */
+    fClusterFinderV1->Digits2RecPoints(digitsTree, clustersTree);
   }
   else {
-    static AliTOFClusterFinder tofClus(fTOFcalib);
+    /*
+    AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
@@ -177,6 +218,11 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     }
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
+    */
+
+    fClusterFinder->Digits2RecPoints(digitsTree, clustersTree);
+    AliTOFTrigger::PrepareTOFMapFromDigit(digitsTree);
+
   }
 
 }
@@ -190,7 +236,8 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
   TString optionString = GetOption();
   // use V1 cluster finder if selected
   if (optionString.Contains("ClusterizerV1")) {
-    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    /*
+    AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
@@ -204,9 +251,13 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     }
     
     tofClus.Raw2Digits(reader, digitsTree);
+    */
+
+    fClusterFinderV1->Digits2RecPoints(reader, digitsTree);
   }
   else {
-    static AliTOFClusterFinder tofClus(fTOFcalib);
+    /*
+    AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
     if (optionString.Contains("DecoderV0")) {
@@ -220,6 +271,10 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     }
     
     tofClus.Raw2Digits(reader, digitsTree);
+    */
+
+    fClusterFinder->Digits2RecPoints(reader, digitsTree);
+
   }
 
 }
@@ -259,6 +314,24 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
   // It contains the event_time estiamted by the TOF combinatorial algorithm
   //
 
+
+  // Set here F. Noferini
+  AliTOFTriggerMask *mapTrigger = AliTOFTrigger::GetTOFTriggerMap();
+
+
+  TString optionString = GetOption();
+  if (optionString.Contains("ClusterizerV1")) {
+    fNumberOfTofClusters=fClusterFinderV1->GetNumberOfTOFclusters();
+    fNumberOfTofTrgPads=fClusterFinderV1->GetNumberOfTOFtrgPads();
+    AliInfo(Form(" Number of TOF cluster readout = %d ",fNumberOfTofClusters));
+    AliInfo(Form(" Number of TOF cluster readout in trigger window = %d ",fNumberOfTofTrgPads));
+  } else {
+    fNumberOfTofClusters=fClusterFinder->GetNumberOfTOFclusters();
+    fNumberOfTofTrgPads=fClusterFinder->GetNumberOfTOFtrgPads();
+    AliInfo(Form(" Number of TOF cluster readout = %d ",fNumberOfTofClusters));
+    AliInfo(Form(" Number of TOF cluster readout in trigger window = %d ",fNumberOfTofTrgPads));
+  }
+
   if (!GetRecoParam()) AliFatal("cannot get TOF RECO params");
 
   Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
@@ -270,6 +343,20 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
   delete tofT0maker;
 
   esdPID->SetTOFResponse(event,(AliESDpid::EStartTimeType_t)GetRecoParam()->GetStartTimeType());
+
+
+  event->GetTOFHeader()->SetNumberOfTOFclusters(fNumberOfTofClusters);
+  event->GetTOFHeader()->SetNumberOfTOFtrgPads(fNumberOfTofTrgPads);
+  event->GetTOFHeader()->SetTriggerMask(mapTrigger);
+  AliInfo(Form(" Number of readout cluster in trigger window = %d ; number of trgPads from Trigger map = %d",
+	       event->GetTOFHeader()->GetNumberOfTOFtrgPads(),
+	       event->GetTOFHeader()->GetNumberOfTOFmaxipad()));
+
+  fClusterFinderV1->ResetDigits();
+  fClusterFinderV1->ResetRecpoint();
+  fClusterFinder->ResetRecpoint();
+  fClusterFinderV1->Clear();
+  fClusterFinder->Clear();
 
 }
 

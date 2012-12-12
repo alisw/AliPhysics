@@ -14,12 +14,15 @@
 
 #include "AliReconstructor.h"
 #include "AliTOFRecoParam.h"
+#include "AliTOFClusterFinder.h"
+#include "AliTOFClusterFinderV1.h"
 
 class TTree;
 
 class AliESDEvent;
 class AliRawReader;
 class AliTOFcalib;
+
 //class AliTOFT0maker;
 
 class AliTOFReconstructor: public AliReconstructor {
@@ -50,7 +53,13 @@ private:
   AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class
   //AliTOFT0maker  *fTOFT0maker;  // pointer to TOF T0 maker class
 
-  ClassDef(AliTOFReconstructor, 3)   // class for the TOF reconstruction
+  Int_t fNumberOfTofClusters; // Number of TOF Clusters
+  Int_t fNumberOfTofTrgPads;  // Number of TOF trigger pads
+
+  AliTOFClusterFinder *fClusterFinder;
+  AliTOFClusterFinderV1 *fClusterFinderV1;
+
+  ClassDef(AliTOFReconstructor, 5)   // class for the TOF reconstruction
 };
 
 #endif

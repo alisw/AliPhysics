@@ -103,6 +103,7 @@ class AliTOFtracker : public AliTracker {
    {if (index==-1 || index >= fN) return NULL;
    return (AliCluster *) fClusters[index];};
  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+ Int_t GetNumberOfMatchedTOFtracks() const {return fnmatch;}
  void InitCheckHists();
  void SaveCheckHists();
  void FillClusterArray(TObjArray* arr) const;
