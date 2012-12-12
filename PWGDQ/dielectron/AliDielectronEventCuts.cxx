@@ -33,6 +33,8 @@ Detailed description
 #include <AliAODEvent.h>
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
+#include <AliESDVZERO.h>
+#include <AliAODVZERO.h>
 
 #include "AliDielectronEventCuts.h"
 
@@ -53,7 +55,10 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
-  fkVertexAOD(0x0)
+  fkVertexAOD(0x0),
+  fparMean(0x0),
+  fparSigma(0x0),
+  fcutSigma(3.)
 {
   //
   // Default Constructor
@@ -75,7 +80,10 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
-  fkVertexAOD(0x0)
+  fkVertexAOD(0x0),
+  fparMean(0x0),
+  fparSigma(0x0),
+  fcutSigma(3.)
 {
   //
   // Named Constructor
@@ -177,7 +185,15 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       return kFALSE;
   }
 
-  
+  if(fparMean && fparSigma) {
+    Double_t nTrks  = ev->GetNumberOfTracks();
+    Double_t multV0 = 0.0;
+    for(Int_t j=0; j<64; j++) multV0 += ev->GetVZEROData()->GetMultiplicity(j);
+    Double_t mV0 = fparMean->Eval(nTrks);
+    Double_t sV0 = fparSigma->Eval(nTrks);
+    if(multV0 > mV0+fcutSigma*sV0 || multV0 > mV0-fcutSigma*sV0) return kFALSE;
+  }
+
   return kTRUE;
 }
 //______________________________________________
@@ -255,7 +271,16 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       return kFALSE;
   }
   */
-  
+
+  if(fparMean && fparSigma) {
+    Double_t nTrks  = ev->GetNumberOfTracks();
+    Double_t multV0 = 0.0;
+    for(Int_t j=0; j<64; j++) multV0 += ev->GetVZEROData()->GetMultiplicity(j);
+    Double_t mV0 = fparMean->Eval(nTrks);
+    Double_t sV0 = fparSigma->Eval(nTrks);
+    if(multV0 > mV0+fcutSigma*sV0 || multV0 < mV0-fcutSigma*sV0) return kFALSE;
+  }
+
   return kTRUE;
 }
 
@@ -275,11 +300,13 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
   if(fMinVtxContributors) {
     printf("Cut %02d: vertex contributors >= %d \n", iCut, fMinVtxContributors);   iCut++; }
   if(fVtxZmin<fVtxZmax) {
-    printf("Cut %02d: %f < %s < %f\n",     iCut, fVtxZmin, "Zvtx", fVtxZmax);      iCut++;}
+    printf("Cut %02d: %f < %s < %f\n",   iCut, fVtxZmin, "Zvtx", fVtxZmax);        iCut++; }
   if(fCentMin<fCentMax) {
     printf("Cut %02d: %f < %s < %f\n",   iCut, fCentMin, "V0centrality", fCentMax);iCut++; }
   if(fMultITSTPC) {
     printf("Cut %02d: cut on multiplcity ITS vs. TPC \n", iCut);                   iCut++; }
+  if(fparMean&&fparSigma) {
+    printf("Cut %02d: multplicity vs. #tracks correlation +-%.1f sigma inclusion \n", iCut, fcutSigma); iCut++; }
   if(fRequireV0and) {
     printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
 

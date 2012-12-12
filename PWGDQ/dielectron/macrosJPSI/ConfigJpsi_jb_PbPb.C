@@ -2,9 +2,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void InitHF(AliDielectron* die, Int_t cutDefinition);
 
-void SetupEventCuts(AliDielectron *die);
+void SetupEventCuts(AliDielectron *die, ULong64_t triggers);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
 
 void AddMCSignals(AliDielectron *die);
 void SetEtaCorrection();
@@ -20,8 +20,7 @@ Bool_t  isESD = kTRUE;
 Bool_t  hasMC = kFALSE;
 TString list  = gSystem->Getenv("LIST");
 
-
-AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
+AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod=""/*, ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB*/)
 {
   //
   // Setup the instance of AliDielectron
@@ -92,7 +91,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   die->SetHasMC(hasMC);
 
   // cut setup
-  SetupEventCuts(die);
+  SetupEventCuts(die,triggers);
   SetupTrackCuts(die,cutDefinition);
   SetupPairCuts(die,cutDefinition);
 
@@ -145,11 +144,11 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      //       mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
-      //       mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
-      //       mix->AddVariable(AliDielectronVarManager::kv0ACrpH2,    8,  TMath::Pi()/-2., TMath::Pi()/2.);
+      //mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
+      //mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,5.);
+      //mix->AddVariable(AliDielectronVarManager::kv0ACrpH2,    8,  TMath::Pi()/-2., TMath::Pi()/2.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
-      mix->SetDepth(120);
+      mix->SetDepth(150);
       die->SetMixingHandler(mix);
 
       // TPC event plane configurations
@@ -197,18 +196,38 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 }
 
 //______________________________________________________________________________________
-void SetupEventCuts(AliDielectron *die)
+void SetupEventCuts(AliDielectron *die, ULong64_t triggers)
 {
   //
   // Setup the event cuts
   //
+
+  // trigger specific centrality cuts (reject trigger inefficiencies)
+  Double_t minCent=0.0, maxCent=100.;
+  if(!hasMC) {
+    switch(triggers) {
+    case AliVEvent::kCentral:     minCent= 0.; maxCent= 9.; break;
+    case AliVEvent::kSemiCentral: minCent=12.; maxCent=53.; break;
+    case AliVEvent::kMB:          minCent= 0.; maxCent=80.; break;
+    default:                      minCent= 0.; maxCent=80.; break;
+    }
+  }
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
   if(!isESD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
+  eventCuts->SetCentralityRange(minCent,maxCent);
+
+  /*
+  TF1 *fMean  = new TF1("fMean", "pol1",               0,25e+3);
+  fMean->SetParameters(631.301, 1.49836);
+  TF1 *fSigma = new TF1("fSigma","[0]+sqrt([1]*x+[2])",0,25e+3);
+  fSigma->SetParameters(-25.7843, 32.8055, 35275.7);
+  eventCuts->SetCutOnV0MultipicityNTrks(fMean, fSigma, 4.0);
+  */
+
   eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
 
@@ -436,11 +455,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   case kTRD:
   case kTOFTRD:
   case kTOFTRD2D: bHistFlow=kTRUE; bHistPair=kTRUE; break;
-  case krec:
-  case kITScls:
-  case kITSamy:
-  case kDCA:
-  case kChi:      break;
+  case krec:      break;
+    //  case kITScls:
+    //  case kITSamy:
+    //  case kDCA:
+    //  case kChi:      break;
   case kEtaGap01:
   case kEtaGap02:
   case kEtaGap03:
@@ -545,74 +564,22 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   if(bHistFlowQA) {
     // TPC event plane
-    histos->UserHistogram("Event","TPCxH2","TPC Qx component;TPCxH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCxH2);
-    histos->UserHistogram("Event","TPCyH2","TPC Qy component;TPCyH2",
-                          100,-1500.,1500.,
-                          AliDielectronVarManager::kTPCyH2);
-    histos->UserHistogram("Event","TPCrpH2","TPC reaction plane; #Psi^{TPC}",
-                          100,-2.,2.,
-                          AliDielectronVarManager::kTPCrpH2);
-    histos->UserHistogram("Event","TPCsub1rpH2","TPC reaction plane sub1; #Psi^{sub1}",
-                          100,-2.,2.,
-                          AliDielectronVarManager::kTPCsub1rpH2);
-    histos->UserHistogram("Event","TPCsub2rpH2","TPC reaction plane sub2; #Psi^{sub2}",
-                          100,-2.,2.,
-                          AliDielectronVarManager::kTPCsub2rpH2);
-    histos->UserHistogram("Event","TPCsub12DiffH2","TPC reaction plane diff; cos(2(#Psi^{sub1}-#Psi^{sub2}))",
-                          100,-1.,1.,
-                          AliDielectronVarManager::kTPCsub12DiffH2);
-    /* // uncorrected eventplane
-     histos->UserHistogram("Event","TPCxH2uc","TPC Qx component;TPCxH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCxH2uc);
-     histos->UserHistogram("Event","TPCyH2uc","TPC Qy component;TPCyH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCyH2uc);
-     histos->UserHistogram("Event","TPCrpH2uc","TPC reaction plane;TPCrpH2uc",
-     100,-2.,2.,
-     AliDielectronVarManager::kTPCrpH2uc);
-     histos->UserHistogram("Event","TPCsub1xH2uc","TPC Qx component sub1;TPCsub1xH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCsub1xH2uc);
-     histos->UserHistogram("Event","TPCsub1yH2uc","TPC Qy component sub1;TPCsub1yH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCsub1yH2uc);
-     histos->UserHistogram("Event","TPCsub1rpH2uc","TPC reaction plane sub1;TPCsub1rpH2uc",
-     100,-2.,2.,
-     AliDielectronVarManager::kTPCsub1rpH2uc);
-     histos->UserHistogram("Event","TPCsub2xH2uc","TPC Qx component sub2;TPCsub2xH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCsub2xH2uc);
-     histos->UserHistogram("Event","TPCsub2yH2uc","TPC Qy component sub2;TPCsub2yH2uc",
-     100,-1500.,1500.,
-     AliDielectronVarManager::kTPCsub2yH2uc);
-     histos->UserHistogram("Event","TPCsub2rpH2uc","TPC reaction plane sub2;TPCsub2rpH2uc",
-     100,-2.,2.,
-     AliDielectronVarManager::kTPCsub2rpH2uc);
-     histos->UserHistogram("Event","TPCsub12DiffH2uc","TPC reaction plane difference;TPCsub12DiffH2uc",
-     100,-1.,1.,
-     AliDielectronVarManager::kTPCsub12DiffH2uc);
-    */
+    histos->UserHistogram("Event","","", 100,-1500.,1500., AliDielectronVarManager::kTPCxH2);
+    histos->UserHistogram("Event","","", 100,-1500.,1500., AliDielectronVarManager::kTPCyH2);
+    histos->UserHistogram("Event","","", 100,   -2.,   2., AliDielectronVarManager::kTPCrpH2);
+    histos->UserHistogram("Event","","", 100,   -2.,   2., AliDielectronVarManager::kTPCsub1rpH2);
+    histos->UserHistogram("Event","","", 100,   -2.,   2., AliDielectronVarManager::kTPCsub2rpH2);
+    histos->UserHistogram("Event","","", 100,   -1.,   1., AliDielectronVarManager::kTPCsub12DiffH2);
 
     // EP resolution calculation
-    histos->UserHistogram("Event","Cent_v0ATPCDiffH2","VZERO-A TPC diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{TPC}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0ATPCDiffH2);
-    histos->UserHistogram("Event","Cent_v0CTPCDiffH2","VZERO-C TPC diff;centrality (%);cos(2(#Psi^{V0C}-#Psi^{TPC}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0CTPCDiffH2);
-    histos->UserHistogram("Event","Cent_v0Av0CDiffH2","VZERO-A VZERO-C diff;centrality (%);cos(2(#Psi^{V0A}-#Psi^{V0C}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kv0Av0CDiffH2);
-    histos->UserHistogram("Event","Cent_TPCsub12DiffH2","TPC-sub1 TPC-sub2 diff;centrality (%);cos(2(#Psi^{sub1}-#Psi^{sub2}))",
-                          10,0.,100.,300,-1.0,1.0,
-                          AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2);
+    histos->UserHistogram("Event","","", 10,0.,100., 300,-1.0,1.0, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kv0ATPCDiffH2);
+    histos->UserHistogram("Event","","", 10,0.,100., 300,-1.0,1.0, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kv0ATPCDiffH2);
+    histos->UserHistogram("Event","","", 10,0.,100., 300,-1.0,1.0, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kv0Av0CDiffH2);
+    histos->UserHistogram("Event","","", 10,0.,100., 300,-1.0,1.0, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kTPCsub12DiffH2);
+
     // detector effects
-    histos->UserHistogram("Event","Cent_TPCsub12DiffH2Sin","TPC-sub1 TPC-sub2 diff;centrality (%);sin(2(#Psi^{sub1}-#Psi^{sub2}))",
-                          10,0.,100.,300,-1.0,1.0,
-			  AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCsub12DiffH2Sin);
+    histos->UserHistogram("Event","","", 10,0.,100., 300,-1.0,1.0, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kTPCsub12DiffH2Sin);
+
     // recentering stuff
     histos->UserProfile("Pair","TPCxH2-Cent-RunNumber", ";centrality (%);run;#LTQ_{x}#GT",
 			AliDielectronVarManager::kTPCxH2,
