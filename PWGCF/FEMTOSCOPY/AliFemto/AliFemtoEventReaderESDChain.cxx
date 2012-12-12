@@ -393,28 +393,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
 	if (esdtrack->GetTPCNcls() > 70) 
 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
-	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
-	      esdtrack->GetImpactParameters(b,bCov);
-	      if ((b[0]<0.2) && (b[1] < 0.25)) {
-		tNormMult++;
-		tTotalPt += esdtrack->Pt();
+	    if (esdtrack->Pt() > 0.15 && esdtrack->Pt() < 20) 
+	      if (TMath::Abs(esdtrack->Eta()) < 0.8) {
+		esdtrack->GetImpactParameters(b,bCov);
+		if ((b[0]<0.2) && (b[1] < 2.0)) {
+		  tNormMult++;
+		  tTotalPt += esdtrack->Pt();
+		}
 	      }
-	    }
 	  }
       }
-      else if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) {
-	if (esdtrack->GetTPCNcls() > 100) 
-	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
-	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
-	      esdtrack->GetImpactParameters(b,bCov);
-	      if ((b[0]<2.4) && (b[1] < 3.2)) {
-		tNormMult++;
-		tTotalPt += esdtrack->Pt();
-	      }
-	    }
-	  }
-      }
-      
+
       hbtEvent->SetZDCEMEnergy(tTotalPt);
       //       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
       // 	if (esdtrack->GetTPCNcls() > 80) 

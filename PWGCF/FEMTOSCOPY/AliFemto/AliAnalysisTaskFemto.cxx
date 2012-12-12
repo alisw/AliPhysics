@@ -33,18 +33,19 @@ ClassImp(AliAnalysisTaskFemto)
 
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams):
-    AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
-    fESD(0), 
-    fESDpid(0),
-    fAOD(0),
-    fAODpidUtil(0),
-    fStack(0),
-    fOutputList(0), 
-    fReader(0x0),
-    fManager(0x0),
-    fAnalysisType(0),
-    fConfigMacro(0),
-    fConfigParams(0)
+AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
+  fESD(0), 
+  fESDpid(0),
+  fAOD(0),
+  fAODpidUtil(0),
+  fAODheader(0),
+  fStack(0),
+  fOutputList(0), 
+  fReader(0x0),
+  fManager(0x0),
+  fAnalysisType(0),
+  fConfigMacro(0),
+  fConfigParams(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -63,6 +64,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
     fESDpid(0),
     fAOD(0),
     fAODpidUtil(0),
+    fAODheader(0),
     fStack(0),
     fOutputList(0), 
     fReader(0x0),
@@ -88,6 +90,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
     fESDpid(0),
     fAOD(0),
     fAODpidUtil(0),
+    fAODheader(0),
     fStack(0),
     fOutputList(0), 
     fReader(0x0),
@@ -101,6 +104,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
   fESDpid = aFemtoTask.fESDpid; 
   fAOD = aFemtoTask.fAOD; 
   fAODpidUtil = aFemtoTask.fAODpidUtil;
+  fAODheader = aFemtoTask.fAODheader;
   fStack = aFemtoTask.fStack;
   fOutputList = aFemtoTask.fOutputList;   
   fReader = aFemtoTask.fReader;       
@@ -122,6 +126,7 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   fESDpid = aFemtoTask.fESDpid;
   fAOD = aFemtoTask.fAOD; 
   fAODpidUtil = aFemtoTask.fAODpidUtil;
+  fAODheader = aFemtoTask.fAODheader;
   fStack = aFemtoTask.fStack;
   fOutputList = aFemtoTask.fOutputList;   
   fReader = aFemtoTask.fReader;       
@@ -152,6 +157,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   fESDpid = 0;
   fAOD = 0;
   fAODpidUtil = 0;
+  fAODheader=0;
   fAnalysisType = 0;
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
@@ -263,6 +269,10 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       //fAODpidUtil = new AliAODpidUtil(); //not correct way
       //      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
+
+      fAODheader = fAOD->GetHeader();
+      femtoReaderAOD->SetAODheader(fAODheader);
+   
     }
   }
 

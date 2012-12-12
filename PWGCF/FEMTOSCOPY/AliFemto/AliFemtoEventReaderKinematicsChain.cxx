@@ -194,9 +194,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
         realnofTracks++;//real number of tracks (only primary particles)
 
       //setting normalized multiplicity
-      if (kinetrack->Eta() < 0.9)
+      
 	if(kinetrack->GetPDG()->Charge()/3!=0)
-	  tNormMult++;
+	  if (kinetrack->Pt() > 0.15 && kinetrack->Pt() < 20) 
+	    if (kinetrack->Eta() < 0.8)
+	      tNormMult++;
 	  
 	  
 	  //charge
@@ -237,15 +239,15 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 					
 	//Momentum
       double pxyz[3];
-      double rxyz[3];
+      // double rxyz[3];
      
 	pxyz[0]=kinetrack->Px();
 	pxyz[1]=kinetrack->Py();
 	pxyz[2]=kinetrack->Pz();
 
-	rxyz[0]=kinetrack->Vx();
-	rxyz[1]=kinetrack->Vy();
-	rxyz[2]=kinetrack->Vz();
+	// rxyz[0]=kinetrack->Vx();
+	// rxyz[1]=kinetrack->Vy();
+	// rxyz[2]=kinetrack->Vz();
 
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);

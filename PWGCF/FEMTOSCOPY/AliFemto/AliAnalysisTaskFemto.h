@@ -32,11 +32,12 @@
 
 #include "AliESDpid.h"
 #include "AliAODpidUtil.h"
+#include "AliAODHeader.h"
 
 
 class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
+  AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fAODheader(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams);
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -62,6 +63,7 @@ class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
   AliESDpid                   *fESDpid;       //! ESDpid object
   AliAODEvent                 *fAOD;          //! AOD object
   AliAODpidUtil               *fAODpidUtil;   // AliAODpidUtil object
+  AliAODHeader                *fAODheader;    //AliAODHeader object (to get reference multiplicity in pp)
 
   AliStack                    *fStack;        //! Stack from Kinematics
   TList                       *fOutputList;   //  AliFemto results list

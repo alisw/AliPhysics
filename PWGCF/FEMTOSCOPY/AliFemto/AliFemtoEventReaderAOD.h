@@ -22,6 +22,7 @@
 #include "AliAODMCParticle.h"
 #include "AliFemtoV0.h"
 #include "AliAODpidUtil.h"
+#include "AliAODHeader.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -29,6 +30,9 @@ class AliFemtoTrack;
 class AliFemtoEventReaderAOD : public AliFemtoEventReader 
 {
  public:
+  enum EventMult {kCentrality=0, kGlobalCount=1, kReference=2, kTPCOnlyRef=3};
+  typedef enum EventMult EstEventMult;
+
   AliFemtoEventReaderAOD();
   AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader);
   virtual ~AliFemtoEventReaderAOD();
@@ -44,8 +48,10 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetCentralityPreSelection(double min, double max);
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
+  void SetAODheader(AliAODHeader *aAODheader);
   void SetMagneticFieldSign(int s);
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void SetUseMultiplicity(EstEventMult aType);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -68,9 +74,10 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
   unsigned char  fReadV0;           // Read V0 information from the AOD and put it into V0Collection
   unsigned char  fUsePreCent;       // Use centrality pre-selection to speed up analysis
+  EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   double         fCentRange[2];     // Centrality pre-selection range
-  unsigned char  fNoCentrality;     // Do not use centrality determination (for pp)
   AliAODpidUtil* fAODpidUtil;
+  AliAODHeader* fAODheader; 
 
  private:
 
@@ -81,6 +88,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TChain*        fTree;             // AOD tree
   TFile*         fAodFile;          // AOD file 
   int            fMagFieldSign;     // Magnetic field sign
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderAOD, 11)
