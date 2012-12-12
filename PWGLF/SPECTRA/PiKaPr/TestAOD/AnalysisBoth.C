@@ -259,7 +259,8 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 //	lout->ls();
 	fout->cd();	
 	TList* listqa=new TList();
-	Float_t vertexcorrection=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa);
+	TList* canvaslist=new TList();
+	Float_t vertexcorrection=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist);
 	cout<<" VTX corr="<<vertexcorrection<<endl;
 	for (int i=0;i<6;i++)
 	{
@@ -272,7 +273,8 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 	//spectraall->Scale(1.0/1.6);
 	lout->Write("output",TObject::kSingleKey);	
 	listqa->Write("outputQA",TObject::kSingleKey);
-	
+	canvaslist->Write("outputcanvas",TObject::kSingleKey);
+
 	fout->Close();
 
 }
