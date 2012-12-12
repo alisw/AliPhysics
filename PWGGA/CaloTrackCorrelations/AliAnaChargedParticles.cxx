@@ -544,6 +544,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     //if(vtxBC!=AliVTrack::kTOFBCNA)printf("BC primary %d",vtxBC);
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
+    AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
+
     if(aodTrack)
     {
       dcaCons = aodTrack->DCA();
@@ -710,7 +712,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     Bool_t bITSRefit    = (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
     Bool_t bConstrained = kFALSE;
     if(aodTrack) bConstrained = aodTrack->IsGlobalConstrained();
-    
+    else         bConstrained = (!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1));
     //printf("Track %d, pt %2.2f, eta %2.2f, phi %2.2f, SPDRefit %d, refit %d, dcaCons %2.2f\n",
     //       i, track->Pt(), track->Eta(), track->Phi(), bConstrained, bITSRefit, dcaCons);
     
