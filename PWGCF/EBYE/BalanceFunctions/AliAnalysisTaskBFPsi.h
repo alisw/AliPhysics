@@ -7,6 +7,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 class TF1;
 
 class AliBalancePsi;
@@ -172,6 +173,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistEta;//pseudorapidity (QA histogram)
   TH2F *fHistRapidity;//rapidity (QA histogram)
   TH2F *fHistPhi;//phi (QA histogram)
+  TH3F *fHistEtaPhi;//eta-phi (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
