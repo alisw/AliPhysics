@@ -620,7 +620,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistPtTPCITS[hadronSpecie]->Fill(pttrack);
       fHistEtaPhiTPCITS[hadronSpecie]->Fill(track->Eta(),track->Phi());
       fHistNcluTPCITS[hadronSpecie]->Fill(pttrack,nITSclus);
-      fHistCluInLayTPCITS[hadronSpecie]->Fill(-1.);
+      fHistCluInLayTPCITS[hadronSpecie]->Fill(-1.,-1.);
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)) fHistCluInLayTPCITS[hadronSpecie]->Fill(pttrack,iBit);
       }
@@ -630,7 +630,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistNcluITSpureSA[hadronSpecie]->Fill(pttrack,nITSclus);
       fHistd0rphiITSpureSA[hadronSpecie]->Fill(pttrack,impactXY);
       fHistd0zITSpureSA[hadronSpecie]->Fill(pttrack,impactZ);
-      fHistCluInLayITSpureSA[hadronSpecie]->Fill(-1.);
+      fHistCluInLayITSpureSA[hadronSpecie]->Fill(-1.,-1.);
       Int_t outerLay=-1;
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)){
@@ -662,7 +662,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistPtITSsa[hadronSpecie]->Fill(pttrack);
       fHistEtaPhiITSsa[hadronSpecie]->Fill(track->Eta(),track->Phi());
       fHistNcluITSsa[hadronSpecie]->Fill(pttrack,nITSclus);
-      fHistCluInLayITSsa[hadronSpecie]->Fill(-1.);
+      fHistCluInLayITSsa[hadronSpecie]->Fill(-1.,-1.);
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)) fHistCluInLayITSsa[hadronSpecie]->Fill(pttrack,iBit);
       }
