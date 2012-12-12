@@ -1,7 +1,7 @@
 Float_t QAPlotsBoth( AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,
 	      AliSpectraBothEventCuts* ecuts_data, AliSpectraBothEventCuts* ecuts_mc,
 	      AliSpectraBothTrackCuts* tcuts_data, AliSpectraBothTrackCuts* tcuts_mc,
-	      TList * flist)
+	      TList * flistqa,TList * flistcanvas)
 {
 TString pidmethods[3]={"TPC","TOF","TPCTOF"};	
 	Double_t neventsdata =  ecutsdata->NumberOfPhysSelEvents();
@@ -45,15 +45,15 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 					 //c->cd()->SetLogy();
 					 //nsig_data_Proj1->Draw();
 					 //nsig_mc_Proj1->Draw("same");
-					flist->Add(nsig_data_Proj1);
-					flist->Add(nsig_mc_Proj1);
+					flistqa->Add(nsig_data_Proj1);
+					flistqa->Add(nsig_mc_Proj1);
 					ibin++;
 				 }
 			}
 	}
 	TH1F* fHistoVtxAftSeldata=(TH1F*)ecuts_data->GetHistoVtxAftSel();
 	TH1F* fHistoVtxAftSelmc=(TH1F*)ecuts_mc->GetHistoVtxAftSel();
-	flist->Add(plot_on_canvas("vertex",fHistoVtxAftSeldata,fHistoVtxAftSelmc));
+	flistcanvas->Add(plot_on_canvas("vertex",fHistoVtxAftSeldata,fHistoVtxAftSelmc));
 	TF1* fdata=new TF1("dataveretxfit","gausn");
 	TF1* fmc=new TF1("mcveretxfit","gausn");
 	fHistoVtxAftSeldata->Fit("dataveretxfit","0");
@@ -64,13 +64,13 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 
 	 TH1F* fHistoEtaAftSeldata=(TH1F*)ecuts_data->GetHistoEtaAftSel();
 	 TH1F* fHistoEtaAftSelmc=(TH1F*)ecuts_mc->GetHistoEtaAftSel();
-	flist->Add(plot_on_canvas("ETA",fHistoEtaAftSeldata,fHistoEtaAftSelmc));
+	flistcanvas->Add(plot_on_canvas("ETA",fHistoEtaAftSeldata,fHistoEtaAftSelmc));
 
 
 	 TH1F* fITSclustershistdata=(TH1F*)tcuts_data->GetHistoNclustersITS();
  	  TH1F* fITSclustershistmc=(TH1F*)tcuts_mc->GetHistoNclustersITS();
 
-	flist->Add(plot_on_canvas("NITS",fITSclustershistdata,fITSclustershistmc));
+	flistcanvas->Add(plot_on_canvas("NITS",fITSclustershistdata,fITSclustershistmc));
 	cout<<" data "<<datavertexratio<<" mc "<<mcvertexratio<<endl;
 	
 	TH2F* hmul=(TH2F*)hman_mc->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul");	
@@ -93,7 +93,7 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	binzero->Fit("badchunkfit","R");
 	Float_t badchunksfraction=badchunk->GetParameter(0);
 	binzero->Draw("E1");
-	flist->Add(cbc);
+	flistcanvas->Add(cbc);
 	
 	return (1.0-badchunksfraction)*mcvertexratio/datavertexratio;
 
