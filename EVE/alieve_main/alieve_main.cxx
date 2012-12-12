@@ -86,14 +86,19 @@ int main(int argc, char **argv)
   catch (TEveException exc) {
 	AliErrorGeneral("alieve_main",exc.Data());
   }
+	
+	app->Connect( "TEveBrowser", "CloseWindow()", "TRint", app, "Terminate(=0)");
 
   app->Run(kTRUE);
 
-  if (gEve && gEve->GetBrowser())
-    gEve->GetBrowser()->UnmapWindow();
-  TEveManager::Terminate();
+  if (gEve && gEve->GetBrowser())	gEve->GetBrowser()->UnmapWindow();
 
+  TEveManager::Terminate();
   app->Terminate(0);
+	
+	if(gEve) {delete gEve; gEve = 0;}
+
+
 
   return 0;
 }
