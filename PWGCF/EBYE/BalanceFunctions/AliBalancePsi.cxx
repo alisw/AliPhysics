@@ -644,10 +644,10 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 
   // ============================================================================================
   // the same for event mixing
-  TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,iVariablePair);
-  TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,iVariablePair);
-  TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,iVariablePair);
-  TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,iVariablePair);
+  TH1D* hTemp1Mix = (TH1D*)fHistPNMix->Project(0,iVariablePair);
+  TH1D* hTemp2Mix = (TH1D*)fHistNPMix->Project(0,iVariablePair);
+  TH1D* hTemp3Mix = (TH1D*)fHistPPMix->Project(0,iVariablePair);
+  TH1D* hTemp4Mix = (TH1D*)fHistNNMix->Project(0,iVariablePair);
   TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
   TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
   // ============================================================================================
@@ -683,10 +683,23 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
     hTemp3->Scale(1./hTemp5->GetEntries());
     hTemp2->Scale(1./hTemp6->GetEntries());
     hTemp4->Scale(1./hTemp6->GetEntries());
-    hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-    hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+ 
+    // normalize in a way that mixed is 1 at (0,0)  --> Jan Fietes method
+    Double_t mixedNorm1 = hTemp1Mix->Integral(1,hTemp1Mix->GetNbinsX());
+    mixedNorm1 /= hTemp1Mix->GetNbinsX();
+    hTemp1Mix->Scale(1./mixedNorm1);
+
+    Double_t mixedNorm2 = hTemp2Mix->Integral(1,hTemp2Mix->GetNbinsX());
+    mixedNorm2 /= hTemp2Mix->GetNbinsX();
+    hTemp2Mix->Scale(1./mixedNorm2);
+
+    Double_t mixedNorm3 = hTemp3Mix->Integral(1,hTemp3Mix->GetNbinsX());
+    mixedNorm3 /= hTemp3Mix->GetNbinsX();
+    hTemp3Mix->Scale(1./mixedNorm3);
+
+    Double_t mixedNorm4 = hTemp4Mix->Integral(1,hTemp4Mix->GetNbinsX());
+    mixedNorm4 /= hTemp4Mix->GetNbinsX();
+    hTemp4Mix->Scale(1./mixedNorm4);
 
     hTemp1->Divide(hTemp1Mix);
     hTemp2->Divide(hTemp2Mix);
@@ -902,10 +915,23 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     hTemp3->Scale(1./hTemp5->GetEntries());
     hTemp2->Scale(1./hTemp6->GetEntries());
     hTemp4->Scale(1./hTemp6->GetEntries());
-    hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-    hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-    hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+
+    // normalize in a way that mixed is 1 at (0,0)  --> Jan Fietes method
+    Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
+    mixedNorm1 /= hTemp1Mix->GetNbinsY()*(hTemp1Mix->GetXaxis()->FindBin(0.01) - hTemp1Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp1Mix->Scale(1./mixedNorm1);
+
+    Double_t mixedNorm2 = hTemp2Mix->Integral(hTemp2Mix->GetXaxis()->FindBin(0-10e-5),hTemp2Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp2Mix->GetNbinsX());
+    mixedNorm2 /= hTemp2Mix->GetNbinsY()*(hTemp2Mix->GetXaxis()->FindBin(0.01) - hTemp2Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp2Mix->Scale(1./mixedNorm2);
+
+    Double_t mixedNorm3 = hTemp3Mix->Integral(hTemp3Mix->GetXaxis()->FindBin(0-10e-5),hTemp3Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp3Mix->GetNbinsX());
+    mixedNorm3 /= hTemp3Mix->GetNbinsY()*(hTemp3Mix->GetXaxis()->FindBin(0.01) - hTemp3Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp3Mix->Scale(1./mixedNorm3);
+
+    Double_t mixedNorm4 = hTemp4Mix->Integral(hTemp4Mix->GetXaxis()->FindBin(0-10e-5),hTemp4Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp4Mix->GetNbinsX());
+    mixedNorm4 /= hTemp4Mix->GetNbinsY()*(hTemp4Mix->GetXaxis()->FindBin(0.01) - hTemp4Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp4Mix->Scale(1./mixedNorm4);
 
     hTemp1->Divide(hTemp1Mix);
     hTemp2->Divide(hTemp2Mix);
@@ -916,6 +942,191 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
     hTemp2->Add(hTemp4,-1.);
 
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+    gHistBalanceFunctionHistogram->Scale(0.5);
+  }
+
+  return gHistBalanceFunctionHistogram;
+}
+
+//____________________________________________________________________//
+TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
+							Double_t psiMin, 
+							Double_t psiMax,
+							Double_t ptTriggerMin,
+							Double_t ptTriggerMax,
+							Double_t ptAssociatedMin,
+							Double_t ptAssociatedMax,
+							AliBalancePsi *bfMix) {
+  //Returns the BF histogram in Delta eta OR Delta phi,
+  //after dividing each correlation function by the Event Mixing one 
+  // (But the division is done here in 2D, this was basically done to check the Integral)
+  //extracted from the 6 AliTHn objects 
+  //(private members) of the AliBalancePsi class.
+  //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
+  //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
+  TString histName = "gHistBalanceFunctionHistogram1D";
+
+  if(!bfMix){
+    AliError("balance function object for event mixing not available");
+    return NULL;
+  }
+
+  // Psi_2
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+
+  // pt trigger
+  if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+  }
+
+  // pt associated
+  if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+  }
+
+
+  // ============================================================================================
+  // the same for event mixing
+  AliTHn *fHistPMix = bfMix->GetHistNp();
+  AliTHn *fHistNMix = bfMix->GetHistNn();
+  AliTHn *fHistPNMix = bfMix->GetHistNpn();
+  AliTHn *fHistNPMix = bfMix->GetHistNnp();
+  AliTHn *fHistPPMix = bfMix->GetHistNpp();
+  AliTHn *fHistNNMix = bfMix->GetHistNnn();
+
+  // Psi_2
+  fHistPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+
+  // pt trigger
+  if((ptTriggerMin != -1.)&&(ptTriggerMax != -1.)) {
+    fHistPMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNMix->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(3)->SetRangeUser(ptTriggerMin,ptTriggerMax);
+  }
+
+  // pt associated
+  if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)) {
+    fHistPNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistPPMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+    fHistNNMix->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax);
+  }
+  // ============================================================================================
+
+
+  //AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
+
+  // Project into the wanted space (1st: analysis step, 2nd: axis)
+  TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
+  TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
+  TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
+  TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
+  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
+  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
+
+  // ============================================================================================
+  // the same for event mixing
+  TH2D* hTemp1Mix = (TH2D*)fHistPNMix->Project(0,1,2);
+  TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
+  TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
+  TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
+  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+  // ============================================================================================
+
+  TH1D *gHistBalanceFunctionHistogram = 0x0;
+  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
+
+    hTemp1->Sumw2();
+    hTemp2->Sumw2();
+    hTemp3->Sumw2();
+    hTemp4->Sumw2();
+    hTemp1Mix->Sumw2();
+    hTemp2Mix->Sumw2();
+    hTemp3Mix->Sumw2();
+    hTemp4Mix->Sumw2();
+
+    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp3->Scale(1./hTemp5->GetEntries());
+    hTemp2->Scale(1./hTemp6->GetEntries());
+    hTemp4->Scale(1./hTemp6->GetEntries());
+
+    // normalize in a way that mixed is 1 at (0,0)  --> Jan Fietes method
+    Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
+    mixedNorm1 /= hTemp1Mix->GetNbinsY()*(hTemp1Mix->GetXaxis()->FindBin(0.01) - hTemp1Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp1Mix->Scale(1./mixedNorm1);
+
+    Double_t mixedNorm2 = hTemp2Mix->Integral(hTemp2Mix->GetXaxis()->FindBin(0-10e-5),hTemp2Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp2Mix->GetNbinsX());
+    mixedNorm2 /= hTemp2Mix->GetNbinsY()*(hTemp2Mix->GetXaxis()->FindBin(0.01) - hTemp2Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp2Mix->Scale(1./mixedNorm2);
+
+    Double_t mixedNorm3 = hTemp3Mix->Integral(hTemp3Mix->GetXaxis()->FindBin(0-10e-5),hTemp3Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp3Mix->GetNbinsX());
+    mixedNorm3 /= hTemp3Mix->GetNbinsY()*(hTemp3Mix->GetXaxis()->FindBin(0.01) - hTemp3Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp3Mix->Scale(1./mixedNorm3);
+
+    Double_t mixedNorm4 = hTemp4Mix->Integral(hTemp4Mix->GetXaxis()->FindBin(0-10e-5),hTemp4Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp4Mix->GetNbinsX());
+    mixedNorm4 /= hTemp4Mix->GetNbinsY()*(hTemp4Mix->GetXaxis()->FindBin(0.01) - hTemp4Mix->GetXaxis()->FindBin(-0.01) + 1);
+    hTemp4Mix->Scale(1./mixedNorm4);
+
+    hTemp1->Divide(hTemp1Mix);
+    hTemp2->Divide(hTemp2Mix);
+    hTemp3->Divide(hTemp3Mix);
+    hTemp4->Divide(hTemp4Mix);
+
+    // now only project on one axis
+    TH1D *h1DTemp1 = NULL;
+    TH1D *h1DTemp2 = NULL;
+    TH1D *h1DTemp3 = NULL;
+    TH1D *h1DTemp4 = NULL;
+    if(!bPhi){
+      h1DTemp1 = (TH1D*)hTemp1->ProjectionX(Form("%s_projX",hTemp1->GetName()));
+      h1DTemp2 = (TH1D*)hTemp2->ProjectionX(Form("%s_projX",hTemp2->GetName()));
+      h1DTemp3 = (TH1D*)hTemp3->ProjectionX(Form("%s_projX",hTemp3->GetName()));
+      h1DTemp4 = (TH1D*)hTemp4->ProjectionX(Form("%s_projX",hTemp4->GetName()));
+    }
+    else{
+      h1DTemp1 = (TH1D*)hTemp1->ProjectionY(Form("%s_projX",hTemp1->GetName()));
+      h1DTemp2 = (TH1D*)hTemp2->ProjectionY(Form("%s_projX",hTemp2->GetName()));
+      h1DTemp3 = (TH1D*)hTemp3->ProjectionY(Form("%s_projX",hTemp3->GetName()));
+      h1DTemp4 = (TH1D*)hTemp4->ProjectionY(Form("%s_projX",hTemp4->GetName()));
+    }
+
+    gHistBalanceFunctionHistogram = (TH1D*)h1DTemp1->Clone(Form("%s_clone",h1DTemp1->GetName()));
+    gHistBalanceFunctionHistogram->Reset();
+    if(!bPhi){
+      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#eta");  
+      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta#eta)");   
+    }
+    else{
+      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta#varphi)");   
+    }
+
+    h1DTemp1->Add(h1DTemp3,-1.);
+    h1DTemp2->Add(h1DTemp4,-1.);
+
+    gHistBalanceFunctionHistogram->Add(h1DTemp1,h1DTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
   }
 

@@ -142,6 +142,14 @@ class AliBalancePsi : public TObject {
 						   Double_t ptAssociatedMin=-1.,
 						   Double_t ptAssociatedMax=-1.,
 						   AliBalancePsi *bfMix=NULL);
+
+  TH1D *GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
+					   Double_t psiMin, Double_t psiMax,
+					   Double_t ptTriggerMin=-1.,
+					   Double_t ptTriggerMax=-1.,
+					   Double_t ptAssociatedMin=-1.,
+					   Double_t ptAssociatedMax=-1.,
+					   AliBalancePsi *bfMix=NULL);
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
