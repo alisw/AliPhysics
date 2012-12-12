@@ -371,7 +371,9 @@ public:
 
   static const AliKFVertex* GetKFVertex() {return fgKFVertex;}
   
-  static const char* GetValueName(Int_t i) { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i]:""; }
+  static const char* GetValueName(Int_t i) { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i][0]:""; }
+  static const char* GetValueLabel(Int_t i) { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i][1]:""; }
+  static const char* GetValueUnit(Int_t i) { return (i>=0&&i<kNMaxValues)?fgkParticleNames[i][2]:""; }
   static UInt_t GetValueType(const char* valname);
   static const Double_t* GetData() {return fgData;}
 
@@ -380,7 +382,7 @@ public:
   
 private:
 
-  static const char* fgkParticleNames[kNMaxValues];  //variable names
+  static const char* fgkParticleNames[kNMaxValues][3];  //variable names
 
   static void FillVarVParticle(const AliVParticle *particle,         Double_t * const values);
   static void FillVarESDtrack(const AliESDtrack *particle,           Double_t * const values);

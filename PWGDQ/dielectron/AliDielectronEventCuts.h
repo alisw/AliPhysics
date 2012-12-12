@@ -20,10 +20,12 @@
 //#############################################################
 
 #include <AliAnalysisCuts.h>
+#include "TF1.h"
 
 class AliTriggerAnalysis;
 class AliESDVertex;
 class AliAODVertex;
+
 
 class AliDielectronEventCuts : public AliAnalysisCuts {
 public:
@@ -42,6 +44,7 @@ public:
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   void SetCentralityRange(Double_t min, Double_t max) { fCentMin=min; fCentMax=max; }
+  void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   //
   //Analysis cuts interface
   //
@@ -69,11 +72,15 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
+  TF1*     fparMean;                // parametrization of the mean values
+  TF1*     fparSigma;               // parametrization of the sigmas
+  Double_t fcutSigma;               // number of absolut sigmas inclusion
+
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
   
-  ClassDef(AliDielectronEventCuts,1)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,2)         // Dielectron EventCuts
 };
 
 

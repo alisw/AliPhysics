@@ -217,12 +217,15 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
   
   // set axis titles if not specified 
-  if(!strlen(title)) title=Form(";%s;%s", AliDielectronVarManager::GetValueName(valTypeX),
-				(valTypeP!=999 ?
-				 (option.Contains("s",TString::kIgnoreCase) ?
-				  Form("RMS(%s)",AliDielectronVarManager::GetValueName(valTypeP)) :
-				  Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)) ) :
-				 Form("#%ss",histClass)) );
+  TString tit = "";
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeX), AliDielectronVarManager::GetValueUnit(valTypeX));
+  if( valTypeP!=999 && option.Contains("s",TString::kIgnoreCase) )
+    tit += Form(";RMS(%s) %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
+  if( valTypeP!=999 && !option.Contains("s",TString::kIgnoreCase) )
+    tit += Form(";#LT%s#GT %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
+  if( valTypeP==999 )
+    tit += Form(";#%ss",histClass);
+  if(!strlen(title)) title=tit.Data();
 
   if (isOk){
     if(valTypeP==999)
@@ -280,12 +283,16 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   // set axis titles if not specified 
-  if(!strlen(title)) title=Form(";%s;%s;%s", AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY),
-				(valTypeP!=999 ?
-				 (option.Contains("s",TString::kIgnoreCase) ?
-				  Form("RMS(%s)",AliDielectronVarManager::GetValueName(valTypeP)) :
-				  Form("#LT%s#GT",AliDielectronVarManager::GetValueName(valTypeP)) ) :
-				 Form("#%ss",histClass)) );
+  TString tit = "";
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeX), AliDielectronVarManager::GetValueUnit(valTypeX));
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeY), AliDielectronVarManager::GetValueUnit(valTypeY));
+  if( valTypeP!=999 && option.Contains("s",TString::kIgnoreCase) )
+    tit += Form(";RMS(%s) %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
+  if( valTypeP!=999 && !option.Contains("s",TString::kIgnoreCase) )
+    tit += Form(";#LT%s#GT %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
+  if( valTypeP==999 )
+    tit += Form(";#%ss",histClass);
+  if(!strlen(title)) title=tit.Data();
 
   if (isOk){
     if(valTypeP==999) {
@@ -353,7 +360,11 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   // set axis titles if not specified
-  if(!strlen(title)) title=Form(";%s;%s;%s", AliDielectronVarManager::GetValueName(valTypeX), AliDielectronVarManager::GetValueName(valTypeY), AliDielectronVarManager::GetValueName(valTypeZ));
+  TString tit = "";
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeX), AliDielectronVarManager::GetValueUnit(valTypeX));
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeY), AliDielectronVarManager::GetValueUnit(valTypeY));
+  tit += Form(";%s %s", AliDielectronVarManager::GetValueLabel(valTypeZ), AliDielectronVarManager::GetValueUnit(valTypeZ));
+  if(!strlen(title)) title=tit.Data();
 
   if (isOk){
     if(valTypeP==999)
