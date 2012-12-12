@@ -894,7 +894,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality < 0 && !fCompareCentralities)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fSelectParticleSpecies, kTRUE);
+  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+  //Printf("Accepted %d tracks", tracks->GetEntries());
   
   // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
   Bool_t reject = kFALSE;
@@ -922,18 +923,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  // correlate particles with...
+  TObjArray* tracksCorrelate = 0;
+  if (fSelectParticleSpecies != -1)
+    tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fSelectParticleSpecies, kTRUE);
+  
   // reference multiplicity
   Int_t referenceMultiplicity = -1;
   if (fESD)
     referenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(fESD);
 
   ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
-  
-  // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
-  TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
-  delete tracks;
-  
-  //Printf("Accepted %d tracks", tracks->GetEntries());
   
   const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
@@ -951,12 +951,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality >= 0)
   {
     if (!fSkipStep6)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight, kTRUE, kFALSE, 0, 0.02, kTRUE);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, 0.02, kTRUE);
     
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
     
     if (fTwoTrackEfficiencyCut > 0)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, 0, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
   }
 
   // fill second time with SPD centrality
@@ -964,8 +964,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   {
     centrality = centralityObj->GetCentralityPercentile("CL1");
     if (centrality >= 0 && !fSkipStep6)
-      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracksClone, 0, weight, kTRUE, kFALSE, 0, 0.02, kTRUE);
+      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, 0.02, kTRUE);
   }
+  
+  // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
+  TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
+  delete tracks;
   
   if (fFillMixed)
   {
@@ -1019,11 +1023,21 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     }
     
     // ownership is with the pool now
-    pool->UpdatePool(tracksClone);
+    if (tracksCorrelate)
+    {
+      pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelate));
+      delete tracksClone;
+    }
+    else
+      pool->UpdatePool(tracksClone);
     //pool->PrintInfo();
   }
   else
+  {
     delete tracksClone;
+    if (tracksCorrelate)
+      delete tracksCorrelate;
+  }
 }
 
 TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tracks)
