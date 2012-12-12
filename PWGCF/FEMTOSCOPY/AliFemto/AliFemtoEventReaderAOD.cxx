@@ -52,8 +52,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fReadMC(0),
   fReadV0(0),
   fUsePreCent(0),
-  fNoCentrality(0),
+  fEstEventMult(kCentrality),
   fAODpidUtil(0),
+  fAODheader(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -79,8 +80,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fReadMC(0),
   fReadV0(0),
   fUsePreCent(0),
-  fNoCentrality(0),
+  fEstEventMult(kCentrality),
   fAODpidUtil(0),
+  fAODheader(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -101,9 +103,10 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fFilterBit = aReader.fFilterBit;
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
+  fAODheader = aReader.fAODheader;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
-  fNoCentrality = aReader.fNoCentrality;
+  fEstEventMult = aReader.fEstEventMult;
   fUsePreCent = aReader.fUsePreCent;
 }
 //__________________
@@ -125,7 +128,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
 {
   // assignment operator
   if (this == &aReader)
-    return *this;
+   return *this;
 
   fInputFile = aReader.fInputFile;
   fFileName  = aReader.fFileName;
@@ -141,10 +144,11 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fFilterBit = aReader.fFilterBit;
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
+  fAODheader = aReader.fAODheader;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
-  fNoCentrality = aReader.fNoCentrality;
+  fEstEventMult = aReader.fEstEventMult;
 
   return *this;
 }
@@ -300,14 +304,20 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   int nofTracks=0;  //number of reconstructed tracks in event
 
   // Check to see whether the additional info exists
-//   if (fPWG2AODTracks)
-//     nofTracks=fPWG2AODTracks->GetEntries();
-//   else
-    nofTracks=fEvent->GetNumberOfTracks();
+  //   if (fPWG2AODTracks)
+  //     nofTracks=fPWG2AODTracks->GetEntries();
+  //   else
+  nofTracks=fEvent->GetNumberOfTracks();
+  
+  AliEventplane *ep = fEvent->GetEventplane();
+  if (ep) {
+    tEvent->SetEP(ep);
+    tEvent->SetReactionPlaneAngle(ep->GetEventplane("Q"));
+  }
 
   AliCentrality *cent = fEvent->GetCentrality();
 
-  if (!fNoCentrality && cent && fUsePreCent) {
+  if (!fEstEventMult && cent && fUsePreCent) {
     if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
 	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
       {
@@ -476,11 +486,11 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	double impact[2];
 	double covimpact[3];
 	if (aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-	  if(impact[0]<2.4 && TMath::Abs(impact[1]+fV1[2])<3.2)
-	    if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+	  if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
+	    //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
 	      if (aodtrack->Chi2perNDF() < 4.0) 
 		if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20) 
-		  if (aodtrack->GetTPCNcls() > 50)
+		  if (aodtrack->GetTPCNcls() > 70)
 		    if (aodtrack->Eta() < 0.8)
 		      tNormMult++;
 
@@ -623,7 +633,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
-  if (!fNoCentrality) {
+
+  if (fEstEventMult==kCentrality) {
     //  AliCentrality *cent = fEvent->GetCentrality();
     if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
     //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
@@ -635,9 +646,17 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
     }
   }
-  else {
+  else if(fEstEventMult==kGlobalCount){
     tEvent->SetNormalizedMult(tNormMult); //particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
   }
+  else if(fEstEventMult==kReference)
+    {
+      tEvent->SetNormalizedMult(fAODheader->GetRefMultiplicity());
+    }
+  else if(fEstEventMult==kTPCOnlyRef)
+    {
+      tEvent->SetNormalizedMult(fAODheader->GetTPConlyRefMultiplicity());
+    }
 
   if (mcP) delete [] motherids;
 
@@ -1020,6 +1039,11 @@ void AliFemtoEventReaderAOD::SetReadV0(unsigned char a)
   fReadV0 = a;
 }
 
+void AliFemtoEventReaderAOD::SetUseMultiplicity(EstEventMult aType)
+{
+  fEstEventMult = aType;
+}
+
 AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel)
 {
   if (aLabel < 0) return 0;
@@ -1090,6 +1114,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
+
+    tTOF -= fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
   }
 
   tFemtoTrack->SetTofExpectedTimes(tTOF-aodpid[2], tTOF-aodpid[3], tTOF-aodpid[4]);
@@ -1158,19 +1184,24 @@ void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min; fCentRange[1] = max;
   fUsePreCent = 1; 
-  fNoCentrality = 0;
+  fEstEventMult = kCentrality;
 }
 
 void AliFemtoEventReaderAOD::SetNoCentrality(bool anocent)
 {
-  fNoCentrality = anocent;
-  if (fNoCentrality) fUsePreCent = 0;
+  if(anocent==false) {fEstEventMult=kCentrality;}
+  else {fEstEventMult=kReference; fUsePreCent = 0; }
 }
 
 void AliFemtoEventReaderAOD::SetAODpidUtil(AliAODpidUtil *aAODpidUtil)
 {
   fAODpidUtil = aAODpidUtil;
   //  printf("fAODpidUtil: %x\n",fAODpidUtil);
+}
+
+void AliFemtoEventReaderAOD::SetAODheader(AliAODHeader *aAODheader)
+{
+  fAODheader = aAODheader;
 }
 
 

@@ -24,16 +24,16 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fMass(0.13957)
 {
   // Default constructor
-    fYPt = new TH2D("YPt", "Rapidity vs Pt",              140, -1.4, 1.4, 100, 0.0, 5.0);
+  fYPt = new TH2D("YPt", "Rapidity vs Pt",              140, -1.4, 1.4, 100, 0.0, 5.0);
   fYPhi = new TH2D("YPhi", "Rapidity vs Phi",           140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-    fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.0, 5.0, 100, -TMath::Pi(), TMath::Pi());
+  fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.0, 5.0, 100, -TMath::Pi(), TMath::Pi());
   fEtaPhi = new TH2D("EtaPhi", "Pseudorapidity vs Phi", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-    fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 5.0);
+  fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 5.0);
   // fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
-    // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 5.0)
-    ;
-    fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
-    fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+  // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 5.0)
+  ;
+  fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+  fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, float aMass):
@@ -150,6 +150,7 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
   float tEnergy = ::sqrt(aTrack->P().Mag2()+fMass*fMass);
+  if(tEnergy==abs(aTrack->P().z())) tEnergy+=0.001;
   float tRapidity = 0.5*::log((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z()));
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
   float tEta = -TMath::Log(TMath::Tan(aTrack->P().Theta()/2.0));
@@ -192,8 +193,8 @@ void AliFemtoCutMonitorParticleYPt::Write()
 TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
 {
   TList *tOutputList = new TList();
-    // tOutputList->Add(fYPt);
-    // tOutputList->Add(fYPhi);
+  tOutputList->Add(fYPt);
+  tOutputList->Add(fYPhi);
   tOutputList->Add(fPtPhi);
   tOutputList->Add(fEtaPhi);
   tOutputList->Add(fEtaPt);
