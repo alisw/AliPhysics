@@ -39,7 +39,7 @@ TEveGeoShape* geom_gentle_muon(Bool_t updateScene = kTRUE) {
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_muon.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
-  gEve->AddGlobalElement(gsre);
+  //gEve->AddGlobalElement(gsre);
   f.Close();
 
   gsre->SetRnrSelf(kFALSE);
