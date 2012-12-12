@@ -79,7 +79,7 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fConstrainTrack(kFALSE),
+fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
 fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
@@ -152,6 +152,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
 	}
   
   delete fESDtrackCuts;
+  delete fESDtrackComplementaryCuts;
   delete fTriggerAnalysis;
   
   //  Pointers not owned, done by the analysis frame
@@ -373,6 +374,9 @@ void AliCaloTrackReader::Init()
     TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
   }
 
+  if(!fESDtrackCuts)
+    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
+
 }
 
 //_______________________________________
@@ -416,7 +420,8 @@ void AliCaloTrackReader::InitParameters()
   fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
   
-  fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks 
+  fESDtrackCuts = 0;
+  fESDtrackComplementaryCuts = 0;
   
   fConstrainTrack = kFALSE ; // constrain tracks to vertex
   
@@ -1063,6 +1068,7 @@ void AliCaloTrackReader::FillInputCTS()
     fTrackBCEvent   [i] = 0;
     fTrackBCEventCut[i] = 0;
   }
+  
   for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
@@ -1079,29 +1085,44 @@ void AliCaloTrackReader::FillInputCTS()
     {
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
       
-      if(esdTrack && fESDtrackCuts->AcceptTrack(esdTrack))
+      if(esdTrack)
       {
-        track->GetPxPyPz(pTrack) ;
-
-        if(fConstrainTrack)
+        if(fESDtrackCuts->AcceptTrack(esdTrack))
         {
+          track->GetPxPyPz(pTrack) ;
+
+          if(fConstrainTrack)
+          {
+            if(esdTrack->GetConstrainedParam())
+            {
+              const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
+              esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+              esdTrack->GetConstrainedPxPyPz(pTrack);
+            }
+            else continue;
+            
+          } // use constrained tracks
+          
+          if(fSelectSPDHitTracks)
+          {//Not much sense to use with TPC only or Hybrid tracks
+            if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
+          }
+        }
+        // Complementary track to global : Hybrids (make sure that the previous selection is for Global)
+        else  if(fESDtrackComplementaryCuts && fESDtrackComplementaryCuts->AcceptTrack(esdTrack))
+        {
+          // constrain the track
           if(esdTrack->GetConstrainedParam())
           {
-            const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
-            esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-            esdTrack->GetConstrainedPxPyPz(pTrack);
+            esdTrack->Set(esdTrack->GetConstrainedParam()->GetX(),esdTrack->GetConstrainedParam()->GetAlpha(),esdTrack->GetConstrainedParam()->GetParameter(),esdTrack->GetConstrainedParam()->GetCovariance());
+          
+            track->GetPxPyPz(pTrack) ;
+
           }
           else continue;
-          
-        } // use constrained tracks
-        
-        if(fSelectSPDHitTracks)
-        {//Not much sense to use with TPC only or Hybrid tracks
-          if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
         }
+        else continue;
       }
-      else continue;
-      
     } // ESD
     else if(fDataType==kAOD)
     {
@@ -1659,7 +1680,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
       return kTRUE;
       
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1)
     {
       //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
       return kFALSE;
@@ -1680,4 +1701,16 @@ void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts)
   fESDtrackCuts = cuts ; 
   
 }		  
+
+//_________________________________________________________________________
+void  AliCaloTrackReader::SetTrackComplementaryCuts(AliESDtrackCuts * cuts)
+{
+  // Set Track cuts for complementary tracks (hybrids)
+  
+  if(fESDtrackComplementaryCuts) delete fESDtrackComplementaryCuts ;
+  
+  fESDtrackComplementaryCuts = cuts ;
+  
+}
+
 
