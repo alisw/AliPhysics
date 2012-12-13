@@ -40,6 +40,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
+  Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -97,6 +98,10 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fClusEtMcPt;                //!cluster et x mc-pt
   TH2F        *fClusMcDetaDphi;            //!delta-eta x delta-phi(reco-mc)
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
+  TH2F        *fMcPtInConeBG;              //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template
+  TH2F        *fMcPtInConeSBG;             //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range
+  TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template no UE sub
+  TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range no UE sub
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 

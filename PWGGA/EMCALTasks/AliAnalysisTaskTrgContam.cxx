@@ -39,12 +39,12 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam() :
   AliAnalysisTaskSE(), 
   fCaloClusters(0),
   fEMCalCells(0),
+  fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fPeriod("LHC11c"),
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
-  fGeom(0x0),
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
@@ -115,7 +115,7 @@ void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
   
-  fGeom = AliEMCALGeometry::GetInstance(fGeoName);
+  fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
