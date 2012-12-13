@@ -69,6 +69,7 @@ ClassImp(AliEbyEHigherMomentsTask)
 AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
 : AliAnalysisTaskSE( name ),
   fListOfHistos(0),
+  fAnalysisType("AOD"),
   fCentralityEstimator("V0M"),
   fVxMax(3.),
   fVyMax(3.),
