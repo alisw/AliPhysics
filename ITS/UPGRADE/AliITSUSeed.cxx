@@ -75,7 +75,7 @@ Float_t AliITSUSeed::GetChi2GloNrm() const
 Int_t AliITSUSeed::Compare(const TObject* obj)  const
 {
   // compare clusters accodring to specific mode
-  const AliITSUSeed* sd = dynamic_cast<const AliITSUSeed*>(obj);
+  const AliITSUSeed* sd = (const AliITSUSeed*)obj;
   const Float_t kTol = 1e-5;
   if (!IsKilled() && sd->IsKilled()) return -1;
   if ( IsKilled() &&!sd->IsKilled()) return  1;
@@ -89,7 +89,7 @@ Int_t AliITSUSeed::Compare(const TObject* obj)  const
 Bool_t AliITSUSeed::IsEqual(const TObject* obj)  const
 {
   // compare clusters accodring to specific mode
-  const AliITSUSeed* sd = dynamic_cast<const AliITSUSeed*>(obj);
+  const AliITSUSeed* sd = (const AliITSUSeed*)obj;
   const Float_t kTol = 1e-5;
   if (IsKilled() != sd->IsKilled()) return kFALSE;
   return Abs(GetChi2Glo() - sd->GetChi2Glo())<kTol;

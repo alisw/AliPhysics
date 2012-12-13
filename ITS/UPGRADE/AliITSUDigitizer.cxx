@@ -106,7 +106,7 @@ Bool_t AliITSUDigitizer::Init()
 }
 
 //______________________________________________________________________
-void AliITSUDigitizer::Digitize(Option_t* opt)
+void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
 {
   // Main digitization function. 
   //

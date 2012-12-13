@@ -605,7 +605,7 @@ void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
 }
 
 //_____________________________________________________________________
-Int_t AliITSU::Hits2Clusters(TTree *hTree, TTree *cTree)
+Int_t AliITSU::Hits2Clusters(TTree */*hTree*/, TTree */*cTree*/)
 {
   /* RS: TODO
   // This function creates ITS clusters
@@ -703,8 +703,8 @@ void AliITSU::AddSimDigit(Int_t branch, AliITSdigit *d)
 }
 
 //______________________________________________________________________
-void AliITSU::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,Int_t *tracks,
-			    Int_t *hits,Float_t *charges, Int_t sigexpanded)
+void AliITSU::AddSimDigit(Int_t branch,Float_t /*phys*/,Int_t *digits,Int_t *tracks,
+			  Int_t *hits,Float_t */*charges*/, Int_t /*sigexpanded*/)
 {
   // Add a simulated digit to the list.
   // Inputs:
@@ -750,7 +750,7 @@ AliLoader* AliITSU::MakeLoader(const char* topfoldername)
 }
 
 //______________________________________________________________________
-Bool_t AliITSU::Raw2SDigits(AliRawReader* rawReader)
+Bool_t AliITSU::Raw2SDigits(AliRawReader* /*rawReader*/)
 {
   AliError("Not ready");
   return kFALSE;

@@ -82,6 +82,11 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fNSigmaRoadY(fgkNSigmaRoadY)
   ,fNSigmaRoadZ(fgkNSigmaRoadZ)
      //
+  ,fTPCITSWallRMin(fgkTPCITSWallRMin)
+  ,fTPCITSWallRMax(fgkTPCITSWallRMax)
+  ,fTPCITSWallZSpanH(fgkTPCITSWallZSpanH)
+  ,fTPCITSWallMaxStep(fgkTPCITSWallMaxStep)
+     //
   ,fTanLorentzAngle(0)
   ,fSigmaY2(0)
   ,fSigmaZ2(0)
