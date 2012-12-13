@@ -96,7 +96,7 @@ inline EvtGammaMatrix operator*(const EvtGammaMatrix& g1,const EvtGammaMatrix& g
   return EvtGammaMatrix(g1)*=g2;
 }
 
-inline EvtGammaMatrix operator/(const EvtGammaMatrix& g, const double d)
+inline EvtGammaMatrix operator/(const EvtGammaMatrix& g, double d)
 {
     return g * EvtComplex(1/d,0);
 }

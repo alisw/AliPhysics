@@ -45,7 +45,7 @@ public:
   EvtVector3C();
   EvtVector3C(const EvtComplex&,const EvtComplex&,const EvtComplex&);
   virtual ~EvtVector3C();
-  inline void set(const int,const EvtComplex&);
+  inline void set(int,const EvtComplex&);
   inline void set(const EvtComplex&,const EvtComplex&,const EvtComplex&);
   inline void set(double,double,double);
   inline EvtVector3C& operator*=(const EvtComplex& c);
@@ -72,7 +72,7 @@ inline EvtVector3C::EvtVector3C(const EvtVector3R& v1){
 
 } 
 
-inline void EvtVector3C::set(const int i,const EvtComplex& c){
+inline void EvtVector3C::set(int i,const EvtComplex& c){
 
   v[i]=c;
   

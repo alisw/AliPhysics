@@ -147,7 +147,7 @@ EvtTensor3C EvtTensor3C::operator*=(const EvtComplex& c) {
 }
 
 
-EvtTensor3C EvtTensor3C::operator*=(const double c){
+EvtTensor3C EvtTensor3C::operator*=(double c){
 
   int i,j;
   

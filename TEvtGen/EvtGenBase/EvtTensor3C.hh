@@ -41,10 +41,10 @@ class EvtTensor3C {
 				 double phi,double theta,double ksi);
   friend EvtTensor3C operator*(
 	          const EvtComplex& c,const EvtTensor3C& t2);
-  friend EvtTensor3C operator*(const double d,const EvtTensor3C& t2);
+  friend EvtTensor3C operator*(double d,const EvtTensor3C& t2);
   friend EvtTensor3C operator*(
                   const EvtTensor3C& t2,const EvtComplex& c);
-  friend EvtTensor3C operator*(const EvtTensor3C& t2,const double d);
+  friend EvtTensor3C operator*(const EvtTensor3C& t2,double d);
   friend EvtTensor3C operator+(
                   const EvtTensor3C& t1,const EvtTensor3C& t2);
   friend EvtTensor3C operator-(
@@ -76,7 +76,7 @@ public:
 
   EvtTensor3C operator+=(const EvtTensor3C& t2);
   EvtTensor3C operator-=(const EvtTensor3C& t2);
-  EvtTensor3C operator*=(const double d);
+  EvtTensor3C operator*=(double d);
   EvtTensor3C operator*=(const EvtComplex& c);
   EvtTensor3C conj() const;
   EvtVector3C cont1(const EvtVector3C& v) const; 
@@ -102,7 +102,7 @@ inline EvtTensor3C operator*(const EvtTensor3C& t2,const EvtComplex& c){
   return EvtTensor3C(t2)*=c;
 }
 
-inline EvtTensor3C operator*(const EvtTensor3C& t2,const double d){
+inline EvtTensor3C operator*(const EvtTensor3C& t2,double d){
   return EvtTensor3C(t2)*=d;
 }
 

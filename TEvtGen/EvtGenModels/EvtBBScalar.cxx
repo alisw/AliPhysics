@@ -110,7 +110,7 @@ void EvtBBScalar::setKnownBaryonTypes(const EvtId& baryon) {
     }
 }
 
-const double EvtBBScalar::baryonF1F2(double t) {
+double EvtBBScalar::baryonF1F2(double t) {
     // check for known form factors for combination of baryons
     if (_baryonCombination.test(Lambda) and _baryonCombination.test(Proton)) {
         return -sqrt(1.5) * G_p(t);
@@ -131,7 +131,7 @@ const double EvtBBScalar::baryonF1F2(double t) {
     }
 }
 
-const double EvtBBScalar::formFactorFit(double t, const vector<double>& params) {
+double EvtBBScalar::formFactorFit(double t, const vector<double>& params) {
     static const double gamma = 2.148;
     static const double Lambda_0 = 0.3;
     double result = 0;
@@ -142,20 +142,20 @@ const double EvtBBScalar::formFactorFit(double t, const vector<double>& params) 
 }
 
 
-const double EvtBBScalar::G_p(double t) {
+double EvtBBScalar::G_p(double t) {
     const vector<double> v_x(x, x+5);
     return formFactorFit(t, v_x);
 }
 
 
-const double EvtBBScalar::G_n(double t) {
+double EvtBBScalar::G_n(double t) {
     const vector<double> v_y(y, y+2);
     return -formFactorFit(t, v_y);
 }
 
 
 
-const double EvtBBScalar::baryon_gA(double t) {
+double EvtBBScalar::baryon_gA(double t) {
     // check for known form factors for combination of baryons
     if (_baryonCombination.test(Lambda) and _baryonCombination.test(Proton)) {
         return -1/sqrt(6.) * (D_A(t) + 3*F_A(t));
@@ -177,7 +177,7 @@ const double EvtBBScalar::baryon_gA(double t) {
 }
 
 
-const double EvtBBScalar::baryon_gP(double t) {
+double EvtBBScalar::baryon_gP(double t) {
     // check for known form factors for combination of baryons
     if (_baryonCombination.test(Lambda) and _baryonCombination.test(Proton)) {
         return -1/sqrt(6.) * (D_P(t) + 3*F_P(t));
@@ -198,7 +198,7 @@ const double EvtBBScalar::baryon_gP(double t) {
     }
 }
 
-const double EvtBBScalar::baryon_fS(double t) {
+double EvtBBScalar::baryon_fS(double t) {
     // check for known form factors for combination of baryons
     if (_baryonCombination.test(Lambda) and _baryonCombination.test(Proton)) {
         return -1/sqrt(6.) * (D_S(t) + 3*F_S(t));
@@ -220,45 +220,45 @@ const double EvtBBScalar::baryon_fS(double t) {
 }
 
         
-const double EvtBBScalar::D_A(double t) {
+double EvtBBScalar::D_A(double t) {
     const double d_tilde[] = {x[0]-1.5*y[0], -478};
     const vector<double> v_d_tilde(d_tilde, d_tilde+2);
     return formFactorFit(t, v_d_tilde);
 }
 
 
-const double EvtBBScalar::F_A(double t) {
+double EvtBBScalar::F_A(double t) {
     const double f_tilde[] = {2./3*x[0]+0.5*y[0], -478};
     const vector<double> v_f_tilde(f_tilde, f_tilde+2);
     return formFactorFit(t, v_f_tilde);
 }
 
 
-const double EvtBBScalar::D_P(double t) {
+double EvtBBScalar::D_P(double t) {
     const double d_bar[] = {1.5*y[0]* _massRatio, /*-952*/0};
     const vector<double> v_d_bar(d_bar, d_bar+2);
     return formFactorFit(t, v_d_bar);
 }
 
 
-const double EvtBBScalar::F_P(double t) {
+double EvtBBScalar::F_P(double t) {
     const double f_bar[] = {(x[0]-0.5*y[0]) * _massRatio, /*-952*/0};
     const vector<double> v_f_bar(f_bar, f_bar+2);
     return formFactorFit(t, v_f_bar);
 }
 
 
-const double EvtBBScalar::D_S(double t) {
+double EvtBBScalar::D_S(double t) {
     return -1.5 * _massRatio * G_n(t);
 }
 
 
-const double EvtBBScalar::F_S(double t) {
+double EvtBBScalar::F_S(double t) {
     return (G_p(t) + 0.5*G_n(t)) * _massRatio;
 }
 
 
-const double EvtBBScalar::baryon_hA(double t) {
+double EvtBBScalar::baryon_hA(double t) {
     return (1/_massRatio*baryon_gP(t)-baryon_gA(t))*pow(_baryonMassSum, 2)/t;
 }
 
@@ -342,7 +342,7 @@ void EvtBBScalar::initProbMax()
 }
 
 // Form factor f1 for B-pi transition
-const double EvtBBScalar::B_pi_f1(double t)
+double EvtBBScalar::B_pi_f1(double t)
 {
     FormFactor f = _f1Map[_scalarType];
     double mv2 = f.mV*f.mV;
@@ -350,7 +350,7 @@ const double EvtBBScalar::B_pi_f1(double t)
 }
 
 // Form factor f0 for B-pi transition
-const double EvtBBScalar::B_pi_f0(double t)
+double EvtBBScalar::B_pi_f0(double t)
 {
     FormFactor f = _f0Map[_scalarType];
     double mv2 = f.mV*f.mV;

@@ -88,28 +88,28 @@ private:
     std::bitset<nBaryons> _baryonCombination;
     void setKnownBaryonTypes(const EvtId& baryon);
     
-    const double B_pi_f1(double t);
-    const double B_pi_f0(double t);
-    const double baryonF1F2(double t);
-    const double G_p(double t);
-    const double G_n(double t);
+    double B_pi_f1(double t);
+    double B_pi_f0(double t);
+    double baryonF1F2(double t);
+    double G_p(double t);
+    double G_n(double t);
     
-    const double baryon_gA(double t);
-    const double baryon_hA(double t);
-    const double baryon_gP(double t);
-    const double baryon_fS(double t);
+    double baryon_gA(double t);
+    double baryon_hA(double t);
+    double baryon_gP(double t);
+    double baryon_fS(double t);
 
-    const double D_A(double t);
-    const double F_A(double t);
-    const double D_P(double t);
-    const double F_P(double t);
-    const double D_S(double t);
-    const double F_S(double t);
+    double D_A(double t);
+    double F_A(double t);
+    double D_P(double t);
+    double F_P(double t);
+    double D_S(double t);
+    double F_S(double t);
 
     // (mB1 - mB2)/(mq1 - mq1)
     double _massRatio;
     double _baryonMassSum;
-    const double formFactorFit(double t, const std::vector<double>& params);
+    double formFactorFit(double t, const std::vector<double>& params);
 
     static const EvtComplex const_B;
     static const EvtComplex const_C;
@@ -137,7 +137,7 @@ private:
     amp_C_pseudoscalarPart(const EvtDiracSpinor& b1Pol, const EvtDiracSpinor& b2Pol, double t);
 
     // initialize phasespace and calculate the amplitude for one (i=0,1) state of the photon
-    EvtComplex calcAmpliude(const EvtParticle* p, const unsigned int polState);
+    EvtComplex calcAmplitude(const EvtParticle* p, unsigned int polState);
 };
 
 #endif
