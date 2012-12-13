@@ -54,6 +54,9 @@ private:
   
   AliMpDCSNamer* DCSNamer() const;
 
+  AliMUONTrackerHV(const AliMUONTrackerHV& rhs); // not implemented on purpose
+  AliMUONTrackerHV& operator=(const AliMUONTrackerHV& rhs); // not implemented on purpose
+  
 private:
   std::vector<int> fRunList; // input run list
   TString fOCDBPath; // ocdb path (raw:// by default)
