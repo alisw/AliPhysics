@@ -506,11 +506,11 @@ AliCDBManager::DataType AliCDBStorage::GetDataType() const {
 //_____________________________________________________________________________
 void AliCDBStorage::SetMirrorSEs(const char* mirrors) {
 // if the current storage is not of "alien" type, just issue a warning
-// AliCDBGrid implements its own SetMirrorSEs method
+// AliCDBGrid implements its own SetMirrorSEs method, classes for other storage types do not
 
         TString storageType = GetType();
 	if(storageType != "alien"){
-	    AliWarning(Form("The current storage is of type \"%s\" and cannot handle SEs. Setting skipped!",storageType.Data()));
+	    AliWarning(Form("The current storage is of type \"%s\". Setting of SEs to \"%s\" skipped!",storageType.Data(),mirrors));
 	    return;
 	}
 	AliError("We should never get here!! AliCDBGrid must have masked this virtual method!");
@@ -520,7 +520,7 @@ void AliCDBStorage::SetMirrorSEs(const char* mirrors) {
 //_____________________________________________________________________________
 const char* AliCDBStorage::GetMirrorSEs() const {
 // if the current storage is not of "alien" type, just issue a warning
-// AliCDBGrid implements its own GetMirrorSEs method
+// AliCDBGrid implements its own GetMirrorSEs method, classes for other storage types do not
 
         TString storageType = GetType();
 	if(storageType != "alien"){

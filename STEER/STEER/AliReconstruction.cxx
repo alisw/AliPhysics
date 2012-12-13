@@ -1777,6 +1777,10 @@ void AliReconstruction::SlaveBegin(TTree*)
   // ESD layout template in CDB
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBEntry* hltESDConfig = man->Get("HLT/Calib/esdLayout");
+  if(!hltESDConfig){
+      AliError(Form("Error getting \"HLT/Calib/esdLayout\""));
+      return;
+  }
   AliESDEvent* pESDLayout=dynamic_cast<AliESDEvent*>(hltESDConfig->GetObject());
   if (pESDLayout) {
       // init all internal variables from the list of objects
