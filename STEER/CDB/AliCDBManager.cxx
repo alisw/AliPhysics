@@ -1283,7 +1283,7 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, const char* mirrors, DataType type
 	AliDebug(2,Form("Storing object into storage: %s", aStorage->GetURI().Data()));
 
 	TString strMirrors(mirrors);
-	Bool_t result = "kFALSE";
+	Bool_t result = kFALSE;
 	if(!strMirrors.IsNull() && !strMirrors.IsWhitespace())
 	    result = aStorage->Put(entry, mirrors, type);
 	else
