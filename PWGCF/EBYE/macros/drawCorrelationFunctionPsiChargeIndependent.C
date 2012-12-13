@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 9;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100"};
+const Int_t numberOfCentralityBins = 12;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 const Int_t gRebin = 1;
 
@@ -343,9 +343,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     bMixed->SetHistNnn(hNNMixed);
   }
 
-  TH2D *gHist[4];
+  TH2D *gHist[6];
   
-  TCanvas *c[4];
+  TCanvas *c[6];
   TString histoTitle, pngName;
   
   // all charges together
@@ -471,6 +471,31 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
     pngName += ".PositiveNegative.png";
     //c[3]->SaveAs(pngName.Data());
+
+    //Correlation function subtracted awayside (+-)
+    gHist[4] = dynamic_cast<TH2D *>(gHist[3]->Clone()); // this will be used to imitate twice the away-side
+    gHist[4]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHist[4]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
+    gHist[5] = dynamic_cast<TH2D *>(gHist[3]->Clone()); // this will be the subtracted one
+    gHist[5]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    gHist[5]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
+
+    //prepare the double away side histo
+    for(Int_t ix = 0; ix < gHist[4]->GetNbinsX(); ix++ ){
+      for(Int_t iy = 0; iy < gHist[4]->GetNbinsX(); iy++ ){
+	if(iy<gHist[4]->GetNbinsY()/2) gHist[4]->SetBinContent(ix+1,iy+1,gHist[4]->GetBinContent(ix+1,iy+1+gHist[4]->GetNbinsY()/2));
+      }
+    }
+    gHist[5]->Add(gHist[4],-1);
+
+    c[4] = new TCanvas("c3","",0,300,600,500);
+    c[4]->SetFillColor(10); 
+    c[4]->SetHighLightColor(10);
+    gHist[5]->DrawCopy("surf1fb");
+    gPad->SetTheta(30); // default is 30
+    //gPad->SetPhi(130); // default is 30
+    gPad->SetPhi(-60); // default is 30
+    gPad->Update();    
   }
 
   //Write to output file
@@ -494,20 +519,22 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   if(listBFMixed) {
     gHist[2]->SetName("gHistMixed"); gHist[2]->Write();
 
-    gHist[3]->SetName("gHistCorrelationFunctions"); gHist[3]->Write();
+    gHist[3]->SetName("gHistCorrelationFunctions");gHist[3]->Write();
+    gHist[4]->SetName("gHistCorrelationFunctionsAwaySide"); gHist[4]->Write();
+    gHist[5]->SetName("gHistCorrelationFunctionsSubtracted"); gHist[5]->Write();
   }
   newFile->Close();
 
-  // some cleaning
-  for(Int_t i = 0; i < 4; i++){
+  // // some cleaning
+  // for(Int_t i = 0; i < 6; i++){
 
-    if(!listBFShuffled && i == 1) continue;
-    if(!listBFMixed && (i == 2 || i == 3)) continue;
+  //   if(!listBFShuffled && i == 1) continue;
+  //   if(!listBFMixed && (i == 2 || i == 3 || i == 4 || i == 5)) continue;
 
-    if(gHist[i]) delete gHist[i];
+  //   if(gHist[i]) delete gHist[i];
     
-    if(c[i]) delete c[i];
-  }
+  //   if(c[i]) delete c[i];
+  // }
 
   delete hP;
   delete hN;
