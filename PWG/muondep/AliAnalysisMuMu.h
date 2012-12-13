@@ -291,6 +291,10 @@ public:
   static void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
 
 private:
+  AliAnalysisMuMu(const AliAnalysisMuMu& rhs); // not implemented on purpose
+  AliAnalysisMuMu& operator=(const AliAnalysisMuMu& rhs); // not implemented on purpose
+  
+private:
 
   static TString ExpandPathName(const char* file);
 
