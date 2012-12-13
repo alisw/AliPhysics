@@ -374,7 +374,7 @@ void AliGenDPMjet::Generate()
 
 
 	      
-	      Bool_t tFlag = (fTrackIt && (ks == 1));
+	      Bool_t tFlag = (fTrackIt && (ks==1 || ks==-1 || ks==1001));
 	      PushTrack(tFlag, imo, kf, 
 			p[0], p[1], p[2], p[3], 
 			origin[0], origin[1], origin[2], tof,

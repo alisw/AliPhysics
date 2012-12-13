@@ -53,7 +53,7 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons(AliCollisionGeometry* geo,
 //
 // Number of collisions
 
-    Int_t nu  = geo->NwN() +  geo->NNw();
+    Int_t nu = geo->NN() + geo->NwN() + geo->NNw(); 
 
 // Mean number of gray nucleons 
 
