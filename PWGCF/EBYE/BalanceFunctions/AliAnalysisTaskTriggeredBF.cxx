@@ -779,10 +779,10 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t vCharge;
-  Double_t vEta;
-  Double_t vPhi;
-  Double_t vPt;
+  Double_t vCharge = 0.;
+  Double_t vEta    = 0.;
+  Double_t vPhi    = 0.;
+  Double_t vPt     = 0.;
   
   //------------------------------------------------
   // MAIN LAMBDA LOOP STARTS HERE (basically a copy of AliAnalysisTaskExtractV0AOD)

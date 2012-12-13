@@ -648,8 +648,8 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
   TH1D* hTemp2Mix = (TH1D*)fHistNPMix->Project(0,iVariablePair);
   TH1D* hTemp3Mix = (TH1D*)fHistPPMix->Project(0,iVariablePair);
   TH1D* hTemp4Mix = (TH1D*)fHistNNMix->Project(0,iVariablePair);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
+  //TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
+  //TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
   // ============================================================================================
 
   TH1D *gHistBalanceFunctionHistogram = 0x0;
@@ -890,8 +890,8 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
   TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
   TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
   TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+  //TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+  //TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
   // ============================================================================================
 
   TH2D *gHistBalanceFunctionHistogram = 0x0;
@@ -1051,8 +1051,8 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   TH2D* hTemp2Mix = (TH2D*)fHistNPMix->Project(0,1,2);
   TH2D* hTemp3Mix = (TH2D*)fHistPPMix->Project(0,1,2);
   TH2D* hTemp4Mix = (TH2D*)fHistNNMix->Project(0,1,2);
-  TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
-  TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
+  //TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,1);
+  //TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,1);
   // ============================================================================================
 
   TH1D *gHistBalanceFunctionHistogram = 0x0;
