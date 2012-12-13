@@ -2,6 +2,7 @@ class LMEECutLib {
 
   public:
 	static  enum LMMECutSet {
+   		kPbPb2011NoPID,
    		kPbPb2011TPCandTOF,
 		kPbPb2011TPC, //TOF required, more relaxed cut on TPC
 		kPbPb2011TPCandTOFwide, //TOF required, more relaxed cut on TPC
@@ -43,6 +44,7 @@ class LMEECutLib {
 	AliDielectronEventCuts* GetEventCuts(Int_t cutSet) {
 	  AliDielectronEventCuts* eventCuts = 0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -87,6 +89,7 @@ class LMEECutLib {
 	AliDielectronTrackRotator* GetTrackRotator(Int_t cutSet) {
 	  AliDielectronTrackRotator* trackRotator = 0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -116,6 +119,7 @@ class LMEECutLib {
 		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 		  break;
 */
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -208,6 +212,11 @@ class LMEECutLib {
 	  pMin->AddCut(AliDielectronVarManager::kPt,.2,5.);
 
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
+		  AliDielectronCutGroup* cgSecondTrackFilterNoPID = new AliDielectronCutGroup("cgNoPID","cgNoPID",AliDielectronCutGroup::kCompAND);
+		  cgSecondTrackFilterNoPID->AddCut(pTPC);
+		  anaCuts= cgSecondTrackFilterNoPID;
+		  break;
 		case kPbPb2011TPCandTOF :
 		  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 		  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
@@ -259,6 +268,7 @@ class LMEECutLib {
 	AliAnalysisCuts* GetPIDCutsPre(Int_t cutSet) {
 	  AliAnalysisCuts* anaCuts=0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -299,6 +309,7 @@ class LMEECutLib {
                   pairCutsV->AddCut(AliDielectronVarManager::kM,0.15,100.,kTRUE);
                   pairCuts = pairCutsV;
                   break;
+		case kPbPb2011NoPID:
                 case kPbPb2011TPCandTOF :
                 case kPbPb2011TPC :
                 case kPbPb2011TPCandTOFwide :
@@ -339,6 +350,7 @@ class LMEECutLib {
 		  pairCuts = new AliDielectronVarCuts("InvMass","InvMass > 150 MeV");
 		  pairCuts->AddCut(AliDielectronVarManager::kM,0.15,100.,kTRUE);
 		  break;
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -354,6 +366,7 @@ class LMEECutLib {
 	AliAnalysisCuts* GetESDTrackCutsAna(Int_t cutSet) {
 	  AliESDtrackCuts* esdTrackCutsH = 0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -387,6 +400,7 @@ class LMEECutLib {
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet) {
 	  AliDielectronCutGroup* trackCuts=0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPC :
 		case kPbPb2011TPCandTOFwide :
@@ -424,6 +438,7 @@ class LMEECutLib {
 	AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet) {
 	  AliESDtrackCuts* trackCuts=0x0;
 	  switch (cutSet) {
+		case kPbPb2011NoPID:
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPCorTOF  :
 		case kpp2010TPCandTOF :
