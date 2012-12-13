@@ -5,26 +5,30 @@ AliPHOSTenderTask* AddAODPHOSTender()
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPHOSPi0Flow", "No analysis manager to connect to");
+    ::Error("AddAODPHOSTender", "No analysis manager to connect to");
     return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPHOSPi0Flow", "This task requires an input event handler");
+    ::Error("AddAODPHOSTender", "This task requires an input event handler");
     return NULL;
   }
 
-  AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask("AODPHOSTender") ;
-  mgr->AddTask(tenderTask);
+  // input must be AOD
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if( "AOD" != inputDataType )
+    ::Error("AddAODPHOSTender", Form("AOD input data required, input data is of type: %s", inputDataType.Data()));
 
+  // create and add task
+  AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask("AODPHOSTender") ;
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply("PHOStender");
   PHOSSupply->SetReconstructionPass(1) ;
   tenderTask->SetPHOSTenderSupply(PHOSSupply);
 
-  AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer();
+  mgr->AddTask(tenderTask);
 
   // Connect input/output
-  mgr->ConnectInput(tenderTask , 0, cinput);
+  mgr->ConnectInput(tenderTask , 0, mgr->GetCommonInputContainer());
 
   return tenderTask;
 }
