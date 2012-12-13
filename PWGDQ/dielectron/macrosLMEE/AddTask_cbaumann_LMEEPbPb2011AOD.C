@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE){
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
@@ -74,6 +74,12 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t se
   AliDielectron *lowmass6=ConfigLMEEPbPb2011AOD(6,hasMC,bESDANA);
   task->AddDielectron(lowmass6);
   printf("add: %s\n",lowmass6->GetName());
+
+if (PIDbaseline) {
+	AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
+	task->AddDielectron(lowmass7);
+	printf("add: %s\n",lowmass7->GetName());
+}
 
   mgr->AddTask(task);
 

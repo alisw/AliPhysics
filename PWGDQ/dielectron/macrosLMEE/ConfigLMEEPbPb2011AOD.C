@@ -4,7 +4,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFCentnoTOF;NoPIDNoPairing");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -74,6 +74,11 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
+  else if (cutDefinition==7) {
+	selectedPID = LMEECutLib::kPbPb2011NoPID;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kFALSE;
+  }
   else Semi{
 	cout << " =============================== " << endl;
 	cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -88,6 +93,10 @@ AliDielectron* ConfigLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, B
 
   //switch off KF PArticle:
   die->SetUseKF(kFALSE);
+
+  if (selectedPID == LMEECutLib::kPbPb2011NoPID) {
+	  die->SetNoPairing();
+   }
 
 	if (rejectionStep) {
 		die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
