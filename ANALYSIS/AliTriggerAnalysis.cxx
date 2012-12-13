@@ -1788,7 +1788,7 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* 
   Float_t  tvdc[5] ;
   for (Int_t ii=0; ii<5; ii++)
     tvdc[ii] = esdT0->GetTVDC(ii);
-  Int_t trig=esdT0->GetT0Trig();
+  //  Int_t trig=esdT0->GetT0Trig();
   //  cout<<" T0 trig "<<trig<<endl;	
 
   if(fillHists) fHistT0->Fill(tvdc[0]);
