@@ -19,6 +19,7 @@ class AliGenBox : public AliGenerator
   AliGenBox();
   AliGenBox(Int_t npart);
   virtual ~AliGenBox() {}
+  virtual void GenerateN(Int_t ntimes);
   virtual void Generate();
   virtual void Init();
   virtual void SetEtaRange(Float_t etamin, Float_t etamax)

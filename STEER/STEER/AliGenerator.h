@@ -53,6 +53,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetNumberParticles(Int_t npart=100) {fNpart=npart;}
     virtual Int_t NumberParticles() const {return fNpart;}
     virtual void SetThetaRange(Float_t thetamin=0, Float_t thetamax=180);
+    virtual void GenerateN(Int_t ntimes);
     virtual void Generate()=0;
     virtual void SetParentWeight(Float_t wgt) {fParentWeight=wgt;}
     virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    

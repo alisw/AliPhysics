@@ -233,7 +233,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	    }
 	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
 	  
-	  for (Int_t i = 0; i < ntimes; i++) gen->Generate();
+	  gen->GenerateN(ntimes);
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
 	}

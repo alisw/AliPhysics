@@ -35,6 +35,7 @@ public:
 		Int_t    (*IpPara)(TRandom*)           );
      
     virtual ~AliGenParam();
+    virtual void GenerateN(Int_t ntimes);
     virtual void Generate();
     virtual void Init();
     // select particle type

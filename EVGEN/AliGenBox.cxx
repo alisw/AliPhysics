@@ -62,10 +62,19 @@ AliGenBox::AliGenBox(Int_t npart)
 
 //_____________________________________________________________________________
 
-void AliGenBox::Generate()
+void AliGenBox::Generate() {
+  //
+  // Generate one trigger (fNpart particles)
+  //
+  GenerateN(1);
+}
+ 
+//_____________________________________________________________________________
+void AliGenBox::GenerateN(Int_t ntimes)
 {
   //
-  // Generate one trigger
+  // Generate ntimes triggers
+  //   total ntimes*fNpart particles
   //
   
     Float_t polar[3]= {0,0,0};
@@ -89,7 +98,8 @@ void AliGenBox::Generate()
 
     Double_t m = TDatabasePDG::Instance()->GetParticle(fIpart)->Mass();
 
-    for(i=0;i<fNpart;i++) {
+    Int_t mult = fNpart*ntimes;
+    for(i=0;i<mult;i++) {
 	Rndm(random,3);
 	
 	if (TestBit(kYRange)) {
@@ -148,7 +158,7 @@ void AliGenBox::Generate()
 
     AliGenEventHeader* header = new AliGenEventHeader("BOX");
     header->SetPrimaryVertex(fVertex);
-    header->SetNProduced(fNpart);
+    header->SetNProduced(mult);
     header->SetInteractionTime(fTime);
     
  // Passes header either to the container or to gAlice

@@ -273,8 +273,16 @@ void AliGenParam::Init()
 //____________________________________________________________
 void AliGenParam::Generate()
 {
+  // 
+  // Generate 1 event (see Generate(Int_t ntimes) for details
   //
-  // Generate 'npart' of light and heavy mesons (J/Psi, upsilon or phi, Pion,
+  GenerateN(1);
+}
+//____________________________________________________________
+void AliGenParam::GenerateN(Int_t ntimes)
+{
+  //
+  // Generate ntimes*'npart' light and heavy mesons (J/Psi, upsilon or phi, Pion,
   // Kaons, Etas, Omegas) and Baryons (proton, antiprotons, neutrons and 
   // antineutrons in the the desired theta, phi and momentum windows; 
   // Gaussian smearing on the vertex is done if selected. 
@@ -322,7 +330,8 @@ void AliGenParam::Generate()
   // Generating fNpart particles
   fNprimaries = 0;
   
-  while (ipa<fNpart) {
+  Int_t nGen = fNpart*ntimes;
+  while (ipa<nGen) {
       while(1) {
       //
       // particle type 
