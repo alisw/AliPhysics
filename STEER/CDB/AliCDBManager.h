@@ -135,6 +135,8 @@ class AliCDBManager: public TObject {
 	Int_t GetEndRunLHCPeriod();
 	TString GetLHCPeriod();
 
+	Bool_t DiffObjects(const char *cdbFile1, const char *cdbFile2) const;
+
 protected:
 
 	static TString fgkCondUri;	// URI of the Conditions data base folder

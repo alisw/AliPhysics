@@ -35,6 +35,8 @@
 #include <TKey.h>
 #include <TUUID.h>
 #include <TGrid.h>
+#include "TMessage.h"
+#include "TObject.h"
 
 ClassImp(AliCDBParam)
 
@@ -1551,6 +1553,73 @@ const char* AliCDBManager::GetDataTypeName(DataType type)
      }
      return 0;
 
+}
+
+//______________________________________________________________________________________________
+Bool_t AliCDBManager::DiffObjects(const char *cdbFile1, const char *cdbFile2) const
+{
+    // Compare byte-by-byte the objects contained in the CDB entry in two different files,
+    // whose name is passed as input
+    // Return value:
+    //   kTRUE - in case the content of the OCDB object (persistent part) is exactly the same 
+    //   kFALSE - otherwise
+
+    TString f1Str(cdbFile1);
+    TString f2Str(cdbFile2);
+    if (!gGrid && ( f1Str.BeginsWith("alien://") || f2Str.BeginsWith("alien://") ))
+	    TGrid::Connect("alien://");
+
+    TFile * f1 = TFile::Open(cdbFile1);
+    if (!f1){
+	Printf("Cannot open file \"%s\"",cdbFile1);
+	return kFALSE;
+    }
+    TFile * f2 = TFile::Open(cdbFile2);
+    if (!f2){
+	Printf("Cannot open file \"%s\"",cdbFile2);
+	return kFALSE;
+    }
+
+    AliCDBEntry * entry1 = (AliCDBEntry*)f1->Get("AliCDBEntry");
+    if (!entry1){
+	Printf("Cannot get CDB entry from file \"%s\"",cdbFile1);
+	return kFALSE; 
+    }
+    AliCDBEntry * entry2 = (AliCDBEntry*)f2->Get("AliCDBEntry");
+    if (!entry2){
+	Printf("Cannot get CDB entry from file \"%s\"",cdbFile2);
+	return kFALSE; 
+    }
+
+    // stream the two objects in the buffer of two TMessages
+    TObject* object1 = entry1->GetObject();
+    TObject* object2 = entry2->GetObject();
+    TMessage * file1 = new TMessage(TBuffer::kWrite);
+    file1->WriteObject(object1);
+    Int_t size1 = file1->Length();  
+    TMessage * file2 = new TMessage(TBuffer::kWrite);
+    file2->WriteObject(object2);
+    Int_t size2 = file2->Length(); 
+    if (size1!=size2){
+	Printf("Problem 2:  OCDB entry of different size (%d,%d)",size1,size2);
+	return kFALSE;
+    }
+    
+    // if the two buffers have the same size, check that they are the same byte-by-byte
+    Int_t countDiff=0;
+    char* buf1 = file1->Buffer();
+    char* buf2 = file2->Buffer();
+    //for (Int_t i=0; i<size1; i++)    if (file1->Buffer()[i]!=file2->Buffer()[i]) countDiff++;
+    for(Int_t i=0; i<size1; i++)
+	if (buf1[i]!=buf2[i]) countDiff++;
+
+    if (countDiff>0){
+	Printf("The CDB objects differ by %d bytes.", countDiff);
+	return kFALSE;
+    }
+
+    Printf("The CDB objects are the same in the two files.");
+    return kTRUE;
 }
 
 //______________________________________________________________________________________________
