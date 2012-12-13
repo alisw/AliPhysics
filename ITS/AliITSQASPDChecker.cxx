@@ -335,16 +335,6 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 
  // some style settings
  gStyle->SetOptStat(10);  
- const Int_t NRGBs = 5;
- const Int_t NCont = 255;
-
- Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
- Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
- Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
- Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
- TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
- gStyle->SetNumberContours(NCont);
-
  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
   //printf("-------------------------> %i \n", esIndex);
   if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
@@ -440,9 +430,6 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
      hist->SetObjectStat(0);
      hist->SetOption("colz") ;
      hist->DrawCopy("colz");   
-     TList *l = hist->GetListOfFunctions(); 
-     //l->Print();
-     // gPad->GetListOfPrimitives()->Print();
      TH2F *h2 =  (TH2F*)(gPad->GetListOfPrimitives()->At(0)); 
      for(Int_t i=0; i<h2->GetListOfFunctions()->GetEntries(); i++){
        TString cname = h2->GetListOfFunctions()->At(i)->ClassName();
