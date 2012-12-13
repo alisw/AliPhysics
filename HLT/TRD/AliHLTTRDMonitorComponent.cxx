@@ -111,11 +111,11 @@ int AliHLTTRDMonitorComponent::DoInit(int argc, const char** argv) {
   do {
 
     fTrackingData = new AliTRDonlineTrackingDataContainer();
-    fTrackingData->SetGtuPtMultiplier(-1.); // this component does not know about the B-field direction
     if (!fTrackingData) {
       iResult = -ENOMEM;
       break;
     }
+    fTrackingData->SetGtuPtMultiplier(-1.); // this component does not know about the B-field direction
 
     fHistArray = new TObjArray(25);
     if(!fHistArray)
@@ -351,7 +351,7 @@ int AliHLTTRDMonitorComponent::ProcessTRDData(){
     UInt_t numHists = fHistArray->GetEntries();
     for (UInt_t iHist = 0; iHist < numHists; ++iHist)
       if (fHistArray->At(iHist))
-	dynamic_cast<TH1*>(fHistArray->At(iHist))->Reset();
+	((TH1*) (fHistArray->At(iHist)))->Reset();
   }
 
   // tracklets

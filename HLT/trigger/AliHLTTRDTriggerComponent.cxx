@@ -757,7 +757,7 @@ int AliHLTTRDTriggerComponent::MatchTRDTracksESD(){
     UInt_t numHists = fHistArray->GetEntries();
     for (UInt_t iHist = 0; iHist < numHists; ++iHist)
       if (fHistArray->At(iHist))
-	dynamic_cast<TH1*>(fHistArray->At(iHist))->Reset();
+	((TH1*) (fHistArray->At(iHist)))->Reset();
   }
 
   int result = 1;
@@ -1051,7 +1051,7 @@ int AliHLTTRDTriggerComponent::MatchTRDTracks(){
     UInt_t numHists = fHistArray->GetEntries();
     for (UInt_t iHist = 0; iHist < numHists; ++iHist)
       if (fHistArray->At(iHist))
-	dynamic_cast<TH1*>(fHistArray->At(iHist))->Reset();
+	((TH1*) (fHistArray->At(iHist)))->Reset();
   }
 
   int result = 1;
