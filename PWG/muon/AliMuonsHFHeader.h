@@ -54,8 +54,8 @@ class AliMuonsHFHeader : public TNamed {
 
   void CreateHistograms(TList *list);
   void FillHistosEvnH(TList *list);
-  void FillHistosMuon(TList *list, AliMuonInfoStoreRD* infoStore, Int_t src=-1);
-  void FillHistosDimu(TList *list, AliDimuInfoStoreRD* infoStore, Int_t src=-1);
+  void FillHistosMuon(TList *list, AliMuonInfoStoreRD* infoStore, Int_t src=0);
+  void FillHistosDimu(TList *list, AliDimuInfoStoreRD* infoStore, Int_t src=0);
 
   static const char* StdBranchName()             { return fgkStdBranchName.Data();          }
   static void SetAnaMode(Int_t anaMode=0)        { fgAnaMode=anaMode;                       }
