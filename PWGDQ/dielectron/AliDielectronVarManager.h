@@ -2029,10 +2029,22 @@ inline Bool_t AliDielectronVarManager::GetDCA(const AliAODTrack *track, Double_t
   Bool_t ok=kFALSE;
   if(fgEvent) {
     Double_t covd0z0[3];
-    AliAODTrack copy(*track);
+    //AliAODTrack copy(*track);
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+    d0z0[0]=-999.;
+    d0z0[1]=-999.;
+    //printf("This method can be used only for propagation inside the beam pipe \n");
+    return kFALSE;
+    }
+
+
     AliAODVertex *vtx =(AliAODVertex*)(fgEvent->GetPrimaryVertex());
     Double_t fBzkG = fgEvent->GetMagneticField(); // z componenent of field in kG
-    ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+    //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
   if(!ok){
     d0z0[0]=-999.;
