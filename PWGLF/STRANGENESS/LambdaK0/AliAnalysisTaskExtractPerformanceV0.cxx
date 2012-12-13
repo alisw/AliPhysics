@@ -183,6 +183,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fTreeVariableMCPVy(0),
   fTreeVariableMCPVz(0),
 
+  fTreeVariableIsNonInjected(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -227,6 +229,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimRawPtVsYVsMultNonInjLambda(0),
+   f3dHistPrimRawPtVsYVsMultNonInjAntiLambda(0),
+   f3dHistPrimRawPtVsYVsMultNonInjK0Short(0),
    f3dHistPrimRawPtVsYVsMultMCLambda(0),
    f3dHistPrimRawPtVsYVsMultMCAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultMCK0Short(0),
@@ -349,6 +354,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fTreeVariableMCPVy(0),
   fTreeVariableMCPVz(0),
 
+  fTreeVariableIsNonInjected(0),
+
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -393,6 +401,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimRawPtVsYVsMultNonInjLambda(0),
+   f3dHistPrimRawPtVsYVsMultNonInjAntiLambda(0),
+   f3dHistPrimRawPtVsYVsMultNonInjK0Short(0),
    f3dHistPrimRawPtVsYVsMultMCLambda(0),
    f3dHistPrimRawPtVsYVsMultMCAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultMCK0Short(0),
@@ -545,6 +556,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableMCPVy",&fTreeVariableMCPVy,"fTreeVariableMCPVy/F");
         fTree->Branch("fTreeVariableMCPVz",&fTreeVariableMCPVz,"fTreeVariableMCPVz/F");
 
+        fTree->Branch("fTreeVariableIsNonInjected",&fTreeVariableIsNonInjected,"fTreeVariableIsNonInjected/O"); //O for bOOlean... 
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -770,6 +782,21 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
    if(! f3dHistPrimRawPtVsYVsMultK0Short) {
       f3dHistPrimRawPtVsYVsMultK0Short = new TH3F( "f3dHistPrimRawPtVsYVsMultK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHistV0->Add(f3dHistPrimRawPtVsYVsMultK0Short);
+   }
+
+//---> Non-injected particles
+
+   if(! f3dHistPrimRawPtVsYVsMultNonInjLambda) {
+      f3dHistPrimRawPtVsYVsMultNonInjLambda = new TH3F( "f3dHistPrimRawPtVsYVsMultNonInjLambda", "Pt_{lambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{lambda} (GeV/c); Y_{#Lambda} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultNonInjLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsMultNonInjAntiLambda) {
+      f3dHistPrimRawPtVsYVsMultNonInjAntiLambda = new TH3F( "f3dHistPrimRawPtVsYVsMultNonInjAntiLambda", "Pt_{antilambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{antilambda} (GeV/c); Y_{#Lambda} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultNonInjAntiLambda);
+   }
+   if(! f3dHistPrimRawPtVsYVsMultNonInjK0Short) {
+      f3dHistPrimRawPtVsYVsMultNonInjK0Short = new TH3F( "f3dHistPrimRawPtVsYVsMultNonInjK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimRawPtVsYVsMultNonInjK0Short);
    }
 
 //--- 3D Histo (Pt, Y, MultiplicityMC)  
@@ -1147,6 +1174,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 //----- End Loop on Stack ------------------------------------------------------------
 
 
+   Bool_t lStackNatural = kTRUE;
 //----- Loop on Lambda, K0Short ----------------------------------------------------------------
    for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++) 
    {// This is the begining of the loop on tracks
@@ -1192,8 +1220,15 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          //Use Physical Primaries only for filling PrimRaw Histograms!
          if ( lMCstack->IsPhysicalPrimary(iCurrentLabelStack)!=kTRUE ) continue;
 
+          lStackNatural = lMCevent->IsFromBGEvent(iCurrentLabelStack); //Is it? 
+          if (!lStackNatural){
+            if (!(lCurrentParticleForLambdaCheck->GetFirstMother()<0)) 
+              {lStackNatural = kTRUE;} // because there are primaries (ALICE definition) not produced in the collision
+          }
+
          if( lPdgcodeCurrentPart == 3122 ){
             f3dHistPrimRawPtVsYVsMultLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            if(lStackNatural){f3dHistPrimRawPtVsYVsMultNonInjLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);}
             f3dHistPrimRawPtVsYVsMultMCLambda->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
             f3dHistPrimRawPtVsYVsVertexZLambda->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
             if( TMath::Abs( lCurrentParticleForLambdaCheck->Eta() )<1.2 && lPtCurrentPart>2 ){
@@ -1202,11 +1237,13 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          }
          if( lPdgcodeCurrentPart == -3122 ){
             f3dHistPrimRawPtVsYVsMultAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            if(lStackNatural){f3dHistPrimRawPtVsYVsMultNonInjAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);}
             f3dHistPrimRawPtVsYVsMultMCAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
             f3dHistPrimRawPtVsYVsVertexZAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
          }
          if( lPdgcodeCurrentPart == 310 ){
             f3dHistPrimRawPtVsYVsMultK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            if(lStackNatural){f3dHistPrimRawPtVsYVsMultNonInjK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);}
             f3dHistPrimRawPtVsYVsMultMCK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lNumberOfCharged);
             f3dHistPrimRawPtVsYVsVertexZK0Short->Fill(lPtCurrentPart, lRapCurrentPart, mcPrimaryVtx.At(2));
          }
@@ -1645,6 +1682,12 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          //Set tree variables
          fTreeVariablePID   = pThisV0->GetPdgCode(); //PDG Code
          fTreeVariablePtMC  = pThisV0->Pt(); //Perfect Pt
+
+          fTreeVariableIsNonInjected = lMCevent->IsFromBGEvent(lblMotherPosV0Dghter); //Is it? 
+          if (!fTreeVariableIsNonInjected){
+            if (!(pThisV0->GetFirstMother()<0)) 
+              {fTreeVariableIsNonInjected = kTRUE;} // because there are primaries (ALICE definition) not produced in the collision
+          }
 
          //Set Variables for later filling
          //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the 

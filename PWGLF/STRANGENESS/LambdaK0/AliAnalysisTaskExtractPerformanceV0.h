@@ -159,6 +159,8 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Float_t fTreeVariableMCPVy; //!
   Float_t fTreeVariableMCPVz; //!
 
+  Bool_t fTreeVariableIsNonInjected; //!
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
@@ -206,6 +208,10 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimRawPtVsYVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimRawPtVsYVsMultK0Short;    //! K0Short
+
+   TH3F      *f3dHistPrimRawPtVsYVsMultNonInjLambda;     //! Non-injected Lambda
+   TH3F      *f3dHistPrimRawPtVsYVsMultNonInjAntiLambda; //! Non-injected AntiLambda
+   TH3F      *f3dHistPrimRawPtVsYVsMultNonInjK0Short;    //! Non-injected K0Short
 
    TH3F      *f3dHistPrimRawPtVsYVsMultMCLambda;     //! Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultMCAntiLambda; //! AntiLambda
