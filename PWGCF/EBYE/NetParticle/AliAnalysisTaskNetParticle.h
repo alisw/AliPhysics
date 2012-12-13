@@ -131,7 +131,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
    * ---------------------------------------------------------------------------------
    */
   
-  AliAnalysisNetParticleHelper       *fHelper;  //! Helper class
+  AliAnalysisNetParticleHelper       *fHelper;  // Helper class
   AliAnalysisNetParticleEffCont      *fEffCont; //! Efficiency and Contamination class
   AliAnalysisNetParticleDCA          *fDCA;     //! DCA class
   AliAnalysisNetParticleDistribution *fDist;    //! Distributions class
