@@ -627,7 +627,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
     // Background subtraction-------------------------------------------------------------------
-    if(GetPlugin(kNonPhotonicElectron) && fBackgroundSubtraction){
+    if(GetPlugin(kNonPhotonicElectron)){
       fBackgroundSubtraction->SetMCEvent(fMCEvent);
     }
     //------------------------------------------------------------------------------------------

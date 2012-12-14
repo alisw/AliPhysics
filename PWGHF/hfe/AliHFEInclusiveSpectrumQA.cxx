@@ -289,10 +289,9 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
     efficiencyparametrized = (TF1 *) fListOfResult->UncheckedAt(kPEfficiency);
   }
 
- if((typeeff==kV0 || typeeff==kMC) && (!afterE || !beforeE || !efficiencyDproj)) return;
- if(typeeff==kParametrized && (!afterE || !beforeE || !efficiencyparametrized)) return;
+ if(!afterE || !beforeE) return;
 
-  SetStyle();
+ SetStyle();
 
   TCanvas * cEfficiency = new TCanvas(AliHFEInclusiveSpectrumQA::fgkNameCanvas[typeeff],AliHFEInclusiveSpectrumQA::fgkNameCanvas[typeeff],1000,700);
   cEfficiency->Divide(2,1);
@@ -328,18 +327,20 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
   cEfficiency->cd(2);
   gPad->SetTicks();
   if((typeeff==kV0 || typeeff==kMC)) {
-    efficiencyDproj->SetTitle("");
-    efficiencyDproj->SetStats(0);
-    efficiencyDproj->GetYaxis()->SetTitleOffset(1.5);
-    efficiencyDproj->GetYaxis()->SetRangeUser(0.0,1.0);
-    efficiencyDproj->GetYaxis()->SetTitle("Efficiency");
-    efficiencyDproj->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
-    efficiencyDproj->GetXaxis()->SetRangeUser(0.0,fPtMax);
-    efficiencyDproj->SetMarkerStyle(25);
-    efficiencyDproj->Draw();
+    if(efficiencyDproj) {
+      efficiencyDproj->SetTitle("");
+      efficiencyDproj->SetStats(0);
+      efficiencyDproj->GetYaxis()->SetTitleOffset(1.5);
+      efficiencyDproj->GetYaxis()->SetRangeUser(0.0,1.0);
+      efficiencyDproj->GetYaxis()->SetTitle("Efficiency");
+      efficiencyDproj->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+      efficiencyDproj->GetXaxis()->SetRangeUser(0.0,fPtMax);
+      efficiencyDproj->SetMarkerStyle(25);
+      efficiencyDproj->Draw();
+    }
   }
   if(typeeff==kParametrized) {
-    efficiencyparametrized->Draw();
+    if(efficiencyparametrized) efficiencyparametrized->Draw();
   }
   
   if(fWriteToFile) {

@@ -344,7 +344,8 @@ void AliHFEsmearDCA::GetImproveITSImpactParameters(AliVTrack *track, Double_t &d
 //  track->SetP(p,kTRUE);
 
   AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
-  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+  if(!esdevent) return;
+  //const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
    // recalculate primary vertex for peri. and pp
    AliVertexerTracks vertexer(fEvent->GetMagneticField());
    vertexer.SetITSMode();
@@ -362,7 +363,8 @@ void AliHFEsmearDCA::GetImproveITSImpactParameters(AliVTrack *track, Double_t &d
    vertexer.SetVtxStart(diamond);
    delete diamond; diamond=NULL;
  //----------------------------------------------------
-   vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
+   const AliVVertex *vtxESDSkip = (const AliVVertex *) vertexer.FindPrimaryVertex(fEvent);   
+   //vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
 
    // Getting the DCA
    // Propagation always done on a working copy to not disturb the track params of the original track

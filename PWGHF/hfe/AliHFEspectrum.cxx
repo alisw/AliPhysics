@@ -3815,10 +3815,12 @@ void AliHFEspectrum::UnfoldBG(AliCFDataGrid* const bgsubpectrum){
   //AliCFContainer *mcContainer = GetContainer(kMCContainerMC);
   if(!mcContainer){
     AliError("MC Container not available");
+    return;
   }
 
   if(!fCorrelation){
     AliError("No Correlation map available");
+    return;
   }
 
   // Data 

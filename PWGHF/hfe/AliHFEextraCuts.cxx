@@ -1140,7 +1140,7 @@ const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliESDEvent *es
   // The output vertex is created with "new". 
   //
 
-  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+  //const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
 
   AliVertexerTracks vertexer(fEvent->GetMagneticField());
   vertexer.SetITSMode();
@@ -1159,7 +1159,7 @@ const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliESDEvent *es
   vertexer.SetVtxStart(diamond);
   delete diamond; diamond=NULL;
 
-  vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
+  const AliVVertex *vtxESDSkip = (const AliVVertex *) vertexer.FindPrimaryVertex(fEvent);
 
   return vtxESDSkip;
 }
