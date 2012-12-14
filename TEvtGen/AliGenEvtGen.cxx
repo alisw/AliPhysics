@@ -156,7 +156,7 @@ void AliGenEvtGen::Generate()
          }
   //select trackable particle  
   if (np >1) {
-  TParticle* iparticle =  (TParticle *) particles->At(0);//parent particle
+    TParticle* iparticle =  0;//(TParticle *) particles->At(0);//parent particle
    for (int i = 1; i<np ; i++) { 
      iparticle = (TParticle*) particles->At(i);
      Int_t ks = iparticle->GetStatusCode();
