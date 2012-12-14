@@ -48,7 +48,7 @@ class AliFemtoPicoEvent{
 public:
   AliFemtoPicoEvent();
   AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent);
-  ~AliFemtoPicoEvent();
+  virtual ~AliFemtoPicoEvent();
 
   AliFemtoPicoEvent& operator=(const AliFemtoPicoEvent& aPicoEvent);
 
