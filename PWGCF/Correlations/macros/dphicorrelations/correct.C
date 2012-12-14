@@ -1729,6 +1729,8 @@ void ProfileMultiplicity(const char* fileName = "PWG4_JetTasksOutput.root")
 
 void SetupRanges(void* obj)
 {
+  if (!obj)
+    return;
   ((AliUEHistograms*) obj)->SetEtaRange(0, 0);
 //   ((AliUEHistograms*) obj)->SetEtaRange(-0.99, 0.99); Printf("WARNING: Setting eta Range!");
   ((AliUEHistograms*) obj)->SetPtRange(gpTMin, gpTMax);
@@ -7572,7 +7574,7 @@ Double_t GetEtaCut(TTree* analysisSettings)
   return etaCut;
 }
 
-void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, const char* fileNamepp, const char* fileNamepp2, const char* outputFile = "dphi_corr.root")
+void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 0, const char* fileNamepp = 0, const char* fileNamepp2 = 0, const char* outputFile = "dphi_corr.root")
 {
   loadlibs();
   
@@ -7650,12 +7652,22 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 //   hMixed3 = (AliUEHistograms*) hMixed->Clone();
   
   TList* list2 = 0;
-  AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, &list2);
-  hMixed2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, 0, kTRUE);
+  AliUEHistograms* h2 = 0;
+  AliUEHistograms* hMixed2 = 0;
+  if (fileNamepp)
+  {
+    h2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, &list2);
+    hMixed2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, 0, kTRUE);
+  }
 
   TList* list3 = 0;
-  AliUEHistograms* h3 = (AliUEHistograms*) GetUEHistogram(fileNamepp2, &list3);
-  hMixed3 = (AliUEHistograms*) GetUEHistogram(fileNamepp2, 0, kTRUE);
+  AliUEHistograms* h3 = 0;
+  AliUEHistograms* hMixed3 = 0;
+  if (fileNamepp2)
+  {
+    h3 = (AliUEHistograms*) GetUEHistogram(fileNamepp2, &list3);
+    hMixed3 = (AliUEHistograms*) GetUEHistogram(fileNamepp2, 0, kTRUE);
+  }
 
   //   h->GetUEHist(2)->SetGetMultCache();
 //   hMixed->GetUEHist(2)->SetGetMultCache();
@@ -7688,38 +7700,40 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
   Printf("Setting eta cut to %f", etaCut);
   h->SetTrackEtaCut(etaCut);
 
-  tree = (TTree*) list2->FindObject("UEAnalysisSettings");
-  if (tree)
+  if (list2)
   {
-    Double_t etaCut = GetEtaCut(tree);
-    Printf("Setting eta cut to %f", etaCut);
-    h2->SetTrackEtaCut(etaCut);
-  }
-  else
-  {
-    Double_t etaCut = 0.9;
-    Printf("WARNING: Setting eta cut to %f without checking", etaCut);
-    h2->SetTrackEtaCut(etaCut);
+    tree = (TTree*) list2->FindObject("UEAnalysisSettings");
+    if (tree)
+    {
+      Double_t etaCut = GetEtaCut(tree);
+      Printf("Setting eta cut to %f", etaCut);
+      h2->SetTrackEtaCut(etaCut);
+    }
+    else
+    {
+      Double_t etaCut = 0.9;
+      Printf("WARNING: Setting eta cut to %f without checking", etaCut);
+      h2->SetTrackEtaCut(etaCut);
+    }
   }
 
-  tree = (TTree*) list3->FindObject("UEAnalysisSettings");
-  if (tree)
+  if (list3)
   {
-    Double_t etaCut = GetEtaCut(tree);
-    Printf("Setting eta cut to %f", etaCut);
-    h3->SetTrackEtaCut(etaCut);
-  }
-  else
-  {
-    Double_t etaCut = 0.9;
-    Printf("WARNING: Setting eta cut to %f without checking", etaCut);
-    h3->SetTrackEtaCut(etaCut);
+    tree = (TTree*) list3->FindObject("UEAnalysisSettings");
+    if (tree)
+    {
+      Double_t etaCut = GetEtaCut(tree);
+      Printf("Setting eta cut to %f", etaCut);
+      h3->SetTrackEtaCut(etaCut);
+    }
+    else
+    {
+      Double_t etaCut = 0.9;
+      Printf("WARNING: Setting eta cut to %f without checking", etaCut);
+      h3->SetTrackEtaCut(etaCut);
+    }
   }
   
-  h->SetWeightPerEvent(h->GetWeightPerEvent());
-  h2->SetWeightPerEvent(h->GetWeightPerEvent());
-  h3->SetWeightPerEvent(h->GetWeightPerEvent());
-
   //   return;
   
   if (0)
@@ -7801,8 +7815,11 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	GetSumOfRatios(h, hMixed, &hist7,  step, 80, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist8,  step, 0, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 
-	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
-	GetSumOfRatios(h3, hMixed3, &hist6,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	if (h2)
+	  GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	
+	if (h3)
+	  GetSumOfRatios(h3, hMixed3, &hist6,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }      
       else if (0)
       {
@@ -12514,6 +12531,9 @@ void PlotCorrections(const char* fileName, const char* tag = "")
   c = new TCanvas("c", "c", 1200, 800);
   c->Divide(3, 3);
 
+  c2 = new TCanvas("c2", "c2", 800, 600);
+  c2->Divide(2, 2);
+
   h->SetEtaRange(-0.89, 0.89);
 //   h->SetEtaRange(-1.19, 1.19);
   
@@ -12523,18 +12543,25 @@ void PlotCorrections(const char* fileName, const char* tag = "")
     c->cd(i+1);
     h->GetUEHist(2)->GetTrackingEfficiency()->DrawClone("COLZ");
     
-    c->cd(6);
+    c2->cd(1);
     proj = h->GetUEHist(2)->GetTrackingEfficiency(1);
+    proj->SetTitle(""); proj->SetStats(0);
+    proj->GetYaxis()->SetTitle("tracking efficiency");
     proj->SetLineColor(i+1);
     proj->DrawClone((i == 0) ? "" : "SAME");
     
-    c->cd(7);
+    c2->cd(2);
     proj = h->GetUEHist(2)->GetTrackingEfficiency(0);
+    proj->GetYaxis()->SetTitle("tracking efficiency");
+    proj->SetTitle(""); proj->SetStats(0);
+    proj->GetXaxis()->SetTitle("#eta");
     proj->SetLineColor(i+1);
     proj->DrawClone((i == 0) ? "" : "SAME");
 
-    c->cd(8);
+    c2->cd(3);
     proj = h->GetUEHist(2)->GetTrackingContamination(1);
+    proj->GetYaxis()->SetTitle("contamination correction");
+    proj->SetTitle(""); proj->SetStats(0);
     proj->SetLineColor(i+1);
     proj->DrawClone((i == 0) ? "" : "SAME");
 //     return;
@@ -12543,9 +12570,12 @@ void PlotCorrections(const char* fileName, const char* tag = "")
   h->GetUEHist(2)->SetCentralityRange(0, -1);
   for (Int_t i=0; i<10; i++)
   {
-    c->cd(9);
+    c2->cd(4);
     h->SetZVtxRange(-10.0 + 2 * i, -8.0 + 2 * i);
     proj = h->GetUEHist(2)->GetTrackingEfficiency(0);
+    proj->GetYaxis()->SetTitle("tracking efficiency");
+    proj->SetTitle(""); proj->SetStats(0);
+    proj->GetXaxis()->SetTitle("#eta");
     proj->SetLineColor(i+1);
     proj->DrawClone((i == 0) ? "" : "SAME");
   }
@@ -12708,7 +12738,8 @@ void PlotFake(const char* fileName, const char* fileName2 = 0)
   
   for (Int_t i=0; i<5; i++)
   {
-    h->GetUEHist(2)->SetCentralityRange(100.0/5*i + 0.1, 100.0/5*(i+1) - 0.1);
+//     h->GetUEHist(2)->SetCentralityRange(100.0/5*i + 0.1, 100.0/5*(i+1) - 0.1);
+    h->GetUEHist(2)->SetCentralityRange(0, 100);
     c1->cd(i+1);
     h->GetUEHist(2)->GetFakeRate()->DrawClone("COLZ");
     c1->cd(6);

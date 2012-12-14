@@ -168,8 +168,8 @@ TH2* SubtractEtaGapNS(TH2* hist, Float_t etaLimit, Float_t outerLimit, Bool_t dr
     gPad->SetLeftMargin(0.13);
     centralRegion->SetStats(0);
     TString label(centralRegion->GetTitle());
-    label.ReplaceAll(".00", " GeV/c");
-    label.ReplaceAll(".0", " GeV/c");
+    label.ReplaceAll(".00", " GeV/#it{c}");
+    label.ReplaceAll(".0", " GeV/#it{c}");
     centralRegion->SetTitle(label);
     centralRegion->SetLineColor(3);
     centralRegion->Draw();
@@ -548,6 +548,10 @@ void DrawProjectionsTim(const char* fileName, Int_t i, Int_t j, Float_t eta = 1.
     tex_PtA->SetTextFont(62);
     tex_PtA->SetTextSize(0.04);
     tex_PtA->Draw();
+    
+//     box = new TBox(-1.4, 0.185, -1.3, 0.195);
+//     box->SetFillColor(kGray);
+//     box->Draw();
 
     if (i == 2 && j == 2 && eta < 0)
     {
@@ -1610,14 +1614,14 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   {
     v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
     v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
-//     if (symmetricpT)
+    if (symmetricpT)
       AddPoint(graph[4], xValue1vn, v2value, 0, v2E);
   }
   if (v2v3->GetParameter(2) > 0)
   {
     v3 = TMath::Sqrt(v2v3->GetParameter(2) / (baseLine + diffMinParam0));
     v3E = 0.5 * v3 * TMath::Sqrt(v2v3->GetParError(2) * v2v3->GetParError(2) / v2v3->GetParameter(2) / v2v3->GetParameter(2) + baseLineE * baseLineE / baseLine / baseLine);
-//     if (symmetricpT)
+    if (symmetricpT)
       AddPoint(graph[5], xValue2vn, v3, 0, v3E);
   }
   if (v2v3->GetParameter(1) > 0 && v2v3->GetParameter(2) > 0 && symmetricpT)
@@ -2000,7 +2004,7 @@ void GetSystematic()
 
 void DrawSystematics(TString fileTag = "graphs_121119")
 {
-  if (1)
+  if (0)
   {
     const Int_t n = 6;
     const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_exclusion00", "_exclusionAS", "_exclusionScale", "_trackcuts", "_nonclosure", "_baseline" };
@@ -2047,12 +2051,12 @@ void DrawSeveral(const char* graphFile1, const char* graphFile2, const char* gra
   
 void DrawYield(const char* graphFile)
 {
-  DrawGraph(graphFile, 0, 1, "Ridge yield per #Delta#eta", "fig4b.eps");
+  DrawGraph(graphFile, 0, 1, "Ridge yield per #Delta#eta", "fig4b.eps", kTRUE);
 }
 
 void DrawRMS(const char* graphFile)
 {
-  DrawGraph(graphFile, 2, 3, "#sqrt{variance}", 0);
+  DrawGraph(graphFile, 2, 3, "#sigma", 0);
 }
 
 void Drawv2v3(const char* graphFile)
@@ -2073,8 +2077,31 @@ void AddSystUnc(TGraphErrors* graph, Float_t syst020, Float_t syst2060)
   }
 }
 
+void SetSystUnc(TGraphErrors* graph, Float_t syst020, Float_t syst2060)
+{
+  for (Int_t j=0; j<graph->GetN(); j++)
+  {
+    Float_t syst = syst2060;
+    if (graph->GetX()[j] < 20)
+      syst = syst020;
+  
+//     Printf("%d %f", j, syst);
+    graph->GetEY()[j] = syst * graph->GetY()[j];
+  }
+}
+
+void SetXError(TGraphErrors* graph, Float_t value)
+{
+  for (Int_t j=0; j<graph->GetN(); j++)
+    graph->GetEX()[j] = value;
+}
+
 void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel = 0, const char* outputFileName, Bool_t corrGraph = kFALSE)
 {
+  ReadGraphs(graphFile);
+  TGraphErrors*** graphsSyst = graphs;
+  ReadGraphs(graphFile);
+  TGraphErrors*** graphsCombinedError = graphs;
   ReadGraphs(graphFile);
   
   if (yLabel == 0)
@@ -2083,6 +2110,7 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   Float_t yMax[] = { 0.12, 0.12, 2, 2, 0.2, 0.25, 4, 1.5, 50, 50, 4 };
   Int_t markers[] = { 20, 21, 22, 23, 29, 33 };
   Int_t markers2[] = { 24, 25, 26, 32, 30, 27 };
+  Float_t markerSize[] = { 1.7, 1.7, 1.7, 1.7, 2.0, 2.0 };
 
   if (1)
   {
@@ -2108,7 +2136,9 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
       }
       
 //       Printf("%d %d %f %f", i, id1, syst020, syst2060);
-      AddSystUnc(graphs[i][id1], syst020, syst2060);
+      SetSystUnc(graphsSyst[i][id1], syst020, syst2060);
+      AddSystUnc(graphsCombinedError[i][id1], syst020, syst2060);
+      SetXError(graphsSyst[i][id1], 0.3);
 
       Float_t syst020 = syst020Array[id2];
       Float_t syst2060 = syst2060Array[id2];
@@ -2119,13 +2149,13 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
 	syst2060 = syst2060ArrayGr0[id2];
       }
 
-      AddSystUnc(graphs[i][id2], syst020, syst2060);
+      SetSystUnc(graphsSyst[i][id2], syst020, syst2060);
+      AddSystUnc(graphsCombinedError[i][id2], syst020, syst2060);
+      SetXError(graphsSyst[i][id2], 0.3);
     }
     
 //     graphs[0][id1]->Print();
   }
-  else
-    Printf(">>>>>>>>>>>> SKIPPING SYST");
   
   
   TCanvas* canvas = new TCanvas;
@@ -2154,26 +2184,51 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     dummy->GetXaxis()->SetTitleOffset(1);
   }
   
-  legend = new TLegend(0.33, (id1 == 4) ? 0.70 : 0.55, 0.95, 0.92);
+  legend = new TLegend((id1 == 4) ? 0.47 : 0.33, (id1 == 4) ? 0.70 : 0.55, 0.95, 0.92);
   legend->SetNColumns(2);
   if (id1 == 0 || id1 == 2)
     legend->SetHeader("Near side   Away side");
   else if (id1 == 4)
-    legend->SetHeader("    #it{v}_{2}          #it{v}_{3}");
+    legend->SetHeader("  #it{v}_{2}       #it{v}_{3}");
     
   legend->SetFillColor(0);
   legend->SetBorderSize(0);
 
+  if (1)
+  {
+    Int_t fillStyle[11] = { 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011 };
+    
+    for (Int_t i=0; i<NGraphs; i++)
+    {
+      graphsSyst[i][id1]->SetMarkerStyle(1);
+      graphsSyst[i][id1]->SetMarkerColor(1);
+      graphsSyst[i][id1]->SetLineColor(1);
+      graphsSyst[i][id1]->SetFillColor(1);
+      graphsSyst[i][id1]->SetFillStyle(3001);
+      graphsSyst[i][id1]->Draw("2SAME");
+
+      graphsSyst[i][id2]->SetMarkerStyle(1);
+      graphsSyst[i][id2]->SetMarkerColor(2);
+      graphsSyst[i][id2]->SetLineColor(2);
+      graphsSyst[i][id2]->SetFillColor(2);
+      graphsSyst[i][id2]->SetFillStyle(3001);
+      graphsSyst[i][id2]->Draw("2SAME");
+    }
+  }
+  else
+    Printf(">>>>>>>>>>>> SKIPPING SYST");
+
+  
   for (Int_t i=0; i<NGraphs; i++)
   {
     graphs[i][id1]->SetMarkerStyle(markers[i]);
-    graphs[i][id1]->SetMarkerSize(1.7);
+    graphs[i][id1]->SetMarkerSize(markerSize[i]);
     graphs[i][id1]->SetMarkerColor(1);
     graphs[i][id1]->SetLineColor(1);
     graphs[i][id1]->Draw("PSAME");
 
     graphs[i][id2]->SetMarkerStyle(markers2[i]);
-    graphs[i][id2]->SetMarkerSize(1.7);
+    graphs[i][id2]->SetMarkerSize(markerSize[i]);
     graphs[i][id2]->SetMarkerColor(2);
     graphs[i][id2]->SetLineColor(2);
     graphs[i][id2]->Draw("PSAME");
@@ -2181,13 +2236,25 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
     TString label(graphs[i][id1]->GetTitle());
     label.ReplaceAll(".00", ".0");
     label.ReplaceAll(".50", ".5");
-/*    label.ReplaceAll(".0", " GeV/c");
-    label.ReplaceAll(".5", ".5 GeV/c");*/
+    
+    
+/*    label.ReplaceAll(".0", " GeV/#it{c}");
+    label.ReplaceAll(".5", ".5 GeV/#it{c}");*/
     TObjArray* objArray = label.Tokenize("-");
     label.Form("%s-%s", objArray->At(0)->GetName(), objArray->At(1)->GetName());
     label.ReplaceAll("-", ";");
+    
+    if (id1 == 4)
+    {
+      // reduce label
+      label.ReplaceAll(" ", "");
+      label.ReplaceAll(";", "<");
+      tokens = label.Tokenize("<");
+      label.Form("%s < %s < %s < %s ", tokens->At(0)->GetName(), tokens->At(1)->GetName(), tokens->At(4)->GetName(), tokens->At(5)->GetName());
+    }
+    
     label.ReplaceAll("p_", "#it{p}_");
-    label += "GeV/c";
+    label += "GeV/#it{c}";
 
     if (graphs[i][id1]->GetN() > 0)
     {
@@ -2208,17 +2275,38 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   for (Int_t i=0; i<NGraphs; i++)
   {
     for (Int_t j=0; j<graphs[i][id1]->GetN(); j++)
-      AddPoint(corr, graphs[i][id1]->GetY()[j], graphs[i][id2]->GetY()[j], graphs[i][id1]->GetEY()[j], graphs[i][id2]->GetEY()[j]);
+      AddPoint(corr, graphsCombinedError[i][id1]->GetY()[j], graphsCombinedError[i][id2]->GetY()[j], graphsCombinedError[i][id1]->GetEY()[j], graphsCombinedError[i][id2]->GetEY()[j]);
   }
 
   new TCanvas;
-  corr->Draw("AP");
-  corr->GetXaxis()->SetTitle(graphs[0][id1]->GetYaxis()->GetTitle());
-  corr->GetYaxis()->SetTitle(graphs[0][id2]->GetYaxis()->GetTitle());
+  gPad->SetTopMargin(0.03);
+  gPad->SetRightMargin(0.02);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetBottomMargin(0.13);
+  TString titleString;
+  titleString.Form(";%s;%s", graphs[0][id1]->GetYaxis()->GetTitle(), graphs[0][id2]->GetYaxis()->GetTitle());
+  titleString.ReplaceAll("NS", "Near-side");
+  titleString.ReplaceAll("AS", "Away-side");
+  titleString.ReplaceAll("Ridge Yield", "ridge yield per #Delta#eta");
+  dummy = new TH2F("dummy2", titleString, 100, 0, 0.095, 100, 1e-5, 0.095);
+  dummy->GetYaxis()->SetTitleOffset(1.1);
+  dummy->SetStats(0);
+  dummy->GetXaxis()->SetNdivisions(505);
+  dummy->GetYaxis()->SetNdivisions(505);
+  dummy->GetXaxis()->SetLabelSize(0.06);
+  dummy->GetYaxis()->SetLabelSize(0.06);
+  dummy->GetXaxis()->SetTitleSize(0.06);
+  dummy->GetYaxis()->SetTitleSize(0.06);
+  dummy->Draw();
+
+  corr->Draw("PSAME");
   
-  line = new TLine(0, 0, 0.09, 0.09);
+  line = new TLine(0, 0, 0.095, 0.095);
   line->SetLineWidth(2);
+  line->SetLineStyle(2);
   line->Draw();
+
+  DrawLatex(0.18, 0.92, 1, "p-Pb #sqrt{s_{NN}} = 5.02 TeV", 0.04);
 }
 
 void PaperCorrFunc(const char* fileName, Int_t centr)
