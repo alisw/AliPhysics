@@ -4587,7 +4587,7 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
   hist2->Scale(1.0 / hist2->GetYaxis()->GetBinWidth(1));
   
-  hist2->Scale(1.0 / hist2->GetXaxis()->GetBinWidth(1)); hist1->Rebin2D(4, 2); hist1->Scale(1.0 / 8);
+//   hist2->Scale(1.0 / hist2->GetXaxis()->GetBinWidth(1)); hist1->Rebin2D(4, 2); hist1->Scale(1.0 / 8);
 
   hist2->Scale(scaling);
   
