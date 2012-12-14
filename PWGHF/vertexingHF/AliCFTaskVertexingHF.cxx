@@ -1219,11 +1219,14 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   if (fCuts->GetIsUsePID() && fDecayChannel==22) {
 	  
     fCuts->GetPidHF()->SetPidResponse(localPIDResponse);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetPidResponse(localPIDResponse);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetPidResponse(localPIDResponse);
     fCuts->GetPidHF()->SetOldPid(kFALSE);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetOldPid(kFALSE);
-    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetOldPid(kFALSE);
+    AliRDHFCutsLctoV0* lcv0Cuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
+    if(lcv0Cuts){
+      lcv0Cuts->GetPidV0pos()->SetPidResponse(localPIDResponse);
+      lcv0Cuts->GetPidV0neg()->SetPidResponse(localPIDResponse);
+      lcv0Cuts->GetPidV0pos()->SetOldPid(kFALSE);
+      lcv0Cuts->GetPidV0neg()->SetOldPid(kFALSE);
+    }
   }
 
   //slot #1
