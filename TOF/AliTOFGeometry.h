@@ -79,29 +79,29 @@ class AliTOFGeometry: public TObject{
   virtual void    ImportGeometry();
   virtual void    SetHoles(Bool_t holes) {fgHoles = holes;};
   static  Bool_t  GetHoles() {return fgHoles;};
-  virtual Float_t DistanceToPadPar(Int_t *det, const Float_t * const pos, Float_t *dist3d=0) const;
-  virtual Bool_t  IsInsideThePadPar(Int_t *det, const Float_t * const pos) const;
-  virtual Bool_t  IsInsideThePad(TGeoHMatrix *mat, const Float_t * const pos, Float_t *dist3d=0) const;
-  static  void    GetVolumePath(const Int_t * const ind, Char_t *path );
+  virtual Float_t DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d=0) const;
+  virtual Bool_t  IsInsideThePadPar(Int_t *det, const Float_t * pos) const;
+  virtual Bool_t  IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d=0) const;
+  static  void    GetVolumePath(const Int_t * ind, Char_t *path );
   static  void    GetVolumePath(Int_t sector, Char_t *path );
   static  void    GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path );
   static  void    GetPos(Int_t *det,Float_t *pos);
   static  void    GetPosPar(Int_t *det,Float_t *pos);
   static  void    GetDetID(Float_t *pos,Int_t *det);
-  static  Int_t   GetPlate(const Float_t * const pos);
-  static  Int_t   GetStrip(const Float_t * const pos);
-  static  Int_t   GetSector(const Float_t * const pos);
-  static  Int_t   GetPadX(const Float_t * const pos);
-  static  Int_t   GetPadZ(const Float_t * const pos);
-  static  Float_t GetX(const Int_t * const det);
-  static  Float_t GetY(const Int_t * const det);
-  static  Float_t GetZ(const Int_t * const det);
+  static  Int_t   GetPlate(const Float_t * pos);
+  static  Int_t   GetStrip(const Float_t * pos);
+  static  Int_t   GetSector(const Float_t * pos);
+  static  Int_t   GetPadX(const Float_t * pos);
+  static  Int_t   GetPadZ(const Float_t * pos);
+  static  Float_t GetX(const Int_t * det);
+  static  Float_t GetY(const Int_t * det);
+  static  Float_t GetZ(const Int_t * det);
   virtual void    DetToStripRF(Int_t nPadX, Int_t nPadZ,
 			       Float_t &x,  Float_t &z) const;
   virtual void    DetToSectorRF(Int_t vol[5], Double_t coord[4][3]);
-  static  Float_t GetPadDx(const Float_t * const pos);
-  static  Float_t GetPadDy(const Float_t * const pos);
-  static  Float_t GetPadDz(const Float_t * const pos);
+  static  Float_t GetPadDx(const Float_t * pos);
+  static  Float_t GetPadDy(const Float_t * pos);
+  static  Float_t GetPadDz(const Float_t * pos);
   static  void Translation(Float_t *xyz, Float_t translationVector[3]);
   static  void Rotation(Float_t *xyz, Double_t rotationAngles[6]);
   static  void InverseRotation(Float_t *xyz, Double_t rotationAngles[6]);
@@ -110,7 +110,7 @@ class AliTOFGeometry: public TObject{
   static Float_t GetHeights(Int_t iplate, Int_t istrip)  {return fgkHeights[iplate][istrip];};
   static Float_t GetDistances(Int_t iplate, Int_t istrip)  {return fgkDistances[iplate][istrip];};
 
-  static Int_t GetIndex(const Int_t * const detId); // Get channel index from det Id (for calibration mainly)
+  static Int_t GetIndex(const Int_t * detId); // Get channel index from det Id (for calibration mainly)
   static void GetVolumeIndices(Int_t index, Int_t *detId); // Get volume index from channel index
 
   static UShort_t GetAliSensVolIndex(Int_t sec, Int_t pla, Int_t str); // Get the index of the TOF alignable volume in the AliGeomManager order
@@ -119,7 +119,7 @@ class AliTOFGeometry: public TObject{
   static void GetStripAndModule(Int_t iStripPerSM, Int_t &iplate, Int_t &istrip); // Return the module and strip per module corresponding to the strip number per SM
   void PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT); // Convert the track coordinates from pad RF to tracking RF
 
-  static Int_t GetTOFsupermodule(const Int_t index); // Return the TOF supermodule where TOF channel index is located
+  static Int_t GetTOFsupermodule(Int_t index); // Return the TOF supermodule where TOF channel index is located
 
   private:
 

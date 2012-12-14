@@ -330,7 +330,7 @@ void AliTOFGeometry::DetToStripRF(Int_t nPadX, Int_t nPadZ, Float_t &x,  Float_t
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * const pos, Float_t *dist3d) const
+Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * pos, Float_t *dist3d) const
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -393,7 +393,7 @@ Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * const pos, 
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * const pos) const
+Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos) const
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -464,7 +464,7 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * const pos) 
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * const pos, Float_t *dist3d) const
+Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d) const
 {
   //
   // Returns true if space point with coor pos (x,y,z) [cm] falls inside
@@ -522,7 +522,7 @@ Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * const po
 
 }
 //_____________________________________________________________________________
-void AliTOFGeometry::GetVolumePath(const Int_t * const ind, Char_t *path ) {
+void AliTOFGeometry::GetVolumePath(const Int_t * ind, Char_t *path ) {
   //--------------------------------------------------------------------
   // This function returns the colume path of a given pad 
   //--------------------------------------------------------------------
@@ -629,7 +629,7 @@ void AliTOFGeometry::GetPos(Int_t *det, Float_t *pos)
   pos[2]=tr[2];
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPlate(const Float_t * const pos)
+Int_t AliTOFGeometry::GetPlate(const Float_t * pos)
 {
   //
   // Returns the Plate index 
@@ -725,7 +725,7 @@ Int_t AliTOFGeometry::GetPlate(const Float_t * const pos)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetSector(const Float_t * const pos)
+Int_t AliTOFGeometry::GetSector(const Float_t * pos)
 {
   //
   // Returns the Sector index 
@@ -753,7 +753,7 @@ Int_t AliTOFGeometry::GetSector(const Float_t * const pos)
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetStrip(const Float_t * const pos)
+Int_t AliTOFGeometry::GetStrip(const Float_t * pos)
 {
   //
   // Returns the Strip index 
@@ -887,7 +887,7 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * const pos)
   
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPadZ(const Float_t * const pos)
+Int_t AliTOFGeometry::GetPadZ(const Float_t * pos)
 {
   //
   // Returns the Pad index along Z 
@@ -980,7 +980,7 @@ Int_t AliTOFGeometry::GetPadZ(const Float_t * const pos)
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometry::GetPadX(const Float_t * const pos)
+Int_t AliTOFGeometry::GetPadX(const Float_t * pos)
 {
   //
   // Returns the Pad index along X 
@@ -1073,7 +1073,7 @@ Int_t AliTOFGeometry::GetPadX(const Float_t * const pos)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetX(const Int_t * const det)
+Float_t AliTOFGeometry::GetX(const Int_t * det)
 {
   //
   // Returns X coordinate (cm)
@@ -1184,7 +1184,7 @@ Float_t AliTOFGeometry::GetX(const Int_t * const det)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetY(const Int_t * const det)
+Float_t AliTOFGeometry::GetY(const Int_t * det)
 {
   //
   // Returns Y coordinate (cm)
@@ -1297,7 +1297,7 @@ Float_t AliTOFGeometry::GetY(const Int_t * const det)
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetZ(const Int_t * const det)
+Float_t AliTOFGeometry::GetZ(const Int_t * det)
 {
   //
   // Returns Z coordinate (cm)
@@ -1459,7 +1459,7 @@ void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t coord[4][3])
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetPadDx(const Float_t * const pos)
+Float_t AliTOFGeometry::GetPadDx(const Float_t * pos)
 {
   //
   // Returns the x coordinate in the Pad reference frame
@@ -1560,7 +1560,7 @@ Float_t AliTOFGeometry::GetPadDx(const Float_t * const pos)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetPadDy(const Float_t * const pos)
+Float_t AliTOFGeometry::GetPadDy(const Float_t * pos)
 {
   //
   // Returns the y coordinate in the Pad reference frame
@@ -1661,7 +1661,7 @@ Float_t AliTOFGeometry::GetPadDy(const Float_t * const pos)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometry::GetPadDz(const Float_t * const pos)
+Float_t AliTOFGeometry::GetPadDz(const Float_t * pos)
 {
   //
   // Returns the z coordinate in the Pad reference frame
@@ -1843,7 +1843,7 @@ void AliTOFGeometry::InverseRotation(Float_t *xyz, Double_t rotationAngles[6])
 }
 //_____________________________________________________________________________
 
-Int_t AliTOFGeometry::GetIndex(const Int_t * const detId)
+Int_t AliTOFGeometry::GetIndex(const Int_t * detId)
 {
   //Retrieve calibration channel index 
   Int_t isector = detId[0];
@@ -2200,7 +2200,7 @@ void AliTOFGeometry::PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT)
 }
 //-------------------------------------------------------------------------
 
-Int_t AliTOFGeometry::GetTOFsupermodule(const Int_t index)
+Int_t AliTOFGeometry::GetTOFsupermodule(Int_t index)
 {
   // Return the TOF supermodule where TOF channel index is located
 
