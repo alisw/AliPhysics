@@ -706,16 +706,16 @@ void AliHMPIDQAChecker::InitOnlineThresholds()
 void AliHMPIDQAChecker::PrintThresholds()
 {
   Printf("--- Printing thresholds ---");  
-  Printf(Form("--- Default or online: %d ---",fIsOnlineThr));  
-  Printf(Form("--- fHmpQaThr_NumberOfExcludedDDL %d ---",fHmpQaThr_NumberOfExcludedDDL));
-  Printf(Form("--- fHmpQaThr_DataSizeLowerThreshold %d ---",fHmpQaThr_DataSizeLowerThreshold));
-  Printf(Form("--- fHmpQaThr_DataSizeUpperThreshold %d ---",fHmpQaThr_DataSizeUpperThreshold));
-  Printf(Form("--- fHmpQaThr_PadOccupancyLowerThreshold %f ---",fHmpQaThr_PadOccupancyLowerThreshold));
-  Printf(Form("--- fHmpQaThr_PadOccupancyUpperThreshold %f ---",fHmpQaThr_PadOccupancyUpperThreshold));
-  Printf(Form("--- fHmpQaThr_SectorGainLossWarningThreshold %d ---",fHmpQaThr_SectorGainLossWarningThreshold));
-  Printf(Form("--- fHmpQaThr_SectorGainLossErrorThreshold %d ---",fHmpQaThr_SectorGainLossErrorThreshold));
-  Printf(Form("--- fHmpQaThr_MissingPadFractionWarningThreshold %f ---",fHmpQaThr_MissingPadFractionWarningThreshold));
-  Printf(Form("--- fHmpQaThr_MissingPadFractionErrorThreshold %f ---",fHmpQaThr_MissingPadFractionErrorThreshold));
+  Printf("--- Default or online: %i ---",fIsOnlineThr);  
+  Printf("--- fHmpQaThr_NumberOfExcludedDDL: %i ---",fHmpQaThr_NumberOfExcludedDDL);
+  Printf("--- fHmpQaThr_DataSizeLowerThreshold: %i ---",fHmpQaThr_DataSizeLowerThreshold);
+  Printf("--- fHmpQaThr_DataSizeUpperThreshold: %i ---",fHmpQaThr_DataSizeUpperThreshold);
+  Printf("--- fHmpQaThr_PadOccupancyLowerThreshold: %f ---",fHmpQaThr_PadOccupancyLowerThreshold);
+  Printf("--- fHmpQaThr_PadOccupancyUpperThreshold: %f ---",fHmpQaThr_PadOccupancyUpperThreshold);
+  Printf("--- fHmpQaThr_SectorGainLossWarningThreshold: %i ---",fHmpQaThr_SectorGainLossWarningThreshold);
+  Printf("--- fHmpQaThr_SectorGainLossErrorThreshold: %i ---",fHmpQaThr_SectorGainLossErrorThreshold);
+  Printf("--- fHmpQaThr_MissingPadFractionWarningThreshold: %f ---",fHmpQaThr_MissingPadFractionWarningThreshold);
+  Printf("--- fHmpQaThr_MissingPadFractionErrorThreshold: %f ---",fHmpQaThr_MissingPadFractionErrorThreshold);
   Printf("--- Printing thresholds done ---");  
 
   
