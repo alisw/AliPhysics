@@ -511,7 +511,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackControlParticles() {
 
   Int_t pdgCode    = fHelper->GetControlParticleCode();
   Bool_t isNeutral  = fHelper->IsControlParticleNeutral();
-  const Char_t* name = fHelper->GetControlParticleName().Data();
+  //const Char_t* name = fHelper->GetControlParticleName().Data();
 
   for (Int_t idxMC = 0; idxMC < fStack->GetNprimary(); ++idxMC) {
     TParticle* particle = fStack->Particle(idxMC);

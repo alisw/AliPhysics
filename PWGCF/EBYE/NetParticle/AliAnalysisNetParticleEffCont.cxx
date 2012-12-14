@@ -500,9 +500,13 @@ void AliAnalysisNetParticleEffCont::CheckContTrackAOD(Int_t label, Float_t sign,
 
   // -- Get PDG Charge
   Float_t contSign = 0.;
-  if      ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.) contSign =  0.;
-  else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() <  0.) contSign = -1.;	
-  else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() >  0.) contSign =  1.;	
+  // Crashing (MW)? --> why do we need the PDG charge? 
+  // if      ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.) contSign =  0.;
+  // else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() <  0.) contSign = -1.;	
+  // else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() >  0.) contSign =  1.;	
+   if      (particle->Charge() == 0.) contSign =  0.;
+   else if (particle->Charge() <  0.) contSign = -1.;	
+   else if (particle->Charge() >  0.) contSign =  1.;
 
   // -- Get contaminating particle
   Float_t contPart = 0;
