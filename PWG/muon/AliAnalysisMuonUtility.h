@@ -34,6 +34,9 @@ class AliAnalysisMuonUtility : public TObject {
   static TString GetFiredTriggerClasses ( const AliVEvent* event );
   static Int_t GetNTracks ( const AliVEvent* event );
   static AliVParticle* GetTrack ( Int_t itrack, const AliVEvent* event );
+  static UInt_t GetL0TriggerInputs ( const AliVEvent* event );
+  static UInt_t GetL1TriggerInputs ( const AliVEvent* event );
+  static UInt_t GetL2TriggerInputs ( const AliVEvent* event );
   
   static Bool_t IsAODTrack ( const AliVParticle* track );
   static Bool_t IsMuonTrack ( const AliVParticle* track );

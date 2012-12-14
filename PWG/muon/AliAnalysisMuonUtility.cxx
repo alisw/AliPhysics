@@ -228,6 +228,32 @@ Int_t AliAnalysisMuonUtility::GetNTracks ( const AliVEvent* event )
   return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetNTracks() : static_cast<const AliESDEvent*>(event)->GetNumberOfMuonTracks();
 }
 
+//________________________________________________________________________
+UInt_t AliAnalysisMuonUtility::GetL0TriggerInputs ( const AliVEvent* event )
+{
+  //
+  /// Return the L0 trigger inputs
+  //
+  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL0TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL0TriggerInputs();
+}
+
+//________________________________________________________________________
+UInt_t AliAnalysisMuonUtility::GetL1TriggerInputs ( const AliVEvent* event )
+{
+  //
+  /// Return the L1 trigger inputs
+  //
+  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL1TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL1TriggerInputs();
+}
+
+//________________________________________________________________________
+UInt_t AliAnalysisMuonUtility::GetL2TriggerInputs ( const AliVEvent* event )
+{
+  //
+  /// Return the L2 trigger inputs
+  //
+  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetHeader()->GetL2TriggerInputs() : static_cast<const AliESDEvent*>(event)->GetHeader()->GetL2TriggerInputs();
+}
 
 //________________________________________________________________________
 AliVParticle* AliAnalysisMuonUtility::GetTrack ( Int_t itrack, const AliVEvent* event )
