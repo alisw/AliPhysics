@@ -248,7 +248,7 @@ class AliExternalTrackParam: public AliVTrack {
  private:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
- private:
+ protected:
   Double32_t           fX;     // X coordinate for the point of parametrisation
   Double32_t           fAlpha; // Local <-->global coor.system rotation angle
   Double32_t           fP[5];  // The track parameters

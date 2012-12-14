@@ -806,14 +806,23 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   }
 
   //f = F - 1
-   
+  /*
   Double_t f02=    dx/(r1*r1*r1);            Double_t cc=crv/fP4;
   Double_t f04=0.5*dx*dx/(r1*r1*r1);         f04*=cc;
   Double_t f12=    dx*fP3*f1/(r1*r1*r1);
   Double_t f14=0.5*dx*dx*fP3*f1/(r1*r1*r1);  f14*=cc;
   Double_t f13=    dx/r1;
   Double_t f24=    dx;                       f24*=cc;
-  
+  */
+  Double_t rinv = 1./r1;
+  Double_t r3inv = rinv*rinv*rinv;
+  Double_t f24=    x2r/fP4;
+  Double_t f02=    dx*r3inv;
+  Double_t f04=0.5*f24*f02;
+  Double_t f12=    f02*fP3*f1;
+  Double_t f14=0.5*f24*f02*fP3*f1;
+  Double_t f13=    dx*rinv;
+
   //b = C*ft
   Double_t b00=f02*fC20 + f04*fC40, b01=f12*fC20 + f14*fC40 + f13*fC30;
   Double_t b02=f24*fC40;
@@ -2028,13 +2037,23 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
 
   //f = F - 1
+  /*
   Double_t f02=    dx/(r1*r1*r1);            Double_t cc=crv/fP4;
   Double_t f04=0.5*dx*dx/(r1*r1*r1);         f04*=cc;
   Double_t f12=    dx*fP3*f1/(r1*r1*r1);
   Double_t f14=0.5*dx*dx*fP3*f1/(r1*r1*r1);  f14*=cc;
   Double_t f13=    dx/r1;
   Double_t f24=    dx;                       f24*=cc;
-  
+  */
+  Double_t rinv = 1./r1;
+  Double_t r3inv = rinv*rinv*rinv;
+  Double_t f24=    x2r/fP4;
+  Double_t f02=    dx*r3inv;
+  Double_t f04=0.5*f24*f02;
+  Double_t f12=    f02*fP3*f1;
+  Double_t f14=0.5*f24*f02*fP3*f1;
+  Double_t f13=    dx*rinv;
+ 
   //b = C*ft
   Double_t b00=f02*fC20 + f04*fC40, b01=f12*fC20 + f14*fC40 + f13*fC30;
   Double_t b02=f24*fC40;
@@ -2357,7 +2376,7 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
 	if (sn>0) {if (fy>det)  return kFALSE;} // track is along Y axis and above the circle
 	else      {if (fy<-det) return kFALSE;} // track is against Y axis amd belo the circle
       }
-      else if(dir>0) {                                    // agains track direction
+      else {                                    // agains track direction
 	if (sn>0) {if (fy<-det) return kFALSE;} // track is along Y axis
         else if (fy>det)  return kFALSE;        // track is against Y axis
       }
