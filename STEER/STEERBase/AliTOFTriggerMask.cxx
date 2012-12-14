@@ -110,11 +110,11 @@ Int_t AliTOFTriggerMask::GetNumberMaxiPadOn() {
 };
 //_________________________________________________________
 void AliTOFTriggerMask::SetON(Int_t icrate,Int_t ich){
-  if(ich < 24 && icrate < 73) fTriggerMask[icrate] += fPowerMask[ich];
+  if(ich < 24 && icrate < 72) fTriggerMask[icrate] += fPowerMask[ich];
 }
 //_________________________________________________________
 Bool_t AliTOFTriggerMask::IsON(Int_t icrate,Int_t ich){
-  if(ich < 24 && icrate < 73) return (fTriggerMask[icrate] & fPowerMask[ich]);
+  if(ich < 24 && icrate < 72) return (fTriggerMask[icrate] & fPowerMask[ich]);
   else return kFALSE;
 }
 //_________________________________________________________
