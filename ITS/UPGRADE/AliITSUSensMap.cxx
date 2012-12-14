@@ -75,10 +75,12 @@ AliITSUSensMap::AliITSUSensMap(const AliITSUSensMap &source)
 {
   if (source.fBTree) {
     fBTree = new TBtree();
-    for (int i=fItems->GetEntriesFast();i--;) {
-      TObject* obj = fItems->At(i);
-      if (obj && ! IsDisabled(obj)) continue;
-      RegisterItem(obj);
+    if (fItems) {
+      for (int i=fItems->GetEntriesFast();i--;) {
+	TObject* obj = fItems->At(i);
+	if (obj && ! IsDisabled(obj)) continue;
+	RegisterItem(obj);
+      }
     }
   }
 }

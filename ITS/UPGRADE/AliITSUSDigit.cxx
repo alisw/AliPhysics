@@ -32,6 +32,11 @@ AliITSUSDigit::AliITSUSDigit()
   ,fSignalAfterElect(0.0)
 {
   // Default constructor
+  for (int i=kBuffSize;i--;) {
+    fTrack[i] = -2;
+    fHits[i] = -1;
+    fSignal[i] = 0;
+  }
 }
 
 //______________________________________________________________________

@@ -309,7 +309,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
       if (doLayer) {
 	if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
 	// go via layer to its boundary, applying material correction.
-	if (!PropagateTrackTo(seed,xToGo,fCurrMass, lrFr->GetMaxStep(), kFALSE, -1, 0, kTRUE)) return kFALSE;
+	if (!PropagateSeed(seed,xToGo,fCurrMass, lrFr->GetMaxStep())) return kFALSE;
       }
     }
     AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
@@ -318,7 +318,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
     // go the entrance of the layer, assuming no materials in between
     double xToGo = dir>0 ? lrTo->GetRMin() : lrTo->GetRMax();
     if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
-    if (!seed->PropagateTo(xToGo, GetBz())) return kFALSE; // RS: do we need BxByBz?
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) return kFALSE;
     lrFr = lrTo;
   }
   return kTRUE;
@@ -457,6 +457,36 @@ Bool_t AliITSUTrackerGlo::NeedToKill(AliITSUSeed *seed, Int_t flag)
     if (lastChecked) patt |= ~(kMask<<lastChecked); // not all layers were checked, complete unchecked once by potential hits
     Bool_t seedOK = fTrCond.CheckPattern(patt);
     return !seedOK;
+  }
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t matCorr) 
+{
+  // propagate seed to given x applying material correction if requested
+  const Double_t kEpsilon = 1e-5;
+  Double_t xpos     = seed->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+  Double_t xyz0[3],xyz1[3],param[7];
+  //
+  if (matCorr) seed->GetXYZ(xyz1);   //starting global position
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t bz=GetBz();   // getting the local Bz
+    if (!seed->PropagateToX(x,bz))  return kFALSE;
+    if (matCorr) {
+      xyz0[0]=xyz1[0]; // global pos at the beginning of step
+      xyz0[1]=xyz1[1];
+      xyz0[2]=xyz1[2];
+      seed->GetXYZ(xyz1);    //  // global pos at the end of step
+      MeanMaterialBudget(xyz0,xyz1,param);	
+      Double_t xrho=param[0]*param[4], xx0=param[1];
+      if (dir>0) xrho = -xrho; // outward should be negative
+      if (!seed->ApplyMaterialCorrection(xx0,xrho,mass,kFALSE)) return kFALSE;
+    }
+    xpos = seed->GetX();
   }
   return kTRUE;
 }

@@ -65,8 +65,9 @@ AliITSUReconstructor::~AliITSUReconstructor()
       delete clFinder;
     }
     //
-    delete[] fClusters;
+    delete fClusters[i];
   }
+  delete[] fClusters;
   //
   delete fGeom;
 } 
@@ -120,6 +121,7 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   TBranch *lrBranch[fGeom->GetNLayers()];
   //
   for (int ilr=0;ilr<fGeom->GetNLayers();ilr++) {
+    lrBranch[ilr] = 0;
     if (clustersTree) { // do we write clusters tree?
       int tp = fGeom->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
       if (tp==AliITSUGeomTGeo::kDetTypePix) {

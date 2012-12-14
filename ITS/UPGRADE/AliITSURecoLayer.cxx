@@ -298,7 +298,7 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
 Bool_t AliITSURecoLayer::IsEqual(const TObject* obj) const
 {
   // check if layers are equal in R
-  const AliITSURecoLayer* lr = dynamic_cast<const AliITSURecoLayer*>(obj);
+  const AliITSURecoLayer* lr = (const AliITSURecoLayer*)obj;
   return Abs(lr->GetR()-GetR())<1e-6 ? kTRUE : kFALSE;
 }
 
@@ -306,7 +306,7 @@ Bool_t AliITSURecoLayer::IsEqual(const TObject* obj) const
 Int_t  AliITSURecoLayer::Compare(const TObject* obj) const
 {
   // compare two layers
-  const AliITSURecoLayer* lr = dynamic_cast<const AliITSURecoLayer*>(obj);
+  const AliITSURecoLayer* lr = (const AliITSURecoLayer*)obj;
   double dr = GetR() - lr->GetR();
   if (Abs(dr)<1e-6) return 0;
   return dr>0 ? 1:-1;

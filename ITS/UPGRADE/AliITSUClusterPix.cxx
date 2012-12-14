@@ -251,7 +251,7 @@ void AliITSUClusterPix::GetTrackingXYZ(Float_t xyz[3]) const
 Int_t AliITSUClusterPix::Compare(const TObject* obj)  const
 {
   // compare clusters accodring to specific mode
-  const AliITSUClusterPix* px = dynamic_cast<const AliITSUClusterPix*>(obj);
+  const AliITSUClusterPix* px = (const AliITSUClusterPix*)obj;
   float xyz[3],xyz1[3];
   if (fgMode & kSortIdLocXZ) { // sorting in local frame
     if (GetVolumeId()==px->GetVolumeId()) {
@@ -285,7 +285,7 @@ Int_t AliITSUClusterPix::Compare(const TObject* obj)  const
 Bool_t AliITSUClusterPix::IsEqual(const TObject* obj)  const
 {
   // compare clusters accodring to specific mode
-  const AliITSUClusterPix* px = dynamic_cast<const AliITSUClusterPix*>(obj);
+  const AliITSUClusterPix* px = (const AliITSUClusterPix*)obj;
   const Float_t kTol = 1e-5;
   float xyz[3],xyz1[3];
   if (fgMode & kSortIdLocXZ) { // sorting in local frame

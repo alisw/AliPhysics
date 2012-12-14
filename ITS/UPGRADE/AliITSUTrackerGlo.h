@@ -56,6 +56,8 @@ class AliITSUTrackerGlo : public AliTracker {
   Int_t                  GetNSeeds(Int_t lr)              const {return fSeedsLr[lr].GetEntriesFast();} //RS TOCHECK
   AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return (AliITSUSeed*)fSeedsLr[lr].UncheckedAt(sID);} //RS TOCHECK
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
+  Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
+  //
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
@@ -65,6 +67,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   DeleteLastSeedFromPool()               {fSeedsPool.RemoveLast();}
   void                   ResetSeedTree();  // RS TOCHECK
   //
+
  private:
   
   AliITSUTrackerGlo(const AliITSUTrackerGlo&);
