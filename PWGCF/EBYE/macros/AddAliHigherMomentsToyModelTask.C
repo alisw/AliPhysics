@@ -27,11 +27,14 @@ AliAnalysisTask* AddAliHigherMomentsToyModelTask(Double_t vx,
 						 Double_t nsigma,
 						 Int_t AODfilterBit = 128,
 						 Bool_t usepid,
-						 TString  analysis) {
+						 TString  analysis,
+						 const char* taskss) {
   
   
   TString taskname = "HMMCQA";
-  TString taskname1 = "HMToyModel";
+  taskname.Append(taskss);
+  TString taskname1 = "HMTM";
+  taskname1.Append(taskss);
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
