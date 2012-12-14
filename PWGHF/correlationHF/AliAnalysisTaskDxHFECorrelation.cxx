@@ -218,13 +218,15 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   }
 
   // TODO: why copy? cleanup?
-  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
-  const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
-  copyfCuts->SetName(nameoutput);
+  if(fCutsD0){
+    AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
+    const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
+    copyfCuts->SetName(nameoutput);
+    PostData(2,copyfCuts);
+  }
 
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
-  PostData(2,copyfCuts);
   PostData(3,fCutsHFE);
   PostData(4,fCuts);
 
