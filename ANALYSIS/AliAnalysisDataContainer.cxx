@@ -632,5 +632,6 @@ void AliAnalysisFileDescriptor::SavePrimitive(std::ostream &out, Option_t *)
    out << "filesize     " << fSize/megabyte << endl;
    out << "readsize     " << fReadBytes/megabyte << endl;
    out << "throughput   " << fThroughput << endl;
+   out << resetiosflags(std::ios::fixed);
 }
-   
+
