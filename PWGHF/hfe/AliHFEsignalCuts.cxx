@@ -142,8 +142,9 @@ Bool_t AliHFEsignalCuts::IsCharmElectron(const TObject * const o) const {
   //
   // Check if mother is coming from Charm
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kDirectCharm)  // 1: direct D->e
     return kTRUE;
   else
@@ -155,8 +156,9 @@ Bool_t AliHFEsignalCuts::IsBeautyElectron(const TObject * const o) const {
   //
   // Check if mother is coming from Beauty
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kDirectBeauty || esources == AliHFEmcQA::kBeautyCharm)  // 2: B->e 3: B->D->e
     return kTRUE;
   else
@@ -168,8 +170,9 @@ Bool_t AliHFEsignalCuts::IsGammaElectron(const TObject * const o) const {
   //
   // Check for MC if the electron is coming from Gamma  
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources >= AliHFEmcQA::kGammaPi0 && esources <= AliHFEmcQA::kGammaRho0 )  // 4: conversion electrons
   //if(esources == AliHFEmcQA::kGammaPi0 || esources == AliHFEmcQA::kGammaEta || esources == AliHFEmcQA::kGammaOmega || esources == AliHFEmcQA::kGammaPhi || esources == AliHFEmcQA::kGammaEtaPrime || esources == AliHFEmcQA::kGammaRho0 )  // 4: conversion electrons
     return kTRUE;
@@ -182,8 +185,9 @@ Bool_t AliHFEsignalCuts::IsNonHFElectron(const TObject * const o) const {
   //
   // Check for MC if the electron is coming from NonHFE except for conversion
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA:: kPi0 || esources == AliHFEmcQA::kEta || esources == AliHFEmcQA::kOmega || esources == AliHFEmcQA::kPhi || esources == AliHFEmcQA::kEtaPrime || esources == AliHFEmcQA::kRho0)  // 4: conversion electrons
     return kTRUE;
   else
@@ -195,8 +199,9 @@ Bool_t AliHFEsignalCuts::IsJpsiElectron(const TObject * const o) const {
   //
   // Check if mother is coming from Charm
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kJpsi)  // 5: J/psi->ee
     return kTRUE;
   else
@@ -208,8 +213,9 @@ Bool_t AliHFEsignalCuts::IsB2JpsiElectron(const TObject * const o) const {
   //
   // Check if mother is coming from Charm
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kB2Jpsi)  // 6: B->Jpsi->ee
     return kTRUE;
   else
@@ -221,8 +227,9 @@ Bool_t AliHFEsignalCuts::IsKe3Electron(const TObject * const o) const {
   //
   // Check if mother is coming from Charm
   //
-  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
-  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
+  const AliVParticle *v = dynamic_cast<const AliVParticle *>(o);
+  if(!v) return kFALSE;
+  Int_t esources = GetElecSource(v);
   if(esources == AliHFEmcQA::kKe3)  // 7: K->e
     return kTRUE;
   else
@@ -285,19 +292,29 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
   // Get Mother Pdg code for reconstructed respectively MC tracks
   // 
   TClass *type = track->IsA();  
-  if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
-    AliDebug(1, "No MC Event Available\n");
-    return 0;
-  }
+  //if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
+  //  AliDebug(1, "No MC Event Available\n");
+  //  return 0;
+  // }
+
+
   const AliVParticle *motherParticle = NULL, *mctrack = NULL;
   Int_t label = TMath::Abs(track->GetLabel());
   if(type == AliESDtrack::Class()){
     // Reconstructed track
+    if(!fMC) {
+      AliDebug(1, "No MC Event Available\n");
+      return 0;
+    }
     if(label) mctrack = fMC->GetTrack(TMath::Abs(label));
     
   } 
   else if(type == AliAODTrack::Class()) {
     // MCParticle
+    if(!fAODArrayMCInfo) {
+      AliDebug(1, "No MC Event Available\n");
+      return 0;
+    }
     if(label && label < fAODArrayMCInfo->GetEntriesFast())
       mctrack = (AliVParticle *) fAODArrayMCInfo->At(label);
   }
@@ -311,7 +328,13 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
   if(TString(mctrack->IsA()->GetName()).CompareTo("AliMCParticle") == 0){
     // case MC Particle
     const AliMCParticle *esdmctrack = dynamic_cast<const AliMCParticle *>(mctrack);
-    if(esdmctrack) motherParticle = fMC->GetTrack(esdmctrack->Particle()->GetFirstMother());
+    if(esdmctrack) {
+      if(!fMC) {
+	AliDebug(1, "No MC Event Available\n");
+	return 0;
+      }
+      motherParticle = fMC->GetTrack(esdmctrack->Particle()->GetFirstMother());
+    }
     if(motherParticle){
       const AliMCParticle *esdmcmother = dynamic_cast<const AliMCParticle *>(motherParticle);
       if(esdmcmother) motherPDG = TMath::Abs(esdmcmother->Particle()->GetPdgCode());
@@ -320,8 +343,12 @@ Int_t AliHFEsignalCuts::GetMotherPDG(const AliVParticle * const track) const {
     // case AODMCParticle
     const AliAODMCParticle *aodmctrack = dynamic_cast<const AliAODMCParticle *>(mctrack);
     if(aodmctrack) {
+      if(!fAODArrayMCInfo) {
+	AliDebug(1, "No MC Event Available\n");
+	return 0;
+      }  
       if(aodmctrack->GetMother() && aodmctrack->GetMother() < fAODArrayMCInfo->GetEntriesFast())
-      motherParticle =  (AliVParticle *) fAODArrayMCInfo->At(aodmctrack->GetMother());
+	motherParticle =  (AliVParticle *) fAODArrayMCInfo->At(aodmctrack->GetMother());
     }
     if(motherParticle){
       const AliAODMCParticle *aodmcmother = dynamic_cast<const AliAODMCParticle *>(motherParticle);
@@ -377,19 +404,20 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
   // Return PDG code of a particle itself
   //
   
-  TClass *type = track->IsA();  
-  if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
-    AliDebug(1, "No MC Event Available\n");
-    return 0;
-  }
-  if(!fMCQA){
-    AliDebug(1, "No MCQA Available\n");
-    return 0;
-  }
   if(!track){
     AliDebug(1, "Track not Available\n");
     return 0;
   }
+  TClass *type = track->IsA();  
+  // if((!fMC && (type == AliESDtrack::Class())) || (!fAODArrayMCInfo && (type == AliAODTrack::Class()))){
+  //  AliDebug(1, "No MC Event Available\n");
+  //  return 0;
+  //}
+  if(!fMCQA){
+    AliDebug(1, "No MCQA Available\n");
+    return 0;
+  }
+ 
 
   const AliVParticle *mctrack = NULL;
   TParticle *mcpart = NULL;
@@ -397,11 +425,19 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
   //AliMCParticle *esdmcmother = NULL;
   if(type == AliESDtrack::Class()){
     // Reconstructed track
+    if(!fMC) {
+      AliDebug(1, "No MC Event Available\n");
+      return 0;
+    }
     if(label) mctrack = fMC->GetTrack(TMath::Abs(label));
     
   } 
   else if(type == AliAODTrack::Class()) {
     // MCParticle
+    if(!fAODArrayMCInfo) {
+      AliDebug(1, "No MC Event Available\n");
+      return 0;
+    }
     if(label && label < fAODArrayMCInfo->GetEntriesFast())
       mctrack = (AliVParticle *) fAODArrayMCInfo->At(label);
   }

@@ -599,8 +599,12 @@ void AliHFEInclusiveSpectrum::WriteResults(const char *filename)
 
   AliCFContainer *dataContainer = GetContainer(kDataContainer);
   AliCFContainer *mcContainer = GetContainer(kMCContainerMC);
-  TObject *unfolded = fQA->GetResult(AliHFEInclusiveSpectrumQA::kFinalResultUnfolded);
-  TObject *correctedspectrum = fQA->GetResult(AliHFEInclusiveSpectrumQA::kFinalResultDirectEfficiency);
+  TObject *unfolded = 0x0;
+  TObject *correctedspectrum = 0x0;
+  if(fQA) {
+    unfolded = fQA->GetResult(AliHFEInclusiveSpectrumQA::kFinalResultUnfolded);
+    correctedspectrum = fQA->GetResult(AliHFEInclusiveSpectrumQA::kFinalResultDirectEfficiency);
+  }
 
   TFile *file = TFile::Open(filename,"recreate");
   if(dataContainer) dataContainer->Write("data");

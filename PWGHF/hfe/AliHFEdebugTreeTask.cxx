@@ -481,7 +481,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     UChar_t nclustersTRD = track->GetTRDncls();
     UChar_t ntrackletsTRDPID = track->GetTRDntrackletsPID();
     // ITS and TRD acceptance maps
-    UChar_t hasClusterITS[6], statusITS[5], hasTrackletTRD[6];
+    UChar_t hasClusterITS[6], statusITS[6], hasTrackletTRD[6];
     UChar_t itsPixel = track->GetITSClusterMap();
     for(Int_t icl = 0; icl < 6; icl++){ 
       hasClusterITS[icl] = TESTBIT(itsPixel, icl) ? 1 : 0;
