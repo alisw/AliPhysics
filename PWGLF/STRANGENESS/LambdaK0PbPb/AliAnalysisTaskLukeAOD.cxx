@@ -512,7 +512,7 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 	AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 	AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
 	fPIDResponse = inputHandler->GetPIDResponse();
-	Bool_t maskIsSelected = inputHandler->IsEventSelected();
+	//Bool_t maskIsSelected = inputHandler->IsEventSelected();
     
 	// Create histograms
     Int_t ptbins = 15;
