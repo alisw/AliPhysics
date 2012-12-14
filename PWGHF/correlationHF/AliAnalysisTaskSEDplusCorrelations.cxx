@@ -90,23 +90,7 @@ AliAnalysisTaskSE(),
   fSystem(kFALSE)
 {
   // Default constructor
-  
-  for(Int_t i=0;i<3*kMaxPtBins;i++){
-    if(fMassVsdPhiHistHad[i])fMassVsdPhiHistHad[i]=0;
-    if(fMassVsdEtaHistHad[i])fMassVsdEtaHistHad[i]=0;
-    if(fMassVsdPhiHistKaon[i])fMassVsdPhiHistKaon[i]=0;
-    if(fMassVsdEtaHistKaon[i])fMassVsdEtaHistKaon[i]=0;
-    if(fMassVsdPhiHistKshort[i])fMassVsdPhiHistKshort[i]=0;
-    if(fMassVsdEtaHistKshort[i])fMassVsdEtaHistKshort[i]=0;
-    if(fMassVsdPhiHistLeadHad[i])fMassVsdPhiHistLeadHad[i]=0;
-    if(fMassVsdEtaHistLeadHad[i])fMassVsdEtaHistLeadHad[i]=0;
-    if(fMassHistK0S[i])fMassHistK0S[i]=0;
-    if(fLeadPt[i])fLeadPt[i]=0;
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fMassHistTCPlus[i])fMassHistTCPlus[i]=0;
-    if(fMassHistTCMinus[i])fMassHistTCMinus[i]=0;
-  }
-  
+   
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
   }
@@ -152,24 +136,6 @@ AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations(const cha
   fNPtBins=fRDCutsAnalysis->GetNPtBins();
     
     
-  for(Int_t i=0;i<3*kMaxPtBins;i++){
-    if(fMassVsdPhiHistHad[i])fMassVsdPhiHistHad[i]=0;
-    if(fMassVsdEtaHistHad[i])fMassVsdEtaHistHad[i]=0;
-    if(fMassVsdPhiHistKaon[i])fMassVsdPhiHistKaon[i]=0;
-    if(fMassVsdEtaHistKaon[i])fMassVsdEtaHistKaon[i]=0;
-    if(fMassVsdPhiHistKshort[i])fMassVsdPhiHistKshort[i]=0;
-    if(fMassVsdEtaHistKshort[i])fMassVsdEtaHistKshort[i]=0;
-    if(fMassVsdPhiHistLeadHad[i])fMassVsdPhiHistLeadHad[i]=0;
-    if(fMassVsdEtaHistLeadHad[i])fMassVsdEtaHistLeadHad[i]=0;
-    if(fMassHistK0S[i])fMassHistK0S[i]=0;
-    if(fLeadPt[i])fLeadPt[i]=0;
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fMassHistTC[i])fMassHistTC[i]=0;
-    if(fMassHistTCPlus[i])fMassHistTCPlus[i]=0;
-    if(fMassHistTCMinus[i])fMassHistTCMinus[i]=0;
-    
-    
-  }
   
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
@@ -856,8 +822,9 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t */*option*/)
 
 		index=GetSignalHistoIndex(iPtBin);
 
-		Bool_t* PartSource = fCuts->IsMCpartFromHF(label,arrayMC); // check source of associated particle (hadron/kaon/K0)
-		FillMCCorrelations(d,DeltaPhi,DeltaEta,index,PartSource,fSelect);   
+		Bool_t* partSource = fCuts->IsMCpartFromHF(label,arrayMC); // check source of associated particle (hadron/kaon/K0)
+		FillMCCorrelations(d,DeltaPhi,DeltaEta,index,partSource,fSelect);   
+		delete partSource;
 		
 			 
 	      } // readMC 
