@@ -911,7 +911,7 @@ void AliEveEventManager::NextEvent()
     // !!! This should really go somewhere else. It is done in GotoEvent(),
     // so here we should do it in SetEvent().
     DestroyElements();
-
+		gSystem->ExitLoop();
 
   }
   else if (fESDTree)
