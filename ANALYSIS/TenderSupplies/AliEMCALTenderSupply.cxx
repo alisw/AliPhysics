@@ -1103,8 +1103,25 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
   if (!rundeprecal)
   {
-    AliError(Form("No Objects for run: %d",runRC));
-    return 2;
+    AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runRC));
+    // let's get the closest runnumber instead then..
+    Int_t lower = 0;
+    Int_t ic = 0;
+    Int_t maxEntry = contRF->GetNumberOfEntries();
+
+    while ( (ic < maxEntry) && (contRF->UpperLimit(ic) < runRC) ) {
+      lower = ic;
+      ic++; 
+    }
+
+    Int_t closest = lower;
+    if ( (ic<maxEntry) && 
+	 (contRF->LowerLimit(ic)-runRC) < (runRC - contRF->UpperLimit(lower)) ) {
+	 closest = ic;
+    }
+
+    AliWarning(Form("TemperatureCorrCalib Objects found closest id %d from run: %d", closest, contRF->LowerLimit(closest)));
+    rundeprecal = (TH1S*) contRF->GetObjectByIndex(closest);  
   } 
   
   if (fDebugLevel>0) rundeprecal->Print();
