@@ -823,6 +823,12 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			  }
 			  Int_t labelK0Dau = part->GetDaughter(0);
 			  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelK0Dau));
+			  if(!partK0S){
+			    AliError("Error while casting particle! returning a NULL array");
+			    delete [] fLabelArray;
+			    fLabelArray = 0x0;
+			    return bLabelArray;
+			  }		    
 			  Int_t nDauRes=partK0S->GetNDaughters();
 			  if(nDauRes!=2 || partK0S->GetPdgCode()!=310) {
 			    delete [] fLabelArray;

@@ -187,7 +187,9 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetGeneratedValuesFromMCParticle(Double_t
   AliAODMCParticle* mcPartDaughterV0=0;
   if (fGenLcOption==kCountLambdapi) {
     mcPartDaughterV0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0lc)); // strange baryon (0)
-    AliInfo(Form(" Case Lc->Lambda+pi: (V0) daughter0_Lc=%d (%d)",daughter0lc,mcPartDaughterV0->GetPdgCode()));
+    if(mcPartDaughterV0){
+      AliInfo(Form(" Case Lc->Lambda+pi: (V0) daughter0_Lc=%d (%d)",daughter0lc,mcPartDaughterV0->GetPdgCode()));
+    }
   }
   else if (fGenLcOption==kCountK0Sp) {
     AliAODMCParticle* mcPartDaughterK0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1lc)); // strange meson (1)
@@ -195,6 +197,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetGeneratedValuesFromMCParticle(Double_t
     if (TMath::Abs(mcPartDaughterK0->GetPdgCode())!=311) return bGenValues;
     Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);
     mcPartDaughterV0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughterK0));
+    if (!mcPartDaughterV0) return bGenValues;
     if (TMath::Abs(mcPartDaughterV0->GetPdgCode())!=310) return bGenValues;
     AliInfo(Form(" Case Lc->K0S+p: (V0) daughter1_Lc=%d (%d to %d)",daughter1lc,mcPartDaughterK0->GetPdgCode(),
 		 mcPartDaughterV0->GetPdgCode()));
@@ -204,11 +207,15 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetGeneratedValuesFromMCParticle(Double_t
   AliAODMCParticle* mcPartDaughterBachelor=0;
   if (fGenLcOption==kCountLambdapi) {
     mcPartDaughterBachelor = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1lc)); // meson (1)
-    AliInfo(Form(" Case Lc->Lambda+pi: (bachelor) daughter1_Lc=%d (%d)",daughter1lc,mcPartDaughterBachelor->GetPdgCode()));
+    if(mcPartDaughterBachelor){
+      AliInfo(Form(" Case Lc->Lambda+pi: (bachelor) daughter1_Lc=%d (%d)",daughter1lc,mcPartDaughterBachelor->GetPdgCode()));
+    }
   }
   if (fGenLcOption==kCountK0Sp) {
     mcPartDaughterBachelor = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0lc)); // baryon (0)
-    AliInfo(Form(" Case Lc->K0S+p: (bachelor) daughter0_Lc=%d (%d)",daughter0lc,mcPartDaughterBachelor->GetPdgCode()));
+    if(mcPartDaughterBachelor){
+      AliInfo(Form(" Case Lc->K0S+p: (bachelor) daughter0_Lc=%d (%d)",daughter0lc,mcPartDaughterBachelor->GetPdgCode()));
+    }
   }
 
   if (!mcPartDaughterV0 || !mcPartDaughterBachelor) return bGenValues;
@@ -478,8 +485,16 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       if (mcPartDaughter0->GetNDaughters()!=2) return checkCD;
       Int_t daughter0D0 = mcPartDaughter0->GetDaughter(0);
       AliAODMCParticle* mcPartDaughter0D0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0D0));
+      if(!mcPartDaughter0D0){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       Int_t daughter0D1 = mcPartDaughter0->GetDaughter(1);
       AliAODMCParticle* mcPartDaughter0D1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0D1));
+      if(!mcPartDaughter0D1){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       if (!(TMath::Abs(mcPartDaughter0D0->GetPdgCode())==211 &&
 	    TMath::Abs(mcPartDaughter0D1->GetPdgCode())==2212) &&
 	  !(TMath::Abs(mcPartDaughter0D0->GetPdgCode())==2212 &&
@@ -491,8 +506,16 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       if (mcPartDaughter1->GetNDaughters()!=2) return checkCD;
       Int_t daughter1D0 = mcPartDaughter1->GetDaughter(0);
       AliAODMCParticle* mcPartDaughter1D0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1D0));
+      if(!mcPartDaughter1D0){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       Int_t daughter1D1 = mcPartDaughter1->GetDaughter(1);
       AliAODMCParticle* mcPartDaughter1D1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1D1));
+      if(!mcPartDaughter1D1){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       if (!(TMath::Abs(mcPartDaughter1D0->GetPdgCode())==211 &&
 	    TMath::Abs(mcPartDaughter1D1->GetPdgCode())==2212) &&
 	  !(TMath::Abs(mcPartDaughter1D0->GetPdgCode())==2212 &&
@@ -516,6 +539,11 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
     if (TMath::Abs(mcPartDaughter0->GetPdgCode())==311) {
       Int_t daughter = mcPartDaughter0->GetDaughter(0);
       AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter));
+      if(!mcPartDaughter){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
+
       if (!(TMath::Abs(mcPartDaughter->GetPdgCode())==310)) {
 	AliDebug(2, "The K0 (or K0bar) MC doesn't go in K0S, skipping!!");
 	return checkCD;
@@ -523,8 +551,16 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       if (mcPartDaughter->GetNDaughters()!=2) return checkCD;
       Int_t daughterD0 = mcPartDaughter->GetDaughter(0);
       AliAODMCParticle* mcPartDaughterD0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughterD0));
+      if(!mcPartDaughterD0){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       Int_t daughterD1 = mcPartDaughter->GetDaughter(1);
       AliAODMCParticle* mcPartDaughterD1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughterD1));
+      if(!mcPartDaughterD1){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       if (!(TMath::Abs(mcPartDaughterD0->GetPdgCode())==211 &&
 	    TMath::Abs(mcPartDaughterD1->GetPdgCode())==211)) {
 	AliDebug(2, "The K0S MC doesn't decay in pi+pi, skipping!!");
