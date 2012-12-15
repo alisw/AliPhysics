@@ -417,6 +417,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F *       fhMixXECharged;                 //! xE for mixed event
+  TH2F *       fhMixXEUeCharged;               //! xE for mixed event in Ue region
   TH2F *       fhMixHbpXECharged;              //! ln(1/xE) for mixed event
   TH2F **      fhMixDeltaPhiChargedAssocPtBin; //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins
   TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta08;   //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins, delta eta > 0.8
