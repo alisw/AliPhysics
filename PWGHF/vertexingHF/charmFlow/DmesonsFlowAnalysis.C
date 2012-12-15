@@ -318,13 +318,20 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
   Float_t averagePt[nptbinsnew];
   Float_t errorPt[nptbinsnew];
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
-    TH1F *histtofit = (TH1F*)hmasspt->ProjectionY("_py",hmasspt->FindBin(ptbinsnew[ipt]),hmasspt->FindBin(ptbinsnew[ipt+1]));
+    Int_t binMin=hmasspt->FindBin(ptbinsnew[ipt]);
+    Int_t binMax=hmasspt->FindBin(ptbinsnew[ipt+1]-0.001);
+    if(TMath::Abs(hmasspt->GetXaxis()->GetBinLowEdge(binMin)-ptbinsnew[ipt])>0.001 || 
+       TMath::Abs(hmasspt->GetXaxis()->GetBinUpEdge(binMax)-ptbinsnew[ipt+1])>0.001){
+      printf("Error in pt bin limits for projection!");
+      return;
+    }
+    TH1F *histtofit = (TH1F*)hmasspt->ProjectionY("_py",binMin,binMax);
     AliHFMassFitter fitter(histtofit,histtofit->GetBinLowEdge(2),histtofit->GetBinLowEdge(histtofit->GetNbinsX()-2),1);
     fitter.MassFitter(kFALSE);
     Float_t massFromFit=fitter.GetMean();
     Float_t sigmaFromFit=fitter.GetSigma();
     TF1* funcB2=fitter.GetBackgroundRecalcFunc();
-    utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2);
+    utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,1);
   }
 
   printf("Fill TGraphs for signal \n");
