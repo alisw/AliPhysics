@@ -262,7 +262,7 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
 
   // Histograms for different centralities
   char key[55] ;
-  for(Int_t cent=0; cent < fCentEdges.GetSize(); cent++){
+  for(Int_t cent=0; cent < fCentEdges.GetSize()-1; cent++){
     snprintf(key,55,"hPhotAll_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"All clusters",nPtPhot,0.,ptPhotMax));
     snprintf(key,55,"hPhotAllcore_cen%d",cent) ;
@@ -433,7 +433,7 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
       snprintf(phiTitle,15,"V0A") ;
     if(iRP==2)
       snprintf(phiTitle,15,"V0C") ;
-    for(Int_t cent=0; cent<fCentEdges.GetSize(); cent++){
+    for(Int_t cent=0; cent<fCentEdges.GetSize()-1; cent++){
       snprintf(key,55,"hPhotPhi%sAll_cen%d",phiTitle,cent) ;
       fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
       snprintf(key,55,"hPhotPhi%sAllcore_cen%d",phiTitle,cent) ;
