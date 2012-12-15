@@ -165,7 +165,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhNtracksAll(0),                fhNtracksTrigger(0),            fhNtracksMB(0),
     fhNclustersAll(0),              fhNclustersTrigger(0),          fhNclustersMB(0),
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
-    fhMixXECharged(0),              fhMixHbpXECharged(0),
+    fhMixXECharged(0),              fhMixXEUeCharged(0),            fhMixHbpXECharged(0),
     fhMixDeltaPhiChargedAssocPtBin(),
     fhMixDeltaPhiChargedAssocPtBinDEta08(),
     fhMixDeltaPhiChargedAssocPtBinDEta0(),
@@ -2364,8 +2364,15 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhMixXECharged->SetYTitle("x_{E}");
     fhMixXECharged->SetXTitle("p_{T trigger} (GeV/c)");
     outputContainer->Add(fhMixXECharged);
+    
+    fhMixXEUeCharged  =
+    new TH2F("hMixXEUeCharged","Mixed event : x_{E} for charged tracks in Ue region",
+             nptbins,ptmin,ptmax,200,0.,2.);
+    fhMixXEUeCharged->SetYTitle("x_{E}");
+    fhMixXEUeCharged->SetXTitle("p_{T trigger} (GeV/c)");
+    outputContainer->Add(fhMixXEUeCharged);
 
-    fhMixHbpXECharged  = 
+    fhMixHbpXECharged  =
     new TH2F("hMixHbpXECharged","mixed event : #xi = ln(1/x_{E}) with charged hadrons",
              nptbins,ptmin,ptmax,200,0.,10.); 
     fhMixHbpXECharged->SetYTitle("ln(1/x_{E})");
@@ -2945,13 +2952,14 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       pout = pt*TMath::Sin(deltaPhi) ;
       
       //delta phi cut for momentum imbalance correlation
-      if      ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   ) 
+      if  ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       {
         
         FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, 
                                                nTracks, track->Charge(), bin, decay,outTOF,mcTag);
         
-      } 
+      }
+      
       if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
       { //UE study
         
@@ -3238,12 +3246,23 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
       else        hbpXE =-100;
 
-      if      ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   ) 
+      if ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       {
         fhMixXECharged->Fill(ptTrig,xE);
         fhMixHbpXECharged->Fill(ptTrig,hbpXE);
       }
-
+      
+      if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
+      {
+        //Underlying event region
+        Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+        Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
+        
+        if(uexE < 0.) uexE = -uexE;
+        
+        fhMixXEUeCharged->Fill(ptTrig,uexE);
+      }
+      
       if(bin < 0) continue ; // this pt bin was not considered
       
       if(TMath::Abs(deltaEta) > 0.8) 
