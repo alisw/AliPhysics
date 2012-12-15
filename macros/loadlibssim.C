@@ -89,8 +89,8 @@ Int_t loadlibssim ()
   if ( gSystem->Load("libTRDsim") < 0 ) return ret; ret--;
   if ( gSystem->Load("libTRDrec") < 0 ) return ret; ret--; // Needed by libAliHLTTRD
   if ( gSystem->Load("libTOFbase") < 0 ) return ret; ret--;
-  if ( gSystem->Load("libTOFrec") < 0 ) return ret; ret--;
   if ( gSystem->Load("libTOFsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTOFrec") < 0 ) return ret; ret--;
 
   if ( gSystem->Load("libHLTbase") < 0 ) return ret; ret--;
   if ( gSystem->Load("libHLTinterface") < 0 ) return ret; ret--;
