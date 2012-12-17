@@ -1735,7 +1735,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
     TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
     TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
     TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
-    if(!qcorr && !qcsub1 && !qcsub2) {
+    if(qcorr && qcsub1 && qcsub2) {
 
       values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();

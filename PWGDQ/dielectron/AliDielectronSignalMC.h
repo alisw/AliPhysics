@@ -65,7 +65,7 @@ class AliDielectronSignalMC : public TNamed {
   
  public:
   enum EBranchRelation {kUndefined=0, kSame, kDifferent};
-  enum ESource {kDontCare=0, kPrimary, kFinalState, kDirect, kSecondary};
+  enum ESource {kDontCare=0, kPrimary, kFinalState, kDirect, kSecondary, kNoCocktail};
   enum EJpsiRadiativ {kAll=0, kIsRadiative, kIsNotRadiative};
   
   AliDielectronSignalMC();
