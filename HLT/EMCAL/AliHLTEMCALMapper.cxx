@@ -22,6 +22,7 @@
 #include "assert.h"
 #include "AliHLTCaloConstants.h"
 #include "TString.h"
+#include <memory>
 
 using EMCAL::NXCOLUMNSMOD;
 using EMCAL::NZROWSMOD;
@@ -72,12 +73,12 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
       snprintf(fFilepath,FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base.Data(),   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
       snprintf(fFilepath, FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base.Data(),   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
 
-      FILE *fp = fopen(fFilepath, "r");
-      if(fp != 0)
+      std::auto_ptr<FILE> fp(fopen(fFilepath, "r"));
+      if(fp.get() != 0)
 	{
-	  res = fscanf(fp, "%d\n", &nChannels);
+	  res = fscanf(fp.get(), "%d\n", &nChannels);
 	  if (res!=1) return false;
-	  res = fscanf(fp, "%d\n", &maxaddr);
+	  res = fscanf(fp.get(), "%d\n", &maxaddr);
 	  if (res!=1) return false;
 	  //	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 	  fHw2geomapPtr = new fAltromap[MAXHWADDR +1];
@@ -94,7 +95,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	    {
 	      for(int i=0; i<nChannels; i ++)
 		{
-		  res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+		  res = fscanf(fp.get(), "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
 		  if (res!=4) return false;
 		  
 		  if(tmpGain < 2)
@@ -113,7 +114,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	    {
 	      fIsInitializedMapping = false;	   
 	    }
-	  fclose(fp);
+	  fclose(fp.get());
 	}
       else
 	{
