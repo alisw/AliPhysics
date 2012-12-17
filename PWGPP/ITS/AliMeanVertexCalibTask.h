@@ -58,7 +58,7 @@ class AliMeanVertexCalibTask : public AliAnalysisTaskSE
   AliMeanVertexCalibTask(const AliMeanVertexCalibTask&);
   AliMeanVertexCalibTask& operator=(const AliMeanVertexCalibTask&);
  
-  AliESDVertex* ReconstructPrimaryVertex(Bool_t constr=kFALSE, Int_t mode=0) const;
+  //AliESDVertex* ReconstructPrimaryVertex(Bool_t constr=kFALSE, Int_t mode=0) const;
   
   ClassDef(AliMeanVertexCalibTask, 1);
   
