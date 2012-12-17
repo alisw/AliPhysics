@@ -66,7 +66,7 @@ ClassImp(AliAnalysisTaskPhiFlow)
 ClassImp(AliPhiMesonHelperTrack)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fAODAnalysis(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fCentrality(999), fVertex(999), fESD(0), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0)
+   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fAODAnalysis(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fCentrality(999), fVertex(999), fESD(0), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0)
 {
    // Default constructor
    for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -83,7 +83,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fAODAnalysis(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fCentrality(999), fVertex(999), fESD(0), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0)
+   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fAODAnalysis(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fNPtBins(18), fCentrality(999), fVertex(999), fESD(0), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0)
 {
    // Constructor
    for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -215,6 +215,12 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
        fOutputList->Add(fDCAXYQA);
        fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
        fOutputList->Add(fDCAZQA);
+       if(fCentralityCut) {
+           fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+           fOutputList->Add(fMultCorAfterCuts);
+           fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 8.5, 100, 0, 3000);
+           fOutputList->Add(fMultvsCentr);
+       }
    }
    if(fIsMC || fQA) {
        fDCAAll = new TH2F("fDCAAll", "fDCAAll", 1000, 0, 10, 1000, -5, 5);
@@ -380,21 +386,46 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
 {
    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
    if(fDebug > 0) cout << " *** CheckCentrality() *** " << endl;
-   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
-   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax)) {
+   if (!fkCentralityMethodA) AliFatal("No centrality method set! FATAL ERROR!");
+   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodA);
+   Double_t cenB(-999);
+   // if a second centrality estimator is requited, set it
+   (fkCentralityMethodB) ? cenB = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodB) : cenB = fCentrality;
+   if (TMath::Abs(fCentrality-cenB > 5) || cenB >= 80 || cenB < 0 || fCentrality <= fCentralityMin || fCentrality > fCentralityMax) {
       if(fQA) fCentralityNoPass->Fill(fCentrality) ;
       return kFALSE;
    }
+   const Int_t nGoodTracks = event->GetNumberOfTracks();
+   if(fCentralityCut) { // cut on outliers
+      Float_t multTPC(0.); // tpc mult estimate
+      Float_t multGlob(0.); // global multiplicity
+      for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+          AliAODTrack* trackAOD = event->GetTrack(iTracks);
+          if (!trackAOD) continue;
+          if (!(trackAOD->TestFilterBit(1))) continue;
+          if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+          multTPC++;
+      }
+      for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+          AliAODTrack* trackAOD = event->GetTrack(iTracks);
+          if (!trackAOD) continue;
+          if (!(trackAOD->TestFilterBit(16))) continue;
+          if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+          Double_t b[2] = {-99., -99.};
+          Double_t bCov[3] = {-99., -99., -99.};
+          if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+          if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+          multGlob++;
+      } //track loop
+ //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
+      if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) return kFALSE;
+      if(fQA) {  
+          fMultCorAfterCuts->Fill(multGlob, multTPC);  
+          fMultvsCentr->Fill(fCentrality, multTPC);
+      }
+   }
    fCentralityPass->Fill(fCentrality);
    return kTRUE;
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::InitializeBayesianPID(AliESDEvent* event)
-{
-   // Initialize the Bayesian PID object for ESD analysis
-   if(fDebug > 0) cout << " *** InitializeBayesianPID() *** " << endl;
-   fBayesianResponse->SetDetResponse(event, fCentrality, AliESDpid::kTOF_T0, kTRUE);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::InitializeBayesianPID(AliAODEvent* event)
@@ -455,20 +486,6 @@ Bool_t AliAnalysisTaskPhiFlow::PassesDCACut(AliAODTrack* track) const
         fDCAPrim->Fill(track->Pt(), b[0]);
     }
     return kTRUE;
-}
-//_____________________________________________________________________________
-Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliESDtrack* track) const
-{
-   // Check if particle is a kaon according to method set in steering macro
-   if(fDebug > 1) cout << " *** IsKaon() *** " << endl;
-   if (fRequireTPCStandAlone && (track->GetStatus()&AliESDtrack::kTPCin) == 0) return kFALSE;
-   if (fPIDConfig[1]!=0 || fPIDConfig[4]!=0) AliFatal("TPC || ITS PID not available in ESD anlaysis -- terminating analysis !!!");
-   if (PassesTPCbayesianCut(track))
-   {
-     if(fQA) fPIDk->Fill(track->P(), track->GetTPCsignal());
-     return kTRUE;
-   }
-   return kFALSE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
@@ -750,107 +767,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
       PostData(1, fOutputList);
       PostData(2, fFlowEvent);
    }
-   fESD = dynamic_cast<AliESDEvent*>(InputEvent()); // check for esd data type (obsolete)
-   if (fESD) {
-      if(fV0 || fEventMixing) {
-          if (fDebug > 0 ) cout << " FATAL ERROR: AOD only analysis called on ESD data, skipping input !!! " << endl;
-          return;
-      }
-      fAODAnalysis = kFALSE;
-      if (!EventCut(fESD)) return; // check event cuts
-      InitializeBayesianPID(fESD);
-      SetNullCuts(fESD);
-      PrepareFlowEvent(fESD->GetNumberOfTracks());
-      if(fQA) fEventStats->Fill(0);
-      Int_t unTracks = fESD->GetNumberOfTracks();
-      AliESDtrack* un[unTracks];
-      AliESDtrack* up[unTracks];
-      Int_t unp(0);
-      Int_t unn(0);
-      for (Int_t iTracks = 0; iTracks < unTracks; iTracks++) { // select analysis candidates
-         AliESDtrack* track = fESD->GetTrack(iTracks);
-         if (!PhiTrack(track)) continue;
-         Bool_t charge = kFALSE;
-         if (track->Charge() > 0) {
-            charge = kTRUE;
-            if(fQA) {fEventStats->Fill(1); fPtP->Fill(track->Pt());}
-         }
-         if (track->Charge() < 0) {
-            if(fQA) fEventStats->Fill(2);
-            fPtN->Fill(track->Pt());
-         }
-         if (IsKaon(track)) {
-            if (charge) {
-               up[unp] = track;
-               unp++;
-               if(fQA) {fEventStats->Fill(3);fPtKP->Fill(track->Pt());}
-            }
-            if (!charge) {
-               un[unn] = track;
-               unn++;
-               if(fQA) {fEventStats->Fill(4); fPtKN->Fill(track->Pt());}
-            }
-         }
-      }
-        for (Int_t pTracks = 0; pTracks < unp ; pTracks++) { // perform analysis
-         for (Int_t nTracks = 0; nTracks < unn ; nTracks++) {
-            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], un[nTracks]))) continue;
-            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(up[pTracks], un[nTracks]))) continue;
-            PtSelector(0, up[pTracks], un[nTracks]);
-            Double_t pt = PhiPt(up[pTracks], un[nTracks]);
-            Double_t mass = InvariantMass(up[pTracks], un[nTracks]);
-            TVector3 a(up[pTracks]->Px(), up[pTracks]->Py(), up[pTracks]->Pz());
-            TVector3 b(un[nTracks]->Px(), un[nTracks]->Py(), up[pTracks]->Pz());
-            TVector3 c = a + b;
-            Double_t phi = c.Phi();
-            Double_t eta = c.Eta();
-            Int_t nIDs[2];
-            nIDs[0] = up[pTracks]->GetID();
-            nIDs[1] = un[nTracks]->GetID();
-            MakeTrack(mass, pt, phi, eta, 2, nIDs);
-         }
-      }
-      if (fDebug > 0)  printf("I received %d candidates\n", fCandidates->GetEntriesFast()); // insert candidates in flow event
-      for (int iCand = 0; iCand != fCandidates->GetEntriesFast(); ++iCand) {
-         AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
-         if (!cand) continue;
-         if (fDebug > 1) printf(" >Checking at candidate %d with %d daughters: mass %f\n", iCand, cand->GetNDaughters(), cand->Mass());
-         for (int iDau = 0; iDau != cand->GetNDaughters(); ++iDau) {
-            if (fDebug > 1) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
-            for (int iRPs = 0; iRPs != fFlowEvent->NumberOfTracks(); ++iRPs) {
-               AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack(iRPs));
-               if (!iRP) continue;
-               if (!iRP->InRPSelection()) continue;
-               if (cand->GetIDDaughter(iDau) == iRP->GetID()) {
-                  if (fDebug>1) printf(" was in RP set");
-                  iRP->SetForRPSelection(kFALSE);
-                  fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
-               }
-            }
-            if (fDebug>1) printf("\n");
-         }
-         cand->SetForPOISelection(kTRUE);
-         fFlowEvent->InsertTrack(((AliFlowTrack*) cand));
-      }
-      if (fDebug > 0) printf("TPCevent %d\n", fFlowEvent->NumberOfTracks());
-
-      for (Int_t pTracks = 0; pTracks < unp ; pTracks++) {
-         for (Int_t nTracks = pTracks + 1; nTracks < unp ; nTracks++) {
-            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(up[pTracks], up[nTracks]))) continue;
-            if (fCandidateMinEta && (!CheckCandidateEtaPtCut(up[pTracks], up[nTracks]))) continue;
-            PtSelector(1, up[pTracks], up[nTracks]);
-         }
-      }
-      for (Int_t nTracks = 0; nTracks < unn ; nTracks++) {
-         for (Int_t pTracks = nTracks + 1; pTracks < unn ; pTracks++) {
-            if (fApplyDeltaDipCut && (!CheckDeltaDipAngle(un[nTracks], un[pTracks]))) continue;
-            if (fCandidateEtaPtCut && (!CheckCandidateEtaPtCut(un[nTracks], un[pTracks]))) continue;
-            PtSelector(2, un[nTracks], un[pTracks]);
-         }
-      }
-      PostData(1, fOutputList);
-      PostData(2, fFlowEvent);
-   }
+   if (fESD) AliFatal(" ESD analysis no longer supported ! " );
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::ReconstructionWithEventMixing(TObjArray* MixingCandidates) const

@@ -70,13 +70,15 @@ public:
    template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
-   void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod) { 
-                                                                                          fCentralityMin = CentralityMin; 
-                                                                                          fCentralityMax = CentralityMax; 
-                                                                                          fkCentralityMethod = CentralityMethod; }
+   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c) { 
+                                                                                          fCentralityMin = min; 
+                                                                                          fCentralityMax = max; 
+                                                                                          fkCentralityMethodA = a; 
+                                                                                          fkCentralityMethodB = b;
+                                                                                          fCentralityCut = c; }
    Double_t                             GetCenMin() const {return fCentralityMin; }
    Double_t                             GetCenMax() const {return fCentralityMax; }
-   const char*                          GetCentralityMethod() const {return fkCentralityMethod; }
+   const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
    void                                 SetVertexZ(Float_t z) { fVertexRange = z; }
    Float_t                              GetVertexZ() const { return fVertexRange; }
    void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
@@ -88,11 +90,9 @@ public:
    template <typename T> void           PlotMultiplcities(const T* event) const;
    template <typename T> Bool_t         CheckVertex(const T* event);
    template <typename T> Bool_t         CheckCentrality(T* event);
-   void                                 InitializeBayesianPID(AliESDEvent* event);
    void                                 InitializeBayesianPID(AliAODEvent* event);
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track) const;
    Bool_t                               PassesDCACut(AliAODTrack* track) const;
-   Bool_t                               IsKaon(AliESDtrack* track) const;
    Bool_t                               IsKaon(AliAODTrack* track) const;
    template <typename T> Double_t       PhiPt(const T* track_1, const T* track_2) const;
    template <typename T> void           PtSelector(Int_t _track_type, const T* track_1, const T* track_2) const;
@@ -183,9 +183,13 @@ private:
    TH1F                 *fPtN; //! QA histogram of p_t distribution of negative particles
    TH1F                 *fPtKP; //! QA histogram of p_t distribution of positive kaons
    TH1F                 *fPtKN; //! QA histogram of p_t distribution of negative kaons
+   TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
+   TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
    Double_t             fCentralityMin; // lower bound of cenrality bin
    Double_t             fCentralityMax; // upper bound of centrality bin
-   const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
+   const char           *fkCentralityMethodA; // method used to determine centrality, default
+   const char           *fkCentralityMethodB; // method used to determine centrality, fallback
+   Bool_t               fCentralityCut; // cut away the multiplicity outliers
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
    Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation

@@ -55,9 +55,9 @@ static Int_t OnTheFlyEventGeneratorCounter = 0;
 
 ClassImp(AliFlowOnTheFlyEventGenerator)
 //_____________________________________________________________________________
-AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator() : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(0) {/* constructor used for IO by root */}
+AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator() : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(0), fFF(0) {/* constructor used for IO by root */}
 //_____________________________________________________________________________
-AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator(Bool_t qa, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d) : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(qa) {
+AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator(Bool_t qa, Bool_t ff, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d) : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(qa), fFF(ff) {
     // contructor
     if(!fFlowEvent) fFlowEvent = new AliFlowEventSimple(mult, (AliFlowEventSimple::ConstructionMethod)0, 0x0, 0, TMath::TwoPi(), -.9, .9);
     if(!fGenerators) {
@@ -89,7 +89,7 @@ AliFlowOnTheFlyEventGenerator::NaiveFlowAndSpectrumGenerator* AliFlowOnTheFlyEve
         }
     }
     if(make) {
-        AliFlowOnTheFlyEventGenerator::NaiveFlowAndSpectrumGenerator* _tmp = new AliFlowOnTheFlyEventGenerator::NaiveFlowAndSpectrumGenerator(pdg, fQA);
+        AliFlowOnTheFlyEventGenerator::NaiveFlowAndSpectrumGenerator* _tmp = new AliFlowOnTheFlyEventGenerator::NaiveFlowAndSpectrumGenerator(pdg, fQA, fFF);
         fGenerators->Add(_tmp);
         return _tmp;
     }
@@ -422,7 +422,7 @@ void AliFlowOnTheFlyEventGenerator::InitGenerators()
                         3322, // xi0
                         3324, // xi*0
                         3334}; // Omeg
-   for(int i(0); i < 47; i++) fGenerators->Add(new NaiveFlowAndSpectrumGenerator(PDGcode[i], fQA));
+   for(int i(0); i < 47; i++) fGenerators->Add(new NaiveFlowAndSpectrumGenerator(PDGcode[i], fQA, fFF));
 }
 //_____________________________________________________________________________
 void AliFlowOnTheFlyEventGenerator::PrintGenerators()
