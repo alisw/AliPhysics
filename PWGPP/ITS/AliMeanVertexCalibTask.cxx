@@ -25,11 +25,15 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <string.h>
 
 #include "AliMultiplicity.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliVertexerTracks.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGRPRecoParam.h"
 
 #include "AliMeanVertexCalibTask.h"
 
@@ -150,12 +154,63 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   const AliMultiplicity *alimult = esdE->GetMultiplicity();
   Int_t ntrklets=0;
   if(alimult) ntrklets = alimult->GetNumberOfTracklets();
-   
+  
+  const char* beamType = esdE->GetBeamType();
+  Printf("beam type = %s", beamType);
 
-  const AliESDVertex *trkv = esdE->GetPrimaryVertexTracks();
+  Bool_t kLowFlux = kTRUE, kHighFlux = kFALSE;
+  // TString pp= "p-p";
+  //TString pA= "p-A";
+  TString AA= "A-A";
+
+  if (beamType == AA){ 
+    kHighFlux = kTRUE;
+    kLowFlux = kFALSE;
+    Printf ("high flux setting");
+    }
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  Int_t runNb = esdE->GetRunNumber();
+  man->SetRun(runNb);
+  Printf("runNb = %d", runNb);
+  AliCDBEntry *entry = (AliCDBEntry*)man->Get("GRP/Calib/RecoParam/");
+  Printf("entry = %p", entry);
+
+  TObjArray *arrayRecoParam = (TObjArray*)entry->GetObject();
+  Printf("arrayRecoParam = %p", arrayRecoParam);
+  
+  AliGRPRecoParam *grpRecoParam=0x0;
+  if (kLowFlux) grpRecoParam= (AliGRPRecoParam*)arrayRecoParam->At(1);
+  else if (kHighFlux) grpRecoParam = (AliGRPRecoParam*)arrayRecoParam->At(2);
+  
+  grpRecoParam->Dump();
+
+  AliVertexerTracks *vertexer= new AliVertexerTracks(esdE->GetMagneticField());
+  vertexer->SetITSMode();
+  vertexer->SetConstraintOff();
+    
+  if (grpRecoParam) {
+    Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
+    Double_t *cutsVertexer = new Double_t[nCutsVertexer];
+    grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer,nCutsVertexer);
+    vertexer->SetCuts(cutsVertexer,nCutsVertexer);
+    delete [] cutsVertexer; cutsVertexer = NULL; 
+   }
+   
+  vertexer->SetConstraintOff();
+
+  //track vertex recomputed from the vertexer
+  AliESDVertex *trkv = vertexer->FindPrimaryVertex(esdE);
+  Printf ("trkv = %p", trkv); 
+  //const AliESDVertex *trkv = esdE->GetPrimaryVertexTracks();
+  
+  //SPD vertex taken from the ESD 
   const AliESDVertex *spdv = esdE->GetPrimaryVertexSPD();
 
-  AliESDVertex *itsSAv = ReconstructPrimaryVertex(kFALSE); 
+  //ITSSA vertex computed from the vertexer
+  vertexer->SetITSpureSA();
+  AliESDVertex *itsSAv = vertexer->FindPrimaryVertex(esdE);
 
   if(spdv) {
     if(spdv->GetNContributors()>0) {
@@ -179,42 +234,43 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
 	((TH1F*)fOutput->FindObject("hTRKVertexXdefMult"))->Fill(trkv->GetXv());
 	((TH1F*)fOutput->FindObject("hTRKVertexYdefMult"))->Fill(trkv->GetYv());
       }
-		
-	  if (ntrklets>1500){
-			((TH1F*)fOutput->FindObject("hTRKVertexXHighMult"))->Fill(trkv->GetXv());
-			((TH1F*)fOutput->FindObject("hTRKVertexYHighMult"))->Fill(trkv->GetYv());
-		}
+      
+      if (ntrklets>1500){
+	((TH1F*)fOutput->FindObject("hTRKVertexXHighMult"))->Fill(trkv->GetXv());
+	((TH1F*)fOutput->FindObject("hTRKVertexYHighMult"))->Fill(trkv->GetYv());
+      }
       
       ((TH2F*)fOutput->FindObject("hTRKVertexXZ"))->Fill(trkv->GetXv(),trkv->GetZv());
       ((TH2F*)fOutput->FindObject("hTRKVertexYZ"))->Fill(trkv->GetYv(),trkv->GetZv());
       
     }
   }
-
+  
   if (itsSAv){
     if (itsSAv->GetNContributors()>0){
-  
+      
       ((TH1F*)fOutput->FindObject("hITSSAVertexX"))->Fill(itsSAv->GetXv());
       ((TH1F*)fOutput->FindObject("hITSSAVertexY"))->Fill(itsSAv->GetYv());
       ((TH1F*)fOutput->FindObject("hITSSAVertexZ"))->Fill(itsSAv->GetZv());
       
-		if (ntrklets>30 && ntrklets<45){
-			((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());
-		    ((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetYv());
-		}
-		
-		if (ntrklets>1500){
-			((TH1F*)fOutput->FindObject("hITSSAVertexXHighMult"))->Fill(itsSAv->GetXv());
-			((TH1F*)fOutput->FindObject("hITSSAVertexYHighMult"))->Fill(itsSAv->GetYv());
-		}
+      if (ntrklets>30 && ntrklets<45){
+	((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());
+	((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetYv());
+      }
+      
+      if (ntrklets>1500){
+	((TH1F*)fOutput->FindObject("hITSSAVertexXHighMult"))->Fill(itsSAv->GetXv());
+	((TH1F*)fOutput->FindObject("hITSSAVertexYHighMult"))->Fill(itsSAv->GetYv());
+      }
       
       ((TH2F*)fOutput->FindObject("hITSSAVertexXZ"))->Fill(itsSAv->GetXv(),itsSAv->GetZv());
       ((TH2F*)fOutput->FindObject("hITSSAVertexYZ"))->Fill(itsSAv->GetYv(),itsSAv->GetZv());
-     
+      
     }
   }
 
   delete itsSAv;
+  delete vertexer;
   
   PostData(1, fOutput);
   
@@ -241,51 +297,51 @@ void AliMeanVertexCalibTask::Terminate(Option_t *)
 
 
 //__________________________________________________________________________
-AliESDVertex* AliMeanVertexCalibTask::ReconstructPrimaryVertex(Bool_t constr,Int_t mode) const {
-  // On the fly reco of ITS+TPC vertex from ESD
-  // mode=0 use all tracks
-  // mode=1 use odd-number tracks
-  // mode=2 use even-number tracks
+// AliESDVertex* AliMeanVertexCalibTask::ReconstructPrimaryVertex(Bool_t constr,Int_t mode) const {
+//   // On the fly reco of ITS+TPC vertex from ESD
+//   // mode=0 use all tracks
+//   // mode=1 use odd-number tracks
+//   // mode=2 use even-number tracks
 
-  AliESDEvent* evt = (AliESDEvent*) fInputEvent;
-  AliVertexerTracks vertexer(evt->GetMagneticField());
-  if(evt->GetNumberOfTracks()<500) {
-    vertexer.SetITSMode(); // defaults
-    vertexer.SetMinClusters(4); // default is 5
-  } else { 
-    vertexer.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1);// PbPb
-  } 
-  if (fOnlyITSSATracks) vertexer.SetITSpureSA();
+//   AliESDEvent* evt = (AliESDEvent*) fInputEvent;
+//   AliVertexerTracks vertexer(evt->GetMagneticField());
+//   if(evt->GetNumberOfTracks()<500) {
+//     vertexer.SetITSMode(); // defaults
+//     vertexer.SetMinClusters(4); // default is 5
+//   } else { 
+//     vertexer.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1);// PbPb
+//   } 
+//   if (fOnlyITSSATracks) vertexer.SetITSpureSA();
   
-  Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
-  Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
-  Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-  AliESDVertex *initVertex = new AliESDVertex(pos,cov,1.,1);
-  vertexer.SetVtxStart(initVertex);
-  delete initVertex;
-  if(!constr) vertexer.SetConstraintOff();
+//   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
+//   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
+//   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+//   AliESDVertex *initVertex = new AliESDVertex(pos,cov,1.,1);
+//   vertexer.SetVtxStart(initVertex);
+//   delete initVertex;
+//   if(!constr) vertexer.SetConstraintOff();
 
-  if(fOnlyITSTPCTracks || fOnlyITSSATracks || mode>0) {
-    Int_t iskip=0;
-    Int_t ntracks = evt->GetNumberOfTracks();
-    Int_t *skip = new Int_t[ntracks];
-    for(Int_t i=0;i<ntracks;i++) skip[i]=-1;
-    for(Int_t itr=0;itr<ntracks; itr++) {
-      AliESDtrack* track = evt->GetTrack(itr);
-      if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
-	skip[iskip++]=itr;
-	continue;
-      }
-      if(fOnlyITSSATracks && track->GetNcls(1)>0) { // skip ITSTPC
-	skip[iskip++]=itr;
-	continue;
-      }
-      if(mode==1 && itr%2==0) skip[iskip++]=itr;
-      if(mode==2 && itr%2==1) skip[iskip++]=itr;
-    }
-    vertexer.SetSkipTracks(iskip,skip);
-    delete [] skip; skip=NULL;
-  }
+//   if(fOnlyITSTPCTracks || fOnlyITSSATracks || mode>0) {
+//     Int_t iskip=0;
+//     Int_t ntracks = evt->GetNumberOfTracks();
+//     Int_t *skip = new Int_t[ntracks];
+//     for(Int_t i=0;i<ntracks;i++) skip[i]=-1;
+//     for(Int_t itr=0;itr<ntracks; itr++) {
+//       AliESDtrack* track = evt->GetTrack(itr);
+//       if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
+// 	skip[iskip++]=itr;
+// 	continue;
+//       }
+//       if(fOnlyITSSATracks && track->GetNcls(1)>0) { // skip ITSTPC
+// 	skip[iskip++]=itr;
+// 	continue;
+//       }
+//       if(mode==1 && itr%2==0) skip[iskip++]=itr;
+//       if(mode==2 && itr%2==1) skip[iskip++]=itr;
+//     }
+//     vertexer.SetSkipTracks(iskip,skip);
+//     delete [] skip; skip=NULL;
+//   }
   
-  return vertexer.FindPrimaryVertex(evt);
-}
+//   return vertexer.FindPrimaryVertex(evt);
+// }
