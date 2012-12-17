@@ -2120,7 +2120,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     fhSelectedAsymmetry->Fill(mom.E(),asy);
 
-    if( fUseSplitAsyCut &&  GetCaloPID()->IsInPi0SplitAsymmetryRange(mom.E(),asy,nMaxima) )
+    if( fUseSplitAsyCut &&  !GetCaloPID()->IsInPi0SplitAsymmetryRange(mom.E(),asy,nMaxima) )
     {
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Too large asymmetry\n");
       FillRejectedClusterHistograms(mom,tag);

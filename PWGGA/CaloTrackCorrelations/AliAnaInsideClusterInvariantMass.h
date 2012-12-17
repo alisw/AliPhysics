@@ -208,6 +208,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassEtaLocMaxN[7][2] ;                 //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConLocMaxN[7][2] ;                 //! Mass for selected around close to 0, N Local Maxima > 2
   
+  TH2F       * fhMassPi0AsyCutLocMax1[7][2] ;           //! Mass for selected pi0, N Local Maxima = 1, asy cut passed
+  TH2F       * fhMassPi0AsyCutLocMax2[7][2] ;           //! Mass for selected pi0, N Local Maxima = 2, asy cut passed
+  TH2F       * fhMassPi0AsyCutLocMaxN[7][2] ;           //! Mass for selected pi0, N Local Maxima > 2, asy cut passed
+  
   TH2F       * fhAsyPi0LocMax1[7][2] ;                  //! Asy for Mass around pi0, N Local Maxima = 1
   TH2F       * fhAsyEtaLocMax1[7][2] ;                  //! Asy for Mass around eta, N Local Maxima = 1
   TH2F       * fhAsyConLocMax1[7][2] ;                  //! Asy for Mass around close to 0, N Local Maxima = 1
