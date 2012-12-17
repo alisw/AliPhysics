@@ -126,6 +126,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
   //man->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
   if(!man) return; 
   AliCDBEntry* entry = man->Get("GRP/Calib/QAThresholds");
+  if(!entry) return; 
   TObjArray* t0branch = (TObjArray*) entry->GetObject();
   if(!list) return;
   AliQAThresholds*  thresholds = (AliQAThresholds*) t0branch->FindObject("T00");
