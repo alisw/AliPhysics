@@ -1942,7 +1942,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        FillPileUpHistograms(mom.E(),cluster->GetTOF()*1e9);     
+        if(cluster)FillPileUpHistograms(mom.E(),cluster->GetTOF()*1e9);
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
