@@ -35,6 +35,7 @@
 #include "TDatime.h"
 #include "TError.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TH2.h"
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -792,9 +793,14 @@ TGraph* AliAnalysisTriggerScalers::MakeGraph(const std::vector<int>& vx,
     ey[i] = vey[i];
   }
   
-  TGraph* g = new TGraph(vx.size(),x,y);
+  TGraph* g = new TGraphErrors(vx.size(),x,y,ex,ey);
   
   TimeAxis(g);
+  
+  delete[] x;
+  delete[] y;
+  delete[] ex;
+  delete[] ey;
   
   return g;
 }
