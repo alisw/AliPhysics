@@ -189,7 +189,7 @@ void AliZDCQADataMakerRec::InitRaws()
   
   TProfile * hRawADCProfs = new TProfile("hRawADCProfs", "ADC profiles;ADC id;Mean ADC values",22,-0.5,21.5,10.,1210.,"");
   Add2RawsList(hRawADCProfs, 20, expert, !image);
-  TProfile * hRawTDCProfs = new TProfile("hRawTDCProfs", "TDC profiles;TDC id;Mean TDC values",6,0.5,6.5,-320.,-250.,"S");
+  TProfile * hRawTDCProfs = new TProfile("hRawTDCProfs", "TDC profiles;TDC id;Mean TDC values",6,0.5,6.5,-340.,-290.,"S");
   Add2RawsList(hRawTDCProfs, 21, expert, !image);
   
   TH1F * hRawADCs = new TH1F("hRawADCs", "ADCs;ADC id;Mean ADC values",22,-0.5,21.5);
