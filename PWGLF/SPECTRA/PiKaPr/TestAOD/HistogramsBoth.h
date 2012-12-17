@@ -10,7 +10,7 @@
 
 namespace AliSpectraNameSpaceBoth
 {
-   enum AODPtHist_t
+   enum BothPtHist_t
    {
 
       // 6 Pt Generated True Primary

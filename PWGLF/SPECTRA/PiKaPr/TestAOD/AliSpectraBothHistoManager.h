@@ -79,7 +79,6 @@ public:
    TH2F*   BookPtRecAllChHistogram(const char * name);
    TH2F*   BookPIDHistogram(const char * name);
    TH2F*   BookNSigHistogram(const char * name);
-   TH2F*   BookqVecHistogram(const char * name);
    TH2F*   BookGenMulvsRawMulHistogram(const char * name);
    
    TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);

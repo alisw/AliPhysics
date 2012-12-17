@@ -97,6 +97,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		if(fUseSDDPatchforLHC11a!=kDoNotCheckforSDD)
 		{
 			esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+			if(!esdevent)
+				kFALSE;
 			if(esdevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
 				isSDD=kTRUE;
 		}	
@@ -107,6 +109,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		if(fUseSDDPatchforLHC11a!=kDoNotCheckforSDD)
 		{
 			aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+			if(!aodevent)
+				kFALSE;
 			if(aodevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
 				isSDD=kTRUE;	
 		}	

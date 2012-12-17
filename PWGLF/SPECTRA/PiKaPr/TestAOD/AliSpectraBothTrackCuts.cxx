@@ -150,13 +150,16 @@ Bool_t AliSpectraBothTrackCuts::CheckTrackType()
   if(fAODtrack==kESDobject)
   {
 	AliESDtrack* esdtrack=dynamic_cast<AliESDtrack*>(fTrack);
-	
+	if(!esdtrack)
+		return kFALSE;	
 	if(fCuts->AcceptTrack(esdtrack)) return kTRUE;
 		return kFALSE;
  }
   else if(fAODtrack==kAODobject)
   {
 	AliAODTrack* aodtrack=dynamic_cast<AliAODTrack*>(fTrack);
+	if(!aodtrack)
+		return kFALSE;
 	if (aodtrack->TestFilterBit(fTrackBits)) return kTRUE;
 		return kFALSE;
   }
@@ -176,6 +179,8 @@ Bool_t AliSpectraBothTrackCuts::CheckTrackCuts()
   if(fAODtrack==kESDobject)
   {
 	esdtrack=dynamic_cast<AliESDtrack*>(fTrack);
+	if(!esdtrack)
+		return kFALSE;
 	if (!esdtrack->HasPointOnITSLayer(0) && !esdtrack->HasPointOnITSLayer(1))PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
 	if (fHashitinSPD1&&!esdtrack->HasPointOnITSLayer(0)) PassTrackCuts=kFALSE; 		
 	if (esdtrack->GetTPCNcls()<fMinTPCcls)PassTrackCuts=kFALSE;
@@ -191,6 +196,8 @@ Bool_t AliSpectraBothTrackCuts::CheckTrackCuts()
   else if (fAODtrack==kAODobject)
   	{
 	aodtrack=dynamic_cast<AliAODTrack*>(fTrack);
+	if(!aodtrack)
+		return kFALSE;
 	if (!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1))PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
 	if (fHashitinSPD1&&!aodtrack->HasPointOnITSLayer(0)) PassTrackCuts=kFALSE; 	
 	if (aodtrack->GetTPCNcls()<fMinTPCcls)PassTrackCuts=kFALSE;
@@ -253,6 +260,8 @@ Bool_t AliSpectraBothTrackCuts::CheckDCACut()
   if(fAODtrack==kESDobject)
   {
 	esdtrack=dynamic_cast<AliESDtrack*>(fTrack);
+	if(!esdtrack)
+		return kFALSE;
 	Float_t dcaxy=0.0; 
 	Float_t dcaz=0.0;
 	esdtrack->GetImpactParameters(dcaxy,dcaz);	
@@ -264,6 +273,8 @@ Bool_t AliSpectraBothTrackCuts::CheckDCACut()
   else if (fAODtrack==kAODobject)
   {
 	aodtrack=dynamic_cast<AliAODTrack*>(fTrack);
+	if(!aodtrack)
+		return kFALSE;
 	if (TMath::Abs(aodtrack->DCA()) < fDCACut) return kTRUE;
 	else 
 		return kFALSE;
