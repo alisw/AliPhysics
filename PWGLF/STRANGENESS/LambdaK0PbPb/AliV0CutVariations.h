@@ -68,6 +68,7 @@ public :
    Float_t         fTreeVariableV0CreationRadius;
    Int_t           fTreeVariableIndexStatus;
    Int_t           fTreeVariableIndexStatusMother;
+   Bool_t          fTreeVariableIsNonInjected;
 
    // List of branches
    TBranch        *b_fTreeVariablePrimaryStatus;   //!
@@ -110,6 +111,7 @@ public :
    TBranch        *b_fTreeVariableV0CreationRadius;   //!
    TBranch        *b_fTreeVariableIndexStatus;   //!
    TBranch        *b_fTreeVariableIndexStatusMother;   //!
+   TBranch        *b_fTreeVariableIsNonInjected;   //!
 
   AliV0CutVariations(TTree * /*tree*/ =0);
    virtual ~AliV0CutVariations() { }
@@ -128,12 +130,14 @@ public :
    virtual void    Terminate();
 
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;}
+  void SetSelectNonInjected(Bool_t is=kTRUE) {fSelectNonInjected=is;}
   Bool_t AcceptV0();
   Bool_t AcceptTracks();
   Bool_t AcceptPID(Int_t code);
 
 private:
-  Bool_t fIsMC;
+  Bool_t fIsMC;         // MC flag
+  Bool_t fSelectNonInjected;// non-injected flag
   Double_t fCMin;       // Min centrality
   Double_t fCMax;       // Max centrality
   Double_t fCPA;        // cos(PA) threshold
@@ -222,6 +226,7 @@ void AliV0CutVariations::Init(TTree *tree)
    fChain->SetBranchAddress("fTreeVariableV0CreationRadius", &fTreeVariableV0CreationRadius, &b_fTreeVariableV0CreationRadius);
    fChain->SetBranchAddress("fTreeVariableIndexStatus", &fTreeVariableIndexStatus, &b_fTreeVariableIndexStatus);
    fChain->SetBranchAddress("fTreeVariableIndexStatusMother", &fTreeVariableIndexStatusMother, &b_fTreeVariableIndexStatusMother);
+   fChain->SetBranchAddress("fTreeVariableIsNonInjected", &fTreeVariableIsNonInjected, &b_fTreeVariableIsNonInjected);
    }
 
    fChain->SetBranchAddress("fTreeVariableChi2V0", &fTreeVariableChi2V0, &b_Chi2V0);
