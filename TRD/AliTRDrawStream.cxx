@@ -1112,6 +1112,7 @@ Int_t AliTRDrawStream::ReadStackHeader(Int_t stack)
 
   switch (fCurrStackHeaderVersion[stack]) {
   case 0xa:
+  case 0xb:
     if (fCurrStackHeaderSize[stack] < 8) {
       LinkError(kStackHeaderInvalid, "Stack header smaller than expected!");
       return -1;
@@ -1149,8 +1150,10 @@ Int_t AliTRDrawStream::ReadGTUTrailer()
   UInt_t* trailer = fPayloadStart + fPayloadSize -1;
 
   // look for the trailer index word from the end
-  for (Int_t iWord = 0; iWord < fPayloadSize; iWord++) {
-    if ((fPayloadStart[fPayloadSize-1-iWord] & 0xffff) == 0x1f51) {
+  for (Int_t iWord = 0; iWord < fPayloadSize-2; iWord++) {
+    if ((fPayloadStart[fPayloadSize-3-iWord] == fgkStackEndmarker[0]) &&
+	(fPayloadStart[fPayloadSize-2-iWord] == fgkStackEndmarker[1]) &&
+	((fPayloadStart[fPayloadSize-1-iWord] & 0xfff) == 0xf51)) {
       trailer = fPayloadStart + fPayloadSize - 1 - iWord;
       break;
     }
