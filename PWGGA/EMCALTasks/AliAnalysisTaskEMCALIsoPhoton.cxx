@@ -392,7 +392,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t alliso, allphiband, allcore;
     Float_t phibandArea = (1.4 - 2*fIsoConeR)*2*fIsoConeR;
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
-    GetCeIso(clsVec, ceiso, cephiband, cecore);
+    GetCeIso(clsVec, id, ceiso, cephiband, cecore);
     GetTrIso(clsVec, triso, trphiband, trcore);
     Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
     if(Et>10 && Et<15 && dr>0.025){
@@ -444,7 +444,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 } 
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core)
+void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t &iso, Float_t &phiband, Float_t &core)
 {
   // Get cell isolation.
 
@@ -457,6 +457,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t
   Float_t etacl = vec.Eta();
   Float_t phicl = vec.Phi();
   Float_t thetacl = vec.Theta();
+  Float_t maxtcl = fEMCalCells->GetCellTime(maxid);
   if(phicl<0)
     phicl+=TMath::TwoPi();
   Int_t absid = -1;
@@ -464,7 +465,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t
   for(int icell=0;icell<ncells;icell++){
     absid = TMath::Abs(fEMCalCells->GetCellNumber(icell));
     Float_t celltime = fEMCalCells->GetCellTime(absid);
-    if((celltime>2e-8 || celltime<-2e-8) && (!fIsMc))
+    //if(TMath::Abs(celltime)>2e-8 && (!fIsMc))
+    if(TMath::Abs(celltime-maxtcl)>2e-8 )
       continue;
     if(!fGeom)
       return;
