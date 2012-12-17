@@ -467,6 +467,14 @@ void AliCaloTrackReader::InitParameters()
   fTimeStampEventFracMin = -1;
   fTimeStampEventFracMax = 2;
 
+  for(Int_t i = 0; i < 19; i++)
+  {
+    fEMCalBCEvent   [i] = 0;
+    fEMCalBCEventCut[i] = 0;
+    fTrackBCEvent   [i] = 0;
+    fTrackBCEventCut[i] = 0;
+  }
+  
 }
 
 //___________________________________________________________
@@ -704,13 +712,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   if(fDataType==kESD && fTimeStampEventSelect)
   {
     AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-    Int_t timeStamp = esd->GetTimeStamp();
-    Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
-  
-    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
-    
-    if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
-  
+    if(esd)
+    {
+      Int_t timeStamp = esd->GetTimeStamp();
+      Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
+      
+      //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
+      
+      if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
+    }
     //printf("\t accept time stamp\n");
   }
 
