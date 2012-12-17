@@ -102,6 +102,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassEtaLocMaxN[i][j] = 0;
       fhMassConLocMaxN[i][j] = 0;
       
+      fhMassPi0AsyCutLocMax1[i][j] = 0;
+      fhMassPi0AsyCutLocMax2[i][j] = 0;
+      fhMassPi0AsyCutLocMaxN[i][j] = 0;
+
       fhAsyPi0LocMax1[i][j] = 0;
       fhAsyEtaLocMax1[i][j] = 0;
       fhAsyConLocMax1[i][j] = 0;
@@ -741,6 +745,15 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassPi0LocMax1[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0LocMax1[i][j]) ; 
       
+      fhMassPi0AsyCutLocMax1[i][j]     = new TH2F(Form("hMassPi0AsyCutLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                            Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 1, asy cut",
+                                                 GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
+                                            nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassPi0AsyCutLocMax1[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0AsyCutLocMax1[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassPi0AsyCutLocMax1[i][j]) ;
+
+      
       fhMassEtaLocMax1[i][j]     = new TH2F(Form("hMassEtaLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                            Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 1",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
@@ -765,6 +778,15 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassPi0LocMax2[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0LocMax2[i][j]) ; 
       
+      fhMassPi0AsyCutLocMax2[i][j]     = new TH2F(Form("hMassPi0AsyCutLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                  Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max = 2, asy cut",
+                                                       GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
+                                                  nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassPi0AsyCutLocMax2[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0AsyCutLocMax2[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassPi0AsyCutLocMax2[i][j]) ;
+
+      
       fhMassEtaLocMax2[i][j]     = new TH2F(Form("hMassEtaLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
                                            Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max = 2",
                                                 GetCaloPID()->GetEtaMinMass(),GetCaloPID()->GetEtaMaxMass(),ptype[i].Data()),
@@ -788,6 +810,15 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhMassPi0LocMaxN[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
       fhMassPi0LocMaxN[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMassPi0LocMaxN[i][j]) ; 
+      
+      fhMassPi0AsyCutLocMaxN[i][j]     = new TH2F(Form("hMassPi0AsyCutLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                  Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2} %s, for N Local max > 2, asy cut",
+                                                       GetCaloPID()->GetPi0MinMass(),GetCaloPID()->GetPi0MaxMass(),ptype[i].Data()),
+                                                  nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassPi0AsyCutLocMaxN[i][j]   ->SetYTitle("Mass (MeV/c^{2})");
+      fhMassPi0AsyCutLocMaxN[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassPi0AsyCutLocMaxN[i][j]) ;
+
       
       fhMassEtaLocMaxN[i][j]     = new TH2F(Form("hMassEtaLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
                                            Form("Mass vs E for mass range [%2.2f-%2.2f] MeV/c^{2}, %s, for N Local max > 2", 
@@ -1623,6 +1654,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     if( l0 < fM02MinCut || l0 > fM02MaxCut ) continue ;
     
+    Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
+    
     fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
     if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
         
@@ -1638,7 +1671,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMax1->Fill(en,mass);
           fhAsymM02CutNLocMax1->Fill(en,asym );
-          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax1->Fill(en,mass);
+          if(asyOK) fhMassAsyCutNLocMax1->Fill(en,mass);
         }
       }
       
@@ -1650,9 +1683,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
       
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMax1[0][matched]->Fill(en,l0); fhMassConLocMax1[0][matched]->Fill(en,mass);  fhAsyConLocMax1[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax1[0][matched]->Fill(en,l0); fhMassPi0LocMax1[0][matched]->Fill(en,mass);  fhAsyPi0LocMax1[0][matched]->Fill(en,asym); }
+      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax1[0][matched]->Fill(en,l0); fhMassPi0LocMax1[0][matched]->Fill(en,mass);  fhAsyPi0LocMax1[0][matched]->Fill(en,asym);
+        if(asyOK)fhMassPi0AsyCutLocMax1[0][matched]->Fill(en,mass);
+      }
       else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMax1[0][matched]->Fill(en,l0); fhMassEtaLocMax1[0][matched]->Fill(en,mass);  fhAsyEtaLocMax1[0][matched]->Fill(en,asym); }
-    }  
+    }
     else if(nMax==2) 
     {
       fhMassNLocMax2[0][matched]->Fill(en,mass );
@@ -1665,7 +1700,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMax2->Fill(en,mass);
           fhAsymM02CutNLocMax2->Fill(en,asym );
-          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax2->Fill(en,mass);
+          if(asyOK) fhMassAsyCutNLocMax2->Fill(en,mass);
         }
       }
       
@@ -1677,8 +1712,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
       
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMax2[0][matched]->Fill(en,l0); fhMassConLocMax2[0][matched]->Fill(en,mass);  fhAsyConLocMax2[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax2[0][matched]->Fill(en,l0); fhMassPi0LocMax2[0][matched]->Fill(en,mass);  fhAsyPi0LocMax2[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMax2[0][matched]->Fill(en,l0); fhMassEtaLocMax2[0][matched]->Fill(en,mass);  fhAsyEtaLocMax2[0][matched]->Fill(en,asym); }      
+      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax2[0][matched]->Fill(en,l0); fhMassPi0LocMax2[0][matched]->Fill(en,mass);  fhAsyPi0LocMax2[0][matched]->Fill(en,asym);
+        if(asyOK)fhMassPi0AsyCutLocMax2[0][matched]->Fill(en,mass);
+      }
+      else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMax2[0][matched]->Fill(en,l0); fhMassEtaLocMax2[0][matched]->Fill(en,mass);  fhAsyEtaLocMax2[0][matched]->Fill(en,asym); }
     }
     else if(nMax >2) 
     {
@@ -1692,7 +1729,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         {
           fhMassM02CutNLocMaxN->Fill(en,mass);
           fhAsymM02CutNLocMaxN->Fill(en,asym );
-          if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMaxN->Fill(en,mass);
+          if(asyOK) fhMassAsyCutNLocMaxN->Fill(en,mass);
         }
       }
       
@@ -1704,7 +1741,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       }
       
       if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMaxN[0][matched]->Fill(en,l0); fhMassConLocMaxN[0][matched]->Fill(en,mass);  fhAsyConLocMaxN[0][matched]->Fill(en,asym); }
-      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMaxN[0][matched]->Fill(en,l0); fhMassPi0LocMaxN[0][matched]->Fill(en,mass);  fhAsyPi0LocMaxN[0][matched]->Fill(en,asym); }
+      else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMaxN[0][matched]->Fill(en,l0); fhMassPi0LocMaxN[0][matched]->Fill(en,mass);  fhAsyPi0LocMaxN[0][matched]->Fill(en,asym);
+        if(asyOK)fhMassPi0AsyCutLocMaxN[0][matched]->Fill(en,mass); }
       else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMaxN[0][matched]->Fill(en,l0); fhMassEtaLocMaxN[0][matched]->Fill(en,mass);  fhAsyEtaLocMaxN[0][matched]->Fill(en,asym); } 
     }
     
@@ -1716,7 +1754,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMax1[mcindex][matched]->Fill(en,mass); 
         fhAsymNLocMax1[mcindex][matched]->Fill(en,asym); 
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMax1[mcindex][matched]->Fill(en,l0); fhMassConLocMax1[mcindex][matched]->Fill(en,mass); fhAsyConLocMax1[mcindex][matched]->Fill(en,asym); }
-        else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0); fhMassPi0LocMax1[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMax1[mcindex][matched]->Fill(en,asym); }
+        else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax1[mcindex][matched]->Fill(en,l0); fhMassPi0LocMax1[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMax1[mcindex][matched]->Fill(en,asym);
+          if(asyOK) fhMassPi0AsyCutLocMax1[mcindex][matched]->Fill(en,mass);
+        }
         else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMax1[mcindex][matched]->Fill(en,l0); fhMassEtaLocMax1[mcindex][matched]->Fill(en,mass); fhAsyEtaLocMax1[mcindex][matched]->Fill(en,asym); } 
       }  
       else if(nMax==2) 
@@ -1724,7 +1764,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
         fhAsymNLocMax2[mcindex][matched]->Fill(en,asym); 
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMax2[mcindex][matched]->Fill(en,l0); fhMassConLocMax2[mcindex][matched]->Fill(en,mass); fhAsyConLocMax2[mcindex][matched]->Fill(en,asym); }
-        else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0); fhMassPi0LocMax2[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMax2[mcindex][matched]->Fill(en,asym); }
+        else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMax2[mcindex][matched]->Fill(en,l0); fhMassPi0LocMax2[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMax2[mcindex][matched]->Fill(en,asym);
+          if(asyOK) fhMassPi0AsyCutLocMax2[mcindex][matched]->Fill(en,mass);
+        }
         else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMax2[mcindex][matched]->Fill(en,l0); fhMassEtaLocMax2[mcindex][matched]->Fill(en,mass); fhAsyEtaLocMax2[mcindex][matched]->Fill(en,asym); } 
         
       }
@@ -1733,7 +1775,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
         fhAsymNLocMaxN[mcindex][matched]->Fill(en,asym); 
         if     (pidTag==AliCaloPID::kPhoton) { fhM02ConLocMaxN[mcindex][matched]->Fill(en,l0); fhMassConLocMaxN[mcindex][matched]->Fill(en,mass); fhAsyConLocMaxN[mcindex][matched]->Fill(en,asym); }
-        else if(pidTag==AliCaloPID::kPi0   ) { fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0); fhMassPi0LocMaxN[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMaxN[mcindex][matched]->Fill(en,asym); }
+        else if(pidTag==AliCaloPID::kPi0   ) {
+          fhM02Pi0LocMaxN[mcindex][matched]->Fill(en,l0); fhMassPi0LocMaxN[mcindex][matched]->Fill(en,mass); fhAsyPi0LocMaxN[mcindex][matched]->Fill(en,asym);
+          if(asyOK)fhMassPi0AsyCutLocMaxN[mcindex][matched]->Fill(en,mass); 
+        }
         else if(pidTag==AliCaloPID::kEta)    { fhM02EtaLocMaxN[mcindex][matched]->Fill(en,l0); fhMassEtaLocMaxN[mcindex][matched]->Fill(en,mass); fhAsyEtaLocMaxN[mcindex][matched]->Fill(en,asym); } 
       }
       
