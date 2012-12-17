@@ -3481,7 +3481,6 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
-/*
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     delete fReconstructor[iDet];
     fReconstructor[iDet] = NULL;
@@ -3489,7 +3488,6 @@ void AliReconstruction::CleanUp()
     delete fTracker[iDet];
     fTracker[iDet] = NULL;
   }
-*/
 
   delete fRunInfo;
   fRunInfo = NULL;
