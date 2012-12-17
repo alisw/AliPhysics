@@ -97,6 +97,8 @@ public:
   Bool_t IsFromResonance();
   Bool_t IsFromCharm();
   Bool_t IsFromBeauty();
+  Bool_t IsPDGCharm(Int_t pdg);
+  Bool_t IsPDGBeauty(Int_t pdg);
   Bool_t IsFromBackground();
 
 protected:

@@ -457,24 +457,7 @@ Bool_t AliMuonForwardTrack::IsFromCharm() {
 
   Bool_t result = kFALSE;
 
-  if ( GetParentPDGCode(0) ==   411 ||
-       GetParentPDGCode(0) ==   421 ||
-       GetParentPDGCode(0) == 10411 ||
-       GetParentPDGCode(0) == 10421 ||
-       GetParentPDGCode(0) ==   413 ||
-       GetParentPDGCode(0) ==   423 ||
-       GetParentPDGCode(0) == 10413 ||
-       GetParentPDGCode(0) == 10423 ||
-       GetParentPDGCode(0) == 20413 ||
-       GetParentPDGCode(0) == 20423 ||
-       GetParentPDGCode(0) ==   415 ||
-       GetParentPDGCode(0) ==   425 ||
-       GetParentPDGCode(0) ==   431 ||
-       GetParentPDGCode(0) == 10431 ||
-       GetParentPDGCode(0) ==   433 ||
-       GetParentPDGCode(0) == 10433 ||
-       GetParentPDGCode(0) == 20433 ||
-       GetParentPDGCode(0) ==   435 ) result = kTRUE;
+  if (IsPDGCharm(GetParentPDGCode(0)) && !IsPDGBeauty(GetParentPDGCode(1))) result = kTRUE;
   
   if (result) AliDebug(1, Form("Muon comes from a charmed hadron %d", GetParentPDGCode(0)));
   
@@ -488,30 +471,7 @@ Bool_t AliMuonForwardTrack::IsFromBeauty() {
 
   Bool_t result = kFALSE;
 
-  if ( GetParentPDGCode(0) ==   511 ||
-       GetParentPDGCode(0) ==   521 ||
-       GetParentPDGCode(0) == 10511 ||
-       GetParentPDGCode(0) == 10521 ||
-       GetParentPDGCode(0) ==   513 ||
-       GetParentPDGCode(0) ==   523 ||
-       GetParentPDGCode(0) == 10513 ||
-       GetParentPDGCode(0) == 10523 ||
-       GetParentPDGCode(0) == 20513 ||
-       GetParentPDGCode(0) == 20523 ||
-       GetParentPDGCode(0) ==   515 ||
-       GetParentPDGCode(0) ==   525 ||
-       GetParentPDGCode(0) ==   531 ||
-       GetParentPDGCode(0) == 10531 ||
-       GetParentPDGCode(0) ==   533 ||
-       GetParentPDGCode(0) == 10533 ||
-       GetParentPDGCode(0) == 20533 ||
-       GetParentPDGCode(0) ==   535 ||
-       GetParentPDGCode(0) ==   541 ||
-       GetParentPDGCode(0) == 10541 ||
-       GetParentPDGCode(0) ==   543 ||
-       GetParentPDGCode(0) == 10543 ||
-       GetParentPDGCode(0) == 20543 ||
-       GetParentPDGCode(0) ==   545 ) result = kTRUE;
+  if (IsPDGBeauty(GetParentPDGCode(0))) result = kTRUE;
   
   if (result) AliDebug(1, Form("Muon comes from a beauty hadron %d", GetParentPDGCode(0)));
   
@@ -520,6 +480,71 @@ Bool_t AliMuonForwardTrack::IsFromBeauty() {
 }
 
 //====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsPDGCharm(Int_t pdg) {
+
+  Bool_t result = kFALSE;
+
+  if ( TMath::Abs(pdg) ==   411 ||
+       TMath::Abs(pdg) ==   421 ||
+       TMath::Abs(pdg) == 10411 ||
+       TMath::Abs(pdg) == 10421 ||
+       TMath::Abs(pdg) ==   413 ||
+       TMath::Abs(pdg) ==   423 ||
+       TMath::Abs(pdg) == 10413 ||
+       TMath::Abs(pdg) == 10423 ||
+       TMath::Abs(pdg) == 20413 ||
+       TMath::Abs(pdg) == 20423 ||
+       TMath::Abs(pdg) ==   415 ||
+       TMath::Abs(pdg) ==   425 ||
+       TMath::Abs(pdg) ==   431 ||
+       TMath::Abs(pdg) == 10431 ||
+       TMath::Abs(pdg) ==   433 ||
+       TMath::Abs(pdg) == 10433 ||
+       TMath::Abs(pdg) == 20433 ||
+       TMath::Abs(pdg) ==   435 ) result = kTRUE;
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMuonForwardTrack::IsPDGBeauty(Int_t pdg) {
+
+  Bool_t result = kFALSE;
+
+  if ( TMath::Abs(pdg) ==   511 ||
+       TMath::Abs(pdg) ==   521 ||
+       TMath::Abs(pdg) == 10511 ||
+       TMath::Abs(pdg) == 10521 ||
+       TMath::Abs(pdg) ==   513 ||
+       TMath::Abs(pdg) ==   523 ||
+       TMath::Abs(pdg) == 10513 ||
+       TMath::Abs(pdg) == 10523 ||
+       TMath::Abs(pdg) == 20513 ||
+       TMath::Abs(pdg) == 20523 ||
+       TMath::Abs(pdg) ==   515 ||
+       TMath::Abs(pdg) ==   525 ||
+       TMath::Abs(pdg) ==   531 ||
+       TMath::Abs(pdg) == 10531 ||
+       TMath::Abs(pdg) ==   533 ||
+       TMath::Abs(pdg) == 10533 ||
+       TMath::Abs(pdg) == 20533 ||
+       TMath::Abs(pdg) ==   535 ||
+       TMath::Abs(pdg) ==   541 ||
+       TMath::Abs(pdg) == 10541 ||
+       TMath::Abs(pdg) ==   543 ||
+       TMath::Abs(pdg) == 10543 ||
+       TMath::Abs(pdg) == 20543 ||
+       TMath::Abs(pdg) ==   545 ) result = kTRUE;
+  
+  return result; 
+  
+}
+
+//====================================================================================================================================================
+
 
 Bool_t AliMuonForwardTrack::IsFromBackground() {
 
