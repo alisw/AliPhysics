@@ -24,7 +24,7 @@
 #include <AliESDtrack.h>
 
 #include <AliTender.h>
-#include <AliT0TenderSupply.h>
+#include "AliT0TenderSupply.h"
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliT0CalibSeasonTimeShift.h>
@@ -94,6 +94,7 @@ void AliT0TenderSupply::Init(){
 
 //________________________________________________________________________
 void AliT0TenderSupply::ProcessEvent(){
+
     //
     // loop over all online T0 candidates and flag
     // selected daughter tracks using the status bis of the TObject
@@ -151,7 +152,9 @@ void AliT0TenderSupply::ProcessEvent(){
     }
 
     //...........................................
-    Float_t *t0means=0x0;
+    Float_t t00means[4] = {0,0,0,0}; 
+    Float_t *t0means = t00means;
+
     if(fCorrectMeanTime) {
       AliCDBManager* ocdbMan = AliCDBManager::Instance();
       ocdbMan->SetRun(fTender->GetRun());    
