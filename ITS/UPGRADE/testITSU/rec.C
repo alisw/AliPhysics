@@ -1,3 +1,4 @@
+
 void rec() {
   
   //  AliLog::SetClassDebugLevel("AliReconstruction",1);
@@ -16,7 +17,6 @@ void rec() {
 			 "AliITSUReconstructor","ITS", "AliITSUReconstructor()");
   
   AliReconstruction rec;
-
   rec.SetRunReconstruction("ITS TPC"); // run cluster finder
   //rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
   rec.SetRunTracking("ITS TPC"); // Turn on with ITS when tracker is implemented

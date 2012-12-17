@@ -217,6 +217,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
       AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
       seedUC = *seedU;                          // its copy will be prolonged
       seedUC.SetParent(seedU);
+      seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
       // go till next active layer
       AliInfo(Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
       if (!TransportToLayer(&seedUC, fITS->GetLrIDActive(ilaUp), fITS->GetLrIDActive(ila)) ) {
@@ -234,11 +235,18 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
       AliInfo(Form("Will check %d sensors on lr:%d ",nsens,ila));
       //
+      double bz = GetBz();
       for (int isn=nsens;isn--;) {
 	seedT = seedUC;
 	AliITSURecoSens* sens = hitSens[isn];
 	//
-	if (!seedT.Propagate(sens->GetPhiTF(),sens->GetXTF(),GetBz())) continue; // propagation failed, seedT is intact
+	// We need to propagate the seed to sensor on lrA staying the frame of the sensor from prev.layer,
+	// since the transport matrix should be defined in this frame.
+	double xs; // X in the TF of current seed, corresponding to intersection with sensor plane
+	if (!seedT.GetTrackingXAtXAlpha(sens->GetXTF(),sens->GetPhiTF(),bz, xs)) continue;
+	if (!seedT.PropagateToX(xs,bz)) continue;
+	if (!seedT.Rotate(sens->GetPhiTF())) continue;
+	//
 	int clID0 = sens->GetFirstClusterId();
 	for (int icl=sens->GetNClusters();icl--;) {
 	  int res = CheckCluster(&seedT,ila,clID0+icl);
@@ -333,30 +341,30 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   double bz = GetBz();
   AliITSURecoLayer* lrA = fITS->GetLayerActive(ilrA);
   seed->GetXYZ(&fTrImpData[kTrXIn]);    // lab position at the entrance from above
+  static AliExternalTrackParam sc;   // seed copy for manipalitions
+  sc = *seed;
   //
   fTrImpData[kTrPhiIn] = ATan2(fTrImpData[kTrYIn],fTrImpData[kTrXIn]);
-  if (!seed->Rotate(fTrImpData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
+  if (!sc.Rotate(fTrImpData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
   double dr  = lrA->GetDR();                              // approximate X dist at the inner radius
-  if (!seed->GetXYZAt(seed->GetX()-dr, bz, fTrImpData + kTrXOut)) {
+  if (!sc.GetXYZAt(sc.GetX()-dr, bz, fTrImpData + kTrXOut)) {
     // special case: track does not reach inner radius, might be tangential
-    double r = seed->GetD(0,0,bz);
+    double r = sc.GetD(0,0,bz);
     double x;
-    if (!seed->GetXatLabR(r,x,bz,-1)) {
-      AliError(Form("This should not happen: r=%f",r));
-      seed->Print();
-      return kFALSE;
+    if (!sc.GetXatLabR(r,x,bz,-1)) {
+      sc.Print();
+      AliFatal(Form("This should not happen: r=%f",r));
     }
-    dr = Abs(seed->GetX() - x);
-    if (!seed->GetXYZAt(x, bz, fTrImpData + kTrXOut)) {
-      AliError(Form("This should not happen: x=%f",x));
-      seed->Print();
-      return kFALSE;      
+    dr = Abs(sc.GetX() - x);
+    if (!sc.GetXYZAt(x, bz, fTrImpData + kTrXOut)) {
+      sc.Print();
+      AliFatal(Form("This should not happen: x=%f",x));
     }
   }
   //
   fTrImpData[kTrPhiOut] = ATan2(fTrImpData[kTrYOut],fTrImpData[kTrXOut]);
-  double sgy = seed->GetSigmaY2() + dr*dr*seed->GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
-  double sgz = seed->GetSigmaZ2() + dr*dr*seed->GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
+  double sgy = sc.GetSigmaY2() + dr*dr*sc.GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
+  double sgz = sc.GetSigmaZ2() + dr*dr*sc.GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
   sgy = Sqrt(sgy)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadY();
   sgz = Sqrt(sgz)*AliITSUReconstructor::GetRecoParam()->GetNSigmaRoadZ();
   fTrImpData[kTrPhi0] = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
@@ -385,7 +393,6 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   //           kClusterMatching    if the cluster is matching
   //           kClusterMatching    otherwise
   //
-  // The seed is already propagated to cluster
   const double kTolerX = 5e-4;
   AliCluster *cl = fITS->GetLayerActive(lr)->GetCluster(clID);
   //
@@ -431,7 +438,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   }
   //
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
-  if (!track->Update(p,cov)) {
+  if (!track->Update()) {
     if (goodCl) {printf("Loose good cl: Failed update |"); cl->Print();}
     return kClusterNotMatching;
   }

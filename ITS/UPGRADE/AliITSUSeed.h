@@ -11,7 +11,7 @@ class AliITSUSeed: public AliExternalTrackParam
  public:
   enum {kKilled=BIT(14)};
   enum {kF02,kF04,kF12,kF13,kF14,kF24, kF44,kNFElem}; // non-trivial elems of propagation matrix
-  enum {kB00,kB01,kB02,kB03,kB04,kB10,kB11,kB12,kB13,kB14, kNBElem}; // non-trivial elems of B matrix (I - K*H)
+  enum {kB00,kB01,kB10,kB11,kB20,kB21,kB30,kB31,kB40,kB41, kNBElem}; // non-trivial elems of B matrix (I - K*H)
   //
   AliITSUSeed();
   AliITSUSeed(const AliITSUSeed& src);
@@ -49,13 +49,16 @@ class AliITSUSeed: public AliExternalTrackParam
   void            ApplyELoss2FMatrix(Double_t frac, Bool_t beforeProp);
   Bool_t          ApplyMaterialCorrection(Double_t xOverX0, Double_t xTimesRho, Double_t mass, Bool_t beforeProp);
   Bool_t          PropagateToX(Double_t xk, Double_t b);
+  Bool_t          GetTrackingXAtXAlpha(double xOther,double alpOther,double bz, double &x);
+  Double_t        GetPredictedChi2(Double_t p[2],Double_t cov[3]);
+  Bool_t          Update();
   //
  protected:
   //
-  Double_t              fFMatrix[kNFElem];  // matxif of propagation from prev layer (non-trivial elements)
+  Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
+  Double_t              fCovIYZ[3];         // inverted matrix of propagation + meas errors = [Hi * Pi|i-1 * Hi^T + Ri]^-1
   Double_t              fResid[2];          // residuals vector
-  Double_t              fCombErrI[3];       // inverse combined error matrix
-  Double_t              fBMatix[kNBElem];   // I - K*H matix non-trivial elements
+  Double_t              fBMatrix[kNBElem];  // K*H - I matix non-trivial elements (note: standard MBF formula uses I-K*H)
   UShort_t              fHitsPattern;       // bit pattern of hits
   UInt_t                fClID;              // packed cluster info (see AliITSUAux::PackCluster)
   Float_t               fChi2Glo;           // current chi2 global

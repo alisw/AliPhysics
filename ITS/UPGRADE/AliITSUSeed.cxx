@@ -34,6 +34,13 @@ AliITSUSeed::AliITSUSeed(const AliITSUSeed& src)
 {
   // def c-tor
   for (int i=kNFElem;i--;) fFMatrix[i] = src.fFMatrix[i];
+  for (int i=kNBElem;i--;) fBMatrix[i] = src.fBMatrix[i];
+  fResid[0]=src.fResid[0];
+  fResid[1]=src.fResid[1];  
+  fCovIYZ[0]=src.fCovIYZ[0];
+  fCovIYZ[1]=src.fCovIYZ[1];
+  fCovIYZ[2]=src.fCovIYZ[2];
+  //
 }
 
 //_________________________________________________________________________
@@ -41,13 +48,8 @@ AliITSUSeed &AliITSUSeed::operator=(const AliITSUSeed& src)
 {
   // def c-tor
   if (this == &src) return *this;
-  fClID        = src.fClID;
-  fHitsPattern = src.fHitsPattern;
-  fChi2Glo     = src.fChi2Glo;
-  fChi2Cl      = src.fChi2Cl;
-  fParent      = src.fParent;
-  for (int i=kNFElem;i--;) fFMatrix[i] = src.fFMatrix[i];
-  AliExternalTrackParam::operator=(src);
+  this->~AliITSUSeed();
+  new(this) AliITSUSeed(src);
   return *this;
 }
 
@@ -198,6 +200,106 @@ Bool_t AliITSUSeed::PropagateToX(Double_t xk, Double_t b)
   fFMatrix[kF12] += f12;
   fFMatrix[kF13] += f13;
   fFMatrix[kF24] += f24;
+  //
+  CheckCovariance();
+
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUSeed::GetTrackingXAtXAlpha(double xOther, double alpOther, double bz, double &xdst)
+{
+  // calculate X and Y in the tracking frame of the track, corresponding to other X,Alpha tracking
+  double ca=TMath::Cos(alpOther-fAlpha), sa=TMath::Sin(alpOther-fAlpha);
+  double &y=fP[0], &sf=fP[2], cf=Sqrt((1.-sf)*(1.+sf));
+  double eta = xOther - fX*ca - y*sa;
+  double xi  = sf*ca - cf*sa;
+  if (xi>= kAlmost1) return kFALSE;
+  double nu  = xi + GetC(bz)*eta;
+  if (nu>= kAlmost1) return kFALSE;
+  xdst = xOther*ca - sa*( y*ca-fX*sa + eta*(xi+nu)/(Sqrt((1.-xi)*(1.+xi)) + Sqrt((1.-nu)*(1.+nu))) );
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Double_t AliITSUSeed::GetPredictedChi2(Double_t p[2],Double_t cov[3]) 
+{
+  // Estimate the chi2 of the space point "p" with the cov. matrix "cov"
+  // Store info needed for update and smoothing
+  Double_t sdd = fC[0] + cov[0]; 
+  Double_t sdz = fC[1] + cov[1];
+  Double_t szz = fC[2] + cov[2];
+  Double_t det = sdd*szz - sdz*sdz;
+  if (TMath::Abs(det) < kAlmost0) return kVeryBig;
+  det = 1./det;
+  fCovIYZ[0] =  szz*det;
+  fCovIYZ[1] = -sdz*det;
+  fCovIYZ[2] =  sdd*det;
+  double &dy = fResid[0] = p[0] - fP[0];
+  double &dz = fResid[1] = p[1] - fP[1];
+  //
+  return dy*(dy*fCovIYZ[0]+dz*fCovIYZ[1]) + dz*(dy*fCovIYZ[1]+dz*(fCovIYZ[2]));
+  //
+}
+
+//____________________________________________________________________
+Bool_t AliITSUSeed::Update() 
+{
+  // Update the track parameters with the measurement stored during GetPredictedChi2
+  //
+  Double_t &fP0=fP[0], &fP1=fP[1], &fP2=fP[2], &fP3=fP[3], &fP4=fP[4];
+  Double_t 
+  &fC00=fC[0],
+  &fC10=fC[1],   &fC11=fC[2],  
+  &fC20=fC[3],   &fC21=fC[4],   &fC22=fC[5],
+  &fC30=fC[6],   &fC31=fC[7],   &fC32=fC[8],   &fC33=fC[9],  
+  &fC40=fC[10],  &fC41=fC[11],  &fC42=fC[12],  &fC43=fC[13], &fC44=fC[14];
+  //
+  double &r00=fCovIYZ[0],&r01=fCovIYZ[1],&r11=fCovIYZ[2];
+  double &dy=fResid[0], &dz=fResid[1];
+  //
+  // store info needed for smoothing in the fBMatrix
+  double &k00 = fBMatrix[kB00] = fC00*r00+fC10*r01;
+  double &k01 = fBMatrix[kB01] = fC00*r01+fC10*r11;
+  double &k10 = fBMatrix[kB10] = fC10*r00+fC11*r01;
+  double &k11 = fBMatrix[kB11] = fC10*r01+fC11*r11;  
+  double &k20 = fBMatrix[kB20] = fC20*r00+fC21*r01;
+  double &k21 = fBMatrix[kB21] = fC20*r01+fC21*r11;
+  double &k30 = fBMatrix[kB30] = fC30*r00+fC31*r01;
+  double &k31 = fBMatrix[kB31] = fC30*r01+fC31*r11;
+  double &k40 = fBMatrix[kB40] = fC40*r00+fC41*r01;
+  double &k41 = fBMatrix[kB41] = fC40*r01+fC41*r11;
+  //
+  Double_t sf=fP2 + k20*dy + k21*dz;
+  if (TMath::Abs(sf) > kAlmost1) return kFALSE;  
+  
+  fP0 += k00*dy + k01*dz;
+  fP1 += k10*dy + k11*dz;
+  fP2  = sf;
+  fP3 += k30*dy + k31*dz;
+  fP4 += k40*dy + k41*dz;
+  //
+  Double_t c01=fC10, c02=fC20, c03=fC30, c04=fC40;
+  Double_t c12=fC21, c13=fC31, c14=fC41;
+
+  fC00-=k00*fC00+k01*fC10; fC10-=k00*c01+k01*fC11;
+  fC20-=k00*c02+k01*c12;   fC30-=k00*c03+k01*c13;
+  fC40-=k00*c04+k01*c14; 
+
+  fC11-=k10*c01+k11*fC11;
+  fC21-=k10*c02+k11*c12;   fC31-=k10*c03+k11*c13;
+  fC41-=k10*c04+k11*c14; 
+
+  fC22-=k20*c02+k21*c12;   fC32-=k20*c03+k21*c13;
+  fC42-=k20*c04+k21*c14; 
+
+  fC33-=k30*c03+k31*c13;
+  fC43-=k30*c04+k31*c14; 
+  
+  fC44-=k40*c04+k41*c14; 
+  //
+  k00 -= 1;
+  k11 -= 1;
   //
   CheckCovariance();
 
