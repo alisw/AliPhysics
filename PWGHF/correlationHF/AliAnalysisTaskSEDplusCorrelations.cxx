@@ -91,6 +91,23 @@ AliAnalysisTaskSE(),
 {
   // Default constructor
    
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
+    fMassVsdPhiHistHad[i]=0;
+    fMassVsdEtaHistHad[i]=0;
+    fMassVsdPhiHistKaon[i]=0;
+    fMassVsdEtaHistKaon[i]=0;
+    fMassVsdPhiHistKshort[i]=0;
+    fMassVsdEtaHistKshort[i]=0;
+    fMassVsdPhiHistLeadHad[i]=0;
+    fMassVsdEtaHistLeadHad[i]=0;
+    fMassHistK0S[i]=0;
+    fLeadPt[i]=0;
+    fMassHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistTCPlus[i]=0;
+    fMassHistTCMinus[i]=0;
+  }
+
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
   }
@@ -135,7 +152,23 @@ AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations(const cha
   //
   fNPtBins=fRDCutsAnalysis->GetNPtBins();
     
-    
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
+    fMassVsdPhiHistHad[i]=0;
+    fMassVsdEtaHistHad[i]=0;
+    fMassVsdPhiHistKaon[i]=0;
+    fMassVsdEtaHistKaon[i]=0;
+    fMassVsdPhiHistKshort[i]=0;
+    fMassVsdEtaHistKshort[i]=0;
+    fMassVsdPhiHistLeadHad[i]=0;
+    fMassVsdEtaHistLeadHad[i]=0;
+    fMassHistK0S[i]=0;
+    fLeadPt[i]=0;
+    fMassHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistTCPlus[i]=0;
+    fMassHistTCMinus[i]=0;
+  }
+   
   
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
