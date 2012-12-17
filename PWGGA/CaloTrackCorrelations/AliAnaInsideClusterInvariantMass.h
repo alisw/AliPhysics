@@ -94,17 +94,21 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhSplitEFractionvsAsyNLocMax2[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMaxN[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2 vs |A|  
   
-  TH2F       * fhMassM02CutNLocMax1  ;                  //! M02(E) selection, not matched, Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
-  TH2F       * fhMassM02CutNLocMax2  ;                  //! M02(E) selection, not matched, Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhMassM02CutNLocMaxN  ;                  //! M02(E) selection, not matched, Mass of >2 cells local maxima vs E, 1-6 for different MC particle types  
+  TH2F       * fhMassM02CutNLocMax1  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassM02CutNLocMax2  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassM02CutNLocMaxN  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM > 2
 
-  TH2F       * fhMassSplitECutNLocMax1 ;                //! 85% of split energy, not matched, Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
-  TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhMassSplitECutNLocMaxN ;                //! 85% of split energy, not matched, Mass of >2 cells local maxima vs E, 1-6 for different MC particle types    
+  TH2F       * fhAsymM02CutNLocMax1  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM = 1
+  TH2F       * fhAsymM02CutNLocMax2  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM = 2
+  TH2F       * fhAsymM02CutNLocMaxN  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM > 2
   
-  TH2F       * fhMassAsyCutNLocMax1  ;                  //! |A|>0.8 selection, not matched, Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
-  TH2F       * fhMassAsyCutNLocMax2  ;                  //! |A|>0.8 selection, not matched, Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! |A|>0.8 selection, not matched, Mass of >2 cells local maxima vs E, 1-6 for different MC particle types  
+  TH2F       * fhMassSplitECutNLocMax1 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassSplitECutNLocMaxN ;                //! 85% of split energy, not matched, Mass of split clusters, NLM > 2    
+  
+  TH2F       * fhMassAsyCutNLocMax1  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMax2  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM > 2
   
   TH2F       * fhMassM02NLocMax1[7][2]  ;               //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
   TH2F       * fhMassM02NLocMax2[7][2]  ;               //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
@@ -242,7 +246,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,17)
+  ClassDef(AliAnaInsideClusterInvariantMass,18)
   
 } ;
 
