@@ -23,24 +23,24 @@ class AliFlowOnTheFlyEventGenerator : public TObject {
     public:
         // general
         AliFlowOnTheFlyEventGenerator();                
-        AliFlowOnTheFlyEventGenerator(Bool_t qa, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d);
+        AliFlowOnTheFlyEventGenerator(Bool_t qa, Bool_t ff, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d);
         virtual ~AliFlowOnTheFlyEventGenerator();
         class NaiveFlowAndSpectrumGenerator : public TObject { // small nested helper class. use methods of AliFlowOnTheFlyEventGenerator to get access to members
             public: 
-                NaiveFlowAndSpectrumGenerator(Short_t pdg, Bool_t qa) : fPdg(pdg), fQA(qa), fpt(0), fv2(0), fv3(0), fQApt(0), fQAv2(0), fQAv3(0) {
+                NaiveFlowAndSpectrumGenerator(Short_t pdg, Bool_t qa, Bool_t ff) : fPdg(pdg), fQA(qa), fFF(ff), fpt(0), fv2(0), fv3(0), fQApt(0), fQAv2(0), fQAv3(0) {
                     TParticle* t = new TParticle(); t->SetPdgCode(fPdg);
                     fpt = new TF1(Form("pt_%i", pdg), Form("x/TMath::Power(1+2*TMath::Sqrt(%f*%f+x*x),4)", t->GetMass(), t->GetMass()),0.,20);
                     fv2 = new TF1(Form("v2_%i", pdg), Form("TMath::Log(x+1)*.2/TMath::Power(%f*%f+x*x,.2)", t->GetMass(), t->GetMass()), 0., 20);
                     fv3 = new TF1(Form("v3_%i", pdg), Form("TMath::Log(x+1)*.1/TMath::Power(%f*%f+x*x,.2)", t->GetMass(), t->GetMass()), 0., 20);
                     if(fQA) { fQApt = new TH1F(Form("pt_%i", fPdg),Form("pt_%i", fPdg),100,0,20);
-                              fQAv2 = new TH2F(Form("v2_%i", fPdg),Form("v2_%i", fPdg),100,0,20, 100, 0, .2);
-                              fQAv3 = new TH2F(Form("v3_%i", fPdg),Form("v3_%i", fPdg),100,0,20, 100, 0, .2);      }
+                              fQAv2 = new TH2F(Form("v2_%i", fPdg),Form("v2_%i", fPdg),100,0,20, 100, -.5, .3);
+                              fQAv3 = new TH2F(Form("v3_%i", fPdg),Form("v3_%i", fPdg),100,0,20, 100, -.5, .3);      }
                     delete t;
                 }
                 virtual ~NaiveFlowAndSpectrumGenerator() {if(fpt) delete fpt; if(fv2) delete fv2; if(fv3) delete fv3; if(fQA) {delete fQApt; delete fQAv2; delete fQAv3;};}
                 Short_t         GetPDGCode()            const {return fPdg;}
                 Double_t        GetPt()                 const {double _pt(fpt->GetRandom()); if(fQA) fQApt->Fill(_pt); return _pt;}
-                Double_t        GetV2(Double_t pt)      const {double _v2(fv2->Eval(pt)); if(fQA) fQAv2->Fill(pt, _v2); return _v2;} 
+                Double_t        GetV2(Double_t pt)      const {double _v2(fv2->Eval(pt)); if(fFF) _v2=gRandom->Gaus(_v2, _v2/2.); if(fQA) fQAv2->Fill(pt, _v2); return _v2;} 
                 Double_t        GetV3(Double_t pt)      const {double _v3(fv3->Eval(pt)); if(fQA) fQAv3->Fill(pt, _v3); return _v3;}
                 TF1*            GetPtSpectrum()         const {return fpt;}                     // return pt fSpectrum
                 TF1*            GetDifferentialV2()     const {return fv2;}                     // return fDifferential v2
@@ -55,6 +55,7 @@ class AliFlowOnTheFlyEventGenerator : public TObject {
             private:
                 Short_t                 fPdg;                                                   // pdg value of track
                 Bool_t                  fQA;                                                    // make fQA plots for all generated species
+                Bool_t                  fFF;                                                    // introduce e-by-e flow fluctuations
                 TF1*                    fpt;                                                    // !pt fSpectrum
                 TF1*                    fv2;                                                    // !fDifferential v2
                 TF1*                    fv3;                                                    // !fDifferential v3
@@ -108,6 +109,7 @@ class AliFlowOnTheFlyEventGenerator : public TObject {
         Double_t                fPrecisionPhi;                  // afterburner convergence precision
         Int_t                   fMaxNumberOfIterations;         // afterburner convergence precision
         Bool_t                  fQA;                            // save qa histograms for all generated species
+        Bool_t                  fFF;                            // introduce e-by-e flow fluctuations
         // assignment operator and copy constructor
         AliFlowOnTheFlyEventGenerator(const AliFlowOnTheFlyEventGenerator& dummy);              // not implemented
         AliFlowOnTheFlyEventGenerator& operator =(const AliFlowOnTheFlyEventGenerator& dummy);  // not implemented

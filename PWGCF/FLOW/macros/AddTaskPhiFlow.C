@@ -63,15 +63,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    fileName+=suffixName;
    if(debug) cout << "    --> Reconstruction data container: " << fileName << endl;
    // check validity of arguments
-   if((!SPSUB)&&(EtaGap > 0.)) {
-       if(debug) cout << " --> Fatal error: Eta gap is introduced but method SPSUB is not enabled !!! <-- " << endl;
-       return 0x0;
-   }
-   else if ((QC||SP||EP||EP3sub)&&(EtaGap > 0.)) {
-       if(debug) cout << " --> Fatal error: one or more of the flow analyses is not compatible with the Eta Gap !!! <--" << endl;
-       return 0x0;
-   }
-   else if(EP3sub) {
+   if(EP3sub) {
        if(highPtMode) {
            if(debug) cout << " --> Can't launch 3 subevent method for high pt analysis, exiting ... <--" << endl;
            return 0x0;
@@ -212,7 +204,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        if((deltaDip>0.005)&&(deltaDipMaxPt>0.005)) task->SetMaxDeltaDipAngleAndPt(deltaDip, deltaDipMaxPt);
        else cout << " --> Disabled Delta-Dip exclusion. <-- " << endl;
        task->SetCandidateEtaAndPt(POIEtaMin, POIEtaMax, 0., 15.);
-       task->SetCentralityParameters(centrMin, centrMax, "TRK");
+       task->SetCentralityParameters(centrMin, centrMax, "TRK", "V0M", kTRUE);
        task->SetVertexZ(vertexZ);
        if(debug) cout << "    --> Set pair cuts and event cuts" << endl;
        // specify the PID procedure which will be used
@@ -318,7 +310,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    if((deltaDip>0.005)&&(deltaDipMaxPt>0.005)) task->SetMaxDeltaDipAngleAndPt(deltaDip, deltaDipMaxPt);
    else cout << " --> Disabled Delta-Dip exclusion. <-- " << endl;
    task->SetCandidateEtaAndPt(POIEtaMin, POIEtaMax, 0., 10.);
-   task->SetCentralityParameters(centrMin, centrMax, "TRK");
+   task->SetCentralityParameters(centrMin, centrMax, "TRK", "V0M", kTRUE);
    task->SetVertexZ(vertexZ);
    if(debug) cout << "    --> Set pair cuts and event cuts" << endl;
    // set the kaon cuts, and specify the PID procedure which will be used

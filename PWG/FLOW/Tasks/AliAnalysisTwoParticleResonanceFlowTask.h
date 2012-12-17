@@ -79,10 +79,11 @@ public:
    // setters
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    void                                 SetdPhiBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fdPhiBins[i] = bin[i]; fNdPhiBins = n;}
-   void                                 SetCentralityParameters(Float_t CentralityMin, Float_t CentralityMax, const char* CentralityMethod) { 
-                                                                                          fCentralityMin = CentralityMin; 
-                                                                                          fCentralityMax = CentralityMax; 
-                                                                                          fkCentralityMethod = CentralityMethod; }
+   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b) { 
+                                                                                          fCentralityMin = min; 
+                                                                                          fCentralityMax = max; 
+                                                                                          fkCentralityMethodA = a; 
+                                                                                          fkCentralityMethodB = b; }
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
    void                                 SetPIDConfiguration(Float_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
@@ -111,7 +112,7 @@ public:
    void                                 GetMixingParameters(Int_t p[3]) const { for(Int_t i = 0; i < 3; i++) p[i] = fMixingParameters[i]; } 
    Float_t                              GetCenMin() const {return fCentralityMin; }
    Float_t                              GetCenMax() const {return fCentralityMax; }
-   const char*                          GetCentralityMethod() const {return fkCentralityMethod; }
+   const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
    Float_t                              GetVertexZ() const { return fVertexRange; }
    Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
    Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
@@ -216,7 +217,8 @@ private:
    TH1F                 *fPtSpeciesB; //! QA histogram of p_t distribution of species B
    Float_t              fCentralityMin; // lower bound of cenrality bin
    Float_t              fCentralityMax; // upper bound of centrality bin
-   const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
+   const char           *fkCentralityMethodA; // centrality determiantion (primary method)
+   const char           *fkCentralityMethodB; // centrality determination fallback
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
    Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of POI daughters
