@@ -204,12 +204,16 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   		if(ifAODEvent==AliSpectraBothTrackCuts::kESDobject)
   		{
 			esdtrack=dynamic_cast<AliESDtrack*>(track);
+			if(!esdtrack)
+				continue;
 			Float_t dcaz=0.0;
 			esdtrack->GetImpactParameters(dca,dcaz);
   		}
   		else if (ifAODEvent==AliSpectraBothTrackCuts::kAODobject)
   		{
-			aodtrack=dynamic_cast<AliAODTrack*>(track);	
+			aodtrack=dynamic_cast<AliAODTrack*>(track);
+			if(!aodtrack)
+				continue;		
 			dca=aodtrack->DCA();
   		}
   		else
