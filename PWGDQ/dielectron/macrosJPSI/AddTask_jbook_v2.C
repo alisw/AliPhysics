@@ -1,4 +1,7 @@
-AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
+AliAnalysisTask *AddTask_jbook_v2(TString prod="",
+				    Bool_t gridconf=kFALSE,
+				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
+
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -12,7 +15,6 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
   if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
-  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
@@ -20,9 +22,9 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
   // set AOD debug levels
   if(isAOD) {
     mgr->AddClassDebug("AliAODTrack", AliLog::kFatal);
-    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo); 
+    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo);
   }
-  
+
   //set config file name
   TString configFile("");
   printf("%s \n",gSystem->pwd());
@@ -31,18 +33,37 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
     configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";   // gsi config
   else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
     configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
-  else
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
   if(!gridconf)
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
   //create task and add it to the manager
-  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  AliAnalysisTaskMultiDielectron *task;
+
+  // trigger selection
+  ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
+			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
+  const char* triggerNames[]={"Central","SemiCentral","MB","MB+Cent+SemiCent"};
+
+  // find out the configured triggers
+  Int_t j=0;
+  for(j=0; j<4; j++) {
+    if(triggers!=triggerSets[j]) continue;
+    else break;
+  }
+
+  // print task configuration
+  printf("production: %s MC: %d \n",  list.Data(),hasMC);
+  printf("triggers:   %s \n",         triggerNames[j]  );
+  printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
+
+  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJB_%s",triggerNames[j])));
+  task->SetTriggerMask(triggers);
+  //task->SetTriggerMask(AliVEvent::kMB);
+
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
-  
+
   //load dielectron configuration file
   TString checkconfig="ConfigJpsi_jb_PbPb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
@@ -50,51 +71,35 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="", Bool_t gridconf=kFALSE){
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=12; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list);
+    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,list,triggers);
     if (jpsi ) task->AddDielectron(jpsi);
-    if (jpsi ) printf("add: %s\n",jpsi->GetName());
+    if (jpsi ) printf(" %s added\n",jpsi->GetName());
   }
-  
-  //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetCentralityRange(0.0,80.0);
-  task->SetEventFilter(eventCuts);
 
-  
   //create output container
-  AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("jbook_v2_tree",
-                         TTree::Class(),
-                         AliAnalysisManager::kExchangeContainer,
-                         "jbook_v2_default");
-  
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("jbook_v2_QA",
-                         TList::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         "jbookv2.root");
+    mgr->CreateContainer(Form("jbook_v2_%s",triggerNames[j]),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("jbook_v2_%s.root",triggerNames[j]));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("jbook_v2_CF",
-                         TList::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         "jbookv2.root");
-  
+    mgr->CreateContainer(Form("jbook_v2_CF_%s",triggerNames[j]),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("jbook_v2_%s.root",triggerNames[j]));
+
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("jbook_v2_EventStat",
-                         TH1D::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         "jbookv2.root");
-  
+    mgr->CreateContainer(Form("jbook_v2_EventStat_%s",triggerNames[j]),
+			 TH1D::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 Form("jbook_v2_%s.root",triggerNames[j]));
+
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 0, coutput1 );
+  //  mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
   mgr->ConnectOutput(task, 3, cOutputHist3);
-  
+
   return task;
 }
