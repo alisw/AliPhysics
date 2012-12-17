@@ -221,6 +221,7 @@ TObjArray* AliDielectronHFhelper::CollectHistos()
   TObjArray *collection = new TObjArray(AliDielectron::kEv1PMRot+1);
 
   TObjArray *histArr = (TObjArray*) fArrPairType->Clone("tmpArr");
+  if(!histArr) return 0x0;
   histArr->SetOwner(kTRUE);
 
   // loop over max. available pair types

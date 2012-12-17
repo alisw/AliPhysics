@@ -934,6 +934,10 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // 3.) Certain particles added via MC generator cocktails (e.g. J/psi added to pythia MB events)
       return (label>=0 && GetMothersLabel(label)<0);
       break;
+    case AliDielectronSignalMC::kNoCocktail :
+      // Particles from the HIJING event and NOT from the AliGenCocktail
+      return (label>=0 && GetMothersLabel(label)>=0);
+      break;
     case AliDielectronSignalMC::kSecondary :          
       // particles which are created by the interaction of final state primaries with the detector
       // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
@@ -965,8 +969,8 @@ Bool_t AliDielectronMC::CheckIsRadiative(Int_t label) const
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
     AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label));
-    const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
     if (!mother) return kFALSE;
+    const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
       if (GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
