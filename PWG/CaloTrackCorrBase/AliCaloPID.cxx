@@ -252,10 +252,27 @@ void AliCaloPID::InitParameters()
   fM02MinParam[3] = 0.0069;   // pol2 param2 for NLM=1 , E < 16 GeV
   fM02MinParam[4] = 0.3;      // absolute minimum in any case
   
-  fAsyMinParam[0] = 0.08 ;    // pol2 param0 for NLM=2 , E < 11 GeV
-  fAsyMinParam[1] = 0.127;    // pol2 param1 for NLM=2 , E < 11 GeV
-  fAsyMinParam[2] =-0.0049;   // pol2 param2 for NLM=2 , E < 11 GeV
+  fAsyMinParam[0][0] =-0.02  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][1] = 0.072 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][2] =-0.0014;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
+
+  fAsyMinParam[1][0] =-0.33 ;   // pol3 param0 for NLM>2 , E < 25 GeV, pp
+  fAsyMinParam[1][1] = 0.20 ;   // pol3 param1 for NLM>2 , E < 25 GeV, pp
+  fAsyMinParam[1][2] =-0.011;   // pol3 param2 for NLM>2 , E < 25 GeV, pp
+  fAsyMinParam[1][3] = 0.00019; // pol3 param2 for NLM>2 , E < 25 GeV, pp
   
+  
+//  fAsyMinParam[0][0] =-0.41  ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][1] = 0.111 ;  // pol3 param1 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][2] =-0.0023;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
+//  
+//  fAsyMinParam[1][0] =-1.3  ;   // pol3 param0 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][1] = 0.32 ;   // pol3 param1 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][2] =-0.015;   // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][3] = 0.00022; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+
   
   fSplitEFracMin   = 0.85 ;
   fSplitWidthSigma = 2.5  ;
@@ -271,10 +288,17 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   
   Float_t abasy = TMath::Abs(asy);
 
-  // Get the parametrized min cut of asymmetry for NLM=2 up to 11 GeV
-  Float_t cut = fAsyMinParam[0]+energy*fAsyMinParam[1]+energy*energy*fAsyMinParam[2];  
+  Int_t inlm = nlm-1;
+  if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
   
-  if(nlm != 2 || energy > 11 ) cut = 0.95;
+  // Get the parametrized min cut of asymmetry for NLM=2 up to 11 GeV
+  Float_t cut = fAsyMinParam[inlm][0]+energy*fAsyMinParam[inlm][1]+energy*energy*fAsyMinParam[inlm][2]+
+                energy*energy*energy*fAsyMinParam[inlm][3];
+  
+  if(energy > 25 ) cut = 0.95;
+  
+  //printf("energy %2.2f - nlm: %d (%d)- p0 %f, p1 %f, p2 %f, p3 %f ; cut: %2.2f\n",energy,nlm,inlm,
+  //       fAsyMinParam[inlm][0],fAsyMinParam[inlm][1],fAsyMinParam[inlm][2],fAsyMinParam[inlm][3],cut);
   
   if(abasy < cut) return kTRUE;
   else            return kFALSE;
