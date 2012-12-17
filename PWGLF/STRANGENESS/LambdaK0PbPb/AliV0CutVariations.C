@@ -38,6 +38,7 @@
 AliV0CutVariations::AliV0CutVariations(TTree * /*tree*/ ) : 
 fChain(0), 
 fIsMC(kFALSE),
+fSelectNonInjected(kFALSE),
 fCMin(0.),
 fCMax(90.),
 fCPA(0.9975),
@@ -345,6 +346,9 @@ Bool_t AliV0CutVariations::AcceptPID(Int_t code)
 
   if (fIsMC) {
     // MC PID
+
+    if (fSelectNonInjected && (!fTreeVariableIsNonInjected)) return kFALSE;
+
     if (code > 0) {
       if (fTreeVariablePIDPositive == code) return kTRUE;
     } else {
@@ -400,6 +404,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
    Double_t lt=0;
    //+++++++ MC
    if (fIsMC) {
+      if (fSelectNonInjected && (!fTreeVariableIsNonInjected)) goto real;
+
       Int_t code=fTreeVariablePID;
 
       if (code != kK0Short)
@@ -521,6 +527,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
    }
 
    if (!fIsMC) return kFALSE;
+   if (fSelectNonInjected && (!fTreeVariableIsNonInjected)) return kFALSE;
+
 
    //++++++ MC 
    if (!isK0s)
