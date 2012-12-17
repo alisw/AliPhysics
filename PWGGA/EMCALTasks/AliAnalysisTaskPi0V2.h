@@ -74,6 +74,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fEtaCut;		// Cluster Eta Cut
     Double_t			fM02Cut;		// Cluster long axis cut
     Bool_t			fPi0AsyCut;		// pion Asymetry cut 0=off 1=on
+    Bool_t			isV1Clus;		// pion Asymetry cut 0=off 1=on
     Double_t			fCentrality;	  	//! Centrality
     Double_t			fEPTPC;			//! Evt plane TPC
     Double_t			fEPTPCreso;		//! resolution of TPC method
@@ -136,7 +137,8 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
 
     TH2F			*hM02vsPtA;		//! 2-D histo clus M02 vs Pt before cut
     TH2F			*hM02vsPtB;		//! 2-D histo clus M02 vs Pt after cut
-    TH2F			*hClusDxDZ;		//! 2-D histo clus Dx vs Dz
+    TH2F			*hClusDxDZA;		//! 2-D histo clus Dx vs Dz before
+    TH2F			*hClusDxDZB;		//! 2-D histo clus Dx vs Dz after
 
     TH3F			*hdifEMC_EPV0;		//! 3-D histo dif phi in EMC with EPV0
     TH3F			*hdifEMC_EPV0A;		//! 3-D histo dif phi in EMC with EPV0A

@@ -67,7 +67,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0), isV1Clus(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
@@ -79,7 +79,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0), 
-    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZ(0),
+    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
@@ -102,7 +102,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0), isV1Clus(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
@@ -114,7 +114,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),  
-    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZ(0),
+    hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
@@ -596,13 +596,15 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(h2DcosTPC);
     fOutput->Add(h2DsinTPC);
 
-    hM02vsPtA = new TH2F("hM02vsPtA", "M02 vs Pt before cut", 50, 0, 50, 40, 0, 4);
-    hM02vsPtB = new TH2F("hM02vsPtB", "M02 vs Pt before cut", 50, 0, 50, 40, 0, 4);
+    hM02vsPtA = new TH2F("hM02vsPtA", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
+    hM02vsPtB = new TH2F("hM02vsPtB", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
     fOutput->Add(hM02vsPtA);
     fOutput->Add(hM02vsPtB);
 
-    hClusDxDZ = new TH2F("hClusDxDZ", "clus Dx vs Dz", 50, -1., 1., 50, -1., 1);
-    fOutput->Add(hClusDxDZ);
+    hClusDxDZA = new TH2F("hClusDxDZA", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
+    hClusDxDZB = new TH2F("hClusDxDZB", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
+    fOutput->Add(hClusDxDZA);
+    fOutput->Add(hClusDxDZB);
 
     const Int_t ndims = 5;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
@@ -785,19 +787,18 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
    for(Int_t i=0; i<nCluster; ++i){
      AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
-     hClusDxDZ->Fill(c1->GetTrackDz(), c1->GetTrackDx());
-     Float_t clsPos[3] = {0,0,0};
-     c1->GetPosition(clsPos);
-     TVector3 clsVec(clsPos);
+     hClusDxDZA->Fill(c1->GetTrackDz(), c1->GetTrackDx());
+     Float_t clsPosEt[3] = {0,0,0};
+     c1->GetPosition(clsPosEt);
+     TVector3 clsVec(clsPosEt);
      Double_t Et = c1->E()*TMath::Sin(clsVec.Theta());
      hM02vsPtA->Fill(Et, c1->GetM02());
      if(!c1->IsEMCAL()) continue;
-     if(!IsGoodClusterV1(c1)) continue;
+     if(!IsGoodCluster(c1)) continue;
      hM02vsPtB->Fill(Et, c1->GetM02());	
+     hClusDxDZB->Fill(c1->GetTrackDz(), c1->GetTrackDx());
      TLorentzVector p1;
      GetMom(p1, c1, vertex);
-     FillCluster(p1, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
-     if(!IsGoodCluster(c1)) continue;
      for(Int_t j=i+1; j<nCluster; ++j){
        AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
        if(!c2->IsEMCAL()) continue;
@@ -805,8 +806,20 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
        TLorentzVector p2;
        GetMom(p2, c2, vertex);
        FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
-     } 
+     }
    }
+
+  if(isV1Clus){
+    for(Int_t i=0; i<nCluster; ++i){
+      AliESDCaloCluster *c3 = fESD->GetCaloCluster(i);      
+      if(!c3->IsEMCAL()) continue;
+      if(!IsGoodClusterV1(c3)) continue;
+      TLorentzVector p3;
+      GetMom(p3, c3, vertex);
+      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+    }
+  }
+
 
    if (!fTracksName.IsNull() && !fTracks) {
      fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
