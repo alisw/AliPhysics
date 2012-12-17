@@ -31,7 +31,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *);
 
-  void                   GetCeIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
+  void                   GetCeIso(TVector3 vec, Int_t maxid, Float_t &iso, Float_t &phiband, Float_t &core);
   Double_t               GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t               GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
