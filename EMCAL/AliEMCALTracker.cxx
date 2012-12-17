@@ -260,17 +260,15 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   // Load ESD tracks.
   //
 
-  if (esd) { 
-    UInt_t mask1 = esd->GetESDRun()->GetDetectorsInDAQ();
-    UInt_t mask2 = esd->GetESDRun()->GetDetectorsInReco();
-    Bool_t desc1 = (mask1 >> 3) & 0x1;
-    Bool_t desc2 = (mask2 >> 3) & 0x1;
-    if (desc1==0 || desc2==0) { 
-      AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)", 
-      mask1, esd->GetESDRun()->GetDetectorsInReco(),
-      mask2, esd->GetESDRun()->GetDetectorsInDAQ()));
-      fITSTrackSA = kTRUE;
-    }
+  UInt_t mask1 = esd->GetESDRun()->GetDetectorsInDAQ();
+  UInt_t mask2 = esd->GetESDRun()->GetDetectorsInReco();
+  Bool_t desc1 = (mask1 >> 3) & 0x1;
+  Bool_t desc2 = (mask2 >> 3) & 0x1;
+  if (desc1==0 || desc2==0) {
+    AliError(Form("TPC not in DAQ/RECO: %u (%u)/%u (%u)",
+                  mask1, esd->GetESDRun()->GetDetectorsInReco(),
+                  mask2, esd->GetESDRun()->GetDetectorsInDAQ()));
+    fITSTrackSA = kTRUE;
   }
   
   Clear("TRACKS");
