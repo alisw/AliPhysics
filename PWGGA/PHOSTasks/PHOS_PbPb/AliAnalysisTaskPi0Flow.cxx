@@ -737,6 +737,8 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
 
     if ( !clu->IsPHOS() || clu->E()< kMinClusterEnergy) continue; // reject cluster
 
+
+
     // check if cell/channel is good.
     Float_t  position[3];
     clu->GetPosition(position);
@@ -766,7 +768,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     Double_t origo[3] = {0,0,0}; // don't rely on event vertex, assume (0,0,0)
     if( fEventESD ) {
       AliPHOSEsdCluster cluPHOS1( *(AliESDCaloCluster*) (clu) );
-      cluPHOS1.Recalibrate(fPHOSCalibData, dynamic_cast<AliESDCaloCells*> (cells)); // modify the cell energies
+      cluPHOS1.Recalibrate(fPHOSCalibData, static_cast<AliESDCaloCells*> (cells)); // modify the cell energies
       Reclusterize(&cluPHOS1) ;
       cluPHOS1.EvalAll(kLogWeight, fVertexVector);         // recalculate the cluster parameters
       cluPHOS1.SetE(fNonLinCorr->Eval(cluPHOS1.E()));// Users's nonlinearity
@@ -803,12 +805,9 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     }
 
 
-    char skey[55];
-    snprintf(skey,55,"hCluLowM%d",mod) ;
-    FillHistogram(skey,cellX,cellZ,1.);
+    FillHistogram(Form("hCluLowM%d",mod),cellX,cellZ,1.);
     if(lorentzMomentum.E()>1.5){
-      sprintf(skey,"hCluHighM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluHighM%d",mod),cellX,cellZ,1.);
     }
 
     fCaloPhotonsPHOS->Add(new  AliCaloPhoton(lorentzMomentum.X(),lorentzMomentum.Py(),lorentzMomentum.Z(),lorentzMomentum.E()) );
@@ -824,8 +823,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     EvalCoreLambdas(clu, cells, m02, m20) ;
     ph->SetDisp2Bit(TestCoreLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
     if(ph->IsDispOK()){
-      sprintf(skey,"hCluDispM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
     }
 
     // Track Matching
@@ -864,8 +862,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     ph->SetCPVBit(cpvBit) ;
     ph->SetCPV2Bit(cpvBit2) ;
     if(cpvBit){
-      sprintf(skey,"hCluVetoM%d",mod) ;
-      FillHistogram(skey,cellX,cellZ,1.);
+      FillHistogram(Form("hCluVetoM%d",mod),cellX,cellZ,1.);
     }
     ph->SetEMCx(float(cellX)) ;
     ph->SetEMCz(float(cellZ)) ;
@@ -1802,7 +1799,7 @@ Int_t AliAnalysisTaskPi0Flow::ConvertToInternalRunNumber(Int_t run){
     default : return 199;
     }
   }
-  if(kUndefinedPeriod && fDebug >= 1 ) {
+  if(kUndefinedPeriod && (fDebug >= 1) ) {
     AliWarning("Period not defined");
   }
   return 1;
@@ -2234,9 +2231,9 @@ void AliAnalysisTaskPi0Flow::SetGeometry()
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
-	continue;
 	if( fDebug )
 	  AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+	continue;
       }
       else {
 	fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
