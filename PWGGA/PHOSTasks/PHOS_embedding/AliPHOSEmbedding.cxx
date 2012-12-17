@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // Analysis task to perform embedding of the simulated AOD
 // into real data (ESD)
 // Output conntainer contain AOD with
@@ -161,6 +176,10 @@ void AliPHOSEmbedding::CopyRecalibrateDigits(){
   //exists than one used in reconstruction ("ESD")
   
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!event){
+    AliError("No ESD event!");
+    return ;
+  }
   if(fCellsPHOS)
     delete fCellsPHOS ;
   fCellsPHOS = new AliESDCaloCells() ;
@@ -647,7 +666,7 @@ void AliPHOSEmbedding::ConvertHeader(AliESDEvent & esd){
   } 
   
   //EventPlane
-  AliEventplane *eventplane = (dynamic_cast<AliESDEvent*>(InputEvent()))->GetEventplane();
+  AliEventplane *eventplane = esd.GetEventplane();
   Double_t epQ = eventplane->GetEventplane("Q"); 
   
   //Standard Eventplane setter is too complicated...
@@ -759,10 +778,10 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   if(signal){
     AliAODCaloCells* cellsS = signal->GetPHOSCells();
     Int_t cellLabels[1000]={0} ;       //1000 should be enough for simulated
-    Int_t cellSecondLabels[1000]={0} ; //low-statistics event.
+//    Int_t cellSecondLabels[1000]={0} ; //low-statistics event.
     for(Int_t i=0;i<cellsS->GetNumberOfCells();i++){
       cellLabels[i]=-1 ;
-      cellSecondLabels[i]=-1;
+//      cellSecondLabels[i]=-1;
     }
     //------------------------------------------------------------------------------------
     //Ancestry information
@@ -778,8 +797,8 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
         continue;
     
       Int_t label = clus->GetLabel();
-      Int_t label2 = -1 ;
-      if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
+//      Int_t label2 = -1 ;
+//      if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
     
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t ic=0; ic < clus->GetNCells(); ic++ ){
@@ -791,7 +810,7 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
 	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) ;
 	   if(cellNumber==index[ic]){
 	      cellLabels[icell]=label;
-              cellSecondLabels[icell]=label2;
+//              cellSecondLabels[icell]=label2;
 	      break ;
 	  }
         }
@@ -1021,7 +1040,7 @@ Float_t AliPHOSEmbedding::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t c
               6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   
-  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  AliESDEvent *event = static_cast<AliESDEvent*>(InputEvent());
   Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
 
   if(mf<0.){ //field --

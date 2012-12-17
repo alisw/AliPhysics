@@ -1,6 +1,9 @@
 #ifndef AliPHOSEmbedding_h
 #define AliPHOSEmbedding_h
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // Class to perform embedding on the AOD level
 // Author: D.Peressounko
 
