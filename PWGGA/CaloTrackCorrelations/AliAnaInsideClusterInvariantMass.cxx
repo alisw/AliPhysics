@@ -60,6 +60,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fFillSSExtraHisto(kFALSE),
   fFillMCFractionHisto(kFALSE),
   fhMassM02CutNLocMax1(0),    fhMassM02CutNLocMax2(0),    fhMassM02CutNLocMaxN(0),
+  fhAsymM02CutNLocMax1(0),    fhAsymM02CutNLocMax2(0),    fhAsymM02CutNLocMaxN(0),
   fhMassSplitECutNLocMax1(0), fhMassSplitECutNLocMax2(0), fhMassSplitECutNLocMaxN(0),
   fhMassAsyCutNLocMax1(0),    fhMassAsyCutNLocMax2(0),    fhMassAsyCutNLocMaxN(0)
 {
@@ -311,6 +312,21 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
   fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
   outputContainer->Add(fhMassM02CutNLocMaxN) ;   
+  
+  fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
+  fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+  fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
+  outputContainer->Add(fhAsymM02CutNLocMax1) ;
+  
+  fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
+  fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+  fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
+  outputContainer->Add(fhAsymM02CutNLocMax2) ;
+
+  fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut", nptbins,ptmin,ptmax,200,-1,1);
+  fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+  fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
+  outputContainer->Add(fhAsymM02CutNLocMaxN) ;
   
   fhMassAsyCutNLocMax1  = new TH2F("hMassAsyCutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, with |A|>0.8",
                                    nptbins,ptmin,ptmax,mbins,mmin,mmax); 
@@ -1621,6 +1637,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMax1->Fill(en,mass);
+          fhAsymM02CutNLocMax1->Fill(en,asym );
           if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax1->Fill(en,mass);
         }
       }
@@ -1647,6 +1664,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMax2->Fill(en,mass);
+          fhAsymM02CutNLocMax2->Fill(en,asym );
           if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMax2->Fill(en,mass);
         }
       }
@@ -1673,6 +1691,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         if(GetCaloPID()->IsInMergedM02Range(en,l0,nMax))
         {
           fhMassM02CutNLocMaxN->Fill(en,mass);
+          fhAsymM02CutNLocMaxN->Fill(en,asym );
           if(GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax)) fhMassAsyCutNLocMaxN->Fill(en,mass);
         }
       }
