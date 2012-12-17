@@ -32,7 +32,7 @@ class TList;
 class TString;
 
 const int    kN1 = 4; 
-const double kPtBinV0[kN1+1] = {2.,2.5,3.,4.,5.};
+const float  kPtBinV0[kN1+1] = {2.,2.5,3.,4.,5.};
 
 class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
