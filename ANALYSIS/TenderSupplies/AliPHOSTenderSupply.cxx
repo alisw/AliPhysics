@@ -102,6 +102,10 @@ void AliPHOSTenderSupply::InitTender()
   if(fTender)
     runNumber = fTender->GetRun();
   else{
+    if(!fTask){
+      AliError("Neither Tender not Taks was not set") ;
+      return ;
+    }
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
     if(aod)
       runNumber = aod->GetRunNumber() ;
@@ -365,6 +369,10 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
     aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
   }
   
+  if(!aod && !esd){
+    AliError("Neither AOD nor ESD is found") ;
+    return ;
+  }
   Double_t  magF = 0;
   if(esd) magF = esd->GetMagneticField();
   else  magF = aod->GetMagneticField();
@@ -558,9 +566,13 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
     AliESDEvent *esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
     if(esd)
       mf = esd->GetMagneticField();
-    else{  
-      AliAODEvent *aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
-      mf = aod->GetMagneticField();
+    else{
+      if(fTask){
+        AliAODEvent *aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
+	if(aod)
+          mf = aod->GetMagneticField();
+      }
+      AliError("Neither Tender nor Task defined") ;
     }    
   }
   

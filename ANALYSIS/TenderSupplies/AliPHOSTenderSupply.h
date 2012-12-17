@@ -56,17 +56,17 @@ protected:
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;
 private:
 
-  TString fOCDBpass ;                        //! Pass to OCDB recalibration object, local or alien
-  TString fNonlinearityVersion;              //! Version of non-linearity correction to aaply
-  AliPHOSGeometry   *fPHOSGeo;               //! PHOS geometry
-  Double_t fNonlinearityParams[10] ;         //! Parameters for non-linearity calculation
-  TH2I * fPHOSBadMap[5] ;                    //! Bad channels map
-  Int_t fRecoPass ;                          //! Reconstruction pass
+  TString fOCDBpass ;                        // Pass to OCDB recalibration object, local or alien
+  TString fNonlinearityVersion;              // Version of non-linearity correction to aaply
+  AliPHOSGeometry   *fPHOSGeo;               // PHOS geometry
+  Double_t fNonlinearityParams[10] ;         // Parameters for non-linearity calculation
+  TH2I * fPHOSBadMap[5] ;                    // Bad channels map
+  Int_t fRecoPass ;                          // Reconstruction pass
   Bool_t fUsePrivateBadMap ;
   Bool_t fUsePrivateCalib ;
   
-  AliPHOSCalibData *fPHOSCalibData;          //! PHOS calibration object
-  AliAnalysisTaskSE     *fTask;              //! analysis task
+  AliPHOSCalibData *fPHOSCalibData;          // PHOS calibration object
+  AliAnalysisTaskSE     *fTask;              // analysis task
 
  
   ClassDef(AliPHOSTenderSupply, 2); // PHOS tender task
@@ -74,4 +74,5 @@ private:
 
 
 #endif
+
 
