@@ -247,6 +247,12 @@ public:
     kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
     kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
+    kv0Av0C0DiffH2,             // V0A-ring 0 ofV0C reaction plane difference for 2nd harmonic
+    kv0Av0C3DiffH2,             // V0A-ring 3 ofV0C reaction plane difference for 2nd harmonic
+    kv0Cv0A0DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
+    kv0Cv0A3DiffH2,             // V0C-ring 3 ofV0A reaction plane difference for 2nd harmonic
+    kv0A0v0A3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
+    kv0C0v0C3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
     kv0ArpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-A
     kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
     kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
@@ -1618,6 +1624,25 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   
   values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
 								     values[AliDielectronVarManager::kv0CrpH2]) ); 
+
+  values[AliDielectronVarManager::kv0Av0C0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
+								     values[AliDielectronVarManager::kv0C0rpH2]) ); 
+
+  values[AliDielectronVarManager::kv0Av0C3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
+								     values[AliDielectronVarManager::kv0C3rpH2]) ); 
+
+  values[AliDielectronVarManager::kv0Cv0A0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] - 
+								     values[AliDielectronVarManager::kv0A0rpH2]) ); 
+
+  values[AliDielectronVarManager::kv0Cv0A3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] - 
+								     values[AliDielectronVarManager::kv0A3rpH2]) ); 
+
+  values[AliDielectronVarManager::kv0A0v0A3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0A0rpH2] - 
+								     values[AliDielectronVarManager::kv0A3rpH2]) ); 
+
+  values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] - 
+								     values[AliDielectronVarManager::kv0C3rpH2]) ); 
+
 
 }
 
