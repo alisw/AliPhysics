@@ -218,6 +218,10 @@ Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, Int_t passNumber )
   if ( runMatchParams ) fOADBParam = *runMatchParams;
   else if ( fAllowDefaultParams ) {
     AliOADBMuonTrackCutsParam* currParams = ( lastMatchParams ) ? lastMatchParams : lastDefaultParams;
+    if ( ! currParams ) { // This case should be impossible, but Coverity complains
+      AliFatal("No parameter found");
+      return kFALSE;
+    }
     foundPass = ( lastMatchParams ) ? lastMatchPass : lastDefaultPass;
     fOADBParam = *currParams;
     AliWarning(Form("Requested run %i not found in pass%i: using %s (pass%i)", runNumber, passNumber, fOADBParam.GetName(),foundPass));
