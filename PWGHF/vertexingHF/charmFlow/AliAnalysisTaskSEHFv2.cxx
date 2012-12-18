@@ -847,14 +847,12 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, c
     qx = pl->GetQContributionXArray();
     qy = pl->GetQContributionYArray();
     qcopy = *q;
-    }
-  else {
-    if(d->Eta()>0.){
+  }else {
+    if(d->Eta()<0.){
       qx = pl->GetQContributionXArraysub1();
       qy = pl->GetQContributionYArraysub1();
       qcopy = *qsub1;
-    }
-    else{
+    }else{
       qx = pl->GetQContributionXArraysub2();
       qy = pl->GetQContributionYArraysub2();
       qcopy = *qsub2;
