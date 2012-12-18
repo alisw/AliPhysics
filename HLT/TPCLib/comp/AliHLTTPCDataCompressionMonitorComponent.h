@@ -21,6 +21,8 @@ class AliHLTTPCHWCFData;
 class AliHLTDataInflater;
 class AliHLTTPCTrackGeometry;
 class AliHLTTPCHWCFSpacePointContainer;
+class AliHLTComponentBenchmark;
+class AliHLTTPCDataCompressionDecoder;
 class TH1;
 class TH2;
 class TH3;
@@ -197,6 +199,16 @@ public:
       void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
       void SetCharge(unsigned charge)     {if (fData) fData->FillCharge(charge, fClusterId);}
       void SetQMax(unsigned qmax)         {if (fData) {fData->FillQMax(qmax, fClusterId);fData->Fill(fSlice, fPartition, fClusterId);}}
+      iterator& operator=(const AliHLTTPCRawCluster& cluster) {if (fData) {
+	  fData->FillPadRow(cluster.GetPadRow(), fSlice, fClusterId);
+	  fData->FillPad(cluster.GetPad(), fClusterId);
+	  fData->FillTime(cluster.GetTime(), fClusterId);
+	  fData->FillSigmaY2(cluster.GetSigmaY2(), fClusterId, fPartition);
+	  fData->FillSigmaZ2(cluster.GetSigmaZ2(), fClusterId);
+	  fData->FillCharge(cluster.GetCharge(), fClusterId);
+	  fData->FillQMax(cluster.GetQMax(), fClusterId);
+	  fData->Fill(fSlice, fPartition, fClusterId);
+	} return *this;}
       void SetMC(const AliHLTTPCClusterMCLabel* /*pMC*/) {/* nop */}
 
       // switch to next cluster
@@ -221,8 +233,12 @@ public:
       int fPartition; //! current partition
     };
 
-    /// iterator of remaining clusters block of specification
-    iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification);
+    /// legacy, to be removed later
+    iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification) {
+      return BeginPartitionClusterBlock(count, specification);
+    }
+    /// iterator of partition clusters block of specification
+    iterator& BeginPartitionClusterBlock(int count, AliHLTUInt32_t specification);
     /// iterator of track model clusters
     iterator& BeginTrackModelClusterBlock(int count);
 
@@ -292,11 +308,16 @@ protected:
 
   /// publish to output
   int Publish(int mode);
+
+  AliHLTComponentBenchmark* GetBenchmarkInstance() const {return fpBenchmark;}
     
 private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
 
+  /// benchmark
+  AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
+  AliHLTTPCDataCompressionDecoder* fpDecoder; //! cluster decoder instance
   AliHLTTPCHWCFData* fpHWClusterDecoder; //! data decoder for HW clusters
 
   TH2* fHistoHWCFDataSize;         //! hwcf data size vs. event size

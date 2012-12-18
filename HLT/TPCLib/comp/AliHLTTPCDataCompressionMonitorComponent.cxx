@@ -33,6 +33,7 @@
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCHWCFSpacePointContainer.h"
 #include "AliHLTErrorGuard.h"
+#include "AliHLTComponentBenchmark.h"
 #include "AliRawDataHeader.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCROC.h"
@@ -55,6 +56,8 @@ ClassImp(AliHLTTPCDataCompressionMonitorComponent)
 
 AliHLTTPCDataCompressionMonitorComponent::AliHLTTPCDataCompressionMonitorComponent()
   : AliHLTProcessor()
+  , fpBenchmark(NULL)
+  , fpDecoder(NULL)
   , fpHWClusterDecoder(NULL)
   , fHistoHWCFDataSize(NULL)
   , fHistoHWCFReductionFactor(NULL)
@@ -138,6 +141,11 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
     return iResult;
   }
 
+  if (GetBenchmarkInstance()) {
+    GetBenchmarkInstance()->StartNewEvent();
+    GetBenchmarkInstance()->Start(0);
+  }
+
   const AliHLTComponentBlockData* pDesc=NULL;
   unsigned rawDataSize=0;
   unsigned rawEventSizeFromRCUtrailer=0;
@@ -184,6 +192,10 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   }
 
   if (fMonitoringContainer) {
+    if (GetBenchmarkInstance()) {
+      GetBenchmarkInstance()->Start(1);
+    }
+
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       iResult=fMonitoringContainer->AddClusterIds(pDesc);
@@ -195,7 +207,8 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
     }
 
     // read data
-    AliHLTTPCDataCompressionDecoder decoder;
+    AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
+    decoder.Clear();
     bool bHaveRawClusters=false;
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
@@ -251,6 +264,9 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	ALIHLTERRORGUARD(5, "conflicting data blocks, monitoring histograms already filled from raw cluster data, ignoring blocks of compressed partition and track clusters");
       }		     
     }
+    if (GetBenchmarkInstance()) {
+      GetBenchmarkInstance()->Stop(1);
+    }
 
     fMonitoringContainer->Clear();
   }
@@ -280,6 +296,11 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 
   if (iResult>=0 && fPublishingMode!=kPublishOff) {
     iResult=Publish(fPublishingMode);
+  }
+
+  if (GetBenchmarkInstance()) {
+    GetBenchmarkInstance()->Stop(0);
+    HLTBenchmark("%s", GetBenchmarkInstance()->GetStatistics());
   }
 
   return iResult;
@@ -462,6 +483,20 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("reduction factor");
   }
 
+  std::auto_ptr<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
+  if (benchmark.get()) {
+    benchmark->SetTimer(0,"total");
+    benchmark->SetTimer(1,"clusterdecoding");
+  } else {
+    return -ENOMEM;
+  }
+
+  auto_ptr<AliHLTTPCDataCompressionDecoder> decoder(new AliHLTTPCDataCompressionDecoder);
+  if (!decoder.get()) {
+    return -ENOMEM;
+  }
+
+
   fHistoHWCFDataSize=histoHWCFDataSize.release();
   fHistoHWCFReductionFactor=histoHWCFReductionFactor.release();
   fHistoTotalReductionFactor=histoTotalReductionFactor.release();
@@ -470,6 +505,8 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
 
   fpHWClusterDecoder=hwClusterDecoder.release();
   fMonitoringContainer=dataContainer.release();
+  fpBenchmark=benchmark.release();
+  fpDecoder=decoder.release();
 
   return iResult;
 }
@@ -479,6 +516,9 @@ int AliHLTTPCDataCompressionMonitorComponent::DoDeinit()
   /// inherited from AliHLTComponent: component cleanup
   int iResult=0;
 
+  if (fpBenchmark) delete fpBenchmark; fpBenchmark=NULL;
+  if (fpDecoder) delete fpDecoder;
+  fpDecoder=NULL;
   if (fpHWClusterDecoder) delete fpHWClusterDecoder;
   fpHWClusterDecoder=NULL;
 
@@ -689,7 +729,7 @@ AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::~AliDataContainer()
   if (fHistograms3D) delete fHistograms3D;
 }
 
-AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::iterator& AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::BeginRemainingClusterBlock(int /*count*/, AliHLTUInt32_t specification)
+AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::iterator& AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::BeginPartitionClusterBlock(int /*count*/, AliHLTUInt32_t specification)
 {
   /// iterator of remaining clusters block of specification
   AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(specification);
@@ -869,6 +909,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
     fHistogram3DPointers[index]->Fill(fSector,pad,currentRow);
   
   AliTPCROC *roc=AliTPCROC::Instance();
+  if (roc) {
   Float_t pos[3]={0.,0.,0.};
   roc->GetPositionGlobal(fSector, fSector>35?currentRow-63:currentRow, (int)pad, pos); 
   if (fSector<=17 || (fSector>=36&&fSector<=53))
@@ -881,6 +922,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
     index=kHistogramXYC;
     if (index<fHistogram2DPointers.size() && fHistogram2DPointers[index]!=NULL)
       fHistogram2DPointers[index]->Fill(pos[0],pos[1]);
+  }
   }
 
 }
