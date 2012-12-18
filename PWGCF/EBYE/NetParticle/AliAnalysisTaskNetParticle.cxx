@@ -517,6 +517,11 @@ Int_t AliAnalysisTaskNetParticle::SetupMCEvent() {
 
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> 
     (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+
+  if (!mcH) {
+    AliError("MC event handler not available");
+    return -1;
+  }
   
   fMCEvent = mcH->MCEvent();
   if (!fMCEvent) {

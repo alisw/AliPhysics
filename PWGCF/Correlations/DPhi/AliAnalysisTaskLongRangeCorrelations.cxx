@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 232 2012-11-28 17:27:59Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 239 2012-12-12 17:25:09Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -229,8 +229,8 @@ void AliAnalysisTaskLongRangeCorrelations::SetupForMixing() {
   const Int_t poolsize(1000); // Maximum number of events
 
   Double_t centralityBins[] = { // centrality bins
-    0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.
-//     0.,20.,100.
+//     0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.
+     0.,20.,100.
   };
   const Int_t nCentralityBins(sizeof(centralityBins)/sizeof(Double_t) - 1);
 
@@ -306,13 +306,14 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
     // no track filter selection for MC tracks    
 
     // select only primary tracks
-    if(kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
+    if (kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
 
     // select only charged tracks
     if (pMCTrack->Charge() == 0) continue;
 
     Fill("MC_histQACentPt", pMCTrack->Charge()>0, centrality,      pMCTrack->Pt());
     Fill("MC_histQAPhiEta", pMCTrack->Charge()>0, pMCTrack->Phi(), pMCTrack->Eta());
+
     if (pMCTrack->Phi() < fPhiMin || pMCTrack->Phi() > fPhiMax) continue;
     if (pMCTrack->Pt()  < fPtMin  || pMCTrack->Pt()  > fPtMax)  continue;
 
@@ -325,14 +326,17 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    TObjArray* tracks1,
 							    TObjArray* tracks2,
 							    Double_t weight) {
+  THnSparse* hN1(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
+  THnSparse* hN2(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_2")));
+  if (NULL == hN1) return;
+  if (NULL == hN2) return;
+
   // <n_1>
   THnSparse* hN1ForThisEvent(ComputeNForThisEvent(tracks1, "hN1"));
-  THnSparse* hN1(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   hN1->Add(hN1ForThisEvent, weight);
 
   // <n_2>
   THnSparse* hN2ForThisEvent(ComputeNForThisEvent(tracks2, "hN2"));
-  THnSparse* hN2(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_2")));
   hN2->Add(hN2ForThisEvent, weight);
 
   // n(eta) distributions
@@ -398,6 +402,7 @@ THnSparse* AliAnalysisTaskLongRangeCorrelations::ComputeNForThisEvent(TObjArray*
   const Long64_t nTracks(tracks->GetEntriesFast());
   for (Long64_t i(0); i<nTracks; ++i) {
     const LRCParticle* p(dynamic_cast<LRCParticle*>(tracks->At(i)));
+    if (NULL == p) continue;
     const Double_t x[] = { p->Phi(), p->Eta() };
     hN->Fill(x);
   }
