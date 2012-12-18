@@ -235,7 +235,8 @@ void AliDecayerEvtGen::ForceDecay()
      case kNeutralPion:
      case kBPsiPrimeDiElectron:
      case kBeautyUpgrade:
-       AliWarning(Form("Warning: case %d not implemented for this class!",(int)decay));
+     case kBJpsiUndecayed: 
+      AliWarning(Form("Warning: case %d not implemented for this class!",(int)decay));
      break;
      }
      ReadDecayTable();
