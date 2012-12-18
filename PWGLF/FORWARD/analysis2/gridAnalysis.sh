@@ -210,8 +210,10 @@ draw()
     download 
     for i in *.zip ; do 
 	d=`basename $i .zip` 
-	mkdir -p $d 
-	unzip $i -d $d
+	if test ! -d $d ; then 
+	    mkdir -p $d 
+	    unzip $i -d $d
+	fi
 	(cd $d && script $scr)
     done
 }
@@ -225,8 +227,8 @@ TGrid::Connect("alien://");
 gSystem->RedirectOutput(0);
 std::cout << gGrid->GetHomeDirectory() << std::endl;
 EOF`
-    my_real_dir="$l/${name}_${now}_aod/output"
-    my_mc_dir="$l/${name}_${now}_mcaod/output"
+    my_real_dir="$l/${name}_aod_${now}/output"
+    my_mc_dir="$l/${name}_mcaod_${now}/output"
 }
 
 # === Trains =========================================================
@@ -460,7 +462,7 @@ Then, do
 
 to get a PDF of the diagnostics histograms, and 
 
-  (cd ${nme}_${now} && aliroot -l draw.C)
+  (cd ${nme}_${now} && aliroot -l Draw.C)
 
 to get the final plot. 
 EOF
@@ -532,9 +534,9 @@ dndetas_upload()
 dndetas_draw() 
 {
     (cd ${name}_mcdndeta_${now} && draw ${fwd_dir}/DrawdNdetaSummary.C && \
-	script draw.C)
+	draw ../Draw.C)
     (cd ${name}_dndeta_${now}   && draw ${fwd_dir}/DrawdNdetaSummary.C && \
-	script draw.C)
+	draw ../Draw.C)
 }
 
 # === Executable code
@@ -593,7 +595,7 @@ case $what in
     clean)   cleanup ; exit 0 ;;
     corr*)   func=corrs;; 
     aod*)    func=aods ;; 
-    dndeta*) func=dndeta ;; 
+    dndeta*) func=dndetas ;; 
     *) echo "$0: Unknown operation: $what" > /dev/stderr ; exit 1 ;;
 esac
     

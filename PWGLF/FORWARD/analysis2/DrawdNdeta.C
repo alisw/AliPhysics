@@ -78,6 +78,7 @@ struct dNdetaDrawer
     fShowOthers(0),        // Show other data
     fMirror(false), 
     fForceMB(false),    
+    fAddExec(false),
     // Settings 
     fRebin(0),             // Rebinning factor 
     fFwdSysErr(0.076),     // Systematic error in forward range
@@ -217,9 +218,41 @@ struct dNdetaDrawer
    * @param e Systematic error in the forward region 
    */
   void SetCentralSysError(Double_t e=0) { fCenSysErr = e; }
+  /** 
+   * Force the plot of minimum bias, even if centrality dependent data
+   * is present
+   * 
+   * @param force if true, force minimum bias
+   */
   void SetForceMB(Bool_t force=true) { fForceMB = force; }
+  /** 
+   * Force the plot of minimum bias, even if centrality dependent data
+   * is present
+   * 
+   * @param force if true, force minimum bias
+   */
+  void SetAddExec(Bool_t add=true) { fAddExec = add; }
+  /** 
+   * Mirror data to regions with no coverage (@f$-5.0<\eta<-3.5@f$)
+   * 
+   * @param mirror If true, mirror data 
+   */
   void SetMirror(Bool_t mirror=true) { fMirror = mirror; }
+  /** 
+   * Set the 'Final MC' correction file.  This is needed if the
+   * secondary maps where produced using the old code
+   * 
+   * @param file Filename 
+   */
   void SetFinalMC(const TString& file) { fFinalMC = file; }
+  /** 
+   * Set the file that contains the empirical correction.  This is
+   * needed when the secondary maps was generated with an in-accurate
+   * geometry, and when we're analysing data at nominal interaction
+   * points
+   * 
+   * @param file Filename 
+   */
   void SetEmpirical(const TString& file) { fEmpirical = file; }
   /* @} */
   //==================================================================  
@@ -296,19 +329,50 @@ struct dNdetaDrawer
     // --- Open input file -------------------------------------------
     TFile* file = TFile::Open(filename, "READ");
     if (!file) { 
-      Error("Open", "Cannot open %s", filename);
+      Error("Run", "Cannot open %s", filename);
       return;
     }
-    Info("Open", "Drawing results from %s", file->GetName());
+    Info("Run", "Drawing results from %s", file->GetName());
 
     // --- Get forward list ------------------------------------------
     TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
     if (!forward) { 
-      Error("Open", "Couldn't find list ForwardResults");
+      Error("Run", "Couldn't find list ForwardResults");
       return;
     }
     // --- Get information on the run --------------------------------
     FetchInformation(forward);
+
+    // --- Print settings --------------------------------------------
+    Info("Run", "Settings for the drawer:\n"
+	 "   Show ratios:                      %5s\n"
+	 "   Show Left/right:                  %5s\n"
+	 "   Show rings:                       %5s\n"
+	 "   Export to file:                   %5s\n"
+	 "   Cut edges when rebinning:         %5s\n"
+	 "   Remove outer rings:               %5s\n"
+	 "   Mirror to un-covered regions:     %5s\n"
+	 "   Force minimum bias:               %5s\n"
+	 "   Show other results:               0x%03x\n"
+	 "   Rebinning factor:                 %5d\n"
+	 "   Forward systematic error:         %5.1f%%\n"
+	 "   Central systematic error:         %5.1f%%\n"
+	 "   Title on plot:                    %s\n"
+	 "   Scaling of clusters to tracklets: %s\n"
+	 "   Final MC correction file:         %s\n"
+	 "   Empirical correction file:        %s",
+	 (fShowRatios    ? "yes" : "no"), 
+	 (fShowLeftRight ? "yes" : "no"),
+	 (fShowRings     ? "yes" : "no"),
+	 (fExport        ? "yes" : "no"), 
+	 (fCutEdges      ? "yes" : "no"),
+	 (fRemoveOuters  ? "yes" : "no"),
+	 (fMirror        ? "yes" : "no"),
+	 (fForceMB       ? "yes" : "no"),
+	 fShowOthers, fRebin, (100*fFwdSysErr), (100*fCenSysErr), 
+	 fTitle.Data(), fClusterScale.Data(), fFinalMC.Data(), 
+	 fEmpirical.Data());
+
     // --- Set the macro pathand load other data script --------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
@@ -316,11 +380,11 @@ struct dNdetaDrawer
 
     // --- Get the central results -----------------------------------
     TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
-    if (!clusters) Warning("Open", "Couldn't find list CentralResults");
+    if (!clusters) Warning("Run", "Couldn't find list CentralResults");
 
     // --- Get the central results -----------------------------------
     TList* mcTruth = static_cast<TList*>(file->Get("MCTruthResults"));
-    if (!mcTruth) Warning("Open", "Couldn't find list MCTruthResults");
+    if (!mcTruth) Warning("Run", "Couldn't find list MCTruthResults");
 
     // --- Make our containtes ---------------------------------------
     fResults   = new THStack("results", "Results");
@@ -340,11 +404,11 @@ struct dNdetaDrawer
       else { 
 	forwardMC = static_cast<TList*>(finalMC->Get("ForwardResults"));
 	if (!forwardMC) 
-	  Warning("Open", "Couldn't find list ForwardResults for final MC");
+	  Warning("Run", "Couldn't find list ForwardResults for final MC");
 #if 0
 	centralMC = static_cast<TList*>(finalMC->Get("CentralResults"));
 	if (!centralMC) 
-	  Warning("Open", "Couldn't find list CentralResults for final MC");
+	  Warning("Run", "Couldn't find list CentralResults for final MC");
 #endif
       }
     }
@@ -359,21 +423,21 @@ struct dNdetaDrawer
 					    "corrections/Empirical/%s", 
 					    fEmpirical.Data())));
 	if (gSystem->AccessPathName(fEmpirical.Data())) { // Not found here
-	  Warning("Open", "Couldn't get empirical correction file");
+	  Warning("Run", "Couldn't get empirical correction file");
 	  fEmpirical = "";
 	}
       }
       if (!fEmpirical.IsNull()) {
 	TFile* empirical = TFile::Open(fEmpirical, "READ");
 	if (!empirical) { 
-	  Warning("Open", "couldn't open empirical correction file: %s",
+	  Warning("Run", "couldn't open empirical correction file: %s",
 		  fEmpirical.Data());
 	  fEmpirical = "";
 	}
 	const char* empPath = "fmdfull/average";
 	empCorr = static_cast<TGraphErrors*>(empirical->Get(empPath));
 	if (!empCorr) {
-	  Warning("Open", "Didn't find the graph %s in %s", 
+	  Warning("Run", "Didn't find the graph %s in %s", 
 		  empPath, fEmpirical.Data());
 	  fEmpirical = "";
 	}
@@ -1120,9 +1184,10 @@ struct dNdetaDrawer
     p1->Draw();
     p1->cd();
 
-    // Info("PlotResults", "Plotting results with max=%f", max);
+    Info("PlotResults", "Plotting results with max=%f", max);
     fResults->SetMaximum(1.15*max);
     fResults->SetMinimum(yd > 0.00001 ? -0.02*max : 0);
+    // fResults->SetMinimum(yd > 0.00001 ? -0.02*max : 0);
 
     FixAxis(fResults, (1-yd)*(yd > .001 ? 1 : .9 / 1.2), 
 	    "#font[12]{#frac{1}{N} "
@@ -1312,14 +1377,16 @@ struct dNdetaDrawer
     // Replot the ratios on top
     fRatios->DrawClone("nostack e1 same");
 
-    if (isBottom) {
-      fRangeParam->fMasterAxis = FindXAxis(p2, fRatios->GetName());
-      p2->AddExec("range", Form("RangeExec((dNdetaDrawer::RangeParam*)%p)", 
-				fRangeParam));
-    }
-    else { 
-      fRangeParam->fSlave2Axis = FindXAxis(p2, fRatios->GetName());
-      fRangeParam->fSlave2Pad  = p2;
+    if (fAddExec) {
+      if (isBottom) {
+	fRangeParam->fMasterAxis = FindXAxis(p2, fRatios->GetName());
+	p2->AddExec("range", Form("RangeExec((dNdetaDrawer::RangeParam*)%p)", 
+				  fRangeParam));
+      }
+      else { 
+	fRangeParam->fSlave2Axis = FindXAxis(p2, fRatios->GetName());
+	fRangeParam->fSlave2Pad  = p2;
+      }
     }
   }
   //__________________________________________________________________
@@ -1509,7 +1576,7 @@ struct dNdetaDrawer
 
 	if (fCutEdges) {
 	  if (h->GetBinContent(bin+1)<=0 || 
-	      h->GetBinContent(bin-1)) {
+	      h->GetBinContent(bin-1)<=0) {
 	    Warning("Rebin", "removing bin %d=%f of %s (%d=%f,%d=%f)", 
 		    bin, c, h->GetName(), 
 		    bin+1, h->GetBinContent(bin+1), 
@@ -2158,6 +2225,13 @@ struct dNdetaDrawer
 	 << "}\n" << std::endl;
   }
   /* @} */ 
+  /** 
+   * Check if we have centrality dependent information, and we're not
+   * forcing to use minimum bias
+   * 
+   * 
+   * @return True if we should do centrality dependent ploting 
+   */
   Bool_t HasCent() const { return fCentAxis && !fForceMB; }
 
 
@@ -2176,6 +2250,7 @@ struct dNdetaDrawer
   UShort_t     fShowOthers;   // Show other data
   Bool_t       fMirror;       // Whether to mirror 
   Bool_t       fForceMB;      // Force min-bias
+  Bool_t       fAddExec;      // Add code to do combined zooms
   /* @} */
   /** 
    * @{ 
@@ -2326,23 +2401,25 @@ Usage()
 	 "  Float_t     IPZMIN (optional) Least z coordinate of IP\n"
 	 "  Float_t     IPZMAX (optional) Largest z coordinate of IP\n\n"
 	 " OTHERS is a bit mask of\n\n"
-	 "  0x1   Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
-	 "  0x2   Show CMS data (NSD, pp)\n"
-	 "  0x4   Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
-	 "  0x8   Show event genertor data\n\n"
+	 "  0x1     Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
+	 "  0x2     Show CMS data (NSD, pp)\n"
+	 "  0x4     Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
+	 "  0x8     Show event genertor data\n\n"
 	 " FLAGS is a bit mask of\n\n"
-	 "  0x1   Show ratios of data to other data and possibly MC\n"
-	 "  0x2   Show left-right asymmetry\n"
-	 "  0x4   Show systematic error band\n"
-	 "  0x8   Show individual ring results (INEL only)\n"
-	 "  0x10  Cut edges when rebinning\n"
-	 "  0x20  Remove FMDxO points\n"
-	 "  0x40  Do not make our own canvas\n"
-	 "  0x80  Force use of MB\n"
-	 "  0x100 Mirror data\n"
-	 "  0x200 Apply `final MC' correction\n"
-	 "  0x400 Apply `Emperical' correction\n"
-	 "  0x800 Export results to script\n\n"
+	 "  0x1     Show ratios of data to other data and possibly MC\n"
+	 "  0x2     Show left-right asymmetry\n"
+	 "  0x4     Show systematic error band\n"
+	 "  0x8     Show individual ring results (INEL only)\n"
+	 "  0x10    Cut edges when rebinning\n"
+	 "  0x20    Remove FMDxO points\n"
+	 "  0x40    Do not make our own canvas\n"
+	 "  0x80    Force use of MB\n"
+	 "  0x100   Mirror data\n"
+	 "  0x200   Apply `final MC' correction\n"
+	 "  0x400   Apply `Emperical' correction\n"
+	 "  0x800   Export results to script\n"
+	 "  0x1000  Add code to do combined zooms on eta axis\n"
+	 "  0x2000  Assume old-style input\n\n"
 	 "0x200 requires the file forward_dndetamc.root\n"
 	 "0x400 requires the file EmpiricalCorrection.root\n"
 	 "To specify that you want ratios, force MB, apply empirical "
@@ -2404,7 +2481,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetFinalMC(flags & 0x200 ? "forward_dndetamc.root" : "");
   d.SetEmpirical(flags & 0x400 ? "EmpiricalCorrection.root" : "");
   d.SetExport(flags & 0x800);
-  d.SetOld(flags & 0x1000);
+  d.SetAddExec(flags & 0x1000);
+  d.SetOld(flags & 0x2000);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)

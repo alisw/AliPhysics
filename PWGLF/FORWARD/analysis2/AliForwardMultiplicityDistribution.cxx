@@ -116,12 +116,12 @@ void AliForwardMultiplicityDistribution::UserExec(Option_t */*option*/)
   // Get 2D eta-phi histograms for each event
   GetHistograms(aod, forward, central);
   
-  TH1D* dndetaSumForward    = (TH1D*)fOutput->FindObject("dndetaSumForward");
-  TH1D* dndetaSumCentral    = (TH1D*)fOutput->FindObject("dndetaSumCentral");
-  TH1D* dndetaEventForward  = (TH1D*)fOutput->FindObject("dndetaEventForward");
-  TH1D* dndetaEventCentral  = (TH1D*)fOutput->FindObject("dndetaEventCentral");
-  TH1D* normEventForward    = 0;
-  TH1D* normEventCentral    = 0;
+  TH1D* dndetaSumForward   = (TH1D*)fOutput->FindObject("dndetaSumForward");
+  TH1D* dndetaSumCentral   = (TH1D*)fOutput->FindObject("dndetaSumCentral");
+  TH1D* dndetaEventForward = 0;//(TH1D*)fOutput->FindObject("dndetaEventForward");
+  TH1D* dndetaEventCentral = 0;//(TH1D*)fOutput->FindObject("dndetaEventCentral");
+  TH1D* normEventForward   = 0;
+  TH1D* normEventCentral   = 0;
 
   dndetaEventForward = forward.ProjectionX("dndetaForward",1,forward.GetNbinsY(),"");
   dndetaEventCentral = central.ProjectionX("dndetaCentral",1,central.GetNbinsY(),"");

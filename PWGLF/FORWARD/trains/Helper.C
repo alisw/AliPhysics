@@ -130,7 +130,9 @@ struct Helper
   {
     if (!AuxFile(name, copy)) return false;
     TString base(gSystem->BaseName(name));
+    gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"a\");");
     gROOT->LoadMacro(Form("%s++g", base.Data()));
+    gROOT->ProcessLine("gSystem->RedirectOutput(0);");
     return true;
   }
   /** 
@@ -317,7 +319,7 @@ struct Helper
 			      const TUrl&    url, 
 			      Int_t verbose=0)
   {
-    if (verbose > 3) gSystem->RedirectOutput("/dev/null","w");
+    if (verbose < 3) gSystem->RedirectOutput("/dev/null","w");
     if (cl.Contains("proof", TString::kIgnoreCase) || 
 	cl.Contains("lite",  TString::kIgnoreCase) || 
 	cl.Contains("aaf",   TString::kIgnoreCase)) {
@@ -328,7 +330,7 @@ struct Helper
     gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
     Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
 					 cl.Data(), url.GetUrl(), verbose));
-    if (verbose > 3) gSystem->RedirectOutput(0);
+    if (verbose < 3) gSystem->RedirectOutput(0);
     if (!ptr) { 
       Warning("Helper::CreateObject", "Failed to instantize a %s", cl.Data());
       return 0;

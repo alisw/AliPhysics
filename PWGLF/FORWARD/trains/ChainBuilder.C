@@ -179,12 +179,14 @@ struct ChainBuilder
     }
     
     TGridCollection* collection = reinterpret_cast<TGridCollection*>(ret);
+#if 0
     if (!collection) { 
       Error("ChainBuilder::CreateFromXML", 
 	    "Cannot create AliEn collection from XML file %s", src.Data());
       return false;
     }
-    
+#endif
+
     collection->Reset();
     while (collection->Next()) chain->Add(collection->GetTURL(""));
     
@@ -273,6 +275,10 @@ struct ChainBuilder
 	TString cl(k->GetClassName());
 	if (!cl.EqualTo("TFileCollection")) continue;
 	TFileCollection* fc = dynamic_cast<TFileCollection*>(k->ReadObj());
+	if (!fc) { 
+	  Warning("", "Returned collection invalid");
+	  continue;
+	}
 	Info("", "Adding file collection");
 	chain->AddFileInfoList(fc->GetList());
 	ok = true;

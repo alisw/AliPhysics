@@ -315,21 +315,11 @@ struct TrainSetup
   {
     if (!fOptions.Has("help")) return true;
 
-    if (asProg) 
-      o << "Usage: runTrain2 --name=NAME --class=CLASS [OPTIONS]";
-    else 
+    if (!asProg) 
       o << "Usage: RunTrain(NAME, CLASS, OPTIONS)";
     
-    o << "\n\nOptions:\n\n";
-    if (asProg) {
-      OptionList tmp(fOptions);
-      tmp.Add("name", "STRING", "Name of train", fName);
-      tmp.Add("class", "NAME", "Name of setup class", "");
-      tmp.Help(o,"  --");
-    }
-    else 
-      fOptions.Help(o, "  ");
-    
+    o << "\n\nTrain Options:\n";
+    fOptions.Help(o, asProg ? "  --" : "  ");
     o << "\n";
 
     if (!fHelper && fOptions.Has("url")) {
@@ -368,7 +358,8 @@ struct TrainSetup
    */
   static Bool_t Main(const TString& name, const TString& cls, 
 		     const TCollection* opts, 
-		     Bool_t asProg=true)
+		     Bool_t asProg=true,
+		     Bool_t spawn=false)
   {
     Bool_t ret = false;
     try {
@@ -377,10 +368,13 @@ struct TrainSetup
       if (name.IsNull()) 
 	throw TString("No train name specified");
 
+      gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"w\");");
       Int_t error = 0;
       Int_t r1 = gROOT->LoadMacro(Form("%s.C++g", cls.Data()), &error);
+      gROOT->ProcessLine("gSystem->RedirectOutput(0);");
       if (r1 < 0 || error) 
-	throw TString::Format("Failed to load setup %s: %d", cls.Data(), error);
+	throw TString::Format("Failed to load setup %s: %d - see build.log", 
+			      cls.Data(), error);
 
       // Make our object using the interpreter 
       TString create = TString::Format("new %s(\"%s\")", 
@@ -413,8 +407,10 @@ struct TrainSetup
       if (!e.IsNull()) Error("Main", "%s", e.Data());
     }
     if (gApplication && asProg) {
-      gSystem->Sleep(3);
-      gApplication->Terminate(ret ? 0 : 1);
+      if (!spawn) {
+	gSystem->Sleep(3);
+	gApplication->Terminate(ret ? 0 : 1);
+      }
     }
     return ret;
   }
@@ -526,7 +522,7 @@ protected:
    */
   virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
   {
-    gROOT->Macro("AddTaskCentrality.C");
+    gROOT->Macro("AddTaskCentrality.C(true)");
     const char* name = "CentralitySelection";
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
@@ -540,6 +536,12 @@ protected:
    * @param mgr  Manager
    */
   virtual void CreateTasks(AliAnalysisManager* mgr)=0;
+  /** 
+   * Set the name of the train - should be name of the class.  Must be
+   * overloaded.
+   * 
+   * @return Class name as a constant C string 
+   */
   virtual const Char_t* ClassName() const = 0;
   /* @} */
   //__________________________________________________________________

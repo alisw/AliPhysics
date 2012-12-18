@@ -319,8 +319,16 @@ void AliForwardCreateResponseMatrices::Bin::CreateOutputObjectss(TList* cont,  I
  
 
 //_____________________________________________________________________
-void AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward, TH1D* dndetaCentral,
-						    TH1D* normForward,   TH1D* normCentral, TH1D* mc, Double_t VtxZ, Bool_t selectedTrigger, Bool_t isMCNSD, Bool_t isESDNSD, AliAODEvent* aodevent) 
+void AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward, 
+						    TH1D* dndetaCentral,
+						    TH1D* normForward,   
+						    TH1D* normCentral, 
+						    TH1D* mc, 
+						    Double_t VtxZ, 
+						    Bool_t selectedTrigger, 
+						    Bool_t isMCNSD, 
+						    Bool_t isESDNSD, 
+						    AliAODEvent* aodevent) 
 {
   //
   // Process a single eta bin
@@ -384,15 +392,18 @@ void AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward, TH1D* d
     e2 += ee2;
   }
   
-  //retreive MC particles from event
+  // retreive MC particles from event
   TClonesArray* mcArray = (TClonesArray*)aodevent->FindListObject(AliAODMCParticle::StdBranchName());
   if(!mcArray){
-        AliWarning("No MC array found in AOD. Try making it again.");
-    // return kFALSE;
+    AliWarning("No MC array found in AOD. Try making it again.");
+    return;
   }
-  AliAODMCHeader* header = dynamic_cast<AliAODMCHeader*>(aodevent->FindListObject(AliAODMCHeader::StdBranchName()));
+  AliAODMCHeader* header = 
+    dynamic_cast<AliAODMCHeader*>(aodevent->
+				  FindListObject(AliAODMCHeader::StdBranchName()));
   if (!header) {
     AliWarning("No header file found.");
+    return;
   }
   
   

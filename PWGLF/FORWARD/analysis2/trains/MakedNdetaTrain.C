@@ -68,6 +68,7 @@ protected:
     Bool_t   cent   = fOptions.Has("cent");
     Bool_t   edges  = fOptions.Has("cut-edges");
     Bool_t   corrEm = fOptions.Has("corr-empty");
+    Bool_t   mc     = fOptions.Has("mc");
 
     // --- Form arguments --------------------------------------------
     TString args;
@@ -83,7 +84,14 @@ protected:
   /** 
    * Do not the centrality selection
    */
+  //__________________________________________________________________
   void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  /** 
+   * Do not create MC input handler 
+   * 
+   * @return Always null
+   */
+  AliVEventHandler* CreateMCHandler(UShort_t, bool) { return 0; }
   //__________________________________________________________________
   /** 
    * Crete output handler - we don't want one here. 
@@ -103,9 +111,9 @@ protected:
   {
     TrainSetup::SaveSetup(asShellScript);
 
-    std::ofstream o("draw.C");
+    std::ofstream o("Draw.C");
     if (!o) { 
-      Error("MakedNdetaTrain::SaveSetup", "Failed to open draw.C");
+      Error("MakedNdetaTrain::SaveSetup", "Failed to open Draw.C");
       return;
     }
 
@@ -116,7 +124,7 @@ protected:
       << "// Options can be specified as needed. To get help, pass the\n"
       << "// string \"help\" for the title\n"
       << "// \n"
-      << "void draw(const TString& title="",\n"
+      << "void Draw(const TString& title="",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0x7,\n"
       << "          UShort_t       flags=0xD87,\n"

@@ -344,7 +344,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   // UInt_t   foundMC  = 
   fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, cMC,
 			    npart, nbin, phiR);
-  fEventInspector.CompareResults(ip.Z(), vzMC, cent, b, npart, nbin);
+  fEventInspector.CompareResults(ip.Z(), vzMC, cent, cMC, b, npart, nbin);
   
   //Store all events
   MarkEventForStore();

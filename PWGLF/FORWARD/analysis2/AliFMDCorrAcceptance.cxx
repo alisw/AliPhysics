@@ -66,6 +66,8 @@ AliFMDCorrAcceptance::operator=(const AliFMDCorrAcceptance& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this;
+
   fRingArray        = o.fRingArray;
   fCache            = o.fCache;
   fHasOverflow      = o.fHasOverflow;
