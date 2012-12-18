@@ -14,17 +14,17 @@
  **************************************************************************/
 
 //
-// This class represents the AliDCSClient.
-// The client used for data retrieval from DCS server.
-// There are two way for retrieving data from the server.
+// This class represents the AliDCSClient, the client used for
+// data retrieval from the DCS server.
+// There are two ways for retrieving data from the server:
 //	1) asking for DP (DataPoint) - usually changed frequently.
-//	2) asking for Alias (Alias) - alias should be the same through whole
-//		experimnet.
+//	2) asking for Alias (Alias) - alias should be the same through
+//		the whole experiment.
 //		
-// There are two type of read operations:
-//	Asking for single alias/dp or asking for set of aliases/dp
+// There are two types of read operations:
+//	Asking for a single alias/DP or asking for a set of aliases/DPs
 //
-// In case of ServerError the coresponding error code and 
+// In case of ServerError the corresponding error code and 
 // error string (description) could be got by GetServerErrorCode() and
 // GetServerErrorString()
 //
