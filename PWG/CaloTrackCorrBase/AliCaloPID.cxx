@@ -246,22 +246,32 @@ void AliCaloPID::InitParameters()
   fMassWidthPi0Param[5] = 0.130;  // Mean mass value for NLM=1
   fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
   
-  fM02MinParam[0] = 0.6 ;     // Min for NLM > 1 
-  fM02MinParam[1] = 2.3 ;     // pol2 param0 for NLM=1 , E < 16 GeV
-  fM02MinParam[2] =-0.235;    // pol2 param1 for NLM=1 , E < 16 GeV
-  fM02MinParam[3] = 0.0069;   // pol2 param2 for NLM=1 , E < 16 GeV
-  fM02MinParam[4] = 0.3;      // absolute minimum in any case
+  
+  fM02MinParam[0][0] = 4.59   ; // pol3 param0 for NLM=1 , E < 16 GeV, pp/PbPb
+  fM02MinParam[0][1] =-0.66   ; // pol3 param1 for NLM=1 , E < 16 GeV, pp/PbPb
+  fM02MinParam[0][2] = 0.0334 ; // pol3 param2 for NLM=1 , E < 16 GeV, pp/PbPb
+  fM02MinParam[0][3] =-0.00056; // pol3 param2 for NLM=1 , E < 16 GeV, pp/PbPb
+  fM02MinParam[0][4] = 0.3    ; // cut for E > 16 GeV, pp/PbPb
+
+  fM02MinParam[1][0] = 7.67  ;  // pol3 param0 for NLM>2 , E < 16 GeV, pp/PbPb
+  fM02MinParam[1][1] =-1.56  ;  // pol3 param1 for NLM>2 , E < 16 GeV, pp/PbPb
+  fM02MinParam[1][2] = 0.115 ;  // pol3 param2 for NLM>2 , E < 16 GeV, pp/PbPb
+  fM02MinParam[1][3] =-0.0028;  // pol3 param2 for NLM>2 , E < 16 GeV, pp/PbPb
+  fM02MinParam[1][4] = 0.6;     // cut for E > 16 GeV, pp/PbPb
+
   
   fAsyMinParam[0][0] =-0.02  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][1] = 0.072 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][2] =-0.0014;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][4] = 0.95  ;  // cut for NLM=1 , E > 25 GeV, pp/PbPb
 
   fAsyMinParam[1][0] =-0.33 ;   // pol3 param0 for NLM>2 , E < 25 GeV, pp
   fAsyMinParam[1][1] = 0.20 ;   // pol3 param1 for NLM>2 , E < 25 GeV, pp
   fAsyMinParam[1][2] =-0.011;   // pol3 param2 for NLM>2 , E < 25 GeV, pp
   fAsyMinParam[1][3] = 0.00019; // pol3 param2 for NLM>2 , E < 25 GeV, pp
-  
+  fAsyMinParam[1][4] = 0.95  ;  // cut for NLM>2 , E > 25 GeV, pp/PbPb
+
   
 //  fAsyMinParam[0][0] =-0.41  ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
 //  fAsyMinParam[0][1] = 0.111 ;  // pol3 param1 for NLM=1 , E < 25 GeV, PbPb
@@ -295,7 +305,7 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   Float_t cut = fAsyMinParam[inlm][0]+energy*fAsyMinParam[inlm][1]+energy*energy*fAsyMinParam[inlm][2]+
                 energy*energy*energy*fAsyMinParam[inlm][3];
   
-  if(energy > 25 ) cut = 0.95;
+  if(energy > 25 ) cut = fAsyMinParam[inlm][4];
   
   //printf("energy %2.2f - nlm: %d (%d)- p0 %f, p1 %f, p2 %f, p3 %f ; cut: %2.2f\n",energy,nlm,inlm,
   //       fAsyMinParam[inlm][0],fAsyMinParam[inlm][1],fAsyMinParam[inlm][2],fAsyMinParam[inlm][3],cut);
@@ -351,20 +361,16 @@ Bool_t AliCaloPID::IsInMergedM02Range(const Float_t energy, const Float_t m02,  
   
   if(!fUseSimpleM02Cut)
   {
-    if     ( nlm > 1 ) minCut = fM02MinParam[0]; // 0.6
-    else if( nlm== 1 )
-    { 
-      //if     (energy < 8 )  minCut = fM02MinParam[0]; // 0.6
-      //else
-      if(energy < 16)  minCut = fM02MinParam[1]+energy*fM02MinParam[2]+energy*energy*fM02MinParam[3]; // (check the range of applicability of the function) 
-      else             minCut = fM02MinParam[4]; // 0.3
-    }
+    Int_t inlm = nlm-1;
+    if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
     
-    //In any case, the parameter cannot be smaller than this (0.3)
-    if(minCut < fM02MinParam[4]) minCut = fM02MinParam[4];
+    if(energy < 16)  minCut = fM02MinParam[inlm][0]+energy*fM02MinParam[inlm][1]+
+                              energy*energy*fM02MinParam[inlm][2]+energy*energy*energy*fM02MinParam[inlm][3];
+    //In any case, the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
+    if(minCut < fM02MinParam[inlm][4]) minCut = fM02MinParam[inlm][4];
   }
   
-  //printf("\t \t m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",m02,minCut,fSplitM02MaxCut);
+  //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,fSplitM02MaxCut);
   
   if(m02 < fSplitM02MaxCut && m02 > minCut) return kTRUE;
   else                                      return kFALSE;
