@@ -473,8 +473,8 @@ protected:
    * 
    * @return False on error, true otherwise 
    */
-  Bool_t ReadCentrality(const AliESDEvent& esd, Double_t& cent,
-			UShort_t& qual) const;
+  virtual Bool_t ReadCentrality(const AliESDEvent& esd, Double_t& cent,
+				UShort_t& qual) const;
 
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 

@@ -25,6 +25,7 @@
 #include "TrainSetup.C"
 
 #include <TGApplication.h>
+#include <TRint.h>
 #include <TROOT.h>
 #include <TList.h>
 #include <TObjString.h>
@@ -40,11 +41,12 @@
 struct Deferred : public TTimer
 {
   Deferred(const TString& name, const TString& cls, 
-	   const TCollection* opts)
+	   const TCollection* opts, bool spawn)
     : TTimer(1000, false), 
       fName(name), 
       fClass(cls), 
-      fOptions(opts)
+      fOptions(opts),
+      fSpawn(spawn)
   {
     Start(1000, true);
   }
@@ -52,7 +54,8 @@ struct Deferred : public TTimer
     : TTimer(), 
       fName(o.fName),
       fClass(o.fClass),
-      fOptions(o.fOptions)
+      fOptions(o.fOptions),
+      fSpawn(o.fSpawn)
   {}
   Deferred& operator=(const Deferred& o) 
   { 
@@ -60,6 +63,7 @@ struct Deferred : public TTimer
     fName    = o.fName;
     fClass   = o.fClass;
     fOptions = o.fOptions;
+    fSpawn   = o.fSpawn;
     return *this; 
   }
   Bool_t Notify()
@@ -67,11 +71,12 @@ struct Deferred : public TTimer
     // gSystem->RemoveTimer(this);
     Info("Notify", "Will run train setup: %s (%s)", 
 	 fName.Data(), fClass.Data());
-    return TrainSetup::Main(fName, fClass, fOptions);
+    return TrainSetup::Main(fName, fClass, fOptions, fSpawn);
   }
   TString fName;
   TString fClass;
   const TCollection* fOptions;
+  Bool_t  fSpawn;
 };
 
 /** 
@@ -98,9 +103,21 @@ void AppendPath(const char* dir)
  */
 void PrintFakeOption(std::ostream& o, const char* opt, const char* desc)
 {
-  o << "  --" << std::left << std::setw(30) << opt << " " << desc << std::endl;
+  o << "  --" << std::left << std::setw(30) << opt << " " << desc 
+    << std::right << std::endl;
 }
 
+void ProgramUsage(const char* progname, std::ostream& o)
+{
+  o << "Usage: " << progname 
+    << " --class=CLASS --name=NAME --url=URI [OPTIONS]\n\n"
+    << progname << " specific options:\n";
+  PrintFakeOption(o, "class=CLASS",       "Train class");
+  PrintFakeOption(o, "name=NAME",         "Name of train");
+  PrintFakeOption(o, "include=DIRECTORY", "Append dir to macro/header path");
+  PrintFakeOption(o, "batch",             "Batch mode");
+  PrintFakeOption(o, "spawn",             "Spawn interactive ROOT shell");
+}
 /** 
  * Print usage information 
  * 
@@ -112,13 +129,7 @@ void PrintFakeOption(std::ostream& o, const char* opt, const char* desc)
  */
 void Usage(const char* progname, std::ostream& o)
 {
-  o << "Usage: " << progname 
-    << " --class=CLASS --name=NAME --url=URI [OPTIONS]\n\n"
-    << "PROGRAM OPTIONS:\n";
-  PrintFakeOption(o, "class=CLASS",       "Train class");
-  PrintFakeOption(o, "name=NAME",         "Name of train");
-  PrintFakeOption(o, "include=DIRECTORY", "Append dir to macro/header path");
-  PrintFakeOption(o, "batch",             "Batch mode");
+  ProgramUsage(progname, o);
   PrintFakeOption(o, "url=URI",           "Execution URI");
   o << "\nAlternatively to using --url=URI, one can use\n";
   PrintFakeOption(o, "where=BASE_URI",    "Set protocol, user, host, "
@@ -126,7 +137,6 @@ void Usage(const char* progname, std::ostream& o)
   PrintFakeOption(o, "file=FILE_OR_PATH", "File/path part of URI");
   PrintFakeOption(o, "options=OPTIONS",   "Query options for URI");
   PrintFakeOption(o, "anchor=ANCHOR",     "Query anchor for URI");
-
 }
 
 int
@@ -142,7 +152,7 @@ main(int argc, char** argv)
   Bool_t  batch   = false;
   Bool_t  help    = false;
   Bool_t  urlSeen = false;
-
+  Bool_t  spawn   = true;
   // --- Parse options -----------------------------------------------
   for (int i = 1; i < argc; i++) { 
     if (argv[i][0] == '-' && argv[i][1] == '-') { 
@@ -160,6 +170,7 @@ main(int argc, char** argv)
       else if (arg.BeginsWith("--file"))    file   = val;
       else if (arg.BeginsWith("--opts"))    opts   = val;
       else if (arg.BeginsWith("--anchor"))  anchor = val;
+      else if (arg.BeginsWith("--spawn"))   spawn  = true;
       else {
 	if (arg.BeginsWith("--url")) urlSeen = true;
 	optList.Add(new TObjString(&(argv[i][2])));
@@ -180,11 +191,12 @@ main(int argc, char** argv)
   }
 
   // --- check for help ----------------------------------------------
-  if (help && cls.IsNull()) {
+  if (help) {
     if (cls.IsNull()) {
       Usage(argv[0], std::cout);
       return 0;
     }
+    ProgramUsage(argv[0], std::cout);
     optList.Add(new TObjString("help"));
   }
 
@@ -210,9 +222,15 @@ main(int argc, char** argv)
   // --- Set-up Application ------------------------------------------
   TApplication* app = 0;
   gROOT->SetBatch(true);
-  if (!batch) { 
+  if (!batch || spawn) { 
     gROOT->SetBatch(false);
-    app = new TGApplication("runTrain", 0, 0);
+    if (!spawn)
+      app = new TGApplication("runTrain", 0, 0);
+    else {
+      TRint* rint = new TRint("runTrain", 0, 0, 0, 0, true);
+      rint->SetPrompt("runTrain[%3d]> ");
+      app = rint;
+    }
     app->InitializeGraphics();
   }
 
@@ -221,7 +239,8 @@ main(int argc, char** argv)
   if (batch) 
     ret = TrainSetup::Main(name, cls, &optList);
   else {
-    new Deferred(name, cls, &optList);
+    optList.ls();
+    new Deferred(name, cls, &optList, spawn);
     Info("main", "Running application (%s)", gROOT->IsBatch() 
 	 ? "batch" : "normal");
     gApplication->Run();

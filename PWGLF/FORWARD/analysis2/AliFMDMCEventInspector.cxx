@@ -44,12 +44,14 @@ AliFMDMCEventInspector::AliFMDMCEventInspector()
     fHVertex(0),
     fHPhiR(0), 
     fHB(0),
+    fHMcC(0),
     fHBvsPart(0),
     fHBvsBin(0),
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
     fHCentVsBin(0),
+    fHCentVsMcC(0),
     fProduction("")
 {
   // 
@@ -63,12 +65,14 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
     fHVertex(0),
     fHPhiR(0), 
     fHB(0),
+    fHMcC(0),
     fHBvsPart(0),
     fHBvsBin(0),
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
     fHCentVsBin(0),
+    fHCentVsMcC(0),
     fProduction("")
 {
   // 
@@ -85,12 +89,14 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const AliFMDMCEventInspector& o)
     fHVertex(0),
     fHPhiR(0), 
     fHB(0),
+    fHMcC(0),
     fHBvsPart(0),
     fHBvsBin(0),
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
     fHCentVsBin(0),
+    fHCentVsMcC(0),
     fProduction("")
 {
   // 
@@ -168,6 +174,11 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fHB->SetDirectory(0);
   fList->Add(fHB);
 
+  fHMcC = static_cast<TH1F*>(fHCent->Clone("mcC"));
+  fHMcC->SetFillColor(kCyan+2);
+  fHMcC->SetDirectory(0);
+  fList->Add(fHMcC);
+  
   fHBvsPart = new TH2F("bVsParticipants", "Impact parameter vs Participants",
 		       5*maxB, 0, maxB, maxPart, -.5, maxPart-.5);
   fHBvsPart->SetXTitle("b [fm]");
@@ -221,11 +232,23 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fHCentVsBin->SetZTitle("Event");
   fHCentVsBin->SetDirectory(0);
   fList->Add(fHCentVsBin);
+
+  Int_t    nC = fHCent->GetNbinsX();
+  Double_t cL = fHCent->GetXaxis()->GetXmin();
+  Double_t cH = fHCent->GetXaxis()->GetXmax();
+  fHCentVsMcC = new TH2F("centralityRecoVsMC", 
+			 "Centrality from reconstruction vs MC derived", 
+			 nC, cL, cH, nC, cL, cH);
+  fHCentVsMcC->SetDirectory(0);
+  fHCentVsMcC->SetStats(0);
+  fHCentVsMcC->SetXTitle("Centralty from Reco [%]");
+  fHCentVsMcC->SetYTitle("Centralty derived from Impact Par. [%]");
+  fHCentVsMcC->SetZTitle("Events");
+  fList->Add(fHCentVsMcC);
 }
 
 //____________________________________________________________________
-void
-AliFMDMCEventInspector::StoreInformation(Int_t runNo)
+void AliFMDMCEventInspector::StoreInformation(Int_t runNo)
 {
   // Store information about running conditions in the output list 
   if (!fList) return;
@@ -434,6 +457,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHVertex->Fill(vz);
   fHPhiR->Fill(phiR);
   fHB->Fill(b);
+  fHMcC->Fill(c);
   fHBvsPart->Fill(b, npart);
   fHBvsBin->Fill(b, nbin);
 
@@ -461,6 +485,32 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 
   
   return kOk;
+}
+//____________________________________________________________________
+Bool_t
+AliFMDMCEventInspector::ReadCentrality(const AliESDEvent& esd, 
+				       Double_t& cent, 
+				       UShort_t& qual) const
+{
+  // 
+  // Read centrality from event 
+  // 
+  // Parameters:
+  //    esd  Event 
+  //    cent On return, the centrality or negative if not found
+  // 
+  // Return:
+  //    False on error, true otherwise 
+  //
+  Bool_t ret = AliFMDEventInspector::ReadCentrality(esd, cent, qual);
+  if (qual != 0) {
+    AliCentrality* centObj = const_cast<AliESDEvent&>(esd).GetCentrality();
+    if (!centObj)  return ret;
+
+    // For MC, we allow `bad' centrality selections 
+    cent = centObj->GetCentralityPercentileUnchecked(fCentMethod); 
+  }
+  return ret;
 }
 
 //____________________________________________________________________
@@ -565,16 +615,20 @@ AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
 //____________________________________________________________________
 Bool_t
 AliFMDMCEventInspector::CompareResults(Double_t vz,    Double_t trueVz, 
-				       Double_t cent,  Double_t b,
+				       Double_t cent,  Double_t mcC, 
+				       Double_t b,    
 				       Int_t    npart, Int_t    nbin)
 {
   fHVzComp->Fill(trueVz, vz);
   fHBvsCent->Fill(b, cent);
   fHCentVsPart->Fill(npart, cent);
   fHCentVsBin->Fill(nbin, cent);
+  fHCentVsMcC->Fill(cent, mcC);
 
   return true;
 }  
+
+
 //
 // EOF
 //

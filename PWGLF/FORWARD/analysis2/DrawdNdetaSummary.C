@@ -7,6 +7,20 @@
  * 
  * 
  */
+#if 1
+//____________________________________________________________________
+void DrawdNdetaSummary(const char* fname="forward_dndeta.root",
+		       UShort_t what=0x0)
+{
+  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
+			   gROOT->GetMacroPath()));
+  gROOT->LoadMacro("SummarydNdetaDrawer.C++g");
+  
+  SummarydNdetaDrawer d;
+  d.Run(fname, what);
+}
+
+#else
 #ifndef __CINT__
 # include <TCollection.h>
 # include <TH1.h>
@@ -789,6 +803,7 @@ void DrawdNdetaSummary(const char* fname="forward_dndeta.root",
     
   CloseCanvas(c);
 }
-  
-
-  
+#endif
+//
+// EOF
+//

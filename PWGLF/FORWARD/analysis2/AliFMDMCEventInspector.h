@@ -110,6 +110,7 @@ public:
    * @param vz       Found @f$ v_z@f$
    * @param trueVz   True  @f$ v_z@f$
    * @param cent     Centrality
+   * @param mcC      Centrality from Impact par. 
    * @param b        Impact parameter (if available)
    * @param npart    Number of participants (if available)
    * @param nbin     Number of binary collisions (if available)
@@ -117,7 +118,8 @@ public:
    * @return true
    */
   virtual Bool_t CompareResults(Double_t vz,    Double_t trueVz, 
-				Double_t cent,  Double_t b,
+				Double_t cent,  Double_t mcC,
+				Double_t b,
 				Int_t    npart, Int_t    nbin);
   /** 
    * Store information about running conditions in output list 
@@ -139,6 +141,17 @@ public:
   virtual void ReadProductionDetails(AliMCEvent* event);
 protected:
   /** 
+   * Read centrality from event 
+   * 
+   * @param esd  Event 
+   * @param cent On return, the centrality or negative if not found
+   * @param qual On return, centrality quality flag
+   * 
+   * @return False on error, true otherwise 
+   */
+  virtual Bool_t ReadCentrality(const AliESDEvent& esd, Double_t& cent,
+				UShort_t& qual) const;
+  /** 
    * Check if the event is single diffractive 
    * 
    * @param stack  Stack of MC particles 
@@ -155,12 +168,14 @@ protected:
   TH1F* fHVertex;  // Histogram of vertex 
   TH1F* fHPhiR;    // Histogram of event plane 
   TH1F* fHB;       // Histogram of impact parameter 
+  TH1F* fHMcC;     // Histogram of centrality derived from imp. par.
   TH2F* fHBvsPart; // Impact parameter vs # participants 
   TH2F* fHBvsBin;  // Impact parameter vs # participants 
   TH2F* fHBvsCent; // Impact parameter vs centrality
   TH2F* fHVzComp;  // True vs reconstructed vz
   TH2F* fHCentVsPart; // Centrality versus # participants 
   TH2F* fHCentVsBin;  // Centrality versus # binary collisions 
+  TH2F* fHCentVsMcC;  // Compare centralities
   TString fProduction; // Production information 
   ClassDef(AliFMDMCEventInspector,4); // Inspect the event 
 };
