@@ -166,7 +166,7 @@ AliFMDReconstructor::Init()
     fDiagAll    = new TH2F("diagAll",    "Read ADC vs Multiplicity deduced", 
 			   1024, -.5, 1023.5, 100, -.1, 19.9);
   }
-  if (!fDiagAll) {
+  if (fDiagAll) {
     fDiagAll->SetDirectory(0);
     fDiagAll->GetXaxis()->SetTitle("ADC (read)");
     fDiagAll->GetYaxis()->SetTitle("Multiplicity");

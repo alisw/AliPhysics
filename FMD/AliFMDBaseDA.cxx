@@ -157,7 +157,10 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fSummaries(0)
 {
   //Constructor
-  fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
+  for(Int_t i = 0; i< 3;i++) {
+    fSeenDetectors[i] = false;
+    fNEventsPerDetector[i] = 0;
+  }
   fDetectorArray.SetOwner();
   Rotate("conditions.csv", 3);
   fConditionsFile.open("conditions.csv");
@@ -179,12 +182,12 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fSummaries(0)
 {
   //Copy constructor
-  fSeenDetectors[0] = baseDA.fSeenDetectors[0];
-  fSeenDetectors[1] = baseDA.fSeenDetectors[1];
-  fSeenDetectors[2] = baseDA.fSeenDetectors[2];
+  for(Int_t i = 0; i< 3;i++) {
+    fSeenDetectors[i] = baseDA.fSeenDetectors[0];
+    fNEventsPerDetector[i] = baseDA.fNEventsPerDetector[i];
+  }
 
-  fDetectorArray.SetOwner();
-  
+  fDetectorArray.SetOwner();  
 }
 
 
