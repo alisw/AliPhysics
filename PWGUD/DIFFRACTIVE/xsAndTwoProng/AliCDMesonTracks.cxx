@@ -442,7 +442,7 @@ void AliCDMesonTracks::GetRemainingTracklets()
 			if (!mult->GetTrackletTrackIDs(iTracklet, 0, id1, id2)) {
 				float_t eta = mult->GetEta(iTracklet);
 
-				if ((eta < -0.9) || (eta < 0.9)) {
+				if ((eta < -0.9) || (eta > 0.9)) {
 					++fNtrackletsForward;
 				}
 				else {
