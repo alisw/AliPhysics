@@ -30,6 +30,7 @@ public:
   MakeFlowTrain(const char* name)
   : TrainSetup(name)
   {
+    fOptions.Add("mc", "Do MC analysis");
     fOptions.Add("mom", "Flow moments to analyse", "234", "234");
     fOptions.Add("eta-gap", "Whether to use an eta-gap", "[no,yes,both]", "both");
     fOptions.Add("eg-value", "Set value in |eta| of the eta gap", "2.0");
@@ -62,6 +63,7 @@ protected:
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
+    // --- Get the parameters ----------------------------------------
     TString  type    = fOptions.Get("mom");
     TString  etaGap  = fOptions.Get("eta-gap");
     Double_t egValue = fOptions.AsDouble("eg-value");

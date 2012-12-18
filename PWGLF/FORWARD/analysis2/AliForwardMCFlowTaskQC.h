@@ -125,6 +125,12 @@ protected:
    */
   void Finalize();
   /**
+   * Find FMD coverage for this vtx, to make MC histogram match
+   *
+   * @param h FMD d^2N/detadphi histogram
+   */
+  void GetFMDLimits();
+  /**
    * Loop over AliAODMCParticle branch object and fill d^2N/detadphi histograms
    * add flow if arguments are set
    * 
@@ -151,6 +157,8 @@ protected:
   AliForwardFlowWeights fWeights;   //  Flow after burner 
   TGraph*       fImpactParToCent;   //  Parametrization of b to centrality
   Bool_t        fUseImpactPar;      //  Flag to use impact parameter for cent
+  Double_t      fFMDMinEta;         //  FMD min. eta coverage for this vtx
+  Double_t      fFMDMaxEta;         //  FMD max. eta coverage for this vtx
   TString       fAddFlow;           //  Add flow string
   Int_t         fAddType;           //  Add flow type #
   Int_t         fAddOrder;          //  Add flow order
