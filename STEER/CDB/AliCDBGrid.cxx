@@ -463,7 +463,10 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 						validFileIds.AddLast(validFileId.Clone());
 			}
 			delete res;
-		}	
+		}else{
+		    return 0; // this should be only in case of file catalogue glitch
+		}
+
 		dataId = GetId(validFileIds, selectedId);
 	}
 
