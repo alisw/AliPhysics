@@ -266,22 +266,22 @@ Bool_t AliAnalysisTaskCDex::CheckInput()
 		//return kFALSE;
 	}
 
-	if(fDoAOD && fabs(fAODEvent->GetMagneticField())<1){
+	if(fDoAOD && fAODEvent && fabs(fAODEvent->GetMagneticField())<1){
 		printf("AliAnalysisTaskex - strange Bfield! %f\n",
 		       fAODEvent->GetMagneticField());
 		return kFALSE;
 	}
-	else if((!fDoAOD) && fabs(fESDEvent->GetMagneticField())<1){
+	else if((!fDoAOD) && fESDEvent && fabs(fESDEvent->GetMagneticField())<1){
 		printf("AliAnalysisTaskex - strange Bfield! %f\n",
 		       fESDEvent->GetMagneticField());
 		return kFALSE;
 	}
 
 	Int_t tmprun = 0;
-	if (fDoAOD) {
+	if (fDoAOD && fAODEvent) {
 		tmprun = fAODEvent->GetRunNumber();
 	}
-	else {
+	else if (fESDEvent) {
 		tmprun = fESDEvent->GetRunNumber();
 	}
 
