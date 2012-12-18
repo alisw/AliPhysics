@@ -151,7 +151,7 @@ AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
 void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid) {
   // -- Set particle species (ID, Name, Title, Title LATEX)
   
-  if ( Int_t(pid) < 0 || Int_t(pid) > AliPID::kSPECIES) {
+  if ( Int_t(pid) < 0 || Int_t(pid) >= AliPID::kSPECIES) {
     AliWarning("Particle ID not in AliPID::kSPECIES --> Set to protons");
     pid = AliPID::kProton;
   }  
@@ -288,12 +288,24 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   if(esdHandler){
     fInputEventHandler = static_cast<AliInputEventHandler*>(esdHandler);
     fESD               = dynamic_cast<AliESDEvent*>(fInputEventHandler->GetEvent());
+    
+    if (!fESD) {
+      AliError("ESD event handler not available");
+      return -1;
+    }
+
   }
 
   // -- Get AOD objects
   else if(aodHandler){
     fInputEventHandler = static_cast<AliInputEventHandler*>(aodHandler);
     fAOD               = dynamic_cast<AliAODEvent*>(fInputEventHandler->GetEvent());
+
+    if (!fAOD) {
+      AliError("AOD event handler not available");
+      return -1;
+    }
+
   }
 
   // -- Get Common objects
@@ -315,6 +327,11 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   else if(aodHandler)
     centrality = fAOD->GetHeader()->GetCentralityP();
 
+  if (!centrality) {
+    AliError("Centrality not available");
+    return -1;
+  }
+  
   Int_t centBin = centrality->GetCentralityClass10("V0M");
   if (centBin == 0)
     fCentralityBin = centrality->GetCentralityClass5("V0M");

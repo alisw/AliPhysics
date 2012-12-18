@@ -60,12 +60,16 @@ AliAnalysisNetParticleEffCont::AliAnalysisNetParticleEffCont() :
 AliAnalysisNetParticleEffCont::~AliAnalysisNetParticleEffCont() {
   // Destructor
 
-  if (fLabelsRec[0])
-    delete[] (fLabelsRec[0]);
-  if (fLabelsRec[1])
-    delete[] (fLabelsRec[1]);
-  if (fLabelsRec)
+  if (fLabelsRec){
+
+    if (fLabelsRec[0])
+      delete[] (fLabelsRec[0]);
+
+    if (fLabelsRec[1])
+      delete[] (fLabelsRec[1]);
+
     delete[] fLabelsRec;
+  }
 }
 
 /*
@@ -340,8 +344,10 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
       continue;
     
     // -- Check if accepted - AOD
-    if (fAOD && !((dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fAODtrackCutBit))) 
-      continue;
+    if (fAOD && (dynamic_cast<AliAODTrack*>(track))){
+      if(!((dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fAODtrackCutBit))) 
+	continue;
+    }
 
     // -- Check if accepted in rapidity window
     Double_t yP;

@@ -31,6 +31,7 @@
 #pragma link C++ class AliAnalysisTaskChargeFluctuations+;
 #pragma link C++ class AliEbyEHigherMomentsTask+;
 #pragma link C++ class AliEbyEHigherMomentsEffContTask+;
+#pragma link C++ class AliHigherMomentsToyModel+;
 
 #pragma link C++ class AliAnalysisTaskPtFluc+;
 #pragma link C++ class AliAnalysisTaskPtFlucPbPb+;
