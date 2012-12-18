@@ -614,6 +614,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     resoGraph->SetName(currName.Data());
     currName.Append("_can");
     can = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
+    can->cd();
     
     for ( Int_t icent=0; icent<kNresoCentr; icent++ ) {
       resoGraph->SetPoint(icent, 0.5*(resoCentrArray[icent+1] + resoCentrArray[icent]), resolution[0][icent]);
