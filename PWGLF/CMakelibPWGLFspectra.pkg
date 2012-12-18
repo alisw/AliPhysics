@@ -57,6 +57,9 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
         SPECTRA/PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
         SPECTRA/PiKaPr/TestAOD/AliSpectraBothPID.cxx
         SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraBoth.cxx
+	SPECTRA/Nuclei/B2/AliLnID.cxx
+	SPECTRA/Nuclei/B2/AliLnHistoMap.cxx
+	SPECTRA/Nuclei/B2/AliAnalysisTaskB2.cxx
 
  )
 
@@ -66,4 +69,4 @@ set ( DHDR PWGLFspectraLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGLF/SPECTRA/Nuclei/B2 PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/STEERBase)

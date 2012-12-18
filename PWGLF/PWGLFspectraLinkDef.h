@@ -34,4 +34,8 @@
 #pragma link C++ class AliSpectraBothPID+;
 #pragma link C++ class AliSpectraBothTrackCuts+;
 
+#pragma link C++ class AliLnID+;
+#pragma link C++ class AliLnHistoMap+;
+#pragma link C++ class AliAnalysisTaskB2+;
+
 #endif
