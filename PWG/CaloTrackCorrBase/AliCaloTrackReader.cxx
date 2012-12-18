@@ -463,7 +463,7 @@ void AliCaloTrackReader::InitParameters()
   //fEMCALParamTimeCutMax[0] = 3.5; fEMCALParamTimeCutMax[1] = 50; fEMCALParamTimeCutMax[2] = 0.15; fEMCALParamTimeCutMax[3] = 1.6;
   
   fTimeStampRunMin = -1;
-  fTimeStampRunMax = 1000000000000;
+  fTimeStampRunMax = 1e12;
   fTimeStampEventFracMin = -1;
   fTimeStampEventFracMax = 2;
 
