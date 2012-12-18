@@ -128,7 +128,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
    * @class AliRawClusterContainer
    * Cluster read interface for offline.
    * The class implements the interface to be used in the decoding
-   * of compressed TPC data.
+   * of compressed TPC data. The container handles 
    */
   class AliRawClusterContainer {
   public:
@@ -159,6 +159,13 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       void SetSigmaZ2(float sigmaZ2)   {if (fEntry ) fEntry->fCluster.SetSigmaZ2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fEntry ) fEntry->fCluster.SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fEntry ) fEntry->fCluster.SetQMax(qmax);}
+      iterator& operator=(const AliHLTTPCRawCluster& rawcluster) {if (fEntry ) {
+	  memcpy(&fEntry->fCluster, &rawcluster, sizeof(AliHLTTPCRawCluster));
+	  // Note: offline code uses a different convention for row offset than the online code
+	  // Online: first row of readout partition
+	  // Offline: first row of readout chamber(inner: partition 0-1; outer: 2-5 
+	  fEntry->fCluster.fPadRow-=fRowOffset;
+	} return *this;}
       void SetMC(const AliHLTTPCClusterMCLabel* pMC) {
 	if (fEntry && pMC ) fEntry->fMC=*pMC;
       }
@@ -176,8 +183,12 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       int fRowOffset;  //! row offset for current partition      
     };
 
-    /// iterator of remaining clusters block of specification
-    iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification);
+    /// legacy, to be removed later
+    iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification) {
+      return BeginPartitionClusterBlock(count, specification);
+    }
+    /// iterator of partition clusters block of specification
+    iterator& BeginPartitionClusterBlock(int count, AliHLTUInt32_t specification);
     /// iterator of track model clusters
     iterator& BeginTrackModelClusterBlock(int count);
 

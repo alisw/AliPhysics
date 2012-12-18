@@ -435,7 +435,7 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::~AliRawClusterContainer()
   }
 }
 
-AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::iterator& AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification)
+AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::iterator& AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::BeginPartitionClusterBlock(int count, AliHLTUInt32_t specification)
 {
   /// iterator of remaining clusters block of specification
 
