@@ -409,6 +409,7 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   // no offline trigger selection
       gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
+      taskMuonTrig->GetMuonTrackCuts()->SetCustomParamFromRun(160000,2);       
   }
 
   //
@@ -430,7 +431,8 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   if (doMUON) {
   // trigger analysis internal
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
-    AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
+    AliAnalysisTaskMuonQA* taskmuonqa= AddTaskMuonQA();
+    taskmuonqa->GetTrackCuts()->SetCustomParamFromRun(160000,2);
   }  
   //
   // TOF (Francesca Bellini)
