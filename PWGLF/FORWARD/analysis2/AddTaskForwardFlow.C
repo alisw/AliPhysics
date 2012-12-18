@@ -52,7 +52,7 @@ void AddTaskForwardFlow(TString  type          = "234",
   if (aodInput == 2 && 
       (!AliForwardUtil::CheckForTask("AliForwardMultiplicityBase") ||
        !AliForwardUtil::CheckForTask("AliCentralMultiplicityTask")))
-    Fatal("","The relevant tasks wasn't added to the train");
+    Fatal("","The relevant tasks weren't added to the train");
 
   // --- For the selected flow tasks the input and output is set -----
   const char* name = (useEtaGap ? "ForwardQCumulantsEtaGap", "ForwardQCumulants");
@@ -87,9 +87,13 @@ void AddTaskForwardFlow(TString  type          = "234",
   // --- Check which harmonics to calculate --------------------------
   const char* harm = type.Data();
   Int_t i = 0;
+  std::cout << "Type string: " << type.Data();
+  std::cout << "\t harm string: " << harm << std::endl;
   while (i < type.Length()) {
     char c = harm[i];
+    std::cout << "Adding moment: " << c << std::endl;
     Short_t n = atoi(&c);
+    std::cout << "Adding moment: " << n << std::endl;
     task->AddFlowMoment(n);
     i++;
   }

@@ -226,7 +226,7 @@ protected:
     /*
      * Enumeration for ref/diff histograms
      */
-    enum { kHmult = 1, kHQnRe, kHQnIm, kHQ2nRe, kHQ2nIm };
+    enum { kHmultA = 1, kHmultB, kHQnReA, kHQnImA, kHQnReB, kHQnImB, kHQ2nRe, kHQ2nIm };
     /*
      * Enumeration for cumulant histograms
      */
@@ -234,9 +234,12 @@ protected:
 	   kW2, 
 	   kW4Four, 
 	   kW4, 
-	   kQnRe, 
-	   kQnIm, 
-	   kM,
+	   kQnReA, 
+	   kQnImA, 
+	   kMA,
+	   kQnReB, 
+	   kQnImB, 
+	   kMB,
 	   kCosphi1phi2, 
 	   kSinphi1phi2, 
 	   kCosphi1phi2phi3m, 
@@ -385,6 +388,12 @@ protected:
    * @return Bool_t 
    */
   virtual Bool_t GetVertex(const AliAODForwardMult* aodfm);
+  /**
+   * Make diagnostics hitogram
+   *
+   * @return void
+   */
+  void MakeQualityHist(const Char_t* name) const;
   /**
    * Print the setup of the task
    *

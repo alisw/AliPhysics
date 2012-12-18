@@ -16,6 +16,7 @@
 #include "AliAODEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliForwardMCFlowTaskQC)
 #if 0
@@ -31,6 +32,8 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC()
     fWeights(),            // Flow weights
     fImpactParToCent(),    // Impact parameter to centrality graph
     fUseImpactPar(0),      // Use impact par for centrality
+    fFMDMinEta(-6),        // FMD min eta coverage for this vtx
+    fFMDMaxEta(6),         // FMD max eta coverage for this vtx
     fAddFlow(0),           // Add flow to MC truth
     fAddType(0),           // Add type of flow to MC truth
     fAddOrder(0)           // Add order of flow to MC truth        
@@ -48,6 +51,8 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name)
     fWeights(),            // Flow weights
     fImpactParToCent(),    // Impact parameter to centrality graph
     fUseImpactPar(0),      // Use impact par for centrality
+    fFMDMinEta(-6),        // FMD min eta coverage for this vtx
+    fFMDMaxEta(6),         // FMD max eta coverage for this vtx
     fAddFlow(0),           // Add flow to MC truth
     fAddType(0),           // Add type of flow to MC truth
     fAddOrder(0)           // Add order of flow to MC truth        
@@ -80,6 +85,8 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const AliForwardMCFlowTaskQC& o)
     fWeights(o.fWeights),                  // Flow weights
     fImpactParToCent(o.fImpactParToCent),  // Impact parameter to centrality
     fUseImpactPar(o.fUseImpactPar),        // Use impact par for centrality
+    fFMDMinEta(o.fFMDMinEta),              // FMD min eta coverage for this vtx
+    fFMDMaxEta(o.fFMDMaxEta),              // FMD max eta coverage for this vtx
     fAddFlow(o.fAddFlow),                  // Add flow to MC truth
     fAddType(o.fAddType),                  // Add type of flow to MC truth
     fAddOrder(o.fAddOrder)                 // Add order of flow to MC truth
@@ -102,6 +109,8 @@ AliForwardMCFlowTaskQC::operator=(const AliForwardMCFlowTaskQC& o)
   fWeights         = o.fWeights;
   fImpactParToCent = o.fImpactParToCent;
   fUseImpactPar    = o.fUseImpactPar;
+  fFMDMinEta       = o.fFMDMinEta;
+  fFMDMaxEta       = o.fFMDMaxEta;
   fAddFlow         = o.fAddFlow;
   fAddType         = o.fAddType;
   fAddOrder        = o.fAddOrder;
@@ -184,6 +193,7 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
     } else {
       FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx);
     }
+    
     if (aodcmult) {
       const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
       if ((fFlowFlags & kEtaGap)) {
@@ -193,7 +203,6 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
       }
     }
   }
-
   // Run analysis on MC branch
   if (!LoopAODMC()) return kFALSE;
   if ((fFlowFlags & kEtaGap)) {
@@ -250,6 +259,29 @@ Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
   return AliForwardFlowTaskQC::GetCentrality(aodfm);
 }
 //_____________________________________________________________________
+void AliForwardMCFlowTaskQC::GetFMDLimits()
+{
+
+  const AliAODForwardMult* aodfmult = 
+    static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+  const TH2D& h = aodfmult->GetHistogram();
+
+  for (Int_t e = 1; ; e++) {
+    if (h.GetBinContent(e, 0) != 0) { 
+      fFMDMinEta = h.GetXaxis()->GetBinLowEdge(e);
+      break;
+    }
+  }
+  for (Int_t e = h.GetNbinsX(); ; e--) {
+    if (h.GetBinContent(e, 0) != 0) { 
+      fFMDMaxEta = h.GetXaxis()->GetBinLowEdge(e);
+      break;
+    }
+  }
+
+  return;
+}
+//_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::LoopAODMC()  
 {
   // 
@@ -257,6 +289,7 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
   // Add flow if set to do so in AddTask function
   //
   fdNdedpMC.Reset();
+  GetFMDLimits();
 
   //retreive MC particles from event
   TClonesArray* mcArray = 
@@ -273,10 +306,14 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
                                   AliAODMCHeader::StdBranchName()));
   if (!header) 
     AliWarning("No header file found.");
-  else 
-    rp = header->GetReactionPlaneAngle();
+  
+  rp = header->GetReactionPlaneAngle();
 
   Int_t ntracks = mcArray->GetEntriesFast();
+  // TODO: Make this bit smarter...
+  if (header->GetNCocktailHeaders() > 1) {
+    ntracks = header->GetCocktailHeader(0)->NProduced();
+  }
 
   UShort_t flowFlags = 0;
   if (fAddFlow.Length() > 1) {
@@ -297,12 +334,12 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
       AliError(Form("Could not receive track %d", it));
       continue;
     }
-    if (!particle->IsPhysicalPrimary()) continue;
+    if (!particle->IsPrimary()) continue;
     if (particle->Charge() == 0) continue;
     //Double_t pT = particle->Pt();
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
-    if (eta > -4. && eta < 5.) {
+    if (eta >= fFMDMinEta && eta <= fFMDMaxEta) {
       // Add flow if it is in the argument
       /* FLOW WEIGHTS DISABLED IN THE VERSION - COMING BACK SOON
       if (flowFlags != 0) { 
@@ -316,8 +353,8 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
         fdNdedpMC.Fill(eta, phi, weight);
     }
   }
-  Int_t sBin = fdNdedpMC.GetXaxis()->FindBin(-4.);
-  Int_t eBin = fdNdedpMC.GetXaxis()->FindBin(+5.);
+  Int_t sBin = fdNdedpMC.GetXaxis()->FindBin(fFMDMinEta);
+  Int_t eBin = fdNdedpMC.GetXaxis()->FindBin(fFMDMaxEta);
   for ( ; sBin < eBin; sBin++) fdNdedpMC.SetBinContent(sBin, 0, 1.);
 
   return kTRUE;
