@@ -99,7 +99,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   trackCuts->SetMaxChi2PerClusterTPC(3.5);
   //trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
   trackCuts->SetRequireTPCRefit(kTRUE);
-  //trackCuts->SetRequireITSRefit(kTRUE);
+  trackCuts->SetRequireITSRefit(kTRUE);
   //trackCuts->SetMinNsigmaToVertex(10);
   trackCuts->SetRequireSigmaToVertex(kFALSE);
   trackCuts->SetAcceptKinkDaughters(kFALSE);
