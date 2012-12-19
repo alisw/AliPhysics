@@ -333,7 +333,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 //
     AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
-	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
 
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 //
@@ -343,52 +343,43 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
       // Get the actual offline trigger mask for the event and AND it with the
       // requested mask. If no mask requested select by default the event.
       if (fOfflineTriggerMask)
-         isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+	isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
     }
 //  Functionality below moved in the filter tasks (AG)
 //    if (handler) handler->SetFillAOD(isSelected);
 
     if( fInputHandler ) {
-	fEntry = fInputHandler->GetReadEntry();
-	fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
+      fEntry = fInputHandler->GetReadEntry();
+      fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
     }
     
 
-// Notify the change of run number
+    // Notify the change of run number
     if (InputEvent() && (InputEvent()->GetRunNumber() != fCurrentRunNumber)) {
 	fCurrentRunNumber = InputEvent()->GetRunNumber();
 	NotifyRun();
-    }    
-	   
-    else if( fMCEvent )
-       fEntry = fMCEvent->Header()->GetEvent(); 
-    if ( !((Entry()-1)%100) && fDebug > 0) 
-         AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
+    } else if( fMCEvent )
+      fEntry = fMCEvent->Header()->GetEvent(); 
 
+    if ( !((Entry()-1)%100) && fDebug > 0) 
+      AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
     
-    
+    if (aodH) fMCEvent = aodH->MCEvent();
 
     if (handler && aodH) {
-	fMCEvent = aodH->MCEvent();
 	Bool_t merging = aodH->GetMergeEvents();
-      
-  // Do not analyze merged events if last embedded file has less events than normal event, 
-  // skip analysis after last embeded event 
-  if(merging){
-    if(aodH->GetReadEntry() + aodH->GetMergeOffset() >= aodH->GetTreeToMerge()->GetEntriesFast()){
-      //printf("Skip Entry %lld, Offset %d, Tree Entries %d\n",aodH->GetReadEntry(),aodH->GetMergeOffset(), aodH->GetTreeToMerge()->GetEntries());
-          
-      // Do I need to add the lines before the return?
-      // Added protection in case the derived task is not an AOD producer.
-      AliAnalysisDataSlot *out0 = GetOutputSlot(0);
-      if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
-          
-      DisconnectMultiHandler();
-          
-      return;
-    }
-    //else   printf("MERGE Entry %lld, Offset %d, Tree Entries %d\n",aodH->GetReadEntry(),aodH->GetMergeOffset(), aodH->GetTreeToMerge()->GetEntries());
-  }
+	// Do not analyze merged events if last embedded file has less events than normal event, 
+	// skip analysis after last embeded event 
+	if(merging){
+	  if(aodH->GetReadEntry() + aodH->GetMergeOffset() >= aodH->GetTreeToMerge()->GetEntriesFast()){
+	    // Do I need to add the lines before the return?
+	    // Added protection in case the derived task is not an AOD producer.
+	    AliAnalysisDataSlot *out0 = GetOutputSlot(0);
+	    if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
+	    DisconnectMultiHandler();
+	    return;
+	  }
+	}
       
 	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
 
