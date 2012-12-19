@@ -291,7 +291,9 @@ void AliMUONResponseTriggerV1::SetHV()
         voltage += (dcsValue->GetFloat())*(time2-time1);
       }
       
-      fHVvalues.AddAt(voltage/(timeend-timebegin)/1000,18*iPlane+iRPC); //voltage in kV, not in V
+      Double_t deltaTime = timeend - timebegin;
+      Double_t meanVoltage = ( deltaTime > 0 ) ? 0. : voltage/deltaTime/1000.;
+      fHVvalues.AddAt(meanVoltage,18*iPlane+iRPC); //voltage in kV, not in V
       
       voltage=0;
     }
