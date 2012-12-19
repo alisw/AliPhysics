@@ -9,6 +9,9 @@ class TList;
 class TAxis;
 class AliTimeStamp;
 class TArrayI;
+class TString;
+class TObjString;
+class TObjArray;
 
 class AliMuonEventCuts : public AliAnalysisCuts
 {
@@ -39,8 +42,10 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetTrigClassPatterns ( const TString pattern );
   /// Get default trigger class patterns
   TString GetDefaultTrigClassPatterns() { return fDefaultTrigClassPatterns; };
-  void SetTrigClassLevels ( const TString pattern = "MSL:Lpt MSH:Hpt MUL:LptLpt MLL:LptLpt" );
+  void SetTrigClassLevels ( const TString pattern = "MSL:Lpt,MSH:Hpt,MUL:LptLpt,MLL:LptLpt" );
   TArrayI GetTrigClassPtCutLevel ( const TString trigClassName ) const;
+  void SetTrigClassCombination ( const TString trigClassCombination, Bool_t disableTrigPattern = kTRUE );
+  void SetTrigInputsMap ( const TString trigInputsMap );
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
   TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
@@ -75,9 +80,13 @@ class AliMuonEventCuts : public AliAnalysisCuts
 
  protected:
   
-  void BuildTriggerClasses ( const TString firedTrigClasses );
+  void BuildTriggerClasses ( const TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
+  Bool_t CheckTriggerClassPattern ( const TString& toCheck ) const;
+  Bool_t CheckTriggerClassCombination ( const TString& toCheck, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
+  void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig );
   Bool_t UpdateEvent( const AliVEvent* event );
   void SetDefaultTrigClassPatterns();
+  void SetDefaultTrigInputsMap();
     
   UInt_t fPhysicsSelectionMask; ///< Physics selection mask
   
@@ -89,6 +98,8 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TObjArray* fSelectedTrigPattern; ///< List of triggers to be kept
   TObjArray* fRejectedTrigPattern; ///< List of triggers to be rejected
   TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
+  TObjArray* fSelectedTrigCombination; ///< Selected trigger combinations
+  TList* fTrigInputsMap;       ///< Trigger inputs map
   TList* fAllSelectedTrigClasses;  ///< List of all selected trigger classes found
   TAxis* fCentralityClasses;   ///< Centrality classes
   
@@ -96,7 +107,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   AliTimeStamp* fTimeStamp; //!< current event time stamp
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event 
   
-  ClassDef(AliMuonEventCuts, 2); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 3); // Class for muon event filters
 };
 
 #endif

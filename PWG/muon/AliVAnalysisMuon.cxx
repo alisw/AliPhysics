@@ -660,8 +660,8 @@ void AliVAnalysisMuon::SetTrigClassPatterns(const TString pattern)
   TString currPattern = pattern;
   if ( currPattern.IsNull() ) { 
     currPattern = GetDefaultTrigClassPatterns();
-    currPattern.Append(" !CMUP"); // by default do not account for UltraPeripheral events
-  } 
+    currPattern.Append(",!CMUP"); // by default do not account for UltraPeripheral events
+  }
   fMuonEventCuts->SetTrigClassPatterns(currPattern);
 }
 
