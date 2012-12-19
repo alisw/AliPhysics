@@ -102,6 +102,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fMcPtInConeSBG;             //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range
   TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template no UE sub
   TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range no UE sub
+  TH2F        *fAllIsoEtMcGamma;           //!all iso distribution vs. Et clus for clusters comming from a MC prompt photon
+  TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 

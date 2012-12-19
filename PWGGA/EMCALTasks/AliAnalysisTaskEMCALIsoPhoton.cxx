@@ -78,6 +78,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMcPtInConeSBG(0),
   fMcPtInConeBGnoUE(0),
   fMcPtInConeSBGnoUE(0),
+  fAllIsoEtMcGamma(0),
+  fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
   fHnOutput(0)
 {
@@ -130,6 +132,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMcPtInConeSBG(0),
   fMcPtInConeBGnoUE(0),
   fMcPtInConeSBGnoUE(0),
+  fAllIsoEtMcGamma(0),
+  fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
   fHnOutput(0)
 {
@@ -209,6 +213,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   fMcPtInConeSBGnoUE  = new TH2F("hMcPtInConeSBGnoUE","#sum_{in-cone}p_{T}^{mc-primaries} vs. ISO^{TRK+EMC} (SBG range);ISO^{TRK+EMC} (GeV);#sum_{in-cone}p_{T}^{mc-primaries}",600,-10,50,1000,0,100);
   fOutputList->Add(fMcPtInConeSBGnoUE);
+
+  fAllIsoEtMcGamma  = new TH2F("hAllIsoEtMcGammaE","ISO^{TRK+EMC} vs. E_{T}^{clus} for clusters comming from a MC prompt #gamma; E_{T}^{clus} (GeV);ISO^{TRK+EMC} (GeV);",1000,0,100,600,-10,50);
+  fOutputList->Add(fAllIsoEtMcGamma);
+
+  fAllIsoNoUeEtMcGamma  = new TH2F("hAllIsoNoUeEtMcGammaE","ISO^{TRK+EMC}_{noue} vs. E_{T}^{clus} for clusters comming from a MC prompt #gamma; E_{T}^{clus} (GeV);ISO^{TRK+EMC}_{noue} (GeV);",1000,0,100,600,-10,50);
+  fOutputList->Add(fAllIsoNoUeEtMcGamma);
 
 
   fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
@@ -416,6 +426,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(c->GetM02()>0.1 && c->GetM02()<0.3){
       fMcPtInConeSBG->Fill(alliso-Et-allisoue, mcptsum);
       fMcPtInConeSBGnoUE->Fill(alliso-Et, mcptsum);
+      if(fMcIdFamily.Contains((Form("%d",c->GetLabel())))){
+	fAllIsoEtMcGamma->Fill(Et, alliso-Et/*cecore*/-allisoue);
+	fAllIsoNoUeEtMcGamma->Fill(Et, alliso-Et/*cecore*/);
+      }
     }
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
