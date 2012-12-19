@@ -16,6 +16,7 @@
 #include "AliMuonEventCuts.h"
 
 #include "TMath.h"
+#include "TFormula.h"
 #include "THashList.h"
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -53,6 +54,8 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fSelectedTrigPattern(0x0),
   fRejectedTrigPattern(0x0),
   fSelectedTrigLevel(0x0),
+  fSelectedTrigCombination(0x0),
+  fTrigInputsMap(0x0),
   fAllSelectedTrigClasses(0x0),
   fCentralityClasses(0x0),
   fTimeStamp(0x0),
@@ -72,6 +75,8 @@ AliAnalysisCuts(name, title),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
   fSelectedTrigLevel(new TObjArray()),
+  fSelectedTrigCombination(new TObjArray()),
+  fTrigInputsMap(new THashList()),
   fAllSelectedTrigClasses(new THashList()),
   fCentralityClasses(0x0),
   fTimeStamp(0x0),
@@ -82,6 +87,7 @@ AliAnalysisCuts(name, title),
   SetDefaultFilterMask();
   SetDefaultTrigClassPatterns();
   SetTrigClassLevels();
+  SetDefaultTrigInputsMap();
   SetCentralityClasses();
   fAllSelectedTrigClasses->SetOwner();
   fSelectedTrigClassesInEvent->SetOwner();
@@ -98,6 +104,8 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fSelectedTrigPattern(obj.fSelectedTrigPattern),
   fRejectedTrigPattern(obj.fRejectedTrigPattern),
   fSelectedTrigLevel(obj.fSelectedTrigLevel),
+  fSelectedTrigCombination(obj.fSelectedTrigCombination),
+  fTrigInputsMap(obj.fTrigInputsMap),
   fAllSelectedTrigClasses(obj.fAllSelectedTrigClasses),
   fCentralityClasses(obj.fCentralityClasses),
   fTimeStamp(obj.fTimeStamp),
@@ -121,6 +129,8 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fSelectedTrigPattern = obj.fSelectedTrigPattern;
     fRejectedTrigPattern = obj.fRejectedTrigPattern;
     fSelectedTrigLevel = obj.fSelectedTrigLevel;
+    fSelectedTrigCombination = obj.fSelectedTrigCombination;
+    fTrigInputsMap = obj.fTrigInputsMap;
     fAllSelectedTrigClasses = obj.fAllSelectedTrigClasses;
     fCentralityClasses = obj.fCentralityClasses;
     fTimeStamp = obj.fTimeStamp;
@@ -137,6 +147,8 @@ AliMuonEventCuts::~AliMuonEventCuts()
   delete fSelectedTrigPattern;
   delete fRejectedTrigPattern;
   delete fSelectedTrigLevel;
+  delete fSelectedTrigCombination;
+  delete fTrigInputsMap;
   delete fAllSelectedTrigClasses;
   delete fSelectedTrigClassesInEvent;
   delete fCentralityClasses;
@@ -149,6 +161,8 @@ Bool_t AliMuonEventCuts::IsSelected( TObject* obj )
   /// Track is selected
   UInt_t filterMask = GetFilterMask();
   UInt_t selectionMask = GetSelectionMask(obj);
+  
+  AliDebug(1, Form("Is event selected %i  mask 0x%x", ( selectionMask & filterMask ) == filterMask, selectionMask ));
   
   return ( ( selectionMask & filterMask ) == filterMask );
 }
@@ -200,7 +214,7 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
   AliTimeStamp currTimeStamp(event->GetOrbitNumber(), event->GetPeriodNumber(), event->GetBunchCrossNumber());
   if ( fTimeStamp && fTimeStamp->Compare(&currTimeStamp) == 0 ) return kFALSE;
   
-  BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event));
+  BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event), AliAnalysisMuonUtility::GetL0TriggerInputs(event), AliAnalysisMuonUtility::GetL1TriggerInputs(event), AliAnalysisMuonUtility::GetL2TriggerInputs(event));
   
   delete fTimeStamp;
   fTimeStamp = new AliTimeStamp(currTimeStamp);
@@ -213,7 +227,7 @@ void AliMuonEventCuts::SetDefaultTrigClassPatterns ()
 {
   /// Set the default patterns
   /// (done in such a way to get all muon triggers)
-  fDefaultTrigClassPatterns = "C !EMC !CS !CCUP !CTRUE !ABCE !-ACE- !-AC- !-E- !WU !EGA !EJE !PHS !0VG";
+  fDefaultTrigClassPatterns = "C,!EMC,!CS,!CCUP,!CTRUE,!ABCE,!-ACE-,!-AC-,!-E-,!WU,!EGA,!EJE,!PHS,!C0VG";
   SetTrigClassPatterns(fDefaultTrigClassPatterns);
 }
 
@@ -226,7 +240,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString pattern )
   /// - if name contains ! (without spaces): reject it
   /// - otherwise, keep it
   /// example:
-  /// SetTrigClassPatterns("CMBAC !ALLNOTRD")
+  /// SetTrigClassPatterns("CMBAC,!ALLNOTRD")
   /// keeps classes containing CMBAC, and not containing ALLNOTRD.
   ///
   /// CAVEAT: if you use an fCFContainer and you want an axis to contain the trigger classes,
@@ -238,10 +252,9 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString pattern )
   fRejectedTrigPattern->SetOwner();
   if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
   
-  pattern.ReplaceAll("  "," ");
-  pattern.ReplaceAll("! ","!");
+  pattern.ReplaceAll(" ","");
   
-  TObjArray* fullList = pattern.Tokenize(" ");
+  TObjArray* fullList = pattern.Tokenize(",");
   
   for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
     TString currPattern = fullList->At(ipat)->GetName();
@@ -261,7 +274,7 @@ void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
   /// Set trigger cut level associated to the trigger class
   ///
   /// example:
-  /// SetTrigClassLevels("MSL:Lpt MSH:Hpt MUL:LptLpt")
+  /// SetTrigClassLevels("MSL:Lpt,MSH:Hpt,MUL:LptLpt")
   ///
   /// For the trigger classes defined in SetTrigClassPatterns
   /// it check if they contains the keywords MSL or MSH
@@ -273,10 +286,9 @@ void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
   fSelectedTrigLevel->SetOwner();
   if ( fSelectedTrigLevel->GetEntries() > 0 ) fSelectedTrigLevel->Delete();
   
-  pattern.ReplaceAll("  "," ");
-  pattern.ReplaceAll(" :",":");
+  pattern.ReplaceAll(" ","");
   
-  TObjArray* fullList = pattern.Tokenize(" ");
+  TObjArray* fullList = pattern.Tokenize(",");
   UInt_t offset = 2;
   for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
     TString currPattern = fullList->At(ipat)->GetName();
@@ -305,6 +317,13 @@ void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
 TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName ) const
 {
   /// Get trigger class pt cut level for tracking/trigger matching
+  ///
+  /// CAVEAT: this functionality fully works with trigger class names,
+  ///   but it can have a problem to extract the correct information in
+  ///   combinations of trigger classes/inputs. In this case it provides:
+  ///   - the highest pt level among classes/inputs combined through a logical AND "&"
+  ///   - the lowest pt level among classes/inputs combined through a logical OR "|"
+  ///   The first should be fine, but the second could not be the proper matching.
   TObject* obj = fAllSelectedTrigClasses->FindObject(trigClassName.Data());
   if ( ! obj ) {
     AliWarning(Form("Class %s not in the list!", trigClassName.Data()));
@@ -321,6 +340,114 @@ TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName )
   return ptCutLevel;
 }
 
+//________________________________________________________________________
+void AliMuonEventCuts::SetTrigClassCombination ( TString trigClassCombination, Bool_t disableTrigPattern )
+{
+  /// Set trigger classes combinations
+  ///
+  /// Differently from the pattern, one needs to specify combination of triggers
+  /// combined through a logical AND "&" or a logical OR "|"
+  /// It is also possible to ask for a trigger class containing a specific trigger input:
+  /// e.g. CMSL7-B-NOPF-MUON&0MSH,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON|CMSL8-B-NOPF-MUON
+  /// will give the events with:
+  /// - the single low trigger class fired and containing a single high trigger input
+  /// - the single low trigger class fired
+  /// - the single low trigger class 7 or 8 fired
+  /// By default, when specific trigger combinations are provided, the most general case
+  /// based on trigger pattern is disabled...but it can be activated with the disableTrigPattern flag
+  
+  if ( disableTrigPattern ) SetTrigClassPatterns("");
+  
+  if ( fSelectedTrigCombination->GetEntries() > 0 ) fSelectedTrigCombination->Delete();
+  
+  trigClassCombination.ReplaceAll(" ","");
+  
+  TObjArray* fullList = trigClassCombination.Tokenize(",");
+  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
+    TString currPattern = fullList->At(ipat)->GetName();
+    fSelectedTrigCombination->AddLast(new TObjString(currPattern));
+  }
+  delete fullList;
+}
+
+//________________________________________________________________________
+void AliMuonEventCuts::SetTrigInputsMap ( TString trigInputsMap )
+{
+  /// Set trigger input mask
+  /// The inputs must be in the form:
+  /// input1:ID1,input2:ID2,...
+  /// CAVEAT: the input ID is ID_aliceLogbook - 1
+  /// since this is the ID in the OCDB
+  
+  fTrigInputsMap->SetOwner();
+  if ( fTrigInputsMap->GetEntries() > 0 ) fTrigInputsMap->Delete();
+  
+  trigInputsMap.ReplaceAll(" ","");
+  
+  TObjArray* fullList = trigInputsMap.Tokenize(",");
+  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
+    TString currPattern = fullList->At(ipat)->GetName();
+    TObjArray* arr = currPattern.Tokenize(":");
+    TObjString* trigInput = new TObjString(arr->At(0)->GetName());
+    UInt_t trigID = (UInt_t)static_cast<TObjString*>(arr->At(1))->GetString().Atoi();
+    trigInput->SetUniqueID(1<<trigID);
+    fTrigInputsMap->Add(trigInput);
+    delete arr;
+  }
+  delete fullList;
+}
+
+//________________________________________________________________________
+void AliMuonEventCuts::SetDefaultTrigInputsMap ()
+{
+  /// Set default trigger input mask
+  
+  TString trigInputsMap = "0VBA:0,";
+  trigInputsMap += "0VBC:1,";
+  trigInputsMap += "0SMB:2,";
+  trigInputsMap += "0TVX:3,";
+  trigInputsMap += "0VGC:4,";
+  trigInputsMap += "0VGA:5,";
+  trigInputsMap += "0SH1:6,";
+  trigInputsMap += "0SH2:7,";
+  trigInputsMap += "0HPT:8,";
+  trigInputsMap += "0AMU:9,";
+  trigInputsMap += "0OB0:10,";
+  trigInputsMap += "0ASL:11,";
+  trigInputsMap += "0MSL:12,";
+  trigInputsMap += "0MSH:13,";
+  trigInputsMap += "0MUL:14,";
+  trigInputsMap += "0MLL:15,";
+  trigInputsMap += "0EMC:16,";
+  trigInputsMap += "0PH0:17,";
+  trigInputsMap += "0HWU:18,";
+  trigInputsMap += "0LSR:19,";
+  trigInputsMap += "0T0A:20,";
+  trigInputsMap += "0BPA:21,";
+  trigInputsMap += "0BPC:22,";
+  trigInputsMap += "0T0C:23,";
+  
+  trigInputsMap += "1EJE:0,";
+  trigInputsMap += "1EGA:1,";
+  trigInputsMap += "1EJ2:2,";
+  trigInputsMap += "1EG2:3,";
+  trigInputsMap += "1PHL:4,";
+  trigInputsMap += "1PHM:5,";
+  trigInputsMap += "1PHH:6,";
+  trigInputsMap += "1HCO:8,";
+  trigInputsMap += "1HJT:9,";
+  trigInputsMap += "1HSE:10,";
+  trigInputsMap += "1DUM:11,";
+  trigInputsMap += "1HQU:12,";
+  trigInputsMap += "1H14:13,";
+  trigInputsMap += "1ZMD:14,";
+  trigInputsMap += "1ZMB:16,";
+  trigInputsMap += "1ZED:17,";
+  trigInputsMap += "1ZAC:18,";
+  trigInputsMap += "1EJE:19";
+  
+  SetTrigInputsMap(trigInputsMap);
+}
 
 //________________________________________________________________________
 TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEvent* event )
@@ -332,7 +459,8 @@ TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEvent* eve
 
 
 //________________________________________________________________________
-void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses )
+void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
+                                             UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs )
 {
   //
   /// Return the list of trigger classes to be considered
@@ -344,55 +472,151 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses )
   fSelectedTrigClassesInEvent->SetOwner();
 
   TString firedTrigClassesAny = "ANY " + firedTrigClasses;
-  TObjArray* firedTrigClassesList = firedTrigClassesAny.Tokenize(" ");
   
-  UInt_t trigLevel = 0;
-  for ( Int_t itrig=0; itrig<firedTrigClassesList->GetEntries(); ++itrig ) {
-    TString trigName = ((TObjString*)firedTrigClassesList->At(itrig))->GetString();
-    
-    TObject* foundTrig = fAllSelectedTrigClasses->FindObject(trigName.Data());
-    if ( foundTrig ) trigLevel = foundTrig->GetUniqueID();
-    else {
-      Bool_t rejectTrig = kFALSE;
-      for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) {
-          rejectTrig = kTRUE;
-          break;
-        }
-      } // loop on reject pattern
-      if ( rejectTrig ) continue;
+  if ( fSelectedTrigPattern->GetEntries() > 0 ) {
+    TObjArray* firedTrigClassesList = firedTrigClassesAny.Tokenize(" ");
+  
+    for ( Int_t itrig=0; itrig<firedTrigClassesList->GetEntries(); ++itrig ) {
+      TString trigName = ((TObjString*)firedTrigClassesList->At(itrig))->GetString();
+
+      TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(trigName.Data()));
+      if ( ! foundTrig ) {
+        if ( ! CheckTriggerClassPattern(trigName) ) continue;
+      }
       
-      rejectTrig = kTRUE;
-      for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) {
-          rejectTrig = kFALSE;
-          break;
-        }
-      } // loop on keep pattern
-      if ( rejectTrig ) continue;
-      
-      trigLevel = 0;
-      for ( Int_t ipat=0; ipat<fSelectedTrigLevel->GetEntries(); ++ipat ) {
-        if ( trigName.Contains(fSelectedTrigLevel->At(ipat)->GetName() ) ) {
-          trigLevel = fSelectedTrigLevel->At(ipat)->GetUniqueID();
-          break;
-        }
-      } // loop on trig level patterns      
+      AddToEventSelectedClass ( trigName, foundTrig );
+    } // loop on trigger classes
+  
+    delete firedTrigClassesList;
+  }
+  
+  for ( Int_t icomb=0; icomb<fSelectedTrigCombination->GetEntries(); icomb++ ) {
+    TString currComb = static_cast<TObjString*>(fSelectedTrigCombination->At(icomb))->GetString();
+    if ( CheckTriggerClassCombination(currComb, firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs) ) {
+      TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(currComb.Data()));
+      AddToEventSelectedClass ( currComb, foundTrig );
     }
-    TObjString* currTrig = new TObjString(trigName);
-    currTrig->SetUniqueID(trigLevel);
-    fSelectedTrigClassesInEvent->AddLast(currTrig);
-    
-    if ( foundTrig ) continue;
-    TObjString* addTrig = new TObjString(trigName);
-    addTrig->SetUniqueID(trigLevel);
-    fAllSelectedTrigClasses->Add(addTrig);
-    TString trigLevelInfo = Form("trig level %i ", trigLevel & 0x3);
-    trigLevelInfo += ( trigLevel > 3 ) ? "di-muon" : "single-muon";
-    AliInfo(Form("Adding %s (%s) to considered trigger classes",trigName.Data(),trigLevelInfo.Data()));
-  } // loop on trigger classes
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMuonEventCuts::CheckTriggerClassPattern ( const TString& toCheck ) const
+{
+  // Check if the "toCheck" class matches the user pattern
   
-  delete firedTrigClassesList;
+  for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
+    if ( toCheck.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) return kFALSE;
+  } // loop on reject pattern
+
+  for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
+    if ( toCheck.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) return kTRUE;
+  } // loop on keep pattern
+  
+  return kFALSE;
+}
+
+
+//_____________________________________________________________________________
+Bool_t
+AliMuonEventCuts::CheckTriggerClassCombination ( const TString& toCheck,
+                                                 const TString& firedTriggerClasses,
+                                                 UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const
+{
+  // Check if the "toCheck" class (or logical combination of classes and L0 inputs)
+  // are within the "firedTriggerClasses"
+  
+  Bool_t ok(kFALSE);
+  
+  TString tn(toCheck);
+  TString comp("");
+  UInt_t trigInputs[3] = {l0Inputs, l1Inputs, l2Inputs};
+  
+  if ( tn.Contains("&") || tn.Contains("|") || tn.Contains("(") || tn.Contains(")") ) {
+    comp=tn;
+    tn.ReplaceAll("&",":");
+    tn.ReplaceAll("|",":");
+    tn.ReplaceAll("(","");
+    tn.ReplaceAll(")","");
+    TObjArray* arr = tn.Tokenize(":");
+    TIter nextA(arr);
+    TObjString* an;
+    while ( ( an = static_cast<TObjString*>(nextA()) ) )
+    {
+      Int_t inputIdx = -1;
+      if ( an->String().BeginsWith("0") ) inputIdx = 0;
+      else if ( an->String().BeginsWith("1") ) inputIdx = 1;
+      else if ( an->String().BeginsWith("2") ) inputIdx = 2;
+      if ( inputIdx >= 0 )
+      {
+        // that's an input
+        TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
+        Bool_t matchInput = kFALSE;
+        if ( trigInput ) {
+          UInt_t bit = trigInput->GetUniqueID();
+          matchInput = ( (trigInputs[inputIdx] & bit) == bit );
+        }
+        comp.ReplaceAll(an->String().Data(),( matchInput ) ? "1" : "0");
+      }
+      else
+      {
+        comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
+      }
+    }
+    delete arr;
+    
+    TFormula formula("TriggerClassFormulaCheck", comp.Data());
+    if ( formula.Compile() > 0 ) AliError(Form("Could not evaluate formula %s",comp.Data()));
+    else ok = formula.Eval(0);
+  }
+  else ok = firedTriggerClasses.Contains(toCheck);
+  
+  AliDebug(1,Form("tname %s => %d comp=%s  inputs 0x%x 0x%x 0x%x",toCheck.Data(),ok,comp.Data(),l0Inputs, l1Inputs, l2Inputs));
+  
+  return ok;
+}
+
+//_____________________________________________________________________________
+void
+AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig )
+{
+  /// Add current trigger to the selected class for the event
+  
+  // Compute the trigger pt cut level of the current class
+  UInt_t trigLevel = 0;
+  if ( foundTrig ) trigLevel = foundTrig->GetUniqueID();
+  else {
+    // The assigned trigger pt cut level is:
+    // - the correct one if "toCheck" is a single trigger class
+    // - the highest pt cut among the matching ones in case "toCheck" is a trigger class/input
+    //   combined through (at least one) logical AND "&"
+    // - the lowest pt cut among the macthing ones in case "toCheck" is a trigger class/input
+    //   combined through (only) logical OR "|"
+    // This may lead to errors in case of complex combinations of trigger/inputs
+    for ( Int_t ipat=0; ipat<fSelectedTrigLevel->GetEntries(); ++ipat ) {
+      if ( toCheck.Contains(fSelectedTrigLevel->At(ipat)->GetName() ) ) {
+        UInt_t currLevel = fSelectedTrigLevel->At(ipat)->GetUniqueID();
+        if ( toCheck.Contains("&") ) trigLevel = TMath::Max(trigLevel, currLevel);
+        else if ( toCheck.Contains("|") ) trigLevel = TMath::Min(trigLevel, currLevel);
+        else {
+          trigLevel = currLevel;
+          break;
+        }
+      }
+    } // loop on trig level patterns
+  }
+  
+  TObjString* currTrig = new TObjString(toCheck);
+  currTrig->SetUniqueID(trigLevel);
+  fSelectedTrigClassesInEvent->AddLast(currTrig);
+  
+  if ( foundTrig ) return;
+  TObjString* addTrig = new TObjString(toCheck);
+  addTrig->SetUniqueID(trigLevel);
+  fAllSelectedTrigClasses->Add(addTrig);
+  TString trigLevelInfo = Form("trig level %i ", trigLevel & 0x3);
+  trigLevelInfo += ( trigLevel > 3 ) ? "di-muon" : "single-muon";
+  AliInfo(Form("Adding %s (%s) to considered trigger classes",toCheck.Data(),trigLevelInfo.Data()));
 }
 
 //________________________________________________________________________
@@ -404,7 +628,7 @@ void AliMuonEventCuts::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
   Double_t* bins = centralityBins;
   Int_t nbins = nCentralityBins;
   
-  Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 100., 105.};
+  Double_t defaultCentralityBins[] = {-5., 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100., 105.};
   if ( ! centralityBins ) {
     bins = defaultCentralityBins;
     nbins = sizeof(defaultCentralityBins)/sizeof(defaultCentralityBins[0])-1;
