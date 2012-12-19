@@ -14,7 +14,6 @@
 
 #include <AliTenderSupply.h>
 
-class AliTRDpidRecalculator;
 class AliTRDCalDet;
 class AliESDEvent;
 class AliOADBContainer;
@@ -32,8 +31,8 @@ public:
   virtual ~AliTRDTenderSupply();
 
   void SetRunByRunCorrection(const char *filename) { fNameRunByRunCorrection = filename; }
-  void SetLoadReferencesFromCDB() { fLoadReferences = kTRUE; fLoadReferencesFromCDB = kTRUE; }
-  void SetLoadReferencesFromFile() { fLoadReferences = kTRUE; fLoadReferencesFromCDB = kFALSE; }
+//  void SetLoadReferencesFromCDB() { fLoadReferences = kTRUE; fLoadReferencesFromCDB = kTRUE; }
+//  void SetLoadReferencesFromFile() { fLoadReferences = kTRUE; fLoadReferencesFromCDB = kFALSE; }
   void SetLoadDeadChambersFromCDB(){ fLoadDeadChambers = kTRUE;} ;
   void SetPIDmethod(Int_t pidMethod) { fPIDmethod = pidMethod; }
   void SetNormalizationFactor(Double_t norm) { fNormalizationFactor = norm; }
@@ -83,8 +82,8 @@ private:
   UInt_t fNBadChambers;              // Number of bad chambers
   const char *fGeoFile;              // File with geometry.root
   Bool_t fGainCorrection;            // Apply gain correction 
-  Bool_t fLoadReferences;            // Tender Load references
-  Bool_t fLoadReferencesFromCDB;     // Load References from CDB
+//  Bool_t fLoadReferences;            // Tender Load references
+//  Bool_t fLoadReferencesFromCDB;     // Load References from CDB
   Bool_t fLoadDeadChambers;          // Load dead chambers
   Bool_t fHasReferences;             // has references loaded
   Bool_t fHasNewCalibration;         // has new calibration
