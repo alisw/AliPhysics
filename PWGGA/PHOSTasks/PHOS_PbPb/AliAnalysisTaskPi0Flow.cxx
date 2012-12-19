@@ -261,58 +261,61 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
   // Histograms for different centralities
-  char key[55] ;
+  const int kNPID = 12;
+  const char* pidNames[kNPID] = {"All", "Allcore", "Allwou", "Disp", "Disp2", "Dispcore", "Dispwou", "CPV", "CPVcore", "CPV2", "Both", "Bothcore"};
+  char key[55];
+  TString name, title;
   for(Int_t cent=0; cent < fCentEdges.GetSize()-1; cent++){
-    snprintf(key,55,"hPhotAll_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"All clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotAllcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"All clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotAllwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"All clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotDisp_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Disp clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotDisp2_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Disp clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotDispcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Disp clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotDispwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Disp clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotCPV_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"CPV clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotCPVcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"CPV clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotCPV2_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"CPV clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotBoth_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Both clusters",nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPhotBothcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH1F(key,"Both clusters",nPtPhot,0.,ptPhotMax));
+    for(Int_t ipid=0; ipid < kNPID; ipid++){
+      name = Form("hPhot%s_cen%i", pidNames[ipid], cent );
+      title = Form("%s clusters", pidNames[ipid]);
+      fOutputContainer->Add(new TH1F(name.Data(), title.Data(), nPtPhot,0.,ptPhotMax));
 
-    snprintf(key,55,"hPi0All_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Allcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Allwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Disp_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Disp2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Dispcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Dispwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0CPV_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0CPVcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0CPV2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Both_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hPi0Bothcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+      name = Form("hPi0%s_cen%i", pidNames[ipid], cent );
+      title = Form("%s clusters", pidNames[ipid]);
+      fOutputContainer->Add(new TH2F(name.Data(), title.Data(), nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
+      name = Form("hSingle%s_cen%i", pidNames[ipid], cent );
+      title = Form("%s clusters", pidNames[ipid]);
+      fOutputContainer->Add(new TH2F(name.Data(), title.Data(), nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+      name = Form("hMiPi0%s_cen%i", pidNames[ipid], cent );
+      title = Form("%s clusters", pidNames[ipid]);
+      fOutputContainer->Add(new TH2F(name.Data(), title.Data(), nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+      name = Form("hMiSingle%s_cen%i", pidNames[ipid], cent );
+      title = Form("%s clusters", pidNames[ipid]);
+      fOutputContainer->Add(new TH2F(name.Data(), title.Data(), nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+      // PhotPhi histograms
+      const Int_t nPt      = 20;
+      const Double_t xPt[21]={0.6,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,7.,8.,9.,10.,12.,14.,16.,18.,20.} ;
+      const Int_t nPhi=10 ;
+      Double_t xPhi[nPhi+1] ;
+      for(Int_t i=0;i<=nPhi;i++)
+	xPhi[i]=i*TMath::Pi() /nPhi ;
+      const Int_t nMm=200 ;
+      Double_t xM[nMm+1] ;
+      for(Int_t i=0;i<=nMm;i++)
+	xM[i]=i*0.5 /nMm;
+      const Int_t kNPhiTitles = 3;
+      const char* phiTitles[kNPhiTitles] = {"TPC", "V0A", "V0C"};
+      for(Int_t iRP=0; iRP<3; iRP++){
+	name = Form("hPhotPhi%s%s_cen%i", phiTitles[iRP], pidNames[ipid], cent );
+	title = Form("(M,p_{T},d#phi)_{#gamma#gamma}");
+	fOutputContainer->Add(new TH2F(name.Data(), title.Data(), nPt,xPt,nPhi,xPhi));
+    
+	name = Form("hMassPt%s%s_cen%i", phiTitles[iRP], pidNames[ipid], cent );
+	title = Form("(M,p_{T},d#phi)_{#gamma#gamma}");
+	fOutputContainer->Add(new TH3F(name.Data(), title.Data(), nMm,xM,nPt,xPt,nPhi,xPhi));
+    
+	name = Form("hMiMassPt%s%s_cen%i", phiTitles[iRP], pidNames[ipid], cent );
+	title = Form("(M,p_{T},d#phi)_{#gamma#gamma}");
+	fOutputContainer->Add(new TH3F(name.Data(), title.Data(), nMm,xM,nPt,xPt,nPhi,xPhi));
+      }
+    }
+    
+    // a07 histograms
     snprintf(key,55,"hPi0All_a07_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     snprintf(key,55,"hPi0Disp_a07_cen%d",cent) ;
@@ -322,57 +325,6 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
     snprintf(key,55,"hPi0CPV2_a07_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     snprintf(key,55,"hPi0Both_a07_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-
-    snprintf(key,55,"hSingleAll_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleAllcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleAllwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleDisp_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleDisp2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleDispcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleDispwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleCPV_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleCPVcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleCPV2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleBoth_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hSingleBothcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-
-
-    snprintf(key,55,"hMiPi0All_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Allcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Allwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Disp_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Disp2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Dispwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Dispcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0CPV_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0CPVcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0CPV2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Both_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiPi0Bothcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
     snprintf(key,55,"hMiPi0All_a07_cen%d",cent) ;
@@ -385,108 +337,6 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     snprintf(key,55,"hMiPi0Both_a07_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-
-    snprintf(key,55,"hMiSingleAll_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleAllwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleAllcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleDisp_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleDisp2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleDispwou_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleDispcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Disp clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleCPV_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleCPVcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleCPV2_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"CPV clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleBoth_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    snprintf(key,55,"hMiSingleBothcore_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"Both clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  }
-
-
-
-  const Int_t nPt      = 20;
-  const Double_t xPt[21]={0.6,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,7.,8.,9.,10.,12.,14.,16.,18.,20.} ;
-  const Int_t nPhi=10 ;
-  Double_t xPhi[nPhi+1] ;
-  for(Int_t i=0;i<=nPhi;i++)
-    xPhi[i]=i*TMath::Pi() /nPhi ;
-  const Int_t nMm=200 ;
-  Double_t xM[nMm+1] ;
-  for(Int_t i=0;i<=nMm;i++)
-    xM[i]=i*0.5 /nMm;
-
-  char phiTitle[15] ;
-  for(Int_t iRP=0; iRP<3; iRP++){
-    if(iRP==0)
-      snprintf(phiTitle,15,"TPC") ;
-    if(iRP==1)
-      snprintf(phiTitle,15,"V0A") ;
-    if(iRP==2)
-      snprintf(phiTitle,15,"V0C") ;
-    for(Int_t cent=0; cent<fCentEdges.GetSize()-1; cent++){
-      snprintf(key,55,"hPhotPhi%sAll_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sAllcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sDisp_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sDispcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sCPV_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sCPVcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sBoth_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hPhotPhi%sBothcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nPt,xPt,nPhi,xPhi));
-
-      //Pions
-      snprintf(key,55,"hMassPt%sAll_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sAllcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sCPV_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sCPVcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sDisp_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sDispcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sBoth_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMassPt%sBothcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-
-      //Mixed
-      snprintf(key,55,"hMiMassPt%sAll_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sAllcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sCPV_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sCPVcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sDisp_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sDispcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sBoth_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-      snprintf(key,55,"hMiMassPt%sBothcore_cen%d",phiTitle,cent) ;
-      fOutputContainer->Add(new TH3F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nMm,xM,nPt,xPt,nPhi,xPhi));
-    }
   }
   
   // Setup photon lists
