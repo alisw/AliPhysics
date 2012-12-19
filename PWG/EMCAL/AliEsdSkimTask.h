@@ -16,18 +16,22 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
 
   void UserExec(Option_t *opt);
   void UserCreateOutputObjects();
+  void SetCheckCond(Int_t c)       { fCheckCond     = c; }
   void SetCuts(AliESDtrackCuts *c) { fCuts          = c; }
+  void SetDoCent(Bool_t b)         { fDoCent        = b; }
   void SetDoClus(Bool_t b)         { fDoClus        = b; }
   void SetDoEmC(Bool_t b)          { fDoEmCs        = b; }
   void SetDoEmT(Bool_t b)          { fDoEmT         = b; }
   void SetDoFmd(Bool_t b)          { fDoFmd         = b; }
   void SetDoMiniTracks(Bool_t b)   { fDoMiniTracks  = b; }
   void SetDoMult(Bool_t b)         { fDoMult        = b; }
+  void SetDoMuonTracks(Bool_t b)   { fDoMuonTracks  = b; }
   void SetDoPhC(Bool_t b)          { fDoPCs         = b; }
   void SetDoPhT(Bool_t b)          { fDoPT          = b; }
   void SetDoPicoTracks(Bool_t b)   { fDoPicoTracks  = b; }
   void SetDoPileup(Bool_t b)       { fDoPileup      = b; }
   void SetDoPriV(Bool_t b)         { fDoPriv        = b; }
+  void SetDoRP(Bool_t b)           { fDoRP          = b; }
   void SetDoSaveBytes(Bool_t b)    { fDoSaveBytes   = b; }
   void SetDoSpdV(Bool_t b)         { fDoSPDv        = b; }
   void SetDoT0(Bool_t b)           { fDoT0          = b; }
@@ -37,8 +41,8 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   void SetDoV0(Bool_t b)           { fDoV0          = b; }
   void SetDoZdc(Bool_t b)          { fDoZDC         = b; }
   void SetEmcNames(const char *n)  { fEmcNames      = n; }
-  void SetPhosClusOnly(Bool_t b)   { fPhosClusOnly  = b; }
   void SetEmcalClusOnly(Bool_t b)  { fEmcalClusOnly = b; }
+  void SetPhosClusOnly(Bool_t b)   { fPhosClusOnly  = b; }
   void SetRemoveCP(Bool_t b)       { fRemoveCP      = b; }
   void SetResetCov(Bool_t b)       { fResetCov      = b; }
   void SetTracks(const char *n)    { fTracks        = n; }
@@ -63,6 +67,7 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoTof;        // do TOF
   Bool_t           fDoPileup;     // do pileup
   Bool_t           fDoClus;       // do clusters
+  Bool_t           fDoMuonTracks; // do muon tracks
   TString          fEmcNames;     // name of clusters
   Bool_t           fDoMiniTracks; // strip down tracks
   TString          fTracks;       // name of tracks (e.g. tracks propagated to EMCAL surface)
@@ -74,11 +79,12 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fRemoveCP;     // if false then keep constrained parameters (only reset covariance)
   Bool_t           fResetCov;     // if true reset covariance matrix of track
   Bool_t           fDoPicoTracks; // if true then do pico tracks
+  Int_t            fCheckCond;    // if !=0 check certain conditions before event is accepted
 
  private:
   AliEsdSkimTask(const AliEsdSkimTask&);            // not implemented
   AliEsdSkimTask &operator=(const AliEsdSkimTask&); // not implemented
 
- ClassDef(AliEsdSkimTask, 4); // Esd trimming and skimming task
+ ClassDef(AliEsdSkimTask, 5); // Esd trimming and skimming task
 };
 #endif

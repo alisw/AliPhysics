@@ -12,6 +12,8 @@
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliESDFMD.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliESDtrackCuts.h"
 #include "AliEsdTrackExt.h"
 #include "AliEventplane.h"
@@ -25,10 +27,10 @@ AliEsdSkimTask::AliEsdSkimTask(const char *opt) :
   AliAnalysisTaskSE(opt), fEvent(0), fTree(0), fCuts(0),
   fDoZDC(1), fDoV0(1), fDoT0(1), fDoTPCv(1), fDoSPDv(1), fDoPriv(1),
   fDoEmCs(1), fDoPCs(0), fDoEmT(1), fDoPT(0), fDoTracks(0), fDoFmd(1),
-  fDoMult(1), fDoTof(0), fDoPileup(1), fDoClus(0), fEmcNames(""), 
+  fDoMult(1), fDoTof(0), fDoPileup(1), fDoClus(0), fDoMuonTracks(0), fEmcNames(""), 
   fDoMiniTracks(0), fTracks("Tracks"), fPhosClusOnly(0), fEmcalClusOnly(0),
   fDoSaveBytes(0), fDoCent(1), fDoRP(1), fRemoveCP(0), fResetCov(1), 
-  fDoPicoTracks(0)
+  fDoPicoTracks(0), fCheckCond(0)
 {
   // Constructor.
 
@@ -55,6 +57,12 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
 
   TList* objsin  = esdin->GetList();
   TList* objsout = fEvent->GetList();
+
+  if (fCheckCond!=0) {
+    Int_t mult = AliESDtrackCuts::GetReferenceMultiplicity(esdin, AliESDtrackCuts::kTrackletsITSTPC, 0.8);           
+    if (mult<10)
+      return;
+  }
 
   AliESDHeader *header = dynamic_cast<AliESDHeader*>(objsout->FindObject("AliESDHeader"));
   if (header) {
@@ -377,6 +385,17 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
           newtrack->SetID(nacc);
           ++nacc;
         }
+      }
+    }
+  }
+  if (fDoMuonTracks) {
+    TClonesArray *muons = dynamic_cast<TClonesArray*>(objsout->FindObject("MuonTracks"));
+    if (muons) {
+      am->LoadBranch("MuonTracks");
+      Int_t N = esdin->GetNumberOfMuonTracks();
+      for (Int_t i=0; i<N; ++i) {
+        const AliESDMuonTrack *mt = esdin->GetMuonTrack(i);
+        new ((*muons)[i]) AliESDMuonTrack(*mt);
       }
     }
   }
