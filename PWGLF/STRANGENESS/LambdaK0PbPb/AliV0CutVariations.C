@@ -455,6 +455,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
    if (0.4977*lt/pt > 3*2.68) isK0s=kFALSE;
    if (1.1157*lt/pt > 3*7.89) isLambdaBar=isLambda=kFALSE;
 
+   if (fTreeVariablePtArmV0<0.2*TMath::Abs(fTreeVariableAlphaV0)) isK0s=kFALSE;
+
    if (!AcceptPID(kProton)) isLambda=kFALSE;
    if (!AcceptPID(kProtonBar)) isLambdaBar=kFALSE;
 
