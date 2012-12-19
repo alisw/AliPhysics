@@ -15,6 +15,7 @@ AliEsdSkimTask* AddTaskEsdSkim(
   Bool_t sbytes    = kFALSE,
   Bool_t phosclus  = kFALSE,
   Bool_t emcclus   = kFALSE,
+  Bool_t muons     = kFALSE,
   const char *tname = "Tracks",
   const char *filename = "AliSkimmedESD.root"
 )
@@ -40,20 +41,21 @@ AliEsdSkimTask* AddTaskEsdSkim(
   // Init the task and do settings
   //-------------------------------------------------------
   AliEsdSkimTask *task = new AliEsdSkimTask("EmcalSkimTask");
-  task->SetDoTof(tof);
+  task->SetDoClus(clus);
   task->SetDoEmC(emc);
   task->SetDoEmT(emt);
+  task->SetDoMiniTracks(mtracks);
+  task->SetDoMuonTracks(muons);
   task->SetDoPhC(phc);
   task->SetDoPhT(pht);
-  task->SetDoClus(clus);
-  task->SetDoTracks(tracks);
-  task->SetDoMiniTracks(mtracks);
   task->SetDoPicoTracks(ptracks);
+  task->SetDoSaveBytes(sbytes);
+  task->SetDoTof(tof);
+  task->SetDoTracks(tracks);
+  task->SetEmcalClusOnly(emcclus);
+  task->SetPhosClusOnly(phosclus);
   task->SetRemoveCP(remcov);
   task->SetResetCov(rescov);
-  task->SetDoSaveBytes(sbytes);
-  task->SetPhosClusOnly(phosclus);
-  task->SetEmcalClusOnly(emcclus);
   task->SetTracks(tname);
 
   //-------------------------------------------------------
