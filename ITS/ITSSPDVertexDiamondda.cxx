@@ -217,6 +217,8 @@ int main(int argc, char **argv) {
  mv->SetCutOnR(r);
  mv->SetCutOnCls(minClInner,maxClInner);
 
+ gSystem->Exec(Form("rm %s",OUTPUT_FILE));
+
  // Initialization of AMORE sender
 #ifdef ALI_AMORE
  amore::da::AmoreDA vtxAmore(amore::da::AmoreDA::kSender);
