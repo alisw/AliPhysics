@@ -41,3 +41,12 @@ bool AliAnalysisEtReconstructedEmcal::TrackHitsCalorimeter(AliVParticle* track, 
 {
   return  AliAnalysisEtReconstructed::TrackHitsCalorimeter(track, magField);
 }
+
+void AliAnalysisEtReconstructedEmcal::CreateHistograms()
+{ // add some extra histograms & objects to the ones from base class
+  if(!fSelector){
+    cout<<__FILE__<<" "<<"Creating new fSelector"<<endl;
+    fSelector = new AliAnalysisEtSelectorEmcal(fCuts);
+  }
+  AliAnalysisEtReconstructed::CreateHistograms();
+}

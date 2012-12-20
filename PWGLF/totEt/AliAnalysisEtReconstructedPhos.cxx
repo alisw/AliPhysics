@@ -96,5 +96,9 @@ bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, D
 
 void AliAnalysisEtReconstructedPhos::CreateHistograms()
 { // add some extra histograms & objects to the ones from base class
+  if(!fSelector){
+    cout<<__FILE__<<" "<<"Creating new fSelector"<<endl;
+    fSelector = new AliAnalysisEtSelectorPhos(fCuts);
+  }
   AliAnalysisEtReconstructed::CreateHistograms();
 }

@@ -130,6 +130,26 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistClusterMultvsRemovedGamma(0)
     ,fHistMultvsNonRemovedChargedE(0)
     ,fHistMultvsNonRemovedNeutralE(0)
+						  ,fHistK0EDepositsVsPtForEOver000MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver100MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver150MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver200MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver250MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver300MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver350MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver400MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver450MeV(0)
+						  ,fHistK0EDepositsVsPtForEOver500MeV(0)
+						  ,fHistK0EGammaVsPtForEOver000MeV(0)
+						  ,fHistK0EGammaVsPtForEOver100MeV(0)
+						  ,fHistK0EGammaVsPtForEOver150MeV(0)
+						  ,fHistK0EGammaVsPtForEOver200MeV(0)
+						  ,fHistK0EGammaVsPtForEOver250MeV(0)
+						  ,fHistK0EGammaVsPtForEOver300MeV(0)
+						  ,fHistK0EGammaVsPtForEOver350MeV(0)
+						  ,fHistK0EGammaVsPtForEOver400MeV(0)
+						  ,fHistK0EGammaVsPtForEOver450MeV(0)
+						  ,fHistK0EGammaVsPtForEOver500MeV(0)
     ,fHistMultvsRemovedGammaE(0)
     ,fEtNonRemovedProtons(0)
     ,fEtNonRemovedAntiProtons(0)
@@ -302,6 +322,28 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistMultvsNonRemovedChargedE; // enter comment here
     delete fHistMultvsNonRemovedNeutralE; // enter comment here
     delete fHistMultvsRemovedGammaE; // enter comment here
+
+    delete fHistK0EDepositsVsPtForEOver000MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver100MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver150MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver200MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver250MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver300MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver350MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver400MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver450MeV; // enter comment here
+    delete fHistK0EDepositsVsPtForEOver500MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver000MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver100MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver150MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver200MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver250MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver300MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver350MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver400MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver450MeV; // enter comment here
+    delete fHistK0EGammaVsPtForEOver500MeV; // enter comment here
+
     delete fHistDxDzNonRemovedCharged; // enter comment here
     delete fHistDxDzRemovedCharged; // enter comment here
     delete fHistDxDzNonRemovedNeutral; // enter comment here
@@ -580,8 +622,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     {
         Int_t cf = 0;
         AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
-        //Float_t caloE = caloCluster->E();
-
+        //Float_t caloE = caloCluster->E()
         fNClusters++;
         const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
         TParticle *part  =  stack->Particle(iPart);
@@ -601,7 +642,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      //std::cout << primIdx << " = " << stack->GetPrimary(iPart) << std::endl;
 	      //PrintFamilyTree(iPart, stack);
 	    }
-	     
+	    //if it is from a K0S
             if(primIdx < 0)
             {
                 std::cout << "What!? No primary?" << std::endl;
@@ -728,7 +769,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  fEnergyChargedNotRemoved += clEt;
 		  fHistRemovedOrNot->Fill(2.0, fCentClass);
 		  fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-		  PrintFamilyTree(iPart, stack);
+		  //PrintFamilyTree(iPart, stack);
 		}
             }
             else
@@ -742,7 +783,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		}
 		else
 		{
-//  		  PrintFamilyTree(iPart, stack);
+//  		  //PrintFamilyTree(iPart, stack);
 		}
                // if(TMath::Abs(part->Vx()) < 1.0 && TMath::Abs(part->Vy()) < 1.0 && TMath::Abs(part->Vz()) < 20 && fSelector->IsEmEtParticle(primCode))
 		if(fSecondary && fSelector->IsEmEtParticle(primCode))
@@ -836,7 +877,114 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 //  std::cout << "Energy of removed charged: " << fEnergyChargedRemoved << std::endl;
 //  std::cout << "Energy of non-removed charged: " << fEnergyChargedNotRemoved << std::endl;
 //  std::cout << "Energy of non-removed neutral: " << fEnergyNeutralNotRemoved << std::endl;
+    Float_t etCuts[10] = {0.0,0.1,0.15,0.2,0.25, 0.3,0.35,0.4,0.45,0.5};
+    Int_t nEtCuts = 10;
+    //loop over simulated particles in order to find K0S
+    for (Int_t iPart = 0; iPart < stack->GetNtrack(); iPart++){
+      TParticle *part = stack->Particle(iPart);
+      if (!part){
+	//Printf("ERROR: Could not get particle %d", iPart);
+	continue;
+      }
+      TParticlePDG *pdg = part->GetPDG(0);
+      if (!pdg){
+	//Printf("ERROR: Could not get particle PDG %d", iPart);
+	continue;
+      }
+      
+      if(stack->IsPhysicalPrimary(iPart)){//if it is a K0 it might have decayed into four pions
+	//fgK0SCode, fgGammaCode, fgPi0Code
+	Int_t code = pdg->PdgCode();
+	if(code == fgK0SCode){//this is a K0S
+	  if(stack->Particle(iPart)->GetNDaughters()==2){//it has two daughters
+	    Int_t daughterID = stack->Particle(iPart)->GetFirstDaughter();
+	    if(stack->Particle(daughterID)->GetPDG(0)->PdgCode()==fgPi0Code){//and it decayed into a pi0
+	      //cout<<"I am a gamma from a pi0 from a K0S"<<endl;
+	      Float_t pTk0 = stack->Particle(iPart)->Pt();
+	      Int_t gammaDaughterIDs[6] = {0,0,0,0,0,0};
+	      Float_t gammaEts[4] = {0.0,0.0,0.0,0.0};
+	      Float_t totalGammaEts[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+	      Float_t totalClusterEts[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+	      gammaDaughterIDs[4] = stack->Particle(iPart)->GetDaughter(0);
+	      gammaDaughterIDs[5] = stack->Particle(iPart)->GetDaughter(1);
+	      gammaDaughterIDs[0] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(0);
+	      gammaDaughterIDs[1] = stack->Particle(gammaDaughterIDs[4])->GetDaughter(1);
+	      gammaDaughterIDs[2] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(0);
+	      gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
+	      for(int k=0;k<4;k++){
+		gammaEts[k] = stack->Particle(gammaDaughterIDs[4])->Energy() * TMath::Sin(stack->Particle(gammaDaughterIDs[4])->Theta() );
+	      }
+	      //does not always have all of the daughters
+	      if(gammaDaughterIDs[0]==gammaDaughterIDs[1]){
+		gammaDaughterIDs[1] = -1;
+		gammaEts[1] = 0.0;
+		//cout<<"Duplicates.  This has "<<stack->Particle(gammaDaughterIDs[4])->GetNDaughters()<<" daughters"<<endl;
+	      }
+	      if(gammaDaughterIDs[2]==gammaDaughterIDs[3]){
+		gammaDaughterIDs[3] = -1;
+		gammaEts[3] = 0.0;
+		//cout<<"Duplicates.  This has "<<stack->Particle(gammaDaughterIDs[5])->GetNDaughters()<<" daughters"<<endl;
+	      }
+// 	      cout<<"My daughters are ";
+// 	      for(int j=0;j<6;j++){
+// 		cout <<gammaDaughterIDs[j]<<" ";
+// 		if(gammaDaughterIDs[j]>=0) cout<<stack->Particle(gammaDaughterIDs[j])->GetName();
+// 		cout<<",";
+// 	      }
+// 	      cout<<endl;
+	      for(int l=0;l<nEtCuts;l++){//loop over cut values
+		for(int k=0;k<4;k++){//loop over gamma daughter energies
+		  if(gammaEts[k]>=etCuts[l]){
+		    totalGammaEts[l] += gammaEts[k];//if gamma et is above the cut off energy add it
+		  }
+		}
+	      }
 
+	      float energyMeasured = 0.0;
+	      for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of our K0S
+		AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
+		const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+		for(int j=0;j<6;j++){
+		  if(myPart==gammaDaughterIDs[j]){
+		    cout<<"Found a matching cluster!";//<<endl;
+		    Double_t clEt = CalculateTransverseEnergy(*caloCluster);
+		    cout<<" it has energy "<<clEt<<endl;
+		    for(int l=0;l<nEtCuts;l++){//loop over cut values
+		      if(clEt>=etCuts[l]){
+			totalClusterEts[l] += clEt;//if cluster et is above the cut off energy add it
+		      }
+		    }
+
+		  }
+		}
+	      }
+	      //now we have the total energy measured for each case
+	      fHistK0EDepositsVsPtForEOver000MeV->Fill(pTk0,totalClusterEts[0]);
+	      fHistK0EDepositsVsPtForEOver100MeV->Fill(pTk0,totalClusterEts[1]);
+	      fHistK0EDepositsVsPtForEOver150MeV->Fill(pTk0,totalClusterEts[2]);
+	      fHistK0EDepositsVsPtForEOver200MeV->Fill(pTk0,totalClusterEts[3]);
+	      fHistK0EDepositsVsPtForEOver250MeV->Fill(pTk0,totalClusterEts[4]);
+	      fHistK0EDepositsVsPtForEOver300MeV->Fill(pTk0,totalClusterEts[5]);
+	      fHistK0EDepositsVsPtForEOver350MeV->Fill(pTk0,totalClusterEts[6]);
+	      fHistK0EDepositsVsPtForEOver400MeV->Fill(pTk0,totalClusterEts[7]);
+	      fHistK0EDepositsVsPtForEOver450MeV->Fill(pTk0,totalClusterEts[8]);
+	      fHistK0EDepositsVsPtForEOver500MeV->Fill(pTk0,totalClusterEts[9]);
+	      fHistK0EGammaVsPtForEOver000MeV->Fill(pTk0,totalGammaEts[0]);
+	      fHistK0EGammaVsPtForEOver100MeV->Fill(pTk0,totalGammaEts[1]);
+	      fHistK0EGammaVsPtForEOver150MeV->Fill(pTk0,totalGammaEts[2]);
+	      fHistK0EGammaVsPtForEOver200MeV->Fill(pTk0,totalGammaEts[3]);
+	      fHistK0EGammaVsPtForEOver250MeV->Fill(pTk0,totalGammaEts[4]);
+	      fHistK0EGammaVsPtForEOver300MeV->Fill(pTk0,totalGammaEts[5]);
+	      fHistK0EGammaVsPtForEOver350MeV->Fill(pTk0,totalGammaEts[6]);
+	      fHistK0EGammaVsPtForEOver400MeV->Fill(pTk0,totalGammaEts[7]);
+	      fHistK0EGammaVsPtForEOver450MeV->Fill(pTk0,totalGammaEts[8]);
+	      fHistK0EGammaVsPtForEOver500MeV->Fill(pTk0,totalGammaEts[9]);
+	    }
+	  }
+	}
+      }
+    }
+    
     FillHistograms();
     return 0;
 }
@@ -1064,6 +1212,27 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistDxDzNonRemovedNeutral = new TH2F("fHistDxDzNonRemovedNeutral", "fHistDxDzNonRemovedNeutral", 800, -200, 200, 800, -200, 200);
     fHistDxDzRemovedNeutral = new TH2F("fHistDxDzRemovedNeutral", "fHistDxDzRemovedNeutral", 800, -200, 200, 800, -200, 200);
 
+    fHistK0EDepositsVsPtForEOver000MeV = new TH2F("fHistK0EDepositsVsPtForEOver000MeV","K^{0}_{S} deposits over 0 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver100MeV = new TH2F("fHistK0EDepositsVsPtForEOver100MeV","K^{0}_{S} deposits over 100 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver150MeV = new TH2F("fHistK0EDepositsVsPtForEOver150MeV","K^{0}_{S} deposits over 150 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver200MeV = new TH2F("fHistK0EDepositsVsPtForEOver200MeV","K^{0}_{S} deposits over 200 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver250MeV = new TH2F("fHistK0EDepositsVsPtForEOver250MeV","K^{0}_{S} deposits over 250 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver300MeV = new TH2F("fHistK0EDepositsVsPtForEOver300MeV","K^{0}_{S} deposits over 300 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver350MeV = new TH2F("fHistK0EDepositsVsPtForEOver350MeV","K^{0}_{S} deposits over 350 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver400MeV = new TH2F("fHistK0EDepositsVsPtForEOver400MeV","K^{0}_{S} deposits over 400 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver450MeV = new TH2F("fHistK0EDepositsVsPtForEOver450MeV","K^{0}_{S} deposits over 450 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EDepositsVsPtForEOver500MeV = new TH2F("fHistK0EDepositsVsPtForEOver500MeV","K^{0}_{S} deposits over 500 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver000MeV = new TH2F("fHistK0EGammaVsPtForEOver000MeV","K^{0}_{S} gamma over 0 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver100MeV = new TH2F("fHistK0EGammaVsPtForEOver100MeV","K^{0}_{S} gamma over 100 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver150MeV = new TH2F("fHistK0EGammaVsPtForEOver150MeV","K^{0}_{S} gamma over 150 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver200MeV = new TH2F("fHistK0EGammaVsPtForEOver200MeV","K^{0}_{S} gamma over 200 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver250MeV = new TH2F("fHistK0EGammaVsPtForEOver250MeV","K^{0}_{S} gamma over 250 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver300MeV = new TH2F("fHistK0EGammaVsPtForEOver300MeV","K^{0}_{S} gamma over 300 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver350MeV = new TH2F("fHistK0EGammaVsPtForEOver350MeV","K^{0}_{S} gamma over 350 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver400MeV = new TH2F("fHistK0EGammaVsPtForEOver400MeV","K^{0}_{S} gamma over 400 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver450MeV = new TH2F("fHistK0EGammaVsPtForEOver450MeV","K^{0}_{S} gamma over 450 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+    fHistK0EGammaVsPtForEOver500MeV = new TH2F("fHistK0EGammaVsPtForEOver500MeV","K^{0}_{S} gamma over 500 MeV",fgNumOfPtBins,fgPtAxis,fgNumOfPtBins,fgPtAxis);
+
     fHistPiPlusMult = new TH1F("fHistPiPlusMult", "fHistPiPlusMult", 2000, -0.5, 1999.5);
     fHistPiMinusMult = new TH1F("fHistPiMinusMult", "fHistPiMinusMult", 2000, -0.5, 1999.5);
     fHistPiZeroMult = new TH1F("fHistPiZeroMult", "fHistPiZeroMult", 2000, -0.5, 1999.5);
@@ -1206,6 +1375,27 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistDxDzRemovedCharged);
     list->Add(fHistDxDzNonRemovedNeutral);
     list->Add(fHistDxDzRemovedNeutral);
+
+    list->Add(fHistK0EDepositsVsPtForEOver000MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver100MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver150MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver200MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver250MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver300MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver350MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver400MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver450MeV);
+    list->Add(fHistK0EDepositsVsPtForEOver500MeV);
+    list->Add(fHistK0EGammaVsPtForEOver000MeV);
+    list->Add(fHistK0EGammaVsPtForEOver100MeV);
+    list->Add(fHistK0EGammaVsPtForEOver150MeV);
+    list->Add(fHistK0EGammaVsPtForEOver200MeV);
+    list->Add(fHistK0EGammaVsPtForEOver250MeV);
+    list->Add(fHistK0EGammaVsPtForEOver300MeV);
+    list->Add(fHistK0EGammaVsPtForEOver350MeV);
+    list->Add(fHistK0EGammaVsPtForEOver400MeV);
+    list->Add(fHistK0EGammaVsPtForEOver450MeV);
+    list->Add(fHistK0EGammaVsPtForEOver500MeV);
 
     list->Add(fHistPiPlusMult);
     list->Add(fHistPiMinusMult);
@@ -1427,13 +1617,13 @@ Int_t AliAnalysisEtMonteCarlo::GetK0InFamily(Int_t partIdx, AliStack* stack)
 { // get K0 in family
     if(partIdx >= 0)
     {
-        if(stack->Particle(partIdx)->GetPdgCode() == fgPi0Code) return partIdx;
+        if(stack->Particle(partIdx)->GetPdgCode() == fgK0SCode) return partIdx;
         Int_t mothIdx = stack->Particle(partIdx)->GetMother(0);
         if(mothIdx < 0) return -1;
         TParticle *mother = stack->Particle(mothIdx);
         if(mother)
         {
-            if(mother->GetPdgCode() == fgPi0Code)
+	  if(mother->GetPdgCode() == fgK0SCode)
             {
                 return mothIdx;
             }

@@ -19,6 +19,7 @@ public:
     virtual ~AliAnalysisEtMonteCarloEmcal();
 
     virtual void Init();
+    void CreateHistograms();
 
  private:
 

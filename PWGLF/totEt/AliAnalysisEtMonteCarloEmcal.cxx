@@ -34,3 +34,13 @@ void AliAnalysisEtMonteCarloEmcal::Init()
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
 }
+
+
+void AliAnalysisEtMonteCarloEmcal::CreateHistograms()
+{ // add some extra histograms & objects to the ones from base class
+  if(!fSelector){
+    cout<<__FILE__<<" "<<"Creating new fSelector"<<endl;
+    fSelector = new AliAnalysisEtSelectorEmcal(fCuts);
+  }
+  AliAnalysisEtMonteCarlo::CreateHistograms();
+}

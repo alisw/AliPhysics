@@ -20,6 +20,7 @@ public:
     virtual ~AliAnalysisEtMonteCarloPhos();
 
     virtual void Init();
+    void CreateHistograms();
 protected:
       virtual Bool_t TooCloseToBadChannel(const AliESDCaloCluster &cluster) const;
 

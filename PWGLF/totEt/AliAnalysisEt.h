@@ -15,6 +15,9 @@
 #include "AliAnalysisEtTrackMatchCorrections.h"
 #include <vector>
 #include "Rtypes.h"
+#include "AliAnalysisEtSelector.h"
+#include "AliAnalysisEtSelectorEmcal.h"
+#include "AliAnalysisEtSelectorPhos.h"
 
 class AliAnalysisEtRecEffCorrection;
 class AliAnalysisEtTrackMatchCorrections;

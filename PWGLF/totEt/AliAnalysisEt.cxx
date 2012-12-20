@@ -679,6 +679,7 @@ Int_t AliAnalysisEt::ReadCorrections(TString filename)
     {
       det = "Emcal";
     }
+    cout<<"Histo name suffix "<<fHistogramNameSuffix<<endl;
     TString name = "TmCorrections" + det;
     std::cout << name << std::endl;
     fTmCorrections = dynamic_cast<AliAnalysisEtTrackMatchCorrections*>(f->Get(name));
