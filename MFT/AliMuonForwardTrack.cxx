@@ -545,7 +545,6 @@ Bool_t AliMuonForwardTrack::IsPDGBeauty(Int_t pdg) {
 
 //====================================================================================================================================================
 
-
 Bool_t AliMuonForwardTrack::IsFromBackground() {
 
   Bool_t result = kFALSE;
