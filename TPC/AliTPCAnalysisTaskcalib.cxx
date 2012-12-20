@@ -62,7 +62,12 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name)
   // Constructor
   //
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TObjArray::Class());
+  DefineOutput(0, AliTPCcalibBase::Class());
+  DefineOutput(1, AliTPCcalibBase::Class());
+  DefineOutput(2, AliTPCcalibBase::Class());
+  DefineOutput(3, AliTPCcalibBase::Class());
+  DefineOutput(4, AliTPCcalibBase::Class());
+  DefineOutput(5, AliTPCcalibBase::Class());
   fCalibJobs = new TObjArray(0);
   fCalibJobs->SetOwner(kTRUE);
 }
@@ -106,7 +111,6 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     if (seed)
       Process(seed);
   }
-  PostData(0,fCalibJobs);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
@@ -135,7 +139,11 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //OpenFile(0, "RECREATE");
 
-  PostData(0,fCalibJobs);
+  for (Int_t i=0; i<fCalibJobs->GetEntries(); i++)
+  {
+    if (fCalibJobs->At(i))
+      PostData(i,(AliTPCcalibBase*)fCalibJobs->At(i));
+  }
 }
 
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {

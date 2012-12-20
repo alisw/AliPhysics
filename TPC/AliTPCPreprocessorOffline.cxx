@@ -51,6 +51,7 @@
 #include "TGraphErrors.h"
 #include "AliExternalTrackParam.h"
 #include "TFile.h"
+#include "TDirectory.h"
 #include "TGraph.h"
 #include "TMultiGraph.h"
 #include "TCanvas.h"
@@ -192,8 +193,13 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   //
   // 1. Initialization and run range setting
   TFile fcalib(file);
-  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-  if (array){
+  TObject* obj = dynamic_cast<TObject*>(fcalib.Get("TPCCalib"));
+  TObjArray* array = dynamic_cast<TObjArray*>(obj);
+  TDirectory* dir = dynamic_cast<TDirectory*>(obj);
+  if (dir) {
+    fTimeDrift = dynamic_cast<AliTPCcalibTime*>(dir->Get("calibTime"));
+  }
+  else if (array){
     fTimeDrift = (AliTPCcalibTime *)array->FindObject("calibTime");
   } else {
     fTimeDrift = (AliTPCcalibTime*)fcalib.Get("calibTime");
@@ -918,8 +924,15 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   // read calibration entries from file
   // 
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-  if (array){
+  TObject* obj = dynamic_cast<TObject*>(fcalib.Get("TPCCalib"));
+  TObjArray * array = dynamic_cast<TObjArray*>(obj);
+  TDirectory * dir = dynamic_cast<TDirectory*>(obj);
+  if (dir) {
+    fGainMIP    = dynamic_cast<AliTPCcalibTimeGain *>(dir->Get("calibTimeGain"));
+    fGainCosmic = dynamic_cast<AliTPCcalibTimeGain *>(dir->Get("calibTimeGainCosmic"));
+    fGainMult   = dynamic_cast<AliTPCcalibGainMult *>(dir->Get("calibGainMult"));
+  }
+  else if (array){
     fGainMIP    = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGain");
     fGainCosmic = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGainCosmic");
     fGainMult   = ( AliTPCcalibGainMult *)array->FindObject("calibGainMult");
@@ -1362,8 +1375,13 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
   const char * hname[5]={"dy","dz","dsnp","dtheta","d1pt"};
   Int_t run=0;
   AliTPCcalibTime  *calibTime = 0;
-  TObjArray * array = (TObjArray*)f.Get("TPCCalib");
-  if (array){
+  TObject* obj = dynamic_cast<TObject*>(f.Get("TPCCalib"));
+  TObjArray * array = dynamic_cast<TObjArray*>(obj);
+  TDirectory * dir = dynamic_cast<TDirectory*>(obj);
+  if (dir) {
+    calibTime = dynamic_cast<AliTPCcalibTime*>(dir->Get("calibTime"));
+  }
+  else if (array){
     calibTime = (AliTPCcalibTime *)array->FindObject("calibTime");
   } else {
     calibTime = (AliTPCcalibTime*)f.Get("calibTime");
