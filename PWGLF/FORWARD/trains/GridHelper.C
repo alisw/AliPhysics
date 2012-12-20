@@ -90,6 +90,7 @@ struct GridHelper : public PluginHelper
     fOptions.Add("pattern","GLOB",   "File/directory name pattern");
     fOptions.Add("alien",  "VERSION","Alien API version",              "V1.1x");
     fOptions.Add("concat", "Concatenate all runs");
+    fOptions.Add("ttl",    "N|max",  "Time to live",                    "max");
   }
   GridHelper(const GridHelper& o)
     : PluginHelper(o), fRuns()
@@ -295,7 +296,11 @@ struct GridHelper : public PluginHelper
     fHandler->SetNtestFiles(1);
 
     // --- Set the Time-To-Live --------------------------------------
-    fHandler->SetTTL(70000);
+    if (fOptions.Has("ttl")) { 
+      if (!fOptions.Get("ttl").EqualTo("max")) {
+	fHandler->SetTTL(fOptions.AsInt("ttl"));
+      }
+    }
     
     // --- Re-submit failed jobs as long as the ratio of failed jobs -
     // --- is this percentage.
