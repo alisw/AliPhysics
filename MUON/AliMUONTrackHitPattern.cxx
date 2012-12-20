@@ -137,7 +137,13 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
     trackParam.SetBendingSlope(triggerTrack->GetSlopeY());
     trackParam.SetInverseBendingMomentum(1.);
     UInt_t pattern = GetHitPattern(trackParam, kTRUE);
-    triggerTrack->SetHitsPatternInTrigCh(pattern);    
+    // The pattern is a UInt_t, including the information
+    // on the matched local board,
+    // but for backward compatibility we fill a UShort_t
+    // which do not contain such info.
+    // In the old pattern, we use 15 bits out of 16, so the last one should
+    // be masked or it will be filled with 1 bit with the local board info.
+    triggerTrack->SetHitsPatternInTrigCh((UShort_t)(pattern & 0x7FFF));
     AliDebug(1, Form("Hit pattern (MTR): hits 0x%x  slat %2i  board %3i  effFlag %i",
                      pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern),triggerTrack->GetLoTrgNum(), AliESDMuonTrack::GetEffFlag(pattern)));
   }
