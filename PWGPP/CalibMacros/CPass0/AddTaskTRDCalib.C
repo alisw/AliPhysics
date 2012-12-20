@@ -50,7 +50,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   // Disabling TRD CPAss0 as per https://savannah.cern.ch/bugs/?88813
   //calibTask->SetMaxEvent(-1);
   
-  calibTask->SetMaxNbTracks(1600);
+  calibTask->SetMaxNbTracks(999999999);
   calibTask->SetHisto2d(kTRUE);
   calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);
@@ -100,6 +100,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
   trackCuts->SetRequireTPCRefit(kTRUE);
   trackCuts->SetRequireITSRefit(kTRUE);
+  trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   //trackCuts->SetMinNsigmaToVertex(10);
   trackCuts->SetRequireSigmaToVertex(kFALSE);
   trackCuts->SetAcceptKinkDaughters(kFALSE);
