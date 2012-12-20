@@ -94,6 +94,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         AliFatal("ERROR: ESD Event does not exist");
         return 0;
     }
+    if(!fSelector){
+        AliFatal("ERROR: fSelector does not exist");
+        return 0;
+    }
     fSelector->SetEvent(event);
     
     Int_t cent = -1;

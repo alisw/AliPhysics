@@ -173,6 +173,28 @@ protected:
     TH2F *fHistMultvsNonRemovedNeutralE; // enter comment here
     TH2F *fHistMultvsRemovedGammaE; // enter comment here
 
+    TH2F *fHistK0EDepositsVsPtForEOver000MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver100MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver150MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver200MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver250MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver300MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver350MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver400MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver450MeV; // enter comment here
+    TH2F *fHistK0EDepositsVsPtForEOver500MeV; // enter comment here
+
+    TH2F *fHistK0EGammaVsPtForEOver000MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver100MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver150MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver200MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver250MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver300MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver350MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver400MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver450MeV; // enter comment here
+    TH2F *fHistK0EGammaVsPtForEOver500MeV; // enter comment here
+
     Float_t fEtNonRemovedProtons; // enter comment here
     Float_t fEtNonRemovedAntiProtons; // enter comment here
     Float_t fEtNonRemovedPiPlus; // enter comment here
