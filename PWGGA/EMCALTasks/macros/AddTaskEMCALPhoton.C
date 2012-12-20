@@ -63,8 +63,10 @@ AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("photon_ana_out", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 1, coutput1 );
+  mgr->ConnectOutput (ana, 2, coutput2 );
    
   return ana;
 }

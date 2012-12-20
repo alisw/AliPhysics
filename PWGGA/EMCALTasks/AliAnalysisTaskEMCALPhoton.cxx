@@ -199,7 +199,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
 
   if( !fTree){
-    TFile *f = OpenFile(1); 
+    TFile *f = OpenFile(2); 
     TDirectory::TContext context(f);
     if (f) {
       f->SetCompressionLevel(2);
@@ -224,7 +224,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
       fTree->Branch("mcparts", &fMyMcParts, 8*16*1024, 99);
     }
   }
-  if(fIsGrid)fOutputList->Add(fTree);
+  //if(fIsGrid)fOutputList->Add(fTree);
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
   
   
@@ -881,7 +881,7 @@ void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *)
 /*  if(fIsGrid)
     return;*/
   if (fTree) {
-    TFile *f = OpenFile(1);
+    TFile *f = OpenFile(2);
     TDirectory::TContext context(f);
     if (f) 
       fTree->Write();
