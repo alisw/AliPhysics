@@ -7,6 +7,7 @@
 #include "TFormula.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TAxis.h"
 #include "TProfile2D.h"
 #include "TROOT.h"
@@ -20,6 +21,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDMuonTrack.h"
 #include "AliPool.h"
 #include "AliVParticle.h"
 
@@ -28,16 +30,39 @@ using std::endl;
 
 ClassImp(AliDhcTask)
 
+
 //________________________________________________________________________
-AliDhcTask::AliDhcTask(const char *name) 
-: AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
-  fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(0),
-  fESD(0), fAOD(0), fOutputList(0), fHEvt(0), fHTrk(0), fHPtAss(0), fHPtTrg(0), fHPtTrg_Evt(0),
-  fHCent(0), fHZvtx(0), fNbins(0), fHSs(0), fHMs(0), fHPts(0), fIndex(0), 
+AliDhcTask::AliDhcTask()
+: AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
+  fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
+  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
+  fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
+  fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
-  fMixBCent(0x0), fMixBZvtx(0x0)
+  fMixBCent(0x0), fMixBZvtx(0x0),
+  fHEffT(0x0), fHEffA(0x0)
+{
+  
+}
+
+//________________________________________________________________________
+AliDhcTask::AliDhcTask(const char *name) 
+: AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
+  fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
+  fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
+  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
+  fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
+  fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fIndex(0x0),
+  fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
+  fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
+  fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
+  fMixBCent(0x0), fMixBZvtx(0x0),
+  fHEffT(0x0), fHEffA(0x0)
 {
   // Constructor
 
@@ -70,6 +95,14 @@ void AliDhcTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (per slave on PROOF!)
+  if (fVerbosity > 1) {
+    AliInfo("Initialize Dhc Task");
+    AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
+    AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
+    AliInfo(Form(" fill muons? %d", fFillMuons));
+    AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
+    AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
+  }
 
   fOutputList = new TList();
   fOutputList->SetOwner(1);
@@ -135,7 +168,16 @@ void AliDhcTask::BookHistos()
   fOutputList->Add(fHPtAss);
   fHPtTrg = new TH1F("fHPtTrg","PtTrig;P_{T} (GeV/c) [GeV/c]",nPtTrig,ptt);
   fOutputList->Add(fHPtTrg);
-  fHPtTrg_Evt = (TH1*) fHPtTrg->Clone("fHPtTrg_Evt");
+  fHPtTrgEvt = new TH1F("fHPtTrgEvt","PtTrig;P_{T} (GeV/c) [GeV/c]",nPtTrig,ptt);
+  fHPtTrgNorm1S = new TH3F("fHPtTrgNorm1S","PtTrig;P_{T} (GeV/c) [GeV/c];centrality;z_{vtx}",nPtTrig,ptt,nCent,cent,nZvtx,zvtx);
+  fOutputList->Add(fHPtTrgNorm1S);
+  fHPtTrgNorm1M = (TH3*) fHPtTrgNorm1S->Clone("fHPtTrgNorm1M");
+  fOutputList->Add(fHPtTrgNorm1M);
+  fHPtTrgNorm2S = (TH3*) fHPtTrgNorm1S->Clone("fHPtTrgNorm2S");
+  fOutputList->Add(fHPtTrgNorm2S);
+  fHPtTrgNorm2M = (TH3*) fHPtTrgNorm1S->Clone("fHPtTrgNorm2M");
+  fOutputList->Add(fHPtTrgNorm2M);
+
   fHCent = new TH1F("fHCent","Cent;bins",nCent,cent);
   fOutputList->Add(fHCent);
   fHZvtx = new TH1F("fHZvtx","Zvertex;bins",nZvtx,zvtx);
@@ -149,7 +191,7 @@ void AliDhcTask::BookHistos()
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
-  //fOutputList->Add(fIndex);
+  fOutputList->Add(fIndex);
 
   Int_t count = 0;
   for (Int_t c=1; c<=nCent; ++c) {
@@ -194,6 +236,50 @@ void AliDhcTask::BookHistos()
 }
 
 //________________________________________________________________________
+void AliDhcTask::SetAnaMode(Int_t iAna=kHH)
+{
+  if (iAna==kHH) {
+    SetFillMuons(kFALSE);
+    fEtaTLo = -1.0;
+    fEtaTHi = 1.0;
+    fEtaALo = -1.0;
+    fEtaAHi = 1.0;
+  } else if (iAna==kMuH) {
+    SetFillMuons(kTRUE);
+    fEtaTLo = -5.0;
+    fEtaTHi = -2.0;
+    fEtaALo = -1.0;
+    fEtaAHi = 1.0;
+  } else if (iAna==kHMu) {
+    SetFillMuons(kTRUE);
+    fEtaTLo = -1.0;
+    fEtaTHi = 1.0;
+    fEtaALo = -5.0;
+    fEtaAHi = -2.0;
+  } else if (iAna==kMuMu) {
+    SetFillMuons(kTRUE);
+    fEtaTLo = -5.0;
+    fEtaTHi = -2.0;
+    fEtaALo = -5.0;
+    fEtaAHi = -2.0;
+  } else if (iAna==kPSide) {
+    SetFillMuons(kFALSE);
+    fEtaTLo = -1.0;
+    fEtaTHi = -0.465;
+    fEtaALo = -1.0;
+    fEtaAHi = -0.465;
+  } else if (iAna==kASide) {
+    SetFillMuons(kFALSE);
+    fEtaTLo = -0.465;
+    fEtaTHi = 1.0;
+    fEtaALo = -0.465;
+    fEtaAHi = 1.0;
+  } else {
+    AliInfo(Form("Unrecognized analysis option: %d", iAna));
+  }
+}
+
+//________________________________________________________________________
 void AliDhcTask::InitEventMixer()
 {
   // The effective pool size in events is set by trackDepth, so more
@@ -228,7 +314,6 @@ void AliDhcTask::InitEventMixer()
 void AliDhcTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
   static int iEvent = -1; ++iEvent;
 
   if (fVerbosity>2) {
@@ -261,7 +346,9 @@ void AliDhcTask::UserExec(Option_t *)
   if (mcgen) {
     fZVertex = 0;
     TList *list = InputEvent()->GetList();
-    TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
+    TClonesArray *tcaTracks = 0;
+    if (list) 
+      tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
     if (tcaTracks) 
       fCentrality = tcaTracks->GetEntries();
   } else {
@@ -419,6 +506,19 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
       arr.Add(newtrack);
       nSelTrax++;
     }
+
+    for(Int_t itrack = 0; itrack < nSelTrax; itrack++) {
+      AliVTrack *esdtrack = static_cast<AliESDtrack*>(arr.At(itrack));
+      if(!esdtrack) {
+        AliError(Form("ERROR: Could not retrieve esdtrack %d",itrack));
+        continue;
+      }
+      Double_t pt = esdtrack->Pt();
+      Double_t eta  = esdtrack->Eta();
+      Double_t phi  = esdtrack->Phi();
+      Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
+      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+    }
     return;
   }
 
@@ -443,6 +543,32 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
     Double_t phi  = esdtrack->Phi();
     Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
     miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+  }
+
+  if (fFillMuons) {
+    Double_t ptMu, etaMu, phiMu;
+    Int_t signMu;
+    // count good muons
+    Int_t nGoodMuons = 0;
+    for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
+      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
+      if(muonTrack) {
+          if (IsGoodMUONtrack(*muonTrack)) nGoodMuons++;
+      }
+    }
+    miniEvt->reserve(miniEvt->size()+nGoodMuons);
+    // fill them into the mini event
+    for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
+      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
+      if(muonTrack) {
+        if(!IsGoodMUONtrack(*muonTrack)) continue;
+        ptMu   = muonTrack->Pt();
+        etaMu  = muonTrack->Eta();
+        phiMu  = muonTrack->Phi();
+        signMu = muonTrack->Charge() > 0 ? 1 : -1;
+        miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
+      }
+    }
   }
 }
 
@@ -566,69 +692,116 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
   Int_t ptindex = (Int_t)fIndex->Eval(1,1,zbin,cbin);
 
-  fHPtTrg_Evt->Reset();
+  fHPtTrgEvt->Reset();
   for (Int_t i=0; i<iMax; ++i) {
     const AliMiniTrack &a(evt1.at(i));
     Float_t pta  = a.Pt();
-    fHPtTrg_Evt->Fill(pta);
+    fHPtTrgEvt->Fill(pta);
     if (pairing == kSameEvt) {
       fHPts[ptindex]->Fill(pta);
     }
   }
 
-  for (Int_t i=0; i<iMax; ++i) {
+  Bool_t bCountTrg; // only count the trigger if an associated particle is found
 
+  for (Int_t i=0; i<iMax; ++i) {
     // Trigger particles
     const AliMiniTrack &a(evt1.at(i));
 
     Float_t pta  = a.Pt();
+    Float_t etaa = a.Eta();
     Int_t abin = fHPtTrg->FindBin(pta);
-    if (fHPtTrg->IsBinOverflow(abin) ||
-	fHPtTrg->IsBinUnderflow(abin))
+    if (fHPtTrg->IsBinOverflow(abin) || fHPtTrg->IsBinUnderflow(abin))
       continue;
 
-    if (pairing == kSameEvt) {
-      fHTrk->Fill(a.Phi(),a.Eta());
-      fHPtTrg->AddBinContent(abin);
+    if (etaa<fEtaTLo || etaa>fEtaTHi)
+      continue;
+
+    // efficiency weighting
+    Int_t effBin[4];
+    Double_t effWtT = 1.0;
+    if (fHEffT) {
+      // trigger particle
+      effBin[0] = fHEffT->GetAxis(0)->FindBin(etaa);
+      effBin[1] = fHEffT->GetAxis(1)->FindBin(pta);
+      effBin[2] = fHEffT->GetAxis(2)->FindBin(fCentrality);
+      effBin[3] = fHEffT->GetAxis(3)->FindBin(fZVertex);
+      effWtT = fHEffT->GetBinContent(effBin);
     }
+    
+    if (pairing == kSameEvt) {
+      fHTrk->Fill(a.Phi(),etaa);
+      fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
+    } else {
+      fHPtTrgNorm1M->Fill(pta,fCentrality,fZVertex,effWtT);
+    }
+    bCountTrg = kFALSE;
 
     for (Int_t j=0; j<jMax; ++j) {
       // Associated particles
       if (pairing == kSameEvt && i==j)
-	continue;
+        continue;
 
       const AliMiniTrack &b(evt2.at(j));
       
       Float_t ptb  = b.Pt();
-      if (pta < ptb) 
-	continue;
+      Float_t etab = b.Eta();
+      if (pta < ptb)
+	    continue;
 
       Int_t bbin = fHPtAss->FindBin(ptb);
-      if (fHPtAss->IsBinOverflow(bbin) ||
-	  fHPtAss->IsBinUnderflow(bbin))
-	continue;
+      if (fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))
+        continue;
+
+      if (etab<fEtaALo || etab>fEtaAHi)
+        continue;
 
       Float_t dphi = DeltaPhi(a.Phi(), b.Phi());
-      Float_t deta = a.Eta() - b.Eta();
+      Float_t deta = etaa - etab;
 
       Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
       Double_t weight = 1.0;
-      if (fDoWeights) 
-        weight = fHPtTrg_Evt->GetBinContent(abin);
-
-      if (weight==0.0) {
-        AliError(Form("Trying to work with weight = %f",weight));
-      } else {
-        hist[index]->Fill(dphi,deta,1./weight);
+      // number of trigger weight event-by-event (CMS method)
+      if (fDoWeights) {
+        Double_t nTrgs = fHPtTrgEvt->GetBinContent(abin);
+        if (nTrgs==0.0) {
+          AliError(Form("Trying to work with number of triggers weight = %f",nTrgs));
+          return 0;
+        }
+        weight *= 1./nTrgs;
       }
 
+      // efficiency weighting
+      if (fHEffT) {
+        // trigger particle
+        weight *= effWtT;
+      }
+      if (fHEffA) {
+        // associated particle
+        effBin[0] = fHEffA->GetAxis(0)->FindBin(etab);
+        effBin[1] = fHEffA->GetAxis(1)->FindBin(ptb);
+        effBin[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
+        effBin[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
+        weight *= fHEffA->GetBinContent(effBin);
+      }
+
+      hist[index]->Fill(dphi,deta,weight);
+      bCountTrg = kTRUE;
+
       if (pairing == kSameEvt) {
-	fHPtAss->AddBinContent(bbin);
+        fHPtAss->AddBinContent(bbin);
+      }
+    }
+    if (bCountTrg) {
+      if (pairing == kSameEvt) {
+        fHPtTrgNorm2S->Fill(pta,fCentrality,fZVertex,effWtT);
+      } else {
+        fHPtTrgNorm2M->Fill(pta,fCentrality,fZVertex,effWtT);
       }
     }
   }
 
-  return 0;
+  return 1;
 }
 
 //________________________________________________________________________
@@ -682,4 +855,20 @@ Bool_t AliDhcTask::VertexOk(TObject* obj) const
   }
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliDhcTask::IsGoodMUONtrack(AliESDMuonTrack &track)
+{
+    // Applying track cuts for MUON tracks
+    if(!track.ContainTrackerData()) return kFALSE;
+    if(!track.ContainTriggerData()) return kFALSE;
+    Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
+    Double_t eta = track.Eta();
+    if(!(thetaTrackAbsEnd >= 2. && thetaTrackAbsEnd <= 10. && eta >= -4. && eta <= -2.5)) return kFALSE;
+    if(track.GetMatchTrigger() <= 0) return kFALSE;
+    // if(track.Pt() <= 1.0) return kFALSE;
+    //  if(track.GetNormalizedChi2() >= 4.0) return kFALSE;
+    
+    return kTRUE;
 }

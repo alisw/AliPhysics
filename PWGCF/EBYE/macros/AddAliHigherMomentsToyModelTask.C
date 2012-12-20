@@ -8,7 +8,7 @@
 TString fileNameBase="AnalysisResults.root";
 
 //const char* analysisType        = "MCAOD"; // MC, ESD, AOD
-const char* centralityEstimator = "V0M"; // V0M, TRK, FMD, ....
+//const char* centralityEstimator = "V0M"; // V0M, TRK, FMD, ....
 
 //_________________________________________________________//
 
@@ -26,6 +26,8 @@ AliAnalysisTask* AddAliHigherMomentsToyModelTask(Double_t vx,
 						 TString particle,
 						 Double_t nsigma,
 						 Int_t AODfilterBit = 128,
+						 const char* centralityEstimator,
+						 Bool_t trigger = kFALSE,
 						 Bool_t usepid,
 						 TString  analysis,
 						 const char* taskss) {
@@ -60,7 +62,8 @@ AliAnalysisTask* AddAliHigherMomentsToyModelTask(Double_t vx,
   taskHM->SetAODtrackCutBit(AODfilterBit);
   taskHM->SetKinematicsCutsAOD(ptl,pth,eta);
   taskHM->SetUsePid(usepid);
-  
+  if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
   
   if( usepid ){
     taskHM->SetNSigmaCut(nsigma);

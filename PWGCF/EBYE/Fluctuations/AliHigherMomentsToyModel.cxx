@@ -560,9 +560,10 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
   // -- Get MC header
   // ------------------------------------------------------------------
   
-  fArrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!fArrayMC) {
     AliFatal("Error: MC particles branch not found!\n");
+    return;
   }
   
   AliAODMCHeader *mcHdr=NULL;
@@ -639,41 +640,47 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
     
     newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
     
-    Float_t dxy = 0., dz = 0.;
-    
-    dxy = aodTrack1->DCA();
-    dz  = aodTrack1->ZAtDCA();
- 
+  
     //cout << dxy << endl;
     Double_t pt = aodTrack1->Pt();
     Double_t eta = aodTrack1->Eta();
     Double_t nclus = aodTrack1->GetTPCClusterInfo(2,1);
     Double_t chi2ndf = aodTrack1->Chi2perNDF();
   
-    /*  
-    if( fabs(dxy) > fDCAxy ) continue; 
-    if( fabs(dz) > fDCAz ) continue;
-    //Extra cut on DCA---( Similar to BF Task.. )	      
-    if( fDCAxy !=0 && fDCAz !=0 ){
-      if( TMath::Sqrt((dxy*dxy)/(fDCAxy*fDCAxy)+(dz*dz)/(fDCAz*fDCAz)) > 1. ) continue;
+    Float_t dxy = 0., dz = 0.;
+    
+    if( fAODtrackCutBit == 128 ){
+     
+      dxy = aodTrack1->DCA();
+      dz  = aodTrack1->ZAtDCA();      
+      
+      if( fabs(dxy) > fDCAxy ) continue; 
+      if( fabs(dz) > fDCAz ) continue;
+      //Extra cut on DCA---( Similar to BF Task.. )	      
+      if( fDCAxy !=0 && fDCAz !=0 ){
+	if( TMath::Sqrt((dxy*dxy)/(fDCAxy*fDCAxy)+(dz*dz)/(fDCAz*fDCAz)) > 1. ) continue;
+      }
+
+      fHistQA[6]->Fill(dxy);
+      fHistQA[7]->Fill(dz);
+      fHistDCA->Fill(dxy,dz);
+
     }
-    */
     
 
     if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;
     if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) continue;
-    // if( nclus < fTPCNClus ) continue;
-    //if( chi2ndf > fChi2perNDF ) continue;
+    if( nclus < fTPCNClus ) continue;
+    if( chi2ndf > fChi2perNDF ) continue;
     
     
-    fHistQA[6]->Fill(dxy);
-    fHistQA[7]->Fill(dz);
+    
     fHistQA[8]->Fill(pt);
     fHistQA[9]->Fill(eta);
     fHistQA[10]->Fill(aodTrack1->Phi());
     fHistQA[11]->Fill(nclus);
     fHistQA[12]->Fill(chi2ndf);
-    fHistDCA->Fill(dxy,dz);
+    
     
     Short_t gCharge = aodTrack1->Charge();
     

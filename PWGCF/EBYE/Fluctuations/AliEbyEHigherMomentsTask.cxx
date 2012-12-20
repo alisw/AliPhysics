@@ -69,7 +69,7 @@ ClassImp(AliEbyEHigherMomentsTask)
 AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
 : AliAnalysisTaskSE( name ),
   fListOfHistos(0),
-  fAnalysisType("AOD"),
+  fAnalysisType(0),
   fCentralityEstimator("V0M"),
   fVxMax(3.),
   fVyMax(3.),
@@ -265,9 +265,10 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
   }//AOD--analysis-----
   
   else if(fAnalysisType == "MCAOD") {
-    TClonesArray *arrayMC = (TClonesArray*) gAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    TClonesArray *arrayMC = dynamic_cast<TClonesArray*>(gAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!arrayMC) {
-      AliFatal("Error: MC particles branch not found!\n");
+      AliError("Error: MC particles branch not found!\n");
+      return;
     }
     AliAODMCHeader *mcHdr=0;
     mcHdr=(AliAODMCHeader*)gAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
@@ -278,7 +279,7 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
     
     AliAODHeader *aodHeader = gAOD->GetHeader();
     AliCentrality* fcentrality = aodHeader->GetCentralityP();
-    Double_t cent =fcentrality ->GetCentralityPercentile("V0M");
+    Double_t cent =fcentrality->GetCentralityPercentile(fCentralityEstimator.Data());
     
     Int_t nCentrality = (Int_t)cent;
     if(cent < 0 || cent >= 91) return;
@@ -306,6 +307,10 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
     Int_t nMC = arrayMC->GetEntries();
     for (Int_t iMC = 0; iMC < nMC; iMC++) {
       AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+      if(!partMC){
+	AliError(Form("ERROR: Could not retrieve AODMCtrack %d",iMC));
+	continue;
+      }
       if(!partMC->IsPhysicalPrimary())continue;
       if (partMC->Eta() < fEtaLowerLimit || partMC->Eta() > fEtaHigherLimit) continue;
       if (partMC->Pt() < fPtLowerLimit ||  partMC->Pt() > fPtHigherLimit) continue;
@@ -318,11 +323,9 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
     //cout << "Cent=" << nCentrality << " MC-PlusChrg=" << nPlusCharge << " MC-MinusChrg=" << nMinusCharge << endl;
     
   }//MCAOD--analysis---- 
+  
   else return;
-  
-  
-  
-  
+    
   fEventCounter->Fill(8);
   PostData(1, fListOfHistos);
   
