@@ -74,7 +74,7 @@ void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
 AliHMPIDCluster::~AliHMPIDCluster()
 {
   if(fDigs)  delete fDigs; fDigs=0;
-  if(fParam) delete fParam; fParam=0;
+  //PH  if(fParam) delete fParam; fParam=0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::CoG()
