@@ -2371,8 +2371,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
 
         // - Combined PID
         // Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
-        Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
-        Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
+        Double_t lPriorsGuessXi[14]    = {0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        Double_t lPriorsGuessOmega[14] = {0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Double_t ppionBach = 0.0, pkaonBach = 0.0;
         Bool_t   lIsBachelorMCPiMinus  = kFALSE;
         Bool_t   lIsBachelorMCPiPlus   = kFALSE;

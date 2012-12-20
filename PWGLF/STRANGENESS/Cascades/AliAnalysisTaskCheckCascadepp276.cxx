@@ -978,6 +978,9 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       // - Take the number of cascades and tracks before any events selection
       ncascadesBeforeAnySel  = lAODevent->GetNumberOfCascades();
       nTrackMultiplicityBeforeAnySel = -100;  //FIXME: I can't find the equivalent method for the AOD  
+  } else {
+      Printf("Analysis type (ESD or AOD) not specified \n");
+      return;
   }
   // - Fill the plots
   fHistCascadeMultiplicityBeforeAnySel->Fill(ncascadesBeforeAnySel);
@@ -1210,7 +1213,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       // - Take the number of cascades and tracks after vertex Z position selection
       ncascadesAfterVertexSel = lAODevent->GetNumberOfCascades();
       nTrackMultiplicityAfterVertexSel = -100; //FIXME: I can't find the equivalent method for the AOD
-  }
+  } 
   // - Fill the plots
   fHistCascadeMultiplicityAfterVertexCutSel->Fill(ncascadesAfterVertexSel);
   fHistTrackMultiplicityAfterVertexCutSel->Fill(nTrackMultiplicityAfterVertexSel);
