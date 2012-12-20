@@ -130,6 +130,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistClusterMultvsRemovedGamma(0)
     ,fHistMultvsNonRemovedChargedE(0)
     ,fHistMultvsNonRemovedNeutralE(0)
+    ,fHistMultvsRemovedGammaE(0)
 						  ,fHistK0EDepositsVsPtForEOver000MeV(0)
 						  ,fHistK0EDepositsVsPtForEOver100MeV(0)
 						  ,fHistK0EDepositsVsPtForEOver150MeV(0)
@@ -150,7 +151,6 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistK0EGammaVsPtForEOver400MeV(0)
 						  ,fHistK0EGammaVsPtForEOver450MeV(0)
 						  ,fHistK0EGammaVsPtForEOver500MeV(0)
-    ,fHistMultvsRemovedGammaE(0)
     ,fEtNonRemovedProtons(0)
     ,fEtNonRemovedAntiProtons(0)
     ,fEtNonRemovedPiPlus(0)
@@ -684,7 +684,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
-        fPrimaryCharge = primPart->GetPDG()->Charge();
+        fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
 
         fPrimaryE = primPart->Energy();
         fPrimaryEt = primPart->Energy()*TMath::Sin(primPart->Theta());
@@ -703,7 +703,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fDepositedCode = part->GetPdgCode();
 	fDepositedE = part->Energy();
         fDepositedEt = part->Energy()*TMath::Sin(part->Theta());
-        fDepositedCharge = part->GetPDG()->Charge();
+        fDepositedCharge = (Int_t) part->GetPDG()->Charge();
 
         fDepositedVx = part->Vx();
         fDepositedVy = part->Vy();
@@ -940,12 +940,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		}
 	      }
 
-	      float energyMeasured = 0.0;
 	      for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of our K0S
 		AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
 		const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
 		for(int j=0;j<6;j++){
-		  if(myPart==gammaDaughterIDs[j]){
+		  if( myPart==((UInt_t) gammaDaughterIDs[j]) ){
 		    cout<<"Found a matching cluster!";//<<endl;
 		    Double_t clEt = CalculateTransverseEnergy(*caloCluster);
 		    cout<<" it has energy "<<clEt<<endl;
