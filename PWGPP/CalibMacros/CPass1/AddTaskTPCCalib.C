@@ -38,37 +38,61 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
   // set TPC OCDB parameters
   ConfigOCDB(runNumber);
 
-  // setup task
+  // setup task TPCCalib
+  TString outputFileName=mgr->GetCommonFileName();
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrain1(task1);
   mgr->AddTask(task1);
-
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TPCCalib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
-
+  for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
+    if (task1->GetJobs()->At(i)) {
+      AliAnalysisDataContainer* coutput = mgr->CreateContainer(task1->GetJobs()->At(i)->GetName(),
+                                                               AliTPCcalibBase::Class(), 
+                                                               AliAnalysisManager::kOutputContainer, 
+                                                               "AliESDfriends_v1.root:TPCCalib"); 
+      mgr->ConnectOutput(task1,i,coutput);
+    }
+  }
   mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
-
+  //
+  // setup task TPCAlign
   AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainAlign(taskAlign);
   mgr->AddTask(taskAlign);
-
-  AliAnalysisDataContainer *cinputAlign = mgr->GetCommonInputContainer();
-  if (!cinputAlign) cinputAlign = mgr->CreateContainer("cchain",TChain::Class(), 
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCAlign",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
-
-  mgr->ConnectInput(taskAlign,0,cinputAlign);
-  mgr->ConnectOutput(taskAlign,0,coutputAlign);
-
+  for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
+    if (taskAlign->GetJobs()->At(i)) {
+      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
+                                                               AliTPCcalibBase::Class(), 
+                                                               AliAnalysisManager::kOutputContainer, 
+                                                               "AliESDfriends_v1.root:TPCAlign"); 
+      mgr->ConnectOutput(taskAlign,i,coutput);
+    }
+  }
+  mgr->ConnectInput(taskAlign,0,cinput1);
+  //
+  // setup task TPCCluster
   AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainCluster(taskCluster);
   mgr->AddTask(taskCluster);
-  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCCluster",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+                                      AliAnalysisManager::kInputContainer);
+  for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
+    if (taskCluster->GetJobs()->At(i)) {
+      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
+                                                               AliTPCcalibBase::Class(), 
+                                                               AliAnalysisManager::kOutputContainer, 
+                                                               "AliESDfriends_v1.root:TPCCluster"); 
+      mgr->ConnectOutput(taskCluster,i,coutput);
+    }
+  }
   mgr->ConnectInput(taskCluster,0,cinput1);
-  mgr->ConnectOutput(taskCluster,0,coutputAlign);
+  //
 
   return task1;
 }
