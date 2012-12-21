@@ -27,8 +27,10 @@
 #include <AliAODInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
+#include <AliTriggerAnalysis.h>
 #include <AliInputEventHandler.h>
 #include <AliAODInputHandler.h>
+#include <AliESDInputHandler.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronMC.h"
@@ -44,9 +46,15 @@ AliAnalysisTaskSE(),
 fDielectron(0),
 fSelectPhysics(kTRUE),
 fTriggerMask(AliVEvent::kMB),
+fExcludeTriggerMask(0),
+fTriggerOnV0AND(kFALSE),
+fRejectPileup(kFALSE),
 fEventStat(0x0),
+fTriggerLogic(kAny),
+fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
+fStoreTrackLegs(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -60,9 +68,15 @@ AliAnalysisTaskSE(name),
 fDielectron(0),
 fSelectPhysics(kTRUE),
 fTriggerMask(AliVEvent::kMB),
+fExcludeTriggerMask(0),
+fTriggerOnV0AND(kFALSE),
+fRejectPileup(kFALSE),
 fEventStat(0x0),
+fTriggerLogic(kAny),
+fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
+fStoreTrackLegs(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -103,14 +117,25 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
   fDielectron->SetDontClearArrays(); 
   fDielectron->Init();
 
+  Int_t nbins=kNbinsEvent+2;
   if (!fEventStat){
-    fEventStat=new TH1D("hEventStat","Event statistics",6,0,6);
+    fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
-    fEventStat->GetXaxis()->SetBinLabel(3,"After Phys. Sel.");
-    fEventStat->GetXaxis()->SetBinLabel(4,"After Cand. Sel.");
-  }
-  
+
+    //default names
+    fEventStat->GetXaxis()->SetBinLabel(3,"Bin3 not used");
+    fEventStat->GetXaxis()->SetBinLabel(4,"Bin4 not used");
+    fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
+
+    if(fTriggerOnV0AND) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
+    if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
+    if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
+
+    fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1),Form("#splitline{1 candidate}{%s}",fDielectron->GetName()));
+    fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2),Form("#splitline{With >1 candidate}{%s}",fDielectron->GetName()));
+   }
+ 
   PostData(2,fEventStat);
 }
 
@@ -124,6 +149,9 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   if (!fDielectron) return;
   
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
@@ -135,30 +163,75 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   }
   
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
-  if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
-    isSelected = inputHandler->IsEventSelected();
-    isSelected&=fTriggerMask;
-  }
-  
-  //Before physics selection
-  fEventStat->Fill(0.);
-  if (isSelected==0) {
-    PostData(2,fEventStat);
+  ULong64_t isSelected = AliVEvent::kAny;
+  Bool_t isRejected = kFALSE;
+  if( fSelectPhysics && inputHandler){
+    if((isESD && inputHandler->GetEventSelection()) || isAOD){
+      isSelected = inputHandler->IsEventSelected();
+      if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
+      if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
+      else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+    }
+   }
+ 
+  //before physics selection
+  fEventStat->Fill(kAllEvents);
+  if (isSelected==0||isRejected) {
+    PostData(3,fEventStat);
     return;
   }
   //after physics selection
-  fEventStat->Fill(1.);
+  fEventStat->Fill(kSelectedEvents);
+
+  //V0and
+  if(fTriggerOnV0AND){
+  if(isESD){if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND))
+            return;}
+  if(isAOD){if(!((static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0ADecision() == AliVVZERO::kV0BB &&
+            (static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0CDecision() == AliVVZERO::kV0BB) )
+            return;}
+   }
+
+   fEventStat->Fill(kV0andEvents);
+
+  //Fill Event histograms before the event filter
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0};
+  Double_t valuesMC[AliDielectronVarManager::kNMaxValues]={0};
+  AliDielectronVarManager::SetEvent(InputEvent());
+  AliDielectronVarManager::Fill(InputEvent(),values);
+  AliDielectronVarManager::Fill(InputEvent(),valuesMC);
+
+  Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+  if (hasMC) {
+    if (AliDielectronMC::Instance()->ConnectMCEvent())
+      AliDielectronVarManager::Fill(AliDielectronMC::Instance()->GetMCEvent(),valuesMC);
+  }
+
+  AliDielectronHistos *h=fDielectron->GetHistoManager();
+    if (h){
+      if (h->GetHistogramList()->FindObject("Event_noCuts"))
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,values);
+      if (hasMC && h->GetHistogramList()->FindObject("MCEvent_noCuts"))
+        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,valuesMC);
+    }
 
   //event filter
   if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) return;
+  if (!fEventFilter->IsSelected(InputEvent())) return;
   }
-  fEventStat->Fill(2.);
+  fEventStat->Fill(kFilteredEvents);
+
+  //pileup
+  if (fRejectPileup){
+  if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+  }
+  fEventStat->Fill(kPileupEvents);
 
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
+
+  AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   
   fDielectron->Process(InputEvent());
   
@@ -172,51 +245,52 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     AliAODHandler *aodH=(AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     AliAODEvent *aod = aodH->GetAOD();
     
+    // reset bit for all tracks
+    if(isAOD){
+    for(Int_t it=0;it<aod->GetNumberOfTracks();it++){
+        aod->GetTrack(it)->ResetBit(kIsReferenced);  aod->GetTrack(it)->SetUniqueID(0);
+        }
+    }
+
     //replace the references of the legs with the AOD references
     TObjArray *obj = 0x0;
     for(Int_t i=0; i < 11; i++ ){
       obj = (TObjArray*)((*(fDielectron->GetPairArraysPointer()))->UncheckedAt(i));
       if(!obj) continue;
       for(int j=0;j<obj->GetEntriesFast();j++){
-        AliAODTrack *leg1 = 0x0;
-        AliAODTrack *leg2 = 0x0;
         AliDielectronPair *pairObj = (AliDielectronPair*)obj->UncheckedAt(j);
         Int_t id1 = ((AliVTrack*)pairObj->GetFirstDaughter())->GetID();
         Int_t id2 = ((AliVTrack*)pairObj->GetSecondDaughter())->GetID();
         
         for(Int_t it=0;it<aod->GetNumberOfTracks();it++){
-          if(aod->GetTrack(it)->GetID() == id1) leg1 = aod->GetTrack(it);
-          if(aod->GetTrack(it)->GetID() == id2) leg2 = aod->GetTrack(it);
+          if(aod->GetTrack(it)->GetID() == id1) pairObj->SetRefFirstDaughter(aod->GetTrack(it)); 
+          if(aod->GetTrack(it)->GetID() == id2) pairObj->SetRefSecondDaughter(aod->GetTrack(it));
         }
-        if(!leg1 || !leg2) continue;
-        
-        if(man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-          leg1->ResetBit(kIsReferenced);
-          leg1->SetUniqueID(0);
-          leg2->ResetBit(kIsReferenced);
-          leg2->SetUniqueID(0);
-        }
-        pairObj->SetRefFirstDaughter(leg1);
-        pairObj->SetRefSecondDaughter(leg2);
       }
     }
     
     AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
     extDielectron->SelectEvent();
-    //after candidate selection
-    fEventStat->Fill(3.);
-    
+    Int_t ncandidates=fDielectron->GetPairArray(1)->GetEntriesFast();
+    if (ncandidates==1) fEventStat->Fill((kNbinsEvent));
+    else if (ncandidates>1) fEventStat->Fill((kNbinsEvent+1));
+ 
     //see if dielectron candidate branch exists, if not create is
     TTree *t=extDielectron->GetTree();
 
-    if(!t->GetListOfBranches()->GetEntries() && man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class())
+    if(!t->GetListOfBranches()->GetEntries() && isAOD)
       t->Branch(aod->GetList());
     
     if (!t->GetBranch("dielectrons")){
       t->Bronch("dielectrons","TObjArray",fDielectron->GetPairArraysPointer());
+      // store positive and negative tracks
+      if(fStoreTrackLegs){
+      t->Branch("positiveTracks","TObjArray", (TObjArray*)(fDielectron->GetTrackArray(0)));
+      t->Branch("negativeTracks","TObjArray", (TObjArray*)(fDielectron->GetTrackArray(1)));
+      }
     }
     
-    if(man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()) t->Fill();
+    if(isAOD) t->Fill();
   }
   
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
