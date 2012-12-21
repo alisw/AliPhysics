@@ -51,7 +51,6 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	
     fNLMCutMin(-1),                fNLMCutMax(10), 
-    fUseSplitAsyCut(kFALSE),
     fTimeCutMin(-10000),           fTimeCutMax(10000),
     fFillPileUpHistograms(0),
     fFillWeightHistograms(kFALSE), fFillTMHisto(0),              
@@ -2118,16 +2117,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
                               mom.Pt(), idPartType);
     
+    //Mass and asymmetry of selected pairs
     fhSelectedAsymmetry->Fill(mom.E(),asy);
-
-    if( fUseSplitAsyCut &&  !GetCaloPID()->IsInPi0SplitAsymmetryRange(mom.E(),asy,nMaxima) )
-    {
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Too large asymmetry\n");
-      FillRejectedClusterHistograms(mom,tag);
-      continue ;
-    }
-    
-    //Mass of selected pairs
     fhSelectedMass     ->Fill(mom.E(),mass);
 
     //-----------------------

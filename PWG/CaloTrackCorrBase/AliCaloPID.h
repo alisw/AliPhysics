@@ -207,10 +207,16 @@ class AliCaloPID : public TObject {
   void    SwitchOnSimpleSplitM02Cut()          { fUseSimpleM02Cut    = kTRUE  ; }
   void    SwitchOffSimpleSplitM02Cut()         { fUseSimpleM02Cut    = kFALSE ; }
   
+  void    SwitchOnSplitAsymmetryCut()          { fUseSplitAsyCut     = kTRUE  ; }
+  void    SwitchOffSplitAsymmetryCut()         { fUseSplitAsyCut     = kFALSE ; }
+  
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
   
-  void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells   = cut ; }  
+  void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells = cut   ; }
+  
+  void    SetSplitEnergyFractionMinimum(Float_t min){ fSplitEFracMin  = min   ; }
+  Float_t GetSplitEnergyFractionMinimum() const     { return fSplitEFracMin   ; }
   
   Float_t GetPi0MinMass()                const { return fMassPi0Min           ; } // Simple cut case
   Float_t GetEtaMinMass()                const { return fMassEtaMin           ; } // Simple cut case
@@ -222,17 +228,14 @@ class AliCaloPID : public TObject {
   void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
   void    SetPi0MassWidthSelectionParameters    (Int_t iparam, Float_t param) { if(iparam < 7 ) fMassWidthPi0Param[iparam] = param ; }
   void    SetM02MinimumSelectionParameters      (Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 5 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
+  { if(iparam < 6 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
   void    SetAsymmetryMinimumSelectionParameters(Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 5 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
+  { if(iparam < 6 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
 
   void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min    = min ; fMassPi0Max = max ; } // Simple case
   void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin    = min ; fMassEtaMax = max ; }
   void    SetPhotonMassRange(Float_t min, Float_t max) { fMassPhoMin    = min ; fMassPhoMax = max ; }
-  
-  void    SetSplitEnergyFractionMinimum(Float_t min)   { fSplitEFracMin = min ; }
-  
-  
+    
 private:
   
   Int_t	    fDebug;                             // Debug level
@@ -275,7 +278,8 @@ private:
   Bool_t    fDoClusterSplitting;                // Cluster splitting analysis
   Bool_t    fUseSimpleMassCut;                  // Use simple min-max pi0 mass cut
   Bool_t    fUseSimpleM02Cut;                   // Use simple min-max M02 cut
-  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut 
+  Bool_t    fUseSplitAsyCut ;                   // Remove splitted clusters with too large asymmetry, range defined in AliCaloPID
+  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut
   Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut  // simple case
   Int_t     fSplitMinNCells ;                   // Study clusters with ncells larger than cut  
   Float_t   fMassEtaMin  ;                      // Min Eta mass
@@ -285,8 +289,8 @@ private:
   Float_t   fMassPhoMin  ;                      // Min Photon mass
   Float_t   fMassPhoMax  ;                      // Min Photon mass
   Float_t   fMassWidthPi0Param[7] ;             // 3 param for pol2 fit on width, 2 param for mass position NLM=1 and NLM>1 for pi0 selection
-  Float_t   fM02MinParam[2][5] ;                // 4 param for pol3 fit on M02 minimum
-  Float_t   fAsyMinParam[2][5] ;                // 4 param for pol3 fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
+  Float_t   fM02MinParam[2][6] ;                // 4 param for pol3 fit on M02 minimum
+  Float_t   fAsyMinParam[2][6] ;                // 4 param for pol3 fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
   Float_t   fSplitEFracMin  ;                   // Do not use clusters with too large energy in cluster compared 
                                                 // to energy in splitted clusters
   Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma

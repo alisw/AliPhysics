@@ -81,6 +81,7 @@ fPHOSDispersionCut(1000), fPHOSRCut(1000),
 fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
+fUseSplitAsyCut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -114,6 +115,7 @@ fPHOSDispersionCut(1000), fPHOSRCut(1000),
 fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
+fUseSplitAsyCut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -149,6 +151,7 @@ fPHOSDispersionCut(1000),    fPHOSRCut(1000),
 fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
+fUseSplitAsyCut(kFALSE),
 fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
@@ -238,8 +241,8 @@ void AliCaloPID::InitParameters()
   fMassPhoMin  = 0.0;
   fMassPhoMax  = 0.08;
   
-  fMassWidthPi0Param[0] = 0.111;  // Aboslute Low mass cut for NLM=1 and E < 12 GeV
-  fMassWidthPi0Param[1] = 0.110;  // Aboslute Low mass cut for NLM=2 and E < 9 GeV
+  fMassWidthPi0Param[0] = 0.110;  // Aboslute Low mass cut for NLM=1 and E < 10 GeV
+  fMassWidthPi0Param[1] = 0.100;  // Aboslute Low mass cut for NLM=2 and E < 10 GeV
   fMassWidthPi0Param[2] = 0.009;  // constant width for E < 8 GeV, 9 MeV
   fMassWidthPi0Param[3] = 0.0023; // pol1 param0 of width for E > 8 GeV
   fMassWidthPi0Param[4] = 0.0008; // pol1 param1 of width for E > 8 GeV
@@ -247,45 +250,48 @@ void AliCaloPID::InitParameters()
   fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
   
   
-  fM02MinParam[0][0] = 4.59   ; // pol3 param0 for NLM=1 , E < 16 GeV, pp/PbPb
-  fM02MinParam[0][1] =-0.66   ; // pol3 param1 for NLM=1 , E < 16 GeV, pp/PbPb
-  fM02MinParam[0][2] = 0.0334 ; // pol3 param2 for NLM=1 , E < 16 GeV, pp/PbPb
-  fM02MinParam[0][3] =-0.00056; // pol3 param2 for NLM=1 , E < 16 GeV, pp/PbPb
-  fM02MinParam[0][4] = 0.3    ; // cut for E > 16 GeV, pp/PbPb
+  fM02MinParam[0][0] = 5.76   ; // pol3 param0 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][1] =-0.88   ; // pol3 param1 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][2] = 0.0487 ; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][3] =-0.00091; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][4] = 0.3    ; // cut for E > 20 GeV, pp/PbPb
+  fM02MinParam[0][5] = 20.    ; // E cut change
 
-  fM02MinParam[1][0] = 7.67  ;  // pol3 param0 for NLM>2 , E < 16 GeV, pp/PbPb
-  fM02MinParam[1][1] =-1.56  ;  // pol3 param1 for NLM>2 , E < 16 GeV, pp/PbPb
-  fM02MinParam[1][2] = 0.115 ;  // pol3 param2 for NLM>2 , E < 16 GeV, pp/PbPb
-  fM02MinParam[1][3] =-0.0028;  // pol3 param2 for NLM>2 , E < 16 GeV, pp/PbPb
-  fM02MinParam[1][4] = 0.6;     // cut for E > 16 GeV, pp/PbPb
+  fM02MinParam[1][0] = 8.3   ;  // pol3 param0 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][1] =-1.48  ;  // pol3 param1 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][2] = 0.095 ;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][3] =-0.0020;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][4] = 0.6;     // cut for E > 14 GeV, pp/PbPb
+  fM02MinParam[1][5] = 14.;     // E cut change
 
   
-  fAsyMinParam[0][0] =-0.02  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
-  fAsyMinParam[0][1] = 0.072 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
-  fAsyMinParam[0][2] =-0.0014;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][0] =-0.24  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][1] = 0.087 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][2] =-0.0017;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
-  fAsyMinParam[0][4] = 0.95  ;  // cut for NLM=1 , E > 25 GeV, pp/PbPb
+  fAsyMinParam[0][4] = 1.0   ;  // cut for NLM=1 , E > 25 GeV, pp/PbPb
+  fAsyMinParam[0][5] = 25.   ;  // E cut change
 
-  fAsyMinParam[1][0] =-0.33 ;   // pol3 param0 for NLM>2 , E < 25 GeV, pp
-  fAsyMinParam[1][1] = 0.20 ;   // pol3 param1 for NLM>2 , E < 25 GeV, pp
-  fAsyMinParam[1][2] =-0.011;   // pol3 param2 for NLM>2 , E < 25 GeV, pp
-  fAsyMinParam[1][3] = 0.00019; // pol3 param2 for NLM>2 , E < 25 GeV, pp
-  fAsyMinParam[1][4] = 0.95  ;  // cut for NLM>2 , E > 25 GeV, pp/PbPb
-
+  fAsyMinParam[1][0] =-1.31 ;   // pol3 param0 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][1] = 0.39 ;   // pol3 param1 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][2] =-0.022;   // pol3 param2 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][3] = 0.00041; // pol3 param2 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][4] = 1.0  ;   // cut for NLM>2 , E > 18 GeV, pp/PbPb
+  fAsyMinParam[1][5] = 18.  ;   // E cut change
   
-//  fAsyMinParam[0][0] =-0.41  ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
-//  fAsyMinParam[0][1] = 0.111 ;  // pol3 param1 for NLM=1 , E < 25 GeV, PbPb
-//  fAsyMinParam[0][2] =-0.0023;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][0] =-0.66  ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][1] = 0.131 ;  // pol3 param1 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][2] =-0.0028;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
 //  fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
-//  
-//  fAsyMinParam[1][0] =-1.3  ;   // pol3 param0 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][1] = 0.32 ;   // pol3 param1 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][2] =-0.015;   // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][3] = 0.00022; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+
+//  fAsyMinParam[1][0] =-1.31 ;   // pol3 param0 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][1] = 0.26 ;   // pol3 param1 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][2] =-0.0079;  // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][3] = 0.000038; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
 
   
   fSplitEFracMin   = 0.85 ;
-  fSplitWidthSigma = 2.5  ;
+  fSplitWidthSigma = 3.  ;
   
 }
 
@@ -302,10 +308,14 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
   
   // Get the parametrized min cut of asymmetry for NLM=2 up to 11 GeV
-  Float_t cut = fAsyMinParam[inlm][0]+energy*fAsyMinParam[inlm][1]+energy*energy*fAsyMinParam[inlm][2]+
-                energy*energy*energy*fAsyMinParam[inlm][3];
-  
-  if(energy > 25 ) cut = fAsyMinParam[inlm][4];
+  Float_t cut = fAsyMinParam[inlm][0]+
+                fAsyMinParam[inlm][1]*energy+
+                fAsyMinParam[inlm][2]*energy*energy+
+                fAsyMinParam[inlm][3]*energy*energy*energy;
+
+  // In any case and beyond validity energy range of the function,
+  // the parameter cannot be smaller than 1
+  if(cut > fAsyMinParam[inlm][4] || energy > fAsyMinParam[inlm][5] ) cut = fAsyMinParam[inlm][4];
   
   //printf("energy %2.2f - nlm: %d (%d)- p0 %f, p1 %f, p2 %f, p3 %f ; cut: %2.2f\n",energy,nlm,inlm,
   //       fAsyMinParam[inlm][0],fAsyMinParam[inlm][1],fAsyMinParam[inlm][2],fAsyMinParam[inlm][3],cut);
@@ -340,8 +350,8 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Float_t maxMass = meanMass+fSplitWidthSigma*width;
 
   // In case of low energy, hard cut to avoid conversions
-  if(energy < 12 && nlm == 1) minMass = fMassWidthPi0Param[0];
-  if(energy < 9  && nlm == 2) minMass = fMassWidthPi0Param[1];
+  if(energy < 10  && nlm == 1) minMass = fMassWidthPi0Param[0];
+  if(energy < 10  && nlm == 2) minMass = fMassWidthPi0Param[1];
   
   //printf("\t \t sigma %1.1f width %3.1f, mean Mass %3.0f, minMass %3.0f, maxMass %3.0f\n ", 
   //       fSplitWidthSigma, width*1000, meanMass*1000,minMass*1000,maxMass*1000);
@@ -364,10 +374,14 @@ Bool_t AliCaloPID::IsInMergedM02Range(const Float_t energy, const Float_t m02,  
     Int_t inlm = nlm-1;
     if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
     
-    if(energy < 16)  minCut = fM02MinParam[inlm][0]+energy*fM02MinParam[inlm][1]+
-                              energy*energy*fM02MinParam[inlm][2]+energy*energy*energy*fM02MinParam[inlm][3];
-    //In any case, the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
-    if(minCut < fM02MinParam[inlm][4]) minCut = fM02MinParam[inlm][4];
+    minCut = fM02MinParam[inlm][0]+
+               fM02MinParam[inlm][1]*energy+
+               fM02MinParam[inlm][2]*energy*energy+
+               fM02MinParam[inlm][3]*energy*energy*energy;
+    
+    // In any case and beyond validity energy range of the function,
+    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
+    if( minCut < fM02MinParam[inlm][4] || energy > fM02MinParam[inlm][5] ) minCut = fM02MinParam[inlm][4];
   }
   
   //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,fSplitM02MaxCut);
@@ -537,7 +551,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   mass  = -1.;
   angle = -1.;
-
+  
   //If too low number of cells, skip it
   if ( nc < fSplitMinNCells)  return kNeutralUnknown ; 
   
@@ -639,8 +653,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   e1    = cluster1.E();
   e2    = cluster2.E();
   
-  if(fDebug > 0) 
-    printf("\t Split : E1 %1.2f, E2 %1.2f, mass %3.3f \n", e1,e2,mass);
+
   
   // Consider clusters with splitted energy not too different to original cluster energy
   if((e1+e2)/eClus < fSplitEFracMin) return kNeutralUnknown ;
@@ -652,6 +665,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   if(fDebug > 0) printf("\t pass M02 cut\n");
   
+  // Asymmetry of cluster
+  Float_t asy =-10;
+  if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
+  if( fUseSplitAsyCut &&  !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
+  
+  if (fDebug>0) printf("\t pass asymmetry cut\n");
+
   // Check the mass, and set an ID to the splitted cluster
   if     (mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
   else if(mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
