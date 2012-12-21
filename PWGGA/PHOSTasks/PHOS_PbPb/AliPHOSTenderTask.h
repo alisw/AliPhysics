@@ -23,6 +23,7 @@ public:
   virtual ~AliPHOSTenderTask();
 
   void                      SetPHOSTenderSupply(AliPHOSTenderSupply *supply);
+  AliPHOSTenderSupply*      GetPHOSTenderSupply() {return fPHOSTender;}
 
   virtual void              ConnectInputData(Option_t *option);
   virtual void              UserCreateOutputObjects();
