@@ -75,7 +75,7 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 
   fAOD(0), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fTrigPtMin(8.), fTrigPtMax(20.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
 
-  fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fYMax(0.5), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fMinCtau(0.), fMaxCtau(3.), 
+  fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fYMax(0.5), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsTrigFromV0daug(0), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
   fOutput(0), fOutputQA(0), fEvents(0), fCentrality(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0), fNumberPileUp(0), fCentMult(0), fdEdx(0), fdEdxPid(0), 
 
@@ -85,55 +85,11 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 
   fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
   
-  fK0sMass(0),     
-  fK0sPtLtSB(0),    
-  fK0sPtvsEta(0),
-  fK0sPtvsRap(0),
-  fK0sEtaPhi(0),
-  fK0sMassPtPhi(0),
+  fK0sMass(0), fK0sPtLtSB(0), fK0sPtvsEta(0), fK0sPtvsRap(0), fK0sEtaPhi(0), fK0sMassPtPhi(0), fK0sMassPtvsPtL(0), fK0sSiPtL(0), fK0sDaughtersPt(0), fK0sdPhiPtAssocPtL(0), fK0sDCADaugToPrimVtx(0), fK0sBckgDecLength(0), fK0sBckgDCADaugToPrimVtx(0), fK0sdEdxPosDaug(0), fK0sdEdxNegDaug(0), fK0sBckgEtaPhi(0), fK0sBckgPhiRadio(0), fK0sBckgDCANegDaugToPrimVtx(0), fK0sBckgDCAPosDaugToPrimVtx(0), fK0sMassCascade(0),
 
-  fK0sMassPtvsPtL(0),
-  fK0sSiPtL(0),
-  fK0sDaughtersPt(0),
-  fK0sdPhiPtAssocPtL(0),
-  fK0sDCADaugToPrimVtx(0), 
+  fLambdaMass(0), fLambdaPtLtSB(0), fLambdaPtvsEta(0), fLambdaPtvsRap(0), fLambdaEtaPhi(0), fLambdaMassPtPhi(0), fLambdadEdx(0), fCPA(0), fDCA(0),
 
-  fK0sBckgDecLength(0),
-  fK0sBckgDCADaugToPrimVtx(0),
-  fK0sdEdxPosDaug(0),
-  fK0sdEdxNegDaug(0),
-  fK0sBckgEtaPhi(0),
-  fK0sBckgPhiRadio(0),
-  fK0sBckgDCANegDaugToPrimVtx(0),
-  fK0sBckgDCAPosDaugToPrimVtx(0),
-  fK0sMassCascade(0),
-
-  fLambdaMass(0), 
-  fLambdaPtLtSB(0), 
-  fLambdaPtvsEta(0), 
-  fLambdaPtvsRap(0),
-  fLambdaEtaPhi(0),
-  fLambdaMassPtPhi(0),
-
-  fLambdadEdx(0),
-  fCPA(0),
-  fDCA(0),
-
-  fLambdaMassPtvsPtL(0),
-  fLambdaSiPtL(0),
-  fLambdaDaughtersPt(0),
-  fLambdadPhiPtAssocPtL(0),
-  fLambdaDCADaugToPrimVtx(0), 
-
-  fLambdaBckgDecLength(0),
-  fLambdaBckgDCADaugToPrimVtx(0),
-  fLambdadEdxPosDaug(0),
-  fLambdadEdxNegDaug(0),
-  fLambdaBckgEtaPhi(0),
-  fLambdaBckgPhiRadio(0),
-  fLambdaBckgDCANegDaugToPrimVtx(0),
-  fLambdaBckgDCAPosDaugToPrimVtx(0),
-  fLambdaMassCascade(0),
+  fLambdaMassPtvsPtL(0), fLambdaSiPtL(0), fLambdaDaughtersPt(0), fLambdadPhiPtAssocPtL(0), fLambdaDCADaugToPrimVtx(0), fLambdaBckgDecLength(0), fLambdaBckgDCADaugToPrimVtx(0), fLambdadEdxPosDaug(0), fLambdadEdxNegDaug(0), fLambdaBckgEtaPhi(0), fLambdaBckgPhiRadio(0), fLambdaBckgDCANegDaugToPrimVtx(0), fLambdaBckgDCAPosDaugToPrimVtx(0), fLambdaMassCascade(0),
 
   fK0sPIDPosDaug(0), fK0sPIDNegDaug(0), fK0sBckgPIDPosDaug(0), fK0sBckgPIDNegDaug(0), fK0sPhiEtaPosDaug(0), fK0sPhiEtaNegDaug(0), fK0sBckgPhiEtaPosDaug(0), fK0sBckgPhiEtaNegDaug(0), fK0sDCAPosDaug(0), fK0sDCANegDaug(0), fK0sBckgDCAPosDaug(0), fK0sBckgDCANegDaug(0), fK0sDifPtPosDaug(0), fK0sDifPtNegDaug(0), fK0sBckgDifPtPosDaug(0), fK0sBckgDifPtNegDaug(0), fK0sDecayPos(0), fK0sBckgDecayPos(0), fK0sDecayVertex(0), fK0sBckgDecayVertex(0), fK0sDecayVertexZoom(0), fK0sBckgDecayVertexZoom(0), fK0sCPA(0), fK0sBckgCPA(0), fK0sDCAV0Daug(0), fK0sBckgDCAV0Daug(0),
 
@@ -556,10 +512,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   
     snprintf(hNameHist,100, "fK0sdPhidEtaMC_Cent_%.1f_%.1f",kPtBinV0[k],kPtBinV0[k+1]); 
     fK0sdPhidEtaMCCent[k] = new TH3F(hNameHist,"K^{0}_{S} MC: #Delta#phi vs #Delta#eta vs p_{T,l}",
-				      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-				      nbinsdEta,-2.,2.,
-				      nbinsVtx,-10.,10.);
-    fK0sdPhidEtaMCCent[k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
+				     nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+				     nbinsdEta,-2.,2.,
+				     nbinsVtx,-10.,10.);
+    fK0sdPhidEtaMCCent[k]->GetXaxis()->SetTitle("#Delta#phi (rad)");
     fK0sdPhidEtaMCCent[k]->GetYaxis()->SetTitle("#Delta#eta"); 
     fK0sdPhidEtaMCCent[k]->GetZaxis()->SetTitle("Vertex Z (cm)");
     fOutput->Add(fK0sdPhidEtaMCCent[k]);
@@ -1591,15 +1547,15 @@ void AliAnalysisTaskLambdaOverK0sJets::RecCascade(AliAODTrack *trk1,const AliAOD
    
     // 4. Filling histograms
     if( histo.Contains("K0s") ) {
-      if(i==0)
+      if(i==0) // Xi 
 	fK0sMassCascade->Fill(lMassCascade,1);
-      else if(i==1)
+      else if(i==1) //Omega
 	fK0sMassCascade->Fill(lMassCascade,3);
     }
     else if( histo.Contains("Lambda") ) {
-      if(i==0)
+      if(i==0) // Xi 
 	fLambdaMassCascade->Fill(lMassCascade,1);
-      else if(i==1)
+      else if(i==1) //Omega
 	fLambdaMassCascade->Fill(lMassCascade,3);
     }
 
@@ -1610,28 +1566,27 @@ void AliAnalysisTaskLambdaOverK0sJets::RecCascade(AliAODTrack *trk1,const AliAOD
 
 //___________________________________________________________________________________________
  
-TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopStep_t step, Bool_t isTriggered) 
+void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTriggered) 
 { 
   // Three options for the 'step' variable:
   // 1) TriggerCheck
   // 2) Reconstruction and Correlation
   // 3) Mixed event
 
+  AliAODTrack *trkTrig;
   Float_t ptTrig  = -100.;
   Float_t phiTrig = -100.;
-  Float_t etaTrig = -100.;
+  Float_t etaTrig = -100.; 
 
   if( step==kTriggerCheck || isTriggered ){
+    fIsTrigFromV0daug = 0;
+
+    trkTrig = (AliAODTrack*)fAOD->GetTrack(fIdTrigger); 
     ptTrig  = trkTrig->Pt();
     phiTrig = trkTrig->Phi();
     etaTrig = trkTrig->Eta();
   }
   
-  // ---- 1) TriggerCheck: Variables used to crosscheck if trigger particle is a V0 daughter ---- //
-  Int_t    isTrigFromV0daug = 0, isV0LP = 0;
-  Float_t ptV0LP = -1000.;
-
-
   // *************************************************
   // Centrality selection
   AliCentrality *cent = fAOD->GetCentrality();
@@ -2019,7 +1974,8 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
     // Comparing the pt of the trigger particle wrt the v0-candidate's daughter:
     // It is used as well for the side-band subtraction
     Int_t isSameTrk = -1;
-    isSameTrk = EqualPt(trkTrig,ntrack,ptrack);
+    if( step==kTriggerCheck || isTriggered )
+      isSameTrk = EqualPt(trkTrig,ntrack,ptrack);
     
     // *******************
     // Disentangle the V0 candidate
@@ -2071,12 +2027,12 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
 
 	if (isCandidate2K0s){
 	  if(pt>ptTrig){
-	    isV0LP = 1; 
-	    ptV0LP = pt;
+	    fIsV0LP = 1; 
+	    fPtV0LP = pt;
 	  }       
 	  
-	  isTrigFromV0daug = isSameTrk;
-	  if(isTrigFromV0daug){
+	  fIsTrigFromV0daug = isSameTrk;
+	  if(fIsTrigFromV0daug){
 	    Printf("  The LP has the same momentum in X and Y as one of the K0s daughters *** iV0 %d",iV0); 
 
 
@@ -2308,12 +2264,12 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
 	
 	if (isCandidate2Lambda){
 	  if(pt>ptTrig) {
-	    isV0LP = 1;
-	    ptV0LP = pt;
+	    fIsV0LP = 1;
+	    fPtV0LP = pt;
 	  }
 
-	  isTrigFromV0daug = isSameTrk;
-	  if(isTrigFromV0daug){
+	  fIsTrigFromV0daug = isSameTrk;
+	  if(fIsTrigFromV0daug){
 	    Printf("  The LP has the same momentum in X and Y as one of the Lambda daughters *** iV0 %d",iV0); 
 
 	    
@@ -2543,12 +2499,12 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
 	
 	if (isCandidate2LambdaBar){
 	  if(pt>ptTrig) {
-	    isV0LP = 1;
-	    ptV0LP = pt;
+	    fIsV0LP = 1;
+	    fPtV0LP = pt;
 	  }
 	  
-	  isTrigFromV0daug = isSameTrk;
-	  if(isTrigFromV0daug){
+	  fIsTrigFromV0daug = isSameTrk;
+	  if(fIsTrigFromV0daug){
 	    Printf("  The LP has the same momentum in X and Y as one of the AntiLambda daughters *** iV0 %d",iV0); 
 
 	    if(fCheckIDTrig){
@@ -2578,32 +2534,15 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
       
   } // End V0 loop
   
-  // ----------------------------
-
-  TArrayD* aV0Loop = new TArrayD(3);
-  aV0Loop->AddAt(isV0LP,0);
-  aV0Loop->AddAt(isTrigFromV0daug,1);
-  aV0Loop->AddAt(ptV0LP,2);
-
-  return aV0Loop;
-  delete aV0Loop;
 }
 
 //___________________________________________________________________________________________
 
-TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle() 
+void AliAnalysisTaskLambdaOverK0sJets::TriggerParticle() 
 { 
   // Obtain the trigger particle of the event to perform the correlations in phi and eta
 
-  Float_t ptTrigger  = -1000.;
-  Int_t    iTrigger   = -1000;
-  Float_t phiTrigger = -1000.;
-  Float_t etaTrigger = -1000.;
-  Int_t    isTriggerFromV0Daug = -1000;
-  Int_t    isV0LP  = -1000; 
-  Float_t ptV0LP  = -100.;
-  Int_t    isSndCheck = 0; 
-
+  Float_t  ptTrigger  = -1000.;
   Int_t    idSndTrigger = 0;
 
   // ----------------------------
@@ -2618,56 +2557,38 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
     if (TMath::Abs(pz/pt)>0.8) continue;
     if (TMath::Abs(t->Eta())>0.8 ) continue;
     if (!(t->TestFilterMask(1<<7))) continue; 
-
     
     if(pt>ptTrigger) {
       ptTrigger = pt;
-      iTrigger = i;
-      //rapTrigger   = 0.5*TMath::Log((t->E()+t->Pz())/(t->E()-t->Pz()+1.e-13));
-      phiTrigger = t->Phi();
-      etaTrigger = t->Eta();
+      fIdTrigger = i;
     }
     
   }
 
-  TArrayD* v0Audit;
-  AliAODTrack *trackLP;
-  
-  if(iTrigger<0)
-    goto endLP;
-  
+  if(fIdTrigger<0) 
+    { fEvents->Fill(7); return; }
+   
   // ----------------------------
-
   // 2. Checking if the trigger particle 
   // might be a daughter from the V0-candidate
+  V0Loop(kTriggerCheck,kFALSE);
+    
+  fCheckTriggerFromV0Daug->Fill(fIsTrigFromV0daug);
+  // V0-candidate is the highest particle in the event:
+  if(fIsV0LP) fTriggerIsV0->Fill(fPtV0LP);
+  // V0-candidate is the highest particle in the event & the trigger-particle is its daughter:
+  if(fIsTrigFromV0daug && fIsV0LP)  fCheckTriggerFromV0Daug->Fill(2);
+  if(fIsTrigFromV0daug) fTriggerComingFromDaug->Fill(ptTrigger);
+  else return;
 
-  trackLP = (AliAODTrack*)fAOD->GetTrack(iTrigger); 
-
-  v0Audit = V0Loop(trackLP,kTriggerCheck,kFALSE);
-  isV0LP               = TMath::FloorNint( v0Audit->At(0) );
-  isTriggerFromV0Daug  = TMath::FloorNint( v0Audit->At(1) );
-  ptV0LP               = v0Audit->At(2);
-  
-  fCheckTriggerFromV0Daug->Fill(isTriggerFromV0Daug);
-
-  if(isV0LP) fTriggerIsV0->Fill(ptV0LP);
-
-  if(isTriggerFromV0Daug && isV0LP) 
-    fCheckTriggerFromV0Daug->Fill(2);
-
-  if(isTriggerFromV0Daug)
-    fTriggerComingFromDaug->Fill(ptTrigger);
-  else 
-    goto endLP;
- 
   // ----------------------------
   // 3. Second trigger particle: when isV0LP is true
-  
-  isSndCheck = 1; 
+  fIsTrigFromV0daug = 0;
+  fIsSndCheck = 1; 
   ptTrigger = -1000.;
  
   for (Int_t i=0; i<nTrk; i++) {
-    if(i == iTrigger) continue;
+    if(i == fIdTrigger) continue;
 
     AliAODTrack *t=fAOD->GetTrack(i);
     if (t->IsMuonTrack()) continue;
@@ -2679,50 +2600,38 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
     if(pt>ptTrigger) {
       ptTrigger = pt;
       idSndTrigger = i;
-      //rapTrigger   = 0.5*TMath::Log((t->E()+t->Pz())/(t->E()-t->Pz()+1.e-13));
-      phiTrigger = t->Phi();
-      etaTrigger = t->Eta();
     }
     
   }
 
-  iTrigger = idSndTrigger;
-  trackLP =  (AliAODTrack*)fAOD->GetTrack(iTrigger); 
+  fIdTrigger = idSndTrigger;
 
-  v0Audit = V0Loop(trackLP,kTriggerCheck,kFALSE); 
-  //isV0LP           = TMath::FloorNint( v0Audit->At(0) );
-  isTriggerFromV0Daug = TMath::FloorNint( v0Audit->At(1) );
-  //ptV0LP           = v0Audit->At(2);
-
-  
   // ----------------------------
-  // 4. Fill the values for the array
+  // 3. Checking if the trigger second particle 
+  // might be a daughter from the V0-candidate
+  V0Loop(kTriggerCheck,kFALSE); 
+  
+  if(!fIsTrigFromV0daug) fCheckTriggerFromV0Daug->Fill(-1);
+  if(fIsTrigFromV0daug && fIsV0LP) fCheckTriggerFromV0Daug->Fill(3);
 
-  endLP:
- 
-  Float_t idTrigger = 1.*iTrigger;
-  Float_t flagTriggerFromV0daug = 1.*isTriggerFromV0Daug;
-  Float_t flagV0LP = 1.*isV0LP;
-  Float_t flagSndLoop = 1.*isSndCheck;
-
-  TArrayD* myTrigger = new TArrayD(4);
-  myTrigger->AddAt(idTrigger,0);
-  myTrigger->AddAt(flagTriggerFromV0daug,1);
-  myTrigger->AddAt(flagV0LP,2);
-  myTrigger->AddAt(flagSndLoop,3);
-
-  return myTrigger;
-  delete myTrigger;
-  delete v0Audit;
-  trackLP->Delete();
 }
 
 //___________________________________________________________________________________________
 
 void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 {
-  //Main loop for the Analysis
+  // Main loop for the Analysis
 
+  // Initializing global variables for the correlation studies (mandatory for each event).
+  // ---- 1) Trigger Particle: id track
+  fIdTrigger  = -1;
+  // ---- 2) TriggerCheck: Variables used to crosscheck if trigger particle is a V0 daughter ---- //
+  fIsTrigFromV0daug = 0; 
+  fIsV0LP     = 0;
+  fPtV0LP     = -10.;
+  fIsSndCheck = 0;
+
+  // Getting AOD Event
   fAOD = (AliAODEvent *)InputEvent();
   fEvents->Fill(0); //event counter  
 
@@ -2816,23 +2725,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   
   // **********************************************
   // Triggered Particle -  Trigger Particle
+  TriggerParticle();
 
-  TArrayD* triggerArray = TriggerParticle();
-  Int_t    iTrigger     = TMath::FloorNint( triggerArray->At(0) );
-  Int_t    isTriggerFromV0daug = TMath::FloorNint( triggerArray->At(1) );
-  Int_t    isV0LP    = TMath::FloorNint( triggerArray->At(2) );
-  Int_t    is2ndLoop = TMath::FloorNint( triggerArray->At(3) );
-  
   Bool_t isTriggered = kFALSE;
   Float_t ptTrigger  = -100.;
   Float_t phiTrigger = -100.;
   Float_t etaTrigger = -100.;
   AliAODTrack *trkTrigger = 0x0;
 
-  if(iTrigger<0)
+  if(fIdTrigger<0)
     fEvents->Fill(7);
   else {
-    trkTrigger = (AliAODTrack*)fAOD->GetTrack(iTrigger);
+    trkTrigger = (AliAODTrack*)fAOD->GetTrack(fIdTrigger);
     ptTrigger  = trkTrigger->Pt();
     phiTrigger = trkTrigger->Phi();
     etaTrigger = trkTrigger->Eta();
@@ -2840,36 +2744,24 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
  
   // -------------------
    
-  if(!isTriggerFromV0daug && is2ndLoop) 
-    fCheckTriggerFromV0Daug->Fill(-1);
-  else if(isTriggerFromV0daug && isV0LP && is2ndLoop) 
-    fCheckTriggerFromV0Daug->Fill(3);
-
   // The highest-pt particle is a V0-candidate 
-  if(isV0LP)
-    fEvents->Fill(8);
-
+  if(fIsV0LP) { fEvents->Fill(8); }
   // The highest-pt particle is a V0-candidate's daughter  
-  if(isTriggerFromV0daug)
-    fEvents->Fill(9);
-
+  if(fIsTrigFromV0daug) { fEvents->Fill(9); }
   // The sencond highest-pt particle is a V0-candidate's daughter  
-  if( isTriggerFromV0daug && is2ndLoop ) 
-    fEvents->Fill(10);
-
-  if(!isTriggerFromV0daug){
+  if( fIsTrigFromV0daug && fIsSndCheck ) { fEvents->Fill(10); }
+  // Trigger Particle Properties
+  if( !fIsTrigFromV0daug &&  (TMath::Abs(etaTrigger)<fTrigEtaMax) ){
     fTriggerEtaPhi->Fill(phiTrigger,etaTrigger);
     fTriggerPtCent->Fill(ptTrigger,centrality);
+    // Event is triggered
+    if( (ptTrigger>=fTrigPtMin)  && (ptTrigger<=fTrigPtMax) ) {
+      fEvents->Fill(11); 
+      isTriggered=kTRUE;
+    }
+    else
+      fEvents->Fill(12);
   }
-
-  if( (ptTrigger>=fTrigPtMin)  && (ptTrigger<=fTrigPtMax) &&
-      (TMath::Abs(etaTrigger)<fTrigEtaMax) && !isTriggerFromV0daug ) {
-    fEvents->Fill(11);
-    isTriggered=kTRUE;
-  }
-  else
-    fEvents->Fill(12);
- 
  
   // ******************************************
   // Start loop over MC particles
@@ -2896,10 +2788,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     // --------- Trigger particle --------------
     // -----------------------------------------
 
-    Float_t triggerMCPt = -1000.;
-    Float_t triggerMCPhi = -1000.;
-    Float_t triggerMCEta = -1000.;
-    Bool_t   isTriggeredMC = kFALSE;
+    Float_t triggerMCPt   = -1000.;
+    Float_t triggerMCPhi  = -1000.;
+    Float_t triggerMCEta  = -1000.;
+    Bool_t  isTriggeredMC = kFALSE;
 
     for (Int_t iTrkMC = 0; iTrkMC < nTrkMC; iTrkMC++){
       
@@ -3188,14 +3080,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     } // End loop over MC
     
   } // End MC condition
-  
+
   // *************************************************
   // V0 loop - AOD
-
-  TArrayD* v0Corr = V0Loop(trkTrigger,kCorrelation,isTriggered);
-
-  delete v0Corr;
-  delete triggerArray;
+  V0Loop(kCorrelation,isTriggered);
 
 }
 
