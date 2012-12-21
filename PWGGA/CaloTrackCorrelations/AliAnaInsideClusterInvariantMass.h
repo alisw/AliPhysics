@@ -105,11 +105,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassSplitECutNLocMax1 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassSplitECutNLocMaxN ;                //! 85% of split energy, not matched, Mass of split clusters, NLM > 2    
-  
-  TH2F       * fhMassAsyCutNLocMax1  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM = 1
-  TH2F       * fhMassAsyCutNLocMax2  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM = 1
-  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! |A|>0.8 selection, Mass of split clusters, NLM > 2
-  
+    
   TH2F       * fhMassM02NLocMax1[7][2]  ;               //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 7 GeV, 1-6 for different MC particle types 
   TH2F       * fhMassM02NLocMax2[7][2]  ;               //! Mass of 2 cells local maxima, vs M02, for E > 7 GeV,  1-6 for different MC particle types
   TH2F       * fhMassM02NLocMaxN[7][2]  ;               //! Mass of >2 cells local maxima, vs M02, for E > 7 GeV, 1-6 for different MC particle types  
@@ -156,14 +152,22 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenFracNLocMax1[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMax2[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMaxN[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
-  
+ 
+  TH2F       * fhMCGenFracAfterCutsNLocMax1MCPi0 ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, MCPi0 after M02 and asymmetry cut
+  TH2F       * fhMCGenFracAfterCutsNLocMax2MCPi0 ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, MCPi0, after M02 and asymmetry cut
+  TH2F       * fhMCGenFracAfterCutsNLocMaxNMCPi0 ; //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, MCPi0, after M02 and asymmetry cut
+
   TH2F       * fhMCGenSplitEFracNLocMax1[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracNLocMax2[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracNLocMaxN[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+
+  TH2F       * fhMCGenSplitEFracAfterCutsNLocMax1MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracAfterCutsNLocMax2MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types
   
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMax1[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax1[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 1, MC pi0
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 2, MC pi0
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster > 2, MC pi0
   
   TH2F       * fhMCGenEvsSplitENLocMax1[7][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenEvsSplitENLocMax2[7][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 2, 1-6 for different MC particle types
@@ -208,9 +212,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassEtaLocMaxN[7][2] ;                 //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConLocMaxN[7][2] ;                 //! Mass for selected around close to 0, N Local Maxima > 2
   
-  TH2F       * fhMassPi0AsyCutLocMax1[7][2] ;           //! Mass for selected pi0, N Local Maxima = 1, asy cut passed
-  TH2F       * fhMassPi0AsyCutLocMax2[7][2] ;           //! Mass for selected pi0, N Local Maxima = 2, asy cut passed
-  TH2F       * fhMassPi0AsyCutLocMaxN[7][2] ;           //! Mass for selected pi0, N Local Maxima > 2, asy cut passed
+  TH2F       * fhMassAfterCutsNLocMax1[7] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1, not matched
+  TH2F       * fhMassAfterCutsNLocMax2[7] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2, not matched
+  TH2F       * fhMassAfterCutsNLocMaxN[7] ;              //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2, not matched
   
   TH2F       * fhAsyPi0LocMax1[7][2] ;                  //! Asy for Mass around pi0, N Local Maxima = 1
   TH2F       * fhAsyEtaLocMax1[7][2] ;                  //! Asy for Mass around eta, N Local Maxima = 1
@@ -227,7 +231,11 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhSplitEFractionNLocMax1[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
   TH2F       * fhSplitEFractionNLocMax2[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
   TH2F       * fhSplitEFractionNLocMaxN[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
-    
+
+  TH2F       * fhSplitEFractionAfterCutsNLocMax1 ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax2 ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMaxN ;      //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
+  
   TH2F       * fhMassSplitEFractionNLocMax1Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMax2Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMaxNEbin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
