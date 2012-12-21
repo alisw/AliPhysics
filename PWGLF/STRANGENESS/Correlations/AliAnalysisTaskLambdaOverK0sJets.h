@@ -88,8 +88,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual void     UserCreateOutputObjects();
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
   virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
-  virtual TArrayD* V0Loop(AliAODTrack *trkLP, V0LoopStep_t step, Bool_t isTriggered);
-  virtual TArrayD* TriggerParticle();
+  //virtual TArrayD* V0Loop(AliAODTrack *trkLP, V0LoopStep_t step, Bool_t isTriggered);
+  virtual void     V0Loop(/*AliAODTrack *trkLP,*/V0LoopStep_t step, Bool_t isTriggered);
+  virtual void     TriggerParticle();
     
   virtual void     UserExec(Option_t *option);
   virtual void     Terminate(Option_t *);  
@@ -111,7 +112,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Bool_t   fCheckIDTrig;
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 
-  AliPIDResponse *fPIDResponse;         //  PID Response
+  AliPIDResponse *fPIDResponse;          //  PID Response
 
 
   Float_t fMinPtDaughter;                //  Minimum transverse momentum for V0's daughters
@@ -123,6 +124,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fNSigma;                       //  Number of sigmas for PID wi dE/dx
   Float_t fMinCtau;                      //  Minimum ctau
   Float_t fMaxCtau;                      //  Maximum ctau
+
+  Int_t   fIdTrigger;  
+  Int_t   fIsTrigFromV0daug;
+  Int_t   fIsV0LP;  
+  Float_t fPtV0LP;  
+  Int_t   fIsSndCheck; 
+  
 
   TList*  fOutput;                       //! List of histograms
   TList*  fOutputQA;                     //! List of histograms
