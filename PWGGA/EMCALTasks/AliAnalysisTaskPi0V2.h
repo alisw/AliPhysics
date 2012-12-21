@@ -18,6 +18,7 @@ class TH2F;
 class TH3F;
 class TList;
 class AliESDCaloCluster;
+class AliVCluster;
 class AliESDtrackCuts;
 class AliESDEvent;
 class THnSparse;
@@ -40,12 +41,12 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t		GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax) const;
     Double_t		GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const;
     Bool_t		IsWithinFiducialVolume(Short_t id) const;
-    Bool_t		IsGoodCluster(const AliESDCaloCluster *c) const;
-    Bool_t		IsGoodClusterV1(const AliESDCaloCluster *c) const;
+    Bool_t		IsGoodCluster(const AliVCluster *c) const;
+    Bool_t		IsGoodClusterV1(const AliVCluster *c) const;
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
     void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
-    void 		GetMom(TLorentzVector& p, const AliESDCaloCluster *c, Double_t *vertex);		
+    void 		GetMom(TLorentzVector& p, const AliVCluster *c, Double_t *vertex);		
     void		SetEventMethod(Double_t e )	{ fEvtSelect  =e ;}
     void		SetVtxCut(Double_t v )	        { fVtxCut     =v ;}
     void		SetClusNcell(Double_t c )	{ fNcellCut   =c ;}
@@ -64,8 +65,12 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TList           		*fOutput;	        //! Output list
     AliESDEvent			*fESD;		        //!ESD object
     TString                     fTracksName;	        // name of track collection
+    TString                     fV1ClusName;	        // name of V1 Clus collection
+    TString                     fV2ClusName;	        // name of V1 Clus collection
     TString                     fTrigClass;	        // trigger class name for event selection
     TClonesArray                *fTracks;		//! pico tracks specific for Skim ESD
+    TClonesArray                *fV1Clus;		//! Cluster Array for V1
+    TClonesArray                *fV2Clus;		//! Cluster Array for V2
     Int_t			fRunNumber;		//! Run numbers
     Double_t 			fEvtSelect;	  	// 1 = MB+Semi+Central, 2 = MB+Semi, 3 = MB;
     Double_t			fVtxCut;		// vertex cut

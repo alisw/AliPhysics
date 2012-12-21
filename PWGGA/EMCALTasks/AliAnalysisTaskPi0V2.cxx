@@ -44,6 +44,7 @@
 #include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
+#include "AliVCluster.h"
 
 #include "AliEventplane.h"
 #include "AliEMCALGeometry.h"
@@ -61,9 +62,9 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fTracksName("PicoTrack"),
+    fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
     fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
-    fTracks(0),
+    fTracks(0), fV1Clus(0), fV2Clus(0),
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
@@ -260,7 +261,7 @@ Bool_t AliAnalysisTaskPi0V2::IsWithinFiducialVolume(Short_t id) const
   return kFALSE;
 }
 //______________________________________________________________________
-Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
+Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliVCluster *c) const
 {
 
   if(!c)
@@ -297,7 +298,7 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
 
 }
 //________________________________________________________________________________________________
-Bool_t AliAnalysisTaskPi0V2::IsGoodClusterV1(const AliESDCaloCluster *c) const
+Bool_t AliAnalysisTaskPi0V2::IsGoodClusterV1(const AliVCluster *c) const
 {
 
   if(!c)
@@ -437,7 +438,7 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
 
 }
 //_________________________________________________________________________________________________
-void AliAnalysisTaskPi0V2::GetMom(TLorentzVector& p, const AliESDCaloCluster *c, Double_t *vertex)
+void AliAnalysisTaskPi0V2::GetMom(TLorentzVector& p, const AliVCluster *c, Double_t *vertex)
 {
   // Calculate momentum.
   Float_t posMom[3];
@@ -784,9 +785,20 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hdifV0C_V0A->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPV0A)));
     // Cluster loop for reconstructed event
 
-   Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
+   if (!fV2ClusName.IsNull() && !fV2Clus) {
+     fV2Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV2ClusName));
+     if (!fV2Clus) {
+       AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV2ClusName.Data()));
+       return;
+     }
+  }
+
+
+//   Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
+   Int_t nCluster =  fV2Clus->GetEntries(); 
    for(Int_t i=0; i<nCluster; ++i){
-     AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
+//     AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
+     AliVCluster *c1 = static_cast<AliVCluster*>(fV2Clus->At(i));      
      hClusDxDZA->Fill(c1->GetTrackDz(), c1->GetTrackDx());
      Float_t clsPosEt[3] = {0,0,0};
      c1->GetPosition(clsPosEt);
@@ -800,7 +812,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      TLorentzVector p1;
      GetMom(p1, c1, vertex);
      for(Int_t j=i+1; j<nCluster; ++j){
-       AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
+//       AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
+       AliVCluster *c2 = static_cast<AliVCluster*>(fV2Clus->At(i));      
        if(!c2->IsEMCAL()) continue;
        if(!IsGoodCluster(c2)) continue;
        TLorentzVector p2;
@@ -810,8 +823,17 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    }
 
   if(isV1Clus){
-    for(Int_t i=0; i<nCluster; ++i){
-      AliESDCaloCluster *c3 = fESD->GetCaloCluster(i);      
+    if (!fV2ClusName.IsNull() && !fV1Clus) {
+      fV1Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV1ClusName));
+      if (!fV1Clus) {
+	AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV1ClusName.Data()));
+	return;
+      }
+    }
+    Int_t nClusterV1 = fV1Clus->GetEntries();
+    for(Int_t i=0; i<nClusterV1; ++i){
+//      AliESDCaloCluster *c3 = fESD->GetCaloCluster(i);      
+      AliVCluster *c3 = static_cast<AliVCluster*>(fV1Clus->At(i));      
       if(!c3->IsEMCAL()) continue;
       if(!IsGoodClusterV1(c3)) continue;
       TLorentzVector p3;
