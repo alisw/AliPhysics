@@ -282,11 +282,16 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
       cov[3] =  fAverPosSq[0][2];  // cov xz
       cov[4] =  fAverPosSq[1][2];  // cov yz
       cov[5] =  fAverPosSq[2][2];  // variance z
-      AliMeanVertex mv(fWeighPos,fWeighSig,cov,fNoEventsContr,0,0.,0.);
+      // We use standard average and not weighed averag now
+      // AliMeanVertex is apparently not taken by the preprocessor; only
+      // the AliESDVertex object is retrieved
+      //      AliMeanVertex mv(fWeighPos,fWeighSig,cov,fNoEventsContr,0,0.,0.);
+      AliMeanVertex mv(fAverPos,fWeighSig,cov,fNoEventsContr,0,0.,0.);
       mv.SetTitle("Mean Vertex");
       mv.SetName("MeanVertex");
       // we have to add chi2 here
-      AliESDVertex vtx(fWeighPos,cov,0,TMath::Nint(fAverContributors),"MeanVertexPos");
+      //      AliESDVertex vtx(fWeighPos,cov,0,TMath::Nint(fAverContributors),"MeanVertexPos");
+      AliESDVertex vtx(fAverPos,cov,0,TMath::Nint(fAverContributors),"MeanVertexPos");
 
       mv.Write(mv.GetName(),TObject::kOverwrite);
       vtx.Write(vtx.GetName(),TObject::kOverwrite);
