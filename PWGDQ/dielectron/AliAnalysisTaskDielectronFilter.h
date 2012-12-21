@@ -29,6 +29,7 @@ Add a sattelite AOD with the array of candidates.
 
 class AliDielectron;
 class TH1D;
+class AliTriggerAnalysis;
 
 class AliAnalysisTaskDielectronFilter : public AliAnalysisTaskSE {
   
@@ -36,6 +37,8 @@ public:
   AliAnalysisTaskDielectronFilter();
   AliAnalysisTaskDielectronFilter(const char *name);
   virtual ~AliAnalysisTaskDielectronFilter(){}
+
+  enum ETriggerLogig {kAny, kExact};
 
   virtual void UserExec(Option_t *option);
   virtual void Init();
@@ -47,25 +50,40 @@ public:
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
   UInt_t GetTriggerMask() const { return fTriggerMask; }
+  void SetExcludeTriggerMask(ULong64_t mask) {fExcludeTriggerMask=mask;}
+  UInt_t GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
+  void SetTriggerLogic(ETriggerLogig log) {fTriggerLogic=log;}
+  ETriggerLogig GetTriggerLogic() const {return fTriggerLogic;}
   
+
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
 
   void SetStoreLikeSignCandidates(Bool_t storeLS) { fStoreLikeSign = storeLS; }
   void SetStoreRotatedPairs(Bool_t storeTR) { fStoreRotatedPairs = storeTR; }
+  void SetStoreTrackLegs(Bool_t storeTrackRef) { fStoreTrackLegs = storeTrackRef; }
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
 
 private:
-  
+  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};  
+
   AliDielectron *fDielectron;             // J/psi framework object
 
   Bool_t fSelectPhysics;                  // Whether to use physics selection
   UInt_t fTriggerMask;               // Event trigger mask
+  UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
+  Bool_t fTriggerOnV0AND;            // if to trigger on V0and
+  Bool_t fRejectPileup;              // pileup rejection wanted
 
   TH1D *fEventStat;                  //! Histogram with event statistics
+
+  ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
+
+  AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
   
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   Bool_t fStoreRotatedPairs;    // flag to store rotation
+  Bool_t fStoreTrackLegs;       // flag to store track legs
 
   AliAnalysisCuts *fEventFilter;     // event filter
   
