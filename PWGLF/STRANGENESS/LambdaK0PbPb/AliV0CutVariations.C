@@ -460,8 +460,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
    if (!AcceptPID(kProton)) isLambda=kFALSE;
    if (!AcceptPID(kProtonBar)) isLambdaBar=kFALSE;
 
-   Double_t yK0s=fTreeVariableRapK0Short;
-   Double_t yLam=fTreeVariableRapLambda;
+   Double_t yK0s=TMath::Abs(fTreeVariableRapK0Short);
+   Double_t yLam=TMath::Abs(fTreeVariableRapLambda);
    if (yK0s > yMax) isK0s=kFALSE;
    if (yLam > yMax) isLambda=isLambdaBar=kFALSE;
    //---
