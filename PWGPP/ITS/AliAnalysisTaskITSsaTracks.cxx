@@ -1,14 +1,15 @@
 #include "AliAnalysisTaskSE.h"
-#include "AliTrackPointArray.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliStack.h"
 #include "AliPID.h"
+#include "AliCentrality.h"
 #include "AliITSPIDResponse.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMultiplicity.h"
 #include <TParticle.h>
 #include <TSystem.h>
 #include <TTree.h>
@@ -58,18 +59,22 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
   fMinPtsforPid(3),
   fMinTPCpts(50),
   fMaxITSChi2Clu(100.),
+  fMinCentrality(0.),
+  fMaxCentrality(100.),
   fFillNtuple(kFALSE),
   fReadMC(kFALSE),
-  fUseMCId(kFALSE)
+  fUseMCId(kFALSE),
+  fUseCentrality(kFALSE)
 {
   //
   for(Int_t ilay=0; ilay<6;ilay++) fRequirePoint[ilay]=kFALSE;
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-  const Int_t nbins = 29;
+  const Int_t nbins = 35;
   Double_t xbins[nbins+1]={0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,
 			   0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,
-			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00};
+			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00,
+			   3.00,4.00,5.00,10.0,20.0,30.0};
   SetPtBins(nbins,xbins);
 }
 
@@ -157,7 +162,7 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fNtupleTracks= new TNtuple("ntupleTracks","ntupleTracks","pt:px:py:pz:eta:phi:d0xy:d0z:dedx3:dedx4:dedx5:dedx6:truncmean:chi2:status:ITSrefit:TPCin:TPCrefit:ITSpureSA:nITSclu:nTPCclu:clumap:spdin:spdout:sddin:sddout:ssdin:ssdout:label:ptgen:pxgen:pygen:pzgen:etagen:phigen:ntracks");
+  fNtupleTracks= new TNtuple("ntupleTracks","ntupleTracks","pt:px:py:pz:eta:phi:d0xy:d0z:dedx3:dedx4:dedx5:dedx6:truncmean:chi2:status:ITSrefit:TPCin:TPCrefit:ITSpureSA:nITSclu:nTPCclu:clumap:spdin:spdout:sddin:sddout:ssdin:ssdout:label:ptgen:pxgen:pygen:pzgen:etagen:phigen:ntracks:ntracklets:centr:iEvent");
   // kinematics: pt, p eta,phi        ->  6 variables
   // impact parameters: d0xy, d0z     ->  2 variables
   // dE/dx: 4 Layers + trunc mean     ->  5 variables
@@ -316,12 +321,12 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
     //---
 
     hisname.Form("hd0rphiITSpureSA%s",spname[iSpec].Data());
-    fHistd0rphiITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,2000,-1,1);
+    fHistd0rphiITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,4000,-2,2);
     fHistd0rphiITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistd0rphiITSpureSA[iSpec]);
 
     hisname.Form("hd0zITSpureSA%s",spname[iSpec].Data());
-    fHistd0zITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,2000,-1,1);
+    fHistd0zITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,4000,-2,2);
     fHistd0zITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistd0zITSpureSA[iSpec]);
 
@@ -442,10 +447,20 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
   if(spdv->GetNContributors()<=0) return;
   fHistNEvents->Fill(1);
   
-  const Int_t ntSize=36;
+  const Int_t ntSize=39;
   Float_t xnt[ntSize];
   
+  Double_t centrality=esd->GetCentrality()->GetCentralityPercentile("V0M");
+  if(fUseCentrality){
+    if(centrality<fMinCentrality) return;
+    if(centrality>fMaxCentrality) return;
+  }
+  fHistNEvents->Fill(2);
+
   Int_t ntracks = esd->GetNumberOfTracks();
+  const AliMultiplicity* mult=esd->GetMultiplicity();
+  Int_t ntracklets = mult->GetNumberOfTracklets();
+
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = esd->GetTrack(iTrack);
     if (!track) continue;
@@ -526,6 +541,9 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     xnt[indexn++]=etagen;
     xnt[indexn++]=phigen;
     xnt[indexn++]=ntracks;
+    xnt[indexn++]=ntracklets;
+    xnt[indexn++]=centrality;
+    xnt[indexn++]=esd->GetEventNumberInFile();
 
     if(indexn>ntSize) printf("AliAnalysisTaskITSsaTracks: ERROR ntuple insexout of range\n");
     if(fFillNtuple) fNtupleTracks->Fill(xnt);
@@ -620,7 +638,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistPtTPCITS[hadronSpecie]->Fill(pttrack);
       fHistEtaPhiTPCITS[hadronSpecie]->Fill(track->Eta(),track->Phi());
       fHistNcluTPCITS[hadronSpecie]->Fill(pttrack,nITSclus);
-      fHistCluInLayTPCITS[hadronSpecie]->Fill(-1.,-1.);
+      fHistCluInLayTPCITS[hadronSpecie]->Fill(pttrack,-1.);
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)) fHistCluInLayTPCITS[hadronSpecie]->Fill(pttrack,iBit);
       }
@@ -630,7 +648,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistNcluITSpureSA[hadronSpecie]->Fill(pttrack,nITSclus);
       fHistd0rphiITSpureSA[hadronSpecie]->Fill(pttrack,impactXY);
       fHistd0zITSpureSA[hadronSpecie]->Fill(pttrack,impactZ);
-      fHistCluInLayITSpureSA[hadronSpecie]->Fill(-1.,-1.);
+      fHistCluInLayITSpureSA[hadronSpecie]->Fill(pttrack,-1.);
       Int_t outerLay=-1;
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)){
@@ -662,7 +680,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       fHistPtITSsa[hadronSpecie]->Fill(pttrack);
       fHistEtaPhiITSsa[hadronSpecie]->Fill(track->Eta(),track->Phi());
       fHistNcluITSsa[hadronSpecie]->Fill(pttrack,nITSclus);
-      fHistCluInLayITSsa[hadronSpecie]->Fill(-1.,-1.);
+      fHistCluInLayITSsa[hadronSpecie]->Fill(pttrack,-1.);
       for(Int_t iBit=0; iBit<6; iBit++){
 	if(clumap&(1<<iBit)) fHistCluInLayITSsa[hadronSpecie]->Fill(pttrack,iBit);
       }
