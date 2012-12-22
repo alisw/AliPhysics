@@ -31,6 +31,16 @@ AliAnalysisEtSelectorPhos::AliAnalysisEtSelectorPhos(AliAnalysisEtCuts* cuts): A
   
 }
 
+AliAnalysisEtSelectorPhos::AliAnalysisEtSelectorPhos(): AliAnalysisEtSelector()
+,fGeoUtils(0)
+,fBadMapM2(0)
+,fBadMapM3(0)
+,fBadMapM4(0)
+,fMatrixInitialized(kFALSE)
+{
+  
+}
+
 AliAnalysisEtSelectorPhos::~AliAnalysisEtSelectorPhos()
 {
 

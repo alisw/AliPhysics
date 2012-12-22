@@ -15,6 +15,9 @@ AliAnalysisEtSelectorEmcal::AliAnalysisEtSelectorEmcal(AliAnalysisEtCuts* cuts):
 {
 
 }
+AliAnalysisEtSelectorEmcal::AliAnalysisEtSelectorEmcal():AliAnalysisEtSelector()
+{
+}
 
 AliAnalysisEtSelectorEmcal::~AliAnalysisEtSelectorEmcal()
 {

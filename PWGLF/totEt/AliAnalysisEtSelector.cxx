@@ -25,6 +25,15 @@ AliAnalysisEtSelector::AliAnalysisEtSelector(AliAnalysisEtCuts *cuts) : AliAnaly
 ,fInitialized(kFALSE)
 {
 }
+AliAnalysisEtSelector::AliAnalysisEtSelector() : AliAnalysisEtCommon()
+,fEvent(0)
+,fClusterArray(0)
+,fCuts(0)
+,fRunNumber(0)
+,fInitialized(kFALSE)
+{
+  fCuts = new AliAnalysisEtCuts();
+}
 
 AliAnalysisEtSelector::~AliAnalysisEtSelector()
 { // dtor

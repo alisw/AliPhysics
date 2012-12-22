@@ -20,6 +20,7 @@ class AliAnalysisEtSelectorPhos : public AliAnalysisEtSelector
 public:
 
     AliAnalysisEtSelectorPhos(AliAnalysisEtCuts *cuts);
+    AliAnalysisEtSelectorPhos();
     virtual ~AliAnalysisEtSelectorPhos();
     
     virtual TRefArray* GetClusters();
@@ -48,7 +49,7 @@ private:
 
     Bool_t fMatrixInitialized; // matrix initialized
     
-    AliAnalysisEtSelectorPhos();
+    //AliAnalysisEtSelectorPhos();
     AliAnalysisEtSelectorPhos(const AliAnalysisEtSelectorPhos& other); // Prohibited
     AliAnalysisEtSelectorPhos& operator=(const AliAnalysisEtSelectorPhos& other); // Prohibited
     bool operator==(const AliAnalysisEtSelectorPhos& other) const; // Prohibited

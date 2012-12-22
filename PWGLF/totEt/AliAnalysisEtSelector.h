@@ -26,6 +26,7 @@ public:
   
     // Constructor takes cuts object
     AliAnalysisEtSelector(AliAnalysisEtCuts *cuts);
+    AliAnalysisEtSelector();
     
     // Destructor 
     virtual ~AliAnalysisEtSelector();
@@ -94,7 +95,7 @@ protected:
     
 private:
 
-    AliAnalysisEtSelector(); // Prohibited
+    //AliAnalysisEtSelector(); // Prohibited
     AliAnalysisEtSelector(const AliAnalysisEtSelector& other);// Prohibited
     AliAnalysisEtSelector& operator=(const AliAnalysisEtSelector& other);// Prohibited
     bool operator==(const AliAnalysisEtSelector& other) const;// Prohibited

@@ -945,9 +945,9 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
 		for(int j=0;j<6;j++){
 		  if( myPart==((UInt_t) gammaDaughterIDs[j]) ){
-		    cout<<"Found a matching cluster!";//<<endl;
+		    //cout<<"Found a matching cluster!";//<<endl;
 		    Double_t clEt = CalculateTransverseEnergy(*caloCluster);
-		    cout<<" it has energy "<<clEt<<endl;
+		    //cout<<" it has energy "<<clEt<<endl;
 		    for(int l=0;l<nEtCuts;l++){//loop over cut values
 		      if(clEt>=etCuts[l]){
 			totalClusterEts[l] += clEt;//if cluster et is above the cut off energy add it
