@@ -81,7 +81,7 @@ void PostProcessCTau(Int_t corrType=1) {
 
   Double_t myExp2(Double_t *v, Double_t *p);
   void Correct(TH1 *rw, const TH1 *as, const TH1 *mc);
-  void Normalise(Double_t, Double_t, Double_t, Double_t, TH1 *h);
+  void Normalise(Double_t, Double_t, Double_t, TH1 *h);
 
   const Int_t    iMax=3;   // Number of V0 particles
   const TString  pnam[]={"K^{0}_{S}", "#Lambda", "#bar{#Lambda}"};
@@ -93,6 +93,10 @@ void PostProcessCTau(Int_t corrType=1) {
   const Int_t nbx=fLambdaFromXi->GetNbinsX();
   const Int_t nby=fLambdaFromXi->GetNbinsY();
   const Int_t nbz=fLambdaFromXi->GetNbinsZ();
+
+  fK0sMC->Scale(1/brch[0]);
+  fLambdaMC->Scale(1/brch[1]);
+  fLambdaBarMC->Scale(1/brch[2]);
 
   const TH2 *in[]={
     fK0sSi,fK0sAs,fK0sMC,
@@ -118,21 +122,19 @@ void PostProcessCTau(Int_t corrType=1) {
          ptAsPx=ptAs->ProjectionX("_px",0,-1,"e"); 
          ptMcPx=ptMc->ProjectionX("_px",0,-1,"e"); 
          Correct(pt, ptAsPx, ptMcPx);
-	 /*
+	 
          TString effName = "Efficiency for " + pnam[i] + " (" + name + ")";
          TH1 *eff = (TH1*)ptAsPx->Clone();
          eff->SetTitle(effName.Data());
          eff->Divide(ptAsPx,ptMcPx,1,1,"b");
          eff->SetName("eff");
-         eff->Scale(brch[i]);
          new TCanvas; eff->Draw();
-	 */
       } else {
          pt=cr->ProjectionX("_px",0,-1,"e");
       }
       TString ptName = pnam[i] + " p_{T} spectrum";
       pt->SetTitle(ptName.Data());
-      Normalise(brch[i], yWin, wbx, nEvents, pt);      
+      Normalise(yWin, wbx, nEvents, pt);      
 
       new TCanvas; 
       pt->Draw(); 
@@ -172,14 +174,14 @@ void PostProcessCTau(Int_t corrType=1) {
          } else {
             fd1=fd2->ProjectionX("_px",0,-1,"e");
 	 }
-         Normalise(brch[i], yWin, wbx, nEvents, fd1);
+         Normalise(yWin, wbx, nEvents, fd1);
 
          //new TCanvas();
          fd1->Draw("same");
 
          cr->Add(fd2,-1);
       } 
-      //continue;
+      continue;
  
       //++++ c*tau
       TF2 *f2=new TF2("myexpo2",myExp2,0.,10.,0.,100.,1+1+1+nbx);
@@ -226,8 +228,7 @@ void Correct(TH1 *rw, const TH1 *as, const TH1 *mc) {
   delete eff;
 } 
 
-void Normalise(Double_t br, Double_t yw, Double_t bw, Double_t ne, TH1 *pt) {
-   pt->Scale(1/br);    // branching ratio
+void Normalise(Double_t yw, Double_t bw, Double_t ne, TH1 *pt) {
    pt->Scale(1/yw);    // rapidity window
    pt->Scale(1/bw);    // bin width 
    pt->Scale(1/ne);    // number of events
