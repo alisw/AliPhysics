@@ -48,38 +48,45 @@ ClassImp(AliAnalysisTaskTotEt)
   // select if we should use EMCal or PHOS class
   // PHOS by default, EMCal if name string contains EMC
   TString t(name);
+  gROOT->LoadMacro(fMCConfigFile);
+  gROOT->LoadMacro(fRecoConfigFile);
+  //There is a weird problem where the name reverts to a default using the plugin
+  //these lines solve it - there is a function written into ConfigEtMonteCarlo.C which solves this
+  Bool_t isEMCal = t.Contains("EMC");
+  if (!(t.Contains("EMC")) && !(t.Contains("PHOS"))) {//the name does not contain either EMCal or PHOS
+    cout<<"Default arguments called.  Reading config file."<<endl;
+      isEMCal = (Bool_t) gInterpreter->ProcessLine("GetIsEMCAL()");
+      isMc =  (Bool_t) gInterpreter->ProcessLine("GetIsMC()");
+
+  }
+  //cout<<__FILE__<<" My name is "<<name<<endl;
   //t.ToUpper();
-  if (t.Contains("EMC")) {
+  if (isEMCal) {
     if (t.Contains("Detail")) {
 
       cout<<"Rereading AliAnalysisEtMonteCarlo configuration file..."<<endl;
-      gROOT->LoadMacro(fMCConfigFile);
       fMCAnalysis = (AliAnalysisEmEtMonteCarlo *) gInterpreter->ProcessLine("ConfigEtMonteCarlo(true,true)");
 			
       cout << "Instantiating AliAnalysisEmEtMonteCarlo class..."<< endl;
     }
     else if (fMCConfigFile.Length()) {
       cout<<"Rereading AliAnalysisEtMonteCarloEmcal configuration file..."<<endl;
-      gROOT->LoadMacro(fMCConfigFile);
       fMCAnalysis = (AliAnalysisEtMonteCarloEmcal *) gInterpreter->ProcessLine("ConfigEtMonteCarlo()");
     }
 		
     if (t.Contains("Detail")) {
       cout<<"Rereading AliAnalysisEmEtReconstructed configuration file..."<<endl;
-      gROOT->LoadMacro(fRecoConfigFile);
       fRecAnalysis = (AliAnalysisEmEtReconstructed *) gInterpreter->ProcessLine("ConfigEtReconstructed(true,true)");
 
     }
     else if (fRecoConfigFile.Length()) {
       cout<<"Rereading AliAnalysisEtReconstructedEmcal configuration file..."<<endl;
-      gROOT->LoadMacro(fRecoConfigFile);
       fRecAnalysis = (AliAnalysisEtReconstructedEmcal *) gInterpreter->ProcessLine("ConfigEtReconstructed()");
     }
   }
   else {
     if (fMCConfigFile.Length()) {
       cout<<"Rereading AliAnalysisEtMonteCarloPhos configuration file..."<<endl;
-      gROOT->LoadMacro(fMCConfigFile);
 			
       fMCAnalysis = (AliAnalysisEtMonteCarloPhos *) gInterpreter->ProcessLine("ConfigEtMonteCarlo(false)");
       cout << fMCAnalysis << endl;
@@ -87,7 +94,6 @@ ClassImp(AliAnalysisTaskTotEt)
 		
     if (fRecoConfigFile.Length()) {
       cout<<"Rereading AliAnalysisEtReconstructedPhos configuration file..."<<endl;
-      gROOT->LoadMacro(fRecoConfigFile);
       fRecAnalysis = (AliAnalysisEtReconstructedPhos *) gInterpreter->ProcessLine("ConfigEtReconstructed(false)");
     }
   }

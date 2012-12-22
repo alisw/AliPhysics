@@ -1,3 +1,12 @@
+//These functions are needed for the plugin to work.  Values have to be set by hand.
+Bool_t GetIsEMCAL(){
+  return kTRUE;
+}
+
+Bool_t GetIsMC(){
+  return kTRUE;
+}
+
 
 AliAnalysisEtMonteCarlo * ConfigEtMonteCarlo(Bool_t EMCAL = true, Bool_t DETAIL = false){
   //Bool_t EMCAL = true;
