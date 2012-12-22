@@ -241,11 +241,11 @@ static Bool_t AcceptTrack(const AliESDtrack *t) {
   if (!t->IsOn(AliESDtrack::kTPCrefit)) return kFALSE;
   if (t->GetKinkIndex(0)>0) return kFALSE;
 
-  Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
-  if (nCrossedRowsTPC < 70) return kFALSE;
+  //Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
+  //if (nCrossedRowsTPC < 70) return kFALSE;
   Int_t findable=t->GetTPCNclsF();
   if (findable <= 0) return kFALSE;
-  if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
+  //if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
 
   if (TMath::Abs(t->Eta()) > 0.8) return kFALSE;
 
@@ -272,13 +272,9 @@ static Bool_t AcceptV0(const AliESDv0 *v0, const AliESDEvent *esd) {
 
   Double_t dca=v0->GetDcaV0Daughters();
   if (dca>1.0) return kFALSE;
-  //if (dca>0.7) return kFALSE;
-  //if (dca>0.4) return kFALSE;
 
   Double_t cpa=v0->GetV0CosineOfPointingAngle();
   if (cpa<0.998) return kFALSE;
-  //if (cpa<0.99875) return kFALSE;
-  //if (cpa<0.9995) return kFALSE;
 
   Double_t xx,yy,zz; v0->GetXYZ(xx,yy,zz);
   Double_t r2=xx*xx + yy*yy;
@@ -391,11 +387,8 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
   }
 
   // Vertex selection
-  const AliESDVertex *vtx=esd->GetPrimaryVertexSPD();
-  if (!vtx->GetStatus()) {
-     vtx=esd->GetPrimaryVertexTracks();
-     if (!vtx->GetStatus()) return;
-  }
+  const AliESDVertex *vtx=esd->GetPrimaryVertex();
+  if (!vtx->GetStatus()) return;
   Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
 
   if (TMath::Abs(zv) > 10.) return ;   
@@ -535,6 +528,8 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
       if (0.4977*lt/pt > 3*2.68) isK0s=kFALSE;
       if (1.1157*lt/pt > 3*7.89) isLambdaBar=isLambda=kFALSE;
 
+      if (v0->PtArmV0() < 0.2*TMath::Abs(v0->AlphaV0())) isK0s=kFALSE;
+
       if (!AcceptPID(pidResponse, ptrack, stack)) isLambda=kFALSE;
       if (!AcceptPID(pidResponse, ntrack, stack)) isLambdaBar=kFALSE;
 
@@ -573,8 +568,6 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
          fLambdaM->Fill(mass,pt);
 
          m=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-         //s=0.0027 + (0.004-0.0027)/(10-1)*(pt-1);
-         //s=0.0015 + (0.002-0.0015)/(2.6-1)*(pt-1);
          s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
          if (TMath::Abs(m-mass) < 3*s) {
             fLambdaSi->Fill(pt,lt);
@@ -596,8 +589,6 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
          fLambdaBarM->Fill(mass,pt);
 
          m=TDatabasePDG::Instance()->GetParticle(kLambda0Bar)->Mass();
-         //s=0.0027 + (0.004-0.0027)/(10-1)*(pt-1);
-         //s=0.0015 + (0.002-0.0015)/(2.6-1)*(pt-1);
          s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
          if (TMath::Abs(m-mass) < 3*s) {
             fLambdaBarSi->Fill(pt,lt);
