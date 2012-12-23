@@ -79,17 +79,20 @@ public:
    // setters
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    void                                 SetdPhiBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fdPhiBins[i] = bin[i]; fNdPhiBins = n;}
-   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b) { 
+   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c) { 
                                                                                           fCentralityMin = min; 
                                                                                           fCentralityMax = max; 
                                                                                           fkCentralityMethodA = a; 
-                                                                                          fkCentralityMethodB = b; }
+                                                                                          fkCentralityMethodB = b;
+                                                                                          fCentralityCut = c; }
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
    void                                 SetPIDConfiguration(Float_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
    Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
    void                                 SetAddTaskMacroSummary(Float_t m[12]) {for(Int_t i(0); i < 12; i++) fAddTaskMacroSummary[i] = m[i];}
    void                                 SetPOIDCAXYZ(Float_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
+   void                                 SetMixingBins(Int_t c[20], Int_t v[20]) {for(Int_t i = 0; i < 20; i++) { fCentralityMixingBins[i] = c[i];
+                                                                                                                 fVertexMixingBins[i] = v[i]; } }
    void                                 SetMixingParameters(Int_t p[3]) { for(Int_t i = 0; i < 3; i++) fMixingParameters[i] = p[i]; }
    void                                 SetPermissiveMixing(Bool_t p) { fPermissiveMixing = p; }
    void                                 SetupSpeciesA(Int_t species, Int_t charge, Float_t mass, Float_t minPtA, Float_t maxPtA) {fSpeciesA = species; fChargeA = charge; fMassA = mass; fMinPtA = minPtA; fMaxPtA = maxPtA;}
@@ -106,8 +109,6 @@ public:
    void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
                                                                                           fDeltaDipPt = pt;
                                                                                           fApplyDeltaDipCut = kTRUE; };
-   void                                 SetMixingBins(Int_t c[20], Int_t v[20]) {for(Int_t i = 0; i < 20; i++) { fCentralityMixingBins[i] = c[i];
-                                                                                                                 fVertexMixingBins[i] = v[i]; } }
    //getters
    void                                 GetMixingParameters(Int_t p[3]) const { for(Int_t i = 0; i < 3; i++) p[i] = fMixingParameters[i]; } 
    Float_t                              GetCenMin() const {return fCentralityMin; }
@@ -215,10 +216,13 @@ private:
    TH1F                 *fPtN; //! QA histogram of p_t distribution of negative particles
    TH1F                 *fPtSpeciesA; //! QA histogram of p_t distribution of species A
    TH1F                 *fPtSpeciesB; //! QA histogram of p_t distribution of species B
+   TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
+   TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
    Float_t              fCentralityMin; // lower bound of cenrality bin
    Float_t              fCentralityMax; // upper bound of centrality bin
    const char           *fkCentralityMethodA; // centrality determiantion (primary method)
    const char           *fkCentralityMethodB; // centrality determination fallback
+   Bool_t               fCentralityCut; // 3 sigma cut for multiplicity outliers 
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
    Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of POI daughters

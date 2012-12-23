@@ -65,7 +65,7 @@ using std::endl;
 ClassImp(AliAnalysisTwoParticleResonanceFlowTask)
 
 AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask() : AliAnalysisTaskSE(),
-  fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
+  fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
 {
    // Default constructor
    for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -85,7 +85,7 @@ AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask
    }
 }
 //_____________________________________________________________________________
-AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0),fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
+AliAnalysisTwoParticleResonanceFlowTask::AliAnalysisTwoParticleResonanceFlowTask(const char *name) : AliAnalysisTaskSE(name), fSpeciesA(0), fSpeciesB(0), fChargeA(0), fChargeB(0), fMassA(0), fMassB(0), fMinPtA(0), fMaxPtA(0), fMinPtB(0), fMaxPtB(0), fIsMC(0), fEventMixing(0), fPhiMinusPsiMethod(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0),fBayesianResponse(0), fCandidates(0),  fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fPermissiveMixing(0), fNPtBins(18), fNdPhiBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fPIDp(0), fPtP(0), fPtN(0), fPtSpeciesA(0), fPtSpeciesB(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut(0), fPOICuts(0), fVertexRange(0), fPhi(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fAnalysisSummary(0)
 {
    // Constructor
   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
@@ -258,6 +258,12 @@ void AliAnalysisTwoParticleResonanceFlowTask::UserCreateOutputObjects()
        fOutputList->Add(fDCAXYQA);
        fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
        fOutputList->Add(fDCAZQA);
+       if(fCentralityCut) {
+           fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+           fOutputList->Add(fMultCorAfterCuts);
+           fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 100.5, 101, 0, 3000);
+           fOutputList->Add(fMultvsCentr);
+       }
    }
    if(fIsMC || fQA) {
        fDCAAll = new TH2F("fDCAAll", "fDCAAll", 1000, 0, 10, 1000, -5, 5);
@@ -365,9 +371,9 @@ AliEventPoolManager* AliAnalysisTwoParticleResonanceFlowTask::InitializeEventMix
   }
   Double_t centralityBins[_c];
   Double_t vertexBins[_v];
-  for(Int_t i(0); i < _c + 1; i++) centralityBins[i] = (Double_t)fCentralityMixingBins[i];
-  for(Int_t i(0); i < _v + 1; i++) vertexBins[i] = (Double_t)fVertexMixingBins[i];
-  return new AliEventPoolManager(fMixingParameters[0], fMixingParameters[1], -1+(Int_t)(sizeof(centralityBins)/sizeof(centralityBins[0])), (Double_t*)centralityBins, -1+(Int_t)(sizeof(vertexBins)/sizeof(vertexBins[0])), (Double_t*)vertexBins);
+  for(Int_t i(0); i < _c + 1; i++) centralityBins[i] = fCentralityMixingBins[i];
+  for(Int_t i(0); i < _v + 1; i++) vertexBins[i] = fVertexMixingBins[i];
+  return new AliEventPoolManager(fMixingParameters[0], fMixingParameters[1], _c, (Double_t*)centralityBins, _v, (Double_t*)vertexBins);
 }
 //_____________________________________________________________________________
 template <typename T> Float_t AliAnalysisTwoParticleResonanceFlowTask::InvariantMass(const T* track1, const T* track2) const
@@ -448,6 +454,35 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCentr
    if (TMath::Abs(fCentrality-cenB > 5) || cenB >= 80 || cenB < 0 || fCentrality <= fCentralityMin || fCentrality > fCentralityMax) {
       if(fQA) fCentralityNoPass->Fill(fCentrality) ;
       return kFALSE;
+   }
+   const Int_t nGoodTracks = event->GetNumberOfTracks();
+   if(fCentralityCut) { // cut on outliers
+      Float_t multTPC(0.); // tpc mult estimate
+      Float_t multGlob(0.); // global multiplicity
+      for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+          AliAODTrack* trackAOD = event->GetTrack(iTracks);
+          if (!trackAOD) continue;
+          if (!(trackAOD->TestFilterBit(1))) continue;
+          if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+          multTPC++;
+      }
+      for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+          AliAODTrack* trackAOD = event->GetTrack(iTracks);
+          if (!trackAOD) continue;
+          if (!(trackAOD->TestFilterBit(16))) continue;
+          if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+          Double_t b[2] = {-99., -99.};
+          Double_t bCov[3] = {-99., -99., -99.};
+          if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+          if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+          multGlob++;
+      } //track loop
+ //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
+      if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) return kFALSE;
+      if(fQA) {  
+          fMultCorAfterCuts->Fill(multGlob, multTPC);  
+          fMultvsCentr->Fill(fCentrality, multTPC);
+      }
    }
    fCentralityPass->Fill(fCentrality);
    return kTRUE;

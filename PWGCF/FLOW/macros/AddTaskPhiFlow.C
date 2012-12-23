@@ -97,7 +97,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    }
    if(task->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
    if(event_mixing) {
-      if(debug) cout << " --> Enabeling event mixing for phi reconstruction - try at your own risk !!! <-- " << endl;
+      if(debug) cout << " --> Enabeling event mixing for reconstruction - try at your own risk !!! <-- " << endl;
       // set vertex and mixing bins - arrays MUST have length 20!
       Int_t c[] = {0, 2, 4, 6, 8, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101, 0, 0, 0, 0, 0};
       Int_t v[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -106,7 +106,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
           return 0x0;
       }
       else task->SetMixingBins(c, v);
-   }
+   }  
    // set triggers
    if (bCentralTrigger) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
    else                 task->SelectCollisionCandidates(AliVEvent::kMB);

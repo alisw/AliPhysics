@@ -10,13 +10,17 @@
  * if the macro is called with kFALSE as argument,
  * an example function of how to do analysis on the output is called
  *
+ * at the end of the macro, an example function is given that can be used 
+ * to connect the on the fly events to the AliAnalysistwoParticleResonanceFlowTask
+ *
  * Redmer Alexander Bertens (rbertens@cern.ch)
  * Carlos Eugenio Perez Lara
  * Andrea Dubla
  */
 
 class AliFlowOnTheFlyGenerator;
-
+class AliAnalysisTwoParticleResonanceFlowTask;
+class AliFlowAnalysisWithQCumulants;
 // main function
 //
 // you can call this macro in different modes. 
@@ -26,6 +30,7 @@ class AliFlowOnTheFlyGenerator;
 // doing the desired v2 analysis)
 void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   if(!generate) {
+      LoadLibraries();
       AnalyseEventsFromFile();
       return;
   }
@@ -78,7 +83,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   // note that by default gamma's are 'decayed' to e+ e- pairs
   Int_t decayModes[]    = { TPythia6Decayer::kHadronicD };     // some decay modes
   // h) number of events you want to generate.
-  const int events      = 1000;
+  const int events      = 100;
   // i) write output to file
   Bool_t writeOutput    = kTRUE;
   // j) do qa. qa histograms will be created at the end of generation adn written to a rootfile in your working directory
@@ -86,7 +91,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   // k) write analysis to an output file
   TString trunkName             =       "OnTheFlyEvent"; // trunk of output file name
   // l) specify the max number of events per file (new files will be generated automatically)
-  const int maxEventsPerFile    =    500;          // specify the maximum number of events that is stored per file
+  const int maxEventsPerFile    =    50;          // specify the maximum number of events that is stored per file
                                                      // note that events are stored temporarily in RAM memory before writing to file
                                                      // so setting this number to a very large value could lead to an unresponsive system
   ///====== END OF GENERATOR INTERFACE===///
@@ -106,6 +111,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   for(Int_t i(0); i < nDecayModes; i++) decayer->SetForceDecay(decayModes[i]);
   // get an instance of the class that we'll use to generate events
   AliFlowOnTheFlyEventGenerator* eventGenerator = new AliFlowOnTheFlyEventGenerator(    qa,             // make some QA plots
+                                                                                        NULL,           // introduce flow fluctuations (not implemented yet)
                                                                                         nMult,          // set initial value for evnet multiplcity
                                                                                         decayer,        // specify the decayer (NULL is no decay)
                                                                                         addMotherV2,    // add v2 for mothers
@@ -145,31 +151,10 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
 //_____________________________________________________________________________
 void AnalyseEventsFromFile() {
     // example function: read events from file and do some analysis.
-    gSystem->Load("libPWGflowBase");
     Int_t nFiles(0);                                    // file counter
     // setup analysis methods
-    AliFlowAnalysisWithQCumulants *qc(0x0);             // for cumulants
-    AliFlowAnalysisWithScalarProduct *sp(0x0);          // for scalar product
-    sp = new AliFlowAnalysisWithScalarProduct();
-    sp->SetHarmonic(2);
-    sp->SetApplyCorrectionForNUA(kFALSE);
-    sp->Init();
-    qc = new AliFlowAnalysisWithQCumulants();
-    qc->SetHarmonic(2);
-    qc->SetCalculateDiffFlow(kTRUE);
-    qc->SetCalculate2DDiffFlow(kFALSE); // vs (pt,eta)
-    qc->SetApplyCorrectionForNUA(kFALSE);
-    qc->SetFillMultipleControlHistograms(kFALSE);     
-    qc->SetMultiplicityWeight("combinations"); // default (other supported options are "unit" and "multiplicity")
-    qc->SetCalculateCumulantsVsM(kFALSE);
-    qc->SetCalculateAllCorrelationsVsM(kFALSE); // calculate all correlations in mixed harmonics "vs M"
-    qc->SetnBinsMult(10000);
-    qc->SetMinMult(0);
-    qc->SetMaxMult(10000);      
-    qc->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
-    qc->SetCalculateDiffFlowVsEta(kTRUE); // if you set kFALSE only differential flow vs pt is calculated
-    qc->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators
-    qc->Init();  
+    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
+    PrepareQCumulants(qc);
 
     while(kTRUE) {
         TFile file(Form("OnTheFlyEvent_%i.root",nFiles));         // open the root file
@@ -209,7 +194,6 @@ void AnalyseEventsFromFile() {
             }
             // insert the poor guy into the flow anaysis method
             qc->Make(event);
-            sp->Make(event);
             delete event;
         }
         nFiles++;
@@ -217,8 +201,8 @@ void AnalyseEventsFromFile() {
     // prepare output for the flow package analyses
     TString outputFileName = "AnalysisResults.root";  
     TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
-    const Int_t nMethods(2);
-    TString method[] = {"SP", "QC"};
+    const Int_t nMethods(1);
+    TString method[] = {"QC"};
     TDirectoryFile *dirFileFinal[nMethods] = {NULL};
     TString fileName[nMethods]; 
     for(Int_t i(0); i < nMethods; i++) {
@@ -227,10 +211,143 @@ void AnalyseEventsFromFile() {
          fileName[i]+="analysis";
          dirFileFinal[i] = new TDirectoryFile(fileName[i].Data(),fileName[i].Data());
     } 
-    sp->Finish();sp->WriteHistograms(dirFileFinal[0]);
-    qc->Finish();qc->WriteHistograms(dirFileFinal[1]);
+    qc->Finish();qc->WriteHistograms(dirFileFinal[0]);
     outputFile->Close();
     delete outputFile;
+}
+
+/* ====================================================
+ *
+ * the following two functions serve as an exmaple
+ * of how to run the phi and kstar analysis on on the 
+ * fly events 
+ * 
+ * ====================================================
+ */
+
+//_____________________________________________________________________________
+void TwoParticleResonanceFlowOnTheFly() {
+    
+    // load additional libraries
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libXMLIO");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libPWGflowBase");
+    gSystem->Load("libPWGflowTasks");
+
+    TString dirName = "reconstruction";
+    Int_t nFiles(0);
+    // define the poi cuts, see AddTwoParticelResonanceFlowTask.C for more info
+    const Int_t mb(30); // no of massbands available for analysis
+    Float_t minMass(.99), maxMass(1.092);       // upper and lower bound
+    AliFlowTrackSimpleCuts* POIfilterQC[mb];    // pointers to poi filters
+    Double_t flowBands[2][mb];                  // define the invm regins
+    Double_t _inc = (maxMass-minMass)/(float)mb;
+    for (Int_t _mb = 0; _mb < mb; _mb++) {      // create the poi filters
+       flowBands[0][_mb] = minMass + _mb * _inc;
+       flowBands[1][_mb] = minMass + (_mb + 1) * _inc;
+       POIfilterQC[_mb] = new AliFlowTrackSimpleCuts(Form("FilterPOIQC_MB%d", _mb));
+       POIfilterQC[_mb]->SetEtaMin(-0.8);       // eta range
+       POIfilterQC[_mb]->SetEtaMax(+0.8);       
+       POIfilterQC[_mb]->SetMassMin(flowBands[0][_mb]); // invm range lower bound
+       POIfilterQC[_mb]->SetMassMax(flowBands[1][_mb]); // invm rnage upper bound
+    }
+    // do the flow analysis
+    AliFlowAnalysisWithQCumulants* qc[mb];
+    for(int i(0); i < mb; i++) {        // init the q-cumulant tasks, one for each invm bin
+        qc[i] = new AliFlowAnalysisWithQCumulants();
+        PrepareQCumulants(qc[i]);
+        printf("  > init qc task %i < \n", i);
+    }
+    AliAnalysisTwoParticleResonanceFlowTask* task = new AliAnalysisTwoParticleResonanceFlowTask("onthefly");
+    SetUpTask(task, minMass,maxMass);// setup the task
+    // open files
+    while(kTRUE) {      // infinite loop which we will break when we've looked through all the files
+        TFile file(Form("OnTheFlyEvent_%i.root", nFiles));   // open the root file
+        if(nFiles==0&&file.IsZombie()) {                     // something went wrong ...
+            printf(" > cannot get input files ... exiting < \n");
+            exit(0);
+        }
+        if(file.IsZombie()) break;                  // break the loop on the first empty file
+        TIter iter(file.GetListOfKeys());           // get a list of keys
+        while(kTRUE) {                              // infinite loop over events ...
+            TKey* key = iter();                     // get the next key from the file
+            if(!key) break;                         // ... and exit the loop if the key is empty
+            AliFlowEventSimple* event = (AliFlowEventSimple*)key->ReadObj();        // cast to a flow event
+            printf("   - read event with %i tracks from file %i \n       > task ", event->NumberOfTracks(), nFiles);
+            task->DoAnalysisOnTheFly(event);                       // do the on the fly analysis
+            AliFlowEventSimple* flowEvent = task->GetFlowEvent();  // retrieve the flow event
+            for(int j(0); j < mb; j++) {                           // loop over all invm bands
+                flowEvent->TagPOI(POIfilterQC[j]);                 // 'offline' tagging of poi's in certain mass range
+                flowEvent->TagSubeventsInEta(-.8, 0, 0, .8);       // setup subevents
+                qc[j]->Make(flowEvent);                            // do qc analysis
+                printf(" %i", j);
+            }
+        }
+        nFiles++;
+    }
+    // prepare output for the flow package analyses
+    TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");   // common outputfile    
+    TDirectoryFile* dirFileFinal[mb];                                   // tdirectory files
+    TString fileName[mb];                                               // dir names
+    for(Int_t i(0); i < mb; i++) {                                      // loop over all bands ...
+         fileName[i]+=Form("QC_minv_%i", i);
+         dirFileFinal[i] = new TDirectoryFile(fileName[i].Data(),fileName[i].Data());
+         qc[i]->Finish();                               // finalize the method
+         qc[i]->WriteHistograms(dirFileFinal[i]);       // and write it to file
+    }
+    // write the output of the phi reconstruction to the same file
+    TDirectoryFile* dir = new TDirectoryFile(dirName.Data(), dirName.Data());
+    task->DoAnalysisOnTheFly(dir);
+    // end of analysis
+    outputFile->Close();
+    delete outputFile;
+}
+//_____________________________________________________________________________
+void SetUpTask(AliAnalysisTwoParticleResonanceFlowTask* task, Float_t minMass, Float_t maxMass) 
+{
+    // some magic which is necessary to 'trick' the analysis task into thinking
+    // that we're actually doing an analysis on aod events.
+    // some of these configurations are used (e.g. setupSpecies, common constants
+    // and the binning in pt)
+    // others have no meaning (PID, DCA, RP and POI cuts)
+    // note that UserCreateOutputObjects is necessary since it initializes
+    // the output of the analysis
+    gSystem->Load("libPWGflowTasks");
+    Float_t PIDconfig[] = {0,0,0,0,0,0,0.3};                    // not used
+    task->SetPIDConfiguration(PIDconfig);                       // not used
+    task->SetupSpeciesA(321, 1, 4.93676999e-01, 0.15, 5.);      // pid and charge 
+    task->SetupSpeciesB(-321, -1, 4.93676999e-01, 0.15, 5.);    // pid and charge
+    task->SetRPCuts(new AliFlowTrackCuts("unused_rp_cuts"));    // not used
+    task->SetPOICuts(new AliFlowTrackCuts("unused_poi_cuts"));  // not used
+    Float_t POIDCA[] = {0,0,0,0,0};                             // not used
+    task->SetPOIDCAXYZ(POIDCA);                                 // not used
+    task->SetCommonConstants(30, minMass, maxMass);             // necesssary
+    Float_t _pt[] = {0., 0.6, 1.2, 1.8, 2.4, 3., 4., 5., 6., 7.};       // same
+    task->SetPtBins(_pt, (Int_t)(sizeof(_pt)/sizeof(_pt[1]))-1);        // same
+    task->UserCreateOutputObjects();                            // necessary
+}
+//_____________________________________________________________________________
+void PrepareQCumulants(AliFlowAnalysisWithQCumulants* qc) 
+{
+    // prepare the cumulants task
+    qc->SetHarmonic(2);
+    qc->SetCalculateDiffFlow(kTRUE);
+    qc->SetCalculate2DDiffFlow(kFALSE); // vs (pt,eta)
+    qc->SetApplyCorrectionForNUA(kFALSE);
+    qc->SetFillMultipleControlHistograms(kFALSE);     
+    qc->SetMultiplicityWeight("combinations"); // default (other supported options are "unit" and "multiplicity")
+    qc->SetCalculateCumulantsVsM(kFALSE);
+    qc->SetCalculateAllCorrelationsVsM(kFALSE); // calculate all correlations in mixed harmonics "vs M"
+    qc->SetnBinsMult(10000);
+    qc->SetMinMult(0);
+    qc->SetMaxMult(10000);      
+    qc->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
+    qc->SetCalculateDiffFlowVsEta(kTRUE); // if you set kFALSE only differential flow vs pt is calculated
+    qc->Init();
 }
 //_____________________________________________________________________________
 Bool_t LoadLibraries() {
