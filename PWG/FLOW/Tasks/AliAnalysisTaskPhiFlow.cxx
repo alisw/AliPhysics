@@ -218,7 +218,7 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
        if(fCentralityCut) {
            fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
            fOutputList->Add(fMultCorAfterCuts);
-           fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 8.5, 100, 0, 3000);
+           fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 100.5, 101, 0, 3000);
            fOutputList->Add(fMultvsCentr);
        }
    }
