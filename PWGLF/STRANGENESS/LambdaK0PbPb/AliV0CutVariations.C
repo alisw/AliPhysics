@@ -298,9 +298,10 @@ Bool_t AliV0CutVariations::AcceptTracks() {
   //if (!t->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
   //if (t->GetKinkIndex(0)>0) return kFALSE;
 
+  /* 
   if (fTreeVariableLeastNbrCrossedRows < fTPCcr) return kFALSE;
   if (fTreeVariableLeastRatioCrossedRowsOverFindable < fTPCcrfd) return kFALSE;
-
+  */
   if (TMath::Abs(fTreeVariableNegEta) > 0.8) return kFALSE;
   if (TMath::Abs(fTreeVariablePosEta) > 0.8) return kFALSE;
 
@@ -472,7 +473,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
       fK0sM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-      s=0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
+      //s=0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
+      s=0.0029 + 0.00077*pt;
       if (TMath::Abs(m-mass) < 3*s) {
          fK0sSi->Fill(pt,lt);
       } else {
@@ -491,9 +493,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
       fLambdaM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-      //s=0.0027 + (0.004-0.0027)/(10-1)*(pt-1);
-      //s=0.0015 + (0.002-0.0015)/(2.6-1)*(pt-1);
-      s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+      //s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+      s=0.0021 + 0.00022*pt;
       if (TMath::Abs(m-mass) < 3*s) {
          fLambdaSi->Fill(pt,lt);
       } else {
@@ -512,9 +513,8 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
       fLambdaBarM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kLambda0Bar)->Mass();
-      //s=0.0027 + (0.004-0.0027)/(10-1)*(pt-1);
-      //s=0.0015 + (0.002-0.0015)/(2.6-1)*(pt-1);
-      s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+      //s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+      s=0.0021 + 0.00022*pt;
       if (TMath::Abs(m-mass) < 3*s) {
          fLambdaBarSi->Fill(pt,lt);
       } else {
@@ -802,7 +802,10 @@ void AliV0CutVariations::Terminate()
 
   TFile *file = 0;
   if (fIsMC)
-     file=TFile::Open("AliV0CutVariationsMC.root", "RECREATE");
+    if (fSelectNonInjected) 
+       file=TFile::Open("AliV0CutVariationsMC_nonInj.root", "RECREATE");
+    else  
+       file=TFile::Open("AliV0CutVariationsMC.root", "RECREATE");
   else
      file=TFile::Open("AliV0CutVariations.root", "RECREATE");
 
