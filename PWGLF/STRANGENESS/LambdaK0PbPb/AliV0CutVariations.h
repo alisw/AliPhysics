@@ -130,6 +130,7 @@ public :
    virtual void    Terminate();
 
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;}
+  void SetCentrality(Double_t min,Double_t max) {fCMin=min; fCMax=max;}
   void SetSelectNonInjected(Bool_t is=kTRUE) {fSelectNonInjected=is;}
   Bool_t AcceptV0();
   Bool_t AcceptTracks();
