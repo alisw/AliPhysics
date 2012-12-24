@@ -39,8 +39,9 @@ Int_t color[3]={1,2,4};
 TString particle[3]={"Pion","Kaon","Proton"};
 
 
-void PlotOutputQATaskITSsa(TString filename="LHC11h_QA95_MB_4cls.root",TString foutName="OutputQAITSstandaloneTracks_LHC11h_QA95_MB_4cls.root",Bool_t fMC=0){
-  
+
+ void PlotOutputQATaskITSsa(TString filename="LHC11b7Highpt_010Cent_6cls_chi2cut.root",TString foutName="OutputQA_LHC11b7Highpt_010Cent_6cls_chi2cut.root",Bool_t fMC=1){
+
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1); 
 
@@ -269,10 +270,13 @@ void ImpParRes(TList *li,TString foutName)
 
   TH2F *hd0rphiITSpureSA[3];
   //binning
-  const Int_t nbins = 29;
+  const Int_t nbins = 35;
   Double_t xbins[nbins+1]={0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,
 			   0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,
-			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00};
+			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00,
+			   3,4,5,10,20,30};
+  
+  Int_t maxbin=28;
   Int_t MinBin[3]={2,7,9};
   
   TH1F *fHistDCA[nbins];  
@@ -284,10 +288,8 @@ void ImpParRes(TList *li,TString foutName)
   TCanvas *cImpParMean=new TCanvas("ImpParMean_vs_pt_Gaus","ImpParMean_vs_pt_Gaus",1000,800);
   cImpParMean->SetGridx();
   cImpParMean->SetLogx();
-  
+  for(Int_t iparticle=0;iparticle<3;iparticle++)hd0rphiITSpureSA[iparticle]=(TH2F*)li->FindObject(Form("hd0rphiITSpureSA%s",particle[iparticle].Data()));
   for(Int_t iparticle=0;iparticle<3;iparticle++){
-    hd0rphiITSpureSA[iparticle]=(TH2F*)li->FindObject(Form("hd0rphiITSpureSA%s",particle[iparticle].Data()));
-    
     TH1F *fHistImpParRes = new TH1F(Form("fHistImpParResGaus%s",particle[iparticle].Data()),Form("%s",particle[iparticle].Data()),nbins,xbins);
     fHistImpParRes->GetXaxis()->SetTitle("#font[52]{p}_{T} (GeV/#font[52]{c})");
     fHistImpParRes->GetYaxis()->SetTitle("d0 r#phi resolution [#mum]");
@@ -301,14 +303,21 @@ void ImpParRes(TList *li,TString foutName)
     
     for(Int_t m=0;m<nbins;m++){
       fHistDCA[m]= (TH1F*)hd0rphiITSpureSA[iparticle]->ProjectionY(Form("%s%i",particle[iparticle].Data(),m),hd0rphiITSpureSA[iparticle]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle]->GetXaxis()->FindBin(xbins[m+1]-0.000001));
+      //for pt>2 sum kaons and prtons to pions
+      if(iparticle==0 && m>maxbin){
+	fHistDCA[m]->Add((TH1F*)hd0rphiITSpureSA[iparticle+1]->ProjectionY(Form("%s%i",particle[iparticle+1].Data(),m),hd0rphiITSpureSA[iparticle+1]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle+1]->GetXaxis()->FindBin(xbins[m+1]-0.000001)));
+      	fHistDCA[m]->Add((TH1F*)hd0rphiITSpureSA[iparticle+2]->ProjectionY(Form("%s%i",particle[iparticle+2].Data(),m),hd0rphiITSpureSA[iparticle+2]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle+2]->GetXaxis()->FindBin(xbins[m+1]-0.000001)));
+      }    
     }
     
     TCanvas *cgaus=new TCanvas(Form("cgausFit_ImpParRes_vs_pt_%s",particle[iparticle].Data()),Form("cgausFit_ImpParRes_vs_pt_%s",particle[iparticle].Data()),1000,800);
-    cgaus->Divide(8,4,0.001,0.001);
+    if(iparticle==0)cgaus->Divide(8,5,0.001,0.001);
+    else cgaus->Divide(8,4,0.001,0.001);
     Float_t sigma=0;
     
     for(Int_t i=0; i<nbins; i++){
       if(i<MinBin[iparticle])continue;
+      if(iparticle!=0 && i>maxbin)continue; //skip kaons and protons for pt aove 2 GeV (added to pions spectrum)
       
       cgaus->cd(i+1);
       gPad->SetLogy();
@@ -322,10 +331,9 @@ void ImpParRes(TList *li,TString foutName)
       Float_t nsigmas=2.;
       sigma=fPar->GetParameter(2);
       fHistDCA[i]->Fit(fPar,"NM","",fPar->GetParameter(1)-nsigmas*sigma,fPar->GetParameter(1)+nsigmas*sigma);
-      Printf("Third fit step [-0.5 sigma,0.5 sigma]");
-      nsigmas=.5; // narrow range, just want to fit the primaries
+      Printf("Third fit step [-1 sigma,1 sigma]");
+      nsigmas=1.; // narrow range, just want to fit the primaries
       fHistDCA[i]->Fit(fPar,"NM","",fPar->GetParameter(1)-nsigmas*sigma,fPar->GetParameter(1)+nsigmas*sigma);
-      
       //set range to 3 sigmas (for the plot)
       sigma=fPar->GetParameter(2);
       fHistDCA[i]->GetXaxis()->SetRangeUser(fPar->GetParameter(1)-3*sigma,fPar->GetParameter(1)+3*sigma);
@@ -383,9 +391,14 @@ void ImpParResGausTail(TList *li,TString foutName)
   TH2F *hd0rphiITSpureSA[3];
   //binning
   const Int_t nbins = 29;
+  const Int_t nbins = 35;
   Double_t xbins[nbins+1]={0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,
 			   0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,
-			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00};
+			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00,
+			   3,4,5,10,20,30};
+  Int_t maxbin=28;
+  Int_t MinBin[3]={2,7,9};
+  
   TH1F *d0AllpointrphiSkip1_[nbins];  
   
   TCanvas *cImpPar=new TCanvas("ImpParResGausTail_vs_pt","ImpParResGausTail_vs_pt",1000,800);
@@ -403,9 +416,8 @@ void ImpParResGausTail(TList *li,TString foutName)
   Float_t sigma=0;
   Double_t j =3.;  
   
-  for(Int_t iparticle=0;iparticle<3;iparticle++){
-    hd0rphiITSpureSA[iparticle]=(TH2F*)li->FindObject(Form("hd0rphiITSpureSA%s",particle[iparticle].Data()));
-    
+  for(Int_t iparticle=0;iparticle<3;iparticle++)hd0rphiITSpureSA[iparticle]=(TH2F*)li->FindObject(Form("hd0rphiITSpureSA%s",particle[iparticle].Data()));
+  for(Int_t iparticle=0;iparticle<3;iparticle++){   
     TH1F *fHistImpParRes = new TH1F(Form("fHistImpParResGausTail%s",particle[iparticle].Data()),Form("%s",particle[iparticle].Data()),nbins,xbins);
     fHistImpParRes->GetXaxis()->SetTitle("#font[52]{p}_{T} (GeV/#font[52]{c})");
     fHistImpParRes->GetYaxis()->SetTitle("d0 r#phi resolution [#mum]");
@@ -417,12 +429,22 @@ void ImpParResGausTail(TList *li,TString foutName)
     
     for(Int_t m=0;m<nbins;m++){
       d0AllpointrphiSkip1_[m]= (TH1F*)hd0rphiITSpureSA[iparticle]->ProjectionY(Form("%s%i",particle[iparticle].Data(),m),hd0rphiITSpureSA[iparticle]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle]->GetXaxis()->FindBin(xbins[m+1]-0.000001));
+      //for pt>2 sum kaons and prtons to pions
+      if(iparticle==0 && m>maxbin){
+	d0AllpointrphiSkip1_[m]->Add((TH1F*)hd0rphiITSpureSA[iparticle+1]->ProjectionY(Form("%s%i",particle[iparticle+1].Data(),m),hd0rphiITSpureSA[iparticle+1]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle+1]->GetXaxis()->FindBin(xbins[m+1]-0.000001)));
+	d0AllpointrphiSkip1_[m]->Add((TH1F*)hd0rphiITSpureSA[iparticle+2]->ProjectionY(Form("%s%i",particle[iparticle+2].Data(),m),hd0rphiITSpureSA[iparticle+2]->GetXaxis()->FindBin(xbins[m]+0.000001),hd0rphiITSpureSA[iparticle+2]->GetXaxis()->FindBin(xbins[m+1]-0.000001)));
+      }
+      
     }
     
     TCanvas *cgaus=new TCanvas(Form("cgausTailFit_ImpParRes_vs_pt_%s",particle[iparticle].Data()),Form("cgausTailFit_ImpParRes_vs_pt_%s",particle[iparticle].Data()),1000,800);
-    cgaus->Divide(8,4,0.001,0.001);
+    if(iparticle==0)cgaus->Divide(8,5,0.001,0.001);
+    else cgaus->Divide(8,4,0.001,0.001);   
     
     for(Int_t i=0; i<nbins; i++){
+      if(i<MinBin[iparticle])continue;
+      if(iparticle!=0 && i>maxbin)continue; //skip kaons and protons for pt aove 2 GeV (added to pions spectrum)
+      
       cgaus->cd(i+1);
       gPad->SetLogy();
       d0AllpointrphiSkip1_[i]->SetLineColor(1);
@@ -465,7 +487,7 @@ void ImpParResGausTail(TList *li,TString foutName)
       hh->SetLineColor(d0AllpointrphiSkipTail1_[i]->GetLineColor());
       d0AllpointrphiSkipTail1_[i]->Fit(hh,"NM","",-1,1);  
       Double_t Sigmatail_allpointSkip1 = hh->GetParameter(2);
-      d0AllpointrphiSkipGaus1_[i]->Fit(h,"NM","",d0rphiMean_allpointSkip1-d0rphirange_allpointSkip1,d0rphiMean_allpointSkip1+d0rphirange_allpointSkip1);//narrow around the peak
+      d0AllpointrphiSkipGaus1_[i]->Fit(h,"NM","",d0rphiMean_allpointSkip1-d0rphirange_allpointSkip1,d0rphiMean_allpointSkip1+d0rphirange_allpointSkip1);//narrow around the peak (1 sigma)
       //d0AllpointrphiSkipGaus1_[i]->Fit(h,"NM","",-1,1);
       h->SetLineColor(d0AllpointrphiSkipGaus1_[i]->GetLineColor());
       Double_t Sigmagaus_allpointSkip1 = h->GetParameter(2);
@@ -497,7 +519,7 @@ void ImpParResGausTail(TList *li,TString foutName)
     fHistImpParRes->SetTitle(Form("%s - GausTail Fit",particle[iparticle].Data()));
     setDrawAtt(iparticle+20,color[iparticle],1,color[iparticle],1,fHistImpParMean);
     fHistImpParMean->SetTitle(Form("%s - GausTail Fit",particle[iparticle].Data()));
-   
+    
     cImpPar->cd();
     if(iparticle==0)fHistImpParRes->DrawCopy("p");
     else fHistImpParRes->DrawCopy("psame");
