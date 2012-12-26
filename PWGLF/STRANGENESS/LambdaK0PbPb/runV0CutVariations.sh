@@ -1,7 +1,7 @@
 #
 centrality="0005 0010 1020 2040 4060 6080 8090"
 
-production="LHC11a10b_bis LHC11a10b_bis"
+production="LHC11a10b_plus LHC11a10b_bis"
 
 
 #### Real data
@@ -11,6 +11,7 @@ do
   s=${dir:0:2}; e=${dir:2:2}
   echo $dir $s $e
   root.exe -q runV0CutVariations.C\($s,$e,kFALSE,kFALSE,\"$fn\"\) >& real.log
+  mkdir $dir
   mv AliV0CutVariations.root real.log $dir
 done
 
@@ -48,3 +49,4 @@ do
   hadd AliV0CutVariationsMC_nonInj.root `find . -name "AliV0CutVariationsMC_nonInj.root"`
   cd ..
 done
+
