@@ -1,4 +1,7 @@
-void runV0CutVariations(Double_t cmin, Double_t cmax, Bool_t isMC=kFALSE, Bool_t selectNonInjected=kFALSE) {
+void runV0CutVariations(
+Double_t cmin, Double_t cmax, 
+Bool_t isMC=kFALSE, Bool_t selectNonInjected=kFALSE,
+TString fname) {
    TProof::Open("");
 
    TChain *ch=new TChain("chain");
@@ -11,11 +14,13 @@ void runV0CutVariations(Double_t cmin, Double_t cmax, Bool_t isMC=kFALSE, Bool_t
    selector->SetSelectNonInjected(selectNonInjected);
 
    if (isMC) {
-    ch->Add("LHC11a10b_plus/Merged.root/PWGLFExtractPerformanceV0_PP_MC/fTree");
+      fname += "/PWGLFExtractPerformanceV0_PP_MC/fTree";
    } else {
-     ch->Add("LHC10h_pass2/Merged.root/PWGLFExtractV0_PP/fTree");
+      fname += "/PWGLFExtractV0_PP/fTree";
    }
 
-   ch->Process(selector);
+   cout<<"Running over "<<fname.Data()<<endl;
 
+   ch->Add(fname.Data());  
+   ch->Process(selector);
 }
