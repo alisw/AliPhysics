@@ -1093,6 +1093,15 @@ void AliChaoticity::UserCreateOutputObjects()
 			name3DMomResSmeared->Append("_Smeared");
 			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fSmeared = new TH3D(name3DMomResSmeared->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fSmeared);
+			//
+			TString *name3DMomResQW12=new TString(namePC3->Data());
+			name3DMomResQW12->Append("_QW12");
+			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fQW12 = new TH3D(name3DMomResQW12->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fQW12);
+			TString *name3DMomResQW13=new TString(namePC3->Data());
+			name3DMomResQW13->Append("_QW13");
+			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fQW13 = new TH3D(name3DMomResQW13->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
+			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fQW13);
 		      }
 		      
 		      //
@@ -1236,7 +1245,6 @@ void AliChaoticity::Exec(Option_t *)
       mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
       if(!mcArray || mcArray->GetEntriesFast() >= 110000){
 	cout<<"No MC particle branch found or Array too large!!"<<endl;
-	cout<<mcArray->GetEntriesFast()<<endl;
 	return;
       }
     }
@@ -1732,8 +1740,8 @@ void AliChaoticity::Exec(Option_t *)
 		}
 	      }
 	    }
-	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12MC, MCWeight(ch1,ch2,4,5,qinv12MC));
-	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(ch1,ch2,4,5,qinv12MC));
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12, MCWeight(ch1,ch2,4,5,qinv12MC));
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12, qinv12MC*MCWeight(ch1,ch2,4,5,qinv12MC));
 	    
 	  }// label check 2
 	}// MC case
@@ -2471,6 +2479,8 @@ void AliChaoticity::Exec(Option_t *)
 		    Float_t WInput = MCWeight3D(kTRUE, 1, kMCfixedRbin, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW12->Fill(firstQ, secondQ, thirdQ, WInput*firstQMC);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW13->Fill(firstQ, secondQ, thirdQ, WInput*secondQMC);
 		  }else {// mixed charge
 		    Float_t WInput=1.0;
 		    if(bin1==bin2) WInput = MCWeight3D(kFALSE, 1, kMCfixedRbin, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);

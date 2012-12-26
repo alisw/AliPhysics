@@ -135,6 +135,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
     TH3D *f4VectProd2TermsCC0; //!
     TH3D *fIdeal; //!
     TH3D *fSmeared; //!
+    TH3D *fQW12; //!
+    TH3D *fQW13; //!
     //
     struct St_DT DT[kDENtypes];
   };

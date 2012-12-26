@@ -493,7 +493,7 @@ void AliHigherMomentsToyModel::doAODEvent(){
   fTHnCentNplusNminusCh->Fill(fContainerCh);
   
   if( fUsePid ){
-    
+    gPid = (Int_t)fParticleSpecies;
     fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);
     
     // cout << "nCentrality "<< fCentrality <<", nParticle="<< nPartile << ", nMinusParticle=" << nAntiParticle << endl;
@@ -728,7 +728,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
   fTHnCentNplusNminusCh->Fill(fContainerCh);  
   
   if( fUsePid ){
-    
+
+    gPid = (Int_t)fParticleSpecies;
     fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);
     
   }
@@ -785,7 +786,7 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
   fTHnCentNplusNminusChTruth->Fill(fContainerChTruth);  
   
   if( fUsePid ){
-    
+    gPid = (Int_t)fParticleSpecies;
     fTHnCentNplusNminusPidTruth[gPid]->Fill(fContainerPidTruth);
     
   }
