@@ -244,6 +244,8 @@ void Generated() {
 
   //
   TFile::Open("LHC11a10a_bis/Merged.root");
+  v0listMC=(TList *)gFile->Get("PWGLFExtractPerformanceV0_PP_MC/clistV0MC");
+
   h3 = (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultK0Short");
   k0s_nonInj->Add(h3); 
   h3 = (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultLambda");
