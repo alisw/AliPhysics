@@ -78,7 +78,7 @@ void Efficiencies(Float_t cmin, Float_t cmax, TString centr) {
   name+=centr;
   effLambdaBar->SetName(name.Data());
 
-  TFile *f=TFile::Open("SpectraFromTrees.root","update");
+  TFile *f=TFile::Open("SpectraV0CutVariations.root","update");
     effK0s->Write();
     effLambda->Write();
     effLambdaBar->Write();
@@ -117,7 +117,7 @@ void RawYields(Float_t cMin, Float_t cMax, TString centr) {
   TH2F *f2d=0;
 
   //+++ Number of events for normalisation
-  TFile *file=TFile::Open("Merged.root");
+  TFile *file=TFile::Open("LHC10h_pass2/Merged.root");
     TList *v0list=(TList *)gFile->Get("PWGLFExtractV0_PP/clistV0");
     TH1F *fMult=(TH1F*)v0list->FindObject("fHistMultiplicity");
     Int_t i1=fMult->GetXaxis()->FindBin(cMin+1e-2);
@@ -145,7 +145,7 @@ void RawYields(Float_t cMin, Float_t cMax, TString centr) {
   TH1D *rawLambdaBar=f2d->ProjectionX(name,0,-1,"e");
   rawLambdaBar->Scale(1/nEvents,"width");
  
-  TFile *f=TFile::Open("SpectraFromTrees.root","update");
+  TFile *f=TFile::Open("SpectraV0CutVariations.root","update");
     rawK0s->Write();
     rawLambda->Write();
     rawLambdaBar->Write();
@@ -158,7 +158,7 @@ void Spectra(TString centr) {
   TH1D *raw=0;
   TH1D *spe=0;
 
-  TFile *f=TFile::Open("SpectraFromTrees.root","update");
+  TFile *f=TFile::Open("SpectraV0CutVariations.root","update");
     name="eff_K0s_";
     name+=centr;
     eff = (TH1*)gDirectory->Get(name.Data());
@@ -257,3 +257,4 @@ void Generated() {
   alam->Write(); alam_nonInj->Write();
   f->Close();
 }
+
