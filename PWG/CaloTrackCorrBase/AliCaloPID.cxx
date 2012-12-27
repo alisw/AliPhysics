@@ -241,8 +241,8 @@ void AliCaloPID::InitParameters()
   fMassPhoMin  = 0.0;
   fMassPhoMax  = 0.08;
   
-  fMassWidthPi0Param[0] = 0.110;  // Aboslute Low mass cut for NLM=1 and E < 10 GeV
-  fMassWidthPi0Param[1] = 0.100;  // Aboslute Low mass cut for NLM=2 and E < 10 GeV
+  fMassWidthPi0Param[0] = 0.100;  // Absolute Low mass cut for NLM=1 and E < 10 GeV
+  fMassWidthPi0Param[1] = 0.050;  // Absolute Low mass cut for NLM=2 and E < 10 GeV
   fMassWidthPi0Param[2] = 0.009;  // constant width for E < 8 GeV, 9 MeV
   fMassWidthPi0Param[3] = 0.0023; // pol1 param0 of width for E > 8 GeV
   fMassWidthPi0Param[4] = 0.0008; // pol1 param1 of width for E > 8 GeV
@@ -250,48 +250,61 @@ void AliCaloPID::InitParameters()
   fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
   
   
-  fM02MinParam[0][0] = 5.76   ; // pol3 param0 for NLM=1 , E < 20 GeV, pp/PbPb
-  fM02MinParam[0][1] =-0.88   ; // pol3 param1 for NLM=1 , E < 20 GeV, pp/PbPb
-  fM02MinParam[0][2] = 0.0487 ; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
-  fM02MinParam[0][3] =-0.00091; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
-  fM02MinParam[0][4] = 0.3    ; // cut for E > 20 GeV, pp/PbPb
-  fM02MinParam[0][5] = 20.    ; // E cut change
+  fM02MinParam[0][0] = 5.762   ; // pol3 param0 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][1] =-0.880   ; // pol3 param1 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][2] = 0.0487  ; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][3] =-0.000913; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MinParam[0][4] = 0.3     ; // cut for E > 20 GeV, pp/PbPb
+  fM02MinParam[0][5] = 20.     ; // E cut change
 
-  fM02MinParam[1][0] = 8.3   ;  // pol3 param0 for NLM>2 , E < 14 GeV, pp/PbPb
-  fM02MinParam[1][1] =-1.48  ;  // pol3 param1 for NLM>2 , E < 14 GeV, pp/PbPb
-  fM02MinParam[1][2] = 0.095 ;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
-  fM02MinParam[1][3] =-0.0020;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][0] = 8.297  ;  // pol3 param0 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][1] =-1.485  ;  // pol3 param1 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][2] = 0.0949 ;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MinParam[1][3] =-0.00200;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
   fM02MinParam[1][4] = 0.6;     // cut for E > 14 GeV, pp/PbPb
   fM02MinParam[1][5] = 14.;     // E cut change
 
+  fM02MaxParam[0][0] = 4.826   ; // pol3 param0 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MaxParam[0][1] =-0.395   ; // pol3 param1 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MaxParam[0][2] = 0.0123  ; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MaxParam[0][3] =-0.000121; // pol3 param2 for NLM=1 , E < 20 GeV, pp/PbPb
+  fM02MaxParam[0][4] = 0.75    ; // cut for E > 23 GeV, pp/PbPb
+  fM02MaxParam[0][5] = 25.     ; // E cut change
   
-  fAsyMinParam[0][0] =-0.24  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
-  fAsyMinParam[0][1] = 0.087 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
-  fAsyMinParam[0][2] =-0.0017;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
+  fM02MaxParam[1][0] =11.4    ;  // pol3 param0 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MaxParam[1][1] =-1.466  ;  // pol3 param1 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MaxParam[1][2] = 0.0726 ;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MaxParam[1][3] =-0.00121;  // pol3 param2 for NLM>2 , E < 14 GeV, pp/PbPb
+  fM02MaxParam[1][4] = 1.45  ;  // cut for E > 21 GeV, pp/PbPb
+  fM02MaxParam[1][5] = 21.   ;  // E cut change
+  
+  fAsyMinParam[0][0] =-0.245  ;  // pol3 param0 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][1] = 0.0873 ;  // pol3 param1 for NLM=1 , E < 25 GeV, pp
+  fAsyMinParam[0][2] =-0.00173;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, pp
   fAsyMinParam[0][4] = 1.0   ;  // cut for NLM=1 , E > 25 GeV, pp/PbPb
   fAsyMinParam[0][5] = 25.   ;  // E cut change
 
-  fAsyMinParam[1][0] =-1.31 ;   // pol3 param0 for NLM>2 , E < 18 GeV, pp
-  fAsyMinParam[1][1] = 0.39 ;   // pol3 param1 for NLM>2 , E < 18 GeV, pp
-  fAsyMinParam[1][2] =-0.022;   // pol3 param2 for NLM>2 , E < 18 GeV, pp
-  fAsyMinParam[1][3] = 0.00041; // pol3 param2 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][0] =-1.31  ;   // pol3 param0 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][1] = 0.387 ;   // pol3 param1 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][2] =-0.0217;   // pol3 param2 for NLM>2 , E < 18 GeV, pp
+  fAsyMinParam[1][3] = 0.000409; // pol3 param2 for NLM>2 , E < 18 GeV, pp
   fAsyMinParam[1][4] = 1.0  ;   // cut for NLM>2 , E > 18 GeV, pp/PbPb
   fAsyMinParam[1][5] = 18.  ;   // E cut change
   
-//  fAsyMinParam[0][0] =-0.66  ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][0] =-0.663 ;  // pol3 param0 for NLM=1 , E < 25 GeV, PbPb
 //  fAsyMinParam[0][1] = 0.131 ;  // pol3 param1 for NLM=1 , E < 25 GeV, PbPb
-//  fAsyMinParam[0][2] =-0.0028;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
+//  fAsyMinParam[0][2] =-0.00278;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
 //  fAsyMinParam[0][3] = 0     ;  // pol3 param2 for NLM=1 , E < 25 GeV, PbPb
 
-//  fAsyMinParam[1][0] =-1.31 ;   // pol3 param0 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][1] = 0.26 ;   // pol3 param1 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][2] =-0.0079;  // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
-//  fAsyMinParam[1][3] = 0.000038; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][0] =-1.308 ;   // pol3 param0 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][1] = 0.257 ;   // pol3 param1 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][2] =-0.00788;  // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
+//  fAsyMinParam[1][3] = 0.0000377; // pol3 param2 for NLM>2 , E < 25 GeV, PbPb
 
   
-  fSplitEFracMin   = 0.85 ;
-  fSplitWidthSigma = 3.  ;
+  fSplitEFracMin   = 0. ; // no effect
+  fSplitWidthSigma = 3. ;
   
 }
 
@@ -350,8 +363,8 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Float_t maxMass = meanMass+fSplitWidthSigma*width;
 
   // In case of low energy, hard cut to avoid conversions
-  if(energy < 10  && nlm == 1) minMass = fMassWidthPi0Param[0];
-  if(energy < 10  && nlm == 2) minMass = fMassWidthPi0Param[1];
+  if(energy < 10  && nlm == 1 && minMass < fMassWidthPi0Param[0] ) minMass = fMassWidthPi0Param[0];
+  if(energy < 10  && nlm == 2 && minMass < fMassWidthPi0Param[1] ) minMass = fMassWidthPi0Param[1];
   
   //printf("\t \t sigma %1.1f width %3.1f, mean Mass %3.0f, minMass %3.0f, maxMass %3.0f\n ", 
   //       fSplitWidthSigma, width*1000, meanMass*1000,minMass*1000,maxMass*1000);
@@ -362,12 +375,12 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
 }
 
 //_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInMergedM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
 {
-  // Select the appropriate m02 range in splitting method
-  // Min value between 0.3 and 0.6
+  // Select the appropriate m02 range in splitting method for pi0
   
   Float_t minCut = fSplitM02MinCut;
+  Float_t maxCut = fSplitM02MaxCut;
   
   if(!fUseSimpleM02Cut)
   {
@@ -375,22 +388,108 @@ Bool_t AliCaloPID::IsInMergedM02Range(const Float_t energy, const Float_t m02,  
     if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
     
     minCut = fM02MinParam[inlm][0]+
-               fM02MinParam[inlm][1]*energy+
-               fM02MinParam[inlm][2]*energy*energy+
-               fM02MinParam[inlm][3]*energy*energy*energy;
+             fM02MinParam[inlm][1]*energy+
+             fM02MinParam[inlm][2]*energy*energy+
+             fM02MinParam[inlm][3]*energy*energy*energy;
+    
+    maxCut = fM02MaxParam[inlm][0]+
+             fM02MaxParam[inlm][1]*energy+
+             fM02MaxParam[inlm][2]*energy*energy+
+             fM02MaxParam[inlm][3]*energy*energy*energy;
+
     
     // In any case and beyond validity energy range of the function,
     // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
     if( minCut < fM02MinParam[inlm][4] || energy > fM02MinParam[inlm][5] ) minCut = fM02MinParam[inlm][4];
+    if( maxCut < fM02MaxParam[inlm][4] || energy > fM02MaxParam[inlm][5] ) maxCut = fM02MaxParam[inlm][4];
+    if( nlm>2 ) maxCut+=0.75;
   }
   
-  //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,fSplitM02MaxCut);
+  //if(energy > 7) printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
   
-  if(m02 < fSplitM02MaxCut && m02 > minCut) return kTRUE;
-  else                                      return kFALSE;
+  if(m02 < maxCut && m02 > minCut) return kTRUE;
+  else                             return kFALSE;
 
 }
 
+
+//_____________________________________________________________________________________________
+Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+{
+  // Select the appropriate m02 range in splitting method to select eta's
+  // Use same parametrization as pi0, just shift the distributions (to be tuned)
+  
+  Float_t minCut = fSplitM02MinCut;
+  Float_t maxCut = fSplitM02MaxCut;
+  
+  if(!fUseSimpleM02Cut)
+  {
+    Int_t inlm = nlm-1;
+    if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
+    
+    Float_t shiftE = energy-20; // to be tuned
+    if(nlm==1) shiftE=energy-28;
+    
+    minCut = fM02MinParam[inlm][0]+
+    fM02MinParam[inlm][1]*shiftE+
+    fM02MinParam[inlm][2]*shiftE*shiftE+
+    fM02MinParam[inlm][3]*shiftE*shiftE*shiftE;
+    
+    // In any case and beyond validity energy range of the function,
+    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
+    Float_t minE = 50;
+    if(nlm>1) minE = 35;
+    if( minCut < fM02MinParam[inlm][4]+1 || shiftE > minE ) minCut = fM02MinParam[inlm][4]+1;
+
+    shiftE = energy+20; // to be tuned
+
+    maxCut = 1+fM02MaxParam[inlm][0]+
+    fM02MaxParam[inlm][1]*shiftE+
+    fM02MaxParam[inlm][2]*shiftE*shiftE+
+    fM02MaxParam[inlm][3]*shiftE*shiftE*shiftE;
+    
+    Float_t maxE = 50;
+    if(nlm>1) maxE = 40;
+    if( maxCut < fM02MaxParam[inlm][4]+1 || shiftE > maxE ) maxCut = fM02MaxParam[inlm][4]+1;
+    if( nlm>2 ) maxCut+=0.75;
+  }
+  
+  //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
+  
+  if(m02 < maxCut && m02 > minCut) return kTRUE;
+  else                             return kFALSE;
+  
+}
+
+//_____________________________________________________________________________________________
+Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+{
+  // Select the appropriate m02 range in splitting method for converted photons
+  // Just min limit for pi0s is max for conversion.
+  
+  Float_t minCut = 0.1;
+  Float_t maxCut = 0.3;
+  
+  if(!fUseSimpleM02Cut)
+  {
+    Int_t inlm = nlm-1;
+    if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
+    
+    maxCut = fM02MinParam[inlm][0]+
+    fM02MinParam[inlm][1]*energy+
+    fM02MinParam[inlm][2]*energy*energy+
+    fM02MinParam[inlm][3]*energy*energy*energy;
+    
+    // In any case and beyond validity energy range of the function,
+    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
+    if( maxCut < fM02MaxParam[inlm][4] || energy > fM02MaxParam[inlm][5] ) maxCut = fM02MaxParam[inlm][4];
+  }
+  
+  
+  if(m02 < maxCut && m02 > minCut) return kTRUE;
+  else                             return kFALSE;
+  
+}
 
 //______________________________________________
 AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils() 
@@ -652,31 +751,33 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   angle = cellMom2.Angle(cellMom1.Vect());
   e1    = cluster1.E();
   e2    = cluster2.E();
-  
-
-  
+    
   // Consider clusters with splitted energy not too different to original cluster energy
   if((e1+e2)/eClus < fSplitEFracMin) return kNeutralUnknown ;
   
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
-  
-  //If too small or big M02 low number of cells, skip it
-  if (!IsInMergedM02Range(eClus,m02,nMax))  return kNeutralUnknown ; 
-  
-  if(fDebug > 0) printf("\t pass M02 cut\n");
-  
+    
   // Asymmetry of cluster
   Float_t asy =-10;
   if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
   if( fUseSplitAsyCut &&  !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
   
   if (fDebug>0) printf("\t pass asymmetry cut\n");
-
+  
+  Bool_t pi0OK = kFALSE;
+  Bool_t etaOK = kFALSE;
+  Bool_t conOK = kFALSE;
+  
+  //If too small or big M02, skip it
+  if     (IsInPi0M02Range(eClus,m02,nMax))  pi0OK = kTRUE;
+  else if(IsInEtaM02Range(eClus,m02,nMax))  etaOK = kTRUE;
+  else if(IsInConM02Range(eClus,m02,nMax))  conOK = kTRUE;
+  
   // Check the mass, and set an ID to the splitted cluster
-  if     (mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
-  else if(mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
-  else if(IsInPi0SplitMassRange(cluster->E(),mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
-  else                                                                                                return kNeutralUnknown ;
+  if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
+  else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
+  else if( pi0OK && IsInPi0SplitMassRange(cluster->E(),mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
+  else                                                                                                          return kNeutralUnknown ;
   
 }
 
