@@ -208,6 +208,14 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhMassM02NLocMax1Ebin[i] = 0 ;
     fhMassM02NLocMax2Ebin[i] = 0 ;
     fhMassM02NLocMaxNEbin[i] = 0 ;
+
+    fhMassAsyNLocMax1Ebin[i] = 0 ;
+    fhMassAsyNLocMax2Ebin[i] = 0 ;
+    fhMassAsyNLocMaxNEbin[i] = 0 ;
+
+    fhAsyMCGenRecoNLocMax1EbinPi0[i] = 0 ;
+    fhAsyMCGenRecoNLocMax2EbinPi0[i] = 0 ;
+    fhAsyMCGenRecoNLocMaxNEbinPi0[i] = 0 ;
     
     fhMassDispEtaNLocMax1Ebin[i] = 0 ;
     fhMassDispEtaNLocMax2Ebin[i] = 0 ;
@@ -1061,50 +1069,95 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
  
   for(Int_t i = 0; i < 4; i++)
   {  
-    if(IsDataMC())
-    {
-      fhMCAsymM02NLocMax1MCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMax1MCPi0Ebin%d",i),
-                                                 Form("Asymmetry of MC #pi^{0} of 2 highest energy cells #lambda_{0}^{2}, E bin %d",i),
-                                                 ssbins,ssmin,ssmax,100,0,1); 
-      fhMCAsymM02NLocMax1MCPi0Ebin[i]->SetYTitle("Decay asymmetry");
-      fhMCAsymM02NLocMax1MCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhMCAsymM02NLocMax1MCPi0Ebin[i]) ;   
-      
-      fhMCAsymM02NLocMax2MCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMax2MCPi0Ebin%d",i),
-                                                 Form("Asymmetry of MC #pi^{0} of 2 local maxima cells #lambda_{0}^{2}, E bin %d",i),
-                                                 ssbins,ssmin,ssmax,100,0,1); 
-      fhMCAsymM02NLocMax2MCPi0Ebin[i]->SetYTitle("Decay asymmetry");
-      fhMCAsymM02NLocMax2MCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhMCAsymM02NLocMax2MCPi0Ebin[i]) ;   
-      
-      fhMCAsymM02NLocMaxNMCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMaxNMCPi0Ebin%d",i),
-                                                 Form("Asymmetry of MC #pi^{0} of N>2 local maxima cells vs #lambda_{0}^{2}, E bin %d",i),
-                                                 ssbins,ssmin,ssmax,100,0,1); 
-      fhMCAsymM02NLocMaxNMCPi0Ebin[i]->SetYTitle("Decay asymmetry");
-      fhMCAsymM02NLocMaxNMCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhMCAsymM02NLocMaxNMCPi0Ebin[i]) ; 
-    }
-    
     fhMassM02NLocMax1Ebin[i]  = new TH2F(Form("hMassM02NLocMax1Ebin%d",i),
-                                        Form("Invariant mass of 2 highest energy cells #lambda_{0}^{2}, E bin %d",i),
+                                        Form("Invariant mass of split clusters vs #lambda_{0}^{2}, NLM=1, E bin %d",i),
                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
     fhMassM02NLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
     fhMassM02NLocMax1Ebin[i]->SetXTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhMassM02NLocMax1Ebin[i]) ;   
     
     fhMassM02NLocMax2Ebin[i]  = new TH2F(Form("hMassM02NLocMax2Ebin%d",i),
-                                        Form("Invariant mass of 2 local maxima cells #lambda_{0}^{2}, E bin %d",i),
+                                        Form("Invariant mass of split clusters vs #lambda_{0}^{2}, NLM=2, E bin %d",i),
                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
     fhMassM02NLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
     fhMassM02NLocMax2Ebin[i]->SetXTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhMassM02NLocMax2Ebin[i]) ;   
     
     fhMassM02NLocMaxNEbin[i]  = new TH2F(Form("hMassM02NLocMaxNEbin%d",i),
-                                        Form("Invariant mass of N>2 local maxima cells vs #lambda_{0}^{2}, E bin %d",i),
+                                        Form("Invariant mass of split clusters vs vs #lambda_{0}^{2}, NLM>2, E bin %d",i),
                                         ssbins,ssmin,ssmax,mbins,mmin,mmax); 
     fhMassM02NLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
     fhMassM02NLocMaxNEbin[i]->SetXTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhMassM02NLocMaxNEbin[i]) ; 
+    
+    
+    fhMassAsyNLocMax1Ebin[i]  = new TH2F(Form("hMassAsyNLocMax1Ebin%d",i),
+                                         Form("Invariant mass of split clusters vs split asymmetry, NLM=1, E bin %d",i),
+                                         200,-1,1,mbins,mmin,mmax);
+    fhMassAsyNLocMax1Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassAsyNLocMax1Ebin[i]->SetXTitle("asymmetry");
+    outputContainer->Add(fhMassAsyNLocMax1Ebin[i]) ;
+    
+    fhMassAsyNLocMax2Ebin[i]  = new TH2F(Form("hMassAsyNLocMax2Ebin%d",i),
+                                         Form("Invariant mass of split clusters vs split asymmetry, NLM=2, E bin %d",i),
+                                         200,-1,1,mbins,mmin,mmax);
+    fhMassAsyNLocMax2Ebin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassAsyNLocMax2Ebin[i]->SetXTitle("asymmetry");
+    outputContainer->Add(fhMassAsyNLocMax2Ebin[i]) ;
+    
+    fhMassAsyNLocMaxNEbin[i]  = new TH2F(Form("hMassAsyNLocMaxNEbin%d",i),
+                                         Form("Invariant mass of split clusters vs split asymmetry, NLM>2, E bin %d",i),
+                                         200,-1,1,mbins,mmin,mmax);
+    fhMassAsyNLocMaxNEbin[i]->SetYTitle("M (GeV/c^{2})");
+    fhMassAsyNLocMaxNEbin[i]->SetXTitle("asymmetry");
+    outputContainer->Add(fhMassAsyNLocMaxNEbin[i]) ;
+
+    
+    if(IsDataMC())
+    {
+      fhMCAsymM02NLocMax1MCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMax1MCPi0Ebin%d",i),
+                                                  Form("Asymmetry of MC #pi^{0} vs #lambda_{0}^{2}, NLM=1, E bin %d",i),
+                                                  ssbins,ssmin,ssmax,100,0,1);
+      fhMCAsymM02NLocMax1MCPi0Ebin[i]->SetYTitle("Decay asymmetry");
+      fhMCAsymM02NLocMax1MCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMCAsymM02NLocMax1MCPi0Ebin[i]) ;
+      
+      fhMCAsymM02NLocMax2MCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMax2MCPi0Ebin%d",i),
+                                                  Form("Asymmetry of MC #pi^{0} vs #lambda_{0}^{2}, NLM=2, E bin %d",i),
+                                                  ssbins,ssmin,ssmax,100,0,1);
+      fhMCAsymM02NLocMax2MCPi0Ebin[i]->SetYTitle("Decay asymmetry");
+      fhMCAsymM02NLocMax2MCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMCAsymM02NLocMax2MCPi0Ebin[i]) ;
+      
+      fhMCAsymM02NLocMaxNMCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMaxNMCPi0Ebin%d",i),
+                                                  Form("Asymmetry of MC #pi^{0} vs #lambda_{0}^{2}, NLM>2, E bin %d",i),
+                                                  ssbins,ssmin,ssmax,100,0,1);
+      fhMCAsymM02NLocMaxNMCPi0Ebin[i]->SetYTitle("Decay asymmetry");
+      fhMCAsymM02NLocMaxNMCPi0Ebin[i]->SetXTitle("#lambda_{0}^{2}");
+      outputContainer->Add(fhMCAsymM02NLocMaxNMCPi0Ebin[i]) ;    
+      
+      
+      fhAsyMCGenRecoNLocMax1EbinPi0[i]  = new TH2F(Form("hAsyMCGenRecoNLocMax1Ebin%dPi0",i),
+                                                Form("Generated vs reconstructed asymmetry of split clusters from pi0, NLM=1, E bin %d",i),
+                                                200,-1,1,200,-1,1);
+      fhAsyMCGenRecoNLocMax1EbinPi0[i]->SetYTitle("M (GeV/c^{2})");
+      fhAsyMCGenRecoNLocMax1EbinPi0[i]->SetXTitle("asymmetry");
+      outputContainer->Add(fhAsyMCGenRecoNLocMax1EbinPi0[i]) ;
+      
+      fhAsyMCGenRecoNLocMax2EbinPi0[i]  = new TH2F(Form("hAsyMCGenRecoNLocMax2Ebin%dPi0",i),
+                                                Form("Generated vs reconstructed asymmetry of split clusters from pi0, NLM=2, E bin %d",i),
+                                                200,-1,1,200,-1,1);
+      fhAsyMCGenRecoNLocMax2EbinPi0[i]->SetYTitle("M (GeV/c^{2})");
+      fhAsyMCGenRecoNLocMax2EbinPi0[i]->SetXTitle("asymmetry");
+      outputContainer->Add(fhAsyMCGenRecoNLocMax2EbinPi0[i]) ;
+      
+      fhAsyMCGenRecoNLocMaxNEbinPi0[i]  = new TH2F(Form("hAsyMCGenRecoNLocMaxNEbin%dPi0",i),
+                                                Form("Generated vs reconstructed asymmetry of split clusters from pi0, NLM>2, E bin %d",i),
+                                                200,-1,1,200,-1,1);
+      fhAsyMCGenRecoNLocMaxNEbinPi0[i]->SetYTitle("M (GeV/c^{2})");
+      fhAsyMCGenRecoNLocMaxNEbinPi0[i]->SetXTitle("asymmetry");
+      outputContainer->Add(fhAsyMCGenRecoNLocMaxNEbinPi0[i]) ;
+    }
     
     if(fFillSSExtraHisto)
     {
@@ -1573,7 +1626,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
               fhM02MCGenFracNLocMax1Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
               fhMassMCGenFracNLocMax1Ebin[mcindex][ebin]->Fill(efrac  ,  mass  ); 
             }
-            fhMCAsymM02NLocMax1MCPi0Ebin        [ebin]->Fill(l0     ,  asymGen );
+            fhMCAsymM02NLocMax1MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+            fhAsyMCGenRecoNLocMax1EbinPi0[ebin]->Fill(asym,  asymGen );
           }
           
           if(fFillSSExtraHisto)
@@ -1590,7 +1644,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassSplitEFractionNLocMax1Ebin[0][ebin]->Fill(splitFrac,  mass);
         if(IsDataMC())fhMassSplitEFractionNLocMax1Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
 
-        fhMassM02NLocMax1Ebin    [ebin]->Fill(l0     ,  mass    );
+        fhMassM02NLocMax1Ebin    [ebin]->Fill(l0  ,  mass );
+        fhMassAsyNLocMax1Ebin    [ebin]->Fill(asym,  mass );
+        
         if(fFillSSExtraHisto)
         {
           fhMassDispEtaNLocMax1Ebin[ebin]->Fill(dispEta,  mass );
@@ -1629,8 +1685,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
               fhM02MCGenFracNLocMax2Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
               fhMassMCGenFracNLocMax2Ebin[mcindex][ebin]->Fill(efrac  ,  mass  ); 
             }
-            fhMCAsymM02NLocMax2MCPi0Ebin        [ebin]->Fill(l0     ,  asymGen );
-
+            fhMCAsymM02NLocMax2MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+            fhAsyMCGenRecoNLocMax2EbinPi0[ebin]->Fill(asym,  asymGen );
           }
           if(fFillSSExtraHisto)
           {
@@ -1646,7 +1702,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassSplitEFractionNLocMax2Ebin[0][ebin]->Fill(splitFrac,  mass);
         if(IsDataMC())fhMassSplitEFractionNLocMax2Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
 
-        fhMassM02NLocMax2Ebin    [ebin]->Fill(l0     ,  mass );
+        fhMassM02NLocMax2Ebin    [ebin]->Fill(l0  ,  mass );
+        fhMassAsyNLocMax2Ebin    [ebin]->Fill(asym,  mass );
+        
         if(fFillSSExtraHisto)
         {
           fhMassDispEtaNLocMax2Ebin[ebin]->Fill(dispEta,  mass );
@@ -1685,7 +1743,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
               fhM02MCGenFracNLocMaxNEbin [mcindex][ebin]->Fill(efrac  ,  l0     ); 
               fhMassMCGenFracNLocMaxNEbin[mcindex][ebin]->Fill(efrac  ,  mass   ); 
             }
-            fhMCAsymM02NLocMaxNMCPi0Ebin        [ebin]->Fill(l0     ,  asymGen);
+            fhMCAsymM02NLocMaxNMCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+            fhAsyMCGenRecoNLocMaxNEbinPi0[ebin]->Fill(asym,  asymGen );
           }
           if(fFillSSExtraHisto)
           {
@@ -1701,7 +1760,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassSplitEFractionNLocMaxNEbin[0][ebin]->Fill(splitFrac,  mass);
         if(IsDataMC())fhMassSplitEFractionNLocMaxNEbin[mcindex][ebin]->Fill(splitFrac,  mass);
 
-        fhMassM02NLocMaxNEbin    [ebin]->Fill(l0     ,  mass );
+        fhMassM02NLocMaxNEbin    [ebin]->Fill(l0  ,  mass );
+        fhMassAsyNLocMaxNEbin    [ebin]->Fill(asym,  mass );
+        
         if(fFillSSExtraHisto)
         {
           fhMassDispEtaNLocMaxNEbin[ebin]->Fill(dispEta,  mass );
@@ -1717,7 +1778,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     if( l0 < fM02MinCut || l0 > fM02MaxCut ) continue ;
     
-    Bool_t m02OK = GetCaloPID()->IsInMergedM02Range(en,l0,nMax);
+    Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,l0,nMax);
     Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
     
     fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
