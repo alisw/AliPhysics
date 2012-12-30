@@ -244,10 +244,10 @@ void AliCaloPID::InitParameters()
   fMassWidthPi0Param[0] = 0.100;  // Absolute Low mass cut for NLM=1 and E < 10 GeV
   fMassWidthPi0Param[1] = 0.050;  // Absolute Low mass cut for NLM=2 and E < 10 GeV
   fMassWidthPi0Param[2] = 0.009;  // constant width for E < 8 GeV, 9 MeV
-  fMassWidthPi0Param[3] = 0.0023; // pol1 param0 of width for E > 8 GeV
-  fMassWidthPi0Param[4] = 0.0008; // pol1 param1 of width for E > 8 GeV
-  fMassWidthPi0Param[5] = 0.130;  // Mean mass value for NLM=1
-  fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2
+  fMassWidthPi0Param[3] = 0.0023; // pol1 param0 of width for 8 < E < 16 GeV
+  fMassWidthPi0Param[4] = 0.0008; // pol1 param1 of width for 8 < E < 16 GeV
+  fMassWidthPi0Param[5] = 0.130;  // Mean mass value for NLM=1, pp (121 PbPb)
+  fMassWidthPi0Param[6] = 0.134;  // Mean mass value for NLM=2, pp (125 PbPb)
   
   
   fM02MinParam[0][0] = 5.762   ; // pol3 param0 for NLM=1 , E < 20 GeV, pp/PbPb
@@ -353,11 +353,14 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Float_t       meanMass = fMassWidthPi0Param[6];
   if(nlm == 1)  meanMass = fMassWidthPi0Param[5];
   
+  if(energy > 16) meanMass+= (energy*fMassWidthPi0Param[4]-0.013); // Increase mean mass with energy from 16 GeV, same slope as for width
+    
   // Get the parametrized width of the mass
   Float_t width   = 0.009;
-  if(energy < 8) width = fMassWidthPi0Param[2];
-  else           width = fMassWidthPi0Param[3]+energy*fMassWidthPi0Param[4];  
-
+  if      (energy < 8 ) width = fMassWidthPi0Param[2];
+  else if (energy < 16) width = fMassWidthPi0Param[3]+energy*fMassWidthPi0Param[4];
+  else                  width = fMassWidthPi0Param[3]+16    *fMassWidthPi0Param[4]; // Fixed value at 16 GeV
+  
   // Calculate the 2 sigma cut
   Float_t minMass = meanMass-fSplitWidthSigma*width;
   Float_t maxMass = meanMass+fSplitWidthSigma*width;
