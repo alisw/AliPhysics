@@ -153,6 +153,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //
     TH1D *fMCqinv; //!
     TH1D *fMCqinvQW; //!
+    TH2D *fPIDpurityDen; //!
+    TH2D *fPIDpurityNum; //!
     struct St7 OSL_ktbin[2];
   };
   struct St_EDB {// SC structure

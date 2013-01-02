@@ -954,6 +954,15 @@ void AliChaoticity::UserCreateOutputObjects()
 		  nameEx2MCQW->Append("_MCqinvQW");
 		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = new TH1D(nameEx2MCQW->Data(),"",400,0,2);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW);
+		  //
+		  TString *nameEx2PIDpurityDen=new TString(nameEx2->Data());
+		  nameEx2PIDpurityDen->Append("_PIDpurityDen");
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen = new TH2D(nameEx2PIDpurityDen->Data(),"Two Particle Distribution",20,0,1, 400,0,2);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen);
+		  TString *nameEx2PIDpurityNum=new TString(nameEx2->Data());
+		  nameEx2PIDpurityNum->Append("_PIDpurityNum");
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH2D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",20,0,1, 400,0,2);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum);
 		}
 		if(sc==0){
 		  
@@ -1742,7 +1751,12 @@ void AliChaoticity::Exec(Option_t *)
 	    }
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12, MCWeight(ch1,ch2,4,5,qinv12MC));
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12, qinv12MC*MCWeight(ch1,ch2,4,5,qinv12MC));
-	    
+	    // pion purity	    
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityDen->Fill(transK12, qinv12);
+	    if(abs(mcParticle1->GetPdgCode())==211 && abs(mcParticle2->GetPdgCode())==211){// Pions
+	      Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(transK12, qinv12);
+	    }
+
 	  }// label check 2
 	}// MC case
 	
@@ -2193,7 +2207,6 @@ void AliChaoticity::Exec(Option_t *)
     }
     ///////////////////////////////////////////////////
 
-   
 
     //cout<<"pairCountSE = "<<pairCountSE<<"   pairCountME = "<<pairCountME<<endl;
     //cout<<"Start Main analysis"<<endl;
@@ -2475,19 +2488,17 @@ void AliChaoticity::Exec(Option_t *)
 		if(fillIndex3==0 && fMCcase){
 		  Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
 		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 0, 1, firstQMC, secondQMC, thirdQMC);
+		  Float_t WInput = 1;
 		  if(ch1==ch2 && ch1==ch3){// same charge
-		    Float_t WInput = MCWeight3D(kTRUE, 1, kMCfixedRbin, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW12->Fill(firstQ, secondQ, thirdQ, WInput*firstQMC);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW13->Fill(firstQ, secondQ, thirdQ, WInput*secondQMC);
+		    WInput = MCWeight3D(kTRUE, 1, kMCfixedRbin, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
 		  }else {// mixed charge
-		    Float_t WInput=1.0;
 		    if(bin1==bin2) WInput = MCWeight3D(kFALSE, 1, kMCfixedRbin, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
 		    else WInput = MCWeight3D(kFALSE, 1, kMCfixedRbin, kMCfixedLambdabin, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss 
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
 		  }
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW12->Fill(firstQMC, secondQMC, thirdQMC, WInput*firstQMC);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW13->Fill(firstQMC, secondQMC, thirdQMC, WInput*secondQMC);
 		}// fMCcase
 		
 	      }
