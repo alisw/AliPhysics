@@ -1804,7 +1804,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(m02OK && asyOK && !matched)
       {
         fhSplitEFractionAfterCutsNLocMax1->Fill(en,splitFrac);
-        if(IsDataMC() && mcindex==kmcPi0)
+        if(IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
           fhMCGenFracAfterCutsNLocMax1MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax1MCPi0->Fill(en   ,  efracSplit);
@@ -1846,7 +1846,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(m02OK && asyOK && !matched)
       {
         fhSplitEFractionAfterCutsNLocMax2->Fill(en,splitFrac);
-        if(IsDataMC() && mcindex==kmcPi0)
+        if(IsDataMC()  && fFillMCFractionHisto && mcindex==kmcPi0)
         {
           fhMCGenFracAfterCutsNLocMax2MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax2MCPi0->Fill(en   ,  efracSplit);
@@ -1884,7 +1884,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(m02OK && asyOK && !matched)
       {
         fhSplitEFractionAfterCutsNLocMaxN->Fill(en,splitFrac);
-        if(IsDataMC() && mcindex==kmcPi0)
+        if(IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
         {
           fhMCGenFracAfterCutsNLocMaxNMCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0->Fill(en   ,  efracSplit);
