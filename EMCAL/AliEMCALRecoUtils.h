@@ -460,7 +460,7 @@ private:
   Bool_t     fCutRequireITSpureSA; 	 // ITS pure standalone tracks
   
   
-  ClassDef(AliEMCALRecoUtils, 18)
+  ClassDef(AliEMCALRecoUtils, 19)
   
 };
 
