@@ -3,8 +3,8 @@
 AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Tracks",
 					  const char *nclusters          = "CaloClusters",
 					  const char *njets              = "Jets",
-					  const char *nmcjets            = "MCJets",
 					  const char *nmctracks          = "MCParticles",
+					  const char *nmcjets            = "MCJets",
 					  Double_t    jetradius          = 0.2,
 					  Double_t    jetptcut           = 1,
 					  Double_t    jetareacut         = 0.557,
@@ -25,7 +25,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Trac
   AliJetResponseMaker *jetTask = new AliJetResponseMaker[maxPtBin - minPtBin + 1];
 
   for (Int_t i = minPtBin; i <= maxPtBin; i++) {
-    AddTaskJetResponseMaker(ntracks, nclusters, njets, nmcjets, nmctracks, 
+    AddTaskJetResponseMaker(ntracks, nclusters, njets, nmctracks, nmcjets,
 			    jetradius, jetptcut, jetareacut, jetBiasTrack, 
 			    jetBiasClus, maxDistance, type, i, taskname, jetTask + i - minPtBin);
     jetTask[i - minPtBin].SetDoMatching(domatch);

@@ -34,13 +34,22 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s_R0%d_",taskname,njets,nrho,(Int_t)floor(jetradius*100+0.5)));
+  TString name(taskname);
+  if (strcmp(njets,"")) {
+    name += "_";
+    name += njets;
+  }
+  if (strcmp(nrho,"")) {
+    name += "_";
+    name += nrho;
+  }
   if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "TPC";
+    name += "_TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "EMCAL";
+    name += "_EMCAL";
   else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "USER";
+    name += "_USER";
+
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);

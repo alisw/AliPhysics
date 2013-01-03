@@ -137,6 +137,7 @@ void AliEmcalJetTask::FindJets()
   // setup fj wrapper
   AliFJWrapper fjw(name, name);
   fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
+  fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
   fjw.SetAlgorithm(jalgo);  
   fjw.SetMaxRap(1);

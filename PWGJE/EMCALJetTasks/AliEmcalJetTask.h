@@ -30,6 +30,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetType(Int_t t)                 { fType          = t     ; }
   void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
   void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
+  void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
 
  protected:
   void                   FindJets();
@@ -49,6 +50,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fEtaMax;                 // maximum eta for constituents (applied before clustering)
   Double_t               fMinJetArea;             // min area to keep jet in output
   Double_t               fMinJetPt;               // min jet pt to keep jet in output
+  Double_t               fGhostArea;              // ghost area
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
@@ -61,6 +63,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 4) // Jet producing task
+  ClassDef(AliEmcalJetTask, 5) // Jet producing task
 };
 #endif

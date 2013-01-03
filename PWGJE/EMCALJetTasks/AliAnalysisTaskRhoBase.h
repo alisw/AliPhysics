@@ -50,6 +50,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
 
   TH2F                  *fHistJetPtvsCent;               //!jet pt vs. centrality
   TH2F                  *fHistJetAreavsCent;             //!jet area vs. centrality
+  TH2F                  *fHistJetRhovsCent;              //!jet pt/area vs. centrality
   TH2F                  *fHistNjetvsCent;                //!no. of jets vs. centrality
   TH2F                  *fHistJetPtvsNtrack;             //!jet pt vs. no. of tracks
   TH2F                  *fHistJetAreavsNtrack;           //!jet area vs. no. of tracks
@@ -73,6 +74,6 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoBase(const AliAnalysisTaskRhoBase&);             // not implemented
   AliAnalysisTaskRhoBase& operator=(const AliAnalysisTaskRhoBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoBase, 7); // Rho base task
+  ClassDef(AliAnalysisTaskRhoBase, 8); // Rho base task
 };
 #endif

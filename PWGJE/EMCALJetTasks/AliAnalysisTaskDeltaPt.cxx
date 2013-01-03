@@ -56,13 +56,13 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
-    fHistEmbJetsPt[i] = 0;
-    fHistEmbJetsCorrPt[i] = 0;
-    fHistEmbJetsArea[i] = 0;
+    fHistEmbJetsPtArea[i] = 0;
+    fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPt[i] = 0;
     fHistDistEmbPartJetAxis[i] = 0;
+    fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
-    fHistDeltaPtEmb[i] = 0;
+    fHistDeltaPtEmbArea[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -102,13 +102,13 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
     fHistEmbNotFoundPhiEta[i] = 0;
-    fHistEmbJetsPt[i] = 0;
-    fHistEmbJetsCorrPt[i] = 0;
-    fHistEmbJetsArea[i] = 0;
+    fHistEmbJetsPtArea[i] = 0;
+    fHistEmbJetsCorrPtArea[i] = 0;
     fHistEmbPartPt[i] = 0;
     fHistDistEmbPartJetAxis[i] = 0;
+    fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
-    fHistDeltaPtEmb[i] = 0;
+    fHistDeltaPtEmbArea[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -133,7 +133,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   fOutput->Add(fHistRCPhiEta);
 
   fHistRCPtExLJVSDPhiLJ = new TH2F("fHistRCPtExLJVSDPhiLJ","fHistRCPtExLJVSDPhiLJ", fNbins, fMinBinPt, fMaxBinPt, 128, -1.6, 4.8);
-  fHistRCPtExLJVSDPhiLJ->GetXaxis()->SetTitle("rigid cone p_{T} [GeV/c]");
+  fHistRCPtExLJVSDPhiLJ->GetXaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
   fHistRCPtExLJVSDPhiLJ->GetYaxis()->SetTitle("#Delta#phi");
   fOutput->Add(fHistRCPtExLJVSDPhiLJ);
 
@@ -155,78 +155,71 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
     histname = "fHistRCPt_";
     histname += i;
     fHistRCPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPt[i]->GetXaxis()->SetTitle("rigid cone p_{T} [GeV/c]");
+    fHistRCPt[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
     fHistRCPt[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistRCPt[i]);
 
     histname = "fHistRCPtExLJ_";
     histname += i;
     fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPtExLJ[i]->GetXaxis()->SetTitle("rigid cone p_{T}^{RC} [GeV/c]");
+    fHistRCPtExLJ[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T}^{RC} (GeV/#it{c})");
     fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistRCPtExLJ[i]);
 
     histname = "fHistRCPtRand_";
     histname += i;
     fHistRCPtRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-    fHistRCPtRand[i]->GetXaxis()->SetTitle("rigid cone p_{T}^{RC} [GeV/c]");
+    fHistRCPtRand[i]->GetXaxis()->SetTitle("rigid cone #it{p}_{T}^{RC} (GeV/#it{c})");
     fHistRCPtRand[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistRCPtRand[i]);
 
     histname = "fHistRhoVSRCPt_";
     histname += i;
-    fHistRhoVSRCPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistRhoVSRCPt[i]->GetXaxis()->SetTitle("A#rho [GeV/c]");
-    fHistRhoVSRCPt[i]->GetYaxis()->SetTitle("rigid cone p_{T} [GeV/c]");
+    fHistRhoVSRCPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+    fHistRhoVSRCPt[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
+    fHistRhoVSRCPt[i]->GetYaxis()->SetTitle("rigid cone #it{p}_{T} (GeV/#it{c})");
     fOutput->Add(fHistRhoVSRCPt[i]);
 
     histname = "fHistDeltaPtRC_";
     histname += i;
     fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
+    fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
     fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRC[i]);
 
     histname = "fHistDeltaPtRCExLJ_";
     histname += i;
     fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
+    fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
     fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRCExLJ[i]);
 
     histname = "fHistDeltaPtRCRand_";
     histname += i;
     fHistDeltaPtRCRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistDeltaPtRCRand[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
+    fHistDeltaPtRCRand[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
     fHistDeltaPtRCRand[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRCRand[i]);
 
     if (!fEmbJetsName.IsNull()) {
-      histname = "fHistEmbJetsPt_";
+      histname = "fHistEmbJetsPtArea_";
       histname += i;
-      fHistEmbJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-      fHistEmbJetsPt[i]->GetXaxis()->SetTitle("embedded jet p_{T}^{raw} [GeV/c]");
-      fHistEmbJetsPt[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistEmbJetsPt[i]);
+      fHistEmbJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbJetsPtArea[i]->GetXaxis()->SetTitle("area");
+      fHistEmbJetsPtArea[i]->GetYaxis()->SetTitle("embedded jet #it{p}_{T}^{raw} (GeV/#it{c})");
+      fOutput->Add(fHistEmbJetsPtArea[i]);
 
-      histname = "fHistEmbJetsCorrPt_";
+      histname = "fHistEmbJetsCorrPtArea_";
       histname += i;
-      fHistEmbJetsCorrPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-      fHistEmbJetsCorrPt[i]->GetXaxis()->SetTitle("embedded jet p_{T}^{corr} [GeV/c]");
-      fHistEmbJetsCorrPt[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistEmbJetsCorrPt[i]);
-
-      histname = "fHistEmbJetsArea_";
-      histname += i;
-      fHistEmbJetsArea[i] = new TH1F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
-      fHistEmbJetsArea[i]->GetXaxis()->SetTitle("area");
-      fHistEmbJetsArea[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistEmbJetsArea[i]);
+      fHistEmbJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistEmbJetsCorrPtArea[i]->GetXaxis()->SetTitle("area");
+      fHistEmbJetsCorrPtArea[i]->GetYaxis()->SetTitle("embedded jet #it{p}_{T}^{corr} (GeV/#it{c})");
+      fOutput->Add(fHistEmbJetsCorrPtArea[i]);
 
       histname = "fHistEmbPartPt_";
       histname += i;
       fHistEmbPartPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle p_{T}^{emb} [GeV/c]");
+      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle it{p}_{T}^{emb} (GeV/#it{c})");
       fHistEmbPartPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbPartPt[i]);
 
@@ -244,19 +237,26 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistEmbNotFoundPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fOutput->Add(fHistEmbNotFoundPhiEta[i]);
 
+      histname = "fHistEmbBkgArea_";
+      histname += i;
+      fHistEmbBkgArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbBkgArea[i]->GetXaxis()->SetTitle("area");
+      fHistEmbBkgArea[i]->GetYaxis()->SetTitle("background of embedded track (GeV/#it{c})");
+      fOutput->Add(fHistEmbBkgArea[i]);
+
       histname = "fHistRhoVSEmbBkg_";
       histname += i;
-      fHistRhoVSEmbBkg[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
-      fHistRhoVSEmbBkg[i]->GetXaxis()->SetTitle("A#rho [GeV/c]");
-      fHistRhoVSEmbBkg[i]->GetYaxis()->SetTitle("background of embedded track [GeV/c]");
+      fHistRhoVSEmbBkg[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistRhoVSEmbBkg[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
+      fHistRhoVSEmbBkg[i]->GetYaxis()->SetTitle("background of embedded track (GeV/#it{c})");
       fOutput->Add(fHistRhoVSEmbBkg[i]);
       
-      histname = "fHistDeltaPtEmb_";
+      histname = "fHistDeltaPtEmbArea_";
       histname += i;
-      fHistDeltaPtEmb[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-      fHistDeltaPtEmb[i]->GetXaxis()->SetTitle("#deltap_{T}^{emb} [GeV/c]");
-      fHistDeltaPtEmb[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistDeltaPtEmb[i]);
+      fHistDeltaPtEmbArea[i] = new TH2F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtEmbArea[i]->GetXaxis()->SetTitle("area");
+      fHistDeltaPtEmbArea[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
+      fOutput->Add(fHistDeltaPtEmbArea[i]);
     }
   }
 
@@ -281,17 +281,17 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
   
   const Float_t rcArea = fJetRadius * fJetRadius * TMath::Pi();
 
-  // Simple random cones
   for (Int_t i = 0; i < fRCperEvent; i++) {
+    // Simple random cones
     Float_t RCpt = 0;
     Float_t RCeta = 0;
     Float_t RCphi = 0;
     GetRandomCone(RCpt, RCeta, RCphi, 0);
     if (RCpt > 0) {
       fHistRCPhiEta->Fill(RCeta, RCphi);
-      fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal, RCpt);
+      fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
 
-      fHistRCPt[fCentBin]->Fill(RCpt / rcArea);
+      fHistRCPt[fCentBin]->Fill(RCpt);
       fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
     }
   
@@ -307,7 +307,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 	if (dphi < -1.6) dphi += TMath::Pi() * 2; 
 	fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
       }
-      fHistRCPtExLJ[fCentBin]->Fill(RCpt / rcArea);
+      fHistRCPtExLJ[fCentBin]->Fill(RCpt);
       fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
     }
     
@@ -317,7 +317,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     RCphi = 0;
     GetRandomCone(RCpt, RCeta, RCphi, 0, fRandTracks, fRandCaloClusters);
     if (RCpt > 0) {
-      fHistRCPtRand[fCentBin]->Fill(RCpt / rcArea);
+      fHistRCPtRand[fCentBin]->Fill(RCpt);
       fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
     }  
   }
@@ -367,13 +367,14 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     
     fHistDistEmbPartJetAxis[fCentBin]->Fill(distProbeJet);
 
-    fHistEmbJetsPt[fCentBin]->Fill(embJet->Pt());
-    fHistEmbJetsCorrPt[fCentBin]->Fill(embJet->Pt() - fRhoVal * embJet->Area());
-    fHistEmbJetsArea[fCentBin]->Fill(embJet->Area());
+    fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
+    fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area());
     fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
 
-    fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRhoVal - probePt);
-    fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal, embJet->Pt() - probePt);
+    fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - probePt);
+    fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - probePt);
+    fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - probePt);
+
   }
   else {
     if (fEmbTracks)
