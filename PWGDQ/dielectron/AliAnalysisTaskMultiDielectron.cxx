@@ -52,6 +52,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
+  fBeamEnergy(-1.),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
@@ -73,6 +74,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fExcludeTriggerMask(0),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
+  fBeamEnergy(-1.),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fEventFilter(0x0),
@@ -260,6 +262,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliKFParticle::SetField( bz );
 
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
+  //  AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
   
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);

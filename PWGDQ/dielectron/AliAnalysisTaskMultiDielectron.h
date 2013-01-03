@@ -53,6 +53,7 @@ public:
   void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
   void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
+  void SetBeamEnergy(Double_t beamEbyHand=-1.)  { fBeamEnergy=beamEbyHand;  }
   
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
@@ -65,6 +66,7 @@ protected:
   UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
   Bool_t fRejectPileup;              // pileup rejection wanted
+  Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
 
   ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
   
@@ -77,6 +79,6 @@ protected:
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);
   
-  ClassDef(AliAnalysisTaskMultiDielectron, 2); //Analysis Task handling multiple instances of AliDielectron
+  ClassDef(AliAnalysisTaskMultiDielectron, 3); //Analysis Task handling multiple instances of AliDielectron
 };
 #endif

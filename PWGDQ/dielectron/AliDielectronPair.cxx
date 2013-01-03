@@ -25,10 +25,13 @@
 #include <AliVVertex.h>
 #include <AliPID.h>
 #include <AliExternalTrackParam.h>
+#include <AliESDEvent.h>
 
 #include "AliDielectronPair.h"
 
 ClassImp(AliDielectronPair)
+
+Double_t AliDielectronPair::fBeamEnergy=-1.;
 
 AliDielectronPair::AliDielectronPair() :
   fType(-1),
@@ -199,7 +202,6 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
   //
   // Calculate theta and phi in helicity and Collins-Soper coordinate frame
   //
-  const Double_t kBeamEnergy   = 3500.;
   Double_t pxyz1[3]={fD1.GetPx(),fD1.GetPy(),fD1.GetPz()};
   Double_t pxyz2[3]={fD2.GetPx(),fD2.GetPy(),fD2.GetPz()};
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
@@ -211,8 +213,8 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
 //   d1->PxPyPz(pxyz1);
 //   d2->PxPyPz(pxyz2);
   
-  TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
+  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
+  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   
   // first & second daughter 4-mom
   TLorentzVector p1Mom(pxyz1[0],pxyz1[1],pxyz1[2],
@@ -321,8 +323,6 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
 
   // Laboratory frame 4-vectors:
   // projectile beam & target beam 4-mom
-  // TODO: need to retrieve the beam energy from somewhere
-  const Double_t kBeamEnergy   = 3500.;
   Double_t px1=d1->Px();
   Double_t py1=d1->Py();
   Double_t pz1=d1->Pz();
@@ -331,9 +331,9 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
   Double_t pz2=d2->Pz();
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
   Double_t proMass=AliPID::ParticleMass(AliPID::kProton);
-  
-  TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
+  printf(" beam energy %f \n ", fBeamEnergy);
+  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
+  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   
   // first & second daughter 4-mom
   TLorentzVector p1Mom(px1,py1,pz1,TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+eleMass*eleMass));
@@ -382,7 +382,6 @@ Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) 
   AliVParticle *d1 = static_cast<AliVParticle*>(fRefD1.GetObject());
   AliVParticle *d2 = static_cast<AliVParticle*>(fRefD2.GetObject());
   
-  const Double_t kBeamEnergy   = 3500.;
   Double_t px1=d1->Px();
   Double_t py1=d1->Py();
   Double_t pz1=d1->Pz();
@@ -392,8 +391,8 @@ Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) 
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
   Double_t proMass=AliPID::ParticleMass(AliPID::kProton);
   
-  TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
-  TLorentzVector targMom(0.,0., kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
+  TLorentzVector projMom(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
+  TLorentzVector targMom(0.,0., fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+proMass*proMass));
   
   // first & second daughter 4-mom
   // first & second daughter 4-mom
@@ -575,5 +574,14 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 
 }
 
-
-
+//______________________________________________
+void AliDielectronPair::SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand)
+{
+  //
+  // set the beam energy (by hand in case of AODs)
+  //
+  if(ev->IsA()==AliESDEvent::Class())
+    fBeamEnergy = ((AliESDEvent*)ev)->GetBeamEnergy();
+  else
+    fBeamEnergy = beamEbyHand;
+}
