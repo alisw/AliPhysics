@@ -26,6 +26,7 @@
 
 #include <AliKFParticle.h>
 #include <AliVParticle.h>
+#include <AliVEvent.h>
 
 class AliVVertex;
 class AliVTrack;
@@ -101,6 +102,7 @@ public:
 
   UChar_t GetType() const { return fType; }
   void SetType(Char_t type) { fType=type; }
+  static void SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand=-1.);
 
   // MC information
   void SetLabel(Int_t label) {fLabel=label;}
@@ -152,6 +154,7 @@ private:
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
   Int_t    fLabel;        // MC label
   Int_t    fPdgCode;      // pdg code in case it is a MC particle
+  static Double_t fBeamEnergy; //!beam energy
   
   AliKFParticle fPair;   // KF particle internally used for pair calculation
   AliKFParticle fD1;     // KF particle first daughter
@@ -162,7 +165,7 @@ private:
 
   Bool_t fKFUsage;       // Use KF for vertexing
   
-  ClassDef(AliDielectronPair,4)
+  ClassDef(AliDielectronPair,5)
 };
 
 #endif
