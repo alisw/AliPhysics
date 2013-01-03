@@ -49,6 +49,14 @@ void AliEmcalTenderTask::SetEMCALTenderSupply(AliEMCALTenderSupply *supply)
   fEMCALTender = supply;
   supply->SetTask(this);
 }
+
+//______________________________________________________________________________
+AliEMCALTenderSupply* AliEmcalTenderTask::GetEMCALTenderSupply() const
+{
+  // Get tender supply.
+
+  return fEMCALTender;
+}
    
 //______________________________________________________________________________
 void AliEmcalTenderTask::ConnectInputData(Option_t *option)

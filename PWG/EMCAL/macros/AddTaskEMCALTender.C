@@ -1,6 +1,19 @@
 // $Id$
 
-AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
+AliAnalysisTaskSE *AddTaskEMCALTender(
+  const char*  p       = "lhc11h",
+  Bool_t timeCut       = kFALSE,
+  Bool_t distBC        = kTRUE, 
+  Bool_t recalibClus   = kTRUE, 
+  Bool_t recalibClusPos = kTRUE, 
+  Bool_t nonLinearCorr = kTRUE, 
+  Bool_t remExotic     = kTRUE,
+  Bool_t fidRegion     = kFALSE,
+  Bool_t calibEnergy   = kTRUE,
+  Bool_t calibTime     = kTRUE,
+  Bool_t remBC         = kTRUE,
+  Bool_t reclusterize  = kFALSE,
+  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -16,7 +29,6 @@ AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
   //===========================================================================
 
   AliAnalysisTaskSE *ana = 0;
-  AliEMCALTenderSupply *EMCALSupply = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
   UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
@@ -30,9 +42,10 @@ AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
-  if (evhand->InheritsFrom("AliESDInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, nonLinFunct);
+  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
+							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer);
 
+  if (evhand->InheritsFrom("AliESDInputHandler")) {
     AliTender* alitender = new  AliTender("AliTender");
     alitender->AddSupply(EMCALSupply);
     alitender->SetDefaultCDBStorage("raw://"); 
@@ -44,8 +57,6 @@ AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
 				    "default_tender");
   }
   else if (evhand->InheritsFrom("AliAODInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, nonLinFunct);
-
     AliEmcalTenderTask* emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
     emcaltender->SetEMCALTenderSupply(EMCALSupply);
     ana = emcaltender;
