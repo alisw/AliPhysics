@@ -1,7 +1,7 @@
 // $Id$
 
 AliEMCALTenderSupply* ConfigEmcalTenderSupply(
-  Bool_t timeCut       = kTRUE,
+  Bool_t timeCut       = kFALSE,
   Bool_t distBC        = kTRUE, 
   Bool_t recalibClus   = kTRUE, 
   Bool_t recalcClusPos = kTRUE, 
@@ -11,21 +11,36 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t calibEnergy   = kTRUE,
   Bool_t calibTime     = kTRUE,
   Bool_t remBC         = kTRUE,
-  UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected)
+  UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
+  Bool_t reclusterize  = kFALSE,
+  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
 
   AliEMCALRecParam *params = new AliEMCALRecParam();
   params->SetClusteringThreshold(0.1); // 100 MeV
-  params->SetMinECut(0.05);            //50 MeV  
+  params->SetMinECut(0.05);            // 50 MeV  
   params->SetW0(4.5);
-  if (timeCut) {
-    params->SetTimeCut(1e6); //Open this cut for AODs
-    params->SetTimeMin(-1);  //Open this cut for AODs
-    params->SetTimeMax(1e6); //Open this cut for AODs
+  if (reclusterize) {
+    params->SetClusterizerFlag(clusterizer);
+    if (clusterizer == AliEMCALRecParam::kClusterizerNxN)
+      params->SetNxM(3,3);
   }
+  //if (timeCut) {
+  // No time cut
+  params->SetTimeCut(1e6);
+  params->SetTimeMin(-1);
+  params->SetTimeMax(1e6);
+  //}
   EMCALSupply->SetRecParam(params);
+
+  if (reclusterize) {
+    EMCALSupply->SwitchOnReclustering();
+  }
+  else {
+    EMCALSupply->SwitchOffReclustering();
+  }
 
   if (remBC) {
     EMCALSupply->SwitchOnClusterBadChannelCheck();

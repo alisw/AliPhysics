@@ -66,7 +66,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEPV0C(-1.0),
   fNVertCont(0),
   fBeamType(kNA),
-  fOutput(0)
+  fOutput(0),
+  fHistCentrality(0),
+  fHistZVertex(0)
 {
   // Default constructor.
 
@@ -114,7 +116,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEPV0C(-1.0),
   fNVertCont(0),
   fBeamType(kNA),
-  fOutput(0)
+  fOutput(0),
+  fHistCentrality(0),
+  fHistZVertex(0)
 {
   // Standard constructor.
 

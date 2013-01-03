@@ -23,12 +23,13 @@ public:
   AliEmcalTenderTask(const char *name);
   virtual ~AliEmcalTenderTask();
 
-  void                      SetEMCALTenderSupply(AliEMCALTenderSupply *supply);
+  void                      SetEMCALTenderSupply(AliEMCALTenderSupply *supply)       ;
+  AliEMCALTenderSupply*     GetEMCALTenderSupply()                              const;
 
   virtual void              ConnectInputData(Option_t *option);
   virtual void              UserCreateOutputObjects();
   virtual void              UserExec(Option_t*);
     
-  ClassDef(AliEmcalTenderTask,1) // Wrapper class to hold tender supply for AOD usage
+  ClassDef(AliEmcalTenderTask,2) // Wrapper class to hold tender supply for AOD usage
 };
 #endif
