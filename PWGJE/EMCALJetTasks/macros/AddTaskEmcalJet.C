@@ -7,7 +7,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const Double_t radius      = 0.4,
   const Int_t type           = 0,
   const Double_t minTrPt     = 0.15,
-  const Double_t minClPt     = 0.15
+  const Double_t minClPt     = 0.30,
+  const Double_t ghostArea   = 0.01  
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -94,6 +95,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   jetTask->SetMinJetPt(minJetPt);
   jetTask->SetRadius(radius);
   jetTask->SetType(type);
+  jetTask->SetGhostArea(ghostArea);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

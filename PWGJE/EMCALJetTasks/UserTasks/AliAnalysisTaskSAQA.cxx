@@ -34,6 +34,7 @@ ClassImp(AliAnalysisTaskSAQA)
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
+  fParticleLevel(kFALSE),
   fNclusters(0),
   fNtracks(0),
   fNjets(0),
@@ -72,6 +73,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
+  fParticleLevel(kFALSE),
   fNclusters(0),
   fNtracks(0),
   fNjets(0),

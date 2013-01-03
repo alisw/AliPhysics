@@ -33,6 +33,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fCompareRhoScaled(0),
   fHistJetPtvsCent(0),
   fHistJetAreavsCent(0),
+  fHistJetRhovsCent(0),
   fHistNjetvsCent(0),
   fHistJetPtvsNtrack(0),
   fHistJetAreavsNtrack(0),
@@ -73,6 +74,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fCompareRhoScaled(0),
   fHistJetPtvsCent(0),
   fHistJetAreavsCent(0),
+  fHistJetRhovsCent(0),
   fHistNjetvsCent(0),
   fHistJetPtvsNtrack(0),
   fHistJetAreavsNtrack(0),
@@ -126,6 +128,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   if (!fJetsName.IsNull()) {
     fHistJetPtvsCent            = new TH2F("JetPtvsCent",           "JetPtvsCent",           101, -1,  100,   fNbins, fMinBinPt, fMaxBinPt);
     fHistJetAreavsCent          = new TH2F("JetAreavsCent",         "JetAreavsCent",         101, -1,  100,   30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistJetRhovsCent           = new TH2F("fHistJetRhovsCent",     "fHistJetRhovsCent",     101, -1,  100,   fNbins, fMinBinPt, fMaxBinPt*2);
     fHistNjetvsCent             = new TH2F("NjetvsCent",            "NjetvsCent",            101, -1,  100,   150, -0.5, 149.5);
 
     fOutput->Add(fHistJetPtvsCent);
@@ -248,6 +251,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
       
       fHistJetPtvsCent->Fill(fCent, jet->Pt());
       fHistJetAreavsCent->Fill(fCent, jet->Area());
+      fHistJetRhovsCent->Fill(fCent, jet->Pt() / jet->Area());
       
       if (fTracks) {
 	fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());

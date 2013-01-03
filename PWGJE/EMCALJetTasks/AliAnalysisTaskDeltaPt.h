@@ -70,20 +70,20 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
 
   // Jet embedding
   TH2F                       *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
-  TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
-  TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt-rho*A distribution of embedded jets
-  TH1F                       *fHistEmbJetsArea[4];         //!Area distribution of embedded jets
+  TH2F                       *fHistEmbJetsPtArea[4];       //!Pt vs. area of embedded jets
+  TH2F                       *fHistEmbJetsCorrPtArea[4];   //!Pt-rho*A vs. area of embedded jets
   TH1F                       *fHistEmbPartPt[4];           //!Pt distribution of embedded particle
   TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
   TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles
   TH1F                       *fHistDistEmbPartJetAxis[4];  //!Distance between embedded particle and jet axis
+  TH2F                       *fHistEmbBkgArea[4];          //!Pt(embjet) - Pt(embtrack) vs. area of embedded jets
   TH2F                       *fHistRhoVSEmbBkg[4];         //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
-  TH1F                       *fHistDeltaPtEmb[4];          //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
+  TH2F                       *fHistDeltaPtEmbArea[4];      //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
 
  private:
   AliAnalysisTaskDeltaPt(const AliAnalysisTaskDeltaPt&);            // not implemented
   AliAnalysisTaskDeltaPt &operator=(const AliAnalysisTaskDeltaPt&); // not implemented
 
-  ClassDef(AliAnalysisTaskDeltaPt, 1) // deltaPt analysis task
+  ClassDef(AliAnalysisTaskDeltaPt, 2) // deltaPt analysis task
 };
 #endif

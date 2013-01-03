@@ -34,19 +34,25 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   // Init the task and do settings
   //-------------------------------------------------------
   
-  TString name;
+  TString name(taskname);
+  if (strcmp(ntracks,"")) {
+    name += "_";
+    name += ntracks;
+  }
+  if (strcmp(nclusters,"")) {
+    name += "_";
+    name += nclusters;
+  }
   if (strcmp(njets,"")) {
-    name = Form("%s_%s_%s_%s_R0%d_",taskname,njets,ntracks,nclusters,(Int_t)floor(jetradius*100+0.5));
-    if (type == AliAnalysisTaskEmcal::kTPC) 
-      name += "TPC";
-    else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-      name += "EMCAL";
-    else if (type == AliAnalysisTaskEmcal::kUser) 
-      name += "USER";
+    name += "_";
+    name += njets;
   }
-  else {
-    name = Form("%s_%s_%s_",taskname,ntracks,nclusters);
-  }
+  if (type == AliAnalysisTaskEmcal::kTPC) 
+    name += "_TPC";
+  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+    name += "_EMCAL";
+  else if (type == AliAnalysisTaskEmcal::kUser) 
+    name += "_USER";
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetTracksName(ntracks);
