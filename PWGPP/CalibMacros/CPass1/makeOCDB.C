@@ -248,13 +248,19 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   //
   Int_t tpcEvents=0;
   Int_t tpcTracks=0;
-  TList * TPCCalib = (TList*)fin->Get("TPCCalib");      
-  if (TPCCalib) {
-    AliTPCcalibTime  * calibTime = (AliTPCcalibTime  *)TPCCalib->FindObject("calibTime");
-    if (calibTime){
+  TObject* obj = dynamic_cast<TObject*>(fin->Get("TPCCalib"));
+  TObjArray* array = dynamic_cast<TObjArray*>(obj);
+  TDirectory* dir = dynamic_cast<TDirectory*>(obj);
+  AliTPCcalibTime  * calibTime = NULL;
+  if (dir) {
+    calibTime = dynamic_cast<AliTPCcalibTime*>(dir->Get("calibTime"));
+  }
+  else if (array){
+    calibTime = (AliTPCcalibTime *)array->FindObject("calibTime");
+  }
+  if (calibTime) {
       tpcEvents = TMath::Nint(calibTime->GetTPCVertexHisto(0)->GetEntries());
       tpcTracks = TMath::Nint(calibTime->GetResHistoTPCITS(0)->GetEntries());
-    }
   }
   printf("Monalisa TPCevents\t%d\n",tpcEvents);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TPCevents="<<tpcEvents;
