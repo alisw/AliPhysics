@@ -262,7 +262,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliKFParticle::SetField( bz );
 
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
-  //  AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
+  AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
   
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);
