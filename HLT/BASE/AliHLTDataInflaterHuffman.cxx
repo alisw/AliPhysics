@@ -141,7 +141,7 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
     fInputLength+=inputLength;
   }
   AliHLTUInt32_t codeLength=0;
-  if (!fHuffmanCoders[fCurrentParameter]->DecodeUp(fInput, value, length, codeLength)) return false;
+  if (!fHuffmanCoders[fCurrentParameter]->DecodeMSB(fInput, value, length, codeLength)) return false;
   if (fInputLength<codeLength) {
     HLTError("huffman decoder '%s' pretends to have %d bit(s) decoded, but only %d available",
 	     fHuffmanCoders[fCurrentParameter]->GetName(), codeLength, fInputLength);

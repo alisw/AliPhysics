@@ -214,6 +214,8 @@ AliHLTHuffman::AliHLTHuffman()
 	, fHuffTopNode(NULL)
 	, fReverseCode(true)
 	, fMaxCodeLength(0)
+	, fDecodingNodes()
+	, fDecodingTopNode(NULL)
 {
         /// nop
 }
@@ -227,6 +229,8 @@ AliHLTHuffman::AliHLTHuffman(const AliHLTHuffman& other)
 	, fHuffTopNode(NULL)
 	, fReverseCode(other.fReverseCode)
 	, fMaxCodeLength(other.fMaxCodeLength)
+	, fDecodingNodes()
+	, fDecodingTopNode(NULL)
 {
         /// nop
 }
@@ -239,6 +243,8 @@ AliHLTHuffman::AliHLTHuffman(const char* name, UInt_t maxBits)
 	, fHuffTopNode(NULL)
 	, fReverseCode(true)
 	, fMaxCodeLength(0)
+	, fDecodingNodes()
+	, fDecodingTopNode(NULL)
  {
         /// standard constructor
 	for (AliHLTUInt64_t i = 0; i <= fMaxValue; i++) {
@@ -270,8 +276,9 @@ const std::bitset<64>& AliHLTHuffman::Encode(const AliHLTUInt64_t v, AliHLTUInt6
 	return dummy;
 }
 
-Bool_t AliHLTHuffman::DecodeDown(std::bitset<64> bits, AliHLTUInt64_t& value,
-			     AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const {
+Bool_t AliHLTHuffman::DecodeLSB(std::bitset<64> bits, AliHLTUInt64_t& value,
+				AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const
+{
 	// huffman decoding
 	AliHLTHuffmanNode* currNode = fHuffTopNode;
 	if (!currNode) return kFALSE;
@@ -310,8 +317,9 @@ Bool_t AliHLTHuffman::DecodeDown(std::bitset<64> bits, AliHLTUInt64_t& value,
 	return kFALSE;
 }
 
-Bool_t AliHLTHuffman::DecodeUp(std::bitset<64> bits, AliHLTUInt64_t& value,
-			     AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const {
+Bool_t AliHLTHuffman::DecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
+			        AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const
+{
 	// huffman decoding
 	AliHLTHuffmanNode* currNode = fHuffTopNode;
 	if (!currNode) return kFALSE;
@@ -340,6 +348,48 @@ Bool_t AliHLTHuffman::DecodeUp(std::bitset<64> bits, AliHLTUInt64_t& value,
 				value = currNode->GetValue();
 				length = fMaxBits;
 				codeLength = currNode->GetBinaryCodeLength();
+				return kTRUE;
+			}
+			continue;
+		}
+		break;
+	}
+	value = ((AliHLTUInt64_t)1) << 63;
+	return kFALSE;
+}
+
+Bool_t AliHLTHuffman::FastDecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
+				    AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const
+{
+	// huffman decoding using the binary node map
+        HLTFatal("this function needs to be tested and commisioned");
+	AliHuffmanDecodingNode* currNode = fDecodingTopNode;
+	if (!currNode) return kFALSE;
+	if (currNode->fValue >= 0) {
+		// handle case with just one node - also quite unlikely
+		value = currNode->fValue;
+		return kTRUE;
+	}
+	while (currNode) {
+		if (bits[63] && currNode->fLeft) {
+			// follow left branch
+			currNode = currNode->fLeft;
+			bits <<= 1;
+			if (currNode->fValue >= 0) {
+				value = currNode->fValue;
+				length = fMaxBits;
+				codeLength = currNode->fBinaryCodeLength;
+				return kTRUE;
+			}
+			continue;
+		}
+		if (!bits[63] && currNode->fRight) {
+			currNode = currNode->fRight;
+			bits <<= 1;
+			if (currNode->fValue >= 0) {
+				value = currNode->fValue;
+				length = fMaxBits;
+				codeLength = currNode->fBinaryCodeLength;
 				return kTRUE;
 			}
 			continue;
@@ -436,12 +486,12 @@ bool AliHLTHuffman::CheckConsistency() const
     AliHLTUInt32_t readbackcodelen=0;
     if (fReverseCode) {
       code<<=64-codeLength;
-      if (!DecodeUp(code, readback, readbacklen, readbackcodelen)) {
+      if (!DecodeMSB(code, readback, readbacklen, readbackcodelen)) {
 	cout << "Decode failed" << endl;
 	return false;
       }
     } else {
-    if (!DecodeDown(code, readback, readbacklen, readbackcodelen)) {
+    if (!DecodeLSB(code, readback, readbacklen, readbackcodelen)) {
       cout << "Decode failed" << endl;
       return false;
     }
@@ -464,6 +514,65 @@ UInt_t AliHLTHuffman::InitMaxCodeLength()
       fMaxCodeLength=node->GetBinaryCodeLength();
   }
   return fMaxCodeLength;
+}
+
+int AliHLTHuffman::EnableDecodingMap()
+{
+  // build decoder nodes from node tree
+  fDecodingTopNode=NULL;
+  fDecodingNodes.clear();
+  if (fNodes.size()==0) {
+    return 0;
+  }
+  fDecodingNodes.reserve(2*fNodes.size());
+  fDecodingTopNode=BuildDecodingNode(fHuffTopNode, fDecodingNodes);
+  if (!fDecodingTopNode) {
+    fDecodingNodes.clear();
+  } else {
+    HLTError("decoder nodes created sucessfully");
+  }
+  return 0;
+}
+
+AliHLTHuffman::AliHuffmanDecodingNode* AliHLTHuffman::BuildDecodingNode(AliHLTHuffmanNode* node, vector<AliHuffmanDecodingNode>& decodernodes) const
+{
+  // build and add decoder node structure corresponding to huffman node
+  if (!node) {
+    HLTError("invalid node pointer");
+    return NULL;
+  }
+  for (vector<AliHuffmanDecodingNode>::iterator i=decodernodes.begin();
+       i!=decodernodes.end(); i++) {
+    if (i->fParent==node) {
+      HLTError("node %p already existing in decoder nodes", node);
+      return NULL;
+    }
+  }
+
+  AliHuffmanDecodingNode* decodernode=NULL;
+  if (decodernodes.size()+1>decodernodes.capacity()) {
+    HLTError("initial size of array too small, can not add more nodes because pointers will become invalid when growing vector");
+  } else {
+    AliHuffmanDecodingNode dn;
+    dn.fParent=node;
+    dn.fValue=node->GetValue();
+    dn.fLeft=NULL;
+    dn.fRight=NULL;
+    dn.fBinaryCodeLength=0;
+    decodernodes.push_back(dn);
+    decodernode=&(decodernodes.back());
+  }
+
+  if (decodernode && decodernode->fValue<0) {
+    decodernode->fRight=BuildDecodingNode(node->GetRightChild(), decodernodes);
+    decodernode->fLeft=BuildDecodingNode(node->GetLeftChild(), decodernodes);
+    if (decodernode->fLeft==NULL || decodernode->fRight==0) {
+      HLTError("failed to build corresponding decoder node for node %p", node);
+      decodernode=NULL;
+    }
+  }
+
+  return decodernode;
 }
 
 ClassImp(AliHLTHuffman)
