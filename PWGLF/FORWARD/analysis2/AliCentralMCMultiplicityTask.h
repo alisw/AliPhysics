@@ -94,6 +94,18 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
+  /** 
+   * Return the track density calculator 
+   * 
+   * @return Track density calculator 
+   */
+  const AliSPDMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
+  /** 
+   * Return the track density calculator 
+   * 
+   * @return Track density calculator 
+   */
+  AliSPDMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
 
 protected: 
   AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl
