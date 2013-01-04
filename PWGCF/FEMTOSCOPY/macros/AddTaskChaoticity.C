@@ -86,19 +86,24 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     return;
   }  
   TH2D *FSI2D[2];
-  TH3D *FSI3D[2];
+  TH3D *FSI3Dos;
+  TH3D *FSI3Dss[6];
   FSI2D[0] = (TH2D*)inputFileFSI->Get("K2ss");
   FSI2D[1] = (TH2D*)inputFileFSI->Get("K2os");
-  FSI3D[0] = (TH3D*)inputFileFSI->Get("K3ss");
-  FSI3D[1] = (TH3D*)inputFileFSI->Get("K3os");
+  FSI3Dos = (TH3D*)inputFileFSI->Get("K3os");
+  for(Int_t CB=0; CB<6; CB++) {
+    TString *name=new TString("K3ss_");
+    *name += CB;
+    FSI3Dss[CB] = (TH3D*)inputFileFSI->Get(name->Data());
+  }
   FSI2D[0]->SetDirectory(0);
   FSI2D[1]->SetDirectory(0);
-  FSI3D[0]->SetDirectory(0);
-  FSI3D[1]->SetDirectory(0);
-  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2D , FSI3D);
+  FSI3Dos->SetDirectory(0);
+  for(Int_t CB=0; CB<6; CB++) FSI3Dss[CB]->SetDirectory(0);
+  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2D , FSI3Dos, FSI3Dss);
   ////////////////////////////////////////////////////
-   
-
+  
+  
   // Return the task pointer
   return ChaoticityTask;
 }
