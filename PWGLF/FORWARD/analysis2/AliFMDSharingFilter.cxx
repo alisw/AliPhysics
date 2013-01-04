@@ -428,8 +428,10 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  }
 	  
 	  // Keep dead-channel information. 
-	  if(mult == AliESDFMD::kInvalidMult || IsDead(d,r,s,t))
+	  if(mult == AliESDFMD::kInvalidMult || IsDead(d,r,s,t)) {
 	    output.SetMultiplicity(d,r,s,t,AliESDFMD::kInvalidMult);
+	    mult = AliESDFMD::kInvalidMult;
+	  }
 	  
 	  // If no signal or dead strip, go on. 
 	  if (mult == AliESDFMD::kInvalidMult || mult == 0) {
