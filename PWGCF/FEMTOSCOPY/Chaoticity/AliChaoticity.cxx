@@ -59,6 +59,7 @@ AliAnalysisTaskSE(),
   fTabulatePairs(kFALSE),
   fBfield(0),
   fMbin(0),
+  fFSIbin(0),
   fEDbin(0),
   fMbins(0),
   fMultLimit(0),
@@ -205,6 +206,7 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
   fTabulatePairs(Tabulatedecision),
   fBfield(0),
   fMbin(0),
+  fFSIbin(0),
   fEDbin(0),
   fMbins(0),
   fMultLimit(0),
@@ -363,6 +365,7 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fTabulatePairs(obj.fTabulatePairs),
     fBfield(obj.fBfield),
     fMbin(obj.fMbin),
+    fFSIbin(obj.fFSIbin),
     fEDbin(obj.fEDbin),
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
@@ -467,6 +470,7 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fTabulatePairs = obj.fTabulatePairs;
   fBfield = obj.fBfield;
   fMbin = obj.fMbin;
+  fFSIbin = obj.fFSIbin;
   fEDbin = obj.fEDbin;
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
@@ -537,7 +541,12 @@ AliChaoticity::~AliChaoticity()
   if(fRandomNumber) delete fRandomNumber;
   if(fFSI2SS) delete fFSI2SS;
   if(fFSI2OS) delete fFSI2OS;
-  if(fFSIOmega0SS) delete fFSIOmega0SS;
+  if(fFSIOmega0SS[0]) delete fFSIOmega0SS[0];
+  if(fFSIOmega0SS[1]) delete fFSIOmega0SS[1];
+  if(fFSIOmega0SS[2]) delete fFSIOmega0SS[2];
+  if(fFSIOmega0SS[3]) delete fFSIOmega0SS[3];
+  if(fFSIOmega0SS[4]) delete fFSIOmega0SS[4];
+  if(fFSIOmega0SS[5]) delete fFSIOmega0SS[5];
   if(fFSIOmega0OS) delete fFSIOmega0OS;
   if(fMomResC2) delete fMomResC2;
   if(fMomRes3DTerm1) delete fMomRes3DTerm1;
@@ -1541,6 +1550,13 @@ void AliChaoticity::Exec(Option_t *)
 
   if(fMbin==-1) {cout<<"Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
   
+  if(fMbin==0) fFSIbin = 0;//0-5%
+  else if(fMbin==1) fFSIbin = 1;//5-10%
+  else if(fMbin<=3) fFSIbin = 2;//10-20%
+  else if(fMbin<=5) fFSIbin = 3;//20-30%
+  else if(fMbin<=7) fFSIbin = 4;//30-40%
+  else fFSIbin = 5;//40-50%
+
   //////////////////////////////////////////////////
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
   //////////////////////////////////////////////////
@@ -3575,20 +3591,20 @@ void AliChaoticity::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D, TH3D *te
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
-void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2D[2], TH3D *temp3D[2]){
+void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2D[2], TH3D *temp3Dos, TH3D *temp3Dss[6]){
   // read in 2-particle and 3-particle FSI correlations = K2 & K3
   // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
   if(legoCase){
     cout<<"LEGO call to SetFSICorrelations"<<endl;
     fFSI2SS = (TH2D*)temp2D[0]->Clone();
     fFSI2OS = (TH2D*)temp2D[1]->Clone();
-    fFSIOmega0SS = (TH3D*)temp3D[0]->Clone();
-    fFSIOmega0OS = (TH3D*)temp3D[1]->Clone();
+    fFSIOmega0OS = (TH3D*)temp3Dos->Clone();
+    for(Int_t CB=0; CB<6; CB++) fFSIOmega0SS[CB] = (TH3D*)temp3Dss[CB]->Clone();
     //
     fFSI2SS->SetDirectory(0);
     fFSI2OS->SetDirectory(0);
-    fFSIOmega0SS->SetDirectory(0);
     fFSIOmega0OS->SetDirectory(0);
+    for(Int_t CB=0; CB<6; CB++) fFSIOmega0SS[CB]->SetDirectory(0);
   }else {
     cout<<"non LEGO call to SetFSICorrelations"<<endl;
     TFile *fsifile = new TFile("KFile.root","READ");
@@ -3599,60 +3615,66 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2D[2], TH3D *t
     
     TH2D *temphisto2SS = (TH2D*)fsifile->Get("K2ss");
     TH2D *temphisto2OS = (TH2D*)fsifile->Get("K2os");
-    TH3D *temphisto3SS = (TH3D*)fsifile->Get("K3ss");
     TH3D *temphisto3OS = (TH3D*)fsifile->Get("K3os");
-    
+    TH3D *temphisto3SS[6];
+    for(Int_t CB=0; CB<6; CB++) {
+      TString *nameK3 = new TString("K3ss_");
+      *nameK3 += CB;
+      temphisto3SS[CB] = (TH3D*)fsifile->Get(nameK3->Data());
+    }
+
     fFSI2SS = (TH2D*)temphisto2SS->Clone();
     fFSI2OS = (TH2D*)temphisto2OS->Clone();
-    fFSIOmega0SS = (TH3D*)temphisto3SS->Clone();
     fFSIOmega0OS = (TH3D*)temphisto3OS->Clone();
+    for(Int_t CB=0; CB<6; CB++) fFSIOmega0SS[CB] = (TH3D*)temphisto3SS[CB]->Clone();
     //
     fFSI2SS->SetDirectory(0);
     fFSI2SS->SetDirectory(0);
-    fFSIOmega0SS->SetDirectory(0);
     fFSIOmega0OS->SetDirectory(0);
-    
+    for(Int_t CB=0; CB<6; CB++) fFSIOmega0SS[CB]->SetDirectory(0);
+
     fsifile->Close();
   }
   
   // condition FSI histogram for edge effects
-  for(Int_t ii=1; ii<=fFSIOmega0SS->GetNbinsX(); ii++){
-    for(Int_t jj=1; jj<=fFSIOmega0SS->GetNbinsY(); jj++){
-      for(Int_t kk=1; kk<=fFSIOmega0SS->GetNbinsZ(); kk++){
-	
-       	if(fFSIOmega0SS->GetBinContent(ii,jj,kk) <=0){
-	  Double_t Q12 = fFSIOmega0SS->GetXaxis()->GetBinCenter(ii);
-	  Double_t Q23 = fFSIOmega0SS->GetYaxis()->GetBinCenter(jj);
-	  Double_t Q13 = fFSIOmega0SS->GetZaxis()->GetBinCenter(kk);
-	  //
-	  Int_t Q12bin=ii;
-	  Int_t Q23bin=jj;
-	  Int_t Q13bin=kk;
-	  Int_t AC=0;//Adjust Counter
-	  Int_t AClimit=10;// maximum bin shift
-	  if(Q12 < sqrt(pow(Q13,2)+pow(Q23,2) - 2*Q13*Q23)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin++; AC++;}}
-	  if(Q12 > sqrt(pow(Q13,2)+pow(Q23,2) + 2*Q13*Q23)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin--; AC++;}}
-	  //
-	  if(Q13 < sqrt(pow(Q12,2)+pow(Q23,2) - 2*Q12*Q23)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin++; AC++;}}
-	  if(Q13 > sqrt(pow(Q12,2)+pow(Q23,2) + 2*Q12*Q23)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin--; AC++;}}
-	  //
-	  if(Q23 < sqrt(pow(Q12,2)+pow(Q13,2) - 2*Q12*Q13)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin++; AC++;}}
-	  if(Q23 > sqrt(pow(Q12,2)+pow(Q13,2) + 2*Q12*Q13)) {while(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin--; AC++;}}
+  for(Int_t CB=0; CB<6; CB++){
+    for(Int_t ii=1; ii<=fFSIOmega0SS[CB]->GetNbinsX(); ii++){
+      for(Int_t jj=1; jj<=fFSIOmega0SS[CB]->GetNbinsY(); jj++){
+	for(Int_t kk=1; kk<=fFSIOmega0SS[CB]->GetNbinsZ(); kk++){
 	  
-	  // Save cpu time by setting empty cell contents (edge effects) to nearest non-zero cell (these cells are not used very often anyway.)
-	  if(AC==AClimit) {
-	    fFSIOmega0SS->SetBinContent(ii,jj,kk, 1.0);
-	    fFSIOmega0OS->SetBinContent(ii,jj,kk, 1.0);
-	  }else {
-	    fFSIOmega0SS->SetBinContent(ii,jj,kk, fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin));
-	    fFSIOmega0OS->SetBinContent(ii,jj,kk, fFSIOmega0OS->GetBinContent(Q12bin, Q23bin, Q13bin));
+	  if(fFSIOmega0SS[CB]->GetBinContent(ii,jj,kk) <=0){
+	    Double_t Q12 = fFSIOmega0SS[CB]->GetXaxis()->GetBinCenter(ii);
+	    Double_t Q23 = fFSIOmega0SS[CB]->GetYaxis()->GetBinCenter(jj);
+	    Double_t Q13 = fFSIOmega0SS[CB]->GetZaxis()->GetBinCenter(kk);
+	    //
+	    Int_t Q12bin=ii;
+	    Int_t Q23bin=jj;
+	    Int_t Q13bin=kk;
+	    Int_t AC=0;//Adjust Counter
+	    Int_t AClimit=10;// maximum bin shift
+	    if(Q12 < sqrt(pow(Q13,2)+pow(Q23,2) - 2*Q13*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin++; AC++;}}
+	    if(Q12 > sqrt(pow(Q13,2)+pow(Q23,2) + 2*Q13*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin--; AC++;}}
+	    //
+	    if(Q13 < sqrt(pow(Q12,2)+pow(Q23,2) - 2*Q12*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin++; AC++;}}
+	    if(Q13 > sqrt(pow(Q12,2)+pow(Q23,2) + 2*Q12*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin--; AC++;}}
+	    //
+	    if(Q23 < sqrt(pow(Q12,2)+pow(Q13,2) - 2*Q12*Q13)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin++; AC++;}}
+	    if(Q23 > sqrt(pow(Q12,2)+pow(Q13,2) + 2*Q12*Q13)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin--; AC++;}}
+	    
+	    // Save cpu time by setting empty cell contents (edge effects) to nearest non-zero cell (these cells are not used very often anyway.)
+	    if(AC==AClimit) {
+	      fFSIOmega0SS[CB]->SetBinContent(ii,jj,kk, 1.0);
+	      if(CB==0) fFSIOmega0OS->SetBinContent(ii,jj,kk, 1.0);
+	    }else {
+	      fFSIOmega0SS[CB]->SetBinContent(ii,jj,kk, fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin));
+	      if(CB==0) fFSIOmega0OS->SetBinContent(ii,jj,kk, fFSIOmega0OS->GetBinContent(Q12bin, Q23bin, Q13bin));
+	    }
 	  }
+	  
 	}
-	
       }
     }
   }
-
   cout<<"Done reading FSI file"<<endl;
 }
 //________________________________________________________________________
@@ -3679,16 +3701,15 @@ Float_t AliChaoticity::FSICorrelation2(Int_t charge1, Int_t charge2, Int_t rInde
 Double_t AliChaoticity::FSICorrelationOmega0(Bool_t SameCharge, Double_t Q12, Double_t Q13, Double_t Q23){
   // remember: Omega0 histogram is in the following order (Q12, Q23, Q13)
   // returns 3d 3-particle Coulomb Correlation = K3
-  Int_t Q12bin = fFSIOmega0SS->GetXaxis()->FindBin(Q12);
-  Int_t Q13bin = fFSIOmega0SS->GetZaxis()->FindBin(Q13);
-  Int_t Q23bin = fFSIOmega0SS->GetYaxis()->FindBin(Q23);
+  Int_t Q12bin = fFSIOmega0SS[fFSIbin]->GetXaxis()->FindBin(Q12);
+  Int_t Q13bin = fFSIOmega0SS[fFSIbin]->GetZaxis()->FindBin(Q13);
+  Int_t Q23bin = fFSIOmega0SS[fFSIbin]->GetYaxis()->FindBin(Q23);
   
   if(SameCharge){
-    if(fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0) return 1.0;
-    else return fFSIOmega0SS->GetBinContent(Q12bin, Q23bin, Q13bin);// K3
-  }else{// mixed charge
+    if(fFSIOmega0SS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0) return 1.0;
+    else return fFSIOmega0SS[fFSIbin]->GetBinContent(Q12bin, Q23bin, Q13bin);// K3
+  }else{// mixed charge. Uses only fFSIbin=0 (0-5%)
     if(fFSIOmega0OS->GetBinContent(Q12bin, Q23bin, Q13bin) <=0) return 1.0;
     else return fFSIOmega0OS->GetBinContent(Q12bin, Q23bin, Q13bin);// K3
   }
 }
-//________________________________________________________________________
