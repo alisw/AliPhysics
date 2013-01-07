@@ -251,20 +251,20 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   //
 
   // conversion rejection
-  //   Double_t gCut;
-  //   switch(cutDefinition) {
-  //   case kQA:    gCut=0.0;  break;
-  //   default: gCut=0.05;             // default
-  //   }
-  //AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
+  Double_t gCut;
+  switch(cutDefinition) {
+  case kQA:    gCut = 0.05;  break;
+  default:     gCut = 0.05;
+  }
+  AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   //  gammaCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0,   0.1,  kTRUE);
   //  gammaCuts->AddCut(AliDielectronVarManager::kLegDist,      0.0,   0.25, kTRUE);
   //  gammaCuts->AddCut(AliDielectronVarManager::kR,            3.0,   90.0, kTRUE);
   //  gammaCuts->AddCut(AliDielectronVarManager::kPsiPair,      0.0,   0.05, kTRUE);
   //  gammaCuts->AddCut(AliDielectronVarManager::kChi2NDF,      0.0,   10.0, kTRUE);
-  //gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
-  //gammaCuts->Print();
-  //  die->GetPairPreFilter().AddCuts(gammaCuts);
+  gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
+  gammaCuts->Print();
+  die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
   //  AliDielectronVarCuts *rapCut=new AliDielectronVarCuts("|Y|<.9","|Y|<.9");
@@ -443,10 +443,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Track","", "", AliDielectronVarManager::kTPCclsSegments,
 			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
 
-    histos->UserHistogram("Track","","", 160,0.,160., AliDielectronVarManager::kNFclsTPCr);
-    histos->UserProfile("Track","","", AliDielectronVarManager::kNFclsTPCr, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
-    histos->UserProfile("Track","","", AliDielectronVarManager::kNFclsTPCr, 80, 0.,80.,      AliDielectronVarManager::kCentrality);
-    histos->UserProfile("Track","", "", AliDielectronVarManager::kNFclsTPCr,
+    histos->UserHistogram("Track","","", 110,0.,1.1, AliDielectronVarManager::kNFclsTPCfCross);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kNFclsTPCfCross, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Track","","", AliDielectronVarManager::kNFclsTPCfCross, 80, 0.,80.,      AliDielectronVarManager::kCentrality);
+    histos->UserProfile("Track","", "", AliDielectronVarManager::kNFclsTPCfCross,
 			200,-1.,+1., 180,0.,TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
 
     // ITS
@@ -464,7 +464,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     // TRD
     histos->UserHistogram("Track","", "",   7, 0., 7., AliDielectronVarManager::kTRDpidQuality);
     histos->UserHistogram("Track","", "", 105,-1.,20., AliDielectronVarManager::kTRDchi2);
- 
+
     // TPC PID
     histos->UserProfile("Track","","", AliDielectronVarManager::kTPCnSigmaEle, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
     histos->UserHistogram("Track","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(16, 0.,80.), AliDielectronHelper::MakeLinBinning(100, -5.,+5),
@@ -551,6 +551,18 @@ void AddMCSignals(AliDielectron *die){
   gammaConversion->SetMotherPDGs(22,22);
   gammaConversion->SetMothersRelation(AliDielectronSignalMC::kSame);
   die->AddSignalMC(gammaConversion);
+
+  /*
+  AliDielectronSignalMC* gammaConversionHI = new AliDielectronSignalMC("gammaConversionHI","gamma conversions Hijing");
+  gammaConversionHI->SetLegPDGs(11,-11);
+  gammaConversionHI->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  gammaConversionHI->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  gammaConversionHI->SetMotherSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail);
+  gammaConversionHI->SetGrandMotherSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail);
+  gammaConversionHI->SetMotherPDGs(22,22);
+  gammaConversionHI->SetMothersRelation(AliDielectronSignalMC::kSame);
+  die->AddSignalMC(gammaConversionHI);
+  */
 
   AliDielectronSignalMC* conversionElePairs = new AliDielectronSignalMC("conversionEle","conversion electron pairs");  // pairs made from conversion (may be also from 2 different conversions)
   conversionElePairs->SetLegPDGs(11,-11);
