@@ -191,7 +191,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     for(Int_t j=0; j<64; j++) multV0 += ev->GetVZEROData()->GetMultiplicity(j);
     Double_t mV0 = fparMean->Eval(nTrks);
     Double_t sV0 = fparSigma->Eval(nTrks);
-    if(multV0 > mV0+fcutSigma*sV0 || multV0 > mV0-fcutSigma*sV0) return kFALSE;
+    if(multV0 > mV0+fcutSigma*sV0 || multV0 < mV0-fcutSigma*sV0) return kFALSE;
   }
 
   return kTRUE;

@@ -58,6 +58,7 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
 
   task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
+  task->SetBeamEnergy(1380.);
   task->SetTriggerMask(triggers);
   //task->SetTriggerMask(AliVEvent::kMB);
   if (!hasMC) task->UsePhysicsSelection();
