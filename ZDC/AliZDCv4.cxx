@@ -2455,7 +2455,7 @@ void AliZDCv4::StepManager()
       Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
       TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
       hits[10] = part->GetPdgCode();
-      //printf("\t PDGCode = %d\n", part->GetPdgCode());
+      //if(part->GetPdgCode()>10000) printf("\t PDGCode = %d\n", part->GetPdgCode());
       //
       Int_t imo = part->GetFirstMother();
       if(imo>0){
@@ -2553,7 +2553,16 @@ void AliZDCv4::StepManager()
        ibe = Int_t(be*1000.+1);
   
        //Looking into the light tables 
-       Float_t charge = gMC->TrackCharge();
+       Float_t charge = 0.;
+       Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
+       TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
+       Int_t pdgCode = part->GetPdgCode();
+       if(pdgCode<10000) charge = gMC->TrackCharge();
+       else{
+          float z = (pdgCode/10000-100000);
+          charge = TMath::Abs(z);
+          //printf(" PDG %d   charge %f\n",pdgCode,charge);
+       } 
        
        if(vol[0]==1 || vol[0]==4) {	// (1)  ZN fibres
          if(ibe>fNben) ibe=fNben;
