@@ -166,7 +166,7 @@ Double_t GetMeanNtrk(const TString& period)
 	if(period =="lhc10f6a")            return 4.41362;
 	if(period =="lhc10e21")            return 4.74991;
 	if(period =="lhc11e3a_plus_wosdd") return 3.37669;
-	if(period =="lhc11e3a_plus_wosdd") return 3.55973;
+	if(period =="lhc11e3a_plus_wsdd")  return 3.55973;
 	
 	return 1;
 }

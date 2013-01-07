@@ -443,7 +443,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 //
 // Get particles from current event
 //
-	int nParticles = 0;
+	Int_t nParticles = 0;
 	
 	AliStack* stack = fMCevent->Stack();
 	if (!stack)
@@ -625,8 +625,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// momentum
 		
-		Double_t p       = iTrack->GetP();
-		Double_t pt      = iTrack->Pt(); // pt at DCA
+		Double_t p       = iTrack->GetP()*z;
+		Double_t pt      = iTrack->Pt()*z; // pt at DCA
 		Double_t y       = this->GetRapidity(iTrack, fPartCode);
 		Double_t pITS    = this->GetITSmomentum(iTrack);
 		Double_t pTPC    = iTrack->GetTPCmomentum();
@@ -803,13 +803,13 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		}
 		
 		// pid performance
-		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(p*z, dEdxITS);
-		((TH2D*)fHistoMap->Get(particle + "_PID_TPCdEdx_P"))->Fill(pTPC*z, dEdxTPC);
+		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(p, dEdxITS);
+		((TH2D*)fHistoMap->Get(particle + "_PID_TPCdEdx_P"))->Fill(pTPC, dEdxTPC);
 		
 		if(this->TOFmatch(iTrack))
 		{
-			((TH2D*)fHistoMap->Get(particle + "_PID_Beta_P"))->Fill(pTOF*z, beta);
-			((TH2D*)fHistoMap->Get(particle + "_PID_Mass_P"))->Fill(pTOF*z, mass);
+			((TH2D*)fHistoMap->Get(particle + "_PID_Beta_P"))->Fill(pTOF, beta);
+			((TH2D*)fHistoMap->Get(particle + "_PID_Mass_P"))->Fill(pTOF, mass);
 			if(fSimulation && goodPid)
 			{
 				((TH1D*)fHistoMap->Get(particle + "_Sim_PID_Mass"))->Fill(mass);
@@ -1057,9 +1057,9 @@ Double_t AliAnalysisTaskB2::GetRapidity(const AliESDtrack* trk, Int_t pid) const
 // and using the momentum at the DCA
 //
 	Double_t m  = AliPID::ParticleMass(pid);
-	Double_t p  = trk->GetP();
+	Double_t p  = (pid>AliPID::kTriton) ? 2.*trk->GetP() : trk->GetP();
 	Double_t e  = TMath::Sqrt(p*p + m*m);
-	Double_t pz = trk->Pz();
+	Double_t pz = (pid>AliPID::kTriton) ? 2.*trk->Pz() : trk->Pz();
 	
 	if(e <= pz) return 1.e+16;
 	
@@ -1108,20 +1108,20 @@ Double_t AliAnalysisTaskB2::GetMassSquare(const AliESDtrack* trk) const
 //
 // Square mass
 //
-	Double_t p    = this->GetTOFmomentum(trk);
+	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
 	Double_t beta = this->GetBeta(trk);
 	
 	return p*p*(1./(beta*beta) - 1.);
 }
 
-Int_t AliAnalysisTaskB2::GetChargedMultiplicity(double etaMax) const
+Int_t AliAnalysisTaskB2::GetChargedMultiplicity(Double_t etaMax) const
 {
 //
 // Charged particle multiplicity using ALICE physical primary definition
 //
 	AliStack* stack = fMCevent->Stack();
 	
-	int nch = 0;
+	Int_t nch = 0;
 	//for (Int_t i=0; i < stack->GetNprimary(); ++i)
 	for (Int_t i=0; i < stack->GetNtrack(); ++i)
 	{

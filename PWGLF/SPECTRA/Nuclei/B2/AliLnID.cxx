@@ -420,7 +420,7 @@ Bool_t AliLnID::GetITSlikelihood(Double_t pITS, Double_t dEdx, Int_t nPointsITS,
 	return kTRUE;
 }
 
-Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t nPointsTPC, Double_t* r) const
+Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t /*nPointsTPC*/, Double_t* r) const
 {
 //
 // Probability of dEdx for each particle species in the TPC.
@@ -434,9 +434,10 @@ Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t nPointsTPC,
 	Double_t sum = 0;
 	for(Int_t i=0; i < fkNumSpecies; ++i)
 	{
+		Double_t m = AliPID::ParticleMass(fSpecies[i]);
 		Double_t p = fSpecies[i] > AliPID::kTriton ? 2.*pTPC : pTPC; // correct by Z
-		Double_t expDedx = fTPCpid->GetExpectedSignal(p, fSpecies[i]);
-		Double_t sigma = fTPCpid->GetExpectedSigma(p, nPointsTPC, fSpecies[i]);
+		Double_t expDedx = fTPCpid->Bethe(p/m);
+		Double_t sigma = fTPCpid->GetRes0()*expDedx;
 		
 		if(fSpecies[i] > AliPID::kTriton) // correct by Z^2
 		{
@@ -563,14 +564,15 @@ Bool_t AliLnID::GetITSmatch(Int_t pid, Double_t pITS, Double_t dEdxITS, Int_t nP
 	return kFALSE;
 }
 
-Bool_t AliLnID::GetTPCmatch(Int_t pid, Double_t pTPC, Double_t dEdxTPC, Double_t nPointsTPC, Double_t nSigma) const
+Bool_t AliLnID::GetTPCmatch(Int_t pid, Double_t pTPC, Double_t dEdxTPC, Double_t /*nPointsTPC*/, Double_t nSigma) const
 {
 //
 // Check if the signal is less than nSigma from the expected TPC dEdx
 //
+	Double_t m = AliPID::ParticleMass(pid);
 	Double_t p = pid > AliPID::kTriton ? 2.*pTPC : pTPC; // correct by Z
-	Double_t expDedx = fTPCpid->GetExpectedSignal(p, (AliPID::EParticleType)pid);
-	Double_t sigma = fTPCpid->GetExpectedSigma(p, nPointsTPC, (AliPID::EParticleType)pid);
+	Double_t expDedx = fTPCpid->Bethe(p/m);
+	Double_t sigma = fTPCpid->GetRes0()*expDedx;
 	
 	if(pid > AliPID::kTriton) // correct by Z^2
 	{
