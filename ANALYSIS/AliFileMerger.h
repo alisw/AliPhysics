@@ -40,7 +40,7 @@ class AliFileMerger : public TNamed
   Int_t GetMaxFilesOpen()          const {return fMaxFilesOpen;}
 protected:
   int AddFile(TList* sourcelist, std::string entry);
-  int MergeRootfile( TDirectory *target, TList *sourceNames);
+  int MergeRootfile( TDirectory *target, TList *sourceNames, Bool_t nameFiltering=kTRUE);
   int OpenNextChunks(const TList* namesList, TList* filesList, Int_t from, Int_t to);
 protected:
   TObjArray * fRejectMask;  // mask of the objects to be rejected

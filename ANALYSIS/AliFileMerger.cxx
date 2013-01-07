@@ -373,7 +373,7 @@ void AliFileMerger::AddAccept(const char *accept){
 }
 
 //___________________________________________________________________________
-int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
+int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t nameFiltering)
 {
   // Merge all objects in a directory
   // modified version of root's hadd.cxx
@@ -418,7 +418,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
       //
       // check if we don't reject this name
       TString nameK(key->GetName());
-      if (!IsAccepted(nameK)) {
+      if (!IsAccepted(nameK) && nameFiltering) {
 	if (!counterF) printf("Object %s is in rejection list, skipping...\n",nameK.Data());
 	continue;
       }
@@ -489,7 +489,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	// newdir is now the starting point of another round of merging
 	// newdir still knows its depth within the target file via
 	// GetPath(), so we can still figure out where we are in the recursion
-	status = MergeRootfile( newdir, sourcelist);
+	status = MergeRootfile( newdir, sourcelist, kFALSE);
 	if (status) return status;
 	
       } else if ( obj->InheritsFrom(TObject::Class())
