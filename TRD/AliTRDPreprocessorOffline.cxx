@@ -433,16 +433,19 @@ void AliTRDPreprocessorOffline::CalibChamberStatus(const Char_t* file, Int_t sta
   //
   // 4. validate OCDB entries
   //
-  if(fSwitchOnValidation==kTRUE && ValidateChamberStatus()==kFALSE) { 
-    //AliError("TRD Chamber status OCDB parameters not ok!");
-    return;
+  //printf("Enough stats for vdrift? %d\n",(Int_t)fNotEnoughStatisticsForTheVdriftLinear);
+  //printf("Enough stats for gain? %d\n",(Int_t)fNotEnoughStatisticsForTheGain); 
+  if((!fNotEnoughStatisticsForTheVdriftLinear) && (!fNotEnoughStatisticsForTheGain)) {
+    if(fSwitchOnValidation==kTRUE && ValidateChamberStatus()==kFALSE) { 
+      //AliError("TRD Chamber status OCDB parameters not ok!");
+      return;
+    }
+    //
+    // 5. update of OCDB
+    //
+    //
+    UpdateOCDBChamberStatus(startRunNumber,endRunNumber,ocdbStorage);
   }
-  //
-  // 5. update of OCDB
-  //
-  //
-  if((!fNotEnoughStatisticsForTheVdriftLinear) && (!fNotEnoughStatisticsForTheGain)) UpdateOCDBChamberStatus(startRunNumber,endRunNumber,ocdbStorage);
-  //UpdateOCDBChamberStatus(startRunNumber,endRunNumber,ocdbStorage);
   
 }
 //______________________________________________________________________________________________________
