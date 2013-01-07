@@ -85,7 +85,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	TParticle* GetParticle(const AliESDtrack* trk) const;
 	
-	Int_t GetChargedMultiplicity(double maxEta) const;
+	Int_t GetChargedMultiplicity(Double_t maxEta) const;
 	
 	Bool_t IsFakeTrack(const AliESDtrack* trk) const;
 	Bool_t IsPhysicalPrimary(const TParticle* prt) const;

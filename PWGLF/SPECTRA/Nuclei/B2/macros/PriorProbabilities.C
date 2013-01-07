@@ -16,7 +16,7 @@
 // macro for prior probabilities
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-void SetParameters(double* prob, double c0, double c1, double c2, double c3, double c4, double c5, double c6, double c7, double c8)
+void SetParameters(Double_t* prob, Double_t c0, Double_t c1, Double_t c2, Double_t c3, Double_t c4, Double_t c5, Double_t c6, Double_t c7, Double_t c8)
 {
 //
 // assign values to an array

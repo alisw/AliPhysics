@@ -16,6 +16,15 @@
 // macro for creating histograms
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#include <TObject.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TMap.h>
+#include <TString.h>
+#include <TMath.h>
+
+#include "AliLnHistoMap.h"
+
 AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Double_t maxDCAxy, Double_t maxEta, Double_t maxY, Bool_t heavyIons)
 {
 //
@@ -54,9 +63,9 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	Double_t dcazMax = 3.25;
 	
 	// m2 bins
-	Int_t m2Bins = 200;
+	Int_t m2Bins = 400;
 	Double_t m2Min = 0;
-	Double_t m2Max = 10;
+	Double_t m2Max = 20;
 	
 	// track multiplicity
 	Int_t ntrkBins = 200;
@@ -288,7 +297,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 			
 			hMap->Add( particle[i] + "_Sim_Prim_M2_P", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_M2_Pt", ptBins, ptMin, ptMax, 100, 0., 10., Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
+			hMap->Add( particle[i] + "_Sim_Prim_M2_Pt", ptBins, ptMin, ptMax, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 			
 			// unfolding
 			
@@ -315,7 +324,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Doubl
 	
 	if(simulation)
 	{
-		for(int i=0; i<2; ++i)
+		for(Int_t i=0; i<2; ++i)
 		{
 			hMap->Add( particle[i] + "_Gen_Prim_P", ptBins, ptMin, ptMax, Form("Primary %s", particle[i].Data()), "p (GeV/c)");
 			
