@@ -762,7 +762,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
     if (fEnableAdvancedCheck)
 fHpos->AddLast(hTOFmatchedESDetaPos) ; 
   //4
-   TH1F* hTOFmatchedESDphiPos = new TH1F("hTOFmatchedESDphiPos", "Matched Positive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
+   TH1F* hTOFmatchedESDphiPos = new TH1F("hTOFmatchedESDphiPos", "Matched Positive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);Counts", 72, 0., 360.) ; 
   hTOFmatchedESDphiPos->Sumw2();
   hTOFmatchedESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
@@ -817,7 +817,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFprimaryESDetaPos) ; 
   //10
-  TH1F* hTOFprimaryESDphiPos = new TH1F("hTOFprimaryESDphiPos", "Primary ESD Pos tracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
+  TH1F* hTOFprimaryESDphiPos = new TH1F("hTOFprimaryESDphiPos", "Primary ESD Pos tracks #phi_{out} (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
   hTOFprimaryESDphiPos->Sumw2();
   hTOFprimaryESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
@@ -868,7 +868,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackEtaPosNoTRDout);
 
   //15
-  TH1F* hESDprimaryTrackPhiPosTRDout = new TH1F("hESDprimaryTrackPhiPosTRDout", "ESDs Pos primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiPosTRDout = new TH1F("hESDprimaryTrackPhiPosTRDout", "ESDs Pos primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiPosTRDout->Sumw2();
   hESDprimaryTrackPhiPosTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosTRDout->SetMarkerStyle(20);
@@ -879,7 +879,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackPhiPosTRDout);
 
   //16
-  TH1F* hESDprimaryTrackPhiPosNoTRDout = new TH1F("hESDprimaryTrackPhiPosNoTRDout", "ESDs Pos primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiPosNoTRDout = new TH1F("hESDprimaryTrackPhiPosNoTRDout", "ESDs Pos primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiPosNoTRDout->Sumw2();
   hESDprimaryTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosNoTRDout->SetMarkerStyle(25);
@@ -930,7 +930,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackEtaPosNoTRDout);
 
   //22
-  TH1F* hESDmatchedTrackPhiPosTRDout = new TH1F("hESDmatchedTrackPhiPosTRDout", "ESDs Pos matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiPosTRDout = new TH1F("hESDmatchedTrackPhiPosTRDout", "ESDs Pos matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiPosTRDout->Sumw2();
   hESDmatchedTrackPhiPosTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosTRDout->SetMarkerStyle(20);
@@ -941,7 +941,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackPhiPosTRDout);
 
   //23
-  TH1F* hESDmatchedTrackPhiPosNoTRDout = new TH1F("hESDmatchedTrackPhiPosNoTRDout", "ESDs Pos matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiPosNoTRDout = new TH1F("hESDmatchedTrackPhiPosNoTRDout", "ESDs Pos matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiPosNoTRDout->Sumw2();
   hESDmatchedTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosNoTRDout->SetMarkerStyle(25);
@@ -952,16 +952,42 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackPhiPosNoTRDout);
 
   //POS 24
-  TH2F* hTOFmatchedExpTimePiVsPhiTPCPos = new TH2F("hTOFmatchedExpTimePiVsPhiTPCPos", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
+  TH2F* hTOFmatchedExpTimePiVsPhiTPCPos = new TH2F("hTOFmatchedExpTimePiVsPhiTPCPos", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
   hTOFmatchedExpTimePiVsPhiTPCPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimePiVsPhiTPCPos) ;
 
   //POS 25
-  TH2F* hTOFmatchedExpTimeKaVsPhiTPCPos = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCPos", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
+  TH2F* hTOFmatchedExpTimeKaVsPhiTPCPos = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCPos", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
   hTOFmatchedExpTimeKaVsPhiTPCPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimeKaVsPhiTPCPos) ;
+
+  //POS 26
+  TH2F* hTOFprimaryEtaVsPhiOutPos = new TH2F("hTOFprimaryEtaVsPhiOutPos", "Positive tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
+  hTOFprimaryEtaVsPhiOutPos->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHpos->AddLast(hTOFprimaryEtaVsPhiOutPos) ;
+  
+  //POS 27
+  TH2F* hTOFmatchedEtaVsPhiOutPos = new TH2F("hTOFmatchedEtaVsPhiOutPos", "Positive tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
+  hTOFmatchedEtaVsPhiOutPos->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHpos->AddLast(hTOFmatchedEtaVsPhiOutPos) ;
+
+  //POS 28
+  TH2F* hTOFprimaryPtVsPhiOutPos = new TH2F("hTOFprimaryPtVsPhiOutPos", "Positive tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
+  hTOFprimaryPtVsPhiOutPos->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHpos->AddLast(hTOFprimaryPtVsPhiOutPos) ;
+  
+  //POS 29
+  TH2F* hTOFmatchedPtVsPhiOutPos = new TH2F("hTOFmatchedPtVsPhiOutPos", "Positive tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
+  hTOFmatchedPtVsPhiOutPos->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHpos->AddLast(hTOFmatchedPtVsPhiOutPos) ;
+
+
 
 //----------------------------------------------------------NEGATIVE TRACKS
   //0
@@ -999,7 +1025,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedESDetaNeg) ; 
   //4
-   TH1F* hTOFmatchedESDphiNeg = new TH1F("hTOFmatchedESDphiNeg", "Matched Negitive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
+   TH1F* hTOFmatchedESDphiNeg = new TH1F("hTOFmatchedESDphiNeg", "Matched Negative ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);Counts", 72, 0., 360.) ; 
   hTOFmatchedESDphiNeg->Sumw2();
   hTOFmatchedESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
@@ -1054,7 +1080,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFprimaryESDetaNeg) ; 
   //10
-  TH1F* hTOFprimaryESDphiNeg = new TH1F("hTOFprimaryESDphiNeg", "Primary ESD Neg tracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
+  TH1F* hTOFprimaryESDphiNeg = new TH1F("hTOFprimaryESDphiNeg", "Primary ESD Neg tracks #phi (p_{T} #geq 1.0 GeV/c);#phi_{out} (deg);Counts", 72, 0., 360.) ; 
   hTOFprimaryESDphiNeg->Sumw2();
   hTOFprimaryESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
@@ -1105,7 +1131,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackEtaNegNoTRDout);
 
   //15
-  TH1F* hESDprimaryTrackPhiNegTRDout = new TH1F("hESDprimaryTrackPhiNegTRDout", "ESDs Neg primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiNegTRDout = new TH1F("hESDprimaryTrackPhiNegTRDout", "ESDs Neg primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiNegTRDout->Sumw2();
   hESDprimaryTrackPhiNegTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegTRDout->SetMarkerStyle(20);
@@ -1116,7 +1142,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackPhiNegTRDout);
 
   //16
-  TH1F* hESDprimaryTrackPhiNegNoTRDout = new TH1F("hESDprimaryTrackPhiNegNoTRDout", "ESDs Neg primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDprimaryTrackPhiNegNoTRDout = new TH1F("hESDprimaryTrackPhiNegNoTRDout", "ESDs Neg primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
   hESDprimaryTrackPhiNegNoTRDout->Sumw2();
   hESDprimaryTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegNoTRDout->SetMarkerStyle(25);
@@ -1139,7 +1165,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hTOFmatchedExpTimeProVsPhiVertexNeg) ;
 
   //NEG 19
-  TH2F* hTOFmatchedExpTimeProVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeProVsPhiTPCNeg", "ESDs t_{TOF}-t_{p,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
+  TH2F* hTOFmatchedExpTimeProVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeProVsPhiTPCNeg", "ESDs t_{TOF}-t_{p,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
   hTOFmatchedExpTimeProVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeProVsPhiTPCNeg) ;
@@ -1168,7 +1194,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackEtaNegNoTRDout);
 
   //22
-  TH1F* hESDmatchedTrackPhiNegTRDout = new TH1F("hESDmatchedTrackPhiNegTRDout", "ESDs Neg matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiNegTRDout = new TH1F("hESDmatchedTrackPhiNegTRDout", "ESDs Neg matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiNegTRDout->Sumw2();
   hESDmatchedTrackPhiNegTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegTRDout->SetMarkerStyle(20);
@@ -1179,7 +1205,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackPhiNegTRDout);
 
   //23
-  TH1F* hESDmatchedTrackPhiNegNoTRDout = new TH1F("hESDmatchedTrackPhiNegNoTRDout", "ESDs Neg matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi(deg);tracks", 72, 0., 360.) ;  
+  TH1F* hESDmatchedTrackPhiNegNoTRDout = new TH1F("hESDmatchedTrackPhiNegNoTRDout", "ESDs Neg matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
   hESDmatchedTrackPhiNegNoTRDout->Sumw2();
   hESDmatchedTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegNoTRDout->SetMarkerStyle(25);
@@ -1190,16 +1216,41 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackPhiNegNoTRDout);
  
  //NEG 24
-  TH2F* hTOFmatchedExpTimePiVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimePiVsPhiTPCNeg", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
+  TH2F* hTOFmatchedExpTimePiVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimePiVsPhiTPCNeg", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
   hTOFmatchedExpTimePiVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimePiVsPhiTPCNeg) ;
 
   //NEG 25
-  TH2F* hTOFmatchedExpTimeKaVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCNeg", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
+  TH2F* hTOFmatchedExpTimeKaVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCNeg", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
   hTOFmatchedExpTimeKaVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeKaVsPhiTPCNeg) ;
+
+    //NEG 26
+  TH2F* hTOFprimaryEtaVsPhiOutNeg = new TH2F("hTOFprimaryEtaVsPhiOutNeg", "Negative tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
+  hTOFprimaryEtaVsPhiOutNeg->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHneg->AddLast(hTOFprimaryEtaVsPhiOutNeg) ;
+  
+  //NEG 27
+  TH2F* hTOFmatchedEtaVsPhiOutNeg = new TH2F("hTOFmatchedEtaVsPhiOutNeg", "Negative tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
+  hTOFmatchedEtaVsPhiOutNeg->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHneg->AddLast(hTOFmatchedEtaVsPhiOutNeg) ;
+
+  //NEG 28
+  TH2F* hTOFprimaryPtVsPhiOutNeg = new TH2F("hTOFprimaryPtVsPhiOutNeg", "Negative tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
+  hTOFprimaryPtVsPhiOutNeg->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHneg->AddLast(hTOFprimaryPtVsPhiOutNeg) ;
+  
+  //NEG 29
+  TH2F* hTOFmatchedPtVsPhiOutNeg = new TH2F("hTOFmatchedPtVsPhiOutNeg", "Negative tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
+  hTOFmatchedPtVsPhiOutNeg->Sumw2() ;
+  if (fEnableAdvancedCheck)
+    fHneg->AddLast(hTOFmatchedPtVsPhiOutNeg) ;
+
 
   PostData(1, fHlist);
   PostData(2, fHlistTimeZero);
@@ -1326,49 +1377,61 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       ((TH1F*)fHlist->FindObject("hTOFprimaryESDeta"))->Fill(eta);
       ((TH1F*)fHlist->FindObject("hTOFprimaryESDphi"))->Fill(phi);
     }
+
+    //get track phi at TPC outer radius
+    Double_t tpcoutcoord[3]={0.,0.,0.};
+    track->GetOuterXYZ(tpcoutcoord);
+    Double_t phiOuterTPC=TMath::ATan2(tpcoutcoord[1],tpcoutcoord[0])*TMath::RadToDeg();
+    if (phiOuterTPC<0) phiOuterTPC+= (2*TMath::Pi()*TMath::RadToDeg());
+    
      //evaluate sign  
-     if (fEnableAdvancedCheck){
-       if (track->GetSign()>0){
+    if (fEnableAdvancedCheck){
+      if (track->GetSign()>0){
  	((TH1F*)fHpos->FindObject("hESDprimaryTrackPPos"))->Fill(mom); 
  	((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPos"))->Fill(pT);	
+ 	((TH2F*)fHpos->FindObject("hTOFprimaryPtVsPhiOutPos"))->Fill(phiOuterTPC,pT);	
  	if (pT>=matchingMomCut){
  	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDetaPos"))->Fill(eta);
- 	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDphiPos"))->Fill(phi);
+ 	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDphiPos"))->Fill(phiOuterTPC);
+ 	  ((TH2F*)fHpos->FindObject("hTOFprimaryEtaVsPhiOutPos"))->Fill(phiOuterTPC,eta);
  	}
  	if ( (track->IsOn(AliESDtrack::kTRDout)) && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosTRDout"))->Fill(pT);
  	  if (pT>=matchingMomCut) {
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosTRDout"))->Fill(eta);
- 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosTRDout"))->Fill(phi);
+ 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosTRDout"))->Fill(phiOuterTPC);
  	  }
  	}
  	if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosNoTRDout"))->Fill(pT);
  	  if (pT>=matchingMomCut) {
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosNoTRDout"))->Fill(eta);
-	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phi);
+	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phiOuterTPC);
  	  }
  	}
        } //end positive 
        else {
-	       ((TH1F*)fHneg->FindObject("hESDprimaryTrackPNeg"))->Fill(mom); 
- 	((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNeg"))->Fill(pT); 
- 	if (pT>=matchingMomCut){
- 	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDetaNeg"))->Fill(eta);
- 	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDphiNeg"))->Fill(phi);		
- 	}
- 	if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
- 	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegTRDout"))->Fill(pT);
- 	  if (pT>=matchingMomCut) {
- 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegTRDout"))->Fill(eta);
- 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegTRDout"))->Fill(phi); 
- 	  }
- 	}
+	 ((TH1F*)fHneg->FindObject("hESDprimaryTrackPNeg"))->Fill(mom); 
+	 ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNeg"))->Fill(pT); 
+	 ((TH2F*)fHneg->FindObject("hTOFprimaryPtVsPhiOutNeg"))->Fill(phiOuterTPC,pT);
+  	
+	 if (pT>=matchingMomCut){
+	   ((TH1F*)fHneg->FindObject("hTOFprimaryESDetaNeg"))->Fill(eta);
+	   ((TH1F*)fHneg->FindObject("hTOFprimaryESDphiNeg"))->Fill(phiOuterTPC);		
+	   ((TH2F*)fHneg->FindObject("hTOFprimaryEtaVsPhiOutNeg"))->Fill(phiOuterTPC,eta);	
+	 }
+	 if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+	   ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegTRDout"))->Fill(pT);
+	   if (pT>=matchingMomCut) {
+	     ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegTRDout"))->Fill(eta);
+	     ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegTRDout"))->Fill(phiOuterTPC); 
+	   }
+	 }
  	if  ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegNoTRDout"))->Fill(pT);
  	  if (pT>=matchingMomCut){
  	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegNoTRDout"))->Fill(eta);
- 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegNoTRDout"))->Fill(phi);
+ 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegNoTRDout"))->Fill(phiOuterTPC);
  	  }
  	}
        }//end negative
@@ -1409,22 +1472,24 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDtrkLengthPos"))->Fill(length);  
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPPos"))->Fill(mom); 
  	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPtPos"))->Fill(pT); 
- 	  if (pT>=matchingMomCut){
+	  ((TH2F*)fHpos->FindObject("hTOFmatchedPtVsPhiOutPos"))->Fill(phiOuterTPC,pT);	
+	  if (pT>=matchingMomCut){
  	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDetaPos"))->Fill(eta);
- 	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDphiPos"))->Fill(phi);
+ 	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDphiPos"))->Fill(phiOuterTPC);
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedEtaVsPhiOutPos"))->Fill(phiOuterTPC,eta);	
  	  }	
  	  if ( (track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosTRDout"))->Fill(pT);
  	    if (pT>=matchingMomCut){
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosTRDout"))->Fill(eta);
- 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosTRDout"))->Fill(phi);
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosTRDout"))->Fill(phiOuterTPC);
  	    }
  	  } 
  	  if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
  	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosNoTRDout"))->Fill(pT);
  	    if (pT>=matchingMomCut) {
  	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosNoTRDout"))->Fill(eta);
- 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosNoTRDout"))->Fill(phi);
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosNoTRDout"))->Fill(phiOuterTPC);
  	    }
  	  }
        }// END POSITIVE
@@ -1432,22 +1497,25 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDtrkLengthNeg"))->Fill(length);  
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDPNeg"))->Fill(mom); 
          ((TH1F*)fHneg->FindObject("hTOFmatchedESDPtNeg"))->Fill(pT); 
+	 ((TH2F*)fHneg->FindObject("hTOFmatchedPtVsPhiOutNeg"))->Fill(phiOuterTPC,pT);
+
          if (pT>=matchingMomCut) {
            ((TH1F*)fHneg->FindObject("hTOFmatchedESDetaNeg"))->Fill(eta);
-           ((TH1F*)fHneg->FindObject("hTOFmatchedESDphiNeg"))->Fill(phi);
+           ((TH1F*)fHneg->FindObject("hTOFmatchedESDphiNeg"))->Fill(phiOuterTPC);
+	   ((TH2F*)fHneg->FindObject("hTOFmatchedEtaVsPhiOutNeg"))->Fill(phiOuterTPC,eta);
          }	  
          if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
            ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegTRDout"))->Fill(pT);
            if (pT>=matchingMomCut) {
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegTRDout"))->Fill(eta);
-             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegTRDout"))->Fill(phi);	    
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegTRDout"))->Fill(phiOuterTPC);	    
            }
          }
          if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
            ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegNoTRDout"))->Fill(pT);
            if (pT>=matchingMomCut) {
              ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegNoTRDout"))->Fill(eta);
-             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegNoTRDout"))->Fill(phi);
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegNoTRDout"))->Fill(phiOuterTPC);
            }
          }	  
        }//end negative
@@ -1539,9 +1607,9 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	  }
 	}
 	
-	track->GetOuterXYZ(pos);
-	Double_t phiOuterTPC=TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-	if (phiOuterTPC<0) phiOuterTPC+= (2*TMath::Pi()*TMath::RadToDeg());
+	// track->GetOuterXYZ(pos);
+	// Double_t phiOuterTPC=TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+	// if (phiOuterTPC<0) phiOuterTPC+= (2*TMath::Pi()*TMath::RadToDeg());
 	
 	if (track->GetSign()>0){
 	  if (isValidBeta[AliPID::kProton])
