@@ -894,7 +894,7 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
 		       if(s==0 && a==0 && fNonStdBranch.Contains("Baseline",TString::kIgnoreCase))
 			 {
 			   if(fSaveQAHistos)    AnalyzeJets(fDetJetFinder[s][a][r],fTriggerType, r);
-			   if(fRunUE && fFindChargedOnlyJet && s==1 && a==0 && r==0) RunAnalyzeUE(fDetJetFinder[s][a][r]);
+			   // s == 1 cannot be true here			   if(fRunUE && fFindChargedOnlyJet && s==1 && a==0 && r==0) RunAnalyzeUE(fDetJetFinder[s][a][r]);
 			 }
 		     }
 		 }
@@ -2416,7 +2416,7 @@ void AliAnalysisTaskFullppJet::CheckExoticEvent()
   //
   // Check if the event containts exotic clusters
   //
-
+  if(!fESD)return;
   Double_t leadingE = 0;
   for(Int_t icl=0; icl<fESD->GetNumberOfCaloClusters(); icl++)
     {

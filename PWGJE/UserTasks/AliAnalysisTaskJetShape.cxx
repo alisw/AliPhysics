@@ -1364,12 +1364,12 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
       if(fkMC)
 	{
 	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(IndexArray[it]));
-	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
+	  if(part)vec.SetXYZ(part->Px(), part->Py(), part->Pz());
 	}
       else 
 	{
 	  AliAODTrack *tr = aodE->GetTrack(IndexArray[it]);
-	  vec.SetXYZ(tr->Px(), tr->Py(), tr->Pz());
+	  if(tr)vec.SetXYZ(tr->Px(), tr->Py(), tr->Pz());
 	}
 
 	Double_t R = CalcR(fJvec, vec);
@@ -1841,14 +1841,17 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
 
      if (imax != -1)  {
 
-     jetL = dynamic_cast<AliAODJet*> (Jets[0]->At(imax));
-     areaJL   = jetL->EffectiveAreaCharged();
-     ptJLcorr  = jetL->Pt()-rho*areaJL;
+       jetL = dynamic_cast<AliAODJet*> (Jets[0]->At(imax));
+       if(jetL){
 
-     fhPtJL->Fill(ptJLcorr);
-     fhAreaJL->Fill(areaJL);
-     vecJ.SetXYZ(jetL->Px(), jetL->Py(), jetL->Pz());
-     fanalJetSubStrHM->AddEvent(aodE, jetL, rho*areaJL);
+	 areaJL   = jetL->EffectiveAreaCharged();
+	 ptJLcorr  = jetL->Pt()-rho*areaJL;
+	 
+	 fhPtJL->Fill(ptJLcorr);
+	 fhAreaJL->Fill(areaJL);
+	 vecJ.SetXYZ(jetL->Px(), jetL->Py(), jetL->Pz());
+	 fanalJetSubStrHM->AddEvent(aodE, jetL, rho*areaJL);
+       }
      }
 
 
@@ -1888,7 +1891,9 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
 
     if (imax != -1)  {
       jetMCL = dynamic_cast<AliAODJet*> (Jets[1]->At(imax));
-      fanalJetSubStrMCHM->AddEvent(aodE, jetMCL, rho_MC*areaJL_MC);
+      if(jetMCL){
+	fanalJetSubStrMCHM->AddEvent(aodE, jetMCL, rho_MC*areaJL_MC);
+      }
      }
 
 

@@ -36,6 +36,10 @@ class AliAnaChargedJetResponseMaker {
   virtual void SetDeltaPtJetsHist(TH1D *h1) {fhDeltaPt=h1;}
   virtual void SetNDimensions(Int_t dim)    {fDimensions = dim;}
   virtual void SetMeasuredSpectrum(TH1D *hPtMeasured);
+  virtual void SetMeasuredSpectrumTruncated(TH1D *h1) {fh1MeasuredTruncated=h1;}
+
+  virtual void SetDetectorResponse(TH2 *h2) {fh2DetectorResponse=(TH2D*)h2;}
+  virtual void SetDetectorEfficiency(TH1D *h1) {fhEfficiencyDet=h1;}
 
   virtual void SetFlatEfficiency(Double_t eff);
   virtual void SetEfficiency(TGraphErrors *grEff);
@@ -65,12 +69,26 @@ class AliAnaChargedJetResponseMaker {
   virtual THnSparse *GetResponseMatrix() {return fResponseMatrix;}
   virtual THnSparse *GetResponseMatrixFine() {return fResponseMatrixFine;}
 
+  virtual TH2D      *GetDetectorResponseRebin() {return fh2DetectorResponseRebin;}
+
+  virtual Bool_t CheckInputForCombinedResponse();
+
+  virtual TH2D      *GetResponseCombinedFineFull() {return fh2ResponseMatrixCombinedFineFull;}
+  virtual TH2D      *GetResponseCombinedFull() {return fh2ResponseMatrixCombinedFull;}
+
+  virtual TH2D      *GetResponseCombined() {return fh2ResponseMatrixCombined;}
+  virtual TH1D      *GetEfficiencyCombined() {return fhEfficiencyCombined;}
+
+  static Double_t   GetBetaPerDOFValue(Int_t betaColl = 0, Int_t betaOpt= 0);
+
   //Utility functions
   virtual Double_t InterpolateFast(TGraph *gr, Double_t x);
   virtual Double_t InterpolateFast(TH1 *h, Double_t x);
 
   virtual TH1D *MultiplyResponseGenerated(TH1 *hGen=0, TH2 *hResponse=0,TH1 *hEfficiency=0,Bool_t bDrawSlices=kFALSE);
   virtual TH1D *MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency);
+
+  virtual void MakeResponseMatrixCombined(Int_t skipBins =0, Int_t binWidthFactor = 2, Int_t extraBins = 0, Bool_t bVariableBinning = kFALSE, Double_t ptmin = 0.);
 
   virtual void MakeResponseMatrixJetsFineMerged(Int_t skipBins =0, Int_t binWidthFactor = 2, Int_t extraBins = 0, Bool_t bVariableBinning = kFALSE, Double_t ptmin = 0.);
 
@@ -98,6 +116,14 @@ class AliAnaChargedJetResponseMaker {
   ResolutionType fResolutionType;
   TF1        *fDeltaPt;
   TH1D       *fhDeltaPt;
+  TH1D       *fh1MeasuredTruncated;
+  TH2D       *fh2DetectorResponse;
+  TH2D       *fh2DetectorResponseRebin;
+  TH1D       *fhEfficiencyDet;
+  TH2D       *fh2ResponseMatrixCombinedFineFull;
+  TH2D       *fh2ResponseMatrixCombinedFull;
+  TH2D       *fh2ResponseMatrixCombined;
+  TH1D       *fhEfficiencyCombined;
   Int_t       fDimensions; //number of dimensions to unfold (class only prepared for 1 dimension -> 2D response matrix)
   Int_t       fDimRec;
   Int_t       fDimGen;

@@ -774,15 +774,16 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                        Int_t ippt=0;
                        Double_t ppt=-10;
                        if(fFlagJetHadron==0){   
-		       TRefArray *genTrackList = jetbig->GetRefTracks();
-                       Int_t nTracksGenJet = genTrackList->GetEntriesFast();
-                       AliAODTrack* genTrack;
-                       for(Int_t ir=0; ir<nTracksGenJet; ++ir){
-                       genTrack = (AliAODTrack*)(genTrackList->At(ir));
-		       if(genTrack->Pt()>ppt){ppt=genTrack->Pt();
-		       ippt=ir;}}
-                       leadtrack=(AliAODTrack*)(genTrackList->At(ippt));
-                       if(!leadtrack) continue;}
+			 TRefArray *genTrackList = jetbig->GetRefTracks();
+			 Int_t nTracksGenJet = genTrackList->GetEntriesFast();
+			 AliAODTrack* genTrack;
+			 for(Int_t ir=0; ir<nTracksGenJet; ++ir){
+			   genTrack = (AliAODTrack*)(genTrackList->At(ir));
+			   if(genTrack->Pt()>ppt){ppt=genTrack->Pt();
+			     ippt=ir;}}
+			 leadtrack=(AliAODTrack*)(genTrackList->At(ippt));
+			 if(!leadtrack) continue;
+		       }
 
 		       AliVParticle* leadtrackb=0;
                        if(fFlagJetHadron!=0){
@@ -795,26 +796,26 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
                        
-			//store one trigger info                   
-                        if(iCount==0){                        
-			  trigJet=i;
-                          trigBBTrack=nT;
-                          trigInTrack=ippt;
-                          iCount=iCount+1;} 
-
+		       //store one trigger info                   
+		       if(iCount==0){                        
+			 trigJet=i;
+			 trigBBTrack=nT;
+			 trigInTrack=ippt;
+			 iCount=iCount+1;} 
+		       
    
-		  if(fCheckMethods){
-                  for(Int_t j=0; j<fListJets[1]->GetEntries(); ++j){
-                  AliAODJet* jetsmall = (AliAODJet*)(fListJets[1]->At(j));
-                  etasmall  = jetsmall->Eta();
-                  phismall = jetsmall->Phi();
-                  ptsmall   = jetsmall->Pt();
-                  areasmall = jetsmall->EffectiveAreaCharged();
-                  Double_t tmpDeltaR=(phismall-phibig)*(phismall-phibig)+(etasmall-etabig)*(etasmall-etabig);
-		  tmpDeltaR=TMath::Sqrt(tmpDeltaR);
-		     //Fraction in the jet core  
-                    if((ptsmall>ptmax)&&(tmpDeltaR<=fRadioFrac)){ptmax=ptsmall;  
-		    index2=j;}  
+		       if(fCheckMethods){
+			 for(Int_t j=0; j<fListJets[1]->GetEntries(); ++j){
+			   AliAODJet* jetsmall = (AliAODJet*)(fListJets[1]->At(j));
+			   etasmall  = jetsmall->Eta();
+			   phismall = jetsmall->Phi();
+			   ptsmall   = jetsmall->Pt();
+			   areasmall = jetsmall->EffectiveAreaCharged();
+			   Double_t tmpDeltaR=(phismall-phibig)*(phismall-phibig)+(etasmall-etabig)*(etasmall-etabig);
+			   tmpDeltaR=TMath::Sqrt(tmpDeltaR);
+			   //Fraction in the jet core  
+			   if((ptsmall>ptmax)&&(tmpDeltaR<=fRadioFrac)){ptmax=ptsmall;  
+			     index2=j;}  
                     if(tmpDeltaR<=dismin){ dismin=tmpDeltaR;
 		      index1=j;}} //en of loop over R=0.2 jets
                 //method1:most concentric jet=core 
@@ -1065,7 +1066,10 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
      if(!fESD)aod = fAODIn;
      else aod = fAODOut;   
-      Int_t index=-1;
+
+     if(!aod)return 0;
+
+     Int_t index=-1;
      Double_t ptmax=-10;
 
 
