@@ -98,7 +98,7 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		{
 			esdevent=dynamic_cast<AliESDEvent*>(fAOD);
 			if(!esdevent)
-				kFALSE;
+				return kFALSE;
 			if(esdevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
 				isSDD=kTRUE;
 		}	
@@ -110,7 +110,7 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		{
 			aodevent=dynamic_cast<AliAODEvent*>(fAOD);
 			if(!aodevent)
-				kFALSE;
+				return kFALSE;
 			if(aodevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
 				isSDD=kTRUE;	
 		}	

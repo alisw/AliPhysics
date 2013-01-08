@@ -332,7 +332,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			//	  cout<<" functions "<<partMC->IsPhysicalPrimary()<<" "<<partMC->IsSecondaryFromWeakDecay()<<" "<<partMC->IsSecondaryFromMaterial()<<endl;
 		  
 		  		if (isPrimary&&irec==kSpPion)
-					fHistMan->GetPtHistogram(kHistPtRecPrimary)->Fill(track->Pt(),dca);  // PT histo of primaries
+					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of primaries
 		  
 		  	//nsigma cut (reconstructed nsigma)
 		  		if(idRec == kSpUndefined) 

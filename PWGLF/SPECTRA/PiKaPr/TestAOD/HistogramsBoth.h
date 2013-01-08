@@ -89,8 +89,8 @@ namespace AliSpectraNameSpaceBoth
       
       // Rest
       kHistPtRec,                               // Pt histo for all particles, reconstructed tracks
-      kHistPtRecPrimary,                               // Pt histo for all particles, reconstructed tracks
-      kNPtRecAllChHist = kHistPtRecPrimary,                    // Number of ptRec-likehistos histos - no PID
+      kHistPtRecPrimaryAll,                               // Pt histo for all particles, reconstructed tracks
+      kNPtRecAllChHist = kHistPtRecPrimaryAll,                    // Number of ptRec-likehistos histos - no PID
       
       kHistPIDTPC,                              // Particle Identification histo
       kHistPIDTOF,                              
