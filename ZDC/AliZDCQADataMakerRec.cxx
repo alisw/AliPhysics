@@ -848,12 +848,15 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
 	}
 	else{
+	  if(h22){
 
-	  for(Int_t ibin=1; ibin<=h20->GetNbinsX(); ibin++){
-	    h22->SetBinContent(ibin, h20->GetBinContent(ibin)); 
-	    h22->SetBinError(ibin, h20->GetBinError(ibin));
+	    for(Int_t ibin=1; ibin<=h20->GetNbinsX(); ibin++){
+	      h22->SetBinContent(ibin, h20->GetBinContent(ibin)); 
+	      h22->SetBinError(ibin, h20->GetBinError(ibin));
+	    }
+	    h22->SetLineColor(kBlue+1); h22->SetLineWidth(2);
 	  }
-	  h22->SetLineColor(kBlue+1); h22->SetLineWidth(2);
+	  else printf("Warning: Raw ADC QA histo not found \n\n");
 	}
 	if(!h14 || !h15 || !h16 || !h17 || !h18 || !h19){
 	AliWarning("AliZDCQADataMakerRec -> RAW TDC histos not found!"); 
@@ -866,20 +869,23 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    h23->SetBinContent(ibin, h21->GetBinContent(ibin)); 
 	    h23->SetBinError(ibin, h21->GetBinError(ibin));
 	  }*/
-	  h23->SetBinContent(1, h14->GetMean());
-	  h23->SetBinError(1, h14->GetRMS());
-	  h23->SetBinContent(2, h15->GetMean());
-	  h23->SetBinError(2, h15->GetRMS());
-	  h23->SetBinContent(3, h16->GetMean());
-	  h23->SetBinError(3, h16->GetRMS());
-	  h23->SetBinContent(4, h17->GetMean());
-	  h23->SetBinError(4, h17->GetRMS());
-	  h23->SetBinContent(5, h18->GetMean());
-	  h23->SetBinError(5, h18->GetRMS());
-	  h23->SetBinContent(6, h19->GetMean());
-	  h23->SetBinError(6, h19->GetRMS());
-	  //
-	  h23->SetLineColor(kAzure+6); h22->SetLineWidth(2);
+	  if(h23){
+	    h23->SetBinContent(1, h14->GetMean());
+	    h23->SetBinError(1, h14->GetRMS());
+	    h23->SetBinContent(2, h15->GetMean());
+	    h23->SetBinError(2, h15->GetRMS());
+	    h23->SetBinContent(3, h16->GetMean());
+	    h23->SetBinError(3, h16->GetRMS());
+	    h23->SetBinContent(4, h17->GetMean());
+	    h23->SetBinError(4, h17->GetRMS());
+	    h23->SetBinContent(5, h18->GetMean());
+	    h23->SetBinError(5, h18->GetRMS());
+	    h23->SetBinContent(6, h19->GetMean());
+	    h23->SetBinError(6, h19->GetRMS());
+	    //
+	    h23->SetLineColor(kAzure+6); h22->SetLineWidth(2);
+	  }
+	  else printf(" Warning: Raw TDC QA histo not found\n\n");
         }
 	if(!h25 || !h26){
 	 AliWarning("AliZDCQADataMakerRec -> RAW centroid histos not found!"); 
