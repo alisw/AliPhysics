@@ -13,15 +13,13 @@
 #include <TArrayI.h>
 
 class TDPMjet;
-class TArrayI;
 class TParticle;
 class TClonesArray;
-class TGraph;
 class AliGenEventHeader;
 class AliStack;
 class AliRunLoader;
 class AliGenDPMjetEventHeader;
-
+class AliIonPDGCodes;
 
 
 class AliGenDPMjet : public AliGenMC
@@ -47,6 +45,7 @@ class AliGenDPMjet : public AliGenMC
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     virtual void    SetPi0Decay(Int_t iPi0)  {fPi0Decay = iPi0;}
     virtual void    SetDecayAll(Int_t iDec)  {fDecayAll = iDec;}
+    virtual void    SetIonPDGCodes();
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
 			{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
     virtual Int_t   GetSpectators()        {return fSpectators;}

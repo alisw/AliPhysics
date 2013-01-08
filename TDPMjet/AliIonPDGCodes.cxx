@@ -62,7 +62,7 @@ void AliIonPDGCodes::AddParticlesToPdgDataBase()
   
   TDatabasePDG *pdgDB = TDatabasePDG::Instance();
   
-  const Int_t kOffset=10000000;
+  const Int_t kOffset=1000000000;
   
   pdgDB->AddParticle("H","H",1.00794,kTRUE,0,1,"Ion",1*10000+1*10+kOffset,-1,8);
   //pdgDB->AddParticle("Helium","Helium",4.0026,kTRUE,0,2,"Ion",2*10000+4*10+kOffset,-1,8);
