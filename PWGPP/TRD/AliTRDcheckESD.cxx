@@ -1692,8 +1692,10 @@ void AliTRDcheckESD::Terminate(Option_t *)
   // All tracks
   h1[0] = h2->ProjectionX("Ncl_px");
   TGraphErrors *ge=(TGraphErrors*)arr->At(0);
-  for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-    ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+  if (ge) {
+    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+      ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+    }
   }
   
   // All charged tracks
@@ -1705,15 +1707,19 @@ void AliTRDcheckESD::Terminate(Option_t *)
   }
   if(Int_t(hNclCh[0]->GetEntries())){
     ge=(TGraphErrors*)arr->At(1);
-    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-      ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
+    if (ge) {
+      for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+	ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
+      }
     }
   }
   
   if(Int_t(hNclCh[1]->GetEntries())){
     ge=(TGraphErrors*)arr->At(2);
-    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-      ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[1]->GetBinContent(ib));
+    if (ge) {
+      for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+	ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[1]->GetBinContent(ib));
+      }
     }
   }
   // Species wise
@@ -1721,8 +1727,10 @@ void AliTRDcheckESD::Terminate(Option_t *)
     h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
     if(!Int_t(h1[0]->GetEntries())) continue;
     ge=(TGraphErrors*)arr->At(2+is);
-    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-      ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+    if (ge) {
+      for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+	ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+      }
     }
   }
   
