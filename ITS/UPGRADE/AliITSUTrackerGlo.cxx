@@ -41,8 +41,6 @@ using namespace TMath;
 
 
 //----------------- tmp stuff -----------------
-Int_t currLabel=-1;
-
 
 ClassImp(AliITSUTrackerGlo)
 //_________________________________________________________________________
@@ -51,7 +49,8 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fITS(0)
   ,fCurrESDtrack(0)
   ,fCurrMass(kPionMass)
-  ,fSeedsLr(0)
+  ,fHypStore(100)
+  ,fCurrHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
   ,fTrCond()
 {
@@ -65,7 +64,6 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
  // Default destructor
  //  
   delete fITS;
-  delete[] fSeedsLr;
   //
 }
 
@@ -80,8 +78,6 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   }
   //
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
-  int n = fITS->GetNLayersActive()+1;
-  fSeedsLr = new TObjArray[n];
   //
   fTrCond.SetNLayers(fITS->GetNLayersActive());
   fTrCond.AddNewCondition(5);
@@ -109,17 +105,21 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   //
   //
   AliITSUReconstructor::GetRecoParam()->Print();
-
+  int nTrESD = esdEv->GetNumberOfTracks();
+  fHypStore.Delete();
+  if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
+  //
   fITS->ProcessClusters();
   // select ESD tracks to propagate
-  int nTrESD = esdEv->GetNumberOfTracks();
   for (int itr=0;itr<nTrESD;itr++) {
     AliESDtrack *esdTr = esdEv->GetTrack(itr);
     AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
-    currLabel = Abs(esdTr->GetTPCLabel());
-    FindTrack(esdTr);
+    FindTrack(esdTr, itr);
   }
-
+  //
+  printf("Hypotheses for current event (N seeds in pool: %d, size: %d)\n",fSeedsPool.GetEntriesFast(),fSeedsPool.GetSize());
+  fHypStore.Print();
+  //
   return 0;
 }
 
@@ -197,12 +197,12 @@ Bool_t AliITSUTrackerGlo::NeedToProlong(AliESDtrack* esdTr)
 }
 
 //_________________________________________________________________________
-void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
+void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 {
   // find prolongaion candidates finding for single seed
   //
   if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
-  if (!InitSeed(esdTr))      return;  // initialize prolongations hypotheses tree
+  if (!InitSeed(esdTr,esdID)) return;  // initialize prolongations hypotheses tree
   //
   AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
   AliITSUSeed seedUC;  // copy of the seed from the upper layer
@@ -212,9 +212,9 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
   //
   for (int ila=fITS->GetNLayersActive();ila--;) {
     int ilaUp = ila+1;                         // prolong seeds from layer above
-    int nSeedsUp = GetNSeeds(ilaUp);
+    int nSeedsUp = fCurrHyp->GetNSeeds(ilaUp);
     for (int isd=0;isd<nSeedsUp;isd++) {
-      AliITSUSeed* seedU = GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
+      AliITSUSeed* seedU = fCurrHyp->GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
       seedUC = *seedU;                          // its copy will be prolonged
       seedUC.SetParent(seedU);
       seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
@@ -245,7 +245,8 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
 	double xs; // X in the TF of current seed, corresponding to intersection with sensor plane
 	if (!seedT.GetTrackingXAtXAlpha(sens->GetXTF(),sens->GetPhiTF(),bz, xs)) continue;
 	if (!seedT.PropagateToX(xs,bz)) continue;
-	if (!seedT.Rotate(sens->GetPhiTF())) continue;
+	//	if (!seedT.Rotate(sens->GetPhiTF())) continue;
+	if (!seedT.RotateToAlpha(sens->GetPhiTF())) continue;
 	//
 	int clID0 = sens->GetFirstClusterId();
 	for (int icl=sens->GetNClusters();icl--;) {
@@ -258,40 +259,60 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr)
       }
       // cluster search is done. Do we need ta have a version of this seed skipping current layer
       seedT.SetLr(ila);
-      if (!NeedToKill(&seedT,kMissingCluster)) AddProlongationHypothesis(NewSeedFromPool(&seedT) ,ila);      
+      if (!NeedToKill(&seedT,kMissingCluster)) {
+	AliITSUSeed* seedSkp = NewSeedFromPool(&seedT);
+	double penalty = -AliITSUReconstructor::GetRecoParam()->GetMissPenalty(ila);
+	// to do: make penalty to account for probability to miss the cluster for good reason
+	seedSkp->SetChi2Cl(penalty);
+	AddProlongationHypothesis(seedSkp,ila);      
+      }
     }
+    ((TObjArray*)fCurrHyp->GetLayerSeeds(ila))->Sort();
     printf(">>> All hypotheses on lr %d: \n",ila);
-    for (int ih=0;ih<GetNSeeds(ila);ih++) {
-      printf(" #%3d ",ih); GetSeed(ila,ih)->Print();
+    for (int ih=0;ih<fCurrHyp->GetNSeeds(ila);ih++) {
+      printf(" #%3d ",ih); fCurrHyp->GetSeed(ila,ih)->Print();
+      //
+      /*
+      if (ila!=0) continue;
+      double vecL[5] = {0};
+      double matL[15] = {0};
+      AliITSUSeed* sp = fCurrHyp->GetSeed(ila,ih);
+      while(sp->GetParent()) {
+	sp->Smooth(vecL,matL);
+	if (sp->GetLayerID()>=fITS->GetNLayersActive()-1) break;
+	sp = (AliITSUSeed*)sp->GetParent();
+      }
+      */
     }
   }
   //
-  ResetSeedTree();
+  SaveCurrentTrackHypotheses();
+  //
 }
 
 //_________________________________________________________________________
-Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr)
+Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr, Int_t esdID)
 {
   // init prolongaion candidates finding for single seed
+  fCurrHyp = GetTrackHyp(esdID);
+  if (fCurrHyp) return kTRUE;
+  //
   fCurrMass = esdTr->GetMass();
   fCurrESDtrack = esdTr;
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
-  //
   //
   AliITSUSeed* seed = NewSeedFromPool();
   seed->SetLr(fITS->GetNLayersActive());   // fake layer
   seed->AliExternalTrackParam::operator=(*esdTr);
   seed->SetParent(esdTr);
-  AddProlongationHypothesis(seed,fITS->GetNLayersActive());
+  int nl = fITS->GetNLayersActive();
+  fCurrHyp = new AliITSUTrackHyp(nl);
+  fCurrHyp->SetESDSeed(seed);
+  AddProlongationHypothesis(seed,nl);
+  fCurrHyp->SetUniqueID(esdID);
+  SetTrackHyp(fCurrHyp,esdID);
   return kTRUE;
   // TO DO
-}
-
-//_________________________________________________________________________
-void AliITSUTrackerGlo::ResetSeedTree()
-{
-  // reset current hypotheses tree
-  for (int i=fITS->GetNLayersActive()+1;i--;) fSeedsLr[i].Clear();
 }
 
 //_________________________________________________________________________
@@ -397,7 +418,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   AliCluster *cl = fITS->GetLayerActive(lr)->GetCluster(clID);
   //
   Bool_t goodCl = kFALSE;
-  for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) goodCl = kTRUE;
+  int currLabel = Abs(fCurrESDtrack->GetTPCLabel());
+  //
+  if (cl->GetLabel(0)>=0) {for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) {goodCl = kTRUE; break;}}
+  else goodCl = kTRUE;
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
     if (!track->PropagateParamOnlyTo(track->GetX()+cl->GetX(),GetBz())) {
@@ -430,7 +454,8 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   double chi2 = track->GetPredictedChi2(p,cov);
   if (chi2>AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)) {
     if (goodCl) {
-      printf("Loose good cl: Chi2=%e > Chi2Max=%e \n",chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr)); 
+      printf("Loose good cl: Chi2=%e > Chi2Max=%e |dy: %+.3e dz: %+.3e\n",
+	     chi2,AliITSUReconstructor::GetRecoParam()->GetMaxTr2ClChi2(lr),dy,dz); 
       track->Print("etp");
       cl->Print("");
     }
@@ -446,7 +471,10 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   track->SetLrClusterID(lr,clID);
   cl->IncreaseClusterUsage();
   //
-  AliInfo(Form("AddCl Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d) |Chi2=%f",clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2), chi2));
+  track->SetFake(!goodCl);
+  //
+  AliInfo(Form("AddCl(%d) Cl%d lr:%d: dY:%+8.4f dZ:%+8.4f (MC: %5d %5d %5d) |Chi2=%f(%c)",
+	       goodCl,clID,lr,dy,dz2,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2), chi2, track->IsFake() ? '-':'+'));
   //
   AddProlongationHypothesis(track,lr);
   //
@@ -496,4 +524,13 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
     xpos = seed->GetX();
   }
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliITSUTrackerGlo::SaveCurrentTrackHypotheses()
+{
+  // RS: shall we clean up killed seeds?
+  fCurrHyp = 0;
+  // TODO
+  
 }

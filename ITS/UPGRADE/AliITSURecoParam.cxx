@@ -36,7 +36,7 @@ const Double_t AliITSURecoParam::fgkSigmaRoadY                    = 1.;//1000e-4
 const Double_t AliITSURecoParam::fgkSigmaRoadZ                    = 1.;//1000e-4;
 const Double_t AliITSURecoParam::fgkMaxTr2ClChi2                  = 15.;
 const Double_t AliITSURecoParam::fgkTanLorentzAngle               = 0;
-const Double_t AliITSURecoParam::fgkMissPenalty                   = 3.0;
+const Double_t AliITSURecoParam::fgkMissPenalty                   = 2.0;
 //
 // hardwired params for TPC-ITS border layer
 const Double_t AliITSURecoParam::fgkTPCITSWallRMin                = 50.;

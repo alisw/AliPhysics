@@ -11,6 +11,7 @@
 #include "AliESDEvent.h"
 #include "AliITSUSeed.h"
 #include "AliITSUTrackCond.h"
+#include "AliITSUTrackHyp.h"
 
 class AliITSUReconstructor;
 class AliITSURecoDet;
@@ -51,10 +52,8 @@ class AliITSUTrackerGlo : public AliTracker {
   //------------------------------------
   Bool_t                 NeedToProlong(AliESDtrack* estTr);
   void                   Init(AliITSUReconstructor* rec);
-  void                   FindTrack(AliESDtrack* esdTr);
-  Bool_t                 InitSeed(AliESDtrack *esdTr);
-  Int_t                  GetNSeeds(Int_t lr)              const {return fSeedsLr[lr].GetEntriesFast();} //RS TOCHECK
-  AliITSUSeed*           GetSeed(Int_t lr, Int_t sID)     const {return (AliITSUSeed*)fSeedsLr[lr].UncheckedAt(sID);} //RS TOCHECK
+  void                   FindTrack(AliESDtrack* esdTr, Int_t esdID);
+  Bool_t                 InitSeed(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   //
@@ -64,9 +63,11 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
-  void                   DeleteLastSeedFromPool()               {fSeedsPool.RemoveLast();}
-  void                   ResetSeedTree();  // RS TOCHECK
-  //
+  AliITSUTrackHyp*       GetTrackHyp(Int_t id)               const  {return (AliITSUTrackHyp*)fHypStore.UncheckedAt(id);}
+  void                   SetTrackHyp(AliITSUTrackHyp* hyp,Int_t id) {fHypStore.AddAtAndExpand(hyp,id);}
+  void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
+  void                   SaveCurrentTrackHypotheses();
+ //
 
  private:
   
@@ -81,7 +82,8 @@ class AliITSUTrackerGlo : public AliTracker {
   Double_t                        fTrImpData[kNTrImpData];  // data on track impact on the layer
   //
   // the seeds management to be optimized
-  TObjArray*                      fSeedsLr;        // seeds at each layer
+  TObjArray                       fHypStore;       // storage for tracks hypotheses
+  AliITSUTrackHyp*                fCurrHyp;        // hypotheses container for current track
   TClonesArray                    fSeedsPool;      // pool for seeds
   //
   AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
@@ -94,7 +96,7 @@ class AliITSUTrackerGlo : public AliTracker {
 inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr)
 {
   // add new seed prolongation hypothesis 
-  fSeedsLr[lr].AddLast(seed);
+  fCurrHyp->AddSeed(seed,lr);
   printf("*** Adding: "); seed->Print();
 }
 

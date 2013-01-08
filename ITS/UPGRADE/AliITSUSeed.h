@@ -9,9 +9,11 @@ using namespace AliITSUAux;
 class AliITSUSeed: public AliExternalTrackParam
 {
  public:
-  enum {kKilled=BIT(14)};
+  enum {kKilled=BIT(14),kFake=BIT(15)};
   enum {kF02,kF04,kF12,kF13,kF14,kF24, kF44,kNFElem}; // non-trivial elems of propagation matrix
-  enum {kB00,kB01,kB10,kB11,kB20,kB21,kB30,kB31,kB40,kB41, kNBElem}; // non-trivial elems of B matrix (I - K*H)
+  enum {kK00,kK01,kK10,kK11,kK20,kK21,kK30,kK31,kK40,kK41, kNKElem}; // non-trivial elems of gain matrix
+  enum {kS00,kS10,kS11,kS20,kS21,kS22,kS30,kS31,kS32,kS33,kS40,kS41,kS42,kS43,kS44,kNSElem}; // elements of 5x5 sym matrix
+  enum {kR00,kR22,kNRElem};                        // non trivial elements of rotation matrix
   //
   AliITSUSeed();
   AliITSUSeed(const AliITSUSeed& src);
@@ -23,8 +25,9 @@ class AliITSUSeed: public AliExternalTrackParam
   void            SetLr(Int_t lr)                        {SetLrClusterID(lr,-1);} // lr w/o cluster
   void            SetLrClusterID(UInt_t id)              {fClID = id;}
   void            SetParent(TObject* par)                {fParent = par;}
-  void            SetChi2Cl(Double_t v)                  {fChi2Glo += fChi2Cl= v;}
+  void            SetChi2Cl(Double_t v)                  {fChi2Cl= v; v>0 ? fChi2Glo+=v : fChi2Penalty -= v;}
   void            Kill(Bool_t v=kTRUE)                   {SetBit(kKilled, v);}
+  void            SetFake(Bool_t v=kTRUE)                {SetBit(kFake, v);}
   //
   UInt_t          GetLrClusterID()                 const {return fClID;}
   Int_t           GetLrCluster(Int_t &lr)          const {return UnpackCluster(fClID,lr);}
@@ -35,10 +38,13 @@ class AliITSUSeed: public AliExternalTrackParam
   UShort_t        GetHitsPattern()                 const {return fHitsPattern;}
   Float_t         GetChi2Cl()                      const {return fChi2Cl;}
   Float_t         GetChi2Glo()                     const {return fChi2Glo;}
+  Float_t         GetChi2Penalty()                 const {return fChi2Penalty;}
   Float_t         GetChi2GloNrm()                  const;
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
+  Bool_t          IsFake()                         const {return TestBit(kFake);}
   //
   TObject*        GetParent()                      const {return fParent;}
+  const AliITSUSeed* GetParent(Int_t lr)              const;
   //
   virtual Bool_t  IsSortable()                     const {return kTRUE;}
   virtual Bool_t  IsEqual(const TObject* obj)      const;
@@ -49,20 +55,25 @@ class AliITSUSeed: public AliExternalTrackParam
   void            ApplyELoss2FMatrix(Double_t frac, Bool_t beforeProp);
   Bool_t          ApplyMaterialCorrection(Double_t xOverX0, Double_t xTimesRho, Double_t mass, Bool_t beforeProp);
   Bool_t          PropagateToX(Double_t xk, Double_t b);
+  Bool_t          RotateToAlpha(Double_t alpha);
   Bool_t          GetTrackingXAtXAlpha(double xOther,double alpOther,double bz, double &x);
   Double_t        GetPredictedChi2(Double_t p[2],Double_t cov[3]);
   Bool_t          Update();
+  Bool_t          Smooth(Double_t vecL[5],Double_t matL[15]);
+  Double_t*       ProdABA(const double a[15],const double b[15]) const;
   //
  protected:
   //
   Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
+  Double_t              fKMatrix[kNKElem];  // Gain matrix non-trivial elements (note: standard MBF formula uses I-K*H)
+  Double_t              fRMatrix[kNRElem];  // rotation matrix non-trivial elements
   Double_t              fCovIYZ[3];         // inverted matrix of propagation + meas errors = [Hi * Pi|i-1 * Hi^T + Ri]^-1
   Double_t              fResid[2];          // residuals vector
-  Double_t              fBMatrix[kNBElem];  // K*H - I matix non-trivial elements (note: standard MBF formula uses I-K*H)
   UShort_t              fHitsPattern;       // bit pattern of hits
   UInt_t                fClID;              // packed cluster info (see AliITSUAux::PackCluster)
-  Float_t               fChi2Glo;           // current chi2 global
-  Float_t               fChi2Cl;            // track-cluster chi2
+  Float_t               fChi2Glo;           // current chi2 global (sum of track-cluster chi2's on layers with hit)
+  Float_t               fChi2Cl;            // track-cluster chi2 (if >0) or penalty for missing cluster (if < 0)
+  Float_t               fChi2Penalty;       // total penalty (e.g. for missing clusters)
   TObject*              fParent;            // parent track (in higher tree hierarchy)
   
   ClassDef(AliITSUSeed,1)
@@ -110,5 +121,17 @@ inline void AliITSUSeed::ApplyELoss2FMatrix(Double_t frac, Bool_t beforeProp)
   }
 }
 
+//_________________________________________________________________________
+inline const AliITSUSeed* AliITSUSeed::GetParent(Int_t lr) const
+{
+  // get parent at given layer
+  const AliITSUSeed* par=this;
+  int lrt;
+  while( par && (lrt=par->GetLayerID())>=0 ) {
+    if (lrt==lr) break;
+    par = dynamic_cast<const AliITSUSeed*>(par->GetParent());
+  }
+  return par;
+}
 
 #endif

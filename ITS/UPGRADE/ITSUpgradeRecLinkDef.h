@@ -23,6 +23,8 @@
 #pragma link C++ class AliITSUSeed+;
 #pragma link C++ class AliITSUTrackerGlo+;
 #pragma link C++ class AliITSUTrackCond+;
+#pragma link C++ class AliITSUTrackHyp+;
+
 //
 
 // old v0
