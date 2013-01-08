@@ -57,7 +57,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kQbins = 20,
     kQbinsWeights = 40,
     kEDbins = 1,
-    kRVALUES = 6+1,// 6 Gaussian radii (3-8fm), last slot for Therminator source
+    kRVALUES = 6,// 6 Gaussian radii (3-8fm)
     kNDampValues = 16,
     kDENtypes = 1,// was (kRVALUES)*kNDampValues
     kCentBins=10,// 0-50%
@@ -70,9 +70,10 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Int_t GetNumKtbins() const {return kKbinsT;}
   Int_t GetNumRValues() const {return kRVALUES;}
   Int_t GetNumCentBins() const {return kCentBins;}
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
-  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0, TH3D *temp3D[5]=0x0);
-  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2D[2]=0x0, TH3D *temp3Dos=0x0, TH3D *temp3Dss[6]=0x0);
+  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
+  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
   //
 
 
@@ -92,10 +93,13 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
-  Float_t FSICorrelation2(Int_t, Int_t, Int_t, Float_t);
+  void FourVectProdTerms(Float_t [], Float_t [], Float_t [], Float_t&, Float_t&, Float_t&, Float_t&, Float_t&);
+  Float_t FSICorrelationGaus2(Int_t, Int_t, Int_t, Float_t);
+  Float_t FSICorrelationTherm2(Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
-  Float_t MCWeight3D(Bool_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t);
+  Float_t MCWeight3D(Bool_t, Int_t, Int_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
+  void TestAddTask();
   //
   
   
@@ -120,6 +124,10 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //TH3D *fTwoPartNormErr; //!
     TH3D *f4VectProd1TwoPartNorm; //!
     TH3D *f4VectProd2TwoPartNorm; //!
+    TH3D *f4VectProd1TwoPartNormIdeal; //!
+    TH3D *f4VectProd2TwoPartNormIdeal; //!
+    TH3D *f4VectProd1TwoPartNormSmeared; //!
+    TH3D *f4VectProd2TwoPartNormSmeared; //!
   };  
   struct St6 {
     TH1D *fExplicit3; //!
@@ -127,16 +135,26 @@ class AliChaoticity : public AliAnalysisTaskSE {
     //
     TH1D *fNorm3; //!
     TH3D *fTerms3; //!
-    TH3D *f4VectProd1TermsCC3; //!
-    TH3D *f4VectProd1TermsCC2; //!
-    TH3D *f4VectProd1TermsCC0; //!
-    TH3D *f4VectProd2TermsCC3; //!
-    TH3D *f4VectProd2TermsCC2; //!
-    TH3D *f4VectProd2TermsCC0; //!
+    TH3D *f4VectProd1Terms; //!
+    TH3D *f4VectProd2Terms; //!
+    TH3D *f4VectProd1TermsIdeal; //!
+    TH3D *f4VectProd2TermsIdeal; //!
+    TH3D *f4VectProd1TermsSmeared; //!
+    TH3D *f4VectProd2TermsSmeared; //!
+    TH3D *f4VectProd1TermsSumK3; //!
+    TH3D *f4VectProd2TermsSumK3; //!
+    TH3D *f4VectProd1TermsEnK3; //!
+    TH3D *f4VectProd2TermsEnK3; //!
+    TH3D *f4VectProd1TermsSumK2; //!
+    TH3D *f4VectProd2TermsSumK2; //!
+    TH3D *f4VectProd1TermsEnK2; //!
+    TH3D *f4VectProd2TermsEnK2; //!
     TH3D *fIdeal; //!
     TH3D *fSmeared; //!
     TH3D *fQW12; //!
     TH3D *fQW13; //!
+    TH3D *fSumK3; //!
+    TH3D *fEnK3; //!
     //
     struct St_DT DT[kDENtypes];
   };
@@ -267,17 +285,13 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticityNormPairStruct *fNormPairs[3];//!
   
  public:
-  TH2D *fFSI2SS;
-  TH2D *fFSI2OS;
+  TH2D *fFSI2SS[2];
+  TH2D *fFSI2OS[2];
   TH3D *fFSIOmega0SS[6];
-  TH3D *fFSIOmega0OS;
+  TH3D *fFSIOmega0OS[6];
   //
   TH2D *fMomResC2;
-  TH3D *fMomRes3DTerm1;
-  TH3D *fMomRes3DTerm2;
-  TH3D *fMomRes3DTerm3;
-  TH3D *fMomRes3DTerm4;
-  TH3D *fMomRes3DTerm5;
+  
   //
   Float_t *******fNormWeight;//! osl kt binning
   Float_t *******fNormWeightErr;//! osl kt binning
