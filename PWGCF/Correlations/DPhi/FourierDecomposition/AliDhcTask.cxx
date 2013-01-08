@@ -524,6 +524,12 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
 
   TList *list = InputEvent()->GetList();
   TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
+
+  if(!tcaTracks){
+    AliError("Ptr to tcaTracks zero");
+    return;
+  }
+
   const Int_t ntracks = tcaTracks->GetEntries();
   if (miniEvt)
     miniEvt->reserve(ntracks);
