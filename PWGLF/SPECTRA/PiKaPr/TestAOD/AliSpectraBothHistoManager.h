@@ -45,6 +45,7 @@ namespace AliSpectraNameSpaceBoth
      kHistPtRecSigma,
      kHistPtRecTrue,
      kHistPtRecTruePrimary,
+     kHistPtRecPrimary,	
      kHistPtRecSigmaPrimary,
      kHistPtRecSigmaSecondaryMaterial,
      kHistPtRecSigmaSecondaryWeakDecay,
