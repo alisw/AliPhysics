@@ -416,7 +416,7 @@ AliPoissonCalculator::Result(Bool_t correct)
       Double_t corr     = CalculateCorrection(empty, total);
       fEmptyVsTotal->Fill(total, empty);
       fMean->Fill(mean);
-      if (total != 0) fOcc->Fill(100 * (1 - empty/total));
+      if (total > 1e-6) fOcc->Fill(100 * (1 - empty/total));
       //Old fOcc->Fill(100 * (1 - TMath::PoissonI(0,mean)));
       fCorr->Fill(mean, corr);
     }
