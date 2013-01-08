@@ -13,7 +13,7 @@
 #include "TObjArray.h"
 #include "TH1F.h"
 #include "TAxis.h"
-#include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TLine.h"
 #include "TCanvas.h"
 #include "TString.h"
@@ -171,7 +171,7 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
   Float_t *la = new Float_t[ntv]; memset(la, 0, ntv*sizeof(Float_t));
   Float_t *lm = new Float_t[ntv]; for(Int_t im(0); im<ntv; im++) lm[im] = 1.e5;
   Float_t *lM = new Float_t[ntv]; for(Int_t im(0); im<ntv; im++) lM[im] = -1.e5;
-  TGraph **g = new TGraph*[ntv]; memset(g, 0, ntv*sizeof(TGraph*));
+  TGraphErrors **g = new TGraphErrors*[ntv]; memset(g, 0, ntv*sizeof(TGraphErrors*));
   AliTRDtrendValue *TV(NULL), *tv(NULL);
   TString sfp; Int_t run[10000], nr(0);
   while(sfp.Gets(fp)){
@@ -202,12 +202,14 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
         if(tv->GetVal()>lM[it])lM[it]=tv->GetVal();
       }
       if(!g[it]){
-        g[it] = new TGraph();
+        g[it] = new TGraphErrors();
         g[it]->SetNameTitle(TV->GetName(), TV->GetTitle());
         g[it]->SetMarkerStyle(4);g[it]->SetMarkerSize(1.2);
         g[it]->SetLineStyle(2);g[it]->SetLineWidth(1);
       }
-      g[it]->SetPoint(g[it]->GetN(), nr, tv->GetVal());
+      Int_t ip(g[it]->GetN());
+      g[it]->SetPoint(ip, nr, tv->GetVal());
+      g[it]->SetPointError(ip, 0., tv->GetErr());
     }
     if(Float_t(nmiss)/ntv>.1) AliWarning(Form("Run[%09d] Missing %6.2f%% values", rno, 1.e2*nmiss/ntv));
     nr++;
@@ -238,7 +240,7 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
       ay->SetTitle(Form("#bf{%s}", g[it]->GetTitle()));
     }
     hT->Draw("p");
-    g[it]->Draw("pl");
+    g[it]->Draw("ple5");
     if(line) line->Draw();
     c->Modified(); c->Update(); c->SaveAs(Form("Trend_%s.gif", g[it]->GetName()));
     if(dump) dump->Add(g[it]);

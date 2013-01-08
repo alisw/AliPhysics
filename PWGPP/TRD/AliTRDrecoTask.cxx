@@ -242,7 +242,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
     AliWarning("No track functor list defined for the task");
     return;
   }
-  if(!fTracks) return;
+  if(!fEvent || !fTracks) return;
   if(!fTracks->GetEntriesFast()) return;
   else AliDebug(2, Form("Tracks[%d] for %s", fTracks->GetEntriesFast(), GetName()));
 
@@ -509,10 +509,10 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
 // Generic debug handler
 
   AliAnalysisTaskSE::SetDebugLevel(level);
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=1 && !fgDebugStream){
     AliInfo(Form("Debug Level for Task %s set to %d", GetName(), level));
     TDirectory *savedir = gDirectory;
-    fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root");
+    fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root", "RECREATE");
     savedir->cd();
   }
 }
@@ -751,20 +751,20 @@ Double_t AliTRDrecoTask::AliTRDrecoProjection::GetTrendValue(const Int_t mid, Do
   Float_t mn(h1s->GetMean()), rms(h1s->GetRMS()),
           v(mn),  // main trending value (mean, mu, MPV)
           ve(rms),// dispersion (RMS, sigma, landau 2nd param)
-          ev(0.), // error on v
-          eve(0.);// error on ve
+          ev(h1s->GetMeanError()), // error on v
+          eve(h1s->GetRMSError());// error on ve
   if(mid==1){
     TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
     fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, mn); fg.SetParameter(2, rms);
     h1s->Fit(&fg, "WQ0");
     v = fg.GetParameter(1); ev = fg.GetParError(1);
-    ve= fg.GetParameter(2);
+    ve= fg.GetParameter(2); eve= fg.GetParError(2);
   } else if (mid==2) {
     TF1 fl("fl", "landau", az->GetXmin(), az->GetXmax());
     fl.SetParameter(0, Float_t(ne)); fl.SetParameter(1, mn); fl.SetParameter(2, rms);
     h1s->Fit(&fl, "WQ0");
     v = fl.GetMaximumX(); ev = fl.GetParError(1);
-    ve= fl.GetParameter(2);
+    ve= fl.GetParameter(2);eve= fl.GetParError(2);
   }
   if(e)  *e  = ev;
   if(s)  *s  = ve;
