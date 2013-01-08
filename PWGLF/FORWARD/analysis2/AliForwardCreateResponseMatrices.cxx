@@ -125,13 +125,16 @@ void AliForwardCreateResponseMatrices::UserExec(Option_t */*option*/)
   TH1D* dndetaSumForward    = (TH1D*)fOutput->FindObject("dndetaSumForward");
   TH1D* dndetaSumCentral    = (TH1D*)fOutput->FindObject("dndetaSumCentral");
   TH1D* dndetaSumMC         = (TH1D*)fOutput->FindObject("dndetaSumMC");
-  TH1D* dndetaEventForward  = (TH1D*)fOutput->FindObject("dndetaEventForward");
-  TH1D* dndetaEventCentral  = (TH1D*)fOutput->FindObject("dndetaEventCentral");
-  TH1D* dndetaEventMC       = (TH1D*)fOutput->FindObject("dndetaEventMC");
+  // TH1D* dndetaEventForward= (TH1D*)fOutput->FindObject("dndetaEventForward");
+  // TH1D* dndetaEventCentral= (TH1D*)fOutput->FindObject("dndetaEventCentral");
+  // TH1D* dndetaEventMC     = (TH1D*)fOutput->FindObject("dndetaEventMC");
 
-  dndetaEventForward = forward.ProjectionX("dndetaForward",1,forward.GetNbinsY(),"");
-  dndetaEventCentral = central.ProjectionX("dndetaCentral",1,central.GetNbinsY(),"");
-  dndetaEventMC      = primHist->ProjectionX("dndetaMC",1,primHist->GetNbinsY(),"");
+  TH1D* dndetaEventForward = forward.ProjectionX("dndetaForward",1,
+						 forward.GetNbinsY(),"");
+  TH1D* dndetaEventCentral = central.ProjectionX("dndetaCentral",1,
+						 central.GetNbinsY(),"");
+  TH1D* dndetaEventMC      = primHist->ProjectionX("dndetaMC",1,
+						   primHist->GetNbinsY(),"");
    
   // underflow eta bin of forward/central carry information on whether
   // there is acceptance. 1= acceptance, 0= no acceptance
