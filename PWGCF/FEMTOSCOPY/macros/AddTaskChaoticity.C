@@ -28,21 +28,13 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   TFile *inputFileMomRes = 0;
   TFile *inputFileFSI = 0;
 
-  if(!MCcase && !Tabulatecase){
-   
-    TGrid::Connect("alien:");
+ 
+  if(!Tabulatecase){
     inputFileWeight = TFile::Open(inputFileNameWeight,"OLD");
-    inputFileMomRes = TFile::Open(inputFileNameMomRes,"OLD");
     if (!inputFileWeight){
       cout << "Requested file:" << inputFileWeight << " was not opened. ABORT." << endl;
       return;
     }
-    if (!inputFileMomRes){
-      cout << "Requested file:" << inputFileMomRes << " was not opened. ABORT." << endl;
-      return;
-    }
-    
-    //
     ////////////////////////////////////////////////////
     // C2 Weight File
     Int_t ktbins = ChaoticityTask->GetNumKtbins();
@@ -61,21 +53,22 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     }
     ChaoticityTask->SetWeightArrays( kTRUE, weightHisto );
     ////////////////////////////////////////////////////
-
-    //
+  }// Tabulatecase check
+  
+  if(!MCcase && !Tabulatecase){
+    
+    inputFileMomRes = TFile::Open(inputFileNameMomRes,"OLD");
+    if (!inputFileMomRes){
+      cout << "Requested file:" << inputFileMomRes << " was not opened. ABORT." << endl;
+      return;
+    }
     ////////////////////////////////////////////////////
     // Momentum Resolution File
     TH2D *momResHisto2D = 0;
-    TH3D *momResHisto3D[5] = 0;
     momResHisto2D = (TH2D*)inputFileMomRes->Get("MomResHisto_pp");
-    momResHisto3D[0] = (TH3D*)inputFileMomRes->Get("MomResHisto_3d_ppp_term1");
-    momResHisto3D[1] = (TH3D*)inputFileMomRes->Get("MomResHisto_3d_ppp_term2");
-    momResHisto3D[2] = (TH3D*)inputFileMomRes->Get("MomResHisto_3d_ppp_term3");
-    momResHisto3D[3] = (TH3D*)inputFileMomRes->Get("MomResHisto_3d_ppp_term4");
-    momResHisto3D[4] = (TH3D*)inputFileMomRes->Get("MomResHisto_3d_ppp_term5");
-    ChaoticityTask->SetMomResCorrections( kTRUE, momResHisto2D, momResHisto3D );
+    ChaoticityTask->SetMomResCorrections( kTRUE, momResHisto2D);
     ////////////////////////////////////////////////////
-  }// !MCcase and !Tabulatecase
+  }// MCcase and Tabulatecase check
   
 
   ////////////////////////////////////////////////////
@@ -85,22 +78,32 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
     return;
   }  
-  TH2D *FSI2D[2];
-  TH3D *FSI3Dos;
-  TH3D *FSI3Dss[6];
-  FSI2D[0] = (TH2D*)inputFileFSI->Get("K2ss");
-  FSI2D[1] = (TH2D*)inputFileFSI->Get("K2os");
-  FSI3Dos = (TH3D*)inputFileFSI->Get("K3os");
+  TH2D *FSI2gaus[2];
+  TH2D *FSI2therm[2];
+  TH3D *FSI3ss[6];
+  TH3D *FSI3os[6];
+  FSI2gaus[0] = (TH2D*)inputFileFSI->Get("K2ssG");
+  FSI2gaus[1] = (TH2D*)inputFileFSI->Get("K2osG");
+  FSI2therm[0] = (TH2D*)inputFileFSI->Get("K2ssT");
+  FSI2therm[1] = (TH2D*)inputFileFSI->Get("K2osT");
   for(Int_t CB=0; CB<6; CB++) {
-    TString *name=new TString("K3ss_");
-    *name += CB;
-    FSI3Dss[CB] = (TH3D*)inputFileFSI->Get(name->Data());
+    TString *nameSS=new TString("K3ss_");
+    *nameSS += CB;
+    FSI3ss[CB] = (TH3D*)inputFileFSI->Get(nameSS->Data());
+    TString *nameOS=new TString("K3os_");
+    *nameOS += CB;
+    FSI3os[CB] = (TH3D*)inputFileFSI->Get(nameOS->Data());
   }
-  FSI2D[0]->SetDirectory(0);
-  FSI2D[1]->SetDirectory(0);
-  FSI3Dos->SetDirectory(0);
-  for(Int_t CB=0; CB<6; CB++) FSI3Dss[CB]->SetDirectory(0);
-  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2D , FSI3Dos, FSI3Dss);
+  //
+  FSI2gaus[0]->SetDirectory(0);
+  FSI2gaus[1]->SetDirectory(0);
+  FSI2therm[0]->SetDirectory(0);
+  FSI2therm[1]->SetDirectory(0);
+  for(Int_t CB=0; CB<6; CB++) {
+    FSI3ss[CB]->SetDirectory(0);
+    FSI3os[CB]->SetDirectory(0);
+  }
+  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2gaus, FSI2therm , FSI3os, FSI3ss);
   ////////////////////////////////////////////////////
   
   
