@@ -882,8 +882,8 @@ void AliAnalysisTaskITSAlignQA::CopyUserInfo()
     TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
     if (keyStr && valStr) {
       cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+      AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
     }
-    AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
   }	 
   //  
   TList *cdbListCopy = new TList();	 
