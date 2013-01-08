@@ -91,8 +91,24 @@ fLikeSign3prong(kFALSE),
 fMixEvent(kFALSE),
 fPidResponse(0x0),
 fUseKaonPIDfor3Prong(kFALSE),
+fUsePIDforLc(0),
+fUseKaonPIDforDs(kFALSE),
+fUseTPCPID(kFALSE),
+fUseTOFPID(kFALSE),
+fUseTPCPIDOnlyIfNoTOF(kFALSE),
+fMaxMomForTPCPid(1.),
+fnSigmaTPCPionLow(5.),
+fnSigmaTPCPionHi(5.),
+fnSigmaTOFPionLow(5.),
+fnSigmaTOFPionHi(5.),
+fnSigmaTPCKaonLow(5.),
+fnSigmaTPCKaonHi(5.),
 fnSigmaTOFKaonLow(5.),
 fnSigmaTOFKaonHi(5.),
+fnSigmaTPCProtonLow(5.),
+fnSigmaTPCProtonHi(5.),
+fnSigmaTOFProtonLow(5.),
+fnSigmaTOFProtonHi(5.),
 fMaxCentPercentileForTightCuts(-9999),
 fTrackFilter(0x0),
 fTrackFilter2prongCentral(0x0),
@@ -164,8 +180,24 @@ fLikeSign3prong(source.fLikeSign3prong),
 fMixEvent(source.fMixEvent),
 fPidResponse(source.fPidResponse),
 fUseKaonPIDfor3Prong(source.fUseKaonPIDfor3Prong),
+fUsePIDforLc(source.fUsePIDforLc),
+fUseKaonPIDforDs(source.fUseKaonPIDforDs),
+fUseTPCPID(source.fUseTPCPID),
+fUseTOFPID(source.fUseTOFPID),
+fUseTPCPIDOnlyIfNoTOF(source.fUseTPCPIDOnlyIfNoTOF),
+fMaxMomForTPCPid(source.fMaxMomForTPCPid),
+fnSigmaTPCPionLow(source.fnSigmaTPCPionLow),
+fnSigmaTPCPionHi(source.fnSigmaTPCPionHi),
+fnSigmaTOFPionLow(source.fnSigmaTOFPionLow),
+fnSigmaTOFPionHi(source.fnSigmaTOFPionHi),
+fnSigmaTPCKaonLow(source.fnSigmaTPCKaonLow),
+fnSigmaTPCKaonHi(source.fnSigmaTPCKaonHi),
 fnSigmaTOFKaonLow(source.fnSigmaTOFKaonLow),
 fnSigmaTOFKaonHi(source.fnSigmaTOFKaonHi),
+fnSigmaTPCProtonLow(source.fnSigmaTPCProtonLow),
+fnSigmaTPCProtonHi(source.fnSigmaTPCProtonHi),
+fnSigmaTOFProtonLow(source.fnSigmaTOFProtonLow),
+fnSigmaTOFProtonHi(source.fnSigmaTOFProtonHi),
 fMaxCentPercentileForTightCuts(source.fMaxCentPercentileForTightCuts),
 fTrackFilter(source.fTrackFilter),
 fTrackFilter2prongCentral(source.fTrackFilter2prongCentral),
@@ -234,6 +266,24 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMixEvent = source.fMixEvent;
   fPidResponse = source.fPidResponse;
   fUseKaonPIDfor3Prong = source.fUseKaonPIDfor3Prong;
+  fUsePIDforLc = source.fUsePIDforLc;
+  fUseKaonPIDforDs = source.fUseKaonPIDforDs;
+  fUseTPCPID = source.fUseTPCPID;
+  fUseTOFPID = source.fUseTOFPID;
+  fUseTPCPIDOnlyIfNoTOF = source.fUseTPCPIDOnlyIfNoTOF;
+  fMaxMomForTPCPid = source.fMaxMomForTPCPid;
+  fnSigmaTPCPionLow = source.fnSigmaTPCPionLow;
+  fnSigmaTPCPionHi = source.fnSigmaTPCPionHi;
+  fnSigmaTOFPionLow = source.fnSigmaTOFPionLow;
+  fnSigmaTOFPionHi = source.fnSigmaTOFPionHi;
+  fnSigmaTPCKaonLow = source.fnSigmaTPCKaonLow;
+  fnSigmaTPCKaonHi = source.fnSigmaTPCKaonHi;
+  fnSigmaTOFKaonLow = source.fnSigmaTOFKaonLow;
+  fnSigmaTOFKaonHi = source.fnSigmaTOFKaonHi;
+  fnSigmaTPCProtonLow = source.fnSigmaTPCProtonLow;
+  fnSigmaTPCProtonHi = source.fnSigmaTPCProtonHi;
+  fnSigmaTOFProtonLow = source.fnSigmaTOFProtonLow;
+  fnSigmaTOFProtonHi = source.fnSigmaTOFProtonHi;
   fnSigmaTOFKaonLow = source.fnSigmaTOFKaonLow;
   fnSigmaTOFKaonHi = source.fnSigmaTOFKaonHi;
   fMaxCentPercentileForTightCuts = source.fMaxCentPercentileForTightCuts;
@@ -524,7 +574,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   // and retrieves primary vertex
   TObjArray seleTrksArray(trkEntries);
   TObjArray tracksAtVertex(trkEntries);
-  UChar_t  *seleFlags = new UChar_t[trkEntries]; // bit 0: displaced, bit 1: softpi, bit 2: 3 prong
+  UChar_t  *seleFlags = new UChar_t[trkEntries]; // bit 0: displaced, bit 1: softpi, bit 2: 3 prong, bits 3-4-5: for PID
   Int_t     nSeleTrks=0;
   Int_t *evtNumber    = new Int_t[trkEntries];
   SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,tracksAtVertex,nSeleTrks,seleFlags,evtNumber);
@@ -960,8 +1010,35 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	if(fUseKaonPIDfor3Prong){
-	  Double_t nsigmatofK= fPidResponse->NumberOfSigmasTOF(negtrack1,AliPID::kKaon);
-	  if(nsigmatofK>-990. && (nsigmatofK<-fnSigmaTOFKaonLow || nsigmatofK>fnSigmaTOFKaonHi)) continue;
+	  if(!TESTBIT(seleFlags[iTrkN1],kBitKaonCompat)) continue;
+	}
+	Bool_t okForLcTopKpi=kTRUE;
+	Int_t pidLcStatus=3; // 3= OK as pKpi and Kpipi
+	if(fUsePIDforLc>0){
+	  if(!TESTBIT(seleFlags[iTrkP1],kBitProtonCompat) &&
+	     !TESTBIT(seleFlags[iTrkP2],kBitProtonCompat) ){
+	    okForLcTopKpi=kFALSE;
+	    pidLcStatus=0;
+	  }
+	  if(okForLcTopKpi && fUsePIDforLc>1){
+	    okForLcTopKpi=kFALSE;
+	    pidLcStatus=0;
+	    if(TESTBIT(seleFlags[iTrkP1],kBitProtonCompat) &&
+	       TESTBIT(seleFlags[iTrkP2],kBitPionCompat) ){
+	      okForLcTopKpi=kTRUE;
+	      pidLcStatus+=1; // 1= OK as pKpi
+	    }
+	    if(TESTBIT(seleFlags[iTrkP2],kBitProtonCompat) &&
+	       TESTBIT(seleFlags[iTrkP1],kBitPionCompat) ){
+	      okForLcTopKpi=kTRUE;
+	      pidLcStatus+=2; // 2= OK as piKp
+	    }
+	  }
+	}
+	Bool_t okForDsToKKpi=kTRUE;
+	if(fUseKaonPIDforDs){
+	  if(!TESTBIT(seleFlags[iTrkP1],kBitKaonCompat) &&
+	     !TESTBIT(seleFlags[iTrkP2],kBitKaonCompat) ) okForDsToKKpi=kFALSE;
 	}
 	// back to primary vertex
 	//	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -996,7 +1073,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    Double_t pyDau[3]={mompos1[1],momneg1[1],mompos2[1]};
 	    Double_t pzDau[3]={mompos1[2],momneg1[2],mompos2[2]};
 	    //	    massCutOK = SelectInvMassAndPt3prong(threeTrackArray);
-	    massCutOK = SelectInvMassAndPt3prong(pxDau,pyDau,pzDau);
+	    massCutOK = SelectInvMassAndPt3prong(pxDau,pyDau,pzDau,pidLcStatus);
 	  }
 	}
 
@@ -1022,7 +1099,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	if(f3Prong && massCutOK) { 
 
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
 	    if(!isLikeSign3Prong) {
@@ -1190,8 +1267,35 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	if(fUseKaonPIDfor3Prong){
-	  Double_t nsigmatofK= fPidResponse->NumberOfSigmasTOF(postrack1,AliPID::kKaon);
-	  if(nsigmatofK>-990. && (nsigmatofK<-fnSigmaTOFKaonLow || nsigmatofK>fnSigmaTOFKaonHi)) continue;
+	  if(!TESTBIT(seleFlags[iTrkP1],kBitKaonCompat)) continue;
+	}
+	Bool_t okForLcTopKpi=kTRUE;
+	Int_t pidLcStatus=3; // 3= OK as pKpi and Kpipi
+	if(fUsePIDforLc>0){
+	  if(!TESTBIT(seleFlags[iTrkN1],kBitProtonCompat) &&
+	     !TESTBIT(seleFlags[iTrkN2],kBitProtonCompat) ){
+	    okForLcTopKpi=kFALSE;
+	    pidLcStatus=0;
+	  }
+	  if(okForLcTopKpi && fUsePIDforLc>1){
+	    okForLcTopKpi=kFALSE;
+	    pidLcStatus=0;
+	    if(TESTBIT(seleFlags[iTrkN1],kBitProtonCompat) &&
+	       TESTBIT(seleFlags[iTrkN2],kBitPionCompat) ){
+	      okForLcTopKpi=kTRUE;
+	      pidLcStatus+=1; // 1= OK as pKpi
+	    }
+	    if(TESTBIT(seleFlags[iTrkN2],kBitProtonCompat) &&
+	       TESTBIT(seleFlags[iTrkN1],kBitPionCompat) ){
+	      okForLcTopKpi=kTRUE;
+	      pidLcStatus+=2; // 2= OK as piKp
+	    }
+	  }
+	}
+	Bool_t okForDsToKKpi=kTRUE;
+	if(fUseKaonPIDforDs){
+	  if(!TESTBIT(seleFlags[iTrkN1],kBitKaonCompat) &&
+	     !TESTBIT(seleFlags[iTrkN2],kBitKaonCompat) ) okForDsToKKpi=kFALSE;
 	}
 
 	// back to primary vertex
@@ -1220,7 +1324,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  Double_t pyDau[3]={momneg1[1],mompos1[1],momneg2[1]};
 	  Double_t pzDau[3]={momneg1[2],mompos1[2],momneg2[2]};
 	  //	  massCutOK = SelectInvMassAndPt3prong(threeTrackArray);
-	  massCutOK = SelectInvMassAndPt3prong(pxDau,pyDau,pzDau);
+	  massCutOK = SelectInvMassAndPt3prong(pxDau,pyDau,pzDau,pidLcStatus);
 	}
 	if(!massCutOK) { 
 	  threeTrackArray->Clear();
@@ -1241,7 +1345,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(f3Prong) { 
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp1n2,dcap1n1,dcap1n2,dcan1n2,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp1n2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
 	    if(!isLikeSign3Prong) {
@@ -1716,7 +1820,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 			     AliAODVertex *secVert,Double_t dispersion,
 			     const AliAODVertex *vertexp1n1,const AliAODVertex *vertexp2n1,
 			     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
-			     Bool_t &ok3Prong) 
+			     Bool_t useForLc, Bool_t useForDs, Bool_t &ok3Prong) 
 {
   // Make 3Prong candidates and check if they pass Dplus or Ds or Lambdac
   // reconstruction cuts 
@@ -1794,14 +1898,18 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
       ok3Prong = kTRUE;
       the3Prong->SetSelectionBit(AliRDHFCuts::kDplusCuts);
     }
-    if(fOKInvMassDs && fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
-      ok3Prong = kTRUE;
-      the3Prong->SetSelectionBit(AliRDHFCuts::kDsCuts);
+    if(useForDs && fOKInvMassDs){
+      if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
+	ok3Prong = kTRUE;
+	the3Prong->SetSelectionBit(AliRDHFCuts::kDsCuts);
+      }
     }
-    if(fOKInvMassLc && fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
-      ok3Prong = kTRUE;
-      the3Prong->SetSelectionBit(AliRDHFCuts::kLcCuts);
-    } 
+    if(useForLc && fOKInvMassLc){
+      if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
+	ok3Prong = kTRUE;
+	the3Prong->SetSelectionBit(AliRDHFCuts::kLcCuts);
+      } 
+    }
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
 
@@ -2295,7 +2403,8 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtJpsiee(Double_t *px,
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
 							Double_t *py,
-							Double_t *pz){
+							Double_t *pz,
+							Int_t pidLcStatus){
   // Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
@@ -2346,17 +2455,21 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   mrange=fCutsLctopKpi->GetMassCut();
   lolim=fMassLambdaC-mrange;
   hilim=fMassLambdaC+mrange;
-  pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassLc=kTRUE;
+  if(pidLcStatus&1){
+    pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
+    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+    if(minv2>lolim*lolim && minv2<hilim*hilim ){
+      retval=kTRUE;
+      fOKInvMassLc=kTRUE;
+    }
   }
-  pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassLc=kTRUE;
+  if(pidLcStatus&2){
+    pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
+    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+    if(minv2>lolim*lolim && minv2<hilim*hilim ){
+      retval=kTRUE;
+      fOKInvMassLc=kTRUE;
+    }
   }
 
   return retval;
@@ -2599,6 +2712,41 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
       if(okDisplaced) SETBIT(seleFlags[nSeleTrks],kBitDispl);
       if(okFor3Prong)    SETBIT(seleFlags[nSeleTrks],kBit3Prong);
       if(okSoftPi)    SETBIT(seleFlags[nSeleTrks],kBitSoftPi);
+
+      // Check the PID
+      SETBIT(seleFlags[nSeleTrks],kBitPionCompat);
+      SETBIT(seleFlags[nSeleTrks],kBitKaonCompat);
+      SETBIT(seleFlags[nSeleTrks],kBitProtonCompat);
+      Bool_t useTPC=kTRUE;
+      if(fUseTOFPID){
+	Double_t nsigmatofPi= fPidResponse->NumberOfSigmasTOF(esdt,AliPID::kPion);
+	if(nsigmatofPi>-990. && (nsigmatofPi<-fnSigmaTOFPionLow || nsigmatofPi>fnSigmaTOFPionHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
+	}
+	Double_t nsigmatofK= fPidResponse->NumberOfSigmasTOF(esdt,AliPID::kKaon);
+	if(nsigmatofK>-990. && (nsigmatofK<-fnSigmaTOFKaonLow || nsigmatofK>fnSigmaTOFKaonHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitKaonCompat);
+	}
+ 	Double_t nsigmatofP= fPidResponse->NumberOfSigmasTOF(esdt,AliPID::kProton);
+	if(nsigmatofP>-990. && (nsigmatofP<-fnSigmaTOFProtonLow || nsigmatofP>fnSigmaTOFProtonHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitProtonCompat);
+	}
+	if(fUseTPCPIDOnlyIfNoTOF && nsigmatofPi>-990.) useTPC=kFALSE;
+      }
+      if(useTPC && fUseTPCPID && esdt->P()<fMaxMomForTPCPid){ 
+	Double_t nsigmatpcPi= fPidResponse->NumberOfSigmasTPC(esdt,AliPID::kPion);
+	if(nsigmatpcPi>-990. && (nsigmatpcPi<-fnSigmaTPCPionLow || nsigmatpcPi>fnSigmaTPCPionHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
+	}
+	Double_t nsigmatpcK= fPidResponse->NumberOfSigmasTPC(esdt,AliPID::kKaon);
+	if(nsigmatpcK>-990. && (nsigmatpcK<-fnSigmaTPCKaonLow || nsigmatpcK>fnSigmaTPCKaonHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitKaonCompat);
+	}
+ 	Double_t nsigmatpcP= fPidResponse->NumberOfSigmasTPC(esdt,AliPID::kProton);
+	if(nsigmatpcP>-990. && (nsigmatpcP<-fnSigmaTPCProtonLow || nsigmatpcP>fnSigmaTPCProtonHi)){
+	  CLRBIT(seleFlags[nSeleTrks],kBitProtonCompat);
+	}
+      }
       nSeleTrks++;
     } else {
       if(fInputAOD) delete esdt; 
