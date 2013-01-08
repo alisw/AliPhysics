@@ -635,16 +635,16 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   if(fkESD->IsElectron()) v0pid = -1;
   else if(fkESD->IsPion()) v0pid = 0;
   else if(fkESD->IsProton()) v0pid = 1;
-  if(DebugLevel()>=3){
+  if(DebugLevel()>=1 && v0pid>-2){
     Float_t tpc(fkESD->GetTPCdedx());
     Float_t tof(fkESD->GetTOFbeta());
+    AliTRDtrackV1 t(*fkTrack); t.SetOwner();
     (*DebugStream()) << "trackIn"
-      <<"spc="        << spc
-      <<"spcV0="      << v0pid
-      <<"tpc="        << tpc
-      <<"tof="        << tof
-      <<"tracklet.="  << fTracklet
-      <<"trackIn.="   << tin
+      <<"pid="      << v0pid
+      <<"tpc="      << tpc
+      <<"tof="      << tof
+      <<"track.="   << &t
+      <<"trackIn.=" << tin
       << "\n";
   }
 
@@ -1625,7 +1625,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
       if((h2 = hp[ih].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
   }
-  Double_t m(0.), s(0.), trend(0.);
+  Double_t m(0.), s(0.), se(0.), trend(0.);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t ich(0); ich<nCh; ich++){
       for(Int_t icen(0); icen<nCen; icen++){
@@ -1708,7 +1708,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
       pr0->H()->SetNameTitle(Form("H%sClY%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), Form("Clusters :: #Deltay Ly[%d]", UseLYselectTrklt()?fLYselect:ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      if((trend=pr0->GetTrendValue(1,&m,&s))>-100.) PutTrendValue(Form("%sClS%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), s);
+      if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.) PutTrendValue(Form("%sClS%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), s, se);
     }
     /*!YXPh*/
     if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
@@ -2071,9 +2071,9 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, UseLYselectTrklt()?fLYselect:ily, 0)))){
       pr0->H()->SetNameTitle(Form("H%sTrkltY%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), Form("Tracklets :: #Deltay Ly[%d]", UseLYselectTrklt()?fLYselect:ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
-        PutTrendValue(Form("%sTrkltY%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), trend);
-        PutTrendValue(Form("%sTrkltYS%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), s);
+      if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
+        PutTrendValue(Form("%sTrkltY%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), trend, m);
+        PutTrendValue(Form("%sTrkltYS%d", mc?"MC":"", UseLYselectTrklt()?fLYselect:ily), s, se);
       }
     }
     /*!dphi*/
@@ -2157,7 +2157,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
   if(ndim > Int_t(kNdim)+1)       ax = H->GetAxis(kNdim+1);
   if(ndim > Int_t(kNdim)+2)      abf = H->GetAxis(kNdim+2);
   //AliInfo(Form("Using : Species[%c] Pt[%c] BunchFill[%c]", as?'y':'n', ap?'y':'n', abf?'y':'n'));
-  const Int_t nPt(apt->GetNbins()+2);
+  const Int_t nPt(apt?(apt->GetNbins()+2):1);
 
   // build list of projections
   const Int_t nsel((fgNPt+2)*(kNspc*kNcharge + 1) + kNspc*kNcharge);
@@ -2346,7 +2346,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
   }
   // build combined performance plots
   // combine up the tree of projections
-  Double_t m(0.), s(0.), trend(0.);
+  Double_t m(0.), s(0.), se(0.), trend(0.);
   AliTRDrecoProjection xlow[2], specY[kNcharge*kNspc], specPh[kNcharge*kNspc], specQ[kNcharge*kNspc];
   for(Int_t ich(0); ich<kNcharge; ich++){
     // PID dependency - summation over pt
@@ -2358,23 +2358,23 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
         specY[idx].SetNameTitle(Form("H%sTrkInY%c%d", prefix, chName[ich], isp), "Sum over pt");
         specY[idx].H()->SetNameTitle(Form("H%sTrkInY%c%d", prefix, chName[ich], isp),
                               Form("TrackIn[%s%c]:: #Deltay", spcName[v0][isp], chSgn[ich]));
-        if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+        if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInY%c%c%d", prefix, chName[ich], ptName[0], isp), trend, m);
-          PutTrendValue(Form("%sTrkInYS%c%c%d", prefix, chName[ich], ptName[0], isp), s);
+          PutTrendValue(Form("%sTrkInYS%c%c%d", prefix, chName[ich], ptName[0], isp), s, se);
         }
         for(Int_t ipt(1); ipt<nPt; ipt++){
           if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", prefix, chName[ich], ptName[ipt], isp)))) continue;
-          if((trend=pr1->GetTrendValue(1,&m,&s))>-100.){
+          if((trend=pr1->GetTrendValue(1,&m,&s, &se))>-100.){
             PutTrendValue(Form("%sTrkInY%c%c%d", prefix, chName[ich], ptName[ipt], isp), trend, m);
-            PutTrendValue(Form("%sTrkInYS%c%c%d", prefix, chName[ich], ptName[ipt], isp), s);
+            PutTrendValue(Form("%sTrkInYS%c%c%d", prefix, chName[ich], ptName[ipt], isp), s, se);
           }
           specY[idx]+=(*pr1);
         }
         php.AddLast(&specY[idx]);
         if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-        if((trend=specY[idx].GetTrendValue(1,&m,&s))>-100.){
+        if((trend=specY[idx].GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInY%c%d", prefix, chName[ich], isp), trend, m);
-          PutTrendValue(Form("%sTrkInYS%c%d", prefix, chName[ich], isp), s);
+          PutTrendValue(Form("%sTrkInYS%c%d", prefix, chName[ich], isp), s,se);
         }
         if((h2 = (TH2*)gDirectory->Get(Form("%sEn", specY[idx].H()->GetName())))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%d", prefix, chName[0], isp)))) (*pr1)+=specY[idx];
@@ -2386,23 +2386,23 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
         specPh[idx].H()->SetNameTitle(Form("H%sTrkInPh%c%d", prefix, chName[ich], isp),
                               Form("TrackIn[%s%c]:: #Delta#phi", spcName[v0][isp], chSgn[ich]));
         specPh[idx].SetShowRange(-1.5, 1.5);
-        if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+        if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInPh%c%c%d", prefix, chName[ich], ptName[0], isp), trend, m);
-          PutTrendValue(Form("%sTrkInPhS%c%c%d", prefix, chName[ich], ptName[0], isp), s);
+          PutTrendValue(Form("%sTrkInPhS%c%c%d", prefix, chName[ich], ptName[0], isp), s, se);
         }
         for(Int_t ipt(1); ipt<nPt; ipt++){
           if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", prefix, chName[ich], ptName[ipt], isp)))) continue;
-          if((trend=pr1->GetTrendValue(1,&m,&s))>-100.){
+          if((trend=pr1->GetTrendValue(1,&m,&s,&se))>-100.){
             PutTrendValue(Form("%sTrkInPh%c%c%d", prefix, chName[ich], ptName[ipt], isp), trend, m);
-            PutTrendValue(Form("%sTrkInPhS%c%c%d", prefix, chName[ich], ptName[ipt], isp), s);
+            PutTrendValue(Form("%sTrkInPhS%c%c%d", prefix, chName[ich], ptName[ipt], isp), s, se);
           }
           specPh[idx]+=(*pr1);
         }
         php.AddLast(&specPh[idx]);
         if((h2 = specPh[idx].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if((trend=specPh[idx].GetTrendValue(1,&m,&s))>-100.){
+        if((trend=specPh[idx].GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInPh%c%d", prefix, chName[ich], isp), trend, m);
-          PutTrendValue(Form("%sTrkInPhS%c%d", prefix, chName[ich], isp), s);
+          PutTrendValue(Form("%sTrkInPhS%c%d", prefix, chName[ich], isp), s,se);
         }
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%d", prefix, chName[0], isp)))) (*pr1)+=specPh[idx];
       }
@@ -2414,16 +2414,12 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
                               Form("TrackIn[%s%c]:: dQdl", spcName[v0][isp], chSgn[ich]));
         specQ[idx].SetShowRange(-2.2, -1.75);
         specQ[idx].H()->GetZaxis()->SetTitle("dQdl [a.u.]");
-        if((trend = pr0->GetTrendValue(2, &m))>-100.){
-          PutTrendValue(Form("%sTrkInQ%c%c%d", prefix, chName[ich], ptName[0], isp), trend, m);
-          PutTrendValue(Form("%sTrkInQS%c%c%d", prefix, chName[ich], ptName[0], isp), m);
-        }
+        if((trend = pr0->GetTrendValue(2, &m))>-100.) PutTrendValue(Form("%sTrkInQ%c%c%d", prefix, chName[ich], ptName[0], isp), trend, m);
+        if((trend = pr0->GetTrendValue(0, &m))>-100.) PutTrendValue(Form("%sTrkInQS%c%c%d", prefix, chName[ich], ptName[0], isp), trend, m);
         for(Int_t ipt(1); ipt<nPt; ipt++){
           if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%c%d", prefix, chName[ich], ptName[ipt], isp)))) continue;
-          if((trend=pr1->GetTrendValue(2, &m))>-100.){
-            PutTrendValue(Form("%sTrkInQ%c%c%d", prefix, chName[ich], ptName[ipt], isp), trend, m);
-            PutTrendValue(Form("%sTrkInQS%c%c%d", prefix, chName[ich], ptName[ipt], isp), m);
-          }
+          if((trend=pr1->GetTrendValue(2, &m))>-100.) PutTrendValue(Form("%sTrkInQ%c%c%d", prefix, chName[ich], ptName[ipt], isp), trend, m);
+          if((trend=pr1->GetTrendValue(0, &m))>-100.) PutTrendValue(Form("%sTrkInQS%c%c%d", prefix, chName[ich], ptName[ipt], isp), trend, m);
           specQ[idx]+=(*pr1);
         }
         php.AddLast(&specQ[idx]);
@@ -2431,10 +2427,8 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
         specQ[idx].H()->SetName(Form("H%sTrkInQS%c%d", prefix, chName[ich], isp));
         specQ[idx].SetShowRange(-1.85, -1.4);
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-        if((trend=specQ[idx].GetTrendValue(2, &m))>-100.){
-          PutTrendValue(Form("%sTrkInQ%c%d", prefix, chName[ich], isp), trend, m);
-          PutTrendValue(Form("%sTrkInQS%c%d", prefix, chName[ich], isp), m);
-        }
+        if((trend=specQ[idx].GetTrendValue(2, &m))>-100.) PutTrendValue(Form("%sTrkInQ%c%d", prefix, chName[ich], isp), trend, m);
+        if((trend=specQ[idx].GetTrendValue(0, &m))>-100.) PutTrendValue(Form("%sTrkInQS%c%d", prefix, chName[ich], isp), trend, m);
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%d", prefix, chName[0], isp)))) (*pr1)+=specQ[idx];
       }
     } // end PID loop for pt integration
@@ -2451,9 +2445,9 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
                                   Form("TrackIn[%c]:: #Deltay{%s}", chSgn[ich], ptCut[ipt]));
         pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+        if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInY%c%c", prefix, chName[ich], ptName[ipt]), trend, m);
-          PutTrendValue(Form("%sTrkInYS%c%c", prefix, chName[ich], ptName[ipt]), s);
+          PutTrendValue(Form("%sTrkInYS%c%c", prefix, chName[ich], ptName[ipt]), s, se);
         }
         if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", prefix, chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
@@ -2466,9 +2460,9 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
         pr0->H()->SetNameTitle(Form("H%sTrkInPh%c%c", prefix, chName[ich], ptName[ipt]),
                                   Form("TrackIn[%c]:: #Delta#phi{%s}", chSgn[ich], ptCut[ipt]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+        if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
           PutTrendValue(Form("%sTrkInPh%c%c", prefix, chName[ich], ptName[ipt]), trend, m);
-          PutTrendValue(Form("%sTrkInPhS%c%c", prefix, chName[ich], ptName[ipt]), s);
+          PutTrendValue(Form("%sTrkInPhS%c%c", prefix, chName[ich], ptName[ipt]), s, se);
         }
         if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", prefix, chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
@@ -2499,9 +2493,9 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
       pr0->SetShowRange(-0.3, 0.3);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
       if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
-      if((trend=pr0->GetTrendValue(1, &m, &s))>-100.){
+      if((trend=pr0->GetTrendValue(1, &m, &s, &se))>-100.){
         PutTrendValue(Form("%sTrkInY%c", prefix, chName[ich]), trend, m);
-        PutTrendValue(Form("%sTrkInYS%c", prefix, chName[ich]), s);
+        PutTrendValue(Form("%sTrkInYS%c", prefix, chName[ich]), s, se);
       }
       if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", prefix, chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
@@ -2520,9 +2514,9 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
                             Form("TrackIn[%c]:: #Delta#phi", chSgn[ich]));
       pr0->SetShowRange(-1., 1.);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      if((trend=pr0->GetTrendValue(1, &m, &s))>-100.){
+      if((trend=pr0->GetTrendValue(1, &m, &s, &se))>-100.){
         PutTrendValue(Form("%sTrkInPh%c", prefix, chName[ich]), trend, m);
-        PutTrendValue(Form("%sTrkInPhS%c", prefix, chName[ich]), s);
+        PutTrendValue(Form("%sTrkInPhS%c", prefix, chName[ich]), s, se);
       }
       if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", prefix, chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
@@ -2568,10 +2562,8 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
       pr0->H()->SetName(Form("H%sTrkInQS%d", prefix, isp));
       pr0->SetShowRange(-1.85, -1.4);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-      if((trend=pr0->GetTrendValue(2, &m))>-100.){
-        PutTrendValue(Form("%sTrkInQ%d", prefix, isp), trend, m);
-        PutTrendValue(Form("%sTrkInQS%d", prefix, isp), m);
-      }
+      if((trend=pr0->GetTrendValue(2, &m))>-100.) PutTrendValue(Form("%sTrkInQ%d", prefix, isp), trend, m);
+      if((trend=pr0->GetTrendValue(0, &m))>-100.) PutTrendValue(Form("%sTrkInQS%d", prefix, isp), trend, m);
     }
   } // end PID processing
 
@@ -2602,9 +2594,9 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc, Bool_t v0)
     }
     pr0->H()->SetNameTitle(Form("H%sTrkInRCZ", prefix), "TrackIn[RC]:: #Deltaz");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-    if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+    if((trend=pr0->GetTrendValue(1,&m,&s,&se))>-100.){
       PutTrendValue(Form("%sTrkInRCZ", prefix), trend, m);
-      PutTrendValue(Form("%sTrkInRCZS", prefix), s);
+      PutTrendValue(Form("%sTrkInRCZS", prefix), s, se);
     }
   }
   /*!RC dy*/

@@ -497,7 +497,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliESDv0 *v0(NULL);
   Int_t v0pid[AliPID::kSPECIES];
   for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
-    if(!(v0 = fESDev->GetV0(iv0)) && !v0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
+    // Take only V0s from the On-the-fly v0 finder
+    if(!(v0 = fESDev->GetV0(iv0))) continue;
+    if(!v0->GetOnFlyStatus()) continue;
     // register v0
     if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
     else new(fV0Info) AliTRDv0Info();
@@ -536,8 +538,15 @@ void AliTRDinfoGen::UserExec(Option_t *){
       (esdTrack->GetStatus()&AliESDtrack::kTPCout)?'y':'n',
       (esdTrack->GetStatus()&AliESDtrack::kTRDin)?'y':'n',
       (esdTrack->GetStatus()&AliESDtrack::kTRDout)?'y':'n',
-      (esdTrack->GetStatus()&AliESDtrack::kTRDStop)?'y':'n', ns);*/
-
+      (esdTrack->GetStatus()&AliESDtrack::kTRDStop)?'y':'n', ns);
+    if(ns){
+      for(Int_t ipl(0); ipl<AliTRDgeometry::kNlayer; ipl++){
+        Double_t sp, p(esdTrack->GetTRDmomentum(ipl, &sp));
+        printf("    [%d] p[%6.3f+-%6.3f] dEdx={", ipl, p, sp);
+        for(Int_t is(0); is<8; is++) printf("%7.2f ", esdTrack->GetTRDslice(ipl, is)); printf("}\n");
+      }
+    }
+*/
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
@@ -962,13 +971,12 @@ void AliTRDinfoGen::MakeSummary()
   p=cOut->cd(4); p->SetRightMargin(0.0215);p->SetLeftMargin(0.414);//p->SetLogz();
   TObject *o = fContainer->At(kTrigger);
   if(o){
-    if(!strcmp("TH1I", o->IsA()->GetName())){
-      h1 = dynamic_cast<TH1I*>(o);
+    if((h1 = dynamic_cast<TH1I*>(o))) {
       h1->GetXaxis()->SetTitleOffset(6.5); h1->GetXaxis()->CenterTitle();
       h1->SetFillStyle(3001);h1->SetFillColor(kGreen);
       h1->SetBarWidth(0.8);h1->SetBarOffset(0.1);
       ((TH1I*)o)->Draw("hbar2");
-    } else ((AliTRDtriggerInfo*)o)->Draw();
+    } else o->Draw();
   }
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 }
