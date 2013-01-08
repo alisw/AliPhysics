@@ -82,6 +82,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F *fPtVsMassK0st;   //! hist. of pt vs. mass (K0* selection)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
+  TH2F *fHistCentralityMult[3];//!hist. for cent distr vs mult (all,sel ev, )
   TNtuple *fNtupleDs; //! output ntuple
   Int_t fFillNtuple;                 // 0 not to fill ntuple
                                      // 1 for filling ntuple for events through Phi
@@ -101,7 +103,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,11);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,12);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
