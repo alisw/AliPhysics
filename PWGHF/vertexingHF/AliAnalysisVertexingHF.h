@@ -164,15 +164,35 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetMasses();
   Bool_t CheckCutsConsistency();
 
-  void SetUseKaonPIDfor3Prong(Bool_t opt=kTRUE){fUseKaonPIDfor3Prong=opt;}
+  void SetUseTPCPID(Bool_t opt=kTRUE){fUseTPCPID=opt;}
+  void SetUseTOFPID(Bool_t opt=kTRUE){fUseTOFPID=opt;}
+  void SetUseTPCPIDOnlyIfNoTOF(Bool_t opt=kTRUE){fUseTPCPIDOnlyIfNoTOF=opt;}
+  void SetMaxMomForTPCPid(Double_t mom){fMaxMomForTPCPid=mom;}
+  void SetnSigmaTPCforPionSel(Double_t nsl, Double_t nsh){
+    fnSigmaTPCPionLow=nsl; fnSigmaTPCPionHi=nsh;}
+  void SetnSigmaTOFforPionSel(Double_t nsl, Double_t nsh){
+    fnSigmaTOFPionLow=nsl; fnSigmaTOFPionHi=nsh;}
+  void SetnSigmaTPCforKaonSel(Double_t nsl, Double_t nsh){
+    fnSigmaTPCKaonLow=nsl; fnSigmaTPCKaonHi=nsh;}
   void SetnSigmaTOFforKaonSel(Double_t nsl, Double_t nsh){
     fnSigmaTOFKaonLow=nsl; fnSigmaTOFKaonHi=nsh;}
+  void SetnSigmaTPCforProtonSel(Double_t nsl, Double_t nsh){
+    fnSigmaTPCProtonLow=nsl; fnSigmaTPCProtonHi=nsh;}
+  void SetnSigmaTOFforProtonSel(Double_t nsl, Double_t nsh){
+    fnSigmaTOFProtonLow=nsl; fnSigmaTOFProtonHi=nsh;}
+
+  void SetUseKaonPIDfor3Prong(Bool_t opt=kTRUE){fUseKaonPIDfor3Prong=opt;}
+  void SetNotUseProtonPIDforLambdaC(){fUsePIDforLc=0;}
+  void SetUseProtonPIDforLambdaC(){fUsePIDforLc=1;}
+  void SetUseProtonAndPionPIDforLambdaC(){fUsePIDforLc=2;}
+  void SetUseKaonPIDforDs(Bool_t opt=kTRUE){fUseKaonPIDforDs=opt;}
+
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
 
   //
  private:
   //
-  enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2 };
+  enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2, kBitPionCompat = 3, kBitKaonCompat = 4, kBitProtonCompat = 5};
 
   Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
   Int_t fAODMapSize; // size of fAODMap 
@@ -202,9 +222,25 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fMixEvent; // event mixing
 
   AliPIDResponse* fPidResponse; // PID response
-  Bool_t fUseKaonPIDfor3Prong;  // Kaon PID usage flag
-  Double_t fnSigmaTOFKaonLow;   //Low cut value on number of sigmas for TOF PID
-  Double_t fnSigmaTOFKaonHi;    //High cut value on number of sigmas for TOF PID
+  Bool_t fUseKaonPIDfor3Prong;  // Kaon PID usage for 3 prongs
+  Int_t  fUsePIDforLc;          // PID for Lambdac: 0=no, 1=proton, 2=p and pi
+  Bool_t fUseKaonPIDforDs;      // Kaon PID usage for Ds
+  Bool_t fUseTPCPID;            // switch use/not use TPC PID
+  Bool_t fUseTOFPID;            // switch use/not use TOF PID
+  Bool_t fUseTPCPIDOnlyIfNoTOF; // use TPC PID only for tracks that without TOF
+  Double_t fMaxMomForTPCPid;    // upper momentum limit to apply TPC PID
+  Double_t fnSigmaTPCPionLow;   //Low cut value on n. of sigmas for pi TPC PID
+  Double_t fnSigmaTPCPionHi;    //High cut value on n. of sigmas for pi TPC PID
+  Double_t fnSigmaTOFPionLow;   //Low cut value on n. of sigmas for pi TOF PID
+  Double_t fnSigmaTOFPionHi;    //High cut value on n. of sigmas for pi TOF PID
+  Double_t fnSigmaTPCKaonLow;   //Low cut value on n. of sigmas for K TPC PID
+  Double_t fnSigmaTPCKaonHi;    //High cut value on n. of sigmas for K TPC PID
+  Double_t fnSigmaTOFKaonLow;   //Low cut value on n. of sigmas for K TOF PID
+  Double_t fnSigmaTOFKaonHi;    //High cut value on n. of sigmas for K TOF PID
+  Double_t fnSigmaTPCProtonLow; //Low cut value on n. of sigmas for p TPC PID
+  Double_t fnSigmaTPCProtonHi;  //High cut value on n. of sigmas for p TPC PID
+  Double_t fnSigmaTOFProtonLow; //Low cut value on n. of sigmas for p TOF PID
+  Double_t fnSigmaTOFProtonHi;  //High cut value on n. of sigmas for p TOF PID
 
   Float_t fMaxCentPercentileForTightCuts; //max. centrality percentile for using tight cuts
 
@@ -265,7 +301,8 @@ class AliAnalysisVertexingHF : public TNamed {
 				      Double_t dispersion,
 				      const AliAODVertex *vertexp1n1,
 				      const AliAODVertex *vertexp2n1,
-				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
+				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2, 
+				      Bool_t useForLc, Bool_t useForDs,
 				      Bool_t &ok3Prong);
   AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliVEvent *event,
                                       AliAODVertex *secVert,
@@ -288,7 +325,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray=0x0,AliVEvent *event=0x0) const;
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
 
-  Bool_t SelectInvMassAndPt3prong(Double_t *px,Double_t *py,Double_t *pz);
+  Bool_t SelectInvMassAndPt3prong(Double_t *px,Double_t *py,Double_t *pz, Int_t pidLcStatus=3);
   Bool_t SelectInvMassAndPt4prong(Double_t *px,Double_t *py,Double_t *pz);
   Bool_t SelectInvMassAndPtD0Kpi(Double_t *px,Double_t *py,Double_t *pz);
   Bool_t SelectInvMassAndPtJpsiee(Double_t *px,Double_t *py,Double_t *pz);
@@ -314,7 +351,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,22);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,23);  // Reconstruction of HF decay candidates
 };
 
 
