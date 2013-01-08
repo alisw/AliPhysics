@@ -347,7 +347,14 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	// ----------------- trigger --------------------
 	
-	UInt_t triggerBits = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	AliInputEventHandler* eventH = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+	if(eventH == 0)
+	{
+		cerr << "ERROR: could not get AliInputEventHandler" << endl;
+		return;
+	}
+	
+	UInt_t triggerBits = eventH->IsEventSelected();
 	
 	if(fHeavyIons)
 	{
@@ -625,7 +632,6 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// momentum
 		
-		Double_t p       = iTrack->GetP()*z;
 		Double_t pt      = iTrack->Pt()*z; // pt at DCA
 		Double_t y       = this->GetRapidity(iTrack, fPartCode);
 		Double_t pITS    = this->GetITSmomentum(iTrack);
@@ -803,7 +809,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		}
 		
 		// pid performance
-		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(p, dEdxITS);
+		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(pITS, dEdxITS);
 		((TH2D*)fHistoMap->Get(particle + "_PID_TPCdEdx_P"))->Fill(pTPC, dEdxTPC);
 		
 		if(this->TOFmatch(iTrack))
