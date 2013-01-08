@@ -23,6 +23,14 @@ AliAnaChargedJetResponseMaker::AliAnaChargedJetResponseMaker():
   fResolutionType(kParam),
   fDeltaPt(0x0),
   fhDeltaPt(0x0),
+  fh1MeasuredTruncated(0x0),
+  fh2DetectorResponse(0x0),
+  fh2DetectorResponseRebin(0x0),
+  fhEfficiencyDet(0x0),
+  fh2ResponseMatrixCombinedFineFull(0x0),
+  fh2ResponseMatrixCombinedFull(0x0),
+  fh2ResponseMatrixCombined(0x0),
+  fhEfficiencyCombined(0x0),
   fDimensions(1),
   fDimRec(0),
   fDimGen(1),
@@ -56,6 +64,14 @@ AliAnaChargedJetResponseMaker::AliAnaChargedJetResponseMaker(const AliAnaCharged
   fResolutionType(obj.fResolutionType),
   fDeltaPt(obj.fDeltaPt),
   fhDeltaPt(obj.fhDeltaPt),
+  fh1MeasuredTruncated(obj.fh1MeasuredTruncated),
+  fh2DetectorResponse(obj.fh2DetectorResponse),
+  fh2DetectorResponseRebin(obj.fh2DetectorResponseRebin),
+  fhEfficiencyDet(obj.fhEfficiencyDet),
+  fh2ResponseMatrixCombinedFineFull(obj.fh2ResponseMatrixCombinedFineFull),
+  fh2ResponseMatrixCombinedFull(obj.fh2ResponseMatrixCombinedFull),
+  fh2ResponseMatrixCombined(obj.fh2ResponseMatrixCombined),
+  fhEfficiencyCombined(obj.fhEfficiencyCombined),
   fDimensions(obj.fDimensions),
   fDimRec(obj.fDimRec),
   fDimGen(obj.fDimGen),
@@ -88,34 +104,42 @@ AliAnaChargedJetResponseMaker& AliAnaChargedJetResponseMaker::operator=(const Al
 // Assignment
   if(&other == this) return *this;
   AliAnaChargedJetResponseMaker::operator=(other);
-  fDebug                  = other.fDebug;
-  fResolutionType         = other.fResolutionType;
-  fDeltaPt                = other.fDeltaPt;
-  fhDeltaPt               = other.fhDeltaPt;
-  fDimensions             = other.fDimensions;
-  fDimRec                 = other.fDimRec;
-  fDimGen                 = other.fDimGen;
-  fPtMin                  = other.fPtMin;
-  fPtMax                  = other.fPtMax;
-  fNbins                  = other.fNbins;
-  fBinArrayPtRec          = other.fBinArrayPtRec;
-  fPtMeasured             = other.fPtMeasured;
-  fEffFlat                = other.fEffFlat;
-  fEfficiency             = other.fEfficiency;
-  fEfficiencyFine         = other.fEfficiencyFine;
-  fResponseMatrix         = other.fResponseMatrix;
-  fResponseMatrixFine     = other.fResponseMatrixFine;
-  fPtMinUnfolded          = other.fPtMinUnfolded;
-  fPtMaxUnfolded          = other.fPtMaxUnfolded;
-  fPtMaxUnfoldedHigh      = other.fPtMaxUnfoldedHigh;
-  fBinWidthFactorUnfolded = other.fBinWidthFactorUnfolded;
-  fSkipBinsUnfolded       = other.fSkipBinsUnfolded;
-  fExtraBinsUnfolded      = other.fExtraBinsUnfolded;
-  fbVariableBinning       = other.fbVariableBinning;
-  fPtMaxUnfVarBinning     = other.fPtMaxUnfVarBinning;
-  f1MergeFunction         = other.f1MergeFunction;
-  fFineFrac               = other.fFineFrac;
-  fbCalcErrors            = other.fbCalcErrors;
+  fDebug                    = other.fDebug;
+  fResolutionType           = other.fResolutionType;
+  fDeltaPt                  = other.fDeltaPt;
+  fhDeltaPt                 = other.fhDeltaPt;
+  fh1MeasuredTruncated      = other.fh1MeasuredTruncated;
+  fh2DetectorResponse       = other.fh2DetectorResponse;
+  fh2DetectorResponseRebin  = other.fh2DetectorResponseRebin;
+  fhEfficiencyDet           = other.fhEfficiencyDet;
+  fh2ResponseMatrixCombinedFineFull = other.fh2ResponseMatrixCombinedFineFull;
+  fh2ResponseMatrixCombinedFull = other.fh2ResponseMatrixCombinedFull;
+  fh2ResponseMatrixCombined = other.fh2ResponseMatrixCombined;
+  fhEfficiencyCombined      = other.fhEfficiencyCombined;
+  fDimensions               = other.fDimensions;
+  fDimRec                   = other.fDimRec;
+  fDimGen                   = other.fDimGen;
+  fPtMin                    = other.fPtMin;
+  fPtMax                    = other.fPtMax;
+  fNbins                    = other.fNbins;
+  fBinArrayPtRec            = other.fBinArrayPtRec;
+  fPtMeasured               = other.fPtMeasured;
+  fEffFlat                  = other.fEffFlat;
+  fEfficiency               = other.fEfficiency;
+  fEfficiencyFine           = other.fEfficiencyFine;
+  fResponseMatrix           = other.fResponseMatrix;
+  fResponseMatrixFine       = other.fResponseMatrixFine;
+  fPtMinUnfolded            = other.fPtMinUnfolded;
+  fPtMaxUnfolded            = other.fPtMaxUnfolded;
+  fPtMaxUnfoldedHigh        = other.fPtMaxUnfoldedHigh;
+  fBinWidthFactorUnfolded   = other.fBinWidthFactorUnfolded;
+  fSkipBinsUnfolded         = other.fSkipBinsUnfolded;
+  fExtraBinsUnfolded        = other.fExtraBinsUnfolded;
+  fbVariableBinning         = other.fbVariableBinning;
+  fPtMaxUnfVarBinning       = other.fPtMaxUnfVarBinning;
+  f1MergeFunction           = other.f1MergeFunction;
+  fFineFrac                 = other.fFineFrac;
+  fbCalcErrors              = other.fbCalcErrors;
 
   return *this;
 }
@@ -444,8 +468,8 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   nbinsFine[fDimGen] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; 
   xminFine[fDimRec] = TMath::Min(fPtMin,0.);
   xminFine[fDimGen] = TMath::Min(fPtMin,0.);
-  xmaxFine[fDimRec] = fResponseMatrix->GetAxis(fDimGen)->GetXmax()+40.;
-  xmaxFine[fDimGen] = fResponseMatrix->GetAxis(fDimGen)->GetXmax()+40.;
+  xmaxFine[fDimRec] = fResponseMatrix->GetAxis(fDimGen)->GetXmax();//+40.;
+  xmaxFine[fDimGen] = fResponseMatrix->GetAxis(fDimGen)->GetXmax();//+40.;
   pTarrayFine[fDimRec] = 0.;
   pTarrayFine[fDimGen] = 0.;
 
@@ -455,6 +479,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   Double_t binWidthFine[2];
   binWidthFine[fDimRec] = binWidth[fDimRec]/((double)fFineFrac);
   binWidthFine[fDimGen] = binWidthFine[fDimRec]*(double)fBinWidthFactorUnfolded;
+  //  binWidthFine[fDimRec] = binWidthFine[fDimGen];
 
   nbinsFine[fDimRec] = (int)((xmaxFine[fDimRec]-xminFine[fDimRec])/binWidthFine[fDimRec]); //adjust nbins to bin width
   nbinsFine[fDimGen] = (int)((xmaxFine[fDimGen]-xminFine[fDimGen])/binWidthFine[fDimGen]); //adjust nbins to bin width
@@ -654,7 +679,7 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
 
     //fill merged response matrix
 
-    //find bin in fine RM correspoinding to mimimum/maximum bin of merged RM on rec axis
+    //find bin in fine RM corresponding to mimimum/maximum bin of merged RM on rec axis
     int ixMin = fResponseMatrixFine->GetAxis(fDimRec)->FindBin(fResponseMatrix->GetAxis(fDimRec)->GetXmin()); 
     int ixMax = fResponseMatrixFine->GetAxis(fDimRec)->FindBin(fResponseMatrix->GetAxis(fDimRec)->GetXmax());
 
@@ -729,7 +754,7 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
 
   //First normalize columns of input
   const Int_t nbinsNorm = hRM2->GetNbinsX();
-  cout << "nbinsNorm: " << nbinsNorm << endl;
+  if(fDebug) cout << "nbinsNorm: " << nbinsNorm << endl;
 
   TArrayF *normVector = new TArrayF(nbinsNorm);
 
@@ -744,7 +769,7 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
       normVector->SetAt(f1MergeFunction->Integral(xLow,xUp),ix-1);
     else
       normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
-    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
+    //if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
   }
 
   Double_t content, oldcontent = 0.;
@@ -809,8 +834,8 @@ TH2* AliAnaChargedJetResponseMaker::CreateTruncated2DHisto(TH2 *h2, Double_t xmi
   if(h2->GetYaxis()->GetBinUpEdge(binMaxYh2) < ymax ) binMaxYh2++;
   if(h2->GetYaxis()->GetBinUpEdge(binMaxYh2) > ymax ) binMaxYh2--;
 
-  Int_t nbinsX = binMaxXh2-binMinXh2;
-  Int_t nbinsY = binMaxYh2-binMinYh2;
+  Int_t nbinsX = binMaxXh2-binMinXh2+1;
+  Int_t nbinsY = binMaxYh2-binMinYh2+1;
 
   Double_t *binsX = new Double_t[nbinsX+1];
   Double_t *binsY = new Double_t[nbinsY+1];
@@ -828,12 +853,12 @@ TH2* AliAnaChargedJetResponseMaker::CreateTruncated2DHisto(TH2 *h2, Double_t xmi
   for(int ix=1; ix<=nbinsX; ix++) {
     //    cout << "ix: " << ix << "  " << binsX[ix] << endl;
     for(int iy=1; iy<=nbinsY; iy++) {
-      cout << "ix: " << ix << "  " << binsX[ix] << "\tiy: " << iy << "  " << binsY[iy] << endl;
+      // cout << "ix: " << ix << "  " << binsX[ix] << "\tiy: " << iy << "  " << binsY[iy] << endl;
 
       double content = h2->GetBinContent(binMinXh2+ix-1,binMinYh2+iy-1);
       double error = h2->GetBinContent(binMinXh2+ix-1,binMinYh2+iy-1);
       h2Lim->SetBinContent(ix,iy,content);
-      h2Lim->SetBinError(ix,iy,error);
+      if(fbCalcErrors) h2Lim->SetBinError(ix,iy,error);
 
     }
   }
@@ -871,13 +896,103 @@ TH2* AliAnaChargedJetResponseMaker::TruncateAxisRangeResponseMatrix(TH2 *hRMOrig
       error = hRMOrig->GetBinError(binOrig[0],binOrig[1]);
 
       hRMLimit2->SetBinContent(ix,iy,content);
-      hRMLimit2->SetBinError(ix,iy,error);
+      if(fbCalcErrors) hRMLimit2->SetBinError(ix,iy,error);
 
     }
   }
   
 
   return hRMLimit2;
+
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+Bool_t AliAnaChargedJetResponseMaker::CheckInputForCombinedResponse() {
+
+  Bool_t check = kTRUE;
+
+  if(!fhDeltaPt)             check = kFALSE;
+  if(!fh2DetectorResponse)   check = kFALSE;
+  if(!fhEfficiencyDet)       check = kFALSE;
+  if(!fh1MeasuredTruncated)  check = kFALSE;
+  if(fPtMin<0. || fPtMax<0.) check = kFALSE;
+
+  return check;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+void AliAnaChargedJetResponseMaker::MakeResponseMatrixCombined(Int_t skipBins, Int_t binWidthFactor, Int_t extraBins, Bool_t bVariableBinning, Double_t ptmin) {
+
+  //Check if all input histos are there otherwise break
+  if(!CheckInputForCombinedResponse()) {
+    printf("Not all input available..... \n");
+    return;
+  }
+ 
+  // Make response bkg fluctuations
+  MakeResponseMatrixJetsFineMerged(skipBins,binWidthFactor,extraBins,bVariableBinning,ptmin);
+
+  //Get TH2D with dimensions we want final RM
+  TH2D *h2ResponseMatrix = fResponseMatrix->Projection(0,1,"E");
+  h2ResponseMatrix->Reset();
+
+  //Get fine binned response matrix from bkg fluctuations
+  TH2D *h2ResponseMatrixFine = fResponseMatrixFine->Projection(0,1,"E");
+
+  // Rebin response detector effects
+  const TArrayD *arrayX = h2ResponseMatrixFine->GetXaxis()->GetXbins();
+  const Double_t *xbinsArray = arrayX->GetArray();
+
+  TH2D *h2ResponseDetTmp = new TH2D("h2ResponseDetTmp","h2ResponseDetTmp",h2ResponseMatrixFine->GetNbinsX(),xbinsArray,h2ResponseMatrixFine->GetNbinsX(),xbinsArray);
+
+  fh2DetectorResponseRebin = (TH2D*)MakeResponseMatrixRebin(fh2DetectorResponse,h2ResponseDetTmp,kFALSE);
+  fh2DetectorResponseRebin->SetName("fh2DetectorResponseRebin");
+  fh2DetectorResponseRebin->SetTitle("fh2DetectorResponseRebin");
+  fh2DetectorResponseRebin->SetXTitle("p_{T}^{jet} gen");
+  fh2DetectorResponseRebin->SetYTitle("p_{T}^{jet} rec");
+
+  // Make full combined response matrix fine binning (background flucutuations + detector effects)
+  fh2ResponseMatrixCombinedFineFull = (TH2D*)MultiplityResponseMatrices(h2ResponseMatrixFine,fh2DetectorResponseRebin);
+  fh2ResponseMatrixCombinedFineFull->SetName("fh2ResponseMatrixCombinedFineFull");
+  fh2ResponseMatrixCombinedFineFull->SetTitle("fh2ResponseMatrixCombinedFineFull");
+
+  // Rebin full combined response matrix with weighting
+  fh2ResponseMatrixCombinedFull = (TH2D*)MakeResponseMatrixRebin(fh2ResponseMatrixCombinedFineFull,h2ResponseMatrix,kTRUE); 
+  fh2ResponseMatrixCombinedFull->SetName("fh2ResponseMatrixCombinedFull");
+  fh2ResponseMatrixCombinedFull->SetTitle("fh2ResponseMatrixCombinedFull");
+  fh2ResponseMatrixCombinedFull->SetXTitle("#it{p}_{T,gen}^{ch jet} (GeV/#it{c})");
+  fh2ResponseMatrixCombinedFull->SetYTitle("#it{p}_{T,rec}^{ch jet} (GeV/#it{c})");
+
+  fh2ResponseMatrixCombined = (TH2D*)TruncateAxisRangeResponseMatrix(fh2ResponseMatrixCombinedFull, h2ResponseMatrix->GetXaxis()->GetXmin(),h2ResponseMatrix->GetXaxis()->GetXmax(),fh1MeasuredTruncated->GetXaxis()->GetXmin(),fh1MeasuredTruncated->GetXaxis()->GetXmax());
+  fh2ResponseMatrixCombined->SetTitle("fh2ResponseMatrixCombined");
+  fh2ResponseMatrixCombined->SetName("fh2ResponseMatrixCombined");
+
+  fhEfficiencyCombined = (TH1D*)fh2ResponseMatrixCombined->ProjectionX("fhEfficiencyCombined");
+  fhEfficiencyCombined->Reset();
+
+  for(int i=1; i<=fh2ResponseMatrixCombined->GetNbinsX(); i++) {
+    Double_t sumyield = 0.;
+    for(int j=1; j<=fh2ResponseMatrixCombined->GetYaxis()->GetNbins(); j++) {
+      sumyield+=fh2ResponseMatrixCombined->GetBinContent(i,j);
+    }
+    Double_t kCounter = 0.;
+    Double_t kPtLowEdge = fh2ResponseMatrixCombined->GetXaxis()->GetBinLowEdge(i);
+    Double_t kPtUpEdge  = fh2ResponseMatrixCombined->GetXaxis()->GetBinUpEdge(i);
+    Double_t kJetEffDet = 0.;
+
+    for(int k=1; k<=fhEfficiencyDet->GetNbinsX(); k++) {
+      if(fhEfficiencyDet->GetXaxis()->GetBinLowEdge(k)>=kPtLowEdge && fhEfficiencyDet->GetXaxis()->GetBinUpEdge(k)<=kPtUpEdge) {
+	kJetEffDet+=fhEfficiencyDet->GetBinContent(k);
+	kCounter+=1.;
+      }
+    }
+    kJetEffDet = kJetEffDet/kCounter;
+
+    if(kJetEffDet==0.) kJetEffDet=1.;
+
+    fhEfficiencyCombined->SetBinContent(i,sumyield*kJetEffDet);
+
+  }
 
 }
 
@@ -1021,6 +1136,8 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
   Double_t sumYield = 0.;
   const Int_t nbinsRec = hRec->GetNbinsX();
   Double_t sumError2[nbinsRec+1];
+  for(int irec=0; irec<=hRec->GetNbinsX(); irec++)
+    sumError2[irec]=0.;
   Double_t eff = 0.;
 
   for(int igen=1; igen<=hGen->GetNbinsX(); igen++) {
@@ -1124,6 +1241,56 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *h
   }
 
   return hRec;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+/* static */ Double_t AliAnaChargedJetResponseMaker::GetBetaPerDOFValue(Int_t betaColl, Int_t betaOpt) {
+
+  Float_t betaPerDOFoptions[6] = {0.};
+  //define beta per degree of freedom (DOF=nbins in measured)
+  if(betaColl==0) {
+    betaPerDOFoptions[0] = 9.1e-9;
+    betaPerDOFoptions[1] = 2.25e-8;
+    betaPerDOFoptions[2] = 4.55e-8;
+    betaPerDOFoptions[3] = 9.1e-8;
+    betaPerDOFoptions[4] = 2.25e-7;
+    betaPerDOFoptions[5] = 4.55e-7;
+  }
+  if(betaColl==1) {
+    betaPerDOFoptions[0] = 9.1e-7;
+    betaPerDOFoptions[1] = 2.25e-6;
+    betaPerDOFoptions[2] = 4.55e-6;
+    betaPerDOFoptions[3] = 9.1e-6;
+    betaPerDOFoptions[4] = 2.25e-5;
+    betaPerDOFoptions[5] = 4.55e-5;
+  }
+  if(betaColl==2) {
+    betaPerDOFoptions[0] = 9.1e-5;
+    betaPerDOFoptions[1] = 2.25e-4;
+    betaPerDOFoptions[2] = 4.55e-4;
+    betaPerDOFoptions[3] = 9.1e-4;
+    betaPerDOFoptions[4] = 2.25e-3;
+    betaPerDOFoptions[5] = 4.55e-3;
+  }
+  if(betaColl==3) {
+    betaPerDOFoptions[0] = 9.1e-3;
+    betaPerDOFoptions[1] = 2.25e-2;
+    betaPerDOFoptions[2] = 4.55e-2;
+    betaPerDOFoptions[3] = 9.1e-2;
+    betaPerDOFoptions[4] = 2.25e-1;
+    betaPerDOFoptions[5] = 4.55e-1;
+  }
+  if(betaColl==4) {
+    betaPerDOFoptions[0] = 9.1e-1;
+    betaPerDOFoptions[1] = 2.25;
+    betaPerDOFoptions[2] = 4.55;
+    betaPerDOFoptions[3] = 9.1;
+    betaPerDOFoptions[4] = 22.5;
+    betaPerDOFoptions[5] = 45.5;
+  }
+
+  return betaPerDOFoptions[betaOpt];
+
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
