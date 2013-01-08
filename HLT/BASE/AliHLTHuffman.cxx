@@ -292,7 +292,7 @@ Bool_t AliHLTHuffman::DecodeLSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 			// follow left branch
 			currNode = currNode->GetLeftChild();
 			bits >>= 1;
-			if (currNode->GetValue() >= 0) {
+			if (currNode && currNode->GetValue() >= 0) {
 				value = currNode->GetValue();
 				length = fMaxBits;
 				codeLength = currNode->GetBinaryCodeLength();
@@ -303,7 +303,7 @@ Bool_t AliHLTHuffman::DecodeLSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 		if (!bits[0] && currNode->GetRightChild()) {
 			currNode = currNode->GetRightChild();
 			bits >>= 1;
-			if (currNode->GetValue() >= 0) {
+			if (currNode && currNode->GetValue() >= 0) {
 				value = currNode->GetValue();
 				length = fMaxBits;
 				codeLength = currNode->GetBinaryCodeLength();
@@ -333,7 +333,7 @@ Bool_t AliHLTHuffman::DecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 			// follow left branch
 			currNode = currNode->GetLeftChild();
 			bits <<= 1;
-			if (currNode->GetValue() >= 0) {
+			if (currNode && currNode->GetValue() >= 0) {
 				value = currNode->GetValue();
 				length = fMaxBits;
 				codeLength = currNode->GetBinaryCodeLength();
@@ -344,7 +344,7 @@ Bool_t AliHLTHuffman::DecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 		if (!bits[63] && currNode->GetRightChild()) {
 			currNode = currNode->GetRightChild();
 			bits <<= 1;
-			if (currNode->GetValue() >= 0) {
+			if (currNode && currNode->GetValue() >= 0) {
 				value = currNode->GetValue();
 				length = fMaxBits;
 				codeLength = currNode->GetBinaryCodeLength();
@@ -375,7 +375,7 @@ Bool_t AliHLTHuffman::FastDecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 			// follow left branch
 			currNode = currNode->fLeft;
 			bits <<= 1;
-			if (currNode->fValue >= 0) {
+			if (currNode && currNode->fValue >= 0) {
 				value = currNode->fValue;
 				length = fMaxBits;
 				codeLength = currNode->fBinaryCodeLength;
@@ -386,7 +386,7 @@ Bool_t AliHLTHuffman::FastDecodeMSB(std::bitset<64> bits, AliHLTUInt64_t& value,
 		if (!bits[63] && currNode->fRight) {
 			currNode = currNode->fRight;
 			bits <<= 1;
-			if (currNode->fValue >= 0) {
+			if (currNode && currNode->fValue >= 0) {
 				value = currNode->fValue;
 				length = fMaxBits;
 				codeLength = currNode->fBinaryCodeLength;
