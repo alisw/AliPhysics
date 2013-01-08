@@ -31,7 +31,7 @@ TFile *fGen;
 TFile *fRaw;
 
 void Generated();
-void Efficiencies(Float_t cMin, Float_t cMax, TString centr);
+void Corrections(Float_t cMin, Float_t cMax, TString centr);
 void RawYields(Float_t cMin, Float_t cMax, TString centr);
 void Spectra(TString centr);
 
@@ -45,7 +45,7 @@ void SpectraV0CutVariations(Float_t cMin, Float_t cMax, TString centr) {
      fGen=TFile::Open("Generated.root");
   }
 
-  Efficiencies(cMin,cMax,centr);
+  Corrections(cMin,cMax,centr);
   RawYields(cMin,cMax,centr);
   Spectra(centr);
 
@@ -55,8 +55,9 @@ void SpectraV0CutVariations(Float_t cMin, Float_t cMax, TString centr) {
 }
 
 TH1 *GetEfficiency(Float_t, Float_t, const Char_t *, const Char_t *);
+TH1 *GetFeedDown(Float_t, Float_t, TString);
 
-void Efficiencies(Float_t cmin, Float_t cmax, TString centr) {
+void Corrections(Float_t cmin, Float_t cmax, TString centr) {
 
   TString name;
 
@@ -71,6 +72,11 @@ void Efficiencies(Float_t cmin, Float_t cmax, TString centr) {
   name="eff_Lambda_";
   name+=centr;
   effLambda->SetName(name.Data());
+    TH1 *fdLambda=GetFeedDown(cmin, cmax, centr);
+    name="fd_Lambda_";
+    name+=centr;
+    fdLambda->SetName(name.Data());
+
 
   TH1 *effLambdaBar=
   GetEfficiency(cmin,cmax,"fLambdaBarAs","f3dHistPrimRawPtVsYVsMultAntiLambda");
@@ -80,7 +86,7 @@ void Efficiencies(Float_t cmin, Float_t cmax, TString centr) {
 
   TFile *f=TFile::Open("SpectraV0CutVariations.root","update");
     effK0s->Write();
-    effLambda->Write();
+    effLambda->Write();    fdLambda->Write();
     effLambdaBar->Write();
   f->Close();
 }
@@ -111,6 +117,104 @@ TH1 *GetEfficiency(Float_t cMin, Float_t cMax,
 
   return eff;
 }
+
+Bool_t GetBinContentError(const TH1 *h, Double_t x, Double_t &c, Double_t &e) {
+   Int_t i1=h->GetXaxis()->FindFixBin(x);
+   if (i1 <=0) return kFALSE;
+   Int_t nb=h->GetNbinsX();
+   if (i1 >nb) return kFALSE;
+
+   Double_t x1=h->GetBinCenter(i1);
+
+   if (TMath::Abs(x1-x) < 1e-13) {
+     c=h->GetBinContent(i1);
+     e=h->GetBinError(i1);
+     return kTRUE;
+   }
+
+   Int_t i2 = (x1 < x) ? i1+1 : i1-1;
+   if (i2 <=0) i2=i1+1;
+   if (i2 >nb) i2=i1-1;
+   Double_t x2=h->GetBinCenter(i2);
+
+   Double_t c1=h->GetBinContent(i1);
+   Double_t c2=h->GetBinContent(i2);
+   c = c1 + (x - x1)*(c2 - c1)/(x2 - x1);
+   e = 0.5*(h->GetBinError(i1) + h->GetBinError(i2));
+
+   return kTRUE;
+}
+
+TH1 *GetFeedDown(Float_t cMin, Float_t cMax, TString cent) {
+  // Get the FD matrix
+  fAss->cd();
+  TH3F *f3d = (TH3F*)gDirectory->Get("fLambdaFromXi");
+  f3d->Sumw2();
+  TH2D *fdMat = (TH2D*)f3d->Project3D("zxe");
+  const Int_t nbx=fdMat->GetNbinsX();
+  const Int_t nby=fdMat->GetNbinsY();
+  TAxis *xiPtAxis=fdMat->GetYaxis();
+
+  // Re-normalise the FD matrix with MC Xi spectrum
+  fGen->cd();
+  f3d = (TH3F*)gDirectory->Get("f3dHistGenPtVsYVsMultXiMinus");
+  f3d->Sumw2();
+
+  TH1D *hMcXi = f3d->ProjectionX("fpt",
+                  f3d->GetYaxis()->FindBin(-0.5+1e-2),
+                  f3d->GetYaxis()->FindBin(+0.5-1e-2),
+                  f3d->GetZaxis()->FindBin(cMin),
+                  f3d->GetZaxis()->FindBin(cMax)
+              );
+
+  TH2D *h2McXi=new TH2D(*fdMat); 
+  h2McXi->Reset();
+  h2McXi->Sumw2();
+
+  for (Int_t i=1; i<=nbx; i++) {
+      for (Int_t j=1; j<=nby; j++) {
+	  Double_t pt=xiPtAxis->GetBinCenter(j);
+          Double_t c=0.,e=0.;
+          if (!GetBinContentError(hMcXi,pt,c,e)) continue;
+          h2McXi->SetBinContent(i,j,c);
+          h2McXi->SetBinError(i,j,e);
+      }
+  }
+  fdMat->Divide(h2McXi);
+  delete h2McXi;
+
+
+  // Multiply the re-normalised matrix with the real Xi spectrum
+  TString fileName("systcorrectedpt_cent");
+     //*** "Dictionary" ***
+     if (cent=="0005") cent="0010";
+     if (cent=="6080") cent="6090";
+     if (cent=="8090") cent="6090";
+  TFile *f=TFile::Open((fileName+cent+".root").Data());
+     TH1F *hReXi=(TH1F*)gDirectory->Get("correctedpt_0");
+
+     TH2D *h2ReXi=new TH2D(*fdMat); 
+     h2ReXi->Reset();
+     h2ReXi->Sumw2();
+
+     for (Int_t i=1; i<=nbx; i++) {
+         for (Int_t j=1; j<=nby; j++) {
+	    Double_t pt=xiPtAxis->GetBinCenter(j);
+            Double_t c=0.,e=0.;
+            if (!GetBinContentError(hReXi,pt,c,e)) continue;
+            h2ReXi->SetBinContent(i,j,c);
+            h2ReXi->SetBinError(i,j,e);
+         }
+     }
+     fdMat->Multiply(h2ReXi);
+     delete h2ReXi;
+     f->Close();
+
+  TH1 *fd=fdMat->ProjectionX("_px",0,-1,"e");
+  fd->Scale(0.1,"width");
+  return fd;
+}
+
 
 void RawYields(Float_t cMin, Float_t cMax, TString centr) {
   TString name;
@@ -222,6 +326,11 @@ void Generated() {
   TH3F *alam_nonInj = 
     (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultNonInjAntiLambda");
 
+  TH3F *xiMinus = 
+    (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiMinus");
+  TH3F *xiPlus = 
+    (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiPlus");
+
 
   //    
   TFile::Open("LHC11a10b_bis/Merged.root");  
@@ -242,6 +351,12 @@ void Generated() {
   h3 = (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultNonInjAntiLambda");
   alam_nonInj->Add(h3); 
 
+  h3 = (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiMinus");
+  xiMinus->Add(h3);
+  h3 = (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiPlus");
+  xiPlus->Add(h3); 
+
+
   //
   TFile::Open("LHC11a10a_bis/Merged.root");
   v0listMC=(TList *)gFile->Get("PWGLFExtractPerformanceV0_PP_MC/clistV0MC");
@@ -252,11 +367,17 @@ void Generated() {
   lam_nonInj->Add(h3); 
   h3 = (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultAntiLambda");
   alam_nonInj->Add(h3); 
+  h3 = (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiMinus");
+  xiMinus->Add(h3);
+  h3 = (TH3F*)v0listMC->FindObject("f3dHistGenPtVsYVsMultXiPlus");
+  xiPlus->Add(h3); 
 
   TFile *f=TFile::Open("Generated.root","new");
   k0s->Write(); k0s_nonInj->Write();
   lam->Write(); lam_nonInj->Write();
   alam->Write(); alam_nonInj->Write();
+  xiMinus->Write();
+  xiPlus->Write();
   f->Close();
 }
 
