@@ -31,7 +31,6 @@ ClassImp(AliLnID)
 AliLnID::AliLnID()
 : TObject()
 , fPidProcedure(kBayes)
-, fkNumSpecies(AliLnID::kSPECIES)
 , fRange(5.)
 , fITSpid(0)
 , fTPCpid(0)
@@ -50,7 +49,7 @@ AliLnID::AliLnID()
 	fSpecies[8] = AliPID::kAlpha;
 	
 	// equal prior probabilities for all particle species
-	for(Int_t i=0; i<fkNumSpecies; ++i) fPrior[i]=1./fkNumSpecies;
+	for(Int_t i=0; i<kSPECIES; ++i) fPrior[i]=1./kSPECIES;
 	
 	// ALEPH Bethe Bloch parameters for ITS
 	Double_t param[] = { 0.13, 15.77/0.95, 4.95, 0.312, 2.14, 0.82};
@@ -63,7 +62,6 @@ AliLnID::AliLnID()
 AliLnID::AliLnID(const AliLnID& other)
 : TObject(other)
 , fPidProcedure(other.fPidProcedure)
-, fkNumSpecies(other.fkNumSpecies)
 , fRange(other.fRange)
 , fITSpid(0)
 , fTPCpid(0)
@@ -71,7 +69,7 @@ AliLnID::AliLnID(const AliLnID& other)
 //
 // Copy constructor
 //
-	for(Int_t i=0; i < fkNumSpecies; ++i)
+	for(Int_t i=0; i < kSPECIES; ++i)
 	{
 		fSpecies[i] = other.fSpecies[i];
 		fPrior[i]   = other.fPrior[i];
@@ -97,7 +95,7 @@ AliLnID& AliLnID::operator=(const AliLnID& other)
 	// copy
 	TObject::operator=(other);
 	
-	for(Int_t i=0; i < fkNumSpecies; ++i)
+	for(Int_t i=0; i < kSPECIES; ++i)
 	{
 		fSpecies[i] = other.fSpecies[i];
 		fPrior[i]   = other.fPrior[i];
@@ -130,7 +128,7 @@ void AliLnID::SetPriorProbabilities(const Double_t* prob)
 //
 // Set prior probabilities
 //
-	for(Int_t i=0; i < fkNumSpecies; ++i) fPrior[i] = prob[i];
+	for(Int_t i=0; i < kSPECIES; ++i) fPrior[i] = prob[i];
 }
 
 void AliLnID::SetITSBetheBlochParams(const Double_t* par, Double_t res)
@@ -280,11 +278,11 @@ Int_t AliLnID::GetITSTPCpid(Int_t pidCode, Double_t pITS, Double_t dEdxITS, Int_
 Int_t AliLnID::GetIndexOfMaxValue(const Double_t* w) const
 {
 //
-// Index with maximum value in the array of size fkNumSpecies
+// Index with maximum value in the array of size kSPECIES
 //
 	Double_t wmax= 0;
 	Int_t imax = -1;
-	for(Int_t i=0; i < fkNumSpecies; ++i)
+	for(Int_t i=0; i < kSPECIES; ++i)
 	{
 		if(w[i] > wmax)
 		{
@@ -302,9 +300,9 @@ Bool_t AliLnID::GetLikelihood(Double_t pITS, Double_t dEdxITS, Int_t nPointsITS,
 // Fill r array with the combined likelihood for ITS, TPC and TOF when possible
 // return 1 if success
 //
-	Double_t its[fkNumSpecies];
-	Double_t tpc[fkNumSpecies];
-	Double_t tof[fkNumSpecies];
+	Double_t its[kSPECIES];
+	Double_t tpc[kSPECIES];
+	Double_t tof[kSPECIES];
 	
 	Bool_t itsPid = this->GetITSlikelihood(pITS, dEdxITS, nPointsITS, its);
 	Bool_t tpcPid = this->GetTPClikelihood(pTPC, dEdxTPC, nPointsTPC, tpc);
@@ -314,19 +312,19 @@ Bool_t AliLnID::GetLikelihood(Double_t pITS, Double_t dEdxITS, Int_t nPointsITS,
 	
 	// Combine detector responses
 	
-	for(Int_t i=0; i<fkNumSpecies; ++i) r[i]=1.;
+	for(Int_t i=0; i<kSPECIES; ++i) r[i]=1.;
 	
 	if(itsPid)
 	{
-		for(Int_t i=0; i < fkNumSpecies; ++i) r[i] *= its[i];
+		for(Int_t i=0; i < kSPECIES; ++i) r[i] *= its[i];
 	}
 	if(tpcPid)
 	{
-		for(Int_t i=0; i < fkNumSpecies; ++i) r[i] *= tpc[i];
+		for(Int_t i=0; i < kSPECIES; ++i) r[i] *= tpc[i];
 	}
 	if(tofPid)
 	{
-		for(Int_t i=0; i < fkNumSpecies; ++i) r[i] *= tof[i];
+		for(Int_t i=0; i < kSPECIES; ++i) r[i] *= tof[i];
 	}
 	
 	return kTRUE;
@@ -337,7 +335,7 @@ Int_t AliLnID::GetMaxLikelihoodPID(Double_t pITS, Double_t dEdxITS, Int_t nPoint
 //
 // Maximum likelihood principle
 //
-	Double_t r[fkNumSpecies];
+	Double_t r[kSPECIES];
 	
 	if(!this->GetLikelihood(pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, r)) return -1;
 	
@@ -353,14 +351,14 @@ Int_t AliLnID::GetBayesPID(Double_t pITS, Double_t dEdxITS, Int_t nPointsITS, Do
 //
 // Bayesian inference
 //
-	Double_t r[fkNumSpecies];
+	Double_t r[kSPECIES];
 	
 	if(!this->GetLikelihood(pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, r)) return -1;
 	
 	// Bayes' rule
 	
-	Double_t w[fkNumSpecies]; // NOTE: no need to normalize
-	for(Int_t i = 0; i < fkNumSpecies; ++i) w[i] = r[i]*fPrior[i];
+	Double_t w[kSPECIES] = {0};
+	for(Int_t i = 0; i < kSPECIES; ++i) w[i] = r[i]*fPrior[i];  // no need to normalize
 	
 	Int_t imax = this->GetIndexOfMaxValue(w);
 	
@@ -383,19 +381,12 @@ Bool_t AliLnID::GetITSlikelihood(Double_t pITS, Double_t dEdx, Int_t nPointsITS,
 	Bool_t mismatch = kTRUE;
 	
 	Double_t sum = 0;
-	for (Int_t i=0; i<fkNumSpecies; ++i)
+	for (Int_t i=0; i<kSPECIES; ++i)
 	{
 		Double_t mass = AliPID::ParticleMass(fSpecies[i]);
-		Double_t p = fSpecies[i] > AliPID::kTriton ? 2.*pITS : pITS; // correct by Z
-		Double_t expDedx = fITSpid->BetheAleph(p, mass);
+		Double_t p = (fSpecies[i] > AliPID::kTriton) ? 2.*pITS : pITS; // correct by Z
+		Double_t expDedx = (fSpecies[i] > AliPID::kTriton) ? 4.*fITSpid->BetheAleph(p, mass) : fITSpid->BetheAleph(p, mass); // correct by Z^2
 		Double_t sigma = fITSpid->GetResolution(expDedx, nPointsITS);
-		
-		//correct by Z^2
-		if(fSpecies[i] > AliPID::kTriton)
-		{
-			expDedx *= 4.;
-			sigma *= 4.;
-		}
 		
 		if (TMath::Abs(dEdx - expDedx) > fRange*sigma)
 		{
@@ -415,7 +406,7 @@ Bool_t AliLnID::GetITSlikelihood(Double_t pITS, Double_t dEdx, Int_t nPointsITS,
 		return kFALSE;
 	}
 	
-	for(Int_t i=0; i < fkNumSpecies; ++i) r[i] /= sum;
+	for(Int_t i=0; i < kSPECIES; ++i) r[i] /= sum;
 	
 	return kTRUE;
 }
@@ -432,18 +423,12 @@ Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t /*nPointsTP
 	Bool_t mismatch = kTRUE;
 	
 	Double_t sum = 0;
-	for(Int_t i=0; i < fkNumSpecies; ++i)
+	for(Int_t i=0; i < kSPECIES; ++i)
 	{
 		Double_t m = AliPID::ParticleMass(fSpecies[i]);
-		Double_t p = fSpecies[i] > AliPID::kTriton ? 2.*pTPC : pTPC; // correct by Z
-		Double_t expDedx = fTPCpid->Bethe(p/m);
+		Double_t p = (fSpecies[i] > AliPID::kTriton) ? 2.*pTPC : pTPC; // correct by Z
+		Double_t expDedx = (fSpecies[i] > AliPID::kTriton) ? 4.*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^2
 		Double_t sigma = fTPCpid->GetRes0()*expDedx;
-		
-		if(fSpecies[i] > AliPID::kTriton) // correct by Z^2
-		{
-			expDedx *= 4.;
-			sigma *= 4.;
-		}
 		
 		if(TMath::Abs(dEdx - expDedx) > fRange*sigma)
 		{
@@ -463,7 +448,7 @@ Bool_t AliLnID::GetTPClikelihood(Double_t pTPC, Double_t dEdx, Int_t /*nPointsTP
 		return kFALSE;
 	}
 	
-	for(Int_t i=0; i < fkNumSpecies; ++i) r[i] /= sum;
+	for(Int_t i=0; i < kSPECIES; ++i) r[i] /= sum;
 	
 	return kTRUE;
 }
@@ -479,10 +464,10 @@ Bool_t AliLnID::GetTOFlikelihood(Double_t pTOF, Double_t beta, Double_t* r) cons
 	Double_t mismatch = kTRUE;
 	
 	Double_t sum = 0;
-	for(Int_t i=0; i < fkNumSpecies; ++i)
+	for(Int_t i=0; i < kSPECIES; ++i)
 	{
 		Double_t mass = AliPID::ParticleMass(fSpecies[i]);
-		Double_t p = fSpecies[i] > AliPID::kTriton ? 2.*pTOF : pTOF; // correct by Z
+		Double_t p = (fSpecies[i] > AliPID::kTriton) ? 2.*pTOF : pTOF; // correct by Z
 		Double_t expBeta = this->Beta(p,mass);
 		Double_t sigma = this->GetBetaExpectedSigma(p,mass);
 		
@@ -504,7 +489,7 @@ Bool_t AliLnID::GetTOFlikelihood(Double_t pTOF, Double_t beta, Double_t* r) cons
 		return kFALSE;
 	}
 	
-	for(Int_t i=0; i < fkNumSpecies; ++i) r[i] /= sum;
+	for(Int_t i=0; i < kSPECIES; ++i) r[i] /= sum;
 	
 	return kTRUE;
 }
@@ -546,15 +531,9 @@ Bool_t AliLnID::GetITSmatch(Int_t pid, Double_t pITS, Double_t dEdxITS, Int_t nP
 // Check if the signal is less than nSigma from the expected ITS dEdx
 //
 	Double_t mass = AliPID::ParticleMass(pid);
-	Double_t p = pid > AliPID::kTriton ? 2.*pITS : pITS; // correct by Z
-	Double_t expDedx = fITSpid->BetheAleph(p, mass);
+	Double_t p = (pid > AliPID::kTriton) ? 2.*pITS : pITS; // correct by Z
+	Double_t expDedx = (pid > AliPID::kTriton) ? 4.*fITSpid->BetheAleph(p, mass) : fITSpid->BetheAleph(p, mass); // correct by Z^2
 	Double_t sigma = fITSpid->GetResolution(expDedx, nPointsITS);
-	
-	if(pid > AliPID::kTriton) //correct by Z^2
-	{
-		expDedx *= 4.;
-		sigma *= 4.;
-	}
 	
 	if(TMath::Abs(dEdxITS-expDedx) < nSigma*sigma)
 	{
@@ -570,15 +549,9 @@ Bool_t AliLnID::GetTPCmatch(Int_t pid, Double_t pTPC, Double_t dEdxTPC, Double_t
 // Check if the signal is less than nSigma from the expected TPC dEdx
 //
 	Double_t m = AliPID::ParticleMass(pid);
-	Double_t p = pid > AliPID::kTriton ? 2.*pTPC : pTPC; // correct by Z
-	Double_t expDedx = fTPCpid->Bethe(p/m);
+	Double_t p = (pid > AliPID::kTriton) ? 2.*pTPC : pTPC; // correct by Z
+	Double_t expDedx = (pid > AliPID::kTriton) ? 4.*fTPCpid->Bethe(p/m) : fTPCpid->Bethe(p/m); // correct by Z^2
 	Double_t sigma = fTPCpid->GetRes0()*expDedx;
-	
-	if(pid > AliPID::kTriton) // correct by Z^2
-	{
-		expDedx *= 4.;
-		sigma *= 4.;
-	}
 	
 	if(TMath::Abs(dEdxTPC-expDedx) < nSigma*sigma)
 	{
@@ -594,7 +567,7 @@ Bool_t AliLnID::GetTOFmatch(Int_t pid, Double_t pTOF, Double_t beta, Double_t nS
 // Check if the signal is less than nSigma from the expected velocity
 //
 	Double_t mass = AliPID::ParticleMass(pid);
-	Double_t p = pid > AliPID::kTriton ? 2.*pTOF : pTOF;
+	Double_t p = (pid > AliPID::kTriton) ? 2.*pTOF : pTOF;
 	Double_t expBeta = this->Beta(p, mass);
 	Double_t sigma = this->GetBetaExpectedSigma(p, mass);
 	
@@ -611,7 +584,7 @@ Bool_t AliLnID::GetM2match(Int_t pid, Double_t pTOF, Double_t m2, Double_t nSigm
 //
 // Check if the signal is less than nSigma from the expected m2
 //
-	Double_t p = pid > AliPID::kTriton ? 2.*pTOF : pTOF; // correct by Z
+	Double_t p = (pid > AliPID::kTriton) ? 2.*pTOF : pTOF; // correct by Z
 	Double_t expM2 = AliPID::ParticleMass(pid); expM2 *= expM2;
 	Double_t sigma = this->GetM2ExpectedSigma(p, expM2);
 	
@@ -628,7 +601,7 @@ Bool_t AliLnID::IsITSTPCmismatch(Double_t pITS, Double_t dEdxITS, Int_t nPointsI
 //
 // Check track TPC mismatch with ITS
 //
-	for(Int_t i=0; i<fkNumSpecies; ++i)
+	for(Int_t i=0; i<kSPECIES; ++i)
 	{
 		if(this->GetTPCmatch(fSpecies[i], pTPC, dEdxTPC, nPointsTPC, nSigma) &&
 		   this->GetITSmatch(fSpecies[i], pITS, dEdxITS, nPointsITS, 5.))
@@ -645,7 +618,7 @@ Bool_t AliLnID::IsITSTOFmismatch(Double_t pITS, Double_t dEdxITS, Int_t nPointsI
 //
 // Check track TOF mismatch with ITS
 //
-	for(Int_t i=0; i<fkNumSpecies; ++i)
+	for(Int_t i=0; i<kSPECIES; ++i)
 	{
 		if(this->GetTOFmatch(fSpecies[i], pTOF, beta, nSigma) &&
 		   this->GetITSmatch(fSpecies[i], pITS, dEdxITS, nPointsITS, 3.))
@@ -662,7 +635,7 @@ Bool_t AliLnID::IsTPCTOFmismatch(Double_t pTPC, Double_t dEdxTPC, Int_t nPointsT
 //
 // Check track TOF mismatch with TPC
 //
-	for(Int_t i=0; i<fkNumSpecies; ++i)
+	for(Int_t i=0; i<kSPECIES; ++i)
 	{
 		if(this->GetTOFmatch(fSpecies[i], pTOF, beta, nSigma) &&
 		   this->GetTPCmatch(fSpecies[i], pTPC, dEdxTPC, nPointsTPC, 3.))

@@ -73,7 +73,6 @@ class AliLnID: public TObject
   private:
  
 	Int_t fPidProcedure; // PID procedure code
-	const Int_t fkNumSpecies; // number of particle species
 	AliPID::EParticleType fSpecies[kSPECIES]; // particle species known by the pid
 	
 	Double_t fPrior[kSPECIES]; // prior probabilities
