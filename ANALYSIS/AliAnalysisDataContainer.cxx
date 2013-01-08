@@ -626,12 +626,13 @@ void AliAnalysisFileDescriptor::SavePrimitive(std::ostream &out, Option_t *)
    out << "image        " << fImage << endl;
    out << "nreplicas    " << fNreplicas << endl;
    out << "openstamp    " << fOpenedAt << endl;
+   std::ios_base::fmtflags original_flags = out.flags();
    out << setiosflags(std::ios::fixed) << std::setprecision(3);
    out << "opentime     " << fOpenTime << endl;
    out << "runtime      " << fProcessingTime << endl;
    out << "filesize     " << fSize/megabyte << endl;
    out << "readsize     " << fReadBytes/megabyte << endl;
    out << "throughput   " << fThroughput << endl;
-   out << resetiosflags(std::ios::fixed);
+   out.flags(original_flags);
 }
 
