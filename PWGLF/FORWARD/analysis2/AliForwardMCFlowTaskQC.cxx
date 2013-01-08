@@ -300,14 +300,13 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     return kFALSE;
   }
 
-  Double_t rp = 0;
   AliAODMCHeader* header = 
     dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(
                                   AliAODMCHeader::StdBranchName()));
   if (!header) 
     AliWarning("No header file found.");
   
-  rp = header->GetReactionPlaneAngle();
+  // Double_t rp = header->GetReactionPlaneAngle();
 
   Int_t ntracks = mcArray->GetEntriesFast();
   // TODO: Make this bit smarter...
@@ -322,8 +321,7 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     if (fAddFlow.Contains("eta"))  flowFlags |= AliForwardFlowWeights::kEta;
     if (fAddFlow.Contains("cent")) flowFlags |= AliForwardFlowWeights::kCent;
   }
-  Double_t b = -1.;
-  b = header->GetImpactParameter();
+  // Double_t b = header->GetImpactParameter();
 
   // Track loop: chek how many particles will be accepted
   Double_t weight = 0;
@@ -366,12 +364,11 @@ Double_t AliForwardMCFlowTaskQC::GetCentFromB() const
   // Get centrality from MC impact parameter.
   //
   Double_t cent = -1.;
-  Double_t b = -1.;
   AliAODMCHeader* header = 
     static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::
 						      StdBranchName()));
   if (!header) return cent;
-  b = header->GetImpactParameter();
+  Double_t b = header->GetImpactParameter();
 
   cent = fImpactParToCent->Eval(b);
 
@@ -390,9 +387,12 @@ void AliForwardMCFlowTaskQC::PrintFlowSetup() const
   printf("Doing flow analysis for      :\t");
   for (Int_t n  = 0; n < fV.GetSize(); n++) printf("v%d ", fV.At(n));
   printf("\n");
-  Printf("Satellite vertex flag           :\t%s", ((fFlowFlags & kSatVtx) ? "true" : "false"));
-  Printf("Symmetrize ref. flow wrt eta = 0:\t%s", ((fFlowFlags & kSymEta) ? "true" : "false"));
-  Printf("Use an eta-gap for ref. flow    :\t%s", ((fFlowFlags & kEtaGap) ? "true" : "false"));
+  Printf("Satellite vertex flag           :\t%s", ((fFlowFlags & kSatVtx) ? 
+						   "true" : "false"));
+  Printf("Symmetrize ref. flow wrt eta = 0:\t%s", ((fFlowFlags & kSymEta) ? 
+						   "true" : "false"));
+  Printf("Use an eta-gap for ref. flow    :\t%s", ((fFlowFlags & kEtaGap) ? 
+						   "true" : "false"));
   Printf("FMD sigma cut:               :\t%f", fFMDCut);
   Printf("SPD sigma cut:               :\t%f", fSPDCut);
   if ((fFlowFlags & kEtaGap)) 

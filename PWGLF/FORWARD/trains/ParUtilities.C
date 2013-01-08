@@ -296,7 +296,7 @@ struct ParUtilities
       retVal = true;
     }
     catch (TString& e) {
-      Error("ParUtilities::MakeScriptPAR", e.Data());
+      Error("ParUtilities::MakeScriptPAR", "%s", e.Data());
       retVal = false;
     }
     

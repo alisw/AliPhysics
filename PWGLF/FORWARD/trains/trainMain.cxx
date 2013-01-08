@@ -152,7 +152,7 @@ main(int argc, char** argv)
   Bool_t  batch   = false;
   Bool_t  help    = false;
   Bool_t  urlSeen = false;
-  Bool_t  spawn   = true;
+  Bool_t  spawn   = false;
   // --- Parse options -----------------------------------------------
   for (int i = 1; i < argc; i++) { 
     if (argv[i][0] == '-' && argv[i][1] == '-') { 
