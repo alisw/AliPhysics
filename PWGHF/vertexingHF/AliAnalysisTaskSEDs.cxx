@@ -70,6 +70,12 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fAnalysisCuts(0)
 {
   // Default constructor
+  
+  for(Int_t i=0;i<3;i++){
+    if(fHistCentrality[i])fHistCentrality[i]=0;
+    if(fHistCentralityMult[i])fHistCentralityMult[i]=0;
+  }
+  
 
   for(Int_t i=0;i<4;i++) {
     if(fChanHist[i]) fChanHist[i]=0;
@@ -129,6 +135,11 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
 {
   // Default constructor
   // Output slot #1 writes into a TList container
+  
+  for(Int_t i=0;i<3;i++){
+    if(fHistCentrality[i])fHistCentrality[i]=0;
+    if(fHistCentralityMult[i])fHistCentralityMult[i]=0;
+  }
   
   for(Int_t i=0;i<4;i++) {
     if(fChanHist[i]) fChanHist[i]=0;
@@ -270,6 +281,19 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
+  
+  fHistCentrality[0]=new TH1F("hCentr","centrality",10000,0.,100.);
+  fHistCentrality[1]=new TH1F("hCentr(selectedCent)","centrality(selectedCent)",10000,0.,100.);
+  fHistCentrality[2]=new TH1F("hCentr(OutofCent)","centrality(OutofCent)",10000,0.,100.);
+  fHistCentralityMult[0]=new TH2F("hCentrMult","centrality vs mult",100,0.5,30000.5,40,0.,100.);
+  fHistCentralityMult[1]=new TH2F("hCentrMult(selectedCent)","centrality vs mult(selectedCent)",100,0.5,30000.5,40,0.,100.);
+  fHistCentralityMult[2]=new TH2F("hCentrMult(OutofCent)","centrality vs mult(OutofCent)",100,0.5,30000.5,40,0.,100.);
+  for(Int_t i=0;i<3;i++){
+    fHistCentrality[i]->Sumw2();
+    fOutput->Add(fHistCentrality[i]);
+    fHistCentralityMult[i]->Sumw2();
+    fOutput->Add(fHistCentralityMult[i]);  
+  }
 
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
   
@@ -472,22 +496,30 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
+  Float_t ntracks=aod->GetNTracks();
+  Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
+  
+  fHistCentrality[0]->Fill(evCentr);
+  fHistCentralityMult[0]->Fill(ntracks,evCentr);
   if(fAnalysisCuts->IsEventRejectedDueToTrigger())fHistNEvents->Fill(2);
   if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(3);
   if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(4);
   if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(5);
   if(fAnalysisCuts->IsEventRejectedDueToPileupSPD())fHistNEvents->Fill(6);
-  if(fAnalysisCuts->IsEventRejectedDueToCentrality())fHistNEvents->Fill(7);
+  if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
+    fHistNEvents->Fill(7); 
+    fHistCentrality[2]->Fill(evCentr);
+    fHistCentralityMult[2]->Fill(ntracks,evCentr);
+  }
   
   Float_t centrality=fAnalysisCuts->GetCentrality(aod);
   Int_t runNumber=aod->GetRunNumber();
 
   if(!isEvSel)return;
   
-    
-
-  
   fHistNEvents->Fill(1);
+  fHistCentrality[1]->Fill(evCentr);
+  fHistCentralityMult[1]->Fill(ntracks,evCentr);
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
