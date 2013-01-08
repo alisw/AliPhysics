@@ -414,7 +414,7 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::AliRawClusterContainer()
   /// constructor
   for (int i=0; i<72; i++) {
     fClusterMaps.push_back(new AliRawClusterEntryVector);
-    fClusterMaps.back()->reserve(5000);
+    fClusterMaps.back()->reserve(30000);
   }
 }
 
