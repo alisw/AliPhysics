@@ -166,6 +166,10 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
 	fHistLeadInfoMixMC(0)
 {
 
+  for(Int_t iBin = 0; iBin < 100; iBin++){
+    fZvtxBins[iBin] = 0.;
+    fCentBins[iBin] = 0.;
+  }
 
 }
 //---------------------------------------------------------------------------------------
@@ -290,7 +294,13 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
 	fHistLeadInfoMix(0),
 	fHistLeadInfoMixMC(0)
 {	
-   DefineOutput(1, TList::Class());                                            
+
+  for(Int_t iBin = 0; iBin < 100; iBin++){
+    fZvtxBins[iBin] = 0.;
+    fCentBins[iBin] = 0.;
+  }
+  
+  DefineOutput(1, TList::Class());                                            
 }
 
 //---------------------------------------------------------------------------------------
