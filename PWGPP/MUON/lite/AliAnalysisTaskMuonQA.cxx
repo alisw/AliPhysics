@@ -409,19 +409,37 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
   Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
   
-
   // get the V0 multiplicity (except for p-p)
   AliESDVZERO* v0Data = fESD->GetVZEROData();
   Float_t v0Mult = 0.;
-  if (v0Data && strcmp(fESD->GetBeamType(),"p-p"))
-    for (Int_t i = 0 ; i < 64 ; i++) v0Mult += v0Data->GetMultiplicity(i);
+  const Int_t nV0MultRange = 4;
+  const Int_t nCollType = 2;
+  //define rough V0 mult. range (~ 80%, 60%, 10%, 0%)
+  Int_t v0MultRange[nCollType][nV0MultRange]= {{239,1165,12191,20633},{25,60,200,800}};
+  Int_t iCollType = 0;
+
+  if (v0Data) {
+    if (!strcmp(fESD->GetBeamType(),"A-A")){
+      iCollType = 0;
+      for (Int_t i = 0 ; i < 64 ; i++) v0Mult += v0Data->GetMultiplicity(i);
+    } 
+    else if (!strcmp(fESD->GetBeamType(),"p-A")){
+      iCollType = 1;
+      for (Int_t i = 0 ; i < 32 ; i++) v0Mult += v0Data->GetMultiplicityV0A(i);
+    }
+    else if (!strcmp(fESD->GetBeamType(),"A-p")){
+      iCollType = 1;
+      for (Int_t i = 0 ; i < 32 ; i++) v0Mult += v0Data->GetMultiplicityV0C(i);
+    }
+  }
+
   TList listV0MultKey;
   listV0MultKey.SetOwner();
   listV0MultKey.AddLast(new TObjString("v0mult:any"));
-  //if (v0Mult > 239. && v0Mult < 559.) listV0MultKey.AddLast(new TObjString("v0mult:low"));
-  if (v0Mult >= 239. && v0Mult < 1165.) listV0MultKey.AddLast(new TObjString("v0mult:low"));
-  else if (v0Mult >= 1165. && v0Mult < 12191.) listV0MultKey.AddLast(new TObjString("v0mult:int"));
-  else if (v0Mult >= 12191. && v0Mult < 20633.) listV0MultKey.AddLast(new TObjString("v0mult:high"));
+  if (v0Mult >= v0MultRange[iCollType][0] && v0Mult < v0MultRange[iCollType][1]) listV0MultKey.AddLast(new TObjString("v0mult:low"));
+  else if (v0Mult >= v0MultRange[iCollType][1] && v0Mult < v0MultRange[iCollType][2]) listV0MultKey.AddLast(new TObjString("v0mult:int"));
+  else if (v0Mult >= v0MultRange[iCollType][2] && v0Mult < v0MultRange[iCollType][3]) listV0MultKey.AddLast(new TObjString("v0mult:high"));
+  
   TIter nextV0MultKey(&listV0MultKey);
   
   // first loop over tracks to check for trigger readout problem
