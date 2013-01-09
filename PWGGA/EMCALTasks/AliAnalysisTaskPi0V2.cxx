@@ -97,9 +97,9 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
     fESD(0),
-    fTracksName("PicoTracks"),
+    fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
     fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
-    fTracks(0),
+    fTracks(0), fV1Clus(0), fV2Clus(0),
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
@@ -110,13 +110,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
     hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
-    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
+    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
-    hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),  
+    hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
-    hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
+    hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0),
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
@@ -560,10 +560,10 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifful_EPTPC);
     fOutput->Add(hdifout_EPTPC);
 
-    hdifClus_EPV0 = new TH3F("hdifClus_EPV0", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifClus_EPV0A = new TH3F("hdifClus_EPV0A", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifClus_EPV0C = new TH3F("hdifClus_EPV0C", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifClus_EPTPC = new TH3F("hdifClus_EPTPC", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifClus_EPV0 = new TH3F("hdifClus_EPV0",   "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
+    hdifClus_EPV0A = new TH3F("hdifClus_EPV0A", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
+    hdifClus_EPV0C = new TH3F("hdifClus_EPV0C", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
+    hdifClus_EPTPC = new TH3F("hdifClus_EPTPC", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
     fOutput->Add(hdifClus_EPV0);
     fOutput->Add(hdifClus_EPV0A);
     fOutput->Add(hdifClus_EPV0C);
@@ -602,7 +602,7 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hM02vsPtA);
     fOutput->Add(hM02vsPtB);
 
-    hClusDxDZA = new TH2F("hClusDxDZA", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
+    hClusDxDZA = new TH2F("hClusDxDZA", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);  
     hClusDxDZB = new TH2F("hClusDxDZB", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
     fOutput->Add(hClusDxDZA);
     fOutput->Add(hClusDxDZB);
@@ -785,43 +785,35 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hdifV0C_V0A->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPV0A)));
     // Cluster loop for reconstructed event
 
-   if (!fV2ClusName.IsNull() && !fV2Clus) {
-     fV2Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV2ClusName));
-     if (!fV2Clus) {
-       AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV2ClusName.Data()));
-       return;
-     }
+//================ for v2 clusterize analysis==============================================
+  if(!isV1Clus){
+    if (!fV2ClusName.IsNull() && !fV2Clus) {
+      fV2Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV2ClusName));
+      if (!fV2Clus) {
+	AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV2ClusName.Data()));
+	return;
+      }
+    }
+    Int_t nCluster =  fV2Clus->GetEntries(); 
+    for(Int_t i=0; i<nCluster; ++i){
+      AliVCluster *c1 = static_cast<AliVCluster*>(fV2Clus->At(i));      
+      hClusDxDZA->Fill(c1->GetTrackDz(), c1->GetTrackDx());
+      if(!c1->IsEMCAL()) continue;
+      if(!IsGoodCluster(c1)) continue;
+      hClusDxDZB->Fill(c1->GetTrackDz(), c1->GetTrackDx());
+      TLorentzVector p1;
+      GetMom(p1, c1, vertex);
+      for(Int_t j=i+1; j<nCluster; ++j){
+	AliVCluster *c2 = static_cast<AliVCluster*>(fV2Clus->At(i));      
+	if(!c2->IsEMCAL()) continue;
+	if(!IsGoodCluster(c2)) continue;
+	TLorentzVector p2;
+	GetMom(p2, c2, vertex);
+	FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+      }
+    }
   }
-
-
-//   Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
-   Int_t nCluster =  fV2Clus->GetEntries(); 
-   for(Int_t i=0; i<nCluster; ++i){
-//     AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
-     AliVCluster *c1 = static_cast<AliVCluster*>(fV2Clus->At(i));      
-     hClusDxDZA->Fill(c1->GetTrackDz(), c1->GetTrackDx());
-     Float_t clsPosEt[3] = {0,0,0};
-     c1->GetPosition(clsPosEt);
-     TVector3 clsVec(clsPosEt);
-     Double_t Et = c1->E()*TMath::Sin(clsVec.Theta());
-     hM02vsPtA->Fill(Et, c1->GetM02());
-     if(!c1->IsEMCAL()) continue;
-     if(!IsGoodCluster(c1)) continue;
-     hM02vsPtB->Fill(Et, c1->GetM02());	
-     hClusDxDZB->Fill(c1->GetTrackDz(), c1->GetTrackDx());
-     TLorentzVector p1;
-     GetMom(p1, c1, vertex);
-     for(Int_t j=i+1; j<nCluster; ++j){
-//       AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
-       AliVCluster *c2 = static_cast<AliVCluster*>(fV2Clus->At(i));      
-       if(!c2->IsEMCAL()) continue;
-       if(!IsGoodCluster(c2)) continue;
-       TLorentzVector p2;
-       GetMom(p2, c2, vertex);
-       FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
-     }
-   }
-
+  //================ for v1 clusterize analysis==============================================
   if(isV1Clus){
     if (!fV2ClusName.IsNull() && !fV1Clus) {
       fV1Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV1ClusName));
@@ -832,10 +824,17 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
     Int_t nClusterV1 = fV1Clus->GetEntries();
     for(Int_t i=0; i<nClusterV1; ++i){
-//      AliESDCaloCluster *c3 = fESD->GetCaloCluster(i);      
       AliVCluster *c3 = static_cast<AliVCluster*>(fV1Clus->At(i));      
+      hClusDxDZA->Fill(c3->GetTrackDz(), c3->GetTrackDx());
+      Float_t clsPosEt[3] = {0,0,0};
+      c3->GetPosition(clsPosEt);
+      TVector3 clsVec(clsPosEt);
+      Double_t Et = c3->E()*TMath::Sin(clsVec.Theta());
+      hM02vsPtA->Fill(Et, c3->GetM02());
       if(!c3->IsEMCAL()) continue;
       if(!IsGoodClusterV1(c3)) continue;
+      hM02vsPtB->Fill(Et, c3->GetM02());
+      hClusDxDZB->Fill(c3->GetTrackDz(), c3->GetTrackDx());
       TLorentzVector p3;
       GetMom(p3, c3, vertex);
       FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
