@@ -94,7 +94,7 @@ class AliCDBManager: public TObject {
 	void SetCacheFlag(Bool_t cacheFlag) {fCache=cacheFlag;}
 	Bool_t GetCacheFlag() const {return fCache;}
 	
-	ULong_t SetLock(Bool_t lockFlag=kTRUE, ULong_t key=0);
+	ULong64_t SetLock(Bool_t lockFlag=kTRUE, ULong64_t key=0);
 	Bool_t GetLock() const {return fLock;}
 
 	void SetRaw(Bool_t rawFlag){fRaw=rawFlag;}
@@ -199,7 +199,7 @@ protected:
 	TString fLHCPeriod;       // LHC period alien folder
 
 private:
-   ULong_t fKey;  //! Key for locking/unlocking
+	ULong64_t fKey;  //! Key for locking/unlocking
 
 
 	ClassDef(AliCDBManager, 0);

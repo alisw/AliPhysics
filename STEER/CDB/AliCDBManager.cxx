@@ -1678,7 +1678,7 @@ Bool_t AliCDBManager::IsShortLived(const char* path)
 }
 
 //______________________________________________________________________________________________
-ULong_t AliCDBManager::SetLock(Bool_t lock, ULong_t key){
+ULong64_t AliCDBManager::SetLock(Bool_t lock, ULong64_t key){
   // To lock/unlock user must provide the key. A new key is provided after
   // each successful lock. User should always backup the returned key and
   // use it on next access.
