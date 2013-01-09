@@ -256,6 +256,11 @@ void RawYields(Float_t cMin, Float_t cMax, TString centr) {
   f->Close();
 }
 
+Double_t fd(Double_t x) {
+  //Effective FD correction
+  return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+}
+
 void Spectra(TString centr) {
   TString name;
   TH1 *eff=0;
@@ -283,6 +288,12 @@ void Spectra(TString centr) {
     name+=centr;
     raw = (TH1D*)gDirectory->Get(name.Data());
     spe = new TH1D(*raw);
+    for (Int_t i=1; i<=spe->GetNbinsX(); i++) {
+        Double_t pt=spe->GetBinCenter(i);
+        Double_t c=spe->GetBinContent(i);
+        c -= (c*fd(pt));
+        spe->SetBinContent(i,c);
+    }
     spe->Divide(eff);
     name="Lambda_";
     name+=centr;
@@ -296,6 +307,12 @@ void Spectra(TString centr) {
     name+=centr;
     raw = (TH1D*)gDirectory->Get(name.Data());
     spe = new TH1D(*raw);
+    for (Int_t i=1; i<=spe->GetNbinsX(); i++) {
+        Double_t pt=spe->GetBinCenter(i);
+        Double_t c=spe->GetBinContent(i);
+        c -= (c*fd(pt));
+        spe->SetBinContent(i,c);
+    }
     spe->Divide(eff);
     name="LambdaBar_";
     name+=centr;
