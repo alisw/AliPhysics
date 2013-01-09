@@ -359,15 +359,33 @@ AliCaloTrackReader * ConfigureReader()
   if(kInputDataType=="ESD")
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-    reader->SetTrackCuts(esdTrackCuts);
-    reader->SwitchOnConstrainTrackToVertex();
+    //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
+    //reader->SetTrackCuts(esdTrackCuts);
+    //reader->SwitchOnConstrainTrackToVertex();
+    
+    if(kYears>2010)
+    {
+      //Hybrids 2011
+      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
+      reader->SetTrackCuts(esdTrackCuts);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+    }
+    else
+    {
+      //Hybrids 2010
+      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
+      reader->SetTrackCuts(esdTrackCuts);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+    }
   }
   else if(kInputDataType=="AOD")
   {
-    reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
-    //reader->SwitchOnTrackHitSPDSelection();    // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
     //reader->SetTrackFilterMask(128);           // Filter bit, not mask, use if off hybrid
+    reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
+    reader->SetTrackStatus(AliVTrack::kITSrefit);
+    //reader->SwitchOnTrackHitSPDSelection();    // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
   }
   
   // Calorimeter
@@ -498,7 +516,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   if(!kSimulation)
   {
     cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
-    cu->SwitchOnRunDepCorrection(); 
+    if(kClusterArray == "" && !kTender) cu->SwitchOnRunDepCorrection();
   }
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
@@ -777,6 +795,19 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Fl
   caloPID->SetEtaMassRange(0.40, 0.60);
   caloPID->SetPhotonMassRange(0.00, 0.08);
   
+  caloPID->SwitchOnSplitAsymmetryCut() ;
+  if(kCollisions=="PbPb") // pp default
+  {
+    caloPID->SetAsymmetryMinimumSelectionParameters(0,0,-0.66   );
+    caloPID->SetAsymmetryMinimumSelectionParameters(0,1, 0.131  );
+    caloPID->SetAsymmetryMinimumSelectionParameters(0,2,-0.0028 );
+    
+    caloPID->SetAsymmetryMinimumSelectionParameters(1,0,-1.31    );
+    caloPID->SetAsymmetryMinimumSelectionParameters(1,1, 0.26    );
+    caloPID->SetAsymmetryMinimumSelectionParameters(1,2,-0.0079  );
+    caloPID->SetAsymmetryMinimumSelectionParameters(1,3, 0.000038);
+  }
+  
   ConfigureMC(ana);
   
   if(kPrint) ana->Print("");
@@ -951,9 +982,22 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     caloPID->SetEtaMassRange(0.40, 0.60);
     caloPID->SetPhotonMassRange(0.00, 0.08);
     caloPID->SetClusterSplittingM02Cut(0.3,5); // Do the selection in the analysis class and not in the PID method to fill SS histograms
+    
+    caloPID->SwitchOnSplitAsymmetryCut() ;
+    if(kCollisions=="PbPb") // pp default
+    {
+      caloPID->SetAsymmetryMinimumSelectionParameters(0,0,-0.66   );
+      caloPID->SetAsymmetryMinimumSelectionParameters(0,1, 0.131  );
+      caloPID->SetAsymmetryMinimumSelectionParameters(0,2,-0.0028 );
+      
+      caloPID->SetAsymmetryMinimumSelectionParameters(1,0,-1.31    );
+      caloPID->SetAsymmetryMinimumSelectionParameters(1,1, 0.26    );
+      caloPID->SetAsymmetryMinimumSelectionParameters(1,2,-0.0079  );
+      caloPID->SetAsymmetryMinimumSelectionParameters(1,3, 0.000038);
+    }
   }
   
-  ana->SwitchOffSelectedClusterHistoFill(); 
+  ana->SwitchOffSelectedClusterHistoFill();
   ana->SwitchOffFillWeightHistograms();
   ana->SwitchOffFillPileUpHistograms();
 
@@ -1470,7 +1514,12 @@ UInt_t SetTriggerMaskFromName()
   {
     printf("CaloTrackCorr trigger Central\n");
     return AliVEvent::kCentral;
-  } 
+  }
+  else if(kTrig=="CentralEGA")
+  {
+    printf("CaloTrackCorr trigger Central+EMCEGA\n");
+    return (AliVEvent::kCentral | AliVEvent::kEMCEGA);
+  }
   else if(kTrig=="SemiCentral")
   {
     printf("CaloTrackCorr trigger SemiCentral\n");
