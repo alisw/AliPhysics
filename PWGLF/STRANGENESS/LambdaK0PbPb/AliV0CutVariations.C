@@ -468,22 +468,24 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
    //---
 
    Double_t mass=0., m=0., s=0.;
+   Double_t peakWidth=0;
    if (isK0s) {
       mass=fTreeVariableInvMassK0s;
       fK0sM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-      //s=0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
-      s=0.0029 + 0.00077*pt;
-      if (TMath::Abs(m-mass) < 3*s) {
+      //s=0.0029 + 0.00077*pt;
+      s=0.0041 + 0.00056*pt;
+      peakWidth=5*s;
+      if (TMath::Abs(m-mass) < peakWidth) {
          fK0sSi->Fill(pt,lt);
       } else {
 	 isK0s=kFALSE;
       }
-      if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass + 1.5*peakWidth) < 0.5*peakWidth) {
          fK0sSi->Fill(pt,lt,-1);
       }
-      if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass - 1.5*peakWidth) < 0.5*peakWidth) {
          fK0sSi->Fill(pt,lt,-1);
       }
    }
@@ -493,17 +495,18 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
       fLambdaM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-      //s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
-      s=0.0021 + 0.00022*pt;
-      if (TMath::Abs(m-mass) < 3*s) {
+      //s=0.0021 + 0.00022*pt;
+      s=0.0018 + 0.00030*pt;
+      peakWidth = 3*s + 0.002;
+      if (TMath::Abs(m-mass) < peakWidth) {
          fLambdaSi->Fill(pt,lt);
       } else {
 	 isLambda=kFALSE;
       } 
-      if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass + 1.5*peakWidth) < 0.5*peakWidth) {
          fLambdaSi->Fill(pt,lt,-1);
       }
-      if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass - 1.5*peakWidth) < 0.5*peakWidth) {
          fLambdaSi->Fill(pt,lt,-1);
       }
    }
@@ -513,17 +516,18 @@ Bool_t AliV0CutVariations::Process(Long64_t entry)
       fLambdaBarM->Fill(mass,pt);
 
       m=TDatabasePDG::Instance()->GetParticle(kLambda0Bar)->Mass();
-      //s=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
-      s=0.0021 + 0.00022*pt;
-      if (TMath::Abs(m-mass) < 3*s) {
+      //s=0.0021 + 0.00022*pt;
+      s=0.0018 + 0.00035*pt;
+      peakWidth = 3*s + 0.002;
+      if (TMath::Abs(m-mass) < peakWidth) {
          fLambdaBarSi->Fill(pt,lt);
       } else {
 	 isLambdaBar=kFALSE;
       }
-      if (TMath::Abs(m-mass + 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass + 1.5*peakWidth) < 0.5*peakWidth) {
          fLambdaBarSi->Fill(pt,lt,-1);
       }
-      if (TMath::Abs(m-mass - 4.5*s) < 1.5*s) {
+      if (TMath::Abs(m-mass - 1.5*peakWidth) < 0.5*peakWidth) {
          fLambdaBarSi->Fill(pt,lt,-1);
       }
    }
