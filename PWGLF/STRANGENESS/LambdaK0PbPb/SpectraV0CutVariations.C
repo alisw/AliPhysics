@@ -17,15 +17,6 @@
    #include <TH3F.h>
 #endif
 
-   Double_t xbins[]={
-   0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,
-   1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-   2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,
-   4.5,5.0,5.5,6.5,8.0,10.0,12.0
-   };
-   Int_t nb=sizeof(xbins)/sizeof(Double_t);
-   Int_t nb1=nb-1;
-
 TFile *fAss;
 TFile *fGen;
 TFile *fRaw;
@@ -93,6 +84,15 @@ void Corrections(Float_t cmin, Float_t cmax, TString centr) {
 
 TH1 *GetEfficiency(Float_t cMin, Float_t cMax, 
 		   const Char_t *chis, const Char_t *znam) {
+  Double_t xbins[]={
+   0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,
+   1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+   2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,
+   4.5,5.0,5.5,6.5,8.0,10.0,12.0
+  };
+  Int_t nb=sizeof(xbins)/sizeof(Double_t);
+  Int_t nb1=nb-1;
+
   // Numerator
   fAss->cd();
   TH2F *f2d=(TH2F*)gDirectory->Get(chis); f2d->Sumw2();
