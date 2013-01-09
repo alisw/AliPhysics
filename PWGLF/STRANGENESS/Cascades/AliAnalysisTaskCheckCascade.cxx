@@ -3111,7 +3111,9 @@ void AliAnalysisTaskCheckCascade::DoAngularCorrelation( const Char_t   *lCascTyp
         
         
                 // 2nd step: filling ONCE the THnSparse
-                AliESDtrack *lLeadingTrck = dynamic_cast<AliESDtrack*>( (InputEvent())->GetTrack( lLeadingPrimTrackIdx ) );
+                AliESDtrack *lLeadingTrck = 0x0;
+                    lLeadingTrck =dynamic_cast<AliESDtrack*>( (InputEvent())->GetTrack( lLeadingPrimTrackIdx ) );
+                if( !lLeadingTrck ) return;
                 
                 TVector3 lTVect3MomLeadingTrck( lLeadingTrck->Px(), lLeadingTrck->Py(), lLeadingTrck->Pz() );
                 
