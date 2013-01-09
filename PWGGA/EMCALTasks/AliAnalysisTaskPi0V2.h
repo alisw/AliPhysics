@@ -55,9 +55,12 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void		SetClusM02(Double_t m )	        { fM02Cut     =m ;}
     void		SetPi0Asy(Double_t a )	        { fPi0AsyCut  =a ;}
     void                SetTracksName(const char *n)    { fTracksName =n ;}
-    void                SetTrigClass(const char *n)     { fTrigClass = n ;} 
+    void                SetTrigClass(const char *n)     { fTrigClass  =n ;} 
+    void                SetV1ClusName(const char *n)    { fV1ClusName =n ;} 
+    void                SetV2ClusName(const char *n)    { fV2ClusName =n ;} 
     Int_t		ConvertToInternalRunNumber(Int_t n);
     void		FillEPQA();
+    void		SetIsV1Clus(Bool_t e)		{ isV1Clus   =e  ;}
     
 
     
