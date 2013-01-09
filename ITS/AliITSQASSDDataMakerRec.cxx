@@ -383,7 +383,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
     } //  RS Loop over all trigger classes (+ global counter, -1)
     //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
     //
-    if (specie==4) ResetRawsMonitoredObjects();
+    ResetRawsMonitoredObjects();
   }//raw data end of cycle
   //
       
