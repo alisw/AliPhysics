@@ -106,8 +106,8 @@ TH1 *GetEfficiency(Float_t cMin, Float_t cMax,
   TH1D *fpt = f3d->ProjectionX("fpt",
                   f3d->GetYaxis()->FindBin(-0.5+1e-2),
                   f3d->GetYaxis()->FindBin(+0.5-1e-2),
-                  f3d->GetZaxis()->FindBin(cMin),
-                  f3d->GetZaxis()->FindBin(cMax)
+                  f3d->GetZaxis()->FindBin(cMin+1e-2),
+                  f3d->GetZaxis()->FindBin(cMax-1e-2)
               );
    TH1 *hMc=fpt->Rebin(nb1,"hMc",xbins);
   
@@ -163,8 +163,8 @@ TH1 *GetFeedDown(Float_t cMin, Float_t cMax, TString cent) {
   TH1D *hMcXi = f3d->ProjectionX("fpt",
                   f3d->GetYaxis()->FindBin(-0.5+1e-2),
                   f3d->GetYaxis()->FindBin(+0.5-1e-2),
-                  f3d->GetZaxis()->FindBin(cMin),
-                  f3d->GetZaxis()->FindBin(cMax)
+                  f3d->GetZaxis()->FindBin(cMin+1e-2),
+                  f3d->GetZaxis()->FindBin(cMax-1e-2)
               );
 
   TH2D *h2McXi=new TH2D(*fdMat); 
@@ -225,7 +225,7 @@ void RawYields(Float_t cMin, Float_t cMax, TString centr) {
     TList *v0list=(TList *)gFile->Get("PWGLFExtractV0_PP/clistV0");
     TH1F *fMult=(TH1F*)v0list->FindObject("fHistMultiplicity");
     Int_t i1=fMult->GetXaxis()->FindBin(cMin+1e-2);
-    Int_t i2=fMult->GetXaxis()->FindBin(cMax+1e-2);
+    Int_t i2=fMult->GetXaxis()->FindBin(cMax-1e-2);
     Float_t nEvents=fMult->Integral(i1,i2);
   file->Close();
 
