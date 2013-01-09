@@ -78,11 +78,13 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   fHasReferences(kFALSE),
   fHasNewCalibration(kTRUE),
   fDebugMode(kFALSE),
-  fNameRunByRunCorrection()
+  fNameRunByRunCorrection(),
+  fNormalizationFactorArray(NULL)
 {
   //
   // default ctor
   //
+  memset(fBadChamberID, 0, sizeof(Int_t) * kNChambers);
   memset(fSlicesForPID, 0, sizeof(UInt_t) * 2);
 }
 
@@ -108,7 +110,8 @@ AliTRDTenderSupply::AliTRDTenderSupply(const char *name, const AliTender *tender
   fHasReferences(kFALSE),
   fHasNewCalibration(kTRUE),
   fDebugMode(kFALSE),
-  fNameRunByRunCorrection()
+  fNameRunByRunCorrection(),
+  fNormalizationFactorArray(NULL)
 {
   //
   // named ctor
@@ -123,6 +126,7 @@ AliTRDTenderSupply::~AliTRDTenderSupply()
   //
   // dtor
   //
+  if(fNormalizationFactorArray) delete fNormalizationFactorArray;
 }
 
 //_____________________________________________________
@@ -185,6 +189,7 @@ void AliTRDTenderSupply::ProcessEvent()
 
   fESD = fTender->GetEvent();
   if (!fESD) return;
+  if(fNormalizationFactorArray) fNormalizationFactor = GetNormalizationFactor(fESD->GetRunNumber());
   Int_t ntracks=fESD->GetNumberOfTracks();
    
   //
@@ -468,7 +473,11 @@ void AliTRDTenderSupply::ApplyRunByRunCorrection(AliESDtrack *const track) {
   //
 
   TVectorD *corrfactor = dynamic_cast<TVectorD *>(fRunByRunCorrection->GetObject(fTender->GetRun()));
-  if(!corrfactor) AliDebug(2, "Couldn't derive gain correction factor from OADB");
+  if(!corrfactor){ 
+    // No correction available - simply return
+    AliDebug(2, "Couldn't derive gain correction factor from OADB");
+    return;
+  }
   else AliDebug(2, Form("Gain factor from OADB %f", (*corrfactor)[0]));
   Double_t slice = 0;
   for(Int_t ily = 0; ily < kNPlanes; ily++){
@@ -479,6 +488,42 @@ void AliTRDTenderSupply::ApplyRunByRunCorrection(AliESDtrack *const track) {
       track->SetTRDslice(slice, ily, islice);
     }
   }
+}
+
+//_____________________________________________________
+void AliTRDTenderSupply::SetNormalizationFactor(Double_t norm, Int_t runMin, Int_t runMax) { 
+  //
+  // Set the normalisation factor for a given run range
+  //
+  if(!fNormalizationFactorArray)
+    fNormalizationFactorArray = new TObjArray;
+  TVectorD *entry = new TVectorD(3);
+  TVectorD &myentry = *entry;
+  myentry(0) = runMin;
+  myentry(1) = runMax;
+  myentry(2) = norm;
+  fNormalizationFactorArray->Add(entry);
+}
+
+//_____________________________________________________
+Double_t AliTRDTenderSupply::GetNormalizationFactor(Int_t runnumber){
+  // 
+  // Load the normalization factor
+  //
+  Double_t norm = 1.;
+  if(fNormalizationFactorArray){
+    TVectorD *entry;
+    Int_t runMin, runMax;
+    TIter entries(fNormalizationFactorArray);
+    while((entry = dynamic_cast<TVectorD *>(entries()))){
+      TVectorD &myentry = *entry;
+      runMin = TMath::Nint(myentry(0));
+      runMax = TMath::Nint(myentry(1));
+      if(runnumber >= runMin && runnumber <= runMax) norm = myentry(2);
+    }
+  }
+  AliDebug(1, Form("Gain normalization factor: %f\n", norm));
+  return norm;
 }
 
 //_____________________________________________________

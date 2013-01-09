@@ -79,27 +79,11 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   //========= Attach TRD supply ======
   if (useTRD) {
     AliTRDTenderSupply *trdSupply=new AliTRDTenderSupply("TRDtender");
-    trdSupply->SetLoadReferencesFromCDB();
-    // Mask Bad chambers
-    trdSupply->AddBadChamber(265);      // low drift
-    trdSupply->AddBadChamber(50);
-    trdSupply->AddBadChamber(524);      // low drift
-    trdSupply->AddBadChamber(32);       // intermediate gain
-    trdSupply->AddBadChamber(15);
-    trdSupply->AddBadChamber(231);      // low gain
-    trdSupply->AddBadChamber(273);      // intermediate gain
-    trdSupply->AddBadChamber(532);
-    trdSupply->AddBadChamber(5);        // low drift
-    trdSupply->AddBadChamber(227);
-    trdSupply->AddBadChamber(287);      // low drift
-    trdSupply->AddBadChamber(212);      // intermediate gain
-    trdSupply->AddBadChamber(228);      // low gain
-    trdSupply->AddBadChamber(52);       // low gain
-    trdSupply->AddBadChamber(169);      // low drift
-    trdSupply->AddBadChamber(236);      // low drift
 
+    trdSupply->SetLoadDeadChambersFromCDB();                    // Mask Bad chambers
     trdSupply->SetPIDmethod(AliTRDTenderSupply::k1DLQpid);
-    trdSupply->SetNormalizationFactor(1./7.603);
+    trdSupply->SwitchOffGainCorrection();                       // Correction only on pass 1
+    trdSupply->SetNormalizationFactor(0.12697,114737,130850);   // 1 otherwise
     tender->AddSupply(trdSupply);
   }  
 
