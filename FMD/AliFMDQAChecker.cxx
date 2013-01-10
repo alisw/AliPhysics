@@ -670,6 +670,15 @@ AliFMDQAChecker::CheckRaw(AliRecoParam::EventSpecie_t specie,
     // func->SetLineStyle(2);
     Double_t high = xMax; // xMaxY+fELossNRMS*rms;
     if (fELossNRMS > 0) high = xMaxY+fELossNRMS*rms;
+    
+    // Check we don't have an empty fit range 
+    if (low >= high) return ret;
+
+    // Check that we have enough counts in the fit range 
+    Int_t bLow  = hist->FindBin(low);
+    Int_t bHigh = hist->FindBin(high);
+    if (bLow >= bHigh || hist->Integral(bLow, bHigh) < fELossMinEntries)
+      return ret;
 
     // Set our fit function 
     TString fitOpt("QS");
@@ -688,8 +697,8 @@ AliFMDQAChecker::CheckRaw(AliRecoParam::EventSpecie_t specie,
     res = hist->Fit("pol2", fitOpt, "", fELossMinSharing, low-0.05);
     func = hist->GetFunction("pol2");
     Double_t   s     = Chi2Scale(hist,fELossMinEntries*100);
-    Double_t   chi2  = res->Chi2();
-    Int_t      nu    = res->Ndf();
+    Double_t   chi2  = (!res.Get() ? 0 : res->Chi2());
+    Int_t      nu    = (!res.Get() ? 1 : res->Ndf());
     Double_t   red   = s * (nu == 0 ? fELossFkupChi2Nu : chi2 / nu);
     if (AliDebugLevel()) 
       printf("FIT: %s, 2, %d, %f, %f\n", hist->GetName(),
