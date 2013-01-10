@@ -83,7 +83,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
-    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
+//    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
+    fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 
 {
@@ -118,7 +119,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0),
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
-    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
+//    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
+    fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 {
     // Constructor
@@ -419,10 +421,11 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
 
 }
 //________________________________________________________________________________________________________________________________
-void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC)
+void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, Double_t M02)
 {
   //cluster(photon) v2 method
-  Double_t Pt   = p1.Pt();
+//  Double_t Pt   = p1.Pt();
+  Double_t Et   = p1.Et();
   Double_t Phi  = p1.Phi();
 
   Double_t difClusV0 = TVector2::Phi_0_2pi(Phi-EPV0r);   if(difClusV0 >TMath::Pi()) difClusV0  -= TMath::Pi();
@@ -430,11 +433,37 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   Double_t difClusV0C = TVector2::Phi_0_2pi(Phi-EPV0C);  if(difClusV0C >TMath::Pi()) difClusV0C -= TMath::Pi();
   Double_t difClusTPC = TVector2::Phi_0_2pi(Phi-EPTPC);  if(difClusTPC >TMath::Pi()) difClusTPC -= TMath::Pi();
 
-  hdifClus_EPV0->Fill(fCentrality,  difClusV0, Pt);
-  hdifClus_EPV0A->Fill(fCentrality, difClusV0A, Pt);
-  hdifClus_EPV0C->Fill(fCentrality, difClusV0C, Pt);
-  hdifClus_EPTPC->Fill(fCentrality, difClusTPC, Pt);
+  Double_t DataV0[5];
+  DataV0[0] = Et;
+  DataV0[1] = M02;
+  DataV0[2] = fCentrality;
+  DataV0[3] = difClusV0;
+  DataV0[4] = TMath::Cos(2.0*(difClusV0));
+  fClusterPbV0->Fill(DataV0);
 
+  Double_t DataV0A[5];
+  DataV0A[0] = Et;
+  DataV0A[1] = M02;
+  DataV0A[2] = fCentrality;
+  DataV0A[3] = difClusV0A;
+  DataV0A[4] = TMath::Cos(2.0*(difClusV0A));
+  fClusterPbV0A->Fill(DataV0A);
+
+  Double_t DataV0C[5];
+  DataV0C[0] = Et;
+  DataV0C[1] = M02;
+  DataV0C[2] = fCentrality;
+  DataV0C[3] = difClusV0C;
+  DataV0C[4] = TMath::Cos(2.0*(difClusV0C));
+  fClusterPbV0C->Fill(DataV0C);
+
+  Double_t DataTPC[5];
+  DataTPC[0] = Et;
+  DataTPC[1] = M02;
+  DataTPC[2] = fCentrality;
+  DataTPC[3] = difClusTPC;
+  DataTPC[4] = TMath::Cos(2.0*(difClusTPC));
+  fClusterPbTPC->Fill(DataTPC);
 
 }
 //_________________________________________________________________________________________________
@@ -560,7 +589,7 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifful_EPTPC);
     fOutput->Add(hdifout_EPTPC);
 
-    hdifClus_EPV0 = new TH3F("hdifClus_EPV0",   "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
+/*    hdifClus_EPV0 = new TH3F("hdifClus_EPV0",   "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
     hdifClus_EPV0A = new TH3F("hdifClus_EPV0A", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
     hdifClus_EPV0C = new TH3F("hdifClus_EPV0C", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
     hdifClus_EPTPC = new TH3F("hdifClus_EPTPC", "dif phi in EMC Clus with EP", 100, 0., 100., 100, 0., TMath::Pi(), 90, 5., 50.);
@@ -568,6 +597,33 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifClus_EPV0A);
     fOutput->Add(hdifClus_EPV0C);
     fOutput->Add(hdifClus_EPTPC);
+*/
+
+		      //  Et   M02  V0Mcent DeltaPhi    Cos[2*DeltaPhi]
+    Int_t    bins[5] = {  500, 350,  100,     100,          100  }; // binning
+    Double_t min[5]  = {  0.0, 0.0,    0,     0.0,         -1.0}; // min x
+    Double_t max[5]  = { 50.0, 3.5,  100,  TMath::Pi(),     1.0}; // max x
+
+    fClusterPbV0 = new THnSparseF("fClusterPbV0","",5,bins,min,max);
+    fClusterPbV0->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0->GetAxis(1)->SetTitle("M02"); fClusterPbV0->GetAxis(2)->SetTitle("V0M Centrality");
+    fClusterPbV0->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0->GetAxis(4)->SetTitle("Cos[2*Delta(#phi)]");
+    fOutput->Add(fClusterPbV0);
+
+    fClusterPbV0A = new THnSparseF("fClusterPbV0A","",5,bins,min,max);
+    fClusterPbV0A->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0A->GetAxis(1)->SetTitle("M02"); fClusterPbV0A->GetAxis(2)->SetTitle("V0M Centrality");
+    fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0A->GetAxis(4)->SetTitle("Cos[2*Delta(#phi)]");
+    fOutput->Add(fClusterPbV0A);
+
+    fClusterPbV0C = new THnSparseF("fClusterPbV0C","",5,bins,min,max);
+    fClusterPbV0C->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0C->GetAxis(1)->SetTitle("M02"); fClusterPbV0C->GetAxis(2)->SetTitle("V0M Centrality");
+    fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0C->GetAxis(4)->SetTitle("Cos[2*Delta(#phi)]");
+    fOutput->Add(fClusterPbV0C);
+
+    fClusterPbTPC = new THnSparseF("fClusterPbTPC","",5,bins,min,max);
+    fClusterPbTPC->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbTPC->GetAxis(1)->SetTitle("M02"); fClusterPbTPC->GetAxis(2)->SetTitle("V0M Centrality");
+    fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbTPC->GetAxis(4)->SetTitle("Cos[2*Delta(#phi)]");
+    fOutput->Add(fClusterPbTPC);
+
 
     hAllcentV0  = new TH1F("hAllcentV0",  "All cent EP V0",  100, 0., TMath::Pi());
     hAllcentV0r = new TH1F("hAllcentV0r", "All cent EP V0r", 100, 0., TMath::Pi());
@@ -609,13 +665,13 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
 
     const Int_t ndims = 5;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
-    Int_t bins[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
+    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
     Double_t xmin[ndims] = { 0,   0.,  0,   0.,     -1.};
     Double_t xmax[ndims] = { 0.5, 20., 100, 3.15,   1.};
-    fHEPV0r  = new THnSparseF("fHEPV0r",  "Flow histogram EPV0",  ndims, bins, xmin, xmax);
-    fHEPV0A = new THnSparseF("fHEPV0A",   "Flow histogram EPV0A", ndims, bins, xmin, xmax);
-    fHEPV0C = new THnSparseF("fHEPV0C",   "Flow histogram EPV0C", ndims, bins, xmin, xmax);
-    fHEPTPC = new THnSparseF("fHEPTPC",   "Flow histogram EPTPC", ndims, bins, xmin, xmax);
+    fHEPV0r  = new THnSparseF("fHEPV0r",  "Flow histogram EPV0",  ndims, binsv1, xmin, xmax);
+    fHEPV0A = new THnSparseF("fHEPV0A",   "Flow histogram EPV0A", ndims, binsv1, xmin, xmax);
+    fHEPV0C = new THnSparseF("fHEPV0C",   "Flow histogram EPV0C", ndims, binsv1, xmin, xmax);
+    fHEPTPC = new THnSparseF("fHEPTPC",   "Flow histogram EPTPC", ndims, binsv1, xmin, xmax);
     fOutput->Add(fHEPV0r);
     fOutput->Add(fHEPV0A);
     fOutput->Add(fHEPV0C);
@@ -837,7 +893,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       hClusDxDZB->Fill(c3->GetTrackDz(), c3->GetTrackDx());
       TLorentzVector p3;
       GetMom(p3, c3, vertex);
-      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC, c3->GetM02());
     }
   }
 

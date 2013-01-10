@@ -45,7 +45,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t		IsGoodClusterV1(const AliVCluster *c) const;
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
-    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
+    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, Double_t M02);
     void 		GetMom(TLorentzVector& p, const AliVCluster *c, Double_t *vertex);		
     void		SetEventMethod(Double_t e )	{ fEvtSelect  =e ;}
     void		SetVtxCut(Double_t v )	        { fVtxCut     =v ;}
@@ -164,10 +164,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH3F			*hdifful_EPTPC;		//! 3-D histo dif phi in full with EPTPC
     TH3F			*hdifout_EPTPC;		//! 3-D histo dif phi out EMC with EPTPC
 
-    TH3F			*hdifClus_EPV0;		//! 3-D histo dif phi of Clus with V0r
-    TH3F			*hdifClus_EPV0A;	//! 3-D histo dif phi of Clus with V0A
-    TH3F			*hdifClus_EPV0C;	//! 3-D histo dif phi of Clus with V0C
-    TH3F			*hdifClus_EPTPC;	//! 3-D histo dif phi of Clus with TPC
+    THnSparse		        *fClusterPbV0;
+    THnSparse		        *fClusterPbV0A;
+    THnSparse		        *fClusterPbV0C;
+    THnSparse			 *fClusterPbTPC;
 
     THnSparse                   *fHEPV0r;	        //! Flow 4-D Histo
     THnSparse                   *fHEPV0A;	        //! Flow 4-D Histo
@@ -179,7 +179,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
     
-    ClassDef(AliAnalysisTaskPi0V2, 4); // example of analysis
+    ClassDef(AliAnalysisTaskPi0V2, 5); // example of analysis
 };
 
 #endif
