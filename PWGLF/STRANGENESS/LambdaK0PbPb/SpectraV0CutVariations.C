@@ -3,9 +3,9 @@
    #include <TROOT.h>
    #include <Riostream.h>
    #include <TCanvas.h>
-
+   #include <TStyle.h>
    #include <TString.h>
-
+   #include <TLegend.h>
    #include <TFile.h>
    #include <TList.h>
    #include <TH1F.h>
@@ -398,3 +398,71 @@ void Generated() {
   f->Close();
 }
 
+extern TStyle *gStyle;
+
+void SetOptions(TH1 *h, const Char_t *t, Int_t c, Int_t m, Float_t s) {
+   h->SetLineColor(c);
+   h->SetMarkerColor(c); 
+   h->SetMarkerStyle(m);
+   h->SetMarkerSize(s);
+   h->SetTitle(t);
+   TAxis *x=h->GetXaxis();
+   x->SetTitle("p_{T} (GeV/c)");
+   x->SetTitleSize(0.05);   
+   x->SetLabelSize(0.05);   
+   TAxis *y=h->GetYaxis();
+   y->SetTitle("1/N_{ev}dN/dp_{T}/dy (GeV/c)^{-1}");   
+   y->SetTitleSize(0.05);   
+   y->SetLabelSize(0.05);   
+}
+void DrawSpectra() {
+  TH1 *h=0;
+  TString name;
+
+  const Char_t *title[]={
+    "0-5 %",
+    "0-10 %",
+    "10-20 %",
+    "20-40 %",
+    "40-60 %",
+    "60-80 %",
+    "80-90 %"
+  };
+  const Int_t nCent=sizeof(title)/sizeof(const Char_t *);
+  TString centr[nCent]={"0005","0010","1020","2040","4060","6080","8090"};
+  const Int_t   colour[nCent]={2,   3,   635, 419, 4 , 6,  1  };
+  const Int_t   marker[nCent]={22,  29,  34,  21,  23, 33, 20 };
+  const Float_t masize[nCent]={1.6, 1.7, 1.3, 1.3, 1.6,2,  1.3};
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetLegendFillColor(0);
+
+  TCanvas *kc=new TCanvas(); kc->SetLogy();
+  TCanvas *lc=new TCanvas(); lc->SetLogy();
+
+  TFile::Open("SpectraV0CutVariations.root");
+  
+  for (Int_t i=0; i<nCent; i++) {
+    name="K0s_";
+    h=(TH1*)gDirectory->Get((name+centr[i]).Data());
+    SetOptions(h,title[i],colour[i],marker[i],masize[i]);
+    kc->cd();
+    if (i==0) h->Draw(); else h->Draw("same");
+
+    name="Lambda_";
+    h=(TH1*)gDirectory->Get((name+centr[i]).Data());
+    SetOptions(h,title[i],colour[i],marker[i],masize[i]);
+    lc->cd();
+    if (i==0) h->Draw(); else h->Draw("same");
+  }
+
+  kc->cd();
+  TLegend *kleg=kc->BuildLegend(0.659,0.320,0.881,0.875,"K0s spectra:");
+  kleg->SetBorderSize(0);
+  kleg->SetFillColor(0);
+  lc->cd();
+  TLegend *lleg=lc->BuildLegend(0.659,0.320,0.881,0.875,"#Lambda spectra:");
+  lleg->SetBorderSize(0);
+  lleg->SetFillColor(0);
+}
