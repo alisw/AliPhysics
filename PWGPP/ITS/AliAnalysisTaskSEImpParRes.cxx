@@ -27,6 +27,9 @@
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
 #include "AliMultiplicity.h"
+#include "AliTriggerConfiguration.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliTrackPointArray.h"
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
@@ -51,6 +54,10 @@ fUseDiamond(kFALSE),
 fSkipTrack(kTRUE),
 fMinMult(0),
 fMaxMult(1000000),
+fCheckSDDIsIn(0),
+fTriggerClass(""),
+fTrigConfig(0),
+fOCDBPath(""),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -76,12 +83,6 @@ fOutputpullAllpointTrue(0),
 fOutputphiAllpointSkip(0),
 fOutputphiPostvtracSkip(0),
 fOutputphiNegtvtracSkip(0),
-fOutputclusterTypeSPD01Skip(0),
-fOutputclusterTypeSPD02Skip(0),
-fOutputclusterTypeSPD03Skip(0),
-fOutputclusterTypeSPD11Skip(0),
-fOutputclusterTypeSPD12Skip(0),
-fOutputclusterTypeSPD13Skip(0),
 fOutputparticlePID(0),
 fOutputPt(0),
 fNentries(0),
@@ -101,6 +102,10 @@ fUseDiamond(kFALSE),
 fSkipTrack(kTRUE),
 fMinMult(0),
 fMaxMult(1000000),
+fCheckSDDIsIn(0),
+fTriggerClass(""),
+fTrigConfig(0),
+fOCDBPath(""),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -126,12 +131,6 @@ fOutputpullAllpointTrue(0),
 fOutputphiAllpointSkip(0),
 fOutputphiPostvtracSkip(0),
 fOutputphiNegtvtracSkip(0),
-fOutputclusterTypeSPD01Skip(0),
-fOutputclusterTypeSPD02Skip(0),
-fOutputclusterTypeSPD03Skip(0),
-fOutputclusterTypeSPD11Skip(0),
-fOutputclusterTypeSPD12Skip(0),
-fOutputclusterTypeSPD13Skip(0),
 fOutputparticlePID(0),
 fOutputPt(0),
 fNentries(0),
@@ -211,12 +210,6 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   if (fOutputphiAllpointSkip)               {delete fOutputphiAllpointSkip;fOutputphiAllpointSkip=0x0;}
   if (fOutputphiPostvtracSkip)            {delete fOutputphiPostvtracSkip;fOutputphiPostvtracSkip=0x0;}
   if (fOutputphiNegtvtracSkip)            {delete fOutputphiNegtvtracSkip;fOutputphiNegtvtracSkip=0x0;}
-  if (fOutputclusterTypeSPD01Skip){delete fOutputclusterTypeSPD01Skip;fOutputclusterTypeSPD01Skip=0x0;}
-  if (fOutputclusterTypeSPD02Skip){delete fOutputclusterTypeSPD02Skip;fOutputclusterTypeSPD02Skip=0x0;}
-  if (fOutputclusterTypeSPD03Skip){delete fOutputclusterTypeSPD03Skip;fOutputclusterTypeSPD03Skip=0x0;}
-  if (fOutputclusterTypeSPD11Skip){delete fOutputclusterTypeSPD11Skip;fOutputclusterTypeSPD11Skip=0x0;}
-  if (fOutputclusterTypeSPD12Skip){delete fOutputclusterTypeSPD12Skip;fOutputclusterTypeSPD12Skip=0x0;}
-  if (fOutputclusterTypeSPD13Skip){delete fOutputclusterTypeSPD13Skip;fOutputclusterTypeSPD13Skip=0x0;}
   if (fOutputparticlePID)                           {delete fOutputparticlePID;fOutputparticlePID=0x0;}
   if (fOutputPt)                                                      {delete fOutputPt;fOutputPt=0x0;}
   if (fNentries)                                           { delete fNentries;     fNentries    =0x0; }
@@ -354,42 +347,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputpullAllpointTrue->SetName("pullAllpointTrue");
   } 
   
-  if (!fOutputclusterTypeSPD01Skip) {
-    fOutputclusterTypeSPD01Skip = new TList();
-    fOutputclusterTypeSPD01Skip->SetOwner();
-    fOutputclusterTypeSPD01Skip->SetName("clustertypeSPD01Skip");
-  }
-  
-  
-  if (!fOutputclusterTypeSPD02Skip) {
-    fOutputclusterTypeSPD02Skip = new TList();
-    fOutputclusterTypeSPD02Skip->SetOwner();
-    fOutputclusterTypeSPD02Skip->SetName("clustertypeSPD02Skip");
-  }
-  
-  if (!fOutputclusterTypeSPD03Skip) {
-    fOutputclusterTypeSPD03Skip = new TList();
-    fOutputclusterTypeSPD03Skip->SetOwner();
-    fOutputclusterTypeSPD03Skip->SetName("clustertypeSPD03Skip");
-  }
-  
-  if (!fOutputclusterTypeSPD11Skip) {
-    fOutputclusterTypeSPD11Skip = new TList();
-    fOutputclusterTypeSPD11Skip->SetOwner();
-    fOutputclusterTypeSPD11Skip->SetName("clustertypeSPD11Skip");
-  }
-  
-  if (!fOutputclusterTypeSPD12Skip) {
-    fOutputclusterTypeSPD12Skip = new TList();
-    fOutputclusterTypeSPD12Skip->SetOwner();
-    fOutputclusterTypeSPD12Skip->SetName("clustertypeSPD12Skip");
-  }
-  
-  if (!fOutputclusterTypeSPD13Skip) {
-    fOutputclusterTypeSPD13Skip = new TList();
-    fOutputclusterTypeSPD13Skip->SetOwner();
-    fOutputclusterTypeSPD13Skip->SetName("clustertypeSPD13Skip");
-  }
   
   if (!fOutputparticlePID) {
     fOutputparticlePID = new TList();
@@ -421,18 +378,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   const TString d0onlyRefitrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0onlyRefitzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
   const TString d0ptTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD01rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD01zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries"; 
-  const TString d0clusterTypeSPD02rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD02zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD03rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD03zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD11rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD11zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD12rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD12zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD13rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-  const TString d0clusterTypeSPD13zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0zTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
   const TString d0rphiParticlPID = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
@@ -443,9 +388,9 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   TH1F *d0ITSpureSArphiRec=0,*d0ITSpureSAzRec=0,*d0AllpointrphiRec=0, *d0AllpointzRec=0,*d0PartpointrphiRec=0, *d0PartpointzRec=0,
     *d0OnepointSPDrphiRec=0,*d0OnepointSPDzRec=0,*d0PostvtracrphiRec=0, *d0PostvtraczRec=0,*d0NegtvtracrphiRec=0, *d0NegtvtraczRec=0,*d0Pt=0,*d0PullAllpointrphiRec=0,*d0PullAllpointzRec=0,*d0OnlyRefitrphiRec=0,*d0OnlyRefitzRec=0,*d0PionPIDrphiRec=0,*d0PionPIDzRec=0,*d0KaonPIDrphiRec=0,*d0KaonPIDzRec=0,*d0ProtonPIDrphiRec=0,*d0ProtonPIDzRec=0;
 
-  TString  named0itspureSArphiSkip,named0itspureSAzSkip,named0allpointrphiSkip, named0allpointzSkip,named0partpointrphiSkip, named0partpointzSkip,named0onepointSPDrphiSkip, named0onepointSPDzSkip,named0postvtracrphiSkip, named0postvtraczSkip,named0negtvtracrphiSkip, named0negtvtraczSkip,named0ptSkip,named0pullAllpointrphiSkip,named0pullAllpointzSkip,named0onlyRefitrphiSkip,named0onlyRefitzSkip,named0allpointrphiTrue, named0allpointzTrue,named0postvtracrphiTrue, named0postvtraczTrue,named0negtvtracrphiTrue, named0negtvtraczTrue,named0pullAllpointrphiTrue,named0pullAllpointzTrue,named0clusterTypeSPD01rphiSkip,named0clusterTypeSPD01zSkip,named0clusterTypeSPD02rphiSkip,named0clusterTypeSPD02zSkip,named0clusterTypeSPD03rphiSkip,named0clusterTypeSPD03zSkip,named0clusterTypeSPD11rphiSkip,named0clusterTypeSPD11zSkip,named0clusterTypeSPD12rphiSkip,named0clusterTypeSPD12zSkip,named0clusterTypeSPD13rphiSkip,named0clusterTypeSPD13zSkip,named0pionPIDrphiSkip, named0pionPIDzSkip,named0kaonPIDrphiSkip, named0kaonPIDzSkip,named0protonPIDrphiSkip, named0protonPIDzSkip;
+  TString  named0itspureSArphiSkip,named0itspureSAzSkip,named0allpointrphiSkip, named0allpointzSkip,named0partpointrphiSkip, named0partpointzSkip,named0onepointSPDrphiSkip, named0onepointSPDzSkip,named0postvtracrphiSkip, named0postvtraczSkip,named0negtvtracrphiSkip, named0negtvtraczSkip,named0ptSkip,named0pullAllpointrphiSkip,named0pullAllpointzSkip,named0onlyRefitrphiSkip,named0onlyRefitzSkip,named0allpointrphiTrue, named0allpointzTrue,named0postvtracrphiTrue, named0postvtraczTrue,named0negtvtracrphiTrue, named0negtvtraczTrue,named0pullAllpointrphiTrue,named0pullAllpointzTrue,named0pionPIDrphiSkip, named0pionPIDzSkip,named0kaonPIDrphiSkip, named0kaonPIDzSkip,named0protonPIDrphiSkip, named0protonPIDzSkip;
 
-  TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip=0,*d0PullAllpointzSkip=0,*d0OnlyRefitrphiSkip=0,*d0OnlyRefitzSkip=0,*d0AllpointrphiTrue=0, *d0AllpointzTrue=0,*d0PostvtracrphiTrue=0, *d0PostvtraczTrue=0,*d0NegtvtracrphiTrue=0,*d0NegtvtraczTrue=0,*d0PullAllpointrphiTrue,*d0PullAllpointzTrue,*d0ClustertypeSPD01rphiSkip=0,*d0ClustertypeSPD01zSkip=0,*d0ClustertypeSPD02rphiSkip=0,*d0ClustertypeSPD02zSkip=0,*d0ClustertypeSPD03rphiSkip=0,*d0ClustertypeSPD03zSkip=0,*d0ClustertypeSPD11rphiSkip=0,*d0ClustertypeSPD11zSkip=0,*d0ClustertypeSPD12rphiSkip=0,*d0ClustertypeSPD12zSkip=0,*d0ClustertypeSPD13rphiSkip=0,*d0ClustertypeSPD13zSkip=0,*d0PionPIDrphiSkip=0,*d0PionPIDzSkip=0,*d0KaonPIDrphiSkip=0,*d0KaonPIDzSkip=0,*d0ProtonPIDrphiSkip=0,*d0ProtonPIDzSkip=0;
+  TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip=0,*d0PullAllpointzSkip=0,*d0OnlyRefitrphiSkip=0,*d0OnlyRefitzSkip=0,*d0AllpointrphiTrue=0, *d0AllpointzTrue=0,*d0PostvtracrphiTrue=0, *d0PostvtraczTrue=0,*d0NegtvtracrphiTrue=0,*d0NegtvtraczTrue=0,*d0PullAllpointrphiTrue,*d0PullAllpointzTrue,*d0PionPIDrphiSkip=0,*d0PionPIDzSkip=0,*d0KaonPIDrphiSkip=0,*d0KaonPIDzSkip=0,*d0ProtonPIDrphiSkip=0,*d0ProtonPIDzSkip=0;
 
   for(Int_t i=1; i<=nhist; i++) {
    
@@ -708,83 +653,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0PullAllpointzTrue->SetMinimum(0);
     fOutputpullAllpointTrue->Add(d0PullAllpointzTrue);
 
-    named0clusterTypeSPD01rphiSkip = "d0clustertypeSPD01rphiSkip_";
-    named0clusterTypeSPD01rphiSkip +=i;
-    named0clusterTypeSPD01zSkip = "d0clustertypeSPD01zSkip_";
-    named0clusterTypeSPD01zSkip +=i;
-    d0ClustertypeSPD01rphiSkip = new TH1F(named0clusterTypeSPD01rphiSkip.Data(),d0clusterTypeSPD01rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD01rphiSkip->Sumw2();
-    d0ClustertypeSPD01rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD01Skip->Add(d0ClustertypeSPD01rphiSkip);
-    d0ClustertypeSPD01zSkip = new TH1F(named0clusterTypeSPD01zSkip.Data(),d0clusterTypeSPD01zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD01zSkip->Sumw2();
-    d0ClustertypeSPD01zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD01Skip->Add(d0ClustertypeSPD01zSkip);
-
-    named0clusterTypeSPD02rphiSkip = "d0clustertypeSPD02rphiSkip_";
-    named0clusterTypeSPD02rphiSkip +=i;
-    named0clusterTypeSPD02zSkip = "d0clustertypeSPD02zSkip_";
-    named0clusterTypeSPD02zSkip +=i;
-    d0ClustertypeSPD02rphiSkip = new TH1F(named0clusterTypeSPD02rphiSkip.Data(),d0clusterTypeSPD02rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD02rphiSkip->Sumw2();
-    d0ClustertypeSPD02rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD02Skip->Add(d0ClustertypeSPD02rphiSkip);
-    d0ClustertypeSPD02zSkip = new TH1F(named0clusterTypeSPD02zSkip.Data(),d0clusterTypeSPD02zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD02zSkip->Sumw2();
-    d0ClustertypeSPD02zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD02Skip->Add(d0ClustertypeSPD02zSkip);
-
-    named0clusterTypeSPD03rphiSkip = "d0clustertypeSPD03rphiSkip_";
-    named0clusterTypeSPD03rphiSkip +=i;
-    named0clusterTypeSPD03zSkip = "d0clustertypeSPD03zSkip_";
-    named0clusterTypeSPD03zSkip +=i;
-    d0ClustertypeSPD03rphiSkip = new TH1F(named0clusterTypeSPD03rphiSkip.Data(),d0clusterTypeSPD03rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD03rphiSkip->Sumw2();
-    d0ClustertypeSPD03rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD03Skip->Add(d0ClustertypeSPD03rphiSkip);
-    d0ClustertypeSPD03zSkip = new TH1F(named0clusterTypeSPD03zSkip.Data(),d0clusterTypeSPD03zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD03zSkip->Sumw2();
-    d0ClustertypeSPD03zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD03Skip->Add(d0ClustertypeSPD03zSkip);
-
-    named0clusterTypeSPD11rphiSkip = "d0clustertypeSPD11rphiSkip_";
-    named0clusterTypeSPD11rphiSkip +=i;
-    named0clusterTypeSPD11zSkip = "d0clustertypeSPD11zSkip_";
-    named0clusterTypeSPD11zSkip +=i;
-    d0ClustertypeSPD11rphiSkip = new TH1F(named0clusterTypeSPD11rphiSkip.Data(),d0clusterTypeSPD11rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD11rphiSkip->Sumw2();
-    d0ClustertypeSPD11rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD11Skip->Add(d0ClustertypeSPD11rphiSkip);
-    d0ClustertypeSPD11zSkip = new TH1F(named0clusterTypeSPD11zSkip.Data(),d0clusterTypeSPD11zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD11zSkip->Sumw2();
-    d0ClustertypeSPD11zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD11Skip->Add(d0ClustertypeSPD11zSkip);
-
-    named0clusterTypeSPD12rphiSkip = "d0clustertypeSPD12rphiSkip_";
-    named0clusterTypeSPD12rphiSkip +=i;
-    named0clusterTypeSPD12zSkip = "d0clustertypeSPD12zSkip_";
-    named0clusterTypeSPD12zSkip +=i;
-    d0ClustertypeSPD12rphiSkip = new TH1F(named0clusterTypeSPD12rphiSkip.Data(),d0clusterTypeSPD12rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD12rphiSkip->Sumw2();
-    d0ClustertypeSPD12rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD12Skip->Add(d0ClustertypeSPD12rphiSkip);
-    d0ClustertypeSPD12zSkip = new TH1F(named0clusterTypeSPD12zSkip.Data(),d0clusterTypeSPD12zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD12zSkip->Sumw2();
-    d0ClustertypeSPD12zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD12Skip->Add(d0ClustertypeSPD12zSkip);
-
-    named0clusterTypeSPD13rphiSkip = "d0clustertypeSPD13rphiSkip_";
-    named0clusterTypeSPD13rphiSkip +=i;
-    named0clusterTypeSPD13zSkip = "d0clustertypeSPD13zSkip_";
-    named0clusterTypeSPD13zSkip +=i;
-    d0ClustertypeSPD13rphiSkip = new TH1F(named0clusterTypeSPD13rphiSkip.Data(),d0clusterTypeSPD13rphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD13rphiSkip->Sumw2();
-    d0ClustertypeSPD13rphiSkip->SetMinimum(0);
-    fOutputclusterTypeSPD13Skip->Add(d0ClustertypeSPD13rphiSkip);
-    d0ClustertypeSPD13zSkip = new TH1F(named0clusterTypeSPD13zSkip.Data(),d0clusterTypeSPD13zTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
-    d0ClustertypeSPD13zSkip->Sumw2();
-    d0ClustertypeSPD13zSkip->SetMinimum(0);
-    fOutputclusterTypeSPD13Skip->Add(d0ClustertypeSPD13zSkip);
 
     named0pionPIDrphiRec = "d0pionPIDrphiRec_";
     named0pionPIDrphiRec += i;
@@ -1154,16 +1022,10 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   PostData(23, fOutputphiAllpointSkip);
   PostData(24, fOutputphiPostvtracSkip);
   PostData(25, fOutputphiNegtvtracSkip);
-  PostData(26, fOutputclusterTypeSPD01Skip);
-  PostData(27, fOutputclusterTypeSPD02Skip);
-  PostData(28, fOutputclusterTypeSPD03Skip);
-  PostData(29, fOutputclusterTypeSPD11Skip);
-  PostData(30, fOutputclusterTypeSPD12Skip);
-  PostData(31, fOutputclusterTypeSPD13Skip);
-  PostData(32, fOutputparticlePID);
-  PostData(33, fOutputPt);
-  PostData(34, fNentries);
-  PostData(35, fEstimVtx);  
+  PostData(26, fOutputparticlePID);
+  PostData(27, fOutputPt);
+  PostData(28, fNentries);
+  PostData(29, fEstimVtx);  
 
   return;
 }
@@ -1182,6 +1044,38 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 
   // only events in the requested multiplicity range
   if(!IsSelectedCentrality(esd)) return;
+
+  TString firedTriggerClasses=esd->GetFiredTriggerClasses();  
+  if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
+  
+
+  Bool_t sddIsIn=kTRUE;
+  if(fCheckSDDIsIn) {
+
+    if(!fTrigConfig) {    
+      AliCDBManager* man = AliCDBManager::Instance();
+      if(fOCDBPath.Contains("OCDB")) { // when running in the QAtrain this is not called (OCBD is already set)
+	man->SetDefaultStorage(fOCDBPath.Data());
+	man->SetRun(esd->GetRunNumber());
+      }
+      if(!man) {       
+	AliFatal("CDB not set but needed by AliAnalysisTaskITSTrackingCheck");
+	return;    
+      }   
+      AliCDBEntry* eT=(AliCDBEntry*)man->Get("GRP/CTP/Config");    
+      if(eT) {      
+	fTrigConfig=(AliTriggerConfiguration*)eT->GetObject();    
+      }    
+      if(!eT || !fTrigConfig) {      
+	AliError("Cannot retrieve CDB entry for GRP/CTP/Config");      
+	return;     
+      }
+    }
+
+    sddIsIn=esd->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+    if(fCheckSDDIsIn==1 && !sddIsIn) return;
+    if(fCheckSDDIsIn==-1 && sddIsIn) return;
+  }
 
   fNentries->Fill(1);
 
@@ -1458,7 +1352,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     }
 
     // with 6 ITS points (including different selection)
-    if(npointsITS==6) {
+    if(npointsITS==6 || (npointsITS==4 && !sddIsIn)) {
       //pt 
       char *named0Pt = Form("d0pt_%d",bin);
       ((TH1F*)(fOutputPt->FindObject(named0Pt)))->Fill(pt);
@@ -1627,52 +1521,6 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	}
       }
 
-      //cluster type
-      Int_t ctypeSPD0 = ClusterTypeOnITSLayer(esdtrack,0);
-      if(ctypeSPD0==-1) continue;
-      Int_t ctypeSPD1 = ClusterTypeOnITSLayer(esdtrack,1);
-      if(ctypeSPD1==-1) continue;
-
-      if(ctypeSPD0==1) {
-	char *named0ClustertypeSPD01rphiSkip = Form("d0clustertypeSPD01rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD01zSkip = Form("d0clustertypeSPD01rphiSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD01Skip->FindObject(named0ClustertypeSPD01rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD01Skip->FindObject(named0ClustertypeSPD01zSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(ctypeSPD0==2) {
-	char *named0ClustertypeSPD02rphiSkip = Form("d0clustertypeSPD02rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD02zSkip = Form("d0clustertypeSPD02rphiSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD02Skip->FindObject(named0ClustertypeSPD02rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD02Skip->FindObject(named0ClustertypeSPD02zSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(ctypeSPD0==3) {
-	char *named0ClustertypeSPD03rphiSkip = Form("d0clustertypeSPD03rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD03zSkip = Form("d0clustertypeSPD03zSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD03Skip->FindObject(named0ClustertypeSPD03rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD03Skip->FindObject(named0ClustertypeSPD03zSkip)))->Fill(10000*dzRecSkip[1]);
-      }
-      
-      if(ctypeSPD1==1) {
-	char *named0ClustertypeSPD11rphiSkip = Form("d0clustertypeSPD11rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD11zSkip = Form("d0clustertypeSPD11rphiSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD11Skip->FindObject(named0ClustertypeSPD11rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD11Skip->FindObject(named0ClustertypeSPD11zSkip)))->Fill(10000*dzRecSkip[1]);
-      } 
-      if(ctypeSPD1==2) {
-	char *named0ClustertypeSPD12rphiSkip = Form("d0clustertypeSPD12rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD12zSkip = Form("d0clustertypeSPD12rphiSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD12Skip->FindObject(named0ClustertypeSPD12rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD12Skip->FindObject(named0ClustertypeSPD12zSkip)))->Fill(10000*dzRecSkip[1]);
-      } 
-      
-      if(ctypeSPD1==3) {
-	char *named0ClustertypeSPD13rphiSkip = Form("d0clustertypeSPD13rphiSkip_%d",phibin);
-	char *named0ClustertypeSPD13zSkip = Form("d0clustertypeSPD13rphiSkip_%d",phibin);
-	((TH1F*)(fOutputclusterTypeSPD13Skip->FindObject(named0ClustertypeSPD13rphiSkip)))->Fill(10000*dzRecSkip[0]);
-	((TH1F*)(fOutputclusterTypeSPD13Skip->FindObject(named0ClustertypeSPD13zSkip)))->Fill(10000*dzRecSkip[1]);
-      }  
      
       // Bayesian PID
       Double_t prob[AliPID::kSPECIES];
@@ -1773,16 +1621,10 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   PostData(23, fOutputphiAllpointSkip);
   PostData(24, fOutputphiPostvtracSkip);
   PostData(25, fOutputphiNegtvtracSkip);
-  PostData(26, fOutputclusterTypeSPD01Skip);
-  PostData(27, fOutputclusterTypeSPD02Skip);
-  PostData(28, fOutputclusterTypeSPD03Skip);
-  PostData(29, fOutputclusterTypeSPD11Skip);
-  PostData(30, fOutputclusterTypeSPD12Skip);
-  PostData(31, fOutputclusterTypeSPD13Skip);
-  PostData(32, fOutputparticlePID);
-  PostData(33, fOutputPt);
-  PostData(34, fNentries);
-  PostData(35, fEstimVtx);  
+  PostData(26, fOutputparticlePID);
+  PostData(27, fOutputPt);
+  PostData(28, fNentries);
+  PostData(29, fEstimVtx);  
 
   return;
 }

@@ -10,6 +10,7 @@
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSresponseSDD.h"
+#include "AliTriggerConfiguration.h"
 #include "AliGeomManager.h"
 #include <TSystem.h>
 #include <TTree.h>
@@ -84,11 +85,13 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fCluSizAnVsTime(0),
   fCluSizTbVsTime(0),
   fResp(0),
+  fTrigConfig(0),
   fUseITSsaTracks(kFALSE),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPfordEdx(0.5),
-  fOnlyCINT1BTrig(0),
+  fTriggerClass(""),
+  fOnlyEventsWithSDD(kTRUE),
   fExcludeBadMod(kFALSE)
 {
   //
@@ -115,7 +118,12 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-1.5,1.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",5,-1.5,3.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Selected triggers"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Without SDD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"With SDD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Analyzed events"); 
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
@@ -327,8 +335,6 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   //
   static Bool_t initCalib = kFALSE;
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
-
-
   if(!esd) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
     return;
@@ -350,13 +356,25 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
        AliFatal("CDB not set but needed by AliAnalysisTaskSDDRP");
        return;
     }   
+    AliCDBEntry* eT=(AliCDBEntry*)man->Get("GRP/CTP/Config");
+    if(eT){
+      eT->PrintId();
+      eT->PrintMetaData();
+      fTrigConfig=(AliTriggerConfiguration*)eT->GetObject();
+    }
+    if(!eT || !fTrigConfig){
+      AliError("Cannot retrieve CDB entry for GRP/CTP/Config");
+      return;      
+    }
     AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
     if (eR) {
       eR->PrintId();
       eR->PrintMetaData();
       fResp=(AliITSresponseSDD*)eR->GetObject();
+    }else{
+      AliError("Cannot retrieve CDB entry for ITS/Calib/RespSDD");
+      return;
     }
-  
     AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
     if (!eC) {
        AliError("Cannot retrieve CDB entry for ITS/Calib/CalibSDD");
@@ -398,11 +416,18 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   
   PostData(1, fOutput);
 
+  fHistNEvents->Fill(-1);
+
+  TString firedTriggerClasses=esd->GetFiredTriggerClasses();
+  if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
   fHistNEvents->Fill(0);
-  if(fOnlyCINT1BTrig){
-    if(!esd->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
-    fHistNEvents->Fill(1);
-  }
+
+  Bool_t sddOK=esd->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+  if(!sddOK) fHistNEvents->Fill(1.);
+  else fHistNEvents->Fill(2.);
+  if(fOnlyEventsWithSDD && !sddOK) return; 
+  else fHistNEvents->Fill(3.);
+  
   const AliTrackPointArray *array = 0;
   Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack=0; itrack < ntracks; itrack++) {

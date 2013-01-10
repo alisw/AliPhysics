@@ -22,6 +22,7 @@ class TTree;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
+class AliTriggerConfiguration;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -80,6 +81,15 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   }
   void SetCentralityRange(Float_t minc, Float_t maxc){
     fMinCentrality=minc; fMaxCentrality=maxc; fUseCentrality=kTRUE;
+  }
+  void SetRequireSPDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSPD=opt;
+  }
+  void SetRequireSDDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSDD=opt;
+  }
+  void SetRequireSSDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSSD=opt;
   }
 
  private:
@@ -166,8 +176,12 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;          // flag read/not-read MC truth info
   Bool_t  fUseMCId;         // flag use/not-use MC identity for PID
   Bool_t  fUseCentrality;   // flag use/not-use centrality selection
+  Bool_t  fRequireSPD;      // check that SPD are in trigger cluster
+  Bool_t  fRequireSDD;      // check that SDD are in trigger cluster
+  Bool_t  fRequireSSD;      // check that SSD are in trigger cluster
+  AliTriggerConfiguration* fTrigConfig; // trigger configuration object
 
-  ClassDef(AliAnalysisTaskITSsaTracks,4);  
+  ClassDef(AliAnalysisTaskITSsaTracks,5);  
 };
 
 
