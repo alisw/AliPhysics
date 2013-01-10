@@ -281,15 +281,20 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     if(!t->GetListOfBranches()->GetEntries() && isAOD)
       t->Branch(aod->GetList());
     
-    if (!t->GetBranch("dielectrons")){
+    if (!t->GetBranch("dielectrons"))
       t->Bronch("dielectrons","TObjArray",fDielectron->GetPairArraysPointer());
       // store positive and negative tracks
-      if(fStoreTrackLegs){
-      t->Branch("positiveTracks","TObjArray", (TObjArray*)(fDielectron->GetTrackArray(0)));
-      t->Branch("negativeTracks","TObjArray", (TObjArray*)(fDielectron->GetTrackArray(1)));
+      if(fStoreTrackLegs && t->GetBranch("tracks")){
+       Int_t nTracks = (fDielectron->GetTrackArray(0))->GetEntries() + (fDielectron->GetTrackArray(1))->GetEntries();
+      extDielectron->GetAOD()->ResetStd(nTracks);
+
+         for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++)
+         extDielectron->GetAOD()->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj));
+
+         for(int kj=0; kj<(fDielectron->GetTrackArray(1))->GetEntries(); kj++)
+         extDielectron->GetAOD()->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(1)->At(kj));
       }
-    }
-    
+
     if(isAOD) t->Fill();
   }
   
