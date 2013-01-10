@@ -881,6 +881,7 @@ void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *)
 /*  if(fIsGrid)
     return;*/
   if (fTree) {
+    printf("***tree %s being saved***\n",fTree->GetName());
     TFile *f = OpenFile(2);
     TDirectory::TContext context(f);
     if (f) 
