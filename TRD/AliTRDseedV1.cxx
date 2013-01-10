@@ -102,7 +102,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
   fZfit[0] = 0.; fZfit[1] = 0.; 
-  memset(fdEdx, 0, kNslices*sizeof(Float_t)); 
+  memset(fdEdx, 0, kNdEdxSlices*sizeof(Float_t));
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
@@ -224,7 +224,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fZref[0] = fZref[0]; target.fZref[1] = fZref[1]; 
   target.fYfit[0] = fYfit[0]; target.fYfit[1] = fYfit[1]; 
   target.fZfit[0] = fZfit[0]; target.fZfit[1] = fZfit[1]; 
-  memcpy(target.fdEdx, fdEdx, kNslices*sizeof(Float_t)); 
+  memcpy(target.fdEdx, fdEdx, kNdEdxSlices*sizeof(Float_t));
   memcpy(target.fProb, fProb, AliPID::kSPECIES*sizeof(Float_t)); 
   memcpy(target.fLabels, fLabels, 3*sizeof(Int_t)); 
   memcpy(target.fRefCov, fRefCov, 7*sizeof(Double_t)); 
@@ -308,7 +308,7 @@ void AliTRDseedV1::Reset(Option_t *opt)
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
   fZfit[0] = 0.; fZfit[1] = 0.; 
-  memset(fdEdx, 0, kNslices*sizeof(Float_t)); 
+  memset(fdEdx, 0, kNdEdxSlices*sizeof(Float_t));
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
@@ -417,7 +417,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 // 3. cluster size
 //
 
-  memset(fdEdx, 0, kNslices*sizeof(Float_t));
+  memset(fdEdx, 0, kNdEdxSlices*sizeof(Float_t));
   const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
   AliTRDcluster *c(NULL);
@@ -679,11 +679,11 @@ Float_t AliTRDseedV1::GetMomentum(Float_t *err) const
 //
 
   Double_t p = fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);
-  Double_t p2 = p*p;
-  Double_t tgl2 = fZref[1]*fZref[1];
-  Double_t pt2 = fPt*fPt;
   if(err){
-    Double_t s2 = 
+    Double_t p2 = p*p;
+    Double_t tgl2 = fZref[1]*fZref[1];
+    Double_t pt2 = fPt*fPt;
+    Double_t s2 =
       p2*tgl2*pt2*pt2*fRefCov[4]
      -2.*p2*fZref[1]*fPt*pt2*fRefCov[5]
      +p2*pt2*fRefCov[6];
@@ -745,6 +745,8 @@ Bool_t AliTRDseedV1::CookPID()
 // According to the steering settings specified in the reconstruction one of the following methods are used
 // - Neural Network [default] - option "nn"  
 // - 2D Likelihood - option "!nn"  
+
+  AliWarning(Form("Obsolete function. Use AliTRDPIDResponse::GetResponse() instead."));
 
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
@@ -1143,7 +1145,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   memset(s2y, 0, kNrows*kNcls*sizeof(Double_t));
   memset(blst, 0, kNrows*kNcls*sizeof(Bool_t));   //this is 8 times faster to memset than "memset(clst, 0, kNrows*kNcls*sizeof(AliTRDcluster*))"
 
-  Double_t roady(0.), s2Mean(0.), sMean(0.); Int_t ns2Mean(0);
+  Double_t roady(0.), s2Mean(0.); Int_t ns2Mean(0);
 
   // Do cluster projection and pick up cluster candidates
   AliTRDcluster *c(NULL);
@@ -1216,7 +1218,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
     for(Int_t ir(kNrows);ir--;) clst[ir].Clear();
     return kFALSE;
   }
-  s2Mean /= ns2Mean; sMean = TMath::Sqrt(s2Mean);
+  s2Mean /= ns2Mean; //sMean = TMath::Sqrt(s2Mean);
   //Double_t sRef(TMath::Sqrt(s2Mean+s2yTrk)); // reference error parameterization
 
   // organize row candidates
@@ -1939,9 +1941,10 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
       kDZDX=kFALSE;
     }
 
-    Float_t w = 1.;
-    if(c->GetNPads()>4) w = .5;
-    if(c->GetNPads()>5) w = .2;
+//   TODO use this information to adjust cluster error parameterization
+//     Float_t w = 1.;
+//     if(c->GetNPads()>4) w = .5;
+//     if(c->GetNPads()>5) w = .2;
 
     // cluster charge
     qc[n]   = TMath::Abs(c->GetQ());

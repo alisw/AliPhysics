@@ -53,6 +53,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   ,fTruncatedMean(0)
   ,fNchamberdEdx(0)
   ,fNclusterdEdx(0)
+  ,fNdEdxSlices(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -72,6 +73,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
     fTrackletIndex[ip] = -1;
     fTracklet[ip]      = NULL;
   }
+  SetLabel(-123456789); // reset label
 }
 
 //_______________________________________________________________
@@ -82,6 +84,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   ,fTruncatedMean(ref.fTruncatedMean)
   ,fNchamberdEdx(ref.fNchamberdEdx)
   ,fNclusterdEdx(ref.fNclusterdEdx)
+  ,fNdEdxSlices(ref.fNdEdxSlices)
   ,fkReconstructor(ref.fkReconstructor)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -115,6 +118,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   ,fTruncatedMean(0)
   ,fNchamberdEdx(0)                                                 
   ,fNclusterdEdx(0)
+  ,fNdEdxSlices(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -171,6 +175,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   ,fTruncatedMean(0)
   ,fNchamberdEdx(0)                                                 
   ,fNclusterdEdx(0)
+  ,fNdEdxSlices(0)
   ,fkReconstructor(NULL)
   ,fBackupTrack(NULL)
   ,fTrackLow(NULL)
@@ -228,6 +233,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   
   Float_t pid = 1./AliPID::kSPECIES;
   for(int is =0; is<AliPID::kSPECIES; is++) fPID[is] = pid;
+  SetLabel(-123456789); // reset label
 }
 
 //_______________________________________________________________
@@ -378,26 +384,24 @@ Bool_t AliTRDtrackV1::CookPID()
     AliError("PID Response not available");
     return kFALSE;
   }
-  Int_t nslices = pidResponse->GetNumberOfSlices();
-  Double_t dEdx[kNplane * (Int_t)AliTRDPIDResponse::kNslicesNN];
-  Float_t trackletP[kNplane];
-  memset(dEdx, 0, sizeof(Double_t) * kNplane * (Int_t)AliTRDPIDResponse::kNslicesNN);
-  memset(trackletP, 0, sizeof(Float_t)*kNplane);
+  Double_t dEdx[kNplane * (Int_t)AliTRDseedV1::kNdEdxSlices] = {0.};
+  Float_t trackletP[kNplane] = {0.};
+
+  fNdEdxSlices = pidResponse->GetNumberOfSlices();
   for(Int_t iseed = 0; iseed < kNplane; iseed++){
     if(!fTracklet[iseed]) continue;
     trackletP[iseed] = fTracklet[iseed]->GetMomentum();
-    fTracklet[iseed]->SetPID();
-    //if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
+//    if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
       dEdx[iseed] = fTracklet[iseed]->GetdQdl();
-   /* } else {
-      fTracklet[iseed]->CookdEdx(nslices);
+/*    } else {
+      fTracklet[iseed]->CookdEdx(fNdEdxSlices);
       const Float_t *trackletdEdx = fTracklet[iseed]->GetdEdx();
-      for(Int_t islice = 0; islice < nslices; islice++){
-        dEdx[iseed*nslices + islice] = trackletdEdx[islice];
+      for(Int_t islice = 0; islice < fNdEdxSlices; islice++){
+        dEdx[iseed*fNdEdxSlices + islice] = trackletdEdx[islice];
       }
-  } */
+    }*/
   }
-  pidResponse->GetResponse(nslices, dEdx, trackletP, fPID);
+  pidResponse->GetResponse(fNdEdxSlices, dEdx, trackletP, fPID);
 
   static Int_t nprint = 0;
   if(!nprint){
@@ -902,19 +906,28 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // pack the two numbers together and store them in the ESD
   track->SetTRDntracklets(nPID | (nTrk<<3));
   // allocate space to store raw PID signals dEdx & momentum
-  track->SetNumberOfTRDslices((AliTRDPIDResponse::kNslicesNN+3)*AliTRDgeometry::kNlayer);
+  // independent of the method used to calculate PID (see below AliTRDPIDResponse)
+  track->SetNumberOfTRDslices((AliTRDseedV1::kNdEdxSlices+2)*AliTRDgeometry::kNlayer);
   // store raw signals
   Float_t p, sp; Double_t spd;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
-    if(!fTracklet[ip]->HasPID()) continue;
+    // Fill TRD dEdx info into ESD track
+    // a. Set Summed dEdx into the first slice
+    track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); 
+    // b. Set NN dEdx slices
     fTracklet[ip]->CookdEdx(AliTRDPIDResponse::kNslicesNN);
     const Float_t *dedx = fTracklet[ip]->GetdEdx();
-    for (Int_t js = 0; js < AliTRDPIDResponse::kNslicesNN; js++, dedx++){
-      track->SetTRDslice(*dedx, ip, js+1);
+    for (Int_t js(0), ks(1); js < AliTRDPIDResponse::kNslicesNN; js++, ks++, dedx++){
+      if(ks>=AliTRDseedV1::kNdEdxSlices){
+        AliError(Form("Exceed allocated space for dEdx slices."));
+        break;
+      }
+      track->SetTRDslice(*dedx, ip, ks);
     }
-    p = fTracklet[ip]->GetMomentum(&sp);
-    spd = sp; track->SetTRDmomentum(p, ip, &spd);
+    // fill TRD momentum info into ESD track
+    p = fTracklet[ip]->GetMomentum(&sp); spd = sp;
+    track->SetTRDmomentum(p, ip, &spd);
     // store global quality per tracklet instead of momentum error
     // 26.09.11 A.Bercuci
     // first implementation store no. of time bins filled in tracklet (5bits  see "y" bits) and
@@ -933,7 +946,6 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0); if(nCross>3) nCross = 3;
     Char_t trackletQ = Char_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5) | (fTracklet[ip]->IsChmbGood()<<7));
     track->SetTRDTimBin(trackletQ, ip);
-    track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }
   // store PID probabilities
   track->SetTRDpid(fPID);

@@ -34,8 +34,6 @@ public:
    ,kNplane    = AliTRDgeometry::kNlayer
    ,kNcham     = AliTRDgeometry::kNstack
    ,kNsect     = AliTRDgeometry::kNsector
-   ,kNslice    =   3
-   ,kNMLPslice =   8 
    ,kMAXCLUSTERSPERTRACK = 210
   };
   
@@ -94,6 +92,7 @@ public:
   Double_t       GetPIDsignal() const   { return 0.;}
   Double_t       GetPID(Int_t is) const { return (is >=0 && is < AliPID::kSPECIES) ? fPID[is] : -1.;}
   UChar_t        GetNumberOfTrackletsPID() const;
+  Int_t          GetNumberOfPhysicsSlices() const { return fNdEdxSlices;  };
   Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet, Double_t *cov) const;
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z) const;
@@ -106,14 +105,13 @@ public:
   AliExternalTrackParam*
                  GetTrackOut() const  { return fTrackHigh;} 
   const Int_t* GetTrackletIndexes() const { return &fTrackletIndex[0];}
-  
   Bool_t         IsEqual(const TObject *inTrack) const;
-  Bool_t         IsKink() const    { return TestBit(kKink);}
-  Bool_t         IsOwner() const   { return TestBit(kOwner);};
-  Bool_t         IsPrimary() const   { return TestBit(kPrimary);};
-  Bool_t         IsStopped() const { return TestBit(kStopped);};
+  Bool_t         IsKink() const           { return TestBit(kKink);}
+  Bool_t         IsOwner() const          { return TestBit(kOwner);};
+  Bool_t         IsPrimary() const        { return TestBit(kPrimary);};
+  Bool_t         IsStopped() const        { return TestBit(kStopped);};
   Bool_t         IsElectron() const;
-  Bool_t         IsTPCseeded() const { return !TestBit(kSeeder);};
+  Bool_t         IsTPCseeded() const      { return !TestBit(kSeeder);};
   inline static Bool_t IsTrackError(ETRDtrackError error, UInt_t status);
   inline static Bool_t IsLayerError(ETRDlayerError error, Int_t layer, UInt_t status);
 
@@ -155,6 +153,7 @@ private:
   Double32_t   fTruncatedMean;         //  Truncated mean
   Int_t        fNchamberdEdx;          //  number of chambers used in calculating truncated mean
   Int_t        fNclusterdEdx;          //  number of clusters used in calculating truncated mean
+  Int_t        fNdEdxSlices;           //  number of "physics slices" fill via AliTRDPIDResponse
 
   const AliTRDReconstructor *fkReconstructor;//! reconstructor link 
   AliTRDtrackV1 *fBackupTrack;         //! Backup track
@@ -162,7 +161,7 @@ private:
   AliExternalTrackParam *fTrackLow;    // parameters of the track which enter TRD from below (TPC) 
   AliExternalTrackParam *fTrackHigh;   // parameters of the track which enter TRD from above (HMPID, PHOS) 
 
-  ClassDef(AliTRDtrackV1, 7)          // TRD track - tracklet based
+  ClassDef(AliTRDtrackV1, 8)           // TRD track - tracklet based
 };
 
 //____________________________________________________

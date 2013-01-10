@@ -54,19 +54,18 @@ public:
    ,kMask      = 0x3f   // bit mask
    ,kNtb       = 31     // max clusters/pad row
    ,kNclusters = 2*kNtb // max number of clusters/tracklet
-   ,kNslices   = 10     // max dEdx slices
+   ,kNdEdxSlices= 8     // dEdx slices allocated in reconstruction
   };
 
   // bits from 0-13 are reserved by ROOT (see TObject.h)
   enum ETRDtrackletStatus {
     kOwner      = BIT(14) // owner of its clusters
    ,kRowCross   = BIT(15) // pad row cross tracklet
-   ,kPID        = BIT(16) // PID contributor
+   ,kChmbGood   = BIT(16) // status of the detector from calibration view point
    ,kCalib      = BIT(17) // calibrated tracklet
    ,kKink       = BIT(18) // kink prolongation tracklet
    ,kStandAlone = BIT(19) // tracklet build during stand alone track finding
    ,kPrimary    = BIT(20) // tracklet from a primary track candidate
-   ,kChmbGood   = BIT(21) // status of the detector from calibration view point
   };
 
   enum ETRDtrackletError { // up to 8 bits
@@ -101,7 +100,6 @@ public:
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsKink() const           { return TestBit(kKink);}
   Bool_t    IsPrimary() const        { return TestBit(kPrimary);}
-  Bool_t    HasPID() const           { return TestBit(kPID);}
   Bool_t    HasError(ETRDtrackletError err) const
                                      { return TESTBIT(fErrorMsg, err);}
   Bool_t    IsOK() const             { return GetN() > 4 && GetNUsed() < 4;}
@@ -189,7 +187,6 @@ public:
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
   void      SetKink(Bool_t k = kTRUE){ SetBit(kKink, k);}
   void      SetPrimary(Bool_t k = kTRUE){ SetBit(kPrimary, k);}  
-  void      SetPID(Bool_t k = kTRUE) { SetBit(kPID, k);}
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetPt(Double_t pt)       { fPt = pt;}
   void      SetOwner();
@@ -247,7 +244,7 @@ private:
   Float_t          fS2Z;                    // estimated resolution in the z direction 
   Float_t          fC[2];                   // Curvature for standalone [0] rieman [1] vertex constrained 
   Float_t          fChi2;                   // Global chi2  
-  Float_t          fdEdx[kNslices];         // dE/dx measurements for tracklet
+  Float_t          fdEdx[kNdEdxSlices];     // dE/dx measurements for tracklet
   Float_t          fProb[AliPID::kSPECIES]; // PID probabilities
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
