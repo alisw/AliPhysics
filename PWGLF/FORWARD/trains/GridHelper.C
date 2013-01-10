@@ -147,7 +147,7 @@ struct GridHelper : public PluginHelper
     }
     Int_t       nRuns  = 0;
     TString     runs   = fOptions.Get("run");
-    TObjArray*  tokens = runs.Tokenize(",");
+    TObjArray*  tokens = runs.Tokenize(",+");
     TObjString* part   = 0;
     TIter       next(tokens);
     Bool_t      range  = false;
