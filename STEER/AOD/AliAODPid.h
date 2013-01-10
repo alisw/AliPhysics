@@ -51,7 +51,7 @@ class AliAODPid : public TObject {
   AliTPCdEdxInfo * GetTPCdEdxInfo()const{return fTPCdEdxInfo;}
 
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
-  Int_t     GetTRDnSlices()      const {return  fTRDnSlices;}
+  Int_t     GetTRDnSlices()      const {return  fTRDnSlices/6;}
   Double_t* GetTRDsignal()       const {return  fTRDslices;}
   Double_t  GetTRDChi2()         const {return fTRDChi2;}
   const Double_t*  GetTRDmomentum() const {return  fTRDmomentum;}
@@ -71,7 +71,7 @@ class AliAODPid : public TObject {
   UChar_t     fTPCsignalN;       // number of points used for TPC dE/dx
   Double32_t  fTPCmomentum;      //[0.,0.,20] momentum at the inner wall of TPC;
 
-  Int_t       fTRDnSlices;       // N slices used for PID in the TRD
+  Int_t       fTRDnSlices;       // N slices used for PID in the TRD (as number of slices per tracklet * number of layers)
   UChar_t     fTRDntls;          // number of tracklets used for PID calculation
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
   Double32_t* fTRDslices;        //[fTRDnSlices][0.,0.,10]

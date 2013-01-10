@@ -566,10 +566,14 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   AliTPCdEdxInfo * dEdxInfo = track->GetTPCdEdxInfo();
   if (dEdxInfo) SetTPCdEdxInfo(new AliTPCdEdxInfo(*dEdxInfo));
   //
-  int ntrdsl = track->GetNumberOfTRDslices()/6;
-  if (ntrdsl>0) {    
+  int ntrdsl = track->GetNumberOfTRDslices();
+  if (ntrdsl>0) {
     SetNumberOfTRDslices((ntrdsl+2)*kTRDnPlanes);
-    for (int isl=ntrdsl;isl--;) for (int ipl=kTRDnPlanes;ipl--;) SetTRDslice(track->GetTRDslice(ipl,isl),ipl,isl);
+    for (int ipl=kTRDnPlanes;ipl--;){
+      for (int isl=ntrdsl;isl--;) SetTRDslice(track->GetTRDslice(ipl,isl),ipl,isl);
+      Double_t sp, p = track->GetTRDmomentum(ipl, &sp);
+      SetTRDmomentum(p, ipl, &sp);
+    }
   }
   //
   fTRDncls = track->GetTRDncls();
