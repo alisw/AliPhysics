@@ -248,7 +248,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   
   
   PostData(1, fOutputList);
-  //  PostData(2, fTree);
+  PostData(2, fTree);
 }
 
 //________________________________________________________________________
