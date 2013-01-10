@@ -3,6 +3,9 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliTriggerConfiguration.h"
 #include "AliStack.h"
 #include "AliPID.h"
 #include "AliCentrality.h"
@@ -64,7 +67,11 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
   fFillNtuple(kFALSE),
   fReadMC(kFALSE),
   fUseMCId(kFALSE),
-  fUseCentrality(kFALSE)
+  fUseCentrality(kFALSE),
+  fRequireSPD(kTRUE),
+  fRequireSDD(kTRUE),
+  fRequireSSD(kTRUE),
+  fTrigConfig(0)
 {
   //
   for(Int_t ilay=0; ilay<6;ilay++) fRequirePoint[ilay]=kFALSE;
@@ -173,9 +180,16 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   // Total:                              36
   fOutput->Add(fNtupleTracks);
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-0.5,2.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",7,-0.5,6.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Good vertex"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"In centrality range"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Without SPD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Without SDD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Without SSD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Analyzed events"); 
   fOutput->Add(fHistNEvents);
 
   //binning for the dedx histogram
@@ -407,6 +421,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
 {
   //
 
+  static Bool_t initCalib = kFALSE;
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
 
 
@@ -420,7 +435,27 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESDfriend\n");
     return;
   }
-  
+  if(fRequireSPD || fRequireSDD || fRequireSSD){
+    if (!initCalib) {
+      AliCDBManager* man = AliCDBManager::Instance();
+      if (!man) {
+	AliFatal("CDB not set but needed by AliAnalysisTaskSDDRP");
+	return;
+      }   
+      AliCDBEntry* eT=(AliCDBEntry*)man->Get("GRP/CTP/Config");
+      if(eT){
+	eT->PrintId();
+	eT->PrintMetaData();
+	fTrigConfig=(AliTriggerConfiguration*)eT->GetObject();
+      }
+      if(!eT || !fTrigConfig){
+	AliError("Cannot retrieve CDB entry for GRP/CTP/Config");
+	return;      
+      }
+      initCalib=kTRUE;
+    }
+  }
+
   AliStack* stack=0;
 
   if(fReadMC){
@@ -456,6 +491,23 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     if(centrality>fMaxCentrality) return;
   }
   fHistNEvents->Fill(2);
+
+  Bool_t spdOK=kTRUE;
+  Bool_t sddOK=kTRUE;
+  Bool_t ssdOK=kTRUE;
+  if(fTrigConfig){
+    spdOK=esd->IsDetectorInTriggerCluster("ITSSPD",fTrigConfig);
+    if(!spdOK) fHistNEvents->Fill(3);
+    sddOK=esd->IsDetectorInTriggerCluster("ITSSDD",fTrigConfig);
+    if(!sddOK) fHistNEvents->Fill(4);
+    ssdOK=esd->IsDetectorInTriggerCluster("ITSSSD",fTrigConfig);
+    if(!ssdOK) fHistNEvents->Fill(5);
+  }
+  if(fRequireSPD && !spdOK) return;
+  if(fRequireSDD && !sddOK) return;
+  if(fRequireSSD && !ssdOK) return;
+  fHistNEvents->Fill(6);
+  
 
   Int_t ntracks = esd->GetNumberOfTracks();
   const AliMultiplicity* mult=esd->GetMultiplicity();
