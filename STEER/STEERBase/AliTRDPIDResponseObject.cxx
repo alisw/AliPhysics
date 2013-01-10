@@ -124,7 +124,7 @@ AliTRDPIDResponseObject::~AliTRDPIDResponseObject(){
       if(fPIDParams && TestBit(kIsOwner)){
 	delete fPIDParams[method];fPIDParams[method] = 0;
       }
-      if(fPIDReference && TestBit(kIsOwner)){
+      if(fPIDReference[method] && TestBit(kIsOwner)){
 	delete fPIDReference[method];
 	fPIDReference[method] = 0;
       }
