@@ -529,8 +529,8 @@ void AliPIPEv3::CreateGeometry()
 //  Plie radius
 //  const Float_t kCP3PlieR = 0.118286;
     const Float_t kCP3PlieR = 
-	(kCP3BellowUndulatedLength - 4. *  kCP3ConnectionPlieR + 2. * kCP3PlieThickness + 
-	 (2. *  kCP3NumberOfPlies - 2.) * kCP3PlieThickness) / (4. * kCP3NumberOfPlies - 2.);
+	(kCP3BellowUndulatedLength - 4. *  kCP3ConnectionPlieR + 
+	 2. *  kCP3NumberOfPlies * kCP3PlieThickness) / (4. * kCP3NumberOfPlies - 2.);
 //  Length of connection pipe
     const Float_t kCP3BellowConnectionLength        =  2.35;
 //
@@ -878,7 +878,7 @@ void AliPIPEv3::CreateGeometry()
     const Float_t kRB24B1PlieThickness     =  0.015;   // Plie thickness             
 
     const Float_t kRB24B1PlieRadius = 
-	(kRB24B1BellowUndL + (2. *  kRB24B1NumberOfPlies - 2.) * kRB24B1PlieThickness) / (4. * kRB24B1NumberOfPlies);
+      (kRB24B1BellowUndL + (2. *  kRB24B1NumberOfPlies+ 1.) * kRB24B1PlieThickness) / (4. * kRB24B1NumberOfPlies + 2.);
     
     const Float_t kRB24B1ProtTubeThickness = 0.02;     // Thickness of the protection tube
     const Float_t kRB24B1ProtTubeLength    = 4.2;      // Length of the protection tube
@@ -1808,8 +1808,8 @@ void AliPIPEv3::CreateGeometry()
       const Float_t kRB26s2ConnectionPlieR   =  0.21;    // Connection plie radius     [Pos 1] 
 //  Plie radius
       const Float_t kRB26s2PlieR = 
-	(kRB26s2BellowUndL - 4. *  kRB26s2ConnectionPlieR + 2. * kRB26s2PlieThickness + 
-	 (2. *  kRB26s2NumberOfPlies - 2.) * kRB26s2PlieThickness) / (4. * kRB26s2NumberOfPlies - 2.);
+	(kRB26s2BellowUndL - 4. *  kRB26s2ConnectionPlieR + 
+	 2. *  kRB26s2NumberOfPlies * kRB26s2PlieThickness) / (4. * kRB26s2NumberOfPlies);
       const Float_t kRB26s2CompTubeInnerR    = 12.00/2.;  // Connection tubes inner radius     [Pos 2 + 3]
       const Float_t kRB26s2CompTubeOuterR    = 12.30/2.;  // Connection tubes outer radius     [Pos 2 + 3]
       const Float_t kRB26s2WeldingTubeLeftL  =  9.00/2.;  // Left connection tube half length  [Pos 2]
@@ -2179,8 +2179,8 @@ void AliPIPEv3::CreateGeometry()
       const Float_t kRB26s3ConnectionPlieR    =  0.21;    // Connection plie radius     [Pos 1] 
 //  Plie radius
       const Float_t kRB26s3PlieR = 
-	(kRB26s3BellowUndL - 4. *  kRB26s3ConnectionPlieR + 2. * kRB26s3PlieThickness + 
-	 (2. *  kRB26s3NumberOfPlies - 2.) * kRB26s3PlieThickness) / (4. * kRB26s3NumberOfPlies - 2.);
+	(kRB26s3BellowUndL - 4. *  kRB26s3ConnectionPlieR + 
+	 2. *  kRB26s3NumberOfPlies * kRB26s3PlieThickness) / (4. * kRB26s3NumberOfPlies);
 
       //
       // The welding tubes have 3 sections with different radii and 2 transition regions.
@@ -2268,9 +2268,9 @@ void AliPIPEv3::CreateGeometry()
       z0 += kRB26s3PlieR -  kRB26s3PlieThickness;
       voRB26s3Wiggle->AddNode(voRB26s3WiggleL,  1 , new TGeoTranslation(0., 0., z0));
 // Positioning of the volumes
-      z0   = - kRB26s3BellowUndL/2.+ kRB26s3ConnectionPlieR;
+      z0   = - kRB26s3BellowUndL/2.+ kRB26s3PlieR;
       voRB26s3Bellow->AddNode(voRB26s3WiggleL, 1, new TGeoTranslation(0., 0., z0));
-      z0  +=  kRB26s3ConnectionPlieR;
+      z0  +=  kRB26s3PlieR;
       zsh  = 4. *  kRB26s3PlieR -  2. * kRB26s3PlieThickness;
       for (Int_t iw = 0; iw < kRB26s3NumberOfPlies; iw++) {
 	  Float_t zpos =  z0 + iw * zsh;	
@@ -2394,8 +2394,8 @@ void AliPIPEv3::CreateGeometry()
       const Float_t kRB26s5ConnectionR       = 11.2/2.;  // Bellow connection radius   [Pos 1] 
 //  Plie radius
       const Float_t kRB26s5PlieR = 
-	(kRB26s5BellowUndL - 4. *  kRB26s5ConnectionPlieR + 2. * kRB26s5PlieThickness + 
-	 (2. *  kRB26s5NumberOfPlies - 2.) * kRB26s5PlieThickness) / (4. * kRB26s5NumberOfPlies - 2.);
+	(kRB26s5BellowUndL - 4. *  kRB26s5ConnectionPlieR + 
+	 2. *  kRB26s5NumberOfPlies * kRB26s5PlieThickness) / (4. * kRB26s5NumberOfPlies);
       const Float_t kRB26s5CompTubeInnerR    = 10.00/2.;  // Connection tubes inner radius     [Pos 2 + 3]
       const Float_t kRB26s5CompTubeOuterR    = 10.30/2.;  // Connection tubes outer radius     [Pos 2 + 3]
       const Float_t kRB26s5WeldingTubeLeftL  =  3.70/2.;  // Left connection tube half length  [Pos 2]
