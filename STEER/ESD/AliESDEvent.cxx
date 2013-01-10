@@ -72,6 +72,9 @@
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
 #include "AliESDCosmicTrack.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #ifdef MFT_UPGRADE
 #include "AliESDMFT.h"
 #endif
@@ -548,6 +551,24 @@ Int_t AliESDEvent::AddV0(const AliESDv0 *v) {
   return idx;
 }  
 
+//______________________________________________________________________________
+Bool_t AliESDEvent::IsDetectorInTriggerCluster(TString detector, AliTriggerConfiguration* trigConf) const {
+  // Check if a given detector was read-out in the analyzed event
+  const TObjArray& classesArray=trigConf->GetClasses();
+  ULong64_t trigMask=GetTriggerMask();
+  Int_t nclasses = classesArray.GetEntriesFast();
+  for(Int_t iclass=0; iclass < nclasses; iclass++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+    Int_t classMask=trclass->GetMask();
+    if(trigMask & classMask){
+      TString detList=trclass->GetCluster()->GetDetectorsInCluster();
+      if(detList.Contains(detector.Data())){
+	return kTRUE;
+      }
+    }
+  }
+  return kFALSE; 
+}
 //______________________________________________________________________________
 void AliESDEvent::Print(Option_t *) const 
 {

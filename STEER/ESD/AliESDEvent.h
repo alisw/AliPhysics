@@ -202,7 +202,7 @@ public:
   Int_t     GetEventNumberInFile() const {return fHeader?fHeader->GetEventNumberInFile():-1;}
   UShort_t  GetBunchCrossNumber() const {return fHeader?fHeader->GetBunchCrossNumber():0;}
   UChar_t   GetTriggerCluster() const {return fHeader?fHeader->GetTriggerCluster():0;}
-
+  Bool_t IsDetectorInTriggerCluster(TString detector, AliTriggerConfiguration* trigConf) const;
   // ZDC CKB: put this in the header?
   AliESDZDC*    GetESDZDC()  const {return fESDZDC;}
   AliESDZDC*    GetZDCData() const {return fESDZDC;}
@@ -502,6 +502,7 @@ public:
   ULong_t GetDetectorStatus() const {return fDetectorStatus;}
   Bool_t IsDetectorOn(ULong_t detMask) const {return (fDetectorStatus&detMask)>0;}
 
+  
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);
