@@ -282,7 +282,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
   cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
 
-  fFlowEvent = new AliFlowEvent(3000);
+  fFlowEvent = new AliFlowEvent(10000);
 
   if (fQAon)
   {

@@ -432,6 +432,7 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 
   //do the magic for ESD
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(event);
   if (fCutPID && myESD)
   {
     //TODO: maybe call it only for the TOF options?
@@ -443,8 +444,18 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
     fESDpid.SetTOFResponse(myESD,AliESDpid::kTOF_T0);
     // End F. Noferini added part
   }
-
-  //TODO: AOD
+  if (fCutPID && myAOD){
+    fBayesianResponse->SetDetResponse(myAOD, fCurrCentr,AliESDpid::kTOF_T0); // centrality = PbPb centrality class (0-100%) or -1 for pp collisions
+    if(myAOD->GetTOFHeader()){
+      fESDpid.SetTOFResponse(myAOD,AliESDpid::kTOF_T0);
+    }   
+    else{ // corrected on the fly track by track if tof header is not present (old AODs)
+    }
+    // End F. Noferini added part
+  }
+  
+  if(fPIDsource==kTOFbayesian) fBayesianResponse->SetDetAND(1);
+  else if(fPIDsource==kTPCbayesian) fBayesianResponse->ResetDetOR(1);
 }
 
 //-----------------------------------------------------------------------
@@ -955,6 +966,11 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
   }
 
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
+    {
+      if (!PassesAODpidCut(track)) pass=kFALSE;
+    }
+  
   return pass;
 }
 
@@ -1901,7 +1917,41 @@ void AliFlowTrackCuts::Clear(Option_t*)
   fTrackEta=0.0;
   fTrackPhi=0.0;
 }
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
+{
+     if(!track->GetAODEvent()->GetTOFHeader()){
+          AliAODPid *pidObj = track->GetDetPid();
+          if (!pidObj) fESDpid.GetTOFResponse().SetTimeResolution(84.);
+          else{
+            Double_t sigmaTOFPidInAOD[10];
+            pidObj->GetTOFpidResolution(sigmaTOFPidInAOD);
+            if(sigmaTOFPidInAOD[0] > 84.){
+              fESDpid.GetTOFResponse().SetTimeResolution(sigmaTOFPidInAOD[0]); // use the electron TOF PID sigma as time resolution (including the T0 used)
+          }
+        }
+     }
 
+ //check if passes the selected pid cut for ESDs
+  Bool_t pass = kTRUE;
+  switch (fPIDsource)
+  {
+   case kTOFbeta:
+      if (!PassesTOFbetaCut(track)) pass=kFALSE;
+      break;
+  case kTOFbayesian:
+      if (!PassesTOFbayesianCut(track)) pass=kFALSE;
+      break;
+  case kTPCbayesian:
+      if (!PassesTPCbayesianCut(track)) pass=kFALSE;
+      break;
+  default:
+    return kTRUE;
+    break;
+ }
+  return pass;
+
+}
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesESDpidCut(const AliESDtrack* track )
 {
@@ -2001,17 +2051,86 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 }
 
 //-----------------------------------------------------------------------
-Float_t AliFlowTrackCuts::GetBeta(const AliESDtrack* track)
+Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
 {
   //get beta
+  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  track->GetIntegratedTimes(integratedTimes);
+
   const Float_t c = 2.99792457999999984e-02;  
-  Float_t p = track->GetP();
-  Float_t l = track->GetIntegratedLength();  
+  Float_t p = track->P();
+  Float_t l = integratedTimes[0]*c;  
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
   return l/timeTOF/c;
 }
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliAODTrack* track )
+{
+  //check if track passes pid selection with an asymmetric TOF beta cut
+  if (!fTOFpidCuts)
+  {
+    //printf("no TOFpidCuts\n");
+    return kFALSE;
+  }
 
+  //check if passes PID cut using timing in TOF
+  Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) &&
+                     (track->GetTOFsignal() > 12000) &&
+                     (track->GetTOFsignal() < 100000);
+
+  if (!goodtrack) return kFALSE;
+
+  const Float_t c = 2.99792457999999984e-02;
+  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  track->GetIntegratedTimes(integratedTimes);
+  Float_t l = integratedTimes[0]*c;
+
+  goodtrack = goodtrack && (l > 365);
+
+  if (!goodtrack) return kFALSE;
+
+  if (!fAllowTOFmismatchFlag) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
+
+  Bool_t statusMatchingHard = TPCTOFagree(track);
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+       return kFALSE;
+
+
+  Float_t beta = GetBeta(track);
+
+  //construct the pid index because it's not AliPID::EParticleType
+  Int_t pid = 0;
+  switch (fParticleID)
+  {
+    case AliPID::kPion:
+      pid=2;
+      break;
+    case AliPID::kKaon:
+      pid=3;
+      break;
+    case AliPID::kProton:
+      pid=4;
+      break;
+    default:
+      return kFALSE;
+  }
+
+  //signal to cut on
+  Float_t p = track->P();
+  Float_t betahypothesis = l/integratedTimes[pid]/c;
+  Float_t betadiff = beta-betahypothesis;
+
+  Float_t* arr = fTOFpidCuts->GetMatrixArray();
+  Int_t col = TMath::BinarySearch(fTOFpidCuts->GetNcols(),arr,static_cast<Float_t>(p));
+  if (col<0) return kFALSE;
+  Float_t min = (*fTOFpidCuts)(1,col);
+  Float_t max = (*fTOFpidCuts)(2,col);
+
+  Bool_t pass = (betadiff>min && betadiff<max);
+
+  return pass;
+}
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 {
@@ -2030,11 +2149,11 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 
   if (!fAllowTOFmismatchFlag) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
 
+  if (!goodtrack) return kFALSE;
+
   Bool_t statusMatchingHard = TPCTOFagree(track);
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
-
-  if (!goodtrack) return kFALSE;
   
   Float_t beta = GetBeta(track);
 
@@ -2409,6 +2528,57 @@ void AliFlowTrackCuts::InitPIDcuts()
 }
 
 //-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliAODTrack* track)
+{
+  fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+  Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+
+  Int_t kTPC = fBayesianResponse->GetCurrentMask(0); // is TPC on
+
+  if(! kTPC) return kFALSE;
+
+  fProbBayes = 0.0;
+
+switch (fParticleID)
+  {
+    case AliPID::kPion:
+      fProbBayes = probabilities[2];
+      break;
+    case AliPID::kKaon:
+       fProbBayes = probabilities[3];
+     break;
+    case AliPID::kProton:
+       fProbBayes = probabilities[4];
+      break;
+    case AliPID::kElectron:
+       fProbBayes = probabilities[0];
+     break;
+    case AliPID::kMuon:
+       fProbBayes = probabilities[1];
+     break;
+    case AliPID::kDeuteron:
+       fProbBayes = probabilities[5];
+     break;
+    case AliPID::kTriton:
+       fProbBayes = probabilities[6];
+     break;
+    case AliPID::kHe3:
+       fProbBayes = probabilities[7];
+     break;
+   default:
+      return kFALSE;
+  }
+
+ if(fProbBayes > fParticleProbability){
+    if(!fCutCharge)
+      return kTRUE;
+    else if (fCutCharge && fCharge * track->Charge() > 0)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 {
   //cut on TPC bayesian pid
@@ -2419,18 +2589,18 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
   //     return kFALSE;
   fBayesianResponse->ComputeProb(track,fCurrCentr); // fCurrCentr is needed for mismatch fraction
   Int_t kTPC = fBayesianResponse->GetCurrentMask(0); // is TPC on
-  Int_t kTOF = fBayesianResponse->GetCurrentMask(1); // is TOF on
+  //Int_t kTOF = fBayesianResponse->GetCurrentMask(1); // is TOF on
 
   if(! kTPC) return kFALSE;
 
-  Bool_t statusMatchingHard = 1;
-  Float_t mismProb = 0;
-  if(kTOF){
-    statusMatchingHard = TPCTOFagree(track);
-    mismProb = fBayesianResponse->GetTOFMismProb();
-  }
-  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
-       return kFALSE;
+  //  Bool_t statusMatchingHard = 1;
+  //  Float_t mismProb = 0;
+  //  if(kTOF){
+  //    statusMatchingHard = TPCTOFagree(track);
+  //    mismProb = fBayesianResponse->GetTOFMismProb();
+  //  }
+  //  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+  //       return kFALSE;
 
   Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
 
@@ -2466,7 +2636,7 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
       return kFALSE;
   }
 
-  if(fProbBayes > fParticleProbability && mismProb < 0.5)
+  if(fProbBayes > fParticleProbability)
     {
       if(!fCutCharge)
 	return kTRUE;
@@ -2475,7 +2645,69 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
     }
   return kFALSE;
 }
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
+{  
+//check is track passes bayesian combined TOF+TPC pid cut
+  Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFout) &&
+                     (track->GetStatus() & AliESDtrack::kTIME) &&
+                     (track->GetTOFsignal() > 12000) &&
+                     (track->GetTOFsignal() < 100000);
 
+  if (! goodtrack)   
+       return kFALSE;
+
+  Bool_t statusMatchingHard = TPCTOFagree(track);
+//ciao
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+       return kFALSE;
+
+ fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+  Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+
+  Float_t mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+
+  fProbBayes = 0.0;
+
+ switch (fParticleID)
+  {
+    case AliPID::kPion:
+      fProbBayes = probabilities[2];
+      break;
+    case AliPID::kKaon:
+       fProbBayes = probabilities[3];
+     break;
+    case AliPID::kProton:
+       fProbBayes = probabilities[4];
+      break;
+    case AliPID::kElectron:
+       fProbBayes = probabilities[0];
+     break;
+    case AliPID::kMuon:
+       fProbBayes = probabilities[1];
+     break;
+    case AliPID::kDeuteron:
+       fProbBayes = probabilities[5];
+     break;
+    case AliPID::kTriton:
+       fProbBayes = probabilities[6];
+     break;
+    case AliPID::kHe3:
+       fProbBayes = probabilities[7];
+     break;
+   default:
+      return kFALSE;
+  }
+
+ if(fProbBayes > fParticleProbability && mismProb < 0.5){
+    if(!fCutCharge)
+      return kTRUE;
+    else if (fCutCharge && fCharge * track->Charge() > 0)
+      return kTRUE;
+  }
+  return kFALSE;
+
+}
 //-----------------------------------------------------------------------
 // part added by F. Noferini (some methods)
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
@@ -3636,11 +3868,13 @@ void AliFlowTrackCuts::SetPriors(Float_t centrCur){
 }
 
 //---------------------------------------------------------------//
-Bool_t AliFlowTrackCuts::TPCTOFagree(const AliESDtrack *track)
+Bool_t AliFlowTrackCuts::TPCTOFagree(const AliVTrack *track)
 {
   //check pid agreement between TPC and TOF
   Bool_t status = kFALSE;
-  
+
+  const Float_t c = 2.99792457999999984e-02;
+
   Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
   
 
@@ -3651,7 +3885,7 @@ Bool_t AliFlowTrackCuts::TPCTOFagree(const AliESDtrack *track)
 
   Float_t p = track->P();
   Float_t time = track->GetTOFsignal()- fESDpid.GetTOFResponse().GetStartTime(p);
-  Float_t tl = track->GetIntegratedLength();
+  Float_t tl = exptimes[0]*c; // to work both for ESD and AOD
 
   Float_t betagammares =  fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[4], mass[4]);
 
@@ -3673,9 +3907,7 @@ Bool_t AliFlowTrackCuts::TPCTOFagree(const AliESDtrack *track)
   else betagamma2 = 100;
 
 
-  Double_t ptpc[3];
-  track->GetInnerPxPyPz(ptpc);
-  Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+  Float_t momtpc=track->GetTPCmomentum();
  
   for(Int_t i=0;i < 5;i++){
     Float_t resolutionTOF =  fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[i], mass[i]);

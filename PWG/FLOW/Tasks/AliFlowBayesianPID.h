@@ -112,8 +112,8 @@ class AliFlowBayesianPID : public AliPIDResponse{
   void ComputeWeights(const AliESDtrack *t);
   void ComputeProb(const AliESDtrack *t,Float_t); // obsolete method
   void ComputeProb(const AliESDtrack *t){ComputeProb(t,0.0);}; 
-  void ComputeWeights(const AliAODTrack *t,AliAODEvent *aod=NULL);
-  void ComputeProb(const AliAODTrack *t,AliAODEvent *aod=NULL); // obsolete method
+  void ComputeWeights(const AliAODTrack *t,const AliAODEvent *aod=NULL);
+  void ComputeProb(const AliAODTrack *t,const AliAODEvent *aod=NULL); // obsolete method
 
   void SetTOFres(Float_t res){fTOFresolution=res;};
 
