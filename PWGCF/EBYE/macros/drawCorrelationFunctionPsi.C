@@ -388,11 +388,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     
     TH2D* fHistPos = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiPos"))->Project3D("xy");
     fHistPos->GetYaxis()->SetRangeUser(-0.79,0.79);
-    fHistPos->Rebin2D(10,10);
+    //fHistPos->Rebin2D(10,10);
     
     TH2D* fHistNeg = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiNeg"))->Project3D("xy");
     fHistNeg->GetYaxis()->SetRangeUser(-0.79,0.79);
-    fHistNeg->Rebin2D(10,10);
+    //fHistNeg->Rebin2D(10,10);
 
     gHistPN[2] = convolute2D(fHistPos, fHistNeg, "hConvPN");
     gHistPN[2]->Scale(1./gHistPN[2]->GetBinContent(gHistPN[2]->FindBin(0,0)));
