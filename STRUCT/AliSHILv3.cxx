@@ -706,8 +706,8 @@ void AliSHILv3::CreateGeometry()
       Float_t saa1Wring3Rinner  = 20.31;
       Float_t saa1Wring3Router  = 23.40;
       Float_t saa1Wring3HWidth  =  3.75;
-      Float_t saa1Wring3Cutoffx =  4.50;
-      Float_t saa1Wring3Cutoffy =  4.50;
+      Float_t saa1Wring3Cutoffx =  4.80;
+      Float_t saa1Wring3Cutoffy =  4.80;
       TGeoTubeSeg* shSaa1Wring3a  = new TGeoTubeSeg(saa1Wring3Rinner, saa1Wring3Router, saa1Wring3HWidth, 0., 90.);
       shSaa1Wring3a->SetName("shSaa1Wring3a");
       TGeoBBox* shSaa1Wring3b  = new TGeoBBox(saa1Wring3Router / 2., saa1Wring3Router / 2., saa1Wring3HWidth);
