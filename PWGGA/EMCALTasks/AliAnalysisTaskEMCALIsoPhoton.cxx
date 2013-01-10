@@ -423,12 +423,13 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       fMcPtInConeBG->Fill(alliso-Et-allisoue, mcptsum);
       fMcPtInConeBGnoUE->Fill(alliso-Et, mcptsum);
     }
-    if(c->GetM02()>0.1 && c->GetM02()<0.3){
+    Double_t r = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx()+c->GetTrackDz()*c->GetTrackDz());
+    if(c->GetM02()>0.1 && c->GetM02()<0.3 && r>0.03){
       fMcPtInConeSBG->Fill(alliso-Et-allisoue, mcptsum);
       fMcPtInConeSBGnoUE->Fill(alliso-Et, mcptsum);
       if(fMcIdFamily.Contains((Form("%d",c->GetLabel())))){
-	fAllIsoEtMcGamma->Fill(Et, alliso-Et/*cecore*/-allisoue);
-	fAllIsoNoUeEtMcGamma->Fill(Et, alliso-Et/*cecore*/);
+	fAllIsoEtMcGamma->Fill(Et, alliso-/*Et*/cecore-allisoue);
+	fAllIsoNoUeEtMcGamma->Fill(Et, alliso-/*Et*/cecore);
       }
     }
     const Int_t ndims =   fNDimensions;
@@ -779,11 +780,19 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     printf("Inside GetMcPtSumInCone!!\n");
   Int_t nTracks = fStack->GetNtrack();
   Float_t ptsum = 0;
+  TString addpartlabels = "";
   for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
     if(!mcp)
       continue;  
-    if(mcp->Rho()>2.5)
+    Int_t firstd = mcp->GetFirstDaughter();
+    Int_t lastd = mcp->GetLastDaughter();
+    if((iTrack==6 || iTrack==7) && mcp->GetPdgCode()==22){
+     for(Int_t id=firstd;id<=lastd;id++)
+      addpartlabels += Form("%d,",id);
+     continue;
+    }
+   if(mcp->Rho()>2.5)
       continue;
     else {
       if(fDebug)
@@ -798,6 +807,14 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     Float_t dR = TMath::Sqrt(dphi*dphi +  deta*deta);
     if(dR>R)
       continue;
+    if(addpartlabels.Contains(Form("%d",iTrack))){
+      if(fDebug)
+	printf("      >>>> list of particles included (and their daughters) %s\n",addpartlabels.Data());
+      continue;
+    }
+    addpartlabels += Form("%d,",iTrack);
+    for(Int_t id=firstd;id<=lastd;id++)
+      addpartlabels += Form("%d,",id);
     ptsum += mcp->Pt();
   }
   return ptsum;
