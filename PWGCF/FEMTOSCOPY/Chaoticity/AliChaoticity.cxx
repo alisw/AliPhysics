@@ -2589,9 +2589,13 @@ void AliChaoticity::Exec(Option_t *)
 		    WInput = MCWeight3D(kTRUE, 1, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
 		    K3 = FSICorrelationOmega0(kTRUE, firstQMC, secondQMC, thirdQMC);// K3
 		  }else {// mixed charge
-		    if(bin1==bin2) WInput = MCWeight3D(kFALSE, 1, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
-		    else WInput = MCWeight3D(kFALSE, 1, kMCfixedLambdabin, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss 
-		     K3 = FSICorrelationOmega0(kFALSE, firstQMC, secondQMC, thirdQMC);// K3
+		    if(bin1==bin2) {
+		      WInput = MCWeight3D(kFALSE, 1, kMCfixedLambdabin, firstQMC, secondQMC, thirdQMC);
+		      K3 = FSICorrelationOmega0(kFALSE, firstQMC, secondQMC, thirdQMC);// K3
+		    }else {
+		      WInput = MCWeight3D(kFALSE, 1, kMCfixedLambdabin, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss 
+		      K3 = FSICorrelationOmega0(kFALSE, thirdQMC, secondQMC, firstQMC);// K3
+		    }
 		  }
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
