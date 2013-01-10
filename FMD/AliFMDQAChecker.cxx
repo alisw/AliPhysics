@@ -464,6 +464,9 @@ AliFMDQAChecker::CheckFit(TH1* hist, const TFitResultPtr& res,
 {
   color = kGreen+4;
 
+  // Check if there's indeed a result - if not, flag as OK
+  if (!res.Get()) return 0;
+
   UShort_t   ret   = 0;
   Int_t      nPar  = res->NPar();
   Double_t   dy    = .06;
@@ -670,10 +673,9 @@ AliFMDQAChecker::CheckRaw(AliRecoParam::EventSpecie_t specie,
 
     // Set our fit function 
     TString fitOpt("QS");
-    TFitResultPtr res  = hist->Fit(func, fitOpt, "", low, high);
-
-    Int_t    color = func->GetLineColor();
-    UShort_t qual  = CheckFit(hist, res, low, high, color);
+    TFitResultPtr res   = hist->Fit(func, fitOpt, "", low, high);
+    Int_t         color = func->GetLineColor();
+    UShort_t      qual  = CheckFit(hist, res, low, high, color);
 
     // Make sure we save the function in the full range of the histogram
     func = hist->GetFunction("landauGaus");
