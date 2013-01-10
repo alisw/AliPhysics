@@ -440,29 +440,44 @@ void DrawSpectra() {
 
   TCanvas *kc=new TCanvas(); kc->SetLogy();
   TCanvas *lc=new TCanvas(); lc->SetLogy();
+  TCanvas *rc=new TCanvas();
 
   TFile::Open("SpectraV0CutVariations.root");
   
   for (Int_t i=0; i<nCent; i++) {
+    name="Lambda_";
+    h=(TH1*)gDirectory->Get((name+centr[i]).Data());
+    SetOptions(h,title[i],colour[i],marker[i],masize[i]);
+    lc->cd();
+    if (i==0) h->Draw(); else h->Draw("same");
+
+    TH1F *r=(TH1F*)h->Clone();
+    r->GetYaxis()->SetTitle("#Lambda/K^{0}_{S}");
+
     name="K0s_";
     h=(TH1*)gDirectory->Get((name+centr[i]).Data());
     SetOptions(h,title[i],colour[i],marker[i],masize[i]);
     kc->cd();
     if (i==0) h->Draw(); else h->Draw("same");
 
-    name="Lambda_";
-    h=(TH1*)gDirectory->Get((name+centr[i]).Data());
-    SetOptions(h,title[i],colour[i],marker[i],masize[i]);
-    lc->cd();
-    if (i==0) h->Draw(); else h->Draw("same");
+    r->Divide(h);
+    rc->cd();
+    if (i==0) r->Draw(); else r->Draw("same");
   }
 
+  TLegend *leg=0;
   kc->cd();
-  TLegend *kleg=kc->BuildLegend(0.659,0.320,0.881,0.875,"K0s spectra:");
-  kleg->SetBorderSize(0);
-  kleg->SetFillColor(0);
+  leg=kc->BuildLegend(0.659,0.320,0.881,0.875,"K^{0}_{S} spectra:");
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
+
   lc->cd();
-  TLegend *lleg=lc->BuildLegend(0.659,0.320,0.881,0.875,"#Lambda spectra:");
-  lleg->SetBorderSize(0);
-  lleg->SetFillColor(0);
+  leg=lc->BuildLegend(0.659,0.320,0.881,0.875,"#Lambda spectra:");
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
+
+  rc->cd();
+  leg=rc->BuildLegend(0.659,0.320,0.881,0.875,"#Lambda/K^{0}_{S} ratios:");
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
 }
