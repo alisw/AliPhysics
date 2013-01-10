@@ -148,7 +148,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t GetPmdDetPlane()const {return fPmdDet; }
   Float_t GetPmdAdc()const {return fPmdAdc;}
   Float_t GetPmdNcell() const {return fPmdNcell; }
-  Float_t GetBeta(const AliESDtrack* t);
+  Float_t GetBeta(const AliVTrack* t);
   Float_t Getdedx(const AliESDtrack* t) const;
   Float_t GetBayesianProb() const {return fProbBayes;};
   AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}
@@ -231,7 +231,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);
   Bool_t PassesTOFpidCut(const AliESDtrack* track) const;
   Bool_t PassesESDpidCut(const AliESDtrack* track);
+  Bool_t PassesAODpidCut(const AliAODTrack* track);
   Bool_t PassesMuonCuts(AliVParticle* track);  // XZhang 20120604
+  Bool_t PassesTPCbayesianCut(const AliAODTrack* track);
+  Bool_t PassesTOFbayesianCut(const AliAODTrack* track);
+  Bool_t PassesTOFbetaCut(const AliAODTrack* track);
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
@@ -252,7 +256,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
-  Bool_t TPCTOFagree(const AliESDtrack *track);
+  Bool_t TPCTOFagree(const AliVTrack *track);
   // end part added by F. Noferini
 
   //the cuts

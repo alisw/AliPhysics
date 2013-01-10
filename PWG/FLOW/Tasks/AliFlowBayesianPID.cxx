@@ -662,7 +662,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
+void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,const AliAODEvent *aod){
   // compute Detector weights for Bayesian probablities
   Float_t centr = fCurrCentrality;
 
@@ -901,7 +901,7 @@ void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t,Float_t /*centrObsolet
   
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(const AliAODTrack *t, AliAODEvent *aod){
+void AliFlowBayesianPID::ComputeProb(const AliAODTrack *t, const AliAODEvent *aod){
   // compute Bayesian probablities
   ComputeWeights(t,aod);
   Float_t priors[fgkNspecies];
