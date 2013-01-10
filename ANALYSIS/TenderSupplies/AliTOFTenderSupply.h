@@ -106,12 +106,12 @@ private:
   Float_t fRhoTRDout;               // cm
   Float_t fStep;                    // cm
   Double_t fMagField;               // magnetic field value [kGauss]
-  ULong_t fCDBkey;
+  ULong64_t fCDBkey;
 
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 10);
+  ClassDef(AliTOFTenderSupply, 11);
 };
 
 

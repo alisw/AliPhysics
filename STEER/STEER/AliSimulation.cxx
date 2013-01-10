@@ -378,7 +378,7 @@ void AliSimulation::SetCDBLock() {
   // Set CDB lock: from now on it is forbidden to reset the run number
   // or the default storage or to activate any further storage!
   
-  ULong_t key = AliCDBManager::Instance()->SetLock(1);
+  ULong64_t key = AliCDBManager::Instance()->SetLock(1);
   if (key) fKey = key;
 }
 

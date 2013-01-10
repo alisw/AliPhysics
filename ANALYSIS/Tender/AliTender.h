@@ -35,7 +35,7 @@ enum ETenderFlags {
 private:
   Int_t                     fRun;            //! Current run
   Bool_t                    fRunChanged;     //! Flag for run change.
-  ULong_t                   fCDBkey;         //! Key to unlock CDB manager
+  ULong64_t                 fCDBkey;         //! Key to unlock CDB manager
   TString                   fDefaultStorage; // Default CDB storage
   AliCDBManager            *fCDB;            //! Pointer to CDB manager
   AliESDInputHandler       *fESDhandler;     //! Pointer to ESD input handler
@@ -69,6 +69,6 @@ public:
 //  virtual Bool_t            Notify() {return kTRUE;}
   virtual void              UserExec(Option_t *option);
     
-  ClassDef(AliTender,3)  // Class describing the tender car for ESD analysis
+  ClassDef(AliTender,4)  // Class describing the tender car for ESD analysis
 };
 #endif

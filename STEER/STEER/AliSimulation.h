@@ -191,7 +191,7 @@ private:
   Bool_t         fEmbeddingFlag;       // Flag for embedding
   AliLego       *fLego;                //! Pointer to aliLego object if it exists
   // OCDB
-  ULong_t         fKey;                //! current CDB key
+  ULong64_t       fKey;                //! current CDB key
   Bool_t          fUseVertexFromCDB;   // Flag to use Vertex from CDB
   Bool_t          fUseMagFieldFromGRP; // Use magnetic field settings from GRP
   TString         fGRPWriteLocation;   // Location to write the GRP entry from simulation
@@ -222,7 +222,7 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 12)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 13)  // class for running generation, simulation and digitization
 };
 
 #endif
