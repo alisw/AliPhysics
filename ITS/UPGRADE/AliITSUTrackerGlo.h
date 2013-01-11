@@ -53,9 +53,11 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 NeedToProlong(AliESDtrack* estTr);
   void                   Init(AliITSUReconstructor* rec);
   void                   FindTrack(AliESDtrack* esdTr, Int_t esdID);
-  Bool_t                 InitSeed(AliESDtrack *esdTr, Int_t esdID);
+  Bool_t                 InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
+  Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
+  Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   //
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
@@ -67,6 +69,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   SetTrackHyp(AliITSUTrackHyp* hyp,Int_t id) {fHypStore.AddAtAndExpand(hyp,id);}
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
   void                   SaveCurrentTrackHypotheses();
+  void                   FinalizeHypotheses();
  //
 
  private:

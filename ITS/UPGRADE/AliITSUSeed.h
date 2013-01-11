@@ -3,6 +3,8 @@
 
 #include "AliExternalTrackParam.h"
 #include "AliITSUAux.h"
+class AliESDtrack;
+
 using namespace AliITSUAux;
 
 
@@ -51,6 +53,7 @@ class AliITSUSeed: public AliExternalTrackParam
   virtual Int_t	  Compare(const TObject* obj)      const;
   //
   // test
+  void            InitFromESDTrack(const AliESDtrack* esdTr);
   void            ResetFMatrix();
   void            ApplyELoss2FMatrix(Double_t frac, Bool_t beforeProp);
   Bool_t          ApplyMaterialCorrection(Double_t xOverX0, Double_t xTimesRho, Double_t mass, Bool_t beforeProp);

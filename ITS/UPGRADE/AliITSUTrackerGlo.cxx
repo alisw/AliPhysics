@@ -119,6 +119,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   //
   printf("Hypotheses for current event (N seeds in pool: %d, size: %d)\n",fSeedsPool.GetEntriesFast(),fSeedsPool.GetSize());
   fHypStore.Print();
+  FinalizeHypotheses();
   //
   return 0;
 }
@@ -201,22 +202,34 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 {
   // find prolongaion candidates finding for single seed
   //
-  if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
-  if (!InitSeed(esdTr,esdID)) return;  // initialize prolongations hypotheses tree
-  //
-  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
   AliITSUSeed seedUC;  // copy of the seed from the upper layer
   AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
   //
+  if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
+  if (!InitHypothesis(esdTr,esdID)) return;  // initialize prolongations hypotheses tree
+  //
+  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
+  //
   TObjArray clArr; // container for transfer of clusters matching to seed
   //
-  for (int ila=fITS->GetNLayersActive();ila--;) {
+  int nLrActive = fITS->GetNLayersActive();
+  for (int ila=nLrActive;ila--;) {
     int ilaUp = ila+1;                         // prolong seeds from layer above
-    int nSeedsUp = fCurrHyp->GetNSeeds(ilaUp);
+    //
+    // for the outermost layer the seed is created from the ESD track
+    int nSeedsUp = (ilaUp==nLrActive) ? 1 : fCurrHyp->GetNSeeds(ilaUp);
+    //
     for (int isd=0;isd<nSeedsUp;isd++) {
-      AliITSUSeed* seedU = fCurrHyp->GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong
-      seedUC = *seedU;                          // its copy will be prolonged
-      seedUC.SetParent(seedU);
+      AliITSUSeed* seedU;
+      if (ilaUp==nLrActive) {
+	seedU = 0;
+	seedUC.InitFromESDTrack(esdTr);
+      }
+      else {
+	seedU = fCurrHyp->GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong	
+	seedUC = *seedU;                       // its copy will be prolonged
+	seedUC.SetParent(seedU);
+      }
       seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
       // go till next active layer
       AliInfo(Form("working on Lr:%d Seed:%d of %d",ila,isd,nSeedsUp));
@@ -224,12 +237,12 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	//
 	AliInfo("Transport failed");
 	// Check if the seed satisfies to track definition
-	if (NeedToKill(&seedUC,kTransportFailed)) seedU->Kill(); 
+	if (NeedToKill(&seedUC,kTransportFailed) && seedU) seedU->Kill(); 
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
       }
       AliITSURecoLayer* lrA = fITS->GetLayerActive(ila);
       if (!GetRoadWidth(&seedUC, ila)) { // failed to find road width on the layer
-	if (NeedToKill(&seedUC,kRWCheckFailed)) seedU->Kill(); 
+	if (NeedToKill(&seedUC,kRWCheckFailed) && seedU) seedU->Kill(); 
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
@@ -291,7 +304,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 }
 
 //_________________________________________________________________________
-Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr, Int_t esdID)
+Bool_t AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esdID)
 {
   // init prolongaion candidates finding for single seed
   fCurrHyp = GetTrackHyp(esdID);
@@ -301,16 +314,11 @@ Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr, Int_t esdID)
   fCurrESDtrack = esdTr;
   if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
   //
-  AliITSUSeed* seed = NewSeedFromPool();
-  seed->SetLr(fITS->GetNLayersActive());   // fake layer
-  seed->AliExternalTrackParam::operator=(*esdTr);
-  seed->SetParent(esdTr);
-  int nl = fITS->GetNLayersActive();
-  fCurrHyp = new AliITSUTrackHyp(nl);
-  fCurrHyp->SetESDSeed(seed);
-  AddProlongationHypothesis(seed,nl);
+  fCurrHyp = new AliITSUTrackHyp(fITS->GetNLayersActive());
+  fCurrHyp->SetESDTrack(esdTr);
   fCurrHyp->SetUniqueID(esdID);
   SetTrackHyp(fCurrHyp,esdID);
+  //
   return kTRUE;
   // TO DO
 }
@@ -319,6 +327,45 @@ Bool_t AliITSUTrackerGlo::InitSeed(AliESDtrack *esdTr, Int_t esdID)
 Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo)
 {
   // transport seed from layerFrom to the entrance of layerTo
+  //  
+  const double kToler = 1e-6; // tolerance for layer on-surface check
+  //
+  int dir = lTo > lFrom ? 1:-1;
+  AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
+  Bool_t checkFirst = kTRUE;
+  while(lFrom!=lTo) {
+    double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
+    if (lrFr) {
+      Bool_t doLayer = kTRUE;
+      double xToGo = dir>0 ? lrFr->GetRMax() : lrFr->GetRMin();
+      if (checkFirst) { // do we need to track till the surface of the current layer ?
+	checkFirst = kFALSE;
+	if      (dir>0) { if (curR2-xToGo*xToGo>kToler) doLayer = kFALSE; } // on the surface or outside of the layer
+	else if (dir<0) { if (xToGo*xToGo-curR2>kToler) doLayer = kFALSE; } // on the surface or outside of the layer
+      }
+      if (doLayer) {
+	if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
+	// go via layer to its boundary, applying material correction.
+	if (!PropagateSeed(seed,xToGo,fCurrMass, lrFr->GetMaxStep())) return kFALSE;
+      }
+    }
+    AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
+    if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
+    //
+    // go the entrance of the layer, assuming no materials in between
+    double xToGo = dir>0 ? lrTo->GetRMin() : lrTo->GetRMax();
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) return kFALSE;
+    lrFr = lrTo;
+  }
+  return kTRUE;
+  //
+}
+
+//_________________________________________________________________________
+Bool_t AliITSUTrackerGlo::TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo)
+{
+  // transport track from layerFrom to the entrance of layerTo
   //  
   const double kToler = 1e-6; // tolerance for layer on-surface check
   //
@@ -527,10 +574,69 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
 }
 
 //______________________________________________________________________________
+Bool_t AliITSUTrackerGlo::PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t matCorr) 
+{
+  // propagate seed to given x applying material correction if requested
+  const Double_t kEpsilon = 1e-5;
+  Double_t xpos     = seed->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+  Double_t xyz0[3],xyz1[3],param[7];
+  //
+  Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
+  if (matCorr || updTime) seed->GetXYZ(xyz1);   //starting global position
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t bz=GetBz();   // getting the local Bz
+    if (!seed->PropagateTo(x,bz))  return kFALSE;
+    double ds = 0;
+    if (matCorr || updTime) {
+      xyz0[0]=xyz1[0]; // global pos at the beginning of step
+      xyz0[1]=xyz1[1];
+      xyz0[2]=xyz1[2];
+      seed->GetXYZ(xyz1);    //  // global pos at the end of step
+      //
+      if (matCorr) {
+	MeanMaterialBudget(xyz0,xyz1,param);	
+	Double_t xrho=param[0]*param[4], xx0=param[1];
+	if (dir>0) xrho = -xrho; // outward should be negative
+	if (!seed->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
+	ds = param[4];
+      }
+      else { // matCorr is not requested but time integral is
+	double d0 = xyz1[0]-xyz0[0];
+	double d1 = xyz1[1]-xyz0[1];
+	double d2 = xyz1[2]-xyz0[2];	
+	ds = TMath::Sqrt(d0*d0+d1*d1+d2*d2);
+      }
+    }
+    if (updTime) seed->AddTimeStep(ds);
+    //
+    xpos = seed->GetX();
+  }
+  return kTRUE;
+}
+
+//______________________________________________________________________________
 void AliITSUTrackerGlo::SaveCurrentTrackHypotheses()
 {
   // RS: shall we clean up killed seeds?
   fCurrHyp = 0;
   // TODO
   
+}
+
+//______________________________________________________________________________
+void AliITSUTrackerGlo::FinalizeHypotheses()
+{
+  // select winner for each hypothesis, remove cl. sharing conflicts
+  AliInfo("TODO");
+  //
+  int nh = fHypStore.GetEntriesFast();
+  for (int ih=0;ih<nh;ih++) {
+    AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
+    if (!hyp) continue;
+    hyp->UpdateESD();
+  }
+
 }

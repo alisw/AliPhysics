@@ -1,4 +1,6 @@
 #include "AliITSUTrackHyp.h"
+#include "AliESDtrack.h"
+#include "AliCluster.h"
 
 ClassImp(AliITSUTrackHyp)
 
@@ -7,7 +9,7 @@ ClassImp(AliITSUTrackHyp)
 //__________________________________________________________________
 AliITSUTrackHyp::AliITSUTrackHyp(Int_t nlr) 
 : fNLayers(nlr)
-  ,fESDSeed(0)
+  ,fESDTrack(0)
   ,fLayerSeeds(0)
 {
   // def. c-tor
@@ -23,9 +25,9 @@ AliITSUTrackHyp::~AliITSUTrackHyp()
 
 //__________________________________________________________________
 AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
-  : TObject(src)
+  : AliKalmanTrack(src)
   , fNLayers(src.fNLayers)
-  , fESDSeed(src.fESDSeed)
+  , fESDTrack(src.fESDTrack)
   , fLayerSeeds(0)
 {
   // copy c-tor
@@ -59,4 +61,58 @@ void AliITSUTrackHyp::Print(Option_t* ) const
 {
   printf("Track Hyp.#%4d. NSeeds:",GetUniqueID());
   for (int i=0;i<fNLayers;i++) printf(" (%d) %3d",i,GetNSeeds(i)); printf("\n");
+}
+
+//__________________________________________________________________
+AliITSUSeed* AliITSUTrackHyp::GetWinner() const
+{
+  // Get best candidate
+  return fLayerSeeds[0].GetEntriesFast()>0 ? GetSeed(0,0) : 0;
+}
+
+//__________________________________________________________________
+void AliITSUTrackHyp::DefineWinner(int lr, int id)
+{
+  // assign best candidate
+  AliITSUSeed* winner = GetSeed(lr,id);
+  this->AliExternalTrackParam::operator=(*winner);
+  SetChi2(winner->GetChi2GloNrm());
+  SetNumberOfClusters(winner->GetNLayersHit());
+}
+
+//__________________________________________________________________
+void AliITSUTrackHyp::UpdateESD()
+{
+  // update ESD track
+  AliESDtrack* esdTr = GetESDTrack();
+  if (!esdTr) return;
+  AliITSUSeed* win = GetWinner();
+  if (!win) return;
+  esdTr->UpdateTrackParams(this,AliESDtrack::kITSin);
+}
+
+
+
+//__________________________________________________________________
+Double_t AliITSUTrackHyp::GetPredictedChi2(const AliCluster */*c*/) const
+{
+  // NA
+  AliFatal("Not to be used");
+  return 0;
+}
+
+//__________________________________________________________________
+Bool_t AliITSUTrackHyp::PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/)
+{
+  // NA
+  AliFatal("Not to be used");
+  return 0;
+}
+
+//__________________________________________________________________
+Bool_t AliITSUTrackHyp::Update(const AliCluster* /*c*/, Double_t /*chi2*/, Int_t /*index*/)
+{
+  // NA
+  AliFatal("Not to be used");
+  return kFALSE;
 }

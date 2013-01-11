@@ -2,6 +2,7 @@
 #include <TMath.h>
 #include "AliITSUSeed.h"
 #include "AliLog.h"
+#include "AliESDtrack.h"
 using namespace TMath;
 
 ClassImp(AliITSUSeed)
@@ -81,6 +82,20 @@ void AliITSUSeed::Print(Option_t* opt) const
   if (opts.Contains("etp")) AliExternalTrackParam::Print();
   if (opts.Contains("parent") && GetParent()) GetParent()->Print(opt);
 }
+
+//______________________________________________________________________________
+void AliITSUSeed::InitFromESDTrack(const AliESDtrack* esdTr)
+{
+  // init seed from ESD track
+  TObject::Clear();
+  AliExternalTrackParam::operator=(*esdTr);
+  ResetFMatrix();
+  fHitsPattern = 0;
+  fClID = 0;
+  fChi2Glo = fChi2Cl = fChi2Penalty = 0;
+  fParent = 0; //!!!
+}
+
 
 //______________________________________________________________________________
 Float_t AliITSUSeed::GetChi2GloNrm() const
