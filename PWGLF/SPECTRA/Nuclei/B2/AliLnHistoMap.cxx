@@ -80,7 +80,7 @@ TObject* AliLnHistoMap::Add(const TString& keyname, TObject* value)
 //
 	if(fHistoMap->Contains(keyname.Data()))
 	{
-		std::cerr << "WARNING: object " << keyname << " already exists" << std::endl;
+		fHistoMap->Warning("Add", "object %s already exists", keyname.Data());
 		return 0;
 	}
 	
@@ -98,7 +98,7 @@ TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t xmin, Double
 	TH1D* value = 0;
 	if(fHistoMap->Contains(name.Data()))
 	{
-		std::cerr << "WARNING: histogram " << name << " already exists" << std::endl;
+		fHistoMap->Warning("Add", "histogram %s already exists", name.Data());
 	}
 	else
 	{
@@ -121,7 +121,7 @@ TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double
 	TH2D* value = 0;
 	if(fHistoMap->Contains(name.Data()))
 	{
-		std::cerr << "WARNING: histogram " << name << " already exists" << std::endl;
+		fHistoMap->Warning("Add", "histogram %s already exists", name.Data());
 	}
 	else
 	{

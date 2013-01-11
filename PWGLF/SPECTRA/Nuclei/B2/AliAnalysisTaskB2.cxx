@@ -202,12 +202,10 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 //
 // Connect input data
 //
-	using namespace std;
-	
 	TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
 	if(!tree)
 	{
-		cerr << "ERROR: Could not read chain from input slot 0" << endl;
+		this->Error("ConnectInputData", "could not read chain from input slot 0");
 		return;
 	}
 	
@@ -215,7 +213,7 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 	AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr)
 	{
-		cerr << "ERROR: could not get analysis manager" << endl;
+		this->Error("ConnectInputData", "could not get analysis manager");
 		return;
 	}
 	
@@ -223,7 +221,7 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 	AliESDInputHandler* esdH = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
 	if (!esdH)
 	{
-		cerr << "ERROR: could not get ESDInputHandler" << endl;
+		this->Error("ConnectInputData", "could not get ESDInputHandler");
 		return;
 	}
 	
@@ -244,14 +242,14 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 	AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (mgr->GetMCtruthEventHandler());
 	if (!mcH)
 	{
-		cerr << "ERROR: could not get AliMCEventHandler" << endl;
+		this->Error("ConnectInputData", "could not get AliMCEventHandler");
 		return;
 	}
 	
 	fMCevent = mcH->MCEvent();
 	if (!fMCevent)
 	{
-		cerr << "ERROR: could not get MC fLnEvent" << endl;
+		this->Error("ConnectInputData", "could not get MC fLnEvent");
 		return;
 	}
 }
@@ -294,23 +292,21 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 //
 // Execute analysis for the current event
 //
-	using namespace std;
-	
-	if (fESDevent == 0)
+	if(fESDevent == 0)
 	{
-		cerr << "ERROR: AliESDEvent not available" << endl;
+		this->Error("Exec", "AliESDEvent not available");
 		return;
 	}
 	
 	if(fESDtrackCuts == 0)
 	{
-		cerr << "ERROR: ESD track cuts not set" << endl;
+		this->Error("Exec", "ESD track cuts not set");
 		return;
 	}
 	
 	if(fLnID == 0)
 	{
-		cerr << "ERROR: PID not set" << endl;
+		this->Error("Exec", "PID not set");
 		return;
 	}
 	
@@ -350,7 +346,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	AliInputEventHandler* eventH = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 	if(eventH == 0)
 	{
-		cerr << "ERROR: could not get AliInputEventHandler" << endl;
+		this->Error("Exec", "could not get AliInputEventHandler");
 		return;
 	}
 	
