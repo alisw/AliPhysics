@@ -43,9 +43,9 @@ public:
    Bool_t       CalcEvent(Double_t bgen);
 
    //various ways to calculate multiplicity
-   Double_t GetdNdEta() const;
-   Double_t GetdNdEtaSimple( const Double_t* param ) const;
-   Double_t GetdNdEtaGBW(    const Double_t* param ) const;
+   Double_t     GetdNdEta() const;
+   Double_t     GetdNdEtaSimple( const Double_t* param ) const;
+   Double_t     GetdNdEtaGBW(    const Double_t* param ) const;
    Double_t	GetdNdEtaNBD(    const Double_t* param ) const;
    Double_t	GetdNdEtaNBDSV(  const Double_t* param ) const;
    Double_t	GetdNdEtaTwoNBD( const Double_t* param ) const;
@@ -70,10 +70,6 @@ public:
    Double_t     GetPsi3()      const;
    Double_t     GetPsi4()      const;
    Double_t     GetPsi5()      const;
-   //Double_t     GetE43Part()      const;
-   //Double_t     GetE43Coll()      const;
-   //Double_t     GetE43Com()      const;
-   //Double_t     GetPsi4m2()      const;
    Double_t     GetEccentricityPartColl()  const;
    Double_t     GetEccentricityPartCom()  const;
    Double_t     GetB()               const {return fBMC;}
@@ -87,6 +83,9 @@ public:
    Double_t     GetTotXSect()        const;
    Double_t     GetTotXSectErr()     const;
    void         Reset();
+   AliGlauberNucleus &GetNucA()            {return fANucleus;}
+   AliGlauberNucleus &GetNucB()            {return fBNucleus;}
+
    static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
    Int_t  NegativeBinomialRandom(Int_t k, Double_t nmean) const;
    Int_t  NegativeBinomialRandomSV(Double_t nbar, Double_t k) const;
