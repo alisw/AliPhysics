@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=2, TString trackName="PicoTrack", 
-					     Double_t Ecut = 1,   Double_t M02cut = 0.5, Bool_t IsV1cus = 0,
+					     Double_t Ecut = 1,   Double_t M02cut = 0.5, Double_t fDrCut=0.025, Bool_t IsV1cus = 0,
 					     TString V1ClusName="CaloCluster", TString V2ClusName="CaloCluster"
 				            )
 {
@@ -54,6 +54,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=2, TString trackN
   taskMB->SetTracksName(trackName.Data());
   taskMB->SetClusE(Ecut);
   taskMB->SetClusM02(M02cut);
+  taskMB->SetDrCut(fDrCut);
   taskMB->SetIsV1Clus(IsV1cus);
   taskMB->SetV1ClusName(V1ClusName);
   taskMB->SetV2ClusName(V2ClusName);

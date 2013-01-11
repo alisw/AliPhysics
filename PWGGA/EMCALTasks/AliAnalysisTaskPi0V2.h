@@ -53,6 +53,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void		SetClusE(Double_t e )	        { fECut       =e ;}
     void		SetClusEta(Double_t e )	        { fEtaCut     =e ;}
     void		SetClusM02(Double_t m )	        { fM02Cut     =m ;}
+    void		SetDrCut(Double_t m )	        { fDrCut      =m ;}
     void		SetPi0Asy(Double_t a )	        { fPi0AsyCut  =a ;}
     void                SetTracksName(const char *n)    { fTracksName =n ;}
     void                SetTrigClass(const char *n)     { fTrigClass  =n ;} 
@@ -81,6 +82,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fECut;			// Cluster E cut
     Double_t			fEtaCut;		// Cluster Eta Cut
     Double_t			fM02Cut;		// Cluster long axis cut
+    Double_t			fDrCut;		// Cluster long axis cut
     Bool_t			fPi0AsyCut;		// pion Asymetry cut 0=off 1=on
     Bool_t			isV1Clus;		// pion Asymetry cut 0=off 1=on
     Double_t			fCentrality;	  	//! Centrality
