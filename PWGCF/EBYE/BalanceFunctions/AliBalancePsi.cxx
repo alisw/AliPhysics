@@ -344,13 +344,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
     else if(charge1 < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
     
-    // 2nd particle loop (only for j < i for non double counting in the same pT region)
-    // --> SAME pT region for trigger and assoc: NO double counting with this
-    // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
-    //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
-    for(Int_t j = 0; j < iMax; j++) {  
-      if (particlesMixed && j == jMax-1 )  // if the mixed track number is smaller than the main event one 
-	break;
+    // 2nd particle loop 
+    for(Int_t j = 0; j < jMax; j++) {  
 
       if(j == i) continue; // no auto correlations
       

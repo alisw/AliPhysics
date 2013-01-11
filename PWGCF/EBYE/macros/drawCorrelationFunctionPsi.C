@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 9;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100"};
+const Int_t numberOfCentralityBins = 12;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 const Int_t gRebin = 1;
 
@@ -385,27 +385,35 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 
   // if no mixing then divide by convoluted histograms
   if(!listBFMixed && listQA){
-    
-    TH2D* fHistPos = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiPos"))->Project3D("xy");
-    fHistPos->GetYaxis()->SetRangeUser(-0.79,0.79);
-    //fHistPos->Rebin2D(3,2);
-    
-    TH2D* fHistNeg = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiNeg"))->Project3D("xy");
-    fHistNeg->GetYaxis()->SetRangeUser(-0.79,0.79);
-    //fHistNeg->Rebin2D(3,2);
 
-    gHistPN[2] = convolute2D(fHistPos, fHistNeg, "hConvPN");
-    gHistPN[2]->Scale(1./gHistPN[2]->GetBinContent(gHistPN[2]->FindBin(0,0)));
+    if(!listQA->FindObject("fHistEtaPhiPos") || !listQA->FindObject("fHistEtaPhiNeg")){
 
-    gHistNP[2] = convolute2D(fHistNeg, fHistPos, "hConvNP");
-    gHistNP[2]->Scale(1./gHistNP[2]->GetBinContent(gHistNP[2]->FindBin(0,0)));
+      Printf("fHistEtaPhiPos or fHistEtaPhiNeg not found! --> no convolution");
+      listQA = NULL;
 
-    gHistNN[2] = convolute2D(fHistNeg, fHistNeg, "hConvNN");
-    gHistNN[2]->Scale(1./gHistNN[2]->GetBinContent(gHistNN[2]->FindBin(0,0)));
+    }
+    else{ 
 
-    gHistPP[2] = convolute2D(fHistPos, fHistPos, "hConvPP");
-    gHistPP[2]->Scale(1./gHistPP[2]->GetBinContent(gHistPP[2]->FindBin(0,0)));
-
+      TH2D* fHistPos = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiPos"))->Project3D("xy");
+      fHistPos->GetYaxis()->SetRangeUser(-0.79,0.79);
+      //fHistPos->Rebin2D(3,2);
+      
+      TH2D* fHistNeg = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiNeg"))->Project3D("xy");
+      fHistNeg->GetYaxis()->SetRangeUser(-0.79,0.79);
+      //fHistNeg->Rebin2D(3,2);
+      
+      gHistPN[2] = convolute2D(fHistPos, fHistNeg, "hConvPN");
+      gHistPN[2]->Scale(1./gHistPN[2]->GetBinContent(gHistPN[2]->FindBin(0,0)));
+      
+      gHistNP[2] = convolute2D(fHistNeg, fHistPos, "hConvNP");
+      gHistNP[2]->Scale(1./gHistNP[2]->GetBinContent(gHistNP[2]->FindBin(0,0)));
+      
+      gHistNN[2] = convolute2D(fHistNeg, fHistNeg, "hConvNN");
+      gHistNN[2]->Scale(1./gHistNN[2]->GetBinContent(gHistNN[2]->FindBin(0,0)));
+      
+      gHistPP[2] = convolute2D(fHistPos, fHistPos, "hConvPP");
+      gHistPP[2]->Scale(1./gHistPP[2]->GetBinContent(gHistPP[2]->FindBin(0,0)));
+    }
   }
   
   //(+-)
