@@ -68,7 +68,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0), isV1Clus(1),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5),fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
@@ -83,7 +83,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
-//    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
     fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 
@@ -104,7 +103,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fRunNumber(-999.),
     fEvtSelect(1),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0), isV1Clus(1),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
@@ -119,7 +118,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0),
     hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
-//    hdifClus_EPV0(0), hdifClus_EPV0A(0), hdifClus_EPV0C(0), hdifClus_EPTPC(0),
     fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 {
@@ -329,11 +327,11 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodClusterV1(const AliVCluster *c) const
   if (!IsWithinFiducialVolume(id))
     return kFALSE;
 
-  if(c->GetM02() <0.5)
+  if(c->GetM02() <fM02Cut)
     return kFALSE;
 
   Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
-  if(dr>0.025)
+  if(dr<fDrCut)
     return kFALSE;
 
   return kTRUE;
