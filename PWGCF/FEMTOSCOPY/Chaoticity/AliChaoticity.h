@@ -46,7 +46,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
- enum ChaoticityConstants {
+  enum {
     kPairLimit = 15000,//15000
     kNormPairLimit = 45000,
     kMultLimitPbPb = 2000,//2000
@@ -67,11 +67,13 @@ class AliChaoticity : public AliAnalysisTaskSE {
     kMCfixedLambdabin = 5// 5 normally, (Lambdabin=5 (lambda=0.4)), 8 for systematic variation
  };
 
-  Int_t GetNumKtbins() const {return kKbinsT;}
-  Int_t GetNumRValues() const {return kRVALUES;}
-  Int_t GetNumCentBins() const {return kCentBins;}
+ 
+  Int_t GetNumKtbins() const {return AliChaoticity::kKbinsT;}
+  Int_t GetNumRValues() const {return AliChaoticity::kRVALUES;}
+  Int_t GetNumCentBins() const {return AliChaoticity::kCentBins;}
   //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
+  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
   //
