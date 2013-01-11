@@ -3,7 +3,8 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
 					     Bool_t diamond=kTRUE,
 					     Bool_t skipTrack=kTRUE,
 					     Int_t minmult=0,
-					     Int_t maxmult=1000000)
+					     Int_t maxmult=1000000,
+					     Int_t checkSDDIsIn=1) 
 {
   //
   // Configuration for the study of the impact parameter resolution
@@ -28,9 +29,13 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
   d0ResTask->SetUseDiamond(diamond);
   d0ResTask->SetSkipTrack(skipTrack);
   d0ResTask->SetMultiplicityRange(minmult,maxmult);
+  d0ResTask->SetCheckSDDIsIn(checkSDDIsIn);
+  //d0ResTask->SetOCDBPath("alien://folder=/alice/data/2011/OCDB"); // to be commented for the QAtrain
   mgr->AddTask(d0ResTask);
 
   TString fname=Form("%s:ImpParRes_Performance",mgr->GetCommonFileName());
+  if(checkSDDIsIn==1) fname.Append("_wSDD"); 
+  if(checkSDDIsIn==-1) fname.Append("_woSDD"); 
   if(selPdg>0) {fname+=selPdg;}
 
  

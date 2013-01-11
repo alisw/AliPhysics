@@ -20,6 +20,7 @@ class TString;
 class AliESDEvent;
 class AliESDfriend;
 class AliITSresponseSDD;
+class AliTriggerConfiguration;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -42,8 +43,11 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   void SetMinTPCPoints(Int_t minp=70){
     fMinTPCpts=minp;
   }
-  void SetUseOnlyCINT1BTriggers(Bool_t use=kTRUE){
-    fOnlyCINT1BTrig=use;
+  void SetTriggerClass(TString trclass) {
+    fTriggerClass=trclass;
+  }
+  void SetUseOnlyEventsWithSDD(Bool_t use=kTRUE){
+    fOnlyEventsWithSDD=use;
   }
   void SetMinPfordEdx(Float_t minp=0.5){
     fMinPfordEdx=minp;
@@ -52,7 +56,7 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
     fExcludeBadMod=opt;
   }
   Bool_t CheckModule(Int_t lay, Int_t lad, Int_t det) const;
-  
+ 
 
  private:
   AliAnalysisTaskSDDRP(const AliAnalysisTaskSDDRP &source);
@@ -98,14 +102,16 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TH2F*   fCluSizAnVsTime;  //! Histo with anode cluster size vs. time
   TH2F*   fCluSizTbVsTime;  //! Histo with time-bin cluster size vs. time
   AliITSresponseSDD* fResp; // ResponseSDD object
+  AliTriggerConfiguration* fTrigConfig; // trigger configuration object
   Bool_t  fUseITSsaTracks;   // Flag for using standalone ITS tracs
   Int_t   fMinITSpts;       // Minimum number of ITS points per track
   Int_t   fMinTPCpts;       // Minimum number of TPC points per track
   Float_t fMinPfordEdx;     // Minimum momentum for dE/dx
-  Bool_t  fOnlyCINT1BTrig;  // Flag for using all events or only intections
+  TString fTriggerClass;    // Name of selected trigger class
+  Bool_t  fOnlyEventsWithSDD; // Flag to use only trigger cluster with SDD
   Bool_t  fExcludeBadMod;   // Flag to reject bad modules
  
-  ClassDef(AliAnalysisTaskSDDRP,4);
+  ClassDef(AliAnalysisTaskSDDRP,5);
 };
 
 

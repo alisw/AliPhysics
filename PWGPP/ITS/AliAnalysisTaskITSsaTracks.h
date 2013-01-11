@@ -22,6 +22,7 @@ class TTree;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
+class AliTriggerConfiguration;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -48,7 +49,7 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   void SetMinPointsForITSPid(Int_t minp=3){
     fMinPtsforPid=minp;
   }
-  void SetITChi2Cut(Float_t maxchi2=2.5){
+  void SetITSChi2Cut(Float_t maxchi2=2.5){
     fMaxITSChi2Clu=maxchi2;
   }
 
@@ -75,6 +76,21 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
     fUseMCId=opt;
   }
 
+  void SetUseCentrality(Bool_t usec){
+    fUseCentrality=usec;
+  }
+  void SetCentralityRange(Float_t minc, Float_t maxc){
+    fMinCentrality=minc; fMaxCentrality=maxc; fUseCentrality=kTRUE;
+  }
+  void SetRequireSPDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSPD=opt;
+  }
+  void SetRequireSDDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSDD=opt;
+  }
+  void SetRequireSSDInTriggerCluster(Bool_t opt=kTRUE){
+    fRequireSSD=opt;
+  }
 
  private:
   enum {kPion=0,kKaon,kProton,kNspecies};
@@ -153,12 +169,19 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   Int_t   fMinPtsforPid;    // Minimum number of SDD+SSD points per track
   Int_t   fMinTPCpts;       // Minimum number of TPC points per track
   Float_t fMaxITSChi2Clu;   // Maximum value of ITS chi2 per cluster
+  Float_t fMinCentrality;   // Centrality percentile lower lim
+  Float_t fMaxCentrality;   // Centrality percentile upper lim
   Bool_t  fRequirePoint[6]; // require point in given layer
   Bool_t  fFillNtuple;      // flag to control fill of ntuple  
   Bool_t  fReadMC;          // flag read/not-read MC truth info
   Bool_t  fUseMCId;         // flag use/not-use MC identity for PID
+  Bool_t  fUseCentrality;   // flag use/not-use centrality selection
+  Bool_t  fRequireSPD;      // check that SPD are in trigger cluster
+  Bool_t  fRequireSDD;      // check that SDD are in trigger cluster
+  Bool_t  fRequireSSD;      // check that SSD are in trigger cluster
+  AliTriggerConfiguration* fTrigConfig; // trigger configuration object
 
-  ClassDef(AliAnalysisTaskITSsaTracks,3);  
+  ClassDef(AliAnalysisTaskITSsaTracks,5);  
 };
 
 

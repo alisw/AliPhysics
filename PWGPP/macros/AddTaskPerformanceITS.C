@@ -2,7 +2,8 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 						       Bool_t readRP=kFALSE,
 						       Bool_t fillNtuples=kFALSE,
 						       Int_t minmult=0,
-						       Int_t maxmult=1000000) 
+						       Int_t maxmult=1000000,
+						       Int_t checkSDDIsIn=1) 
 {
   //
   // Task for check of ITS tracking
@@ -26,6 +27,8 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
   taskITS->SetReadRPLabels(readRP);
   taskITS->SetFillNtuples(fillNtuples);
   taskITS->SetUseITSSAforNtuples(kFALSE);
+  taskITS->SetCheckSDDIsIn(checkSDDIsIn);
+  //taskITS->SetOCDBPath("alien://folder=/alice/data/2011/OCDB"); // to be commented for the QAtrain
   AliLog::SetClassDebugLevel("AliAnalysisTaskITSTrackingCheck",10);
   // Add to the manager
   mgr->AddTask(taskITS);
@@ -37,6 +40,8 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
     cname.Append("_"); cname+=minmult; 
     cname.Append("_"); cname+=maxmult;
   } 
+
+
   AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer(cname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:ITS_Performance",mgr->GetCommonFileName()));
 
 

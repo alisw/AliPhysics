@@ -14,6 +14,7 @@
 
 class TList;
 class TH1F;
+class AliTriggerConfiguration;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -35,6 +36,9 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   void SetUseDiamond(Bool_t use=kFALSE) { fUseDiamond=use; return; }
   void SetSkipTrack(Bool_t skip=kFALSE) { fSkipTrack=skip; return; }
   void SetMultiplicityRange(Int_t min,Int_t max) { fMinMult=min; fMaxMult=max; }
+  void SetCheckSDDIsIn(Int_t check=0) { fCheckSDDIsIn=check; }
+  void SetTriggerClass(TString tclass="") { fTriggerClass=tclass; }
+  void SetOCDBPath(TString path="") { fOCDBPath=path; }
 
  private:
   
@@ -52,6 +56,10 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   Bool_t fSkipTrack;    // redo primary vertex for each track
   Int_t  fMinMult; // minimum multiplicity
   Int_t  fMaxMult; // maximum multiplicity
+  Int_t  fCheckSDDIsIn; // check for ITSSDD in the trigger cluster: 0 no check; !=0 check from OCDB
+  TString      fTriggerClass; // trigger class to be inspected
+  AliTriggerConfiguration *fTrigConfig; // trigger configuration (read from OCDB)
+  TString      fOCDBPath; // to the OCDB
   TList *fOutputitspureSARec;  //! ITS StandAlone: with track in vtx 
   TList *fOutputitspureSASkip; //! ITS StandAlone: w/o track in vtx
   TList *fOutputallPointRec;   //! ITS+TPC: 6 ITScls, with track in vtx      
@@ -77,12 +85,6 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TList *fOutputphiAllpointSkip;  //!
   TList *fOutputphiPostvtracSkip;  //!
   TList *fOutputphiNegtvtracSkip;  //!
-  TList *fOutputclusterTypeSPD01Skip;  //!
-  TList *fOutputclusterTypeSPD02Skip;  //!
-  TList *fOutputclusterTypeSPD03Skip;  //!
-  TList *fOutputclusterTypeSPD11Skip;  //!
-  TList *fOutputclusterTypeSPD12Skip;  //!
-  TList *fOutputclusterTypeSPD13Skip;  //!
   TList *fOutputparticlePID;  //!
   TList *fOutputPt;     //!           
   TH1F  *fNentries;   //! histogram of number of events
@@ -90,7 +92,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
 
   Bool_t IsSelectedCentrality(AliESDEvent *esd) const;
 
-  ClassDef(AliAnalysisTaskSEImpParRes,5); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParRes,7); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
