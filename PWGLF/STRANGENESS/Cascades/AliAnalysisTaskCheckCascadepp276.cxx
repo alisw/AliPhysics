@@ -1630,7 +1630,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
 
     } // end of ESD treatment
  
-    if (fAnalysisType == "AOD") {
+    else if (fAnalysisType == "AOD") {
 
            // -------------------------------------
            // - Load the cascades from the handler
