@@ -32,9 +32,10 @@ double fitfun(double *x, double *par) {
 }
 
 // main method
-void RAW_evtdis(const int runno = 615,
+void RAW_evtdis(const int year=12, const int runno = 191741, const int streamno=8, const int segno=10,
 		const int gainv = 1,  /*0=low, 1=high*/
 		const int evtnum= 1,
+		const int module = 0,
 		const int strip = 0,
 		int ymax=200, // set the scale of plots
 		const int delay = 1)  // -1=no delay, wait for input, X>=0 => sleep aprox. X sec. after making plot
@@ -45,10 +46,10 @@ void RAW_evtdis(const int runno = 615,
   const int row_f = 0;
   const int row_l = NROWS - 1;
 
-  const int nsamples = 65; // number of ADC time samples per channel and event
+  const int nsamples = 15; // number of ADC time samples per channel and event
 
   const int saveplot = 0;
-  const int numbering      = 1; // 0: no numbering, 1: nubering on each plot
+  const int numbering      = 1; // 0: no numbering, 1: numbering on each plot
   const int dofit = 0; // 0: no fit, 1: try to fit the spectra (not debugged) 
   const int debug    = 0;
   const float gammaN = 2;
@@ -56,13 +57,14 @@ void RAW_evtdis(const int runno = 615,
 
   // Assume we are just interested in the 1st segment, _0.root below for fname*
   Char_t fname[256];
-  sprintf(fname, "/local/data/Run_%09d.Seq_1A.Stream_0.root",runno);
+  sprintf(fname, "%02d%09d0%02d.%d.root", year, runno, streamno, segno);
 
   // set up a raw reader of the data
   AliRawReader *rawReader = NULL;
   rawReader = new AliRawReaderRoot(fname);
-  AliCaloRawStream *in = NULL; 
-  in = new AliCaloRawStream(rawReader,"EMCAL");
+  AliCaloRawStreamV3 *in = NULL; 
+  in = new AliCaloRawStreamV3(rawReader,"EMCAL");
+  rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL range
 
   // set up histograms
   TH1F *hfit[TOTCHAN];
@@ -147,23 +149,49 @@ void RAW_evtdis(const int runno = 615,
 	   << " timestamp " << timestamp
 	   << endl;
 
+      int sample = 0;
+      int time = 0;
       /// process_event stream
-      while ( in->Next() ) {
+      while (in->NextDDL()) {
+	//	if (module == in->GetModule()) {
+	if (1) {
+	  while (in->NextChannel()) {
+       
+	    int acol = in->GetColumn();
+	    int arow = in->GetRow();
+	    int gain = in->GetCaloFlag();
 
-	int acol = in->GetColumn();
-	int arow = in->GetRow();
-	int gain = in->GetCaloFlag();
+	    int idx = arow * NCOLS + acol + NCOLS*NROWS * gain;
+	    //cout << "module " << in->GetModule() << endl;
 
-	int idx = arow * NCOLS + acol + NCOLS*NROWS * gain;
-	//cout << "hist idx " << idx << endl;
-	
-	if (idx < 0 || idx > TOTCHAN) { 
-	  cout << "Hist idx out of range: " << idx << endl;
+	    if (gain>1 || module!=in->GetModule()) { // TRU or LEDMon
+	    }
+	    else if (idx < 0 || idx > TOTCHAN) { 
+	      cout << "Hist idx out of range: " << idx << endl;
+	    }
+	    else { // reasonable range of idx (removes TRU and LEDMon data also)
+	      //cout << "hist idx " << idx << endl;
+	      
+	      while (in->NextBunch()) {
+		const UShort_t *sig = in->GetSignals();
+		int startBin = in->GetStartTimeBin(); 
+		for (Int_t i = 0; i < in->GetBunchLength(); i++) {
+		  sample = sig[i];
+		  time = startBin--;
+		  if (debug>2) {
+		    cout << " hw address " << in->GetHWAddress()
+			 << " time " << time << " sample " << sample
+			 << endl;
+		  } // debug
+
+		  if (idx >= 0 && idx < TOTCHAN) {  
+		    hfit[idx]->SetBinContent(time, sample);
+		  }
+		}
+	      }
+	    }
+	  }
 	}
-	else { // reasonable range of idx (removes TRU and LEDMon data also)
-	  hfit[idx]->SetBinContent(in->GetTime(), in->GetSignal());
-	}
-
       } // Raw data read
 
       // Next: let's actually plot the data..
