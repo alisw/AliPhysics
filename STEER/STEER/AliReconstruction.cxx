@@ -3963,6 +3963,9 @@ Bool_t AliReconstruction::GetEventInfo()
   }
 
   // Load trigger aliases and declare the trigger classes included in aliases
+  //PH Why do we do it in each event and not only once in the beginning of the chunk??
+  //PH Temporary fix for #99725: AliReconstruction::GetEventInfo bug
+  fDeclTriggerClasses.Clear();
   AliCDBEntry * entry = AliCDBManager::Instance()->Get("GRP/CTP/Aliases");
   if (entry) {
     THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
