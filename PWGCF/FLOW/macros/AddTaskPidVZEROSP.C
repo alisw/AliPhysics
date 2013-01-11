@@ -1,5 +1,5 @@
 AddTaskPidVZEROSP(){
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityPID.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDSP.C");
 
   const Int_t ncentr = 9;
   Int_t cmin[ncentr]={0,5,10,20,30,40,50,60,70};
