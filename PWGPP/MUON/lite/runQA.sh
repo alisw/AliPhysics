@@ -16,8 +16,9 @@ execMergeAll=1
 execTerminate=1
 execTrigQA=1
 execTrackQA=1
+execScalers=1
 isPrivateProd=0
-optList="mfateko:pi:"
+optList="mfatekso:pi:"
 inputTriggerList="0x0"
 while getopts $optList option
 do
@@ -28,6 +29,7 @@ do
     t ) execTerminate=0;;
     e ) execTrigQA=0;;
     k ) execTrackQA=0;;
+    s ) execScalers=0;;
     o ) outTaskName=$OPTARG;;
     p ) isPrivateProd=1;;
     i ) inputTriggerList=$OPTARG;;
@@ -46,7 +48,8 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     echo "       -f merge fast, skip incomplete prod."
     echo "       -a skip final merging (default: run)"
     echo "       -t skip terminate (default: run)"
-    echo "       -e skip run trigger efficiency QA (defult: run)"
+    echo "       -e skip run trigger efficiency QA (default: run)"
+    echo "       -s skip run scalers trending (default: run)"
     echo "       -k skip run muon QA (defult: run)"
     echo "       -o task output name (default: QAresults.root)"
     echo "       -p is private production. Use directory structure of the plugin"
@@ -54,9 +57,9 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     exit 4
 fi
 
-loadAnalysisLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");"
-includeAliroot=" gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");"
-includeMuon=" gSystem->AddIncludePath(\"-I${ALICE_ROOT}/MUON\");"
+loadAnalysisLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");gSystem->Load(\"libPWGmuondep.so\");"
+includeAliroot="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");"
+includeMuon="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/MUON\");"
 
 function mergePerRun()
 {
@@ -140,7 +143,7 @@ function runTrigQA() {
     outFileName="$2"
     aliroot -b <<EOF &> logTrigEffQA.txt
 ${includeAliroot} ${includeMuon} ${loadAnalysisLibs}
-.x $qaMacroDir/trigEffQA.C+("${runListName}","${outFileName}");
+.x $qaMacroDir/trigEffQA.C+("${runListName}","${outFileName}","raw://",${execScalers});
 .q
 EOF
 }

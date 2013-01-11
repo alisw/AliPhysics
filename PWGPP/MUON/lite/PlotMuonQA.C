@@ -226,11 +226,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TString selectionCent;
 	       
   Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
-  Int_t const colorNrFirst = 7;
-  Int_t colorTabFirst[colorNrFirst] = {1,4,2,3,6,7,12};
+  Int_t const colorNrFirst = 8;
+  Int_t colorIndex = 0;
+  Int_t colorTabFirst[colorNrFirst] = {kGray,kRed,kBlue,kGreen,kOrange,kCyan,kMagenta,kYellow};
   for (Int_t i = 0; i< triggersB->GetEntriesFast(); i++ ) {
-    if ( i < colorNrFirst ) colorTab[i] = colorTabFirst[i];
-    else colorTab[i] = 1;
+    colorTab[i] = colorTabFirst[i] + colorIndex;
+    if ( i%colorNrFirst == 0 ) colorIndex++;
   } 
   TArrayI *colorInd = new TArrayI( triggersB->GetEntriesFast() );
   for(Int_t i=0; i< triggersB->GetEntriesFast(); i++) colorInd->AddAt(colorTab[i],i); 
@@ -773,8 +774,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   // Loop over runs
   for ( Int_t irun=0; irun<runs->GetEntriesFast(); irun++ ) {
     
-    //cout<<irun<<endl;
-
     TString run = ((TObjString*)runs->UncheckedAt(irun))->GetString();
     TString run2 = ((TObjString*)runs2->UncheckedAt(irun))->GetString();
     // get the file (or list of files) to be analyzed
@@ -782,6 +781,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     TGridResult *res = 0;
     TObjString *objs = 0;	
     
+    //cout<<irun<<" "<<run<<endl;
+
     if(isAlienFile){
       command = Form("find %s/ %s/%s", alienBaseDir.Data(), run.Data(), QAFileName);
       res = gGrid->Command(command);
@@ -820,7 +821,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     TMap *map = 0;
     
     //some checks
-    Int_t iLoop=0, iLoopMax=200;
+    Int_t iLoop=0, iLoopMax=1000;
     while (kTRUE){
       
       // get the current file url
@@ -1127,10 +1128,10 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   hClusterChargeMeanInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterChargeMeanInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
   //hClusterChargeInCh[0]->LabelsOption("u"); 
-  hClusterChargeMeanInCh[0]->SetLabelSize(0.02);
+  hClusterChargeMeanInCh[0]->SetLabelSize(0.04);
   hClusterChargeMeanInCh[0]->SetTitle("Cluster charge mean (fC) per track in chamber i");
   hClusterChargeMeanInCh[0]->SetMaximum(150);
-  hClusterChargeMeanInCh[0]->SetMinimum(50);
+  hClusterChargeMeanInCh[0]->SetMinimum(30);
   for (Int_t ich=0; ich<10; ich++) {
     hClusterChargeMeanInCh[ich]->SetLineColor(ich+1+ich/9);
     hClusterChargeMeanInCh[ich]->SetLineWidth(2);
@@ -1145,9 +1146,9 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   hClusterChargeSigmaInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterChargeSigmaInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
   //hClusterChargeInCh[0]->LabelsOption("u");                                                                               
-  hClusterChargeSigmaInCh[0]->SetLabelSize(0.02);
+  hClusterChargeSigmaInCh[0]->SetLabelSize(0.04);
   hClusterChargeSigmaInCh[0]->SetTitle("Cluster charge sigma per track in chamber i");
-  hClusterChargeSigmaInCh[0]->SetMaximum(150);
+  hClusterChargeSigmaInCh[0]->SetMaximum(250);
   hClusterChargeSigmaInCh[0]->SetMinimum(50);
   for (Int_t ich=0; ich<10; ich++) {
     hClusterChargeSigmaInCh[ich]->SetLineColor(ich+1+ich/9);
@@ -1174,7 +1175,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   hClusterSizeMeanInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterSizeMeanInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
 
-  hClusterSizeMeanInCh[0]->SetLabelSize(0.02);
+  hClusterSizeMeanInCh[0]->SetLabelSize(0.04);
   hClusterSizeMeanInCh[0]->SetTitle("Cluster size mean (npads) per track in chamber i");
   hClusterSizeMeanInCh[0]->SetMaximum(18);
   hClusterSizeMeanInCh[0]->SetMinimum(0);
@@ -1192,7 +1193,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   hClusterSizeSigmaInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterSizeSigmaInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
 
-  hClusterSizeSigmaInCh[0]->SetLabelSize(0.02);
+  hClusterSizeSigmaInCh[0]->SetLabelSize(0.04);
   hClusterSizeSigmaInCh[0]->SetTitle("Cluster size sigma (npads) per track in chamber i");
   hClusterSizeSigmaInCh[0]->SetMaximum(7);
   hClusterSizeSigmaInCh[0]->SetMinimum(0);
@@ -1346,7 +1347,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       hRelMuonTrigger[j]->SetStats(kFALSE);
       hRelMuonTrigger[j]->GetXaxis()->SetNdivisions(1,kFALSE);
       hRelMuonTrigger[j]->LabelsOption("a");                 
-      hRelMuonTrigger[j]->SetLabelSize(0.04);
+      hRelMuonTrigger[j]->SetLabelSize(0.02);
       //hRelMuonTrigger[j]->GetXaxis()->SetLabelSize(0.04);
       hRelMuonTrigger[j]->SetLineWidth(2);
       hRelMuonTrigger[j]->SetTitle("");
@@ -1521,7 +1522,7 @@ TCanvas *ProcessCanvasRelativeTriggerContent(TObjArray *triggersB, TH1 **histo, 
     if(i==0){
       ratio[i]->SetMaximum(1.5);
       ratio[i]->SetMinimum(0.001);
-      ratio[i]->SetLabelSize(0.02);
+      ratio[i]->SetLabelSize(0.04);
       ratio[i]->GetYaxis()->SetTitle("Relative trigger content"); 
       ratio[i]->Draw("E");
     }
@@ -1937,7 +1938,7 @@ TCanvas *ProcessCanvasTrackMultB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB
     
   hName = Form("Sum of trigger tracks (matched+trigger-only) / # events in %s %s",hNameBase.Data(),legendHeader.Data());
   hSumTriggerOverB->SetTitle(hName);
-  hSumTriggerOverB->SetLabelSize(0.02);
+  hSumTriggerOverB->SetLabelSize(0.04);
   hSumTriggerOverB->SetLineWidth(2);
   hSumTriggerOverB->SetLineColor(kBlue);
   hName = Form("hSumTrackerOver%s",hNameBase.Data());
@@ -1947,7 +1948,7 @@ TCanvas *ProcessCanvasTrackMultB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB
   hName = Form("Sum of tracker tracks (matched+tracker-only) / # events in %s %s",hNameBase.Data(),legendHeader.Data());
   hSumTrackerOverB->SetTitle(hName);
   //hSumTrackerOverCINT1B->LabelsOption("u");
-  hSumTrackerOverB->SetLabelSize(0.02);
+  hSumTrackerOverB->SetLabelSize(0.04);
   hSumTrackerOverB->SetLineWidth(2);
   hSumTrackerOverB->SetLineColor(kBlue);
 		
