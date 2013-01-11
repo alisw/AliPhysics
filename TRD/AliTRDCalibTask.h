@@ -78,6 +78,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetUseSPDVertex()                                               {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} 
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
   void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);}; 
+  void SetRejectPileUpWithSPD(Bool_t rejectPileUpWithSPD)              {fRejectPileUpWithSPD = rejectPileUpWithSPD;};
   void SetMinNbTracks(Int_t minNbTracks)                               {fMinNbTracks = minNbTracks;};
   void SetMaxNbTracks(Int_t maxNbTracks)                               {fMaxNbTracks = maxNbTracks;};
   void SetCutWithVdriftCalib(Bool_t cutWithVdriftCalib)                {fCutWithVdriftCalib = cutWithVdriftCalib;};
@@ -181,6 +182,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fVtxSPD;                           // Flag for use of SPD vertex
   Int_t       fMinNbContributors;                // Min number of contributors
   Double_t    fRangePrimaryVertexZ;              // Were the primary vertex is
+  Bool_t      fRejectPileUpWithSPD;              // Reject pile-up events with SPD
   Int_t       fMinNbTracks;                      // Min Nb Tracks
   Int_t       fMaxNbTracks;                      // Max Nb Tracks
   Bool_t      fCutWithVdriftCalib;               // CutWithVdriftCalib for the gain and PH
@@ -221,7 +223,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 4); 
+  ClassDef(AliTRDCalibTask, 5); 
 };
 
 #endif

@@ -144,6 +144,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fVtxSPD(kFALSE),
   fMinNbContributors(0),
   fRangePrimaryVertexZ(9999999.0),
+  fRejectPileUpWithSPD(kFALSE),
   fMinNbTracks(9),
   fMaxNbTracks(999999999),
   fCutWithVdriftCalib(kFALSE),
@@ -662,7 +663,19 @@ void AliTRDCalibTask::UserExec(Option_t *)
   }
   
   //printf("Primary vertex passed\n");
+
+  //////////////////////////////////
+  // Reject pile-up with SPD
+  //////////////////////////////////
   
+  if(fRejectPileUpWithSPD) {
+    if(fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5)){
+      //printf("test\n");
+      PostData(1, fListHist);
+      return;
+    }
+  }
+
   //////////////////////////////////////
   // Requirement on number of good tracks
   //////////////////////////////////////
