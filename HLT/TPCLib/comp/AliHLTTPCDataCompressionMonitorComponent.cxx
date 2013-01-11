@@ -191,7 +191,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
     }
   }
 
-  if (fMonitoringContainer) {
+  if (fMonitoringContainer && fpDecoder) {
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Start(1);
     }
@@ -300,6 +300,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Stop(0);
+    GetBenchmarkInstance()->AddInput(compDataSize);
     HLTBenchmark("%s", GetBenchmarkInstance()->GetStatistics());
   }
 

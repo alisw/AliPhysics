@@ -315,9 +315,11 @@ private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
 
-  /// benchmark
+  /// benchmark instance
   AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
+  /// cluster decoder instance
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! cluster decoder instance
+  /// data decoder for HW clusters
   AliHLTTPCHWCFData* fpHWClusterDecoder; //! data decoder for HW clusters
 
   TH2* fHistoHWCFDataSize;         //! hwcf data size vs. event size
