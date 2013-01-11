@@ -388,11 +388,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     
     TH2D* fHistPos = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiPos"))->Project3D("xy");
     fHistPos->GetYaxis()->SetRangeUser(-0.79,0.79);
-    //fHistPos->Rebin2D(10,10);
+    //fHistPos->Rebin2D(3,2);
     
     TH2D* fHistNeg = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiNeg"))->Project3D("xy");
     fHistNeg->GetYaxis()->SetRangeUser(-0.79,0.79);
-    //fHistNeg->Rebin2D(10,10);
+    //fHistNeg->Rebin2D(3,2);
 
     gHistPN[2] = convolute2D(fHistPos, fHistNeg, "hConvPN");
     gHistPN[2]->Scale(1./gHistPN[2]->GetBinContent(gHistPN[2]->FindBin(0,0)));
@@ -1840,7 +1840,7 @@ TH2D *convolute2D(TH2D* h1, TH2D* h2, TString hname){
 
   // histogram definition
   TH2D *hConv = NULL;
-  hConv = new TH2D(hname.Data(),hname.Data(), h1->GetNbinsX()+1,-2,2,h1->GetNbinsY()+1,-TMath::Pi()/2.,3*TMath::Pi()/2.);
+  hConv = new TH2D(hname.Data(),hname.Data(), h1->GetNbinsY(),-2,2,h1->GetNbinsX(),-TMath::Pi()/2.,3*TMath::Pi()/2.);
 
   Double_t x1 = 0.;
   Double_t x2 = 0.;
@@ -1868,8 +1868,10 @@ TH2D *convolute2D(TH2D* h1, TH2D* h2, TString hname){
 	  z1 = (Double_t)h1->GetBinContent(i+1,j+1);
 	  z2 = (Double_t)h2->GetBinContent(k+1,l+1);
 
-	  dx = x1 - x2;
-	  dy = y1 - y2;
+	  // need the gymnastics to keep the same binning
+	  dx = x1 - x2 - (h1->GetXaxis()->GetBinWidth(1)/2.);
+	  if(gRandom->Gaus() > 0) dy = y1 - y2 + (h1->GetYaxis()->GetBinWidth(1)/2.);
+	  else                    dy = y1 - y2 - (h1->GetYaxis()->GetBinWidth(1)/2.);
 
 	  if(dx>3./2.*TMath::Pi())  dx = dx - 2.*TMath::Pi();  
 	  if(dx<-1./2.*TMath::Pi()) dx = 2*TMath::Pi() + dx;  
