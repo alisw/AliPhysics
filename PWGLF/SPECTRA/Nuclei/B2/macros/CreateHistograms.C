@@ -16,15 +16,6 @@
 // macro for creating histograms
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <TObject.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TMap.h>
-#include <TString.h>
-#include <TMath.h>
-
-#include "AliLnHistoMap.h"
-
 AliLnHistoMap* CreateHistograms(const TString& species, Bool_t simulation, Double_t maxDCAxy, Double_t maxEta, Double_t maxY, Bool_t heavyIons)
 {
 //
