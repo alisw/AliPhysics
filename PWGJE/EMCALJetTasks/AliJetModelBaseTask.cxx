@@ -257,6 +257,9 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 {
   // Init task.
 
+  delete gRandom;
+  gRandom = new TRandom3(0);
+
   if (fPtMax < fPtMin) {
     AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
     fPtMax = fPtMin;
