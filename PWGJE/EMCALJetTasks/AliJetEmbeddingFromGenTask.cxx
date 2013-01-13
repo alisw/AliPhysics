@@ -54,7 +54,7 @@ AliJetEmbeddingFromGenTask::~AliJetEmbeddingFromGenTask()
 }
 
 //________________________________________________________________________
-void AliJetEmbeddingFromGenTask::ExecOnce() 
+Bool_t AliJetEmbeddingFromGenTask::ExecOnce() 
 {
   // Exec only once.
 
@@ -78,6 +78,8 @@ void AliJetEmbeddingFromGenTask::ExecOnce()
     InputEvent()->AddObject(fOutTracks);
     fNTracks = 0;
   }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
