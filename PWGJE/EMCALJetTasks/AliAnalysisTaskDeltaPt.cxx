@@ -219,7 +219,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       histname = "fHistEmbPartPt_";
       histname += i;
       fHistEmbPartPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle it{p}_{T}^{emb} (GeV/#it{c})");
+      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle #it{p}_{T}^{emb} (GeV/#it{c})");
       fHistEmbPartPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbPartPt[i]);
 

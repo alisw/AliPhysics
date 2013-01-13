@@ -42,7 +42,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliPicoTrack          *AddTrack(Double_t pt = -1, Double_t eta = -999, Double_t phi = -1);    // add a track; if values are -1 generate random parameters
   void                   CopyClusters();
   void                   CopyTracks();
-  virtual void           ExecOnce();
+  virtual Bool_t         ExecOnce();
   void                   GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId);             // generate a random cell in the calorimeter
   Double_t               GetRandomEta();                                                        // generate a random eta value in the given range
   Double_t               GetRandomPhi();                                                        // generate a random phi value in the given range

@@ -95,10 +95,19 @@ void AliJetModelBaseTask::UserExec(Option_t *)
 {
   // Execute per event.
 
-  if (!fIsInit) {
-    ExecOnce();
-    fIsInit = 1;
+  if (!fIsInit)
+    fIsInit = ExecOnce();
+
+  if (!fIsInit)
+    return;
+
+  if (fCopyArray) {
+    if (fOutTracks)
+      fOutTracks->Delete();
+    if (fOutClusters)
+      fOutClusters->Delete();
   }
+
   Run();
 }
 
@@ -244,7 +253,7 @@ void AliJetModelBaseTask::CopyTracks()
 }
 
 //________________________________________________________________________
-void AliJetModelBaseTask::ExecOnce()
+Bool_t AliJetModelBaseTask::ExecOnce()
 {
   // Init task.
 
@@ -267,13 +276,13 @@ void AliJetModelBaseTask::ExecOnce()
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
       AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
-      return;
+      return kFALSE;
     }
     
     if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
       AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
       fTracks = 0;
-      return;
+      return kFALSE;
     }
 
     if (!fOutTracks) {
@@ -282,16 +291,17 @@ void AliJetModelBaseTask::ExecOnce()
 	fOutTracksName += fSuffix;
 	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
 	fOutTracks->SetName(fOutTracksName);
+	if (InputEvent()->FindListObject(fOutTracksName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutTracksName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutTracks);
+	}
       }
       else {
 	fOutTracks = fTracks;
       }
-    }
-
-    if (fCopyArray) {
-      fOutTracks->Delete();
-      if (!(InputEvent()->FindListObject(fOutTracksName)))
-	InputEvent()->AddObject(fOutTracks);
     }
   }
 
@@ -300,13 +310,13 @@ void AliJetModelBaseTask::ExecOnce()
  
     if (!fClusters) {
       AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
-      return;
+      return kFALSE;
     }
 
     if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
       AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
       fClusters = 0;
-      return;
+      return kFALSE;
     }
 
     if (!fOutClusters) {
@@ -315,16 +325,17 @@ void AliJetModelBaseTask::ExecOnce()
 	fOutCaloName += fSuffix;
 	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
 	fOutClusters->SetName(fOutCaloName);
+	if (InputEvent()->FindListObject(fOutCaloName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutCaloName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutClusters);
+	}
       }
       else {
 	fOutClusters = fClusters;
       }
-    }
-
-    if (fCopyArray) {
-      fOutClusters->Delete();
-      if (!(InputEvent()->FindListObject(fOutCaloName)))
-	InputEvent()->AddObject(fOutClusters);
     }
 
     if (!fGeom) {
@@ -354,6 +365,8 @@ void AliJetModelBaseTask::ExecOnce()
     if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
     if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
   }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
