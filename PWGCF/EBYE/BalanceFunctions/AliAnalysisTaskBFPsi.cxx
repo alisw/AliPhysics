@@ -686,6 +686,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	      
 	      // take only events inside centrality class
 	      if((fImpactParameterMin < fCentrality) && (fImpactParameterMax > fCentrality)){
+		fHistEventStats->Fill(5,fCentrality); //events with correct centrality
 		return fCentrality;	    
 	      }//centrality class
 	    }//Vz cut
