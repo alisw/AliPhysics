@@ -73,6 +73,7 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA()
   fSaveMotherPDG(0),
   fSmallTHnSparse(0),
   fIspA(0),
+  fRapCMS(0),
   fTPCnSigmaCutLow(0),
   fTPCnSigmaCutHigh(0),
   fRapidityCutLow(0),
@@ -104,6 +105,7 @@ AliAnalysisTPCTOFpA::AliAnalysisTPCTOFpA(const char *name)
     fSaveMotherPDG(0),
     fSmallTHnSparse(0),
     fIspA(0),
+    fRapCMS(0),
     fTPCnSigmaCutLow(0),
     fTPCnSigmaCutHigh(0),
     fRapidityCutLow(0),
@@ -185,9 +187,9 @@ void AliAnalysisTPCTOFpA::Initialize()
 
 
   if (!fUseTPConlyTracks) {
-	  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+	  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
 	  fESDtrackCuts->SetMaxDCAToVertexXY(3);
-	  fESDtrackCuts->SetMaxDCAToVertexZ(2);
+	  fESDtrackCuts->SetMaxDCAToVertexZ(3);
 	  fESDtrackCuts->SetEtaRange(-0.9,0.9);
   }
   else {
@@ -563,6 +565,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
       // fill MC histograms here...
       // 
       Double_t rap = trackMC->Y();
+      if (fRapCMS) rap = rap + 0.465;
       Double_t pT  = trackMC->Pt();
       Int_t sign = pdg < 0 ? -1 : 1; // only works for charged pi,K,p !!
 //      Double_t transMass = TMath::Sqrt(trackMC->Pt()*trackMC->Pt() + trackMC->GetMass()*trackMC->GetMass()) - trackMC->GetMass();
@@ -681,6 +684,15 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     Double_t rapKaon = 0.5*TMath::Log((energyKaon + pvec[2])/(energyKaon - pvec[2]));
     Double_t rapProton = 0.5*TMath::Log((energyProton + pvec[2])/(energyProton - pvec[2]));
     Double_t rapDeuteron = 0.5*TMath::Log((energyDeuteron + pvec[2])/(energyDeuteron - pvec[2]));
+
+    if (fRapCMS) {
+      rapPion = rapPion + 0.465;
+      rapKaon = rapKaon + 0.465;
+      rapProton = rapProton + 0.465;
+      rapDeuteron = rapDeuteron + 0.465;
+    }
+
+
     //
 //    Double_t transMassPion = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kPion)*AliPID::ParticleMass(AliPID::kPion))      -  AliPID::ParticleMass(AliPID::kPion);
 //    Double_t transMassKaon = TMath::Sqrt(track->Pt()*track->Pt() + AliPID::ParticleMass(AliPID::kKaon)*AliPID::ParticleMass(AliPID::kKaon))     -  AliPID::ParticleMass(AliPID::kKaon);

@@ -47,6 +47,7 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   void           SetRapidityCuts(Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
   void           SetEvenDCAbinning(Bool_t EvenDCAbinning = kTRUE) {fEvenDCAbinning = EvenDCAbinning;};
   void           SetIspA(Bool_t ispA = kFALSE) {fIspA = ispA;};
+  void           SetRapCMS(Bool_t rapCMS = kFALSE) {fRapCMS = rapCMS;};
   void           Initialize();
   //
   
@@ -67,7 +68,8 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   Bool_t	fUseTPConlyTracks;     // flag if TPConly-track should be used
   Bool_t        fSaveMotherPDG;        // flag if PDG of mother should be saved (weak decays)
   Bool_t        fSmallTHnSparse;       // flag if to do cuts on TPC n-sigma and rapidity in task or not
-  Bool_t        fIspA;                 // flag for pA analysis
+  Bool_t        fIspA;                 // flag for pA analysis                                                               
+  Bool_t        fRapCMS;               // flag if rapitidy should be shifted by 0.465 do have rap in CMS of pPb
   Double_t      fTPCnSigmaCutLow;      // low border for TPC n-sigma cut
   Double_t      fTPCnSigmaCutHigh;     // high border for TPC n-sigma cut
   Double_t      fRapidityCutLow;       // low border for rapidity cut
