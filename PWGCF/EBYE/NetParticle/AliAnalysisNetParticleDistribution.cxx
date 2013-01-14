@@ -152,9 +152,9 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
 
   if (fIsMC) {
     AddHistSet("fHMCrapidity", "MC primary in |y| < 0.5");
-    AddHistSet("fHMCptMin",    "MC primary in |y| + #it{p}_{T} > 0.1");
-    AddHistSet("fHMCpt",       Form("MC primary in |y| < 0.5 + #it{p}_{T} [%.1f,%.1f]", fPtRange[0], fPtRange[1]));
-    AddHistSet("fHMCeta",      Form("MC primary in |y| < 0.5 + |#eta| < %.1f", fEtaMax));
+    //    AddHistSet("fHMCptMin",    "MC primary in |y| + #it{p}_{T} > 0.1");
+    //    AddHistSet("fHMCpt",       Form("MC primary in |y| < 0.5 + #it{p}_{T} [%.1f,%.1f]", fPtRange[0], fPtRange[1]));
+    //    AddHistSet("fHMCeta",      Form("MC primary in |y| < 0.5 + |#eta| < %.1f", fEtaMax));
     AddHistSet("fHMCetapt",    Form("MC primary in |y| < 0.5 + |#eta| < %.1f + #it{p}_{T} [%.1f,%.1f]", fEtaMax, fPtRange[0], fPtRange[1]));
     
     //    AddHistSet("fHControlMCLambdarapidity", "Control MC Lambda primary in |y| < 0.5");
@@ -472,6 +472,8 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
     
     // -- Check rapidity window
     Double_t yMC;
+    if (!fHelper->GetUsePID()) 
+      yMC = fEtaMax;
     if (!fHelper->IsParticleAcceptedRapidity(particle, yMC))
       continue;
     
@@ -497,9 +499,9 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackParticles() {
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   FillHistSet("fHMCrapidity", fMCNp[0]);
-  FillHistSet("fHMCptMin",    fMCNp[1]);
-  FillHistSet("fHMCpt",       fMCNp[2]);
-  FillHistSet("fHMCeta",      fMCNp[3]);
+  //  FillHistSet("fHMCptMin",    fMCNp[1]);
+  //  FillHistSet("fHMCpt",       fMCNp[2]);
+  //  FillHistSet("fHMCeta",      fMCNp[3]);
   FillHistSet("fHMCetapt",    fMCNp[4]);
 
   return 0;
@@ -511,7 +513,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackControlParticles() {
 
   Int_t pdgCode    = fHelper->GetControlParticleCode();
   Bool_t isNeutral  = fHelper->IsControlParticleNeutral();
-  //const Char_t* name = fHelper->GetControlParticleName().Data();
+  //  const Char_t* name = fHelper->GetControlParticleName().Data();
 
   for (Int_t idxMC = 0; idxMC < fStack->GetNprimary(); ++idxMC) {
     TParticle* particle = fStack->Particle(idxMC);
@@ -540,6 +542,8 @@ Int_t AliAnalysisNetParticleDistribution::ProcessStackControlParticles() {
     
     // -- Check rapidity window
     Double_t yMC;
+    if (!fHelper->GetUsePID()) 
+      yMC = fEtaMax;
     if (!fHelper->IsParticleAcceptedRapidity(particle, yMC))
       continue;
 
@@ -597,12 +601,12 @@ void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const C
     list->Add(new TH2F(Form("%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
 		       Form("%s %s Dist %s;Centrality;N_{%s}", title, fHelper->GetParticleTitle(idxPart).Data(), sPtTitle.Data(), 
 			    fHelper->GetParticleTitleLatex(idxPart).Data()), 
-		       24, -0.5, 11.5, 501, -0.5, 500.49));
+		       24, -0.5, 11.5, 2601, -0.5, 2600.49));
   } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
    
   list->Add(new TH2F(Form("%sNet%s", name, fHelper->GetParticleName(1).Data()), 
 		     Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
-			  fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5, 201, -100.5, 100.49));
+			  fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data()), 24, -0.5, 11.5, 601, -300.5, 300.49));
 
   list->Add(new TProfile(Form("%sNet%sM", name, fHelper->GetParticleName(1).Data()), 
 			 Form("%s Net %s Dist %s;Centrality;N_{%s} - N_{%s}", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
@@ -627,7 +631,7 @@ void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const C
 		     Form("%s (Net %s)/ Sum Dist %s;Centrality;(N_{%s} - N_{%s})/(N_{%s} + N_{%s})", title, fHelper->GetParticleTitle(1).Data(), sPtTitle.Data(),
 			  fHelper->GetParticleTitleLatex(1).Data(),fHelper->GetParticleTitleLatex(0).Data(),fHelper->GetParticleTitleLatex(1).Data(),
 			  fHelper->GetParticleTitleLatex(0).Data()), 
-		     24, -0.5, 11.5, 801, -50.5, 50.49));
+		     24, -0.5, 11.5, 801, -20.5, 20.49));
   
   if (sName.Contains("fHControlMC")) {
     for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {

@@ -78,11 +78,11 @@ void AliAnalysisNetParticleDCA::Initialize(AliESDtrackCuts *cuts, AliESDtrackCut
   fLabelsRec        = new Int_t*[2];
   for (Int_t ii = 0; ii < 2 ; ++ii)
     fLabelsRec[ii] = NULL;
-
+#endif
   // -- Create THnSparse Histograms
   // --------------------------------
   CreateHistograms();
-#endif  
+
   return;
 }
 
@@ -148,6 +148,10 @@ void AliAnalysisNetParticleDCA::ResetEvent() {
 void AliAnalysisNetParticleDCA::Process() {
   // -- Process event
 
+
+
+
+
   // -- Setup (clean, create and fill) MC labels
   // ---------------------------------------------
   //  FillMCLabels();
@@ -164,7 +168,7 @@ void AliAnalysisNetParticleDCA::Process() {
  *                                 Private Methods
  * ---------------------------------------------------------------------------------
  */
-#if 0
+
 //________________________________________________________________________
 void AliAnalysisNetParticleDCA::CreateHistograms() {
   // -- Create histograms
@@ -190,23 +194,33 @@ void AliAnalysisNetParticleDCA::CreateHistograms() {
   // ------------------------------------------------------------------
   // -- Create THnSparseF - DCA
   // ------------------------------------------------------------------
+  //  DCAr, DCAz, eta phi centrality
 
-  //                              cent:   etaMC:     yMC:   phiMC:   ptMC:     sign:contPart:DCArAccepted:DCAr
-  Int_t    binHnDCA[9] = {   iCent,    iEta,    iRap,    iPhi,    iPt,    iSign,       4,           2,  50 };     
-  Double_t minHnDCA[9] = {dCent[0], dEta[0], dRap[0], dPhi[0], dPt[0], dSign[0],     0.5,        -0.5, -10.};
-  Double_t maxHnDCA[9] = {dCent[1], dEta[1], dRap[1], dPhi[1], dPt[1], dSign[1],     4.5,         1.5,  10.};
-  fHnDCA = new THnSparseF("fHnDCA", "cent:etaMC:yMC:phiMC:ptMC:sign:contPart:contSign:DCArAccepted:DCAr", 9, binHnDCA, minHnDCA, maxHnDCA);
+  // >  Type : 
+  //     Primary MC p + ContMiss p
+  //     2nd Material
+  //     2nd Weak Decays
+
+  //     IsAcceptedDCA
+
+  //                           cent:   etaMC:     yMC:   phiMC:   ptMC:     sign:contPart:DCArAccepted: DCAr: DCAz
+  Int_t    binHnDCA[10] = {   iCent,    iEta,    iRap,    iPhi,    iPt,    iSign,       4,           2,  50 , 50 };     
+  Double_t minHnDCA[10] = {dCent[0], dEta[0], dRap[0], dPhi[0], dPt[0], dSign[0],     0.5,        -0.5, -10.,-10.};
+  Double_t maxHnDCA[19] = {dCent[1], dEta[1], dRap[1], dPhi[1], dPt[1], dSign[1],     4.5,         1.5,  10., 10.};
+  fHnDCA = new THnSparseF("fHnDCA", "cent:etaMC:yMC:phiMC:ptMC:sign:contPart:contSign:DCArAccepted:DCAr:DCAz", 10, binHnDCA, minHnDCA, maxHnDCA);
   
   fHnDCA->Sumw2();
   fHnDCA->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  fHnDCA->GetAxis(1)->SetTitle("#eta_{MC}");                    //  eta  [-0.9,0.9]
-  fHnDCA->GetAxis(2)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
-  fHnDCA->GetAxis(3)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. ,2Pi]
-  fHnDCA->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.1,1.3]
+  fHnDCA->GetAxis(1)->SetTitle("#eta_{Rec}");                    //  eta  [-0.9,0.9]
+  fHnDCA->GetAxis(2)->SetTitle("#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
+  fHnDCA->GetAxis(3)->SetTitle("#varphi_{Rec} (rad)");           //  phi  [ 0. ,2Pi]
+  fHnDCA->GetAxis(4)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");   //  pT   [ 0.1,1.3]
   fHnDCA->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
+
   fHnDCA->GetAxis(6)->SetTitle("contPart");                     //  1  primary | 2 missId | 3 from WeakDecay | 4 p from Material
   fHnDCA->GetAxis(7)->SetTitle("DCArAccepted");                 //  0 not accepted | 1 accepted 
   fHnDCA->GetAxis(8)->SetTitle("DCAr");                         //  DCAr [-10,10]
+  fHnDCA->GetAxis(9)->SetTitle("DCAz");                         //  DCAz [-10,10]
 
   // ------------------------------------------------------------------
   
@@ -214,14 +228,14 @@ void AliAnalysisNetParticleDCA::CreateHistograms() {
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleDCA::FillMCDCA() {
+void AliAnalysisNetParticleDCA::FillDCA() {
   // Fill MC labels
   // Loop over ESD tracks and fill arrays with MC lables
   //  fLabelsRec[0] : all Tracks
   //  fLabelsRec[1] : all Tracks accepted by PID of TPC
   // Check every accepted track if correctly identified
   //  otherwise check for contamination
-
+#if 0
   for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
     AliESDtrack *track = fESD->GetTrack(idxTrack); 
     
@@ -230,7 +244,7 @@ void AliAnalysisNetParticleDCA::FillMCDCA() {
       continue;
     
     // -- Check if accepted
-    if (!fESDTrackCuts->AcceptTrack(track)) 
+    if (!fESDTrackCutsBkg->AcceptTrack(track)) 
       continue;
 
     // -- Check if accepted in rapidity window
@@ -238,36 +252,44 @@ void AliAnalysisNetParticleDCA::FillMCDCA() {
     if (!fHelper->IsTrackAcceptedRapidity(track, yP))
       continue;
 
-    // -- Check if accepted with thighter DCA cuts
-    if (!fHelper->IsTrackAcceptedDCA(track))
-      continue;
-
-    Int_t label  = TMath::Abs(track->GetLabel()); 
-    
-    // -- Fill Label of all reconstructed
-    fLabelsRec[0][idxTrack] = label;
-
     // -- Check if accepted by PID from TPC or TPC+TOF
     Double_t pid[2];
     if (!fHelper->IsTrackAcceptedPID(track, pid))
       continue;
 
-    // -- Fill Label of all reconstructed && recPid_TPC+TOF    
-    fLabelsRec[1][idxTrack] = label;    
+  
+    Bool_t isDCArAccepted = kTRUE;
+
+    // -- Check if accepted with thighter DCA cuts
+    if (!fHelper->IsTrackAcceptedDCA(track))
+      isDCArAccepted = kFALSE;
+
+    if (!fESDTrackCuts->AcceptTrack(track)) 
+      isDCArAccepted = kFALSE;
+
+
+    // ?    Int_t label  = ); 
     
+
     // -- Check for contamination and fill contamination THnSparse
-    CheckContTrack(label, track->GetSign(), idxTrack);
+    Int_t contIdx = CheckContTrack(TMath::Abs(track->GetLabel());
+    
+    Double_t hnDCA[10] = {fCentralityBin, track->Eta(), yP, track->Phi(), track->Pt(), sign, contIdx, isDCArAccepted, dcar, dcaz};
+    fHnDCA->Fill(hnContDCA);
 
   } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
-
+#endif
   return;
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleDCA::CheckDCATrack(Int_t label, Float_t sign, Float_t isDCArAccepted, Float_t dcar) {
+  Int_t AliAnalysisNetParticleDCA::CheckDCATrack(Int_t /*label*/) {
   // Check if DCA of contamination or correctly identified
   // Fill contamination DCA THnSparse
+  // return  1  primary | 2 missId | 3 from WeakDecay | 4 p from Material | -1 unknown
 
+  Int_t contIdx = -1;
+#if 0
   TParticle* particle = fStack->Particle(label);
   if (!particle)
     return;
@@ -275,30 +297,27 @@ void AliAnalysisNetParticleDCA::CheckDCATrack(Int_t label, Float_t sign, Float_t
   Bool_t isSecondaryFromWeakDecay = kFALSE;
   Bool_t isSecondaryFromMaterial  = kFALSE;
   
-  Int_t contPart = 0;
-
-  // -- Check if correctly identified 
-  if (particle->GetPdgCode() == (sign*fPdgCode)) {
-
+  ////  // Check if is physical primary -> all ok 
+  if (fStack->IsPhysicalPrimary(label)) {
+    
+    // -- Check if correctly identified 
     // Check if is physical primary -> all ok 
-    if (fStack->IsPhysicalPrimary(label))
-      contPart = 1;    
-    // -- Check if secondaries from weak decay
-    else if(isSecondaryFromWeakDecay = fStack->IsSecondaryFromWeakDecay(label))
-      contPart = 3;
-    // -- Check if secondaries from material decay
-    else if (isSecondaryFromMaterial  = fStack->IsSecondaryFromMaterial(label))
-      contPart = 4;
+    if (particle->GetPdgCode() == (sign*fPdgCode))
+      contIdx = 1;    
+    // -- MissIdentification
+    else 
+      contIdx = 2;
+  }
+  // -- Check if secondaries from weak decay
+  else if(isSecondaryFromWeakDecay = fStack->IsSecondaryFromWeakDecay(label))
+    contIdx = 3;
+  // -- Check if secondaries from material decay
+  else if (isSecondaryFromMaterial  = fStack->IsSecondaryFromMaterial(label))
+    contIdx = 4;
   } 
-  // -- MissIdentification
-  else
-    contPart = 2;
-  
-  Double_t hnDCA[9] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, contPart, isDCArAccepted, dcar};
-  fHnDCA->Fill(hnContDCA);
-  
-  return;
+#endif
+  return contIdx;
 }
 
 
-#endif
+

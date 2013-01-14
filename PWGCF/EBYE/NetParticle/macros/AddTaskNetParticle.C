@@ -13,9 +13,7 @@
  *     isCreateCSC    -> Prepare for CrossSectionCorrection 
  *                       - requires isModeEff to be set
  *                       - Proton only
- 
-*  JMT add mode isModeAOD
-
+ *     isModeAOD      -> Use AOD input 
  * 
  * - OUTPUT CONTAINER : #N = 5
  *   (1) - Standard Output, Distributions
@@ -104,7 +102,7 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   if (sName.Contains("Proton")) {
     helper->SetParticleSpecies(AliPID::kProton);
     helper->SetControlParticleSpecies(3122, kTRUE, "Lambda");
-    minPt    = 0.4;    maxPt    = 2.2;
+    minPt    = 0.4;    maxPt    = 0.8;
     minPtEff = 0.2;    maxPtEff = 2.6;
     minPtForTOF = 0.8;
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
@@ -114,21 +112,21 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   }
   else if (sName.Contains("Pion")) {
     helper->SetParticleSpecies(AliPID::kPion);
-    minPt    = 0.3;    maxPt    = 0.9;
+    minPt    = 0.25;   maxPt    = 0.7;
     minPtEff = 0.2;    maxPtEff = 1.2;
     minPtForTOF = 0.8;
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
   }
   else if (sName.Contains("Kaon")) {
     helper->SetParticleSpecies(AliPID::kKaon);
-    minPt    = 0.5;    maxPt    = 0.8;
+    minPt    = 0.5;    maxPt    = 1.4;
     minPtEff = 0.1;    maxPtEff = 2.5;
     minPtForTOF = 0.5;
     nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
   }
   else if (sName.Contains("Charge")) {
     helper->SetUsePID(kFALSE);
-    minPt    = 0.2;    maxPt    = 2.8;
+    minPt    = 0.3;    maxPt    = 2.5;
     minPtEff = 0.1;    maxPtEff = 3.0;
     minPtForTOF = -1.;
     nSigmaTPC = -1.;   nSigmaTOF = -1.;
@@ -144,10 +142,11 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // ----------------------------------------------
 
   // -- Set cut flags ...
-  task->SetESDTrackCutMode(0);     // => 0 = clean | 1 = dirty
+  task->SetESDTrackCutMode(0);              // => 0 = clean | 1 = dirty
 
   // -- Set analysis ranges
-  task->SetEtaMax(0.9);        
+  task->SetEtaMax(0.8);                     // eta cut
+  task->SetEtaMaxEff(0.9);                  // eta cut for efficiency
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
 

@@ -66,7 +66,7 @@ class AliAnalysisNetParticleDCA : public TNamed {
   AliAnalysisNetParticleDCA& operator=(const AliAnalysisNetParticleDCA&); // not implemented
 
 
-#if 0
+
   /*
    * ---------------------------------------------------------------------------------
    *                                Methods - private
@@ -80,8 +80,9 @@ class AliAnalysisNetParticleDCA : public TNamed {
   void FillDCA(); 
 
   /** Check if particle is contamination */
-  void CheckDCATrack(Int_t label, Float_t sign, Int_t idxTrack);
-      
+  Int_t CheckDCATrack(Int_t label);
+  //  void CheckDCATrack(Int_t label, Float_t sign, Int_t idxTrack);
+#if 0      
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private

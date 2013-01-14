@@ -75,6 +75,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   void SetModeQACreation(Int_t i)            {fModeQACreation   = i;}
  
   void SetEtaMax(Float_t f)                  {fEtaMax           = f;}
+  void SetEtaMaxEff(Float_t f)               {fEtaMaxEff        = f;}
   void SetPtRange(Float_t f1, Float_t f2)    {fPtRange[0]       = f1; fPtRange[1]    = f2;}
   void SetPtRangeEff(Float_t f1, Float_t f2) {fPtRangeEff[0]    = f1; fPtRangeEff[1] = f2;}
 
@@ -131,7 +132,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
    * ---------------------------------------------------------------------------------
    */
   
-  AliAnalysisNetParticleHelper       *fHelper;  // Helper class
+  AliAnalysisNetParticleHelper       *fHelper;  //  Helper class
   AliAnalysisNetParticleEffCont      *fEffCont; //! Efficiency and Contamination class
   AliAnalysisNetParticleDCA          *fDCA;     //! DCA class
   AliAnalysisNetParticleDistribution *fDist;    //! Distributions class
@@ -181,6 +182,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   // -----------------------------------------------------------------------
 
   Float_t             fEtaMax;                 //  Max, absolut eta 
+  Float_t             fEtaMaxEff;              //  Max, absolut eta for efficiency
   Float_t             fPtRange[2];             //  Array of pt [min,max]
   Float_t             fPtRangeEff[2];          //  Array of pt [min,max] for efficiency
 
