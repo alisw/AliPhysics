@@ -1226,7 +1226,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	     	fhL1GPatchAllFakeE->Fill(patchEnergy);
 	      }
 	    }
-	     cout << "row max"<<rowMax<<" colmax"<<colMax<< " emcalTrigL1G[rowMax][colMax]"<< emcalTrigL1G[rowMax][colMax]<<endl;
+	   //  cout << "row max"<<rowMax<<" colmax"<<colMax<< " emcalTrigL1G[rowMax][colMax]"<< emcalTrigL1G[rowMax][colMax]<<endl;
 
 	if(emcalTrigL1G[rowMax][colMax]>0) {
 	//  printf("\npatch max [%i,%i] = %f\n",rowMax,colMax,patchMax);
