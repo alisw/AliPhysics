@@ -1,11 +1,11 @@
-AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,				                              Bool_t storeNtuple=kFALSE,
-					     Bool_t readMC=kFALSE,
-					     Bool_t mixing=kFALSE,
-					     Int_t select=2,
-					     Int_t usedisp=0,
-					     TString finDirname="Loose",
-					     TString filename="",
-					     TString finAnObjname="AnalysisCuts")
+AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
+						     Bool_t readMC=kFALSE,
+						     Bool_t mixing=kFALSE,
+						     Int_t select=2,
+						     Int_t usedisp=0,
+						     TString finDirname="Loose",
+						     TString filename="",
+						     TString finAnObjname="AnalysisCuts")
 {
 
     //                                                                                                                                    
@@ -32,7 +32,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,				  
       }
   }
   
-  TFile* filecuts1=new TFile("AssocPartCuts.root");
+  TFile* filecuts1=new TFile("AssocPartCutsDplus.root");
 	  if(!filecuts1->IsOpen()){
 		  cout<<"Input file1 not found: exit"<<endl;
 		  return;
@@ -84,18 +84,19 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,				  
   TString outname = "coutputDplus";
   TString cutsname = "coutputDplusCuts";
   TString normname = "coutputDplusNorm";
-  TString ntuplename = "coutputDplus2";
+  TString trackcutsname = "coutputTrackCuts";
   inname += finDirname.Data();
   outname += finDirname.Data();
   cutsname += finDirname.Data();
   normname += finDirname.Data();
-  ntuplename += finDirname.Data();
+  trackcutsname += finDirname.Data();
   TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
   inname += centr;
   outname += centr;
   cutsname += centr;
   normname += centr;
-  ntuplename += centr;
+  trackcutsname += centr;
+  
 
 
   AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer(inname,TChain::Class(),
@@ -114,22 +115,17 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,				  
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
   
-  if(storeNtuple){
-    AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outputfile.Data());
-    
-    coutputDplus2->SetSpecialOutput();
-  }
-  mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
+AliAnalysisDataContainer *coutputTrackCuts = mgr->CreateContainer(trackcutsname,AliHFAssociatedTrackCuts::Class(),
+								  AliAnalysisManager::kOutputContainer,								                                                 outputfile.Data());
   
+ mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
+ 
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
   
   mgr->ConnectOutput(dplusTask,2,coutputDplusCuts);
-
+  
   mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);  
-  if(storeNtuple){
-    mgr->ConnectOutput(dplusTask,4,coutputDplus2);
-  }
+  mgr->ConnectOutput(dplusTask,4,coutputTrackCuts); 
+  
   return dplusTask;
 }
