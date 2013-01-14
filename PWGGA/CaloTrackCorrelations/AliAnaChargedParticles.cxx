@@ -87,6 +87,7 @@ ClassImp(AliAnaChargedParticles)
   
   for(Int_t i = 0; i < 3; i++)
   {
+    fDCACutParam          [i] = 0 ;
     fhPtDCA               [i] = 0 ;
     
     fhPtDCASPDRefit       [i] = 0 ;
@@ -104,8 +105,10 @@ ClassImp(AliAnaChargedParticles)
     fhPtDCAVtxInBC0       [i] = 0 ;
     fhPtDCAVtxOutBC0PileUp[i] = 0 ;
     fhPtDCAVtxInBC0PileUp [i] = 0 ;
-    fhPtDCAVtxOutBC0NoTOFHit      [i] = 0 ;
+    fhPtDCAVtxOutBC0NoTOFHit[i] = 0 ;
+    fhPtDCAVtxInBC0NoTOFHit [i] = 0 ;
     fhPtDCAVtxOutBC0PileUpNoTOFHit[i] = 0 ;
+    fhPtDCAVtxInBC0PileUpNoTOFHit [i] = 0 ;
   }
   
   //Initialize parameters
@@ -118,7 +121,7 @@ Bool_t  AliAnaChargedParticles::AcceptDCA(const Float_t pt, const Float_t dca)
 {
  // Accept track if DCA is smaller than function
   
-  Float_t cut = 0.0105+0.0350/TMath::Power(pt,1.1);
+  Float_t cut = fDCACutParam[0]+fDCACutParam[1]/TMath::Power(pt,fDCACutParam[2]);
   
   if(TMath::Abs(dca) < cut)
     return kTRUE;
@@ -657,6 +660,11 @@ void AliAnaChargedParticles::InitParameters()
   SetOutputAODName("PWG4Particle");
 
   AddToHistogramsName("AnaCharged_");
+  
+  // dca_xy cut = 0.0105+0.0350/TMath::Power(pt,1.1);
+  fDCACutParam[0]= 0.0105;
+  fDCACutParam[1]= 0.0350;
+  fDCACutParam[2]= 1.1;
   
 }
 
