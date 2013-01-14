@@ -1950,7 +1950,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Double_t energy  = part->Energy();
       if(energy>900.) continue;
       Double_t pz = part->Pz();
-      Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
+      Double_t y = 100.;
+      if(energy-pz+1.e-13 > 0.) y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
       if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
     }
     //printf("# primary particles = %7.1f\n",dNchdy);
