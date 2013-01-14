@@ -151,30 +151,6 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
 									  fname.Data());
 
  
- AliAnalysisDataContainer *coutputd0clusterTypeSPD01Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD01Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
-
- AliAnalysisDataContainer *coutputd0clusterTypeSPD02Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD02Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
-
- AliAnalysisDataContainer *coutputd0clusterTypeSPD03Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD03Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
-
- AliAnalysisDataContainer *coutputd0clusterTypeSPD11Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD11Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
-
- AliAnalysisDataContainer *coutputd0clusterTypeSPD12Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD12Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
-
- AliAnalysisDataContainer *coutputd0clusterTypeSPD13Skip = mgr->CreateContainer(Form("coutputd0clusterTypeSPD13Skip_%d_%d",minmult,maxmult),TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									fname.Data());
- 
   AliAnalysisDataContainer *coutputd0PID = mgr->CreateContainer(Form("coutputd0PID_%d_%d",minmult,maxmult),TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									fname.Data());
@@ -219,16 +195,10 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
   mgr->ConnectOutput(d0ResTask,23,coutputd0phiAllpointSkip);
   mgr->ConnectOutput(d0ResTask,24,coutputd0phiPostvtracSkip);
   mgr->ConnectOutput(d0ResTask,25,coutputd0phiNegtvtracSkip);
-  mgr->ConnectOutput(d0ResTask,26,coutputd0clusterTypeSPD01Skip);
-  mgr->ConnectOutput(d0ResTask,27,coutputd0clusterTypeSPD02Skip);
-  mgr->ConnectOutput(d0ResTask,28,coutputd0clusterTypeSPD03Skip);
-  mgr->ConnectOutput(d0ResTask,29,coutputd0clusterTypeSPD11Skip);
-  mgr->ConnectOutput(d0ResTask,30,coutputd0clusterTypeSPD12Skip);
-  mgr->ConnectOutput(d0ResTask,31,coutputd0clusterTypeSPD13Skip);
-  mgr->ConnectOutput(d0ResTask,32,coutputd0PID);
-  mgr->ConnectOutput(d0ResTask,33,coutputd0Pt);
-  mgr->ConnectOutput(d0ResTask,34,coutputNentries);
-  mgr->ConnectOutput(d0ResTask,35,coutputEstimVtx);
+  mgr->ConnectOutput(d0ResTask,26,coutputd0PID);
+  mgr->ConnectOutput(d0ResTask,27,coutputd0Pt);
+  mgr->ConnectOutput(d0ResTask,28,coutputNentries);
+  mgr->ConnectOutput(d0ResTask,29,coutputEstimVtx);
 
   return d0ResTask;
 }

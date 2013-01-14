@@ -167,14 +167,8 @@ fEstimVtx(0)
   DefineOutput(25, TList::Class());
   DefineOutput(26, TList::Class());  //My private output
   DefineOutput(27, TList::Class());
-  DefineOutput(28, TList::Class());  //My private output
-  DefineOutput(29, TList::Class());
-  DefineOutput(30, TList::Class());  //My private output
-  DefineOutput(31, TList::Class());
-  DefineOutput(32, TList::Class());  //My private output
-  DefineOutput(33, TList::Class());  //My private output
-  DefineOutput(34, TH1F::Class());
-  DefineOutput(35, TH1F::Class());
+  DefineOutput(28, TH1F::Class());
+  DefineOutput(29, TH1F::Class());
 }
 
 //________________________________________________________________________
