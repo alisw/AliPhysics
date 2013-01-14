@@ -48,11 +48,14 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnRecalculateVertexBC()      { fRecalculateVertexBC     = kTRUE  ; }
   void    SwitchOffRecalculateVertexBC()     { fRecalculateVertexBC     = kFALSE ; }
 
+  void    SetDCACutParameters(Int_t i, Float_t par) { if(i >= 0 && i < 3) fDCACutParam[i] = par ; }
+  
  private:
   
-  Bool_t fFillPileUpHistograms;    // Fill pile-up related histograms
-  Bool_t fFillVertexBC0Histograms; // Fill histograms for tracks with vertex BC=0 or not related histograms
-  Bool_t fRecalculateVertexBC;     // Recalculate vertex BC for older AODs
+  Bool_t  fFillPileUpHistograms;    // Fill pile-up related histograms
+  Bool_t  fFillVertexBC0Histograms; // Fill histograms for tracks with vertex BC=0 or not related histograms
+  Bool_t  fRecalculateVertexBC;     // Recalculate vertex BC for older AODs
+  Float_t fDCACutParam[3];          // DCA cut function parameters
   
   //Histograms
   TH1F * fhNtracks;     //! track multiplicity distribution
