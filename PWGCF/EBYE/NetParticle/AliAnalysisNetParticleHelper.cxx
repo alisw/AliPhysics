@@ -5,7 +5,6 @@
 #include "TSystem.h" 
 #include "TFile.h" 
 #include "TPRegexp.h"
-#include "TDatabasePDG.h"
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -487,14 +486,10 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicCharged(AliAODMCPart
   if (!particle) 
     return kFALSE;
 
-  // -- check if PDF code exists
-  if (!(TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))) 
-    return kFALSE;
-    
   // -- check if charged
-  if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.0) 
+  if (particle->Charge() == 0.0) 
     return kFALSE;
-      
+  
   // -- check if physical primary
   if(!particle->IsPhysicalPrimary()) 
     return kFALSE;
@@ -530,14 +525,10 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCPart
   if (!particle) 
     return kFALSE;
 
-  // -- check if PDF code exists
-  if (!(TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))) 
-    return kFALSE;
-    
   // -- check if charged
-  if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() != 0.0) 
+  if (particle->Charge() != 0.0) 
     return kFALSE;
-      
+  
   // -- check if physical primary
   if(!particle->IsPhysicalPrimary()) 
     return kFALSE;

@@ -2,7 +2,6 @@
 
 #include "TMath.h"
 #include "TAxis.h"
-#include "TDatabasePDG.h"
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
@@ -574,11 +573,9 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
 
     // -- Check if probeParticle / anti-probeParticle 
     //    > skip check if PID is not required
-    if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != fPdgCode){
-      printf("SHOULD NOT HAPPEN !!!\n"); // JMT
-      printf("%d %d !!!\n", particle->GetPdgCode(), fPdgCode ); // JMT
+    if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != fPdgCode)
       continue;
-    }
+    
     
     // -- Get sign of particle
     Float_t sign      = (particle->GetPdgCode() < 0) ? -1. : 1.;
