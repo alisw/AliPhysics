@@ -89,7 +89,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(0) 
+  ,fqahist(1) 
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -173,6 +173,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
+  ,HDpTcheck(0)
+  ,HBpTcheck(0)
   ,HphopTcheck(0)
   ,fpTCheck(0)
   ,fMomDtoE(0) 
@@ -202,7 +204,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(0)
+  ,fqahist(1)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -287,6 +289,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
   ,HphopTcheck(0)
+  ,HDpTcheck(0)
+  ,HBpTcheck(0)
   ,fpTCheck(0)
   ,fMomDtoE(0)
   ,fLabelCheck(0)
@@ -390,6 +394,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
             if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
          }
 
+      if(mcInDtoE)HDpTcheck->Fill(pTMC,iHijing);
+      if(mcInBtoE)HBpTcheck->Fill(pTMC,iHijing);
+
          if(proR<7.0 && fabs(fPDG)==11)fInputAlle->Fill(cent,pTMC);
 
       }
@@ -444,6 +451,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double emceta = clustpos.Eta();
          double calInfo[5];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
+         fEMCAccE->Fill(calInfo); 
          //if(clustE>1.5)fEMCAccE->Fill(calInfo); 
          //if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
         }
@@ -1128,6 +1136,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   HphopTcheck = new TH2D("HphopTcheck","Pho pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(HphopTcheck);
+  //
+  HDpTcheck = new TH2D("HDpTcheck","D pT from Hijing",100,0,50,3,-0.5,2.5);
+  fOutputList->Add(HDpTcheck);
+
+  HBpTcheck = new TH2D("HBpTcheck","B pT from Hijing",100,0,50,3,-0.5,2.5);
+  fOutputList->Add(HBpTcheck);
+  //
 
   fpTCheck = new TH1D("fpTCheck","pT check",500,0,50);
   fOutputList->Add(fpTCheck);
