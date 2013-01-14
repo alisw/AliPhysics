@@ -150,8 +150,8 @@ AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
 //________________________________________________________________________
 void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid) {
   // -- Set particle species (ID, Name, Title, Title LATEX)
-  
-  if ( Int_t(pid) < 0 || Int_t(pid) >= AliPID::kSPECIES) {
+
+  if ( Int_t(pid) < 0 || Int_t(pid) >= AliPID::kSPECIES) {  
     AliWarning("Particle ID not in AliPID::kSPECIES --> Set to protons");
     pid = AliPID::kProton;
   }  
@@ -288,24 +288,20 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   if(esdHandler){
     fInputEventHandler = static_cast<AliInputEventHandler*>(esdHandler);
     fESD               = dynamic_cast<AliESDEvent*>(fInputEventHandler->GetEvent());
-    
     if (!fESD) {
       AliError("ESD event handler not available");
       return -1;
     }
-
   }
 
   // -- Get AOD objects
   else if(aodHandler){
     fInputEventHandler = static_cast<AliInputEventHandler*>(aodHandler);
     fAOD               = dynamic_cast<AliAODEvent*>(fInputEventHandler->GetEvent());
-
     if (!fAOD) {
       AliError("AOD event handler not available");
       return -1;
     }
-
   }
 
   // -- Get Common objects
@@ -331,7 +327,7 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
     AliError("Centrality not available");
     return -1;
   }
-  
+
   Int_t centBin = centrality->GetCentralityClass10("V0M");
   if (centBin == 0)
     fCentralityBin = centrality->GetCentralityClass5("V0M");
@@ -548,9 +544,42 @@ Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedBasicNeutral(AliAODMCPart
         
   return kTRUE;
 }
+
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP) {
   // -- Check if particle is accepted
+  // > in rapidity
+  // > if no pid : 
+  // >   use yP as input for the pseudo-rapdity_MAX to be checked
+  // > return 0 if not accepted
+
+  if (!fUsePID) {
+    Bool_t isAccepted = kFALSE;
+    if (TMath::Abs(particle->Eta()) < yP)
+      isAccepted = kTRUE;
+    yP = particle->Eta();
+    return isAccepted;
+  }
+
+  Double_t mP = AliPID::ParticleMass(fParticleSpecies);
+
+  // -- Calculate rapidities and kinematics
+  Double_t p  = particle->P();
+  Double_t pz = particle->Pz();
+
+  Double_t eP = TMath::Sqrt(p*p + mP*mP);
+  yP          = 0.5 * TMath::Log((eP + pz) / (eP - pz));  
+
+  // -- Check Rapidity window
+  if (TMath::Abs(yP) > fRapidityMax)
+    return kFALSE;
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisNetParticleHelper::IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP) {
+  // -- Check if AOD particle is accepted
   // > in rapidity
   // > if no pid : 
   // >   use yP as input for the pseudo-rapdity_MAX to be checked

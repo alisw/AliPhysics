@@ -60,15 +60,13 @@ AliAnalysisNetParticleEffCont::AliAnalysisNetParticleEffCont() :
 AliAnalysisNetParticleEffCont::~AliAnalysisNetParticleEffCont() {
   // Destructor
 
-  if (fLabelsRec){
-
+  if (fLabelsRec) {
     if (fLabelsRec[0])
       delete[] (fLabelsRec[0]);
-
     if (fLabelsRec[1])
       delete[] (fLabelsRec[1]);
-
-    delete[] fLabelsRec;
+    if (fLabelsRec)
+      delete[] fLabelsRec;
   }
 }
 
@@ -345,11 +343,11 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
     
     // -- Check if accepted - AOD
     if (fAOD){
-      if(!(dynamic_cast<AliAODTrack*>(track))){
+      if(!(dynamic_cast<AliAODTrack*>(track))) {
 	AliError("Pointer to dynamic_cast<AliAODTrack*>(track) = ZERO");
 	continue;
       }
-      if(!((dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fAODtrackCutBit))) 
+      if(!((dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fAODtrackCutBit)))
 	continue;
     }
 
@@ -499,7 +497,7 @@ void AliAnalysisNetParticleEffCont::CheckContTrackAOD(Int_t label, Float_t sign,
   // -- If no PID is required 
   //    > only check for Primaries and Secondaries  
   else {
-    // Check if is physical primary -> all ok 
+   // Check if is physical primary -> all ok 
     if (particle->IsPhysicalPrimary())
       return;
     
@@ -510,13 +508,9 @@ void AliAnalysisNetParticleEffCont::CheckContTrackAOD(Int_t label, Float_t sign,
 
   // -- Get PDG Charge
   Float_t contSign = 0.;
-  // Crashing (MW)? --> why do we need the PDG charge? 
-  // if      ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() == 0.) contSign =  0.;
-  // else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() <  0.) contSign = -1.;	
-  // else if ((TDatabasePDG::Instance()->GetParticle(particle->PdgCode()))->Charge() >  0.) contSign =  1.;	
-   if      (particle->Charge() == 0.) contSign =  0.;
-   else if (particle->Charge() <  0.) contSign = -1.;	
-   else if (particle->Charge() >  0.) contSign =  1.;
+  if      (particle->Charge() == 0.) contSign =  0.;
+  else if (particle->Charge()  < 0.) contSign = -1.;
+  else if (particle->Charge()  > 0.) contSign =  1.;
 
   // -- Get contaminating particle
   Float_t contPart = 0;
@@ -582,6 +576,7 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
     //    > skip check if PID is not required
     if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != fPdgCode){
       printf("SHOULD NOT HAPPEN !!!\n"); // JMT
+      printf("%d %d !!!\n", particle->GetPdgCode(), fPdgCode ); // JMT
       continue;
     }
     
@@ -638,6 +633,8 @@ void AliAnalysisNetParticleEffCont::FillMCEffHistAOD() {
   // Fill efficiency THnSparse for AODs
   
   Int_t nPart  = fArrayMC->GetEntriesFast();
+  Float_t etaRange[2];
+  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
 
   for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
     
@@ -649,7 +646,9 @@ void AliAnalysisNetParticleEffCont::FillMCEffHistAOD() {
 
     // -- Check rapidity window
     Double_t yMC;
-    if (!fHelper->IsParticleAcceptedRapidity((TParticle*)particle, yMC))  // MW : das geht? wenn ja use c++ cast
+    if (!fHelper->GetUsePID()) 
+      yMC = etaRange[1];
+    if (!fHelper->IsParticleAcceptedRapidity(particle, yMC))
       continue;
 
     // -- Check if probeParticle / anti-probeParticle 

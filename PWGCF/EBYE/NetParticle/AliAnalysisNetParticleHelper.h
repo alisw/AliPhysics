@@ -133,6 +133,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
  
   /** Check if MC particle is accepted for Rapidity */
   Bool_t IsParticleAcceptedRapidity(TParticle *particle, Double_t &yP);
+  Bool_t IsParticleAcceptedRapidity(AliAODMCParticle *particle, Double_t &yP);
 
   /** Check if MC particle is findable tracks */
   Bool_t IsParticleFindable(Int_t label);

@@ -81,7 +81,8 @@ AliAnalysisTaskNetParticle::AliAnalysisTaskNetParticle(const char *name) :
 
   fHnQA(NULL),
 
-  fEtaMax(0.9),
+  fEtaMax(0.8),
+  fEtaMaxEff(0.9),
   fPtRange(),
   fPtRangeEff(),
 
@@ -327,6 +328,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   fESDTrackCutsEff = static_cast<AliESDtrackCuts*>(fESDTrackCuts->Clone());
   fESDTrackCutsEff->SetName(Form("NetParticleCuts2010_%s_Eff",sModeName.Data()));
   fESDTrackCutsEff->SetPtRange(fPtRangeEff[0],fPtRangeEff[1]);                              // Acceptance
+  fESDTrackCutsBase->SetEtaRange(-1.*fEtaMaxEff, fEtaMaxEff);                               // Acceptance
 
   // ------------------------------------------------------------------
   // -- Initialize Helper
@@ -517,12 +519,12 @@ Int_t AliAnalysisTaskNetParticle::SetupMCEvent() {
 
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> 
     (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-
+  
   if (!mcH) {
     AliError("MC event handler not available");
     return -1;
   }
-  
+
   fMCEvent = mcH->MCEvent();
   if (!fMCEvent) {
     AliError("MC event not available");
