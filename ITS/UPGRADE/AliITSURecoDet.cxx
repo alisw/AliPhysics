@@ -123,8 +123,14 @@ Bool_t AliITSURecoDet::Build()
 //______________________________________________________
 void AliITSURecoDet::IndexLayers()
 {
+  // sort and index layers
+  const Double_t kRMargin = 1e-2; // 100 micron margin
   fLayersActive.Sort();
   for (int i=0;i<fNLayersActive;i++) GetLayerActive(i)->SetActiveID(i);
   fLayers.Sort();
   for (int i=0;i<fNLayers;i++) GetLayer(i)->SetID(i);
+  if (fNLayers>0) {
+    SetRMin(GetLayer(0)->GetRMin()-kRMargin);
+    SetRMax(GetLayer(fNLayers-1)->GetRMax()+kRMargin);
+  }
 }

@@ -38,6 +38,7 @@ class AliITSURecoLayer : public TNamed
   Double_t           GetRMax()                     const {return fRMax;}
   Double_t           GetDR()                       const {return fRMax-fRMin;}
   Double_t           GetR()                        const {return fR;}
+  Double_t           GetR(Int_t dir)               const {return dir==0 ? fR : (dir<0 ? fRMin : fRMax);}
   Double_t           GetZMin()                     const {return fZMin;}
   Double_t           GetZMax()                     const {return fZMax;}
   Double_t           GetMaxStep()                  const {return fMaxStep;}

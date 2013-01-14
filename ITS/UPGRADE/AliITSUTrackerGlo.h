@@ -25,6 +25,7 @@ class TTree;
 class AliITSUTrackerGlo : public AliTracker {
 
   public:
+  enum {kClus2Tracks,kPropBack,kRefitInw};   // tracking phases
   enum { // info from track extrapolation to layer for cluster check
     kTrXIn ,kTrYIn ,kTrZIn ,kTrPhiIn , // entrance (outer) point on the layer from above 
     kTrXOut,kTrYOut,kTrZOut,kTrPhiOut, // exit (inner) point on the layer
@@ -58,6 +59,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
+  Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r);
   //
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
@@ -70,6 +72,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
   void                   SaveCurrentTrackHypotheses();
   void                   FinalizeHypotheses();
+  void                   UpdateESDTrack(AliITSUTrackHyp* hyp);
  //
 
  private:
@@ -90,6 +93,7 @@ class AliITSUTrackerGlo : public AliTracker {
   TClonesArray                    fSeedsPool;      // pool for seeds
   //
   AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
+  Int_t                           fTrackPhase;     // tracking phase
   //
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     

@@ -53,6 +53,7 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fCurrHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
   ,fTrCond()
+  ,fTrackPhase(-1)
 {
   // Default constructor
   if (rec) Init(rec);
@@ -104,8 +105,10 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
   //
-  AliITSUReconstructor::GetRecoParam()->Print();
+  fTrackPhase = kClus2Tracks;
   int nTrESD = esdEv->GetNumberOfTracks();
+  AliInfo(Form("Will try to find prolongations for %d tracks",nTrESD));
+  AliITSUReconstructor::GetRecoParam()->Print();
   fHypStore.Delete();
   if (fHypStore.GetSize()<nTrESD) fHypStore.Expand(nTrESD+100);
   //
@@ -114,6 +117,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   for (int itr=0;itr<nTrESD;itr++) {
     AliESDtrack *esdTr = esdEv->GetTrack(itr);
     AliInfo(Form("Processing track %d | MCLabel: %d",itr,esdTr->GetTPCLabel()));
+    if (!NeedToProlong(esdTr)) continue;  // are we interested in this track?
     FindTrack(esdTr, itr);
   }
   //
@@ -125,13 +129,66 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 }
 
 //_________________________________________________________________________
-Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent * /*event*/)
+Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
 {
   //
-  // To be implemented 
+  // Do outward fits in ITS
   //
-  
- Info("PropagateBack","To be implemented");
+  fTrackPhase = kPropBack;
+  int nTrESD = esdEv->GetNumberOfTracks();
+  AliInfo(Form("Will fit %d tracks",nTrESD));
+  //
+  double bz0 = GetBz();
+  Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
+  AliITSUTrackHyp dummyTr,*currTr=0;
+  const double kWatchStep=10.; // for larger steps watch arc vs segment difference
+  Double_t times[AliPID::kSPECIES];
+  //
+  //
+  for (int itr=0;itr<nTrESD;itr++) {
+    AliESDtrack *esdTr = esdEv->GetTrack(itr);
+    // Start time integral and add distance from current position to vertex 
+    if (esdTr->IsOn(AliESDtrack::kITSout)) continue; // already done
+    //
+    esdTr->GetXYZ(xyzTrk); 
+    Double_t dst = 0.;     // set initial track lenght, tof
+    {
+      double dxs = xyzTrk[0] - xyzVtx[0];
+      double dys = xyzTrk[1] - xyzVtx[1];
+      double dzs = xyzTrk[2] - xyzVtx[2];
+      // RS: for large segment steps d use approximation of cicrular arc s by
+      // s = 2R*asin(d/2R) = d/p asin(p) \approx d/p (p + 1/6 p^3) = d (1+1/6 p^2)
+      // where R is the track radius, p = d/2R = 2C*d (C is the abs curvature)
+      // Hence s^2/d^2 = (1+1/6 p^2)^2
+      dst = dxs*dxs + dys*dys;
+      if (dst > kWatchStep*kWatchStep) { // correct circular part for arc/segment factor
+	double crv = Abs(esdTr->GetC(bz0));
+	double fcarc = 1.+crv*crv*dst/6.;
+	dst *= fcarc*fcarc;
+      }
+      dst += dzs*dzs;
+      dst = Sqrt(dst); 
+    }
+    //    
+    esdTr->SetStatus(AliESDtrack::kTIME);
+    //
+    if (!esdTr->IsOn(AliESDtrack::kITSin)) { // case of tracks w/o ITS prolongation: just set the time integration
+      dummyTr.StartTimeIntegral();
+      dummyTr.AddTimeStep(TMath::Sqrt(dst));
+      dummyTr.GetIntegratedTimes(times); 
+      esdTr->SetIntegratedTimes(times);
+      esdTr->SetIntegratedLength(dummyTr.GetIntegratedLength());
+      continue;
+    }
+    //
+    currTr = GetTrackHyp(itr);
+    currTr->StartTimeIntegral();
+    currTr->AddTimeStep(dst);
+    currTr->ResetCovariance(10.);
+    RefitTrack(currTr,fITS->GetRMax()); // propagate to exit from the ITS/TPC screen
+    //
+  }
+  //
   return 0;
 }
 
@@ -205,7 +262,6 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   AliITSUSeed seedUC;  // copy of the seed from the upper layer
   AliITSUSeed seedT;   // transient seed between the seedUC and new prolongation hypothesis
   //
-  if (!NeedToProlong(esdTr)) return;  // are we interested in this track?
   if (!InitHypothesis(esdTr,esdID)) return;  // initialize prolongations hypotheses tree
   //
   AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
@@ -317,6 +373,7 @@ Bool_t AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esdID)
   fCurrHyp = new AliITSUTrackHyp(fITS->GetNLayersActive());
   fCurrHyp->SetESDTrack(esdTr);
   fCurrHyp->SetUniqueID(esdID);
+  fCurrHyp->SetMass(fCurrMass);
   SetTrackHyp(fCurrHyp,esdID);
   //
   return kTRUE;
@@ -636,7 +693,48 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
   for (int ih=0;ih<nh;ih++) {
     AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
     if (!hyp) continue;
-    hyp->UpdateESD();
+    hyp->DefineWinner();  // TODO
+    UpdateESDTrack(hyp);
   }
 
+}
+
+//______________________________________________________________________________
+void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp)
+{
+  // update ESD track with current best hypothesis
+  AliESDtrack* esdTr = hyp->GetESDTrack();
+  if (!esdTr) return;
+  AliITSUSeed* win = hyp->GetWinner();
+  if (!win) return;
+  esdTr->UpdateTrackParams(hyp,AliESDtrack::kITSin);
+  //
+  // transfer module indices
+  // TODO
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
+{
+  // refit track till radius rDest
+  double rCurr = Sqrt(trc->GetX()*trc->GetX() + trc->GetY()*trc->GetY());
+  int dir,lrStart,lrStop;
+  //
+  if (rCurr<rDest) {
+    dir = 1;
+    lrStart = 0;
+    lrStop  = fITS->GetNLayers()-1;
+  }
+  else {
+    dir = 1;
+    lrStart = fITS->GetNLayers()-1;
+    lrStop  = 0;    
+  }
+  //
+  for (int ilr=lrStart;ilr!=lrStop;ilr+=dir) {
+    AliITSURecoLayer* lr = fITS->GetLayer(ilr);
+    if ( dir*(rCurr-lr->GetR(dir))>0) continue; // this layer is already passed
+    //
+  }
+  
 }

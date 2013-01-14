@@ -23,11 +23,10 @@ class AliITSUTrackHyp: public AliKalmanTrack
   AliITSUSeed*       GetSeed(Int_t lr, Int_t id) const {return (AliITSUSeed*)fLayerSeeds[lr].UncheckedAt(id);}
   AliITSUSeed*       GetWinner()         const;
   AliESDtrack*       GetESDTrack()       const {return fESDTrack;}
-  void               DefineWinner(Int_t lr, Int_t id);
+  void               DefineWinner(Int_t lr=0, Int_t id=0);
   const TObjArray*   GetLayerSeeds(Int_t lr) const {return lr<fNLayers ? &fLayerSeeds[lr] : 0;}
   void               AddSeed(AliITSUSeed* seed, Int_t lr) {fLayerSeeds[lr].AddLast(seed);}
   void               SetESDTrack(AliESDtrack* esdtr) {fESDTrack = esdtr;}
-  void               UpdateESD();
   //
   void               SetChi2(Double_t chi2) {fChi2 = chi2;}
   //

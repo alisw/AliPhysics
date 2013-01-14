@@ -81,19 +81,6 @@ void AliITSUTrackHyp::DefineWinner(int lr, int id)
 }
 
 //__________________________________________________________________
-void AliITSUTrackHyp::UpdateESD()
-{
-  // update ESD track
-  AliESDtrack* esdTr = GetESDTrack();
-  if (!esdTr) return;
-  AliITSUSeed* win = GetWinner();
-  if (!win) return;
-  esdTr->UpdateTrackParams(this,AliESDtrack::kITSin);
-}
-
-
-
-//__________________________________________________________________
 Double_t AliITSUTrackHyp::GetPredictedChi2(const AliCluster */*c*/) const
 {
   // NA
