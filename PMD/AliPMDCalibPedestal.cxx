@@ -209,8 +209,8 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     UInt_t  detsmnrowcol = 0;
     Int_t   det = 0, sm = 0, row = 0, col = 0;
     Int_t   idet = 0, ism = 0, irow = 0, icol = 0;
-    Float_t mean = 0., rms = 0.;
-    Float_t meansq = 0., diff = 0.;
+    Double_t mean = 0., rms = 0.;
+    Double_t meansq = 0., diff = 0.;
 
     FILE *fpw0 = fopen("pedestal2304.ped","w");
     FILE *fpw1 = fopen("pedestal2305.ped","w");
