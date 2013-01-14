@@ -1,6 +1,6 @@
 
 
-AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2, Bool_t ispA=kTRUE, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2, Bool_t ispA=kTRUE, Bool_t rapCMS = kFALSE,  Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
 
 
   //get the current analysis manager
@@ -10,10 +10,10 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
     return 0;
   }
   //============= Set Task Name ===================
-  TString taskName=("AliAnalysisTPCTOFpA.cxx+g");
+  //TString taskName=("AliAnalysisTPCTOFpA.cxx+g");
   //===============================================
   //            Load the task
-  gROOT->LoadMacro(taskName.Data());
+  //gROOT->LoadMacro(taskName.Data());
 
 
   
@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
 
   //normal tracks
   AliAnalysisTPCTOFpA *task = new AliAnalysisTPCTOFpA("janielskTaskTPCTOFpA");
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliVEvent::kCINT5);
 
   //switches
   if (isMC) task->SetIsMCtrue(isMC);
@@ -34,6 +34,7 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
     task->SetRapidityCuts(rapidityLow,rapidityHigh);
   }
   if (ispA) task->SetIspA(kTRUE);
+  if (rapCMS) task->SetRapCMS(kTRUE);
 
   //initialize task
   task->Initialize();
