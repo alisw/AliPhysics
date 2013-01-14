@@ -359,19 +359,27 @@ void AliGenAmpt::Generate()
 	          //arr.Print();
 	          // iparticle->SetStatusCode(2);  to be compatible with Hijing
 	          iparticle->SetFirstDaughter(np2);
-	          for (Int_t jj = 1; jj < ndecayed; jj++) {
+		  for (Int_t jj = 1; jj < ndecayed; jj++) {
   	          TParticle *jp = (TParticle *)arr.At(jj);
 	            if (jp->GetFirstMother()!=1)
 	              continue;
-  	          TParticle *newp = new(fParticles[np2]) TParticle(jp->GetPdgCode(),
+
+		    TParticle *newp = new(fParticles[np2]) TParticle(jp->GetPdgCode(),
   	                                                           0, //1,  //to be compatible with Hijing
   	                                                           i,
   	                                                           -1,
   	                                                           -1,
   	                                                           -1,
   	                                                           jp->Px(),jp->Py(),jp->Pz(),jp->Energy(),
-  	                                                           jp->Vx(),jp->Vy(),jp->Vz(),jp->T());
-  	          newp->SetUniqueID( jp->GetStatusCode() );
+								     jp->Vx(),jp->Vy(),jp->Vz(),jp->T());
+		    //take care of the phi
+		    //if((kf == 333)||(kf == 313)) {
+		    if(IsThisAKnownParticle(iparticle)) {
+		      //Printf("=============PANOS===================");
+		      //Printf("Phi detected - daughet is: %d",jp->GetPdgCode());
+		      newp->SetUniqueID(4);
+		    }
+		    else newp->SetUniqueID( jp->GetStatusCode() );
   	          np2++;
   	        } // end of jj->nDecayedParticles
   	        iparticle->SetLastDaughter(np2-1);

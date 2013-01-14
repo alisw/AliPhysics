@@ -2234,6 +2234,7 @@ clin-7/26/03 improve speed
 
          ISS=NINT(SRT/ESBIN)
 clin-4/2008 use last bin if ISS is out of EKAON's upper bound of 2000:
+         if(ISS.lt.0) GOTO 400 
          if(ISS.gt.2000) ISS=2000
 *Sort collisions
 c
@@ -3291,6 +3292,7 @@ c        IF(IC.EQ.-1)GO TO 400
            GO TO 400
         endif
 
+c        print *,"ISS (3294) is ",iss
         ekaon(3,iss)=ekaon(3,iss)+1
 * CALCULATE KAON PRODUCTION PROBABILITY FROM NUCLEON + BARYON RESONANCE 
 * COLLISIONS
@@ -3661,6 +3663,7 @@ clin-4/03/02 rho rho <-> eta eta:
        if(ppel.eq.0)go to 400
 * the collision can happen
 * check what kind collision has happened
+c        print *,"ISS (3665) is ",iss
        ekaon(5,iss)=ekaon(5,iss)+1
         CALL CRPP(PX1CM,PY1CM,PZ1CM,SRT,I1,I2,
      1  IBLOCK,ppel,ppin,spprho,ipp)
