@@ -59,13 +59,14 @@ AliAnalysisTask *AddTaskHFECal()
   
 
   //Jet trigger
-  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+  // semi-central
+  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   
   TString containerName3 = mgr->GetCommonFileName();
-  containerName3 += ":PWGHF_hfeCalTrigEJE";
+  containerName3 += ":PWGHF_hfeCalSemiCentral";
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_EMCalTrigEJE", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_SemiCentral", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
   mgr->ConnectInput(hfetaskTrig2, 0, cinput);
   mgr->ConnectOutput(hfetaskTrig2, 1, coutput1);
   
