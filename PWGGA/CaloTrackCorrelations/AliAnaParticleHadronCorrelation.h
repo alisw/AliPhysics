@@ -36,6 +36,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TList      * GetCreateOutputObjects();
   
   void         InitParameters();
+
+  void         FillEventMixPool() ;
   
   void         MakeAnalysisFillAOD()  ;
   
@@ -408,11 +410,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   // Mixing
   TH1I *       fhNEventsTrigger;               //! number of analyzed triggered events
-  TH1F *       fhNtracksAll;                   //! total number of tracks 
-  TH1F *       fhNtracksTrigger;               //! total number of tracks in triggered events 
   TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
-  TH1F *       fhNclustersAll;                 //! total number of clusters
-  TH1F *       fhNclustersTrigger;             //! total number of clusters in triggered events
   TH1F *       fhNclustersMB;                  //! total number of clusters in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
@@ -430,7 +428,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,27)
+  ClassDef(AliAnaParticleHadronCorrelation,28)
 } ;
  
 

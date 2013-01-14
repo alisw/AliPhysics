@@ -534,8 +534,23 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ; 
     
     ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
-    //Make analysis, create aods in aod branch or AODCaloClusters
+    
+    //Fill pool for mixed event for the analysis that need it
+    if(!GetReader()->IsEventTriggerAtSEOn())
+    {
+      AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+
+      if(inputHandler->IsEventSelected() & GetReader()->GetMixEventTriggerMask())
+      {
+        ana->FillEventMixPool();
+        continue; // pool filled do not try to fill AODs or histograms 
+      }
+    }
+    
+    //Make analysis, create aods in aod branch and in some cases fill histograms
     if(fMakeAOD  )  ana->MakeAnalysisFillAOD()  ;
+    
     //Make further analysis with aod branch and fill histograms
     if(fMakeHisto)  ana->MakeAnalysisFillHistograms()  ;
     

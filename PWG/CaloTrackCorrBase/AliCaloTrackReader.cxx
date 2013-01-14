@@ -800,7 +800,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
         if(fTrackMult == 0) return kFALSE;
       }// no cluster
     }// CaloFileter patch
-  }// Event selection
+  }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
   //------------------------------------------------------
   
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
@@ -813,33 +813,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   //Fill the arrays with cluster/tracks/cells data
   
-  if(fFillEMCALCells) 
-    FillInputEMCALCells();
-  
-  if(fFillPHOSCells)  
-    FillInputPHOSCells();
-  
-  FillInputVZERO();
-  
-  if(fEventTriggerAtSE)
+  if(!fEventTriggerAtSE)
   {
-    if(fFillCTS)
-    {   
-      FillInputCTS();
-      //Accept events with at least one track
-      if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
-    }
-    if(fFillEMCAL) 
-      FillInputEMCAL();
-    if(fFillPHOS)  
-      FillInputPHOS();
-  }
-  else 
-  {
-    // In case of mixing analysis, all triggers accepted, but trigger particles selected 
-    // only for the specific trigered events selected here. Mixing done only for MB events,
-    // tracks array filled also for those events and not the others.
-
+    // In case of mixing analysis, accept MB events, not only Trigger
+    // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
+    // via de method in the base class FillMixedEventPool()
+    
     AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
     
@@ -848,21 +827,32 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
     UInt_t isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
     
-    if(fFillCTS && (isMB || isTrigger))
-    {   
-      FillInputCTS();
-      //Accept events with at least one track
-      if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
-    }
+    if(!isTrigger && !isMB) return kFALSE;
     
-    if(isTrigger)
-    {
-      if(fFillEMCAL) 
-        FillInputEMCAL();
-      if(fFillPHOS)  
-        FillInputPHOS();
-    } 
+    //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
   }
+  
+  if(fFillCTS)
+  {
+    FillInputCTS();
+    //Accept events with at least one track
+    if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
+  }
+  
+  if(fFillEMCALCells)
+    FillInputEMCALCells();
+  
+  if(fFillPHOSCells)
+    FillInputPHOSCells();
+  
+  if(fFillEMCAL)
+    FillInputEMCAL();
+  
+  if(fFillPHOS)
+    FillInputPHOS();
+  
+  FillInputVZERO();
+
   
   return kTRUE ;
 }

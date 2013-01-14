@@ -161,9 +161,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhMCPtZTCharged(0),             fhMCPtHbpZTCharged(0),
     fhMCPtTrigPout(0),              fhMCPtAssocDeltaPhi(0),
     //Mixing
-    fhNEventsTrigger(0),            
-    fhNtracksAll(0),                fhNtracksTrigger(0),            fhNtracksMB(0),
-    fhNclustersAll(0),              fhNclustersTrigger(0),          fhNclustersMB(0),
+    fhNEventsTrigger(0),            fhNtracksMB(0),                 fhNclustersMB(0),
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
     fhMixXECharged(0),              fhMixXEUeCharged(0),            fhMixHbpXECharged(0),
     fhMixDeltaPhiChargedAssocPtBin(),
@@ -809,13 +807,26 @@ void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(
   }
 } 
 
+//______________________________________________________
+void AliAnaParticleHadronCorrelation::FillEventMixPool()
+{
+  // Fill the pool with tracks if requested
+    
+  if(DoOwnMix())
+  {
+    FillChargedEventMixPool();
+    
+    if(OnlyIsolated() || fFillNeutralEventMixPool)
+      FillNeutralEventMixPool();
+  }
+  
+}
+
 //_____________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
 {
   // Mixed event pool filling for tracks
-  
-  //printf("FillChargedEventMixPool for %s\n",GetInputAODName().Data());
-  
+    
   if(fUseMixStoredInReader && GetReader()->GetLastTracksMixedEvent() == GetEventNumber())
   {
     //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
@@ -823,19 +834,12 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   }
   
   Int_t nTracks = GetCTSTracks()->GetEntriesFast();
-  
-  fhNtracksAll->Fill(nTracks);
-  
+    
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
   if(!inputHandler) return ;
-  
-  if( inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask()    )
-  {
-    fhNtracksTrigger->Fill(nTracks);
-  }
-  
+    
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
   
@@ -907,7 +911,6 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   //else                                     pl    = GetEMCALClusters();
   
   Int_t nClusters   = pl->GetEntriesFast();
-  fhNclustersAll->Fill(nClusters);
   
   if(fUseMixStoredInReader && GetReader()->GetLastCaloMixedEvent() == GetEventNumber())
   {
@@ -919,12 +922,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
   if(!inputHandler) return ;
-  
-  if( inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask()    )
-  {
-    fhNclustersTrigger->Fill(nClusters);
-  }
-  
+    
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
   
@@ -2323,23 +2321,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhEventMixBin->SetXTitle("bin");
     outputContainer->Add(fhEventMixBin) ;
     
-    fhNtracksAll=new TH1F("hNtracksAll","Number of tracks w/o event trigger",2000,0,2000);
-    outputContainer->Add(fhNtracksAll);
-    
-    fhNtracksTrigger=new TH1F("hNtracksTriggerEvent","Number of tracks w/ event trigger",2000,0,2000);
-    outputContainer->Add(fhNtracksTrigger);
-    
     fhNtracksMB=new TH1F("hNtracksMBEvent","Number of tracks w/ event trigger kMB",2000,0,2000);
     outputContainer->Add(fhNtracksMB);
     
     if(fFillNeutralEventMixPool || OnlyIsolated())
     {
-      fhNclustersAll=new TH1F("hNclustersAll","Number of clusters w/o event trigger",2000,0,2000);
-      outputContainer->Add(fhNclustersAll);
-      
-      fhNclustersTrigger=new TH1F("hNclustersTriggerEvent","Number of clusters w/ event trigger",2000,0,2000);
-      outputContainer->Add(fhNclustersTrigger);
-      
       fhNclustersMB=new TH1F("hNclustersMBEvent","Number of clusters w/ event trigger kMB",2000,0,2000);
       outputContainer->Add(fhNclustersMB);
     }
@@ -2579,15 +2565,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;   
-  
-  // Fill the pool with tracks if requested
-  if(DoOwnMix())
-  {
-    FillChargedEventMixPool();
-    if(OnlyIsolated() || fFillNeutralEventMixPool)
-      FillNeutralEventMixPool();
-  }
-  
+    
   //Loop on stored AOD particles, find leading trigger
   Double_t ptTrig      = fMinTriggerPt ;
   fLeadingTriggerIndex = -1 ;

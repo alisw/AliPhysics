@@ -52,7 +52,9 @@ public:
   
   virtual void           Init() {;}
   virtual void           InitParameters() ;
-   
+  
+  virtual void           FillEventMixPool()                     { ; }
+
   virtual void           MakeAnalysisFillAOD()                  { ; }
   
   virtual void           MakeAnalysisFillHistograms()           { ; }  
@@ -161,7 +163,7 @@ public:
   virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } //ns
   
   //Getters / Setters for parameters of event buffers
-  
+    
   virtual Int_t          GetMultiBin()                     const { return fMultiBin  ; } // number of bins in Multiplicity 
   virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex   
   virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain 
