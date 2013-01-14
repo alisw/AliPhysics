@@ -29,7 +29,7 @@
 #include <TLine.h>
 #include <TStyle.h>
 
-TGraphErrors* Divide(const TGraphErrors* grX, const TGraphErrors* grY, const TString& name);
+TGraphErrors* Divide(const TGraphErrors* grX1, const TGraphErrors* grX2, const TString& name);
 
 void DrawDir(const TString& inputFile,
              const TString& graphName,
@@ -138,7 +138,7 @@ void DrawDir(const TString& inputFile,
 				grX = new TGraphErrors(*dynamic_cast<TGraphErrors*>(obj[i]));
 			}
 			
-			grDiv[i] = Divide(grX, grY, Form("%s_Ratio", obj[i]->GetName()));
+			grDiv[i] = Divide(grX, grY, Form("%s_%s_Ratio", subdir[i]->Data(), obj[i]->GetName()));
 			
 			grDiv[i]->SetLineColor(kColor[i]);
 			grDiv[i]->SetMarkerColor(kColor[i]);
@@ -284,30 +284,55 @@ void DrawDir(const TString& inputFile,
 	// release memory
 }
 
-TGraphErrors* Divide(const TGraphErrors* grX, const TGraphErrors* grY, const TString& name)
+Double_t GuessErrorY(const TGraphErrors* gr, Double_t x0)
 {
 //
-// Divide two TGraphErrors using first one as reference
+// estimate error of gr(x0) with the closest point to x0
+//
+	for(Int_t i=0; i<gr->GetN(); ++i)
+	{
+		Double_t x, y;
+		gr->GetPoint(i, x, y);
+		if(x >= x0) return gr->GetErrorY(i);
+	}
+	
+	return 0;
+}
+
+TGraphErrors* Divide(const TGraphErrors* grX1, const TGraphErrors* grX2, const TString& name)
+{
+//
+// grX1/grX2 using grX2 as reference
 //
 	TGraphErrors* grQ = new TGraphErrors();
 	grQ->SetName(name.Data());
 	
-	for(Int_t i=0; i < grX->GetN(); ++i)
+	Double_t xmin = 0;
+	Double_t xmax = 0;
+	Double_t y1   = 0;
+	grX1->GetPoint(0, xmin, y1);
+	grX1->GetPoint(grX1->GetN()-1, xmax, y1);
+	
+	for(Int_t i=0, j=0; i < grX2->GetN(); ++i)
 	{
-		Double_t x, y1;
-		grX->GetPoint(i, x, y1);
-		Double_t y2 = grY->Eval(x);
+		Double_t x2, y2;
+		grX2->GetPoint(i, x2, y2);
+		
+		if(x2 < xmin) continue;
+		if(x2 > xmax) break;
+		
+		y1 = grX1->Eval(x2);
 		
 		if(y1 == 0 || y2 == 0) continue;
 		
 		Double_t r = y1/y2;
 		
-		Double_t erry1 = grX->GetErrorY(i);
-		Double_t erry2 = grY->GetErrorY(i); // guess error
+		Double_t erry1 = GuessErrorY(grX1, x2);
+		Double_t erry2 = grX2->GetErrorY(i);
 		Double_t err = r*TMath::Sqrt(TMath::Power(erry1/y1,2)+TMath::Power(erry2/y2,2));
 		
-		grQ->SetPoint(i, x, r);
-		grQ->SetPointError(i, grX->GetErrorX(i), err);
+		grQ->SetPoint(j, x2, r);
+		grQ->SetPointError(j++, grX2->GetErrorX(i), err);
 	}
 	
 	return grQ;
