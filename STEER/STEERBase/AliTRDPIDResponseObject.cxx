@@ -121,7 +121,7 @@ AliTRDPIDResponseObject::~AliTRDPIDResponseObject(){
 	// references are deleted if the object is the owner
 	//
     for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-      if(fPIDParams && TestBit(kIsOwner)){
+	if(fPIDParams[method] && TestBit(kIsOwner)){
 	delete fPIDParams[method];fPIDParams[method] = 0;
       }
       if(fPIDReference[method] && TestBit(kIsOwner)){
