@@ -785,6 +785,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 			 if(!leadtrack) continue;
 		       }
 
+
+
 		       AliVParticle* leadtrackb=0;
                        if(fFlagJetHadron!=0){
 			 Int_t nTb = GetHardestTrackBackToJet(jetbig);
@@ -831,8 +833,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                   if((centValue>20)&&(centValue<40)) fh2JetCoreMethod2C20->Fill(ptcorr,jetmethod2->Pt()/ptbig); 
 		  if((centValue>30)&&(centValue<60)) fh2JetCoreMethod2C30->Fill(ptcorr,jetmethod2->Pt()/ptbig);
 		  if(centValue>60) fh2JetCoreMethod2C60->Fill(ptcorr,jetmethod2->Pt()/ptbig); }}  
-      		  if(centValue<10) fh2Ntriggers2C10->Fill(leadtrack->Pt(),partback->Pt());                  
-                  if(centValue<20) fh2Ntriggers2C20->Fill(leadtrack->Pt(),partback->Pt());  
+      		  if(centValue<10&&leadtrack) fh2Ntriggers2C10->Fill(leadtrack->Pt(),partback->Pt());                  
+                  if(centValue<20&&leadtrack) fh2Ntriggers2C20->Fill(leadtrack->Pt(),partback->Pt());  
          if(fDoEventMixing==0 && fFlagOnlyRecoil==0){ 
 	 for(int it = 0;it<ParticleList.GetEntries();++it){
 	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
