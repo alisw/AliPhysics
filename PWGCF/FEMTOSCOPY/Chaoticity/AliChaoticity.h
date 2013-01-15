@@ -72,8 +72,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Int_t GetNumRValues() const {return AliChaoticity::kRVALUES;}
   Int_t GetNumCentBins() const {return AliChaoticity::kCentBins;}
   //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F ***histos=0x0);
-  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]=0x0);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[3][10]=0x0);
+  //void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
   //

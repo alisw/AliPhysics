@@ -3424,8 +3424,8 @@ void AliChaoticity::GetQosl(Float_t track1[], Float_t track2[], Float_t& qout, F
 }
 //________________________________________________________________________
 //void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F ***histos){
-//void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
-void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]){
+void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
+//void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]){
   for(Int_t mb=0; mb<fMbins; mb++){
     for(Int_t edB=0; edB<kEDbins; edB++){
       for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
