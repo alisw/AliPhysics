@@ -342,12 +342,17 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
     
     // -- Check if accepted - AOD
     if (fAOD){
-      if(!(dynamic_cast<AliAODTrack*>(track))) {
+      
+      AliAODTrack * trackAOD = dynamic_cast<AliAODTrack*>(track);
+      
+      if (!trackAOD) {
 	AliError("Pointer to dynamic_cast<AliAODTrack*>(track) = ZERO");
 	continue;
       }
-      if(!((dynamic_cast<AliAODTrack*>(track))->TestFilterBit(fAODtrackCutBit)))
+      
+      if (!trackAOD->TestFilterBit(fAODtrackCutBit)){
 	continue;
+      }
     }
 
     // -- Check if accepted in rapidity window
