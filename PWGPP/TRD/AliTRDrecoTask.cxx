@@ -225,7 +225,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
   fTracks   = dynamic_cast<TObjArray *>(GetInputData(1));
   fEvent    = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
   fTriggerSlot=0;
-  if(fTriggerList){
+  if(fTriggerList && fEvent){
     for(Int_t itrig(0); itrig<fTriggerList->GetEntries(); itrig++){
       if(!fEvent->GetFiredTriggerClasses().Contains(((TObjString*)(*fTriggerList)[itrig])->GetName())) continue;
       //printf("\"%s\" selected\n", ((TObjString*)(*fTriggerList)[itrig])->GetName());
