@@ -26,7 +26,7 @@ class AliSpectraBothEventCuts : public TNamed
 enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};	
 
   // Constructors
- AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentFromV0(0), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTrackCuts(0),
+ AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentFromV0(0), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
   AliSpectraBothEventCuts(const char *name);
   virtual  ~AliSpectraBothEventCuts() {}
@@ -40,6 +40,11 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   Bool_t GetUseCentPatchAOD049()           const           { return fUseCentPatchAOD049;};
   void 	SetUseSDDPatchforLHC11a(Int_t useSDDPatchforLHC11a) {fUseSDDPatchforLHC11a=useSDDPatchforLHC11a;} ;  
   Int_t GetUseSDDPatchforLHC11a() {return fUseSDDPatchforLHC11a;};   
+
+   void   SetTriggerSettings(UInt_t triggerSettings = AliVEvent::kMB) {fTriggerSettings = triggerSettings;};
+   UInt_t   GetTriggerSettings() {return fTriggerSettings;};
+
+
 
   // Methods
   Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts);
@@ -102,7 +107,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   Bool_t          fCentFromV0;// default centrality with tracks
   Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   Int_t          fUseSDDPatchforLHC11a; // if true will check for ALLNOTRD  in fired trigger class 
-
+  UInt_t fTriggerSettings;     // triger configuration 
   AliSpectraBothTrackCuts     *fTrackCuts;             //! track cuts
   Bool_t          fIsSelected;        // True if cuts are selected
   Float_t         fCentralityCutMin;     // minimum centrality percentile
@@ -131,7 +136,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 3);
+  ClassDef(AliSpectraBothEventCuts, 4);
   
 };
 #endif
