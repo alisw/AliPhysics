@@ -54,7 +54,7 @@ Float_t ptbinsnew[nptbinsnew+1]={3.,4.,6.,8.,12.};
 const Int_t nphibins=4;
 Float_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TMath::Pi()};
 // mass fit configuration
-Int_t rebin[nptbinsnew]={3,3,3,3};
+Int_t rebin[nptbinsnew]={4,4,4,4};
 Int_t typeb=0;  // Background: 0=expo, 1=linear, 2=pol2
 Double_t minMassForFit=1.6;
 Double_t maxMassForFit=2.2;
@@ -77,6 +77,8 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
 
 
 
+//method implementation
+//_________________________________________________________________
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
   Double_t resolFull;
   if(evPlane==2){
@@ -110,8 +112,7 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
   return resolFull;
 }
 
-//methods implementation
-//________________________________________________________________________________
+//____________________________________________________________________
 TList* LoadResolutionHistos(TList *inputlist){
 
   TList *outlist = new TList();
@@ -198,7 +199,7 @@ TList* LoadResolutionHistos(TList *inputlist){
   return outlist;
 }
 
-//________________________________________________________________________________
+//__________________________________________________________
 TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis){
   // printf("Start load histos\n");
   //  const Int_t nptbins=cutobj->GetNPtBins();
@@ -281,7 +282,7 @@ Bool_t DefinePtBins(AliRDHFCuts *cutobj){
 Int_t GetPadNumber(Int_t ix,Int_t iy){
   return (iy)*nptbinsnew+ix+1;
 }
-//________________________________________________________________________________
+//______________________________________________________________
 void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2, Bool_t inoutanis){
 
   Int_t nphi=nphibins;
@@ -689,7 +690,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   gv2BC2->Write();
   grelSystEff->Write();
 }
-//_______________________________________________________________________________________________________________________________
+//___________________________________________________________
 Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value){
   for (Int_t i=0;i<nbins;i++){
     if(value>=array[i] && value<array[i+1]){
@@ -700,7 +701,7 @@ Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value){
   return -1;
 }
 
-//_______________________________________________________________________________________________________________________________
+//__________________________________________________________
 void DrawEventPlane(){
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());

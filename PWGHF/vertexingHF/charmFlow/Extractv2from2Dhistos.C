@@ -19,10 +19,10 @@
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 
-
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
 #include "AliVertexingHFUtils.h"
@@ -35,7 +35,8 @@ TString suffix="v2Dplus3050Cut4upcutPIDTPC";
 TString partname="Dplus";
 Int_t minCent=30;
 Int_t maxCent=50;
-Int_t mesonPDG=421;
+//evPlane flag: -1=V0C,0=V0,1=V0A,2=TPC2subevs,3=TPC3subevs
+Int_t evPlane=2;
 
 const Int_t nFinalPtBins=4;
 Double_t ptlims[nFinalPtBins+1]={3.,4.,6.,8.,12.};
@@ -47,6 +48,7 @@ Int_t rebinHistov2Mass[nFinalPtBins]={2,2,2,2};
 Int_t factor4refl=0;
 Int_t minPtBin[nFinalPtBins]={-1,-1,-1,-1};
 Int_t maxPtBin[nFinalPtBins]={-1,-1,-1,-1};
+Bool_t saveAllCanvas=kFALSE;
 
 // systematic errors for D+, 30-50 TPC eventplane
 Double_t systErrMeth1[nFinalPtBins]={
@@ -120,11 +122,13 @@ void LoadMassHistos(TList* lst, TH2F** hMassDphi);
 Bool_t DefinePtBins(TDirectoryFile* df);
 Double_t v2vsMass(Double_t *x, Double_t *par);
 Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh);
+Double_t ComputeEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3);
 Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad);
 TH1F* DoSideBands(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c1, Int_t optBkg=0);
 TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c2, Int_t optErrors=0, Bool_t useConst=kTRUE);
 
 
+//______________________________________________________________________________
 void Extractv2from2Dhistos(){
   // main function: computes v2 with side band and v2(M) methods
 
@@ -205,8 +209,12 @@ void Extractv2from2Dhistos(){
     v2M2[iFinalPtBin]=v2obsM2/resolFull;
     errv2M2[iFinalPtBin]=errv2obsM2/resolFull;
     printf("v2 = %f +- %f\n",v2M2[iFinalPtBin],errv2M2[iFinalPtBin]);
-    c1[iFinalPtBin]->SaveAs(Form("cMeth1PtBin%d.root",iFinalPtBin));
-    c2[iFinalPtBin]->SaveAs(Form("cMeth2PtBin%d.root",iFinalPtBin));
+    if(saveAllCanvas){
+      c1[iFinalPtBin]->SaveAs(Form("cMeth1PtBin%d.root",iFinalPtBin));
+      c2[iFinalPtBin]->SaveAs(Form("cMeth2PtBin%d.root",iFinalPtBin));
+      c1[iFinalPtBin]->SaveAs(Form("cMeth1PtBin%d.eps",iFinalPtBin));
+      c2[iFinalPtBin]->SaveAs(Form("cMeth2PtBin%d.eps",iFinalPtBin));
+   }
   }
 
   printf("\n--------- Summary ------------\n");
@@ -267,7 +275,8 @@ void Extractv2from2Dhistos(){
    ent->SetTextColor(hv2m2->GetMarkerColor());
    leg2->Draw();
    cv2->Update();
-   cv2->SaveAs(Form("%s-v2-2Dmethods.gif",partname.Data()));
+   cv2->SaveAs(Form("v2%s-2Dmethods-%s.png",partname.Data(),suffix.Data()));
+   cv2->SaveAs(Form("v2%s-2Dmethods-%s.eps",partname.Data(),suffix.Data()));
 
    TFile* outfil=new TFile(Form("v2Output2DMeth_%s_%d_%d_%s.root",partname.Data(),minCent,maxCent,suffix.Data()),"recreate");
    outfil->cd();
@@ -279,6 +288,7 @@ void Extractv2from2Dhistos(){
 }
 
 
+//______________________________________________________________________________
 Double_t v2vsMass(Double_t *x, Double_t *par){
   // Fit function for signal+background
   // par[0] = S/B at the mass peak
@@ -292,6 +302,7 @@ Double_t v2vsMass(Double_t *x, Double_t *par){
   return par[3]*fracsig+par[4]*fracbkg;
 }
 
+//______________________________________________________________________________
 Double_t v2vsMassLin(Double_t *x, Double_t *par){
   // Fit function for signal+background
   // par[0] = S/B at the mass peak
@@ -306,6 +317,7 @@ Double_t v2vsMassLin(Double_t *x, Double_t *par){
   return par[3]*fracsig+(par[4]+par[5]*x[0])*fracbkg;
 }
 
+//______________________________________________________________________________
 Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad){
 
   Int_t nMassBins=hMass->GetNbinsX();
@@ -313,7 +325,17 @@ Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad){
   hMaxBin=nMassBins-2;
   Double_t hmin=hMass->GetBinLowEdge(hMinBin);
   Double_t hmax=hMass->GetBinLowEdge(hMaxBin)+hMass->GetBinWidth(hMaxBin);
-  Float_t massD=TDatabasePDG::Instance()->GetParticle(mesonPDG)->Mass();
+  Double_t massD;
+  if(partname.Contains("Dzero")) {
+    massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  }else if(partname.Contains("Dplus")){
+    massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  }else if(partname.Contains("Dstar")) {
+    massD=(TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass()); 
+  }else{
+    printf("Wrong particle name\n");
+    massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();    
+  }
     
   AliHFMassFitter* fitter=new AliHFMassFitter(hMass,hmin,hmax,2,0,0);
   fitter->SetReflectionSigmaFactor(factor4refl);
@@ -335,6 +357,7 @@ Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad){
   return kTRUE;
 }
 
+//______________________________________________________________________________
 TH1F* DoSideBands(Int_t iFinalPtBin,
 		  TH2F* hMassDphi, 
 		  TH1F* hMass, 
@@ -498,6 +521,7 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
 }
 
 
+//______________________________________________________________________________
 TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c2, Int_t optErrors, Bool_t useConst){
 
   Int_t npars=fSB->GetNpar();
@@ -619,9 +643,12 @@ TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin,
 }
 
 
+//______________________________________________________________________________
 Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   // Event plane resolution syst err (from wide centrality bin
   TH1F* hResolSubAB=0x0;
+  TH1F* hResolSubBC=0x0;
+  TH1F* hResolSubAC=0x0;
   Double_t xmin=1.;
   Double_t xmax=-1.;
   TGraphAsymmErrors* grSingle=new TGraphAsymmErrors(0);
@@ -631,12 +658,23 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   Int_t maxCentTimesTen=maxCent*10;  
   Double_t binHalfWid=25./20.;
   for(Int_t iHisC=minCentTimesTen; iHisC<=maxCentTimesTen-25; iHisC+=25){    
-    TString hisnameEP=Form("hEvPlaneResocentr%d_%d",iHisC,iHisC+25);
-    TH1F* hResolSubABsing=(TH1F*)lst->FindObject(hisnameEP.Data());
+    TString hisnameAB=Form("hEvPlaneResocentr%d_%d",iHisC,iHisC+25);
+    TString hisnameBC=Form("hEvPlaneReso2centr%d_%d",iHisC,iHisC+25);
+    TString hisnameAC=Form("hEvPlaneReso3centr%d_%d",iHisC,iHisC+25);
+    TH1F* hResolSubABsing=(TH1F*)lst->FindObject(hisnameAB.Data());
     cout<<hResolSubABsing->GetName()<<endl;
-    Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hResolSubABsing,1);
-    Double_t resolFullmin=AliVertexingHFUtils::GetFullEvResolLowLim(hResolSubABsing,1);
-    Double_t resolFullmax=AliVertexingHFUtils::GetFullEvResolHighLim(hResolSubABsing,1);
+    TH1F* hResolSubBCsing=0x0;
+    TH1F* hResolSubACsing=0x0;
+    if(evPlane!=2){
+      hResolSubBCsing=(TH1F*)lst->FindObject(hisnameBC.Data());
+      cout<<hResolSubBCsing->GetName()<<endl;
+      hResolSubACsing=(TH1F*)lst->FindObject(hisnameAC.Data());
+      cout<<hResolSubACsing->GetName()<<endl;
+    }
+    Double_t error; 
+    Double_t resolFull=ComputeEventPlaneResolution(error,hResolSubABsing,hResolSubBCsing,hResolSubACsing);
+    Double_t resolFullmin=resolFull-error;
+    Double_t resolFullmax=resolFull+error;
     
     Double_t binCentr=(Double_t)iHisC/10.+binHalfWid;
     grSingle->SetPoint(iPt,binCentr,resolFull);
@@ -649,36 +687,42 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
     if(resolFullmax>xmax) xmax=resolFullmax;
     if(iHisC==minCentTimesTen){
       hResolSubAB=(TH1F*)hResolSubABsing->Clone("hResolSubAB");
+      if(evPlane!=2){
+	hResolSubBC=(TH1F*)hResolSubBCsing->Clone("hResolSubAB");
+	hResolSubAC=(TH1F*)hResolSubACsing->Clone("hResolSubAB");
+      }
     }else{
       hResolSubAB->Add(hResolSubABsing);
+      if(evPlane!=2){
+	hResolSubBC->Add(hResolSubBCsing);
+	hResolSubAC->Add(hResolSubACsing);
+      }
     }
-    printf("Adding histogram %s\n",hisnameEP.Data());
+    printf("Adding histogram %s\n",hResolSubAB->GetName());
   }
   rcflow=xmin;
   rcfhigh=xmax;
 
-  Double_t resolSub=AliVertexingHFUtils::GetSubEvResol(hResolSubAB);
-  printf("Resolution on sub event  = %.4f\n",resolSub);
-  Double_t chisub=AliVertexingHFUtils::FindChi(resolSub,1);
-  printf("Chi Subevent             = %.4f\n",chisub);
-  Double_t chifull=chisub*TMath::Sqrt(2);
-  printf("Chi Full Event           = %.4f\n",chifull);
-  Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hResolSubAB,1);
-  Double_t resolFullmin=AliVertexingHFUtils::GetFullEvResolLowLim(hResolSubAB,1);
-  Double_t resolFullmax=AliVertexingHFUtils::GetFullEvResolHighLim(hResolSubAB,1);
 
+  Double_t error; 
+  Double_t resolFull=ComputeEventPlaneResolution(error,hResolSubAB,hResolSubBC,hResolSubAC);
 
   grInteg->SetPoint(0,40.,resolFull);
   grInteg->SetPointEXlow(0,10);
   grInteg->SetPointEXhigh(0,10.);
-  grInteg->SetPointEYlow(0,resolFullmax-resolFull);
-  grInteg->SetPointEYhigh(0,resolFull-resolFullmin);
+  grInteg->SetPointEYlow(0,error);
+  grInteg->SetPointEYhigh(0,error);
   
- 
   TCanvas* cEP=new TCanvas("cEP","EvPlaneResol");
   cEP->Divide(1,2);
   cEP->cd(1);
   hResolSubAB->Draw();
+  if(evPlane!=2){
+    hResolSubBC->SetLineColor(2);
+    hResolSubBC->Draw("same");
+    hResolSubAC->SetLineColor(4);
+    hResolSubAC->Draw("same");
+  }
   TLatex* tres=new TLatex(0.15,0.7,Form("Resolution on full event = %.4f\n",resolFull));
   tres->SetNDC();
   tres->Draw();
@@ -696,7 +740,41 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   
 }
   
+//______________________________________________________________________________
+Double_t ComputeEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
+  Double_t resolFull;
+  if(evPlane==2){
+    resolFull=AliVertexingHFUtils::GetFullEvResol(hsubev1);
+    error = TMath::Abs(resolFull-AliVertexingHFUtils::GetFullEvResolLowLim(hsubev1));
+  }else{
+    Double_t resolSub[3];
+    Double_t errors[3];
+    TH1F* hevplresos[3];
+    hevplresos[0]=hsubev1;
+    hevplresos[1]=hsubev2;
+    hevplresos[2]=hsubev3;
+    for(Int_t ires=0;ires<3;ires++){
+      resolSub[ires]=hevplresos[ires]->GetMean();
+      errors[ires]=hevplresos[ires]->GetMeanError();
+    }
+    Double_t lowlim[3];for(Int_t ie=0;ie<3;ie++)lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);
+    if(evPlane<=0){
+      resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
+      error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
+    }
+    else if(evPlane==1){
+      resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
+      error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
+    }
+    else if(evPlane==3){
+      resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
+      error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
+    }
+  }
+  return resolFull;
+}
 
+//______________________________________________________________________________
 void LoadMassHistos(TList* lst, TH2F** hMassDphi){
 
   Int_t minCentTimesTen=minCent*10;
@@ -717,10 +795,14 @@ void LoadMassHistos(TList* lst, TH2F** hMassDphi){
   }
 }
 
+//______________________________________________________________________________
 Bool_t DefinePtBins(TDirectoryFile* df){
-  AliRDHFCuts *d0cuts;//=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
-  if(mesonPDG==421)d0cuts=(AliRDHFCutsD0toKpi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
-  if(mesonPDG==411)d0cuts=(AliRDHFCutsDplustoKpipi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
+
+  AliRDHFCuts *d0cuts;
+  if(partname.Contains("Dzero")) d0cuts=(AliRDHFCutsD0toKpi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
+  if(partname.Contains("Dplus")) d0cuts=(AliRDHFCutsDplustoKpipi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
+  if(partname.Contains("Dstar")) d0cuts=((AliRDHFCutsDStartoKpipi*)df->Get(df->GetListOfKeys()->At(2)->GetName()));
+
   Int_t nPtBinsCuts=d0cuts->GetNPtBins();
   printf("Number of pt bins for cut object = %d\n",nPtBinsCuts);
   Float_t *ptlimsCuts=d0cuts->GetPtBinLimits();
@@ -744,6 +826,7 @@ Bool_t DefinePtBins(TDirectoryFile* df){
 }
 
 
+//______________________________________________________________________________
 void SystForSideBands(){
   // Compute systematic ucnertainty for the side band subtraction method
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
@@ -959,6 +1042,7 @@ void SystForSideBands(){
   }
 }
 
+//______________________________________________________________________________
 void SystForFitv2Mass(){
   // Compute systematic ucnertainty for the v2(M) method
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
