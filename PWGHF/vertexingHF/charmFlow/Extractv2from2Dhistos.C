@@ -30,23 +30,38 @@
 
 
 // Common variables: to be configured by the user
-TString filname="AnalysisResultsgoodruns.root";
-TString listname="coutputv2D0Std";//"coutputv2D0RAACuts"; //"coutputv2D0Std";
-TString filcutsname="AnalysisResultsgoodruns.root";
+TString filename="AnalysisResults_train60.root";
+TString suffix="v2Dplus3050Cut4upcutPIDTPC";
+TString partname="Dplus";
 Int_t minCent=30;
 Int_t maxCent=50;
 Int_t mesonPDG=421;
 
-const Int_t nFinalPtBins=3;
-Double_t ptlims[nFinalPtBins+1]={2.,5.,8.,12.};
+const Int_t nFinalPtBins=4;
+Double_t ptlims[nFinalPtBins+1]={3.,4.,6.,8.,12.};
 Double_t sigmaRangeForSig=2.5;
 Double_t sigmaRangeForBkg=4.5;
-Int_t rebinHistoSideBands[nFinalPtBins]={2,2,2};
+Int_t rebinHistoSideBands[nFinalPtBins]={2,2,2,2};
 Bool_t useConstantvsBkgVsMass=kFALSE;
-Int_t rebinHistov2Mass[nFinalPtBins]={2,2,5};
+Int_t rebinHistov2Mass[nFinalPtBins]={2,2,2,2};
 Int_t factor4refl=0;
-Int_t minPtBin[nFinalPtBins]={-1,-1,-1};
-Int_t maxPtBin[nFinalPtBins]={-1,-1,-1};
+Int_t minPtBin[nFinalPtBins]={-1,-1,-1,-1};
+Int_t maxPtBin[nFinalPtBins]={-1,-1,-1,-1};
+
+// systematic errors for D+, 30-50 TPC eventplane
+Double_t systErrMeth1[nFinalPtBins]={
+  (0.247359-0.152503)/2.,
+  (0.337073-0.290978)/2.,
+  (0.286888-0.222045)/2.,
+  (-0.078888+0.178259)/2.
+};
+
+Double_t systErrMeth2[nFinalPtBins]={
+  (0.151019-0.066624)/2.,
+  (0.272252-0.232044)/2.,
+  (0.246019-0.143002)/2.,
+  (-0.026077+0.292956)/2.
+};
 
 // systematic errors for 2-5, 5-8 and 8-12 (no run-by-run weights)
 /*
@@ -63,6 +78,7 @@ Double_t systErrMeth2[nFinalPtBins]={
 */
 
 // systematic errors for 2-5, 5-8 and 8-12 (93 runs with run-by-run weights)
+/*
 Double_t systErrMeth1[nFinalPtBins]={
   (0.23-0.10)/2.,
   (0.152-0.078)/2.,
@@ -73,6 +89,8 @@ Double_t systErrMeth2[nFinalPtBins]={
   (0.110-0.012)/2.,
   (0.131-0.036)/2.
 };
+*/
+
 
 
 // systematic errors for 2-5, 5-8 and 8-12 (93 runs with run-by-run weights, RAA cuts)
@@ -108,24 +126,34 @@ TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin,
 
 
 void Extractv2from2Dhistos(){
+  // main function: computes v2 with side band and v2(M) methods
 
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
 
-  TFile* filcuts=new TFile(filcutsname.Data());
-  TDirectoryFile* dfcuts=(TDirectoryFile*)filcuts->Get("PWG3_D2H_HFv2");
-  Bool_t binOK=DefinePtBins(dfcuts);
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
+  TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
+
+  TFile *f = TFile::Open(filename.Data());
+  if(!f){
+    printf("file %s not found, please check file name\n",filename.Data());
+    return;
+  }
+  TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname.Data());
+  if(!dir){
+    printf("Directory %s not found, please check dir name\n",dirname.Data());
+    return;
+  }
+  Bool_t binOK=DefinePtBins(dir);
   if(!binOK){
     printf("ERROR: mismatch in pt binning\n");
     return;
   }
-
-  TFile* fil=new TFile(filname.Data());
-  TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get(listname.Data());
+  TList *lst =(TList*)dir->Get(listname.Data());
   if(!lst){
-    printf("ERROR: list %s not found in file\n",listname.Data());
+    printf("list %s not found in file, please check list name\n",listname.Data());
     return;
   }
+ 
   Double_t rcfmin,rcfmax;
   Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
   Double_t resolSyst=(rcfmax-rcfmin)/2./resolFull;
@@ -239,9 +267,9 @@ void Extractv2from2Dhistos(){
    ent->SetTextColor(hv2m2->GetMarkerColor());
    leg2->Draw();
    cv2->Update();
-   cv2->SaveAs("Dzero-v2-2Dmethods.gif");
+   cv2->SaveAs(Form("%s-v2-2Dmethods.gif",partname.Data()));
 
-   TFile* outfil=new TFile("Dzero-v2-2Dmethods.root","recreate");
+   TFile* outfil=new TFile(Form("v2Output2DMeth_%s_%d_%d_%s.root",partname.Data(),minCent,maxCent,suffix.Data()),"recreate");
    outfil->cd();
    hv2m1->Write();
    hv2m2->Write();
@@ -496,7 +524,6 @@ TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin,
   TH1F* hAverCos2Phi=new TH1F(Form("hAverCos2PhiBin%d",iFinalPtBin),"",nbinsmass,minmass,maxmass);
   TH1F* hFractionSig=new TH1F(Form("hFractionSigBin%d",iFinalPtBin),"",nbinsmass,minmass,maxmass);
   TH1F* hFractionBkg=new TH1F(Form("hFractionBkgBin%d",iFinalPtBin),"",nbinsmass,minmass,maxmass);
-
   for(Int_t iBin=1; iBin<=hMassDphi->GetNbinsY(); iBin++){
     TH1F* htemp=(TH1F*)hMassDphi->ProjectionX("htemp",iBin,iBin);
     hAverCos2Phi->SetBinContent(iBin,htemp->GetMean());
@@ -538,6 +565,7 @@ TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin,
   fv2->FixParameter(1,massSB);
   fv2->FixParameter(2,sigmaSB);
 
+  printf("LOOP %d\n",rebin);
   if((hAverCos2Phi->GetNbinsX()%rebin)==0){
     hAverCos2Phi->Rebin(rebin);
     hAverCos2Phi->Scale(1./(Double_t)rebin);
@@ -599,21 +627,27 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
   TGraphAsymmErrors* grSingle=new TGraphAsymmErrors(0);
   TGraphAsymmErrors* grInteg=new TGraphAsymmErrors(0);
   Int_t iPt=0;
-  for(Int_t iHisC=minCent; iHisC<=maxCent-5; iHisC+=5){    
-    TString hisnameEP=Form("hEvPlaneResocentr%d_%d",iHisC,iHisC+5);
+  Int_t minCentTimesTen=minCent*10;
+  Int_t maxCentTimesTen=maxCent*10;  
+  Double_t binHalfWid=25./20.;
+  for(Int_t iHisC=minCentTimesTen; iHisC<=maxCentTimesTen-25; iHisC+=25){    
+    TString hisnameEP=Form("hEvPlaneResocentr%d_%d",iHisC,iHisC+25);
     TH1F* hResolSubABsing=(TH1F*)lst->FindObject(hisnameEP.Data());
+    cout<<hResolSubABsing->GetName()<<endl;
     Double_t resolFull=AliVertexingHFUtils::GetFullEvResol(hResolSubABsing,1);
     Double_t resolFullmin=AliVertexingHFUtils::GetFullEvResolLowLim(hResolSubABsing,1);
     Double_t resolFullmax=AliVertexingHFUtils::GetFullEvResolHighLim(hResolSubABsing,1);
-    grSingle->SetPoint(iPt,iHisC+2.5,resolFull);
-    grSingle->SetPointEXlow(iPt,2.5);
-    grSingle->SetPointEXhigh(iPt,2.5);
+    
+    Double_t binCentr=(Double_t)iHisC/10.+binHalfWid;
+    grSingle->SetPoint(iPt,binCentr,resolFull);
+    grSingle->SetPointEXlow(iPt,binHalfWid);
+    grSingle->SetPointEXhigh(iPt,binHalfWid);
     grSingle->SetPointEYlow(iPt,resolFullmax-resolFull);
     grSingle->SetPointEYhigh(iPt,resolFull-resolFullmin);
     ++iPt;
     if(resolFullmin<xmin) xmin=resolFullmin;
     if(resolFullmax>xmax) xmax=resolFullmax;
-    if(iHisC==minCent){
+    if(iHisC==minCentTimesTen){
       hResolSubAB=(TH1F*)hResolSubABsing->Clone("hResolSubAB");
     }else{
       hResolSubAB->Add(hResolSubABsing);
@@ -665,10 +699,12 @@ Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh){
 
 void LoadMassHistos(TList* lst, TH2F** hMassDphi){
 
-  for(Int_t iHisC=minCent; iHisC<=maxCent-5; iHisC+=5){    
+  Int_t minCentTimesTen=minCent*10;
+  Int_t maxCentTimesTen=maxCent*10;  
+  for(Int_t iHisC=minCentTimesTen; iHisC<=maxCentTimesTen-25; iHisC+=25){    
     for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
       for(Int_t iPtBin=minPtBin[iFinalPtBin]; iPtBin<=maxPtBin[iFinalPtBin]; iPtBin++){
-    	TString hisname=Form("hMc2deltaphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
+    	TString hisname=Form("hMc2deltaphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+25);
     	TH2F* htmp=(TH2F*)lst->FindObject(hisname.Data());
 	if(hMassDphi[iFinalPtBin]==0x0){
 	  hMassDphi[iFinalPtBin]=(TH2F*)htmp->Clone(Form("hMassCos2DphiBin%d",iFinalPtBin));
@@ -683,8 +719,8 @@ void LoadMassHistos(TList* lst, TH2F** hMassDphi){
 
 Bool_t DefinePtBins(TDirectoryFile* df){
   AliRDHFCuts *d0cuts;//=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
-  if(mesonPDG==421)d0cuts=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
-  if(mesonPDG==411)d0cuts=(AliRDHFCutsDplustoKpipi*)df->Get("AnalysisCuts");
+  if(mesonPDG==421)d0cuts=(AliRDHFCutsD0toKpi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
+  if(mesonPDG==411)d0cuts=(AliRDHFCutsDplustoKpipi*)df->Get(df->GetListOfKeys()->At(2)->GetName());
   Int_t nPtBinsCuts=d0cuts->GetNPtBins();
   printf("Number of pt bins for cut object = %d\n",nPtBinsCuts);
   Float_t *ptlimsCuts=d0cuts->GetPtBinLimits();
@@ -709,18 +745,30 @@ Bool_t DefinePtBins(TDirectoryFile* df){
 
 
 void SystForSideBands(){
+  // Compute systematic ucnertainty for the side band subtraction method
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
 
-  TFile* filcuts=new TFile(filcutsname.Data());
-  TDirectoryFile* dfcuts=(TDirectoryFile*)filcuts->Get("PWG3_D2H_HFv2");
-  Bool_t binOK=DefinePtBins(dfcuts);
-  if(!binOK) return;
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
+  TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
-  TFile* fil=new TFile(filname.Data());
-  TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get(listname.Data());
+  TFile *f = TFile::Open(filename.Data());
+  if(!f){
+    printf("file %s not found, please check file name\n",filename.Data());
+    return;
+  }
+  TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname.Data());
+  if(!dir){
+    printf("Directory %s not found, please check dir name\n",dirname.Data());
+    return;
+  }
+  Bool_t binOK=DefinePtBins(dir);
+  if(!binOK){
+    printf("ERROR: mismatch in pt binning\n");
+    return;
+  }
+  TList *lst =(TList*)dir->Get(listname.Data());
   if(!lst){
-    printf("ERROR: list %s not found in file\n",listname.Data());
+    printf("list %s not found in file, please check list name\n",listname.Data());
     return;
   }
 
@@ -912,18 +960,30 @@ void SystForSideBands(){
 }
 
 void SystForFitv2Mass(){
+  // Compute systematic ucnertainty for the v2(M) method
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
 
-  TFile* filcuts=new TFile(filcutsname.Data());
-  TDirectoryFile* dfcuts=(TDirectoryFile*)filcuts->Get("PWG3_D2H_HFv2");
-  Bool_t binOK=DefinePtBins(dfcuts);
-  if(!binOK) return;
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
+  TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
-  TFile* fil=new TFile(filname.Data());
-  TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get(listname.Data());
+  TFile *f = TFile::Open(filename.Data());
+  if(!f){
+    printf("file %s not found, please check file name\n",filename.Data());
+    return;
+  }
+  TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname.Data());
+  if(!dir){
+    printf("Directory %s not found, please check dir name\n",dirname.Data());
+    return;
+  }
+  Bool_t binOK=DefinePtBins(dir);
+  if(!binOK){
+    printf("ERROR: mismatch in pt binning\n");
+    return;
+  }
+  TList *lst =(TList*)dir->Get(listname.Data());
   if(!lst){
-    printf("ERROR: list %s not found in file\n",listname.Data());
+    printf("list %s not found in file, please check list name\n",listname.Data());
     return;
   }
 
