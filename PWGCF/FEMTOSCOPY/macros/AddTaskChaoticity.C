@@ -37,8 +37,8 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     }
     ////////////////////////////////////////////////////
     // C2 Weight File
-    Int_t ktbins = ChaoticityTask->GetNumKtbins();
-    Int_t cbins = ChaoticityTask->GetNumCentbins();
+    Int_t ktbins = 3;// ChaoticityTask->GetNumKtbins();
+    Int_t cbins = 10;// ChaoticityTask->GetNumCentbins();
     TH3F *weightHisto[ktbins][cbins] = 0;
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
