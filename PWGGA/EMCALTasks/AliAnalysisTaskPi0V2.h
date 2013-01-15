@@ -24,6 +24,10 @@ class AliESDEvent;
 class THnSparse;
 class TClonesArray;
 class TString;
+class AliCaloPID;
+class AliCalorimeterUtils;
+class AliCaloTrackReader;
+
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -45,7 +49,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t		IsGoodClusterV1(const AliVCluster *c) const;
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
-    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, Double_t M02);
+    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c, Double_t *vertex);
     void 		GetMom(TLorentzVector& p, const AliVCluster *c, Double_t *vertex);		
     void		SetEventMethod(Double_t e )	{ fEvtSelect  =e ;}
     void		SetVtxCut(Double_t v )	        { fVtxCut     =v ;}
@@ -68,6 +72,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
  private:
     TList           		*fOutput;	        //! Output list
     AliESDEvent			*fESD;		        //!ESD object
+    AliCaloPID                  *fCaloPID;              //!
+    AliCalorimeterUtils         *fCaloUtils;            //!
+    AliCaloTrackReader          *fReader;               //!
     TString                     fTracksName;	        // name of track collection
     TString                     fV1ClusName;	        // name of V1 Clus collection
     TString                     fV2ClusName;	        // name of V1 Clus collection
