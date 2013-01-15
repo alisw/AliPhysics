@@ -2167,8 +2167,14 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	
 	// A - Combined PID
 	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
-	Double_t lPriorsGuessXi[10]    = {0, 0, 2, 0, 1,  0,0,0,0,0};
-	Double_t lPriorsGuessOmega[10] = {0, 0, 1, 1, 1,  0,0,0,0,0};
+        Double_t lPriorsGuessXi   [AliPID::kSPECIESCN] = {0, 0, 2, 0, 1,  0,0,0,0};
+        Double_t lPriorsGuessOmega[AliPID::kSPECIESCN] = {0, 0, 1, 1, 1,  0,0,0,0};
+            // Trick Jan, 15th, 2013 : Coverity fix - defect 11329
+            // If the boolean for charged option is activated in AliPID::SetPriors, only the first 9 double_t in the array are read anyway.
+            // But Coverity sniffs an issue (a priori safe but the logic is a bit twisted; Coverity is not totally wrong).
+            // Use AliPID::kSPECIESCN (=14) is size of the array + initialise what I am interested in (charged particle = 9 first particles)
+            // The rest of the table will be initialised to 0 anyway.
+        
 	
 	// Combined VO-positive-daughter PID
 	AliPID pPidXi;         pPidXi.SetPriors(    lPriorsGuessXi    , kTRUE);  // kTRUE = for charged particle PID
