@@ -244,7 +244,7 @@ class AliReducedEventFriend : public TObject {
   Double_t Qx(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][0] : -999.);}
   Double_t Qy(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][1] : -999.);}
   Double_t EventPlane(Int_t det, Int_t h) const;
-  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h] : 999);} 
+  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h-1] : 999);} 
   Bool_t  CheckEventPlaneStatus(Int_t det, Int_t h, EventPlaneStatus flag) const;
   void    CopyEvent(const AliReducedEventFriend* event);
 
@@ -487,7 +487,7 @@ inline Bool_t AliReducedEventFriend::CheckEventPlaneStatus(Int_t det, Int_t h, E
   // Check the status of the event plane for a given detector and harmonic
   //
   if(det<0 || det>=kNdetectors || h<1 || h>fgkNMaxHarmonics) return kFALSE;
-  return (flag<kNMaxFlowFlags ? (fEventPlaneStatus[det][h]&(1<<flag)) : kFALSE);
+  return (flag<kNMaxFlowFlags ? (fEventPlaneStatus[det][h-1]&(1<<flag)) : kFALSE);
 }
 
 #endif
