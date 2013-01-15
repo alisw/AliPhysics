@@ -22,13 +22,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
  public: 
   AliAnaChargedParticles() ; // default ctor
   virtual ~AliAnaChargedParticles() { ; } //virtual dtor
-
-  Bool_t  AcceptDCA(const Float_t pt, const Float_t dca) ;
   
   TList * GetCreateOutputObjects();
-  
-  Int_t   GetVertexBC(const AliVVertex * vtx);
-  
+    
   void    Init();
   
   void    InitParameters();
@@ -45,17 +41,10 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
   void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }
 
-  void    SwitchOnRecalculateVertexBC()      { fRecalculateVertexBC     = kTRUE  ; }
-  void    SwitchOffRecalculateVertexBC()     { fRecalculateVertexBC     = kFALSE ; }
-
-  void    SetDCACutParameters(Int_t i, Float_t par) { if(i >= 0 && i < 3) fDCACutParam[i] = par ; }
-  
  private:
   
   Bool_t  fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t  fFillVertexBC0Histograms; // Fill histograms for tracks with vertex BC=0 or not related histograms
-  Bool_t  fRecalculateVertexBC;     // Recalculate vertex BC for older AODs
-  Float_t fDCACutParam[3];          // DCA cut function parameters
   
   //Histograms
   TH1F * fhNtracks;     //! track multiplicity distribution
@@ -115,6 +104,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhTOFSignalPtCut;               //! TOF signal pt and acceptance cut
   TH1F * fhTOFSignalBCOK;                //! TOF signal pt and acceptance cut
   TH2F * fhPtTOFSignal;                  //! TOF signal vs track pT, good status
+  TH2F * fhPtTOFSignalDCACut;            //! TOF signal vs track pT, good status
   TH2F * fhPtTOFSignalPileUp[7];         //! TOF signal vs track pT, good status, pile-up
   TH2F * fhPtTOFSignalVtxOutBC0;         //! TOF signal vs track pT, good status
   TH2F * fhPtTOFSignalVtxOutBC0PileUp[7];//! TOF signal vs track pT, good status, pile-up

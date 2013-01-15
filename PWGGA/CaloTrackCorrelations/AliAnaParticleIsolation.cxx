@@ -67,7 +67,8 @@ fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0),
 fhConeSumPt(0),                   fhPtInCone(0),
 fhPtTrackInCone(0),
 fhPtTrackInConeOtherBC(0),        fhPtTrackInConeOtherBCPileUpSPD(0),
-fhPtTrackInConeBC0(0),            fhPtTrackInConeBC0PileUpSPD(0),
+fhPtTrackInConeBC0(0),            fhPtTrackInConeVtxBC0(0),
+fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
 fhFRConeSumPt(0),                 fhPtInFRCone(0),                 fhPhiUEConeSumPt(0),
 fhEtaUEConeSumPt(0),              fhEtaBand(0),                    fhPhiBand(0),
@@ -839,6 +840,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtTrackInConeBC0->SetYTitle("p_{T in cone} (GeV/c)");
       fhPtTrackInConeBC0->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtTrackInConeBC0) ;
+      
+      fhPtTrackInConeVtxBC0  = new TH2F("hPtTrackInConeVtxBC0",
+                                     Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC==0",r),
+                                     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeVtxBC0->SetYTitle("p_{T in cone} (GeV/c)");
+      fhPtTrackInConeVtxBC0->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtTrackInConeVtxBC0) ;
+
       
       fhPtTrackInConeBC0PileUpSPD  = new TH2F("hPtTrackInConeBC0PileUpSPD",
                                                   Form("p_{T} of tracks in isolation cone for R = %2.2f, TOF from BC==0, pile-up from SPD",r),
@@ -1945,6 +1954,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
           if     ( okTOF && trackBC!=0 )fhPtTrackInConeOtherBC->Fill(pt,pTtrack);
           else if( okTOF && trackBC==0 )fhPtTrackInConeBC0    ->Fill(pt,pTtrack);
+          
+          Int_t vtxBC = GetReader()->GetVertexBC();
+          if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(pt,pTtrack);
           
           if(GetReader()->IsPileUpFromSPD())             { fhPtInConePileUp[0]->Fill(pt,pTtrack);
             if(okTOF && trackBC!=0 )           fhPtTrackInConeOtherBCPileUpSPD->Fill(pt,pTtrack);

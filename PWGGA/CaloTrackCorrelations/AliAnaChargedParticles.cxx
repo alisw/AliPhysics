@@ -46,7 +46,6 @@ ClassImp(AliAnaChargedParticles)
     AliAnaCaloTrackCorrBaseClass(),
     fFillPileUpHistograms(0),
     fFillVertexBC0Histograms(0),
-    fRecalculateVertexBC(0),
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
     fhPtCutDCA(0),     fhPtCutDCABCOK(0),
@@ -66,7 +65,8 @@ ClassImp(AliAnaChargedParticles)
     fhPtUnknown(0),    fhPhiUnknown(0),      fhEtaUnknown(0),
     //TOF
     fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
-    fhPtTOFSignal(0),  fhPtTOFSignalVtxOutBC0(0), fhPtTOFSignalVtxInBC0(0),
+    fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
+    fhPtTOFSignalVtxOutBC0(0), fhPtTOFSignalVtxInBC0(0),
     fhPtTOFStatus0(0), fhEtaPhiTOFStatus0(0),
     fhEtaPhiTOFBC0(0), fhEtaPhiTOFBCPlus(0), fhEtaPhiTOFBCMinus(0),
     fhEtaPhiTOFBC0PileUpSPD(0),
@@ -87,7 +87,6 @@ ClassImp(AliAnaChargedParticles)
   
   for(Int_t i = 0; i < 3; i++)
   {
-    fDCACutParam          [i] = 0 ;
     fhPtDCA               [i] = 0 ;
     
     fhPtDCASPDRefit       [i] = 0 ;
@@ -113,20 +112,6 @@ ClassImp(AliAnaChargedParticles)
   
   //Initialize parameters
   InitParameters();
-
-}
-
-//_____________________________________________________________________________
-Bool_t  AliAnaChargedParticles::AcceptDCA(const Float_t pt, const Float_t dca)
-{
- // Accept track if DCA is smaller than function
-  
-  Float_t cut = fDCACutParam[0]+fDCACutParam[1]/TMath::Power(pt,fDCACutParam[2]);
-  
-  if(TMath::Abs(dca) < cut)
-    return kTRUE;
-  else
-    return kFALSE;
 
 }
 
@@ -289,6 +274,11 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtTOFSignal->SetYTitle("TOF signal (ns)");
   fhPtTOFSignal->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPtTOFSignal);
+  
+  fhPtTOFSignalDCACut  = new TH2F ("hPtTOFSignalDCACut","TOF signal after DCA cut", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+  fhPtTOFSignalDCACut->SetYTitle("TOF signal (ns)");
+  fhPtTOFSignalDCACut->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtTOFSignalDCACut);
 
   if(fFillVertexBC0Histograms)
   {
@@ -605,52 +595,6 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 
 }
 
-//___________________________________________
-Int_t AliAnaChargedParticles::GetVertexBC(const AliVVertex * vtx)
-{
-  // Get the vertex BC
-  
-  AliVEvent * event = GetReader()->GetInputEvent();
-  
-  if(!fRecalculateVertexBC) return vtx->GetBC();
-  
-  // In old AODs BC not stored, recalculate it
-  // loop over the global track and select those which have small DCA to primary vertex (e.g. primary).
-  // If at least one of these primaries has valid BC != 0, then this vertex is a pile-up candidate.
-  
-  Double_t bz  = event->GetMagneticField();
-  Bool_t   bc0 = kFALSE;
-  Int_t    ntr = GetCTSTracks()->GetEntriesFast();
-  //printf("N Tracks %d\n",ntr);
-  
-  for(Int_t i = 0 ; i < ntr ; i++)
-  {
-    AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(i));
-    
-    //Check if has TOF info, if not skip
-    ULong_t status  = track->GetStatus();
-    Bool_t  okTOF   = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
-    Int_t   trackBC = track->GetTOFBunchCrossing(bz);
-    Float_t pt      = track->Pt();
-    
-    if(!okTOF) continue;
-    
-    // Get DCA x, y
-    Double_t dca[2]   = {1e6,1e6};
-    Double_t covar[3] = {1e6,1e6,1e6};
-    track->PropagateToDCA(GetReader()->GetInputEvent()->GetPrimaryVertex(),bz,100.,dca,covar);
-            
-    if(AcceptDCA(pt,dca[0]))
-    {
-      if     (trackBC !=0 && trackBC != AliVTrack::kTOFBCNA) return trackBC;
-      else if(trackBC == 0)                                  bc0 = kTRUE;
-    }
-  }
-  
-  if( bc0 ) return 0 ;
-  else      return AliVTrack::kTOFBCNA ;
-  
-}
 
 //___________________________________________
 void AliAnaChargedParticles::InitParameters()
@@ -661,10 +605,6 @@ void AliAnaChargedParticles::InitParameters()
 
   AddToHistogramsName("AnaCharged_");
   
-  // dca_xy cut = 0.0105+0.0350/TMath::Power(pt,1.1);
-  fDCACutParam[0]= 0.0105;
-  fDCACutParam[1]= 0.0350;
-  fDCACutParam[2]= 1.1;
   
 }
 
@@ -708,15 +648,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
-  
   AliVEvent * event = GetReader()->GetInputEvent();
 
-  //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
-  //AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
+  Int_t vtxBC = GetReader()->GetVertexBC();
+  if(!GetReader()->IsDCACutOn()) vtxBC = GetReader()->GetVertexBC(event->GetPrimaryVertex());
 
-  const AliVVertex * vtx = event->GetPrimaryVertex();
-  Int_t vtxBC = GetVertexBC(vtx);
-  
   if(fFillVertexBC0Histograms)
   {
     fhProductionVertexBC->Fill(vtxBC);
@@ -784,7 +720,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       fhPtDCA[2]->Fill(pt, dcaCons);
     }
     
-    if(AcceptDCA(pt,trackDCA)) fhPtCutDCA->Fill(pt);
+    if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCA->Fill(pt);
     
     if(fFillVertexBC0Histograms)
     {
@@ -805,7 +741,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       {
         fhPtVtxInBC0->Fill(pt);
         fhEtaPhiVtxInBC0->Fill(eta,phi);
-        if(AcceptDCA(pt,trackDCA)) fhPtCutDCABCOK->Fill(pt);
+        if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCABCOK->Fill(pt);
         
         if(dcaCons == -999)
         {
@@ -936,7 +872,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       fhTOFSignal  ->Fill(tof);
       fhPtTOFSignal->Fill(pt, tof);
-      
+      if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtTOFSignalDCACut->Fill(pt, tof);
+        
       if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
         fhPtTOFSignalVtxOutBC0->Fill(pt, tof);
       else

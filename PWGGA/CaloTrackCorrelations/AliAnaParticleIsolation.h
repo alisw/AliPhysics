@@ -157,6 +157,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeOtherBC ;               //! Track Pt in the cone, tracks out of main BC Time window
   TH2F *   fhPtTrackInConeOtherBCPileUpSPD ;      //! Track Pt in the cone, tracks out of main BC Time window
   TH2F *   fhPtTrackInConeBC0 ;                   //! Track Pt in the cone, tracks in BC=0
+  TH2F *   fhPtTrackInConeVtxBC0 ;                //! Track Pt in the cone, tracks in BC=0
   TH2F *   fhPtTrackInConeBC0PileUpSPD ;          //! Track Pt in the cone, tracks in BC=0
   TH2F *   fhPtInConePileUp[7] ;                  //! Particle Pt in the cone, if event is from pile-up (SPD method)
   TH2F *   fhPtInConeCent ;                       //! Particle Pt in the cone versus centrality
@@ -317,7 +318,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,20)
+  ClassDef(AliAnaParticleIsolation,21)
 } ;
 
 
