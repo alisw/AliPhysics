@@ -226,6 +226,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *       fhPtInput;                      //! pT distribution of trigger particles before selection
   TH1F *       fhPtFidCut;                     //! pT distribution of trigger particles before leading selection, after fiducial selection
   TH1F *       fhPtLeading;                    //! pT distribution of leading particles
+  TH1F *       fhPtLeadingVtxBC0;              //! pT distribution of leading particles
   TH1F *       fhPtLeadingPileUp[7];           //! pT distribution of leading particles
   TH2F *       fhPtLeadingVzBin;               //! pT distribution of leading particles vs vz bin
   TH2F *       fhPtLeadingBin;                 //! pT distribution of leading particles, vs mixing bin
@@ -300,6 +301,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhZTUeChargedBC0  ;               //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhPtTrigChargedBC0 ;              //! trigger and correlated particl pt, to be used for mean value for kt
 
+  TH2F *       fhDeltaPhiChargedVtxBC0  ;        //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
+  TH2F *       fhDeltaPhiChargedPtA3GeVVtxBC0 ;  //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, pTa > 3 GeV
+  TH2F *       fhXEChargedVtxBC0  ;              //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhXEUeChargedVtxBC0  ;            //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhZTChargedVtxBC0  ;              //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhZTUeChargedVtxBC0  ;            //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhPtTrigChargedVtxBC0 ;           //! trigger and correlated particl pt, to be used for mean value for kt
+  
   //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F *       fhDeltaPhiUeLeftCharged  ;      //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
   TH2F *       fhDeltaPhiUeRightCharged  ;     //! Difference of charged particle from underlying events phi and trigger particle  phi 
@@ -428,7 +437,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,28)
+  ClassDef(AliAnaParticleHadronCorrelation,29)
 } ;
  
 

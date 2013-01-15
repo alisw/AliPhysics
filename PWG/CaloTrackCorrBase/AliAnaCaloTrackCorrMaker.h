@@ -110,10 +110,12 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
   TH1F *   fhPrimaryVertexBC;   //! Primary vertex BC
   TH1F *   fhTimeStampFraction; //! event fraction depending on Time Stamp, only if activated on reader
+  TH1F *   fhNPileUpVertSPD;    //! number of pile-up vertices from SPD
+  TH1F *   fhNPileUpVertTracks; //! number of pile-up vertices from tracks
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,15)
+  ClassDef(AliAnaCaloTrackCorrMaker,16)
 } ;
  
 
