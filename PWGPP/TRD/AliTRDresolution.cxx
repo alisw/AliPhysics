@@ -818,6 +818,19 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
         val[kNdim+1]      = 0.;//dx;
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn))) H->Fill(val);
+
+        if(DebugLevel()>=1 && exactPID>-2){
+          Float_t tpc(fkESD->GetTPCdedx());
+          Float_t tof(fkESD->GetTOFbeta());
+          AliTRDtrackV1 t(*fkTrack); t.SetOwner();
+          (*DebugStream()) << "MCtrackIn"
+            <<"pid="      << exactPID
+            <<"tpc="      << tpc
+            <<"tof="      << tof
+            <<"track.="   << &t
+            <<"trackIn.=" << tin
+            << "\n";
+        }
       }
     }
     //if(bc>1) break; // do nothing for the rest of TRD objects if satellite bunch
@@ -2904,7 +2917,8 @@ Bool_t AliTRDresolution::PostProcess()
     AliWarning("Missing/Wrong data @ hTracklet2TRDin needed for infering pt/p segmentation.");
     return kFALSE;
   }
-  fNpt=H->GetAxis(kPt)->GetNbins()+1;
+  // protect for backward compatibility
+  fNpt=H->GetAxis(kPt)?(H->GetAxis(kPt)->GetNbins()+1):1;
   if(!MakeMomSegmentation()) return kFALSE;
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
