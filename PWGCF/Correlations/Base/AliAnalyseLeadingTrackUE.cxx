@@ -241,7 +241,7 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
     arrayMC = static_cast<TClonesArray*>(mcObj);
   else
   {
-    arrayMC->Dump();
+    mcObj->Dump();
     AliFatal("Invalid object passed");
   }
   
@@ -324,7 +324,7 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
     arrayMC = static_cast<TClonesArray*>(mcObj);
   else
   {
-    arrayMC->Dump();
+    mcObj->Dump();
     AliFatal("Invalid object passed");
   }
   
