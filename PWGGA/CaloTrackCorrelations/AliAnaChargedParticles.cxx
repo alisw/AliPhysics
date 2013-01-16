@@ -287,7 +287,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtTOFSignalVtxOutBC0->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtTOFSignalVtxOutBC0);
     
-    fhPtTOFSignalVtxInBC0  = new TH2F ("hPtTOFSignalVtxOnBC0","TOF signal, vtx BC=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+    fhPtTOFSignalVtxInBC0  = new TH2F ("hPtTOFSignalVtxInBC0","TOF signal, vtx BC=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
     fhPtTOFSignalVtxInBC0->SetYTitle("TOF signal (ns)");
     fhPtTOFSignalVtxInBC0->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtTOFSignalVtxInBC0);
