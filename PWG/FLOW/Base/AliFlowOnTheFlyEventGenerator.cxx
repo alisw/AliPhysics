@@ -57,7 +57,7 @@ ClassImp(AliFlowOnTheFlyEventGenerator)
 //_____________________________________________________________________________
 AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator() : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(0), fFF(0) {/* constructor used for IO by root */}
 //_____________________________________________________________________________
-AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator(Bool_t qa, Bool_t ff, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d) : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(qa), fFF(ff) {
+AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator(Bool_t qa, Int_t ff, Int_t mult, TVirtualMCDecayer* decayer, Bool_t a, Bool_t b, Bool_t c, Bool_t d) : fGenerators(0), fEmbedMe(0), fFlowEvent(0), fDecayer(0), fAddV2Mothers(0), fAddV3Mothers(0), fAddV2Daughters(0), fAddV3Daughters(0), fPsi2(0), fPsi3(0), fPrecisionPhi(.001), fMaxNumberOfIterations(100), fQA(qa), fFF(ff) {
     // contructor
     if(!fFlowEvent) fFlowEvent = new AliFlowEventSimple(mult, (AliFlowEventSimple::ConstructionMethod)0, 0x0, 0, TMath::TwoPi(), -.9, .9);
     if(!fGenerators) {
@@ -141,8 +141,12 @@ void AliFlowOnTheFlyEventGenerator::SetPtDependentV3(const char* func, Short_t s
 AliFlowEventSimple* AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyEvent(TClonesArray* event, Int_t nSpecies, Int_t species[], Int_t mult[], Int_t bg, Bool_t fluc)
 {
     // generate a flow event according to settings provided in GENERATOR INTERFACE
-
     fPsi2 = gRandom->Uniform(-TMath::Pi(), TMath::Pi());
+    // generate a random number which will be used for flow fuctuations (if requested)
+    Double_t fluc_poi(-1), fluc_rp(-1);
+    if(fFF == 1 || fFF == 3 ) fluc_poi = gRandom->Uniform();
+    if(fFF == 2) fluc_rp = gRandom->Uniform();
+    if(fFF == 3) fluc_rp = fluc_poi;    // poi and rp fluctuations are fully correlated
     // calculate the total multiplicity for the event
     Int_t multPiKPr[] = {(int)(.7*bg/2.), (int)(.2*bg/2.), (int)(.1*bg/2.)};
     Int_t fPDGPiKPr[] = {211, 321, 2212};
@@ -152,18 +156,18 @@ AliFlowEventSimple* AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyEvent(TClones
     Int_t totalMultiplicity(totalRPMultiplicity+totalPOIMultiplicity);
     // generate the particles of interest. if requested, a vn boost is given to the primary particles
     for(int i(0); i < nSpecies; i++) {
-        if(fluc) GenerateOnTheFlyTracks(gRandom->Uniform(mult[i]-TMath::Sqrt(mult[i]), mult[i]+TMath::Sqrt(mult[i])), species[i], event);
-        else GenerateOnTheFlyTracks(mult[i], species[i], event);
+        if(fluc) GenerateOnTheFlyTracks(gRandom->Uniform(mult[i]-TMath::Sqrt(mult[i]), mult[i]+TMath::Sqrt(mult[i])), species[i], event, fluc_poi);
+        else GenerateOnTheFlyTracks(mult[i], species[i], event, fluc_poi);
     }
     // generate reference particles. if requested, a vn boost is given to the primary particles
     for(int i(0); i < 3; i++) {
         if(fluc) {
-            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), fPDGPiKPr[i], event);
-            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), -1*fPDGPiKPr[i], event);
+            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), fPDGPiKPr[i], event, fluc_rp);
+            GenerateOnTheFlyTracks(gRandom->Uniform(multPiKPr[i]-TMath::Sqrt(multPiKPr[i]), multPiKPr[i]+TMath::Sqrt(mult[i])), -1*fPDGPiKPr[i], event, fluc_rp);
         }
         else {
-            GenerateOnTheFlyTracks(multPiKPr[i], fPDGPiKPr[i], event);
-            GenerateOnTheFlyTracks(multPiKPr[i], -1*fPDGPiKPr[i], event);
+            GenerateOnTheFlyTracks(multPiKPr[i], fPDGPiKPr[i], event, fluc_rp);
+            GenerateOnTheFlyTracks(multPiKPr[i], -1*fPDGPiKPr[i], event, fluc_rp);
         }
     }
     // if requested, decay the event
@@ -214,7 +218,7 @@ AliFlowEventSimple* AliFlowOnTheFlyEventGenerator::ConvertTClonesToFlowEvent(TCl
     return fFlowEvent;
 }
 //_____________________________________________________________________________
-void AliFlowOnTheFlyEventGenerator::AddV2(TParticle* part, Double_t v2)
+void AliFlowOnTheFlyEventGenerator::AddV2(TParticle* part, Double_t v2, Double_t fluc)
 {
     // afterburner, adds v2, uses Newton-Raphson iteration
     Double_t phi = part->Phi();
@@ -222,6 +226,11 @@ void AliFlowOnTheFlyEventGenerator::AddV2(TParticle* part, Double_t v2)
     Double_t f=0.;
     Double_t fp=0.;
     Double_t phiprev=0.;
+    // introduce flow fluctuations (gaussian)
+    if(fluc > -.5) {
+        v2+=TMath::Sqrt(2*(v2*.25)*(v2*.25))*TMath::ErfInverse(2*fluc-1);
+        if(fQA) Find(part->GetPdgCode(), kTRUE)->FillV2(part->Pt(), v2);
+    }
     for (Int_t i=0; i!=fMaxNumberOfIterations; ++i) {
         phiprev=phi; //store last value for comparison
         f =  phi-phi0+v2*TMath::Sin(2.*(phi-fPsi2));
@@ -235,17 +244,18 @@ void AliFlowOnTheFlyEventGenerator::AddV2(TParticle* part, Double_t v2)
 void AliFlowOnTheFlyEventGenerator::AddV2(TClonesArray* event)
 {
     // afterburner, adds v2 for different species to all tracks in an event
+    Double_t fluc(gRandom->Uniform());  // get a random number in case of fluctuations
     // FIXME at the moment no distincition between mothers and daughters
     TParticle *part = new TParticle();
     for(Int_t nTrack=0; nTrack!=event->GetEntriesFast(); ++nTrack) {
         part = (TParticle*) event->At(nTrack);
         // for each track, call overloaded addv2 function with the correct generator
         // create a generator in the case where the decayer has introduced a new particle species
-        AddV2(part, Find(part->GetPdgCode(), kTRUE)->GetV2(part->Pt()));
+        AddV2(part, Find(part->GetPdgCode(), kTRUE)->GetV2(part->Pt()), fluc);
     }
 }
 //_____________________________________________________________________________
-void AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyTracks(Int_t mult, Int_t pid, TClonesArray* event) 
+void AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyTracks(Int_t mult, Int_t pid, TClonesArray* event, Double_t fluc) 
 {
     // generate tracks for the event. the tracks that are generated here are the mothers
     Double_t ph, et, pt, mm, px, py, pz, ee;
@@ -271,7 +281,7 @@ void AliFlowOnTheFlyEventGenerator::GenerateOnTheFlyTracks(Int_t mult, Int_t pid
         ee = TMath::Sqrt( mm*mm + pt*pt+pz*pz );
         part->SetMomentum( px, py, pz, ee );
         // if requested add v2 to the sample of mothers
-        if(fAddV2Mothers) AddV2(part, generator->GetV2(pt));
+        if(fAddV2Mothers) AddV2(part, generator->GetV2(pt), fluc);
     }
 }
 //_____________________________________________________________________________
@@ -335,7 +345,7 @@ void AliFlowOnTheFlyEventGenerator::DecayOnTheFlyTracks(TClonesArray *event)
 void AliFlowOnTheFlyEventGenerator::ForceGammaDecay(TClonesArray* arr, TParticle* part)
 {
     // force gama decay
-    const Float_t mass1(gRandom->Uniform(0.0000001, .1));    // FIXME randomly sample photon 'mass'
+    const Float_t mass1(gRandom->Uniform(0.0000001, .1));   // FIXME randomly sample photon 'mass'
     const Float_t mass_d1(.000511);                         // daughter mass (electron)
     const Float_t mass_d2(.000511);
     Double_t p_dec1=sqrt((TMath::Abs(mass1*mass1-(mass_d1+mass_d2)*(mass_d1+mass_d2))*(mass1*mass1-(mass_d1-mass_d2)*(mass_d1-mass_d2))))/2/mass1;      // energy

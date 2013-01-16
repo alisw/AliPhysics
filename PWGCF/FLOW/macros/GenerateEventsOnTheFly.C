@@ -83,7 +83,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   // note that by default gamma's are 'decayed' to e+ e- pairs
   Int_t decayModes[]    = { TPythia6Decayer::kHadronicD };     // some decay modes
   // h) number of events you want to generate.
-  const int events      = 100;
+  const int events      = 50000;
   // i) write output to file
   Bool_t writeOutput    = kTRUE;
   // j) do qa. qa histograms will be created at the end of generation adn written to a rootfile in your working directory
@@ -91,7 +91,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   // k) write analysis to an output file
   TString trunkName             =       "OnTheFlyEvent"; // trunk of output file name
   // l) specify the max number of events per file (new files will be generated automatically)
-  const int maxEventsPerFile    =    50;          // specify the maximum number of events that is stored per file
+  const int maxEventsPerFile    =    1000;          // specify the maximum number of events that is stored per file
                                                      // note that events are stored temporarily in RAM memory before writing to file
                                                      // so setting this number to a very large value could lead to an unresponsive system
   ///====== END OF GENERATOR INTERFACE===///
@@ -111,7 +111,7 @@ void GenerateEventsOnTheFly(Bool_t generate = kTRUE) {
   for(Int_t i(0); i < nDecayModes; i++) decayer->SetForceDecay(decayModes[i]);
   // get an instance of the class that we'll use to generate events
   AliFlowOnTheFlyEventGenerator* eventGenerator = new AliFlowOnTheFlyEventGenerator(    qa,             // make some QA plots
-                                                                                        NULL,           // introduce flow fluctuations (not implemented yet)
+                                                                                        3,              // introduce flow fluctuations
                                                                                         nMult,          // set initial value for evnet multiplcity
                                                                                         decayer,        // specify the decayer (NULL is no decay)
                                                                                         addMotherV2,    // add v2 for mothers
