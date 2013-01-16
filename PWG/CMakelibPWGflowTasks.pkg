@@ -34,6 +34,7 @@ set ( SRCS
     FLOW/Tasks/AliFlowCandidateTrack.cxx 
     FLOW/Tasks/AliFlowTrackCuts.cxx 
     FLOW/Tasks/AliAnalysisTaskScalarProduct.cxx 
+    FLOW/Tasks/AliAnalysisTaskMSP.cxx 
     FLOW/Tasks/AliAnalysisTaskMCEventPlane.cxx 
     FLOW/Tasks/AliAnalysisTaskLYZEventPlane.cxx 
     FLOW/Tasks/AliAnalysisTaskCumulants.cxx 
@@ -63,5 +64,9 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR PWGflowTasksLinkDef.h)
 
 set ( EXPORT ${HDRS} )
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+        set ( ELIBS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lPWGflowBase -lPWGmuon -lANALYSISalice -lANALYSIS -lAOD -lESD -lSTEERBase ${ROOTCLIBS} -lEG )
+endif( ALICE_TARGET STREQUAL "win32gcc")
 
 set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase PWG/muon)

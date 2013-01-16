@@ -53,6 +53,8 @@ set ( SRCS
       FLOW/Base/AliFlowAnalysisWithFittingQDistribution.cxx 
       FLOW/Base/AliFlowAnalysisWithMixedHarmonics.cxx 
       FLOW/Base/AliFlowAnalysisWithNestedLoops.cxx
+      FLOW/Base/AliFlowMSPHistograms.cxx
+      FLOW/Base/AliFlowAnalysisWithMSP.cxx
       FLOW/Base/AliFlowOnTheFlyEventGenerator.cxx
 )
 
@@ -67,5 +69,6 @@ set ( EINCLUDE  PWG/FLOW/Base)
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
 	set ( PACKSOFLAGS  ${SOFLAGS} -L${ROOTLIBDIR} -lEG)
+	set ( ELIBS ${ROOTCLIBS} -lEG)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")

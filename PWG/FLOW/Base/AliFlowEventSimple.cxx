@@ -196,6 +196,17 @@ void AliFlowEventSimple::AddTrack( AliFlowTrackSimple* track )
 }
 
 //-----------------------------------------------------------------------
+AliFlowTrackSimple* AliFlowEventSimple::MakeNewTrack()
+{
+   AliFlowTrackSimple *t=dynamic_cast<AliFlowTrackSimple *>(fTrackCollection->RemoveAt(fNumberOfTracks));
+   if( !t ) {  // If there was no track at the end of the list then create a new track
+      t=new AliFlowTrackSimple();
+   }
+
+   return t;
+}
+
+//-----------------------------------------------------------------------
 AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights)
 {
   // calculate Q-vector in harmonic n without weights (default harmonic n=2)

@@ -47,6 +47,9 @@ public:
 
    Long64_t Merge(TCollection *);                                                               // Merge all objects in the collection into this
    AliFlowMSPHistograms &operator+=(const AliFlowMSPHistograms &x);                             // Merge this with another AliFlowMSPHistograms object
+   AliFlowMSPHistograms &operator=(const AliFlowMSPHistograms &x);
+
+   TObject *Clone(const char *n=0)const;      // Create a copy of this object
 
 private:
    TObjArray   fVarNames;        // Names of variables being correlated

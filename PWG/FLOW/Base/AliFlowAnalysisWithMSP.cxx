@@ -34,36 +34,87 @@
 #include <iomanip>
 
 AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP() 
-   : TNamed(), fHarmonic(2), fNUA(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
+   : TNamed(), 
+   fHarmonic(2), fNUA(kFALSE), fUseCommonConstants(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
    fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
    fPtStatistics(0), fEtaStatistics(0),
-   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0)
+   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0), fHistList(0)
 {
    // Default constructor. Intended for root IO purposes only
 }     
 
-AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(TDirectoryFile *file)
-   : TNamed(), fHarmonic(2), fNUA(kFALSE), fUseCommonConstants(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
+AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(TDirectory *file)
+   : TNamed(), 
+   fHarmonic(2), fNUA(kFALSE), fUseCommonConstants(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
    fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
    fPtStatistics(0), fEtaStatistics(0),
-   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0)
+   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0), fHistList(0)
 {
+   // Constructor reads the internal state from a root file.
+   // No check for consistency is done. If flags or histograms are not found they are left at default (0).
    ReadHistograms(file);
 }
 
-AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(const unsigned int harmonic, const bool commonConst, const bool commonHist) 
-   : TNamed(), fHarmonic(harmonic), fNUA(kFALSE), fUseCommonConstants(commonConst), fBookCommonHistograms(commonHist), fCommonHist(0), fQaComponents(0), 
+AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(TList *list)
+   : TNamed(), 
+   fHarmonic(2), fNUA(kFALSE), fUseCommonConstants(kFALSE), fBookCommonHistograms(kFALSE), fCommonHist(0), fQaComponents(0), 
    fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
    fPtStatistics(0), fEtaStatistics(0),
-   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0)
+   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0), fHistList(0)
+{
+   // Constructor reads the internal state from a root file.
+   // No check for consistency is done. If flags or histograms are not found they are left at default (0).
+   ReadHistograms(list);
+}
+
+
+AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(const unsigned int harmonic, const bool commonConst, const bool commonHist) 
+   : TNamed(), 
+   fHarmonic(harmonic), fNUA(kFALSE), fUseCommonConstants(commonConst), fBookCommonHistograms(commonHist), fCommonHist(0), fQaComponents(0), 
+   fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
+   fPtStatistics(0), fEtaStatistics(0),
+   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0), fHistList(0)
 {
    // Constructor defining the harmonic, usage of non uniform acceptance corrections and the AliFlowCommonHist() histograms
+   // Calls Init() to set-up the histograms. This is equivalent to:
+   // AliFlowAnalysisWithMSP *ana= new AliFlowAnalysisWithMSP);
+   // ana->SetHarmonic(harmonic);
+   // ana->UseCommonConstants(commonConst);
+   // ana->EnableCommonHistograms(commonHist);
+   // ana->Init();
    // This is the constructor intended for the user
    SetNameTitle("MSP","Flow analysis with the Modified Scalar Product method");
+   Init();
+}
+
+AliFlowAnalysisWithMSP::AliFlowAnalysisWithMSP(const AliFlowAnalysisWithMSP &x)
+   : TNamed(),
+   fHarmonic(x.fHarmonic), fNUA(x.fNUA), fUseCommonConstants(x.fUseCommonConstants), fBookCommonHistograms(x.fBookCommonHistograms), fCommonHist(0), 
+   fQaComponents(0), fQbComponents(0), fQaQb(0), fPtUComponents(0), fEtaUComponents(0), fAllStatistics(0), 
+   fPtStatistics(0), fEtaStatistics(0),
+   fIntegratedFlow(0), fDiffFlowPt(0), fDiffFlowEta(0), fFlags(0), fHistList(0)
+{
+   // Copy constructor
+   SetNameTitle("MSP","Flow analysis with the Modified Scalar Product method");
+   if( x.fQaComponents )   fQaComponents=(AliFlowMSPHistograms *)(x.fQaComponents)->Clone();
+   if( x.fQbComponents )   fQbComponents=(AliFlowMSPHistograms *)(x.fQbComponents)->Clone();
+   if( x.fQaQb )           fQaQb=(AliFlowMSPHistograms *)(x.fQaQb)->Clone();
+   if( x.fPtUComponents)     fPtUComponents=(AliFlowMSPHistograms *)(x.fPtUComponents)->Clone();
+   if( x.fEtaUComponents )   fEtaUComponents=(AliFlowMSPHistograms *)(x.fEtaUComponents)->Clone();
+   if( x.fAllStatistics )    fAllStatistics=(AliFlowMSPHistograms *)(x.fAllStatistics)->Clone();
+   if( x.fPtStatistics )     fPtStatistics=(AliFlowMSPHistograms *)(x.fPtStatistics)->Clone();
+   if( x.fEtaStatistics )    fEtaStatistics=(AliFlowMSPHistograms *)(x.fEtaStatistics)->Clone();
+   if( x.fIntegratedFlow )   fIntegratedFlow=(TH1D *)(x.fIntegratedFlow)->Clone();
+   if( x.fDiffFlowPt )       fDiffFlowPt=(TH1D *)(x.fDiffFlowPt)->Clone();
+   if( x.fDiffFlowEta )      fDiffFlowEta=(TH1D *)(x.fDiffFlowEta)->Clone();
+   if( x.fFlags )            fFlags=(TProfile *)(x.fFlags)->Clone();
+   if( x.fCommonHist )       fCommonHist=new AliFlowCommonHist(*(x.fCommonHist));
+   // The histogram list fHistList is not cloned because it is regenerated when requested
 }
 
 AliFlowAnalysisWithMSP::~AliFlowAnalysisWithMSP() 
 {
+   // Destructor. All internal objects are owned by this class and deleted here.
    delete fCommonHist;
    delete fQaComponents;
    delete fQbComponents;
@@ -77,12 +128,16 @@ AliFlowAnalysisWithMSP::~AliFlowAnalysisWithMSP()
    delete fDiffFlowPt;
    delete fDiffFlowEta;
    delete fFlags;
+   if(fHistList) {
+      fHistList->SetOwner(kFALSE);   // Histograms were already deleted manually
+      delete fHistList;              // Delete the TList itself
+   }
 }
 
 void AliFlowAnalysisWithMSP::Init()
 {
    // Create all output objects. Memory consumption can be reduced by switching off some of the control histograms.
-   // 
+   // pt and eta binning are set to the values defined in the static class AliFlowCommonConstants if enabled. Otherwise defaults are set.
    delete fCommonHist;     fCommonHist=0;    // Delete existing histograms
    delete fQaComponents;   fQaComponents=0;
    delete fQbComponents;   fQbComponents=0;
@@ -96,9 +151,14 @@ void AliFlowAnalysisWithMSP::Init()
    delete fDiffFlowPt;     fDiffFlowPt=0;
    delete fDiffFlowEta;    fDiffFlowEta=0;
    delete fFlags;          fFlags=0;
+   if(fHistList) {
+      fHistList->SetOwner(kFALSE);   // Histograms were already deleted manually
+      delete fHistList;              // Delete the TList itself
+      fHistList=0;                   // Clear pointer which is invalid afcter delete
+   }
 
    // Default binning for histograms
-   // TODO: allow variable binning
+   // TODO: allow variable binning in a simpler way than by AliFlowCommonConstants() only
 
    // Defaults
    int nBinsPt=100;
@@ -182,7 +242,7 @@ void AliFlowAnalysisWithMSP::Make(AliFlowEventSimple *event)
    if( !event ) return;          // Protect against running without events. Can this happen???
 
    AliFlowVector flowVectors[2];                   // Calculate the two subevent Q vectors:
-   event->Get2Qsub(flowVectors, fHarmonic);        // No phi, pt or eta weights implemented yet
+   event->Get2Qsub(flowVectors, fHarmonic);        // TODO: Check how do the phi, pt, eta weights work in the flow event?
 
    AliFlowVector &Qa=flowVectors[0];               // Define some mnemonics for the subevent flow vectors:
    AliFlowVector &Qb=flowVectors[1];
@@ -194,60 +254,57 @@ void AliFlowAnalysisWithMSP::Make(AliFlowEventSimple *event)
 
    if(fCommonHist)fCommonHist->FillControlHistograms(event);   // Standard for all flow analysis
 
-
-   const double qaxy[]={Qa.X()/QaW,Qa.Y()/QaW};                // Two variables expected
+   // Fill NUA correction histograms for Qa, Qb and QaQb per event:
+   const double qaxy[]={Qa.X()/QaW,Qa.Y()/QaW};                // Two variables: Qa components
    const double wqaxy[]={QaW,QaW};
    fQaComponents->Fill(1, qaxy, wqaxy);                        // only one bin (all pt)
 
-   const double qbxy[]={Qb.X()/QbW,Qb.Y()/QbW};                // Two variables expected
+   const double qbxy[]={Qb.X()/QbW,Qb.Y()/QbW};                // Two variables: Qb components
    const double wqbxy[]={QbW,QbW};
    fQbComponents->Fill(1, qbxy, wqbxy);                        // only one bin (all pt)
 
    const double QaQbW=QaW*QbW;
-   const double weightedQaQb = (Qa*Qb)/QaQbW;                  // Scalar product of subevent Q vectors with weight
+   const double weightedQaQb = (Qa*Qb)/QaQbW;                  // Scalar product of subevent Q vectors with weight, only 1 variable
    fQaQb->Fill(1,&weightedQaQb,&QaQbW);                        // Average of QaQb per event
-
    
    int iTrack=0;
    while( AliFlowTrackSimple *track=event->GetTrack(iTrack++) ) {// Loop over the tracks in the event 
-      // Get the track vector
-      if(! track->InPOISelection() ) continue;
-      const double trackWeight=track->Weight();
+      if(! track->InPOISelection() ) continue;  // Ignore if not a POI
+      const double trackWeight=track->Weight(); // Get the track vector
       const double phi=track->Phi();
       const double pt=track->Pt();
       const double eta=track->Eta();
 
       AliFlowVector u;
-      u.SetMagPhi(1, fHarmonic*phi, trackWeight);
-      u.SetMult(1);
+      u.SetMagPhi(trackWeight, fHarmonic*phi, trackWeight);    // Length = track weight = multiplicity for a single track
 
       // Remove track from subevent a 
-      AliFlowVector mQa(Qa);                 // Initialize with Qa flow vector
-      if( track->InSubevent(0) ) {
-         mQa-=u;                             // Should introduce phi weights here
+      AliFlowVector mQa(Qa);                 // Initialize with Qa flow vector of this event
+      if( track->InSubevent(0) ) {           // Correct for autocorrelation with POI for this track
+         mQa-=u;                             
       }
 
       // Remove track from subevent b 
-      AliFlowVector mQb(Qb);                 // Initialize with Qb flow vector
-      if( track->InSubevent(1) ) {
-         mQb-=u;                             // Should introduce phi weights here
+      AliFlowVector mQb(Qb);                 // Initialize with Qb flow vector of this event
+      if( track->InSubevent(1) ) {           // Correct for autocorrelation with POI for this track
+         mQb-=u;                             
       }
 
-      const double uQaW = mQa.GetMult();     // Weight is multiplicity of Q vector
-      const double uQbW = mQb.GetMult();
-      const double uQa=u*mQa;                // Correlate POI with subevent 
+      const double uQaW = mQa.GetMult()*trackWeight;     // Weight is multiplicity of Q vector times weight of POI
+      const double uQbW = mQb.GetMult()*trackWeight;
+      const double uQa=u*mQa;                            // Correlate POI with subevent 
       const double uQb=u*mQb;                
 
       const double uxy[]={u.X(),u.Y()};
       const double wxy[]={1.0,1.0};
-      fPtUComponents->Fill(pt, uxy, wxy);    // vs pt
-      fEtaUComponents->Fill(eta, uxy, wxy);  // vs eta
+      fPtUComponents->Fill(pt, uxy, wxy);    // NUA for POI vs pt
+      fEtaUComponents->Fill(eta, uxy, wxy);  // NUA for POI vs eta
 
-      const double par[]={uQa/uQaW, uQb/uQbW, weightedQaQb};
+      const double par[]={uQa/uQaW, uQb/uQbW, weightedQaQb};   // Three variables to correlate: uQa, uQb and QaQb
       const double wgt[]={uQaW, uQbW, QaQbW};
-      fAllStatistics->Fill(1,   par, wgt  );
-      fPtStatistics->Fill(pt,   par, wgt );
-      fEtaStatistics->Fill(eta, par, wgt );
+      fAllStatistics->Fill(1,   par, wgt  );    // only 1 bin, integrated over pt and eta
+      fPtStatistics->Fill(pt,   par, wgt );     // pt differential correlations
+      fEtaStatistics->Fill(eta, par, wgt );     // eta differential correlations
    }
 }
 
@@ -258,7 +315,6 @@ void AliFlowAnalysisWithMSP::Finish()
    // If the output histograms already exist then they are replaced by the newly calculated result
 
    Print();       // Print a summary of the NUA terms and integrated flow
-   // TODO: Create result histograms for integrated flow and store the flags to be able to restore the initial state from histograms only
 
    // Create result histograms
    fFlags->Fill("NUA",fNUA);
@@ -266,7 +322,11 @@ void AliFlowAnalysisWithMSP::Finish()
    delete fDiffFlowPt;     fDiffFlowPt=0;
    delete fDiffFlowEta;    fDiffFlowEta=0;
 
+   bool oldAddStatus=TH1::AddDirectoryStatus();       // Do not store the next histograms automatically
+   TH1::AddDirectory(kFALSE);                         // We need full control over the writing of the hostograms
+
    fIntegratedFlow=new TH1D("IntegratedFlow","Integrated flow results",10,0.5,10.5);
+   fIntegratedFlow->SetDirectory(0);
    double vn, vnerror;
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 0);    
    fIntegratedFlow->SetBinContent(1,vn);
@@ -291,11 +351,11 @@ void AliFlowAnalysisWithMSP::Finish()
    fDiffFlowPt->SetYTitle(Form("v_{%d}",fHarmonic));
 
    for(int i=1; i<=nbinspt; ++i) {     
-      double vn=0;
-      double evn=0;
-      if( Calculate(vn, evn, fPtStatistics, fPtUComponents, i) && evn<1 ) {
-         fDiffFlowPt->SetBinContent(i,vn);
-         fDiffFlowPt->SetBinError(i,evn);
+      double vnpt=0;
+      double evnpt=0;
+      if( Calculate(vnpt, evnpt, fPtStatistics, fPtUComponents, i) && evnpt<1 ) {
+         fDiffFlowPt->SetBinContent(i,vnpt);
+         fDiffFlowPt->SetBinError(i,evnpt);
       }
    }
 
@@ -305,33 +365,42 @@ void AliFlowAnalysisWithMSP::Finish()
    fDiffFlowEta= new TH1D("DiffFlowEta","flow of POI vs #eta",nbinseta,etalow,etahigh);
    fDiffFlowEta->SetDirectory(0);          // Do not automatically store in file
    fDiffFlowEta->SetStats(kFALSE);
-   fDiffFlowEta->SetXTitle("p_{t}");
+   fDiffFlowEta->SetXTitle("#eta");
    fDiffFlowEta->SetYTitle(Form("v_{%d}",fHarmonic));
 
    for(int i=1; i<=nbinseta; ++i) {     
-      double vn=0;
-      double evn=0;
-      if( Calculate(vn, evn, fEtaStatistics, fEtaUComponents, i) && evn<1 ) {
-         fDiffFlowEta->SetBinContent(i,vn);
-         fDiffFlowEta->SetBinError(i,evn);
+      double vneta=0;
+      double evneta=0;
+      if( Calculate(vneta, evneta, fEtaStatistics, fEtaUComponents, i) && evneta<1 ) {
+         fDiffFlowEta->SetBinContent(i,vneta);
+         fDiffFlowEta->SetBinError(i,evneta);
       }
    }
+
+   TH1::AddDirectory(oldAddStatus);
 }
 
 void AliFlowAnalysisWithMSP::WriteHistograms(TDirectoryFile *file) const
 {
-   //file->Write(file->GetName(), TObject::kSingleKey);      // Make sure the directory itself is written
+   // Write the internal status to file. If the AliFlowCommonHistograms were enabled they are written also.
+   // Results are written only if they were calculated by Finish().
+   // From these histograms the internal state of *this can be reconstructed with ReadHistograms()
+
+   //file->Write(file->GetName(), TObject::kSingleKey);     // Make sure the directory itself is written
 
    if(fCommonHist) file->WriteTObject(fCommonHist);
 
-   file->WriteTObject(fQaComponents,0,"Overwrite");        // Averages of Qa components per event
-   file->WriteTObject(fQbComponents,0,"Overwrite");        // Averages of Qb components per event
-   file->WriteTObject(fQaQb,0,"Overwrite");                // Average of QaQb per event
-   file->WriteTObject(fPtUComponents,0,"Overwrite");       // u components vs pt
-   file->WriteTObject(fEtaUComponents,0,"Overwrite");      // u components vs eta
-   file->WriteTObject(fAllStatistics,0,"Overwrite");       // Integrated uQa, uQb and QaQa
-   file->WriteTObject(fPtStatistics,0,"Overwrite");        // uQa, uQb and QaQb vs pt
-   file->WriteTObject(fEtaStatistics,0,"Overwrite");       // uQa, uQb and QaQb vs eta
+   TList *t=new TList();                                    // This object is written as a marker for redoFinish()
+   t->SetName("cobjMSP");
+   file->WriteTObject(t,0,"Overwrite");
+   file->WriteTObject(fQaComponents,0,"Overwrite");         // Averages of Qa components per event
+   file->WriteTObject(fQbComponents,0,"Overwrite");         // Averages of Qb components per event
+   file->WriteTObject(fQaQb,0,"Overwrite");                 // Average of QaQb per event
+   file->WriteTObject(fPtUComponents,0,"Overwrite");        // u components vs pt
+   file->WriteTObject(fEtaUComponents,0,"Overwrite");       // u components vs eta
+   file->WriteTObject(fAllStatistics,0,"Overwrite");        // Integrated uQa, uQb and QaQa
+   file->WriteTObject(fPtStatistics,0,"Overwrite");         // uQa, uQb and QaQb vs pt
+   file->WriteTObject(fEtaStatistics,0,"Overwrite");        // uQa, uQb and QaQb vs eta
 
    if( fIntegratedFlow ) file->WriteTObject(fIntegratedFlow,0,"Overwrite");  // Integrated flow for POI and subevents
    if( fDiffFlowPt ) file->WriteTObject(fDiffFlowPt,0,"Overwrite");          // Differential flow vs pt if calculated
@@ -344,12 +413,10 @@ void AliFlowAnalysisWithMSP::WriteHistograms(TDirectoryFile *file) const
 
 void AliFlowAnalysisWithMSP::WriteCommonResults(TDirectoryFile *file) const
 {
-   // Copy the results to a AliFlowCommonHistResults() class and write to file
-   // If the results were not calculated again then Finish() is called to generate them
-   // The global AliFlowCommonConstants() is modified to adapt to the binning used in this analysis
-
-   AliFlowCommonConstants *c=AliFlowCommonConstants::GetMaster();
-   int nBinsPt=fPtStatistics->Nbins();
+   // Export the results to a AliFlowCommonHistResults() class and write to file
+   // If the results were not calculated then Finish() is called to generate them
+   
+   int nBinsPt=fPtStatistics->Nbins();       // Get the actually used binning from the Statistics histograms
    double ptMin=fPtStatistics->XLow();
    double ptMax=fPtStatistics->XHigh();
 
@@ -357,6 +424,15 @@ void AliFlowAnalysisWithMSP::WriteCommonResults(TDirectoryFile *file) const
    double etaMin=fEtaStatistics->XLow();
    double etaMax=fEtaStatistics->XHigh();
 
+   AliFlowCommonConstants *c=AliFlowCommonConstants::GetMaster(); // Get the static common constants object
+   // Save the old AliFlowCommonConstants status
+   int oldNbinsPt=c->GetNbinsPt();     
+   double oldPtMin=c->GetPtMin();      
+   double oldPtMax=c->GetPtMax();      
+   int oldNbinsEta=c->GetNbinsEta();   
+   double oldEtaMin=c->GetEtaMin();    
+   double oldEtaMax=c->GetEtaMax(); 
+   // Modify AliFlowCommonConstants to make sure that AliFlowCommonResults is generated with the correct binning
    c->SetNbinsPt(nBinsPt);
    c->SetPtMin(ptMin);
    c->SetPtMax(ptMax);
@@ -364,8 +440,8 @@ void AliFlowAnalysisWithMSP::WriteCommonResults(TDirectoryFile *file) const
    c->SetEtaMin(etaMin);
    c->SetEtaMax(etaMax);
 
-   bool oldAddStatus=TH1::AddDirectoryStatus();
-   TH1::AddDirectory(kFALSE);
+   bool oldAddStatus=TH1::AddDirectoryStatus();       // Do not store the next histograms automatically
+   TH1::AddDirectory(kFALSE);                         // We need full control over the writing of the hostograms
    AliFlowCommonHistResults *h=new AliFlowCommonHistResults("AliFlowCommonHistResults_MSP","AliFlowCommonHistResults from the MSP method",fHarmonic);
 
    double ivn, ivnerror;
@@ -390,15 +466,52 @@ void AliFlowAnalysisWithMSP::WriteCommonResults(TDirectoryFile *file) const
 
    file->WriteTObject(h,0,"Overwrite");
 
-   TH1::AddDirectory(oldAddStatus);
+   TH1::AddDirectory(oldAddStatus);    // Restore the automatic storage of histograms to its original status
+
+   // Restore AliFlowCommonConstants to make sure that no other analysis are affected
+   c->SetNbinsPt(oldNbinsPt);
+   c->SetPtMin(oldPtMin);
+   c->SetPtMax(oldPtMax);
+   c->SetNbinsEta(oldNbinsEta);
+   c->SetEtaMin(oldEtaMin);
+   c->SetEtaMax(oldEtaMax);
 }
 
+TList *AliFlowAnalysisWithMSP::ListHistograms()
+{
+   if( fHistList ) {
+      fHistList->SetOwner(kFALSE);
+      delete fHistList;
+   }
+   fHistList = new TList();
+   fHistList->SetOwner(kFALSE);
+
+   if(fCommonHist)      fHistList->Add(fCommonHist);        // Standard control histograms, if enabled
+
+   //Correlations
+   if(fQaComponents)    fHistList->Add(fQaComponents);      // Averages of Qa components per event for NUA
+   if(fQbComponents)    fHistList->Add(fQbComponents);      // Averages of Qb components per event for NUA
+   if(fQaQb)            fHistList->Add(fQaQb);              // Average of QaQb per event
+   if(fPtUComponents)   fHistList->Add(fPtUComponents);     // ux and uy per pt bin for NUA
+   if(fEtaUComponents)  fHistList->Add(fEtaUComponents);    // ux and uy per eta bin for NUA
+   if(fAllStatistics)   fHistList->Add(fAllStatistics);     // Correlations for uQa uQb and QaQb (integrated)
+   if(fPtStatistics)    fHistList->Add(fPtStatistics);      // Correlations for uQa uQb and QaQb per pt bin
+   if(fEtaStatistics)   fHistList->Add(fEtaStatistics);     // Correlations for uQa uQb and QaQb per eta bin
+
+   // Result histograms (if calculated)
+   if(fIntegratedFlow)  fHistList->Add(fIntegratedFlow);    // vn for POI and subevents
+   if(fDiffFlowPt)      fHistList->Add(fDiffFlowPt);        // vn as function of pt 
+   if(fDiffFlowEta)     fHistList->Add(fDiffFlowEta);       // vn as function of eta
+   if(fFlags)           fHistList->Add(fFlags);             // Stores fHarmonic and fNUA
+
+   return fHistList;
+}
 
 
 void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
 {
-   std::cout << setprecision(3);   
-   
+   if( opt ) std::cout << std::endl;
+
    std::cout << "****************************************************" << std::endl;
    std::cout << "    Integrated flow from Modified Scalar Product    " << std::endl;
    std::cout << "                                                    " << std::endl;
@@ -406,16 +519,17 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
    double vn=0;
    double vnerror=0;
 
+   std::cout << setprecision(4);
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 0);      
-   std::cout << "v" << fHarmonic << " for POI       : " << setw(10) << vn << " +- " << setw(8) << vnerror << std::endl;
+   std::cout << "v" << fHarmonic << " for POI       : " << setw(11) << vn << " +- " << setw(9) << vnerror << std::endl;
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 1);
-   std::cout << "v" << fHarmonic << " for subevent A: " << setw(10) << vn << " +- " << setw(8) << vnerror << std::endl;
+   std::cout << "v" << fHarmonic << " for subevent A: " << setw(11) << vn << " +- " << setw(9) << vnerror << std::endl;
    Calculate(vn, vnerror, fAllStatistics, fPtUComponents, 0, 2);
-   std::cout << "v" << fHarmonic << " for subevent B: " << setw(10) << vn << " +- " << setw(8) << vnerror << std::endl;
+   std::cout << "v" << fHarmonic << " for subevent B: " << setw(11) << vn << " +- " << setw(9) << vnerror << std::endl;
    std::cout << std::endl;
 
    std::cout << "NUA terms: " << (fNUA?"(applied)":"(NOT applied)") << std::endl;
-
+   std::cout << setprecision(3);
    const double ux=fPtUComponents->Average(0);       // Average over all bins
    const double eux=TMath::Sqrt(fPtUComponents->Variance(0));
    std::cout << "<ux>       " << setw(12) << ux << " +- " << setw(12) << eux << (TMath::Abs(ux)<2*eux?" NOT significant ":" ") << std::endl;
@@ -436,11 +550,21 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
    const double euy0pt=TMath::Sqrt(fPtUComponents->Variance(fPtUComponents->FindBin(1.0),1));
    std::cout << "<uy> pt=1  " << setw(12) << uy0pt << " +- " << setw(12) << euy0pt << (TMath::Abs(uy0pt)<2*euy0pt?" NOT significant ":" ") << std::endl;
 
-   std::cout << "<QaX>      " << setw(12) << fQaComponents->Average(0) << " +- " << setw(12) << TMath::Sqrt(fQaComponents->Variance(0)) << std::endl;
-   std::cout << "<QaY>      " << setw(12) << fQaComponents->Average(1) << " +- " << setw(12) << TMath::Sqrt(fQaComponents->Variance(1)) << std::endl;
-   std::cout << "<QbX>      " << setw(12) << fQbComponents->Average(0) << " +- " << setw(12) << TMath::Sqrt(fQbComponents->Variance(0)) << std::endl;
-   std::cout << "<QbY>      " << setw(12) << fQbComponents->Average(1) << " +- " << setw(12) << TMath::Sqrt(fQbComponents->Variance(1)) << std::endl;
-   std::cout << "<QaQb>     " << setw(12) << fQaQb->Average(0) << " +- " << setw(12) << TMath::Sqrt(fQbComponents->Variance(0)) << std::endl;
+   const double ax=fQaComponents->Average(0);
+   const double eax=TMath::Sqrt(fQaComponents->Variance(0));
+   std::cout << "<QaX>      " << setw(12) << ax << " +- " << setw(12) <<eax << (TMath::Abs(ax)<2*eax?" NOT significant ":" ") << std::endl;
+   const double ay=fQaComponents->Average(1);
+   const double eay=TMath::Sqrt(fQaComponents->Variance(1));
+   std::cout << "<QaY>      " << setw(12) << ay << " +- " << setw(12) << eay << (TMath::Abs(ay)<2*eay?" NOT significant ":" ") << std::endl;
+   const double bx=fQbComponents->Average(0);
+   const double ebx=TMath::Sqrt(fQbComponents->Variance(0));
+   std::cout << "<QbX>      " << setw(12) << bx << " +- " << setw(12) << ebx << (TMath::Abs(bx)<2*ebx?" NOT significant ":" ") << std::endl;
+   const double by=fQbComponents->Average(1);
+   const double eby=TMath::Sqrt(fQbComponents->Variance(1));
+   std::cout << "<QbY>      " << setw(12) << by << " +- " << setw(12) << eby << (TMath::Abs(by)<2*eby?" NOT significant ":" ") << std::endl;
+   const double ab=fQaQb->Average(0);
+   const double eab=TMath::Sqrt(fQbComponents->Variance(0));
+   std::cout << "<QaQb>     " << setw(12) << ab << " +- " << setw(12) << eab << (TMath::Abs(ab)<2*eab?" NOT significant ":" ") << std::endl;
    std::cout << std::endl;
 
    std::cout << "Covariance matrix: " << std::endl;
@@ -453,6 +577,38 @@ void AliFlowAnalysisWithMSP::Print(const Option_t *opt)const
 }
 
 
+AliFlowAnalysisWithMSP &AliFlowAnalysisWithMSP::operator=(const AliFlowAnalysisWithMSP &x)
+{
+   SetNameTitle("MSP","Flow analysis with the Modified Scalar Product method");
+   delete fQaComponents; fQaComponents=0;
+   if( x.fQaComponents )   fQaComponents=(AliFlowMSPHistograms *)(x.fQaComponents)->Clone();
+   delete fQbComponents; fQbComponents=0;
+   if( x.fQbComponents )   fQbComponents=(AliFlowMSPHistograms *)(x.fQbComponents)->Clone();
+   delete fQaQb; fQaQb=0;
+   if( x.fQaQb )           fQaQb=(AliFlowMSPHistograms *)(x.fQaQb)->Clone();
+   delete fPtUComponents; fPtUComponents=0;
+   if( fPtUComponents)     fPtUComponents=(AliFlowMSPHistograms *)(x.fPtUComponents)->Clone();
+   delete fEtaUComponents; fEtaUComponents=0;
+   if( fEtaUComponents )   fEtaUComponents=(AliFlowMSPHistograms *)(x.fEtaUComponents)->Clone();
+   delete fAllStatistics; fAllStatistics=0;
+   if( fAllStatistics )    fAllStatistics=(AliFlowMSPHistograms *)(x.fAllStatistics)->Clone();
+   delete fPtStatistics; fPtStatistics=0;
+   if( fPtStatistics )     fPtStatistics=(AliFlowMSPHistograms *)(x.fPtStatistics)->Clone();
+   delete fEtaStatistics; fEtaStatistics=0;
+   if( fEtaStatistics )    fEtaStatistics=(AliFlowMSPHistograms *)(x.fEtaStatistics)->Clone();
+   delete fIntegratedFlow; fIntegratedFlow=0;
+   if( fIntegratedFlow )   fIntegratedFlow=(TH1D *)(x.fIntegratedFlow)->Clone();
+   delete fDiffFlowPt; fDiffFlowPt=0;
+   if( fDiffFlowPt )       fDiffFlowPt=(TH1D *)(x.fDiffFlowPt)->Clone();
+   delete fDiffFlowEta; fDiffFlowEta=0;
+   if( fDiffFlowEta )      fDiffFlowEta=(TH1D *)(x.fDiffFlowEta)->Clone();
+   delete fFlags; fFlags=0;
+   if( fFlags )            fFlags=(TProfile *)(x.fFlags)->Clone();
+   delete fCommonHist; fCommonHist=0;
+   if( fCommonHist ) fCommonHist=new AliFlowCommonHist(*(x.fCommonHist));
+   return *this;
+}
+
 // private functions --------------------------------------------------------------------------------------
 bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlowMSPHistograms *hist, const AliFlowMSPHistograms *components, const int bin, const int poi) const
 {
@@ -461,7 +617,7 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
    double VuQa=hist->Variance(bin,0);              // Var(<<uQa>>)
    double uQb=hist->Average(bin,1);                // <<uQb>>
    double VuQb=hist->Variance(bin,1);              // Var(<<uQb>>)
-   double QaQb=fQaQb->Average(1,0);                // <QaQb> Should not be taken from hist(bin) buit from fQaQa because there QaQb is entered multiple times: <<QaQb>>!!
+   double QaQb=fQaQb->Average(1,0);                // <QaQb> Should not be taken from hist(bin) because there QaQb is entered multiple times: <<QaQb>>!!
    double VQaQb=fQaQb->Variance(1,0);              // V(<QaQb>)
    double CuQauQb=hist->Covariance(bin,0,1);       // Cov(<<uQa>>,<<uQb>>)
    double CuQaQaQb=hist->Covariance(bin,0,2);      // Cov(<<uQa>>,<QaQb>)
@@ -484,19 +640,19 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
       uQb = uQb - uX*QbX - uY*QbY;
       // Error calculation not fully modified: only above terms, the spread in <<u>> and <Qa> and <Qb> are not used
       // therefore this should only be applied if significant!
-      // TODO: Check if not fully NUA correcting the error calculation is justified (but this is compatible with the original SP method)!
+      // Check if not fully NUA correcting the error calculation is justified (but this is compatible with the original SP method)!
+      // In general it is not justified but this can only be checked by splitting the event sample in many subsamples and looking at
+      // the variance of the result. This may not be feasible if statistics is low
    }
 
    // Some sanity checks:
-   if( uQa*uQb*QaQb <= 0 ) {                                    // Catch imaginary results
+   if( uQa*uQb*QaQb <= 0 ) {        // Catch imaginary results
       vn=-99;
       vnerror=-99;
       return false;
    }
 
-   // Decent results, calculate, print and store
-   // TODO: The three cases are cyclic permutations of u, Qa, Qb so there should be a simpler way to do this.
-   // However the difficulty is that we deal here with uQa, uQb and QaQb
+   // Sanity checks passed, calculate, print and store
    switch (poi) {
    case 1:                                        // Subevent A reference flow
       {
@@ -505,19 +661,19 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
             vnerror=-1;
             return false;
          }
-         double vnB = TMath::Sqrt( uQa*QaQb / uQb ); // vn
-         double VvnB = QaQb*VuQa/(4*uQa*uQb)         // Variance of vn
+         double vnA = TMath::Sqrt( uQa*QaQb / uQb ); // vn
+         double VvnA = QaQb*VuQa/(4*uQa*uQb)         // Variance of vn
             + uQa*VQaQb/(4*QaQb*uQb) 
             + uQa*QaQb*VuQb/(4*TMath::Power(uQb,3)) 
             + CuQaQaQb/(2*uQb)
             - QaQb*CuQauQb/(2*TMath::Power(uQb,2))
             - uQa*CuQbQaQb/(2*TMath::Power(uQb,2));
-         vn=vnB;
-         if( VvnB<0 ) {
-            vnerror=VvnB;
+         vn=vnA;
+         if( VvnA<0 ) {
+            vnerror=VvnA;
             return false;
          }
-         vnerror=TMath::Sqrt(VvnB);
+         vnerror=TMath::Sqrt(VvnA);
       }
       break;
    case 2:                                        // Subevent B reference flow
@@ -527,19 +683,19 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
             vnerror=-1;
             return false;
          }
-         double vnA = TMath::Sqrt( uQb*QaQb / uQa );        // vn
-         double VvnA = uQb*VQaQb/(4*QaQb*uQa)               // Variance of vn
+         double vnB = TMath::Sqrt( uQb*QaQb / uQa );        // vn
+         double VvnB = uQb*VQaQb/(4*QaQb*uQa)               // Variance of vn
             + QaQb*VuQb/(4*uQb*uQa) 
             + QaQb*uQb*VuQa/(4*TMath::Power(uQa,3)) 
             + CuQbQaQb/(2*uQa)
             - uQb*CuQaQaQb/(2*TMath::Power(uQa,2))
-            - uQa*CuQauQb/(2*TMath::Power(uQa,2));
-         vn=vnA;
-         if( VvnA<0 ) {
-            vnerror=VvnA;
+            - QaQb*CuQauQb/(2*TMath::Power(uQa,2));
+         vn=vnB;
+         if( VvnB<0 ) {
+            vnerror=VvnB;
             return false;
          }
-         vnerror=TMath::Sqrt(VvnA);
+         vnerror=TMath::Sqrt(VvnB);
       }
       break;
    default:                                       // POI flow
@@ -566,7 +722,7 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
             + CuQauQb/(2*QaQb)
             - uQb*CuQaQaQb/(2*TMath::Power(QaQb,2))
             - uQa*CuQbQaQb/(2*TMath::Power(QaQb,2));
-         vn=vnP;
+         vn=TMath::Sign(vnP,uQb);
          if( VvnP<0 ) {
             vnerror=VvnP;
             return false;
@@ -578,7 +734,7 @@ bool AliFlowAnalysisWithMSP::Calculate(double &vn, double &vnerror, const AliFlo
    return (vnerror>=0);
 }
 
-void AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *file)
+void AliFlowAnalysisWithMSP::ReadHistograms(TDirectory *file)
 {
    delete fCommonHist;     fCommonHist=0;    // Delete existing histograms
    delete fQaComponents;   fQaComponents=0;
@@ -593,6 +749,11 @@ void AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *file)
    delete fDiffFlowPt;     fDiffFlowPt=0;
    delete fDiffFlowEta;    fDiffFlowEta=0;
    delete fFlags;          fFlags=0;
+   if( fHistList ) {
+      fHistList->SetOwner(kFALSE);
+      delete fHistList;
+      fHistList=0;
+   }
 
    file->GetObject("QaComponents",fQaComponents);
    file->GetObject("QbComponents",fQbComponents);
@@ -606,23 +767,86 @@ void AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *file)
       std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms() : One or more histograms were not read correctly from " << file->GetPath() << std::endl;
    }
 
-   // Optional histograms, may return a zero pointer
-   file->GetObject("AliFlowCommonHist_MSP",fCommonHist);              // The AliFlowCommonHist is optional
-   file->GetObject("IntegratedFlow",fIntegratedFlow);
-   file->GetObject("DiffFlowPt",fDiffFlowPt);
-   file->GetObject("DiffFlowEta",fDiffFlowEta);
-
-   file->GetObject("Flags",fFlags);
+   file->GetObject("Flags",fFlags);          // Flags are required
 
    if( !fFlags ){
-      std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms() : Flags histogram not found, using defaults" << std::endl;
+      std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *) : Flags histogram not found, using defaults" << std::endl;
       fHarmonic=2;
       fNUA=false;
    }else{
-      fHarmonic=fFlags->GetBinContent(1);
+      fHarmonic=(UInt_t)(fFlags->GetBinContent(1));
       double harmonicSpread=fFlags->GetBinError(1);
       if( harmonicSpread!=0 ) {
-         std::cerr << "These histograms seem to be merged from analysis with different Harmonics. Results are invalid!" << std::endl;
+         std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *) :These histograms seem to be merged from analysis with different Harmonics. Results removed!" << std::endl;
+         delete fIntegratedFlow; fIntegratedFlow=0;
+         delete fDiffFlowPt;     fDiffFlowPt=0;
+         delete fDiffFlowEta;    fDiffFlowEta=0;
+      }
+      fNUA=fFlags->GetBinContent(2);   // Mixing NUA does not matter since it needs to be recalculated anyway
+      double nuaSpread=fFlags->GetBinError(2);
+      if( nuaSpread!=0 ) {
+         std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *) :These histograms seem to be merged from analysis with different NUA corrections. Results removed" << std::endl;
+         delete fIntegratedFlow; fIntegratedFlow=0;
+         delete fDiffFlowPt;     fDiffFlowPt=0;
+         delete fDiffFlowEta;    fDiffFlowEta=0;
+      }
+   }
+
+   // Optional histograms, may return a zero pointer
+   file->GetObject("AliFlowCommonHist_MSP",fCommonHist);             // The AliFlowCommonHist is optional
+   file->GetObject("IntegratedFlow",fIntegratedFlow);                // Results are optional
+   file->GetObject("DiffFlowPt",fDiffFlowPt);
+   file->GetObject("DiffFlowEta",fDiffFlowEta);
+
+   fBookCommonHistograms=(fCommonHist!=0);
+}
+
+
+void AliFlowAnalysisWithMSP::ReadHistograms(TList *list)
+{
+   if( !list ) return;
+   delete fCommonHist;     fCommonHist=0;    // Delete existing histograms if any
+   delete fQaComponents;   fQaComponents=0;
+   delete fQbComponents;   fQbComponents=0;
+   delete fQaQb;           fQaQb=0;
+   delete fPtUComponents;  fPtUComponents=0;
+   delete fEtaUComponents; fEtaUComponents=0;   
+   delete fAllStatistics;  fAllStatistics=0;
+   delete fPtStatistics;   fPtStatistics=0;
+   delete fEtaStatistics;  fEtaStatistics=0;
+   delete fIntegratedFlow; fIntegratedFlow=0;
+   delete fDiffFlowPt;     fDiffFlowPt=0;
+   delete fDiffFlowEta;    fDiffFlowEta=0;
+   delete fFlags;          fFlags=0;
+   if( fHistList ) {
+      fHistList->SetOwner(kFALSE);
+      delete fHistList;
+      fHistList=0;
+   }
+
+   fQaComponents = static_cast<AliFlowMSPHistograms *>(list->FindObject("QaComponents"));
+   fQbComponents = static_cast<AliFlowMSPHistograms *>(list->FindObject("QbComponents"));
+   fQaQb = static_cast<AliFlowMSPHistograms *>(list->FindObject("QaQb"));
+   fPtUComponents = static_cast<AliFlowMSPHistograms *>(list->FindObject("PtUComponents"));
+   fEtaUComponents = static_cast<AliFlowMSPHistograms *>(list->FindObject("EtaUComponents"));
+   fAllStatistics = static_cast<AliFlowMSPHistograms *>(list->FindObject("AllStatistics"));
+   fPtStatistics = static_cast<AliFlowMSPHistograms *>(list->FindObject("PtStatistics"));
+   fEtaStatistics = static_cast<AliFlowMSPHistograms *>(list->FindObject("EtaStatistics"));
+   if( !fQaComponents || !fQbComponents || !fQaQb || !fPtUComponents || !fEtaUComponents || !fAllStatistics || !fPtStatistics || !fEtaStatistics ) {
+      std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms(Tlist *) : One or more histograms were not read correctly from TList" << std::endl;
+   }
+
+   fFlags = static_cast<TProfile *>(list->FindObject("Flags"));          // Flags are required
+
+   if( !fFlags ){
+      std::cerr << "AliFlowAnalysisWithMSP::ReadHistograms(TList *) : Flags histogram not found, using defaults" << std::endl;
+      fHarmonic=2;
+      fNUA=false;
+   }else{
+      fHarmonic=(UInt_t)(fFlags->GetBinContent(1));
+      double harmonicSpread=fFlags->GetBinError(1);
+      if( harmonicSpread!=0 ) {
+         std::cerr << "These histograms seem to be merged from analysis with different Harmonics. Results removed!" << std::endl;
          delete fIntegratedFlow; fIntegratedFlow=0;
          delete fDiffFlowPt;     fDiffFlowPt=0;
          delete fDiffFlowEta;    fDiffFlowEta=0;
@@ -636,5 +860,12 @@ void AliFlowAnalysisWithMSP::ReadHistograms(TDirectoryFile *file)
          delete fDiffFlowEta;    fDiffFlowEta=0;
       }
    }
+
+   // Optional histograms, may return a zero pointer
+   fCommonHist = static_cast<AliFlowCommonHist *>(list->FindObject("AliFlowCommonHist_MSP"));             // The AliFlowCommonHist is optional
+   fIntegratedFlow = static_cast<TH1D *>(list->FindObject("IntegratedFlow"));                // Results are optional
+   fDiffFlowPt = static_cast<TH1D *>(list->FindObject("DiffFlowPt"));
+   fDiffFlowEta = static_cast<TH1D *>(list->FindObject("DiffFlowEta"));
+
    fBookCommonHistograms=(fCommonHist!=0);
 }

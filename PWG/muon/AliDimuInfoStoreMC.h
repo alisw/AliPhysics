@@ -38,7 +38,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
  private:
 
   void FindDimuonSourceFast();
-  void FindDimuonSourceFull();
+  void FindDimuonSourceFull(){}; // PK, not implemented in source yet
 
   static const TString fgkStdBranchName;  // Standard branch name
   static const Int_t   fgkSourcesN;       // num. of dimuon sources

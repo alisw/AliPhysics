@@ -30,8 +30,24 @@ AliFlowMSPHistograms::AliFlowMSPHistograms(const AliFlowMSPHistograms &x)
    : TNamed(),fVarNames(),fPAvg(x.fPAvg),fPProd(x.fPProd),fXName(x.fXName)
 {
    // Copy constructor, clone all the TProfiles from the other object
+   // The copy constructor made a shallow copy, i.e. all entries point to the originial profiles.
+   // Therefore we need to Clone each entry.
+   for( int i=0; i<fVarNames.GetEntries(); ++i ) {
+      TObjString *org=(TObjString *)(fVarNames[i]);
+      fVarNames[i]=new TObjString(*org);
+   }
    fVarNames.SetOwner(kTRUE);
+
+   for( int i=0; i<fPAvg.GetEntries(); ++i ) {
+      TProfile *org=(TProfile *)(fPAvg[i]);
+      fPAvg[i]=org->Clone();
+   }
    fPAvg.SetOwner(kTRUE);
+
+   for( int i=0; i<fPProd.GetEntries(); ++i ) {
+      TProfile *org=(TProfile *)(fPProd[i]);
+      fPProd[i]=org->Clone();
+   }
    fPProd.SetOwner(kTRUE);
 }
 
@@ -42,6 +58,7 @@ AliFlowMSPHistograms::AliFlowMSPHistograms(const int dim, const char *name, cons
 }
 
 AliFlowMSPHistograms::AliFlowMSPHistograms(const int dim, const char *name, const int nBins, const double *xBins)
+   : TNamed(name,"MSP histograms"),fVarNames(),fPAvg(),fPProd(),fXName()
 {
    Init(dim, name, nBins, xBins);
 }
@@ -262,6 +279,40 @@ AliFlowMSPHistograms &AliFlowMSPHistograms::operator+=(const AliFlowMSPHistogram
       }
    }
    return *this;
+}
+
+AliFlowMSPHistograms &AliFlowMSPHistograms::operator=(const AliFlowMSPHistograms &x)
+{
+   // Assignment, clone all the TProfiles from the other object
+   // We need to Clone each entry and delete existing ones.
+   for( int i=0; i<fVarNames.GetEntries(); ++i ) {
+      TObjString *org=(TObjString *)(x.fVarNames[i]);
+      delete fVarNames[i];
+      fVarNames[i]=new TObjString(*org);
+   }
+   fVarNames.SetOwner(kTRUE);
+
+   for( int i=0; i<fPAvg.GetEntries(); ++i ) {
+      TProfile *org=(TProfile *)(x.fPAvg[i]);
+      delete fPAvg[i];
+      fPAvg[i]=org->Clone();
+   }
+   fPAvg.SetOwner(kTRUE);
+
+   for( int i=0; i<fPProd.GetEntries(); ++i ) {
+      TProfile *org=(TProfile *)(x.fPProd[i]);
+      delete fPProd[i];
+      fPProd[i]=org->Clone();
+   }
+   fPProd.SetOwner(kTRUE);
+   return *this;
+}
+
+TObject *AliFlowMSPHistograms::Clone(const char *n) const
+{
+   AliFlowMSPHistograms *x=new AliFlowMSPHistograms(*this);
+   if(n)x->SetName(n);
+   return x;
 }
 
 // Private functions...................................................................................

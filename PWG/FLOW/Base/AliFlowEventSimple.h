@@ -86,6 +86,7 @@ class AliFlowEventSimple: public TObject {
 
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
+  AliFlowTrackSimple* MakeNewTrack();
  
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
