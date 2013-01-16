@@ -1,3 +1,5 @@
+//Oystein Djuvsland
+//macro for plotting correction factors for EM et for use with AliAnalysisEt and writes them to a file
 #include "TTree.h"
 #include "TFile.h"
 #include <TList.h>
@@ -15,17 +17,19 @@
 
 TCanvas *c1 = 0;
 
+
+//creates an empty set of correction factors for debugging purposes
 TF1 * generateRecEffFunction(Double_t p0, Double_t p1);
-int createDummy(Double_t p0 = 0.366, Double_t p1 = 0.0)
+int createDummy(Double_t p0 = 1.0, Double_t p1 = 0.0, char *det = "Phos")
 {
   TFile *outfile = TFile::Open("calocorrections.root","RECREATE");
   TF1 fitneutral("fitneutral","0", 0, 100);
   TF1 fitcharged("fitcharged","0", 0, 100);
   TF1 fitgamma("fitgamma","0", 0, 100);
   TF1 fitsecondary("fitsecondary","0", 0, 100);
-  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections("TmCorrectionsPhos", fitcharged, fitneutral, fitgamma, fitsecondary,0,0,0,0);
+  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections(Form("TmCorrections%s",det), fitcharged, fitneutral, fitgamma, fitsecondary,0,0,0,0);
   TF1 *func = generateRecEffFunction(p0, p1);
-  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection("ReCorrectionsPhos", *func, 1000);
+  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection(Form("ReCorrections%s",det), *func, 1000);
 
   cor->Write();
   recor->Write();
@@ -33,17 +37,23 @@ int createDummy(Double_t p0 = 0.366, Double_t p1 = 0.0)
 
 
 }
-int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p0 = 0.366, Double_t p1 = 0.0)
+//p0 = correction factors for efficiency from track matching
+//p1 = correction factors for efficiency from track matching
+//determined from fit of efficiency from track matching, 0.366 from simulations, fit as a function of energy
+//p0 is the constant
+//p1 is linear term
+int calculateCorrections(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.EMCAL.LHC11a4_bis.root", Double_t p0 = 0.366, Double_t p1 = 0.0, char *det = "Emcal")
 {
+  TString detector = det;
   c1 = new TCanvas;
   
   TFile *f = TFile::Open(filename, "READ");
   
   TList *l = (TList*)f->Get("out1");
   
-  TTree *primaryTree = (TTree*)l->FindObject("fPrimaryTreePhosMC");
-  TTree *recTree = (TTree*)l->FindObject("fEventSummaryTreePhosRec");
-  TTree *mcTree = (TTree*)l->FindObject("fEventSummaryTreePhosMC");
+  TTree *primaryTree = (TTree*)l->FindObject(("fPrimaryTree"+detector+"MC").Data());
+  TTree *recTree = (TTree*)l->FindObject(("fEventSummaryTree"+detector+"Rec").Data());
+  TTree *mcTree = (TTree*)l->FindObject(("fEventSummaryTree"+detector+"MC").Data());
   std::cout << primaryTree << " " << recTree << " " << mcTree << std::endl;
  
   Int_t clusterMult = 0;
@@ -91,7 +101,8 @@ int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p
   chProf->SetStats(0);
   chProf->Draw("SAME");
   //TF1 fitcharged("fitcharged","([0] + [1]*x)*(0.48/([2] + [3]*[2]))", 0, 100);
-  TF1 fitcharged("fitcharged","pol1", 0, 100);
+  TF1 fitcharged("fitcharged","pol1", 0, 100);//fit of number of charged tracks vs detector multiplicity
+  //if straight line track matching roughly not dependent on centrality
 //   fitcharged.FixParameter(2, p0);
 //   fitcharged.FixParameter(3, p1);
   TFitResultPtr chRes = chProf->Fit(&fitcharged,"S");
@@ -115,7 +126,8 @@ int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p
   TProfile *neuProf = hNeutralVsClusterMult->ProfileX();
   neuProf->SetStats(0);
   neuProf->Draw("SAME");
-  TF1 fitneutral("fitneutral","pol1", 0, 100);
+  TF1 fitneutral("fitneutral","pol1", 0, 100);//fit of number of neutral particles in calo that we call background in calo vs detector multiplicity
+  //may include K0S
   TFitResultPtr neuRes = neuProf->Fit(&fitneutral,"S");
   TArrayD neu;
   if(!neuRes)
@@ -138,7 +150,7 @@ int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p
   TProfile *gamProf = hGammaVsClusterMult->ProfileX();
   gamProf->SetStats(0);
   gamProf->Draw("SAME");
-  TF1 fitgamma("fitgamma","pol1", 0, 100);
+  TF1 fitgamma("fitgamma","pol1", 0, 100);//fit of number of gammas removed erroneously vs detector multiplicity
   TFitResultPtr gammaRes = gamProf->Fit(&fitgamma,"S");
   TArrayD gamma;
   if(!gammaRes)
@@ -162,7 +174,7 @@ int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p
   TProfile *secProf = hSecVsClusterMult->ProfileX();
   secProf->SetStats(0);
   secProf->Draw("SAME");
-  TF1 fitsecondary("fitsecondary","pol1", 0, 100);
+  TF1 fitsecondary("fitsecondary","pol1", 0, 100);//fit of number of secondary particles that leave deposits in calo vs detector multiplicity
   TFitResultPtr secRes = secProf->Fit(&fitsecondary,"S");
   TArrayD sec;
   if(!secRes)
@@ -173,16 +185,19 @@ int calculateCorrections(TString filename="Et.ESD.simPbPb.PHOS.root", Double_t p
   {
     std::cout << "Could not extract charged contribution params" << std::endl;
   }
+  //ugly hack for getting the energy
+  //changing number of particles to energy of particles by multiplying by the <energy> and dividing by the efficiency for the average energy
+  //average energy from each of these:  in excel file
   Double_t meanCharged = 0.48/(p0 + p1*0.48);
   Double_t meanNeutral = 0.53/(p0 + p1*0.53);
   Double_t meanGamma = 0.51/(p0 + p1*0.51);
   Double_t meanSecondary = meanGamma; 
   
-  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections("TmCorrectionsPhos", fitcharged, fitneutral, fitgamma, fitsecondary, 
+  AliAnalysisEtTrackMatchCorrections *cor = new AliAnalysisEtTrackMatchCorrections(("TmCorrections"+detector).Data(), fitcharged, fitneutral, fitgamma, fitsecondary, 
 										   meanCharged, meanNeutral, meanGamma, meanSecondary );
   
   TF1 *func = generateRecEffFunction(p0, p1);
-  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection("ReCorrectionsPhos", *func, 1000);
+  AliAnalysisEtRecEffCorrection *recor = new AliAnalysisEtRecEffCorrection(("ReCorrections"+detector).Data(), *func, 1000);
   TFile *outfile = TFile::Open("calocorrections.root","RECREATE");
   cor->Write();
   recor->Write();
@@ -198,5 +213,3 @@ TF1* generateRecEffFunction(Double_t p0, Double_t p1)
   f->SetParameters(params);
   return f;
 }
-
-
