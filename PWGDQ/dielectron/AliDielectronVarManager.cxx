@@ -175,7 +175,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"XRes",                   "#Delta x_{prim.vtx}",                                "(cm)"},
   {"YRes",                   "#Delta y_{prim.vtx}",                                "(cm)"},
   {"ZRes",                   "#Delta z_{prim.vtx}",                                "(cm)"},
-
+  {"PhiMaxPt",               "#phi(#it{p}_{T}^{lead})",                            "(rad.)"},
+  {"MaxPt",                  "#it{p}_{T}^{lead}",                                  "(GeV/#it{c})"},
 
   {"v0ArpH2",                "#Psi^{V0A}",                                         ""},
   {"v0CrpH2",                "#Psi^{V0C}",                                         ""},
@@ -186,6 +187,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"v0CyH2",                 "Q_{y}^{V0C}",                                        ""},
   {"v0ACxH2",                "Q_{x}^{V0AC}",                                       ""},
   {"v0ACyH2",                "Q_{y}^{V0AC}",                                       ""},
+  {"v0AmagH2",               "|#vec{Q}^{V0A}|",                                     ""},
+  {"v0CmagH2",               "|#vec{Q}^{V0C}|",                                     ""},
+  {"v0ACmagH2",              "|#vec{Q}^{V0AC}|",                                    ""},
   {"v0A0rpH2",               "#Psi^{V0A}_{ring 0}",                                ""},
   {"v0A3rpH2",               "#Psi^{V0A}_{ring 3}",                                ""},
   {"v0C0rpH2",               "#Psi^{V0C}_{ring 0}",                                ""},
@@ -301,6 +305,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
   {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
   {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
+  {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                   ""},
   {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
   {"TPCsub1xH2",             "Q_{x}^{TPCsub1}",                                    ""},
   {"TPCsub1yH2",             "Q_{y}^{TPCsub1}",                                    ""},
@@ -313,6 +318,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"TPCxH2uc",               "Q_{x}^{TPC} (uncorr.)",                              ""},
   {"TPCyH2uc",               "Q_{y}^{TPC} (uncorr.)",                              ""},
+  {"TPCmagH2uc",             "|#vec{Q}^{TPC}| (uncorr.)",                         ""},
   {"TPCrpH2uc",              "#Psi^{TPC} (uncorr.)",                               ""},
   {"TPCsub1xH2uc",           "Q_{x}^{TPCsub1} (uncorr.)",                          ""},
   {"TPCsub1yH2uc",           "Q_{y}^{TPCsub1} (uncorr.)",                          ""},
