@@ -266,7 +266,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
     
   AliESDZDC *esdZDC = esd->GetESDZDC();
   
-  if((((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected())){
+//  if((((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected())){
   
     fhZNCSpectrum->Fill(esdZDC->GetZDCN1Energy());	  
     fhZNASpectrum->Fill(esdZDC->GetZDCN2Energy());
@@ -303,7 +303,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
     fhPMCZNCemd->Fill(towZNCLG[0]);   
     fhPMCZNAemd->Fill(towZNALG[0]);   
   
-  }
+//  }
     
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
