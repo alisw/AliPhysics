@@ -460,6 +460,7 @@ Int_t AliAnalysisTaskESDMCLabelAddition::IsDecayByLabel(const AliMUONTrack &trac
   /// "lastCh" contains the chamber Id of the most downstream chamber hit by the decay chain
   
   Int_t nClusters = track.GetNClusters();
+  if (nClusters <= 0) return -1;
   Int_t *chId = new Int_t[nClusters];
   Int_t *labels = new Int_t[nClusters];
   
@@ -488,6 +489,7 @@ Int_t AliAnalysisTaskESDMCLabelAddition::IsDecayByPosition(const AliMUONTrack &t
   /// All possible combinations of compatible clusters from every trackRefs are considered
   
   Int_t nClusters = track.GetNClusters();
+  if (nClusters <= 0) return -1;
   Int_t *chId = new Int_t[nClusters];
   Int_t *nLabels = new Int_t[nClusters];
   TArrayI *labels = new TArrayI[nClusters];
