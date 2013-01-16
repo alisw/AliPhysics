@@ -74,7 +74,7 @@ public:
    TH1F*                                InitPtSpectraHistograms(Float_t nmin, Float_t nmax);
    TH1F*                                BookPtHistogram(const char* name);
    Bool_t                               InitializeAnalysis();
-   void                                 AddResonanceIdentificationOutputObjects();
+   //PK void                                 AddResonanceIdentificationOutputObjects();
    virtual void                         UserCreateOutputObjects();
    // setters
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }

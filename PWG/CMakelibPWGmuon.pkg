@@ -72,3 +72,10 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 set ( DHDR  PWGmuonLinkDef.h)
 
 set ( EINCLUDE  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+        set ( PACKSOFLAGS  ${SOFLAGS} )
+        set ( ELIBS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSIS -lANALYSISalice -lCORRFW -lAOD -lSTEERBase -lESD ${ROOTCLIBS} -lEG)
+endif( ALICE_TARGET STREQUAL "win32gcc")
+
+

@@ -42,3 +42,10 @@ set ( DHDR  PWGToolsLinkDef.h)
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE PWG/Tools ANALYSIS CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	set ( PACKSOFLAGS ${SOFLAGS} )
+        set ( ELIBS --verbose -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSISalice -lANALYSIS -lCORRFW -lAOD -lESD -lSTEER -lSTEERBase ${ROOTCLIBS} -lEG -lGraf -lGraf3d -lASImage )
+endif( ALICE_TARGET STREQUAL "win32gcc")
+
+

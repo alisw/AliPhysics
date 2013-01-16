@@ -26,9 +26,9 @@ ClassImp(AliFlowVector)
 //________________________________________________________________________
 
 AliFlowVector::AliFlowVector():
- fMult(0)
+ TVector2(0.0,0.0),fMult(0.0)
 {
-  // default contructor
+  // default constructor
 }
 
 //________________________________________________________________________
@@ -40,24 +40,43 @@ AliFlowVector::AliFlowVector(const AliFlowVector& aVector):
   // copy constructor
 }
 
+//________________________________________________________________________
+
+AliFlowVector::AliFlowVector(Double_t *y, const Double_t m):
+  TVector2(y),
+  fMult(m)
+{
+  // Analogue of TVector2 constructor. Sets (x,y) and multiplicity 1.
+}
+
  //________________________________________________________________________
 
 AliFlowVector::AliFlowVector(const TVector2 &v, const Double_t m):
   TVector2(v),
   fMult(m)
 {
-  // custom constructor
+  // custom constructor, Sets vector and multiplicity
+}
+
+ //________________________________________________________________________
+
+AliFlowVector::AliFlowVector(const Double_t x, const Double_t y, const Double_t m):
+  TVector2(x,y),
+  fMult(m)
+{
+  // custom constructor analogue of TVector2 constructor
 }
 
 //________________________________________________________________________ 
 
 AliFlowVector::~AliFlowVector()
 {
-  // default constructor 
+  // default destructor 
 }
 
 void AliFlowVector::SetMagPhi(double size, double angle, double mult)
 {
+   // Analogue to SetMagPhi for a TVector2 but here including a sum of weights
    TVector2::SetMagPhi(size,angle);
    SetMult(mult);
 }
@@ -71,7 +90,6 @@ AliFlowVector& AliFlowVector::operator=(const AliFlowVector& aVector)
   fX = aVector.X();
   fY = aVector.Y();
   fMult = aVector.GetMult();
-  
   return *this;
 }
 
@@ -82,17 +100,24 @@ AliFlowVector& AliFlowVector::operator+=(const AliFlowVector& aVector)
   // addition operator
   fX += aVector.X(); 
   fY += aVector.Y(); 
-  fMult += aVector.GetMult();
-  
+  fMult += aVector.GetMult(); 
   return *this;
 }
 
 AliFlowVector& AliFlowVector::operator-=(const AliFlowVector& aVector)
 {
-  // addition operator
+  // subtraction operator
   fX -= aVector.X(); 
   fY -= aVector.Y(); 
   fMult -= aVector.GetMult();
-  
   return *this;
+}
+
+AliFlowVector& AliFlowVector::operator*=(const double w)
+{
+   // multiply by a weight operator
+   fX*=w;
+   fY*=w;
+   fMult*=w;
+   return *this;
 }
