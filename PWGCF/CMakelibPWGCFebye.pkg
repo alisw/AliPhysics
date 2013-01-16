@@ -67,4 +67,4 @@ set ( DHDR PWGCFebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/NetParticle PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)
+set ( EINCLUDE PWG/Tools ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/NetParticle PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase)

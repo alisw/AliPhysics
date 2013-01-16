@@ -92,4 +92,4 @@ string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWGHFhfeLinkDef.h)
 
-set ( EINCLUDE  PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)
+set ( EINCLUDE PWG/muon PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)

@@ -73,7 +73,8 @@ set ( EINCLUDE
   TRD/Cal 
   TRD/info 
   ANALYSIS/Tender 
-  ANALYSIS 
+  ANALYSIS
+  PWG/CaloTrackCorrBase 
   PWGPP/comparison 
   PWGPP/cosmic 
   PWGPP/global 
