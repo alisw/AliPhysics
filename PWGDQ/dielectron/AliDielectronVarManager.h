@@ -226,6 +226,8 @@ public:
     kXRes,                   // primary vertex x-resolution
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
+    kPhiMaxPt,               // phi angle of the track with maximum pt
+    kMaxPt,                  // track with maximum pt
 
     //// v0 reaction plane quantities from AliEPSelectionTaks
     kv0ArpH2,                // VZERO-A reaction plane of the Q vector for 2nd harmonic
@@ -237,6 +239,9 @@ public:
     kv0CyH2,                 // VZERO-C y-component of the Q vector for 2nd harmonic
     kv0ACxH2,                // VZERO-AC x-component of the Q vector for 2nd harmonic
     kv0ACyH2,                // VZERO-AC y-component of the Q vector for 2nd harmonic
+    kv0AmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
+    kv0CmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
+    kv0ACmagH2,              // VZERO-A the Q vectors magnitude for 2nd harmonic
     kv0A0rpH2,                 // VZERO-A 1st  ring reaction plane of the Q vector for 2nd harmonic
     kv0A3rpH2,                 // VZERO-A last ring reaction plane of the Q vector for 2nd harmonic
     kv0C0rpH2,                 // VZERO-C 1st  ring reaction plane of the Q vector for 2nd harmonic
@@ -289,7 +294,8 @@ public:
     // TPC reaction plane quantities
     kTPCxH2,                  // TPC x-component of the Q vector for 2nd harmonic (corrected)
     kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
-    kTPCrpH2,                 // TPC reaction plane of the Q vector for 2nd harmonic (corrected)
+    kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
+    kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1) 
     kTPCsub1yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 1)
     kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
@@ -301,7 +307,8 @@ public:
 
     kTPCxH2uc,                  // TPC x-component of the Q vector for 2nd harmonic (uncorrected)
     kTPCyH2uc,                  // TPC y-component of the Q vector for 2nd harmonic (uncorrected)
-    kTPCrpH2uc,                 // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected)
+    kTPCmagH2uc,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (uncorrected)
+    kTPCrpH2uc,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (uncorrected)
     kTPCsub1xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 1) 
     kTPCsub1yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
     kTPCsub1rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 1)
@@ -752,9 +759,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   //
   Int_t v0Index=-1;
   Int_t kinkIndex=-1;
-//   printf("test v\n");
   if (particle->GetProdVertex()) {
-//     printf("has v\n");
     v0Index   = particle->GetProdVertex()->GetType()==AliAODVertex::kV0   ? 1 : 0;
     kinkIndex = particle->GetProdVertex()->GetType()==AliAODVertex::kKink ? 1 : 0;
   }
@@ -1218,20 +1223,20 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
 	Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
 	Double_t e1 =-9999.,e2 =-9999.;
-	Double_t feta1=-9999.,fphi1=-9999.;
-	Double_t feta2=-9999.,fphi2=-9999.;
+	Double_t feta1=-9999.;//,fphi1=-9999.;
+	Double_t feta2=-9999.;//,fphi2=-9999.;
 
 	px1 = fD1.GetPx(); 
 	py1 = fD1.GetPy(); 
 	pz1 = fD1.GetPz(); 
 	feta1 = fD1.GetEta();
-	fphi1 = fD1.GetPhi();
+	//	fphi1 = fD1.GetPhi();
 
 	px2 = fD2.GetPx(); 
 	py2 = fD2.GetPy(); 
 	pz2 = fD2.GetPz(); 
 	feta2 = fD2.GetEta();
-	fphi2 = fD2.GetPhi();
+	//	fphi2 = fD2.GetPhi();
 
 	//Calculate Energy per particle by hand
 	e1 = TMath::Sqrt(mElectron*mElectron+px1*px1+py1*py1+pz1*pz1);
@@ -1510,6 +1515,19 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   //  values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event, 1.0);
   //  values[AliDielectronVarManager::kNaccTrckltsCorr] = AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts], values[AliDielectronVarManager::kZvPrim]);
 
+  values[AliDielectronVarManager::kPhiMaxPt]          = 0;
+  values[AliDielectronVarManager::kMaxPt]             = 0;
+  Double_t ptMaxEv    = -1., phiptMaxEv= -1.;
+  for(Int_t itrk=0; itrk<event->GetNumberOfTracks(); itrk++) {
+    AliVParticle *part= event->GetTrack(itrk);
+    if(part->Pt() > ptMaxEv) {
+      ptMaxEv    = part->Pt();
+      phiptMaxEv = part->Phi();
+    }
+  }
+  values[AliDielectronVarManager::kPhiMaxPt]          = phiptMaxEv;
+  values[AliDielectronVarManager::kMaxPt]             = ptMaxEv;
+
 
   // event plane quantities from the AliEPSelectionTask
   for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0ACrpH2FlowV2;   ivar++) values[ivar] = 0.0; // v0  variables
@@ -1520,14 +1538,17 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event,10, 2, qx, qy));
   values[AliDielectronVarManager::kv0ACxH2]   = qx;
   values[AliDielectronVarManager::kv0ACyH2]   = qy;
+  values[AliDielectronVarManager::kv0ACmagH2] = TMath::Sqrt(qx*qx+qy*qy);
   qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0ArpH2]   = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 8, 2, qx, qy));
   values[AliDielectronVarManager::kv0AxH2]    = qx;
   values[AliDielectronVarManager::kv0AyH2]    = qy;
+  values[AliDielectronVarManager::kv0AmagH2] = TMath::Sqrt(qx*qx+qy*qy);
   qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0CrpH2]   = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy));
   values[AliDielectronVarManager::kv0CxH2]    = qx;
   values[AliDielectronVarManager::kv0CyH2]    = qy;
+  values[AliDielectronVarManager::kv0CmagH2] = TMath::Sqrt(qx*qx+qy*qy);
   qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy)); qx = 0, qy = 0;
   values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(ep->CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy)); qx = 0, qy = 0;
@@ -1546,6 +1567,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     if(qstd && qsub1 && qsub2) {
       values[AliDielectronVarManager::kTPCxH2uc]   = qstd->X();
       values[AliDielectronVarManager::kTPCyH2uc]   = qstd->Y();
+      values[AliDielectronVarManager::kTPCmagH2uc] = TMath::Sqrt(qstd->X()*qstd->X()+qstd->Y()*qstd->Y());
       values[AliDielectronVarManager::kTPCrpH2uc]  = ((TMath::Abs(qstd->X())>1.0e-10) ? TMath::ATan2(qstd->Y(),qstd->X())/2.0 : 0.0);
       values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
       values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
@@ -1557,6 +1579,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
       values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
 									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
     }
+
     // TPC event plane quantities (corrected)
     if(fgTPCEventPlane) 
       FillVarTPCEventPlane(fgTPCEventPlane, values);
@@ -1711,21 +1734,28 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 {
   //
   // Fill event information available for histogramming into an array
-  //   
+  //
 
   // Fill common AliVEvent interface information
   FillVarVEvent(event, values);
 
   // Fill AliAODEvent interface specific information
   AliAODHeader *header = event->GetHeader();
-  
+
   Double_t centralityF=-1; Double_t centralitySPD=-1;
   AliCentrality *aodCentrality = header->GetCentralityP();
   if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
   if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
-  
+
+  // nanoAODs (w/o AliCentrality branch) should have the VOM centrality stored in the header
+  if(!header->GetCentralityP())
+    values[AliDielectronVarManager::kCentrality] = header->GetCentrality();
+  // nanoAODs (w/o AliEventPlane branch) should have the tpc event plane angle stored in the header
+  if(!header->GetEventplaneP())
+    values[AliDielectronVarManager::kTPCrpH2uc] = header->GetEventplane();
+
   //const AliAODVertex *primVtx = event->GetPrimaryVertex();
 }
   
@@ -1764,6 +1794,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
 
       values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
+      values[AliDielectronVarManager::kTPCmagH2] = TMath::Sqrt(qcorr->X()*qcorr->X()+qcorr->Y()*qcorr->Y());
       values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
 
       values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
