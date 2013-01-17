@@ -48,6 +48,7 @@ set ( SRCS
     AliITSTracklPairs.cxx 
     AliITSSortTrkl.cxx 
     AliITSVertexerZ.cxx 
+    AliITSVertexerZD.cxx
     AliITSVertexerFast.cxx 
     AliITSVertexerFixed.cxx 
     AliITSVertexer3DTapan.cxx 
