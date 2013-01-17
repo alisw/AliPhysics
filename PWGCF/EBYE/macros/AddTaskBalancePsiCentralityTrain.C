@@ -35,7 +35,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Bool_t bConversionCut = kFALSE,
 						       Int_t AODfilterBit = 128,
 						       Bool_t bCentralTrigger = kFALSE,
-						       TString fileNameBase="AnalysisResults") {
+						       TString fileNameBase="AnalysisResults",
+                   TString fArgEventClass="Centrality") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -87,6 +88,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   // Create the task, add it to manager and configure it.
   //===========================================================================
   AliAnalysisTaskBFPsi *taskBF = new AliAnalysisTaskBFPsi("TaskBFPsi");
+  
+  //Event characteristics scheme
+  taskBF->SetEventClass(fArgEventClass);
+  
   taskBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
   if(gRunMixing){
