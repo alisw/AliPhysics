@@ -154,6 +154,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCM20hfeAll(0)	
   ,fIncpTMCM20hfeCheck(0)	
+  ,fInputHFEMC_weight(0)
+  ,fIncpTMCM20hfeCheck_weight(0)
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -173,9 +175,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
+  ,HphopTcheck(0)
   ,HDpTcheck(0)
   ,HBpTcheck(0)
-  ,HphopTcheck(0)
   ,fpTCheck(0)
   ,fMomDtoE(0) 
   ,fLabelCheck(0)
@@ -269,6 +271,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCM20hfeAll(0)	
   ,fIncpTMCM20hfeCheck(0)	
+  ,fInputHFEMC_weight(0)
+  ,fIncpTMCM20hfeCheck_weight(0)
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -379,6 +383,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       if(!MChijing)iHijing = 0;
       if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
       if(fPDG==221)HETApTcheck->Fill(pTMC,iHijing);
+      if(fabs(fPDG)==411 || fabs(fPDG)==413 || fabs(fPDG)==421 || fabs(fPDG)==423 || fabs(fPDG)==431)HDpTcheck->Fill(pTMC,iHijing);
+      if(fabs(fPDG)==511 || fabs(fPDG)==513 || fabs(fPDG)==521 || fabs(fPDG)==523 || fabs(fPDG)==531)HBpTcheck->Fill(pTMC,iHijing);
 
       if(particle->GetFirstMother()>-1 && fPDG==22)
         {
@@ -389,13 +395,22 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       if(particle->GetFirstMother()>-1 && fabs(fPDG)==11)
         {
 	    int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();  
+	    double pTMCparent = stack->Particle(particle->GetFirstMother())->Pt();  
             if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(fPDG)==11)mcInDtoE = kTRUE;
             if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(fPDG)==11)mcInBtoE = kTRUE;
-            if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
+            if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)
+               {
+                fInputHFEMC->Fill(cent,pTMC);
+                double mcinfo[5];
+                mcinfo[0] = cent;
+                mcinfo[1] = pTMC;
+                mcinfo[2] = 0.0;
+                mcinfo[3] = iHijing;
+                mcinfo[4] = pTMCparent;
+                fInputHFEMC_weight->Fill(mcinfo);
+               }
          }
 
-      if(mcInDtoE)HDpTcheck->Fill(pTMC,iHijing);
-      if(mcInBtoE)HBpTcheck->Fill(pTMC,iHijing);
 
          if(proR<7.0 && fabs(fPDG)==11)fInputAlle->Fill(cent,pTMC);
 
@@ -487,94 +502,99 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       {
        Int_t label = TMath::Abs(track->GetLabel());
        mcLabel = track->GetLabel();
+       
+       if(mcLabel>-1)
+       {
+      
+	       Bool_t MChijing = fMC->IsFromBGEvent(label);
+	       if(!MChijing)iHijing = 0;
 
-       //cout << "mcLabel -all = " << mcLabel << endl; 
+	       TParticle* particle = stack->Particle(label);
+	       int mcpid = particle->GetPdgCode();
+	       mcpT = particle->Pt();
+	       //printf("MCpid = %d",mcpid);
+	       if(particle->GetFirstMother()>-1)
+	       {
+		       //int parentlabel = particle->GetFirstMother();
+		       //int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
+		       //mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
+		       FindMother(particle, parentlabel, parentPID);
+		       mcMompT = stack->Particle(parentlabel)->Pt();
+		       if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
+		       if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
+		       if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
 
-       Bool_t MChijing = fMC->IsFromBGEvent(label);
-       if(!MChijing)iHijing = 0;
+		       // make D->e pT correlation
+		       if(mcDtoE)fMomDtoE->Fill(mcpT,mcMompT); 
 
-       TParticle* particle = stack->Particle(label);
-       int mcpid = particle->GetPdgCode();
-       mcpT = particle->Pt();
-       //printf("MCpid = %d",mcpid);
-       if(particle->GetFirstMother()>-1)
-         {
-          //int parentlabel = particle->GetFirstMother();
-          //int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
-          //mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
-          FindMother(particle, parentlabel, parentPID);
-          mcMompT = stack->Particle(parentlabel)->Pt();
-          if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
-          if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
-          if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
+		       //cout << "check PID = " << parentPID << endl;
+		       //cout << "check pho = " << mcPho << endl;
+		       //cout << "check D or B = " << mcDtoE << endl;
+		       // pi->e (Dalitz)
+		       if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
+		       {
+			       //cout << "find pi0->e " <<  endl;
+			       mcOrgPi0 = kTRUE;
+			       mcWeight = GetMCweight(mcMompT); 
+		       }
+		       // eta->e (Dalitz)
+		       if(parentPID==221 && fabs(mcpid)==11 && mcMompT>0.0)
+		       {
+			       //cout << "find Eta->e " <<  endl;
+			       mcOrgEta = kTRUE;
+			       mcWeight = GetMCweightEta(mcMompT); 
+		       }
 
-          // make D->e pT correlation
-          if(mcDtoE)fMomDtoE->Fill(mcpT,mcMompT); 
+		       // access grand parent 
+		       TParticle* particle_parent = stack->Particle(parentlabel); // get parent pointer
+		       //if(particle_parent->GetFirstMother()>-1 && parentPID==22 && fabs(mcpid)==11) // get grand parent g->e
+		       if(particle_parent->GetFirstMother()>-1 && (parentPID==22 || parentPID==111) && fabs(mcpid)==11) // get grand parent g->e
+		       {
+			       //int grand_parentPID = stack->Particle(particle_parent->GetFirstMother())->GetPdgCode();
+			       //double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
+			       FindMother(particle_parent, grand_parentlabel, grand_parentPID);
+			       double mcGrandpT = stack->Particle(grand_parentlabel)->Pt();
+			       if(grand_parentPID==111 && mcGrandpT>0.0)
+			       {
+				       // check eta->pi0 decay !
+				       int grand2_parentlabel = 99999; int grand2_parentPID = 99999;
+				       TParticle* particle_grand = stack->Particle(grand_parentlabel); // get parent pointer
+				       FindMother(particle_grand, grand2_parentlabel, grand2_parentPID);
+				       if(grand2_parentPID==221)
+				       {
+					       //cout << "find Eta->e " <<  endl;
+					       double mcGrandpT2 = stack->Particle(grand2_parentlabel)->Pt();
+					       mcOrgEta = kTRUE;
+					       mcWeight = GetMCweight(mcGrandpT2);  
+					       mcMompT = mcGrandpT2; 
+				       }
+				       else
+				       {
+					       //cout << "find pi0->e " <<  endl;
+					       mcOrgPi0 = kTRUE;
+					       mcWeight = GetMCweight(mcGrandpT);  
+					       mcMompT = mcGrandpT; 
+				       }
+			       }
 
-           //cout << "check PID = " << parentPID << endl;
-           //cout << "check pho = " << mcPho << endl;
-           //cout << "check D or B = " << mcDtoE << endl;
-          // pi->e (Dalitz)
-          if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
-              {
-               //cout << "find pi0->e " <<  endl;
-               mcOrgPi0 = kTRUE;
-               mcWeight = GetMCweight(mcMompT); 
-              }
-          // eta->e (Dalitz)
-          if(parentPID==221 && fabs(mcpid)==11 && mcMompT>0.0)
-              {
-               //cout << "find Eta->e " <<  endl;
-               mcOrgEta = kTRUE;
-               mcWeight = GetMCweightEta(mcMompT); 
-              }
+			       if(grand_parentPID==221 && mcGrandpT>0.0)
+			       {
+				       //cout << "find Eta->e " <<  endl;
+				       mcOrgEta = kTRUE;
+				       mcOrgPi0 = kFALSE;
+				       mcWeight = GetMCweightEta(mcGrandpT); 
+				       mcMompT = mcGrandpT; 
+			       }
+		       }
+	       }
 
-          // access grand parent 
-          TParticle* particle_parent = stack->Particle(parentlabel); // get parent pointer
-          //if(particle_parent->GetFirstMother()>-1 && parentPID==22 && fabs(mcpid)==11) // get grand parent g->e
-          if(particle_parent->GetFirstMother()>-1 && (parentPID==22 || parentPID==111) && fabs(mcpid)==11) // get grand parent g->e
-            {
-             //int grand_parentPID = stack->Particle(particle_parent->GetFirstMother())->GetPdgCode();
-             //double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
-             FindMother(particle_parent, grand_parentlabel, grand_parentPID);
-             double mcGrandpT = stack->Particle(grand_parentlabel)->Pt();
-             if(grand_parentPID==111 && mcGrandpT>0.0)
-                {
-                  // check eta->pi0 decay !
-                   int grand2_parentlabel = 99999; int grand2_parentPID = 99999;
-                   TParticle* particle_grand = stack->Particle(grand_parentlabel); // get parent pointer
-                   FindMother(particle_grand, grand2_parentlabel, grand2_parentPID);
-                   if(grand2_parentPID==221)
-                     {
-                      //cout << "find Eta->e " <<  endl;
-                      double mcGrandpT2 = stack->Particle(grand2_parentlabel)->Pt();
-                      mcOrgEta = kTRUE;
-                      mcWeight = GetMCweight(mcGrandpT2);  
-                      mcMompT = mcGrandpT2; 
-                     }
-                   else
-                     {
-                      //cout << "find pi0->e " <<  endl;
-                      mcOrgPi0 = kTRUE;
-                      mcWeight = GetMCweight(mcGrandpT);  
-                      mcMompT = mcGrandpT; 
-                     }
-                }
+	       if(fabs(mcpid)==11 && mcDtoE)mcele= 1.; 
+	       if(fabs(mcpid)==11 && mcBtoE)mcele= 2.; 
+	       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
 
-             if(grand_parentPID==221 && mcGrandpT>0.0)
-                {
-                   //cout << "find Eta->e " <<  endl;
-                   mcOrgEta = kTRUE;
-                   mcOrgPi0 = kFALSE;
-                   mcWeight = GetMCweightEta(mcGrandpT); 
-                   mcMompT = mcGrandpT; 
-                }
-            }
-         } 
-       if(fabs(mcpid)==11 && mcDtoE)mcele= 1.; 
-       if(fabs(mcpid)==11 && mcBtoE)mcele= 2.; 
-       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
-      }
+       } // end of mcLabel>-1
+
+      } // end of MC info.
  
     //cout << "Pi0 = " << mcOrgPi0 << " ; Eta = " << mcOrgEta << endl; 
     //printf("weight = %f\n",mcWeight);
@@ -744,7 +764,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if(mcele>0) // select MC electrons
       {
-       //cout << "MC label = " << mcLabel << endl;
+          cout << "MC label = " << mcLabel << endl;
 
           fIncpTMChfeAll->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
@@ -752,8 +772,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(mcBtoE || mcDtoE) // select B->e & D->e
          {
           fIncpTMChfe->Fill(cent,pt);    
-          if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
-          if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
+          //if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
+          //if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
+          if(m20>0.0 && m20<0.3)
+            {
+                fIncpTMCM20hfe->Fill(cent,pt);    
+                fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
+                fIncpTMCM20hfeCheck_weight->Fill(phoval);    
+            }
          }
       
        if(mcPho) // select photonic electrons
@@ -1066,7 +1092,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Int_t nBinspho2[5] =  { 200, 100,    7,    3, 700};
   Double_t minpho2[5] = {  0.,  0., -2.5, -0.5, 0.};   
   Double_t maxpho2[5] = {100., 50.,  4.5,  2.5, 70.};   
-
+  
+  fInputHFEMC_weight = new THnSparseD("fInputHFEMC_weight", "MC HFE electron pt",5,nBinspho2,minpho2,maxpho2);
+  fOutputList->Add(fInputHFEMC_weight);
+  
+  fIncpTMCM20hfeCheck_weight = new THnSparseD("fIncpTMCM20hfeCheck_weight", "HFE electron pt with M20",5,nBinspho2,minpho2,maxpho2);
+  fOutputList->Add(fIncpTMCM20hfeCheck_weight);
+  
   fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",5,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCpho);
 
@@ -1393,6 +1425,7 @@ double AliAnalysisTaskHFECal::GetMCweightEta(double mcEtapT)
 //_________________________________________
 void AliAnalysisTaskHFECal::FindTriggerClusters()
 {
+  //cout << "finding trigger patch" << endl; 
   // constants
   const int nModuleCols = 2;
   const int nModuleRows = 5;
@@ -1461,9 +1494,11 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
       //L1 analysis from AliAnalysisTaskEMCALTriggerQA
       Int_t bit = 0;
       fCaloTrigger->GetTriggerBits(bit);
+      //cout << "bit = " << bit << endl;
 
       Int_t ts = 0;
       fCaloTrigger->GetL1TimeSum(ts);
+      //cout << "ts = " << ts << endl;
       if (ts > 0)ftriggers[globCol][globRow] = 1;
       // number of triggered channels in event
       nTrigChannel++;
@@ -1473,6 +1508,9 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
         iglobCol = globCol;
         iglobRow = globRow;
         nTrigChannelCut++;
+        //cout << "ts cut = " << ts << endl;
+        //cout << "globCol = " << globCol << endl;
+        //cout << "globRow = " << globRow << endl;
         ftriggersCut[globCol][globRow] = 1;
       }
 
@@ -1480,6 +1518,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
   } // has calo trigger entries
 
   // part 2 go through the clusters here -----------------------------------
+  //cout << " part 2 go through the clusters here ----------------------------------- " << endl; 
   Int_t nCluster=0, nCell=0, iCell=0, gCell=0;
   Short_t cellAddr, nSACell, mclabel;
   //Int_t nSACell, iSACell, mclabel;
@@ -1578,6 +1617,9 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
       fphi = gphi / 2;
       feta = geta / 2;
 
+        //cout << "fphi = " << fphi << endl;
+        //cout << "feta = " << feta << endl;
+
       // try to match with a triggered
       if( ftriggers[feta][fphi]==1)
       {  nClusterTrig++;
@@ -1586,6 +1628,8 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
       { nClusterTrigCut++;
       }
 
+      //cout << "nClusterTrigCut : " << nClusterTrigCut << endl;
+     
     } // cells
 
 
