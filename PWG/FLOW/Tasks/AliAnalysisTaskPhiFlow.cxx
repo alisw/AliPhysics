@@ -391,7 +391,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
    Double_t cenB(-999);
    // if a second centrality estimator is requited, set it
    (fkCentralityMethodB) ? cenB = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodB) : cenB = fCentrality;
-   if (TMath::Abs(fCentrality-cenB > 5) || cenB >= 80 || cenB < 0 || fCentrality <= fCentralityMin || fCentrality > fCentralityMax) {
+   if (TMath::Abs(fCentrality-cenB) > 5 || cenB >= 80 || cenB < 0 || fCentrality <= fCentralityMin || fCentrality > fCentralityMax) {
       if(fQA) fCentralityNoPass->Fill(fCentrality) ;
       return kFALSE;
    }
