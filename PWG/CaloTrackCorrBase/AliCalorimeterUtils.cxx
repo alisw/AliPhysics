@@ -215,6 +215,30 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
       
+      //If it did not exist for this run, get closes one
+      if (!htd)
+      {
+        AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runnumber));
+        // let's get the closest runnumber instead then..
+        Int_t lower = 0;
+        Int_t ic = 0;
+        Int_t maxEntry = contRFTD->GetNumberOfEntries();
+        
+        while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < runnumber) ) {
+          lower = ic;
+          ic++;
+        }
+        
+        Int_t closest = lower;
+        if ( (ic<maxEntry) &&
+            (contRFTD->LowerLimit(ic)-runnumber) < (runnumber - contRFTD->UpperLimit(lower)) ) {
+          closest = ic;
+        }
+        
+        AliWarning(Form("TemperatureCorrCalib Objects found closest id %d from run: %d", closest, contRFTD->LowerLimit(closest)));
+        htd = (TH1S*) contRFTD->GetObjectByIndex(closest);
+      } 
+      
       if(htd)
       {
         printf("AliCalorimeterUtils::SetOADBParameters() - Recalibrate (Temperature) EMCAL \n");
