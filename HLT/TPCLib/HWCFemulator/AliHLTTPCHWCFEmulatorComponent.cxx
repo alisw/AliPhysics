@@ -458,6 +458,9 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
   AliHLTTPCHWCFEmulator::CreateConfiguration
     ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fUseTimeBinWindow, fChargeFluctuation, fUseTimeFollow, configWord1, configWord2 );
 
+  AliHLTUInt8_t *outBlock = NULL;
+  AliHLTTPCClusterMCLabel *allocOutMC = NULL;
+
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       const AliHLTComponentBlockData* iter = blocks+ndx;
@@ -493,19 +496,16 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
       AliHLTUInt32_t headerSize = sizeof(AliRawDataHeader);
       AliHLTUInt32_t outBlockSize=headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
-      AliHLTUInt8_t* outBlock = new AliHLTUInt8_t[outBlockSize];
-      if (!outBlock) {
-    	  iResult=-ENOMEM;
-    	  break;
-      }
-      AliHLTTPCClusterMCLabel* allocOutMC = new AliHLTTPCClusterMCLabel[nOutputMC+1];
-      if (!allocOutMC) {
-    	  if (outBlock) {
-    		  delete[] outBlock;
-    	  }
-    	  iResult=-ENOMEM;
-    	  break;
-      }
+
+      if( outBlock ) delete[] outBlock;
+      if( allocOutMC ) delete[] allocOutMC;      
+      outBlock = new AliHLTUInt8_t[outBlockSize];
+      allocOutMC = new AliHLTTPCClusterMCLabel[nOutputMC+1];
+ 
+      if (!outBlock || !allocOutMC) {
+	iResult=-ENOMEM;
+	break;
+      } 
 
       memset(outBlock, 0, outBlockSize*sizeof(AliHLTUInt8_t));
       memset(allocOutMC, 0, (nOutputMC+1)*sizeof(AliHLTTPCClusterMCLabel));
@@ -533,8 +533,6 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       else if( err==-2 ){  HLTWarning("No space left in the output buffer (warning %d)",err); }
       else if( err<0 ){ HLTWarning("HWCF emulator finished with error code %d",err); }
       if( err<0 ){
-    	  if (outBlock) delete[] outBlock;
-    	  if (allocOutMC) delete[] allocOutMC;
 	continue;
       }
 
@@ -585,8 +583,6 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       } else {
 	HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+outSize);
 	iResult=-ENOSPC;
-	if (outBlock) delete[] outBlock;
-	if (allocOutMC) delete[] allocOutMC;
 	break;
       }
 
@@ -607,15 +603,14 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	} else {	
 	  HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+s);
 	  iResult=-ENOSPC;
-	  if (outBlock) delete[] outBlock;
-	  if (allocOutMC) delete[] allocOutMC;
 	  break;
 	}
       }
-	  if (outBlock) delete[] outBlock;
-	  if (allocOutMC) delete[] allocOutMC;
     }
-  
+ 
+  if( outBlock ) delete[] outBlock;
+  if( allocOutMC ) delete[] allocOutMC;      
+
   fBenchmark.Stop(0);  
   HLTInfo(fBenchmark.GetStatistics());
   fCFSupport.ReleaseEventMemory();
