@@ -7,7 +7,6 @@
 class TList;
 class TH1F;
 class TH2F;
-class TH3F;
 class TF1;
 
 class AliBalancePsi;
@@ -134,9 +133,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fParticleOfInterest = poi;}
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
+    void SetEventClass(TString receivedEventClass){
+        fEventClass = receivedEventClass;
+    }
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
+  Double_t    GetRefMultiOrCentrality(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t fCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks);
@@ -173,8 +176,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistEta;//pseudorapidity (QA histogram)
   TH2F *fHistRapidity;//rapidity (QA histogram)
   TH2F *fHistPhi;//phi (QA histogram)
-  TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram)
-  TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -252,7 +253,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
-
+  TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented

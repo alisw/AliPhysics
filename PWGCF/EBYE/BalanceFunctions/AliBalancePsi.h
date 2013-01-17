@@ -56,6 +56,7 @@ class AliBalancePsi : public TObject {
     fAnalysisLevel = analysisLevel;}
   void SetShuffle(Bool_t shuffle) {fShuffle = shuffle;}
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
+  void SetEventClass(TString receivedEventClass){ fEventClass = receivedEventClass; } 
 
   void InitHistograms(void);
 
@@ -65,7 +66,8 @@ class AliBalancePsi : public TObject {
   void CalculateBalance(Double_t gReactionPlane, 
 			TObjArray* particles,
 			TObjArray* particlesMixed,
-			Float_t bSign);
+			Float_t bSign,
+            Double_t kMultorCent = -100);
   
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t ptTriggerMin=-1.,
@@ -142,14 +144,6 @@ class AliBalancePsi : public TObject {
 						   Double_t ptAssociatedMin=-1.,
 						   Double_t ptAssociatedMax=-1.,
 						   AliBalancePsi *bfMix=NULL);
-
-  TH1D *GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
-					   Double_t psiMin, Double_t psiMax,
-					   Double_t ptTriggerMin=-1.,
-					   Double_t ptTriggerMax=-1.,
-					   Double_t ptAssociatedMin=-1.,
-					   Double_t ptAssociatedMax=-1.,
-					   AliBalancePsi *bfMix=NULL);
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
@@ -190,6 +184,8 @@ class AliBalancePsi : public TObject {
 
   Bool_t fHBTCut;//HBT cut
   Bool_t fConversionCut;//conversion cut
+
+    TString fEventClass;
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
