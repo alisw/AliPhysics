@@ -114,6 +114,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   SetName("TPC");
   SetTitle("TPC");
   for (Int_t i=0;i<5;i++) fSystematicErrors[i]=0;
+  // systematic error parameterization at INNER wall of the TPC
+  fSystematicErrorClusterInner[0]=0.5;   // 0.5 cm
+  fSystematicErrorClusterInner[1]=5;     // 5 cm slope  
+  //
   fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
   fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track
   fClusterMaxRange[0]=1;     // y - pad      range

@@ -125,6 +125,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
+  const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
+
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
 
@@ -204,6 +206,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //  misscalibration 
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix 
+  Double_t fSystematicErrorClusterInner[2];  // systematic error of the cluster - used to downscale the information
   Bool_t fUseSystematicCorrelation;         // switch to use the correlation for the sys
 public:   
   static Bool_t fgUseTimeCalibration; // flag usage the time dependent calibration
