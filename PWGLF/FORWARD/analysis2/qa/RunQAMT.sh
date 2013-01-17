@@ -74,6 +74,10 @@ lock=
 handle_exit()
 {
     if test "x$lock" = "x" ; then return ; fi 
+    if test "x$store" != "x" && test "x${top}" != "x" ; then 
+	chmod -R g+rwX ${top}/${proddir}
+	chmod -R g+rwX ${top}/$store
+    fi
     rm -rf $lock 
 }
 trap handle_exit EXIT
@@ -280,7 +284,7 @@ EOF
 # --- Change permissions on files ------------------------------------
 fix_perm()
 {
-    if test ! -f $1 ; then return ; fi 
+    # if test ! -f $1 ; then return ; fi 
     chmod g+rwX $1
     chmod o+rX $1
 }
@@ -627,7 +631,7 @@ fi
 proddir=LHC${prodyear}${prodletter}
 store=${proddir}
 if test ! "x$passno" = "x" ; then 
-    if test "x${passpre}" = "xv" ; then 
+    if test "x${passpre}" = "xv" || test "x${passpre}" = "xc"; then 
 	store=${store}/${passpre}pass${passno}
     else
 	store=${store}/pass${passno}
@@ -681,6 +685,7 @@ for i in QABase.h QAPlotter.C QARing.h QAStructs.h QATrender.C \
     RunFileQA.C RunFinalQA.C ; do
     cp $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/$i ${store}/${i}
     rm -f ${store}/`echo $i | tr '.' '_'`.{so,d}
+    fix_perm ${store}/${i}
 done
 mess 1 "Compiling QATrender.C"
 (cd $store && root -l -b <<EOF 
@@ -696,7 +701,7 @@ gROOT->LoadMacro("QAPlotter.C++g");
 .q
 EOF
 )
-
+(cd ${store} && for i in *.so *.d ; do fix_perm $i ; done)
 
 # --- Now get and analyse each run -----------------------------------
 analyse_runs ${top}/$store $numf $files
@@ -708,6 +713,8 @@ make_trend ${top}/$store
 make_index ${top}/${proddir} ${proddir}
 make_index ${top} "QA for the FMD" \
     "For more information see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
+
+chmod -R g+rwX ${top}/${proddir}
 
 #
 # EOF
