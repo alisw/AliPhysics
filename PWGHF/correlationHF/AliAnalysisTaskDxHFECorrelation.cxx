@@ -31,6 +31,7 @@
 #include "AliDxHFEParticleSelectionEl.h"
 #include "AliDxHFEParticleSelectionMCEl.h"
 #include "AliDxHFEParticleSelection.h"
+#include "AliHFCorrelator.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliESDInputHandler.h"
@@ -141,6 +142,7 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
 void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
 {
   // create result objects and add to output list
+  int iResult=0;
 
   //Initialize PID for electron selection
   if(!fPID->GetNumberOfPIDdetectors()) { 
@@ -163,14 +165,20 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
   else fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
   fD0s->SetCuts(fCutsD0);
-  fD0s->Init();
+  iResult=fD0s->Init();
+  if (iResult<0) {
+    AliFatal(Form("initialization of worker class instance fD0s failed with error %d", iResult));
+  }
 
   //Electrons
   if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl;
   else fElectrons=new AliDxHFEParticleSelectionEl;
   fElectrons->SetCuts(fPID, AliDxHFEParticleSelectionEl::kCutPID);
   fElectrons->SetCuts(fCutsHFE, AliDxHFEParticleSelectionEl::kCutHFE);
-  fElectrons->Init();
+  iResult=fElectrons->Init();
+  if (iResult<0) {
+    AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
+  }
 
   //Correlation
   if(fUseMC) fCorrelation=new AliDxHFECorrelationMC;
@@ -184,7 +192,10 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   // TODO: fSystem is a boolean right now, needs to be changed to fit also p-Pb
   if (!fSystem)         arguments+=" system=pp";
   else                 arguments+=" system=Pb-Pb";
-  fCorrelation->Init(arguments);
+  iResult=fCorrelation->Init(arguments);
+  if (iResult<0) {
+    AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+  }
 
   // Fix for merging:
   // Retrieving the individual objects created
@@ -216,17 +227,14 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
       return;
     }
   }
-
   // TODO: why copy? cleanup?
-  if(fCutsD0){
-    AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
-    const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
-    copyfCuts->SetName(nameoutput);
-    PostData(2,copyfCuts);
-  }
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
+  const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
+  copyfCuts->SetName(nameoutput);
 
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
+  PostData(2,copyfCuts);
   PostData(3,fCutsHFE);
   PostData(4,fCuts);
 
@@ -376,7 +384,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   int iResult=fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
 
   if (iResult<0) {
-    AliError(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
+    AliFatal(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
   }
 
   PostData(1, fOutput);
@@ -394,8 +402,8 @@ void AliAnalysisTaskDxHFECorrelation::Terminate(Option_t *)
   // last action on the client
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {
-    AliFatal("failed to get output container");
+    // looks like that is a valid condition if the task is run
+    // in mode "terminate"
     return;
   }
-
 }

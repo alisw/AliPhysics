@@ -147,6 +147,14 @@ int AliDxHFECorrelation::Init(const char* arguments)
       AliError("mandatory cuts object missing");
     return -EINVAL;
   }
+  if (cuts->GetNCentPoolBins()==0 || cuts->GetCentPoolBins()==NULL ||
+      cuts->GetNZvtxPoolBins()==0 || cuts->GetZvtxPoolBins()==NULL) {
+    // the bin information is used further downstream so it
+    // needs to be available in order to continue
+    AliError(Form("inavlid object %s: bin configuration is mandatory", cuts->GetName()));
+    cuts->Dump();
+    return -EINVAL;
+  }
   fCorrelator = new AliHFCorrelator("Correlator", cuts, fSystem); 
   fCorrelator->SetDeltaPhiInterval(fMinPhi,fMaxPhi); //Correct Phi Interval
   fCorrelator->SetEventMixing(fUseEventMixing);      // mixing Off/On 
@@ -165,53 +173,61 @@ int AliDxHFECorrelation::Init(const char* arguments)
   Int_t MaxNofEvents = cuts->GetMaxNEventsInPool();
   Int_t MinNofTracks = cuts->GetMinNTracksInPool();
   Int_t NofCentBins = cuts->GetNCentPoolBins();
-  Double_t * CentBins = cuts->GetCentPoolBins();
+  const Double_t * CentBins = cuts->GetCentPoolBins();
+  const Double_t defaultCentBins[] = {0,100};
+  if (NofCentBins==0 || CentBins==NULL) {
+    NofCentBins=2;
+    CentBins=defaultCentBins;
+  }
   Int_t NofZVrtxBins = cuts->GetNZvtxPoolBins();
-  Double_t *ZVrtxBins = cuts->GetZvtxPoolBins();
-	
-  Int_t k =0;
-	
-  if(fSystem) k = 100; // PbPb centrality
-  if(!fSystem) k = NofCentBins; // pp multiplicity
-	
-	
-  Double_t minvalue = CentBins[0];
-  Double_t maxvalue = CentBins[NofCentBins+1];
-  Double_t Zminvalue = ZVrtxBins[0];
-  Double_t Zmaxvalue = ZVrtxBins[NofCentBins+1];
+  const Double_t *ZVrtxBins = cuts->GetZvtxPoolBins();
+  const Double_t defaultZVrtxBins[] = {-10,10};
+  if (NofZVrtxBins==0 || ZVrtxBins==NULL) {
+    NofZVrtxBins=2;
+    ZVrtxBins=defaultZVrtxBins;
+  }
 
-  Double_t Nevents[]={0,2*MaxNofEvents/10,4*MaxNofEvents/10,6*MaxNofEvents/10,8*MaxNofEvents/10,MaxNofEvents};
-  Double_t * events = Nevents;
-	
+  Int_t nofEventPropBins =0;
+
+  if(fSystem) nofEventPropBins = 100; // PbPb centrality
+  if(!fSystem) nofEventPropBins = NofCentBins; // pp multiplicity
+
+  Double_t minvalue = CentBins[0];
+  Double_t maxvalue = CentBins[NofCentBins];
+  Double_t Zminvalue = ZVrtxBins[0];
+  Double_t Zmaxvalue = ZVrtxBins[NofCentBins];
+
+  const Double_t Nevents[]={0,2*MaxNofEvents/10,4*MaxNofEvents/10,6*MaxNofEvents/10,8*MaxNofEvents/10,MaxNofEvents};
+  const Double_t * events = Nevents;
+
   TH3D * EventsPerPoolBin = new TH3D("EventsPerPoolBin","Number of events in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins,5,events);
   EventsPerPoolBin->GetXaxis()->SetTitle("Centrality/multiplicity ");
   EventsPerPoolBin->GetYaxis()->SetTitle("Z vertex [cm]");
   EventsPerPoolBin->GetZaxis()->SetTitle("Number of events in pool bin");
   if(fUseEventMixing) AddControlObject(EventsPerPoolBin);
-	
+
   Int_t MaxNofTracks = (MaxNofEvents+1)*MinNofTracks;
   Int_t Diff = MaxNofTracks-MinNofTracks;
-	
+
   Double_t Ntracks[]={MinNofTracks,MinNofTracks+Diff/5,MinNofTracks+2*Diff/5,MinNofTracks+3*Diff/5,MinNofTracks+4*Diff/5,MaxNofTracks};
   Double_t  * trackN = Ntracks;
-	
+
   TH3D * NofTracksPerPoolBin = new TH3D("NofTracksPerPoolBin","Number of tracks in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins,5,trackN);
   NofTracksPerPoolBin->GetXaxis()->SetTitle("Centrality/multiplicity ");
   NofTracksPerPoolBin->GetYaxis()->SetTitle("Z vertex [cm]");
   NofTracksPerPoolBin->GetZaxis()->SetTitle("Number of tracks per bin");
-	
+
   if(fUseEventMixing) AddControlObject(NofTracksPerPoolBin);
-	
+
   TH2D * NofPoolBinCalls = new TH2D("NofPoolBinCalls","Number of tracks in bin pool",NofCentBins,CentBins,NofZVrtxBins,ZVrtxBins);
   NofPoolBinCalls->GetXaxis()->SetTitle("Centrality/multiplicity ");
   NofPoolBinCalls->GetYaxis()->SetTitle("Z vertex [cm]");
   if(fUseEventMixing) AddControlObject(NofPoolBinCalls);
 
-  TH2D * EventProps = new TH2D("EventProps","Number of tracks in bin pool",k,minvalue,maxvalue,100,Zminvalue,Zmaxvalue);
+  TH2D * EventProps = new TH2D("EventProps","Number of tracks in bin pool",nofEventPropBins,minvalue,maxvalue,100,Zminvalue,Zmaxvalue);
   EventProps->GetXaxis()->SetTitle("Centrality/multiplicity ");
   EventProps->GetYaxis()->SetTitle("Z vertex [cm]");
   if(fUseEventMixing) AddControlObject(EventProps);
-
 
   return 0;
 }
@@ -352,9 +368,14 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   }
   if (!fControlObjects) {
     AliError("Initialisation failed, can not fill THnSparse");
+    return -ENODEV;
   }
   // set the event to be processed
   // TODO: change the correlator class to take the const pointer
+  if (!fCorrelator) {
+    AliError("working class instance fCorrelator missing");
+    return -ENODEV;
+  }
   fCorrelator->SetAODEvent(dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent))); 
 
   Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
