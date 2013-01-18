@@ -118,9 +118,10 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	void SetPidHF(AliAODPidHF* pid) {fPidObj = pid; return;}
 	void SetCharge(Short_t charge) {fCharge = charge;}
 	void SetFilterBit(Int_t bit) {fBit = bit;}
-	virtual void PrintAll();
-	virtual void PrintPoolParameters();
-	virtual void PrintSelectedMCevents();
+	void Print(Option_t *option) const;
+	virtual void PrintAll() const;
+	virtual void PrintPoolParameters() const;
+	virtual void PrintSelectedMCevents() const;
 
 	
 	

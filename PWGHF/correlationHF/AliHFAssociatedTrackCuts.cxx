@@ -468,10 +468,29 @@ void AliHFAssociatedTrackCuts::SetPidAssociated()
   }
 }
 
+void AliHFAssociatedTrackCuts::Print(Option_t *option) const
+{
+  /// overloaded from TObject: print info
+  if (strcmp(option, "parameters")==0) {
+    PrintPoolParameters();
+    return;
+  } else if (strcmp(option, "selectedMC")==0) {
+    PrintSelectedMCevents();
+    return;
+  }
+  PrintAll();
+}
+
 //--------------------------------------------------------------------------
-void AliHFAssociatedTrackCuts::PrintAll()
+void AliHFAssociatedTrackCuts::PrintAll() const
 {
 	
+	if(fDescription){
+	  printf("=================================================");
+	  printf("\nAdditional description\n");
+	  std::cout << fDescription << std::endl;
+	  printf("\n");
+	}
 	printf("\n=================================================");
 	if(fESDTrackCuts){
 	  printf("\nCuts for the associated track: \n \n");
@@ -514,17 +533,11 @@ void AliHFAssociatedTrackCuts::PrintAll()
 	std::cout << " " << std::endl;
 	PrintPoolParameters();
 	PrintSelectedMCevents();
-	if(fDescription){
-	  printf("=================================================");
-	  printf("\nAdditional description\n");
-	  std::cout << fDescription << std::endl;
-	  printf("\n");
-	}
 
 }
 
 //--------------------------------------------------------------------------
-void AliHFAssociatedTrackCuts::PrintPoolParameters()
+void AliHFAssociatedTrackCuts::PrintPoolParameters() const
 {   
 	printf("=================================================");
 	printf("\nEvent Pool settings: \n \n");
@@ -547,7 +560,7 @@ void AliHFAssociatedTrackCuts::PrintPoolParameters()
 }
 
 //--------------------------------------------------------------------------
-void AliHFAssociatedTrackCuts::PrintSelectedMCevents()
+void AliHFAssociatedTrackCuts::PrintSelectedMCevents() const
 {
 	printf("\n=================================================");
 	
