@@ -336,14 +336,14 @@ Bool_t AliV0CutVariations::AcceptV0()
 
 Bool_t AliV0CutVariations::AcceptPID(Int_t code) 
 {
-  //const AliAODPid *pid=ptrack->GetDetPid();
-  //if (!pid) return kTRUE;
+  /*
   if (code > 0) {
      if (fTreeVariablePosTransvMomentum > 1.) return kTRUE;
   } else {
      if (fTreeVariableNegTransvMomentum > 1.) return kTRUE;
   }
-
+  */
+  if (fTreeVariablePt > 1.2) return kTRUE;
 
   if (fIsMC) {
     // MC PID
