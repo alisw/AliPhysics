@@ -697,7 +697,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   erry2*=erry2;
   Double_t addErr=0;
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
-  addErr=errInner[0]*TMath::Exp(-TMath::Abs(cl->GetX()-85.)/errInner[2]);
+  addErr=errInner[0]*TMath::Exp(-TMath::Abs((cl->GetX()-85.)/errInner[1]));
   erry2+=addErr*addErr;
   seed->SetErrorY2(erry2);
   //
@@ -853,7 +853,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   errz2*=errz2;
   Double_t addErr=0;
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
-  addErr=errInner[0]*TMath::Exp(-TMath::Abs(cl->GetX()-85.)/errInner[2]);
+  addErr=errInner[0]*TMath::Exp(-TMath::Abs((cl->GetX()-85.)/errInner[1]));
   errz2+=addErr*addErr;
   seed->SetErrorZ2(errz2);
   //
