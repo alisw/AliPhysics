@@ -55,13 +55,13 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // Loading the declared input branches
     void           LoadBranches() const;
  // Getters
-    virtual Int_t         DebugLevel()  {return fDebug;     }
-    virtual AliVEvent*    InputEvent()  {return fInputEvent;}
-    virtual AliESDfriend* ESDfriend()   {return fESDfriend; }
-    virtual AliAODEvent*  AODEvent()    {return fOutputAOD; }
-    virtual TTree*        OutputTree()  {return fTreeA;     }
-    virtual AliMCEvent*   MCEvent()     {return fMCEvent;   }
-    virtual Long64_t      Entry()       {return fEntry;     }
+    virtual Int_t         DebugLevel() const  {return fDebug;     }
+    virtual AliVEvent*    InputEvent() const  {return fInputEvent;}
+    virtual AliESDfriend* ESDfriend()  const  {return fESDfriend; }
+    virtual AliAODEvent*  AODEvent()   const  {return fOutputAOD; }
+    virtual TTree*        OutputTree() const  {return fTreeA;     }
+    virtual AliMCEvent*   MCEvent()    const  {return fMCEvent;   }
+    virtual Long64_t      Entry()      const  {return fEntry;     }
     virtual const AliEventTag *EventTag() const;
     virtual const char*   CurrentFileName();
     virtual Bool_t        IsStandardAOD() const;
