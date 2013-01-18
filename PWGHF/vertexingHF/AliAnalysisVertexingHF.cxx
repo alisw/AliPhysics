@@ -92,6 +92,7 @@ fMixEvent(kFALSE),
 fPidResponse(0x0),
 fUseKaonPIDfor3Prong(kFALSE),
 fUsePIDforLc(0),
+fUsePIDforLc2V0(0),
 fUseKaonPIDforDs(kFALSE),
 fUseTPCPID(kFALSE),
 fUseTOFPID(kFALSE),
@@ -181,6 +182,7 @@ fMixEvent(source.fMixEvent),
 fPidResponse(source.fPidResponse),
 fUseKaonPIDfor3Prong(source.fUseKaonPIDfor3Prong),
 fUsePIDforLc(source.fUsePIDforLc),
+fUsePIDforLc2V0(source.fUsePIDforLc2V0),
 fUseKaonPIDforDs(source.fUseKaonPIDforDs),
 fUseTPCPID(source.fUseTPCPID),
 fUseTOFPID(source.fUseTOFPID),
@@ -267,6 +269,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fPidResponse = source.fPidResponse;
   fUseKaonPIDfor3Prong = source.fUseKaonPIDfor3Prong;
   fUsePIDforLc = source.fUsePIDforLc;
+  fUsePIDforLc2V0 = source.fUsePIDforLc2V0;
   fUseKaonPIDforDs = source.fUseKaonPIDforDs;
   fUseTPCPID = source.fUseTPCPID;
   fUseTOFPID = source.fUseTOFPID;
@@ -618,6 +621,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       for(iv0=0; iv0<nv0; iv0++){
 
 	//AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));	
+
+        if ( fUsePIDforLc2V0 && !TESTBIT(seleFlags[iTrkP1],kBitProtonCompat) ) continue; //clm
 
 	// Get the V0 
 	if(fInputAOD) {

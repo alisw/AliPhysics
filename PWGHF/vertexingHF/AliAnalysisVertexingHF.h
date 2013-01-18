@@ -187,6 +187,40 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetUseProtonAndPionPIDforLambdaC(){fUsePIDforLc=2;}
   void SetUseKaonPIDforDs(Bool_t opt=kTRUE){fUseKaonPIDforDs=opt;}
 
+  void SetNotUseProtonPIDforLambdaC2V0(){fUsePIDforLc2V0=kFALSE;} //clm
+  void SetUseProtonPIDforLambdaC2V0(){fUsePIDforLc2V0=kTRUE;}     //clm
+
+
+
+  void GetnSigmaTOFforPionSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTOFPionLow;maxnsigma=fnSigmaTOFPionHi;
+  }
+  void GetnSigmaTPCforPionSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTPCPionLow;maxnsigma=fnSigmaTPCPionHi;
+  }
+  void GetnSigmaTOFforKaonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTOFKaonLow;maxnsigma=fnSigmaTOFKaonHi;
+  }
+  void GetnSigmaTPCforKaonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTPCKaonLow;maxnsigma=fnSigmaTPCKaonHi; 
+  }
+  void GetnSigmaTOFforProtonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTOFProtonLow;maxnsigma=fnSigmaTOFProtonHi;
+  }
+  void GetnSigmaTPCforProtonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
+    minnsigma=fnSigmaTPCProtonLow;maxnsigma=fnSigmaTPCProtonHi;
+  }
+
+  Bool_t GetUseTPCPID() const {return fUseTPCPID;}
+  Bool_t GetUseTOFPID() const {return fUseTOFPID;}
+  Bool_t GetUseTPCPIDOnlyIfNoTOF() const {return fUseTPCPIDOnlyIfNoTOF;}
+  Double_t GetMaxMomForTPCPid() const {return fMaxMomForTPCPid;}
+
+  Bool_t GetUseKaonPIDfor3Prong() const {return fUseKaonPIDfor3Prong;}
+  Int_t GetUseProtonPIDforLambdaC() const {return fUsePIDforLc;}
+  Bool_t GetUseKaonPIDforDs() const {return fUseKaonPIDforDs;}
+  Bool_t GetUseProtonPIDforLambdaC2V0() const {return fUsePIDforLc2V0;}
+ 
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
 
   //
@@ -224,6 +258,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliPIDResponse* fPidResponse; // PID response
   Bool_t fUseKaonPIDfor3Prong;  // Kaon PID usage for 3 prongs
   Int_t  fUsePIDforLc;          // PID for Lambdac: 0=no, 1=proton, 2=p and pi
+  Bool_t fUsePIDforLc2V0;       // PID for Lambdac 2 V0: 0=no, 1=proton,
   Bool_t fUseKaonPIDforDs;      // Kaon PID usage for Ds
   Bool_t fUseTPCPID;            // switch use/not use TPC PID
   Bool_t fUseTOFPID;            // switch use/not use TOF PID
@@ -351,7 +386,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,23);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,24);  // Reconstruction of HF decay candidates
 };
 
 
