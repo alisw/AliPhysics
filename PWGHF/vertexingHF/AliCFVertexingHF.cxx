@@ -831,18 +831,27 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			  }		    
 			  Int_t nDauRes=partK0S->GetNDaughters();
 			  if(nDauRes!=2 || partK0S->GetPdgCode()!=310) {
+			    AliError("No K0S on no 2-body decay");
 			    delete [] fLabelArray;
 			    fLabelArray = 0x0;
 			    return bLabelArray;
 			  }
-			  Int_t labelFirstDauRes = partK0S->GetDaughter(0); 
+			  Int_t labelFirstDauRes = partK0S->GetDaughter(0);
 			  AliDebug(2,Form(" Found K0S (%d)",labelK0Dau));
 			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
 			    if (dauRes){
-			      fLabelArray[foundDaughters] = dauRes->GetLabel();
-			      foundDaughters++;
+			      if (TMath::Abs(dauRes->GetPdgCode())!=211) {
+				AliError("K0S doesn't decay in 2 charged pions!");
+				delete [] fLabelArray; 
+				fLabelArray = 0x0;  
+				return bLabelArray;
+			      }
+			      else {
+				fLabelArray[foundDaughters] = dauRes->GetLabel();
+				foundDaughters++;
+			      }
 			    }
 			    else {
 			      AliError("Error while casting resonant daughter! returning a NULL array");
