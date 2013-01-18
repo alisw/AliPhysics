@@ -492,7 +492,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				Double_t ptHad = hadron->Pt();
 				Double_t phiHad = hadron->Phi();
 				Double_t etaHad = hadron->Eta(); 
-				Double_t label = hadron->GetLabel(); 
+				Int_t label = hadron->GetLabel(); 
 				Int_t trackid = hadron->GetID();
 				
 				phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
