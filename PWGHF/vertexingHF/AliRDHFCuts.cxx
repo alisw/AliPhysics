@@ -99,6 +99,7 @@ fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
 fKinkReject(kFALSE),
   fUseTrackSelectionWithFilterBits(kTRUE),
+  fUseCentrFlatteningInMC(kFALSE),
   fHistCentrDistr(0x0)
 {
   //
@@ -156,6 +157,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutOnzVertexSPD(source.fCutOnzVertexSPD),
   fKinkReject(source.fKinkReject),
   fUseTrackSelectionWithFilterBits(source.fUseTrackSelectionWithFilterBits),
+  fUseCentrFlatteningInMC(source.fUseCentrFlatteningInMC),
   fHistCentrDistr(0x0)
 {
   //
@@ -228,6 +230,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fKinkReject=source.fKinkReject;
   fUseTrackSelectionWithFilterBits=source.fUseTrackSelectionWithFilterBits;
   if(fHistCentrDistr) delete fHistCentrDistr;
+  fUseCentrFlatteningInMC=source.fUseCentrFlatteningInMC;
   if(source.fHistCentrDistr)fHistCentrDistr=(TH1F*)(source.fHistCentrDistr->Clone());
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
@@ -548,7 +551,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // centrality selection
   if (fUseCentrality!=kCentOff) {  
     Int_t rejection=IsEventSelectedInCentrality(event);    
-    if(rejection>1){      
+    Bool_t okCent=kFALSE;
+    if(rejection==0) okCent=kTRUE;
+    if(isMC && rejection==4 && !fUseCentrFlatteningInMC) okCent=kTRUE;
+    if(!okCent){      
       if(accept) fWhyRejection=rejection;      
       if(fWhyRejection==4)fEvRejectionBits+=1<<kCentralityFlattening;
       else fEvRejectionBits+=1<<kOutsideCentrality;
