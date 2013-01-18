@@ -17,22 +17,24 @@ execTerminate=1
 execTrigQA=1
 execTrackQA=1
 execScalers=1
+defaultStorage="raw://"
 isPrivateProd=0
-optList="mfatekso:pi:"
+optList="ad:efi:kmo:pst"
 inputTriggerList="0x0"
 while getopts $optList option
 do
   case $option in
-    m ) execMerge=0;;
-    f ) mergeFast=1;;
     a ) execMergeAll=0;;
-    t ) execTerminate=0;;
+    d ) defaultStorage=$OPTARG;;
     e ) execTrigQA=0;;
+    f ) mergeFast=1;;
+    i ) inputTriggerList=$OPTARG;;
     k ) execTrackQA=0;;
-    s ) execScalers=0;;
+    m ) execMerge=0;;
     o ) outTaskName=$OPTARG;;
     p ) isPrivateProd=1;;
-    i ) inputTriggerList=$OPTARG;;
+    s ) execScalers=0;;
+    t ) execTerminate=0;;
     * ) echo "Unimplemented option chosen."
     EXIT=1
     ;;
@@ -44,16 +46,17 @@ shift $(($OPTIND - 1))
 # needs 3 arguments
 if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     echo "Usage: `basename $0` (-$optList) <runList.txt> <QAx> <alien:///alice/data/20XX/LHCXXy>"
-    echo "       -m skip merging (default: run)"
-    echo "       -f merge fast, skip incomplete prod."
     echo "       -a skip final merging (default: run)"
-    echo "       -t skip terminate (default: run)"
+    echo "       -d default storage for scalers (default: ${defaultStorage})"
     echo "       -e skip run trigger efficiency QA (default: run)"
-    echo "       -s skip run scalers trending (default: run)"
+    echo "       -f merge fast, skip incomplete prod."
+    echo "       -i input trigger list (default: no list)"
     echo "       -k skip run muon QA (defult: run)"
+    echo "       -m skip merging (default: run)"
     echo "       -o task output name (default: QAresults.root)"
     echo "       -p is private production. Use directory structure of the plugin"
-    echo "       -i input trigger list (default: no list)"
+    echo "       -s skip run scalers trending (default: run)"
+    echo "       -t skip terminate (default: run)"
     exit 4
 fi
 
@@ -143,7 +146,8 @@ function runTrigQA() {
     outFileName="$2"
     aliroot -b <<EOF &> logTrigEffQA.txt
 ${includeAliroot} ${includeMuon} ${loadAnalysisLibs}
-.x $qaMacroDir/trigEffQA.C+("${runListName}","${outFileName}","raw://",${execScalers});
+AliLog::SetClassDebugLevel("AliAnalysisTriggerScalers",-1);
+.x $qaMacroDir/trigEffQA.C+("${runListName}","${outFileName}","${defaultStorage}",${execScalers});
 .q
 EOF
 }

@@ -35,14 +35,11 @@
 #include "AliMUONCalibrationData.h"
 #include "AliAnalysisTriggerScalers.h"
 #include "AliCounterCollection.h"
+#include "AliTriggerConfiguration.h"
 #endif
 
 const Int_t kNch = 4;
 const Double_t kZero = 1.e-7; // Avoid problems when comparing to 0.
-
-const Int_t kNCollType = 4; 
-TString kSCollType[kNCollType] = {"-B-","-S-","-SC-","-SA-"}; 
-
 
 //_____________________________________________________________________________
 void SetMyStyle()
@@ -223,17 +220,30 @@ Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
 //_____________________________________________________________________________
 TList* GetOCDBList ( )
 {
+  TString storageType = AliCDBManager::Instance()->GetDefaultStorage()->GetType();
+  Bool_t isGrid = storageType.Contains("alien");
   TString baseFolder = AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder();
   
   TList* outList = new TList();
   outList->SetOwner();
   TString dirName[3] = {"GlobalTriggerCrateConfig", "RegionalTriggerConfig", "LocalTriggerBoardMasks"};
   for ( Int_t idir=0; idir<3; idir++ ) {
-    TGridResult *res = gGrid->Ls(Form("%s/MUON/Calib/%s", baseFolder.Data(), dirName[idir].Data()));
-    if (!res) return 0x0;
-    for ( Int_t ires=0; ires<res->GetEntries(); ires++ ) {
-      TString currFile = static_cast<TMap*>(res->At(ires))->GetValue("name")->GetName();
-      outList->Add(new TObjString(currFile));
+    if ( isGrid ) {
+      TGridResult *res = gGrid->Ls(Form("%s/MUON/Calib/%s", baseFolder.Data(), dirName[idir].Data()));
+      if (!res) return 0x0;
+      for ( Int_t ires=0; ires<res->GetEntries(); ires++ ) {
+        TString currFile = static_cast<TMap*>(res->At(ires))->GetValue("name")->GetName();
+        outList->Add(new TObjString(currFile));
+      }
+    }
+    else {
+      TString fileListStr = gSystem->GetFromPipe(Form("ls %s/MUON/Calib/%s", baseFolder.Data(), dirName[idir].Data()));
+      TObjArray* fileList = fileListStr.Tokenize("\n");
+      for ( Int_t ires=0; ires<fileList->GetEntries(); ires++ ) {
+        TString currFile = fileList->At(ires)->GetName();
+        outList->Add(new TObjString(currFile));
+      }
+      delete fileList;
     }
   }
   return outList;
@@ -481,7 +491,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     xyPatternAll[icath].Reset(0xFFFF);
   }
   
-  AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
+  if ( ! AliCDBManager::Instance()->IsDefaultStorageSet() ) AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
   TList* ocdbFileList = 0x0;
   Int_t previousRun = -1;
   AliMUONDigitMaker* digitMaker = 0x0;
@@ -545,82 +555,61 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     outCanList.Add(can);
   }
 }
+
 //_____________________________________________________________________________
-TObjArray* BuildListOfT0Trigger(TObjArray* selectedTriggerArray, TString sT0Name = "C0TVX") {
-
-  if ( !selectedTriggerArray ) return 0;
+Bool_t CheckPattern ( TString trigName, TObjArray* keepArray, TObjArray* rejectArray )
+{
+  for ( Int_t ipat=0; ipat<rejectArray->GetEntries(); ++ipat ) {
+    if ( trigName.Contains(rejectArray->At(ipat)->GetName() ) ) return kFALSE;
+  } // loop on reject pattern
   
-  TObjArray* selectedList = new TObjArray();
-  selectedList->SetOwner();
+  for ( Int_t ipat=0; ipat<keepArray->GetEntries(); ++ipat ) {
+    if ( trigName.Contains(keepArray->At(ipat)->GetName() ) ) return kTRUE;
+  } // loop on keep pattern
   
-  TString sT0TriggerName = "";
-  TString currTrigName = "";
-  Bool_t isCollType[kNCollType];
-
-  for ( Int_t iCol = 0; iCol < kNCollType; iCol++ ) isCollType[iCol] = kFALSE;
-
-  for (Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++){
-    currTrigName = ((TObjString*)selectedTriggerArray->At(iTrig))->GetName();
-    //search the collision type
-    for ( Int_t iCol = 0; iCol < kNCollType; iCol++ ) {
-      if ( currTrigName.Contains( kSCollType[iCol]  ) ) isCollType[iCol] = kTRUE;
-    }
-  }
-  for ( Int_t iCol = 0; iCol < kNCollType; iCol++ ) {
-    if ( !isCollType[iCol] ) continue;
-    sT0TriggerName = Form("%s%sNOPF-ALLNOTRD",sT0Name.Data(),kSCollType[iCol].Data());
-    selectedList->AddLast(new TObjString(sT0TriggerName.Data()));
-  }
-
-  return selectedList;
+  return ( keepArray->GetEntries() == 0 ) ? kTRUE : kFALSE;
 }
 
 //_____________________________________________________________________________
-TObjArray* BuildListOfTrigger(TString triggerListName, TString rejectPattern="OTHER TRUE PHI ANY EMC -ACE- -ABCE- WU MUP SPI SHM") {
+TObjArray* BuildListOfTrigger ( const TObjArray* triggerArray, TString keepPattern = "", TString rejectPattern="OTHER,TRUE,PHI,ANY,EMC,-ACE-,-ABCE-,WU,MUP,SPI,SHM" )
+{
 
   TObjArray* selectedList = new TObjArray();
   selectedList->SetOwner();
-  TObjArray* triggerArray = triggerListName.Tokenize(",");
-  TObjArray* rejectArray = rejectPattern.Tokenize(" ");
-  TString currTrigName = "";
-
+  TObjArray* rejectArray = rejectPattern.Tokenize(",");
+  TObjArray* keepArray = keepPattern.Tokenize(",");
+  
   for ( Int_t iTrig = 0; iTrig < triggerArray->GetEntries(); iTrig++ ){
-    currTrigName = ((TObjString*)triggerArray->At(iTrig))->GetName();
-    Bool_t isGoodTrig = kTRUE;
-    for ( Int_t irej=0; irej<rejectArray->GetEntries(); irej++ ) {
-      if (currTrigName.Contains(rejectArray->At(irej)->GetName()) ) {
-        isGoodTrig = kFALSE;
-        break;
-      }
-    }
-    if ( isGoodTrig) selectedList->AddLast(new TObjString(currTrigName.Data()));
+    TString currTrigName = ((TObjString*)triggerArray->At(iTrig))->GetName();
+    if ( CheckPattern(currTrigName, keepArray, rejectArray) ) selectedList->AddLast(new TObjString(currTrigName.Data()));
   }
 
-  delete triggerArray;
   delete rejectArray;
+  delete keepArray;
 
   return selectedList;
 
 }
 
 //_____________________________________________________________________________
-TString FindT0TriggerName(TObjArray *T0TrigArray,TString sTrig, TString sT0Name = "C0TVX") {
+TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray )
+{
 
-  TString name = "";
-  if ( !T0TrigArray ) return name;
-  TString currTrigName = "";
-
-  //search the collision type
-  for ( Int_t iCol = 0; iCol < kNCollType; iCol++ ) {
-    if ( sTrig.Contains( kSCollType[iCol] ) ) {
-      for ( Int_t iTrig = 0; iTrig < T0TrigArray->GetEntries(); iTrig++ ){
-	currTrigName = ((TObjString*) T0TrigArray->At(iTrig))->GetName();
-	if ( currTrigName.Contains( kSCollType[iCol] )  ) return currTrigName;       
-      }
+  TString foundName = "";
+  for ( Int_t iTrig = 0; iTrig < triggerArray->GetEntries(); iTrig++ ){
+    TString currTrigName = ((TObjString*)triggerArray->At(iTrig))->GetName();
+    TObjArray* array = currTrigName.Tokenize("-");
+    TString collisionType = array->At(1)->GetName();
+    delete array;
+    collisionType.Append("-");
+    collisionType.Prepend("-");
+    if ( checkTrigger.Contains(collisionType.Data()) ) {
+      foundName = currTrigName;
+      break;
     }
-    
   }
-  return name;
+
+  return foundName;
 }
   
 //_____________________________________________________________________________
@@ -634,6 +623,8 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
       return;
     }
   }
+  
+  if ( ! AliCDBManager::Instance()->IsDefaultStorageSet() ) AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
 
   //trigger count from ESDs
   TFile *file = TFile::Open(mergedFileName.Data());
@@ -641,15 +632,10 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   
   //Build the trigger list for trigger with muon only in readout and min. bias triggers
   TString triggerListName = ccol->GetKeyWords("trigger");
-  TObjArray* selectedTriggerArray = BuildListOfTrigger(triggerListName);
-  if ( !selectedTriggerArray ) {
-    printf("No trigger selected from trigger list %s\n",triggerListName.Data());
-    return;
-  }
-  printf("Nr of triggers selected %i\n",selectedTriggerArray->GetEntries());
-
-  TObjArray* selectedT0TriggerArray = BuildListOfT0Trigger(selectedTriggerArray);
-  printf("Nr of T0 triggers selected %i\n",selectedT0TriggerArray->GetEntries());
+  
+  TObjArray selectedTriggerArray, selectedL0TriggerArray;
+  selectedTriggerArray.SetOwner();
+  selectedL0TriggerArray.SetOwner();
   
   const Int_t nScaler = 3;
   TString sScaler[nScaler] = {"L0B","L2A","L0BRATE"};
@@ -658,62 +644,11 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   TObjArray hFromQA;
   TObjArray hFromScalers; 
   TObjArray hOutput;
-
+  
+  
   TString sHistName, sHistNameFull, sTitleName;
   Int_t nRuns = runNumArray.GetEntries();
-  //
-  //Create histos for Scalers and QA 
-  //
 
-  //loop on recorded trigger list
-  for ( Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++ ) {
-    //loop on scaler list
-    for ( Int_t iScaler = 0; iScaler < nScaler; iScaler++ ) {
-      sHistName = ((TObjString*) selectedTriggerArray->At(iTrig))->GetName();
-      sHistName += "_";
-      sHistName += sScaler[iScaler];
-      sTitleName = sHistName;
-
-      //      printf("Trigger: %s\n",((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
-	   
-      sHistNameFull = "Scalers_";
-      sHistNameFull += sHistName;
-      TH1F* hCounterScalers = new TH1F(sHistNameFull,sTitleName,nRuns,1,(Double_t)nRuns);
-      hCounterScalers->SetDirectory(0);
-      hCounterScalers->SetMinimum(1);
-      hCounterScalers->SetMaximum(maxScaler[iScaler]);
-      hFromScalers.AddLast(hCounterScalers);
-      hOutput.AddLast(hCounterScalers);
-      
-      if ( !(sScaler[iScaler].Contains("L2A")) ) continue;
-
-      sHistNameFull = "QA_";
-      sHistNameFull += sHistName;
-      TH1F* hCounterQA = new TH1F(sHistNameFull,sTitleName,nRuns,1,(Double_t)nRuns);
-      hCounterQA->SetDirectory(0);
-      hFromQA.AddLast(hCounterQA);
-      
-    }
-  }
-  //loop on T0 trigger list (only for L0B)
-  for ( Int_t iTrig = 0; iTrig < selectedT0TriggerArray->GetEntries(); iTrig++ ) {
-
-    sHistName = ((TObjString*) selectedT0TriggerArray->At(iTrig))->GetName();
-    sHistName += "_";
-    sHistName += sScaler[0];
-    sTitleName = sHistName;
-
-    printf("Trigger: %s\n",((TObjString*) selectedT0TriggerArray->At(iTrig))->GetName());
-    
-    sHistNameFull = "Scalers_";
-    sHistNameFull += sHistName;
-    TH1F* hCounterScalers = new TH1F(sHistNameFull,sTitleName,nRuns,1,(Double_t)nRuns);
-    hCounterScalers->SetDirectory(0);
-    hCounterScalers->SetMinimum(1);
-    hCounterScalers->SetMaximum(maxScaler[0]);
-    hFromScalers.AddLast(hCounterScalers);
-    hOutput.AddLast(hCounterScalers);
-  }
   //
   //Fill histos for Scalers and QA
   //
@@ -723,81 +658,90 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     TString sRunNr = ((TObjString*)runNumArray.At(iRun))->GetString();
     Int_t runNr = sRunNr.Atoi();
     AliAnalysisTriggerScalers triggerScaler(runNr);
+    AliTriggerConfiguration* tc = static_cast<AliTriggerConfiguration*>(triggerScaler.GetOCDBObject("GRP/CTP/Config",runNr));
+    const TObjArray& trClasses = tc->GetClasses();
     
-    //loop on trigger list
-    for ( Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++ ) {
-      
-      //loop on scaler list
-      for ( Int_t iScaler = 0; iScaler < nScaler; iScaler++ ) {
-        
-        //from Scalers
-        TGraph* graph = triggerScaler.PlotTrigger(selectedTriggerArray->At(iTrig)->GetName(),sScaler[iScaler].Data());
-        
-        sHistNameFull = Form("Scalers_%s_%s",selectedTriggerArray->At(iTrig)->GetName(),sScaler[iScaler].Data());
-        TH1* hist = (TH1*) hFromScalers.FindObject(sHistNameFull);
-        if ( !hist ) continue;
-	Double_t *tab = (Double_t*) graph->GetY();
-	if ( tab ) hist->SetBinContent(iRun+1,tab[0]);
-	else hist->SetBinContent(iRun+1,0);
-	hist->GetXaxis()->SetBinLabel(iRun+1,sRunNr.Data());
-	delete graph;
-
-        //from QA
-        if ( !(sScaler[iScaler].Contains("L2A")) ) continue;
-        TH1* histCounters = static_cast<TH1*>(ccol->Get("run",Form("run:%s/trigger:%s",sRunNr.Data(),selectedTriggerArray->At(iTrig)->GetName())));
-        
-        sHistNameFull = Form("QA_%s_%s",selectedTriggerArray->At(iTrig)->GetName(),sScaler[iScaler].Data());
-        hist = (TH1*) hFromQA.FindObject(sHistNameFull);
-        if (!hist) continue;
-        if ( histCounters ) hist->SetBinContent(iRun+1,histCounters->GetSumOfWeights());
-        else hist->SetBinContent(iRun+1,0);
-        hist->GetXaxis()->SetBinLabel(iRun+1,sRunNr.Data());
-        
-        delete histCounters;
-        
-      }//end loop on scaler list
-    }//end loop on trigger list
-
-    //loop on T0 trigger list
-    for ( Int_t iTrig = 0; iTrig < selectedT0TriggerArray->GetEntries(); iTrig++ ) {
-      
-      //from Scalers
-      TGraph* graph = triggerScaler.PlotTrigger(selectedT0TriggerArray->At(iTrig)->GetName(),sScaler[kL0B].Data());
-        
-      sHistNameFull = Form("Scalers_%s_%s",selectedT0TriggerArray->At(iTrig)->GetName(),sScaler[kL0B].Data());
-      TH1* hist = (TH1*) hFromScalers.FindObject(sHistNameFull);
-      if ( !hist ) continue;
-      Double_t *tab = (Double_t*) graph->GetY();
-      if ( tab ) hist->SetBinContent(iRun+1,tab[0]);
-      else hist->SetBinContent(iRun+1,0);
-      hist->GetXaxis()->SetBinLabel(iRun+1,sRunNr.Data());
-      delete graph;
-
-    }//end loop on T0 trigger list
+    Int_t ibin = iRun+1;
     
+    for ( Int_t itype=0; itype<2; itype++ ) {
+      TObjArray* currSelectedList = ( itype == 0 ) ? &selectedTriggerArray : &selectedL0TriggerArray;
+      TString matchTrig = ( itype == 0 ) ? "" : "C0TVX";
+      TObjArray* selectedTrigArrayForRun = BuildListOfTrigger(&trClasses, matchTrig);
+      
+      //loop on trigger list
+      for ( Int_t iTrig = 0; iTrig < selectedTrigArrayForRun->GetEntries(); iTrig++ ) {
+      
+        TString currTrigName = selectedTrigArrayForRun->At(iTrig)->GetName();
+        if ( itype == 0 && ! triggerListName.Contains(currTrigName.Data()) ) continue;
+        if ( ! currSelectedList->FindObject(currTrigName.Data()) ) currSelectedList->Add(new TObjString(currTrigName));
+        
+        //loop on scaler list
+        for ( Int_t iScaler = 0; iScaler < nScaler; iScaler++ ) {
+        
+          if ( itype == 1 && iScaler != kL0B ) continue;
+          
+          //from Scalers
+          TGraph* graph = triggerScaler.PlotTrigger(currTrigName.Data(),sScaler[iScaler].Data());
+        
+          sHistName = Form("%s_%s",currTrigName.Data(),sScaler[iScaler].Data());
+          sHistNameFull = Form("Scalers_%s",sHistName.Data());
+          
+          TH1* hist = (TH1*) hFromScalers.FindObject(sHistNameFull);
+          if ( ! hist ) {
+            hist = new TH1D(sHistNameFull,sHistName,nRuns,1.,1.+(Double_t)nRuns);
+            hist->SetDirectory(0);
+            hist->SetMinimum(1);
+            hist->SetMaximum(maxScaler[0]);
+            hFromScalers.AddLast(hist);
+            hOutput.AddLast(hist);
+            if ( iScaler == kL2A ) {
+              sHistNameFull = "QA_" + sHistName;
+              hFromQA.AddLast(hist->Clone(sHistNameFull.Data()));
+            }
+          }
+          Double_t *tab = (Double_t*) graph->GetY();
+          if ( tab ) hist->SetBinContent(ibin,tab[0]);
+          hist->GetXaxis()->SetBinLabel(ibin,sRunNr.Data());
+          delete graph;
+          
+          //from QA
+          if ( iScaler != kL2A ) continue;
+          TH1* histCounters = static_cast<TH1*>(ccol->Get("run",Form("run:%s/trigger:%s",sRunNr.Data(),currTrigName.Data())));
+          sHistNameFull = sHistNameFull = "QA_" + sHistName;
+          hist = (TH1*) hFromQA.FindObject(sHistNameFull);
+          if ( histCounters ) hist->SetBinContent(ibin,histCounters->GetSumOfWeights());
+          hist->GetXaxis()->SetBinLabel(ibin,sRunNr.Data());
+          delete histCounters;
+        }//end loop on scaler list
+      }//end loop on trigger list
+    } // end loop on type
   }//end loop on run list
   
   
+  if ( selectedTriggerArray.GetEntries() == 0 ) {
+    printf("No trigger selected from trigger list %s\n",triggerListName.Data());
+    return;
+  }
+  printf("Nr of triggers selected %i\n",selectedTriggerArray.GetEntries());
+  
+  printf("Nr of T0 triggers selected %i\n",selectedL0TriggerArray.GetEntries());
+  
   //Set options for QA and Scalers histos
-   //loop on trigger list
-  for ( Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++ ) {
-    //loop on scaler list
-    for ( Int_t iScaler = 0; iScaler < nScaler; iScaler++ ) {
-      
-      sHistNameFull = Form("Scalers_%s_%s",((TObjString*) selectedTriggerArray->At(iTrig))->GetName(),sScaler[iScaler].Data());
-      TH1* histo = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
+
+  for ( Int_t itype=0; itype<2; itype++ ) {
+    TObjArray* currList = ( itype == 0 ) ? &hFromScalers : &hFromQA;
+    for ( Int_t ihisto=0; ihisto<currList->GetEntriesFast(); ihisto++ ) {
+      TH1* histo = static_cast<TH1*> ( currList->At(ihisto) );
       if (!histo) continue;
-      histo->LabelsOption("a");
+      // Write run number to each bin
+      for ( Int_t iRun = 0; iRun < runNumArray.GetEntries(); iRun++ ) {
+        TString sRunNr = ((TObjString*)runNumArray.At(iRun))->GetString();
+        Int_t ibin = iRun+1;
+        TString binLabel = histo->GetXaxis()->GetBinLabel(ibin);
+        if ( ! binLabel.IsNull() ) continue;
+        histo->GetXaxis()->SetBinLabel(ibin,sRunNr.Data());
+      }
       histo->SetStats(kFALSE);
-      SetRunAxisRange(histo->GetXaxis());
-      
-      if ( !(sScaler[iScaler].Contains("L2A")) ) continue;
-      sHistNameFull = Form("QA_%s_%s",((TObjString*) selectedTriggerArray->At(iTrig))->GetName(),sScaler[iScaler].Data());
-      histo = static_cast<TH1*> ( hFromQA.FindObject(sHistNameFull) );
-      if (!histo) continue;
-      histo->LabelsOption("a");
-      histo->SetStats(kFALSE);
-      SetRunAxisRange(histo->GetXaxis());
     }
   }
 
@@ -809,40 +753,40 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   //  TString sHisto[nHisto] = {"L2AoverL0B","L2AQAoverSCALERS"};
   
   //loop on trigger list
-  for ( Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++ ) {
+  for ( Int_t iTrig = 0; iTrig < selectedTriggerArray.GetEntries(); iTrig++ ) {
 
-    //C0TVX
-    TString sTrig = ( (TObjString*) selectedTriggerArray->At(iTrig) )->GetName();
-    TString sT0Trig = FindT0TriggerName(selectedT0TriggerArray,sTrig);
-
-    sHistNameFull = Form("Scalers_%s_L0B",sT0Trig.Data());
-
-    TH1* histo0 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
-    if (!histo0) continue;
-
-    sHistNameFull = Form("Scalers_%s_L0B",((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
+    sHistNameFull = Form("Scalers_%s_L0B",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo1 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
     if (!histo1) continue;
+    
+    
+    //C0TVX
+    TString sTrig = ( (TObjString*) selectedTriggerArray.At(iTrig) )->GetName();
+    TString sL0Trig = FindCorrespondingTrigger(sTrig, &selectedL0TriggerArray);
 
-    sHistNameFull = Form("%s_%s",sHisto[0].Data(),((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
-    TH1* histo10 = (TH1*) histo1->Clone(sHistNameFull);
-    histo10->SetTitle(sTitleHisto[0].Data());
-    histo10->Sumw2();
-    histo10->Divide(histo0);
-    histo10->SetMaximum(10);
-    histo10->SetMinimum(1e-5);
-    //outList.Add(histo10);
-    hOutput.AddLast(histo10);
-    //outList.Add(histo0);
-    //outList.Add(histo1);
+    sHistNameFull = Form("Scalers_%s_L0B",sL0Trig.Data());
 
+    TH1* histo0 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
+    if ( histo0 ) {
+      sHistNameFull = Form("%s_%s",sHisto[0].Data(),((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
+      TH1* histo10 = (TH1*) histo1->Clone(sHistNameFull);
+      histo10->SetTitle(sTitleHisto[0].Data());
+      histo10->Sumw2();
+      histo10->Divide(histo0);
+      histo10->SetMaximum(10);
+      histo10->SetMinimum(1e-5);
+      //outList.Add(histo10);
+      hOutput.AddLast(histo10);
+      //outList.Add(histo0);
+      //outList.Add(histo1);
+    }
 
     //DEADTIME    
-    sHistNameFull = Form("Scalers_%s_L2A",((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
+    sHistNameFull = Form("Scalers_%s_L2A",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo2 = static_cast<TH1*> ( hFromScalers.FindObject(sHistNameFull) );
     if (!histo2) continue;
     
-    sHistNameFull = Form("%s_%s",sHisto[1].Data(),((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
+    sHistNameFull = Form("%s_%s",sHisto[1].Data(),((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo3 = (TH1*) histo2->Clone(sHistNameFull);
     histo3->SetTitle(sTitleHisto[1]);
     histo3->Sumw2();
@@ -853,11 +797,11 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     hOutput.AddLast(histo3);
     
     //QA over Scalers
-    sHistNameFull = Form("QA_%s_L2A",((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
+    sHistNameFull = Form("QA_%s_L2A",((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo4 = static_cast<TH1*> ( hFromQA.FindObject(sHistNameFull) );
     if (!histo4) continue;
     
-    sHistNameFull = Form("%s_%s",sHisto[2].Data(),((TObjString*) selectedTriggerArray->At(iTrig))->GetName());
+    sHistNameFull = Form("%s_%s",sHisto[2].Data(),((TObjString*) selectedTriggerArray.At(iTrig))->GetName());
     TH1* histo5 = (TH1*) histo4->Clone(sHistNameFull);
     histo5->SetTitle(sTitleHisto[2]);
     histo5->Sumw2();
@@ -884,10 +828,10 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     
     //loop on trigger list
     Int_t icolor = 1;
-    for ( Int_t iTrig = 0; iTrig < selectedTriggerArray->GetEntries(); iTrig++ ) {
+    for ( Int_t iTrig = 0; iTrig < selectedTriggerArray.GetEntries(); iTrig++ ) {
       
-      if ( iCan < nScaler ) sHistNameFull = Form("Scalers_%s_%s",selectedTriggerArray->At(iTrig)->GetName(),sCanvases[iCan].Data());
-      else sHistNameFull = Form("%s_%s",sCanvases[iCan].Data(),selectedTriggerArray->At(iTrig)->GetName());
+      if ( iCan < nScaler ) sHistNameFull = Form("Scalers_%s_%s",selectedTriggerArray.At(iTrig)->GetName(),sCanvases[iCan].Data());
+      else sHistNameFull = Form("%s_%s",sCanvases[iCan].Data(),selectedTriggerArray.At(iTrig)->GetName());
       TH1* histo1 = static_cast<TH1*> ( hOutput.FindObject(sHistNameFull) );
       if (!histo1) continue;
       
@@ -896,16 +840,13 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
       histo1->Draw(optDraw);
       optDraw = "esame";
       
-      leg->AddEntry(histo1,selectedTriggerArray->At(iTrig)->GetName(),"l");
+      leg->AddEntry(histo1,selectedTriggerArray.At(iTrig)->GetName(),"l");
     }
     
     leg->Draw();
     outList.Add(canvas);
     outCanList.Add(canvas);
   }
-  
-  delete selectedTriggerArray;
-  delete selectedT0TriggerArray;
   
   file->Close();
 }
