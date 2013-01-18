@@ -5,6 +5,7 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliITSURecoSens.h"
+
 class AliITSUGeomTGeo;
 class AliITSsegmentation;
 class AliCluster;
@@ -57,6 +58,7 @@ class AliITSURecoLayer : public TNamed
   //
   AliITSURecoSens*   GetSensor(Int_t i)            const {return i<0 ? 0:(AliITSURecoSens*)fSensors[i];}
   AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInLadder+is);}
+  AliITSURecoSens*   GetSensorFromID(Int_t i)      const;
   TClonesArray*      GetClusters()                 const {return (TClonesArray*)fClusters;}
   Int_t              GetNClusters()                const {return fClusters ? fClusters->GetEntriesFast() : 0;}
   AliCluster*        GetCluster(Int_t icl)         const {return (AliCluster*)fClusters->UncheckedAt(icl);}

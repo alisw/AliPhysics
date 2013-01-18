@@ -1,9 +1,10 @@
 #include <TClonesArray.h>
 #include "AliITSURecoLayer.h"
-#include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
 #include "AliITSUAux.h"
 #include "AliITSUClusterPix.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliLog.h"
 
 using namespace AliITSUAux;
 using namespace TMath;
@@ -311,4 +312,13 @@ Int_t  AliITSURecoLayer::Compare(const TObject* obj) const
   if (Abs(dr)<1e-6) return 0;
   return dr>0 ? 1:-1;
   //      
+}
+
+//_________________________________________________________________
+AliITSURecoSens* AliITSURecoLayer::GetSensorFromID(Int_t i) const 
+{
+  // get sensor from its global id
+  i -= fITSGeom->GetFirstModIndex(fActiveID);
+  if (i<0||i>=fNSensors) AliFatal(Form("Sensor with id=%d is not in layer %d",i+fITSGeom->GetFirstModIndex(fActiveID),fActiveID));
+  return (AliITSURecoSens*)fSensors[i];
 }

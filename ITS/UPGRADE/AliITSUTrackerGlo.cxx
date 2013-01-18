@@ -54,6 +54,7 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fSeedsPool("AliITSUSeed",0)
   ,fTrCond()
   ,fTrackPhase(-1)
+  ,fClInfo(0)
 {
   // Default constructor
   if (rec) Init(rec);
@@ -65,6 +66,7 @@ AliITSUTrackerGlo::~AliITSUTrackerGlo()
  // Default destructor
  //  
   delete fITS;
+  delete[] fClInfo;
   //
 }
 
@@ -74,7 +76,9 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   // init with external reconstructor
   //
   fITS = new AliITSURecoDet(rec->GetGeom(),"ITSURecoInterface");
-  for (int ilr=fITS->GetNLayersActive();ilr--;) {
+  int nLr = fITS->GetNLayersActive();
+  fClInfo = new Int_t[nLr<<1];
+  for (int ilr=nLr;ilr--;) {
     fITS->GetLayerActive(ilr)->SetClusters(rec->GetClusters(ilr));
   }
   //
@@ -313,7 +317,8 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	// since the transport matrix should be defined in this frame.
 	double xs; // X in the TF of current seed, corresponding to intersection with sensor plane
 	if (!seedT.GetTrackingXAtXAlpha(sens->GetXTF(),sens->GetPhiTF(),bz, xs)) continue;
-	if (!seedT.PropagateToX(xs,bz)) continue;
+	if (!PropagateSeed(&seedT,xs,fCurrMass)) continue;
+	//	if (!seedT.PropagateToX(xs,bz)) continue;
 	//	if (!seedT.Rotate(sens->GetPhiTF())) continue;
 	if (!seedT.RotateToAlpha(sens->GetPhiTF())) continue;
 	//
@@ -387,6 +392,9 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
   //  
   const double kToler = 1e-6; // tolerance for layer on-surface check
   //
+  //
+  if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
+  //
   int dir = lTo > lFrom ? 1:-1;
   AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
   Bool_t checkFirst = kTRUE;
@@ -394,7 +402,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
     double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
     if (lrFr) {
       Bool_t doLayer = kTRUE;
-      double xToGo = dir>0 ? lrFr->GetRMax() : lrFr->GetRMin();
+      double xToGo = lrFr->GetR(dir);
       if (checkFirst) { // do we need to track till the surface of the current layer ?
 	checkFirst = kFALSE;
 	if      (dir>0) { if (curR2-xToGo*xToGo>kToler) doLayer = kFALSE; } // on the surface or outside of the layer
@@ -410,7 +418,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t
     if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
     //
     // go the entrance of the layer, assuming no materials in between
-    double xToGo = dir>0 ? lrTo->GetRMin() : lrTo->GetRMax();
+    double xToGo = lrTo->GetR(-dir);
     if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
     if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) return kFALSE;
     lrFr = lrTo;
@@ -426,6 +434,8 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliExternalTrackParam* seed, Int_t lF
   //  
   const double kToler = 1e-6; // tolerance for layer on-surface check
   //
+  if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
+  //
   int dir = lTo > lFrom ? 1:-1;
   AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
   Bool_t checkFirst = kTRUE;
@@ -433,7 +443,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliExternalTrackParam* seed, Int_t lF
     double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
     if (lrFr) {
       Bool_t doLayer = kTRUE;
-      double xToGo = dir>0 ? lrFr->GetRMax() : lrFr->GetRMin();
+      double xToGo = lrFr->GetR(dir);
       if (checkFirst) { // do we need to track till the surface of the current layer ?
 	checkFirst = kFALSE;
 	if      (dir>0) { if (curR2-xToGo*xToGo>kToler) doLayer = kFALSE; } // on the surface or outside of the layer
@@ -449,7 +459,7 @@ Bool_t AliITSUTrackerGlo::TransportToLayer(AliExternalTrackParam* seed, Int_t lF
     if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
     //
     // go the entrance of the layer, assuming no materials in between
-    double xToGo = dir>0 ? lrTo->GetRMin() : lrTo->GetRMax();
+    double xToGo = lrTo->GetR(-dir);
     if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
     if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) return kFALSE;
     lrFr = lrTo;
@@ -524,7 +534,9 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   Bool_t goodCl = kFALSE;
   int currLabel = Abs(fCurrESDtrack->GetTPCLabel());
   //
-  if (cl->GetLabel(0)>=0) {for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) {goodCl = kTRUE; break;}}
+  if (cl->GetLabel(0)>=0) {
+    for (int i=0;i<3;i++) if (cl->GetLabel(i)>=0 && cl->GetLabel(i)==currLabel) {goodCl = kTRUE; break;}
+  }
   else goodCl = kTRUE;
   //
   if (TMath::Abs(cl->GetX())>kTolerX) { // if due to the misalingment X is large, propagate track only
@@ -609,22 +621,34 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
   Int_t dir         = (xpos<xToGo) ? 1:-1;
   Double_t xyz0[3],xyz1[3],param[7];
   //
+  Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
   if (matCorr) seed->GetXYZ(xyz1);   //starting global position
   while ( (xToGo-xpos)*dir > kEpsilon){
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
     Double_t bz=GetBz();   // getting the local Bz
     if (!seed->PropagateToX(x,bz))  return kFALSE;
-    if (matCorr) {
+    double ds = 0;
+    if (matCorr || updTime) {
       xyz0[0]=xyz1[0]; // global pos at the beginning of step
       xyz0[1]=xyz1[1];
       xyz0[2]=xyz1[2];
       seed->GetXYZ(xyz1);    //  // global pos at the end of step
-      MeanMaterialBudget(xyz0,xyz1,param);	
-      Double_t xrho=param[0]*param[4], xx0=param[1];
-      if (dir>0) xrho = -xrho; // outward should be negative
-      if (!seed->ApplyMaterialCorrection(xx0,xrho,mass,kFALSE)) return kFALSE;
+      if (matCorr) {
+	MeanMaterialBudget(xyz0,xyz1,param);	
+	Double_t xrho=param[0]*param[4], xx0=param[1];
+	if (dir>0) xrho = -xrho; // outward should be negative
+	if (!seed->ApplyMaterialCorrection(xx0,xrho,mass,kFALSE)) return kFALSE;
+	ds = param[4];
+      }
+       else { // matCorr is not requested but time integral is
+	double d0 = xyz1[0]-xyz0[0];
+	double d1 = xyz1[1]-xyz0[1];
+	double d2 = xyz1[2]-xyz0[2];	
+	ds = TMath::Sqrt(d0*d0+d1*d1+d2*d2);
+      }     
     }
+    if (updTime) seed->AddTimeStep(ds);
     xpos = seed->GetX();
   }
   return kTRUE;
@@ -717,24 +741,60 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp)
 Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
 {
   // refit track till radius rDest
+  AliITSUTrackHyp tmpTr;
+  //
   double rCurr = Sqrt(trc->GetX()*trc->GetX() + trc->GetY()*trc->GetY());
   int dir,lrStart,lrStop;
   //
-  if (rCurr<rDest) {
-    dir = 1;
-    lrStart = 0;
-    lrStop  = fITS->GetNLayers()-1;
-  }
-  else {
-    dir = 1;
-    lrStart = fITS->GetNLayers()-1;
-    lrStop  = 0;    
-  }
+  dir = rCurr<rDest ? 1 : -1;
+  lrStart = fITS->FindFirstLayerID(rCurr,dir);
+  lrStop  = fITS->FindLastLayerID(rDest,dir);
+  if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
+  //
+  trc->FetchClusterInfo(fClInfo);
+  fCurrMass = trc->GetMass();
+  tmpTr.AliKalmanTrack::operator=(*trc);
+  tmpTr.SetChi2(0);
+  int iclLr[2],nclLr;
   //
   for (int ilr=lrStart;ilr!=lrStop;ilr+=dir) {
     AliITSURecoLayer* lr = fITS->GetLayer(ilr);
     if ( dir*(rCurr-lr->GetR(dir))>0) continue; // this layer is already passed
+    int ilrA2,ilrA = lr->GetActiveID();
+    // passive layer or active w/o hits will be traversed on the way to next cluster
+    if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
+    //
+    if (!TransportToLayer(&tmpTr,lrStart,ilr)) return kFALSE; 
+    lrStart = ilr;
+    //
+    // select the order in which possible 2 clusters (in case of the overlap) will be traversed and fitted
+    nclLr=0;
+    if (dir>0) { // clusters are stored in increasing radius order
+      iclLr[nclLr++]=fClInfo[ilrA2++];
+      if (fClInfo[ilrA2]>=0) iclLr[nclLr++]=fClInfo[ilrA2];
+    }
+    else {
+      if ( fClInfo[ilrA2+1]>=0 ) iclLr[nclLr++]=fClInfo[ilrA2+1];
+      iclLr[nclLr++]=fClInfo[ilrA2];
+    }
+    //
+    for (int icl=0;icl<nclLr;icl++) {
+      AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
+      AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
+      if (!tmpTr.Rotate(sens->GetPhiTF())) return kFALSE;
+      if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) return kFALSE;
+      if (!tmpTr.Update(clus)) return kFALSE;
+    }
     //
   }
-  
+  // All clusters were succesfully fitted. Even if the track does not reach rDest, this is enough to validate it.
+  // Still, try to go as close as possible to rDest.
+  //
+  if (lrStart!=lrStop) {
+    if (!TransportToLayer(&tmpTr,lrStart,lrStop)) return kTRUE;
+    // go to the exit from layer
+    // TODO
+  }
+  trc->AliKalmanTrack::operator=(tmpTr);
+  return kTRUE;
 }

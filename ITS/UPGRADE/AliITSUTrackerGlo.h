@@ -94,6 +94,7 @@ class AliITSUTrackerGlo : public AliTracker {
   //
   AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
   Int_t                           fTrackPhase;     // tracking phase
+  Int_t*                          fClInfo;         //! auxiliary track cluster info
   //
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     

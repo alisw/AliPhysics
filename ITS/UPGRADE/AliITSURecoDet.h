@@ -26,6 +26,8 @@ class AliITSURecoDet : public TNamed
   Int_t              GetNLayers()                  const {return fNLayers;}
   Int_t              GetNLayersActive()            const {return fNLayersActive;}
   Int_t              GetLrIDActive(Int_t lrActID)  const;
+  Int_t              FindLastLayerID(Double_t r, int dir)  const;
+  Int_t              FindFirstLayerID(Double_t r, int dir) const;
   AliITSURecoLayer*  GetLayer(Int_t i)             const;
   AliITSURecoLayer*  GetLayerActive(Int_t i)       const;
   AliITSUGeomTGeo*   GetGeom()                     const {return fGeom;}
@@ -75,14 +77,14 @@ inline Int_t AliITSURecoDet::GetLrIDActive(Int_t lrActID) const
 inline AliITSURecoLayer* AliITSURecoDet::GetLayer(Int_t i) const 
 {
   // get layer with global id=i
-  return i<fNLayers ? (AliITSURecoLayer*)fLayers.UncheckedAt(i):0;
+  return i>=0&&i<fNLayers ? (AliITSURecoLayer*)fLayers.UncheckedAt(i):0;
 }
 
 //_____________________________________________________________
 inline AliITSURecoLayer* AliITSURecoDet::GetLayerActive(Int_t i) const
 {
   // get layer with activeID=i
-  return i<fNLayersActive ? (AliITSURecoLayer*)fLayersActive.UncheckedAt(i):0;
+  return i>=0&&i<fNLayersActive ? (AliITSURecoLayer*)fLayersActive.UncheckedAt(i):0;
 }
 
 //______________________________________________________

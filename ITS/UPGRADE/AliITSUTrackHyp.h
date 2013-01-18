@@ -27,8 +27,10 @@ class AliITSUTrackHyp: public AliKalmanTrack
   const TObjArray*   GetLayerSeeds(Int_t lr) const {return lr<fNLayers ? &fLayerSeeds[lr] : 0;}
   void               AddSeed(AliITSUSeed* seed, Int_t lr) {fLayerSeeds[lr].AddLast(seed);}
   void               SetESDTrack(AliESDtrack* esdtr) {fESDTrack = esdtr;}
+  void               FetchClusterInfo(Int_t* clIDarr) const;
   //
   void               SetChi2(Double_t chi2) {fChi2 = chi2;}
+  Bool_t             Update(const AliCluster* c);
   //
   virtual Double_t   GetPredictedChi2(const AliCluster *c) const;
   virtual Bool_t     PropagateTo(Double_t xr, Double_t x0, Double_t rho);

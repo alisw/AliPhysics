@@ -134,3 +134,53 @@ void AliITSURecoDet::IndexLayers()
     SetRMax(GetLayer(fNLayers-1)->GetRMax()+kRMargin);
   }
 }
+
+//______________________________________________________
+Int_t AliITSURecoDet::FindLastLayerID(Double_t r, int dir) const
+{
+  // find the last layer which the particle moving in direction dir (1:outward,-1:inward) 
+  // will traverse on its way to radius r 
+  int ilr;
+  //
+  if (dir>0) {
+    for (ilr=0;ilr<fNLayers;ilr++) {
+      AliITSURecoLayer* lr = GetLayer(ilr);
+      if ( r<lr->GetR(-dir) ) break;  // this layer at least entered
+    }
+    return ilr--;  // -1 will correspond to point below the smalles layer
+  }
+  else {
+    for (ilr=fNLayers;ilr--;) {
+      AliITSURecoLayer* lr = GetLayer(ilr);
+      if ( r>lr->GetR(-dir) ) break; // this layer at least entered
+    }
+    ilr++;
+    return ilr<fNLayers ? ilr:-1; // -1 will correspond to point above outer layer
+  }
+  //
+}
+
+//______________________________________________________
+Int_t AliITSURecoDet::FindFirstLayerID(Double_t r, int dir) const
+{
+  // find the first layer which the particle moving in direction dir (1:outward,-1:inward) 
+  // will traverse starting from radius r 
+  int ilr;
+  //
+  if (dir>0) {
+    for (ilr=0;ilr<fNLayers;ilr++) {
+      AliITSURecoLayer* lr = GetLayer(ilr);
+      if ( r<lr->GetR(dir) ) break;  // this layer at least entered
+    }
+    return ilr<fNLayers ? ilr:-1;  // -1 will correspond to point above outer leayer
+  }
+  else {
+    for (ilr=fNLayers;ilr--;) {
+      AliITSURecoLayer* lr = GetLayer(ilr);
+      if ( r>lr->GetR(dir) ) break; // this layer at least entered
+      break;
+    }
+    return ilr; // -1 will correspond to point below inner layer
+  }
+  //
+}
