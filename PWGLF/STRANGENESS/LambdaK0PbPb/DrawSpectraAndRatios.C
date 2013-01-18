@@ -45,11 +45,11 @@ static Bool_t gFlag=kFALSE;
 static 
 Double_t sysEffK0s[nBins]={//Efficiency, combined over cuts mentioned above
   0.0,
-  0.05,0.05,0.04,0.03,  //Dominated by cos(PA)
-  0.04,0.05,0.06,0.07,0.08,0.09, //Dominated by TPC crossed/findable
-  0.10,0.10,0.11,0.12,0.12,0.13,0.13,0.13,0.14,0.14,0.14,
-  0.14,0.13,0.13,0.12,0.11,0.11,0.11,0.10,0.09,0.08,
-  0.08,0.05,0.04,0.03,0.03
+  0.05,0.05,0.04,0.04,  //Dominated by cos(PA)
+  0.04,0.04,0.04,0.04,0.04,0.04,
+  0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,
+  0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,
+  0.04,0.04,0.04,0.04,0.04
 };
 /*
 static Double_t sysSigK0s[nBins]={//Signal extraction
@@ -73,12 +73,12 @@ static Double_t sysSigK0s[nBins]={//Signal extraction
 static 
 Double_t sysEffLam[nBins]={//Efficiency, combined over cuts mentioned above
   0.0,0.0,0.0,
-  0.20,0.12,0.05, //Dominated by cos(PA)+FD
+  0.20,0.12,0.05, //Dominated by cos(PA)
   0.06,0.06,0.06,0.06,0.06,  //Dominated by c*tau
-  0.06,0.06, //Dominated by TPC crossed/findable
-  0.07,0.09,0.09,0.10,0.10,0.11,0.11,0.11,0.10,0.10,0.09,
-  0.08,0.08,0.07,0.07,0.07,0.06,0.07,0.06,0.07,0.05,
-  0.06,0.08,0.04
+  0.05,0.05, //Dominated by cos(PA)
+  0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,
+  0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,
+  0.05,0.05,0.05
 };
 static Double_t sysSigLam[nBins]={//Signal extraction
   0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
