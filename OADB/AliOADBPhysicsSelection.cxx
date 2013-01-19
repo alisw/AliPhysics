@@ -241,7 +241,7 @@ UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
   // If more than one bit is lit, prints an error and returns the first.
   // If no bit is on, prints an error and returns 0
 
-  const Int_t kNBitsToCheck = 28;
+  const Int_t kNBitsToCheck = 29;
 
   //  Int_t nbit = sizeof(mask)*8;
   Int_t nbit = kNBitsToCheck;
