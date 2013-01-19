@@ -1,18 +1,52 @@
-void AddTaskFlowStrange(int trigger, int centrMin, int centrMax, int harmonic=2) {
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc0",centrMin,centrMax),   0,0,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc1",centrMin,centrMax),   0,1,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc2",centrMin,centrMax),   0,2,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc3",centrMin,centrMax),   0,3,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc2TRK",centrMin,centrMax),0,2,"TRK",harmonic);
-
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc0",centrMin,centrMax),   1,0,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc1",centrMin,centrMax),   1,1,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc2",centrMin,centrMax),   1,2,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc3",centrMin,centrMax),   1,3,"V0M",harmonic);
-  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc2TRK",centrMin,centrMax),1,2,"TRK",harmonic);
+// FULL ANALYSIS OF ONE CENTRALITY CLASS
+void AddTaskFlowStrange(int trigger, int centrMin, int centrMax, int harmonic, int matchMC=-1,
+      bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
+  // K0s
+  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"K0",Form("Kv%d_%02d%02dc2",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,3,"K0",Form("Kv%d_%02d%02dc3",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,4,"K0",Form("Kv%d_%02d%02dc4",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,5,"K0",Form("Kv%d_%02d%02dc5",harmonic,centrMin,centrMax),   0,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"K0",Form("Kv%d_%02d%02dc2TRK",harmonic,centrMin,centrMax),0,"TRK",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  // Lambda
+  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"L0",Form("Lv%d_%02d%02dc2",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,3,"L0",Form("Lv%d_%02d%02dc3",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,5,"L0",Form("Lv%d_%02d%02dc5",harmonic,centrMin,centrMax),   1,"V0M",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,2,"L0",Form("Lv%d_%02d%02dc2TRK",harmonic,centrMin,centrMax),1,"TRK",harmonic,matchMC,doQC,doSPTPC,doSPVZE);
 }
-void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", 
-			int specie=0, int cuts=1, char* MULT="V0M", int harmonic=2) {
+// ONE PRECONF WAGON
+void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, int set, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0,
+  char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
+  Double_t c[11];
+  switch(set) {
+  case(0): // Loose cuts + noQT // Baseline sanity check
+    c[0] =-1e+6; c[1] =+1e+6; c[2] =  -1e+6; c[3] =-1e+6; c[4] =+1e+6; c[5] =-1e-6; c[6] =-1e+6; c[7] =+1e+6; c[8] =+1e+6; c[9] =-1e+6; c[10] =0;
+    break;
+  case(1): // Tight cuts + QT // 
+    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] =+1e+6; c[9] = +3.0; c[10] =0;
+    break;
+  case(2): // Tight cuts + PID + QT // nominal cuts
+    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] = +3.0; c[9] = +3.0; c[10] =0;
+    break;
+  case(3): // Loose cuts + PID + QT // for K0s and Lambda systematics
+    c[0] =-1e+6; c[1] =+1e+6; c[2] =  -1e+6; c[3] =-1e+6; c[4] =+1e+6; c[5] = +0.2; c[6] =-1e+6; c[7] =+1e+6; c[8] = +3.0; c[9] =-1e+6; c[10] =0;
+    break;
+  case(4): // Tight cuts + PID + tighterQT(+20%) // for K0s systematics
+    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] =+0.24; c[6] = -0.8; c[7] = +0.8; c[8] = +3.0; c[9] = +3.0; c[10] =0;
+    break;
+  case(5): // Tight cuts + tighterPID(2sigma) + QT // for K0s and Lambda systematics
+    c[0] = +0.5; c[1] = +1.0; c[2] = +0.998; c[3] = +0.1; c[4] = +0.0; c[5] = +0.2; c[6] = -0.8; c[7] = +0.8; c[8] = +2.0; c[9] = +3.0; c[10] =0;
+    break;
+  default:
+    return;
+  }
+  AddTaskFlowStrange(trigger, centrMin, centrMax, folderName, suffixName, specie,
+                    c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],
+                    MULT, harmonic, matchMC, doQC, doSPTPC, doSPVZE);
+}
+// ONE WAGON
+void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", int specie=0, 
+  double cut0, double cut1, double cut2, double cut3, double cut4, double cut5, double cut6, double cut7, double cut8, double cut9, double cut10,
+  char* MULT="V0M", int harmonic=2, int matchMC=-1, bool doQC=true, bool doSPTPC=true, bool doSPVZE=true) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName.ReplaceAll(".root","");
 
@@ -25,7 +59,7 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
     cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kSPDtracklets);
   cutsEvent->SetNContributorsRange(2);
-  cutsEvent->SetPrimaryVertexZrange(-9.5,+9.5);
+  cutsEvent->SetPrimaryVertexZrange(-10.0,+10.0);
 
   //-R-P---c-u-t-s--------------------------------------------------------------
   AliFlowTrackCuts *cutsRPTPC = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts();
@@ -35,9 +69,9 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
 
   //-D-A-U-G-H-T-E-R-S---c-u-t-s------------------------------------------------
   AliESDtrackCuts* cutsDaughter = new AliESDtrackCuts(Form("daughter_cuts_%s",suffixName.Data()) );
-  cutsDaughter->SetPtRange(0.2,10.0);
+  cutsDaughter->SetPtRange(0.2,12.0);
   cutsDaughter->SetEtaRange(-0.8, 0.8 );
-  cutsDaughter->SetMinNClustersTPC(80);
+  cutsDaughter->SetMinNClustersTPC(70);
   cutsDaughter->SetMaxChi2PerClusterTPC(4.0);
   cutsDaughter->SetRequireTPCRefit(kTRUE);
   cutsDaughter->SetAcceptKinkDaughters(kFALSE);
@@ -50,11 +84,12 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
 								       cutsEvent, cutsRPTPC, cutsRPVZE,
 								       cutsDaughter );
   taskSel->SelectCollisionCandidates(trigger);
-  //taskSel->SetDebug();
-  taskSel->SetCuts2010(cuts);
+  Double_t cuts[11];
+  cuts[0]=cut0; cuts[1]=cut1; cuts[2]=cut2; cuts[3]=cut3; cuts[4]=cut4; cuts[5]=cut5; cuts[6]=cut6; cuts[7]=cut7; cuts[8]=cut8; cuts[9]=cut9; cuts[10]=cut10;
+  taskSel->SetCuts(cuts);
   taskSel->SetK0L0(specie);
-  //printf( "CMM %d %f %f\n", MassBins(specie), MinMass(specie), MaxMass(specie) );
-  taskSel->SetCommonConstants( MassBins(specie), MinMass(specie), MaxMass(specie) );
+  taskSel->SetMCmatch(matchMC);
+  taskSel->SetCommonConstants( SFT_MassBins(specie), SFT_MinMass(specie), SFT_MaxMass(specie) );
   AliAnalysisDataContainer *cOutHist = mgr->CreateContainer(Form("OutHistos_%s",suffixName.Data()),
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -73,29 +108,35 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString fol
   mgr->ConnectOutput(taskSel,3,cOutHist);
 
   //-------------------FLOW TASKS----------------------------
-  AliFlowTrackSimpleCuts *filter[15], *filterhf[15][2]; // MASS BANDS
-  for(int mb=0; mb!=MassBands(0); ++mb) {
+  AliFlowTrackSimpleCuts *filter[12], *filterhf[12][2]; // MASS BANDS
+  for(int mb=0; mb!=12; ++mb) {
     filter[mb] = new AliFlowTrackSimpleCuts( Form("Filter_MB%d",mb) );
     filter[mb]->SetEtaMin( -0.8 ); filter[mb]->SetEtaMax( +0.8 );
-    filter[mb]->SetMassMin( MassBandLowEdge(specie,mb) ); filter[mb]->SetMassMax( MassBandLowEdge(specie,mb+1) );
+    filter[mb]->SetMassMin( SFT_MassBandLowEdge(specie,mb) ); filter[mb]->SetMassMax( SFT_MassBandLowEdge(specie,mb+1) );
 
     filterhf[mb][0] = new AliFlowTrackSimpleCuts( Form("Filterhf0_MB%d",mb) );
     filterhf[mb][0]->SetEtaMin( 0.0 ); filterhf[mb][0]->SetEtaMax( +0.8 );
-    filterhf[mb][0]->SetMassMin( MassBandLowEdge(specie,mb) ); filterhf[mb][0]->SetMassMax( MassBandLowEdge(specie,mb+1) );
+    filterhf[mb][0]->SetMassMin( SFT_MassBandLowEdge(specie,mb) ); filterhf[mb][0]->SetMassMax( SFT_MassBandLowEdge(specie,mb+1) );
 
     filterhf[mb][1] = new AliFlowTrackSimpleCuts( Form("Filterhf1_MB%d",mb) );
     filterhf[mb][1]->SetEtaMin( -0.8 ); filterhf[mb][1]->SetEtaMax( 0.0 );
-    filterhf[mb][1]->SetMassMin( MassBandLowEdge(specie,mb) ); filterhf[mb][1]->SetMassMax( MassBandLowEdge(specie,mb+1) );
+    filterhf[mb][1]->SetMassMin( SFT_MassBandLowEdge(specie,mb) ); filterhf[mb][1]->SetMassMax( SFT_MassBandLowEdge(specie,mb+1) );
 
-    AddQCmethod( Form("QCTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filter[mb]); // QC TPC
-    AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][0], "Qa" ); // SP TPC Qa
-    AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][1], "Qb" ); // SP TPC Qb
-    AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
-    AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
+    if(doQC) {
+      SFT_AddQCmethod( Form("QCTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filter[mb]); // QC TPC
+    }
+    if(doSPTPC) {
+      SFT_AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][0], "Qa" ); // SP TPC Qa
+      SFT_AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][1], "Qb" ); // SP TPC Qb
+    }
+    if(doSPVZE) {
+      SFT_AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
+      SFT_AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
+    }
   }
 }
-
-void AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic, 
+// ADDING QC METHOD
+void SFT_AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic, 
 		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   myFolder.Append( Form("v%d",harmonic) );
@@ -119,9 +160,8 @@ void AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic,
   mgr->ConnectInput( tskQC,0,flowEvent2);
   mgr->ConnectOutput(tskQC,1,outQC);
 }
-
-
-void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
+// ADDING SP METHOD
+void SFT_AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
 		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL,
                  char *Qvector) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -148,38 +188,45 @@ void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
   mgr->ConnectInput( tskSP,0,flowEvent2);
   mgr->ConnectOutput(tskSP,1,outSP);
 }
-
-double MassBandLowEdge( int nv0, int mb ) {
-  if(nv0==0) {
-    double lowEdge[15+1]={ 0.452, 0.462, 0.472, 0.482, 0.489, 0.492, 0.495, 0.498,
-			   0.501, 0.504, 0.507, 0.514, 0.524, 0.534, 0.544, 0.554 };
-  } if(nv0==1) {
-    double lowEdge[15+1]={ 1.094, 1.099, 1.104, 1.109, 1.112, 1.114, 1.115, 1.116, 
-			   1.117, 1.118, 1.120, 1.123, 1.128, 1.133, 1.138, 1.143 };
+// MASSBAND HELPER
+double SFT_MassBandLowEdge( int nv0, int mb ) {
+  switch(nv0) {
+  case(0):
+    double lowEdge[13]={ 0.412, 0.440, 0.468, 0.484, 0.492, 0.496, 0.500, 0.504, 0.508, 0.516, 0.532, 0.560, 0.588 };
+    break;
+  case(1):
+    double lowEdge[13]={ 1.075, 1.090, 1.100, 1.108, 1.112, 1.114, 1.116, 1.118, 1.120, 1.124, 1.132, 1.142, 1.167 };
+    break;
+  default:
+    double lowEdge[13]={ 0.000, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.840, 0.860, 0.900, 1.000 };
   }
   return lowEdge[mb];
 }
-
-int MassBands( int nv0 ) {
-  if(nv0==0) {
-    return 15;
-  } else if(nv0==1) {
-    return 15;
+// MASSBAND HELPER
+int SFT_MassBands( int nv0 ) {
+  return 12;
+}
+// MASSBAND HELPER
+int SFT_MassBins( int nv0 ) {
+  int bins=88;
+  switch(nv0) {
+  case(0):
+    bins=88;
+    break;
+  case(1):
+    bins=92;
+    break;
+  default:
+    bins=13;
+    break;
   }
+  return bins;
 }
-
-int MassBins( int nv0 ) {
-  if(nv0==0) {
-    return 102;
-  } else if(nv0==1) {
-    return 49;
-  }
+// MASSBAND HELPER
+double SFT_MinMass( int nv0 ) {
+  return SFT_MassBandLowEdge( nv0, 0 );
 }
-
-double MinMass( int nv0 ) {
-  return MassBandLowEdge( nv0, 0 );
-}
-
-double MaxMass( int nv0 ) {
-  return MassBandLowEdge( nv0, MassBands(nv0) );
+// MASSBAND HELPER
+double SFT_MaxMass( int nv0 ) {
+  return SFT_MassBandLowEdge( nv0, SFT_MassBands(nv0) );
 }
