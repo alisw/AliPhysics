@@ -481,3 +481,15 @@ void DrawSpectra() {
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
 }
+
+void Loop() {
+  const Char_t *cent[]={"0005","0010","1020","2040","4060","6080","8090"};
+  Int_t nCent=sizeof(cent)/sizeof(const Char_t *);
+  const Int_t cmin[]={0, 0,  10, 20, 40, 60, 80};
+  const Int_t cmax[]={5, 10, 20, 40, 60, 80, 90};
+
+  for (Int_t i=0; i<nCent; i++) {
+    cout<<cent[i]<<endl;
+    SpectraV0CutVariations(cmin[i],cmax[i],cent[i]);
+  }
+}
