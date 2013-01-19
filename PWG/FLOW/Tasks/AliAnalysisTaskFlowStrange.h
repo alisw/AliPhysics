@@ -24,6 +24,7 @@ class AliESDEvent;
 class AliAODEvent;
 class AliAODv0;
 class AliESDv0;
+class AliFlowBayesianPID;
 
 class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   public:
@@ -33,12 +34,15 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 			       AliESDtrackCuts *cutsDau);
     virtual ~AliAnalysisTaskFlowStrange();
     virtual void UserCreateOutputObjects();
+    virtual void Exec(Option_t*);
     virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *);
+    void MyUserExec(Option_t *);
     void SetDebug() {fDebug = kTRUE;}
-    void SetCuts2010(int setOfCuts);
-    void SetK0L0(int specie) {fSpecie=specie;}
+    void SetCuts(Double_t cuts[11]);
+    void SetK0L0(Int_t specie) {fSpecie=specie;}
     void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass);
+    void SetMCmatch(Int_t match) {fMCmatch=match;}
 
   private:
     AliAnalysisTaskFlowStrange(const AliAnalysisTaskFlowStrange& analysisTask);
@@ -46,17 +50,18 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     void AddQAEvents();
     void AddQACandidates();
 
-    void ReadFromESDv0(AliESDEvent *tESD);
     void ReadFromAODv0(AliAODEvent *tAOD);
-    Int_t PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tESD);
     Int_t PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD);
+    void ChargedParticleAnalysis(AliAODEvent *tAOD);
     void AddCandidates();
     void MakeTrack( Double_t mass, Double_t pt, Double_t phi,
 		    Double_t eta, Int_t iid, Int_t jid );
     AliPIDResponse *fPIDResponse;     //! PID response object
+    AliFlowBayesianPID *fBayesianPID;  //! Bayesian PID object
     Bool_t fDebug; // true if we want to inspect the main steps of the task
     Int_t fSpecie; // K0=>0 L0=>1
-    Double_t fV0Cuts[9]; // v0 cuts: dl dca ctp d0 d0d0 qt minEta maxEta PID
+    Int_t fMCmatch; // for studies regarding background and efficiency
+    Double_t fV0Cuts[11]; // v0 cuts: dl dca ctp d0 d0d0 qt minEta maxEta PID ct dlxy
     Int_t fMassBins;   // to configure FLOWCOMMON
     Double_t fMinMass; // to configure FLOWCOMMON
     Double_t fMaxMass; // to configure FLOWCOMMON
@@ -71,7 +76,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
     TList *fQAList; // stores the final list of output histograms
 
-  ClassDef(AliAnalysisTaskFlowStrange, 1);
+  ClassDef(AliAnalysisTaskFlowStrange, 3);
 };
 
 #endif
