@@ -242,12 +242,12 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 
-  delete binsPt;
-  delete binsCorrPt;
-  delete binsArea;
-  delete binsEta;
-  delete binsPhi;
-  delete bins120;
+  delete[] binsPt;
+  delete[] binsCorrPt;
+  delete[] binsArea;
+  delete[] binsEta;
+  delete[] binsPhi;
+  delete[] bins120;
 }
 
 //________________________________________________________________________

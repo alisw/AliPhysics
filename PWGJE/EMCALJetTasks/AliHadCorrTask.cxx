@@ -46,20 +46,21 @@ AliHadCorrTask::AliHadCorrTask() :
   // Default constructor.
 
   for(Int_t i=0; i<8; i++) {
-      fHistEsubPch[i]    = 0;
-      fHistEsubPchRat[i] = 0;
-    for(Int_t j=0; j<4; j++) {
-      fHistNCellsEnergy[i][j] = 0;
-    }
+    fHistEsubPch[i]    = 0;
+    fHistEsubPchRat[i] = 0;
+
     if (i<4) {
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
+
+      for(Int_t j=0; j<4; j++)
+	fHistNCellsEnergy[i][j] = 0;
     }
+    
     for(Int_t j=0; j<9; j++) {
-      for(Int_t k=0; k<2; k++) {
+      for(Int_t k=0; k<2; k++) 
 	fHistMatchEtaPhi[i][j][k] = 0;
-      }
     }
   } 
 }
@@ -86,19 +87,21 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   // Standard constructor.
 
   for(Int_t i=0; i<8; i++) {
-    if (i<4) {
-      fHistMatchEvsP[i]   = 0;
-      fHistMatchdRvsEP[i] = 0;
-      for(Int_t j=0; j<3; j++) {
-	fHistNCellsEnergy[i][j] = 0;
-      }
-    }
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
+
+    if (i<4) {
+      fHistMatchEvsP[i]    = 0;
+      fHistMatchdRvsEP[i]  = 0;
+      fHistNMatchEnergy[i] = 0;
+
+      for(Int_t j=0; j<4; j++)
+	fHistNCellsEnergy[i][j] = 0;
+    }
+    
     for(Int_t j=0; j<9; j++) {
-      for(Int_t k=0; k<2; k++) {
+      for(Int_t k=0; k<2; k++) 
 	fHistMatchEtaPhi[i][j][k] = 0;
-      }
     }
   } 
   
