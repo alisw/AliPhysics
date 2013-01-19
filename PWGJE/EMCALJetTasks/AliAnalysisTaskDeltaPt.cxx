@@ -381,11 +381,11 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       DoEmbTrackLoop();
     if (fEmbCaloClusters)
       DoEmbClusterLoop();
-    if (fEmbeddedTrackId >= 0) {
+    if (fEmbTracks && fEmbeddedTrackId >= 0) {
       AliVTrack *track2 = static_cast<AliVTrack*>(fEmbTracks->At(fEmbeddedTrackId));
       fHistEmbNotFoundPhiEta[fCentBin]->Fill(track2->Eta(), track2->Phi());
     }
-    else if (fEmbeddedClusterId >= 0) {
+    else if (fEmbCaloClusters && fEmbeddedClusterId >= 0) {
       AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterId));
       TLorentzVector nPart;
       cluster2->GetMomentum(nPart, fVertex);

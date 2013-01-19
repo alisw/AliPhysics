@@ -229,7 +229,10 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
 
   const Int_t n = array->GetEntriesFast();
 
-  if (fJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+  if (n < 1)
+    return 0;
+
+  if (array->GetClass()->GetBaseClass("AliEmcalJet")) {
 
     for (Int_t i = 0; i < n; i++) {
 
@@ -249,7 +252,7 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
     }
   }
 
-  else if (fJets->GetClass()->GetBaseClass("AliVTrack")) {
+  else if (array->GetClass()->GetBaseClass("AliVTrack")) {
 
     for (Int_t i = 0; i < n; i++) {
 
@@ -269,7 +272,7 @@ Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
     }
   }
 
-  else if (fJets->GetClass()->GetBaseClass("AliVCluster")) {
+  else if (array->GetClass()->GetBaseClass("AliVCluster")) {
 
     for (Int_t i = 0; i < n; i++) {
 

@@ -355,7 +355,7 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 
   Double_t pthard = fPythiaHeader->GetPtHard();
 
-  for (fPtHardBin = 0; fPtHardBin <= 11; fPtHardBin++) {
+  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
     if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
       break;
   }
