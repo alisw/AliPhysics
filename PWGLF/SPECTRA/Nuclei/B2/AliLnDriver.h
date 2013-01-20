@@ -67,6 +67,7 @@ class AliLnDriver: public TObject
 	void SetFakeTracks(Bool_t flag=1) { fFakeTracks = flag; }
 	void SetSecondaries(Bool_t flag=1) { fSecondaries = flag; }
 	void SetSecProd(Int_t prod) { fSecProd = prod; }
+	void SetAntiNucleusAsTemplate(Bool_t flag=1) { fANucTemplate = flag; }
 	void SetMatDCAxyModel(Int_t model=1) { fMatDCAxyMod = model; }
 	void SetNBin(Int_t nbin) { fNbin = nbin; }
 	void SetDCAxyInterval(Double_t dcamin, Double_t dcamax) { fMinDCAxy = dcamin; fMaxDCAxy = dcamax; }
@@ -112,6 +113,7 @@ class AliLnDriver: public TObject
 	Bool_t   fSecondaries;  // correction of secondaries
 	Int_t    fSecProd;      // procedure for estimating fractions
 	Int_t    fMatDCAxyMod;  // DCAxy model for correction of secondaries
+	Bool_t   fANucTemplate; // enable antinucleus as template for primaries
 	Int_t    fNbin;         // rebin of DCAxy distribution
 	Double_t fYMin;         // min rapidity
 	Double_t fYMax;         // max rapidity

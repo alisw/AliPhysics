@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// LHC10x config for protons and antiprotons
+// LHC10x config for deuterons and antideuterons
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #include <Riostream.h>
@@ -24,50 +24,53 @@
 #include "AliLnDriver.h"
 #include "Config.h"
 
-Int_t Config_Proton_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
-                                  const TString& outputDir  = "~/alice/output",
-                                  const TString& period     = "lhc10d",
-                                  const TString& outputTag  = "lhc10d",
-                                  const TString& multTag    = "",
-                                  const TString& multCorTag = "",
-                                  Bool_t normToInel         = 1,  // for mult
-                                  Bool_t drawOutput         = 1)  // for batch
+Int_t Config_Deuteron_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
+                                    const TString& outputDir  = "~/alice/output",
+                                    const TString& period     = "lhc10d",
+                                    const TString& outputTag  = "lhc10d",
+                                    const TString& multTag    = "",
+                                    const TString& multCorTag = "",
+                                    Bool_t normToInel         = 1,  // for mult
+                                    Bool_t drawOutput         = 1)  // for batch
 {
 //
-// lhc10b, lhc10c, lhc10d, lhc10e config for protons and antiprotons
+// lhc10b, lhc10c, lhc10d, lhc10e config for deuterons and antideuterons
 // (combine TPC and TOF)
 //
-	const TString  kSpecies      = "Proton";
+	const TString  kSpecies         = "Deuteron";
 	
-	const TString  kTrkSelTPC    = "its_tpc_dca_spd-bayes";
-	const TString  kTrkSelTOF    = "its_tpc_tof_dca_spd-bayes";
+	const TString  kTrkSelTPC       = "its_tpc_dca_spd-tpc3";
+	const TString  kTrkSelTOF       = "its_tpc_tof_dca-tpc3";
 	
-	const TString  kOutputTagTPC = outputTag + "-tpc";
-	const TString  kOutputTagTOF = outputTag + "-tof";
+	const TString  kOutputTagTPC    = outputTag + "-tpc";
+	const TString  kOutputTagTOF    = outputTag + "-tof";
 	
-	const Int_t    kLowPtBin     = 5; // bin width = 0.1 GeV/c
-	const Int_t    kJointBin     = 11;
-	const Int_t    kHiPtBin      = 36;
+	const Int_t    kLowPtBin        = 4; // bin width = 0.2 GeV/c
+	const Int_t    kJointBin        = 6;
+	const Int_t    kHiPtBin         = 18;
 	
-	const TString  kTrigName     = "mbor";
-	const Bool_t   kVtxCorr      = 0;
-	const Double_t kVtxCorrVal   = GetVertexCorrection(period);
+	const TString  kTrigName        = "mbor";
+	const Bool_t   kVtxCorr         = 0;
+	const Double_t kVtxCorrVal      = GetVertexCorrection(period);
 	
-	const Bool_t   kUnfolding    = 0;
-	const Bool_t   kFakeTracks   = 0;
-	const Bool_t   kSecondaries  = 1;
-	const Int_t    kSecProd      = 0; // 0 tff, 1 roofit, 2 mc
-	const Int_t    kMatDCAxyMod  = 1; // 0 geant, 1 flat
-	const Int_t    kNbin         = 10;
-	const Double_t kDCAxy[2]     = {-1.,1.};
-	const Bool_t   kEfficiency   = 1;
-	const Bool_t   kG3Fluka      = 0;
-	const Double_t kMatScaling   = 1.9;
-	const Double_t kFdwnScaling  = 1.9;
-	const Bool_t   kFitFrac      = 0;
-	const Bool_t   kSameFdwn     = 1;
+	const Bool_t   kUnfolding       = 1;
+	const Int_t    kIter            = 5;
+	const Bool_t   kFakeTracks      = 0;
+	const Bool_t   kSecondaries     = 1;
+	const Int_t    kSecProd         = 0; // 0 tff, 1 roofit, 2 mc
+	const Int_t    kMatDCAxyMod     = 1; // 0 geant, 1 flat
+	const Bool_t   kAntiNucTemplate = 0;
+	const Int_t    kNbin            = 5;
+	const Double_t kDCAxy[2]        = {-0.2,0.2};
+	const Bool_t   kEfficiency      = 1;
+	const Bool_t   kFitFrac         = 0;
 	
-	const Double_t kSysErr[2]    = {0.08, 0.08} ;
+	// for TOF
+	const Int_t    kM2Bin[2]        = {8,18};
+	const Double_t kM2Bkg[2]        = {2.2,5.};
+	const Double_t kM2tpc[2]        = {2.,6.5};
+	
+	const Double_t kSysErr[2]       = {0.10, 0.11} ;
 	
 	Double_t xsec[3];
 	GetInelXSection(xsec, period);
@@ -87,17 +90,16 @@ Int_t Config_Proton_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetVertexCorrection(kVtxCorr, kVtxCorrVal);
 	
 	driver.SetPidM2(0);
-	driver.SetUnfolding(kUnfolding);
+	driver.SetUnfolding(kUnfolding, kIter);
 	driver.SetFakeTracks(kFakeTracks);
 	driver.SetSecondaries(kSecondaries);
 	driver.SetSecProd(kSecProd);
 	driver.SetMatDCAxyModel(kMatDCAxyMod);
+	driver.SetAntiNucleusAsTemplate(kAntiNucTemplate);
 	driver.SetNBin(kNbin);
 	driver.SetDCAxyInterval(kDCAxy[0], kDCAxy[1]);
-	driver.SetEfficiency(kEfficiency,kG3Fluka);
-	driver.SetScalingFactors(kMatScaling, kFdwnScaling);
+	driver.SetEfficiency(kEfficiency,0);
 	driver.SetFitFractionCorr(kFitFrac);
-	driver.SetSameFeedDownCorr(kSameFdwn);
 	
 	driver.SetSysErr(kSysErr[0],kSysErr[1]);
 	
@@ -110,7 +112,7 @@ Int_t Config_Proton_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	                         + MakeSimuName(kSpecies, period, kTrkSelTPC+multCorTag) + ".root";
 	
 	TString inputSimuFixTPC  = inputDir + "/" + period + "/"
-	                         + MakeSimuFixName(kSpecies, period, kTrkSelTPC+multCorTag, kG3Fluka) + ".root";
+	                         + MakeSimuFixName(kSpecies, period, kTrkSelTPC+multCorTag, 0) + ".root";
 	
 	TString inputCorrTPC     = inputDir + "/" + period + "/"
 	                         + MakeInputName(kSpecies, period, kTrkSelTPC+multTag) + "-corr.root";
@@ -171,6 +173,10 @@ Int_t Config_Proton_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetPtBinInterval(kJointBin, kHiPtBin);
 	driver.SetUnfolding(0);
 	driver.SetEfficiency(kEfficiency,0);
+	driver.SetPidM2(1);
+	driver.SetM2BinInterval(kM2Bin[0], kM2Bin[1]);
+	driver.SetM2BkgInterval(kM2Bkg[0], kM2Bkg[1]);
+	driver.SetM2TPCInterval(kM2tpc[0], kM2tpc[1]);
 	
 	TString outputCorrDebugTOF = driver.GetPtCorrDebugFilename();
 	TString outputPtDebugTOF   = driver.GetPtDebugFilename();

@@ -39,6 +39,7 @@ AliLnEfficiency::AliLnEfficiency(const TString& particle, const TString& simuFil
 //
 // constructor
 //
+	TH1::SetDefaultSumw2();
 }
 
 AliLnEfficiency::~AliLnEfficiency()

@@ -34,7 +34,7 @@
 
 #include "B2.h"
 
-void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="AntiDeuteron", Bool_t m2pid=0, Int_t lowm2bin=9, Int_t him2bin=17)
+void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="AntiDeuteron", Int_t hiptbin=17, Bool_t m2pid=0, Int_t lowm2bin=9, Int_t him2bin=17)
 {
 //
 // Draw corrected pt for debugging
@@ -47,7 +47,7 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	
 	// m2 data fitted models
 	
-	if(m2pid)
+	if(m2pid && (hiptbin>lowm2bin))
 	{
 		TH1D* hPidPt = (TH1D*)FindObj(finput, tag, Form("%s_PID_Pt",particle.Data()));
 		Double_t binwidth = hPidPt->GetBinWidth(0);
@@ -67,7 +67,7 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 		TGraphErrors* grFitM2Pt = new TGraphErrors();
 		grFitM2Pt->SetName(Form("%s_Fit_M2_Pt", particle.Data()));
 		
-		for(Int_t i=lowm2bin, j=0; i<him2bin && i-lowm2bin < 9 ; ++i)
+		for(Int_t i=lowm2bin, j=0; i<him2bin && i-lowm2bin < 9 && i < hiptbin; ++i)
 		{
 			c0->cd(i-lowm2bin+1);
 			//gPad->SetLogy(0);

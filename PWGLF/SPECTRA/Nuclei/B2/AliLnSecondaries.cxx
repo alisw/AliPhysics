@@ -51,6 +51,7 @@ AliLnSecondaries::AliLnSecondaries(const TString& particle, const TString& dataF
 , fMaxDCAxy(1.5)
 , fFracProc(0)
 , fMatDCAxyMod(AliLnSecondaries::kFlatDCAxy)
+, fANucTemplate(0)
 , fScMat(1)
 , fScFd(1)
 {
@@ -171,12 +172,15 @@ Int_t AliLnSecondaries::Exec()
 	{
 		// only secondaries from materials for nuclei
 		TH2D* hDataDCAxyPt   = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt"); // for debugging
+		TH2D* hDataMCDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
 		TH2D* hPrimDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		// use the anti-ion as template for primaries
-		//TH2D* hPrimDCAxyPt   = (TH2D*)FindObj(fdata, Form("Anti%s_PID_DCAxy_Pt",fParticle.Data()));
-		TH2D* hMatDCAxyPt    = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
 		
+		if(fANucTemplate)
+		{
+			hPrimDCAxyPt   = (TH2D*)FindObj(fdata, Form("Anti%s_PID_DCAxy_Pt",fParticle.Data()));
+		}
+		
+		TH2D* hMatDCAxyPt    = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
 		if(fMatDCAxyMod == kFlatDCAxy)
 		{
 			hMatDCAxyPt = this->GetFlatDCAxyPt(10, hPrimDCAxyPt, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
@@ -269,6 +273,7 @@ void AliLnSecondaries::GetFraction(TH1D* hPrimPt) const
 //
 	TF1* one = new TF1("one", "1", hPrimPt->GetXaxis()->GetXmin(), hPrimPt->GetXaxis()->GetXmax());
 	hPrimPt->Reset();
+	hPrimPt->Sumw2();
 	hPrimPt->Add(one);
 	delete one;
 }
@@ -387,7 +392,7 @@ void AliLnSecondaries::GetFraction(TH1D* hFracPt[3], const TH2D* hDCAxyPt, const
 	}
 }
 
-Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hSec, Int_t ibin, const char* sec) const
+Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hSec, Int_t ibin, const TString& sec) const
 {
 //
 // find the fractions of 2 contributions
@@ -409,7 +414,7 @@ Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hDa
 		fit->GetResult(1, frac[1], err[1]);
 	}
 	
-	const char* contrib[] = {"Prim", sec };
+	const char* contrib[] = {"Prim", sec.Data() };
 	this->WriteTFFdebug(hData, fit, status, ibin, contrib, frac, 2);
 	
 	delete mc;
@@ -490,18 +495,19 @@ void AliLnSecondaries::WriteTFFdebug(TH1D* hData, TFractionFitter* fit, Int_t st
 	}
 }
 
-TH1D* AliLnSecondaries::ZeroClone(TH1D* h, const char* name) const
+TH1D* AliLnSecondaries::ZeroClone(const TH1D* h, const TString& name) const
 {
 //
 // clone histogram and reset to zero
 //
-	TH1D* clone = (TH1D*)h->Clone(name);
+	TH1D* clone = (TH1D*)h->Clone(name.Data());
 	clone->Reset();
+	clone->Sumw2();
 	
 	return clone;
 }
 
-void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const char* secname) const
+void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const TString& secname) const
 {
 //
 // DCAxy model 2 contributions
@@ -543,13 +549,9 @@ void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const T
 	
 	// ------ debug ------------
 	
-	TH1D* hDebugFit =  (TH1D*)hData->Clone(Form("%s_Fit_Data_DCAxy_%02d",fParticle.Data(),ibin));
-	TH1D* hDebugPrim = (TH1D*)hData->Clone(Form("%s_Fit_Prim_DCAxy_%02d",fParticle.Data(),ibin));
-	TH1D* hDebugSec =  (TH1D*)hData->Clone(Form("%s_Fit_%s_DCAxy_%02d",fParticle.Data(),secname,ibin));
-	
-	hDebugFit->Reset();
-	hDebugPrim->Reset();
-	hDebugSec->Reset();
+	TH1D* hDebugFit  = this->ZeroClone(hData, fParticle + "_Fit_Data_DCAxy_" + Form("%02d",ibin));
+	TH1D* hDebugPrim = this->ZeroClone(hData, fParticle + "_Fit_Prim_DCAxy_" + Form("%02d",ibin));
+	TH1D* hDebugSec  = this->ZeroClone(hData, fParticle + "_Fit_" + secname + "_DCAxy_" + Form("%02d",ibin));
 	
 	w->pdf("model")->fillHistogram(hDebugFit,x,nevents);
 	w->pdf("Sprim")->fillHistogram(hDebugPrim,x,w->var("Nprim")->getVal());
@@ -617,15 +619,10 @@ void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const T
 	
 	// ------ debug ------------
 	
-	TH1D* hDebugFit =  (TH1D*)hData->Clone(Form("%s_Fit_Data_DCAxy_%02d",fParticle.Data(),ibin));
-	TH1D* hDebugPrim = (TH1D*)hData->Clone(Form("%s_Fit_Prim_DCAxy_%02d",fParticle.Data(),ibin));
-	TH1D* hDebugMat =  (TH1D*)hData->Clone(Form("%s_Fit_Mat_DCAxy_%02d",fParticle.Data(),ibin));
-	TH1D* hDebugFdwn = (TH1D*)hData->Clone(Form("%s_Fit_Fdwn_DCAxy_%02d",fParticle.Data(),ibin));
-	
-	hDebugFit->Reset();
-	hDebugPrim->Reset();
-	hDebugMat->Reset();
-	hDebugFdwn->Reset();
+	TH1D* hDebugFit  = this->ZeroClone(hData, fParticle + "_Fit_Data_DCAxy_" + Form("%02d",ibin));
+	TH1D* hDebugPrim = this->ZeroClone(hData, fParticle + "_Fit_Prim_DCAxy_" + Form("%02d",ibin));
+	TH1D* hDebugMat  = this->ZeroClone(hData, fParticle + "_Fit_Mat_DCAxy_" + Form("%02d",ibin));
+	TH1D* hDebugFdwn = this->ZeroClone(hData, fParticle + "_Fit_Fdwn_DCAxy_" + Form("%02d",ibin));
 	
 	w->pdf("model")->fillHistogram(hDebugFit,x,hData->Integral());
 	w->pdf("Sprim")->fillHistogram(hDebugPrim,x,w->var("Nprim")->getVal());
@@ -655,6 +652,7 @@ TH2D* AliLnSecondaries::GetFlatDCAxyPt(Double_t max, const TH2D* hDCAxyPt, const
 	TF1* fnc = new TF1("gen","1", fMinDCAxy, fMaxDCAxy);
 	TH2D* h = (TH2D*)hDCAxyPt->Clone(name.Data());
 	h->Reset();
+	h->Sumw2();
 	
 	TAxis* xAxis = h->GetXaxis();
 	TAxis* yAxis = h->GetYaxis();
