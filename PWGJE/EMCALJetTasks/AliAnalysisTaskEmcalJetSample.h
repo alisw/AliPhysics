@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKEMCALJETSAMPLE_H
 #define ALIANALYSISTASKEMCALJETSAMPLE_H
 
-// $Id: AliAnalysisTaskEmcalJetSample.h  $
+// $Id$
 
 class TH1;
 class TH2;

@@ -7,7 +7,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskEmcalJet+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoFlow+;
@@ -24,12 +23,13 @@
 #pragma link C++ class AliJetResponseMaker+;
 #pragma link C++ class AliRhoParameter+;
 
-// user tasks
-#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
+// user tasks#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
+#pragma link C++ class AliAnalysisTaskChargedJetsPA;
+#pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 
 #endif

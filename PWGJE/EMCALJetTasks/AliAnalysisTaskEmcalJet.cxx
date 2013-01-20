@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcalJet.cxx 56756 2012-05-30 05:03:02Z loizides $
+// $Id$
 //
 // Emcal jet analysis base task.
 //
