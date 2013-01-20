@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKRHOFLOW_H
 #define ALIANALYSISTASKRHOFLOW_H
 
-// $Id: AliAnalysisTaskRhoFlow.h  $
+// $Id$
 
 #include "AliAnalysisTaskRho.h"
 

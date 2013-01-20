@@ -1,7 +1,7 @@
 #ifndef ALIJETEMBEDDINGFROMGENTASK_H
 #define ALIJETEMBEDDINGFROMGENTASK_H
 
-// $Id: AliJetEmbeddingFromGenTask.h 57324 2012-06-21 04:33:52Z loizides $
+// $Id$
 
 class TClonesArray;
 class AliEMCALGeometry;

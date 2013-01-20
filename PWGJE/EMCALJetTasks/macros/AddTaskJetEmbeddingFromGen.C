@@ -1,4 +1,4 @@
-// $Id: AddTaskJetEmbedding.C 58092 2012-08-05 21:18:57Z loizides $
+// $Id$
 
 AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   AliGenerator   *genGen,

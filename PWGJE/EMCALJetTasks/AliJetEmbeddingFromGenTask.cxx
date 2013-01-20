@@ -1,4 +1,4 @@
-// $Id: AliJetEmbeddingFromGenTask.cxx 57324 2012-06-21 04:33:52Z loizides $
+// $Id$
 //
 // Jet embedding task.
 //

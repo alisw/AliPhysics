@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcalJetSample.cxx $
+// $Id$
 //
 // Jet sample analysis task.
 //
