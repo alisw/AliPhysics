@@ -84,7 +84,7 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 		else if(species=="Deuteron" && option==0)
 		{
 			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
+			gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
 		}
 		else if(species=="Deuteron" && option==1)
 		{
