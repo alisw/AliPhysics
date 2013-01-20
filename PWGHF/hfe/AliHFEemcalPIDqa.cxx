@@ -276,52 +276,16 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack, Do
   //Get matched cluster
   Int_t icl = esdtrack->GetEMCALcluster(); //From tender
   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
+  if(cluster==NULL) return refVec;
   if(!cluster->IsEMCAL()) return refVec;
+  printf("EMCal cluster pointer ? %p\n",(void*)cluster);
+  printf("EMCal cluster ? %d\n",cluster->IsEMCAL());
 
   // from ESDs
   double delphi = cluster->GetTrackDx(); 
   double deleta = cluster->GetTrackDz(); 
   double rmatch1 = sqrt(pow(delphi,2)+pow(deleta,2));
 
-  //
-  /*
-  cluster->GetPosition(clsPos);
-  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);//Vector of emcal cluster
-
-  //Extrapolate track to emcal, properly! First, get external params!
-  AliExternalTrackParam *trackParam = 0;
-  const AliESDfriendTrack*  friendTrack = esdtrack->GetFriendTrack();
-  if(friendTrack && friendTrack->GetTPCOut())
-    {
-      //Use TPC Out as starting point if it is available
-      trackParam=  const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
-    }
-  else
-    {
-      //Otherwise use TPC inner
-      trackParam =  const_cast<AliExternalTrackParam*>(esdtrack->GetInnerParam());
-    }
-
-  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
-  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
-  trackParam->Rotate(alpha); //Rotate the track to the same local extrapolation system 
-
-  //Do extrapolation:
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trackParam, vec.X(), fMass, fStep,kFALSE, 0.8, -1)) return refVec; 
-  trackParam->GetXYZ(trkPos); //Get the extrapolated global position, done!
-
-
-  
-  TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
-  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-  
-  
-  Double_t delEmcphi = clsPosVec.Phi()-trkPosVec.Phi();  // track cluster matching
-  Double_t delEmceta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
-  
-  double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
-  */
-  
   matchclsE = cluster->E();
   
   //double feop = -9999.9;

@@ -262,6 +262,7 @@ Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) 
    Int_t icl = esdtrack->GetEMCALcluster();
 
    AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
+   if(cluster==NULL) {return feop;}
    if(!cluster->IsEMCAL()) {return feop;}
 
        matchclsE = cluster->E();
