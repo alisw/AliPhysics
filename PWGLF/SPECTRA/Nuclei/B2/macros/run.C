@@ -7,7 +7,7 @@ Int_t run(const TString& config)
 	TStopwatch timer;
 	timer.Start();
 	
-	gROOT->SetMacroPath("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/");
+	gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/", gROOT->GetMacroPath()));
 	
 	// Install RooUnfold and uncomment and edit AliLnPt.{h,cxx}
 	//gSystem->Load("$ALICE_ROOT/../RooUnfold/libRooUnfold.so");
