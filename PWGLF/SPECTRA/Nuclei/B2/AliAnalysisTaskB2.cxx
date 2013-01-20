@@ -861,30 +861,30 @@ Int_t AliAnalysisTaskB2::GetTracks()
 				
 				if( this->TOFmatch(iTrack) )
 				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_M2_Pt"))->Fill(pt,m2);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_M2_Pt"))->Fill(pt, m2);
 				}
 				
 				if(this->IsPhysicalPrimary(iParticle))
 				{
 					((TH1D*)fHistoMap->Get(particle + "_Sim_PID_Prim_Pt"))->Fill(simPt);
 					
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAxy_Pt"))->Fill(simPt,dcaxy);
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAz_Pt"))->Fill(simPt,dcaz);
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_NSigma_Pt"))->Fill(simPt, nSigmaVtx);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAz_Pt"))->Fill(pt, dcaz);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_NSigma_Pt"))->Fill(pt, nSigmaVtx);
 				}
 				else
 				{
 					if(this->IsFromWeakDecay(iParticle))
 					{
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAxy_Pt"))->Fill(simPt,dcaxy);
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAz_Pt"))->Fill(simPt,dcaz);
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_NSigma_Pt"))->Fill(simPt, nSigmaVtx);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAxy_Pt"))->Fill(pt, dcaxy);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAz_Pt"))->Fill(pt, dcaz);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_NSigma_Pt"))->Fill(pt, nSigmaVtx);
 					}
 					else
 					{
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAxy_Pt"))->Fill(simPt,dcaxy);
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAz_Pt"))->Fill(simPt,dcaz);
-						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_NSigma_Pt"))->Fill(simPt, nSigmaVtx);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAxy_Pt"))->Fill(pt, dcaxy);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAz_Pt"))->Fill(pt, dcaz);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_NSigma_Pt"))->Fill(pt, nSigmaVtx);
 					}
 				}
 			}
@@ -894,15 +894,15 @@ Int_t AliAnalysisTaskB2::GetTracks()
 				
 				if(this->IsPhysicalPrimary(iParticle))
 				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Prim_DCAxy_Pt"))->Fill(simPt,dcaxy);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
 				}
 				else if(this->IsFromWeakDecay(iParticle))
 				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt"))->Fill(simPt,dcaxy);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt"))->Fill(pt, dcaxy);
 				}
 				else
 				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Mat_DCAxy_Pt"))->Fill(simPt,dcaxy);
+					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Mat_DCAxy_Pt"))->Fill(pt, dcaxy);
 				}
 			}
 		}
