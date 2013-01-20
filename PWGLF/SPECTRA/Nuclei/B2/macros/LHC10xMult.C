@@ -24,7 +24,7 @@
 #include "AliLnDriver.h"
 #include "Config.h"
 
-Int_t LHC10xMult(const TString& species   = "Deuteron",
+Int_t LHC10xMult(const TString& species   = "Proton",
                  const TString& inputDir  = "~/alice/input",
                  const TString& outputDir = "~/alice/output",
                  const TString& period    = "lhc10d",
@@ -34,9 +34,9 @@ Int_t LHC10xMult(const TString& species   = "Deuteron",
 // lhc10x multiplicity config
 // call Config_XXX for each multiplicity class
 //
-// if Proton and option = 0 then use Config_Proton_TPC
-// if Proton and option = 1 then use Config_Proton_TOF
-// if Proton and option = 2 then use Config_Proton_TPCTOF
+// if option = 0 then use Config_XXX_TPC
+// if option = 1 then use Config_XXX_TOF
+// if option = 2 then use Config_XXX_TPCTOF
 //
 	using namespace B2mult;
 	using namespace std;
@@ -81,10 +81,20 @@ Int_t LHC10xMult(const TString& species   = "Deuteron",
 			cout << "Config_Proton_TPCTOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Proton_TPCTOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
 		}
-		else if(species=="Deuteron")
+		else if(species=="Deuteron" && option==0)
+		{
+			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
+			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
+		}
+		else if(species=="Deuteron" && option==1)
 		{
 			cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
+		}
+		else if(species=="Deuteron" && option==2)
+		{
+			cout << "Config_Deuteron_TPCTOF_LHC10x.C" << endl << endl;
+			gROOT->ProcessLine(Form(".x Config_Deuteron_TPCTOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
 		}
 		else
 		{

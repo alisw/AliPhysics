@@ -19,25 +19,32 @@ namespace B2mult
 // multiplicity classes
 //
 	const Int_t kNmult = 6;
-	const TString kMultClass[kNmult]   = { "nch0002", "nch0204", "nch0408", "nch0811", "nch1120", "nch20xx" };
+	const TString kMultClass[kNmult]   = { "ntrk0002", "ntrk0204", "ntrk0408", "ntrk0811", "ntrk1120", "ntrk20xx" };
 	const Double_t kKNOmult[kNmult]    = { 0.20, 0.60, 1.01, 1.60, 2.60, 4.35 };
 	const Double_t kKNOmultErr[kNmult] = { 0, 0, 0, 0, 0, 0 };
 };
 
-Double_t GetVertexCorrection(const TString& period)
+Double_t GetVertexCorrection(const TString& period, Int_t vtxCut=10)
 {
 //
-// vertex correction factor for |Vz| < 10 cm and LHC12a5x simulations
+// vertex correction factor for |Vz| < 10 cm, |Vz| < 5 cm and LHC12a5x simulations
 //
 	TString name = period;
 	name.ToLower();
 	
-	if(name == "lhc10c900")   return 1.0142;
-	if(name == "lhc10b")      return 1.0006;
-	if(name == "lhc10c")      return 1.0007;
-	if(name == "lhc10d")      return 1.0224;
-	if(name == "lhc10e")      return 1.0423;
-	if(name == "lhc11a_wsdd") return 1.0728;
+	if(name == "lhc10c900" && vtxCut == 10)   return 1.0142;
+	if(name == "lhc10b" && vtxCut == 10)      return 1.0006;
+	if(name == "lhc10c" && vtxCut == 10)      return 1.0007;
+	if(name == "lhc10d" && vtxCut == 10)      return 1.0224;
+	if(name == "lhc10e" && vtxCut == 10)      return 1.0423;
+	if(name == "lhc11a_wsdd" && vtxCut == 10) return 1.0728;
+	
+	if(name == "lhc10c900" && vtxCut == 5)    return 1.0866;
+	if(name == "lhc10b" && vtxCut == 5)       return 1.0175;
+	if(name == "lhc10c" && vtxCut == 5)       return 1.0180;
+	if(name == "lhc10d" && vtxCut == 5)       return 1.0431;
+	if(name == "lhc10e" && vtxCut == 5)       return 1.0934;
+	if(name == "lhc11a_wsdd" && vtxCut == 5)  return 1.1716;
 	
 	return 1;
 }
@@ -163,8 +170,6 @@ TString GetSimuPeriod(const TString& period)
 	if(period=="lhc10c900")   return "lhc10e13";
 	if(period=="lhc10b")      return "lhc10d1";
 	if(period=="lhc10c")      return "lhc10d4";
-	//if(period=="lhc10b")      return "lhc12a5bb";
-	//if(period=="lhc10c")      return "lhc12a5bc";
 	if(period=="lhc10d")      return "lhc10f6a";
 	if(period=="lhc10e")      return "lhc10e21";
 	if(period=="lhc11a_wsdd") return "lhc11e3a_wsdd";
@@ -185,7 +190,7 @@ TString GetSimuFixPeriod(const TString& period)
 	if(period=="lhc10c")      return "lhc12a5bc";
 	if(period=="lhc10d")      return "lhc12a5bd";
 	if(period=="lhc10e")      return "lhc12a5be";
-	if(period=="lhc10bcde")   return "lhc12a5b";
+	if(period=="lhc10bcde")   return "lhc12a5bbcde";
 	if(period=="lhc11a_wsdd") return "lhc12a5c_wsdd";
 	
 	return "";
@@ -289,7 +294,7 @@ void DrawCorrDebug(const TString& sec, const TString& tag, const TString& specie
 	}
 }
 
-void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, Bool_t m2pid=0, Int_t lowm2bin=9, Int_t him2bin=17)
+void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, Bool_t m2pid=0, Int_t hiptbin=17, Int_t lowm2bin=9, Int_t him2bin=17)
 {
 //
 // draw pt debug for the particle species
@@ -298,7 +303,7 @@ void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, 
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawPt.C+g(\"%s\",\"%s\",\"%s\",%d,%d, %d)", pt.Data(), tag.Data(), kParticle[i].Data(), m2pid, lowm2bin, him2bin));
+		gROOT->ProcessLine(Form(".x DrawPt.C+g(\"%s\",\"%s\",\"%s\",%d, %d, %d, %d)", pt.Data(), tag.Data(), kParticle[i].Data(), hiptbin, m2pid, lowm2bin, him2bin));
 	}
 }
 

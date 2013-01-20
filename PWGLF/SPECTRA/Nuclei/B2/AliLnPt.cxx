@@ -162,9 +162,10 @@ Int_t AliLnPt::Exec()
 		fdebug->cd(fOutputTag.Data());
 		
 		TH1D* hPidPt = 0;
-		if(fPidM2)
+		if(fPidM2 && (fHiPtBin > fLowM2Bin))
 		{
-			hPidPt = this->PID(hOrigPt, hM2Pt, fLowM2Bin, fHiM2Bin, fParticle + "_M2Corr_Pt");
+			Int_t hibin = (fHiPtBin > fHiM2Bin) ? fHiM2Bin : fHiPtBin;
+			hPidPt = this->PID(hOrigPt, hM2Pt, fLowM2Bin, hibin, fParticle + "_M2Corr_Pt");
 		}
 		else
 		{
@@ -250,6 +251,7 @@ Int_t AliLnPt::Exec()
 	TH1D* hPt = (TH1D*) hCorPt->Clone(Form("%s_Pt", fParticle.Data()));
 	hPt->SetTitle(fParticle.Data());
 	hPt->Reset();
+	hPt->Sumw2();
 	
 	for(Int_t i=fLowPtBin; i<fHiPtBin; ++i)
 	{
@@ -422,6 +424,7 @@ TH1D* AliLnPt::PID(const TH1D* hPt, const TH2D* hM2Pt, Int_t lowbin, Int_t hibin
 	
 	TH1D* hPidPt = (TH1D*) hPt->Clone(name.Data());
 	hPidPt->Reset();
+	hPidPt->Sumw2();
 	
 	// first bins are not contaminated since the identification is clear
 	// integrate around the m2 value

@@ -58,6 +58,7 @@ AliLnDriver::AliLnDriver()
 , fSecondaries(1)
 , fSecProd(AliLnSecondaries::kTFractionFitter)
 , fMatDCAxyMod(AliLnSecondaries::kGeantDCAxy)
+, fANucTemplate(0)
 , fNbin(1)
 , fYMin(-0.5)
 , fYMax(0.5)
@@ -208,6 +209,7 @@ void AliLnDriver::MakePtCorr() const
 		lncorr.GetLnSecondaries()->SetCorBins(fLowPtBin, fHighPtBin);
 		lncorr.GetLnSecondaries()->SetProcedure(fSecProd);
 		lncorr.GetLnSecondaries()->SetMatDCAxyModel(fMatDCAxyMod);
+		lncorr.GetLnSecondaries()->SetAntiNucleusAsTemplate(fANucTemplate);
 		lncorr.GetLnSecondaries()->SetDCAxyInterval(fMinDCAxy, fMaxDCAxy);
 		lncorr.GetLnSecondaries()->SetNBin(fNbin);
 		lncorr.GetLnSecondaries()->SetScalingFactors(fScMat, fScFd);

@@ -46,6 +46,7 @@ AliLnRatio::~AliLnRatio()
 //
 // destructor
 //
+	TH1::SetDefaultSumw2();
 }
 
 Int_t AliLnRatio::Exec()

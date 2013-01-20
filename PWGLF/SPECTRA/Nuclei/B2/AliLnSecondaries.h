@@ -40,11 +40,12 @@ class AliLnSecondaries: public TObject
 	void SetNBin(Int_t nbin) { fNbin = nbin; }
 	
 	void SetProcedure(Int_t prod) { fFracProc=prod; }
+	void SetAntiNucleusAsTemplate(Bool_t flag=1) { fANucTemplate = flag; }
 	void SetMatDCAxyModel(Int_t model) { fMatDCAxyMod = model; }
 	void SetScalingFactors(Double_t mat, Double_t fd) { fScMat=mat; fScFd=fd; }
 	
 	enum { kTFractionFitter=0, kRooFit, kMonteCarlo };
-	enum { kGeantDCAxy=0, kFlatDCAxy, kGaussianDCAxy};
+	enum { kGeantDCAxy=0, kFlatDCAxy};
 	
   private:
  
@@ -56,18 +57,17 @@ class AliLnSecondaries: public TObject
 	void GetFraction(TH1D* hFracPt[3], const TH2D* hDCAxyPt, const TH2D* hMCDCAxyPt, const TH2D* hPrimDCAxyPt, const TH2D* hMatDCAxyPt, const TH2D* hFdwnDCAxyPt) const;
 	
 	Int_t GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hMat, TH1D* hFdwn, Int_t ibin) const;
-	Int_t GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hSec, Int_t ibin, const char* secName) const;
+	Int_t GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hSec, Int_t ibin, const TString& secName) const;
 	
-	void GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const char* sec) const;
+	void GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const TString& secName) const;
 	void GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hMat, const TH1D* hFdwn, Int_t ibin) const;
 	
 	TH2D* GetFlatDCAxyPt(Double_t norm, const TH2D* hDCAxyPt, const TString& name) const;
-	//TH2D* GetGaussianDCAxyPt(Double_t norm, Double_t mean, Double_t sigma, const TH2D* hDCAxyPt, const char* name) const;
 	
 	TF1* GetMatFraction(const TString& name) const;
 	TF1* GetFdwnFraction(const TString& name) const;
 	
-	TH1D* ZeroClone(TH1D* h, const char* name) const;
+	TH1D* ZeroClone(const TH1D* h, const TString& name) const;
 	void WriteTFFdebug(TH1D* hData, TFractionFitter* fit, Int_t status, Int_t ibin, const char* contrib[], Double_t* frac, Int_t kmax) const;
 	
   private:
@@ -79,8 +79,8 @@ class AliLnSecondaries: public TObject
 	TString fOutputFilename; // output filename
 	TString fOutputTag; // tag for the ouput
 	
-	Int_t fLowBin; // low bin for the corrections
-	Int_t fHiBin ; // high bin for the corrections
+	Int_t fLowBin; // low pt bin for the corrections
+	Int_t fHiBin ; // high pt bin for the corrections
 	
 	Int_t fNbin; // for rebinning DCA distributions
 	
@@ -89,6 +89,7 @@ class AliLnSecondaries: public TObject
 	
 	Int_t fFracProc;  // procedure for estimating the fractions
 	Int_t fMatDCAxyMod; // DCAxy model for secondaries from materials
+	Bool_t fANucTemplate; // enable antinucleus as template for primaries
 	
 	Double_t fScMat; // scaling factor for material fraction
 	Double_t fScFd; // scaling factor for feed-down fraction

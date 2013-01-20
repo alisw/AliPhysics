@@ -39,6 +39,7 @@ AliLnUnfolding::AliLnUnfolding(const TString& particle, const TString& simuFilen
 //
 // constructor
 //
+	TH1::SetDefaultSumw2();
 }
 
 AliLnUnfolding::~AliLnUnfolding()
