@@ -1180,14 +1180,15 @@ void AliTRDcalibDB::GetGlobalConfigurationVersion(TString &version)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDcalibDB::GetNumberOfParsDCS(TString cname)
+Int_t AliTRDcalibDB::GetNumberOfParsDCS(TString cname, Char_t delimiter)
 {
   // Get the number of configuration parameters from the DCS config
 
-  TString cdelim = "_";
-  TObjArray *carr = cname.Tokenize(cdelim);
-  return carr->GetEntries() - 1; // -1 for the "cf"
-
+  //AliInfo(Form("\"%s\" tokenized by \"%c\"", cname.Data(), delimiter));
+  if(!cname.Length()) return -1;  // -1 for the "cf"
+  Int_t nconf(0);
+  for(Int_t ich(1); ich<cname.Length()-1; ich++){ if(cname[ich]==delimiter) nconf++;}
+  return nconf;
 }
 
 //_____________________________________________________________________________
@@ -1195,22 +1196,20 @@ Int_t AliTRDcalibDB::GetNumberOfOptsDCS(TString cname, Int_t cfgType)
 {
   // Get the number of options of a given configuration parameter from DCS
 
-  TString cdelim = "_";
-  TString odelim = "-";
-
-  TObjArray *carr = cname.Tokenize(cdelim);
-  Int_t nconfig = carr->GetEntries();
+  Char_t cdelim = '_', // define the delimiters
+         odelim = '-';
+  Int_t nconfig = GetNumberOfParsDCS(cname, cdelim);
 
   // protect
-  if ((nconfig == 0) || ((nconfig-1) < cfgType)) {
+  if ((nconfig == -1) || (nconfig < cfgType)) {
     AliError("Not enough parameters in DCS configuration name!");
     return 0;
   }
 
-  TString fullcfg = ((TObjString*)carr->At(cfgType))->GetString();
-  TObjArray *oarr = fullcfg.Tokenize(odelim);
-  return oarr->GetEntries() -1; // -1 for the parameter name
-
+  TObjArray *carr = cname.Tokenize(cdelim);
+  Int_t nopt = GetNumberOfParsDCS(((TObjString*)carr->At(cfgType))->GetString(), odelim);
+  carr->Delete(); delete carr;
+  return nopt;
 }
 
 //_____________________________________________________________________________
@@ -1222,36 +1221,35 @@ void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t op
   // option >  0 returns the optional parameter Nr. (option) of the configuration (cfgType)
   //
 
-  // define the delimiters
-  TString cdelim = "_";
-  TString odelim = "-";
+  Char_t cdelim = '_', // define the delimiters
+         odelim = '-';
 
-  TObjArray *carr = cname.Tokenize(cdelim);
-  Int_t nconfig = carr->GetEntries();
-
+  Int_t nconfig = GetNumberOfParsDCS(cname, cdelim);
   // protect
-  if (nconfig == 0) {
+  if (nconfig == -1) {
     AliError("DCS configuration name empty!");
     cfgo = "";
     return;
-  } else if ((nconfig-1) < cfgType) {
+  } else if (nconfig < cfgType) {
     AliError("Not enough parameters in DCS configuration name!");
     cfgo = "";
     return;
   }
 
-  TString fullcfg = ((TObjString*)carr->At(cfgType))->GetString();
-  TObjArray *oarr = fullcfg.Tokenize(odelim);
-  Int_t noptions = oarr->GetEntries();
-
+  TObjArray *carr = cname.Tokenize(cdelim);
+  TString cfgString(((TObjString*)carr->At(cfgType))->GetString());
+  Int_t noptions = GetNumberOfParsDCS(cfgString, odelim);
   // protect
-  if ((noptions-1) < option) {
+  if (noptions < option) {
     AliError("Not enough options in DCS configuration name!");
     cfgo = "";
+    carr->Delete(); delete carr;
     return;
   }
-
+  TObjArray *oarr = cfgString.Tokenize(odelim);
   cfgo = ((TObjString*)oarr->At(option))->GetString();
+  carr->Delete(); delete carr;
+  oarr->Delete(); delete oarr;
   return;
 
 }

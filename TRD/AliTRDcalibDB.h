@@ -98,7 +98,7 @@ class AliTRDcalibDB : public TObject {
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
   void                                GetGlobalConfigurationVersion(TString &version);
-  Int_t                               GetNumberOfParsDCS(TString cname);
+  Int_t                               GetNumberOfParsDCS(TString cname, Char_t delimiter='_');
   Int_t                               GetNumberOfOptsDCS(TString cname, Int_t cfgType);
   void                                GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t option, TString &cfgo);
 
