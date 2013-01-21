@@ -44,8 +44,12 @@ const char* libraryDependencies=
   "libCORRFW.so "
   "libPWGHFvertexingHF.so "
   "libPWGHFhfe.so "
-  "libPWGHFcorrelationHF.so "
   ;
+// Note: "libPWGHFcorrelationHF.so " shouldn't be added here. If the library is
+// loaded already, compilation of source files by Cint does not have any effect.
+// The already existing class implementations are not overidden. To just load
+// all necessary libraries to make the classes available in aliroot use macro
+// LoadLibraries.C
 
 void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* lhcPeriod, const char* mcProd="")
 {

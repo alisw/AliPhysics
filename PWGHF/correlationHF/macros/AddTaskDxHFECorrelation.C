@@ -18,8 +18,12 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliHFAssociatedTrackCuts.h"
 using namespace std;
 #endif
+
+const char* poolInfoName="PoolInfo";
+AliAnalysisCuts* createDefaultPoolConfig();
 
 /// @file   AddTaskDxHFECorrelation.C
 /// @author Matthias.Richter@ift.uib.no
@@ -35,6 +39,10 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   }
 
   TString ofilename;
+  Int_t system=0;
+  Bool_t bEventMixing=kFALSE;
+  TString poolConfigFile="";
+  TString taskOptions;
 
   // look for configuration arguments
   if (gDirectory) {
@@ -55,8 +63,22 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
 	    argument.ReplaceAll("name=", "");
 	    analysisName=argument;
 	  }
+	  if (argument.BeginsWith("cutname=")) {
+	    argument.ReplaceAll("cutname=", "");
+	    poolConfigFile=argument;
+	  }
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
+	    taskOptions+=" mc";
+	  }
+	  if (argument.BeginsWith("event-mixing") ||
+	      argument.BeginsWith("mixing")/*deprecated, to be removed later*/) {
+	    bEventMixing=kTRUE;
+	    taskOptions+=" event-mixing";
+	  }
+	  if (argument.BeginsWith("PbPb")) {
+	    system=1;
+	    taskOptions+=" PbPb";
 	  }
 	}
 	delete tokens;
@@ -84,40 +106,21 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
     ::Info("AddTaskDxHFECorrelation", Form("PID task '%s' already existing", pidTaskName));
   }
 
-  TString cutname="cutsD0Corr";
-
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
-  ::Info("AddTaskDxHFECorrelation", Form("\ninitializing analysis '%s'%s, output file '%s'\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
-    
+  ///______________________________________________________________________
+  /// Cuts For D0
+
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   RDHFD0toKpi->SetStandardCutsPP2010();
 
+  ///______________________________________________________________________
+  /// Cuts for HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
-  ///______________________________________________________________________
-  /// Standard Cuts defined by the HFE Group
-  /*	
-  **********STANDARD CUTS DESCRIPTION****************
-  SetRequireProdVertex();
-  fProdVtx[0] = 0;
-  fProdVtx[1] = 3;
-  fProdVtx[2] = 0;
-  fProdVtx[3] = 3;
-  fMinClustersTPC = 80;
-  fMinClustersITS = 4;
-  fMinTrackletsTRD = 0;
-  SetRequireITSPixel();
-  fCutITSPixel = AliHFEextraCuts::kFirst;
-  fMaxChi2clusterITS = -1.;
-  fMaxChi2clusterTPC = 4.;
-  fMinClusterRatioTPC = 0.6;
-  fPtRange[0] = 0.1;
-  fPtRange[1] = 20.;
-  SetRequireKineMCCuts();
-  *************************************************** */
-  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);	
+
+  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersTPC(120);	//Default = 80
   hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
   hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
@@ -129,12 +132,44 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   hfecuts->SetMinNClustersITS(4); 					//Default = 4
 	
   ///TOF
-  //hfecuts->SetTOFPIDStep(kTRUE);
+  hfecuts->SetTOFPIDStep(kTRUE);
 		
   ///Additional Cuts
   hfecuts->SetPtRange(0.30, 10.5);
   hfecuts->SetMaxImpactParam(1.,2.);
   hfecuts->SetVertexRange(10.);
+
+  ///______________________________________________________________________
+  /// Info for Pool
+  // TODO: Don't think we need the MC part of AliHFCorrelator, needs to be checked
+  AliAnalysisCuts* poolConfiguration=NULL;
+  if (poolConfigFile.IsNull()) {
+    // load the default configuration from below if no file is specified
+    poolConfiguration=createDefaultPoolConfig();
+  } else {
+    // load configuration from file, and abort if something goes wrong
+    TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
+    if(!filePoolInfo){
+      ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
+      return;
+    }
+    TObject* pObj=filePoolInfo->Get(poolInfoName);
+    if (!pObj) {
+      ::Error("AddTaskDxHFECorrelation", Form("No Pool configuration object with name '%s' found in file %s, exiting", poolInfoName, poolConfigFile.Data()));
+      return;
+    }
+    poolConfiguration = dynamic_cast<AliHFAssociatedTrackCuts*>(pObj);
+    if (!poolConfiguration) {
+      ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object '%s' has inconsistent class type %s, exiting", poolInfoName, pObj->ClassName()));
+      return;
+    }
+  }
+
+  if(!poolConfiguration){
+    ::Error("AddTaskDxHFECorrelation", Form("Pool configuration not found"));
+    return;
+  } 
+  poolConfiguration->Print();
 
   const char* taskName=AliAnalysisTaskDxHFECorrelation::Class()->GetName();
   if (pManager->GetTask(taskName)) {
@@ -151,18 +186,75 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   pTask->SetFillOnlyD0D0bar(1); //0=both, 1=D0 only, 2=D0bar only
   pTask->SetCutsD0(RDHFD0toKpi);
   pTask->SetCutsHFE(hfecuts);
+  pTask->SetCuts(poolConfiguration);
   pTask->SetUseMC(bUseMC);
+  pTask->SetUseEventMixing(bEventMixing);
+  pTask->SetSystem(system);
+  // TODO: the switches above can be consolidated and collected in the options
+  pTask->SetOption(taskOptions);
+
   pManager->AddTask(pTask);
 
   TString listName="DxHFElist";
+  TString cutnameD0="cutsD0Corr";
+  TString cutnameEl="cutsElCorr";
+  TString cutnamePool="PoolInfo";
 
-  //Should also add container with HFEcuts. PID?
+  // The AnalysisManager handles the output file name in the following way:
+  // The output file names are set by the function SetOutputFiles
+  // If the file name given to the container begins with one of the initialized
+  // file names, the data is stored in the corresponding file in a folder with
+  // the full name specified to the container
+  // E.g. output file has been set to "myanalysis", the container is created with
+  // file name "myanalysis_A", data ends up in file "myanalysis" in folder
+  // "myanalysis_A"
+  // IMPORTANT: choosing a file name with a different stem at this point will
+  // probably lead to an empty file.
+  if(bEventMixing){ 
+    ofilename+="ME";
+    listName+="ME";
+    cutnameD0+="ME";
+    cutnameEl+="ME";
+    cutnamePool+="ME";
+  }
+
+  if(bEventMixing) ::Info("AddTaskDxHFECorrelation", Form("\ninitializing analysis '%s'%s, output file '%s', Event Mixing Analysis\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
+  if(!bEventMixing)  ::Info("AddTaskDxHFECorrelation", Form("\ninitializing analysis '%s'%s, output file '%s', Single Event Analysis\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
+
+
   AliAnalysisDataContainer *pContainer=pManager->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, ofilename.Data());    
-  AliAnalysisDataContainer *pContainer2=pManager->CreateContainer(cutname,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts
+  AliAnalysisDataContainer *pContainer2=pManager->CreateContainer(cutnameD0,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts D0
+  AliAnalysisDataContainer *pContainer3=pManager->CreateContainer(cutnameEl,AliHFEcuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
+  AliAnalysisDataContainer *pContainer4=pManager->CreateContainer(cutnamePool,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
 
   pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
   pManager->ConnectOutput(pTask,1,pContainer);
   pManager->ConnectOutput(pTask,2,pContainer2);
+  pManager->ConnectOutput(pTask,3,pContainer3);
+  pManager->ConnectOutput(pTask,4,pContainer4);
 
   return;
+}
+
+AliAnalysisCuts* createDefaultPoolConfig()
+{
+  AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+  HFCorrelationCuts->SetName("PoolInfo");
+  HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+  // NEED to check this
+  HFCorrelationCuts->SetMaxNEventsInPool(200);
+  HFCorrelationCuts->SetMinNTracksInPool(100);
+  HFCorrelationCuts->SetMinEventsToMix(8);
+  HFCorrelationCuts->SetNofPoolBins(5,5);
+  Double_t MBins[]={0,20,40,60,80,500};
+  Double_t * MultiplicityBins = MBins;
+  Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
+  Double_t *ZVrtxBins = ZBins;
+  HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+  TString description = "Info on Pool for EventMixing";   
+  HFCorrelationCuts->AddDescription(description);
+
+  return HFCorrelationCuts;
 }
