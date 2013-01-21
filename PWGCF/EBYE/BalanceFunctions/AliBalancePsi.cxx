@@ -339,11 +339,13 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   TArrayF secondEta(jMax);
   TArrayF secondPhi(jMax);
   TArrayF secondPt(jMax);
+  TArrayS secondCharge(jMax);
 
   for (Int_t i=0; i<jMax; i++){
     secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
     secondPhi[i] = ((AliVParticle*) particlesSecond->At(i))->Phi();
     secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
+    secondCharge[i]  = (Short_t)((AliVParticle*) particlesSecond->At(i))->Charge();
   }
   
   // 1st particle loop
@@ -389,18 +391,12 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
     else if(charge1 < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
     
-    // 2nd particle loop (only for j < i for non double counting in the same pT region)
-    // --> SAME pT region for trigger and assoc: NO double counting with this
-    // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
-    //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
-    for(Int_t j = 0; j < iMax; j++) {  
-      if (particlesMixed && j == jMax-1 )  // if the mixed track number is smaller than the main event one 
-	break;
+    // 2nd particle loop
+    for(Int_t j = 0; j < jMax; j++) {   
 
-      if(j == i) continue; // no auto correlations
-      
-      AliVParticle* secondParticle = (AliVParticle*) particlesSecond->At(j);
-      Short_t charge2 = (Short_t) secondParticle->Charge();
+      if(!particlesMixed && j == i) continue; // no auto correlations (only for non mixing)
+
+      Short_t charge2 = secondCharge[j];
       
       trackVariablesPair[0]    =  trackVariablesSingle[0];
       trackVariablesPair[1]    =  firstEta - secondEta[j];  // delta eta

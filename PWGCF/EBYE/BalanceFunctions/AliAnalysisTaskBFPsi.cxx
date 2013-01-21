@@ -256,10 +256,10 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistCentStats->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());
   fList->Add(fHistCentStats);
 
-  fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",130,0,130);
+  fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",1025,0,1025);
   fList->Add(fHistTriggerStats);
 
-  fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",130,0,130);
+  fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",16,0,16);
   fList->Add(fHistTrackStats);
 
   fHistNumberOfAcceptedTracks = new TH2F("fHistNumberOfAcceptedTracks",";N_{acc.};Centrality percentile;Entries",4001,-0.5,4000.5,220,-5,105);
@@ -737,7 +737,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   Double_t fMultiplicity = -100.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   if(fEventClass == "Centrality"){
-    Bool_t isSelectedMain = kTRUE;
     
 
     if(gAnalysisLevel == "AOD") { //centrality in AOD header
@@ -847,7 +846,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       
       // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
       // take only TPC only tracks 
-      fHistTrackStats->Fill(aodTrack->GetFilterMap());
+      //fHistTrackStats->Fill(aodTrack->GetFilterMap());
+      for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
+	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
+      }
       if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
       
       vCharge = aodTrack->Charge();
