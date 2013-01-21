@@ -64,7 +64,7 @@ ClassImp(AliAnalysisTaskPi0V2)
 AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
    :AliAnalysisTaskSE(name),
     fOutput(0),
-    fESD(0),fCaloPID(0x0), fCaloUtils(0x0),fReader(0x0),
+    fESD(0),
     fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
     fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
     fTracks(0), fV1Clus(0), fV2Clus(0),
@@ -99,7 +99,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
 AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initialised here
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
-    fESD(0),fCaloPID(0x0), fCaloUtils(0x0),fReader(0x0),
+    fESD(0),
     fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
     fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
     fTracks(0), fV1Clus(0), fV2Clus(0),
@@ -422,7 +422,7 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
 
 }
 //________________________________________________________________________________________________________________________________
-void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c, Double_t *vertex)
+void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c)
 {
   //cluster(photon) v2 method
 //  Double_t Pt   = p1.Pt();
@@ -438,24 +438,7 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   Double_t difClusV0C = TVector2::Phi_0_2pi(Phi-EPV0C);  if(difClusV0C >TMath::Pi()) difClusV0C -= TMath::Pi();
   Double_t difClusTPC = TVector2::Phi_0_2pi(Phi-EPTPC);  if(difClusTPC >TMath::Pi()) difClusTPC -= TMath::Pi();
 
-  AliVCaloCells* cellsv1 = 0x0;
-  cellsv1 = fReader->GetEMCALCells();
-  Int_t    nMax = 0;
-  Double_t mass = 0., angle = 0.;
-  Double_t e1   = 0., e2    = 0.;
-  Int_t pidTag = fCaloPID->GetIdentifiedParticleTypeFromClusterSplitting(c,cellsv1,fCaloUtils,vertex, nMax, mass, angle,e1,e2);
-  if(!pidTag){
-    cout<<"seems can not get split Mgg"<<endl;
-  }
-
-  if (nMax <= 0)
-  {
-    printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found! It did not pass CaloPID selection criteria \n");
-    return;
-  }
-
-
-  Double_t DataV0[9];
+  Double_t DataV0[8];
   DataV0[0] = Et;
   DataV0[1] = M02;
   DataV0[2] = fCentrality;
@@ -464,10 +447,9 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   DataV0[5] = DxClus;
   DataV0[6] = DzClus;
   DataV0[7] = dr;
-  DataV0[8] = mass;
   fClusterPbV0->Fill(DataV0);
 
-  Double_t DataV0A[9];
+  Double_t DataV0A[8];
   DataV0A[0] = Et;
   DataV0A[1] = M02;
   DataV0A[2] = fCentrality;
@@ -476,10 +458,9 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   DataV0A[5] = DxClus;
   DataV0A[6] = DzClus;
   DataV0A[7] = dr;
-  DataV0A[8] = mass;
   fClusterPbV0A->Fill(DataV0A);
 
-  Double_t DataV0C[9];
+  Double_t DataV0C[8];
   DataV0C[0] = Et;
   DataV0C[1] = M02;
   DataV0C[2] = fCentrality;
@@ -488,10 +469,9 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   DataV0C[5] = DxClus;
   DataV0C[6] = DzClus;
   DataV0C[7] = dr;
-  DataV0C[8] = mass;
   fClusterPbV0C->Fill(DataV0C);
 
-  Double_t DataTPC[9];
+  Double_t DataTPC[8];
   DataTPC[0] = Et;
   DataTPC[1] = M02;
   DataTPC[2] = fCentrality;
@@ -500,10 +480,7 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   DataTPC[5] = DxClus;
   DataTPC[6] = DzClus;
   DataTPC[7] = dr;
-  DataTPC[8] = mass;
   fClusterPbTPC->Fill(DataTPC);
-
-
 
 }
 //_________________________________________________________________________________________________
@@ -629,29 +606,29 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifful_EPTPC);
     fOutput->Add(hdifout_EPTPC);
 
-		      //  Et   M02  spdcent DeltaPhi     EPangle      Dx    Dz    Dr  mass
-    Int_t    bins[9] = {  500, 350,  100,     100,       100,         500,  500,  100, 500}; // binning
-    Double_t min[9]  = {  0.0, 0.0,    0,     0.0,       0.,          -1.,  -1.,  0,   0. }; // min x
-    Double_t max[9]  = { 50.0, 3.5,  100,  TMath::Pi(),  TMath::Pi(), 1.,   1.,   0.1, 0.5}; // max x
+		      //  Et   M02  spdcent DeltaPhi     EPangle      Dx    Dz    Dr  
+    Int_t    bins[8] = {  500, 350,  100,     100,       100,         500,  500,  100}; // binning
+    Double_t min[8]  = {  0.0, 0.0,    0,     0.0,       0.,          -1.,  -1.,  0 }; // min x
+    Double_t max[8]  = { 50.0, 3.5,  100,  TMath::Pi(),  TMath::Pi(), 1.,   1.,   0.1}; // max x
 
     fClusterPbV0 = new THnSparseF("fClusterPbV0","",9,bins,min,max);
     fClusterPbV0->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0->GetAxis(1)->SetTitle("M02"); fClusterPbV0->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0->GetAxis(4)->SetTitle("EP");fClusterPbV0->GetAxis(5)->SetTitle("Dx");fClusterPbV0->GetAxis(6)->SetTitle("Dz");fClusterPbV0->GetAxis(7)->SetTitle("Dr");fClusterPbV0->GetAxis(5)->SetTitle("M_{#gamma#gamma}");
+    fClusterPbV0->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0->GetAxis(4)->SetTitle("EP");fClusterPbV0->GetAxis(5)->SetTitle("Dx");fClusterPbV0->GetAxis(6)->SetTitle("Dz");fClusterPbV0->GetAxis(7)->SetTitle("Dr");
     fOutput->Add(fClusterPbV0);
 
     fClusterPbV0A = new THnSparseF("fClusterPbV0A","",9,bins,min,max);
     fClusterPbV0A->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0A->GetAxis(1)->SetTitle("M02"); fClusterPbV0A->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0A->GetAxis(4)->SetTitle("EP");fClusterPbV0A->GetAxis(5)->SetTitle("Dx");fClusterPbV0A->GetAxis(6)->SetTitle("Dz");fClusterPbV0A->GetAxis(7)->SetTitle("Dr");fClusterPbV0A->GetAxis(5)->SetTitle("M_{#gamma#gamma}"); 
+    fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0A->GetAxis(4)->SetTitle("EP");fClusterPbV0A->GetAxis(5)->SetTitle("Dx");fClusterPbV0A->GetAxis(6)->SetTitle("Dz");fClusterPbV0A->GetAxis(7)->SetTitle("Dr"); 
     fOutput->Add(fClusterPbV0A);
 
     fClusterPbV0C = new THnSparseF("fClusterPbV0C","",9,bins,min,max);
     fClusterPbV0C->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0C->GetAxis(1)->SetTitle("M02"); fClusterPbV0C->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0C->GetAxis(4)->SetTitle("EP");fClusterPbV0C->GetAxis(5)->SetTitle("Dx");fClusterPbV0C->GetAxis(6)->SetTitle("Dz");fClusterPbV0C->GetAxis(7)->SetTitle("Dr");fClusterPbV0C->GetAxis(5)->SetTitle("M_{#gamma#gamma}");
+    fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0C->GetAxis(4)->SetTitle("EP");fClusterPbV0C->GetAxis(5)->SetTitle("Dx");fClusterPbV0C->GetAxis(6)->SetTitle("Dz");fClusterPbV0C->GetAxis(7)->SetTitle("Dr");
     fOutput->Add(fClusterPbV0C);
 
     fClusterPbTPC = new THnSparseF("fClusterPbTPC","",9,bins,min,max);
     fClusterPbTPC->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbTPC->GetAxis(1)->SetTitle("M02"); fClusterPbTPC->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbTPC->GetAxis(4)->SetTitle("EP");fClusterPbTPC->GetAxis(5)->SetTitle("Dx");fClusterPbTPC->GetAxis(6)->SetTitle("Dz");fClusterPbTPC->GetAxis(7)->SetTitle("Dr");fClusterPbTPC->GetAxis(5)->SetTitle("M_{#gamma#gamma}");
+    fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbTPC->GetAxis(4)->SetTitle("EP");fClusterPbTPC->GetAxis(5)->SetTitle("Dx");fClusterPbTPC->GetAxis(6)->SetTitle("Dz");fClusterPbTPC->GetAxis(7)->SetTitle("Dr");
     fOutput->Add(fClusterPbTPC);
 
 
@@ -876,7 +853,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     if (!fV2ClusName.IsNull() && !fV2Clus) {
       fV2Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV2ClusName));
       if (!fV2Clus) {
-	AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV2ClusName.Data()));
+	AliError(Form("%s: Could not retrieve v2 cluster name %s!", GetName(), fV2ClusName.Data()));
 	return;
       }
     }
@@ -906,7 +883,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     if (!fV2ClusName.IsNull() && !fV1Clus) {
       fV1Clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fV1ClusName));
       if (!fV1Clus) {
-	AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fV1ClusName.Data()));
+	AliError(Form("%s: Could not retrieve v1 cluster name %s!", GetName(), fV1ClusName.Data()));
 	return;
       }
     }
@@ -930,7 +907,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       hClusDxDZB->Fill(Dzc3, Dxc3);
       TLorentzVector p3;
       GetMom(p3, c3, vertex);
-      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC, c3, vertex);
+      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC, c3);
     }
   }
 
@@ -946,6 +923,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    Int_t ntracks = fTracks->GetEntries();
    for(Int_t i=0; i<ntracks; ++i){
      AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(i));
+     if(!track) continue;
      Double_t tPhi = track->Phi();
      Double_t tPt  = track->Pt();
 
@@ -968,7 +946,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      hdifful_EPV0A->Fill(fCentrality,   difTrackV0A, tPt);
      hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
      hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
-    }
+   } 
     hEvtCount->Fill(8);
 
     // NEW HISTO should be filled before this point, as PostData puts the
