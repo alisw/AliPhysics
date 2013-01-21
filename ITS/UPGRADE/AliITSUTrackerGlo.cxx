@@ -622,7 +622,7 @@ Bool_t AliITSUTrackerGlo::PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Doubl
   Double_t xyz0[3],xyz1[3],param[7];
   //
   Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
-  if (matCorr) seed->GetXYZ(xyz1);   //starting global position
+  if (matCorr || updTime) seed->GetXYZ(xyz1);   //starting global position
   while ( (xToGo-xpos)*dir > kEpsilon){
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
