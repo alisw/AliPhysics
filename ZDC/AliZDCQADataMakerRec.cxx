@@ -604,7 +604,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	 else if(stream.GetChannel()==3 && tdcValue!=0.){
 	    zpcTDC = tdcValue;
 	 }
-	 else if(stream.GetChannel()==4 && tdcValue!=0.){
+	 else if(stream.GetChannel()==5 && tdcValue!=0.){
 	    znaTDC = tdcValue;
 	 }
 	 else if(stream.GetChannel()==7 && tdcValue!=0.){
@@ -629,32 +629,32 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	      if(zncTDC!=0.){
 	        Float_t znc = zncTDC-tdcGate;
 	        FillRawsData(14,znc);
-		FillRawsData(21,1, znc);
+		if(znc>-340. && znc<-290.) FillRawsData(21,1, znc);
 	      }
 	      if(zpcTDC!=0.){
 	        Float_t zpc = zpcTDC-tdcGate;
 	        FillRawsData(15,zpc);
-	        FillRawsData(21,2, zpc);
+	        if(zpc>-340. && zpc<-290.) FillRawsData(21,2, zpc);
 	      }
 	      if(znaTDC!=0.){
 	        Float_t zna = znaTDC-tdcGate;
 	        FillRawsData(16,zna);
-	        FillRawsData(21,3, zna);
+	        if(zna>-340. && zna<-290.) FillRawsData(21,3, zna);
 	      }
 	      if(zpaTDC!=0.){
 	        Float_t zpa = zpaTDC-tdcGate;
 	        FillRawsData(17,zpa);
-	        FillRawsData(21,4, zpa);
+	        if(zpa>-340. && zpa<-290.) FillRawsData(21,4, zpa);
 	      }
 	      if(zem1TDC!=0.){
 	        Float_t zem1 = zem1TDC-tdcGate;
 	        FillRawsData(18,zem1);
-		FillRawsData(21,5, zem1);
+		if(zem1>-340. && zem1<-290.) FillRawsData(21,5, zem1);
 	      }
 	      if(zem2TDC!=0.){
 	        Float_t zem2 = zem2TDC-tdcGate;
 	        FillRawsData(19,zem2);
-	        FillRawsData(21,6, zem2);
+	        if(zem2TDC>-340. && zem2<-290.) FillRawsData(21,6, zem2);
               }
 	      if(znaSumTDC!=0. && zncSumTDC!=0.){
 	         Float_t tdcC = zncSumTDC-l0;
