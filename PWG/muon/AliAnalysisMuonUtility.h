@@ -63,9 +63,6 @@ class AliAnalysisMuonUtility : public TObject {
 
   
   // Transparently handle MC
-  static Bool_t IsMCEvent ( const AliVEvent* event, const AliMCEvent* mcEvent );
-  static Int_t GetNMCTracks ( const AliVEvent* event, const AliMCEvent* mcEvent );
-  static AliVParticle* GetMCTrack ( Int_t trackLabel, const AliVEvent* event, const AliMCEvent* mcEvent );
   static Double_t GetMCVertexZ ( const AliVEvent* event, const AliMCEvent* mcEvent );
   
   static Bool_t IsAODMCTrack ( const AliVParticle* mcParticle );
