@@ -88,8 +88,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual void     UserCreateOutputObjects();
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
   virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
-  //virtual TArrayD* V0Loop(AliAODTrack *trkLP, V0LoopStep_t step, Bool_t isTriggered);
-  virtual void     V0Loop(/*AliAODTrack *trkLP,*/V0LoopStep_t step, Bool_t isTriggered);
+  virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered);
   virtual void     TriggerParticle();
     
   virtual void     UserExec(Option_t *option);
