@@ -42,7 +42,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetTrigClassPatterns ( const TString pattern );
   /// Get default trigger class patterns
   TString GetDefaultTrigClassPatterns() { return fDefaultTrigClassPatterns; };
-  void SetTrigClassLevels ( const TString pattern = "MSL:Lpt,MSH:Hpt,MUL:LptLpt,MLL:LptLpt" );
+  void SetTrigClassLevels ( const TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
   TArrayI GetTrigClassPtCutLevel ( const TString trigClassName ) const;
   void SetTrigClassCombination ( const TString trigClassCombination, Bool_t disableTrigPattern = kTRUE );
   void SetTrigInputsMap ( const TString trigInputsMap );
@@ -82,7 +82,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   void BuildTriggerClasses ( const TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
   Bool_t CheckTriggerClassPattern ( const TString& toCheck ) const;
-  Bool_t CheckTriggerClassCombination ( const TString& toCheck, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
+  Bool_t CheckTriggerClassCombination ( const TObjArray* combo, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
   void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig );
   Bool_t UpdateEvent( const AliVEvent* event );
   void SetDefaultTrigClassPatterns();

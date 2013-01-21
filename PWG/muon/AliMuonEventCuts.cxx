@@ -227,7 +227,7 @@ void AliMuonEventCuts::SetDefaultTrigClassPatterns ()
 {
   /// Set the default patterns
   /// (done in such a way to get all muon triggers)
-  fDefaultTrigClassPatterns = "C,!EMC,!CS,!CCUP,!CTRUE,!ABCE,!-ACE-,!-AC-,!-E-,!WU,!EGA,!EJE,!PHS,!C0VG";
+  fDefaultTrigClassPatterns = "CM,C0M,CINT,CPBI,CCENT,CV,!ABCE,!-ACE-,!-AC-,!-E-,!WU,!EGA,!EJE,!PHS";
   SetTrigClassPatterns(fDefaultTrigClassPatterns);
 }
 
@@ -358,14 +358,70 @@ void AliMuonEventCuts::SetTrigClassCombination ( TString trigClassCombination, B
   
   if ( disableTrigPattern ) SetTrigClassPatterns("");
   
+  fSelectedTrigCombination->SetOwner();
   if ( fSelectedTrigCombination->GetEntries() > 0 ) fSelectedTrigCombination->Delete();
   
   trigClassCombination.ReplaceAll(" ","");
   
+  TString listName[4] = {"L0","L1","L2","trigClass"};
+  
   TObjArray* fullList = trigClassCombination.Tokenize(",");
   for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
     TString currPattern = fullList->At(ipat)->GetName();
-    fSelectedTrigCombination->AddLast(new TObjString(currPattern));
+    
+    TObjArray* trigCombo = new TObjArray();
+    trigCombo->SetOwner();
+    trigCombo->SetName(currPattern.Data());
+    
+    TString tn (currPattern);
+    Bool_t requiresFromula = kFALSE;
+    if ( tn.Contains("&") ) tn.ReplaceAll("&",":");
+    if ( tn.Contains("|") ) {
+      tn.ReplaceAll("|",":");
+      requiresFromula = kTRUE;
+    }
+    if ( tn.Contains("(") || tn.Contains(")") ) {
+      tn.ReplaceAll("(","");
+      tn.ReplaceAll(")","");
+    }
+    if ( requiresFromula ) trigCombo->SetUniqueID(1);
+    
+    TObjArray* arr = tn.Tokenize(":");
+    
+    TIter nextA(arr);
+    TObjString* an = 0x0;
+    while ( ( an = static_cast<TObjString*>(nextA()) ) )
+    {
+      Int_t listIdx = 3;
+      if ( an->String().BeginsWith("0") ) listIdx = 0;
+      else if ( an->String().BeginsWith("1") ) listIdx = 1;
+      else if ( an->String().BeginsWith("2") ) listIdx = 2;
+      
+      TObjArray* currList = static_cast<TObjArray*>(trigCombo->FindObject(listName[listIdx].Data()));
+      if ( ! currList ) {
+        currList = new TObjArray();
+        currList->SetOwner();
+        currList->SetName(listName[listIdx].Data());
+        currList->SetUniqueID(listIdx);
+        trigCombo->AddAt(currList,listIdx);
+      }
+      TObjString* currStr = new TObjString(an->String());
+
+      if ( listIdx < 3 ) {
+        // that's an input
+        TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
+        if ( trigInput ) currStr->SetUniqueID(trigInput->GetUniqueID());
+        else {
+          AliError(Form("Uknown input %s in formula %s", an->String().Data(), currPattern.Data()));
+          delete trigCombo;
+          trigCombo = 0x0;
+          break;
+        }
+      }
+      currList->AddLast(currStr);
+    }
+    delete arr;
+    if ( trigCombo) fSelectedTrigCombination->AddLast(trigCombo);
   }
   delete fullList;
 }
@@ -467,6 +523,8 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
   /// for current event. Update the global list if necessary
   //
   
+  AliDebug(2,Form("Fired classes: %s  Inputs 0x%x 0x%x 0x%x",firedTrigClasses.Data(),l0Inputs,l1Inputs,l2Inputs));
+  
   delete fSelectedTrigClassesInEvent;
   fSelectedTrigClassesInEvent = new TObjArray(0);
   fSelectedTrigClassesInEvent->SetOwner();
@@ -491,10 +549,10 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
   }
   
   for ( Int_t icomb=0; icomb<fSelectedTrigCombination->GetEntries(); icomb++ ) {
-    TString currComb = static_cast<TObjString*>(fSelectedTrigCombination->At(icomb))->GetString();
+    TObjArray* currComb = static_cast<TObjArray*>(fSelectedTrigCombination->At(icomb));
     if ( CheckTriggerClassCombination(currComb, firedTrigClassesAny, l0Inputs, l1Inputs, l2Inputs) ) {
-      TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(currComb.Data()));
-      AddToEventSelectedClass ( currComb, foundTrig );
+      TObjString* foundTrig = static_cast<TObjString*>(fAllSelectedTrigClasses->FindObject(currComb->GetName()));
+      AddToEventSelectedClass ( currComb->GetName(), foundTrig );
     }
   }
 }
@@ -519,7 +577,7 @@ AliMuonEventCuts::CheckTriggerClassPattern ( const TString& toCheck ) const
 
 //_____________________________________________________________________________
 Bool_t
-AliMuonEventCuts::CheckTriggerClassCombination ( const TString& toCheck,
+AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
                                                  const TString& firedTriggerClasses,
                                                  UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const
 {
@@ -528,50 +586,45 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TString& toCheck,
   
   Bool_t ok(kFALSE);
   
-  TString tn(toCheck);
-  TString comp("");
+  TString comp(combo->GetName());
   UInt_t trigInputs[3] = {l0Inputs, l1Inputs, l2Inputs};
+  Bool_t requiresFromula = ( combo->GetUniqueID() == 1 );
   
-  if ( tn.Contains("&") || tn.Contains("|") || tn.Contains("(") || tn.Contains(")") ) {
-    comp=tn;
-    tn.ReplaceAll("&",":");
-    tn.ReplaceAll("|",":");
-    tn.ReplaceAll("(","");
-    tn.ReplaceAll(")","");
-    TObjArray* arr = tn.Tokenize(":");
-    TIter nextA(arr);
-    TObjString* an;
+  Bool_t exitLoop = kFALSE;
+  
+  TIter nextObj(combo);
+  TObjArray* currList = 0x0;
+  while ( ( currList = static_cast<TObjArray*>(nextObj()) ) ) {
+    Int_t listIdx = currList->GetUniqueID();
+    TIter nextA(currList);
+    TObjString* an = 0x0;
     while ( ( an = static_cast<TObjString*>(nextA()) ) )
     {
-      Int_t inputIdx = -1;
-      if ( an->String().BeginsWith("0") ) inputIdx = 0;
-      else if ( an->String().BeginsWith("1") ) inputIdx = 1;
-      else if ( an->String().BeginsWith("2") ) inputIdx = 2;
-      if ( inputIdx >= 0 )
-      {
-        // that's an input
-        TObject* trigInput = fTrigInputsMap->FindObject(an->String().Data());
-        Bool_t matchInput = kFALSE;
-        if ( trigInput ) {
-          UInt_t bit = trigInput->GetUniqueID();
-          matchInput = ( (trigInputs[inputIdx] & bit) == bit );
-        }
-        comp.ReplaceAll(an->String().Data(),( matchInput ) ? "1" : "0");
+      if ( listIdx < 3 ) {
+        UInt_t bit = an->GetUniqueID();
+        Bool_t matchInput = ( (trigInputs[listIdx] & bit) == bit );
+        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),( matchInput ) ? "1" : "0");
+        else ok = matchInput;
       }
-      else
-      {
-        comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
+      else {
+        if ( requiresFromula ) comp.ReplaceAll(an->String().Data(),Form("%d",firedTriggerClasses.Contains(an->String().Data())));
+        else ok = firedTriggerClasses.Contains(an->String().Data());
+      }
+      if ( ! requiresFromula && ! ok ) {
+        exitLoop = kTRUE;
+        break;
       }
     }
-    delete arr;
-    
+    if ( exitLoop ) break;
+  }
+  
+  if ( requiresFromula ) {
     TFormula formula("TriggerClassFormulaCheck", comp.Data());
     if ( formula.Compile() > 0 ) AliError(Form("Could not evaluate formula %s",comp.Data()));
     else ok = formula.Eval(0);
   }
-  else ok = firedTriggerClasses.Contains(toCheck);
   
-  AliDebug(1,Form("tname %s => %d comp=%s  inputs 0x%x 0x%x 0x%x",toCheck.Data(),ok,comp.Data(),l0Inputs, l1Inputs, l2Inputs));
+  AliDebug(2,Form("tname %s => %d comp=%s  inputs 0x%x 0x%x 0x%x",combo->GetName(),ok,comp.Data(),l0Inputs, l1Inputs, l2Inputs));
   
   return ok;
 }
