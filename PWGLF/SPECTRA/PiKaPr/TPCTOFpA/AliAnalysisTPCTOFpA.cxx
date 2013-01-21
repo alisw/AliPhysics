@@ -512,20 +512,20 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
   // important change: fill generated only after vertex cut in case of heavy-ions
   //
 
-  /*
-  if (!vertex && fESD->GetEventSpecie() == 4) {
+  
+  if (!vertex) {
     fHistMult->Fill(-1, processCode);
     PostData(1, fListHist);
     return;
   } else {
-    if (TMath::Abs(vertex->GetZv()) > 10 && fESD->GetEventSpecie() == 4) {
+    if (TMath::Abs(vertex->GetZv()) > 10) {
       fHistMult->Fill(-1, processCode);
       PostData(1, fListHist);
       return;
     }
   }
   //
-  */
+  
   
 
   if (fMCtrue) {
