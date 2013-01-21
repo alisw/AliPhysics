@@ -24,6 +24,7 @@ void RunAnalysisAODVertexingHF()
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
   TString pluginmode="full";
+  TString testfileslistWithPlugin="";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
   TString loadMacroPath="$ALICE_ROOT/PWGHF/vertexingHF/macros/";
@@ -121,8 +122,8 @@ void RunAnalysisAODVertexingHF()
 
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  
-    if(analysisMode!="grid") {printf("Analysis mode must be grid, to use alien plugin\n"); return;}
-    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode,useParFiles);  
+    //    if(analysisMode!="grid") {printf("Analysis mode must be grid, to use alien plugin\n"); return;}
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode,useParFiles,testfileslistWithPlugin);  
     if(!alienHandler) return;
   }
 
@@ -267,7 +268,7 @@ void RunAnalysisAODVertexingHF()
 }
 //_____________________________________________________________________________
 //
-AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles=kFALSE)
+AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles=kFALSE, TString testfileslistWithPlugin="")
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -284,6 +285,11 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
 
    // Declare input data to be processed.
+   //************************************************
+   // Set data file list to test on local mode
+   //************************************************  
+   plugin->SetFileForTestMode(testfileslistWithPlugin.Data());
+
    //************************************************
    // Set data search pattern for DATA
    //************************************************  
