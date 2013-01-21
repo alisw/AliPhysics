@@ -213,8 +213,6 @@ void AliVAnalysisMuon::FinishTaskOutput()
 
 
   fMergeableCollection->PruneEmptyObjects();
-
-  TString objectName = "";
   
   // Add stat. info from physics selection
   // (usefull when running on AODs)
@@ -223,7 +221,7 @@ void AliVAnalysisMuon::FinishTaskOutput()
       TString statType = ( istat == 0 ) ? "ALL" : "BIN0";
       TH2* hStat = dynamic_cast<TH2*>(fInputHandler->GetStatistics(statType.Data()));
       if ( hStat ) {
-        objectName = Form("%s_%s", hStat->GetName(), GetName());
+        TString objectName = Form("%s_%s", hStat->GetName(), GetName());
         TH2* cloneStat = static_cast<TH2*>(hStat->Clone(objectName.Data()));
         cloneStat->SetDirectory(0);
         fOutputList->Add(cloneStat);
@@ -267,6 +265,7 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("trigger", 100);
   fEventCounters->AddRubric("centrality", centralityClasses);
+  fEventCounters->AddRubric("run", 10000);
   fEventCounters->Init();
   fOutputList->Add(fEventCounters);
  
@@ -314,7 +313,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
   TString selKey = ( physSel == kPhysSelPass ) ? "yes" : "no";
   for ( Int_t itrig=0; itrig<selectTrigClasses->GetEntries(); ++itrig ) {
     TString trigName = selectTrigClasses->At(itrig)->GetName();
-    fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s", trigName.Data(), selKey.Data(), centralityBinLabel.Data()));
+    fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s/run:%i", trigName.Data(), selKey.Data(), centralityBinLabel.Data(),fCurrentRunNumber));
   }
 
   ProcessEvent(fPhysSelKeys->At(physSel)->GetName(), *selectTrigClasses, centralityBinLabel);
@@ -359,7 +358,7 @@ Int_t AliVAnalysisMuon::GetParticleType(AliVParticle* track)
   Int_t trackSrc = kUnidentified;
   Int_t trackLabel = track->GetLabel();
   if ( trackLabel >= 0 ) {
-    AliVParticle* matchedMCTrack = AliAnalysisMuonUtility::GetMCTrack(trackLabel,InputEvent(),MCEvent());
+    AliVParticle* matchedMCTrack = MCEvent()->GetTrack(trackLabel);
     if ( matchedMCTrack ) trackSrc = RecoTrackMother(matchedMCTrack);
   } // track has MC label
   return trackSrc;
@@ -384,7 +383,7 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
   
   Int_t motherType = kDecayMu;
   while ( imother >= 0 ) {
-    AliVParticle* part = AliAnalysisMuonUtility::GetMCTrack(imother,InputEvent(),MCEvent());
+    AliVParticle* part = MCEvent()->GetTrack(imother);
     //if ( ! part ) return motherType;
     
     Int_t absPdg = TMath::Abs(part->PdgCode());

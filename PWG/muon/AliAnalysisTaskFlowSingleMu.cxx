@@ -284,10 +284,11 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
   //
   Double_t containerInput[kNvars];
   AliVParticle* track = 0x0;
-  for ( Int_t istep = 0; istep<2; ++istep ) {
-    Int_t nTracks = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetNTracks(InputEvent()) : AliAnalysisMuonUtility::GetNMCTracks(InputEvent(),MCEvent());
+  Int_t nSteps = MCEvent() ? 2 : 1;
+  for ( Int_t istep = 0; istep<nSteps; ++istep ) {
+    Int_t nTracks = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetNTracks(InputEvent()) : MCEvent()->GetNumberOfTracks();
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
-      track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : AliAnalysisMuonUtility::GetMCTrack(itrack,InputEvent(),MCEvent());
+      track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : MCEvent()->GetTrack(itrack);
       
       Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
       if ( ! isSelected ) continue;

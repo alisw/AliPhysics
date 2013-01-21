@@ -296,15 +296,6 @@ TLorentzVector AliAnalysisMuonUtility::GetTrackPair ( const AliVParticle* track1
   return vecPair;
 }
 
-//________________________________________________________________________
-Bool_t AliAnalysisMuonUtility::IsMCEvent ( const AliVEvent* event, const AliMCEvent* mcEvent )
-{
-  //
-  /// Contains MC info
-  //
-  return ( mcEvent || ( IsAODEvent(event) && static_cast<const AliAODEvent*>(event)->FindListObject(AliAODMCParticle::StdBranchName()) ) );
-}
-
 
 //________________________________________________________________________
 Bool_t AliAnalysisMuonUtility::IsAODMCTrack( const AliVParticle* mcParticle )
@@ -315,48 +306,15 @@ Bool_t AliAnalysisMuonUtility::IsAODMCTrack( const AliVParticle* mcParticle )
 
 
 //________________________________________________________________________
-Int_t AliAnalysisMuonUtility::GetNMCTracks ( const AliVEvent* event, const AliMCEvent* mcEvent )
-{
-  //
-  /// Return the number of MC tracks in event
-  //
-  Int_t nMCtracks = 0;
-  if ( mcEvent ) nMCtracks = mcEvent->GetNumberOfTracks();
-  else if ( IsAODEvent(event) ) {
-    TClonesArray* mcArray = (TClonesArray*)static_cast<const AliAODEvent*>(event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if ( mcArray ) nMCtracks = mcArray->GetEntries();
-  }
-  return nMCtracks;
-}
-
-//________________________________________________________________________
-AliVParticle* AliAnalysisMuonUtility::GetMCTrack ( Int_t trackLabel, const AliVEvent* event, const AliMCEvent* mcEvent )
-{
-  //
-  /// MC information can be provided by the MC input handler
-  /// (mostly when analyising ESDs) or can be found inside AODs
-  /// This method returns the correct one
-  //
-  AliVParticle* mcTrack = 0x0;
-  if ( mcEvent ) mcTrack = mcEvent->GetTrack(trackLabel);
-  else if ( IsAODEvent(event) ) {
-    TClonesArray* mcArray = (TClonesArray*)static_cast<const AliAODEvent*>(event)->FindListObject(AliAODMCParticle::StdBranchName());
-    if ( mcArray ) mcTrack =  (AliVParticle*)mcArray->At(trackLabel);
-  }
-  if ( ! mcTrack ) AliWarningClass(Form("No track with label %i!", trackLabel));
-  return mcTrack;
-}
-
-//________________________________________________________________________
 Double_t AliAnalysisMuonUtility::GetMCVertexZ ( const AliVEvent* event, const AliMCEvent* mcEvent )
 {
   /// Get MC vertex Z
   Double_t vz = 0.;
-  if ( mcEvent ) vz = mcEvent->GetPrimaryVertex()->GetZ();
-  else if ( IsAODEvent(event) ) {
+  if ( IsAODEvent(event) ) {
     AliAODMCHeader* aodMCHeader = static_cast<AliAODMCHeader*> (static_cast<const AliAODEvent*>(event)->FindListObject(AliAODMCHeader::StdBranchName()));
     vz = aodMCHeader->GetVtxZ();
   }
+  else if ( mcEvent ) vz = mcEvent->GetPrimaryVertex()->GetZ();
   else AliErrorClass("No MC event found");
   return vz;
 }
@@ -396,7 +354,8 @@ Bool_t AliAnalysisMuonUtility::IsPrimary ( const AliVParticle* mcParticle, const
   /// Check if the particle is primary
   
   Bool_t isPrimary = kFALSE;
-  if ( mcEvent ) {
+  if ( IsAODMCTrack(mcParticle) ) isPrimary = static_cast<const AliAODMCParticle*>(mcParticle)->IsPrimary();
+  else if ( mcEvent ) {
     // First get the index of the current particle in the stack.
     // For this: get the mother, and get its daughter.
     // Since the mother can have many daughters, you can come up to a "sister"
@@ -405,7 +364,7 @@ Bool_t AliAnalysisMuonUtility::IsPrimary ( const AliVParticle* mcParticle, const
     if ( imother < 0 ) isPrimary = kTRUE;
     else if ( static_cast<const AliMCParticle*>(mcEvent->GetTrack(imother))->GetFirstDaughter() < const_cast<AliMCEvent*>(mcEvent)->GetNumberOfPrimaries() ) isPrimary = kTRUE;
   }
-  else isPrimary = static_cast<const AliAODMCParticle*>(mcParticle)->IsPrimary();
+  else AliWarningClass("There is no MC info");
   return isPrimary;
 }
 
