@@ -57,6 +57,9 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   /** Process NetParticle Distributions */ 
   Int_t Process();
 
+  /** Update MinPtForTOFRequired, using the pT log-scale */
+  void UpdateMinPtForTOFRequired();
+
   ///////////////////////////////////////////////////////////////////////////////////
 
  private:

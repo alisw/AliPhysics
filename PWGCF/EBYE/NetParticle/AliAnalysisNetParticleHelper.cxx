@@ -737,7 +737,7 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double
     
     // Has no TOF PID availible
     else { 
-      if (track->Pt() > fMinPtForTOFRequired) 
+      if (track->Pt() >= fMinPtForTOFRequired) 
 	isAcceptedTOF = kFALSE;
       else
 	isAcceptedTOF = kTRUE;

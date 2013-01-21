@@ -168,8 +168,10 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // ------------------------------------------------------------------
   // -- Add histograms from distribution class
   // ------------------------------------------------------------------
-  if (fModeDistCreation == 1)
+  if (fModeDistCreation == 1) {
     fDist->CreateHistograms(fOutList);
+    fDist->UpdateMinPtForTOFRequired();
+  }
 
   // ------------------------------------------------------------------
   // -- Add histograms from efficiency/contamination class
@@ -177,6 +179,7 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     fOutListEff->Add(fEffCont->GetHnEff());
     fOutListCont->Add(fEffCont->GetHnCont());
+    fEffCont->UpdateMinPtForTOFRequired();
   }
 
   // ------------------------------------------------------------------

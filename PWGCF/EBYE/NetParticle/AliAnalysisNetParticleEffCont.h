@@ -49,6 +49,9 @@ class AliAnalysisNetParticleEffCont : public TNamed {
   /** Process Event */
   void Process();
 
+  /** Update MinPtForTOFRequired, using the pT log-scale */
+  void UpdateMinPtForTOFRequired();
+
   /*
    * ---------------------------------------------------------------------------------
    *                                    Getter

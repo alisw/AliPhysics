@@ -91,6 +91,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   Bool_t   IsControlParticleNeutral()        {return fControlParticleIsNeutral;}
   TString& GetControlParticleName()          {return fControlParticleName;}
 
+  Float_t  GetMinPtForTOFRequired()          {return fMinPtForTOFRequired;}
+
   /*
    * ---------------------------------------------------------------------------------
    *                                 Public Methods

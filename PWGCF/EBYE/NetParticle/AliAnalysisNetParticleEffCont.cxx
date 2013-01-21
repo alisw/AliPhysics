@@ -202,6 +202,24 @@ void AliAnalysisNetParticleEffCont::Process() {
   return;
 }      
 
+//________________________________________________________________________
+void AliAnalysisNetParticleEffCont::UpdateMinPtForTOFRequired() {
+  // -- Update MinPtForTOFRequired, using the pT log-scale
+
+  if (fHelper && fHnEff) {
+    Float_t minPtForTOF = fHelper->GetMinPtForTOFRequired();
+    TH1D *h =  static_cast<TH1D*>(fHnEff->Projection(4));
+      
+    for (Int_t ii = 0; ii < h->GetNbinsX(); ++ii)
+      if (h->GetBinLowEdge(ii) <= minPtForTOF && h->GetBinLowEdge(ii) + h->GetBinWidth(ii) >  minPtForTOF) {
+	minPtForTOF = h->GetBinLowEdge(ii) + h->GetBinWidth(ii);
+	fHelper->SetMinPtForTOFRequired(minPtForTOF);
+      }
+  }
+
+  return ;
+}
+
 /*
  * ---------------------------------------------------------------------------------
  *                                 Private Methods
@@ -342,17 +360,14 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
     
     // -- Check if accepted - AOD
     if (fAOD){
-      
       AliAODTrack * trackAOD = dynamic_cast<AliAODTrack*>(track);
       
       if (!trackAOD) {
 	AliError("Pointer to dynamic_cast<AliAODTrack*>(track) = ZERO");
 	continue;
       }
-      
-      if (!trackAOD->TestFilterBit(fAODtrackCutBit)){
+      if (!trackAOD->TestFilterBit(fAODtrackCutBit))
 	continue;
-      }
     }
 
     // -- Check if accepted in rapidity window
@@ -580,7 +595,6 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
     //    > skip check if PID is not required
     if (fHelper->GetUsePID() && TMath::Abs(particle->GetPdgCode()) != fPdgCode)
       continue;
-    
     
     // -- Get sign of particle
     Float_t sign      = (particle->GetPdgCode() < 0) ? -1. : 1.;

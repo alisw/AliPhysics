@@ -292,6 +292,24 @@ Int_t AliAnalysisNetParticleDistribution::Process() {
 }
 
 //________________________________________________________________________
+void AliAnalysisNetParticleDistribution::UpdateMinPtForTOFRequired() {
+  // -- Update MinPtForTOFRequired, using the pT log-scale
+
+  if (fHelper && fHnTrackUnCorr) {
+    Float_t minPtForTOF = fHelper->GetMinPtForTOFRequired();
+    TH1D *h =  static_cast<TH1D*>(fHnTrackUnCorr->Projection(1));
+      
+    for (Int_t ii = 0; ii < h->GetNbinsX(); ++ii)
+      if (h->GetBinLowEdge(ii) <= minPtForTOF && h->GetBinLowEdge(ii) + h->GetBinWidth(ii) >  minPtForTOF) {
+	minPtForTOF = h->GetBinLowEdge(ii) + h->GetBinWidth(ii);
+	fHelper->SetMinPtForTOFRequired(minPtForTOF);
+      }
+  }
+
+  return ;
+}
+
+//________________________________________________________________________
 Int_t AliAnalysisNetParticleDistribution::ProcessESDTracks() {
   // -- Process ESD tracks and fill histograms
 
