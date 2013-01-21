@@ -185,17 +185,17 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   fhTDCZNDiff->GetXaxis()->SetTitle("TDC_{ZNC}-TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNDiff);     
   
-  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 200,0., 2000.);
+  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 250,0., 2500.);
   fOutput->Add(fhZNCSpectrum);      
-  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 200,0., 2000.) ;
+  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 250,0., 2500.) ;
   fOutput->Add(fhZNASpectrum);      
   fhZPCSpectrum = new TH1F("fhZPCSpectrum", "ZPC signal", 200,0., 2000.) ;
   fOutput->Add(fhZPCSpectrum);      
   fhZPASpectrum = new TH1F("fhZPASpectrum", "ZPA signal", 200,0., 2000.) ;
   fOutput->Add(fhZPASpectrum);      
-  fhZEM1Spectrum = new TH1F("fhZEM1Spectrum", "ZEM1 signal", 100,0., 2000.);
+  fhZEM1Spectrum = new TH1F("fhZEM1Spectrum", "ZEM1 signal", 100,0., 2500.);
   fOutput->Add(fhZEM1Spectrum);      
-  fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 100,0., 2000.);
+  fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 100,0., 2500.);
   fOutput->Add(fhZEM2Spectrum);      
   
   fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",200, 0., 2000.);
