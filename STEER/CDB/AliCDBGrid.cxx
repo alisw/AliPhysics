@@ -871,6 +871,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 		AliInfo(Form("Mirroring to storage element: %s", mirrorSE.Data()));
 		gGrid->Command(mirrorCmd.Data());
 	}
+	arraySEs->Delete(); arraySEs=0;
 
 	return kTRUE;
 }
