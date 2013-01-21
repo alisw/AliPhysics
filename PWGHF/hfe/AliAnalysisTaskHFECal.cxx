@@ -381,8 +381,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       //if(!MChijing)printf("not MC hijing");
       int iHijing = 1;
       if(!MChijing)iHijing = 0;
-      if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
-      if(fPDG==221)HETApTcheck->Fill(pTMC,iHijing);
+      double mcphoinfo[5];
+      mcphoinfo[0] = cent;
+      mcphoinfo[1] = pTMC;
+      mcphoinfo[2] = iHijing;
+      //if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
+      //if(fPDG==221)HETApTcheck->Fill(pTMC,iHijing);
+      if(fPDG==111)Hpi0pTcheck->Fill(mcphoinfo);
+      if(fPDG==221)HETApTcheck->Fill(mcphoinfo);
       if(fabs(fPDG)==411 || fabs(fPDG)==413 || fabs(fPDG)==421 || fabs(fPDG)==423 || fabs(fPDG)==431)HDpTcheck->Fill(pTMC,iHijing);
       if(fabs(fPDG)==511 || fabs(fPDG)==513 || fabs(fPDG)==521 || fabs(fPDG)==523 || fabs(fPDG)==531)HBpTcheck->Fill(pTMC,iHijing);
 
@@ -456,7 +462,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   for(Int_t iCluster=0; iCluster<fESD->GetNumberOfCaloClusters(); iCluster++)
      {
       AliESDCaloCluster *clust = fESD->GetCaloCluster(iCluster);
-      if(clust->IsEMCAL())
+      if(clust && clust->IsEMCAL())
         {
          double clustE = clust->E();
          float  emcx[3]; // cluster pos
@@ -503,7 +509,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        Int_t label = TMath::Abs(track->GetLabel());
        mcLabel = track->GetLabel();
        
-       if(mcLabel>-1)
+       //if(mcLabel>-1)
        {
       
 	       Bool_t MChijing = fMC->IsFromBGEvent(label);
@@ -764,7 +770,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if(mcele>0) // select MC electrons
       {
-          cout << "MC label = " << mcLabel << endl;
 
           fIncpTMChfeAll->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
@@ -776,6 +781,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           //if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
           if(m20>0.0 && m20<0.3)
             {
+                cout << "MC label = " << mcLabel << endl;
                 fIncpTMCM20hfe->Fill(cent,pt);    
                 fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
                 fIncpTMCM20hfeCheck_weight->Fill(phoval);    
@@ -1159,13 +1165,24 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   CheckNits = new TH1D("CheckNits","ITS cluster check",8,-0.5,7.5);
   fOutputList->Add(CheckNits);
-
+  /*
   Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(Hpi0pTcheck);
 
   HETApTcheck = new TH2D("HETApTcheck","Eta pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(HETApTcheck);
+  */
 
+  Int_t nBinspho3[3] =  { 200, 100, 3};
+  Double_t minpho3[3] = {  0.,  0., -0.5};   
+  Double_t maxpho3[3] = {100., 50., 2.5};   
+
+  Hpi0pTcheck = new THnSparseD("Hpi0pTcheck","Pi0 pT from Hijing",3,nBinspho3,minpho3,maxpho3);
+  fOutputList->Add(Hpi0pTcheck);
+
+  HETApTcheck = new THnSparseD("HETApTcheck","Eta pT from Hijing",3,nBinspho3,minpho3,maxpho3);
+  fOutputList->Add(HETApTcheck);
+  //--
   HphopTcheck = new TH2D("HphopTcheck","Pho pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(HphopTcheck);
   //

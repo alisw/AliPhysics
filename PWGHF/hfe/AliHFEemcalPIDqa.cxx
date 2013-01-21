@@ -278,8 +278,8 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack, Do
   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
   if(cluster==NULL) return refVec;
   if(!cluster->IsEMCAL()) return refVec;
-  printf("EMCal cluster pointer ? %p\n",(void*)cluster);
-  printf("EMCal cluster ? %d\n",cluster->IsEMCAL());
+  //printf("EMCal cluster pointer ? %p\n",(void*)cluster);
+  //printf("EMCal cluster ? %d\n",cluster->IsEMCAL());
 
   // from ESDs
   double delphi = cluster->GetTrackDx(); 
