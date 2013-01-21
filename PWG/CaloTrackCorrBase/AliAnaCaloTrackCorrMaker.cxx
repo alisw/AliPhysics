@@ -550,6 +550,18 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
   
+  //Access pointers, and trigger mask check needed in mixing case
+  AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+  
+  UInt_t isMBTrigger = kFALSE;
+  UInt_t isTrigger   = kFALSE;
+  if(inputHandler)
+  {
+    isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
+    isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
+  }
+  
   //Loop on analysis algorithms
   
   if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
@@ -562,16 +574,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
     
     //Fill pool for mixed event for the analysis that need it
-    if(!GetReader()->IsEventTriggerAtSEOn())
+    if(!fReader->IsEventTriggerAtSEOn() && isMBTrigger)
     {
-      AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
-
-      if(inputHandler->IsEventSelected() & GetReader()->GetMixEventTriggerMask())
-      {
-        ana->FillEventMixPool();
-        continue; // pool filled do not try to fill AODs or histograms 
-      }
+      ana->FillEventMixPool();
+      continue; // pool filled do not try to fill AODs or histograms
     }
     
     //Make analysis, create aods in aod branch and in some cases fill histograms
@@ -586,20 +592,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
 
   // In case of mixing analysis, non triggered events are used,
   // do not fill control histograms for a non requested triggered event
-  if(!fReader->IsEventTriggerAtSEOn())
-  {
-    AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
-    
-    if(!inputHandler) return ;  
-    
-    UInt_t isTrigger = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
-    if(!isTrigger) 
-    {
-      if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis, MB for mixing *** \n");
-      
-      return;
-    }
+  if(!fReader->IsEventTriggerAtSEOn() && !isTrigger)
+  {    
+    if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis, MB for mixing *** \n");
+    return;
   }
   
   FillControlHistograms();
