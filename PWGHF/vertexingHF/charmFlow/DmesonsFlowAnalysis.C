@@ -752,20 +752,66 @@ void DrawEventPlane(){
   //  gStyle->SetTitleAlign(22);
   gStyle->SetTitleFont(42,"xyzg");
 
+  TH1F* htpc = (TH1F*)hevpls->ProjectionX();
+  TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
+  TH1F* hUsedPlane;
+  if(evPlane<2) hUsedPlane=(TH1F*)hv0->Clone("hUsedPlane");
+  else hUsedPlane=(TH1F*)htpc->Clone("hUsedPlane");
+
   TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1200,400);
   cvtotevpl->Divide(3,1);
   cvtotevpl->cd(1);
   hevpls->SetTitleFont(42);
   hevpls->Draw("COLZ");
-  TH1F* htpc = (TH1F*)hevpls->ProjectionX();
   cvtotevpl->cd(2);
   htpc->Draw();
   htpc->Fit("pol0");
-  TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
   cvtotevpl->cd(3);
   hv0->Draw();
   hv0->Fit("pol0");
   
+  TCanvas* cvfitevpl=new TCanvas(Form("cvditevpl%s",suffixcentr.Data()),Form("Fit to Ev plane %s",suffixcentr.Data()));
+  cvfitevpl->cd();
+  hUsedPlane->Draw();
+  TF1* four2=new TF1("four2","[0]*(1+2*[1]*cos(2*x))",hUsedPlane->GetXaxis()->GetXmin(),hUsedPlane->GetXaxis()->GetXmax());
+  TF1* four2s=new TF1("four2s","[0]*(1+2*[1]*sin(2*x))",hUsedPlane->GetXaxis()->GetXmin(),hUsedPlane->GetXaxis()->GetXmax());
+  hUsedPlane->Fit(four2s);
+  hUsedPlane->Fit(four2);
+  four2->SetLineColor(1);
+  four2s->SetLineColor(4);
+  four2->Draw("same");
+  four2s->Draw("same");
+  hUsedPlane->SetMaximum(hUsedPlane->GetMaximum()*1.07);
+  TLatex* tsin=new TLatex(0.15,0.84,Form("1+2*(%.4f)*sin(2*#Phi_{EP})",four2s->GetParameter(1)));
+  tsin->SetNDC();
+  tsin->SetTextColor(4);
+  tsin->Draw();
+  TLatex* tcos=new TLatex(0.15,0.77,Form("1+2*(%.4f)*cos(2*#Phi_{EP})",four2->GetParameter(1)));
+  tcos->SetNDC();
+  tcos->SetTextColor(1);
+  tcos->Draw();
+  
+  // Compute the second Fourier component for since and cosine
+  Double_t aveCos2Phi=0.;
+  Double_t aveSin2Phi=0.;
+  Double_t counts=0.;
+  for(Int_t i=1; i<=hUsedPlane->GetNbinsX(); i++){
+    Double_t co=hUsedPlane->GetBinContent(i);
+    Double_t phi=hUsedPlane->GetBinCenter(i);
+    aveCos2Phi+=co*TMath::Cos(2*phi);
+    aveSin2Phi+=co*TMath::Sin(2*phi);
+    counts+=co;
+  }
+  if(counts>0){ 
+    aveCos2Phi/=counts;
+    aveSin2Phi/=counts;
+  }
+  printf("\n------ Fourier 2nd components of EP distribution ------\n");
+  printf("<cos(2*Psi_EP)>=%f\n",aveCos2Phi);
+  printf("<sin(2*Psi_EP)>=%f\n",aveSin2Phi);
+  printf("\n");
+
+
   TCanvas* cvtotevplreso=new TCanvas(Form("cvtotevplreso%s",suffixcentr.Data()),Form("Ev plane Resolution %s",suffixcentr.Data()));
   cvtotevplreso->cd();
   hevplresos[0]->SetTitle("TPC cos2(#Psi_{A}-#Psi_{B})");
