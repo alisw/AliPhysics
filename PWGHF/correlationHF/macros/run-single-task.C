@@ -8,15 +8,23 @@
 ///
 /// Helper macro to run a single task either locally or on Grid
 /// Usage:
-/// aliroot -b -q -l run-single-task.C'("mode", "run", "tasks", "name", useMC, events, "path", "pattern", "friendPattern", "outputDir", "user")'
+/// aliroot -b -q -l run-single-task.C'("mode", "input", "tasks", "name", "options", events, "path", "pattern", "friendPattern", "outputDir", "user")'
 ///  arguments
 ///   mode:    local, full, test
-///   run:     list of run numbers. Or if using AODs with predefined list/AODs in same folder, specifiy as "AOD"
-///   tasks:   list of class names/source or header files of task
+///   input:   In grid mode a list of run numbers. 
+///            In local mode:
+///             - ESD file AliESDs.root
+///             - a list of ESD files in a text file <choose-file-name>.txt
+///             - AOD file AliAOD.root
+///             - AODs with predefined list/AODs in same folder, specifiy as "AOD"
+///
+///   tasks:   list of class names/source or header files of task, or AddTask-Macro
 ///
 ///  optional arguments
 ///   name:    analysis name (default 'myanalysis')
-///   useMC:   MC analysis enabled if true (default false')
+///   options: optional arguments passed onto the task, e.g. 'mc', 'event-mixing'
+///            options of run-single-task:
+///              'mcData' -> the run numbers indicate MC Data, no '000' prepended
 ///   events:  number of events to be processed (default -1 -> all)
 ///   path:    data search path for grid analysis (default from configuration file)
 ///   pattern: data search pattern (default from configuration file)
@@ -45,6 +53,9 @@
 /// <pre>
 /// for f in <search path>; do ln -s $f; done
 /// </pre>
+/// If there are dependencies (include headers) which are not available in the working
+/// directory, the macro searches for the aliroot libraries implementing them, and adds
+/// the libraries if found to the setup.
 ///
 /// Local analysis:
 /// requires only the path to the input file and the task class name. If the specified file is
@@ -73,6 +84,11 @@
 /// parameter.
 ///
 /// 
+/// Suggestions:
+/// Feedback appreciated: Matthias.Richter@cern.ch
+/// If you find this macro useful but not applicable without patching it, let me know
+/// your changes and use cases.
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -96,7 +112,7 @@ void run_single_task(const char* mode,
 		     const char* input,
 		     const char* tasknames,
 		     const char* analysisName=defaultAnalysisName,
-		     Bool_t useMC=kFALSE,
+		     const char* arguments="",
 		     int nevents=-1,
 		     const char* gridDataDir=NULL,
 		     const char* dataPattern=NULL,
@@ -153,10 +169,11 @@ void run_single_task(const char* mode,
     if (friendDataPattern==NULL) friendDataPattern=defaultFriendDataPattern;
   } else if (bRunLocal) {
     if (dataPattern==NULL) {
+      // thats a very crude logic, I guess it can fail in some special cases
       TString strin=input;
-      if (strin.EndsWith("AOD"))
+      if (strin.Contains("AOD"))
 	dataPattern="AOD";
-      else if (strin.EndsWith("ESD"))
+      else if (strin.Contains("ESD"))
 	dataPattern="ESD";
     }
   }
@@ -165,6 +182,31 @@ void run_single_task(const char* mode,
     // Connect to AliEn
     TGrid::Connect("alien://");
   }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // argument settings
+  //
+  bool mcData=false;
+  TString strArguments(arguments);
+  TObjArray* tokens=strArguments.Tokenize(" ");
+  if (tokens) {
+    for (int iToken=0; iToken<tokens->GetEntriesFast(); iToken++) {
+      TObject* token=tokens->At(iToken);
+      if (!token) continue;
+      TString arg=token->GetName();
+      const char* key=NULL;
+
+      key="mcData";
+      if (arg.CompareTo(key)==0) {
+	strArguments.ReplaceAll(key, "");
+	mcData=true;
+      }
+    }
+    delete tokens;
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,6 +363,10 @@ void run_single_task(const char* mode,
     //
     // local analysis
     //
+    if (strInput.BeginsWith("alien://")) {
+      // file on Grid -> connect to AliEn
+      TGrid::Connect("alien://");
+    }
     if(strInput.EndsWith("AliESDs.root")){
       // suppose it's a single ESD file
       chain = new TChain("esdTree"); 
@@ -331,7 +377,7 @@ void run_single_task(const char* mode,
       gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
       // chain can contain up to 200 files, value can be modified to 
       // include a subset of what the *txt file contains
-      chain = CreateESDChainf(strInput.Data(),200); 
+      chain = CreateESDChain(strInput.Data(),200); 
 
       // check if the files are on grid
       TIter next(chain->GetListOfFiles());
@@ -343,6 +389,23 @@ void run_single_task(const char* mode,
 	  break;
 	}
       }
+    } else if(strInput.EndsWith("ESD")){
+      // fetch esd tree from the setup macro
+      if (gDirectory!=NULL) {
+	const char* esdTreeName="esdTree";
+	TObject* chainObject=gDirectory->FindObject(esdTreeName);
+	if (chainObject) {
+	  chain=dynamic_cast<TChain*>(chainObject);
+	}
+      }
+      if (!chain) {
+	::Error("run_single_task", Form("failed to fetch esd tree object from setup; the chain with name '%s' has to be created before calling this macro", esdTreeName));
+	return;
+      }
+    } else if(strInput.EndsWith("AliAOD.root")){
+      // single local AOD file
+      chain = new TChain("aodTree"); 
+      chain->Add(strInput);
     } else if(strInput.EndsWith("AOD")){
       // fetch aod tree from the setup macro
       if (gDirectory!=NULL) {
@@ -421,7 +484,7 @@ void run_single_task(const char* mode,
 
     if (bSetRun) {
       // only set if input is a run number
-      if (!useMC && !strInput.BeginsWith("000"))
+      if (!mcData && !strInput.BeginsWith("000"))
 	alienHandler->SetRunPrefix("000");   // real data
 
       alienHandler->AddRunNumber(input);
@@ -539,7 +602,7 @@ void run_single_task(const char* mode,
     for (int iTaskMacroToken=0; iTaskMacroToken<taskMacroTokens->GetEntriesFast(); iTaskMacroToken++) {
       taskSource+="+g";
       TString configuration;
-      configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), useMC?"mc":"");
+      configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), strArguments.Data());
       if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
       gROOT->Macro(taskMacroTokens->At(iTaskMacroToken)->GetName());
     }
@@ -564,6 +627,34 @@ void run_single_task(const char* mode,
   } else {
     pManager->StartAnalysis("grid", nevents);
   }
+}
+
+// method for backward compatibility
+void run_single_task(const char* mode,
+		     const char* input,
+		     const char* tasknames,
+		     const char* analysisName,
+		     Bool_t useMC,
+		     int nevents=-1,
+		     const char* gridDataDir=NULL,
+		     const char* dataPattern=NULL,
+		     const char* friendDataPattern=NULL,
+		     TString odir="",
+		     const char* user=NULL
+		     )
+{
+  run_single_task(mode,
+		  input,
+		  taskname,
+		  analysisName,
+		  useMC?"mc":"",
+		  nevents,
+		  gridDataDir,
+		  dataPattern,
+		  friendDataPattern,
+		  odir,
+		  user
+		  );
 }
 
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass)
