@@ -331,6 +331,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NTrk",                   "N_{trk}",                                            ""},
   {"Tracks",                 "tracks",                                             ""},
   {"NVtxContrib",            "N_{vtx. contrib.}",                                  ""},
+  {"NVtxContribTPC",         "N_{vtx. contrib.}^{TPC}",                            ""},
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
   {"NaccTrcklts0916",        "N_{acc. trkl} #cbar_{-1.6<#eta<-0.9}^{0.9<#eta<1.6}",""},

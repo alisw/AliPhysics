@@ -100,3 +100,17 @@ void AliDielectronCutGroup::SetCompOperator(Bool_t compOperator)
   
   fCompOperator = compOperator;
 }
+
+//________________________________________________________________________
+void AliDielectronCutGroup::Print(const Option_t* /*option*/) const
+{
+  //
+  // Print cuts and the range
+  //
+
+  TIter listIterator(&fCutGroupList);
+  while (AliAnalysisCuts *thisCut = (AliAnalysisCuts*) listIterator()) {
+    thisCut->Print();
+  }
+
+}
