@@ -54,7 +54,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
 
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
-  void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE ) { fkLowEnergyPP = lLowEnergyPP; }
+  void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -71,7 +71,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   // (have to be streamed too or configuration is lost)
   
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
-  Bool_t fkLowEnergyPP; //if true, skip FASTOnly (default FALSE)
+  Bool_t fkSwitchINT7;  //if true, skip FASTOnly (default FALSE)
 
 	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related

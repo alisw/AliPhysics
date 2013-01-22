@@ -98,7 +98,51 @@ ClassImp(AliAnalysisTaskExtractCascade)
 AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade() 
   : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
-   fkLowEnergyPP ( kFALSE ),
+   fkSwitchINT7  ( kFALSE ),
+
+//------------------------------------------------
+// Tree Variables
+//------------------------------------------------
+
+   fTreeCascVarCharge(0),
+   fTreeCascVarMassAsXi(0),
+   fTreeCascVarMassAsOmega(0),
+   fTreeCascVarPt(0),
+   fTreeCascVarPtMC(0),
+   fTreeCascVarRapMC(0),
+   fTreeCascVarRapXi(0),
+   fTreeCascVarRapOmega(0),
+   fTreeCascVarNegEta(0),
+   fTreeCascVarPosEta(0),
+   fTreeCascVarBachEta(0),
+   fTreeCascVarDCACascDaughters(0),
+   fTreeCascVarDCABachToPrimVtx(0),
+   fTreeCascVarDCAV0Daughters(0),
+   fTreeCascVarDCAV0ToPrimVtx(0),
+   fTreeCascVarDCAPosToPrimVtx(0),
+   fTreeCascVarDCANegToPrimVtx(0),
+   fTreeCascVarCascCosPointingAngle(0),
+   fTreeCascVarCascRadius(0),
+   fTreeCascVarV0Mass(0),
+   fTreeCascVarV0CosPointingAngle(0),
+   fTreeCascVarV0Radius(0),
+   fTreeCascVarLeastNbrClusters(0),
+   fTreeCascVarMultiplicity(0),
+   fTreeCascVarDistOverTotMom(0),
+   fTreeCascVarPID(0),
+   fTreeCascVarPIDBachelor(0),
+   fTreeCascVarPIDNegative(0),
+   fTreeCascVarPIDPositive(0),
+   fTreeCascVarPosTransMom(0),
+   fTreeCascVarNegTransMom(0),
+   fTreeCascVarPosTransMomMC(0),
+   fTreeCascVarNegTransMomMC(0),
+   fTreeCascVarNegNSigmaPion(0),
+   fTreeCascVarNegNSigmaProton(0),
+   fTreeCascVarPosNSigmaPion(0),
+   fTreeCascVarPosNSigmaProton(0),
+   fTreeCascVarBachNSigmaPion(0),
+   fTreeCascVarBachNSigmaKaon(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -127,8 +171,52 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
 AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name) 
   : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
-   fkLowEnergyPP ( kFALSE ),
+   fkSwitchINT7  ( kFALSE ),
      
+//------------------------------------------------
+// Tree Variables
+//------------------------------------------------
+
+   fTreeCascVarCharge(0),
+   fTreeCascVarMassAsXi(0),
+   fTreeCascVarMassAsOmega(0),
+   fTreeCascVarPt(0),
+   fTreeCascVarPtMC(0),
+   fTreeCascVarRapMC(0),
+   fTreeCascVarRapXi(0),
+   fTreeCascVarRapOmega(0),
+   fTreeCascVarNegEta(0),
+   fTreeCascVarPosEta(0),
+   fTreeCascVarBachEta(0),
+   fTreeCascVarDCACascDaughters(0),
+   fTreeCascVarDCABachToPrimVtx(0),
+   fTreeCascVarDCAV0Daughters(0),
+   fTreeCascVarDCAV0ToPrimVtx(0),
+   fTreeCascVarDCAPosToPrimVtx(0),
+   fTreeCascVarDCANegToPrimVtx(0),
+   fTreeCascVarCascCosPointingAngle(0),
+   fTreeCascVarCascRadius(0),
+   fTreeCascVarV0Mass(0),
+   fTreeCascVarV0CosPointingAngle(0),
+   fTreeCascVarV0Radius(0),
+   fTreeCascVarLeastNbrClusters(0),
+   fTreeCascVarMultiplicity(0),
+   fTreeCascVarDistOverTotMom(0),
+   fTreeCascVarPID(0),
+   fTreeCascVarPIDBachelor(0),
+   fTreeCascVarPIDNegative(0),
+   fTreeCascVarPIDPositive(0),
+   fTreeCascVarPosTransMom(0),
+   fTreeCascVarNegTransMom(0),
+   fTreeCascVarPosTransMomMC(0),
+   fTreeCascVarNegTransMomMC(0),
+   fTreeCascVarNegNSigmaPion(0),
+   fTreeCascVarNegNSigmaProton(0),
+   fTreeCascVarPosNSigmaPion(0),
+   fTreeCascVarPosNSigmaProton(0),
+   fTreeCascVarBachNSigmaPion(0),
+   fTreeCascVarBachNSigmaKaon(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -471,12 +559,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
    Bool_t isSelected = 0;
    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
 
-   //pp at 2.76TeV: special case, ignore FastOnly
-   if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliVEvent::kFastOnly) ){
-        PostData(1, fListHist);
-        PostData(2, fTreeCascade);
-      return;
-   } 
+   //pA triggering: CINT7
+   if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+
    //Standard Min-Bias Selection
    if ( ! isSelected ) { 
         PostData(1, fListHist);
@@ -487,7 +572,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 //------------------------------------------------
 // Rerun cascade vertexer! 
 //------------------------------------------------
-
+/*
   lESDevent->ResetCascades();
   lESDevent->ResetV0s();
 
@@ -499,7 +584,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 
   lV0vtxer.Tracks2V0vertices(lESDevent);
   lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
-
+*/
 //------------------------------------------------
 // After Trigger Selection
 //------------------------------------------------
