@@ -102,6 +102,7 @@ void AliOADBFillingScheme::Browse(TBrowser *b)
       }
       b->Add(folder);
       delete tokIter;
+      delete tokens;
     }
     delete mapIter;    
   }     

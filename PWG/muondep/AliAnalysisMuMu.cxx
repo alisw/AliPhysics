@@ -2533,6 +2533,7 @@ void AliAnalysisMuMu::PlotBackgroundEvolution(const char* gfile, const char* tri
   }
   
   l->Draw();
+  delete triggers;
 }
 
 //_____________________________________________________________________________
@@ -2715,6 +2716,8 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList, Bool_t compa
                total,totalExpected,totalExpected ? total*100.0/totalExpected : 0.0) << std::endl;
   
   AliLog::SetGlobalLogLevel(oldLevel);
+  delete triggers;
+  delete runs;
 }
 
 //_____________________________________________________________________________

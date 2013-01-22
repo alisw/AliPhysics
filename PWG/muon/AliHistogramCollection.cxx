@@ -377,7 +377,9 @@ AliHistogramCollection::Histo(const char* sidentifier) const
     action = static_cast<TObjString*>(a->At(1))->String();
     action.ToUpper();
   }
-  
+
+  delete a;
+
   Int_t nslashes = identifier.CountChar('/');
 
   TH1* h(0x0);
