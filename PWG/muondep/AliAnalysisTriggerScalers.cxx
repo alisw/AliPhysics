@@ -467,7 +467,8 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
       (*out) << sep << "0" << sep << "0" << sep << "0" << sep << "0" << sep << std::endl; // LHC per fill, LHC integrated, lumi tot muon , efficiency
     }
   }
-  
+  //
+  delete triggerArray;
 }
 
 //______________________________________________________________________________
@@ -547,9 +548,11 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
       ++color;
       ++marker;
     }
+    delete a;
     return 0x0;
   }
-  
+  delete a;
+
   std::vector<int> vx;
   std::vector<int> vex;
   std::vector<double> vy;

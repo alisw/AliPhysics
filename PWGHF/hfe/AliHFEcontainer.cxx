@@ -389,6 +389,7 @@ AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const
     for(Int_t istep = 0; istep < ctemp->GetNStep(); istep++)
       cmerged->SetGrid(cstep++, new AliCFGridSparse(*ctemp->GetGrid(istep)));
   }
+  delete containers;
   return cmerged;
 }
 
