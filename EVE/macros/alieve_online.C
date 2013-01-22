@@ -388,11 +388,11 @@ void alieve_online_on_new_event()
 
     Int_t status;
 
-    status = gSystem->Exec(TString::Format("xwd -id %u | convert - %s",
-			   gEve->GetBrowser()->GetId(), pic.Data()));
+    // create screenshots from OpenGL views
+    TEveUtil::LoadMacro("saveViews.C+");
+    saveViews(pic.Data()); 
 
-    printf("Post capture -- status=%d.\n", status);
-
+    // send screenshot to AMORE
     status = gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
 		          id.Data(), pic.Data(),
 		          AliEveEventManager::AssertRawReader()->GetRunNumber()));
