@@ -1,5 +1,5 @@
 AliAnalysisTaskExtractPerformanceCascade *AddTaskExtractPerformanceCascade( Bool_t lSwitchIsNuclear     = kFALSE, 
-                                                                  Bool_t lSwitchIsLowEnergyPP = kFALSE,
+                                                                  Bool_t lSwitchINT7 = kFALSE,
                                                                   const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
@@ -24,7 +24,7 @@ AliAnalysisTaskExtractPerformanceCascade *AddTaskExtractPerformanceCascade( Bool
 
    //Configuration
    taskextractperformance -> SetIsNuclear     ( lSwitchIsNuclear     );
-   taskextractperformance -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
+   taskextractperformance -> SetINT7Trigger   ( lSwitchINT7          );
 
    mgr->AddTask(taskextractperformance);
 
