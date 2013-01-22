@@ -1,6 +1,6 @@
-AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kFALSE, 
-                                            Bool_t lSwitchIsLowEnergyPP = kFALSE,
-                                            Bool_t lSwitchUseOnTheFly   = kFALSE,
+AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear      = kFALSE, 
+                                            Bool_t lSwitchINT7           = kFALSE,
+                                            Bool_t lSwitchUseOnTheFly    = kFALSE,
                                             Bool_t lSwitchTakeAllTracks  = kFALSE, 
                                             const TString lMasterJobSessionFlag = "")
 {
@@ -26,7 +26,7 @@ AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kFALSE
 
    //Configuration
    taskv0extract -> SetIsNuclear     ( lSwitchIsNuclear     );
-   taskv0extract -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
+   taskv0extract -> SetINT7Trigger   ( lSwitchINT7          );
    taskv0extract -> SetUseOnTheFly   ( lSwitchUseOnTheFly   );
    taskv0extract -> SetTakeAllTracks ( lSwitchTakeAllTracks );
 

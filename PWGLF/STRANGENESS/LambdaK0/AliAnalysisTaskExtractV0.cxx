@@ -92,7 +92,7 @@ ClassImp(AliAnalysisTaskExtractV0)
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0() 
   : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
    fkIsNuclear     ( kFALSE ), 
-   fkLowEnergyPP   ( kFALSE ),
+   fkSwitchINT7    ( kFALSE ),
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
 //------------------------------------------------
@@ -180,7 +180,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name) 
   : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
    fkIsNuclear     ( kFALSE ), 
-   fkLowEnergyPP   ( kFALSE ),
+   fkSwitchINT7    ( kFALSE ),
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
      
@@ -598,12 +598,9 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    Bool_t isSelected = 0;
    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
 
-   //pp at 2.76TeV: special case, ignore FastOnly
-   if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliVEvent::kFastOnly) ){
-      PostData(1, fListHistV0);
-      PostData(2, fTree);
-      return;
-   } 
+   //pA triggering: CINT7
+   if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+
    //Standard Min-Bias Selection
    if ( ! isSelected ) { 
       PostData(1, fListHistV0);

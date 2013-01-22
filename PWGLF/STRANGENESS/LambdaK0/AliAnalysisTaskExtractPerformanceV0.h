@@ -55,7 +55,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void CheckChargeV0(AliESDv0 *thisv0);
 
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
-  void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE ) { fkLowEnergyPP = lLowEnergyPP; }
+  void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
   
@@ -72,7 +72,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   //Objects Controlling Task Behaviour 
   
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
-  Bool_t fkLowEnergyPP; //if true, skip FASTOnly (default FALSE)
+  Bool_t fkSwitchINT7 ; //if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; //if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
 
