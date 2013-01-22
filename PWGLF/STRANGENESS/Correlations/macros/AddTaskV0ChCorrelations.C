@@ -2,7 +2,10 @@
 //
 // AddTask for AliAnalysisTaskV0ChCorrelations task
 //
-AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const Bool_t bMCtruth=kFALSE)
+AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const Bool_t bMCtruth=kFALSE,
+														 Float_t DcaDToPV = 0.5,
+														 Float_t DcaV0D = 0.1
+														)
 {
   // Creates a V0Ch correlations analysis task and adds it to the analysis manager.
 
@@ -25,6 +28,8 @@ AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const Bool_t bMCtruth=k
 
 	// create task
     AliAnalysisTaskV0ChCorrelations* task = new AliAnalysisTaskV0ChCorrelations("V0ChCorrelations_task");
+	task->SetDcaDToPV(DcaDToPV);
+	task->SetDcaV0D(DcaV0D);
     mgr->AddTask(task);
     
     // Create ONLY the output containers for the data produced by the task.
