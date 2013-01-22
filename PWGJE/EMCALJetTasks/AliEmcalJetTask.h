@@ -6,6 +6,7 @@
 class TClonesArray;
 class AliVEvent;
 
+#include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliEmcalJetTask : public AliAnalysisTaskSE {
@@ -31,7 +32,19 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
   void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
-
+  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
+  {
+    if(!fIsPSelSet)
+    {
+      fIsPSelSet = kTRUE;
+      fOfflineTriggerMask = offlineTriggerMask;
+    }
+    else
+    {
+      AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");  
+      fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
+    }
+  }
  protected:
   void                   FindJets();
   Bool_t                 DoInit();
@@ -52,6 +65,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fMinJetPt;               // min jet pt to keep jet in output
   Double_t               fGhostArea;              // ghost area
   Bool_t                 fIsInit;                 //!=true if already initialized
+  Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   TClonesArray          *fJets;                   //!jet collection
