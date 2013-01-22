@@ -1,4 +1,4 @@
-/* Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved.  
+/* Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved.  
  * See cxx source for full Copyright notice  
  *
  * AliAnalysisTaskV0ChCorrelations class
@@ -6,7 +6,7 @@
  * The task selects candidates for K0s, Lambdas and AntiLambdas (trigger particles)
  * and calculates correlations with charged unidentified particles (associated particles) in phi and eta. 
  * The task works with AOD events only and containes also mixing for acceptance corrections.
- * Edited by Marek Bombara, last update October2012, Marek.Bombara@cern.ch
+ * Edited by Marek Bombara, last update January 2013, Marek.Bombara@cern.ch
  */
 
 #ifndef ALIANALYSISTASKV0CHCORRELATIONS_H
@@ -26,9 +26,18 @@ class AliEventPoolManager;
 
 class AliAnalysisTaskV0ChCorrelations : public AliAnalysisTaskSE {
 public:
-   AliAnalysisTaskV0ChCorrelations();
-   AliAnalysisTaskV0ChCorrelations(const char *name);
+   AliAnalysisTaskV0ChCorrelations(const char *name = "AliAnalysisTaskV0ChCorrelations");
+   //AliAnalysisTaskV0ChCorrelations(const AliAnalysisTaskV0ChCorrelations&);            //not implemented
+   //AliAnalysisTaskV0ChCorrelations& operator=(const AliAnalysisTaskV0ChCorrelations&); //not implemented 
    virtual ~AliAnalysisTaskV0ChCorrelations();
+
+   // Setting the global variables
+   void SetDcaDToPV(Float_t DcaDToPV = 0.5) {fDcaDToPV = DcaDToPV;}
+   void SetDcaV0D(Float_t DcaV0D = 0.1) {fDcaV0D = DcaV0D;}
+
+   // Getting the global variables
+   Float_t GetDcaDToPV() { return fDcaDToPV; }
+   Float_t GetDcaV0D() { return fDcaV0D; }
 
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
@@ -36,14 +45,19 @@ public:
 
    Bool_t IsMyGoodPrimaryTrack(const AliAODTrack* aodtrack);
    Bool_t IsMyGoodDaughterTrack(const AliAODTrack* aodtrack);
-   Bool_t IsMyGoodV0CutSet0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
-   Bool_t IsMyGoodV0CutSet1(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
-   Bool_t IsMyGoodV0CutSet2(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
+   Bool_t IsMyGoodV0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
 
 private:
+
+   AliAnalysisTaskV0ChCorrelations(const AliAnalysisTaskV0ChCorrelations&);            //not implemented
+   AliAnalysisTaskV0ChCorrelations& operator=(const AliAnalysisTaskV0ChCorrelations&); //not implemented 
+
    Bool_t          fFillMixed;  // enable event mixing (default: ON)
    Int_t           fMixingTracks;      // size of track buffer for event mixing
    AliEventPoolManager*          fPoolMgr;         //! event pool manager
+
+   Float_t         fDcaDToPV;   // DCA of the daughter to primary vertex
+   Float_t         fDcaV0D;     // DCA between daughters
 
    TList           *fOutput;        // Output list
    AliPIDResponse  *fPIDResponse;   // PID response
