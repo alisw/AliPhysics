@@ -24,7 +24,7 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     virtual void SetParameters(Float_t alpha1, Float_t alpha2);
     virtual void SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
-    virtual void SetSaturationParams(Float_t ngray=15, Float_t nblack=28) 
+    virtual void SetSaturationParams(Int_t ngray=15, Int_t nblack=28) 
     		{fnGraySaturation=ngray; fnBlackSaturation=nblack;}
     
  protected:

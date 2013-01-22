@@ -195,7 +195,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,-1);
+		 time, kPNoProcess, nt, 1.,1);
 	KeepTrack(nt);
     }
 //
@@ -207,7 +207,7 @@ void AliGenSlowNucleons::Generate()
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
 	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,-1);
+		 time, kPNoProcess, nt, 1.,1);
 	KeepTrack(nt);
     }
 //
@@ -218,7 +218,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,-1);
+		 time, kPNoProcess, nt, 1.,1);
 	KeepTrack(nt);
     }
 //
@@ -229,7 +229,7 @@ void AliGenSlowNucleons::Generate()
     for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
-		 time, kPNoProcess, nt, 1.,-1);
+		 time, kPNoProcess, nt, 1.,1);
 	KeepTrack(nt);
     }
 }

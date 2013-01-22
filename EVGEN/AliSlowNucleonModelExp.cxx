@@ -33,8 +33,8 @@ ClassImp(AliSlowNucleonModelExp)
 AliSlowNucleonModelExp::AliSlowNucleonModelExp():
     fP(82),
     fN (208 - 82),
-    fAlphaGray(2.),
-    fAlphaBlack(4.),
+    fAlphaGray(2.3),
+    fAlphaBlack(3.6),
     fApplySaturation(kTRUE),
     fnGraySaturation(15),
     fnBlackSaturation(28)
@@ -42,6 +42,10 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp():
   //
   // Default constructor
   //
+  //
+  printf("\n\nInitializing slow nucleon model with parameters:\n");
+  printf(" \t alpha_{gray} %1.2f  alpha_{black} %1.2f\n",fAlphaGray, fAlphaBlack);
+  printf(" \t SATURATION %d w. %d (gray) %d (black) \n\n",fApplySaturation,fnGraySaturation,fnBlackSaturation);
 }
 
 
@@ -65,7 +69,7 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons(AliCollisionGeometry* geo,
     Float_t nBlack  = 0.;
     if(!fApplySaturation || (fApplySaturation && nGray<fnGraySaturation)) nBlack = fAlphaBlack * nu;
     else if(fApplySaturation && nGray>=fnGraySaturation) nBlack = fnBlackSaturation;
-    Float_t nBlackNeutrons = nBlack * fN / (fN + fP);
+    Float_t nBlackNeutrons = nBlack * 0.84;
     Float_t nBlackProtons  = nBlack - nBlackNeutrons;
 
 // Actual number (including fluctuations) from binomial distribution
