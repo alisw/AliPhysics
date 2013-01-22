@@ -111,11 +111,13 @@ void AliFastJetInput::FillInput(){
       Float_t px,py,pz,en;
       // load input vectors
       for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
+	if(fReader->GetCutFlag(i)!=1)continue; // pt cut
 	TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
 	px = lv->Px();
 	py = lv->Py();
 	pz = lv->Pz();
 	en = lv->Energy();
+	
 	//	cout<<"in FillInput...... "<<i<<" "<<px<<" "<<py<<"  "<<pz<<" "<<en<<endl;
 	fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
 	inputPart.set_user_index(i); //label the particle into Fastjet algortihm
