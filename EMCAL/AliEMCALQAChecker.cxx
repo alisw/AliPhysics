@@ -110,7 +110,7 @@ void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArr
 	if ( index == AliQAv1::kRAW ) 
 	{
     CheckRaws(test, list);
-		printf ("checkers for task %d \n", index) ;		
+    //printf ("checkers for task %d \n", index) ;		
 	}
 	
 	if ( index == AliQAv1::kREC)
@@ -122,7 +122,7 @@ void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArr
 	{
     CheckESD(test, list);
 	}
-	AliWarning(Form("Checker for task %d not implement for the moment",index));
+	//AliWarning(Form("Checker for task %d not implement for the moment",index));
 }
 
 //______________________________________________________________________________
@@ -212,25 +212,33 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 			TH2F *hL1JetPatch = (TH2F*)list[specie]->At(kJL1);
 			TH1I *hFrameR = (TH1I*)list[specie]->At(kSTUTRU);
 
+			// ========================================================================================
 			//calib histo checker first:
 
-      if(hdata->GetEntries()!=0 && ratio->GetEntries()!=0) {
+			// first clean lines, text (functions)
+			lstF = hdata->GetListOfFunctions();
+			CleanListOfFunctions(lstF);
+			lstF = ratio->GetListOfFunctions();
+			CleanListOfFunctions(lstF);
+
+			if(hdata->GetEntries()!=0 && ratio->GetEntries()!=0) {
+
+			  lstF = hdata->GetListOfFunctions();
+
 				//adding the lines to distinguish different SMs
-				lstF = hdata->GetListOfFunctions();
-				CleanListOfFunctions(lstF);
 				lstF->Add(fLineCol->Clone()); 
-				for(Int_t iLine = 0; iLine < 4; iLine++) {
+				for(Int_t iLine = 0; iLine < 5; iLine++) {
 					lstF->Add(fLineRow[iLine]->Clone());
 				} 
 				//Now adding the text to for each SM
 				for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  //number of SMs loop start
 					lstF->Add(fTextSM[iSM]->Clone()); 
-				}
-				//
-				lstF = ratio->GetListOfFunctions();
-				CleanListOfFunctions(lstF);
-				//
+				}			
+				
+
 				//now check the ratio histogram
+				lstF = ratio->GetListOfFunctions();
+
 				Double_t binContent = 0. ;  
 				Int_t nGoodTower = 0 ;
 				Double_t rv = 0. ;
@@ -241,7 +249,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 					}
 				}
 				rv = nGoodTower/nTot ; 
-				printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
+				//printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
 				if(fText){
 					lstF->Add(fText->Clone()) ;
 					fText->Clear() ; 
@@ -261,12 +269,21 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 				}//fText
 			} // calib histo checking done
 
-			//now L1 checks:
-      if (specie != calibSpecieId) {
-			if(hL1GammaPatch->GetEntries() !=0 ) {
-				lstF = hL1GammaPatch->GetListOfFunctions();
-				CleanListOfFunctions(lstF);
+			// ========================================================================================
+			// now L1 checks:
 
+			// first clean lines, text (functions)
+			lstF = hL1GammaPatch->GetListOfFunctions();
+			CleanListOfFunctions(lstF);
+			lstF = hL1JetPatch->GetListOfFunctions();
+			CleanListOfFunctions(lstF);
+			lstF = hFrameR->GetListOfFunctions();
+			CleanListOfFunctions(lstF);
+
+			if (specie != calibSpecieId) {
+			  //if(hL1GammaPatch->GetEntries() !=0 ) {
+			  if(hL1GammaPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+ 			        lstF = hL1GammaPatch->GetListOfFunctions();
 
 				// Checker for L1GammaPatch 
 				//Double_t dL1GmeanTrig    = 1./2961.; 
@@ -341,10 +358,11 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 				}//fTextL1[0]
 			}// L1 gamma patch checking done
 
-			if(hL1JetPatch->GetEntries() !=0) {
-				lstF = hL1JetPatch->GetListOfFunctions();
-				CleanListOfFunctions(lstF);
-			
+			  //if(hL1JetPatch->GetEntries() !=0) {
+			if(hL1JetPatch->GetEntries() > 10) { // need some statistics for hot spot calculation
+
+			  lstF = hL1JetPatch->GetListOfFunctions();
+
 				// Checker for L1JetPatch
 				//Double_t dL1JmeanTrig = 1/126.;
 				//Int_t sigmaJ = 5; // deviation from  mean value
@@ -397,9 +415,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       } // if (specie != calibSpecieId) ..
 
 			if(hFrameR->GetEntries() !=0) {
-				lstF = hFrameR->GetListOfFunctions();
-				CleanListOfFunctions(lstF);
-
+			  lstF = hFrameR->GetListOfFunctions();
+			
 				Int_t badLink[32] = {0};
 				Int_t nBadLink = 0;
 				for(Int_t ix = 1; ix <= hFrameR->GetNbinsX(); ix++) {
