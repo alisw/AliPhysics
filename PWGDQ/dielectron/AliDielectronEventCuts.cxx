@@ -58,7 +58,9 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fkVertexAOD(0x0),
   fparMean(0x0),
   fparSigma(0x0),
-  fcutSigma(3.)
+  fcutSigma(3.),
+  fparMinVtxContributors(0x0),
+  fparMaxVtxContributors(0x0)
 {
   //
   // Default Constructor
@@ -83,7 +85,9 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fkVertexAOD(0x0),
   fparMean(0x0),
   fparSigma(0x0),
-  fcutSigma(3.)
+  fcutSigma(3.),
+  fparMinVtxContributors(0x0),
+  fparMaxVtxContributors(0x0)
 {
   //
   // Named Constructor
@@ -194,6 +198,18 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     if(multV0 > mV0+fcutSigma*sV0 || multV0 < mV0-fcutSigma*sV0) return kFALSE;
   }
 
+  // cut on the number of vertex contributors using TPC versus global vertex
+  if(fparMinVtxContributors && fparMaxVtxContributors) {
+    const AliESDVertex *vtxTPC = ev->GetPrimaryVertexTPC();
+    const AliESDVertex *vtxGbl = ev->GetPrimaryVertex();
+    Double_t nContribTPC = (vtxTPC ? vtxTPC->GetNContributors() : 0);
+    Double_t nContribGbl = (vtxGbl ? vtxGbl->GetNContributors() : 0);
+    Double_t minCut = fparMinVtxContributors->Eval(nContribGbl);
+    Double_t maxCut = fparMaxVtxContributors->Eval(nContribGbl);
+    if(nContribTPC > maxCut || nContribTPC < minCut) return kFALSE;
+  }
+
+
   return kTRUE;
 }
 //______________________________________________
@@ -271,7 +287,8 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       return kFALSE;
   }
   */
-
+  
+  // correlation cut Ntrks vs. multV0
   if(fparMean && fparSigma) {
     Double_t nTrks  = ev->GetNumberOfTracks();
     Double_t multV0 = 0.0;
@@ -279,6 +296,17 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     Double_t mV0 = fparMean->Eval(nTrks);
     Double_t sV0 = fparSigma->Eval(nTrks);
     if(multV0 > mV0+fcutSigma*sV0 || multV0 < mV0-fcutSigma*sV0) return kFALSE;
+  }
+
+  // cut on the number of vertex contributors using TPC versus global vertex
+  if(fparMinVtxContributors && fparMaxVtxContributors) {
+    const AliAODVertex *vtxTPC = ev->GetVertex(AliAODVertex::kMainTPC);
+    const AliAODVertex *vtxGbl = ev->GetPrimaryVertex();
+    Double_t nContribTPC = (vtxTPC ? vtxTPC->GetNContributors() : 0);
+    Double_t nContribGbl = (vtxGbl ? vtxGbl->GetNContributors() : 0);
+    Double_t minCut = fparMinVtxContributors->Eval(nContribGbl);
+    Double_t maxCut = fparMaxVtxContributors->Eval(nContribGbl);
+    if(nContribTPC > maxCut || nContribTPC < minCut) return kFALSE;
   }
 
   return kTRUE;

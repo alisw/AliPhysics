@@ -45,6 +45,7 @@ public:
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   void SetCentralityRange(Double_t min, Double_t max) { fCentMin=min; fCentMax=max; }
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
+  void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   //
   //Analysis cuts interface
   //
@@ -75,7 +76,8 @@ private:
   TF1*     fparMean;                // parametrization of the mean values
   TF1*     fparSigma;               // parametrization of the sigmas
   Double_t fcutSigma;               // number of absolut sigmas inclusion
-
+  TF1*     fparMinVtxContributors;  // parametrization of #vtx contributors global vs TPC (lower limit) 
+  TF1*     fparMaxVtxContributors;  // parametrization of #vtx contributors global vs TPC (upper limit) 
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 

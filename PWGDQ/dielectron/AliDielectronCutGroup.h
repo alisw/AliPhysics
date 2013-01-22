@@ -46,6 +46,9 @@ public:
   
   void AddCut(AliAnalysisCuts* fCut);
   void SetCompOperator(Bool_t compOperator);
+
+  virtual void Print(const Option_t* option = "") const;
+
   
 private:
   TList  fCutGroupList;  //for saving the different cuts

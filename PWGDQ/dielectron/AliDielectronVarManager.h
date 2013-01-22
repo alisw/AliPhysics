@@ -320,6 +320,7 @@ public:
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // ESD tracks TODO: ambiguous
     kNVtxContrib,             // number of primary vertex contibutors
+    kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6        
     kNaccTrcklts0916,        // number of accepted SPD tracklets in 0.9<|eta|<1.6
@@ -1567,7 +1568,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     if(qstd && qsub1 && qsub2) {
       values[AliDielectronVarManager::kTPCxH2uc]   = qstd->X();
       values[AliDielectronVarManager::kTPCyH2uc]   = qstd->Y();
-      values[AliDielectronVarManager::kTPCmagH2uc] = TMath::Sqrt(qstd->X()*qstd->X()+qstd->Y()*qstd->Y());
+      values[AliDielectronVarManager::kTPCmagH2uc] = qstd->Mod();
       values[AliDielectronVarManager::kTPCrpH2uc]  = ((TMath::Abs(qstd->X())>1.0e-10) ? TMath::ATan2(qstd->Y(),qstd->X())/2.0 : 0.0);
       values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
       values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
@@ -1690,7 +1691,10 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kZRes]       = primVtx->GetZRes();
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
-  
+
+  const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC(); 
+  values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
+
   // Event multiplicity estimators
   Int_t nTrSPD05=0; Int_t nTrITSTPC05=0; Int_t nTrITSSA05=0;
   event->EstimateMultiplicity(nTrSPD05, nTrITSTPC05, nTrITSSA05, 0.5);
@@ -1756,6 +1760,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   if(!header->GetEventplaneP())
     values[AliDielectronVarManager::kTPCrpH2uc] = header->GetEventplane();
 
+  const AliAODVertex *vtxTPC = event->GetVertex(AliAODVertex::kMainTPC);
+  values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
   //const AliAODVertex *primVtx = event->GetPrimaryVertex();
 }
   
@@ -1794,7 +1800,7 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
 
       values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
-      values[AliDielectronVarManager::kTPCmagH2] = TMath::Sqrt(qcorr->X()*qcorr->X()+qcorr->Y()*qcorr->Y());
+      values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
       values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
 
       values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
