@@ -672,6 +672,14 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
    TString execCommand = fExecutableCommand;
    SetAnalysisMacro(Form("%s.C", name));
    SetExecutable(Form("%s.sh", name));
+      fOutputFiles = GetListOfFiles("outaod");
+      // Add extra files registered to the analysis manager
+      TString extra = GetListOfFiles("ext");
+      if (!extra.IsNull()) {
+         extra.ReplaceAll(".root", "*.root");
+         if (!fOutputFiles.IsNull()) fOutputFiles += ",";
+         fOutputFiles += extra;
+      }
 //   SetExecutableCommand("aliroot -b -q ");
    SetValidationScript(Form("%s_validation.sh", name));
    WriteAnalysisFile();   
@@ -2650,6 +2658,8 @@ Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
 Bool_t AliAnalysisAlien::MergeInfo(const char *output, const char *collection)
 {
 // Merges a collection of output files using concatenation.
+   TString scoll(collection);
+   if (!scoll.Contains(".xml")) return kFALSE;
    TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", collection));
    if (!coll) {
       ::Error("MergeInfo", "Input XML %s collection empty.", collection);
@@ -2702,6 +2712,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    Int_t countChunk = 0;
    Int_t countZero = nmaxmerge;
    Bool_t merged = kTRUE;
+   Bool_t isGrid = kTRUE;
    Int_t index = outputFile.Index("@");
    if (index > 0) outputFile.Remove(index);
    TString inputFile = outputFile;
@@ -2722,17 +2733,29 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          listoffiles->Add(new TNamed(fname.Data(),""));
       }   
    } else if (sbasedir.Contains(".txt")) {
+      // The file having the .txt extension is expected to contain a list of
+      // folders where the output files will be looked. For alien folders,
+      // the full folder LFN is expected (starting with alien://)
       // Assume lfn's on each line
       TString line;
       ifstream in;
       in.open(sbasedir);
+      if (in.fail()) {
+         ::Error("MergeOutput", "File %s cannot be opened. Merging stopped." ,sbasedir.Data());
+         return kTRUE;
+      }           
       Int_t nfiles = 0;
       while (in.good()) {
          in >> line;
          if (line.IsNull() || line.BeginsWith("#")) continue;
+         line.Strip();
+         if (!line.Contains("alien:")) isGrid = kFALSE;
+         line += "/";
+         line += outputFile;
          nfiles++;
          listoffiles->Add(new TNamed(line.Data(),""));
       }
+      in.close();
       if (!nfiles) {
          ::Error("MergeOutput","Input file %s contains no files to be merged\n", sbasedir.Data());
          delete listoffiles;
@@ -2831,7 +2854,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          // Loop 'find' results and get next LFN
          if (countZero == nmaxmerge) {
             // First file in chunk - create file merger and add previous chunk if any.
-            fm = new TFileMerger(kTRUE);
+            fm = new TFileMerger(isGrid);
             fm->SetFastMethod(kTRUE);
             if (previousChunk.Length()) fm->AddFile(previousChunk.Data());
             outputChunk = outputFile;
@@ -2871,7 +2894,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    }
    // Merging stage different than 0.
    // Move to the begining of the requested chunk.
-   fm = new TFileMerger(kTRUE);
+   fm = new TFileMerger(isGrid);
    fm->SetFastMethod(kTRUE);
    while ((nextfile=next())) fm->AddFile(nextfile->GetName());
    delete listoffiles;
@@ -4354,6 +4377,11 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      printf(\"ERROR: Analysis manager could not be extracted from file \");" << endl;
       out << "      return;" << endl;
       out << "   }" << endl;
+      if (IsLocalTest()) {
+         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"Testing merging...\\n\");" << endl;
+         out << "   printf(\"===================================\n\");" << endl;
+      }        
       out << "   while((str=(TObjString*)iter->Next())) {" << endl;
       out << "      outputFile = str->GetString();" << endl;
       out << "      if (outputFile.Contains(\"*\")) continue;" << endl;
@@ -4361,7 +4389,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      if (index > 0) outputFile.Remove(index);" << endl;
       out << "      // Skip already merged outputs" << endl;
       out << "      if (!gSystem->AccessPathName(outputFile)) {" << endl;
-      out << "         printf(\"Output file <%s> found. Not merging again.\",outputFile.Data());" << endl;
+      out << "         printf(\"Output file <%s> found. Not merging again.\\n\",outputFile.Data());" << endl;
       out << "         continue;" << endl;
       out << "      }" << endl;
       out << "      if (mergeExcludes.Contains(outputFile.Data())) continue;" << endl;
@@ -4371,7 +4399,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "         return;" << endl;
       out << "      }" << endl;
       out << "   }" << endl;
-      if (mgr && mgr->IsCollectThroughput()) {
+      if (mgr && mgr->IsCollectThroughput() && !IsLocalTest()) {
          out << "   TString infolog = \"" << mgr->GetFileInfoLog() << "\";" << endl;
          out << "   AliAnalysisAlien::MergeInfo(infolog, outputDir);" << endl;
       }
@@ -4380,7 +4408,13 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   out.open(\"outputs_valid\", ios::out);" << endl;
       out << "   out.close();" << endl;
       out << "   // read the analysis manager from file" << endl;
-      out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
+      if (IsLocalTest()) {
+         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"Testing Terminate()...\\n\");" << endl;
+         out << "   printf(\"===================================\n\");" << endl;      
+      } else {   
+         out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
+      }   
       out << "   mgr->SetRunFromPath(mgr->GetRunFromAlienPath(dir));" << endl;
       out << "   mgr->SetSkipTerminate(kFALSE);" << endl;
       out << "   mgr->PrintStatus();" << endl;

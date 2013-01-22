@@ -94,6 +94,7 @@ enum EAliAnalysisFlags {
 
    // Getters/Setters
    static AliAnalysisManager *GetAnalysisManager() {return fgAnalysisManager;}
+   static Int_t        LoadMacro(const char *filename, Int_t *error = 0, Bool_t check = kFALSE);
    EAliAnalysisExecMode 
                        GetAnalysisType() const    {return fMode;}
    void                GetAnalysisTypeString(TString &type) const;                    
@@ -131,6 +132,7 @@ enum EAliAnalysisFlags {
    static Int_t        GetGlobalInt(const char *key, Bool_t &valid);
    static Double_t     GetGlobalDbl(const char *key, Bool_t &valid);
    TMap               *GetGlobals()               {return fGlobals;}
+   static Bool_t       IsMacroLoaded(const char filename);
    static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
@@ -278,6 +280,7 @@ private:
    Double_t                fCPUTime;             //! Cumulated time in Exec
    Double_t                fInitTime;            //! Cumulated time in initialization
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
+   static TString          fgMacroNames;         //! Loaded macro names
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,18)  // Analysis manager class
 };   
