@@ -246,7 +246,7 @@ AliRawReader* AliRawReader::Create(const char *uri)
     }
     else {
       AliErrorClass(Form("Invalid syntax: %s",fileURI.Data()));
-      fields->Delete();
+      delete fields;
       return NULL;
     }
   }
@@ -265,7 +265,6 @@ AliRawReader* AliRawReader::Create(const char *uri)
   if (!rawReader->IsRawReaderValid()) {
     AliErrorClass(Form("Raw-reader is invalid - check the input URI (%s)",fileURI.Data()));
     delete rawReader;
-    fields->Delete();
     delete fields;
     return NULL;
   }
@@ -300,7 +299,6 @@ AliRawReader* AliRawReader::Create(const char *uri)
     rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data());
   }
 
-  fields->Delete();
   delete fields;
 
   return rawReader;

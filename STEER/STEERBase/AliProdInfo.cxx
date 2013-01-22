@@ -177,7 +177,7 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData) {
       */
     }
   }
-
+  delete tokens;
 }
 
 //-------------------------------------------------------------------------------------------------	

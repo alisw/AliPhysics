@@ -224,8 +224,7 @@ Bool_t AliSurveyObj::IsValidDetector(TString detector) const {
 
   TObjArray *dets = fgkValidDetectors.Tokenize(',');
   TObject *found = dets->FindObject(detector);
-  dets->Delete();
-  dets = 0;
+  delete dets;
 
   if (!found) return kFALSE;
   else return kTRUE;
@@ -242,17 +241,12 @@ TString AliSurveyObj::RealFolderName(TString detector) const {
 
   TObjArray *dets = fgkGRPDetectors.Tokenize(',');
   if (dets->FindObject(detector)) folderName = "GRP";
-  dets->Delete();
-  dets = 0;
+  delete dets;
 
   dets = fgkMUONDetectors.Tokenize(',');
   if (dets->FindObject(detector)) folderName = "MUON";
-  dets->Delete();  
- 
-
-
-  dets = 0;
-
+  delete dets;
+  
   return folderName;
 }
 
@@ -420,8 +414,8 @@ void AliSurveyObj::ListValidDetectors() {
     TObjArray *dets = fgkValidDetectors.Tokenize(',');
     for (int i = 0; i < dets->GetEntries(); ++i) 
 	Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
-    dets->Delete();
-    dets = 0;
+    delete dets;
+
     Printf("Some reports are stored in more general folders.\n"
 	    "These reports can be opened using either name, the original or the\n"
 	    "folder name. Example: 'SPACEFRAME' or 'GRP' are both valid when\n"
@@ -430,14 +424,12 @@ void AliSurveyObj::ListValidDetectors() {
     dets = fgkMUONDetectors.Tokenize(',');
     for (int i = 0; i < dets->GetEntries(); ++i) 
 	Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
-    dets->Delete();
-    dets = 0;
+    delete dets;
     Printf("Detectors stored in 'GRP' folder:");
     dets = fgkGRPDetectors.Tokenize(',');
     for (int i = 0; i < dets->GetEntries(); ++i) 
 	Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
-    dets->Delete();
-    dets = 0;
+    delete dets;
     return;
 }
 
@@ -580,7 +572,6 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  lines->Add(oneLineObj);
   }
 
-  linesRaw->Delete();
   delete linesRaw;
   linesRaw = NULL;
 
@@ -700,7 +691,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	colLine = nextLine.Tokenize(',');
 	if (colLine->GetEntries() != fNrColumns) {
 	  AliError("Survey text file sintax error! (Declared number of Columns doesn't match number of column names)");
-	  colLine->Delete();
+	  delete colLine;
 	  lines->Delete();
 	  delete lines; lines = NULL;
 	  return kFALSE;
@@ -839,7 +830,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  if (dataLine->GetEntries() != fNrColumns) {
 	    // The number of columns doesn't match the number specified in the header
 	    AliError("Survey text file sintax error! (Number of entries in line is different from number of Columns)");
-	    dataLine->Delete();
+	    delete dataLine;
 	    lines->Delete();
 	    delete lines; lines = NULL;
 	    return kFALSE;

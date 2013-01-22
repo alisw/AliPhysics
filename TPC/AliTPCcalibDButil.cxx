@@ -2135,6 +2135,7 @@ Int_t  AliTPCcalibDButil::MakeRunList(Int_t startRun, Int_t stopRun){
       runs[naccept]=irunN;
       naccept++;
     }}
+  delete arr;
   fRuns.Set(naccept);
   fRunsStart.Set(fRuns.fN);
   fRunsStop.Set(fRuns.fN);

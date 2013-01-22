@@ -203,6 +203,7 @@ AliFMDInput::SetLoads(const char* what)
     ETrees type = ParseLoad(os->GetName());
     AddLoad(type);
   }
+  delete ll;
 }
     
 

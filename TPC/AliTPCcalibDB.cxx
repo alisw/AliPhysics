@@ -591,7 +591,8 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
       
       TObjString *sObjType     = (TObjString*)(arrNextCol->At(0));
       TObjString *sObjFileName = (TObjString*)(arrNextCol->At(1));
-      
+      delete arrNextCol;
+
       if ( !sObjType || ! sObjFileName ) continue;
       TString sType(sObjType->GetString());
       TString sFileName(sObjFileName->GetString());
@@ -650,6 +651,7 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
       }
       delete fIn;
    }
+   delete arrFileLine;
 }
 
 Int_t AliTPCcalibDB::InitDeadMap() {

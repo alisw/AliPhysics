@@ -105,10 +105,11 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 		//
 		AliDebug(3,Form("Number of tokens = %d",ntokens));
 		if (ntokens == 2 && !(((TObjString*)tokens->At(0))->String()).CompareTo("LHC_ENTRIES")){
-			lhcEntries = (((TObjString*)tokens->At(1))->String()).Atoi();
-			AliInfo(Form("LHC entries = %d",lhcEntries));
-			AliDebug(3,Form("LHC entries = %d",lhcEntries));
-			continue;
+		  lhcEntries = (((TObjString*)tokens->At(1))->String()).Atoi();
+		  AliInfo(Form("LHC entries = %d",lhcEntries));
+		  AliDebug(3,Form("LHC entries = %d",lhcEntries)); 
+		  delete tokens;
+		  continue;
 		}
 		if (ntokens == 1 && !(((TObjString*)tokens->At(0))->String()).CompareTo("END_OF_DATA")){
 			AliDebug(2,"End of file reached");

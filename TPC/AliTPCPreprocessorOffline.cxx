@@ -1347,7 +1347,9 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
   fAlignTree->SetAlias("err","rms");
 
   TString *strDeltaITS = TStatToolkit::FitPlaneConstrain(fAlignTree,"mean:err", fstringFast.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax, 1);
-  strDeltaITS->Tokenize("++")->Print();
+  TObjArray* tokArr = strDeltaITS->Tokenize("++");
+  tokArr->Print();
+  delete tokArr;
   fAlignTree->SetAlias("fitYFast",strDeltaITS->Data());
   // 
   TVectorD paramC= param;

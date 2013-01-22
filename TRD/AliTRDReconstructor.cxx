@@ -401,6 +401,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 
     AliWarning(Form("Unknown option flag %s.", sopt.Data()));
   }
+  delete opar;
 }
 
 //_____________________________________________________________________________

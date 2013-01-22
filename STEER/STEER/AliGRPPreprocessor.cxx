@@ -1844,6 +1844,7 @@ THashList* AliGRPPreprocessor::ProcessAliases(const char* aliasesFile)
 		TObjArray* arr = strLine.Tokenize(' ');
 		if(arr->GetEntries() != 2){
 			Printf("The line:\n%s\nunexpectedly contains %d tokens, instead of two.",strLine.Data(),arr->GetEntries());
+			delete arr;
 			return 0;
 		}
 		TObjString *osTC = (TObjString*) arr->At(0);

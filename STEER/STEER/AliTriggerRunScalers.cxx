@@ -171,6 +171,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
       if (ntokens != 1) { 
         AliErrorClass( Form( "Error reading version number from (%s), line :%s\n", 
                               filename.Data() , strLine.Data() ) );  
+	delete tokens;
         return NULL;
       }
   //    cout << "Version "<< ((TObjString*)tokens->At(0))->String().Atoi() << endl;
@@ -237,6 +238,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
         AliErrorClass( Form( "Error reading scalers from (%s): line (%s)", 
 			     filename.Data(), strLine1.Data() ));
 	delete rec;
+	delete tokens1;
 	return rScaler;
       }
 

@@ -3047,6 +3047,7 @@ void AliTPCCalibCE::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t
       type=optString.Atoi();
     }
   }
+  delete arr;
 
   if ( type==4 ){
     // only for the new algorithm

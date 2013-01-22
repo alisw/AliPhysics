@@ -1343,6 +1343,7 @@ UInt_t AliShuttleConfig::SetPasswords(){
 		TObjArray *tokens = line.Tokenize(" \t");
 		TString system = ((TObjString *)tokens->At(0))->String(); 
 		TString password = ((TObjString *)tokens->At(1))->String();
+		delete tokens;
 		if (system.Contains("DAQ_LB")){
 			fDAQlbPass=password;
 			nPwd++;
@@ -1373,7 +1374,6 @@ UInt_t AliShuttleConfig::SetPasswords(){
 			AliDebug(3,Form("%i fake line(s) found in file %s", nPwdFake, fPasswdFilePath.Data()));
 			continue;
 		}
-		delete tokens;
 	}
 
 	inputfile->close();

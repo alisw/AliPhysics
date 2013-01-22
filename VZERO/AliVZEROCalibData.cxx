@@ -243,6 +243,8 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
 	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
+	//
+	delete nameSplit;
 }
 
 //________________________________________________________________

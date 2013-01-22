@@ -103,12 +103,14 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
     TObjArray *tokens = string.Tokenize(" ");
     if (tokens->GetEntriesFast() < 7) {
       AliWarning(Form("Invalid input in line %i, too few parameters", lineno));
+      delete tokens;
       continue;
     }
 
-    if ( ((TObjString*) tokens->At(0))->GetString().Atoi() < event)
+    if ( ((TObjString*) tokens->At(0))->GetString().Atoi() < event) {
+      delete tokens;
       continue;
-
+    }
     iEvent = ((TObjString*) tokens->At(0))->GetString().Atoi();
     iSec = ((TObjString*) tokens->At(1))->GetString().Atoi();
     iStack = ((TObjString*) tokens->At(2))->GetString().Atoi();
@@ -152,6 +154,8 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
       if (fTMU)
 	fTMU->AddTracklet(trkl, iLink);
     }
+    //
+    delete tokens;
   }
 
   if (fTMU && evcnt < noev) {

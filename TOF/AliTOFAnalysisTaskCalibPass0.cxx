@@ -562,12 +562,14 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (!ostr) {
     AliError("problems while getting run number from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str = ostr->GetString();
   if (!str.BeginsWith("run:")) {
     AliError("problems while getting run number from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str.Remove(0, 5);
@@ -575,6 +577,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (runNb <= 0) {
     AliError(Form("bad run number: %d", runNb));
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   AliInfo(Form("got run number: %d", runNb));
@@ -584,6 +587,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (!ostr) {
     AliError("problems while getting start timestamp from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str = ostr->GetString();
@@ -591,6 +595,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (!str.BeginsWith("startTimestamp:")) {
     AliError("problems while getting start timestamp from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str.Remove(0, 16);
@@ -598,6 +603,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (startTimestamp <= 0) {
     AliError(Form("bad start timestamp: %d", startTimestamp));
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   TTimeStamp ts = startTimestamp;
@@ -608,6 +614,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (!ostr) {
     AliError("problems while getting BPTX from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str = ostr->GetString();
@@ -615,11 +622,14 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   if (!str.BeginsWith("BPTX:")) {
     AliError("problems while getting BPTX from histogram title");
     fStatus = kDataError;
+    delete strarr;
     return kFALSE;
   }
   str.Remove(0, 6);
   Bool_t useBPTX = atoi(str.Data());
   AliInfo(Form("got BPTX: %d", useBPTX));
+
+  delete strarr;
 
   /*** CALIBRATION STAGE ***/
 

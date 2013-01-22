@@ -576,7 +576,8 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-   
+   delete sigmasTokens;
+
    TString drawStr(drawCommand);
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
    if (dangerousToDraw) {
@@ -749,7 +750,8 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-  
+   delete sigmasTokens;
+
    if (plotMean) {
       cutHistoMean = AliTPCCalibViewer::SigmaCut(htemp, mean, sigma, sigmaMax, sigmaStep, pm);
       if (cutHistoMean) {
@@ -835,6 +837,7 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
+   delete sigmasTokens;
    
    if (plotMean) {
       for (Int_t i = 0; i < entries; i++) {
@@ -942,7 +945,8 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-  
+   delete sigmasTokens;
+
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
    //fListOfObjectsToBeDeleted->Add(legend);
    TH1F *integralHistoMean = 0;
@@ -1038,7 +1042,8 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-  
+   delete sigmasTokens;
+
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
    //fListOfObjectsToBeDeleted->Add(legend);
   
@@ -1751,7 +1756,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    fitter->ClearPoints();
    
    Int_t entries = Draw(drawStr.Data(), cutStr.Data(), "goff");
-   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   if (entries == -1) {
+     delete formulaTokens;
+     return new TString("An ERROR has occured during fitting!");
+   }
    Double_t **values = new Double_t*[dim+1] ; 
    
    for (Int_t i = 0; i < dim + 1; i++){
@@ -1761,6 +1769,7 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
       
       if (entries != centries) {
         delete [] values;
+	delete formulaTokens;
         return new TString("An ERROR has occured during fitting!");
       }
       values[i] = new Double_t[entries];
@@ -2359,6 +2368,7 @@ void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *cali
       }
       delete fIn;
    }
+   delete arrFileLine;
 }
 
 

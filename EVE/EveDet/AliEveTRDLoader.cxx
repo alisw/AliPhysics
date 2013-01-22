@@ -296,10 +296,12 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
 
   if(((TObjString*)(*so)[0])->GetString().CompareTo("TRD") != 0){
     AliError(Form("Filename %s do not fulfill AliRoot naming conventions.", filename));
+    delete so;
     return kFALSE;
   }
   if(gSystem->AccessPathName(Form("%s/%s", dir, filename))){
     AliError(Form("Missing file %s/%s", dir, filename));
+    delete so;
     return kFALSE;
   }
   if(((TObjString*)(*so)[1])->GetString().CompareTo("Hits") == 0){
@@ -324,9 +326,10 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
     }
   } else {
     AliError("Filename didn't fulfill naming conventions. No data will be loaded.");
+    delete so;
     return kFALSE;
   }
-
+  delete so;
   SetDataLinked();
   return kTRUE;
 }

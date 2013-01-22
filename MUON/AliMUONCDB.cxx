@@ -1883,7 +1883,7 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
     
     TString name(static_cast<TObjString*>(a->At(0))->String());
     
-    if ( name.Contains("sw") || name.Contains("SUMMARY") ) continue;
+    if ( name.Contains("sw") || name.Contains("SUMMARY") ) {delete a; continue;}
     
     Int_t index = hvNamer.DCSIndexFromDCSAlias(name.Data());
     
@@ -1894,6 +1894,7 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
     if (!de)
     {
       AliErrorGeneral("AliMUONCDB::CheckHV",Form("Could not get detElemId from dcsAlias %s",name.Data()));
+      delete a;
       continue;
     }
     

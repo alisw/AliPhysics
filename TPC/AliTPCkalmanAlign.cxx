@@ -874,14 +874,19 @@ void AliTPCkalmanAlign::FitCE(){
   TString * strFitG=0;
   TString * strFitLX=0;
   //
+  TObjArray* tokArr = 0;
   strFitG = TStatToolkit::FitPlane(chain,"deltaT", fstringG.Data(),"sideA"+cutAll, chi2,npoints,vecG[0],covar,-1,0, 10000000, kFALSE);
   chain->SetAlias("tfitGA",strFitG->Data());
-  strFitG->Tokenize("++")->Print();
+  tokArr = strFitG->Tokenize("++");
+  tokArr->Print();
+  delete tokArr;
   printf("chi2=%f\n",TMath::Sqrt(chi2/npoints));
   //
   strFitG = TStatToolkit::FitPlane(chain,"deltaT", fstringG.Data(),"sideC"+cutAll, chi2,npoints,vecG[1],covar,-1,0, 10000000, kFALSE);
   chain->SetAlias("tfitGC",strFitG->Data());
-  strFitG->Tokenize("++")->Print();
+  tokArr = strFitG->Tokenize("++");
+  tokArr->Print();
+  delete tokArr;
   printf("chi2=%f\n",TMath::Sqrt(chi2/npoints));
   //
   AliTPCCalPad *padFitG =AliTPCCalPad::CreateCalPadFit("1++gy/500.++gx/500.++0+++0++0++0++0",vecG[0],vecG[1]);
@@ -1050,6 +1055,8 @@ void   AliTPCkalmanAlign::Update1D(TString &input, TString filter, TVectorD &par
   for (Int_t i=0; i<array0->GetEntries(); i++){
     param(i)=paramM(i,0);
   }
+  delete array0;
+  delete array1;
 }
 
 
@@ -1074,6 +1081,8 @@ TString  AliTPCkalmanAlign::FilterFit(TString &input, TString filter, TVectorD &
     }
   }
   result+="-0.)";
+  delete array0;
+  delete array1;
   return result;
 }
 

@@ -183,6 +183,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
       {
         AliErrorClass(Form("Cannot read pcbType=%s",pcbName.Data()));
         delete slat;
+	delete tokens;
         return 0;
       }      
 

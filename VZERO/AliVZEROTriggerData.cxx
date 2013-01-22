@@ -192,6 +192,8 @@ void AliVZEROTriggerData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("PedCutOdd")) SetPedestalCut((UShort_t) val, 1, iBoard, iChannel-1);
 	else if(name.Contains("PedCutEven")) SetPedestalCut((UShort_t) val, 0, iBoard, iChannel-1);
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
+	//
+	delete nameSplit;
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetPedestalCut(UShort_t val,Int_t integrator, Int_t board, Int_t channel)

@@ -3006,11 +3006,13 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       merged = MergeOutput(outputFile, fGridOutputDir, fMaxMergeFiles);
       if (!merged) {
          Error("MergeOutputs", "Terminate() will  NOT be executed");
-         return kFALSE;
+	 delete list;
+	 return kFALSE;
       }
       TFile *fileOpened = (TFile*)gROOT->GetListOfFiles()->FindObject(outputFile);
       if (fileOpened) fileOpened->Close();
    } 
+   delete list;
    return kTRUE;
 }   
 

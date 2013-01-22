@@ -244,7 +244,8 @@ Bool_t AliMpDDLStore::ReadDDLs()
 
         if ( ! AliMpDEManager::IsValidDetElemId(idDE, false) ) {
             AliErrorStream() << "DetElemId "<< idDE << " not valid." << endl;
-            return false;
+            delete stringList;
+	    return false;
         }
 
         TString busPatch = ((TObjString*)stringList->At(1))->GetString();
@@ -255,7 +256,8 @@ Bool_t AliMpDDLStore::ReadDDLs()
 
         if ( iDDL < 0 || iDDL >= fgkNofDDLs ) {
             AliErrorStream() << "DDL id "<< iDDL << " outside limits." << endl;
-            return false;
+            delete stringList;
+	    return false;
         }
 
         AliDebugStream(3)
@@ -527,7 +529,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
         AliMpBusPatch* busPatch = GetBusPatch(busPatchID);
         if ( ! busPatch ) {
           AliErrorStream() << "Bus patch " << busPatchID << " does not exist." << endl;
-          return kFALSE;
+          delete stringList;
+	  return kFALSE;
         }
      
         if ( sKey == GetRevertKeyword() ) {
@@ -555,7 +558,8 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
         }
         else {             
           AliErrorStream() << "Unrecognized key." << endl;
-          return kFALSE;
+          delete stringList;
+	  return kFALSE;
         }
       }
     }

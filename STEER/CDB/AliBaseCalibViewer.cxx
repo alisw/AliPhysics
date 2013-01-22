@@ -247,6 +247,7 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
    Int_t entries = Draw(drawStr.Data(), cutStr.Data(), "goff");
    if (entries == -1) {
      delete fitter;
+     delete formulaTokens;
      return new TString("An ERROR has occured during fitting!");
    }
    Double_t **values = new Double_t*[dim+1] ; 
@@ -259,6 +260,7 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
       if (entries != centries) {
 	delete fitter;
 	delete [] values;
+	delete formulaTokens;
 	return new TString("An ERROR has occured during fitting!");
       }
       values[i] = new Double_t[entries];
@@ -485,7 +487,8 @@ Int_t  AliBaseCalibViewer::DrawHisto1D(const Char_t* drawCommand, const Char_t* 
     Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
     nsigma[i] = sig;
   }
-  
+  delete sigmasTokens;
+  //
   TString drawStr(drawCommand);
   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
   if (dangerousToDraw) {
@@ -632,7 +635,8 @@ Int_t AliBaseCalibViewer::SigmaCut(const Char_t* drawCommand, const Char_t* sect
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-  
+   delete sigmasTokens;
+   //
    if (plotMean) {
       cutHistoMean = SigmaCut(htemp, mean, sigma, sigmaMax, sigmaStep, pm);
       if (cutHistoMean) {
@@ -725,7 +729,7 @@ Int_t AliBaseCalibViewer::Integrate(const Char_t* drawCommand, const Char_t* sec
       Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
       nsigma[i] = sig;
    }
-  
+   delete sigmasTokens;
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
    //fListOfObjectsToBeDeleted->Add(legend);
   

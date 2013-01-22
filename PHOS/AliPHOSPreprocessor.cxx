@@ -546,7 +546,7 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
 	  const Int_t md = ((TObjString*)tks->At(0))->GetString().Atoi();
 	  const Int_t X   = ((TObjString*)tks->At(1))->GetString().Atoi();
 	  const Int_t Z   = ((TObjString*)tks->At(2))->GetString().Atoi();
-
+	  delete tks;
 	  if(badMap) {
 	    if(badMap->IsBadChannel(5-md,Z+1,X+1)) {
 	      AliInfo(Form("Cell mod=%d col=%d row=%d is bad. Histogram %s rejected.",

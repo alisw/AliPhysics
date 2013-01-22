@@ -321,6 +321,7 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
           runNumber = s.Atoi();
           AliDebugClass(1,Form("runNumber is %d",runNumber));
         }            
+	delete a;
       }
       if ( sline.Contains("DAC values") )
       {

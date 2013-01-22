@@ -389,6 +389,7 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
     counter++;    
   }
   finput.close();
+  delete array;
   return kTRUE;
 }
 
@@ -494,6 +495,7 @@ Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, co
     Bool_t result = TFile::Cp(infile,outfile); 
     succes &= result;
   }
+  delete array;
   return succes;
 }
 
@@ -571,12 +573,14 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
       TFile * f = TFile::Open(description->At(4)->GetName());
       if (!f){
 	printf("Fatal: Invalid description: fileName %s\n", description->At(4)->GetName());
+	delete arrayInput;
 	return;
       }
       arrayFile->AddAt(f,itree);
       TTree * tree = (TTree*)f->Get(description->At(3)->GetName());
       if (!tree){
 	printf("Fatal: Invalid description. Tree name\t%s\n", description->At(3)->GetName());
+	delete arrayInput;
 	return;
       }
       tree->SetCacheSize(400000000);
@@ -589,6 +593,7 @@ void AliXRDPROOFtoolkit::JoinTreesIndex(const char * outputFile, const char * ou
 
     }}
   //  
+  delete arrayInput;
   // 2. Make the run list
   //
   //

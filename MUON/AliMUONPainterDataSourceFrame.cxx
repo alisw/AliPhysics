@@ -689,6 +689,8 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
     emax = static_cast<TObjString*>(a->At(7))->String();
   }
   
+  delete a;
+  
   AliRawReader* rawReader = 0x0;
 
   if ( filename.Contains(TRegexp("^alien")) )

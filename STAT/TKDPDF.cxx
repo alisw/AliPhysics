@@ -72,6 +72,7 @@ TKDPDF::TKDPDF(TTree *t, const Char_t *var, const Char_t *cut, UInt_t bsize, Lon
     for(int ip=0; ip<fNPoints; ip++) fData[idim][ip] = (Float_t)v[ip];
   }
   Build();
+  delete vars;
 }
 
 //_________________________________________________________________

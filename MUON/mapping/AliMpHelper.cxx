@@ -77,6 +77,7 @@ AliMpHelper::Decode(const TString& s)
       m->Add(b->At(0),b->At(1));
     }
   }
+  delete a;
   return m;
 }
 

@@ -178,6 +178,7 @@ void AliTPCPreprocessorOnline::AddComponent(TObject *obj) {
       TObjArray *stokens = objName.Tokenize("_ROC");
       TString rocNumber(""); 
       if (stokens->GetEntriesFast()>1) rocNumber = ((TObjString*)stokens->At(1))->GetString();
+      delete stokens;
       Int_t iroc = -1;
       if (rocNumber.IsAlnum()) iroc = rocNumber.Atoi();
       

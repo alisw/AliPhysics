@@ -76,7 +76,7 @@ AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistSt
     TObjString * syst   = (TObjString*) tokens->At(4);
     stat->String().ReplaceAll("+-","");
     if(syst) syst->String().ReplaceAll("+-","");
-    if (!binMin->String().Atof()) continue; // skip headers
+    if (!binMin->String().Atof()) {delete tokens; continue;} // skip headers
     Float_t binCenter = (binMax->String().Atof() + binMin->String().Atof())/2;
     Float_t binWidth  =  (binMax->String().Atof() - binMin->String().Atof())/2;
     cout << line.Data() << endl;//<< " " << binMin->String().Atof() <<" " <<  binCenter << " " << binWidth << endl;
@@ -95,6 +95,7 @@ AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistSt
 							     syst->String().Atof(),
 							     syst->String().Atof());
     ipoints++;
+    delete tokens;
   }
   infile.close();
     

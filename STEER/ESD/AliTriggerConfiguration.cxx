@@ -342,6 +342,7 @@ TString AliTriggerConfiguration::GetActiveDetectors() const
          activeDet.Append( " " );
          activeDet.Append( ((TObjString*)det->At(k))->String() );
       }
+      delete det;
    }
    return activeDet;
 }
@@ -564,6 +565,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        // Read inputs
        if (ntokens != 5) {
 	 AliError(Form("Invalid trigger input syntax (%s)!",strLine.Data()));
+	 delete tokens;
 	 return kFALSE;
        }
        AddInput(((TObjString*)tokens->At(0))->String(),
@@ -576,6 +578,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        // Read interaction
        if (ntokens != 2) {
 	 AliError(Form("Invalid trigger interaction syntax (%s)!",strLine.Data()));
+	 delete tokens;
 	 return kFALSE;
        }
        AddInteraction(((TObjString*)tokens->At(0))->String(),
@@ -593,24 +596,32 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	 }
 	 else {
 	   AliError(Form("Invalid trigger descriptor syntax (%s)!",strLine.Data()));
+	   delete tokens;
 	   return kFALSE;
 	 }
        }
        if (((TObjString*)tokens->At(0))->String().BeginsWith("l0f")) {
 	 // function
 	 if(!AddFunction(((TObjString*)tokens->At(0))->String(),
-			  strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) return kFALSE;
+			 strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) {
+	   delete tokens;
+	   return kFALSE;
+	 }
        }
        else {
 	 if(!AddDescriptor(((TObjString*)tokens->At(0))->String(),
-			    strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) return kFALSE;
+			   strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""))) {
+	   delete tokens;
+	   return kFALSE;
+	 }
        }
        break;
      case 4:
        {
          if (ntokens < 2) {
            AliError(Form("Invalid trigger cluster syntax (%s)!",strLine.Data()));
-           return kFALSE;
+	   delete tokens;
+	   return kFALSE;
          }
 	 if (((TObjString*)tokens->At(1))->String().Atoi() <= 0) {
            AliError(Form("Invalid trigger cluster syntax (%s)!",strLine.Data()));
@@ -676,20 +687,28 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      case 6:
          if (ntokens > 2) {
   	   AliError(Form("Invalid trigger bcmasks syntax (%s)!",strLine.Data()));
+	   delete tokens;
 	   return kFALSE;
          }
        if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0)
        {	 
-         if(!AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()))) return kFALSE;
+         if(!AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()))) {
+	   delete tokens;
+	   return kFALSE;
+	 }
        }
        else {
-	 if(!AddMask(((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String())) return kFALSE;
+	 if(!AddMask(((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String())) {
+	   delete tokens;
+	   return kFALSE;
+	 }
        }
        break;
      case 7:
        {
          if ((ntokens !=8) && (ntokens != 10) && (ntokens != 11)) {
   	   AliError(Form("Invalid trigger class syntax (%s)!",strLine.Data()));
+	   delete tokens;
 	   return kFALSE;
          }
 	 AliTriggerClass *trclass=0;
@@ -704,8 +723,11 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 			((TObjString*)tokens->At(4))->String(),
 			((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()),
 			(((TObjString*)tokens->At(8))->String().Atoi()),(((TObjString*)tokens->At(9))->String().Atoi()));
-		if(!trclass->SetMasks(this,((TObjString*)tokens->At(5))->String())) return kFALSE;
-         }
+	   if(!trclass->SetMasks(this,((TObjString*)tokens->At(5))->String())) {
+	     delete tokens;
+	     return kFALSE;
+	   }
+	 }
          AddClass(trclass);
        }
      default:

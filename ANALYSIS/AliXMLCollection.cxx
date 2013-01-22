@@ -467,6 +467,7 @@ void AliXMLCollection::ParseXML() {
 	    TString stringevlist = oevlist->GetName();
 	    TObjArray *evlist = stringevlist.Tokenize(",");
 	    for (Int_t n = 0; n < evlist->GetEntries(); n++)  xmlevlist->Enter(atol(((TObjString *) evlist->At(n))->GetName()));
+	    delete evlist;
 	  }
 	  attributes->Add(new TObjString("evlist"), xmlevlist);
 	}

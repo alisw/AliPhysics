@@ -814,6 +814,7 @@ void AliAnalysisTaskSE::LoadBranches() const
   TIter next(arr);
   TObject *obj;
   while ((obj=next())) mgr->LoadBranch(obj->GetName());
+  delete arr;
 }
 
 

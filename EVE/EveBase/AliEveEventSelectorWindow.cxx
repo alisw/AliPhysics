@@ -213,6 +213,7 @@ void AliEveEventSelectorWindow::SetupTriggerSelect()
     }
     fPComboBoxTrigger->Select(0, kTRUE); //set default no filtering and emit
     fPComboBoxTrigger->SetEnabled(kTRUE);
+    delete activetrgarr;
   } 
   else
   { 

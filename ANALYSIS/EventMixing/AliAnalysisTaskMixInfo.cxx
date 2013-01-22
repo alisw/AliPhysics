@@ -193,6 +193,7 @@ void AliAnalysisTaskMixInfo::SetDebugForAllClasses()
       AliLog::SetClassDebugLevel(strr.Data(), fLogType);
       AliDebug(AliLog::kDebug + 5, Form("Setting Debug level %d to %s ...", (Int_t)fLogType - AliLog::kDebug, strr.Data()));
    }
+   delete array;
    AliDebug(AliLog::kDebug + 10, "->");
 }
 
