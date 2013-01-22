@@ -10,6 +10,7 @@ ClassImp(AliITSUSeed)
 //_________________________________________________________________________
 AliITSUSeed::AliITSUSeed() 
 : fHitsPattern(0)
+  ,fNChildren(0)
   ,fClID(0)
   ,fChi2Glo(0)
   ,fChi2Cl(0)
@@ -30,6 +31,7 @@ AliITSUSeed::~AliITSUSeed()
 AliITSUSeed::AliITSUSeed(const AliITSUSeed& src) 
   :AliExternalTrackParam(src)
   ,fHitsPattern(src.fHitsPattern)
+  ,fNChildren(src.fNChildren)
   ,fClID(src.fClID)
   ,fChi2Glo(src.fChi2Glo)
   ,fChi2Cl(src.fChi2Cl)
@@ -63,8 +65,8 @@ void AliITSUSeed::Print(Option_t* opt) const
 {
   // print seed info
   int lr,cl = GetLrCluster(lr);
-  printf("%cLr%d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f",IsKilled() ? '-':' ',
-	 lr,cl,GetChi2Glo(),GetChi2GloNrm(),GetChi2Cl(), GetChi2Penalty());
+  printf("%cLr%d Nchild: %3d Cl:%4d Chi2Glo:%7.2f(%7.2f) Chi2Cl:%7.2f Penalty: %7.2f",IsKilled() ? '-':' ',
+	 lr,GetNChildren(),cl,GetChi2Glo(),GetChi2GloNrm(),GetChi2Cl(), GetChi2Penalty());
   printf(" |"); 
   int lrc=0;
   const AliITSUSeed *sdc = this;
@@ -92,6 +94,7 @@ void AliITSUSeed::InitFromESDTrack(const AliESDtrack* esdTr)
   ResetFMatrix();
   fHitsPattern = 0;
   fClID = 0;
+  fNChildren = 0;
   fChi2Glo = fChi2Cl = fChi2Penalty = 0;
   fParent = 0; //!!!
 }

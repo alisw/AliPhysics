@@ -61,12 +61,16 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r);
   //
+  void                   KillSeed(AliITSUSeed* seed, Bool_t branch=kFALSE);
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
   Bool_t                 GetRoadWidth(AliITSUSeed* seed, int ilrA);
   Int_t                  CheckCluster(AliITSUSeed* seed, Int_t lr, Int_t clID);
   void                   AddProlongationHypothesis(AliITSUSeed* seed, Int_t lr);
   //
   AliITSUSeed*           NewSeedFromPool(const AliITSUSeed* src=0);
+  void                   ResetSeedsPool();
+  void                   MarkSeedFree(AliITSUSeed* seed );
+
   AliITSUTrackHyp*       GetTrackHyp(Int_t id)               const  {return (AliITSUTrackHyp*)fHypStore.UncheckedAt(id);}
   void                   SetTrackHyp(AliITSUTrackHyp* hyp,Int_t id) {fHypStore.AddAtAndExpand(hyp,id);}
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
@@ -74,9 +78,11 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   FinalizeHypotheses();
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp);
  //
-
+ protected:
+  TObject*&              NextFreeSeed();
+  //
  private:
-  
+  //
   AliITSUTrackerGlo(const AliITSUTrackerGlo&);
   AliITSUTrackerGlo &operator=(const AliITSUTrackerGlo &tr);
   //
@@ -90,7 +96,10 @@ class AliITSUTrackerGlo : public AliTracker {
   // the seeds management to be optimized
   TObjArray                       fHypStore;       // storage for tracks hypotheses
   AliITSUTrackHyp*                fCurrHyp;        // hypotheses container for current track
-  TClonesArray                    fSeedsPool;      // pool for seeds
+  TClonesArray                    fSeedsPool;      //! pool for seeds
+  TArrayI                         fFreeSeedsID;    //! array of ID's of freed seeds
+  Int_t                           fNFreeSeeds;     //! number of seeds freed in the pool
+  Int_t                           fLastSeedID;     //! id of the pool seed on which is returned by the NextFreeSeed method
   //
   AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
   Int_t                           fTrackPhase;     // tracking phase
@@ -108,6 +117,33 @@ inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_
   printf("*** Adding: "); seed->Print();
 }
 
+//________________________________________
+inline TObject *&AliITSUTrackerGlo::NextFreeSeed()
+{
+  // return next free slot where the seed can be created
+  fLastSeedID = fNFreeSeeds ? fFreeSeedsID.GetArray()[--fNFreeSeeds] : fSeedsPool.GetEntriesFast();
+  //  AliInfo(Form("%d",fLastSeedID));
+  return fSeedsPool[ fLastSeedID ];
+  //
+}
+
+//_________________________________________________________________________
+inline AliITSUSeed* AliITSUTrackerGlo::NewSeedFromPool(const AliITSUSeed* src)
+{
+  // create new seed, optionally copying from the source
+  AliITSUSeed* sd =  src ? new( NextFreeSeed() ) AliITSUSeed(*src) : new( NextFreeSeed() ) AliITSUSeed();
+  sd->SetPoolID(fLastSeedID);
+  return sd;
+}
+
+//_________________________________________________________________________
+inline void AliITSUTrackerGlo::KillSeed(AliITSUSeed* seed, Bool_t branch)
+{
+  // flag seed as killed, if requested, kill recursively its parents whose sole child is the seed being killed
+  seed->Kill();
+  seed = (AliITSUSeed*)seed->GetParent();
+  if (seed && !seed->DecChildren() && branch) KillSeed(seed,branch);
+}
 
 #endif
 

@@ -25,7 +25,7 @@ class AliITSUTrackHyp: public AliKalmanTrack
   AliESDtrack*       GetESDTrack()       const {return fESDTrack;}
   void               DefineWinner(Int_t lr=0, Int_t id=0);
   const TObjArray*   GetLayerSeeds(Int_t lr) const {return lr<fNLayers ? &fLayerSeeds[lr] : 0;}
-  void               AddSeed(AliITSUSeed* seed, Int_t lr) {fLayerSeeds[lr].AddLast(seed);}
+  void               AddSeed(AliITSUSeed* seed, Int_t lr);
   void               SetESDTrack(AliESDtrack* esdtr) {fESDTrack = esdtr;}
   void               FetchClusterInfo(Int_t* clIDarr) const;
   //
@@ -50,5 +50,13 @@ class AliITSUTrackHyp: public AliKalmanTrack
   ClassDef(AliITSUTrackHyp,1)
 };
 
+//___________________________________________________________________
+inline void AliITSUTrackHyp::AddSeed(AliITSUSeed* seed, Int_t lr) 
+{
+  // add seed to hypothesis
+  fLayerSeeds[lr].AddLast(seed);
+  AliITSUSeed* par = (AliITSUSeed*)seed->GetParent();
+  if (par) par->IncChildren();
+}
 
 #endif

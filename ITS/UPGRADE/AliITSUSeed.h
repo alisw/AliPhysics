@@ -45,6 +45,9 @@ class AliITSUSeed: public AliExternalTrackParam
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
   Bool_t          IsFake()                         const {return TestBit(kFake);}
   //
+  Int_t           GetPoolID()                      const {return int(GetUniqueID())-1;}
+  void            SetPoolID(Int_t id)                    {SetUniqueID(id+1);}
+  //
   TObject*        GetParent()                      const {return fParent;}
   const AliITSUSeed* GetParent(Int_t lr)              const;
   //
@@ -65,6 +68,10 @@ class AliITSUSeed: public AliExternalTrackParam
   Bool_t          Smooth(Double_t vecL[5],Double_t matL[15]);
   Double_t*       ProdABA(const double a[15],const double b[15]) const;
   //
+  UInt_t          GetNChildren()                                 const {return fNChildren;}
+  Int_t           IncChildren()                                        {return ++fNChildren;}
+  Int_t           DecChildren()                                        {return --fNChildren;}
+  //
  protected:
   //
   Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
@@ -73,6 +80,7 @@ class AliITSUSeed: public AliExternalTrackParam
   Double_t              fCovIYZ[3];         // inverted matrix of propagation + meas errors = [Hi * Pi|i-1 * Hi^T + Ri]^-1
   Double_t              fResid[2];          // residuals vector
   UShort_t              fHitsPattern;       // bit pattern of hits
+  UShort_t              fNChildren;         // number of children (prolongations)
   UInt_t                fClID;              // packed cluster info (see AliITSUAux::PackCluster)
   Float_t               fChi2Glo;           // current chi2 global (sum of track-cluster chi2's on layers with hit)
   Float_t               fChi2Cl;            // track-cluster chi2 (if >0) or penalty for missing cluster (if < 0)

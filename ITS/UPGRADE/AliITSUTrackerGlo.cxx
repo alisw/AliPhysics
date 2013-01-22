@@ -52,6 +52,9 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fHypStore(100)
   ,fCurrHyp(0)
   ,fSeedsPool("AliITSUSeed",0)
+  ,fFreeSeedsID(0)
+  ,fNFreeSeeds(0)
+  ,fLastSeedID(0)
   ,fTrCond()
   ,fTrackPhase(-1)
   ,fClInfo(0)
@@ -83,6 +86,7 @@ void AliITSUTrackerGlo::Init(AliITSUReconstructor* rec)
   }
   //
   fSeedsPool.ExpandCreateFast(1000); // RS TOCHECK
+  fFreeSeedsID.Set(1000);
   //
   fTrCond.SetNLayers(fITS->GetNLayersActive());
   fTrCond.AddNewCondition(5);
@@ -109,6 +113,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
   //
+  ResetSeedsPool();
   fTrackPhase = kClus2Tracks;
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will try to find prolongations for %d tracks",nTrESD));
@@ -125,7 +130,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
     FindTrack(esdTr, itr);
   }
   //
-  printf("Hypotheses for current event (N seeds in pool: %d, size: %d)\n",fSeedsPool.GetEntriesFast(),fSeedsPool.GetSize());
+  AliInfo(Form("SeedsPool: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
   fHypStore.Print();
   FinalizeHypotheses();
   //
@@ -138,6 +143,8 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   //
   // Do outward fits in ITS
   //
+  return 0;
+
   fTrackPhase = kPropBack;
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will fit %d tracks",nTrESD));
@@ -288,7 +295,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
       else {
 	seedU = fCurrHyp->GetSeed(ilaUp,isd);  // seed on prev.active layer to prolong	
 	seedUC = *seedU;                       // its copy will be prolonged
-	seedUC.SetParent(seedU);
+	seedUC.SetParent(seedU);	
       }
       seedUC.ResetFMatrix();                    // reset the matrix for propagation to next layer
       // go till next active layer
@@ -297,12 +304,12 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
 	//
 	AliInfo("Transport failed");
 	// Check if the seed satisfies to track definition
-	if (NeedToKill(&seedUC,kTransportFailed) && seedU) seedU->Kill(); 
+	if (NeedToKill(&seedUC,kTransportFailed) && seedU) KillSeed(seedU,kTRUE);
 	continue; // RS TODO: decide what to do with tracks stopped on higher layers w/o killing
       }
       AliITSURecoLayer* lrA = fITS->GetLayerActive(ila);
       if (!GetRoadWidth(&seedUC, ila)) { // failed to find road width on the layer
-	if (NeedToKill(&seedUC,kRWCheckFailed) && seedU) seedU->Kill(); 
+	if (NeedToKill(&seedUC,kRWCheckFailed) && seedU) KillSeed(seedU,kTRUE);
 	continue;
       }
       int nsens = lrA->FindSensors(&fTrImpData[kTrPhi0], hitSens);  // find detectors which may be hit by the track
@@ -510,13 +517,29 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   return kTRUE;
 }
 
-//_________________________________________________________________________
-AliITSUSeed* AliITSUTrackerGlo::NewSeedFromPool(const AliITSUSeed* src)
+//________________________________________
+void AliITSUTrackerGlo::ResetSeedsPool()
 {
-  // create new seed, optionally copying from the source
-  return src ? 
-    new(fSeedsPool[fSeedsPool.GetEntriesFast()]) AliITSUSeed(*src) :
-    new(fSeedsPool[fSeedsPool.GetEntriesFast()]) AliITSUSeed();
+  // mark all seeds in the pool as unused
+  AliInfo(Form("CurrentSize: %d, BookedUpTo: %d, free: %d",fSeedsPool.GetSize(),fSeedsPool.GetEntriesFast(),fNFreeSeeds));
+  fNFreeSeeds = 0;
+  fSeedsPool.Clear(); // seeds don't allocate memory
+}
+
+
+//________________________________________
+void AliITSUTrackerGlo::MarkSeedFree(AliITSUSeed *sd) 
+{
+  // account that this seed is "deleted" 
+  int id = sd->GetPoolID();
+  if (id<0) {
+    AliError(Form("Freeing of seed %p NOT from the pool is requested",sd)); 
+    return;
+  }
+  //  AliInfo(Form("%d %p",id, seed));
+  fSeedsPool.RemoveAt(id);
+  if (fFreeSeedsID.GetSize()<=fNFreeSeeds) fFreeSeedsID.Set( 2*fNFreeSeeds + 100 );
+  fFreeSeedsID.GetArray()[fNFreeSeeds++] = id;
 }
 
 //_________________________________________________________________________
@@ -581,6 +604,7 @@ Int_t AliITSUTrackerGlo::CheckCluster(AliITSUSeed* track, Int_t lr, Int_t clID)
   track = NewSeedFromPool(track);  // input track will be reused, use its clone for updates
   if (!track->Update()) {
     if (goodCl) {printf("Loose good cl: Failed update |"); cl->Print();}
+    MarkSeedFree(track);
     return kClusterNotMatching;
   }
   track->SetChi2Cl(chi2);
