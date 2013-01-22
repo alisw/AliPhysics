@@ -59,7 +59,7 @@
 using namespace std;
 
 ClassImp(AliPerformanceRes)
-Double_t          AliPerformanceRes::fgkMergeEntriesCut=50000000.; //5*10**7 tracks
+Double_t          AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
 
 //_____________________________________________________________________________
 AliPerformanceRes::AliPerformanceRes():
