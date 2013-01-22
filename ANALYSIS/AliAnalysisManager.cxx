@@ -63,6 +63,7 @@ ClassImp(AliAnalysisManager)
 
 AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 TString AliAnalysisManager::fgCommonFileName = "";
+TString AliAnalysisManager::fgMacroNames = "";
 Int_t AliAnalysisManager::fPBUpdateFreq = 1;
 
 //______________________________________________________________________________
@@ -2779,6 +2780,37 @@ void AliAnalysisManager::ApplyDebugOptions()
       AliLog::SetClassDebugLevel(debug->GetName(), debugLevel.Atoi());
    }
 }
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::IsMacroLoaded(const char filename)
+{
+// Check if a macro was loaded.
+   return fgMacroNames.Contains(filename);
+}
+   
+//______________________________________________________________________________
+Int_t AliAnalysisManager::LoadMacro(const char *filename, Int_t *error, Bool_t check)
+{
+// Redirection of gROOT->LoadMacro which makes sure the same macro is not loaded 
+// twice
+   TString macroName = gSystem->BaseName(filename);
+   // Strip appended +, ++, +g, +O
+   Int_t index = macroName.Index("+");
+   if (index>0) macroName.Remove(index);
+   if (fgMacroNames.Contains(macroName)) {
+      // Macro with the same name loaded already in this root session, do 
+      // nothing
+      error = 0;
+      return 0;
+   }
+   Int_t ret = gROOT->LoadMacro(filename,error,check);
+   // In case of error return the error code
+   if (ret) return ret;
+   // Append the macro name to the loaded macros list
+   fgMacroNames += macroName;
+   fgMacroNames += " ";
+   return ret;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisManager::Lock()
