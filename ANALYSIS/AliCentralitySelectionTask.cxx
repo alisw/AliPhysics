@@ -912,6 +912,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   if(fDebug>1) printf(" **** AliCentralitySelectionTask::UserExec() \n");
 
+  Int_t    runType = 0;             // 0:PbPb, 1:pPb or Pbp 
+
   Float_t  zncEnergy = 0.;          //  ZNC Energy
   Float_t  zpcEnergy = 0.;          //  ZPC Energy
   Float_t  znaEnergy = 0.;          //  ZNA Energy
@@ -967,6 +969,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       return;
     }
     
+    if (strcmp(esd->GetESDRun()->GetBeamType(), "A-A") == 0) runType=0;
+    else runType=1;  
+
     esdCent = esd->GetCentrality();
 
     // ***** Vertex Info
@@ -1277,7 +1282,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (fEGA) fHOutCentV0MEGA->Fill(fCentV0M);
     if (fPHS) fHOutCentV0MPHS->Fill(fCentV0M);
 
-    if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) { // fill the QA histograms only for MB events!
+    if (((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==0)) ||
+	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7) && (runType==1))) { // fill the QA histograms only for MB events!
+
       fHOutQuality->Fill(fQuality);
       fHOutVertex->Fill(zvtx);
       fHOutVertexT0->Fill(zvtxT0);
