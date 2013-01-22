@@ -448,12 +448,14 @@ void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
   TString title       = ((TObjArray*)fArrPairType->At(0))->First()->GetTitle();
   TObjArray* binvars  = title.Tokenize(":");
   AliInfo(Form(" Number of variables:     %d",binvars->GetEntriesFast()));
+  delete binvars;
 
   TObjArray* binvars2  = title.Tokenize(":#");
   for(Int_t ivar=0; ivar<binvars2->GetEntriesFast(); ivar++) {
     if(ivar%3) continue;
     AliInfo(Form(" variable %.0f: %s",((Double_t)ivar)/3+1,binvars2->At(ivar)->GetName()));
   }
+  delete binvars2;
 
 }
 

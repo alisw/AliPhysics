@@ -242,7 +242,8 @@ AliBasedNdetaTask::ParseNormalizationScheme(const char* what)
   TString     twhat(what);
   twhat.ToUpper();
   TObjString* opt;
-  TIter       next(twhat.Tokenize(" ,|"));
+  TObjArray* token = twhat.Tokenize(" ,|");
+  TIter       next(token);
   while ((opt = static_cast<TObjString*>(next()))) { 
     TString s(opt->GetString());
     if      (s.IsNull()) continue;
@@ -264,6 +265,7 @@ AliBasedNdetaTask::ParseNormalizationScheme(const char* what)
     if (add) scheme |= bit;
     else     scheme ^= bit;
   }
+  delete token;
   return scheme;
 }  
 //________________________________________________________________________

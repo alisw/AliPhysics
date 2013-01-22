@@ -1939,7 +1939,9 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
     TObjArray* arr = name.Tokenize("_");
     Bool_t isBplus = kTRUE;
     if(name.Contains("BMINUS")) isBplus = kFALSE;
-    TString centMinStr = arr->At(2)->GetName(); TString centMaxStr = arr->At(3)->GetName();
+    TString centMinStr = arr->At(2)->GetName(); 
+    TString centMaxStr = arr->At(3)->GetName();
+    delete arr;
     if(isBplus) {
       fgTRDpidEffCentRanges[idxp][2] = centMinStr.Atof();
       fgTRDpidEffCentRanges[idxp][3] = centMaxStr.Atof();

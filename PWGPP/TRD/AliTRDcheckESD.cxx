@@ -485,7 +485,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
   //  cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++triggers fired:  " << triggerClasses.Data() << endl;
   TObjArray* triggers = triggerClasses.Tokenize(" ");
   TObjArray* userTriggers = fUserEnabledTriggers.Tokenize(";");
-  if(triggers->GetEntries()<1) return;
+  if(triggers->GetEntries()<1) {delete triggers; delete userTriggers; return;}
   Bool_t hasGoodTriggers = kFALSE;
   Int_t triggerIndices[kNMaxAssignedTriggers] = {0};
   Int_t nTrigFired=0;
@@ -510,6 +510,10 @@ void AliTRDcheckESD::UserExec(Option_t *){
   //  Int_t nTRDtracks = fESD->GetNumberOfTrdTracks();
   //  Int_t nGlobalTracks = fESD->GetNumberOfTracks();
   //cout << "TRD/All tracks: " << nTRDtracks << "/" << nGlobalTracks << endl;
+  //
+  delete triggers;
+  delete userTriggers;
+  //
   for(Int_t i=0; i<nTrigFired; ++i) 
     ((TH1F*)fHistos->At(kTriggerDefs))->Fill(triggerIndices[i]);
 
@@ -1313,6 +1317,7 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      delete arr;
     }
   }
   // Add background triggers from PhysicsSelection
@@ -1327,6 +1332,7 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      delete arr;
     }
   }
     
@@ -1335,6 +1341,7 @@ void AliTRDcheckESD::InitializeCFContainers() {
   for(Int_t it=0; it<arr->GetEntries(); ++it) {
     GetTriggerIndex(arr->At(it)->GetName(), kTRUE);
   }
+  delete arr;
 }
 
 
@@ -1499,6 +1506,7 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
 	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
 	nBins[nVars] = arr->GetEntries()-1;
 	if(nBins[nVars]>0) nVars++;
+	delete arr;
       }
     }
     if(nVars<1) return 0x0;
@@ -1520,6 +1528,7 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
 	  }
 	  cf->SetBinLimits(iUsedVar++, binLims);
 	}
+	delete arr;
       }
       cf->SetVarTitle(iUsedVar, varNames[ivar]);
     }

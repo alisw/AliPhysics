@@ -295,7 +295,8 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
       TClonesArray *arrin  = dynamic_cast<TClonesArray*>(objsin->FindObject(cname));
       if (!arrin) {
         AliFatal(Form("Can not find input clusters with name %s", cname.Data()));
-        return;
+        delete namearr;
+	return;
       }
       TClonesArray *arrout = dynamic_cast<TClonesArray*>(objsout->FindObject(cname));
       if (!arrout) {

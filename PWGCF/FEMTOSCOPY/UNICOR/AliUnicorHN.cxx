@@ -93,6 +93,7 @@ AliUnicorHN* AliUnicorHN::Retrieve(const char *filnam, const char *nam) {
   hist->Copy(*((TH1D*)hi));
   hi->SetName(lastnam);
   delete hist;
+  delete ar;
   return hi;
 }
 //=============================================================================

@@ -341,7 +341,7 @@ Int_t * AliLatexTable::GetColWidths() {
       Int_t w = ((TObjString *) cols->At(icol))->String().Length();
       if (w>col_widths[icol]) col_widths[icol] = w;
     }
-    
+    delete cols;
   }
 
   return col_widths;
@@ -397,6 +397,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
 
       }
       printf ("\n");
+      delete cols;
     }
     
     delete [] colWidths;

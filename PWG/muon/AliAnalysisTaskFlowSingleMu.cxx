@@ -961,6 +961,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
     } // loop on track sources
   } // loop on steps
 
+  delete centralityClasses;
 
   //////////////////////
   // Event statistics //

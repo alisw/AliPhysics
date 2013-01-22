@@ -288,7 +288,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));
   }
-  parts->Delete();
+  delete parts;
   return trgMask;
 }
 
