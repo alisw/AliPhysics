@@ -17,7 +17,7 @@ class AliITSUReconstructor;
 class AliITSURecoDet;
 class AliITSUClusterPix;
 class AliESDtrack;
-
+class AliITSURecoLayer;
 class TTree;
 
 
@@ -57,6 +57,10 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
+  Bool_t                 GoToExitFromLayer(AliITSUSeed* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
+  Bool_t                 GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
+  Bool_t                 GoToEntranceToLayer(AliITSUSeed* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
+  Bool_t                 GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r);
@@ -104,6 +108,8 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSUTrackCond                fTrCond;         // tmp, to be moved to recoparam
   Int_t                           fTrackPhase;     // tracking phase
   Int_t*                          fClInfo;         //! auxiliary track cluster info
+  //
+  static const Double_t           fgkToler;        // tracking tolerance
   //
   ClassDef(AliITSUTrackerGlo,1)   //ITS upgrade tracker
     

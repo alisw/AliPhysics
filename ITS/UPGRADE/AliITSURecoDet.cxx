@@ -147,7 +147,7 @@ Int_t AliITSURecoDet::FindLastLayerID(Double_t r, int dir) const
       AliITSURecoLayer* lr = GetLayer(ilr);
       if ( r<lr->GetR(-dir) ) break;  // this layer at least entered
     }
-    return ilr--;  // -1 will correspond to point below the smalles layer
+    return --ilr;  // -1 will correspond to point below the smalles layer
   }
   else {
     for (ilr=fNLayers;ilr--;) {
@@ -178,7 +178,6 @@ Int_t AliITSURecoDet::FindFirstLayerID(Double_t r, int dir) const
     for (ilr=fNLayers;ilr--;) {
       AliITSURecoLayer* lr = GetLayer(ilr);
       if ( r>lr->GetR(dir) ) break; // this layer at least entered
-      break;
     }
     return ilr; // -1 will correspond to point below inner layer
   }
