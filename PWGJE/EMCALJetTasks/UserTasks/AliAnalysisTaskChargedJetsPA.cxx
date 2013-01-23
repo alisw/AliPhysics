@@ -8,7 +8,7 @@ ClassImp(AliAnalysisTaskChargedJetsPA)
 void AliAnalysisTaskChargedJetsPA::Init()
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Creating Histograms." << std::endl;
+    AliInfo("Creating histograms.");
   #endif
   // NOTE: Track & Cluster & QA histograms
   if (fAnalyzeQA)
@@ -158,10 +158,10 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4),  fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinVertexContributors(1), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName, const char* backgroundJetArrayName) : AliAnalysisTaskSE(name), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4),  fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calling Constructor." << std::endl;
+    AliInfo("Calling constructor.");
   #endif
 
   // Constructor
@@ -203,7 +203,7 @@ AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, con
   fHistList = new TList();
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calling Constructor DONE." << std::endl;
+    AliInfo("Constructor done.");
   #endif
   
 }
@@ -341,7 +341,7 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsDijet(AliEmcalJet *jet1, AliEmcalJ
 void AliAnalysisTaskChargedJetsPA::ExecOnce()
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Starting ExecOnce." << std::endl;
+    AliInfo("Starting ExecOnce.");
   #endif
   fInitialized = kTRUE;
 
@@ -445,7 +445,7 @@ void AliAnalysisTaskChargedJetsPA::ExecOnce()
   Init();
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": ExecOnce done." << std::endl;
+    AliInfo("ExecOnce done.");
   #endif
 
 }
@@ -567,7 +567,7 @@ Double_t AliAnalysisTaskChargedJetsPA::GetJetBackgroundCorrFactor(Double_t eta, 
 Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedJetPt(AliEmcalJet* jet, Double_t background, Bool_t useEtaCorrection)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting corrected jet spectra." << std::endl;
+    AliInfo("Getting corrected jet spectra.");
   #endif
 
   if(!jet)
@@ -592,7 +592,7 @@ Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedJetPt(AliEmcalJet* jet, Doubl
   correctedPt = jet->Pt() - tmpCorrectedBackground * jet->Area();
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got corrected jet spectra." << std::endl;
+    AliInfo("Got corrected jet spectra.");
   #endif 
 
   return correctedPt;
@@ -603,7 +603,7 @@ Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedJetPt(AliEmcalJet* jet, Doubl
 void AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t& deltaPt, Double_t rho, Int_t numberExcludeLeadingJets, Int_t usedEtaBin, Bool_t useEtaCorrection)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting Delta Pt." << std::endl;
+    AliInfo("Getting Delta Pt.");
   #endif
 
   // Define the tmp delta pt
@@ -667,7 +667,7 @@ void AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t& deltaPt, Double_t rho, I
   if (coneValid)
     deltaPt = GetConePt(tmpRandConeEta,tmpRandConePhi,fRandConeRadius) - (rho*fRandConeRadius*fRandConeRadius*TMath::Pi());
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got Delta Pt." << std::endl;
+    AliInfo("Got Delta Pt.");
   #endif
 }
 
@@ -675,7 +675,7 @@ void AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t& deltaPt, Double_t rho, I
 void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMedian, Double_t& areaMean, Double_t etaMin, Double_t etaMax)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting KT background density." << std::endl;
+    AliInfo("Getting KT background density.");
   #endif
 
   // static declaration. Advantage: more speed. Disadvantage: Problematic for events with more than 1024 jets :)
@@ -736,7 +736,7 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLea
     areaMean   = TMath::Mean(jetCountAccepted, tmpAreas);
   }
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got KT background density." << std::endl;
+    AliInfo("Got KT background density.");
   #endif
 }
 
@@ -744,7 +744,7 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLea
 void AliAnalysisTaskChargedJetsPA::GetKTBackground2Density(Int_t numberExcludeLeadingJets, Double_t& rhoMedian, Double_t& areaMean, Double_t etaMin, Double_t etaMax)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting KT background 2 density." << std::endl;
+    AliInfo("Getting KT background 2 density.");
   #endif
 
   // static declaration. Advantage: more speed. Disadvantage: Problematic for events with more than 1024 jets :)
@@ -816,7 +816,7 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackground2Density(Int_t numberExcludeLe
     areaMean   = TMath::Mean(jetCountAccepted, tmpAreas);
   }
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got KT background 2 density." << std::endl;
+    AliInfo("Got KT background 2 density.");
   #endif
 }
 
@@ -825,7 +825,7 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackground2Density(Int_t numberExcludeLe
 Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& rhoMedian, Double_t etaMin, Double_t etaMax, Int_t numberRandCones)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting RC background density." << std::endl;
+    AliInfo("Getting RC background density.");
   #endif
 
   if(numberRandCones == 0)
@@ -906,7 +906,7 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
   }
     
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got RC background density." << std::endl;
+    AliInfo("Got RC background density.");
   #endif
   return numAcceptedRCs;
 }
@@ -915,7 +915,7 @@ Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLe
 void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, Double_t etaMin, Double_t etaMax)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting track background density." << std::endl;
+    AliInfo("Getting track background density.");
   #endif
 
   Double_t summedTracksPt = 0.0;
@@ -985,7 +985,7 @@ void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExclude
   }
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got track background density." << std::endl;
+    AliInfo("Got track background density.");
   #endif
 }
 
@@ -993,7 +993,7 @@ void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExclude
 void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Getting track background density." << std::endl;
+    AliInfo("Getting track background density.");
   #endif
 
   // Setting invalid values
@@ -1045,7 +1045,7 @@ void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExclude
   }
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Got track background density." << std::endl;
+    AliInfo("Got track background density.");
   #endif
 }
 
@@ -1053,7 +1053,7 @@ void AliAnalysisTaskChargedJetsPA::GetTrackBackgroundDensity(Int_t numberExclude
 void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Starting Calculate." << std::endl;
+    AliInfo("Starting Calculate().");
   #endif
   ////////////////////// NOTE: initialization & casting
 
@@ -1068,7 +1068,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   // Additional cuts
   FillHistogram("hNumberEvents", 0.5); // number of events before manual cuts
   
-  if ((event->GetPrimaryVertex()->GetNContributors() < fMinVertexContributors) || (TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fVertexWindow))
+  if ((event->GetPrimaryVertex()->GetNContributors() < 1) || (TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fVertexWindow))
     return;
 
   if (TMath::Sqrt(event->GetPrimaryVertex()->GetX()*event->GetPrimaryVertex()->GetX() + event->GetPrimaryVertex()->GetY()*event->GetPrimaryVertex()->GetY())  > fVertexMaxR)
@@ -1077,7 +1077,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   FillHistogram("hNumberEvents", 1.5); // number of events after manual cuts
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calculate:Init done" << std::endl;
+    AliInfo("Calculate()::Init done.");
   #endif
 
   ////////////////////// NOTE: Get Centrality, (Leading)Signal jets and Background
@@ -1134,7 +1134,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   }
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calculate:Centrality&SignalJets&Background-Calculation done" << std::endl;
+    AliInfo("Calculate()::Centrality&SignalJets&Background-Calculation done.");
   #endif
   ////////////////////// NOTE: Pythia histograms
   if(fAnalyzePythia)
@@ -1144,7 +1144,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     FillHistogram("hPythiaXSection", GetPtHardBin()+0.1, fCrossSection);
 
     #ifdef DEBUGMODE
-      std::cout << "Task " << GetName() << ": Calculate:Pythia done" << std::endl;
+      AliInfo("Calculate()::Pythia done.");
     #endif
   }
 
@@ -1189,7 +1189,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     }
   }
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calculate:QA done" << std::endl;
+    AliInfo("Calculate()::QA done.");
   #endif
 
   ////////////////////// NOTE: Jet analysis and calculations
@@ -1267,7 +1267,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   } //endif AnalyzeJets
 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calculate:Jets done" << std::endl;
+    AliInfo("Calculate()::Jets done.");
   #endif
   ////////////////////// NOTE: Background analysis
 
@@ -1403,7 +1403,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   }
   
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Calculate:Bckgrd done" << std::endl;
+    AliInfo("Calculate()::Background done.");
   #endif
 } 
 
@@ -1414,7 +1414,7 @@ Bool_t AliAnalysisTaskChargedJetsPA::Notify()
   // and number of trials from pyxsec.root
   // 
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": Notify started." << std::endl;
+    AliInfo("Notify started.");
   #endif
 
   if(fAnalyzePythia)
@@ -1433,10 +1433,6 @@ Bool_t AliAnalysisTaskChargedJetsPA::Notify()
       // not an archive take the basename....
       file.ReplaceAll(gSystem->BaseName(file.Data()),"");
     }
-    #ifdef DEBUGMODE
-      std::cout << "Task " << GetName() << ": Notify::Filename=" << file.Data() << std::endl;
-    #endif
-    
    
     TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
     if(!fxsec){
@@ -1479,9 +1475,7 @@ Bool_t AliAnalysisTaskChargedJetsPA::Notify()
       fxsec->Close();
     }
     #ifdef DEBUGMODE
-      std::cout << "Task " << GetName() << ": Notify::fCrossSection=" << fCrossSection << std::endl;
-      std::cout << "Task " << GetName() << ": Notify::fTrials=" << fTrials << std::endl;
-      std::cout << "Task " << GetName() << ": Notify ended." << std::endl;
+      AliInfo("Notify ended.");
     #endif
   }
   return kTRUE;
@@ -1604,7 +1598,7 @@ void AliAnalysisTaskChargedJetsPA::UserCreateOutputObjects()
 void AliAnalysisTaskChargedJetsPA::UserExec(Option_t *) 
 {
   #ifdef DEBUGMODE
-    std::cout << "Task " << GetName() << ": UserExec started." << std::endl;
+    AliInfo("UserExec() started.");
   #endif
 
   Calculate(InputEvent());

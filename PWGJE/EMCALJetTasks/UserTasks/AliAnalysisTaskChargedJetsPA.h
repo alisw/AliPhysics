@@ -59,7 +59,7 @@ class AliLog;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
 
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinVertexContributors(1), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeQA(1), fAnalyzeJets(1), fAnalyzeBackground(1), fAnalyzePythia(0), fHasTracks(0), fHasClusters(0), fHasJets(0), fHasBackgroundJets(0), fIsMC(0), fJetArray(0), fTrackArray(0), fClusterArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fClusterArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fKTDeltaPtEtaBin(3), fTrackBackgroundConeRadius(0.4), fNumberRandCones(8), fNumberExcludedJets(2), fDijetMaxAngleDeviation(10.0), fBackgroundEtaBins(5), fJetBgrdCorrectionFactors(0), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fClusterEtaWindow(0.7), fVertexWindow(10.0), fVertexMaxR(1.0), fMinTrackPt(0.150), fMinClusterPt(0.300), fMinJetPt(1.0), fMinJetArea(0.4), fMinBackgroundJetPt(0.15), fMinDijetLeadingPt(10.0), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0), fRandom(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0) {}
   
   AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* clusterArrayName, const char* jetArrayName, const char* backgroundJetArrayName);
 
@@ -68,7 +68,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   virtual void     UserCreateOutputObjects();
   virtual void     UserExec(Option_t *option);
   virtual void     Terminate(Option_t *);
-  
+
   // Setters
   void SetAnalyzeTracks(Bool_t val) {fAnalyzeQA = val;}
   void SetAnalyzeJets(Bool_t val) {fAnalyzeJets = val;}
@@ -90,9 +90,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void SetTrackBackgroundConeRadius(Double_t radius) {fTrackBackgroundConeRadius = radius;}
 
   void SetDijetMaxAngleDeviation(Double_t degrees) {fDijetMaxAngleDeviation = degrees/360.0 * TMath::TwoPi();} // degrees are more comfortable
-  void SetAcceptanceWindows(Double_t trackEta, Double_t vertexZ, Double_t vertexMaxR, Int_t minVtxContr, Double_t signalJetRadius, Double_t bgrdJetRadius)
+  void SetAcceptanceWindows(Double_t trackEta, Double_t vertexZ, Double_t vertexMaxR, Double_t signalJetRadius, Double_t bgrdJetRadius)
   {
-    fMinVertexContributors = minVtxContr;
     fVertexWindow = vertexZ;
     fVertexMaxR = vertexMaxR;
     fTrackEtaWindow = trackEta;
@@ -103,13 +102,10 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
     fBackgroundJetEtaWindow = fTrackEtaWindow-fBackgroundJetRadius;
   }
 
-  void SetCorrectionFactors(TH1* histo)
+  void SetCorrectionFactors(TH2D* histo)
   {
     // COPY given histogram
-    if (strcmp(histo->IsA()->GetName(),"TH2D") == 0)
-      fJetBgrdCorrectionFactors = new TH2D(*(dynamic_cast<TH2D*>(histo)));
-    else if (strcmp(histo->IsA()->GetName(),"TH2F") == 0)
-      fJetBgrdCorrectionFactors = new TH2D(*(dynamic_cast<TH2D*>(histo)));
+    fJetBgrdCorrectionFactors = new TH2D(*histo);
 
     if (!fJetBgrdCorrectionFactors)
       AliError(Form("Setting the correction factors with %s (%s) failed! You won't get eta-corrected spectra!", histo->GetName(), histo->IsA()->GetName()));
@@ -250,7 +246,6 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Double_t            fClusterEtaWindow;      // +- window in eta for clusters
   Double_t            fVertexWindow;          // +- window in Z for the vertex
   Double_t            fVertexMaxR;            // +- window in R for the vertex (distance in xy-plane)
-  Int_t               fMinVertexContributors; // Min contributors to vertex
   Double_t            fMinTrackPt;            // Min track pt to be accepted
   Double_t            fMinClusterPt;          // Min track pt to be accepted
   Double_t            fMinJetPt;              // Min jet pt to be accepted
