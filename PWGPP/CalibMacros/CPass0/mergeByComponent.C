@@ -55,6 +55,7 @@ void MergeCPass(const Char_t *list, TString component, TString outputFileName="C
   //AliTPCcalibGainMult::SetMergeEntriesCut(2000000);
   //AliTPCcalibAlign::SetMergeEntriesCut(10000000);
   //AliTPCcalibTracks::SetMergeEntriesCut(10000000);
+  //AliTPCcalibTime::SetResHistoMergeCut(10000000);
   AliFileMerger merger;
   /* select what to merge */
   merger.SetNoTrees(kFALSE);

@@ -158,11 +158,8 @@ mv syswatch.log ../syswatch_calib.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 
-#    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")"
-#    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")" &> ../qa_barrel.log
-
-    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum)"
-    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum)" &> ../qa_barrel.log
+    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"$ocdbPath\")"
+    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"$ocdbPath\")" &> ../qa_barrel.log
 
     exitcode=$?
     echo "Exit code: $exitcode"
@@ -205,11 +202,8 @@ mv syswatch.log ../syswatch_rec_Outer.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (outer) ..."
 
-#    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")"
-#    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")" &> ../qa_outer.log
-
-    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum)"
-    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum)" &> ../qa_outer.log
+    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"$ocdbPath\")"
+    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"$ocdbPath\")" &> ../qa_outer.log
 
     exitcode=$?
     echo "Exit code: $exitcode"
