@@ -17,7 +17,9 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
 				Double_t ptAssociatedMax = -1.,
 				Bool_t normToTrig = kFALSE,
 				Int_t rebinEta = 1,
-				Int_t rebinPhi = 1) {
+				Int_t rebinPhi = 1,
+				TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
+{ 
   //Macro that draws the correlation functions from the balance function
   //analysis vs the reaction plane
   //Author: Panos.Christakoglou@nikhef.nl
@@ -75,7 +77,7 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
   else 
     draw(list,listShuffled,listMixed,listQA,
 	 gCentralityEstimator,gCentrality,psiMin,psiMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,rebinEta,rebinPhi);
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,rebinEta,rebinPhi,eventClass);
 }
 
 //______________________________________________________//
@@ -131,6 +133,7 @@ TList *GetListOfObjects(const char* filename,
 
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
     cout<<"======================================================="<<endl;
+    cout<<"List name (control): "<<listBFName.Data()<<endl;
     cout<<"List name: "<<listBF->GetName()<<endl;
     //listBF->ls();
     
@@ -242,7 +245,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t normToTrig, Int_t rebinEta, Int_t rebinPhi) {
+	  Bool_t normToTrig, Int_t rebinEta, Int_t rebinPhi,TString eventClass) {
   //Draws the correlation functions for every centrality bin
   //(+-), (-+), (++), (--)  
   AliTHn *hP = NULL;
@@ -271,9 +274,12 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   hNP = (AliTHn*) list->FindObject(gHistNPname.Data());
   hPP = (AliTHn*) list->FindObject(gHistPPname.Data());
   hNN = (AliTHn*) list->FindObject(gHistNNname.Data());
+  hNN->Print();
+
 
   //Create the AliBalancePsi object and fill it with the AliTHn objects
   AliBalancePsi *b = new AliBalancePsi();
+  b->SetEventClass(eventClass);
   b->SetHistNp(hP);
   b->SetHistNn(hN);
   b->SetHistNpn(hPN);
@@ -318,6 +324,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     hNNShuffled->SetName("gHistNNShuffled");
     
     AliBalancePsi *bShuffled = new AliBalancePsi();
+    bShuffled->SetEventClass(eventClass);
     bShuffled->SetHistNp(hPShuffled);
     bShuffled->SetHistNn(hNShuffled);
     bShuffled->SetHistNpn(hPNShuffled);
@@ -363,6 +370,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     hNNMixed->SetName("gHistNNMixed");
     
     AliBalancePsi *bMixed = new AliBalancePsi();
+    bMixed->SetEventClass(eventClass);
     bMixed->SetHistNp(hPMixed);
     bMixed->SetHistNn(hNMixed);
     bMixed->SetHistNpn(hPNMixed);
@@ -417,17 +425,35 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
   
   //(+-)
-  histoTitle = "(+-) | Centrality: ";
-  histoTitle += centralityArray[gCentrality-1]; 
-  histoTitle += "%";
-  if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
-  else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
-  else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
-  else 
+  if(eventClass == "Centrality"){
+    histoTitle = "(+-) | Centrality: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " % ";
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else if(eventClass == "Multiplicity"){
+    histoTitle = "(+-) | Multiplicity: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " tracks";
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else{ // "EventPlane" (default)
+    histoTitle = "(+-) | Centrality: ";
+    histoTitle += centralityArray[gCentrality-1]; 
+    histoTitle += "%";
+    if((psiMin == -0.5)&&(psiMax == 0.5))
+      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+    else if((psiMin == 0.5)&&(psiMax == 1.5))
+      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+    else if((psiMin == 1.5)&&(psiMax == 2.5))
+      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+    else 
+      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
 
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1) gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
@@ -601,17 +627,35 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   //(-+)
-  histoTitle = "(-+) | Centrality: "; 
-  histoTitle += centralityArray[gCentrality-1]; 
-  histoTitle += "%";
-  if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
-  else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
-  else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
-  else 
+  if(eventClass == "Centrality"){
+    histoTitle = "(-+) | Centrality: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " % ";
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else if(eventClass == "Multiplicity"){
+    histoTitle = "(-+) | Multiplicity: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " tracks";
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else{ // "EventPlane" (default)
+    histoTitle = "(-+) | Centrality: ";
+    histoTitle += centralityArray[gCentrality-1]; 
+    histoTitle += "%";
+    if((psiMin == -0.5)&&(psiMax == 0.5))
+      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+    else if((psiMin == 0.5)&&(psiMax == 1.5))
+      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+    else if((psiMin == 1.5)&&(psiMax == 2.5))
+      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+    else 
+      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
 
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1) gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
@@ -787,17 +831,35 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 
 
   //(++)
-  histoTitle = "(++) | Centrality: "; 
-  histoTitle += centralityArray[gCentrality-1]; 
-  histoTitle += "%";
-  if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
-  else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
-  else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
-  else 
+  if(eventClass == "Centrality"){
+    histoTitle = "(++) | Centrality: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " % ";
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else if(eventClass == "Multiplicity"){
+    histoTitle = "(++) | Multiplicity: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " tracks";
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else{ // "EventPlane" (default)
+    histoTitle = "(++) | Centrality: ";
+    histoTitle += centralityArray[gCentrality-1]; 
+    histoTitle += "%";
+    if((psiMin == -0.5)&&(psiMax == 0.5))
+      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+    else if((psiMin == 0.5)&&(psiMax == 1.5))
+      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+    else if((psiMin == 1.5)&&(psiMax == 2.5))
+      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+    else 
+      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
 
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1) gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
@@ -972,17 +1034,35 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   //(--)
-  histoTitle = "(--) | Centrality: "; 
-  histoTitle += centralityArray[gCentrality-1]; 
-  histoTitle += "%";
-  if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
-  else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
-  else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
-  else 
+  if(eventClass == "Centrality"){
+    histoTitle = "(--) | Centrality: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " % ";
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else if(eventClass == "Multiplicity"){
+    histoTitle = "(--) | Multiplicity: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " tracks";
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else{ // "EventPlane" (default)
+    histoTitle = "(--) | Centrality: ";
+    histoTitle += centralityArray[gCentrality-1]; 
+    histoTitle += "%";
+    if((psiMin == -0.5)&&(psiMax == 0.5))
+      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+    else if((psiMin == 0.5)&&(psiMax == 1.5))
+      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+    else if((psiMin == 1.5)&&(psiMax == 2.5))
+      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+    else 
+      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  } 
 
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1) gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
@@ -1157,13 +1237,24 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   //Write to output file
-  TString newFileName = "correlationFunction.Centrality";  
-  newFileName += gCentrality; newFileName += ".Psi";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
-  else newFileName += "All.PttFrom";
+  TString newFileName = "correlationFunction."; 
+  if(eventClass == "Centrality"){
+    newFileName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    newFileName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    newFileName += "Centrality";
+    newFileName += gCentrality; newFileName += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+    else newFileName += "All.PttFrom";
+  }  
   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
