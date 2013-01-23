@@ -505,14 +505,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 
   fhnpatchFake   = new TH2F("hnpatchFake","number of fake patchs vs. all patchs are fake",
-                          5,-2,2, 2880,0,2880);
+                          4,-2,2, 2000,0,2000);
   fhnpatchFake  ->SetYTitle("number of fake patchs");
   fhnpatchFake  ->SetXTitle("all fake event");
   fhnpatchFake  ->SetZTitle("counts");
 
 
   fhnpatchNotFake   = new TH2F("hnpatchNotFake","number of Not fake patchs vs. all patchs are fake",
-                     5, -2, 2, 28000,0,2800);
+                     4, -2, 2, 2000,0,2000);
   fhnpatchNotFake  ->SetYTitle("number of Not fake patchs");
   fhnpatchNotFake  ->SetXTitle("all fake event");
   fhnpatchNotFake  ->SetZTitle("counts");
@@ -624,6 +624,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1GPatchNotFakeE);
   fOutputList->Add(fhnpatchFake);
   fOutputList->Add(fhnpatchNotFake);
+
   fOutputList->Add(fhL1JPatch);
   fOutputList->Add(fhL1J2Patch);
   fOutputList->Add(fhFEESTU);
@@ -919,7 +920,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   if( bCen)   fhNEvents->Fill(2.5);
   if( bSem)   fhNEvents->Fill(3.5);
   
-  
+  if( bL0 ) 
+  {
+    fhNEvents->Fill(4.5);
+  }
+ 
   
   if( bL1G ) 
   {
@@ -1012,8 +1017,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       // ici c'est l'amplitude de chaque cellule
       emcalCell[int(posY/2)][int(posX/2)] += amp; 
       
-      if(bL1G) {emcalCellL1G[int(posY/2)][int(posX/2)] += amp;  printf("L1G cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCellL1G[int(posY/2)][int(posX/2)]);}
-      if(bL1G2){emcalCellL1G2[int(posY/2)][int(posX/2)] += amp;  printf("L1G2 cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCellL1G2[int(posY/2)][int(posX/2)]);}
+      if(bL1G) {
+	emcalCellL1G[int(posY/2)][int(posX/2)] += amp;  
+	//printf("L1G cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCellL1G[int(posY/2)][int(posX/2)]);
+	}
+      if(bL1G2){
+	emcalCellL1G2[int(posY/2)][int(posX/2)] += amp;  
+	//printf("L1G2 cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCellL1G2[int(posY/2)][int(posX/2)]);
+	}
 
       if(bL1J) emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
       if(bL1J2) emcalCellL1J2[int(posY/2)][int(posX/2)] += amp;
@@ -1057,7 +1068,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       trg.GetAmplitude(ampL0);
       if (ampL0 > 0) emcalTrigL0[posY][posX] = ampL0;
 
-      // il faut donc changer le nom des triggers manuellement ??
       if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA") || triggerclasses.Contains("CPBI2EG1")) emcalTrigL0L1G[posY][posX] += ampL0;
       if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE") || triggerclasses.Contains("CPBI2EJ1")) emcalTrigL0L1J[posY][posX] += ampL0; 
       totTRU += ampL0;
@@ -1087,13 +1097,16 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       //L1-Gamma
       if ((bit >> fBitEGA) & 0x1) 
       {
+//	cout << "(bit >> fBitEGA) & 0x1"<<endl;
  	  nL1Patch ++;
         emcalPatchL1G[posY][posX] = 1.;
-        if(bL1G) fhL1GPatch->Fill(posX,posY);
+        if( bL1G) {//cout << "fill L1GPatch"<<endl;
+fhL1GPatch->Fill(posX,posY);}
 	if(bL1G2) fhL1G2Patch->Fill(posX,posY);
         if (ts > 0 && bL1G) {emcalTrigL1G[posY][posX] = ts;}
 	if (ts > 0 && bL1G2) {emcalTrigL1G2[posY][posX] = ts;}
       }
+
       
       //L1-Jet
       if (bit >> fBitEJE & 0x1) 
@@ -1155,9 +1168,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
    if(bL1G)
   {
+//cout <<"loop fakes"<<endl;
     // check amplitude enegy :
     // boucle sur les 4
-    int threshold =10;// 10 GeV
+    int threshold =10;// 10 GeV !it's not GeV it's ADC !!
     //  bool isFake=kTRUE;
     bool enoughE=kFALSE;
 	Double_t patchMax = 0;
@@ -1171,14 +1185,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	Double_t patchEnergy=0;
   
 	if(emcalTrigL1G[posy][posx]>0){
-
 	for(int irow=0;irow<2;irow++)
 	for(int icol=0;icol<2;icol++)
 	  {
 	    // loop on cells
 //	    printf("cell[%i,%i]=%f\n",posy+icol,posx+irow, emcalCellL1G[posy+icol][posx+irow]);
 	    patchEnergy += emcalCellL1G[posy+icol][posx+irow] ;
-	    if( emcalCellL1G[posy+icol][posx+irow] >threshold/2) enoughE=kTRUE;
+	  
+	  if( emcalCellL1G[posy+icol][posx+irow] >threshold/2) enoughE=kTRUE;
 	  }
 	if (patchEnergy > patchMax) 
 	{
@@ -1203,7 +1217,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	  }
 	}
       }
-//	cout << "qqqqqqqqqqqq areAllFake=" << areAllFakes << " npatchNotFake="<<npatchNotFake<<" npatchFake="<<npatchFake<<endl;
+
+//	cout << "qqqqqqqqqqqq areAllFake=" << areAllFakes << " npatchNotFake="<<numberpatchNotFake<<" npatchFake="<<numberpatchFake<<endl;
     fhnpatchNotFake->Fill(areAllFakes,numberpatchNotFake);
     fhnpatchFake->Fill(areAllFakes,numberpatchFake);
     if(areAllFakes==0)
@@ -1214,7 +1229,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	    {				
 	      
 	      if(emcalTrigL1G[row][col]>0) {
-		fhL1GPatchAllFake->Fill(col,row);
+//	cout <<"checking emcalTrigL1G[row][col]"<<emcalTrigL1G[row][col]<<endl;
+	fhL1GPatchAllFake->Fill(col,row);
 
 		double patchEnergy=0;
 		for(int irow=0;irow<2;irow++)
@@ -1234,7 +1250,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	  fhL1GPatchAllFakeMaxE->Fill(patchMax);
 	}}
     else{
-      // loop on patchs
+      // loop on patches
       for (Int_t col = 0; col < 47; col++)
 	for (Int_t row = 0; row < 59; row++)
 	  {	
