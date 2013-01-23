@@ -39,7 +39,7 @@ void runEMCalJetAnalysis(
          const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the task on the grid
          UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
          Bool_t         useTender           = kFALSE,                      // trigger, if tender task should be used
-         Bool_t         isMC                = kTRUE,                       // trigger, if MC handler should be used
+         Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
 
          // Here you have to specify additional code files you want to use but that are not in aliroot
          const char*    addCXXs             = "",
@@ -172,7 +172,7 @@ void runEMCalJetAnalysis(
 
   // Here you can put in your AddTaskMacro for your task
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
-  AliAnalysisTaskEmcalJetSample* anaTask = AddTaskEmcalJetSample("PicoTracks", "CaloClustersCorr", jetFinderTask->GetName());
+  AliAnalysisTaskEmcalJetSample* anaTask = AddTaskEmcalJetSample("PicoTracks", "CaloClustersCorr", jetFinderTask->GetName(), "");
 
 
   // Set the physics selection for all given tasks
