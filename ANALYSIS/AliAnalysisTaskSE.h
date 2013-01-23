@@ -11,6 +11,8 @@
 
 class AliAODEvent;
 class AliAODHeader;
+class AliTOFHeader;
+class AliAODVZERO;
 class AliAODTracklets;
 class AliAODCaloCells;
 class AliAODCaloTrigger;
@@ -87,6 +89,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     TList*                fHistosQA;        //! Output histos for QA
     // Provisions for replication
     static AliAODHeader*    fgAODHeader;        //! Header for replication
+    static AliTOFHeader*    fgTOFHeader;        //! TOFHeader for replication
+    static AliAODVZERO*     fgAODVZERO;         //! VZERO for replication
     static TClonesArray*    fgAODTracks;        //! Tracks for replication
     static TClonesArray*    fgAODVertices;      //! Vertices for replication
     static TClonesArray*    fgAODV0s;           //! V0s for replication

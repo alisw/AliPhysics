@@ -49,6 +49,8 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetFillExtension(Bool_t b)              {Changed(); fFillExtension = b;}
     virtual void         SetFillAODforRun(Bool_t b)              {Changed(); fFillAODRun = b;}
     virtual void         SetNeedsHeaderReplication()             {fNeedsHeaderReplication             = kTRUE;}
+    virtual void         SetNeedsTOFHeaderReplication()          {fNeedsTOFHeaderReplication          = kTRUE;}
+    virtual void         SetNeedsVZEROReplication()              {fNeedsVZEROReplication              = kTRUE;}
     virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
     virtual void         SetNeedsVerticesBranchReplication()     {fNeedsVerticesBranchReplication     = kTRUE;}
     virtual void         SetNeedsV0sBranchReplication()          {fNeedsV0sBranchReplication          = kTRUE;}
@@ -82,6 +84,8 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               IsStandard()                         const {return fIsStandard;}
     Bool_t               GetFillAOD()                         const {return fFillAOD;} 
     Bool_t               NeedsHeaderReplication()             const {return  fNeedsHeaderReplication;}
+    Bool_t               NeedsTOFHeaderReplication()          const {return  fNeedsTOFHeaderReplication;}
+    Bool_t               NeedsVZEROReplication()              const {return  fNeedsVZEROReplication;}
     Bool_t               NeedsTracksBranchReplication()       const {return  fNeedsTracksBranchReplication;}
     Bool_t               NeedsVerticesBranchReplication()     const {return  fNeedsVerticesBranchReplication;}
     Bool_t               NeedsV0sBranchReplication()          const {return  fNeedsV0sBranchReplication;}
@@ -117,6 +121,8 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fFillAODRun;                         // Flag for filling of the AOD tree at the end (run)
     Bool_t                   fFillExtension;                      // Flag for filling or the delta AOD tree at the end
     Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
+    Bool_t                   fNeedsTOFHeaderReplication;          // Flag for header replication
+    Bool_t                   fNeedsVZEROReplication;              // Flag for header replication
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
     Bool_t                   fNeedsV0sBranchReplication;          // Flag for V0s replication

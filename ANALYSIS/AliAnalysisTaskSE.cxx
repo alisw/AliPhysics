@@ -33,6 +33,8 @@
 #include "AliESD.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
+#include "AliAODVZERO.h"
+#include "AliTOFHeader.h"
 #include "AliAODTracklets.h"
 #include "AliAODCaloCells.h"
 #include "AliAODCaloTrigger.h"
@@ -54,6 +56,8 @@ ClassImp(AliAnalysisTaskSE)
 
 ////////////////////////////////////////////////////////////////////////
 AliAODHeader*    AliAnalysisTaskSE::fgAODHeader         = NULL;
+AliTOFHeader*    AliAnalysisTaskSE::fgTOFHeader         = NULL;
+AliAODVZERO*     AliAnalysisTaskSE::fgAODVZERO          = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODTracks         = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODVertices       = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODV0s            = NULL;
@@ -215,6 +219,19 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		 fgAODHeader = new AliAODHeader;
 		 handler->AddBranch("AliAODHeader", &fgAODHeader);
 		}
+            if ((handler->NeedsTOFHeaderReplication() || merging) && !(fgTOFHeader))
+                {
+                 if (fDebug > 1) AliInfo("Replicating TOFheader");
+                 fgTOFHeader = new AliTOFHeader;
+                 handler->AddBranch("AliTOFHeader", &fgTOFHeader);
+                }
+            if ((handler->NeedsVZEROReplication() || merging) && !(fgAODVZERO))
+                {
+                 if (fDebug > 1) AliInfo("Replicating VZERO");
+                 fgAODVZERO = new AliAODVZERO;
+                 handler->AddBranch("AliAODVZERO", &fgAODVZERO);
+                }
+
 	    if ((handler->NeedsTracksBranchReplication() || merging) && !(fgAODTracks))      
 	    {   
 		if (fDebug > 1) AliInfo("Replicating track branch\n");
@@ -389,6 +406,15 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	      // copy the contents by assigment
 	      *fgAODHeader =  *(aod->GetHeader());
 	    }
+            if ((handler->NeedsTOFHeaderReplication() || merging) && (fgTOFHeader))
+            {
+              *fgTOFHeader =  *(aod->GetTOFHeader());
+            }
+            if ((handler->NeedsVZEROReplication() || merging) && (fgAODVZERO))
+            {
+              *fgAODVZERO = *(aod->GetVZEROData());
+            }
+
 	    if ((handler->NeedsTracksBranchReplication() || (merging &&  aodH->GetMergeTracks())) && (fgAODTracks))
 	    {
 		TClonesArray* tracks = aod->GetTracks();
