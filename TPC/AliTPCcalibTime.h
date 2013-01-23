@@ -11,14 +11,13 @@ What do we calibrate.
 
 
 #include "AliTPCcalibBase.h"
-//#include "THnSparse.h"           // Temporary
+#include "THnSparse.h"
 //#include "TH1D.h"                // Temporary make code compiling for HLT in the 
 
 class TObjArray;
 class TH1F;
 class TH3F;
 class TH2F;
-class THnSparse;
 class TH1D;
 class TList;
 class AliESDEvent;
@@ -85,11 +84,13 @@ public:
   TObjArray * GetLaserArrayA() const { return fArrayLaserA;}
   TObjArray * GetLaserArrayC() const { return fArrayLaserC;}
 
+  Int_t GetEntries() const {if (fResHistoTPCTOF[0]) return fResHistoTPCITS[0]->GetEntries(); else return 0;}
 
   void   SetCutTracks(Int_t maxTracks)  { fCutTracks = maxTracks; }  // set maximal number of tracks
   Int_t  GetCutTracks() const { return fCutTracks; }    // retun maximal number of tracks
 
-
+  static Double_t fgResHistoMergeCut;
+  static void SetResHistoMergeCut(Double_t d) {fgResHistoMergeCut=d;}
 
 protected:
   void ResetCurrent();                  // reset current values

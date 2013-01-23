@@ -60,6 +60,7 @@ Comments to be written here:
 
 ClassImp(AliTPCcalibTime)
 
+Double_t AliTPCcalibTime::fgResHistoMergeCut = 10000000.;
 
 AliTPCcalibTime::AliTPCcalibTime() 
   :AliTPCcalibBase(),  
@@ -1096,76 +1097,91 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     }
     for (Int_t imeas=0; imeas<3; imeas++){
       if (cal->GetHistVdriftLaserA(imeas) && cal->GetHistVdriftLaserA(imeas)){
-	fHistVdriftLaserA[imeas]->Add(cal->GetHistVdriftLaserA(imeas));
-	fHistVdriftLaserC[imeas]->Add(cal->GetHistVdriftLaserC(imeas));
+        fHistVdriftLaserA[imeas]->Add(cal->GetHistVdriftLaserA(imeas));
+        fHistVdriftLaserC[imeas]->Add(cal->GetHistVdriftLaserC(imeas));
       }
     }
     //
     if (fTPCVertexCorrelation[0] && cal->fTPCVertexCorrelation[0]){
       for (Int_t imeas=0; imeas<5; imeas++){
-	if (fTPCVertexCorrelation[imeas] && cal->fTPCVertexCorrelation[imeas]) fTPCVertexCorrelation[imeas]->Add(cal->fTPCVertexCorrelation[imeas]);
+        if (fTPCVertexCorrelation[imeas] && cal->fTPCVertexCorrelation[imeas]) fTPCVertexCorrelation[imeas]->Add(cal->fTPCVertexCorrelation[imeas]);
       }
     }
-      
+
     if (fTPCVertex[0] && cal->fTPCVertex[0]) 
       for (Int_t imeas=0; imeas<12; imeas++){
-	if (fTPCVertex[imeas] && cal->fTPCVertex[imeas]) fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
+        if (fTPCVertex[imeas] && cal->fTPCVertex[imeas]) fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
       }
-    
+
     if (fMemoryMode>0) for (Int_t imeas=0; imeas<5; imeas++){
       if (fMemoryMode>1){
-	if ( cal->GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
-	  fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
-	}else{
-	  fResHistoTPCCE[imeas]=(THnSparse*)cal->fResHistoTPCCE[imeas]->Clone();
-	}
+        if ( GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
+          if ((cal->GetResHistoTPCCE(imeas)->GetEntries()+GetResHistoTPCCE(imeas)->GetEntries()) < fgResHistoMergeCut)
+            fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
+        }else{
+          fResHistoTPCCE[imeas]=(THnSparse*)cal->fResHistoTPCCE[imeas]->Clone();
+        }
       }
       //
       if ((fMemoryMode>0) &&cal->GetResHistoTPCITS(imeas) && cal->GetResHistoTPCITS(imeas)){
-	if (fMemoryMode>1 || (imeas%2)==1) fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
-	if (fMemoryMode>1) fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
+        if (fMemoryMode>1 || (imeas%2)==1) 
+        {
+          if (fResHistoTPCITS[imeas]->GetEntries()+(cal->fResHistoTPCITS[imeas])->GetEntries() < fgResHistoMergeCut)
+            fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
+        }
+        if (fMemoryMode>1) 
+        {
+          if (fResHistoTPCvertex[imeas]->GetEntries()+(cal->fResHistoTPCvertex[imeas])->GetEntries() < fgResHistoMergeCut)
+            fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
+        }
       }
       //
       if ((fMemoryMode>1) && cal->fResHistoTPCTRD[imeas]){
-	if (fResHistoTPCTRD[imeas])
-	  fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
-	else
-	  fResHistoTPCTRD[imeas]=(THnSparse*)cal->fResHistoTPCTRD[imeas]->Clone();
+        if (fResHistoTPCTRD[imeas] && cal->fResHistoTPCTRD[imeas])
+        {
+          if (fResHistoTPCTRD[imeas]->GetEntries()+(cal->fResHistoTPCTRD[imeas])->GetEntries() < fgResHistoMergeCut)
+          fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
+        }
+        else
+          fResHistoTPCTRD[imeas]=(THnSparse*)cal->fResHistoTPCTRD[imeas]->Clone();
       }
       //
       if  ((fMemoryMode>1) && cal->fResHistoTPCTOF[imeas]){
-	if (fResHistoTPCTOF[imeas])
-	  fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
-	else
-	  fResHistoTPCTOF[imeas]=(THnSparse*)cal->fResHistoTPCTOF[imeas]->Clone();      
+        if (fResHistoTPCTOF[imeas] && cal->fResHistoTPCTOF[imeas])
+        {
+          if (fResHistoTPCTOF[imeas]->GetEntries()+(cal->fResHistoTPCTOF[imeas])->GetEntries() < fgResHistoMergeCut)
+            fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
+        }
+        else
+          fResHistoTPCTOF[imeas]=(THnSparse*)cal->fResHistoTPCTOF[imeas]->Clone();      
       }
       //
       if (cal->fArrayLaserA){
-	fArrayLaserA->Expand(fArrayLaserA->GetEntriesFast()+cal->fArrayLaserA->GetEntriesFast());
-	fArrayLaserC->Expand(fArrayLaserC->GetEntriesFast()+cal->fArrayLaserC->GetEntriesFast());
-	for (Int_t ical=0; ical<cal->fArrayLaserA->GetEntriesFast(); ical++){
-	  if (cal->fArrayLaserA->UncheckedAt(ical)) fArrayLaserA->AddLast(cal->fArrayLaserA->UncheckedAt(ical)->Clone());
-	  if (cal->fArrayLaserC->UncheckedAt(ical)) fArrayLaserC->AddLast(cal->fArrayLaserC->UncheckedAt(ical)->Clone());
-	}
+        fArrayLaserA->Expand(fArrayLaserA->GetEntriesFast()+cal->fArrayLaserA->GetEntriesFast());
+        fArrayLaserC->Expand(fArrayLaserC->GetEntriesFast()+cal->fArrayLaserC->GetEntriesFast());
+        for (Int_t ical=0; ical<cal->fArrayLaserA->GetEntriesFast(); ical++){
+          if (cal->fArrayLaserA->UncheckedAt(ical)) fArrayLaserA->AddLast(cal->fArrayLaserA->UncheckedAt(ical)->Clone());
+          if (cal->fArrayLaserC->UncheckedAt(ical)) fArrayLaserC->AddLast(cal->fArrayLaserC->UncheckedAt(ical)->Clone());
+        }
       }
 
     }
-//     TObjArray* addArray=cal->GetHistoDrift();
-//     if(!addArray) return 0;
-//     TIterator* iterator = addArray->MakeIterator();
-//     iterator->Reset();
-//     THnSparse* addHist=NULL;
-//     if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
-//       //      if(!addHist) continue;
-//       addHist->Print();
-//       THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
-//       if(!localHist){
-//         localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-//         fArrayDz->AddLast(localHist);
-//       }
-//       localHist->Add(addHist);
-//     }
-//     delete iterator;
+    //     TObjArray* addArray=cal->GetHistoDrift();
+    //     if(!addArray) return 0;
+    //     TIterator* iterator = addArray->MakeIterator();
+    //     iterator->Reset();
+    //     THnSparse* addHist=NULL;
+    //     if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
+    //       //      if(!addHist) continue;
+    //       addHist->Print();
+    //       THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
+    //       if(!localHist){
+    //         localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+    //         fArrayDz->AddLast(localHist);
+    //       }
+    //       localHist->Add(addHist);
+    //     }
+    //     delete iterator;
     for(Int_t i=0;i<10;i++) if (cal->GetCosmiMatchingHisto(i)) fCosmiMatchingHisto[i]->Add(cal->GetCosmiMatchingHisto(i));
     //
     // Merge alignment
@@ -1183,17 +1199,17 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       if (!arr1) continue;
       if (!arr0) arr0=new TObjArray(arr1->GetEntriesFast());
       if (arr1->GetEntriesFast()>arr0->GetEntriesFast()){
-	arr0->Expand(arr1->GetEntriesFast());
+        arr0->Expand(arr1->GetEntriesFast());
       }
       for (Int_t i=0;i<arr1->GetEntriesFast(); i++){
-	AliRelAlignerKalman *kalman1 = (AliRelAlignerKalman *)arr1->UncheckedAt(i);
-	AliRelAlignerKalman *kalman0 = (AliRelAlignerKalman *)arr0->UncheckedAt(i);
-	if (!kalman1)  continue;
-	if (kalman1->GetNUpdates()<kMinUpdates) continue;
-	if (kalman1->GetNOutliers()>(kalman1->GetNUpdates()*kMaxOut)) continue;
-	if (!kalman0) {arr0->AddAt(new AliRelAlignerKalman(*kalman1),i); continue;}
-	kalman0->SetRejectOutliers(kFALSE);
-	kalman0->Merge(kalman1);
+        AliRelAlignerKalman *kalman1 = (AliRelAlignerKalman *)arr1->UncheckedAt(i);
+        AliRelAlignerKalman *kalman0 = (AliRelAlignerKalman *)arr0->UncheckedAt(i);
+        if (!kalman1)  continue;
+        if (kalman1->GetNUpdates()<kMinUpdates) continue;
+        if (kalman1->GetNOutliers()>(kalman1->GetNUpdates()*kMaxOut)) continue;
+        if (!kalman0) {arr0->AddAt(new AliRelAlignerKalman(*kalman1),i); continue;}
+        kalman0->SetRejectOutliers(kFALSE);
+        kalman0->Merge(kalman1);
       }
     }
 
