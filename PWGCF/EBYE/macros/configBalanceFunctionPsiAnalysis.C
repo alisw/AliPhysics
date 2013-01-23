@@ -5,7 +5,8 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 					Double_t centrMax = 100.,
 					Bool_t bShuffle = kFALSE,
 					Bool_t bHBTCut = kFALSE,
-					Bool_t bConversionCut = kFALSE) {
+					Bool_t bConversionCut = kFALSE,
+					TString fArgEventClass = "EventPlane") {
   //Function to setup the AliBalance object and return it
   AliBalancePsi *gBalance = new AliBalancePsi();
   gBalance->SetAnalysisLevel(analysisLevel);
@@ -14,6 +15,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
   if(bConversionCut) gBalance->UseConversionCut();
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
   gBalance->SetCentralityInterval(centrMin,centrMax);
+  gBalance->SetEventClass(fArgEventClass);
 
   //Set all analyses separately
   //Rapidity
