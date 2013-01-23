@@ -2,12 +2,14 @@ printCalibObjectsInfo(const char* filename="CalibObjects.root")
 {
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   TFile f(filename,"read");
+  
   TObjArray* tpcCalib = f.Get("TPCCalib");
   tpcCalib->Print();
   AliTPCcalibCalib* calibCalib = tpcCalib->FindObject("calibTPC");
   AliTPCcalibTimeGain* calibTimeGain = tpcCalib->FindObject("calibTimeGain");
   AliTPCcalibGainMult* calibGainMult = tpcCalib->FindObject("calibGainMult");
   AliTPCcalibTime* calibTime = tpcCalib->FindObject("calibTime");
+  
   
   if (!calibCalib || !calibTimeGain || !calibGainMult || !calibTime)
   {
@@ -62,4 +64,25 @@ printCalibObjectsInfo(const char* filename="CalibObjects.root")
     printf("calibTime->GetResHistoTPCTOF(%i)->GetEntries()            = %10i, size: %.2f MB\n", n, calibTime->GetResHistoTPCTOF(n)->GetEntries(),
         (AliSysInfo::EstimateObjectSize(calibTime->GetResHistoTPCTOF(n))/1024./1024));
   }
+
+  TObjArray* TPCCluster = f.Get("TPCCluster");
+  if (TPCCluster)
+  {
+    TPCCluster->Print();
+    AliTPCcalibTracks* calibTracks = TPCCluster->FindObject("calibTracks");
+    printf("calibTracks->fHisDeltaY->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisDeltaY)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisDeltaY)/1024./1024.));
+    printf("calibTracks->fHisDeltaZ->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisDeltaZ)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisDeltaZ)/1024./1024.));
+    printf("calibTracks->fHisRMSY->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisRMSY)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisRMSY)/1024./1024.));
+    printf("calibTracks->fHisRMSZ->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisRMSZ)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisRMSZ)/1024./1024.));
+    printf("calibTracks->fHisQmax->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisQmax)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisQmax)/1024./1024.));
+    printf("calibTracks->fHisQtot->GetEntries() = %10i, size: %.2f MB\n", n, (calibTracks->fHisQtot)->GetEntries(),
+        (AliSysInfo::EstimateObjectSize(calibTracks->fHisQtot)/1024./1024.));
+  }
+
+
 }
