@@ -511,14 +511,14 @@ void AliTRDcheckESD::UserExec(Option_t *){
   //  Int_t nGlobalTracks = fESD->GetNumberOfTracks();
   //cout << "TRD/All tracks: " << nTRDtracks << "/" << nGlobalTracks << endl;
   //
-  delete triggers;
-  delete userTriggers;
   //
   for(Int_t i=0; i<nTrigFired; ++i) 
     ((TH1F*)fHistos->At(kTriggerDefs))->Fill(triggerIndices[i]);
 
   if(!hasGoodTriggers) {
     PostData(1, fHistos);
+    delete triggers;
+    delete userTriggers;
     return;
   }
   
@@ -818,6 +818,8 @@ void AliTRDcheckESD::UserExec(Option_t *){
   
   
   
+  delete triggers;
+  delete userTriggers;
   delete [] valuesMatchingPhiEtaCF;
   delete [] valuesMatchingPtCF;
   delete [] valuesBCCF;
