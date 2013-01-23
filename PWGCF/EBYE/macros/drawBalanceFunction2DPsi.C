@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 10;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2"};
+const Int_t numberOfCentralityBins = 11;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2","0-100"};
 
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
@@ -13,7 +13,9 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
 			      Double_t ptAssociatedMax = -1.,
-			      Bool_t k2pMethod = kFALSE) {
+			      Bool_t k2pMethod = kFALSE,
+			      TString eventClass = "EventPlane") //Can be "EventPlane", "Centrality", "Multiplicity"
+{
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -42,7 +44,7 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   else 
     draw(listBF,listBFShuffled,listBFMixed,gCentrality,psiMin,psiMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,
-	 k2pMethod);  
+	 k2pMethod,eventClass);  
 }
 
 //______________________________________________________//
@@ -198,7 +200,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t k2pMethod = kFALSE) {  
+	  Bool_t k2pMethod = kFALSE, TString eventClass) {  
   //balance function
   AliTHn *hP = NULL;
   AliTHn *hN = NULL;
@@ -222,6 +224,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   hNN->SetName("gHistNN");
 
   AliBalancePsi *b = new AliBalancePsi();
+  b->SetEventClass(eventClass);
   b->SetHistNp(hP);
   b->SetHistNn(hN);
   b->SetHistNpn(hPN);
@@ -253,6 +256,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     hNNShuffled->SetName("gHistNNShuffled");
     
     AliBalancePsi *bShuffled = new AliBalancePsi();
+    bShuffled->SetEventClass(eventClass);
     bShuffled->SetHistNp(hPShuffled);
     bShuffled->SetHistNn(hNShuffled);
     bShuffled->SetHistNpn(hPNShuffled);
@@ -286,6 +290,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     hNNMixed->SetName("gHistNNMixed");
     
     AliBalancePsi *bMixed = new AliBalancePsi();
+    bMixed->SetEventClass(eventClass);
     bMixed->SetHistNp(hPMixed);
     bMixed->SetHistNn(hNMixed);
     bMixed->SetHistNpn(hPNMixed);
@@ -300,18 +305,36 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   TH2D *gHistBalanceFunctionMixed;
   TString histoTitle, pngName;
   
-  histoTitle = "Centrality: "; 
-  histoTitle += centralityArray[gCentrality-1]; 
-  histoTitle += "%";
-  if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
-  else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
-  else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
-  else 
+  if(eventClass == "Centrality"){
+    histoTitle = "Centrality: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " % ";
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
-  
+  }
+  else if(eventClass == "Multiplicity"){
+    histoTitle = "Multiplicity: ";
+    histoTitle += psiMin;
+    histoTitle += " - ";
+    histoTitle += psiMax;
+    histoTitle += " tracks";
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+  else{ // "EventPlane" (default)
+    histoTitle = "Centrality: ";
+    histoTitle += centralityArray[gCentrality-1]; 
+    histoTitle += "%";
+    if((psiMin == -0.5)&&(psiMax == 0.5))
+      histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
+    else if((psiMin == 0.5)&&(psiMax == 1.5))
+      histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
+    else if((psiMin == 1.5)&&(psiMax == 2.5))
+      histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
+    else 
+      histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
+  }
+
   if(k2pMethod) 
     if(bMixed)
       gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
@@ -425,16 +448,27 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     fitbalanceFunction(gCentrality, psiMin = -0.5, psiMax,
 		       ptTriggerMin, ptTriggerMax,
 		       ptAssociatedMin, ptAssociatedMax,
-		       gHistBalanceFunctionSubtracted);
+		       gHistBalanceFunctionSubtracted,k2pMethod, eventClass);
   }
 
-  TString newFileName = "balanceFunction2D.Centrality"; 
-  newFileName += gCentrality; newFileName += ".Psi";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
-  else newFileName += "All.PttFrom";
+  TString newFileName = "balanceFunction2D."; 
+  if(eventClass == "Centrality"){
+    newFileName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    newFileName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    newFileName += "Centrality";
+    newFileName += gCentrality; newFileName += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+    else newFileName += "All.PttFrom";
+  }  
   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
@@ -469,7 +503,9 @@ void fitbalanceFunction(Int_t gCentrality = 1,
 			Double_t ptTriggerMax = -1.,
 			Double_t ptAssociatedMin = -1.,
 			Double_t ptAssociatedMax = -1.,
-			TH2D *gHist) {
+			TH2D *gHist,
+			Bool_t k2pMethod = kFALSE, 
+			TString eventClass="EventPlane") {
 
   cout<<"FITTING FUNCTION"<<endl;
 
@@ -532,18 +568,29 @@ void fitbalanceFunction(Int_t gCentrality = 1,
   gHistResidual->Add(gHistFit,-1);
 
   //Write to output file
-  TString newFileName = "balanceFunctionFit";
-  newFileName += ".Centrality";  
-  newFileName += gCentrality; newFileName += ".Psi";
-  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
-  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
-  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
-  else newFileName += "All.PttFrom";
+  TString newFileName = "balanceFunctionFit2D.";
+  if(eventClass == "Centrality"){
+    newFileName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    newFileName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    newFileName += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    newFileName += "Centrality";
+    newFileName += gCentrality; newFileName += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+    else newFileName += "All.PttFrom";
+  }  
   newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
   newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
   newFileName += Form("%.1f",ptAssociatedMax); 
+  if(k2pMethod) newFileName += "_2pMethod";
   newFileName += ".root";
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
   gHist->Write();
