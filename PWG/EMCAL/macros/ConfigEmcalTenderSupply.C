@@ -13,7 +13,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t remBC         = kTRUE,
   UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   Bool_t reclusterize  = kFALSE,
-  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN)
+  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
+  Bool_t trackMatch    = kFALSE)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
@@ -104,10 +105,16 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   else
     EMCALSupply->SwitchOffCalibrateEnergy();
 
-  EMCALSupply->SetMass(0.139);
-  EMCALSupply->SwitchOnCutEtaPhiSeparate();
-  EMCALSupply->SetEtaCut(0.025);
-  EMCALSupply->SetPhiCut(0.05);
+  if (trackMatch) {
+    EMCALSupply->SetMass(0.139);
+    EMCALSupply->SwitchOnCutEtaPhiSeparate();
+    EMCALSupply->SetEtaCut(0.025);
+    EMCALSupply->SetPhiCut(0.05);
+    EMCALSupply->SwitchOnTrackMatch();
+  }
+  else {
+    EMCALSupply->SwitchOffTrackMatch();
+  }
   
   return EMCALSupply;
 }
