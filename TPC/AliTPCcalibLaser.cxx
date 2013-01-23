@@ -3261,7 +3261,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       //      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
       return -1;
     }
-    printf("Marging number %d\n", counter0);
+    AliDebug(5,Form("Marging number %d\n", counter0));
     counter0++;
     //
     MergeFitHistos(cal);
