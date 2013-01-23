@@ -106,21 +106,20 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
 //_____________________________________________________________________________
 AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 {
-  Bool_t weOwnTheOutput=kTRUE;
+  //the output trees not to be deleted in case of proof analysis
+  Bool_t deleteTrees=kTRUE;
   if ((AliAnalysisManager::GetAnalysisManager()))
   {
     if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
              AliAnalysisManager::kProofAnalysis)
-      weOwnTheOutput=kFALSE;
+      deleteTrees=kFALSE;
   }
-  if (weOwnTheOutput) delete fOutput;
+  if (deleteTrees) delete fTreeSRedirector;
 
-  if(fTreeSRedirector) delete fTreeSRedirector;  fTreeSRedirector =0; 
-
-  if(fFilteredTreeEventCuts) delete fFilteredTreeEventCuts; fFilteredTreeEventCuts=NULL; 
-  if(fFilteredTreeAcceptanceCuts) delete fFilteredTreeAcceptanceCuts; fFilteredTreeAcceptanceCuts=NULL;
-  if(fFilteredTreeRecAcceptanceCuts) delete fFilteredTreeRecAcceptanceCuts; fFilteredTreeRecAcceptanceCuts=NULL;  
-  if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
+  delete fFilteredTreeEventCuts;
+  delete fFilteredTreeAcceptanceCuts;
+  delete fFilteredTreeRecAcceptanceCuts;
+  delete fEsdTrackCuts;
 }
 
 //____________________________________________________________________________
@@ -142,38 +141,27 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-  fOutput = new TList;
-  fOutput->SetOwner();
 
   //
-  // create temporary file for output tree
-  fTreeSRedirector = new TTreeSRedirector("jotwinow_Temp_Trees.root");
+  //get the output file to make sure the trees will be associated to it
+  OpenFile(1);
+  fTreeSRedirector = new TTreeSRedirector();
  
-
-
   //
   // Create trees
-  fHighPtTree = new TTree;
-  fV0Tree = new TTree;
-  fdEdxTree = new TTree;
-  fLaserTree = new TTree;
-  fMCEffTree = new TTree;
-  fCosmicPairsTree = new TTree;
+  fV0Tree = ((*fTreeSRedirector)<<"V0s").GetTree();
+  fHighPtTree = ((*fTreeSRedirector)<<"highPt").GetTree();
+  fdEdxTree = ((*fTreeSRedirector)<<"dEdx").GetTree();
+  fLaserTree = ((*fTreeSRedirector)<<"Laser").GetTree();
+  fMCEffTree = ((*fTreeSRedirector)<<"MCEffTree").GetTree();
+  fCosmicPairsTree = ((*fTreeSRedirector)<<"CosmicPairs").GetTree();
 
-  fOutput->Add(fHighPtTree);
-  fOutput->Add(fV0Tree);
-  fOutput->Add(fdEdxTree);
-  fOutput->Add(fLaserTree);
-  fOutput->Add(fMCEffTree);
-  fOutput->Add(fCosmicPairsTree);
-
-  PostData(1,fHighPtTree);
-  PostData(2,fV0Tree);
+  PostData(1,fV0Tree);
+  PostData(2,fHighPtTree);
   PostData(3,fdEdxTree);
   PostData(4,fLaserTree);
   PostData(5,fMCEffTree);
   PostData(6,fCosmicPairsTree);
- 
 }
 
 //_____________________________________________________________________________
@@ -342,6 +330,23 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event)
       // vertex
       // TPC-ITS tracks
       //
+
+      //fCosmicPairsTree->Branch("fileName",&fileName,32000,0);
+      //fCosmicPairsTree->Branch("runNumber",&runNumber,"runNumber/I");
+      //fCosmicPairsTree->Branch("timeStamp",&timeStamp,"timeStamp/I");
+      //fCosmicPairsTree->Branch("eventNumber",&eventNumber,"eventNumber/I");
+      //fCosmicPairsTree->Branch("triggerMask",&triggerMask,32000,0);
+      //fCosmicPairsTree->Branch("triggerClass",&triggerClass,32000,0);
+      //fCosmicPairsTree->Branch("magField",&magField,"magField/F");
+      //fCosmicPairsTree->Branch("ntracksSPD",&ntracksSPD,"ntracksSPD/I");
+      //fCosmicPairsTree->Branch("ntracksTPC",&ntracksTPC,"ntracksTPC/I");
+      //fCosmicPairsTree->Branch("vertexSPD",vertexSPD,32000,0);
+      //fCosmicPairsTree->Branch("vertexTPC",vertexTPC,32000,0);
+      //fCosmicPairsTree->Branch("track0",track0,32000,0);
+      //fCosmicPairsTree->Branch("track1",track1,32000,0);
+      //
+      //fCosmicPairsTree->Fill();
+
       if(!fTreeSRedirector) return;
 	  (*fTreeSRedirector)<<"CosmicPairs"<<
 	    "fileName.="<<&fileName<<         // file name
@@ -513,9 +518,9 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     vert[1] = vtxESD->GetYv();
     vert[2] = vtxESD->GetZv();
     Int_t mult = vtxESD->GetNContributors();
-    Double_t bz = esdEvent->GetMagneticField();
-    Double_t runNumber = esdEvent->GetRunNumber();
-    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Float_t bz = esdEvent->GetMagneticField();
+    Int_t runNumber = esdEvent->GetRunNumber();
+    Int_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
 
     // high pT tracks
@@ -547,6 +552,25 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       // TPC-ITS tracks
       //
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+
+      //fHighPtTree->Branch("fileName",&fileName,32000,0);
+      //fHighPtTree->Branch("runNumber",&runNumber,"runNumber/I");
+      //fHighPtTree->Branch("evtTimeStamp",&evtTimeStamp,"evtTimeStamp/I");
+      //fHighPtTree->Branch("evtNumberInFile",&evtNumberInFile,"evtNumberInFile/I");
+      //fHighPtTree->Branch("triggerClass",&triggerClass,32000,0);
+      //fHighPtTree->Branch("Bz",&bz,"Bz/F");
+      //fHighPtTree->Branch("vtxESD",vtxESD,32000,0);
+      //fHighPtTree->Branch("IRtot",&ir1,"IRtot/I");
+      //fHighPtTree->Branch("IRint2",&ir2,"IRint2/I");
+      //fHighPtTree->Branch("mult",&mult,"mult/I");
+      //fHighPtTree->Branch("esdTrack",track,32000,0);
+      //fHighPtTree->Branch("centralityF",&centralityF,"centralityF/F");
+
+      //fHighPtTree->Fill();
+
+      //Double_t vtxX=vtxESD->GetX();
+      //Double_t vtxY=vtxESD->GetY();
+      //Double_t vtxZ=vtxESD->GetZ();
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
         "fileName.="<<&fileName<<
@@ -556,6 +580,9 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 	"triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<
         "vtxESD.="<<vtxESD<<
+      //  "vtxESDx="<<vtxX<<
+      //  "vtxESDy="<<vtxY<<
+      //  "vtxESDz="<<vtxZ<<
 	"IRtot="<<ir1<<
 	"IRint2="<<ir2<<
         "mult="<<mult<<
@@ -602,11 +629,21 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
        
     if(countLaserTracks > 100) 
     {      
-      Double_t runNumber = esdEvent->GetRunNumber();
-      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+      Int_t runNumber = esdEvent->GetRunNumber();
+      Int_t evtTimeStamp = esdEvent->GetTimeStamp();
       Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-      Double_t bz = esdEvent->GetMagneticField();
+      Float_t bz = esdEvent->GetMagneticField();
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+
+      //fLaserTree->Branch("fileName",&fileName,32000,0);
+      //fLaserTree->Branch("runNumber",&runNumber,"runNumber/I");
+      //fLaserTree->Branch("evtTimeStamp",&evtTimeStamp,"evtTimeStamp/I");
+      //fLaserTree->Branch("evtNumberInFile",&evtNumberInFile,"evtNumberInFile/I");
+      //fLaserTree->Branch("triggerClass",&triggerClass,32000,0);
+      //fLaserTree->Branch("Bz",&bz,"Bz/F");
+      //fLaserTree->Branch("multTPCtracks",&countLaserTracks,"multTPCtracks/I");
+
+      //fLaserTree->Fill();
 
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"Laser"<<
@@ -781,9 +818,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     vert[1] = vtxESD->GetYv();
     vert[2] = vtxESD->GetZv();
     Int_t mult = vtxESD->GetNContributors();
-    Double_t bz = esdEvent->GetMagneticField();
-    Double_t runNumber = esdEvent->GetRunNumber();
-    Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Float_t bz = esdEvent->GetMagneticField();
+    Int_t runNumber = esdEvent->GetRunNumber();
+    Int_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
 
     // high pT tracks
@@ -1086,64 +1123,162 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       if(fUseMCInfo     && isOKtrackInnerC3) dumpToTree = kTRUE;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
+      /////////////////
+      //book keeping of created dummy objects (to avoid NULL in trees)
+      Bool_t newvtxESD=kFALSE;
+      Bool_t newtrack=kFALSE;
+      Bool_t newtpcInnerC=kFALSE;
+      Bool_t newtrackInnerC=kFALSE;
+      Bool_t newtrackInnerC2=kFALSE;
+      Bool_t newouterITSc=kFALSE;
+      Bool_t newtrackInnerC3=kFALSE;
+      Bool_t newrefTPCIn=kFALSE;
+      Bool_t newrefITS=kFALSE;
+      Bool_t newparticle=kFALSE;
+      Bool_t newparticleMother=kFALSE;
+      Bool_t newparticleTPC=kFALSE;
+      Bool_t newparticleMotherTPC=kFALSE;
+      Bool_t newparticleITS=kFALSE;
+      Bool_t newparticleMotherITS=kFALSE;
+      
+      //check that the vertex is there and that it is OK, 
+      //i.e. no null member arrays, otherwise a problem with merging
+      //later on.
+      //this is a very ugly hack!
+      if (!vtxESD)
+      {
+        AliInfo("fixing the ESD vertex for streaming");
+        vtxESD=new AliESDVertex(); 
+        //vtxESD->SetNContributors(1);
+        //UShort_t pindices[1]; pindices[0]=0;
+        //vtxESD->SetIndices(1,pindices);
+        //vtxESD->SetNContributors(0);
+        newvtxESD=kTRUE;
+      }
       //
+      if (!track) {track=new AliESDtrack();newtrack=kTRUE;}
+      if (!tpcInnerC) {tpcInnerC=new AliExternalTrackParam();newtpcInnerC=kTRUE;}
+      if (!trackInnerC) {trackInnerC=new AliExternalTrackParam();newtrackInnerC=kTRUE;}
+      if (!trackInnerC2) {trackInnerC2=new AliExternalTrackParam();newtrackInnerC2=kTRUE;}
+      if (!outerITSc) {outerITSc=new AliExternalTrackParam();newouterITSc=kTRUE;}
+      if (!trackInnerC3) {trackInnerC3=new AliExternalTrackParam();newtrackInnerC3=kTRUE;}
+      if (fUseMCInfo)
+      {
+        if (!refTPCIn) {refTPCIn=new AliTrackReference(); newrefTPCIn=kTRUE;}
+        if (!refITS) {refITS=new AliTrackReference();newrefITS=kTRUE;}
+        if (!particle) {particle=new TParticle(); newparticle=kTRUE;}
+        if (!particleMother) {particleMother=new TParticle();newparticleMother=kTRUE;}
+        if (!particleTPC) {particleTPC=new TParticle();newparticleTPC=kTRUE;}
+        if (!particleMotherTPC) {particleMotherTPC=new TParticle();newparticleMotherTPC=kTRUE;}
+        if (!particleITS) {particleITS=new TParticle();newparticleITS=kTRUE;}
+        if (!particleMotherITS) {particleMotherITS=new TParticle();newparticleMotherITS=kTRUE;}
+      }
+      /////////////////////////
+
+      //Double_t vtxX=vtxESD->GetX();
+      //Double_t vtxY=vtxESD->GetY();
+      //Double_t vtxZ=vtxESD->GetZ();
+
+      AliESDVertex* pvtxESD = (AliESDVertex*)vtxESD->Clone();
+      AliESDtrack* ptrack=(AliESDtrack*)track->Clone();
+      AliExternalTrackParam* ptpcInnerC = (AliExternalTrackParam*)tpcInnerC->Clone();
+      AliExternalTrackParam* ptrackInnerC = (AliExternalTrackParam*)trackInnerC->Clone();
+      AliExternalTrackParam* ptrackInnerC2 = (AliExternalTrackParam*)trackInnerC2->Clone();
+      AliExternalTrackParam* pouterITSc = (AliExternalTrackParam*)outerITSc->Clone();
+      AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
+
       if(fTreeSRedirector && dumpToTree) 
       {
+
         (*fTreeSRedirector)<<"highPt"<<
-          "fileName.="<<&fileName<<
-          "runNumber="<<runNumber<<
-          "evtTimeStamp="<<evtTimeStamp<<
-          "evtNumberInFile="<<evtNumberInFile<<
-	  "triggerClass="<<&triggerClass<<      //  trigger
-          "Bz="<<bz<<
-          "vtxESD.="<<vtxESD<<
-	  "IRtot="<<ir1<<
-	  "IRint2="<<ir2<<
-          "mult="<<mult<<
-          "esdTrack.="<<track<<
-          "extTPCInnerC.="<<tpcInnerC<<
-          "extInnerParamC.="<<trackInnerC<<
-          "extInnerParam.="<<trackInnerC2<<
-          "extOuterITS.="<<outerITSc<<
-          "extInnerParamRef.="<<trackInnerC3<<
+        "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
+        "evtNumberInFile="<<evtNumberInFile<<
+        "triggerClass="<<&triggerClass<<      //  trigger
+        "Bz="<<bz<<
+        "vtxESD.="<<pvtxESD<<
+        //"vtxESDx="<<vtxX<<
+        //"vtxESDy="<<vtxY<<
+        //"vtxESDz="<<vtxZ<<
+        "IRtot="<<ir1<<
+        "IRint2="<<ir2<<
+        "mult="<<mult<<
+        "esdTrack.="<<ptrack<<
+        "extTPCInnerC.="<<ptpcInnerC<<
+        "extInnerParamC.="<<ptrackInnerC<<
+        "extInnerParam.="<<ptrackInnerC2<<
+        "extOuterITS.="<<pouterITSc<<
+        "extInnerParamRef.="<<ptrackInnerC3<<
+        "chi2TPCInnerC="<<chi2(0,0)<<
+        "chi2InnerC="<<chi2trackC(0,0)<<
+        "chi2OuterITS="<<chi2OuterITS(0,0)<<
+        "centralityF="<<centralityF;
+        if (fUseMCInfo)
+        {
+          (*fTreeSRedirector)<<"highPt"<<
           "refTPCIn.="<<refTPCIn<<
           "refITS.="<<refITS<<
-          "chi2TPCInnerC="<<chi2(0,0)<<
-          "chi2InnerC="<<chi2trackC(0,0)<<
-          "chi2OuterITS="<<chi2OuterITS(0,0)<<
-          "centralityF="<<centralityF<<
           "particle.="<<particle<<
-       	  "particleMother.="<<particleMother<<
+          "particleMother.="<<particleMother<<
           "mech="<<mech<<
           "isPrim="<<isPrim<<
-	  "isFromStrangess="<<isFromStrangess<<
-	  "isFromConversion="<<isFromConversion<<
+          "isFromStrangess="<<isFromStrangess<<
+          "isFromConversion="<<isFromConversion<<
           "isFromMaterial="<<isFromMaterial<<
           "particleTPC.="<<particleTPC<<
-       	  "particleMotherTPC.="<<particleMotherTPC<<
+          "particleMotherTPC.="<<particleMotherTPC<<
           "mechTPC="<<mechTPC<<
           "isPrimTPC="<<isPrimTPC<<
-	  "isFromStrangessTPC="<<isFromStrangessTPC<<
-	  "isFromConversionTPC="<<isFromConversionTPC<<
+          "isFromStrangessTPC="<<isFromStrangessTPC<<
+          "isFromConversionTPC="<<isFromConversionTPC<<
           "isFromMaterialTPC="<<isFromMaterialTPC<<
           "particleITS.="<<particleITS<<
-       	  "particleMotherITS.="<<particleMotherITS<<
+          "particleMotherITS.="<<particleMotherITS<<
           "mechITS="<<mechITS<<
           "isPrimITS="<<isPrimITS<<
-	  "isFromStrangessITS="<<isFromStrangessITS<<
-	  "isFromConversionITS="<<isFromConversionITS<<
-          "isFromMaterialITS="<<isFromMaterialITS<<
-          "\n";
+          "isFromStrangessITS="<<isFromStrangessITS<<
+          "isFromConversionITS="<<isFromConversionITS<<
+          "isFromMaterialITS="<<isFromMaterialITS;
         }
-      
-	if(tpcInnerC) delete tpcInnerC;
-	if(trackInnerC) delete trackInnerC;
-	if(trackInnerC2) delete trackInnerC2;
-	if(outerITSc) delete outerITSc;
-	if(trackInnerC3) delete trackInnerC3;
+        //finish writing the entry
+        (*fTreeSRedirector)<<"highPt"<<"\n";
+      }
+
+      delete pvtxESD;
+      delete ptrack;
+      delete ptpcInnerC;
+      delete ptrackInnerC;
+      delete ptrackInnerC2;
+      delete pouterITSc;
+      delete ptrackInnerC3;
+
+      ////////////////////
+      //delete the dummy objects we might have created.
+      if (newvtxESD) {delete vtxESD; vtxESD=NULL;}
+      if (newtrack) {delete track; track=NULL;}
+      if (newtpcInnerC) {delete tpcInnerC; tpcInnerC=NULL;}
+      if (newtrackInnerC) {delete trackInnerC; trackInnerC=NULL;}
+      if (newtrackInnerC2) {delete trackInnerC2; trackInnerC2=NULL;}
+      if (newouterITSc) {delete outerITSc; outerITSc=NULL;}
+      if (newtrackInnerC3) {delete trackInnerC3; trackInnerC3=NULL;}
+      if (newrefTPCIn) {delete refTPCIn; refTPCIn=NULL;}
+      if (newrefITS) {delete refITS; refITS=NULL;}
+      if (newparticle) {delete particle; particle=NULL;}
+      if (newparticleMother) {delete particleMother; particleMother=NULL;}
+      if (newparticleTPC) {delete particleTPC; particleTPC=NULL;}
+      if (newparticleMotherTPC) {delete particleMotherTPC; particleMotherTPC=NULL;}
+      if (newparticleITS) {delete particleITS; particleITS=NULL;}
+      if (newparticleMotherITS) {delete particleMotherITS; particleMotherITS=NULL;}
+      ///////////////
+
+      delete tpcInnerC;
+      delete trackInnerC;
+      delete trackInnerC2;
+      delete outerITSc;
+      delete trackInnerC3;
     }
   }
-  
+
 }
 
 
@@ -1993,76 +2128,76 @@ void AliAnalysisTaskFilteredTree::FinishTaskOutput()
   // locally on working node
   //
 
-  // must be deleted to store trees
-  if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
+  //// must be deleted to store trees
+  //if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
 
-  // open temporary file and copy trees to the ouptut container
+  //// open temporary file and copy trees to the ouptut container
 
-  TChain* chain = 0;
-  //
-  chain = new TChain("highPt");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fHighPtTree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fHighPtTree) fHighPtTree->Print();
+  //TChain* chain = 0;
+  ////
+  //chain = new TChain("highPt");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fHighPtTree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fHighPtTree) fHighPtTree->Print();
 
-  //
-  chain = new TChain("V0s");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fV0Tree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fV0Tree) fV0Tree->Print();
+  ////
+  //chain = new TChain("V0s");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fV0Tree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fV0Tree) fV0Tree->Print();
 
-  //
-  chain = new TChain("dEdx");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fdEdxTree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fdEdxTree) fdEdxTree->Print();
+  ////
+  //chain = new TChain("dEdx");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fdEdxTree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fdEdxTree) fdEdxTree->Print();
 
-  //
-  chain = new TChain("Laser");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fLaserTree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fLaserTree) fLaserTree->Print();
+  ////
+  //chain = new TChain("Laser");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fLaserTree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fLaserTree) fLaserTree->Print();
 
-  //
-  chain = new TChain("MCEffTree");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fMCEffTree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fMCEffTree) fMCEffTree->Print();
+  ////
+  //chain = new TChain("MCEffTree");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fMCEffTree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fMCEffTree) fMCEffTree->Print();
 
-  //
-  chain = new TChain("CosmicPairs");
-  if(chain) { 
-    chain->Add("jotwinow_Temp_Trees.root");
-    fCosmicPairsTree = chain->CopyTree("1");
-    delete chain; chain=0; 
-  }
-  if(fCosmicPairsTree) fCosmicPairsTree->Print();  
+  ////
+  //chain = new TChain("CosmicPairs");
+  //if(chain) { 
+  //  chain->Add("jotwinow_Temp_Trees.root");
+  //  fCosmicPairsTree = chain->CopyTree("1");
+  //  delete chain; chain=0; 
+  //}
+  //if(fCosmicPairsTree) fCosmicPairsTree->Print();  
 
 
-  OpenFile(1);
+  //OpenFile(1);
 
   // Post output data.
-  PostData(1, fHighPtTree);
-  PostData(2, fV0Tree);
-  PostData(3, fdEdxTree);
-  PostData(4, fLaserTree);
-  PostData(5, fMCEffTree);
-  PostData(6, fCosmicPairsTree);
+  //PostData(1, fHighPtTree);
+  //PostData(2, fV0Tree);
+  //PostData(3, fdEdxTree);
+  //PostData(4, fLaserTree);
+  //PostData(5, fMCEffTree);
+  //PostData(6, fCosmicPairsTree);
 }
 
 //_____________________________________________________________________________
