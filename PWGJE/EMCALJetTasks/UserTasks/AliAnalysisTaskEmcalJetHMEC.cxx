@@ -154,58 +154,55 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   fOutputList->SetOwner();
 
 
-
   // Create histograms
   fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
-
-
 
   fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
 
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
-  char name[200];
+  TString name;
 
   for(Int_t ipta=0; ipta<7; ++ipta){
-    sprintf(name, "fHistTrackEtaPhi_%i", ipta);
+    name = Form("fHistTrackEtaPhi_%i", ipta);
     fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,720,0.0,2.0*TMath::Pi());
     fOutputList->Add(fHistTrackEtaPhi[ipta]);
 
   }
  
   for(Int_t icent = 0; icent<6; ++icent){
-    sprintf(name,"fHistJetPt_%i",icent);   
+    name = Form("fHistJetPt_%i",icent);   
     fHistJetPt[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistJetPt[icent]);
 
-    sprintf(name,"fHistJetPtBias_%i",icent);   
+    name = Form("fHistJetPtBias_%i",icent);   
     fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistJetPtBias[icent]);
 
-    sprintf(name,"fHistLeadJetPt_%i",icent);   
+    name = Form("fHistLeadJetPt_%i",icent);   
     fHistLeadJetPt[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistLeadJetPt[icent]);
 
-    sprintf(name,"fHistLeadJetPtBias_%i",icent);   
+    name = Form("fHistLeadJetPtBias_%i",icent);   
     fHistLeadJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistLeadJetPtBias[icent]);
 
-    sprintf(name,"fHistJetPtTT_%i",icent);   
+    name = Form("fHistJetPtTT_%i",icent);   
     fHistJetPtTT[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistJetPtTT[icent]);
 
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
-	sprintf(name,"fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
+	name = Form("fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
 	fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetH[icent][iptjet][ieta]);
 
-	sprintf(name,"fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
+	name = Form("fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
 	fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetHBias[icent][iptjet][ieta]);
 
-	sprintf(name,"fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);   
+	name = Form("fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);   
 	fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetHTT[icent][iptjet][ieta]);
 
@@ -492,9 +489,15 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
       if(passedTTcut)
 	fHistJetPtTT[centbin]->Fill(jet->Pt());
    
+  
+      Int_t iptjet=-1;
+      iptjet=GetpTjetBin(jetPt);
+      if(iptjet<0) continue;
 
-  if (highestjetpt>15) {
-   
+
+   if (highestjetpt>15) {
+
+  
     for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
       {
 	AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
@@ -518,6 +521,11 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  Double_t trackpt=track->Pt();
 	  Double_t deta=tracketa-jeteta;
 	  Int_t ieta=GetEtaBin(deta);
+	  if (ieta<0) {
+	    AliError(Form("Eta Bin negative: %f", deta));
+	    continue;
+	  }
+      
 
 	  //Jet pt, track pt, dPhi,deta,fcent
 	  Double_t dphijh = RelativePhi(jetphi,trackphi);
@@ -526,9 +534,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  if (dphijh > 1.5*TMath::Pi()) dphijh-=2.*TMath::Pi();
 
 
-	  Int_t iptjet=-1;
-	  iptjet=GetpTjetBin(jetPt);
-
+      
 	  fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 	  fHistJetHEtaPhi->Fill(deta,dphijh);
 
@@ -585,9 +591,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
     AliEventPool* pool = fPoolMgr->GetEventPool(fcent, zVtx);
     
-    if (!pool)
+    if (!pool){
       AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fcent, zVtx));
-
+      return;
+    }
 
     //check for a trigger jet
         
