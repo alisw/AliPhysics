@@ -9,7 +9,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            trackEtaWindow          = 0.9,
   Double_t            vertexWindow            = 10.0,
   Double_t            vertexMaxR              = 1.0,
-  Int_t               minVertexContributors   = 1,
   Double_t            minJetPt                = 5.0, // signal jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
@@ -24,6 +23,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     triggerName = "kAny";
   else if(trigger == AliVEvent::kINT7)
     triggerName = "kINT7";
+  else if(trigger == AliVEvent::kMB)
+    triggerName = "kMB";
   else if(trigger == AliVEvent::kEMC7)
     triggerName = "kEMC7";
   else if(trigger == AliVEvent::kEMCEJE)
@@ -40,9 +41,9 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   }
   TString myContName("");
   if(isMC)
-    myContName = Form("MCChargedJets_pA_R0%2.0f_%s",jetRadius*100,triggerName.Data());
+    myContName = Form("ChargedJetsPA_R0%2.0f_%s_MC",jetRadius*100,triggerName.Data());
   else
-    myContName = Form("ChargedJets_pA_R0%2.0f_%s",jetRadius*100,triggerName.Data());
+    myContName = Form("ChargedJetsPA_R0%2.0f_%s",jetRadius*100,triggerName.Data());
 
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
@@ -52,10 +53,10 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   // #### Define analysis task
   AliAnalysisTaskChargedJetsPA *task = NULL;
   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, kFileName);
-  task = new AliAnalysisTaskChargedJetsPA(Form("Analysis_pA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, usedClusters, jetFinderTask->GetName(),jetFinderTaskKT->GetName());
+  task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, usedClusters, jetFinderTask->GetName(),jetFinderTaskKT->GetName());
 
   // #### Task preferences
-  task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, minVertexContributors, jetRadius, jetRadius);
+  task->SetAcceptanceWindows(trackEtaWindow, vertexWindow, vertexMaxR, jetRadius, jetRadius);
   task->SetSignalJetMinPt(minJetPt);
   task->SetSignalJetMinArea(0.6*jetRadius*jetRadius*TMath::Pi());
   task->SetDijetLeadingMinPt(dijetLeadingMinPt);
