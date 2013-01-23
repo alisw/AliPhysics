@@ -236,6 +236,14 @@ void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFco
   return;
 }
 
+// Note: AliHFAssociatedTrackCuts keeps an instance of the external
+// pointer, the arrays thus need to be global
+// TODO: try a proper implementation of AliHFAssociatedTrackCuts later
+Double_t MBins[]={0,20,40,60,80,500};
+Double_t * MultiplicityBins = MBins;
+Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
+Double_t *ZVrtxBins = ZBins;
+
 AliAnalysisCuts* createDefaultPoolConfig()
 {
   AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
@@ -246,11 +254,7 @@ AliAnalysisCuts* createDefaultPoolConfig()
   HFCorrelationCuts->SetMaxNEventsInPool(200);
   HFCorrelationCuts->SetMinNTracksInPool(100);
   HFCorrelationCuts->SetMinEventsToMix(8);
-  HFCorrelationCuts->SetNofPoolBins(5,5);
-  Double_t MBins[]={0,20,40,60,80,500};
-  Double_t * MultiplicityBins = MBins;
-  Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
-  Double_t *ZVrtxBins = ZBins;
+  HFCorrelationCuts->SetNofPoolBins(5,5); // Note: the arrays have dimension x+1
   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 
   TString description = "Info on Pool for EventMixing";   
