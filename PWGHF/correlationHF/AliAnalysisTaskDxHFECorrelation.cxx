@@ -150,6 +150,11 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fPID->AddDetector("TPC",1);
   }
   fPID->InitializePID();
+  const int paramSize=4;
+  Double_t params[paramSize];
+  memset(params, 0, sizeof(Double_t)*paramSize);
+  params[0]=1.;
+  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
 
   fOutput = new TList;
   fOutput->SetOwner();

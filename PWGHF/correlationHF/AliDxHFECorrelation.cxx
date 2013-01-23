@@ -155,6 +155,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
     cuts->Dump();
     return -EINVAL;
   }
+  cuts->Print("");
   fCorrelator = new AliHFCorrelator("Correlator", cuts, fSystem); 
   fCorrelator->SetDeltaPhiInterval(fMinPhi,fMaxPhi); //Correct Phi Interval
   fCorrelator->SetEventMixing(fUseEventMixing);      // mixing Off/On 
@@ -176,14 +177,14 @@ int AliDxHFECorrelation::Init(const char* arguments)
   const Double_t * CentBins = cuts->GetCentPoolBins();
   const Double_t defaultCentBins[] = {0,100};
   if (NofCentBins==0 || CentBins==NULL) {
-    NofCentBins=2;
+    NofCentBins=1; // note: array dimension minus one, because of bin is bound by upper and lower
     CentBins=defaultCentBins;
   }
   Int_t NofZVrtxBins = cuts->GetNZvtxPoolBins();
   const Double_t *ZVrtxBins = cuts->GetZvtxPoolBins();
   const Double_t defaultZVrtxBins[] = {-10,10};
   if (NofZVrtxBins==0 || ZVrtxBins==NULL) {
-    NofZVrtxBins=2;
+    NofZVrtxBins=1; // note: array dimension minus one, because of bin is bound by upper and lower
     ZVrtxBins=defaultZVrtxBins;
   }
 
@@ -380,7 +381,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 
   Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
   if(!correlatorON) {
-    AliInfo("AliHFCorrelator didn't initialize the pool correctly or processed a bad event");
+    AliError("AliHFCorrelator didn't initialize the pool correctly or processed a bad event");
     return 1;
   }
 
@@ -419,7 +420,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
       Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix, associatedTracks);
 			
       if(!analyzetracks) {
-	AliInfo("AliHFCorrelator::Cannot process the track array");
+	AliError("AliHFCorrelator::Cannot process the track array");
 	continue;
       }
 
