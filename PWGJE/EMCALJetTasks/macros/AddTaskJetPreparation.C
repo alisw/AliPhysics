@@ -13,11 +13,10 @@ void AddTaskJetPreparation(
   const Double_t phiMatch           = 0.03,
   const Double_t etaMatch           = 0.015,
   const Double_t minPtEt            = 0.15,
-  const UInt_t   pSel               = 0,
+  const UInt_t   pSel               = AliVEvent::kAny,
   const Bool_t   doHistos           = kFALSE
 )
 {
-  // TODO: Implement compatability for AODs (cluster names e.g.)
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
@@ -28,9 +27,9 @@ void AddTaskJetPreparation(
 
   // Set trackcuts according to period. Every period used should be definied here
   TString period("");
-  TString trackCuts("");
+  TString clusterColName(usedClusters);
   TString eper(gSystem->Getenv("ETRAIN_PERIOD"));
-  if (eper.BeginsWith("lhc12g") || eper.BeginsWith("lhc11h") || eper.BeginsWith("lhc12a15a") || eper.BeginsWith("LHC12g") || eper.BeginsWith("LHC12a15a"))
+  if (eper.BeginsWith("lhc12g") || eper.BeginsWith("lhc11h") || eper.BeginsWith("lhc12a15a") || eper.BeginsWith("LHC12g") || eper.BeginsWith("LHC12a15a") || eper.BeginsWith("lhc13b"))
     period = "LHC11h";
   else if (eper.BeginsWith("lhc11a"))
     period = "LHC11a";
@@ -40,38 +39,42 @@ void AddTaskJetPreparation(
     Error("AddTaskJetPreparation","Run period in AddTaskJetPreparation.C not recognized! You have to specify it for the used period, if you need jets!");
     return 0;
   }    
-  
-  const char* inputTracks = "HybridTracks";
-  trackCuts = Form("Hybrid_%s", period.Data());
-
+ 
   Bool_t makePicoTracks = kTRUE;
   if ((eper == "lhc10hs") || (eper == "lhc11hs")) {
     makePicoTracks = kFALSE;
   }
 
+  if((strcmp(dataType,"AOD") == 0) && (clusterColName == "CaloClusters"))
+    clusterColName = "caloClusters";
+
   if( makePicoTracks && ((strcmp(dataType,"ESD") == 0) || (strcmp(dataType,"AOD") == 0)) )
   {
+    TString inputTracks = "tracks";
+
     if(strcmp(dataType,"ESD") == 0)
     {
+      inputTracks = "HybridTracks";
+      TString trackCuts(Form("Hybrid_%s", period.Data()));
       // Hybrid tracks maker for ESD
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
-      AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks,trackCuts.Data());
+      AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks.Data(),trackCuts.Data());
       hybTask->SelectCollisionCandidates(pSel);
 
       // Track propagator to extend track to the TPC boundaries
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
-      AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks);
+      AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks.Data());
       propTask->SelectCollisionCandidates(pSel);
     }
     // PicoTracks maker to produce pico tracks
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks, period.Data());
+    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks.Data(), period.Data());
     pTrackTask->SelectCollisionCandidates(pSel);
   }
 
   // Make particles used for hadronic correction
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
-  AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(usedTracks,usedClusters,"EmcalTracks","EmcalClusters");
+  AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(usedTracks,clusterColName.Data(),"EmcalTracks","EmcalClusters");
   emcalParts->SelectCollisionCandidates(pSel);
 
   // Relate tracks and clusters
