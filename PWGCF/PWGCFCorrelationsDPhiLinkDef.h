@@ -22,4 +22,5 @@
 #pragma link C++ class AliLeadingBasicParticle+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
 #pragma link C++ class LRCParticle;
+#pragma link C++ class AliAnalysisTaskMuonHadronCorrelations+;
 #endif
