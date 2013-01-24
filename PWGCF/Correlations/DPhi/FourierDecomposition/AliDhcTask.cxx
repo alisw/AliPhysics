@@ -716,6 +716,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
 
     Float_t pta  = a.Pt();
     Float_t etaa = a.Eta();
+    Float_t phia = a.Phi();
     Int_t abin = fHPtTrg->FindBin(pta);
     if (fHPtTrg->IsBinOverflow(abin) || fHPtTrg->IsBinUnderflow(abin))
       continue;
@@ -724,19 +725,23 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       continue;
 
     // efficiency weighting
-    Int_t effBin[4];
     Double_t effWtT = 1.0;
     if (fHEffT) {
       // trigger particle
-      effBin[0] = fHEffT->GetAxis(0)->FindBin(etaa);
-      effBin[1] = fHEffT->GetAxis(1)->FindBin(pta);
-      effBin[2] = fHEffT->GetAxis(2)->FindBin(fCentrality);
-      effBin[3] = fHEffT->GetAxis(3)->FindBin(fZVertex);
-      effWtT = fHEffT->GetBinContent(effBin);
+      const Int_t nEffDimT = fHEffT->GetNdimensions();
+      Int_t effBinT[nEffDimT];
+      effBinT[0] = fHEffT->GetAxis(0)->FindBin(etaa);
+      effBinT[1] = fHEffT->GetAxis(1)->FindBin(pta);
+      effBinT[2] = fHEffT->GetAxis(2)->FindBin(fCentrality);
+      effBinT[3] = fHEffT->GetAxis(3)->FindBin(fZVertex);
+      if (nEffDimT>4) {
+        effBinT[4] = fHEffT->GetAxis(4)->FindBin(phia);
+      }
+      effWtT = fHEffT->GetBinContent(effBinT);
     }
     
     if (pairing == kSameEvt) {
-      fHTrk->Fill(a.Phi(),etaa);
+      fHTrk->Fill(phia,etaa);
       fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
     } else {
       fHPtTrgNorm1M->Fill(pta,fCentrality,fZVertex,effWtT);
@@ -752,6 +757,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       
       Float_t ptb  = b.Pt();
       Float_t etab = b.Eta();
+      Float_t phib = b.Phi();
       if (pta < ptb)
 	    continue;
 
@@ -762,7 +768,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       if (etab<fEtaALo || etab>fEtaAHi)
         continue;
 
-      Float_t dphi = DeltaPhi(a.Phi(), b.Phi());
+      Float_t dphi = DeltaPhi(phia, phib);
       Float_t deta = etaa - etab;
 
       Int_t index = globIndex+(abin-1)*nPtAssc+(bbin-1);
@@ -784,13 +790,17 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       }
       if (fHEffA) {
         // associated particle
-        effBin[0] = fHEffA->GetAxis(0)->FindBin(etab);
-        effBin[1] = fHEffA->GetAxis(1)->FindBin(ptb);
-        effBin[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
-        effBin[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
-        weight *= fHEffA->GetBinContent(effBin);
+        const Int_t nEffDimA = fHEffA->GetNdimensions();
+        Int_t effBinA[nEffDimA];
+        effBinA[0] = fHEffA->GetAxis(0)->FindBin(etab);
+        effBinA[1] = fHEffA->GetAxis(1)->FindBin(ptb);
+        effBinA[2] = fHEffA->GetAxis(2)->FindBin(fCentrality);
+        effBinA[3] = fHEffA->GetAxis(3)->FindBin(fZVertex);
+        if (nEffDimA>4) {
+          effBinA[4] = fHEffA->GetAxis(4)->FindBin(phib);
+        }
+        weight *= fHEffA->GetBinContent(effBinA);
       }
-
       hist[index]->Fill(dphi,deta,weight);
       bCountTrg = kTRUE;
 
