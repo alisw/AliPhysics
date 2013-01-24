@@ -13,7 +13,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t calibTime     = kTRUE,
   Bool_t remBC         = kTRUE,
   Bool_t reclusterize  = kFALSE,
-  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN)
+  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
+  Bool_t trackMatch    = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -43,7 +44,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
-							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer);
+							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer, trackMatch);
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     AliTender* alitender = new  AliTender("AliTender");
