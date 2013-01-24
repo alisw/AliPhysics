@@ -319,6 +319,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutCentralityPercentile&&esdevent)
   {
     AliCentrality* centr = esdevent->GetCentrality();
+    if(!fCutTPCmultiplicityOutliers && !centr->IsEventInCentralityClass(0,99.99,"TRK")){ // TPC centr < 100
+      pass=kFALSE;
+    }
+
     if (fUseCentralityUnchecked)
     {
       if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
@@ -375,6 +379,9 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if(aodevent) {
     if (fCutCentralityPercentile) {
       AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
+      if(!fCutTPCmultiplicityOutliers && !centr->IsEventInCentralityClass(0,99.99,"TRK")){ // TPC centr < 100
+         pass=kFALSE;
+      }
       if (fUseCentralityUnchecked) {
 	if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
 						       fCentralityPercentileMax,
