@@ -379,12 +379,12 @@ struct TrainSetup
       // Make our object using the interpreter 
       TString create = TString::Format("new %s(\"%s\")", 
 				       cls.Data(), name.Data());
-      gROOT->ProcessLine("gSystem->RedirectOutput(\"/dev/null\",\"w\");");
+      gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"a\");");
       Long_t retP = gROOT->ProcessLine(create, &error);
       gROOT->ProcessLine("gSystem->RedirectOutput(0);");
       if (!retP || error) 
-	throw TString::Format("Failed to make object of class %s: "
-			      "0x%08lx/%d\n\t%s", 
+	throw TString::Format("Failed to make object of class %s "
+			      "(see build.log): 0x%08lx/%d\n\t%s", 
 			      cls.Data(), retP, error, create.Data());
 
       TrainSetup* train = reinterpret_cast<TrainSetup*>(retP);
@@ -406,6 +406,8 @@ struct TrainSetup
     catch (TString& e) { 
       if (!e.IsNull()) Error("Main", "%s", e.Data());
     }
+    // Info("Main", "End of main loop (app=%p, asProg=%s, spawn=%s)",
+    //	 gApplication, asProg ? "true" : "false", spawn ? "true" : "false");
     if (gApplication && asProg) {
       if (!spawn) {
 	gSystem->Sleep(3);
@@ -652,8 +654,8 @@ protected:
 	    nam.Data());
       return false;
     }
-    Info("SetupWorkingDirectory", "Made subdirectory %s, and cd'ed there", 
-	 nam.Data());
+    // Info("SetupWorkingDirectory", "Made subdirectory %s, and cd'ed there", 
+    //      nam.Data());
     return true;
   }
   /** 
