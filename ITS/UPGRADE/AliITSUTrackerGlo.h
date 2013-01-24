@@ -64,7 +64,7 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
-  Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r);
+  Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r, Bool_t stopAtLastCl=kFALSE);
   //
   void                   KillSeed(AliITSUSeed* seed, Bool_t branch=kFALSE);
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
@@ -81,7 +81,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   DeleteLastSeedFromPool()                   {fSeedsPool.RemoveLast();}
   void                   SaveCurrentTrackHypotheses();
   void                   FinalizeHypotheses();
-  void                   UpdateESDTrack(AliITSUTrackHyp* hyp);
+  void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
   void                   CookMCLabel(AliITSUTrackHyp* hyp);
  //
  protected:

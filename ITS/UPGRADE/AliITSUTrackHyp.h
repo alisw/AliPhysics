@@ -29,7 +29,7 @@ class AliITSUTrackHyp: public AliKalmanTrack
   void               AddSeed(AliITSUSeed* seed, Int_t lr);
   void               SetESDTrack(AliESDtrack* esdtr) {fESDTrack = esdtr;}
   void               SetITSLabel(Int_t lb)    {fITSLabel=lb;}
-  void               FetchClusterInfo(Int_t* clIDarr) const;
+  Int_t              FetchClusterInfo(Int_t* clIDarr) const;
   //
   void               SetChi2(Double_t chi2) {fChi2 = chi2;}
   Bool_t             Update(const AliCluster* c);

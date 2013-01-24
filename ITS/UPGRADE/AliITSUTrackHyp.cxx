@@ -120,19 +120,21 @@ Bool_t AliITSUTrackHyp::Update(const AliCluster* cl)
 }
 
 //__________________________________________________________________
-void AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
+Int_t AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
 {
   // fill cl.id's in the array. The clusters of layer L will be set at slots
   // clID[2L] (and clID[2L+1] if there is an extra cluster).
   for (int i=fNLayers<<1;i--;) clIDarr[i]=-1;
   AliITSUSeed* seed = GetWinner();
-  Int_t lr;
+  Int_t lr,ncl=0;
   while(seed) {
     int clID = seed->GetLrCluster(lr);
     if (clID>=0) {
       int slotLr = lr<<1;
       clIDarr[ clIDarr[slotLr]<0 ? slotLr : slotLr+1 ] = clID;
+      ncl++;
     }
     seed = (AliITSUSeed*)seed->GetParent();
   }
+  return ncl;
 }

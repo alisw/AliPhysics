@@ -148,7 +148,6 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   //
   // Do outward fits in ITS
   //
-
   fTrackPhase = kPropBack;
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will fit %d tracks",nTrESD));
@@ -202,7 +201,9 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     currTr->AddTimeStep(dst);
     printf("Before resetCov: "); currTr->AliExternalTrackParam::Print();
     currTr->ResetCovariance(10000);
-    RefitTrack(currTr,fITS->GetRMax()); // propagate to exit from the ITS/TPC screen
+    if (RefitTrack(currTr,fITS->GetRMax())) { // propagate to exit from the ITS/TPC screen
+      UpdateESDTrack(currTr,AliESDtrack::kITSout);
+    }
     //
   }
   //
@@ -792,27 +793,45 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
     AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
     if (!hyp) continue;
     hyp->DefineWinner();  // TODO
-    UpdateESDTrack(hyp);
+    CookMCLabel(hyp);
+    UpdateESDTrack(hyp,AliESDtrack::kITSin);
   }
 
 }
 
 //______________________________________________________________________________
-void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp)
+void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
 {
   // update ESD track with current best hypothesis
   AliESDtrack* esdTr = hyp->GetESDTrack();
   if (!esdTr) return;
   AliITSUSeed* win = hyp->GetWinner();
   if (!win) return;
-  esdTr->UpdateTrackParams(hyp,AliESDtrack::kITSin);
+  switch (flag) {
+  case AliESDtrack::kITSin: 
+    esdTr->UpdateTrackParams(hyp,flag); // update kinematics
+    // TODO: set cluster info
+    break;
+    //
+  case AliESDtrack::kITSout: 
+    esdTr->UpdateTrackParams(hyp,flag); // update kinematics
+    // TODO: avoid setting friend
+    break;
+    //
+  case AliESDtrack::kITSrefit: 
+    esdTr->UpdateTrackParams(hyp,flag); // update kinematics
+    // TODO: avoid setting cluster info
+    break;
+  default:
+    AliFatal(Form("Unknown flag %d",flag));
+  }
   //
   // transfer module indices
   // TODO
 }
 
 //______________________________________________________________________________
-Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
+Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_t stopAtLastCl)
 {
   // refit track till radius rDest
   AliITSUTrackHyp tmpTr;
@@ -827,11 +846,11 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
   printf("Before refit: "); trc->AliExternalTrackParam::Print();
   if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
   //
-  trc->FetchClusterInfo(fClInfo);
+  int ncl = trc->FetchClusterInfo(fClInfo);
   fCurrMass = trc->GetMass();
   tmpTr.AliKalmanTrack::operator=(*trc);
   tmpTr.SetChi2(0);
-  int iclLr[2],nclLr;
+  int iclLr[2],nclLr,clCount=0;
   //
   for (int ilr=lrStart;ilr!=lrStop;ilr+=dir) {
     AliITSURecoLayer* lr = fITS->GetLayer(ilr);
@@ -865,6 +884,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
       if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) return kFALSE;
       if (!tmpTr.Update(clus)) return kFALSE;
       printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
+      if (stopAtLastCl && ++clCount==ncl) return kTRUE; // it was requested to not propagate after last update
     }
     //
   }
