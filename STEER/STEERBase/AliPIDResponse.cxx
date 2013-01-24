@@ -721,8 +721,9 @@ void AliPIDResponse::SetRecoInfo()
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
-  // exception for 12f1a and 12f1b
-  if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")) fMCperiodTPC="LHC12F1";
+  // exception for 12f1a, 12f1b and 12i3
+  if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")
+      || fCurrentFile.Contains("LHC12i3/")) fMCperiodTPC="LHC12F1";
 }
 
 //______________________________________________________________________________
@@ -1203,26 +1204,65 @@ void AliPIDResponse::SetTPCParametrisation()
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunction->GetName()));
               found=kTRUE;
-              // overwrite default with proton spline (for light nuclei)
-              if (ispec==AliPID::kProton) grAll=responseFunction;
               break;
             }
           }
         }
       }
-      if (grAll)
+      
+      // Retrieve responsefunction for pions - will (if available) be used for muons if there are no dedicated muon splines.
+      // For light nuclei, try to set the proton spline, if no dedicated splines are available.
+      // In both cases: Use default splines, if no dedicated splines and no pion/proton splines are available.
+      TObject* responseFunctionPion = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kPion,                             
+                                                                        (AliTPCPIDResponse::ETPCgainScenario)igainScenario);
+      TObject* responseFunctionProton = fTPCResponse.GetResponseFunction( (AliPID::EParticleType)AliPID::kProton,                             
+                                                                          (AliTPCPIDResponse::ETPCgainScenario)igainScenario);
+      
+      for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
       {
-        for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
+        if (!fTPCResponse.GetResponseFunction( (AliPID::EParticleType)ispec,
+          (AliTPCPIDResponse::ETPCgainScenario)igainScenario))
         {
-          if (!fTPCResponse.GetResponseFunction( (AliPID::EParticleType)ispec,
-                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario))
-          {
+          if (ispec == AliPID::kMuon) { // Muons
+            if (responseFunctionPion) {
+              fTPCResponse.SetResponseFunction( responseFunctionPion,
+                                                (AliPID::EParticleType)ispec,
+                                                (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
+              fTPCResponse.SetUseDatabase(kTRUE);
+              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionPion->GetName()));
+              found=kTRUE;  
+            }
+            else if (grAll) {
               fTPCResponse.SetResponseFunction( grAll,
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
               found=kTRUE;
+            }
+            //else
+            //  AliError(Form("No splines found for muons (also no pion splines and no default splines) for gain scenario %d!", igainScenario));
+          }
+          else if (ispec >= AliPID::kSPECIES) { // Light nuclei
+            if (responseFunctionProton) {
+              fTPCResponse.SetResponseFunction( responseFunctionProton,
+                                                (AliPID::EParticleType)ispec,
+                                                (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
+              fTPCResponse.SetUseDatabase(kTRUE);
+              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionProton->GetName()));
+              found=kTRUE;  
+            }
+            else if (grAll) {
+              fTPCResponse.SetResponseFunction( grAll,
+                                                (AliPID::EParticleType)ispec,
+                                                (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
+              fTPCResponse.SetUseDatabase(kTRUE);
+              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              found=kTRUE;
+            }
+            //else
+            //  AliError(Form("No splines found for species %d (also no proton splines and no default splines) for gain scenario %d!",
+            //                ispec, igainScenario));
           }
         }
       }
@@ -1873,12 +1913,6 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   // Compute PID response for the ITS
   //
   
-  // look for cached value first
-  // only the non SA tracks are cached
-  if (track->GetDetectorPID()){
-    return track->GetDetectorPID()->GetRawProbability(kITS, p, nSpecies);
-  }
-  
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   
@@ -1904,7 +1938,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   }
 
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
-  for (Int_t j=0; j<AliPID::kSPECIES; j++) {
+  for (Int_t j=0; j<nSpecies; j++) {
     Double_t mass=AliPID::ParticleMassZ(j);//GeV/c^2
     const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
     Double_t bethe=fITSResponse.Bethe(momITS,mass)*chargeFactor;
@@ -1925,7 +1959,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   }
 
   if (mismatch){
-    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
+    for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
     return kDetNoSignal;
   }
 
@@ -1953,7 +1987,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   Double_t bethe = 0.;
   Double_t sigma = 0.;
   
-  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
+  for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     
     bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection);
@@ -1990,7 +2024,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   if ((track->GetStatus()&AliVTrack::kTIME)==0) return kDetNoSignal;
   
   Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
-  for (Int_t j=0; j<AliPID::kSPECIESC; j++) {
+  for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     Double_t nsigmas=GetNumberOfSigmasTOF(track,type) + meanCorrFactor;
     
