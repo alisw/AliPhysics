@@ -16,8 +16,8 @@
 // Flow task class for the ALICE HFE group
 //
 //
-#ifndef ALIANALYSISTASKHFEFLOW_H
-#define ALIANALYSISTASKHFEFLOW_H
+#ifndef ALIANALYSISTASKFlowTPCTOFEPSP_H
+#define ALIANALYSISTASKFlowTPCTOFEPSP_H
 
 
 
@@ -50,7 +50,7 @@ class TClonesArray;
 class AliHFENonPhotonicElectron;
 class TTreeSRedirector;
 
-class AliAnalysisTaskHFEFlow: public AliAnalysisTaskSE {
+class AliAnalysisTaskFlowTPCTOFEPSP: public AliAnalysisTaskSE {
 public:
 
   typedef enum{
@@ -74,12 +74,12 @@ public:
 
 
 
-  AliAnalysisTaskHFEFlow();
-  AliAnalysisTaskHFEFlow(const char *name);
-  AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref);
-  AliAnalysisTaskHFEFlow& operator=(const AliAnalysisTaskHFEFlow &ref);
+  AliAnalysisTaskFlowTPCTOFEPSP();
+  AliAnalysisTaskFlowTPCTOFEPSP(const char *name);
+  AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTaskFlowTPCTOFEPSP &ref);
+  AliAnalysisTaskFlowTPCTOFEPSP& operator=(const AliAnalysisTaskFlowTPCTOFEPSP &ref);
   virtual void Copy(TObject &o) const;
-  virtual ~AliAnalysisTaskHFEFlow();
+  virtual ~AliAnalysisTaskFlowTPCTOFEPSP();
   
   virtual void  UserExec(Option_t */*option*/);
   virtual void  UserCreateOutputObjects();
@@ -313,7 +313,7 @@ private:
   Int_t IsMotherEta(Int_t tr, AliMCEvent* mcEvent);
     
   
-  ClassDef(AliAnalysisTaskHFEFlow, 1); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 1); // analysisclass
 };
 
 #endif

@@ -35,7 +35,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 
-#include "AliAnalysisTaskElecV2.h"
+#include "AliAnalysisTaskFlowTPCEMCalEP.h"
 #include "TGeoGlobalMagField.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -80,9 +80,9 @@
 #include "AliEventplane.h"
 #include "AliCentrality.h"
 
-ClassImp(AliAnalysisTaskElecV2)
+ClassImp(AliAnalysisTaskFlowTPCEMCalEP)
 //________________________________________________________________________
-AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name) 
+AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fESD(0)
   ,fMC(0)
@@ -146,7 +146,7 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskElecV2::AliAnalysisTaskElecV2() 
+AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
   ,fESD(0)
   ,fMC(0)
@@ -211,7 +211,7 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2()
 }
 //_________________________________________
 
-AliAnalysisTaskElecV2::~AliAnalysisTaskElecV2()
+AliAnalysisTaskFlowTPCEMCalEP::~AliAnalysisTaskFlowTPCEMCalEP()
 {
   //Destructor 
   
@@ -223,7 +223,7 @@ AliAnalysisTaskElecV2::~AliAnalysisTaskElecV2()
 }
 //_________________________________________
 
-void AliAnalysisTaskElecV2::UserExec(Option_t*)
+void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 {
   //Main loop
   //Called for each event
@@ -512,7 +512,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
  PostData(1, fOutputList);
 }
 //_________________________________________
-void AliAnalysisTaskElecV2::UserCreateOutputObjects()
+void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
 {
   //--- Check MC
   if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
@@ -668,14 +668,14 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskElecV2::Terminate(Option_t *)
+void AliAnalysisTaskFlowTPCEMCalEP::Terminate(Option_t *)
 {
   // Info("Terminate");
 	AliAnalysisTaskSE::Terminate();
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskElecV2::ProcessCutStep(Int_t cutStep, AliVParticle *track)
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 {
   // Check single track cuts for a given cut step
   const Int_t kMCOffset = AliHFEcuts::kNcutStepsMCTrack;
@@ -683,7 +683,7 @@ Bool_t AliAnalysisTaskElecV2::ProcessCutStep(Int_t cutStep, AliVParticle *track)
   return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG)
+void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
@@ -764,7 +764,7 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *tr
   
 }
 //_________________________________________
-Double_t AliAnalysisTaskElecV2::GetCos2DeltaPhi(Double_t phiA,Double_t phiB) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetCos2DeltaPhi(Double_t phiA,Double_t phiB) const
 {
   //Get cos[2(phi-psi_EP)] or cos[2(psi_subEP1 - psi_subEP2)]
   Double_t dPhi = TVector2::Phi_0_2pi(phiA - phiB); 
@@ -775,7 +775,7 @@ Double_t AliAnalysisTaskElecV2::GetCos2DeltaPhi(Double_t phiA,Double_t phiB) con
 }
 
 //_________________________________________
-Double_t AliAnalysisTaskElecV2::GetDeltaPhi(Double_t phiA,Double_t phiB) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDeltaPhi(Double_t phiA,Double_t phiB) const
 {
   //Get phi-psi_EP
   Double_t dPhi = TVector2::Phi_0_2pi(phiA - phiB); 
