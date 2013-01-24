@@ -21,6 +21,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -187,10 +188,10 @@ void AliAnalysisTPCTOFpA::Initialize()
 
 
   if (!fUseTPConlyTracks) {
-	  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE);
 	  fESDtrackCuts->SetMaxDCAToVertexXY(3);
-	  fESDtrackCuts->SetMaxDCAToVertexZ(3);
-	  fESDtrackCuts->SetEtaRange(-0.9,0.9);
+	  //fESDtrackCuts->SetMaxDCAToVertexZ(2);
+	  fESDtrackCuts->SetEtaRange(-0.8,0.8);
   }
   else {
 	  //fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -261,9 +262,9 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   
   //dimensions of standard THnSparse
   //                              0,           1,           2,  3,       4,    5,     6,   7,     8
-  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,       10,    50,    2,  80,    kDcaBins};
-  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      -0.5,   -5, -0.5,  -8,       -3};
-  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,       0.5,    5,  1.5,   8,        3};
+  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,       4,     50,    2,  80,    kDcaBins};
+  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      -1.0,   -5, -0.5,  -8,       -3};
+  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,       1.0,    5,  1.5,   8,        3};
 
   //dimensions of small THnSparse
   //                              0,           1,           2,  3,                        4,   5,       6
@@ -298,9 +299,9 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   
   // dimensions of standard THnSparse
   //                            0,            1,           2,  3,      4,   5,    6,   7,       8.,    9.
-  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     10,  50,    2,  80, kDcaBins,    6};
-  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.5,  -5, -0.5,  -8,       -3, -0.5};
-  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.5,   5,  1.5,   8,        3,  5.5};
+  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     4,   50,    2,  80, kDcaBins,    6};
+  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -1.0,  -5, -0.5,  -8,       -3, -0.5};
+  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    1.0,   5,  1.5,   8,        3,  5.5};
 
   //dimensions of small THnSparse
   //                              0,           1,           2,  3,                     4,   5,       6.,    7.
@@ -486,14 +487,20 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     }
   }
 
+
   if (fIspA) {
     AliCentrality *esdCentrality = fESD->GetCentrality();
-    Float_t pApercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0A
-    if (pApercentile >=  0. && pApercentile < 20.) centrality = 0; 
-    if (pApercentile >= 20. && pApercentile < 40.) centrality = 1;
-    if (pApercentile >= 40. && pApercentile < 60.) centrality = 2;
-    if (pApercentile >= 60. && pApercentile <= 100.) centrality = 3;
-    //if (pApercentile >= 80. && pApercentile <= 100.) centrality = 4;
+    Float_t pApercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0M
+    if (pApercentile >=  0. && pApercentile < 10.) centrality = 0; 
+    if (pApercentile >= 10. && pApercentile < 20.) centrality = 1;
+    if (pApercentile >= 20. && pApercentile < 30.) centrality = 2;
+    if (pApercentile >= 30. && pApercentile < 40.) centrality = 3;
+    if (pApercentile >= 40. && pApercentile < 50.) centrality = 4;
+    if (pApercentile >= 50. && pApercentile < 60.) centrality = 5; 
+    if (pApercentile >= 60. && pApercentile < 70.) centrality = 6;
+    if (pApercentile >= 70. && pApercentile < 80.) centrality = 7;
+    if (pApercentile >= 80. && pApercentile < 90.) centrality = 8;
+    if (pApercentile >= 90. && pApercentile <= 100.) centrality = 9;
     //cout << "*****************ispA switch works***************************" << endl;
     //cout << "centrality percentile is:  " << pApercentile << endl;
     //cout << "*************************************************************" << endl;
