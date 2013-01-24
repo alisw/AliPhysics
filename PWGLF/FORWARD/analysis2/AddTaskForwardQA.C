@@ -44,19 +44,23 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
 
   // --- Cuts --------------------------------------------------------
   // Old style cuts
-  Double_t nXi = mc ? 2 : 2;   //HHD test
-  Bool_t   includeSigma = false; //true;
+  // Double_t nXi = mc ? 2 : 2;   //HHD test
+  // Bool_t   includeSigma = false; //true;
   // High cuts for sharing filter
   AliFMDMultCuts cHigh;
   cHigh.SetMPVFraction(0.7);
-  cHigh.SetMultCuts(100);
+  cHigh.SetMultCuts(-1);
+  cHigh.SetNXi(2);
+  // cHigh.SetMultCuts(100);
   // Low cuts for sharing and density calculator
   AliFMDMultCuts cLow;
-  cLow.SetMultCuts(0.1, 0.1, 0.12, 0.1, 0.12);
+  // cLow.SetMultCuts(0.1, 0.1, 0.12, 0.1, 0.12);
+  cLow.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
   // Density cuts
   AliFMDMultCuts cDensity;
-  cDensity.SetMPVFraction(0.7);
-  cDensity.SetMultCuts(100);
+  // cDensity.SetMPVFraction(0.7);
+  // cDensity.SetMultCuts(100);
+  cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
 
   
   // --- Set parameters on the algorithms ----------------------------

@@ -75,8 +75,8 @@ handle_exit()
 {
     if test "x$lock" = "x" ; then return ; fi 
     if test "x$store" != "x" && test "x${top}" != "x" ; then 
-	chmod -R g+rwX ${top}/${proddir}
-	chmod -R g+rwX ${top}/$store
+	chmod -R g+rwX ${top}/${proddir} >> ${redir} 2>&1
+	chmod -R g+rwX ${top}/$store >> ${redir} 2>&1
     fi
     rm -rf $lock 
 }
@@ -285,8 +285,8 @@ EOF
 fix_perm()
 {
     # if test ! -f $1 ; then return ; fi 
-    chmod g+rwX $1
-    chmod o+rX $1
+    chmod g+rwX $1 >> ${redir} 2>&1 
+    chmod o+rX $1 >> ${redir} 2>&1 
 }
 
 # --- Check if a file is OK ------------------------------------------
@@ -639,6 +639,8 @@ if test ! "x$passno" = "x" ; then
 elif test ! "x$prodpost" = "x" ; then 
     proddir=${proddir}${prodpost}
     store=${proddir}/sim
+elif test ! "x$remainder" = "x" ; then 
+    store=${store}/${remainder}
 fi
 if test ! "x$qanumber" = "x" && test $qanumber -gt 0 ; then 
     store=${store}_QA${qanumber}
@@ -714,7 +716,7 @@ make_index ${top}/${proddir} ${proddir}
 make_index ${top} "QA for the FMD" \
     "For more information see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
 
-chmod -R g+rwX ${top}/${proddir}
+chmod -R g+rwX ${top}/${proddir} >> ${redir} 2>&1
 
 #
 # EOF

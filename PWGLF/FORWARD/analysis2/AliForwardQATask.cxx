@@ -156,7 +156,7 @@ AliForwardQATask::SetDebug(Int_t dbg)
 
 //____________________________________________________________________
 Bool_t 
-AliForwardQATask::CheckCorrections(UInt_t what) const
+AliForwardQATask::CheckCorrections(UInt_t what)
 {
   // 
   // Check if all needed corrections are there and accounted for.  If not,
@@ -175,7 +175,29 @@ AliForwardQATask::CheckCorrections(UInt_t what) const
   //   AliFMDDensityCalculator 
   if (what & AliForwardCorrectionManager::kELossFits && !fcm.GetELossFit()) { 
     AliWarning("No energy loss fits");
-    return false;
+
+    // Fall-back values if we do not have the energy loss fits 
+    AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
+    if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 0.3;
+      AliWarningF("Using fixed cut @ %f for the lower bound "
+		 "of the sharing filter", cut);
+      sfLCuts.SetMultCuts(cut);
+    }
+    AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
+    if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 100;
+      AliWarningF("Using fixed cut @ %f for the upper bound "
+		 "of the sharing filter", cut);
+      sfHCuts.SetMultCuts(cut);
+    }
+    AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
+    if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 0.3;
+      AliWarningF("Using fixed cut @ %f for the lower bound "
+		 "of the density calculator", cut);
+      dcCuts.SetMultCuts(cut);
+    }
   }
   return true;
 }
@@ -394,7 +416,7 @@ AliForwardQATask::UserExec(Option_t*)
   }
  
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
@@ -447,7 +469,7 @@ AliForwardQATask::Terminate(Option_t*)
 
   TStopwatch swf;
   swf.Start();
-  fEnergyFitter.Fit(list);
+  fEnergyFitter.Fit(list2);
   swf.Stop();
   AliInfoF("Fitting took %d real-time seconds, and %f CPU seconds", 
 	   Int_t(swf.RealTime()), swf.CpuTime());
@@ -491,6 +513,7 @@ AliForwardQATask::Print(Option_t* option) const
   GetEventInspector()   .Print(option);
   GetEnergyFitter()     .Print(option);
   GetSharingFilter()    .Print(option);
+  GetDensityCalculator().Print(option);
   gROOT->DecreaseDirLevel();
 }
 
