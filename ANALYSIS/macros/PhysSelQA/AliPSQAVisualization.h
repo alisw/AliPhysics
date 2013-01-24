@@ -25,24 +25,29 @@
 
 class AliPSQAVisualization : public TObject
 {
- public: 
+ public:
   AliPSQAVisualization();
   virtual ~AliPSQAVisualization();
-  
+
   void InitializeSelectedPlots(const Char_t * listOfPlots);
   void InitializeColorArray(const Char_t * listOfColors); // called only if fUseColorArray == kTRUE
-
+  
   void PostProcessQA(); // First call of macro
   void ScaleMinAndMax(); // called only if fScaleAuto == kTRUE
   void MakeDir(TString dir); // called if anything is to be saved, first check to make sure directory exists.
+  void ImportRunAndFillInfo(const Char_t * listOfRunsAndFills); // import info on run and fill number
   void DrawSelected(Int_t iplot);
+  Int_t MatchGoodRunToFillNumber(Int_t runnumber); // match run number to fill number
+  Int_t MatchGoodRunToStats(Int_t runnumber); // match run number to it's stats
   void ConvertTGraphErrorsToTH1Ds();
   TString SetDrawSelectedYTitle(TString TGEtitle);
   void SavePDFs(Int_t iplot);
+  void DrawSameTriggerOnSameCA(Int_t iplot);
   void DrawOverPlotCA(Int_t iplot);
   void DrawOverPlotNoCA(Int_t iplot);
-  void SaveOverPlotPDF(); 
-  void SaveOverPlotEPS(); 
+  void SaveToPDFSeparately(Int_t iplot);
+  void SaveOverPlotPDF();
+  void SaveOverPlotEPS();
 
   // Getters and setters from the macro
 
@@ -82,6 +87,8 @@ class AliPSQAVisualization : public TObject
   void     SetOverPlotTitle(TString opt){fOverPlotTitle = opt;};
   TString  GetOverPlotTitle(){return fOverPlotTitle;};
 
+  void SetPlotOnSameCanvas(Bool_t plot){fSetPlotOnSameCanvas=plot;}
+
   // Scaling Options
 
   void     SetScaleAuto(Bool_t sa){fScaleAuto = sa;};
@@ -100,18 +107,21 @@ class AliPSQAVisualization : public TObject
   Double_t GetScaleManMax(){return fMaximum;};
 
  private:
+
   // Input variables
   TString * fSelectedPlots; // List of plots to be turned from tragphs to th1ds
   Int_t     fNSelectedPlots; // number of plots to be turned from tgraphs to th1ds
   TString   fInDirectory; // input directory of root file, most likely the one just analyzed from AliPSQA
   TString   fROOTInput; // name of root file specified by user
+  TString   fRunFillFile;// name of file containing info on various fills
   TFile *   fRootFile; // Root file to be used to produce plots
-  
+
   // Save DrawSelected
   Bool_t  fDrawSelected;
+  Bool_t fSetPlotOnSameCanvas; // plot histos on same canvas
 
   // Save PDF variables
-  
+
   Bool_t  fSavePDFs; // if kTRUE, save pdfs of th1ds
   TString fOutDirectory; // save pdfs to this directory
   TString fOutPDFName; // common pdf name, group pdf files together
@@ -127,7 +137,7 @@ class AliPSQAVisualization : public TObject
   TString   fOutEPSName; // eps file name for overplot together
 
   // Overplot color array variables
-  
+
   Bool_t    fUseColorArray; // if ktrue, use colorarray specified in a list file
   Color_t * fColors; // set in a list file, using enums of colors (just use AliRoot and type in the color, e.g. root [0] kBlue returns (const enum EColor)600)
   Int_t fNColors; // number of colors used
@@ -145,9 +155,21 @@ class AliPSQAVisualization : public TObject
 
   TCanvas * fCanvas; // new array in InitializeDrawSelected with the amount of fNDrawSelected
   TH1D *  fDrawPlot; // new array in InitializeDrawSelected with the amount of fNDrawSelected
-  
-  ClassDef(AliPSQAVisualization, 1)
+  TLine ** fFillSeparationLine; // double array of Tlines - for each plot and for each change of fill number
+    
+  Int_t *fRunNumbers; // Runs to be used in macro
+  Int_t *fFillNumbers; // Fill numbers to be associated to macro
+  Int_t *fRawRunNumbers; // raw run numbers - taken from logbook
+  Int_t *fRawFillNumbers;// raw fill numbers corresponding to runs - taken from logbook
+  Int_t *fRawRunStats; //  raw stats for each run number - taken from logbook
 
+  Int_t *fNDiffFills; // array of integers containing info
+  Int_t *fBinArray; // array of histo bins corresponding to different RUNS
+
+  Int_t fNRuns; // Number of Runs used in macro
+  Int_t fNRawRuns; // Number of raw Runs in macro
+
+  ClassDef(AliPSQAVisualization, 2)
 };
 
 #endif
