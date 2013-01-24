@@ -80,6 +80,7 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
 AliMuonEffMC::~AliMuonEffMC()
 {
   //Destructor
+  if(fOutputList) delete fOutputList;
 }
 
 //________________________________________________________________________
@@ -241,14 +242,18 @@ void AliMuonEffMC::UserExec(Option_t *)
   // Fill Event histogram
   fHEvt->Fill(fZVertex, fCentrality);
 
+  Int_t iVerb = 0;
+
    // Centrality, vertex, other event variables...
   if (!VertexOk(fESD)) { 
-    AliInfo(Form("Event REJECTED. z = %.1f", fZVertex));  
+    if (iVerb>1)
+      AliInfo(Form("Event REJECTED. z = %.1f", fZVertex));  
     return; 
   }
 
   if (fCentrality > 100. || fCentrality < -1.5) { 
-    AliInfo(Form("Event REJECTED. fCentrality = %.1f", fCentrality)); 
+    if (iVerb>1)
+      AliInfo(Form("Event REJECTED. fCentrality = %.1f", fCentrality)); 
     return; 
   }
  

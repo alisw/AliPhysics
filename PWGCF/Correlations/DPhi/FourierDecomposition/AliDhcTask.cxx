@@ -383,7 +383,8 @@ void AliDhcTask::UserExec(Option_t *)
   // Fill Event histogram
   fHEvt->Fill(fZVertex, fCentrality);
   if (fCentrality > fBCent->GetXmax() || fCentrality < fBCent->GetXmin()) {
-    AliInfo(Form("Event REJECTED (centrality out of range). fCentrality = %.1f", fCentrality));
+    if (fVerbosity > 1)
+      AliInfo(Form("Event REJECTED (centrality out of range). fCentrality = %.1f", fCentrality));
     return;
   }
 
