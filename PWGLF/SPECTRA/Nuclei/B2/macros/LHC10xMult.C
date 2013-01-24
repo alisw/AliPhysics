@@ -36,7 +36,7 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 //
 // if option = 0 then use Config_XXX_TPC
 // if option = 1 then use Config_XXX_TOF
-// if option = 2 then use Config_XXX_TPCTOF
+// if option = 2 then use Config_TPCTOF
 //
 	using namespace B2mult;
 	using namespace std;
@@ -76,11 +76,6 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 			cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
 		}
-		else if(species=="Proton" && option==2)
-		{
-			cout << "Config_Proton_TPCTOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TPCTOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
-		}
 		else if(species=="Deuteron" && option==0)
 		{
 			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
@@ -91,10 +86,10 @@ Int_t LHC10xMult(const TString& species   = "Proton",
 			cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
 		}
-		else if(species=="Deuteron" && option==2)
+		else if((species=="Proton" || species=="Deuteron") && option==2)
 		{
-			cout << "Config_Deuteron_TPCTOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Deuteron_TPCTOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), kNormToInel[i]));
+			cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
+			gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\",%d,0,\"%s\")", arg.Data(), kNormToInel[i], species.Data()));
 		}
 		else
 		{

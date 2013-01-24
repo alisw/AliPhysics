@@ -33,7 +33,7 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
                 const TString& multCorTag = "",
                 Bool_t normToInel         = 1,  // for mult
                 Bool_t drawOutput         = 1,  // for batch
-                Int_t option              = 0)
+                Int_t option              = 2)
 {
 //
 // call Config_XXX for each period, merge the corrected pt and then get the results
@@ -70,15 +70,20 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 			cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), normToInel));
 		}
-		else if(species=="Proton" && option==2)
+		else if(species=="Deuteron" && option==0)
 		{
-			cout << "Config_Proton_TPCTOF_LHC10x.C" << endl << endl;
-			gROOT->ProcessLine(Form(".x Config_Proton_TPCTOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), normToInel));
+			cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
+			gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), normToInel));
 		}
-		else if(species=="Deuteron")
+		else if(species=="Deuteron" && option==1)
 		{
 			cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
 			gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\",%d,0)", arg.Data(), normToInel));
+		}
+		else if((species=="Proton" || species=="Deuteron") && option==2)
+		{
+			cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
+			gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\",%d,0,\"%s\")", arg.Data(), kNormToInel[i], species.Data()));
 		}
 		else
 		{
