@@ -62,13 +62,13 @@
 #pragma link C++ class  AliHFEpidObject+;
 #pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
 #pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
-#pragma link C++ class  AliAnalysisTaskElecV2+;
+#pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
 
 #pragma link C++ class  AliHFEdebugTreeTask+;
 
 #pragma link C++ class  AliHFEVZEROEventPlane+;
-#pragma link C++ class  AliAnalysisTaskHFEFlow+;
+#pragma link C++ class  AliAnalysisTaskFlowTPCTOFEPSP+;
 
 #pragma link C++ class  AliSelectNonHFE+;
 #pragma link C++ class  AliHFENonPhotonicElectron+;
@@ -78,5 +78,6 @@
 #pragma link C++ class  AliHFEInclusiveSpectrum+;
 #pragma link C++ class  AliHFEInclusiveSpectrumQA+;
 #pragma link C++ class  AliHFEsmearDCA+;
+#pragma link C++ class  AliAnalysisTaskFlowTPCEMCalQSP+;
 
 #endif

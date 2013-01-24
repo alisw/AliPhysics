@@ -13,8 +13,8 @@
  * provided "as is" without express or implied warranty.                  *               
  **************************************************************************/
 
-#ifndef ALIANALYSISTASKELECV2_H
-#define ALIANALYSISTASKELECV2_H
+#ifndef ALIANALYSISTASKFlowTPCEMCalEP_H
+#define ALIANALYSISTASKFlowTPCEMCalEP_H
 
 class THnSparse;
 class TH2F;
@@ -37,11 +37,11 @@ class AliCFManager;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
+class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskElecV2();
-  AliAnalysisTaskElecV2(const char *name);
-  virtual ~AliAnalysisTaskElecV2();
+  AliAnalysisTaskFlowTPCEMCalEP();
+  AliAnalysisTaskFlowTPCEMCalEP(const char *name);
+  virtual ~AliAnalysisTaskFlowTPCEMCalEP();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -111,10 +111,10 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   TH2F			*fGammaWeight;		//! gamma weight
   TH2F			*fPi0Weight;		//! pi0 weight
   TH2F			*fEtaWeight;		//! eta weight
-  AliAnalysisTaskElecV2(const AliAnalysisTaskElecV2&); // not implemented
-  AliAnalysisTaskElecV2& operator=(const AliAnalysisTaskElecV2&); // not implemented
+  AliAnalysisTaskFlowTPCEMCalEP(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
+  AliAnalysisTaskFlowTPCEMCalEP& operator=(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
   
-  ClassDef(AliAnalysisTaskElecV2, 1); //!example of analysis
+  ClassDef(AliAnalysisTaskFlowTPCEMCalEP, 1); //!example of analysis
 };
 
 #endif

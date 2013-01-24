@@ -74,11 +74,11 @@ set (SRCS
     hfe/AliHFEpidBayes.cxx
     hfe/AliHFEpidObject.cxx
     hfe/AliAnalysisTaskElecHadronCorrel.cxx
-    hfe/AliAnalysisTaskElecV2.cxx
+    hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx
     hfe/AliAnalysisTaskHFECal.cxx 
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
-    hfe/AliAnalysisTaskHFEFlow.cxx
+    hfe/AliAnalysisTaskFlowTPCTOFEPSP.cxx
     hfe/AliSelectNonHFE.cxx
     hfe/AliHFENonPhotonicElectron.cxx
     hfe/AliHFEdebugTreeTaskAOD.cxx
@@ -86,6 +86,7 @@ set (SRCS
     hfe/AliHFEInclusiveSpectrum.cxx
     hfe/AliHFEInclusiveSpectrumQA.cxx 
     hfe/AliHFEsmearDCA.cxx
+    hfe/AliAnalysisTaskFlowTPCEMCalQSP.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
