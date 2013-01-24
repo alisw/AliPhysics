@@ -168,7 +168,7 @@ protected:
    * 
    * @return true if all present, false otherwise
    */  
-  Bool_t CheckCorrections(UInt_t what) const;
+  Bool_t CheckCorrections(UInt_t what);
   /** 
    * Read corrections
    * 

@@ -725,9 +725,9 @@ AliFMDDensityCalculator::Correction(UShort_t d,
       Double_t dblC = dblHitCor->GetBinContent(dblHitCor->FindBin(eta));
       if (dblC > 0) correction *= dblC;
     }
-    else {
-      AliWarning(Form("Missing double hit correction for FMD%d%c",d,r));
-    }
+    // else {
+    //   AliWarning(Form("Missing double hit correction for FMD%d%c",d,r));
+    // }
   }
   return correction;
 }
