@@ -1,5 +1,5 @@
 
-AliMuonEffMC* AddTaskMuonEFFMC(Bool_t MDProcess = kTRUE,
+AliMuonEffMC* AddTaskMuonEffMC(Bool_t MDProcess = kTRUE,
 			       TString centralityEstimator = "V0M",
 			       const Int_t NEtaBins = 15,
 			       const Int_t NpTBins = 100,

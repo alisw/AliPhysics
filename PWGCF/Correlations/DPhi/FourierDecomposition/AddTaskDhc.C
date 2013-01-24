@@ -83,7 +83,7 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 1, TString chTaskFile = "alien:///alice/cern
     dhcTask->SetCentMixBins(axCentMix);
     dhcTask->SetZVtxMixBins(axZvtxMix);
     dhcTask->SelectCollisionCandidates(AliVEvent::kINT7);
-    dhcTask->SetVerbosity(10);
+    dhcTask->SetVerbosity(0);
     mgr->AddTask(dhcTask);
     
     AliAnalysisDataContainer *co_Dhc = mgr->CreateContainer("Cont_tschuste_DhcAna",
