@@ -58,7 +58,7 @@ AliMuonEffMC* AddTaskMuonEFFMC(Bool_t MDProcess = kTRUE,
   AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(Form("MuonEff_%s",centralityEstimator.Data()), 
                                                              TList::Class(), 
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s", outputFileName, folderName)););
+                                                             Form("%s:%s", outputFileName, folderName));
 
   // Connect input/output
   mgr->ConnectInput(MuonEff, 0, cinput);
