@@ -56,12 +56,15 @@ TRefArray* AliAnalysisEtSelectorEmcal::GetClusters()
 
 Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(const AliESDCaloCluster& cl) const
 {
-    return cl.E() > fCuts->GetReconstructedEmcalClusterEnergyCut();
+  Float_t pos[3];
+  cl.GetPosition(pos);
+  TVector3 cp(pos);
+  return TMath::Sin(cp.Theta())*cl.E() > fCuts->GetReconstructedEmcalClusterEnergyCut();
 }
 
 Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(const TParticle& p) const
 {
-    return p.Energy() > fCuts->GetReconstructedEmcalClusterEnergyCut();
+  return TMath::Sin(p.Theta())*p.Energy() > fCuts->GetReconstructedEmcalClusterEnergyCut();
 }
 
 Bool_t AliAnalysisEtSelectorEmcal::PassDistanceToBadChannelCut(const AliESDCaloCluster& ) const

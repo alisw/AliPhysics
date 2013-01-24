@@ -92,14 +92,17 @@ Int_t AliAnalysisEtSelectorPhos::Init(const AliESDEvent* event)
 Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(const AliESDCaloCluster& cluster) const
 {
   
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
 //    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
-  return cluster.E() > fCuts->GetReconstructedPhosClusterEnergyCut();
+  return TMath::Sin(cp.Theta())*cluster.E() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
 Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(const TParticle& part) const
 {
 //    std::cout << fCuts->GetReconstructedPhosClusterEnergyCut();
-    return part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
+    return TMath::Sin(part.Theta())*part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
 
