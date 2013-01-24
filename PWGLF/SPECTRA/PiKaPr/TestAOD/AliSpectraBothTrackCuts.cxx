@@ -58,7 +58,7 @@ const char * AliSpectraBothTrackCuts::kBinLabel[] ={"TrkBit",
 ClassImp(AliSpectraBothTrackCuts)
 
 
-AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
+AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCutMax(0),fYCutMin(0),
   fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0)
   
@@ -89,7 +89,8 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
   fPCut = 100000.0; // default value of p cut ~ no cut
   fPtCut = 100000.0; // default value of pt cut ~ no cut 
   fPtCutTOFMatching=0.6; //default value fot matching with TOF
-  fYCut       = 100000.0; // default value of y cut ~ no cut 
+  fYCutMax       = 100000.0; // default value of y cut ~ no cut 
+  fYCutMin       = -100000.0; // default value of y cut ~ no cut 
   fMinTPCcls=70; // ncls in TPC
 }
 
@@ -246,7 +247,7 @@ Bool_t AliSpectraBothTrackCuts::CheckYCut(BothParticleSpecies_t species)
 	y =-999.0 ;
   else
 	y=0.5*TMath::Log((TMath::Sqrt(mass*mass+p*p)+pz)/(TMath::Sqrt(mass*mass+p*p)-pz));
-  if (TMath::Abs(y) > fYCut || y < -998.) return kFALSE;
+  if (y > fYCutMax || y<fYCutMin||y < -998.) return kFALSE;
 	return kTRUE;
 }
 //_______________________________________________________

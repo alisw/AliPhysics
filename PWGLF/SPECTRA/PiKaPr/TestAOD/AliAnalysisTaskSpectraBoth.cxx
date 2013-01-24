@@ -138,7 +138,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 						fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 				  
 				  //rapidity cut
-				  if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	
+				  if(partMC->Y() > fTrackCuts->GetYMax()|| partMC->Y() < fTrackCuts->GetYMin() ) 
+					continue;	
 				  if(partMC->IsPhysicalPrimary())
 				 	 npar++;    
 				  // check for true PID + and fill P_t histos 
@@ -174,7 +175,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 					continue;//Skip neutrals
 			 	if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax())
 					fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),stack->IsPhysicalPrimary(iMC));
-				if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) 
+				if(partMC->Y()   > fTrackCuts->GetYMax() ||partMC->Y()   < fTrackCuts->GetYMin()  ) 
 					continue;
 				if(stack->IsPhysicalPrimary(iMC))
 					 npar++;    

@@ -43,7 +43,7 @@ using namespace std;
 
 ClassImp(AliSpectraBothEventCuts)
 
-AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentFromV0(0), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
+AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0)
@@ -72,7 +72,7 @@ fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEta
   fMultiplicityCutMin=-1.0;
   fMultiplicityCutMax=-1.0;
   fTrackBits=1;
-  fCentFromV0=kFALSE;
+  fCentEstimator="V0M";
   fMaxChi2perNDFforVertex=-1;
 }
 
@@ -199,9 +199,7 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
   // Check centrality cut
   if ( fCentralityCutMax<0.0  &&  fCentralityCutMin<0.0 )  return kTRUE;   
   Double_t cent=0;
-  TString CentEstimator="TRK";
-  if(fCentFromV0)CentEstimator="V0M";
-  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile(CentEstimator.Data());
+  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
   else cent=ApplyCentralityPatchAOD049();
   
   if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   

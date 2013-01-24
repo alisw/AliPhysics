@@ -22,9 +22,16 @@ enum ECharge_t {
   kNegative,
   kNCharges
 };
+enum {
+ kdodca=0x1,
+ kgeantflukaKaon=0x2,
+ kgeantflukaProton=0x4,
+ knormalizationtoeventspassingPhySel=0x8,
+ kveretxcorrectionandbadchunkscorr=0x10
+};	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag);
-void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TString outnamemc="" )
+void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="" )
 {
 	TH1::AddDirectory(kFALSE);
 	gSystem->Load("libCore.so");  
@@ -104,10 +111,24 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 	
 	
 //	Double_t neventsdata =  ecutsdata->NumberOfEvents();
-	Double_t neventsmcall =  ecutsmc->NumberOfEvents();
-	Double_t neventsdata =  ecutsdata->NumberOfPhysSelEvents();
-	Double_t neventsmc =  ecutsmc->NumberOfPhysSelEvents();
-	
+	Double_t neventsmcall = 1 ;  //if loop over MC is done after or befor events cuts this will be changed 
+	Double_t neventsdata =  1;
+	Double_t neventsmc =  1;
+
+	if(options&knormalizationtoeventspassingPhySel)
+	{
+		neventsmcall= ecutsmc->NumberOfProcessedEvents();
+		 neventsdata=ecutsdata->NumberOfPhysSelEvents();
+		 neventsmc=ecutsmc->NumberOfPhysSelEvents();
+	}
+	else
+	{
+		neventsdata=ecutsdata->NumberOfEvents();
+		 neventsmc=ecutsmc->NumberOfEvents();
+		neventsmcall= ecutsmc->NumberOfEvents();
+
+
+	}
 	GetMCTruth(MCTruth);
 	
 	
@@ -125,7 +146,7 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 	TH1F* contall=(TH1F*)allrecMC->Clone("contall");
 	contall->Add(alleff,-1);
 	alleff->Divide(alleff,allgen,1,1,"B");
-	contall->Divide(contall,allgen,1,1,"B");
+	contall->Divide(contall,allrecMC,1,1,"B");
 	
 	GetCorrectedSpectra(spectraall,allrecdata,alleff,contall);
 	Divideby2pipt(spectraall);
@@ -231,11 +252,11 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 		lout->Add(confinal[i]);
 	}
 	TFile* fout=new TFile(Form("./results/ResMY_%s_%s.root",outnamemc.Data(),outdate.Data()),"RECREATE");
-	if (dca)
+	if (options&kdodca)
 		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit);
 	for (int i=0;i<6;i++)
 	{
-			if(dca)
+			if(options&kdodca)
 			{
 				confinal[i]->Add(contfit[i]);
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],confinal[i]);
@@ -249,8 +270,8 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 			CleanHisto(spectraLeonardo[i],-1,100,contPID[i]);				
 	}
 	
-	GFCorrection(spectra,tcutsdata->GetPtTOFMatching());
-	GFCorrection(spectraLeonardo,tcutsdata->GetPtTOFMatching());
+	GFCorrection(spectra,tcutsdata->GetPtTOFMatching(),options);
+	GFCorrection(spectraLeonardo,tcutsdata->GetPtTOFMatching(),options);
 	 MatchingTOFEff(spectra,lout);
 	  MatchingTOFEff(spectraLeonardo);
 	TH1F* allch=GetSumAllCh(spectra,mass);
@@ -260,8 +281,14 @@ void AnalysisBoth (Bool_t dca=kTRUE,TString outdate, TString outnamedata, TStrin
 	fout->cd();	
 	TList* listqa=new TList();
 	TList* canvaslist=new TList();
-	Float_t vertexcorrection=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist);
+	Float_t vertexcorrection=1.0;
+	Float_t corrbadchunksvtx=QAPlotsBoth(managerdata,managermc,ecutsdata,ecutsmc,tcutsdata,tcutsmc,listqa,canvaslist);
+	if (options&kveretxcorrectionandbadchunkscorr)
+		vertexcorrection=corrbadchunksvtx;
 	cout<<" VTX corr="<<vertexcorrection<<endl;
+	Double_t ycut=tcutsdata->GetY();
+	if(TMath::Abs(ycut)>0.0)
+		vertexcorrection=vertexcorrection/(2.0*ycut);
 	for (int i=0;i<6;i++)
 	{
 		spectra[i]->Scale(vertexcorrection);
@@ -433,7 +460,7 @@ void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0)
 void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHistoManager* hman_mc,TFormula* fun,TFile *fout,TH1F** hcon,TH1F** hconWD,TH1F** hconMat,TH1F** hprimary)
 {
   printf("\n\n-> DCA Correction");  
-  Double_t FitRange[2]={-3.,3.};
+  Double_t FitRange[2]={-2.0,2.0};
   Double_t CutRange[2]={-1.0,1.0};
   Double_t minptformaterial[6]={0.0,100.0,0.0,0.0,100.0,0.0};
   Double_t maxptformaterial[6]={0.0,-100.0,1.3,0.0,-100.0,0.0};
@@ -728,34 +755,36 @@ void GetCorrectedSpectraLeonardo(TH1F* spectra,TH1F* correction, TH1F* hprimaryD
 	spectra->Divide(hprimaryMC);
 }
 
-void GFCorrection(TH1F **Spectra,Float_t tofpt)
+void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 {
-	  //Geant/Fluka Correction
-	  Printf("\nGF correction for Kaons");
-	  //Getting GF For Kaons in TPC
-	  TGraph *gGFCorrectionKaonPlus=new TGraph();
-	  gGFCorrectionKaonPlus->SetName("gGFCorrectionKaonPlus");
-	  gGFCorrectionKaonPlus->SetTitle("gGFCorrectionKaonPlus");
-	  TGraph *gGFCorrectionKaonMinus=new TGraph();
-	  gGFCorrectionKaonMinus->SetName("gGFCorrectionKaonMinus");
-	  gGFCorrectionKaonMinus->SetTitle("gGFCorrectionKaonMinus");
-	  TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
-  	  TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
-	  if (!fGeanFlukaK)		
-		return;
-	  TH1F *hGeantFlukaKPos=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionParticles");
-	  TH1F *hGeantFlukaKNeg=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionAntiParticles");
-	  //getting GF func for Kaons with TOF
-	  TF1 *fGFKPosTracking;
-	  fGFKPosTracking = TrackingEff_geantflukaCorrection(3,kPositive);
-	  TF1 *fGFKNegTracking;
-	  fGFKNegTracking = TrackingEff_geantflukaCorrection(3,kNegative);
-	  TF1 *fGFKPosMatching;
-	  fGFKPosMatching = TOFmatchMC_geantflukaCorrection(3,kPositive);
-	  TF1 *fGFKNegMatching;
-	  fGFKNegMatching = TOFmatchMC_geantflukaCorrection(3,kNegative);
-	  for(Int_t binK=0;binK<=Spectra[1]->GetNbinsX();binK++)
-	  {
+	if (options&kgeantflukaKaon)
+	{		
+	 	 //Geant/Fluka Correction
+	  	Printf("\nGF correction for Kaons");
+	  	//Getting GF For Kaons in TPC
+	  	TGraph *gGFCorrectionKaonPlus=new TGraph();
+	  	gGFCorrectionKaonPlus->SetName("gGFCorrectionKaonPlus");
+	  	gGFCorrectionKaonPlus->SetTitle("gGFCorrectionKaonPlus");
+	  	TGraph *gGFCorrectionKaonMinus=new TGraph();
+	  	gGFCorrectionKaonMinus->SetName("gGFCorrectionKaonMinus");
+	  	gGFCorrectionKaonMinus->SetTitle("gGFCorrectionKaonMinus");
+	 	 TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
+  	  	TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
+	  	if (!fGeanFlukaK)		
+			return;
+	  	TH1F *hGeantFlukaKPos=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionParticles");
+	  	TH1F *hGeantFlukaKNeg=(TH1F*)fGeanFlukaK->Get("gHistCorrectionForCrossSectionAntiParticles");
+	  	//getting GF func for Kaons with TOF
+	  	TF1 *fGFKPosTracking;
+	  	fGFKPosTracking = TrackingEff_geantflukaCorrection(3,kPositive);
+	  	TF1 *fGFKNegTracking;
+	 	 fGFKNegTracking = TrackingEff_geantflukaCorrection(3,kNegative);
+	 	 TF1 *fGFKPosMatching;
+	 	 fGFKPosMatching = TOFmatchMC_geantflukaCorrection(3,kPositive);
+	 	 TF1 *fGFKNegMatching;
+	 	 fGFKNegMatching = TOFmatchMC_geantflukaCorrection(3,kNegative);
+	 	 for(Int_t binK=0;binK<=Spectra[1]->GetNbinsX();binK++)
+	  	{
 			if(Spectra[1]->GetBinCenter(binK)<tofpt)
 			{//use TPC GeantFlukaCorrection
 				Float_t FlukaCorrKPos=hGeantFlukaKPos->GetBinContent(hGeantFlukaKPos->FindBin(Spectra[1]->GetBinCenter(binK)));
@@ -787,8 +816,10 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt)
 				Spectra[1]->SetBinError(binK,Spectra[1]->GetBinError(binK)*FlukaCorrKPosMatching);
 				Spectra[4]->SetBinError(binK,Spectra[4]->GetBinError(binK)*FlukaCorrKNegMatching);
 			}
+	  	}
 	  }
-	  
+	  if(!(options&kgeantflukaProton))	
+		return;
 	  //Geant Fluka for P in TPC
 	  Printf("\nGF correction for Protons");
 	  const Int_t kNCharge=2;

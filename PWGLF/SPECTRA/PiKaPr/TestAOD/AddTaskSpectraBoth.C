@@ -8,7 +8,8 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
 					     Double_t Nsigmapid=3.,
 					     Double_t pt=5.,
 					     Double_t p=5.,
-					     Double_t y=.5,
+					     Double_t ymin=-0.5,
+					     Double_t ymax=.5, 	
 					     Double_t ptTofMatch=.6,
 					     UInt_t trkbit=1,
 					     UInt_t trkbitQVector=1,
@@ -16,7 +17,8 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
 					     Double_t DCA=100000,
 					     UInt_t minNclsTPC=70,
 					     Int_t nrebin=0,
-					     TString opt="",
+					     TString centestimator="V0M",
+					     Int_t pidmethod=2, 	 					
 					     Float_t tpcshift=0.0,
 					     Float_t tofshift=0.0){
   
@@ -44,17 +46,24 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   
   using namespace AliSpectraNameSpaceBoth;
   
+  TString opt=Form("Est_%s_Pid_%d_Y%.1fto%.1f", centestimator.Data(),pidmethod,ymin,ymax);	
   AliSpectraBothPID *pid = new AliSpectraBothPID(); 
   pid->SetNSigmaCut(Nsigmapid);
   pid->SetShiftTPC(tpcshift);
   pid->SetShiftTOF(tofshift);
-  
+  if(pidmethod==0)
+	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTPC);
+  else if (pidmethod==1)
+	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTOF);
+  else		
+  	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTPCTOF);
+
   AliSpectraBothTrackCuts  * trcuts = new AliSpectraBothTrackCuts("Track Cuts");  
   trcuts->SetDCA(DCA);
   trcuts->SetTrackBits(trkbit);
   trcuts->SetPt(pt);
   trcuts->SetP(p);
-  trcuts->SetY(y);
+  trcuts->SetY(ymax,ymin);
   trcuts->SetPtTOFMatching(ptTofMatch);   
   trcuts->SetEta(EtaMin,EtaMax);
   trcuts->SetMinTPCcls(minNclsTPC);
@@ -65,6 +74,7 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   evcuts->SetCentralityCutMax(CentCutMax);  
   evcuts->SetCentralityCutMin(CentCutMin);
   evcuts->SetTrackBits(trkbitQVector);
+  evcuts->SetCentEstimator(centestimator);	
   if(mc==1)evcuts->SetIsMC(kTRUE);
   evcuts->PrintCuts();
   
