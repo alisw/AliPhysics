@@ -505,14 +505,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 
   fhnpatchFake   = new TH2F("hnpatchFake","number of fake patchs vs. all patchs are fake",
-                          4,-2,2, 2000,0,2000);
+                          3,0,3, 2880,0,2880);
   fhnpatchFake  ->SetYTitle("number of fake patchs");
   fhnpatchFake  ->SetXTitle("all fake event");
   fhnpatchFake  ->SetZTitle("counts");
 
 
   fhnpatchNotFake   = new TH2F("hnpatchNotFake","number of Not fake patchs vs. all patchs are fake",
-                     4, -2, 2, 2000,0,2000);
+                     3, 0, 3, 2000,0,2000);
   fhnpatchNotFake  ->SetYTitle("number of Not fake patchs");
   fhnpatchNotFake  ->SetXTitle("all fake event");
   fhnpatchNotFake  ->SetZTitle("counts");
@@ -1049,7 +1049,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   // loop on FASTOR
 //  printf("\n *********** New EVENT ************\n");
 
-  double areAllFakes=-1;
+  int areAllFakes=2;
   int  numberpatchNotFake=0; int numberpatchFake=0;
   while (trg.Next())
   {
@@ -1330,7 +1330,8 @@ fhL1GPatch->Fill(posX,posY);}
       fhL0AmpL1J  ->Fill( j, i, emcalTrigL0L1J[i][j]);
       fhL1Amp     ->Fill( j, i, emcalTrigL1   [i][j]);
      //if(emcalTrigL1   [i][j]>0) 
-     	fhL1FOREnergy->Fill(j*i,  emcalTrigL1   [i][j]);
+     
+     	fhL1FOREnergy->Fill(i+fgkFALTRORows*j,  emcalTrigL1   [i][j]);
       fhL1GAmp    ->Fill( j, i, emcalTrigL1G  [i][j]);
       fhL1G2Amp   ->Fill( j, i, emcalTrigL1G2 [i][j]);
       fhL1JAmp    ->Fill( j, i, emcalTrigL1J  [i][j]);
