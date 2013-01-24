@@ -28,19 +28,25 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
                                  const TString& multTag    = "",
                                  const TString& multCorTag = "",
                                  Bool_t normToInel         = 1,  // for mult
-                                 Bool_t drawOutput         = 1)  // for batch
+                                 Bool_t drawOutput         = 1,  // for batch
+                                 Int_t  lowPtBin           = 3,  // 0.4 Gev/c
+                                 Int_t  hiPtBin            = 6,  // 1.0 GeV/c
+                                 Bool_t makeStats          = 1,
+                                 Bool_t makeCor            = 1,
+                                 Bool_t makePt             = 1,
+                                 Bool_t makeRatio          = 1,
+                                 Bool_t makeSpectra        = 1 )
 {
 //
 // lhc10b, lhc10c, lhc10d, lhc10e config for deuterons and antideuterons
 // (TPC)
 //
 	const TString  kSpecies         = "Deuteron";
-	const TString  kTrkSel          = "its_tpc_dca_spd-tpc3";
+	const TString  kTrkSel          = "its_tpc_dca-tpc3";
 	const TString  kTrigName        = "mbor";
 	const Bool_t   kVtxCorr         = 0;
 	const Double_t kVtxCorrVal      = GetVertexCorrection(period);
-	const Int_t    kPtBin[2]        = {3,6};
-	const Bool_t   kUnfolding       = 1;
+	const Bool_t   kUnfolding       = 0;
 	const Int_t    kIter            = 7;
 	const Bool_t   kFakeTracks      = 0;
 	const Bool_t   kSecondaries     = 1;
@@ -84,7 +90,7 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetInelXSection(xsec);
 	driver.SetNormalizeToINEL(normToInel);
 	driver.SetVertexCorrection(kVtxCorr, kVtxCorrVal);
-	driver.SetPtBinInterval(kPtBin[0], kPtBin[1]);
+	driver.SetPtBinInterval(lowPtBin, hiPtBin);
 	driver.SetPidM2(0);
 	driver.SetUnfolding(kUnfolding, kIter);
 	driver.SetFakeTracks(kFakeTracks);
@@ -98,6 +104,12 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetFitFractionCorr(kFitFrac);
 	driver.SetSysErr(kSysErr[0],kSysErr[1]);
 	
+	driver.SetMakeStats(makeStats);
+	driver.SetMakeCorrections(makeCor);
+	driver.SetMakePt(makePt);
+	driver.SetMakeRatio(makeRatio);
+	driver.SetMakeSpectra(makeSpectra);
+	
 	driver.Run();
 	
 	// draw output
@@ -110,7 +122,7 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	
 	DrawOutputCorr(kSpecies,inputCorr);
 	
-	if(kSecProd != 2) gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"\",\"Deuteron\", %d, %d, %f, %f)", driver.GetPtCorrDebugFilename().Data(), kPtBin[0], kPtBin[1], kDCAxy[0], kDCAxy[1]));
+	if(kSecProd != 2) gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"\",\"Deuteron\", %d, %d, %f, %f)", driver.GetPtCorrDebugFilename().Data(), lowPtBin, hiPtBin, kDCAxy[0], kDCAxy[1]));
 	
 	DrawPtDebug(driver.GetPtDebugFilename(), outputTag, kSpecies, 0);
 	DrawOutputRatio(outputRatio, outputTag, kSpecies);

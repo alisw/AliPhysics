@@ -27,7 +27,14 @@ Int_t Config_Proton_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
                                const TString& multTag    = "",
                                const TString& multCorTag = "",
                                Bool_t normToInel         = 1,  // for mult
-                               Bool_t drawOutput         = 1)  // for batch
+                               Bool_t drawOutput         = 1,  // for batch
+                               Int_t  lowPtBin           = 5,  // 0.4 GeV/c
+                               Int_t  hiPtBin            = 11, // 1.0 GeV/c
+                               Bool_t makeStats          = 1,
+                               Bool_t makeCor            = 1,
+                               Bool_t makePt             = 1,
+                               Bool_t makeRatio          = 1,
+                               Bool_t makeSpectra        = 1 )
 {
 //
 // lhc10b, lhc10c, lhc10d, lhc10e config for protons and antiprotons
@@ -38,7 +45,6 @@ Int_t Config_Proton_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	const TString  kTrigName    = "mbor";
 	const Bool_t   kVtxCorr     = 0;
 	const Double_t kVtxCorrVal  = GetVertexCorrection(period);
-	const Int_t    kPtBin[2]    = {5,14};
 	const Bool_t   kUnfolding   = 0;
 	const Int_t    kIter        = 5;
 	const Bool_t   kFakeTracks  = 0;
@@ -86,7 +92,7 @@ Int_t Config_Proton_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetInelXSection(xsec);
 	driver.SetNormalizeToINEL(normToInel);
 	driver.SetVertexCorrection(kVtxCorr, kVtxCorrVal);
-	driver.SetPtBinInterval(kPtBin[0], kPtBin[1]);
+	driver.SetPtBinInterval(lowPtBin, hiPtBin);
 	driver.SetPidM2(0);
 	driver.SetUnfolding(kUnfolding, kIter);
 	driver.SetFakeTracks(kFakeTracks);
@@ -101,6 +107,12 @@ Int_t Config_Proton_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetSameFeedDownCorr(kSameFdwn);
 	driver.SetSysErr(kSysErr[0],kSysErr[1]);
 	
+	driver.SetMakeStats(makeStats);
+	driver.SetMakeCorrections(makeCor);
+	driver.SetMakePt(makePt);
+	driver.SetMakeRatio(makeRatio);
+	driver.SetMakeSpectra(makeSpectra);
+	
 	driver.Run();
 	
 	// draw output
@@ -113,7 +125,7 @@ Int_t Config_Proton_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	
 	DrawOutputCorr(kSpecies,inputCorr);
 	
-	if(kSecProd != 2) DrawCorrDebug(driver.GetPtCorrDebugFilename(), driver.GetOutputCorrTag(), kSpecies, kPtBin[0], kPtBin[1], kDCAxy[0], kDCAxy[1]);
+	if(kSecProd != 2) DrawCorrDebug(driver.GetPtCorrDebugFilename(), driver.GetOutputCorrTag(), kSpecies, lowPtBin, hiPtBin, kDCAxy[0], kDCAxy[1]);
 	
 	DrawPtDebug(driver.GetPtDebugFilename(), outputTag, kSpecies, 0);
 	DrawOutputRatio(outputRatio, outputTag, kSpecies);
