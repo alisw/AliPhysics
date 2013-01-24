@@ -6,7 +6,7 @@ AddTaskPidQC(){
   Int_t cmax[ncentr]={5,10,20,30,40,50,60,70,80};
 
   for(Int_t i=0;i < ncentr;i++){
-    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kFALSE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0); // no pid
+    AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kFALSE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,2,1); // no pid + QA
     AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0);
     AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kKaon,AliFlowTrackCuts::kTOFbayesian,0);
     AddTaskFlowCentralityPIDQC(cmin[i],cmax[i],"AnalysisResults",kTRUE,AliPID::kProton,AliFlowTrackCuts::kTOFbayesian,-1);

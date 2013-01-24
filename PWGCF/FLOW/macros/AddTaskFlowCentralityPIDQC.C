@@ -90,11 +90,12 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
+//  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
 //  cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   cutsEvent->SetQA(doQA);
+  cutsEvent->SetCutTPCmultiplicityOutliers();
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP2 = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts();
@@ -113,7 +114,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   cutsRP->SetQA(doQA);
 
   // POI TRACK CUTS:
-  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("GlobalPOI");
+  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("TPConlyPOI");
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
@@ -141,6 +142,7 @@ void AddTaskFlowCentralityPIDQC( Float_t centrMin=10.,
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
   cutsPOI->SetMinimalTPCdedx(10.);
+  cutsPOI->SetAODfilterBit(1);
   cutsPOI->SetQA(doQA);
   cutsPOI->SetPriors((centrMin+centrMax)*0.5); // set priors and PID as a function of the centrality
 
