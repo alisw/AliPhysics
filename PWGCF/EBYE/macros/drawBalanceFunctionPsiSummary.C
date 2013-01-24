@@ -8,7 +8,7 @@ void drawBalanceFunctionPsiSummarySummary(const char* lhcPeriod = "LHC11h",
   TFile        *fPar[3];
   TGraphErrors *gPar[3][18];
 
-  Int_t iCentrality[3] = {1,3,5};
+  Int_t iCentrality[3] = {1,2,3};
   
   for(Int_t iCent = 0 ; iCent < 3; iCent++){
 
@@ -87,10 +87,10 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
   // this could also be retrieved directly from AliBalancePsi
   //const Int_t kNPtBins = 16;
   //Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-  const Int_t kNPtBins = 5;
-  Double_t ptBins[kNPtBins+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
-  //const Int_t kNPtBins = 4;
-  //Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
+  //const Int_t kNPtBins = 5;
+  //Double_t ptBins[kNPtBins+1] = {0.2,1.0,2.0,3.0,4.0,8.0};
+  const Int_t kNPtBins = 4;
+  Double_t ptBins[kNPtBins+1] = {1.0,2.0,3.0,4.0,8.0};
   //const Int_t kNPtBins = 1;
   //Double_t ptBins[kNPtBins+1] = {0.2,2.0};
 
@@ -181,7 +181,7 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
       latexInfo1->SetTextColor(1);
       
       // Open input file
-      inFileName = Form("PbPb/%s/Train%d/Fits/balanceFunctionFit",lhcPeriod,gTrainID);
+      inFileName = Form("PbPb/%s/Train%d/Fits/balanceFunctionFit2D",lhcPeriod,gTrainID);
       inFileName += ".Centrality";  
       inFileName += gCentrality; inFileName += ".Psi";
       if((psiMin == -0.5)&&(psiMax == 0.5)) inFileName += "InPlane.Ptt";
@@ -193,7 +193,7 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
       inFileName += Form("%.1f",ptTriggerMax); inFileName += "PtaFrom";
       inFileName += Form("%.1f",ptAssociatedMin); inFileName += "To"; 
       inFileName += Form("%.1f",ptAssociatedMax); 
-      inFileName += ".root";
+      inFileName += "_2pMethod.root";
       inFile = TFile::Open(inFileName.Data(),"read");
       inFile->ls();
       hTMPData = (TH2D*)inFile->Get(Form("gHistBalanceFunctionSubtracted"));
