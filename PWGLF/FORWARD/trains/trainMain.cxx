@@ -69,9 +69,8 @@ struct Deferred : public TTimer
   Bool_t Notify()
   {
     // gSystem->RemoveTimer(this);
-    Info("Notify", "Will run train setup: %s (%s)", 
-	 fName.Data(), fClass.Data());
-    return TrainSetup::Main(fName, fClass, fOptions, fSpawn);
+    //Info("Notify","Will run train setup: %s (%s)",fName.Data(),fClass.Data());
+    return TrainSetup::Main(fName, fClass, fOptions, true, fSpawn);
   }
   TString fName;
   TString fClass;
@@ -214,35 +213,33 @@ main(int argc, char** argv)
   const char* aliPath  = gSystem->ExpandPathName("$ALICE_ROOT");
   const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/");
   AppendPath(aliPath);
-  AppendPath(Form("%s/include",   aliPath));
-  AppendPath(Form("%s/trains",    fwdPath));
-  AppendPath(Form("%s/analysis2", fwdPath));
-
+  AppendPath(Form("%s/include",          aliPath));
+  AppendPath(Form("%s/trains",           fwdPath));
+  AppendPath(Form("%s/analysis2",        fwdPath));
+  AppendPath(Form("%s/analysis2/trains", fwdPath));
 
   // --- Set-up Application ------------------------------------------
   TApplication* app = 0;
-  gROOT->SetBatch(true);
-  if (!batch || spawn) { 
-    gROOT->SetBatch(false);
-    if (!spawn)
-      app = new TGApplication("runTrain", 0, 0);
-    else {
-      TRint* rint = new TRint("runTrain", 0, 0, 0, 0, true);
-      rint->SetPrompt("runTrain[%3d]> ");
-      app = rint;
-    }
-    app->InitializeGraphics();
+  gROOT->SetBatch(batch);
+  if (spawn) {
+    // Info("main", "Creating interpreter application");
+    TRint* rint = new TRint("runTrain", 0, 0, 0, 0, true);
+    rint->SetPrompt("runTrain[%3d]> ");
+    app = rint;
   }
-
+  else if (!batch) {
+    // Info("main", "Creating GUI application");
+    app = new TGApplication("runTrain", 0, 0);
+  }
+  if (app && !batch) app->InitializeGraphics();
+  
   // --- run, possibly in a timer ------------------------------------
   Bool_t ret = true;
-  if (batch) 
+  if (!app) 
     ret = TrainSetup::Main(name, cls, &optList);
   else {
-    optList.ls();
+    // optList.ls();
     new Deferred(name, cls, &optList, spawn);
-    Info("main", "Running application (%s)", gROOT->IsBatch() 
-	 ? "batch" : "normal");
     gApplication->Run();
   }
 

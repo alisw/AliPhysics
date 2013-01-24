@@ -152,7 +152,7 @@ struct GridHelper : public PluginHelper
     TIter       next(tokens);
     Bool_t      range  = false;
     Bool_t      individual = false;
-    Info("GridHelper::RegisterRuns", "Runs specified are %s", runs.Data());
+    // Info("GridHelper::RegisterRuns", "Runs specified are %s", runs.Data());
     while ((part = static_cast<TObjString*>(next()))) {
       TString& s = part->String();
       if (s.Contains("-")) { // Run range 
@@ -177,8 +177,7 @@ struct GridHelper : public PluginHelper
 	Int_t first = static_cast<TObjString*>(ranges->At(0))->String().Atoi();
 	Int_t last  = static_cast<TObjString*>(ranges->At(1))->String().Atoi();
 	nRuns       = last-first+1;
-	Info("GridHelper::RegisterRuns", "Run range %d -> %d", 
-	     first, last);
+	// Info("GridHelper::RegisterRuns", "Run range %d -> %d", first, last);
 	fHandler->SetRunRange(first, last);
 	ranges->Delete();
 	range = true;
@@ -192,7 +191,7 @@ struct GridHelper : public PluginHelper
 		  "ignoring %s", s.Data());
 	  continue;
 	}
-	Info("GridHandler::RegisterRuns", "Adding run %s", s.Data());
+	// Info("GridHandler::RegisterRuns", "Adding run %s", s.Data());
 	fHandler->AddRunNumber(s.Atoi());
 	StoreRun(s.Atoi());
 	nRuns++;
@@ -206,7 +205,7 @@ struct GridHelper : public PluginHelper
       }
 
       // We assume this part is a file 
-      Info("GridHelper::RegisterRuns", "Reading runs from %s", s.Data());
+      // Info("GridHelper::RegisterRuns", "Reading runs from %s", s.Data());
       std::ifstream in(s.Data());
       if (!in) { 
 	s.Prepend("../");
@@ -219,7 +218,7 @@ struct GridHelper : public PluginHelper
       while (!in.eof()) { 
 	Int_t r;
 	in >> r;
-	Info("GridHelper::RegisterRuns", "Read %d, adding", r);
+	// Info("GridHelper::RegisterRuns", "Read %d, adding", r);
 	fHandler->AddRunNumber(r);
 	StoreRun(r);
 	nRuns++;
@@ -263,14 +262,14 @@ struct GridHelper : public PluginHelper
    */
   virtual Bool_t PostSetup() 
   {
-    Info("GridHelper::PostSetup", "Calling super.PostSetup");
+    // Info("GridHelper::PostSetup", "Calling super.PostSetup");
     if (!PluginHelper::PostSetup()) return false;
 
     // --- API version -----------------------------------------------
     fHandler->SetAPIVersion(fOptions.Get("alien"));
     
     // --- Get the name ----------------------------------------------
-    Info("GridHandler", "Proceeding with plugin setup");
+    // Info("GridHelper", "Proceeding with plugin setup");
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     TString name(mgr->GetName());
 
@@ -383,24 +382,35 @@ struct GridHelper : public PluginHelper
     // --- declare these as outputs
     TString listOfAODs  = "";
     TString listOfHists = "";
+    TString listOfTerms = "";
 
-    AliAnalysisDataContainer* cont = 0;
-    TIter nextCont(mgr->GetOutputs());
-    while ((cont = static_cast<AliAnalysisDataContainer*>(nextCont()))) {
-      TString outName(cont->GetFileName());
-      TString& list = (outName == "default" ? listOfAODs : listOfHists);
-      if (outName == "default") { 
-	if (!mgr->GetOutputEventHandler()) continue; 
-
-	outName = mgr->GetOutputEventHandler()->GetOutputFileName();
+    TObjArray*  outs[] = { mgr->GetOutputs(), mgr->GetParamOutputs(), 0 };
+    TObjArray** out    = outs;
+    while (*out) {
+      AliAnalysisDataContainer* cont = 0;
+      TIter nextCont(*out);
+      while ((cont = static_cast<AliAnalysisDataContainer*>(nextCont()))) {
+	TString outName(cont->GetFileName());
+	Bool_t   term = (*out == outs[1]);
+	TString& list = (outName == "default" ? listOfAODs : 
+			 !term ? listOfHists : listOfTerms);
+	if (outName == "default") { 
+	  if (!mgr->GetOutputEventHandler()) continue; 
+	  
+	  outName = mgr->GetOutputEventHandler()->GetOutputFileName();
+	}
+	Info("PostSetup", "Got %s file %s", 
+	     (term ? "terminate" : "output"), outName.Data());
+	// cont->PrintContainer();
+	if (list.Contains(outName)) continue;
+	if (!list.IsNull()) list.Append(",");
+	list.Append(outName);
       }
-      if (list.Contains(outName)) continue;
-      if (!list.IsNull()) list.Append(",");
-      list.Append(outName);
+      out++;
     }
-    if (!mgr->GetExtraFiles().IsNull()) { 
+    TString extra = mgr->GetExtraFiles();
+    if (!extra.IsNull()) { 
       if (!listOfAODs.IsNull()) listOfAODs.Append("+");
-      TString extra = mgr->GetExtraFiles();
       extra.ReplaceAll(" ", ",");
       listOfAODs.Append(extra);
    }
@@ -415,6 +425,8 @@ struct GridHelper : public PluginHelper
 			     listOfAODs.Data(), nReplica));
     if (listOfAODs.IsNull() && listOfHists.IsNull()) 
       Fatal("PostSetup", "No outputs defined");
+    if (!listOfTerms.IsNull()) 
+      fHandler->SetTerminateFiles(listOfTerms);
     // Disabled for now 
     // plugin->SetOutputArchive(outArchive);
     
@@ -430,8 +442,10 @@ struct GridHelper : public PluginHelper
   virtual Long64_t Run(Long64_t nEvents=-1) 
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-    
-    return mgr->StartAnalysis("grid", nEvents);
+    if (nEvents == 0) return 0;
+    Long64_t ret = mgr->StartAnalysis("grid", nEvents);
+    // Info("Run", "Job IDs: %s", fHandler->GetGridJobIDs().Data());
+    return ret;
   }
   /** 
    * Link an auxilary file to working directory 
@@ -500,12 +514,93 @@ struct GridHelper : public PluginHelper
     fHandler->Write("plugin");
     plug->Close();
     
+#if 1
+    TIter       nextLib(&fExtraLibs);
+    TObjString* lib = 0;
+    TString     libs;
+    while ((lib = static_cast<TObjString*>(nextLib()))) {
+      if (!libs.IsNull()) libs.Append(" ");
+      libs.Append(lib->String());
+    }
+    TIter       nextPar(&fExtraPars);
+    TObjString* par = 0;
+    TString     pars;
+    while ((par = static_cast<TObjString*>(nextPar()))) {
+      if (!pars.IsNull()) pars.Append(" ");
+      pars.Append(par->String());
+    }
+    TIter       nextSrc(&fExtraSrcs);
+    TObjString* src = 0;
+    TString     srcs;
+    while ((src = static_cast<TObjString*>(nextSrc()))) {
+      if (!srcs.IsNull()) srcs.Append(" ");
+      srcs.Append(src->String());
+    }
+    TString macDir("$ALICE_ROOT/PWGLF/FORWARD/trains");
     std::ofstream t("Terminate.C");
     if (!t) { 
       Error("GridHelper::AuxSave", "Failed to make terminate ROOT script");
       return;
     }
-    
+
+    t << "// Generated by GridHelper\n"
+      << "Bool_t Terminate()\n"
+      << "{\n"
+      << "  TString name = \"" << escaped << "\";\n"
+      << "  TString libs = \"" << libs << "\";\n"
+      << "  TString pars = \"" << pars << "\";\n"
+      << "  TString srcs = \"" << srcs << "\";\n\n"
+      << "  gROOT->LoadMacro(\"" << macDir << "/GridTerminate.C\");\n\n"
+      << "  return GridTerminate(name,libs,pars,srcs);\n"
+      << "}\n"
+      << "// EOF\n"
+      << std::endl;
+    t.close();
+
+    TString runs;
+    TString format(fOptions.Has("mc") ? "%d" : "%09d");
+    if (fOptions.Has("concat")) {
+      Int_t first = fRuns.First()->GetUniqueID();
+      Int_t last  = fRuns.Last()->GetUniqueID();
+      TString fmt(format); 
+      fmt.Append("_"); 
+      fmt.Append(format);
+      if (!runs.IsNull()) runs.Append(" ");
+      runs.Append(TString::Format(fmt, first, last));
+    }
+    else {
+      TIter next(&fRuns);
+      TObject* o = 0;
+      while ((o = next())) { 
+	if (!runs.IsNull()) runs.Append(" ");
+	runs.Append(Form(format, o->GetUniqueID()));
+      }
+    }
+
+    std::ofstream d("Download.C");
+    if (!d) { 
+      Error("GridHelper::AuxSave", "Failed to make ROOT script Download.C");
+      return;
+    }
+    d << "// Generated by GridHelper\n"
+      << "void Download()\n"
+      << "{\n"
+      << "  TString base = \"" << fUrl.GetProtocol() << "://" 
+      << OutputPath() << "\";\n"
+      << "  TString runs = \"" << runs << "\";\n\n"
+      << "  gROOT->LoadMacro(\"" << macDir << "/GridDownload.C\");\n\n"
+      << "  GridDownload(base, runs);\n"
+      << "}\n"
+      << "// EOF\n"
+      << std::endl;
+    d.close();
+#else    
+    std::ofstream t("Terminate.C");
+    if (!t) { 
+      Error("GridHelper::AuxSave", "Failed to make terminate ROOT script");
+      return;
+    }
+
     t << "// Generated by GridHelper\n"
       << "Bool_t LoadLib(const char* libName)\n"
       << "{\n"
@@ -633,6 +728,8 @@ struct GridHelper : public PluginHelper
       << "  // Run the terminate job\n"
       << "  Info(\"Terminate\",\"Starting terminate job\");\n"
       << "  if (mgr->StartAnalysis(\"grid\") < 0) return false;\n"
+      << "  Info(\"Terminate\",\"Job IDs: %s\","
+      << "handler->GetGridJobIDs().Data());\n"
       << "  return true;\n"
       << "}\n"
       << "// \n"
@@ -640,38 +737,6 @@ struct GridHelper : public PluginHelper
       << "//\n"
       << std::endl;
     t.close();
-
-    if (!asShellScript) return;
-
-    std::ofstream s("terminate.sh");
-    if (!s) { 
-      Error("GridHelper::AuxSave", "Failed to make terminate shell script");
-      return;
-    }
-    s << "#!/bin/sh\n"
-      << "# Generated by GridHelper\n"
-      << "nam=" << escaped << "\n"
-      << "scr=Terminate.C\n"
-      << "mgr=$nam.root\n"
-      << "\n"
-      << "if test ! -f $scr || test ! -f $mgr ; then\n"
-      << "  if test ! -d $nam ; then\n"
-      << "    echo \"Directory $nam not found\"\n"
-      << "    exit 1\n"
-      << "  fi\n\n"
-      << "  if test ! -f $nam/$scr || test ! -f $nam/$mgr ; then\n"
-      << "    echo \"Script $scr, manager $mgr not found in $nam\"\n"
-      << "    exit 1\n"
-      << "  fi\n\n"
-      << "  (cd $nam && aliroot -l $scr)\n"
-      << "fi\n\n"
-      << " aliroot -l $scr\n"
-      << "#\n"
-      << "# EOF\n"
-      << "#\n"
-      << std::endl;
-    s.close();
-    gSystem->Exec("chmod a+x terminate.sh");
 
     std::ofstream d("Download.C");
     if (!d) { 
@@ -723,6 +788,40 @@ struct GridHelper : public PluginHelper
     d << "}\n"
       << std::endl;
     d.close();
+#endif
+
+    if (!asShellScript) return;
+
+    std::ofstream s("terminate.sh");
+    if (!s) { 
+      Error("GridHelper::AuxSave", "Failed to make terminate shell script");
+      return;
+    }
+    s << "#!/bin/sh\n"
+      << "# Generated by GridHelper\n"
+      << "nam=" << escaped << "\n"
+      << "scr=Terminate.C\n"
+      << "mgr=$nam.root\n"
+      << "\n"
+      << "if test ! -f $scr || test ! -f $mgr ; then\n"
+      << "  if test ! -d $nam ; then\n"
+      << "    echo \"Directory $nam not found\"\n"
+      << "    exit 1\n"
+      << "  fi\n\n"
+      << "  if test ! -f $nam/$scr || test ! -f $nam/$mgr ; then\n"
+      << "    echo \"Script $scr, manager $mgr not found in $nam\"\n"
+      << "    exit 1\n"
+      << "  fi\n\n"
+      << "  (cd $nam && aliroot -l $scr)\n"
+      << "fi\n\n"
+      << " aliroot -l $scr\n"
+      << "#\n"
+      << "# EOF\n"
+      << "#\n"
+      << std::endl;
+    s.close();
+    gSystem->Exec("chmod a+x terminate.sh");
+
   }
   TList fRuns;
 };
