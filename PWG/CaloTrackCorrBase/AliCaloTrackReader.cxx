@@ -1159,6 +1159,8 @@ void AliCaloTrackReader::FillInputCTS()
     
     nstatus++;
     
+    Float_t dcaTPC =-999;
+    
     if     (fDataType==kESD)
     {
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
@@ -1231,6 +1233,10 @@ void AliCaloTrackReader::FillInputCTS()
         
         if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
         
+        //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
+        // info stored here
+        dcaTPC = aodtrack->DCA();
+        
         track->GetPxPyPz(pTrack) ;
         
       } // aod track exists
@@ -1262,31 +1268,18 @@ void AliCaloTrackReader::FillInputCTS()
                 
     if(fUseTrackDCACut)
     {
-      //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
-      // info stored
-      AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
-      
-      Float_t dcaTPC =-999;
-      Bool_t  okDCA    = kFALSE;
-      if(aodTrack)
-      {
-        dcaTPC = aodTrack->DCA();
-        //vtxBC   = aodTrack->GetProdVertex()->GetBC();
-        if(dcaTPC!=-999)
-        {
-          okDCA = AcceptDCA(momentum.Pt(),dcaTPC);
-          if(!okDCA) continue ;
-        }
-      }
-      
       //normal way to get the dca, cut on dca_xy
       if(dcaTPC==-999)
       {
         Double_t dca[2]   = {1e6,1e6};
         Double_t covar[3] = {1e6,1e6,1e6};
-        okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
-       if( okDCA) okDCA = AcceptDCA(momentum.Pt(),dca[0]);
-       if(!okDCA) continue ;
+        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
+        if( okDCA) okDCA = AcceptDCA(momentum.Pt(),dca[0]);
+        if(!okDCA)
+        {
+          //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f, BC %d\n",momentum.Pt(),dca[0],trackBC);
+          continue ;
+        }
       }
     }// DCA cuts
     
