@@ -5,9 +5,9 @@
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
-	       const char *dataType="realPbPb", // "sim" or "real" etc.
-	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCalDetail") // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *dataType="simPbPb", // "sim" or "real" etc.
+	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
+	       const char *det = "EMCAL") // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -59,6 +59,27 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
 
+  TString detStr(det);
+  TString dataStr(dataType);
+  if ( detStr.Contains("PHOS") ) {
+    gSystem->CopyFile("calocorrections.PHOS.root","calocorrections.root",kTRUE);
+    if ( dataStr.Contains("sim") ) {
+      gSystem->CopyFile("ConfigEtMonteCarlo.PHOS.C","ConfigEtMonteCarlo.C",kTRUE);
+    }
+    else{
+      gSystem->CopyFile("ConfigEtMonteCarlo.PHOS.data.C","ConfigEtMonteCarlo.C",kTRUE);
+    }
+  }
+  else{
+    gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE);
+    if ( dataStr.Contains("sim") ) {
+      gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
+    }
+    else{
+      gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.data.C","ConfigEtMonteCarlo.C",kTRUE);
+    }
+  }
+
 
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
@@ -73,13 +94,11 @@ void runCaloEt(bool submit = false, // true or false
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TotEtManager");
   
-  TString detStr(det);
   TString taskName = "TaskTotEt" + detStr;
-  TString dataStr(dataType);
   TString dataStrName(dataType);
   dataStrName.ReplaceAll("/",".");
   TString outputName = "Et.ESD." + dataStrName + "." + detStr + ".root";
-  TString outputDir = "totEt" + dataStr;
+  TString outputDir = "totEt" + dataStr + detStr;
 
   cout << " taskName " << taskName
        << " outputName " << outputName 
@@ -103,7 +122,7 @@ void runCaloEt(bool submit = false, // true or false
     cout << " MC " << endl;
     if ( dataStr.Contains("PbPb") ) { // a la: simPbPb/LHC10e18a
       cout << " PbPb " << endl;
-      TString fileLocation = "/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
+      TString fileLocation = "/data/LHC10h8/137161/999/AliESDs.root";//"/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
       cout << "fileLocation " << fileLocation.Data() << endl; 
       chain->Add(fileLocation.Data()); // link to local test file
     }
@@ -124,13 +143,13 @@ void runCaloEt(bool submit = false, // true or false
   }
 
 
-  if(!isMc && detStr.Contains("EMC")){
+  //if(!isMc && detStr.Contains("EMC")){
+  if(detStr.Contains("EMC")){
     cout<<"You are running over EMCal data and using the tender supply"<<endl;
     gSystem->Load("libTENDER.so");
     gSystem->Load("libTENDERSupplies.so"); 
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
-
     //this macro is downloaded from the EMCal tender supply twiki 
     //hopefully it will be replaced by something checked in to aliroot
     //I have added the function from GetOCDBRecParam.C in Jiri's example to this so that we don't add gobs of macros to the code
@@ -141,13 +160,13 @@ void runCaloEt(bool submit = false, // true or false
 //    gROOT->LoadMacro("./GetOCDBRecParam.C");
 //  	// run num, data type pp/PbPb, from grid
 //Gets calibration factors from grid if jobs are to be submitted to the grid
-  	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
+//   	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
 
     AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0);
     //this also likely needs modification
-    tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
-    if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
-    else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
+//     tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
+//     if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
+//     else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
 
     if(submit){
       cout<<"Setting tender to run on grid"<<endl;
