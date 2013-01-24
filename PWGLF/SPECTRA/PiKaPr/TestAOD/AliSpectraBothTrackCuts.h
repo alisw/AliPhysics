@@ -31,7 +31,7 @@ class AliSpectraBothTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   enum {kAODobject=0,kESDobject,kotherobject};
   
- AliSpectraBothTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0) ,fPCut(0), fPtCut(0),fYCut(0), fPtCutTOFMatching(0),fAODtrack(0), fHashitinSPD1(0),fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0) {}
+ AliSpectraBothTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0) ,fPCut(0), fPtCut(0),fYCutMax(0),fYCutMin(0), fPtCutTOFMatching(0),fAODtrack(0), fHashitinSPD1(0),fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0) {}
   
   AliSpectraBothTrackCuts(const char *name);
   virtual  ~AliSpectraBothTrackCuts() {} // To be implemented
@@ -61,14 +61,16 @@ class AliSpectraBothTrackCuts : public TNamed
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
    void SetPt(Float_t pt)     { fPtCut = pt; }
-   void SetY(Float_t y) { fYCut = y;}
+   void SetY(Float_t ymax,Float_t ymin) { fYCutMax = ymax;fYCutMin=ymin;}
    void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
    void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
    void SetMinTPCcls(UInt_t MinTPCcls) {fMinTPCcls=MinTPCcls;}
    void SetHashitinSPD1 (Bool_t value) {fHashitinSPD1=value;}	
    Float_t GetEtaMin()       const    { return fEtaCutMin; }
    Float_t GetEtaMax()       const    { return fEtaCutMax; }
-   Float_t GetY()         const    { return fYCut; }
+   Float_t GetYMax()         const    { return fYCutMax; }
+   Float_t GetYMin()         const    { return fYCutMin; }
+   Float_t GetY()         const    { return 0.5*(fYCutMax-fYCutMin); }
    Float_t GetDCA()       const    { return fDCACut; }
    Float_t GetP()         const    { return fPCut; }
    Float_t GetPt()        const    { return fPtCut; }
@@ -86,7 +88,8 @@ class AliSpectraBothTrackCuts : public TNamed
    Float_t          fDCACut;          // Maximum value of DCA
    Float_t          fPCut;            // Maximum value of P
    Float_t          fPtCut;           // Maximum value of Pt
-   Float_t          fYCut;           // Maximum value of Y
+   Float_t          fYCutMax;           // Maximum value of Y 
+   Float_t          fYCutMin;           // Minimum value of Y
    Float_t          fPtCutTOFMatching;           // TOF Matching
    Int_t 	     fAODtrack; // 0 ESD track connected , 1 AOD track conected , else nothing
    Bool_t 	    fHashitinSPD1; // Check if SPD1 has a hit 	 		
@@ -105,7 +108,7 @@ class AliSpectraBothTrackCuts : public TNamed
    AliSpectraBothTrackCuts(const AliSpectraBothTrackCuts&);
    AliSpectraBothTrackCuts& operator=(const AliSpectraBothTrackCuts&);
    
-   ClassDef(AliSpectraBothTrackCuts, 3);
+   ClassDef(AliSpectraBothTrackCuts, 4);
 };
 #endif
 

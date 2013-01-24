@@ -26,15 +26,15 @@ class AliSpectraBothEventCuts : public TNamed
 enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};	
 
   // Constructors
- AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentFromV0(0), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
+ AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
   AliSpectraBothEventCuts(const char *name);
   virtual  ~AliSpectraBothEventCuts() {}
   
   void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
   Bool_t GetIsMC()           const           { return fIsMC;};
-  void SetCentFromV0(Bool_t centFromV0 = kFALSE)    {fCentFromV0 = centFromV0; };
-  Bool_t GetCentFromV0()           const           { return fCentFromV0;};
+  void SetCentEstimator(TString cent = "V0M")    {fCentEstimator = cent; };
+  TString GetCentFromV0()           const           { return fCentEstimator;};
   
   void SetUseCentPatchAOD049(Bool_t useCentPatchAOD049 = kFALSE)    {fUseCentPatchAOD049 = useCentPatchAOD049; };
   Bool_t GetUseCentPatchAOD049()           const           { return fUseCentPatchAOD049;};
@@ -104,7 +104,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   Int_t 		 fAODEvent; // flag what type event is conected use values form AliSpeatraAODTrackCuts	
   UInt_t           fTrackBits;       // Type of track to be used in the Qvector calculation
   Bool_t          fIsMC;// true if processing MC
-  Bool_t          fCentFromV0;// default centrality with tracks
+  TString          fCentEstimator;// name of centrality estimator
   Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   Int_t          fUseSDDPatchforLHC11a; // if true will check for ALLNOTRD  in fired trigger class 
   UInt_t fTriggerSettings;     // triger configuration 
@@ -136,7 +136,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 4);
+  ClassDef(AliSpectraBothEventCuts, 5);
   
 };
 #endif
