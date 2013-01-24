@@ -228,7 +228,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    
 	    fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
 
-	    fTotNeutralEt += CalculateTransverseEnergy(*cluster);
+	    fTotNeutralEt += CorrectForReconstructionEfficiency(*cluster);
             fNeutralMultiplicity++;
         }
         fMultiplicity++;

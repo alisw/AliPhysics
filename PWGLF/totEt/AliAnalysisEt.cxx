@@ -701,14 +701,14 @@ Int_t AliAnalysisEt::ReadCorrections(TString filename)
  return -1; 
 }
 
-Double_t AliAnalysisEt::CalculateTransverseEnergy(const AliESDCaloCluster& cluster)
+Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster)
 {
   Float_t pos[3];
   cluster.GetPosition(pos);
   TVector3 cp(pos);
   Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E());
   
-//   std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
+  //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
   return TMath::Sin(cp.Theta())*corrEnergy;
 }
 

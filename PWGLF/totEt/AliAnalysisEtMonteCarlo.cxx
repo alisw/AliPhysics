@@ -612,6 +612,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 //    }
 
 //Note that this only returns clusters for the selected detector.  fSelector actually calls the right GetClusters... for the detector
+//It does not apply any cuts on these clusters
     TRefArray *caloClusters = fSelector->GetClusters();
 
     Int_t nCluster = caloClusters->GetEntries();
@@ -645,7 +646,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    //if it is from a K0S
             if(primIdx < 0)
             {
-                std::cout << "What!? No primary?" << std::endl;
+	      //std::cout << "What!? No primary?" << std::endl;
                 continue;
             }
 
@@ -673,7 +674,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
         fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
-        Double_t clEt = CalculateTransverseEnergy(*caloCluster);
+        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
         if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
         fCutFlow->Fill(cf++);
@@ -688,11 +689,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         fPrimaryE = primPart->Energy();
         fPrimaryEt = primPart->Energy()*TMath::Sin(primPart->Theta());
-
         fPrimaryPx = primPart->Px();
         fPrimaryPy = primPart->Py();
         fPrimaryPz = primPart->Pz();
-
+	//cout<<"I have a cluster and it's good energy "<<caloCluster->E()<<" simulated "<<fPrimaryE<<endl;
         fPrimaryVx = primPart->Vx();
         fPrimaryVy = primPart->Vy();
         fPrimaryVz = primPart->Vz();
@@ -752,7 +752,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             }
         }
         else
-        {
+	  {
             fPrimaryAccepted = true;
 	    fPrimaryMatched = false;
             fCutFlow->Fill(cf++);
@@ -820,7 +820,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                     //        }
                 }
             }
-        }
+	  }
         fPrimaryTree->Fill();
     } // end of loop over clusters
 
@@ -912,7 +912,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      gammaDaughterIDs[2] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(0);
 	      gammaDaughterIDs[3] = stack->Particle(gammaDaughterIDs[5])->GetDaughter(1);
 	      for(int k=0;k<4;k++){
-		gammaEts[k] = stack->Particle(gammaDaughterIDs[4])->Energy() * TMath::Sin(stack->Particle(gammaDaughterIDs[4])->Theta() );
+		//if( TMath::Abs(stack->Particle(gammaDaughterIDs[k])->Eta()) <= fCuts->GetGeometryEmcalEtaAccCut() ){//only add the energy if it's within the detector acceptance
+		if( fSelector->CutGeometricalAcceptance( * stack->Particle(gammaDaughterIDs[k]))){//only add the energy if it's within the detector acceptance
+		  //cout<<"Found a gamma "<<" K0S eta "<<stack->Particle(iPart)->Eta()<<" gamma daughter  eta "<< stack->Particle(gammaDaughterIDs[k])->Eta()<<endl;
+		  gammaEts[k] = stack->Particle(gammaDaughterIDs[4])->Energy() * TMath::Sin(stack->Particle(gammaDaughterIDs[4])->Theta() );
+		}
+		else{
+		  //cout<<"Eta rejected "<<" K0S eta "<<stack->Particle(iPart)->Eta()<<" gamma daughter  eta "<< stack->Particle(gammaDaughterIDs[k])->Eta()<<" eta cut "<<fCuts->GetGeometryEmcalEtaAccCut()<<endl;
+		}
 	      }
 	      //does not always have all of the daughters
 	      if(gammaDaughterIDs[0]==gammaDaughterIDs[1]){
@@ -945,14 +952,18 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		const UInt_t myPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
 		for(int j=0;j<6;j++){
 		  if( myPart==((UInt_t) gammaDaughterIDs[j]) ){
-		    //cout<<"Found a matching cluster!";//<<endl;
-		    Double_t clEt = CalculateTransverseEnergy(*caloCluster);
-		    //cout<<" it has energy "<<clEt<<endl;
+		    //Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster);
+		    Double_t clEt = caloCluster->E();
+		    //cout<<"Found a matching cluster!!!  Energy: "<<clEt<<endl;
+		    //cout<<" it has energy "<<clEt;
 		    for(int l=0;l<nEtCuts;l++){//loop over cut values
+		      //cout<<", cut = "<<etCuts[l];
 		      if(clEt>=etCuts[l]){
+			//cout<<", "<<clEt<<">="<<etCuts[l];
 			totalClusterEts[l] += clEt;//if cluster et is above the cut off energy add it
 		      }
 		    }
+		    //cout<<endl;
 
 		  }
 		}

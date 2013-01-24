@@ -244,7 +244,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
       }
 
       // calculate ET
-      Double_t etDep = CalculateTransverseEnergy(*caloCluster);
+      Double_t etDep = CorrectForReconstructionEfficiency(*caloCluster);
 		
       // All clusters
       //fHistAllRecEtaEDepETDep->Fill(caloE,caloPos.Eta(),etDep);
