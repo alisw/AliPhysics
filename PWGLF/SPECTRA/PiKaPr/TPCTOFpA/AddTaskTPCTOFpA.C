@@ -1,6 +1,6 @@
 
 
-AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2, Bool_t ispA=kTRUE, Bool_t rapCMS = kFALSE,  Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.5, Double_t rapidityHigh = 0.5, Bool_t ispA=kTRUE, Bool_t rapCMS = kFALSE, TString multEst = "V0M",  Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
 
 
   //get the current analysis manager
@@ -35,6 +35,7 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
   }
   if (ispA) task->SetIspA(kTRUE);
   if (rapCMS) task->SetRapCMS(kTRUE);
+  task->SetCentEst(multEst.Data());
 
   //initialize task
   task->Initialize();

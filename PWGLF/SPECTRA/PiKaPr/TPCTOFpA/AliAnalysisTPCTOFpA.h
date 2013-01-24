@@ -42,12 +42,13 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   void           SetUseHBTmultiplicity(Bool_t useHBTmultiplicity = kTRUE){fUseHBTmultiplicity = useHBTmultiplicity;};
   void		 SetUseTPConlyTracks(Bool_t useTPConlyTracks = kTRUE){fUseTPConlyTracks = useTPConlyTracks;};
   void           SetSaveMotherPDG(Bool_t saveMotherPDG =kTRUE){fSaveMotherPDG = saveMotherPDG;};
-  void           SetSmallTHnSparse(Bool_t smallTHnSparse = kFALSE) {fSmallTHnSparse = smallTHnSparse;};
+  void           SetSmallTHnSparse(Bool_t smallTHnSparse = kTRUE) {fSmallTHnSparse = smallTHnSparse;};
   void           SetTPCnSigmaCuts(Double_t nSigmaTPCLow = -3., Double_t nSigmaTPCHigh = 3.){fTPCnSigmaCutLow = nSigmaTPCLow; fTPCnSigmaCutHigh = nSigmaTPCHigh;};
-  void           SetRapidityCuts(Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
+  void           SetRapidityCuts(Double_t rapidityLow = -0.5, Double_t rapidityHigh = 0.5){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
   void           SetEvenDCAbinning(Bool_t EvenDCAbinning = kTRUE) {fEvenDCAbinning = EvenDCAbinning;};
-  void           SetIspA(Bool_t ispA = kFALSE) {fIspA = ispA;};
-  void           SetRapCMS(Bool_t rapCMS = kFALSE) {fRapCMS = rapCMS;};
+  void           SetIspA(Bool_t ispA = kTRUE) {fIspA = ispA;};
+  void           SetRapCMS(Bool_t rapCMS = kTRUE) {fRapCMS = rapCMS;};
+  void           SetCentEst(TString centEst = "V0M") {fCentEst = centEst.Data();};
   void           Initialize();
   //
   
@@ -70,6 +71,7 @@ class AliAnalysisTPCTOFpA : public AliAnalysisTaskSE {
   Bool_t        fSmallTHnSparse;       // flag if to do cuts on TPC n-sigma and rapidity in task or not
   Bool_t        fIspA;                 // flag for pA analysis                                                               
   Bool_t        fRapCMS;               // flag if rapitidy should be shifted by 0.465 do have rap in CMS of pPb
+  TString       fCentEst;              // string which contains the string for the centrality estimator
   Double_t      fTPCnSigmaCutLow;      // low border for TPC n-sigma cut
   Double_t      fTPCnSigmaCutHigh;     // high border for TPC n-sigma cut
   Double_t      fRapidityCutLow;       // low border for rapidity cut
