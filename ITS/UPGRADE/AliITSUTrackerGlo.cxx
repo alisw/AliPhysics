@@ -886,3 +886,53 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest)
   printf("After refit (now at lr %d): ",lrStart); trc->AliExternalTrackParam::Print();
   return kTRUE;
 }
+
+//__________________________________________________________________
+void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp) 
+{
+  // build MC label
+  //
+  const int kMaxLbPerCl = 3;
+  int lbID[kMaxLayers*6],lbStat[kMaxLayers*6];
+  Int_t lr,nLab=0,nCl=0;
+  AliITSUSeed *seed = hyp->GetWinner();
+  while(seed) {
+    int clID = seed->GetLrCluster(lr);
+    if (clID>=0) {
+      AliCluster *cl = fITS->GetLayerActive(lr)->GetCluster(clID);
+      nCl++;
+      for (int imc=0;imc<kMaxLbPerCl;imc++) { // labels within single cluster
+	int trLb = cl->GetLabel(imc);
+	if (imc<0) break;
+	// search this mc track in already accounted ones
+	int iLab;
+	for (iLab=0;iLab<nLab;iLab++) if (lbID[iLab]==trLb) break;
+	if (iLab<nLab) lbStat[iLab]++;
+	else {
+	  lbID[nLab] = trLb;
+	  lbStat[nLab++] = 1;
+	}
+      } // loop over given cluster's labels
+    }
+    seed = (AliITSUSeed*)seed->GetParent();
+  } // loop over clusters
+  // 
+  if (nCl) {
+    int maxLab=0,nTPCok=0;
+    AliESDtrack* esdTr = hyp->GetESDTrack();
+    int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -kDummyLabel;
+    for (int ilb=nLab;ilb--;) {
+      int st = lbStat[ilb];
+      if (lbStat[maxLab]<st) maxLab=ilb;
+      if (tpcLab==lbID[ilb]) nTPCok += st;
+    }
+    hyp->SetFakeRatio(1.-float(nTPCok)/nCl);
+    hyp->SetLabel( nTPCok==nCl ? tpcLab : -tpcLab);
+    hyp->SetITSLabel( lbStat[maxLab]==nCl ? lbStat[maxLab] : -lbStat[maxLab]); // winner label
+    return;
+  }
+  //
+  hyp->SetFakeRatio(-1.);
+  hyp->SetLabel( kDummyLabel );
+  hyp->SetITSLabel( kDummyLabel );
+}

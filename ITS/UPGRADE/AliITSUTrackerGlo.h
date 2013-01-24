@@ -37,7 +37,8 @@ class AliITSUTrackerGlo : public AliTracker {
 	,kRWCheckFailed =2  // failed to rotate the seed to frame of the layer impact point
   };
   enum {kStopSearchOnSensor,kClusterNotMatching,kClusterMatching}; // flags for track-to-cluster checks
-
+  //
+  enum {kDummyLabel=-3141593};
   AliITSUTrackerGlo(AliITSUReconstructor* rec);
   virtual ~AliITSUTrackerGlo();
 
@@ -81,6 +82,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   SaveCurrentTrackHypotheses();
   void                   FinalizeHypotheses();
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp);
+  void                   CookMCLabel(AliITSUTrackHyp* hyp);
  //
  protected:
   TObject*&              NextFreeSeed();

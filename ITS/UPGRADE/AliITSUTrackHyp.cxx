@@ -1,6 +1,7 @@
 #include "AliITSUTrackHyp.h"
 #include "AliESDtrack.h"
 #include "AliCluster.h"
+#include "AliITSUAux.h"
 
 ClassImp(AliITSUTrackHyp)
 
@@ -9,6 +10,7 @@ ClassImp(AliITSUTrackHyp)
 //__________________________________________________________________
 AliITSUTrackHyp::AliITSUTrackHyp(Int_t nlr) 
 : fNLayers(nlr)
+  ,fITSLabel(0)
   ,fESDTrack(0)
   ,fLayerSeeds(0)
 {
@@ -134,4 +136,3 @@ void AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
     seed = (AliITSUSeed*)seed->GetParent();
   }
 }
-
