@@ -1428,21 +1428,25 @@ void AliEMCALTenderSupply::FillDigitsArray()
     if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
       break;
 
-    // Do not add if already too low (some cells set to 0 if bad channels)
-    if (cellAmplitude < fRecParam->GetMinECut() ) 
+    // Do not add if energy already too low (some cells set to 0 if bad channels)
+    if (cellAmplitude < fRecParam->GetMinECut())
       continue;
 
     // If requested, do not include exotic cells
    if (fEMCALRecoUtils->IsExoticCell(cellNumber,cells,event->GetBunchCrossNumber())) 
       continue;
-        
-    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-    digit->SetId(cellNumber);
-    digit->SetTime((Float_t)cellTime);
-    digit->SetTimeR((Float_t)cellTime);
-    digit->SetIndexInList(idigit);
-    digit->SetType(AliEMCALDigit::kHG);
-    digit->SetAmplitude((Float_t)cellAmplitude);
+    
+    new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
+                                             (Float_t)cellAmplitude, (Float_t)cellTime,
+                                             AliEMCALDigit::kHG,idigit, 0, 0, 1);
+    
+//    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+//    digit->SetId(cellNumber);
+//    digit->SetTime((Float_t)cellTime);
+//    digit->SetTimeR((Float_t)cellTime);
+//    digit->SetIndexInList(idigit);
+//    digit->SetType(AliEMCALDigit::kHG);
+//    digit->SetAmplitude((Float_t)cellAmplitude);
     idigit++;
   }
 }
