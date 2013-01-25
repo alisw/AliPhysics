@@ -80,6 +80,7 @@ void AliCentralityBy1D::MakePercentiles() {
      hpercent->Reset();
 
      int start_bin=htemp->FindBin(fMultLowBound);
+     //cout << "START: " << start_bin << " " << fMultLowBound << " " << fPercentXsec << endl;
      for (int ibin=1; ibin<=htemp->GetNbinsX(); ibin++) {
       
        if (ibin>=start_bin)
@@ -88,7 +89,9 @@ void AliCentralityBy1D::MakePercentiles() {
    				htemp->Integral(start_bin,htemp->GetNbinsX()));
        else
    	hpercent->SetBinContent(ibin, 100);
-     }    
+ 
+       //if (ibin<700) cout << ibin << " " << hpercent->GetBinContent(ibin) << endl;
+    }    
 
      SaveHisto(htemp,hpercent,outrootfile);
 
