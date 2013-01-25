@@ -53,6 +53,9 @@ AliAnalysisTaskB2* AddTaskB2(const TString& species,
 	const Int_t kMaxNSigmaTOF = 3;
 	const Int_t kMinTPCnCls   = 70;
 	
+	const Double_t kMinM2     = 2.; // for deuterons
+	const Double_t kMaxM2     = 6.;
+	
 	TString period = periodname;
 	period.ToLower();
 	
@@ -89,6 +92,8 @@ AliAnalysisTaskB2* AddTaskB2(const TString& species,
 	task->SetVertexXInterval(-kMaxVx, kMaxVx);
 	task->SetVertexYInterval(-kMaxVy, kMaxVy);
 	task->SetVertexZInterval(-kMaxVz, kMaxVz);
+	
+	task->SetM2Interval(kMinM2, kMaxM2);
 	
 	task->SetCentralityInterval(minCentrality, maxCentrality);
 	
