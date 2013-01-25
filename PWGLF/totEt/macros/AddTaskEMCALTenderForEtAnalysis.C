@@ -73,7 +73,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRe
   EMCALSupply->SwitchOnCalibrateEnergy();
   EMCALSupply->SwitchOnCalibrateTime();
   EMCALSupply->SwitchOnUpdateCell();
-  EMCALSupply->SwitchOnReclustering();
+  //EMCALSupply->SwitchOnReclustering();
   EMCALSupply->SwitchOnClusterBadChannelCheck();
   EMCALSupply->SwitchOnClusterExoticChannelCheck();
   EMCALSupply->SwitchOnCellFiducialRegion();
