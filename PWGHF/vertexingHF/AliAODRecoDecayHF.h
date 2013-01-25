@@ -233,7 +233,9 @@ inline Bool_t AliAODRecoDecayHF::HasBadDaughters() const {
   // checks if at least one of ITS+TPC daughters didn't pass the StandardCuts2010 with loose DCA (ie doesn't have the BIT(4) set)
 
   for(Int_t iDau=0; iDau<GetNDaughters(); iDau++){
-    AliAODTrack* at=(AliAODTrack*)GetDaughter(iDau);
+    if (GetDaughter(iDau)==NULL) continue;
+    AliAODTrack* at=dynamic_cast<AliAODTrack*>(GetDaughter(iDau));
+    if (!at) continue;
     if(at->Charge()==0) continue;
     if(at->GetTPCNcls()==0) continue;
     if(!(at->TestFilterMask(BIT(4)))) return kTRUE;
