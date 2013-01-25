@@ -339,11 +339,12 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     firstCheck = kFALSE;
   }
   //
+  fHistNEvents->Fill(kEvAll);
+  //
   if (!AcceptCentrality(esd)) return;
   fHistNEvents->Fill(kEvCnt);
 
   const AliESDVertex* vtx=0,*vtxSPD=0;
-  fHistNEvents->Fill(kEvAll);
   vtx    = esd->GetPrimaryVertex();
   vtxSPD = esd->GetPrimaryVertexSPD();
   //
