@@ -132,11 +132,11 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	
 	// remaining corrections
 	
-	const Int_t kNum = 6;
-	const TString kCorr[kNum] = { "EffCor", "Unfolded", "FakeCor", "SecCor", "M2Corr", "PID"};
-	const TString kLabel[kNum] = { "Efficiency", "Unfolding", "Fake tracks", "Secondaries", "PID contamination", "Raw"};
-	const Int_t kColor[kNum]  = {kGreen-3, kGreen-2, kRed, kBlue, kOrange+1, kAzure};
-	const Int_t kMarker[kNum] = {kFullSquare, kFullCircle, kFullTriangleDown, kOpenCircle, kFullTriangleUp, kOpenSquare};
+	const Int_t kNum = 5;
+	const TString kCorr[kNum]  = { "PID", "M2Corr", "SecCor", "Unfolded", "EffCor"};
+	const TString kLabel[kNum] = { "Raw", "PID contamination", "Secondaries", "Unfolding","Efficiency" };
+	const Int_t kColor[kNum]   = { kRed, kAzure, kOrange+1, kGreen-2, kGreen-3};
+	const Int_t kMarker[kNum]  = { kFullCircle, kOpenCircle, kFullTriangleUp, kOpenTriangleUp, kFullCircle};
 	
 	TLegend* legend = new TLegend(0.5689655,0.6355932,0.8362069,0.8326271,0,"brNDC");
 	legend->SetTextSize(0.03);
@@ -157,10 +157,10 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	TCanvas* c2 = new TCanvas(Form("%s.Pt",particle.Data()), Form("Pt for %s",particle.Data()));
 	c2->SetLogy();
 	
-	hPt[0]->SetTitle(particle.Data());
-	hPt[0]->SetAxisRange(xmin,xmax,"X");
-	hPt[0]->Draw("E");
-	for(Int_t i=1; i<kNum; ++i) hPt[i]->Draw("sameE");
+	hPt[kNum-1]->SetTitle(particle.Data());
+	hPt[kNum-1]->SetAxisRange(xmin,xmax,"X");
+	hPt[kNum-1]->Draw("E");
+	for(Int_t i=0; i<kNum-1; ++i) hPt[i]->Draw("sameE");
 	
 	legend->Draw();
 }

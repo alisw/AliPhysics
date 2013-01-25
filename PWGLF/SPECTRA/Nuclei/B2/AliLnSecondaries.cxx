@@ -55,6 +55,7 @@ AliLnSecondaries::AliLnSecondaries(const TString& particle, const TString& dataF
 , fANucTemplate(0)
 , fScMat(1)
 , fScFd(1)
+, fAddFakeTracks(1)
 {
 //
 // constructor
@@ -130,10 +131,18 @@ Int_t AliLnSecondaries::Exec()
 	else if(fParticle == "AntiProton")
 	{
 		// assume only secondaries from feed-down
-		TH2D* hDataDCAxyPt   = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		TH2D* hFdwnDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hFdwnDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		TH2D* hFakeFdwnDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
+		
+		if(fAddFakeTracks)
+		{
+			hPrimDCAxyPt->Add(hFakePrimDCAxyPt);
+			hFdwnDCAxyPt->Add(hFakeFdwnDCAxyPt);
+		}
 		
 		hDataDCAxyPt->Rebin2D(1,fNbin);
 		hDataMCDCAxyPt->Rebin2D(1,fNbin);
@@ -150,11 +159,21 @@ Int_t AliLnSecondaries::Exec()
 	else if(fParticle == "Proton")
 	{
 		// secondaries from materials and feed-down
-		TH2D* hDataDCAxyPt   = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		TH2D* hMatDCAxyPt    = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
-		TH2D* hFdwnDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hMatDCAxyPt      = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
+		TH2D* hFdwnDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		TH2D* hFakeMatDCAxyPt  = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Mat_DCAxy_Pt");
+		TH2D* hFakeFdwnDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
+		
+		if(fAddFakeTracks)
+		{
+			hPrimDCAxyPt->Add(hFakePrimDCAxyPt);
+			hMatDCAxyPt->Add(hFakeMatDCAxyPt);
+			hFdwnDCAxyPt->Add(hFakeFdwnDCAxyPt);
+		}
 		
 		if(fMatDCAxyMod == kFlatDCAxy)
 		{
@@ -172,9 +191,12 @@ Int_t AliLnSecondaries::Exec()
 	else
 	{
 		// only secondaries from materials for nuclei
-		TH2D* hDataDCAxyPt   = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		
+		if(fAddFakeTracks) hPrimDCAxyPt->Add(hFakePrimDCAxyPt);
 		
 		if(fANucTemplate)
 		{

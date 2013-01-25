@@ -35,6 +35,7 @@ AliLnEfficiency::AliLnEfficiency(const TString& particle, const TString& simuFil
 , fOutputFilename(outputFilename)
 , fOutputTag(otag)
 , fG3Fluka(0)
+, fAddFakeTracks(1)
 {
 //
 // constructor
@@ -71,6 +72,9 @@ Int_t AliLnEfficiency::Exec()
 	TH1D* hGenVtxPt  = (TH1D*)FindObj(fsimu, fParticle + "_Gen_Vtx_Prim_Pt");
 	TH1D* hGenAccPt  = (TH1D*)FindObj(fsimu, fParticle + "_Gen_Acc_Prim_Pt");
 	TH1D* hPrimRecPt = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Prim_Pt");
+	TH1D* hFakePrimRecPt = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Fake_Prim_Pt");
+	
+	if(fAddFakeTracks) hPrimRecPt->Add(hFakePrimRecPt);
 	
 	TH1D* hEffTrigPt   = Divide(hGenTrigPt, hGenPhSpPt, fParticle + "_Eff_Trig_Pt");
 	TH1D* hEffVtxPt    = Divide(hGenVtxPt, hGenTrigPt, fParticle + "_Eff_Vtx_Pt");

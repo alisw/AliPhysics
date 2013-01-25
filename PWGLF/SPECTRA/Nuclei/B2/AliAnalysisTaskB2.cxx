@@ -964,6 +964,7 @@ Bool_t AliAnalysisTaskB2::IsFakeTrack(const AliESDtrack* trk) const
 {
 //
 // Check if the track shares some clusters with different particles
+// (definition changed to label=0? )
 //
 	return ( trk->GetLabel() < 0 );
 }

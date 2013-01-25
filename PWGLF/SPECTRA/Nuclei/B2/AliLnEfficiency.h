@@ -32,6 +32,7 @@ class AliLnEfficiency: public TObject
 	void SetOutputTag(const TString& tag) { fOutputTag = tag; }
 	
 	void SetG3Fluka(Bool_t flag=1) { fG3Fluka = flag; }
+	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
   private:
  
@@ -47,6 +48,7 @@ class AliLnEfficiency: public TObject
 	TString fOutputTag; // tag for the ouput file
 	
 	Bool_t fG3Fluka; // use G3/FLUKA correction for (anti)protons
+	Bool_t fAddFakeTracks; // include fake tracks in the efficiency
 	
 	ClassDef(AliLnEfficiency,1)
 };

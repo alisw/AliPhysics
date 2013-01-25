@@ -49,7 +49,6 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	const Bool_t   kPidM2           = 1;
 	const Bool_t   kUnfolding       = 0;
 	const Int_t    kIter            = 5;
-	const Bool_t   kFakeTracks      = 0;
 	const Bool_t   kSecondaries     = 1;
 	const Int_t    kSecProd         = 0; // 0 tff, 1 roofit, 2 mc
 	const Int_t    kMatDCAxyMod     = 1; // 0 geant, 1 flat
@@ -99,7 +98,6 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetM2BkgInterval(kM2Bkg[0], kM2Bkg[1]);
 	driver.SetM2TPCInterval(kM2tpc[0], kM2tpc[1]);
 	driver.SetUnfolding(kUnfolding, kIter);
-	driver.SetFakeTracks(kFakeTracks);
 	driver.SetSecondaries(kSecondaries);
 	driver.SetSecProd(kSecProd);
 	driver.SetMatDCAxyModel(kMatDCAxyMod);

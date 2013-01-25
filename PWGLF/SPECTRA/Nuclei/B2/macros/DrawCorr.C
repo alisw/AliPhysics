@@ -61,19 +61,6 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 		hResponseMtx->DrawCopy("cont0colZ");
 	}
 	
-	// Fake tracks
-	
-	TH1D* hFracFakeTracks[kNpart];
-	for(Int_t i=0; i<kNpart; ++i)
-	{
-		hFracFakeTracks[i] = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Frac_Fake_Pt");
-	}
-	
-	TCanvas* c1 = new TCanvas(Form("%s.FakeTracks",species.Data()), Form("Fake Tracks for (Anti)%ss",species.Data()));
-	c1->cd();
-	
-	DrawPair(hFracFakeTracks[0], hFracFakeTracks[1], xmin, xmax, -0.01, 0.2);
-	
 	// Reconstruction efficiency
 	
 	TCanvas* c2 = new TCanvas(Form("%s.Efficiency",species.Data()), Form("Reconstruction Efficiency for (Anti)%ss",species.Data()));
