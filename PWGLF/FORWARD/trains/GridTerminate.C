@@ -7,6 +7,22 @@
  * 
  * 
  */
+#ifndef __CINT__
+# include <TString.h>
+# include <TSystem.h>
+# include <TGrid.h>
+# include <TFile.h>
+# include <TObjArray.h>
+# include <TObjString.h>
+# include <TError.h>
+# include <TEnv.h>
+# include <TROOT.h>
+# include <AliAnalysisManager.h>
+# include <AliAnalysisAlien.h>
+# include <fstream>
+#else
+class TString;
+#endif
 /** 
  * Load a library 
  * 
@@ -85,7 +101,7 @@ Bool_t GridTerminate(const TString& name,
     if (!libName.Contains(".so")) continue;
     if (!LoadLib(libName.Data())) return false;
   }
-  libsArray.Delete();
+  libsArray->Delete();
   
   // Load packages
   TObjArray*  parArray = pars.Tokenize(" ");
@@ -131,15 +147,18 @@ Bool_t GridTerminate(const TString& name,
     return false;
   }
   if (!name.EqualTo(mgr->GetName())) {
-    Error("GridTerminate","Read manager %s is not %s",mgr->GetName(),name.Data());
+    Error("GridTerminate","Read manager %s is not %s",
+	  mgr->GetName(),name.Data());
     return false;
   }
   Info("GridTerminate","Loaded analysis manager");
 
   // Load plugin
   TFile* plug = TFile::Open(Form("%s_plugin.root",name.Data()),"READ");
+  // TFile* plug = TFile::Open("plugin.root","READ");
   if (!plug) {
-    Error("GridTerminate","Failed to open %s_plugin.root",name.Data());
+    // Error("GridTerminate","Failed to open %s_plugin.root",name.Data());
+    Error("GridTerminate","Failed to open plugin.root");
     return false;
   }
   AliAnalysisAlien* handler = 
@@ -155,7 +174,16 @@ Bool_t GridTerminate(const TString& name,
   // Run the terminate job
   Info("GridTerminate","Starting terminate job");
   if (mgr->StartAnalysis("grid") < 0) return false;
-  // Info("GridTerminate","Job IDs: %s",handler->GetGridJobIDs().Data());
+
+  std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
+  outJobs << handler->GetGridJobIDs() << std::endl;
+  outJobs.close();
+  
+  std::ofstream outStages(Form("%s_merge.stage", mgr->GetName()));
+  outStages << handler->GetGridStages() << std::endl;
+  outStages.close();
+
+
   return true;
 }
 // 

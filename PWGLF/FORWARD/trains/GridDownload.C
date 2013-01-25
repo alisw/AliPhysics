@@ -8,6 +8,19 @@
  * 
  * 
  */
+#ifndef __CINT__
+# include <TString.h>
+# include <TSystem.h>
+# include <TGrid.h>
+# include <TFile.h>
+# include <TObjArray.h>
+# include <TObjString.h>
+# include <TError.h>
+# include <TEnv.h>
+#else
+class TString;
+#endif
+
 /** 
  * Get one file 
  * 
