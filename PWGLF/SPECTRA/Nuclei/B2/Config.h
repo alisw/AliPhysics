@@ -190,6 +190,7 @@ TString GetSimuFixPeriod(const TString& period)
 	if(period=="lhc10c")      return "lhc12a5bc";
 	if(period=="lhc10d")      return "lhc12a5bd";
 	if(period=="lhc10e")      return "lhc12a5be";
+	if(period=="lhc10cde")    return "lhc12a5bcde";
 	if(period=="lhc10bcde")   return "lhc12a5bbcde";
 	if(period=="lhc11a_wsdd") return "lhc12a5c_wsdd";
 	

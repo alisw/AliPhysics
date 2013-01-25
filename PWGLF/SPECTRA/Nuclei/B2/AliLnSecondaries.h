@@ -34,7 +34,7 @@ class AliLnSecondaries: public TObject
 	
 	void SetOutputTag(const TString& tag) { fOutputTag = tag; }
 	
-	void SetCorBins(Int_t lowbin, Int_t hibin) { fLowBin = lowbin; fHiBin = hibin; }
+	void SetCorBins(Int_t lowbin, Int_t hibin) { fLowPtBin = lowbin; fHiPtBin = hibin; }
 	void SetDCAxyInterval(Double_t lowdca, Double_t hidca) { fMinDCAxy = lowdca; fMaxDCAxy = hidca; }
 	
 	void SetNBin(Int_t nbin) { fNbin = nbin; }
@@ -68,7 +68,7 @@ class AliLnSecondaries: public TObject
 	TF1* GetFdwnFraction(const TString& name) const;
 	
 	TH1D* ZeroClone(const TH1D* h, const TString& name) const;
-	void WriteTFFdebug(TH1D* hData, TFractionFitter* fit, Int_t status, Int_t ibin, const char* contrib[], Double_t* frac, Int_t kmax) const;
+	void WriteTFFdebug(const TH1D* hData, TFractionFitter* fit, Int_t status, Int_t ibin, const char* contrib[], Double_t* frac, Int_t kmax) const;
 	
   private:
   
@@ -79,8 +79,8 @@ class AliLnSecondaries: public TObject
 	TString fOutputFilename; // output filename
 	TString fOutputTag; // tag for the ouput
 	
-	Int_t fLowBin; // low pt bin for the corrections
-	Int_t fHiBin ; // high pt bin for the corrections
+	Int_t fLowPtBin; // low pt bin for the corrections
+	Int_t fHiPtBin ; // high pt bin for the corrections
 	
 	Int_t fNbin; // for rebinning DCA distributions
 	

@@ -67,11 +67,12 @@ AliLnPt::AliLnPt(const TString& particle, Double_t trigEff, const TString& input
 , fMinM2Bkg(2.2)
 , fMaxM2Bkg(5.)
 , fMinM2tpc(2.)
-, fMaxM2tpc(6.5)
+, fMaxM2tpc(6.)
 , fMakeStats(1)
 , fVtxCorr(0)
 , fVtxFactor(1)
 , fFitFrac(1)
+, fFdwnCorr(1)
 , fSameFdwn(0)
 {
 //
@@ -172,43 +173,43 @@ Int_t AliLnPt::Exec()
 			hPidPt = (TH1D*)hOrigPt->Clone(Form("%s_M2Corr_Pt", fParticle.Data()));
 		}
 		
-		TH1D* hFakeCorPt = 0;
-		if(fFakeTracks)
-		{
-			hFakeCorPt = this->FakeTracks(hPidPt, hFracFakePt, fParticle + "_FakeCor_Pt");
-		}
-		else
-		{
-			hFakeCorPt = (TH1D*)hPidPt->Clone(Form("%s_FakeCor_Pt", fParticle.Data()));
-		}
-		
 		TH1D* hSecCorPt = 0;
 		if(fSecondaries)
 		{
 			if(fFitFrac)
 			{
-				hSecCorPt = this->Secondaries(hFakeCorPt, fncFracMatPt, fncFracFdwnPt, fParticle + "_SecCor_Pt");
+				hSecCorPt = this->Secondaries(hPidPt, fncFracMatPt, fncFracFdwnPt, fParticle + "_SecCor_Pt");
 			}
 			else
 			{
-				hSecCorPt = this->Secondaries(hFakeCorPt, hFracMatPt, hFracFdwnPt, fParticle + "_SecCor_Pt");
+				hSecCorPt = this->Secondaries(hPidPt, hFracMatPt, hFracFdwnPt, fParticle + "_SecCor_Pt");
 			}
 		}
 		else
 		{
-			hSecCorPt = (TH1D*)hFakeCorPt->Clone(Form("%s_SecCor_Pt", fParticle.Data()));
+			hSecCorPt = (TH1D*)hPidPt->Clone(Form("%s_SecCor_Pt", fParticle.Data()));
+		}
+		
+		TH1D* hFakeCorPt = 0;
+		if(fFakeTracks)
+		{
+			hFakeCorPt = this->FakeTracks(hSecCorPt, hFracFakePt, fParticle + "_FakeCor_Pt");
+		}
+		else
+		{
+			hFakeCorPt = (TH1D*)hSecCorPt->Clone(Form("%s_FakeCor_Pt", fParticle.Data()));
 		}
 		
 		TH1D* hUnfoldedPt = 0;
 #ifdef HAVE_ROOUNFOLD
 		if(fUnfolding)
 		{
-			hUnfoldedPt = this->Unfolding(hSecCorPt, hMeasuredPt, hTruePt, hResponseMtx, fParticle + "_Unfolded_Pt", fNIter);
+			hUnfoldedPt = this->Unfolding(hFakeCorPt, hMeasuredPt, hTruePt, hResponseMtx, fParticle + "_Unfolded_Pt", fNIter);
 		}
 		else
 #endif
 		{
-			hUnfoldedPt = (TH1D*)hSecCorPt->Clone(Form("%s_Unfolded_Pt", fParticle.Data()));
+			hUnfoldedPt = (TH1D*)hFakeCorPt->Clone(Form("%s_Unfolded_Pt", fParticle.Data()));
 		}
 		
 		TH1D* hEffCorPt = 0;
@@ -429,7 +430,7 @@ TH1D* AliLnPt::PID(const TH1D* hPt, const TH2D* hM2Pt, Int_t lowbin, Int_t hibin
 	// first bins are not contaminated since the identification is clear
 	// integrate around the m2 value
 	
-	this->GetPtFromM2(hPidPt, 3, lowbin, hM2Pt, fMinM2tpc, fMaxM2tpc);
+	this->GetPtFromM2(hPidPt, 0, lowbin, hM2Pt, fMinM2tpc, fMaxM2tpc);
 	
 	// the remaining bins are contaminated
 	// slice the m2-pt and fit each slice with a gaussian + exponentials bkg
@@ -510,8 +511,8 @@ TH1D* AliLnPt::Secondaries(const TH1D* hPt, const TH1D* hFracMatPt, const TH1D* 
 //
 	TF1* one = new TF1("one","1",0,10);
 	
-	TH1D* xfactor = (TH1D*)hFracFdwnPt->Clone(Form("%s_fdwn_fmat_1_",fParticle.Data()));
-	xfactor->Add(hFracMatPt);
+	TH1D* xfactor = (TH1D*)hFracMatPt->Clone(Form("%s_1_fmat_fdwn_",fParticle.Data()));
+	if(fFdwnCorr) xfactor->Add(hFracFdwnPt);
 	xfactor->Add(one);
 	
 	TH1D* hSecCorPt = (TH1D*)hPt->Clone(name.Data());
@@ -532,13 +533,13 @@ TH1D* AliLnPt::Secondaries(const TH1D* hPt, TF1* fncMatPt, TF1* fncFdwnPt, const
 //
 	TF1* fnc = new TF1("_secondaries_","1 + [0]*exp(-[1]*x)+[2] + [3]*exp(-[4]*x)+[5]", 0, 10);
 	
-	Double_t param[6];
+	Double_t param[6] = {0};
 	fncMatPt->GetParameters(param);
-	fncFdwnPt->GetParameters(&param[3]);
+	if(fFdwnCorr) fncFdwnPt->GetParameters(&param[3]);
 	
-	Double_t err[6];
+	Double_t err[6] = {0};
 	for(Int_t i=0; i<3; ++i) err[i] = fncMatPt->GetParError(i);
-	for(Int_t i=3; i<6; ++i) err[i] = fncFdwnPt->GetParError(i);
+	if(fFdwnCorr) for(Int_t i=3; i<6; ++i) err[i] = fncFdwnPt->GetParError(i);
 	
 	fnc->SetParameters(param);
 	fnc->SetParErrors(err);

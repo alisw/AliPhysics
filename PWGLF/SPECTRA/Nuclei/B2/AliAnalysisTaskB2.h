@@ -65,6 +65,8 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	void SetTOFmatch(Bool_t flag = kTRUE) { fTOFmatch = flag; }
 	Bool_t AcceptTOFtrack(const AliESDtrack* trk) const;
 	
+	void SetM2Interval(Double_t min, Double_t max) { fMinM2 = min; fMaxM2 = max; };
+	
 	void SetParticleSpecies(const TString& species);
 	
     private:
@@ -168,6 +170,9 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Int_t fTimeZeroType;  // time zero type
 	
 	Bool_t fTOFmatch; // TOF match flag
+	
+	Double_t fMinM2; // minimum m2 for TPC+TOF pid
+	Double_t fMaxM2; // maximum m2 for TPC+TOF pid
 	
 	ClassDef(AliAnalysisTaskB2, 1)
 };

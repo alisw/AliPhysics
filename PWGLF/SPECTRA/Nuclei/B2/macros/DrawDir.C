@@ -48,7 +48,7 @@ void DrawDir(const TString& inputFile,
 // draw histograms/graphs with same name located in different directories
 // if option = 0 no comparison,
 // if option = 1 draw a bottom pad with the comparison, and
-// if option = 2 draw the comparasion in a different canvas
+// if option = 2 draw the comparison in a different canvas
 //
 	const Int_t kMax = 10; // maximum number of subdirectories
 	

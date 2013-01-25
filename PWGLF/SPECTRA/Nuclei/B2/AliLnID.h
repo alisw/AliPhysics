@@ -38,12 +38,10 @@ class AliLnID: public TObject
 	Bool_t GetTOFlikelihood(Double_t p, Double_t beta, Double_t* r) const;
 	
 	Double_t GetBetaExpectedSigma(Double_t p, Double_t mass) const;
-	Double_t GetM2ExpectedSigma(Double_t p, Double_t mass) const;
 	
 	Bool_t GetITSmatch(Int_t pid, Double_t p, Double_t dEdx, Int_t nPoints, Double_t nSigma=3.) const;
 	Bool_t GetTPCmatch(Int_t pid, Double_t pTPC, Double_t dEdx, Double_t nPoints, Double_t nSigma=3.) const;
 	Bool_t GetTOFmatch(Int_t pid, Double_t pTOF, Double_t beta, Double_t nSigma=3.) const;
-	Bool_t GetM2match(Int_t pid, Double_t pTOF, Double_t m2, Double_t nSigma=3.) const;
 	
 	Int_t GetPidProcedure() const { return fPidProcedure; }
 	
