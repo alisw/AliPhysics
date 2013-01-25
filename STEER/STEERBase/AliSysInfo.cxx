@@ -130,6 +130,9 @@ AliSysInfo::AliSysInfo():
 	       <<"mi.fSwapUsed"<<"/D:"      //
 	       <<"cI.fUser"<<"/D:"         //
 	       <<"cI.fSys"<<"/D:"         //
+	       <<"cI.fLoad1m"<<"/D:"         //
+	       <<"cI.fLoad5m"<<"/D:"         //
+	       <<"cI.fLoad15m"<<"/D:"         //
     // 
 	       <<"pI.fMemResident"<<"/D:"  // process info
 	       <<"pI.fMemVirtual"<<"/D:"   //    
@@ -213,6 +216,9 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, In
     << memInfo.fSwapUsed<<"\t"      //
     << cpuInfo.fUser <<"\t"         //
     << cpuInfo.fSys  <<"\t"         //
+    << cpuInfo.fLoad1m  <<"\t"         //
+    << cpuInfo.fLoad5m  <<"\t"         //
+    << cpuInfo.fLoad15m  <<"\t"         //
     // 
     <<setprecision(15)<< procInfo.fMemResident/1024.<<"\t"  // process info
     <<setprecision(15)<< procInfo.fMemVirtual/1024.<<"\t"   //    
