@@ -11,7 +11,7 @@ void makeCentralityFit(const char * run="188362",const char * system="TKL", int 
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->LoadMacro("AliCentralityGlauberFit.cxx+");
 
-  const char *finnameGlau ="/home/atoia/GlauberNtuplePA/GlauberMC_pPb_ntuple_sigma71_mind4_r662_a546.root";
+  const char *finnameGlau ="/home/atoia/GlauberNtuplePA/GlauberMC_pPb_ntuple_sigma70_mind4_r662_a546_Rpro4.root";
   TString finname = Form("/home/atoia/analysis/data2012/multRef/EventStat_temp_%s.root",run);
   TString foutname = Form("/home/atoia/analysis/data2012/fit/%s_fit_%s.root",system,run);
   TString foutnameGlau = Form("/home/atoia/analysis/data2012/fit/%s_ntuple_%s.root",system,run);
