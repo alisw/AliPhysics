@@ -46,7 +46,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_qa.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2");
+    fHelper->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -56,7 +56,9 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", mc, fOptions.Has("cent")));
+    if (!gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", 
+			   mc, fOptions.Has("cent"))))
+      Fatal("CreateTasks", "Failed to add ForwardQA task");
   }
   /** 
    * Create entrality selection if enabled 

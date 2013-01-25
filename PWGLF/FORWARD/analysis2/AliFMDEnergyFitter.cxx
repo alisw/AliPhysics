@@ -49,7 +49,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
   // 
   // Default Constructor - do not use 
   //
-  DGUARD(fDebug, 1, "Default CTOR of AliFMDEnergyFitter");
+  // DGUARD(fDebug, 1, "Default CTOR of AliFMDEnergyFitter");
   fRingHistos.SetOwner();
 }
 
@@ -79,7 +79,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
-  DGUARD(fDebug, 1, "Named CTOR of AliFMDEnergyFitter: %s", title);
+  // DGUARD(fDebug, 1, "Named CTOR of AliFMDEnergyFitter: %s", title);
   fEtaAxis.SetName("etaAxis");
   fEtaAxis.SetTitle("#eta");
   fCentralityAxis.SetName("centralityAxis");
@@ -344,7 +344,10 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   if (!fDoFits) return;
 
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
-  if (!d) return;
+  if (!d) {
+    AliWarningF("No list named %s found in %s", GetName(), dir->GetName());
+    return;
+  }    
 
   // +1          for chi^2
   // +3          for 1 landau 

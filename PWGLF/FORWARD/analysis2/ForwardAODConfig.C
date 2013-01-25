@@ -34,12 +34,17 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
   Bool_t   mc           = (task->IsA()==AliForwardMCMultiplicityTask::Class());
-  Double_t nXi          = 2; 
-  Bool_t   includeSigma = false; //true;
+  // Double_t nXi          = 2; 
+  // Bool_t   includeSigma = false; //true;
   // Sharing cut
-  AliFMDMultCuts cSharing;
+  AliFMDMultCuts cSharingLow;
   Double_t factor = 1.;
-  cSharing.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+  cSharingLow.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+  // Sharing cut
+  AliFMDMultCuts cSharingHigh;
+  cSharingHigh.SetMultCuts(-1);
+  cSharingHigh.SetNXi(2);
+  cSharingHigh.SetIncludeSigma(false);
   // Density cut
   AliFMDMultCuts cDensity;
   cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
@@ -75,13 +80,15 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to allow for 3 strip hits 
   task->GetSharingFilter().SetAllow3Strips(true);
   // Do not cut fixed/hard on multiplicity 
-  task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
+  // task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
   // Set the number of xi's (width of landau peak) to stop at 
-  task->GetSharingFilter().GetHCuts().SetNXi(nXi);
+  // task->GetSharingFilter().GetHCuts().SetNXi(nXi);
   // Set whether or not to include sigma in cut
-  task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
+  // task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
+  // Set upper sharing cut 
+  task->GetSharingFilter().SetHCuts(cSharingHigh);
   // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetLCuts(cSharing);
+  task->GetSharingFilter().SetLCuts(cSharingLow);
   // Dead region in FMD2i
   task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
    
