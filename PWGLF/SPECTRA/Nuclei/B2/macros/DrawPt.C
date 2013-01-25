@@ -133,8 +133,8 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	// remaining corrections
 	
 	const Int_t kNum = 6;
-	const TString kCorr[kNum] = { "EffCor", "Unfolded", "SecCor", "FakeCor", "M2Corr", "PID"};
-	const TString kLabel[kNum] = { "Efficiency", "Unfolding", "Secondaries", "Fake tracks", "PID contamination", "Raw"};
+	const TString kCorr[kNum] = { "EffCor", "Unfolded", "FakeCor", "SecCor", "M2Corr", "PID"};
+	const TString kLabel[kNum] = { "Efficiency", "Unfolding", "Fake tracks", "Secondaries", "PID contamination", "Raw"};
 	const Int_t kColor[kNum]  = {kGreen-3, kGreen-2, kRed, kBlue, kOrange+1, kAzure};
 	const Int_t kMarker[kNum] = {kFullSquare, kFullCircle, kFullTriangleDown, kOpenCircle, kFullTriangleUp, kOpenSquare};
 	

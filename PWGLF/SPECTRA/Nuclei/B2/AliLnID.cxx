@@ -514,17 +514,6 @@ Double_t AliLnID::GetBetaExpectedSigma(Double_t p, Double_t m) const
 	return kappa*Beta(p,m);
 }
 
-Double_t AliLnID::GetM2ExpectedSigma(Double_t p, Double_t m2) const
-{
-//
-// Expected deuteron M2 width for the given momentum
-//
-	Double_t c0 = 6.76363e-03;
-	Double_t c1 = 7.04984e-02;
-	
-	return c0/(p*p) + c1*(p*p/m2 + 1.);
-}
-
 Bool_t AliLnID::GetITSmatch(Int_t pid, Double_t pITS, Double_t dEdxITS, Int_t nPointsITS, Double_t nSigma) const
 {
 //
@@ -572,23 +561,6 @@ Bool_t AliLnID::GetTOFmatch(Int_t pid, Double_t pTOF, Double_t beta, Double_t nS
 	Double_t sigma = this->GetBetaExpectedSigma(p, mass);
 	
 	if(TMath::Abs(beta-expBeta) < nSigma*sigma)
-	{
-		return kTRUE;
-	}
-	
-	return kFALSE;
-}
-
-Bool_t AliLnID::GetM2match(Int_t pid, Double_t pTOF, Double_t m2, Double_t nSigma) const
-{
-//
-// Check if the signal is less than nSigma from the expected m2
-//
-	Double_t p = (pid > AliPID::kTriton) ? 2.*pTOF : pTOF; // correct by Z
-	Double_t expM2 = AliPID::ParticleMass(pid); expM2 *= expM2;
-	Double_t sigma = this->GetM2ExpectedSigma(p, expM2);
-	
-	if(TMath::Abs(m2-expM2) < nSigma*sigma)
 	{
 		return kTRUE;
 	}

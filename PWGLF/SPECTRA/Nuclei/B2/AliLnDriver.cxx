@@ -49,7 +49,7 @@ AliLnDriver::AliLnDriver()
 , fMakeSpectra(1)
 , fMakeStats(1)
 , fLowPtBin(3)
-, fHighPtBin(15)
+, fHiPtBin(15)
 , fLowM2Bin(9)
 , fHighM2Bin(17)
 , fUnfolding(0)
@@ -83,7 +83,8 @@ AliLnDriver::AliLnDriver()
 , fOutputSpectra()
 , fOutputPtCorrDebug()
 , fOutputPtDebug()
-, fFitFrac(1)
+, fFitFrac(0)
+, fFdwnCorr(1)
 , fSameFdwn(0)
 , fVtxCorr(0)
 , fVtxCorrVal(1)
@@ -206,7 +207,7 @@ void AliLnDriver::MakePtCorr() const
 		
 		AliLnCorr lncorr(kParticle[i], fInputData, fInputSimu, fInputSimuFix, outputfile1, fOutputCorTag);
 		
-		lncorr.GetLnSecondaries()->SetCorBins(fLowPtBin, fHighPtBin);
+		lncorr.GetLnSecondaries()->SetCorBins(fLowPtBin, fHiPtBin);
 		lncorr.GetLnSecondaries()->SetProcedure(fSecProd);
 		lncorr.GetLnSecondaries()->SetMatDCAxyModel(fMatDCAxyMod);
 		lncorr.GetLnSecondaries()->SetAntiNucleusAsTemplate(fANucTemplate);
@@ -255,7 +256,7 @@ void AliLnDriver::MakePt() const
 		lnpt.SetOnlyGeneration(fIsOnlyGen);
 		lnpt.SetRapidityInterval(fYMin, fYMax);
 		
-		lnpt.SetPtBinInterval(fLowPtBin, fHighPtBin);
+		lnpt.SetPtBinInterval(fLowPtBin, fHiPtBin);
 		lnpt.SetM2BinInterval(fLowM2Bin, fHighM2Bin);
 		lnpt.SetM2BkgInterval(fMinM2Bkg, fMaxM2Bkg);
 		lnpt.SetM2TPCInterval(fMinM2tpc, fMaxM2tpc);
@@ -267,6 +268,7 @@ void AliLnDriver::MakePt() const
 		lnpt.SetMakeStats(fMakeStats);
 		lnpt.SetVertexCorrection(fVtxCorr, fVtxCorrVal);
 		lnpt.SetFitFractionCorr(fFitFrac);
+		lnpt.SetFeedDownCorr(fFdwnCorr);
 		lnpt.SetSameFeedDownCorr(fSameFdwn);
 		
 		lnpt.Exec();

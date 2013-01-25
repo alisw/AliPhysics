@@ -31,6 +31,7 @@
 #include <RooHistPdf.h>
 #include <RooWorkspace.h>
 #include <RooMsgService.h>
+#include <TBackCompFitter.h>
 
 #include "AliLnSecondaries.h"
 #include "B2.h"
@@ -44,8 +45,8 @@ AliLnSecondaries::AliLnSecondaries(const TString& particle, const TString& dataF
 , fSimuFilename(simuFilename)
 , fOutputFilename(outputFilename)
 , fOutputTag(otag)
-, fLowBin(3)
-, fHiBin(15)
+, fLowPtBin(3)
+, fHiPtBin(15)
 , fNbin(1)
 , fMinDCAxy(-1.5)
 , fMaxDCAxy(1.5)
@@ -263,6 +264,8 @@ Int_t AliLnSecondaries::Exec()
 	delete fsimu;
 	delete fdata;
 	
+	delete dynamic_cast<TBackCompFitter*>(TVirtualFitter::GetFitter());
+	
 	return 0;
 }
 
@@ -286,7 +289,7 @@ void AliLnSecondaries::GetFraction(TH1D* hPrimPt, TH1D* hSecPt, const TH2D* hDCA
 //
 	TString nosec = (sec == "Fdwn") ? "Mat" : "Fdwn";
 	
-	for(Int_t i=fLowBin; i<fHiBin; ++i)
+	for(Int_t i=fLowPtBin; i<fHiPtBin; ++i)
 	{
 		TH1D* hDCAxy      = hDCAxyPt->ProjectionY(Form("%s_Data_DCAxy_%02d",fParticle.Data(),i),i,i);
 		TH1D* hMCDCAxy    = hMCDCAxyPt->ProjectionY(Form("%s_SimData_DCAxy_%02d",fParticle.Data(),i),i,i);
@@ -345,7 +348,7 @@ void AliLnSecondaries::GetFraction(TH1D* hFracPt[3], const TH2D* hDCAxyPt, const
 // slice the DCA distribution and get the fractions for each pt bin
 // (3 contributions)
 //
-	for(Int_t i=fLowBin; i<fHiBin; ++i)
+	for(Int_t i=fLowPtBin; i<fHiPtBin; ++i)
 	{
 		// slices
 		TH1D* hDCAxy     = hDCAxyPt->ProjectionY(Form("%s_Data_DCAxy_%02d",fParticle.Data(),i),i,i);
@@ -458,7 +461,7 @@ Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hDa
 	return status;
 }
 
-void AliLnSecondaries::WriteTFFdebug(TH1D* hData, TFractionFitter* fit, Int_t status, Int_t ibin, const char* contrib[], Double_t* frac, Int_t kmax) const
+void AliLnSecondaries::WriteTFFdebug(const TH1D* hData, TFractionFitter* fit, Int_t status, Int_t ibin, const char* contrib[], Double_t* frac, Int_t kmax) const
 {
 //
 // Write TFractionFitter debug histograms

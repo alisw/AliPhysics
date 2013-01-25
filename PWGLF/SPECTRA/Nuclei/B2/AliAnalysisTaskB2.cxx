@@ -59,61 +59,52 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 : AliAnalysisTask()
 , fSpecies("Proton")
 , fPartCode(AliPID::kProton)
-	
 , fHeavyIons(0)
 , fSimulation(0)
-	
 , fMultTrigger(0)
 , fCentTrigger(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
-	
 , fV0AND(0)
 , fNoFastOnly(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(0)
 , fMaxCentrality(100)
-	
 , fNtrk(0)
 , fMeanNtrk(1)
 , fKNOmult(1)
- 
 , fMinVx(-1)
 , fMaxVx(1)
 , fMinVy(-1)
 , fMaxVy(1)
 , fMinVz(-10)
 , fMaxVz(10)
-	
 , fMinDCAxy(-1)
 , fMaxDCAxy(1)
 , fMinDCAz(-2)
 , fMaxDCAz(2)
 , fMaxNSigma(3)
-	
 , fMinEta(-0.8)
 , fMaxEta(0.8)
 , fMinY(-0.5)
 , fMaxY(0.5)
-	
 , fMCevent(0)
 , fESDevent(0)
-	
 , fHistoMap(0)
 , fESDtrackCuts(0)
 , fLnID(0)
-
 , fMaxNSigmaITS(3)
 , fMaxNSigmaTPC(3)
 , fMaxNSigmaTOF(3)
-	
 , fTrigAna(0)
 , fESDpid(0)
 , fIsPidOwner(0)
 , fTimeZeroType(AliESDpid::kTOF_T0)
 , fTOFmatch(0)
+, fMinM2(2.)
+, fMaxM2(6.)
 
 {
 //
@@ -128,61 +119,52 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 : AliAnalysisTask(name,"")
 , fSpecies("Proton")
 , fPartCode(AliPID::kProton)
-	
 , fHeavyIons(0)
 , fSimulation(0)
-	
 , fMultTrigger(0)
 , fCentTrigger(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
-	
 , fV0AND(0)
 , fNoFastOnly(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(-1)
 , fMaxCentrality(100)
-	
 , fNtrk(0)
 , fMeanNtrk(1)
 , fKNOmult(1)
- 
 , fMinVx(-1)
 , fMaxVx(1)
 , fMinVy(-1)
 , fMaxVy(1)
 , fMinVz(-10)
 , fMaxVz(10)
-	
 , fMinDCAxy(-1)
 , fMaxDCAxy(1)
 , fMinDCAz(-2)
 , fMaxDCAz(2)
 , fMaxNSigma(3)
-	
 , fMinEta(-0.8)
 , fMaxEta(0.8)
 , fMinY(-0.5)
 , fMaxY(0.5)
-	
 , fMCevent(0)
 , fESDevent(0)
-	
 , fHistoMap(0)
 , fESDtrackCuts(0)
 , fLnID(0)
-
 , fMaxNSigmaITS(3)
 , fMaxNSigmaTPC(3)
 , fMaxNSigmaTOF(3)
-	
 , fTrigAna(0)
 , fESDpid(0)
 , fIsPidOwner(0)
 , fTimeZeroType(AliESDpid::kTOF_T0)
 , fTOFmatch(0)
+, fMinM2(2.)
+, fMaxM2(6.)
 
 {
 //
@@ -727,22 +709,18 @@ Int_t AliAnalysisTaskB2::GetTracks()
 								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Prim_M2_P"))->Fill(pTOF, m2);
 								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Prim_M2_Pt"))->Fill(pt, m2);
 							}
-							
 						}
-						else
+						else if(this->IsFromWeakDecay(iParticle))
 						{
-							if(this->IsFromWeakDecay(iParticle))
-							{
-								((TH1D*)fHistoMap->Get(simparticle + "_Sim_Fdwn_Pt"))->Fill(simPt);
-								
-								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Fdwn_DCAxy_Pt"))->Fill(simPt,dcaxy);
-							}
-							else // if(this->IsFromMaterial(iParticle)
-							{
-								((TH1D*)fHistoMap->Get(simparticle + "_Sim_Mat_Pt"))->Fill(simPt);
-								
-								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Mat_DCAxy_Pt"))->Fill(simPt,dcaxy);
-							}
+							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Fdwn_Pt"))->Fill(simPt);
+							
+							((TH2D*)fHistoMap->Get(simparticle + "_Sim_Fdwn_DCAxy_Pt"))->Fill(simPt,dcaxy);
+						}
+						else // if(this->IsFromMaterial(iParticle)
+						{
+							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Mat_Pt"))->Fill(simPt);
+							
+							((TH2D*)fHistoMap->Get(simparticle + "_Sim_Mat_DCAxy_Pt"))->Fill(simPt,dcaxy);
 						}
 					}
 					else // fake tracks
@@ -756,7 +734,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 						{
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Fake_Fdwn_Pt"))->Fill(simPt);
 						}
-						else if(this->IsFromMaterial(iParticle))
+						else
 						{
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Fake_Mat_Pt"))->Fill(simPt);
 						}
@@ -836,16 +814,15 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		}
 		
 		// secondaries
-		if(fTOFmatch && fLnID->GetPidProcedure() > AliLnID::kMaxLikelihood)
+		
+		Bool_t m2match = kTRUE;
+		
+		if( fTOFmatch && (fLnID->GetPidProcedure() > AliLnID::kMaxLikelihood))
 		{
-			if(fLnID->GetM2match(fPartCode, pTOF, m2, 3))
-			{
-				((TH2D*)fHistoMap->Get(particle + "_PID_DCAxy_Pt"))->Fill(pt, dcaxy);
-				((TH2D*)fHistoMap->Get(particle + "_PID_DCAz_Pt"))->Fill(pt, dcaz);
-				((TH2D*)fHistoMap->Get(particle + "_PID_NSigma_Pt"))->Fill(pt, nSigmaVtx);
-			}
+			if((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
 		}
-		else
+		
+		if(m2match)
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_DCAxy_Pt"))->Fill(pt, dcaxy);
 			((TH2D*)fHistoMap->Get(particle + "_PID_DCAz_Pt"))->Fill(pt, dcaz);
@@ -867,20 +844,23 @@ Int_t AliAnalysisTaskB2::GetTracks()
 				if(this->IsPhysicalPrimary(iParticle))
 				{
 					((TH1D*)fHistoMap->Get(particle + "_Sim_PID_Prim_Pt"))->Fill(simPt);
-					
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAz_Pt"))->Fill(pt, dcaz);
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_NSigma_Pt"))->Fill(pt, nSigmaVtx);
 				}
-				else
+				
+				if(m2match)
 				{
-					if(this->IsFromWeakDecay(iParticle))
+					if(this->IsPhysicalPrimary(iParticle))
+					{
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_DCAz_Pt"))->Fill(pt, dcaz);
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Prim_NSigma_Pt"))->Fill(pt, nSigmaVtx);
+					}
+					else if(this->IsFromWeakDecay(iParticle))
 					{
 						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAxy_Pt"))->Fill(pt, dcaxy);
 						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_DCAz_Pt"))->Fill(pt, dcaz);
 						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fdwn_NSigma_Pt"))->Fill(pt, nSigmaVtx);
 					}
-					else
+					else // from materials
 					{
 						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAxy_Pt"))->Fill(pt, dcaxy);
 						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Mat_DCAz_Pt"))->Fill(pt, dcaz);
@@ -892,17 +872,20 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			{
 				((TH1D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Pt"))->Fill(simPt);
 				
-				if(this->IsPhysicalPrimary(iParticle))
+				if(m2match)
 				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
-				}
-				else if(this->IsFromWeakDecay(iParticle))
-				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt"))->Fill(pt, dcaxy);
-				}
-				else
-				{
-					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Mat_DCAxy_Pt"))->Fill(pt, dcaxy);
+					if(this->IsPhysicalPrimary(iParticle))
+					{
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Prim_DCAxy_Pt"))->Fill(pt, dcaxy);
+					}
+					else if(this->IsFromWeakDecay(iParticle))
+					{
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt"))->Fill(pt, dcaxy);
+					}
+					else // from materials
+					{
+						((TH2D*)fHistoMap->Get(particle + "_Sim_PID_Fake_Mat_DCAxy_Pt"))->Fill(pt, dcaxy);
+					}
 				}
 			}
 		}

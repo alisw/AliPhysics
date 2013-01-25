@@ -58,7 +58,7 @@ class AliLnDriver: public TObject
 	
 	void SetRapidityInterval(Double_t ymin, Double_t ymax) { fYMin = ymin; fYMax = ymax; }
 	
-	void SetPtBinInterval(Int_t lowbin, Int_t hibin) { fLowPtBin = lowbin; fHighPtBin = hibin; }
+	void SetPtBinInterval(Int_t lowbin, Int_t hibin) { fLowPtBin = lowbin; fHiPtBin = hibin; }
 	void SetM2BinInterval(Int_t lowbin, Int_t hibin) { fLowM2Bin = lowbin; fHighM2Bin = hibin; }
 	void SetM2BkgInterval(Double_t min, Double_t max) { fMinM2Bkg = min; fMaxM2Bkg = max; }
 	void SetM2TPCInterval(Double_t min, Double_t max) { fMinM2tpc = min; fMaxM2tpc = max; }
@@ -76,6 +76,7 @@ class AliLnDriver: public TObject
 	
 	void SetVertexCorrection(Bool_t flag=1, Double_t val=1) { fVtxCorr = flag; fVtxCorrVal=val; }
 	void SetFitFractionCorr(Bool_t flag=1) { fFitFrac=flag; }
+	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn = flag; }
 	
 	void SetSysErr( Double_t pos, Double_t neg) { fSysPos = pos; fSysNeg = neg; }
@@ -89,7 +90,7 @@ class AliLnDriver: public TObject
  
 	TString fSpecies;       // particle species
 	TString fOutputTag;     // tag for output file
-	TString fOutputCorTag;        // tag for correction file
+	TString fOutputCorTag;  // tag for correction file
 	
 	Double_t fTrigEff[3];   // trigger efficiency, stat. and syst. errors
 	Double_t fXsec[3];      // total inelastic cross section, stat. and syst. errors
@@ -103,7 +104,7 @@ class AliLnDriver: public TObject
 	Bool_t  fMakeStats;     // make event stats
 	
 	Int_t    fLowPtBin;     // low pt bin
-	Int_t    fHighPtBin;    // high pt bin
+	Int_t    fHiPtBin;      // high pt bin
 	Bool_t   fPidM2;        // enable m2 pid correction
 	Int_t    fLowM2Bin;     // low m2 bin for pid contamination
 	Int_t    fHighM2Bin;    // high m2 bin for pid contamination
@@ -144,6 +145,7 @@ class AliLnDriver: public TObject
 	TString fOutputPtDebug;     // output filename for debugging pt
 	
 	Bool_t fFitFrac;        // fit for fraction of secondaries
+	Bool_t fFdwnCorr;       // enable feed-down correction
 	Bool_t fSameFdwn;       // same feed-down correction for positives and negatives
 	Bool_t fVtxCorr;        // enable vertex correction from simulation
 	Double_t fVtxCorrVal;   // vertex correction value

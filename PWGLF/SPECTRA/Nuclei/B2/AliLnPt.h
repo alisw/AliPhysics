@@ -63,6 +63,7 @@ class AliLnPt: public TObject
 	
 	void SetVertexCorrection(Bool_t flag=1, Double_t factor=1) { fVtxCorr=flag; fVtxFactor=factor; }
 	void SetFitFractionCorr(Bool_t flag=1) { fFitFrac=flag; }
+	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn=flag; }
 	
   private:
@@ -118,6 +119,7 @@ class AliLnPt: public TObject
 	Double_t fVtxFactor; // correction factor between simulation and data
 	
 	Bool_t fFitFrac; // fit for fraction of secondaries
+	Bool_t fFdwnCorr; // enable feed-down correction
 	Bool_t fSameFdwn; // same feed-down correction for positives and negatives
 	
 	ClassDef(AliLnPt,1)
