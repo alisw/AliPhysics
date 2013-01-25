@@ -43,7 +43,7 @@ class AliMeanVertexCalibTask : public AliAnalysisTaskSE
   
   void           SetOnlyITSTPCTracks() {fOnlyITSTPCTracks=kFALSE;}
   void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
-
+  void           SetRejectionPileUpFromSPD(Bool_t rejPileUpSPD = kTRUE){fRejPileUpSPD=rejPileUpSPD;} 
   
     
   
@@ -53,14 +53,14 @@ class AliMeanVertexCalibTask : public AliAnalysisTaskSE
 
   Bool_t       fOnlyITSTPCTracks; // only ITS-TPC tracks to redo ITSTPC vertex
   Bool_t       fOnlyITSSATracks;  // only ITS-SA tracks to redo ITSTPC vertex
-  
+  Bool_t       fRejPileUpSPD; //flag to reject pile up
   
   AliMeanVertexCalibTask(const AliMeanVertexCalibTask&);
   AliMeanVertexCalibTask& operator=(const AliMeanVertexCalibTask&);
  
   AliESDVertex* ReconstructPrimaryVertex(Bool_t constr=kFALSE, Int_t mode=0) const;
   
-  ClassDef(AliMeanVertexCalibTask, 1);
+  ClassDef(AliMeanVertexCalibTask, 2);
   
 };
 

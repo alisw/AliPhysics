@@ -18,6 +18,7 @@ AliMeanVertexCalibTask *AddTaskMeanVertexCalib(){
 
   
   AliMeanVertexCalibTask *meanVertexTask = new AliMeanVertexCalibTask("AliMeanVertexCalibTask");
+  meanVertexTask->SetRejectionPileUpFromSPD(kTRUE); //to be changed if it rejects too many events. 
   
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), AliAnalysisManager::kInputContainer);
