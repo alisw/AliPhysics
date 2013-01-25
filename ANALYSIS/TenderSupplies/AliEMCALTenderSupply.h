@@ -151,10 +151,13 @@ public:
 
   void     SwitchOnUpdateCellOnly()                       { fDoUpdateOnly = kTRUE            ;} 
   void     SwitchOffUpdateCellOnly()                      { fDoUpdateOnly = kFALSE           ;}  
-
-  void     SwitchOnTrackMatch()                           { fDoTrackMatch = kTRUE            ;} 
-  void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}  
  
+  void     SwitchOnTrackMatch()                           { fDoTrackMatch = kTRUE            ;}
+  void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}
+
+  void     SwitchOnUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = kTRUE  ;}
+  void     SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = kFALSE ;}
+  
 private:
 
   AliVEvent* GetEvent();
@@ -225,9 +228,11 @@ private:
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
 
+  Bool_t                 fSetCellMCLabelFromCluster; // Use cluster MC label as cell label
+  
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 12); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 13); // EMCAL tender task
 };
 #endif
