@@ -159,6 +159,7 @@ void AliCentralityGlauberFit::MakeFits()
     hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
     if (!hDATA) {
       TList *list  = (TList*) (inrootfile->Get("CentralityStat")); 
+      //TList *list  = (TList*) (inrootfile->Get("VZEROEquaFactorStat")); 
       hDATA  = (TH1F*) (list->FindObject(*hni));
     } 
     hDATA->Rebin(fRebinFactor);
@@ -249,7 +250,13 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(Double_t alpha, Double_t mu, Dou
   std::vector<TString>::const_iterator hni;
   for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
     hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
+    if (!hDATA) {
+      TList *list  = (TList*) (inrootfile->Get("CentralityStat")); 
+      //TList *list  = (TList*) (inrootfile->Get("VZEROEquaFactorStat")); 
+      hDATA  = (TH1F*) (list->FindObject(*hni));
+    } 
     hDATA->Rebin(fRebinFactor);
+
     fTempHist=hDATA;
     TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
     hGLAU->Sumw2();
@@ -344,11 +351,11 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t al
       Double_t weights = fhAncestor->GetBinContent(np);
 
       if (weights <= 0) continue;
-      Int_t trials = (Int_t) (20 * nanc * (int) mu);
+      Int_t trials = (Int_t) (20 * nanc * (Int_t) mu);
       if (trials <=0) continue;
       for (Int_t j=0; j<trials; j++) {
-       	double nbdvalue = NBD(j, mu * nanc, k * nanc);
-       	h1->Fill((double) j, nbdvalue * weights);
+       	Double_t nbdvalue = NBD(j, mu * nanc, k * nanc);
+       	h1->Fill((Double_t) j, nbdvalue * weights);
       }
     }
     return h1;
@@ -376,8 +383,8 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t al
       fNcoll = 1;
     }
     Int_t n=0;
-    //if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNpart,alpha));
-    if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNcoll,alpha));
+    if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNpart,alpha));
+    //if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNcoll,alpha));
     else if (fAncestor == 2) n = (Int_t)(alpha * fNpart + (1-alpha) * fNcoll);
     else if (fAncestor == 3) n = (Int_t)((1-alpha) * fNpart/2 + alpha * fNcoll);
 
@@ -492,8 +499,8 @@ void AliCentralityGlauberFit::SaveHisto(TH1F *hist1, TH1F *hist2, TH1F *heffi, T
 Double_t AliCentralityGlauberFit::NBD(Int_t n, Double_t mu, Double_t k) const
 {
   // Compute NBD.
-  double F;
-  double f;
+  Double_t F;
+  Double_t f;
 
   if (n+k > 100.0) {
     // log method for handling large numbers
@@ -536,11 +543,11 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
   Double_t mu    = par[1];
   Double_t k     = par[2];
 
-  if (0) { //avoid warning
-    gin=gin;
-    npar=npar;
-    iflag=iflag;
-  }
+  // if (0) { //avoid warning
+  //   gin=gin;
+  //   npar=npar;
+  //   iflag=iflag;
+  // }
   AliCentralityGlauberFit * obj = (AliCentralityGlauberFit *) gMinuit->GetObjectFit();
   TH1F * thistGlau = obj->GlauberHisto(mu,k,alpha,obj->GetTempHist(),kFALSE);
   f = obj->CalculateChi2(obj->GetTempHist(),thistGlau);
