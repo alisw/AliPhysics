@@ -982,3 +982,17 @@ Double_t  AliTRDtrackV1::CookTruncatedMean(const Bool_t kinvq, const Double_t ma
   return tmean;
 }
 
+//_______________________________________________________________
+TObject* AliTRDtrackV1::Clone(const char* newname) const
+{
+  // temporary override TObject::Clone to avoid crashes in reco
+  AliTRDtrackV1* src = (AliTRDtrackV1*)this;
+  Bool_t isown = src->IsOwner();
+  AliInfo(Form("src_owner %d",isown));
+  AliTRDtrackV1* dst = new AliTRDtrackV1(*src);
+  if (isown) {
+    src->SetBit(kOwner);
+    dst->SetOwner();
+  }
+  return dst;
+}

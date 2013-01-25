@@ -1743,3 +1743,11 @@ void AliTPCseed::Clear(Option_t*)
   // the seeds in the pool). Hence we need this method for fwd. compatibility
   if (fClusterOwner) for (int i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
 }
+
+TObject* AliTPCseed::Clone(const char* newname) const
+{
+  // temporary override TObject::Clone to avoid crashes in reco
+  AliTPCseed* src = (AliTPCseed*)this;
+  AliTPCseed* dst = new AliTPCseed(*src,fClusterOwner);
+  return dst;
+}                                                                                                                                                                    

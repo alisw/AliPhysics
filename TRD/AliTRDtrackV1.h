@@ -75,7 +75,7 @@ public:
   virtual ~AliTRDtrackV1();
   AliTRDtrackV1 &operator=(const AliTRDtrackV1 &ref);
   virtual void   Copy(TObject &ref) const;
- 
+  virtual TObject* Clone(const char* newname = "") const;
   Bool_t         CookPID();
   Double_t       CookTruncatedMean(const Bool_t kinvq, const Double_t mag, const Int_t charge, const Int_t kcalib, Int_t &nch, Int_t &ncls, TVectorD *Qs=NULL, TVectorD *Xs=NULL, Int_t timeBin0=-1, Int_t timeBin1=1000, Int_t tstep=1) const;
  

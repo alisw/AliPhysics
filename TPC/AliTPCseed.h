@@ -33,6 +33,7 @@ class AliTPCseed : public AliTPCtrack {
   public:  
      AliTPCseed();
      virtual ~AliTPCseed();
+     virtual TObject* Clone(const char* newname = "") const;
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner = kFALSE);
      //AliTPCseed(const AliTPCseed &t, Double_t a);
