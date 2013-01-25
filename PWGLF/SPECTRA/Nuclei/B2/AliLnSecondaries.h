@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// removal of secondaries using DCA distributions
+// removal of secondaries using DCA templates
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #include <TObject.h>
@@ -43,6 +43,8 @@ class AliLnSecondaries: public TObject
 	void SetAntiNucleusAsTemplate(Bool_t flag=1) { fANucTemplate = flag; }
 	void SetMatDCAxyModel(Int_t model) { fMatDCAxyMod = model; }
 	void SetScalingFactors(Double_t mat, Double_t fd) { fScMat=mat; fScFd=fd; }
+	
+	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
 	enum { kTFractionFitter=0, kRooFit, kMonteCarlo };
 	enum { kGeantDCAxy=0, kFlatDCAxy};
@@ -93,6 +95,8 @@ class AliLnSecondaries: public TObject
 	
 	Double_t fScMat; // scaling factor for material fraction
 	Double_t fScFd; // scaling factor for feed-down fraction
+	
+	Bool_t fAddFakeTracks; // add fake tracks to the templates
 	
 	ClassDef(AliLnSecondaries,1)
 };

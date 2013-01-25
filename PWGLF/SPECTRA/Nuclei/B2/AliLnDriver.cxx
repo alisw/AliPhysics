@@ -54,7 +54,6 @@ AliLnDriver::AliLnDriver()
 , fHighM2Bin(17)
 , fUnfolding(0)
 , fNIter(4)
-, fFakeTracks(1)
 , fSecondaries(1)
 , fSecProd(AliLnSecondaries::kTFractionFitter)
 , fMatDCAxyMod(AliLnSecondaries::kGeantDCAxy)
@@ -88,6 +87,7 @@ AliLnDriver::AliLnDriver()
 , fSameFdwn(0)
 , fVtxCorr(0)
 , fVtxCorrVal(1)
+, fAddFakeTracks(1)
 {
 //
 // constructor
@@ -214,8 +214,10 @@ void AliLnDriver::MakePtCorr() const
 		lncorr.GetLnSecondaries()->SetDCAxyInterval(fMinDCAxy, fMaxDCAxy);
 		lncorr.GetLnSecondaries()->SetNBin(fNbin);
 		lncorr.GetLnSecondaries()->SetScalingFactors(fScMat, fScFd);
+		lncorr.GetLnSecondaries()->SetAddFakeTracks(fAddFakeTracks);
 		
 		lncorr.GetLnEfficiency()->SetG3Fluka(fG3Fluka);
+		lncorr.GetLnEfficiency()->SetAddFakeTracks(fAddFakeTracks);
 		
 		lncorr.Exec();
 		
@@ -262,7 +264,6 @@ void AliLnDriver::MakePt() const
 		lnpt.SetM2TPCInterval(fMinM2tpc, fMaxM2tpc);
 		lnpt.SetPidM2(fPidM2);
 		lnpt.SetUnfolding(fUnfolding, fNIter);
-		lnpt.SetFakeTracks(fFakeTracks);
 		lnpt.SetSecondaries(fSecondaries);
 		lnpt.SetEfficiency(fEfficiency);
 		lnpt.SetMakeStats(fMakeStats);

@@ -64,7 +64,6 @@ class AliLnDriver: public TObject
 	void SetM2TPCInterval(Double_t min, Double_t max) { fMinM2tpc = min; fMaxM2tpc = max; }
 	void SetPidM2(Bool_t flag=1) { fPidM2 = flag; }
 	void SetUnfolding(Bool_t flag=1, Int_t niter=4) { fUnfolding = flag; fNIter=niter; }
-	void SetFakeTracks(Bool_t flag=1) { fFakeTracks = flag; }
 	void SetSecondaries(Bool_t flag=1) { fSecondaries = flag; }
 	void SetSecProd(Int_t prod) { fSecProd = prod; }
 	void SetAntiNucleusAsTemplate(Bool_t flag=1) { fANucTemplate = flag; }
@@ -78,6 +77,8 @@ class AliLnDriver: public TObject
 	void SetFitFractionCorr(Bool_t flag=1) { fFitFrac=flag; }
 	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn = flag; }
+	
+	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
 	void SetSysErr( Double_t pos, Double_t neg) { fSysPos = pos; fSysNeg = neg; }
 	
@@ -110,7 +111,6 @@ class AliLnDriver: public TObject
 	Int_t    fHighM2Bin;    // high m2 bin for pid contamination
 	Bool_t   fUnfolding;    // unfolding correction
 	Int_t    fNIter;        // number of iterations for Bayesian unfolding
-	Bool_t   fFakeTracks;   // fake tracks correction
 	Bool_t   fSecondaries;  // correction of secondaries
 	Int_t    fSecProd;      // procedure for estimating fractions
 	Int_t    fMatDCAxyMod;  // DCAxy model for correction of secondaries
@@ -149,6 +149,8 @@ class AliLnDriver: public TObject
 	Bool_t fSameFdwn;       // same feed-down correction for positives and negatives
 	Bool_t fVtxCorr;        // enable vertex correction from simulation
 	Double_t fVtxCorrVal;   // vertex correction value
+	
+	Bool_t fAddFakeTracks;  // include fake tracks in the efficiency and templates
 	
 	ClassDef(AliLnDriver,3)
 };

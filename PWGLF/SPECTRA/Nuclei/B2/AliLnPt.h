@@ -31,7 +31,6 @@ class AliLnPt: public TObject
 #ifdef HAVE_ROOUNFOLD
 	TH1D* Unfolding(const TH1D* hPt, const TH1D* hMeasuredPt, const TH1D* hTruePt, const TH2D* ResponseMtx, const TString& name, Int_t iterations=4) const;
 #endif
-	TH1D* FakeTracks(const TH1D* hPt, const TH1D* hFracFakePt, const TString& name) const;
 	TH1D* Secondaries(const TH1D* hPt, const TH1D* hFracMatPt, const TH1D* hFracFdwnPt, const TString& name) const;
 	TH1D* Secondaries(const TH1D* hPt, TF1* fncMatPt, TF1* fncFdwnPt, const TString& name) const;
 	TH1D* Efficiency(const TH1D* hPt, const TH1D* hEffVtxPt, const TH1D* hEffAccTrkPt, const TString& name) const;
@@ -53,7 +52,6 @@ class AliLnPt: public TObject
 	
 	void SetPidM2(Bool_t flag=1) { fPidM2 = flag; }
 	void SetUnfolding(Bool_t flag=1, Int_t niter=4) { fUnfolding = flag; fNIter=niter; }
-	void SetFakeTracks(Bool_t flag=1) { fFakeTracks = flag; }
 	void SetSecondaries(Bool_t flag=1) { fSecondaries = flag; }
 	void SetEfficiency(Bool_t flag=1) { fEfficiency = flag; }
 	
@@ -95,7 +93,6 @@ class AliLnPt: public TObject
 	Bool_t fPidM2; // correct contamination of m2 pid
 	Bool_t fUnfolding; // unfold the pt correction
 	Int_t  fNIter; // number of iterations for Bayesian unfolding
-	Bool_t fFakeTracks; // remove faketracks
 	Bool_t fSecondaries; // remove secondaries
 	Bool_t fEfficiency; // correct by efficiency
 	

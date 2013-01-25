@@ -46,7 +46,6 @@ Int_t Config_Proton_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	const Bool_t   kVtxCorr     = 0;
 	const Double_t kVtxCorrVal  = GetVertexCorrection(period);
 	const Bool_t   kUnfolding   = 0;
-	const Bool_t   kFakeTracks  = 0;
 	const Bool_t   kSecondaries = 1;
 	const Int_t    kSecProd     = 0; // 0 tff, 1 roofit, 2 mc
 	const Int_t    kMatDCAxyMod = 1; // 0 geant, 1 flat
@@ -94,7 +93,6 @@ Int_t Config_Proton_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetPtBinInterval(lowPtBin, hiPtBin);
 	driver.SetPidM2(0);
 	driver.SetUnfolding(kUnfolding);
-	driver.SetFakeTracks(kFakeTracks);
 	driver.SetSecondaries(kSecondaries);
 	driver.SetSecProd(kSecProd);
 	driver.SetMatDCAxyModel(kMatDCAxyMod);

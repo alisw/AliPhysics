@@ -11,7 +11,6 @@
 #include <TString.h>
 
 class AliLnUnfolding;
-class AliLnFakeTracks;
 class AliLnSecondaries;
 class AliLnEfficiency;
 
@@ -25,7 +24,6 @@ class AliLnCorr: public TObject
 	Int_t Exec();
 	
 	AliLnUnfolding*   GetLnUnfolding() { return fUnfolding; }
-	AliLnFakeTracks*  GetLnFakeTracks() { return fFakeTracks; }
 	AliLnSecondaries* GetLnSecondaries() { return fSecondaries; }
 	AliLnEfficiency*  GetLnEfficiency() { return fEfficiency; }
 	
@@ -39,7 +37,6 @@ class AliLnCorr: public TObject
 	TString fOutputFilename; // output filename
 	
 	AliLnUnfolding*   fUnfolding; // unfolding correction
-	AliLnFakeTracks*  fFakeTracks; // fake track correction
 	AliLnSecondaries* fSecondaries; // secondaries correction
 	AliLnEfficiency*  fEfficiency; // eficiency correction
 	

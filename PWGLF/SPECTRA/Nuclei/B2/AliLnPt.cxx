@@ -56,7 +56,6 @@ AliLnPt::AliLnPt(const TString& particle, Double_t trigEff, const TString& input
 , fPidM2(0)
 , fUnfolding(0)
 , fNIter(4)
-, fFakeTracks(1)
 , fSecondaries(1)
 , fEfficiency(1)
 , fIsOnlyGen(0)
@@ -142,8 +141,6 @@ Int_t AliLnPt::Exec()
 		TH1D* hTruePt      = (TH1D*)FindObj(fcorr, fCorrTag, fParticle + "_True_Pt");
 #endif
 		
-		TH1D* hFracFakePt  = (TH1D*)FindObj(fcorr, fCorrTag, fParticle + "_Frac_Fake_Pt");
-		
 		TH1D* hFracMatPt   = (TH1D*)FindObj(fcorr, fCorrTag, fParticle + "_Frac_Mat_Pt");
 		TH1D* hFracFdwnPt  = (TH1D*)FindObj(fcorr, fCorrTag, fParticle + "_Frac_Fdwn_Pt");
 		TF1* fncFracMatPt  = (TF1*)FindObj(fcorr, fCorrTag, fParticle + "_Frac_Mat_Fit_Pt");
@@ -190,26 +187,16 @@ Int_t AliLnPt::Exec()
 			hSecCorPt = (TH1D*)hPidPt->Clone(Form("%s_SecCor_Pt", fParticle.Data()));
 		}
 		
-		TH1D* hFakeCorPt = 0;
-		if(fFakeTracks)
-		{
-			hFakeCorPt = this->FakeTracks(hSecCorPt, hFracFakePt, fParticle + "_FakeCor_Pt");
-		}
-		else
-		{
-			hFakeCorPt = (TH1D*)hSecCorPt->Clone(Form("%s_FakeCor_Pt", fParticle.Data()));
-		}
-		
 		TH1D* hUnfoldedPt = 0;
 #ifdef HAVE_ROOUNFOLD
 		if(fUnfolding)
 		{
-			hUnfoldedPt = this->Unfolding(hFakeCorPt, hMeasuredPt, hTruePt, hResponseMtx, fParticle + "_Unfolded_Pt", fNIter);
+			hUnfoldedPt = this->Unfolding(hSecCorPt, hMeasuredPt, hTruePt, hResponseMtx, fParticle + "_Unfolded_Pt", fNIter);
 		}
 		else
 #endif
 		{
-			hUnfoldedPt = (TH1D*)hFakeCorPt->Clone(Form("%s_Unfolded_Pt", fParticle.Data()));
+			hUnfoldedPt = (TH1D*)hSecCorPt->Clone(Form("%s_Unfolded_Pt", fParticle.Data()));
 		}
 		
 		TH1D* hEffCorPt = 0;
@@ -233,7 +220,6 @@ Int_t AliLnPt::Exec()
 		hOrigPt->Write(); // original distribution
 		hPidPt->Write();
 		hUnfoldedPt->Write();
-		hFakeCorPt->Write();
 		hSecCorPt->Write();
 		hEffCorPt->Write();
 		hCorPt->Write();
@@ -242,7 +228,6 @@ Int_t AliLnPt::Exec()
 		
 		delete hPidPt;
 		delete hUnfoldedPt;
-		delete hFakeCorPt;
 		delete hSecCorPt;
 		delete hEffCorPt;
 	}
@@ -485,23 +470,6 @@ TH1D* AliLnPt::Unfolding(const TH1D* hPt, const TH1D* hMeasuredPt, const TH1D* h
 }
 
 #endif
-
-TH1D* AliLnPt::FakeTracks(const TH1D* hPt, const TH1D* hFracFakePt, const TString& name) const
-{
-//
-// remove fake tracks
-// N_true = N - N_fake = N - f_fake*N
-//
-	TH1D* hFakeTracks = (TH1D*)hPt->Clone("_fake_tracks_");
-	hFakeTracks->Multiply(hFracFakePt);
-	
-	TH1D* hFakeCorPt = (TH1D*)hPt->Clone(name.Data());
-	hFakeCorPt->Add(hFakeTracks,-1.);
-	
-	delete hFakeTracks;
-	
-	return hFakeCorPt;
-}
 
 TH1D* AliLnPt::Secondaries(const TH1D* hPt, const TH1D* hFracMatPt, const TH1D* hFracFdwnPt, const TString& name) const
 {

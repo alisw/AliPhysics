@@ -15,7 +15,6 @@ Int_t run(const TString& config)
 	gSystem->AddIncludePath("-I\"$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/\"");
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnUnfolding.cxx+g");
-	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnFakeTracks.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnSecondaries.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnEfficiency.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnCorr.cxx+g");
