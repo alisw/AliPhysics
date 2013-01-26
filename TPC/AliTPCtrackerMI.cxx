@@ -7702,7 +7702,7 @@ void AliTPCtrackerMI::MakeESDBitmaps(AliTPCseed *t, AliESDtrack *esd)
   esd->SetTPCSharedMap(sharedMap);
   esd->SetTPCFitMap(fitMap);
   if (nclsf != t->GetNumberOfClusters())
-    AliWarning(Form("Inconsistency between ncls %d and indices %d (found %d)",t->GetNumberOfClusters(),nclsf,esd->GetTPCClusterMap().CountBits()));
+    AliDebug(3,Form("Inconsistency between ncls %d and indices %d (found %d)",t->GetNumberOfClusters(),nclsf,esd->GetTPCClusterMap().CountBits()));
 }
 
 Bool_t AliTPCtrackerMI::IsFindable(AliTPCseed & track){
