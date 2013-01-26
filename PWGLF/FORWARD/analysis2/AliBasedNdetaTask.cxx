@@ -38,7 +38,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fNormalizationScheme(kFull), 
     fSchemeString(0), 
     fTriggerString(0),
-    fFinalMCCorrFile("")
+    fFinalMCCorrFile(""),
+    fglobalempiricalcorrection(0)
 {
   // 
   // Constructor
@@ -70,7 +71,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fNormalizationScheme(kFull), 
     fSchemeString(0),
     fTriggerString(0),
-    fFinalMCCorrFile("")
+    fFinalMCCorrFile(""),
+   fglobalempiricalcorrection(0)	
 {
   // 
   // Constructor
@@ -113,7 +115,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fNormalizationScheme(o.fNormalizationScheme), 
     fSchemeString(o.fSchemeString), 
     fTriggerString(o.fTriggerString),
-    fFinalMCCorrFile(o.fFinalMCCorrFile)
+    fFinalMCCorrFile(o.fFinalMCCorrFile),
+    fglobalempiricalcorrection(o.fglobalempiricalcorrection)	
 {
   DGUARD(fDebug, 3,"Copy CTOR of AliBasedNdetaTask");
 }
@@ -413,7 +416,8 @@ AliBasedNdetaTask::UserExec(Option_t *)
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
-
+  if(!ApplyEmpiricalCorrection(forward,data))
+ 	return;
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
 
@@ -963,6 +967,7 @@ AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
   TH1D* tmp = static_cast<TH1D*>(h->Clone(Form("%s_rebin%02d", 
 					       h->GetName(), rebin)));
   tmp->Rebin(rebin);
+  tmp->Reset();	
   tmp->SetDirectory(0);
 
   // The new number of bins 
@@ -975,8 +980,11 @@ AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
     for(Int_t j = 1; j<=rebin;j++) {
       Int_t    bin = (i-1)*rebin + j;
       Double_t c   =  h->GetBinContent(bin);
-      if (c <= 0) continue;
-      
+       if (c <= 0)
+	{
+		content = -1;
+		break;
+	} 
       if (cutEdges) {
 	if (h->GetBinContent(bin+1)<=0 || 
 	    h->GetBinContent(bin-1)<=0) {
@@ -1976,6 +1984,38 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // Temporary stuff 
   // if (!IsAllBin()) return;
 
+}
+//_________________________________________________________________________________________________
+Bool_t AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data)
+{
+	if (!fglobalempiricalcorrection)
+		return true;
+	Float_t zvertex=aod->GetIpZ();
+	Int_t binzvertex=fglobalempiricalcorrection->GetXaxis()->FindBin(zvertex);
+	if(binzvertex<1||binzvertex>fglobalempiricalcorrection->GetNbinsX())
+		return false;
+	for (int i=1;i<=data->GetNbinsX();i++)
+	{
+		Int_t bincorrection=fglobalempiricalcorrection->GetYaxis()->FindBin(data->GetXaxis()->GetBinCenter(i));
+		if(bincorrection<1||bincorrection>fglobalempiricalcorrection->GetNbinsY())
+			return false;
+		Float_t correction=fglobalempiricalcorrection->GetBinContent(binzvertex,bincorrection);
+		if(correction<0.001)
+		{
+			data->SetBinContent(i,0,0);
+			data->SetBinContent(i,data->GetNbinsY()+1,0);
+
+		}	
+		for(int j=1;j<=data->GetNbinsY();j++)
+		{
+			if (data->GetBinContent(i,j)>0.0)
+			{
+				data->SetBinContent(i,j,data->GetBinContent(i,j)*correction);
+				data->SetBinError(i,j,data->GetBinError(i,j)*correction);
+			}	
+		}
+	}
+	return true;
 }
 
 //
