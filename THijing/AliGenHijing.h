@@ -56,11 +56,12 @@ class AliGenHijing : public AliGenMC
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
-    virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
-    virtual void    SetRandomPz(Bool_t flag = 0)        {fRandomPz   = flag;}
+    virtual void    SetBoostLHC(Int_t flag = 0)       {fLHC        = flag;}
+    virtual void    SetRandomPz(Bool_t flag = 0)      {fRandomPz   = flag;}
     virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
-    
-	    
+    virtual void    SetSigmaNN(Float_t val)           {fSigmaNN    = val;}    
+    virtual void    SetNoElas(Bool_t b)               {fNoElas     = b; }	    
+
 // Getters
     virtual TString GetReferenceFrame()  const {return fFrame;}
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax) const
@@ -79,6 +80,7 @@ class AliGenHijing : public AliGenMC
     virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)      const
 	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180./TMath::Pi();}
      THijing       *GetTHijing()                         const {return fHijing;}
+    virtual Float_t GetSigmaNN()                         const {return fSigmaNN;}
 
 // Physics Routines
     virtual Bool_t  ProvidesCollisionGeometry() const {return kTRUE;}
@@ -128,7 +130,9 @@ class AliGenHijing : public AliGenMC
     Bool_t      fRandomPz;       // Randomise sign of pz  event by event
     Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
     AliGenHijingEventHeader     fHeader; // MC Header
-    
+    Float_t     fSigmaNN;        // If not -1 set sigmaNN (HIPR1) 
+    Bool_t      fNoElas;         // If true switch off elastic scattering
+
  private:
     AliGenHijing(const AliGenHijing &Hijing);
     AliGenHijing &  operator=(const AliGenHijing & rhs);
@@ -140,11 +144,6 @@ class AliGenHijing : public AliGenMC
     // check if stable
     Bool_t Stable(const TParticle*  particle) const;
     
-    ClassDef(AliGenHijing, 8) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 9) // AliGenerator interface to Hijing
 };
 #endif
-
-
-
-
-

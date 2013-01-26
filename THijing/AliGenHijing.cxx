@@ -74,7 +74,9 @@ AliGenHijing::AliGenHijing()
      fLHC(kFALSE),
      fRandomPz(kFALSE),
      fNoHeavyQuarks(kFALSE),
-     fHeader(AliGenHijingEventHeader("Hijing"))
+     fHeader(AliGenHijingEventHeader("Hijing")),
+     fSigmaNN(-1),
+     fNoElas(0)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -118,7 +120,9 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fLHC(kFALSE),
      fRandomPz(kFALSE),
      fNoHeavyQuarks(kFALSE),
-     fHeader(AliGenHijingEventHeader("Hijing"))
+     fHeader(AliGenHijingEventHeader("Hijing")),
+     fSigmaNN(-1),
+     fNoElas(0)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -158,8 +162,14 @@ void AliGenHijing::Init()
     fHijing->SetIHPR2(21, fKeep);
     fHijing->SetHIPR1(8,  fPtHardMin); 	
     fHijing->SetHIPR1(9,  fPtHardMax); 	
-    fHijing->SetHIPR1(10, fPtMinJet); 	
+    fHijing->SetHIPR1(10, fPtMinJet); 
+    if (fSigmaNN>0)
+      fHijing->SetHIPR1(31, fSigmaNN/2.); 	
     fHijing->SetHIPR1(50, fSimpleJet);
+    //
+    // Switching off elastic scattering
+    if (fNoElas)
+      fHijing->SetIHPR2(14, 0);
 //
 //  Quenching
 //
