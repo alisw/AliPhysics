@@ -445,6 +445,7 @@ struct GridHelper : public PluginHelper
     if (nEvents == 0) return 0;
     Long64_t ret = mgr->StartAnalysis("grid", nEvents);
 
+#if 0
     std::ofstream outJobs(Form("%s.jobid", mgr->GetName()));
     //outJobs << fHandler->GetGridJobIDs() << std::endl;
     outJobs.close();
@@ -452,7 +453,7 @@ struct GridHelper : public PluginHelper
     std::ofstream outStages(Form("%s.stage", mgr->GetName()));
    // outStages << fHandler->GetGridStages() << std::endl;
     outStages.close();
-
+#endif
     return ret;
   }
   /** 
