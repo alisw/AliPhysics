@@ -3,9 +3,6 @@
 
 // $Id$
 
-class TClonesArray;
-class AliEMCALGeometry;
-
 #include "AliJetModelBaseTask.h"
 
 class AliJetEmbeddingTask : public AliJetModelBaseTask {

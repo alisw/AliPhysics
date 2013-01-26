@@ -10,17 +10,20 @@
 #include <TH1.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
+#include <TList.h>
 
-#include "AliAODCaloCluster.h"
-#include "AliAnalysisManager.h"
-#include "AliEMCALDigit.h"
-#include "AliEMCALGeometry.h"
-#include "AliEMCALRecPoint.h"
-#include "AliESDCaloCluster.h"
-#include "AliLog.h"
-#include "AliPicoTrack.h"
-#include "AliVCluster.h"
 #include "AliVEvent.h"
+#include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
+#include "AliVCluster.h"
+#include "AliEMCALDigit.h"
+#include "AliEMCALRecPoint.h"
+#include "AliESDCaloCells.h"
+#include "AliAODCaloCells.h"
+#include "AliVCaloCells.h"
+#include "AliPicoTrack.h"
+#include "AliEMCALGeometry.h"
+#include "AliLog.h"
 
 ClassImp(AliJetModelBaseTask)
 
@@ -32,6 +35,8 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutTracksName(),
   fCaloName(),
   fOutCaloName(),
+  fCellsName(),
+  fOutCellsName(),
   fSuffix(),
   fEtaMin(-1),
   fEtaMax(1),
@@ -41,27 +46,36 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fPtMax(0),
   fCopyArray(kTRUE),
   fNClusters(0),
+  fNCells(0),
   fNTracks(0),
   fMarkMC(kTRUE),
   fPtSpectrum(0),
+  fQAhistos(kFALSE),
   fIsInit(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
   fTracks(0),
-  fOutTracks(0)
+  fOutTracks(0),
+  fCaloCells(0),
+  fOutCaloCells(0),
+  fAddedCells(0),
+  fEsdMode(kFALSE),
+  fOutput(0)
 {
   // Default constructor.
 }
 
 //________________________________________________________________________
-AliJetModelBaseTask::AliJetModelBaseTask(const char *name) : 
+AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) : 
   AliAnalysisTaskSE(name),
   fGeomName(""),
   fTracksName("PicoTracks"),
   fOutTracksName("PicoTracksEmbedded"),
   fCaloName("CaloClustersCorr"),
   fOutCaloName("CaloClustersCorrEmbedded"),
+  fCellsName(""),
+  fOutCellsName(""),
   fSuffix("Processed"),
   fEtaMin(-1),
   fEtaMax(1),
@@ -71,23 +85,48 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name) :
   fPtMax(60),
   fCopyArray(kTRUE),
   fNClusters(0),
+  fNCells(0),
   fNTracks(1),
   fMarkMC(kTRUE),
   fPtSpectrum(0),
+  fQAhistos(drawqa),
   fIsInit(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
   fTracks(0),
-  fOutTracks(0)
+  fOutTracks(0),
+  fCaloCells(0),
+  fOutCaloCells(0),
+  fAddedCells(0),
+  fEsdMode(kFALSE),
+  fOutput(0)
 {
   // Standard constructor.
+
+  if (fQAhistos) {
+    DefineOutput(1, TList::Class()); 
+  }
 }
 
 //________________________________________________________________________
 AliJetModelBaseTask::~AliJetModelBaseTask()
 {
   // Destructor
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::UserCreateOutputObjects()
+{
+  // Create user output.
+  if (!fQAhistos)
+    return;
+
+  OpenFile(1);
+  fOutput = new TList();
+  fOutput->SetOwner();
+
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
@@ -108,8 +147,255 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fOutClusters->Delete();
   }
 
+  if (fCaloCells) {
+    fAddedCells = 0;
+    if (!fCopyArray)
+      fCaloCells = static_cast<AliVCaloCells*>(fCaloCells->Clone(Form("%s_old",fCaloCells->GetName())));
+  }
+
   Run();
 }
+
+//________________________________________________________________________
+Bool_t AliJetModelBaseTask::ExecOnce()
+{
+  // Init task.
+
+  delete gRandom;
+  gRandom = new TRandom3(0);
+
+  fEsdMode = InputEvent()->InheritsFrom("AliESDEvent");
+
+  if (fPtMax < fPtMin) {
+    AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
+    fPtMax = fPtMin;
+  }
+
+  if (fEtaMax < fEtaMin) {
+    AliWarning (Form("EtaMax (%f) < EtaMin (%f), setting EtaMax = EtaMin = %f", fEtaMax, fEtaMin, fEtaMin));
+    fEtaMax = fEtaMin;
+  }
+
+  if (fPhiMax < fPhiMin) {
+    AliWarning (Form("PhiMax (%f) < PhiMin (%f), setting PhiMax = PhiMin = %f", fPhiMax, fPhiMin, fPhiMin));
+    fPhiMax = fPhiMin;
+  }
+
+  if (!fCaloCells && !fCellsName.IsNull()) {
+    fCaloCells = dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCellsName));
+    if (!fCaloCells) {
+      AliError(Form("%s: Couldn't retrieve calo cells with name %s!", GetName(), fCellsName.Data()));
+      return kFALSE;
+    }
+    
+    if (!fCaloCells->InheritsFrom("AliVCaloCells")) {
+      AliError(Form("%s: Collection %s does not contain a AliVCaloCells object!", GetName(), fCellsName.Data())); 
+      fCaloCells = 0;
+      return kFALSE;
+    }
+
+    if (!fOutCaloCells) {
+      fOutCellsName = fCellsName;
+      if (fCopyArray) {
+	fOutCellsName += fSuffix;
+
+	if (fEsdMode) 
+	  fOutCaloCells = new AliESDCaloCells(fOutCellsName,fOutCellsName);
+	else
+	  fOutCaloCells = new AliAODCaloCells(fOutCellsName,fOutCellsName);
+
+	if (InputEvent()->FindListObject(fOutCellsName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutCellsName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutCaloCells);
+	}
+      }
+      else {
+	fOutCaloCells = fCaloCells;
+      }
+    }
+  }
+
+  if (fNTracks > 0 && !fTracks && !fTracksName.IsNull()) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
+      return kFALSE;
+    }
+    
+    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
+      AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
+      fTracks = 0;
+      return kFALSE;
+    }
+
+    if (!fOutTracks) {
+      fOutTracksName = fTracksName;
+      if (fCopyArray) {
+	fOutTracksName += fSuffix;
+	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
+	fOutTracks->SetName(fOutTracksName);
+	if (InputEvent()->FindListObject(fOutTracksName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutTracksName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutTracks);
+	}
+      }
+      else {
+	fOutTracks = fTracks;
+      }
+    }
+  }
+
+  if (fNClusters > 0 && !fClusters && !fCaloName.IsNull()) {
+    fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
+ 
+    if (!fClusters) {
+      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
+      return kFALSE;
+    }
+
+    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
+      AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
+      fClusters = 0;
+      return kFALSE;
+    }
+
+    if (!fOutClusters) {
+      fOutCaloName = fCaloName;
+      if (fCopyArray) {
+	fOutCaloName += fSuffix;
+	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
+	fOutClusters->SetName(fOutCaloName);
+	if (InputEvent()->FindListObject(fOutCaloName)) {
+	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutCaloName.Data())); 
+	  return kFALSE;
+	}
+	else {
+	  InputEvent()->AddObject(fOutClusters);
+	}
+      }
+      else {
+	fOutClusters = fClusters;
+      }
+    }
+  }
+
+if (!fGeom && (fClusters || fCaloCells)) {
+    if (fGeomName.Length() > 0) {
+      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+      if (!fGeom)
+	AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+    } else {
+      fGeom = AliEMCALGeometry::GetInstance();
+      if (!fGeom) 
+	AliError("Could not get default geometry!");
+    }
+  }
+  
+  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+  
+  if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
+  if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
+  if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
+  if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
+  
+  if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
+  if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
+  if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
+  if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliJetModelBaseTask::SetNumberOfOutCells(Int_t n)
+{
+  if (fOutCaloCells->GetNumberOfCells() < n) {
+    fOutCaloCells->DeleteContainer();
+    fOutCaloCells->CreateContainer(n);
+  }
+  else {
+    fOutCaloCells->SetNumberOfCells(n);
+  }
+
+  fAddedCells = 0;
+
+  return n;
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::CopyCells()
+{
+  for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
+    Short_t mclabel = -1;
+    Double_t efrac = 0.;
+    Double_t time = -1;
+    Short_t cellNum = -1;
+    Double_t amp = -1;
+
+    fCaloCells->GetCell(i, cellNum, amp, time, mclabel, efrac);
+    fOutCaloCells->SetCell(i, cellNum, amp, time, mclabel, efrac);
+  }
+
+  fAddedCells = fCaloCells->GetNumberOfCells();
+}
+
+//________________________________________________________________________
+Int_t AliJetModelBaseTask::AddCell(Double_t e, Double_t eta, Double_t phi)
+{
+  // Add a cell to the event.
+
+  Int_t absId = 0;
+  if (eta < -100 || phi < 0) {
+    GetRandomCell(eta, phi, absId);
+  }
+  else {
+    fGeom->EtaPhiFromIndex(absId, eta, phi);
+  }
+
+  if (absId == -1) {
+    AliWarning(Form("Unable to embed cell in eta = %f, phi = %f!"
+		    " Maybe the eta-phi range is not inside the EMCal acceptance (eta = [%f, %f], phi = [%f, %f])", 
+		    eta, phi, fEtaMin, fEtaMax, fPhiMin, fPhiMax));
+    return 0;
+  } 
+
+  if (e < 0) {
+    Double_t pt = GetRandomPt();
+    TLorentzVector nPart;
+    nPart.SetPtEtaPhiM(pt, eta, phi, 0);
+    e = nPart.E();
+  }
+
+  return AddCell(e, absId);
+}
+
+//________________________________________________________________________
+Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time)
+{
+  // Add a cell to the event.
+
+  Int_t label = fMarkMC ? 100 : -1;
+
+  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, label, 0);
+
+  if (r) {
+    fAddedCells++;
+    return fAddedCells;
+  }
+  else {
+    return 0;
+  }
+}
+
 
 //________________________________________________________________________
 AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi)
@@ -183,7 +469,7 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
 }
 
 //________________________________________________________________________
-AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi)
+AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Bool_t ise)
 {
   // Add a track to the event.
 
@@ -196,16 +482,18 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if (phi < 0) 
     phi = GetRandomPhi();
 
-  Int_t label = fMarkMC ? 100 : 0;
+  Int_t label = fMarkMC ? 100 : -1;
 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
-								  1, 
-								  label,    // MC flag!      
-								  0, 
-								  0, 
-								  kFALSE);
+								  1,
+								  label,    // MC flag!
+								  type, 
+								  etaemc, 
+								  phiemc, 
+								  ise);
+
   return track;
 }
 
@@ -214,11 +502,10 @@ void AliJetModelBaseTask::CopyClusters()
 {
   // Copy all the clusters in the new collection
 
-  Bool_t esdMode = (Bool_t)(fClusters->GetClass()->GetBaseClass("AliESDCaloCluster") != 0);
   const Int_t nClusters = fClusters->GetEntriesFast();
   Int_t nCopiedClusters = 0;
   
-  if (esdMode) {
+  if (fEsdMode) {
     for (Int_t i = 0; i < nClusters; ++i) {
       AliESDCaloCluster *esdcluster = static_cast<AliESDCaloCluster*>(fClusters->At(i));
       if (!esdcluster || !esdcluster->IsEMCAL())
@@ -250,126 +537,6 @@ void AliJetModelBaseTask::CopyTracks()
     new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*track);
     nCopiedTracks++;
   }
-}
-
-//________________________________________________________________________
-Bool_t AliJetModelBaseTask::ExecOnce()
-{
-  // Init task.
-
-  delete gRandom;
-  gRandom = new TRandom3(0);
-
-  if (fPtMax < fPtMin) {
-    AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
-    fPtMax = fPtMin;
-  }
-
-  if (fEtaMax < fEtaMin) {
-    AliWarning (Form("EtaMax (%f) < EtaMin (%f), setting EtaMax = EtaMin = %f", fEtaMax, fEtaMin, fEtaMin));
-    fEtaMax = fEtaMin;
-  }
-
-  if (fPhiMax < fPhiMin) {
-    AliWarning (Form("PhiMax (%f) < PhiMin (%f), setting PhiMax = PhiMin = %f", fPhiMax, fPhiMin, fPhiMin));
-    fPhiMax = fPhiMin;
-  }
-
-  if (fNTracks > 0 && !fTracks && !fTracksName.IsNull()) {
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
-      return kFALSE;
-    }
-    
-    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
-      AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
-      fTracks = 0;
-      return kFALSE;
-    }
-
-    if (!fOutTracks) {
-      fOutTracksName = fTracksName;
-      if (fCopyArray) {
-	fOutTracksName += fSuffix;
-	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
-	fOutTracks->SetName(fOutTracksName);
-	if (InputEvent()->FindListObject(fOutTracksName)) {
-	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutTracksName.Data())); 
-	  return kFALSE;
-	}
-	else {
-	  InputEvent()->AddObject(fOutTracks);
-	}
-      }
-      else {
-	fOutTracks = fTracks;
-      }
-    }
-  }
-
-  if (fNClusters > 0 && !fClusters && !fCaloName.IsNull()) {
-    fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
- 
-    if (!fClusters) {
-      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
-      return kFALSE;
-    }
-
-    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
-      AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
-      fClusters = 0;
-      return kFALSE;
-    }
-
-    if (!fOutClusters) {
-      fOutCaloName = fCaloName;
-      if (fCopyArray) {
-	fOutCaloName += fSuffix;
-	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
-	fOutClusters->SetName(fOutCaloName);
-	if (InputEvent()->FindListObject(fOutCaloName)) {
-	  AliFatal(Form("%s: Collection %s is already present in the event!", GetName(), fOutCaloName.Data())); 
-	  return kFALSE;
-	}
-	else {
-	  InputEvent()->AddObject(fOutClusters);
-	}
-      }
-      else {
-	fOutClusters = fClusters;
-      }
-    }
-
-    if (!fGeom) {
-      if (fGeomName.Length() > 0) {
-	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-	if (!fGeom)
-	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
-      } else {
-	fGeom = AliEMCALGeometry::GetInstance();
-	if (!fGeom) 
-	  AliError("Could not get default geometry!");
-      }
-    }
-    
-    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
-    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
-    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
-    
-    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
-    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
-    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
-    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
-  
-    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
-    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
-    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
-    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
-  }
-
-  return kTRUE;
 }
 
 //________________________________________________________________________

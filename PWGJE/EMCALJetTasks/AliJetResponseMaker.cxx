@@ -6,20 +6,17 @@
 
 #include "AliJetResponseMaker.h"
 
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TList.h>
+#include <TH3F.h>
 #include <TLorentzVector.h>
 
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
-#include "AliFJWrapper.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliLog.h"
 #include "AliMCEvent.h"
 
 ClassImp(AliJetResponseMaker)
@@ -47,24 +44,27 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMCJets(0),
   fHistNTrials(0),
   fHistEvents(0),
-  fHistMCJetPhiEta(0),
-  fHistMCJetsPt(0),
-  fHistMCJetPhiEtaFiducial(0),
-  fHistMCJetsPtFiducial(0),
+  fHistMCJetsPhiEta(0),
+  fHistMCJetsPtArea(0),
+  fHistMCJetsPhiEtaFiducial(0),
+  fHistMCJetsPtAreaFiducial(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
-  fHistJetPhiEta(0),
-  fHistJetsPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsCorrPtArea(0),
   fHistJetsNEFvsPt(0),
   fHistJetsZvsPt(0),
-  fHistClosestDistance(0),
-  fHistClosestDeltaPhi(0),
-  fHistClosestDeltaEta(0),
-  fHistClosestDeltaPt(0),
-  fHistNonMatchedMCJetPt(0),
-  fHistNonMatchedJetPt(0),
+  fHistMatchingLevelMCPt(0),
+  fHistClosestDeltaEtaPhiMCPt(0),
+  fHistClosestDeltaPtMCPt(0),
+  fHistClosestDeltaCorrPtMCPt(0),
+  fHistNonMatchedMCJetsPtArea(0),
+  fHistNonMatchedJetsPtArea(0),
+  fHistNonMatchedJetsCorrPtArea(0),
   fHistPartvsDetecPt(0),
-  fHistMissedMCJets(0)
+  fHistPartvsDetecCorrPt(0),
+  fHistMissedMCJetsPtArea(0)
 {
   // Default constructor.
 
@@ -98,24 +98,27 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMCJets(0),
   fHistNTrials(0),
   fHistEvents(0),
-  fHistMCJetPhiEta(0),
-  fHistMCJetsPt(0),
-  fHistMCJetPhiEtaFiducial(0),
-  fHistMCJetsPtFiducial(0),
+  fHistMCJetsPhiEta(0),
+  fHistMCJetsPtArea(0),
+  fHistMCJetsPhiEtaFiducial(0),
+  fHistMCJetsPtAreaFiducial(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
-  fHistJetPhiEta(0),
-  fHistJetsPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsCorrPtArea(0),
   fHistJetsNEFvsPt(0),
   fHistJetsZvsPt(0),
-  fHistClosestDistance(0),
-  fHistClosestDeltaPhi(0),
-  fHistClosestDeltaEta(0),
-  fHistClosestDeltaPt(0),
-  fHistNonMatchedMCJetPt(0),
-  fHistNonMatchedJetPt(0),
+  fHistMatchingLevelMCPt(0),
+  fHistClosestDeltaEtaPhiMCPt(0),
+  fHistClosestDeltaPtMCPt(0),
+  fHistClosestDeltaCorrPtMCPt(0),
+  fHistNonMatchedMCJetsPtArea(0),
+  fHistNonMatchedJetsPtArea(0),
+  fHistNonMatchedJetsCorrPtArea(0),
   fHistPartvsDetecPt(0),
-  fHistMissedMCJets(0)
+  fHistPartvsDetecCorrPt(0),
+  fHistMissedMCJetsPtArea(0)
 {
   // Standard constructor.
 
@@ -165,95 +168,121 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
   }
 
-  fHistJetPhiEta = new TH2F("fHistJetPhiEta", "fHistJetPhiEta", 20, -2, 2, 32, 0, 6.4);
-  fHistJetPhiEta->GetXaxis()->SetTitle("#eta");
-  fHistJetPhiEta->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistJetPhiEta);
+  fHistJetsPhiEta = new TH2F("fHistJetsPhiEta", "fHistJetsPhiEta", 20, -2, 2, 32, 0, 6.4);
+  fHistJetsPhiEta->GetXaxis()->SetTitle("#eta");
+  fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistJetsPhiEta);
   
-  fHistJetsPt = new TH1F("fHistJetsPt", "fHistJetsPt", fNbins, fMinBinPt, fMaxBinPt);
-  fHistJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistJetsPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsPt);
+  fHistJetsPtArea = new TH2F("fHistJetsPtArea", "fHistJetsPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistJetsPtArea->GetXaxis()->SetTitle("area");
+  fHistJetsPtArea->GetYaxis()->SetTitle("p_{T}^{rec} (GeV/c)");
+  fHistJetsPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistJetsPtArea);
+
+  fHistJetsCorrPtArea = new TH2F("fHistJetsCorrPtArea", "fHistJetsCorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, (Int_t)(1.5*fNbins), -fMaxBinPt/2, fMaxBinPt);
+  fHistJetsCorrPtArea->GetXaxis()->SetTitle("area");
+  fHistJetsCorrPtArea->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+  fHistJetsCorrPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistJetsCorrPtArea);
   
   fHistJetsZvsPt = new TH2F("fHistJetsZvsPt", "fHistJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsZvsPt->GetXaxis()->SetTitle("Z");
-  fHistJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistJetsZvsPt->GetYaxis()->SetTitle("p_{T}^{rec} (GeV/c)");
   fOutput->Add(fHistJetsZvsPt);
   
   fHistJetsNEFvsPt = new TH2F("fHistJetsNEFvsPt", "fHistJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
-  fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T}^{rec} (GeV/c)");
   fOutput->Add(fHistJetsNEFvsPt);
 
-  fHistMCJetPhiEta = new TH2F("fHistMCJetPhiEta", "fHistMCJetPhiEta", 20, -2, 2, 32, 0, 6.4);
-  fHistMCJetPhiEta->GetXaxis()->SetTitle("#eta");
-  fHistMCJetPhiEta->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistMCJetPhiEta);
+  fHistMCJetsPhiEta = new TH2F("fHistMCJetsPhiEta", "fHistMCJetsPhiEta", 20, -2, 2, 32, 0, 6.4);
+  fHistMCJetsPhiEta->GetXaxis()->SetTitle("#eta");
+  fHistMCJetsPhiEta->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistMCJetsPhiEta);
   
-  fHistMCJetsPt = new TH1F("fHistMCJetsPt", "fHistMCJetsPt", fNbins, fMinBinPt, fMaxBinPt);
-  fHistMCJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistMCJetsPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMCJetsPt);
+  fHistMCJetsPtArea = new TH2F("fHistMCJetsPtArea", "fHistMCJetsPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistMCJetsPtArea->GetXaxis()->SetTitle("area");
+  fHistMCJetsPtArea->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHistMCJetsPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPtArea);
 
-  fHistMCJetPhiEtaFiducial = new TH2F("fHistMCJetPhiEtaFiducial", "fHistMCJetPhiEtaFiducial", 20, -2, 2, 32, 0, 6.4);
-  fHistMCJetPhiEtaFiducial->GetXaxis()->SetTitle("#eta");
-  fHistMCJetPhiEtaFiducial->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistMCJetPhiEtaFiducial);
+  fHistMCJetsPhiEtaFiducial = new TH2F("fHistMCJetsPhiEtaFiducial", "fHistMCJetsPhiEtaFiducial", 20, -2, 2, 32, 0, 6.4);
+  fHistMCJetsPhiEtaFiducial->GetXaxis()->SetTitle("#eta");
+  fHistMCJetsPhiEtaFiducial->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistMCJetsPhiEtaFiducial);
   
-  fHistMCJetsPtFiducial = new TH1F("fHistMCJetsPtFiducial", "fHistMCJetsPtFiducial", fNbins, fMinBinPt, fMaxBinPt);
-  fHistMCJetsPtFiducial->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistMCJetsPtFiducial->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMCJetsPtFiducial);
+  fHistMCJetsPtAreaFiducial = new TH2F("fHistMCJetsPtAreaFiducial", "fHistMCJetsPtAreaFiducial", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistMCJetsPtAreaFiducial->GetXaxis()->SetTitle("area");
+  fHistMCJetsPtAreaFiducial->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHistMCJetsPtAreaFiducial->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPtAreaFiducial);
   
   fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
-  fHistMCJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsZvsPt->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fOutput->Add(fHistMCJetsZvsPt);
 
   fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
-  fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fOutput->Add(fHistMCJetsNEFvsPt);
 
-  fHistClosestDistance = new TH1F("fHistClosestDistance", "fHistClosestDistance", 50, 0, fMaxDistance * 1.2);
-  fHistClosestDistance->GetXaxis()->SetTitle("d");
-  fHistClosestDistance->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClosestDistance);
+  fHistMatchingLevelMCPt = new TH2F("fHistMatchingLevelMCPt", "fHistMatchingLevelMCPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
+  fHistMatchingLevelMCPt->GetXaxis()->SetTitle("Matching level");
+  fHistMatchingLevelMCPt->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fOutput->Add(fHistMatchingLevelMCPt);
 
-  fHistClosestDeltaPhi = new TH1F("fHistClosestDeltaPhi", "fHistClosestDeltaPhi", 64, -1.6, 4.8);
-  fHistClosestDeltaPhi->GetXaxis()->SetTitle("#Delta#phi");
-  fHistClosestDeltaPhi->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClosestDeltaPhi);
+  fHistClosestDeltaEtaPhiMCPt = new TH3F("fHistClosestDeltaEtaPhiMCPt", "fHistClosestDeltaEtaPhiMCPt", TMath::CeilNint(fJetMaxEta - fJetMinEta) * 20, fJetMinEta * 2, fJetMaxEta * 2, 64, -1.6, 4.8, fNbins, fMinBinPt, fMaxBinPt);
+  fHistClosestDeltaEtaPhiMCPt->GetXaxis()->SetTitle("#Delta#eta");
+  fHistClosestDeltaEtaPhiMCPt->GetYaxis()->SetTitle("#Delta#phi");
+  fHistClosestDeltaEtaPhiMCPt->GetZaxis()->SetTitle("p_{T}^{gen}");
+  fOutput->Add(fHistClosestDeltaEtaPhiMCPt);
 
-  fHistClosestDeltaEta = new TH1F("fHistClosestDeltaEta", "fHistClosestDeltaEta", TMath::CeilNint(fJetMaxEta - fJetMinEta) * 20, fJetMinEta * 2, fJetMaxEta * 2);
-  fHistClosestDeltaEta->GetXaxis()->SetTitle("#Delta#eta");
-  fHistClosestDeltaEta->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClosestDeltaEta);
+  fHistClosestDeltaPtMCPt = new TH2F("fHistClosestDeltaPtMCPt", "fHistClosestDeltaPtMCPt", fNbins, fMinBinPt, fMaxBinPt, (Int_t)(fNbins*1.5), -fMaxBinPt / 2, fMaxBinPt);
+  fHistClosestDeltaPtMCPt->GetXaxis()->SetTitle("p_{T}^{gen}");  
+  fHistClosestDeltaPtMCPt->GetYaxis()->SetTitle("#Deltap_{T}^{rec} (GeV/c)");
+  fHistClosestDeltaPtMCPt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDeltaPtMCPt);
 
-  fHistClosestDeltaPt = new TH1F("fHistClosestDeltaPt", "fHistClosestDeltaPt", fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
-  fHistClosestDeltaPt->GetXaxis()->SetTitle("#Delta p_{T}");
-  fHistClosestDeltaPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClosestDeltaPt);
+  fHistClosestDeltaCorrPtMCPt = new TH2F("fHistClosestDeltaCorrPtMCPt", "fHistClosestDeltaCorrPtMCPt", fNbins, fMinBinPt, fMaxBinPt, (Int_t)(fNbins*1.5), -fMaxBinPt / 2, fMaxBinPt);
+  fHistClosestDeltaCorrPtMCPt->GetXaxis()->SetTitle("p_{T}^{gen}");  
+  fHistClosestDeltaCorrPtMCPt->GetYaxis()->SetTitle("#Deltap_{T}^{corr} (GeV/c)");
+  fHistClosestDeltaCorrPtMCPt->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDeltaCorrPtMCPt);
 
-  fHistNonMatchedMCJetPt = new TH1F("fHistNonMatchedMCJetPt", "fHistNonMatchedMCJetPt", fNbins, fMinBinPt, fMaxBinPt);
-  fHistNonMatchedMCJetPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistNonMatchedMCJetPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistNonMatchedMCJetPt);
+  fHistNonMatchedMCJetsPtArea = new TH2F("fHistNonMatchedMCJetsPtArea", "fHistNonMatchedMCJetsPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistNonMatchedMCJetsPtArea->GetXaxis()->SetTitle("area");
+  fHistNonMatchedMCJetsPtArea->GetYaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHistNonMatchedMCJetsPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistNonMatchedMCJetsPtArea);
 
-  fHistNonMatchedJetPt = new TH1F("fHistNonMatchedJetPt", "fHistNonMatchedJetPt", fNbins, fMinBinPt, fMaxBinPt);
-  fHistNonMatchedJetPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistNonMatchedJetPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistNonMatchedJetPt);
+  fHistNonMatchedJetsPtArea = new TH2F("fHistNonMatchedJetsPtArea", "fHistNonMatchedJetsPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistNonMatchedJetsPtArea->GetXaxis()->SetTitle("area");
+  fHistNonMatchedJetsPtArea->GetYaxis()->SetTitle("p_{T}^{rec} (GeV/c)");
+  fHistNonMatchedJetsPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistNonMatchedJetsPtArea);
+
+  fHistNonMatchedJetsCorrPtArea = new TH2F("fHistNonMatchedJetsCorrPtArea", "fHistNonMatchedJetsCorrPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, (Int_t)(1.5*fNbins), -fMaxBinPt/2, fMaxBinPt);
+  fHistNonMatchedJetsCorrPtArea->GetXaxis()->SetTitle("area");
+  fHistNonMatchedJetsCorrPtArea->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+  fHistNonMatchedJetsCorrPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistNonMatchedJetsCorrPtArea);
 
   fHistPartvsDetecPt = new TH2F("fHistPartvsDetecPt", "fHistPartvsDetecPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
   fHistPartvsDetecPt->GetXaxis()->SetTitle("p_{T}^{rec}");
   fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{gen}");
   fOutput->Add(fHistPartvsDetecPt);
 
-  fHistMissedMCJets = new TH1F("fHistMissedMCJets", "fHistMissedMCJets", fNbins, fMinBinPt, fMaxBinPt);
-  fHistMissedMCJets->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistMissedMCJets->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMissedMCJets);
+  fHistPartvsDetecCorrPt = new TH2F("fHistPartvsDetecCorrPt", "fHistPartvsDetecCorrPt", (Int_t)(1.5*fNbins), -fMaxBinPt/2, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+  fHistPartvsDetecCorrPt->GetXaxis()->SetTitle("p_{T}^{corr}");
+  fHistPartvsDetecCorrPt->GetYaxis()->SetTitle("p_{T}^{gen}");
+  fOutput->Add(fHistPartvsDetecCorrPt);
+
+  fHistMissedMCJetsPtArea = new TH2F("fHistMissedMCJetsPtArea", "fHistMissedMCJetsPtArea", 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3, fNbins, fMinBinPt, fMaxBinPt);
+  fHistMissedMCJetsPtArea->GetXaxis()->SetTitle("area");  
+  fHistMissedMCJetsPtArea->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistMissedMCJetsPtArea->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistMissedMCJetsPtArea);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
@@ -506,30 +535,30 @@ Bool_t AliJetResponseMaker::FillHistograms()
       if (!AcceptBiasJet(jet->MatchedJet()) || 
 	  jet->MatchedJet()->MaxTrackPt() > fMaxTrackPt || jet->MatchedJet()->MaxClusterPt() > fMaxClusterPt ||
 	  jet->MatchedJet()->Pt() > fMaxBinPt) {
-	fHistMissedMCJets->Fill(jet->Pt(), fEventWeight);
+	fHistMissedMCJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
       }
       else {
-	fHistClosestDistance->Fill(jet->ClosestJetDistance(), fEventWeight);
+	fHistMatchingLevelMCPt->Fill(jet->ClosestJetDistance(), jet->Pt(), fEventWeight);
 
 	Double_t deta = jet->MatchedJet()->Eta() - jet->Eta();
-	fHistClosestDeltaEta->Fill(deta, fEventWeight);
-
 	Double_t dphi = jet->MatchedJet()->Phi() - jet->Phi();
-	fHistClosestDeltaPhi->Fill(dphi, fEventWeight);
+	fHistClosestDeltaEtaPhiMCPt->Fill(deta, dphi, jet->Pt(), fEventWeight);
 
 	Double_t dpt = jet->MatchedJet()->Pt() - jet->Pt();
-	fHistClosestDeltaPt->Fill(dpt, fEventWeight);
+	fHistClosestDeltaPtMCPt->Fill(jet->Pt(), dpt, fEventWeight);
+	fHistClosestDeltaCorrPtMCPt->Fill(jet->Pt(), dpt - fRhoVal * jet->MatchedJet()->Area(), fEventWeight);
 
 	fHistPartvsDetecPt->Fill(jet->MatchedJet()->Pt(), jet->Pt(), fEventWeight);
+	fHistPartvsDetecCorrPt->Fill(jet->MatchedJet()->Pt() - fRhoVal * jet->MatchedJet()->Area(), jet->Pt(), fEventWeight);
       }
     }
     else {
-      fHistNonMatchedMCJetPt->Fill(jet->Pt(), fEventWeight);
-      fHistMissedMCJets->Fill(jet->Pt(), fEventWeight);
+      fHistNonMatchedMCJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
+      fHistMissedMCJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
     }
 
-    fHistMCJetsPt->Fill(jet->Pt(), fEventWeight);
-    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
+    fHistMCJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
+    fHistMCJetsPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
     fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
       
@@ -544,8 +573,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi)
       continue;
     
-    fHistMCJetsPtFiducial->Fill(jet->Pt(), fEventWeight);
-    fHistMCJetPhiEtaFiducial->Fill(jet->Eta(), jet->Phi(), fEventWeight);
+    fHistMCJetsPtAreaFiducial->Fill(jet->Area(), jet->Pt(), fEventWeight);
+    fHistMCJetsPhiEtaFiducial->Fill(jet->Eta(), jet->Phi(), fEventWeight);
   }
 
   const Int_t nJets = fJets->GetEntriesFast();
@@ -569,12 +598,14 @@ Bool_t AliJetResponseMaker::FillHistograms()
       continue;
 
     if (!jet->MatchedJet()) {
-      fHistNonMatchedJetPt->Fill(jet->Pt(), fEventWeight);
+      fHistNonMatchedJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
+      fHistNonMatchedJetsCorrPtArea->Fill(jet->Area(), jet->Pt() - fRhoVal * jet->Area(), fEventWeight);
     }
 
-    fHistJetsPt->Fill(jet->Pt(), fEventWeight);
+    fHistJetsPtArea->Fill(jet->Area(), jet->Pt(), fEventWeight);
+    fHistJetsCorrPtArea->Fill(jet->Area(), jet->Pt() - fRhoVal * jet->Area(), fEventWeight);
 
-    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
+    fHistJetsPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
     fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
 

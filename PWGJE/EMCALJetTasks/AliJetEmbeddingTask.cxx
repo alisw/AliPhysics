@@ -6,19 +6,6 @@
 
 #include "AliJetEmbeddingTask.h"
 
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TRandom3.h>
-
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliVCluster.h"
-#include "AliEMCALDigit.h"
-#include "AliEMCALRecPoint.h"
-#include "AliPicoTrack.h"
-#include "AliEMCALGeometry.h"
-#include "AliLog.h"
-
 ClassImp(AliJetEmbeddingTask)
 
 //________________________________________________________________________

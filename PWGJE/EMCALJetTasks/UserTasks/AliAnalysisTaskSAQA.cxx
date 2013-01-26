@@ -25,6 +25,7 @@
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGeoParams.h"
+#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskSAQA.h"
 
@@ -498,12 +499,16 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     }
     else {
       fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
+      Int_t type = 0;
 
-      Int_t label = track->GetLabel();
-      if (label >= 0 && label < 3)
-	fHistTrPhiEtaPt[fCentBin][label]->Fill(track->Eta(), track->Phi(), track->Pt());
+      AliPicoTrack* ptrack = dynamic_cast<AliPicoTrack*>(track);
+      if (ptrack)
+	type = ptrack->GetTrackType();
+
+      if (type >= 0 && type < 3)
+	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       else
-	AliWarning(Form("%s: track label %d not recognized!", GetName(), label));
+	AliWarning(Form("%s: track type %d not recognized!", GetName(), type));
     }
 
     if (!vtrack)
