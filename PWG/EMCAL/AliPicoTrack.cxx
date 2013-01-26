@@ -12,16 +12,16 @@
 //_________________________________________________________________________________________________
 AliPicoTrack::AliPicoTrack() :
   AliVTrack(),
-  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fEtaEmc(0), fPhiEmc(0), fEmcal(0), fClusId(-1)
+  fPt(0), fEta(0), fPhi(0), fQ(0), fLabel(-1), fTrackType(-1), fEtaEmc(0), fPhiEmc(0), fEmcal(0), fClusId(-1)
 {
   // Default constructor.
 }
 
 //_________________________________________________________________________________________________
-AliPicoTrack::AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, Byte_t lab, 
+AliPicoTrack::AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, Int_t lab, Byte_t type,
                            Double_t etaemc, Double_t phiemc, Bool_t ise) :
   AliVTrack(),
-  fPt(pt), fEta(eta), fPhi(phi), fQ(q), fLabel(lab), 
+  fPt(pt), fEta(eta), fPhi(phi), fQ(q), fLabel(lab), fTrackType(type), 
   fEtaEmc(etaemc), fPhiEmc(phiemc), fEmcal(ise), fClusId(-1)
 {
   // Constructor.
@@ -31,7 +31,7 @@ AliPicoTrack::AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, By
 AliPicoTrack::AliPicoTrack(const AliPicoTrack &pc) :
   AliVTrack(pc),
   fPt(pc.fPt), fEta(pc.fEta), fPhi(pc.fPhi), 
-  fQ(pc.fQ), fLabel(pc.fLabel), 
+  fQ(pc.fQ), fLabel(pc.fLabel), fTrackType(pc.fTrackType),  
   fEtaEmc(pc.fEtaEmc), fPhiEmc(pc.fPhiEmc), fEmcal(pc.fEmcal),
   fClusId(pc.fClusId)
 {
@@ -50,6 +50,7 @@ AliPicoTrack &AliPicoTrack::operator=(const AliPicoTrack &pc)
     fPhi    = pc.fPhi;
     fQ      = pc.fQ;
     fLabel  = pc.fLabel;
+    fTrackType = pc.fTrackType;
     fEtaEmc = pc.fEtaEmc;
     fPhiEmc = pc.fPhiEmc;
     fEmcal  = pc.fEmcal;
