@@ -372,7 +372,7 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
             phiemc = newtrack.GetEmcPhi();
           }
           new ((*tracksout)[nacc]) AliPicoTrack(newtrack.Pt(), newtrack.Eta(), newtrack.Phi(), 
-                                                newtrack.Charge(), newtrack.GetLabel(), 
+                                                newtrack.Charge(), newtrack.GetLabel(), 0, 
                                                 etaemc, phiemc, newtrack.IsEMCAL());
           ++nacc;
         } else {
