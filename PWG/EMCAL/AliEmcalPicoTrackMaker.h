@@ -27,7 +27,7 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void SetTrackEtaLimits(Double_t min, Double_t max)     { fMaxTrackEta      = max ; fMinTrackEta      = min ; }
   void SetTrackPhiLimits(Double_t min, Double_t max)     { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
   void SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency = eff  ; }
-  void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
+  void SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS     = f;    }
 
  protected:
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
