@@ -39,6 +39,7 @@ set ( SRCS
  EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
+ EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx

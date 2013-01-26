@@ -4,6 +4,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
+  const char *nrho               = "Rho",
   const char *nmctracks          = "MCParticles",
   const char *nmcjets            = "MCJets",
   Double_t    jetradius          = 0.2,
@@ -61,6 +62,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
+  jetTask->SetRhoName(nrho);
   jetTask->SetMCJetsName(nmcjets);
   jetTask->SetMCTracksName(nmctracks);
   jetTask->SetJetRadius(jetradius);
