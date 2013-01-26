@@ -163,7 +163,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
         new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
         AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
-        newTrack->SetLabel(0);
+        newTrack->SetTRDNchamberdEdx(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
 	UInt_t status = etrack->GetStatus();
@@ -177,9 +177,9 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
                         constrainParam->GetParameter(),
                         constrainParam->GetCovariance());
           if ((status&AliESDtrack::kITSrefit)==0)
-            newTrack->SetLabel(2);
+            newTrack->SetTRDNchamberdEdx(2);
           else
-            newTrack->SetLabel(1);
+            newTrack->SetTRDNchamberdEdx(1);
         }
       }
     }
