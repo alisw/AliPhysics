@@ -2,13 +2,14 @@ printCalibObjectsInfo(const char* filename="CalibObjects.root")
 {
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   TFile f(filename,"read");
-  
-  TObjArray* tpcCalib = f.Get("TPCCalib");
-  tpcCalib->Print();
-  AliTPCcalibCalib* calibCalib = tpcCalib->FindObject("calibTPC");
-  AliTPCcalibTimeGain* calibTimeGain = tpcCalib->FindObject("calibTimeGain");
-  AliTPCcalibGainMult* calibGainMult = tpcCalib->FindObject("calibGainMult");
-  AliTPCcalibTime* calibTime = tpcCalib->FindObject("calibTime");
+ 
+  TDirectory* tpcCalib = dynamic_cast<TDirectory*>(f.Get("TPCCalib"));
+  tpcCalib->ls();
+
+  AliTPCcalibCalib* calibCalib = tpcCalib->Get("calibTPC");
+  AliTPCcalibTimeGain* calibTimeGain = tpcCalib->Get("calibTimeGain");
+  AliTPCcalibGainMult* calibGainMult = tpcCalib->Get("calibGainMult");
+  AliTPCcalibTime* calibTime = tpcCalib->Get("calibTime");
   
   
   if (!calibCalib || !calibTimeGain || !calibGainMult || !calibTime)
