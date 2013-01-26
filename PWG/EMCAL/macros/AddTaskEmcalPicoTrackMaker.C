@@ -3,7 +3,7 @@
 AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   const char *name         = "PicoTracks",
   const char *inname       = "tracks",
-  const char *runPeriod    = "",
+  const char *runperiod    = "",
   Bool_t      includeNoITS = kTRUE,
   AliESDtrackCuts *cuts    = 0
 )
@@ -33,15 +33,17 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   eTask->SetTracksOutName(name);
   eTask->SetTracksInName(inname);
   eTask->SetIncludeNoITS(includeNoITS);
-  if (!strcmp(runPeriod, "LHC11h")) {
+  TString runPeriod(runperiod);
+  runPeriod.ToLower();
+  if (runPeriod == "lhc11h") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
   }
-  else if (!strcmp(runPeriod, "LHC11a") || !strcmp(runPeriod, "LHC12a15a") || !strcmp(runPeriod, "LHC12a15e")) {
+  else if (runPeriod == "lhc11a" || runPeriod == "lhc12a15a" || runPeriod == "lhc12a15e") {
     eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC11a, LHC12a15a and LHC12a15e
   }
   else {
-    if (strcmp(runPeriod, ""))
-      ::Warning(Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod));
+    if (runPeriod.IsNull())
+      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.");
   }
   eTask->SetESDtrackCuts(cuts);
 
