@@ -373,6 +373,8 @@ public:
    * @return New style 
    */
   static Int_t FlipHollowStyle(Int_t style);
+  /*Setter of empirical correction*/
+   void SetGlobalEmpiricalcorrection(TH2D* globalempiricalcorrection){fglobalempiricalcorrection=globalempiricalcorrection;}
 protected:
   /** 
    * Copy contructor
@@ -433,6 +435,8 @@ protected:
   virtual CentralityBin* MakeCentralityBin(const char* name, Short_t low, 
 					   Short_t high) const;
   
+  // function which applies empirical correction to the AOD object 
+  Bool_t ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data);
   //==================================================================
   /**
    * Class that holds the sum of the data - possibly split into 0 or
@@ -887,8 +891,8 @@ protected:
   TObject*        fSchemeString;    // Normalization scheme string
   TObject*        fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
-  
-  ClassDef(AliBasedNdetaTask,10); // Determine charged particle density
+  TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex 	  
+  ClassDef(AliBasedNdetaTask,11); // Determine charged particle density
 };
 
 #endif
