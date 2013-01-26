@@ -446,11 +446,11 @@ struct GridHelper : public PluginHelper
     Long64_t ret = mgr->StartAnalysis("grid", nEvents);
 
     std::ofstream outJobs(Form("%s.jobid", mgr->GetName()));
-    outJobs << fHandler->GetGridJobIDs() << std::endl;
+    //outJobs << fHandler->GetGridJobIDs() << std::endl;
     outJobs.close();
 
     std::ofstream outStages(Form("%s.stage", mgr->GetName()));
-    outStages << fHandler->GetGridStages() << std::endl;
+   // outStages << fHandler->GetGridStages() << std::endl;
     outStages.close();
 
     return ret;
