@@ -175,6 +175,7 @@ Bool_t GridTerminate(const TString& name,
   Info("GridTerminate","Starting terminate job");
   if (mgr->StartAnalysis("grid") < 0) return false;
 
+#if 0
   std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
   outJobs << handler->GetGridJobIDs() << std::endl;
   outJobs.close();
@@ -182,7 +183,7 @@ Bool_t GridTerminate(const TString& name,
   std::ofstream outStages(Form("%s_merge.stage", mgr->GetName()));
   outStages << handler->GetGridStages() << std::endl;
   outStages.close();
-
+#endif
 
   return true;
 }
