@@ -136,38 +136,36 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       continue;
 
     Bool_t isEmc = kFALSE;
-    Int_t label = -1;
+    Int_t type = -1;
     if (esdMode) {
-      if (fESDtrackCuts) {
-        AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
-        if (!fESDtrackCuts->AcceptTrack(esdtrack))
-          continue;
-      }
-      label = track->GetLabel();
-      if (!fIncludeNoITS && (label==2))
+      AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
+      if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(esdtrack))
+	continue;
+      type = esdtrack->GetTRDNchamberdEdx();
+      if (!fIncludeNoITS && (type==2))
 	continue;
       isEmc = track->IsEMCAL();
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (fAODfilterBits[0] < 0) {
 	if (aodtrack->IsHybridGlobalConstrainedGlobal())
-	  label = 3;
+	  type = 3;
 	else /*not a good track*/
 	  continue;
       }
       else {
 	if (aodtrack->TestFilterBit(fAODfilterBits[0])) {
-	  label = 0;
+	  type = 0;
 	}
 	else if (aodtrack->TestFilterBit(fAODfilterBits[1])) {
 	  if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
 	    if (fIncludeNoITS)
-	      label = 2;
+	      type = 2;
 	    else
 	      continue;
 	  }
 	  else {
-	    label = 1;
+	    type = 1;
 	  }
 	}
 	else {/*not a good track*/
@@ -188,13 +186,14 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     }
 
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
-                                                                     track->Eta(), 
-                                                                     track->Phi(), 
-                                                                     track->Charge(), 
-                                                                     label, 
-                                                                     track->GetTrackEtaOnEMCal(), 
-                                                                     track->GetTrackPhiOnEMCal(), 
-                                                                     isEmc);
+									 track->Eta(), 
+									 track->Phi(), 
+									 track->Charge(), 
+									 -1,
+									 type,
+									 track->GetTrackEtaOnEMCal(), 
+									 track->GetTrackPhiOnEMCal(), 
+									 isEmc);
     ++nacc;
   }
 }
