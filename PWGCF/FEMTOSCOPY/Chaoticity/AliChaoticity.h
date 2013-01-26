@@ -168,6 +168,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
     TH2D *fExplicit2; //!
     TH2D *fExplicit2QW; //!
     TH3I *fExplicit2ThreeD; //!
+    TProfile2D *fAvgP; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
     //
@@ -291,9 +292,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   TH2D *fFSI2OS[2];
   TH3D *fFSIOmega0SS[6];
   TH3D *fFSIOmega0OS[6];
-  //
   TH2D *fMomResC2;
-  
   //
   Float_t *******fNormWeight;//! osl kt binning
   Float_t *******fNormWeightErr;//! osl kt binning

@@ -961,6 +961,11 @@ void AliChaoticity::UserCreateOutputObjects()
 		nameEx2QW->Append("_QW");
 		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0,1, 400,0,2);
 		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW);
+		TString *nameAvgP=new TString(nameEx2->Data());
+		nameAvgP->Append("_AvgP");
+		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fAvgP = new TProfile2D(nameAvgP->Data(),"",10,0,1, 400,0,2, 0.,1.0,"");
+		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fAvgP);
+		
 		// Momentum resolution histos
 		if(fMCcase && sc==0){
 		  TString *nameIdeal = new TString(nameEx2->Data());
@@ -1642,6 +1647,7 @@ void AliChaoticity::Exec(Option_t *)
 
   if(fMbin==-1) {cout<<"Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
   
+  fFSIbin=0;
   if(fMbin==0) fFSIbin = 0;//0-5%
   else if(fMbin==1) fFSIbin = 1;//5-10%
   else if(fMbin<=3) fFSIbin = 2;//10-20%
@@ -1879,7 +1885,8 @@ void AliChaoticity::Exec(Option_t *)
 	// 2-particle term
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2->Fill(transK12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
-	
+	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt)->fTracks[i].fMom);
+	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt+en2)->fTracks[j].fMom);
 	
 	// osl frame
 	if(fillIndex2==0){
@@ -2560,9 +2567,6 @@ void AliChaoticity::Exec(Option_t *)
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 	    Float_t firstQ=0, secondQ=0, thirdQ=0;
 	    //
-
-	   
-	   	    
 	    
 	    //	    
 	    if(config==1) {// 123
@@ -2597,6 +2601,7 @@ void AliChaoticity::Exec(Option_t *)
 		      K3 = FSICorrelationOmega0(kFALSE, thirdQMC, secondQMC, firstQMC);// K3
 		    }
 		  }
+		 
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fIdeal->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fSmeared->Fill(firstQ, secondQ, thirdQ, WInput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fQW12->Fill(firstQMC, secondQMC, thirdQMC, WInput*firstQMC);
@@ -2701,16 +2706,15 @@ void AliChaoticity::Exec(Option_t *)
 	      }
 	      
 	    }else {// config 3: All particles from different events
-	      //Simulate Filling of other event-mixed lowQ pairs
 	      
-	      Float_t enhancement=1.0;
-	      Int_t nUnderCut=0;
-	      if(qinv13<fQcut[qCutBin13]) nUnderCut++;
-	      if(qinv23<fQcut[qCutBin23]) nUnderCut++;
-	      	      
-	      if(nUnderCut==0) enhancement = (1+1+1)/1.;// 1 LowQ pair
-	      if(nUnderCut==1) enhancement = (1+2)/2.;// 2 LowQ pair
-	      if(nUnderCut==2) enhancement = 1.;// 3 LowQ pair
+	      // "enhancement" differs from 1.0 only when Qinv goes over fQcut
+	      //Float_t enhancement=1.0;
+	      //Int_t nUnderCut=0;
+	      //if(qinv13<fQcut[qCutBin13]) nUnderCut++;
+	      //if(qinv23<fQcut[qCutBin23]) nUnderCut++;
+	      //if(nUnderCut==0) enhancement = (1+1+1)/1.;// 1 LowQ pair
+	      //if(nUnderCut==1) enhancement = (1+2)/2.;// 2 LowQ pair
+	      //if(nUnderCut==2) enhancement = 1.;// 3 LowQ pair
 	      
 	      SetFillBins3(fillIndex3, key1, key2, key3, ch1, ch2, ch3, 3, bin1, bin2, bin3, fDummyB, fDummyB, fDummyB);
 	      
@@ -2719,7 +2723,7 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
-		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ, enhancement);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ);
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd1Terms->Fill(Qsum1v1, Qsum2, Qsum3v1);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd2Terms->Fill(Qsum1v2, Qsum2, Qsum3v2);
@@ -2767,70 +2771,81 @@ void AliChaoticity::Exec(Option_t *)
 	      //Int_t denIndex = (kRVALUES-1)*kNDampValues + myDampIt;
 	      //Int_t denIndex = myDampIt;
 	      Int_t myDampIt = 5;
-	      Float_t myDamp = 0.4;
+	      Float_t myDamp = 0.52;
 	      Int_t denIndex = 0;
 	      Int_t momResIndex = rIndexForTPN*kNDampValues + myDampIt;// Therminator slot uses R=7 for momentum resolution
 
-		  Float_t coulCorr12 = FSICorrelationTherm2(+1,+1, qinv12);
-		  Float_t coulCorr13 = FSICorrelationTherm2(+1,+1, qinv13);
-		  Float_t coulCorr23 = FSICorrelationTherm2(+1,+1, qinv23);
-		  
-		  Float_t MomResCorr12=1.0, MomResCorr13=1.0, MomResCorr23=1.0;
-		  if(!fMCcase) {
-		    Int_t momBin12 = fMomResC2->GetYaxis()->FindBin(qinv12);
-		    Int_t momBin13 = fMomResC2->GetYaxis()->FindBin(qinv13);
-		    Int_t momBin23 = fMomResC2->GetYaxis()->FindBin(qinv23);		  
-		    if(momBin12 >= kQbins) momBin12 = kQbins-1;
-		    if(momBin13 >= kQbins) momBin13 = kQbins-1;
-		    if(momBin23 >= kQbins) momBin23 = kQbins-1;
-		    MomResCorr12 = fMomResC2->GetBinContent(momResIndex+1, momBin12);
-		    MomResCorr13 = fMomResC2->GetBinContent(momResIndex+1, momBin13);
-		    MomResCorr23 = fMomResC2->GetBinContent(momResIndex+1, momBin23);
-		  }
-		  weight12CC = ((weight12+1)*MomResCorr12 - myDamp*coulCorr12 - (1-myDamp));
-		  weight12CC /= coulCorr12*myDamp;
-		  weight13CC = ((weight13+1)*MomResCorr13 - myDamp*coulCorr13 - (1-myDamp));
-		  weight13CC /= coulCorr13*myDamp;
-		  weight23CC = ((weight23+1)*MomResCorr23 - myDamp*coulCorr23 - (1-myDamp));
-		  weight23CC /= coulCorr23*myDamp;
-		  
-		  if(weight12CC < 0 || weight13CC < 0 || weight23CC < 0) {// testing purposes only
-		    if(denIndex==71 && fMbin==0 && ch1==-1) {
-		      weightTotal = sqrt(fabs(weight12CC*weight13CC*weight23CC));
-		      ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, enhancement*weightTotal);
-		    }
-		    continue;// C2^QS can never be less than unity
-		  }
-		  
-		  weightTotal = sqrt(weight12CC*weight13CC*weight23CC);
-		  
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].fTwoPartNorm->Fill(qinv12, qinv13, qinv23, enhancement*weightTotal);
-		  
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum1v1, Qsum2, Qsum3v1, enhancement*weightTotal);
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum1v2, Qsum2, Qsum3v2, enhancement*weightTotal);
-		  if(fMCcase){
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormIdeal->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, enhancement*weightTotal);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormSmeared->Fill(Qsum1v1, Qsum2, Qsum3v1, enhancement*weightTotal);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormIdeal->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, enhancement*weightTotal);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, enhancement*weightTotal);
-		  }
-		  
-		  
-		  // Save cpu time and memory by skipping r3 denominator calculation below.  den errors are negligible compared to num errors.
-		  /*
-		    if(weightTotal > 0.0001){// tiny numbers cause a Float_ting point exception below
-		    weightTotalErr = pow((weight12Err*coulCorr12)*weight13CC*weight23CC,2);
-		    weightTotalErr += pow(weight12CC*(weight13Err*coulCorr13)*weight23CC,2);
-		    weightTotalErr += pow(weight12CC*weight13CC*(weight23Err*coulCorr23),2);
-		    weightTotalErr /= pow(2*weightTotal,2);
-		    
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].TwoPartNormErr->Fill(denIndex, q3, enhancement*weightTotalErr);
-		    }
-		  */
-  		  
-		  //}// damp iter
-		//}// R iter
+	      Float_t coulCorr12 = FSICorrelationTherm2(+1,+1, qinv12);
+	      Float_t coulCorr13 = FSICorrelationTherm2(+1,+1, qinv13);
+	      Float_t coulCorr23 = FSICorrelationTherm2(+1,+1, qinv23);
+	      
+	      Float_t MomResCorr12=1.0, MomResCorr13=1.0, MomResCorr23=1.0;
+	      if(!fMCcase) {
+		Int_t momBin12 = fMomResC2->GetYaxis()->FindBin(qinv12);
+		Int_t momBin13 = fMomResC2->GetYaxis()->FindBin(qinv13);
+		Int_t momBin23 = fMomResC2->GetYaxis()->FindBin(qinv23);		  
+		if(momBin12 >= kQbins) momBin12 = kQbins-1;
+		if(momBin13 >= kQbins) momBin13 = kQbins-1;
+		if(momBin23 >= kQbins) momBin23 = kQbins-1;
+		MomResCorr12 = fMomResC2->GetBinContent(momResIndex+1, momBin12);
+		MomResCorr13 = fMomResC2->GetBinContent(momResIndex+1, momBin13);
+		MomResCorr23 = fMomResC2->GetBinContent(momResIndex+1, momBin23);
+	      }
+	      weight12CC = ((weight12+1)*MomResCorr12 - myDamp*coulCorr12 - (1-myDamp));
+	      weight12CC /= coulCorr12*myDamp;
+	      weight13CC = ((weight13+1)*MomResCorr13 - myDamp*coulCorr13 - (1-myDamp));
+	      weight13CC /= coulCorr13*myDamp;
+	      weight23CC = ((weight23+1)*MomResCorr23 - myDamp*coulCorr23 - (1-myDamp));
+	      weight23CC /= coulCorr23*myDamp;
+	      
+	      if(weight12CC < 0 || weight13CC < 0 || weight23CC < 0) {
+		if(fMbin==0 && bin1==0) {
+		  weightTotal = sqrt(fabs(weight12CC*weight13CC*weight23CC));
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, weightTotal);
+		}
+		continue;// C2^QS can never be less than unity
+	      }
+	      
+	      /////////////////////////////////////////////////////
+	      weightTotal = sqrt(weight12CC*weight13CC*weight23CC);
+	      /////////////////////////////////////////////////////
+
+	      if(weightTotal > 1.5) {
+		if(fMbin==0 && bin1==0) {
+		  ((TH3F*)fOutputList->FindObject("fTPNRejects"))->Fill(qinv12, qinv13, qinv23, weightTotal);
+		}
+		continue;// C2^QS never be greater than 1.0 in theory. Can be slightly larger than 1.0 with fluctuations
+	      }
+
 	    
+	      
+	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].fTwoPartNorm->Fill(qinv12, qinv13, qinv23, weightTotal);
+	      
+	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
+	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
+	      if(fMCcase){
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormIdeal->Fill(Qsum1v1MC, Qsum2MC, Qsum3v1MC, weightTotal);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNormSmeared->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormIdeal->Fill(Qsum1v2MC, Qsum2MC, Qsum3v2MC, weightTotal);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNormSmeared->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
+	      }
+		  
+		  
+	      // Save cpu time and memory by skipping r3 denominator calculation below.  den errors are negligible compared to num errors.
+	      /*
+		if(weightTotal > 0.0001){// tiny numbers cause a Float_ting point exception below
+		weightTotalErr = pow((weight12Err*coulCorr12)*weight13CC*weight23CC,2);
+		weightTotalErr += pow(weight12CC*(weight13Err*coulCorr13)*weight23CC,2);
+		weightTotalErr += pow(weight12CC*weight13CC*(weight23Err*coulCorr23),2);
+		weightTotalErr /= pow(2*weightTotal,2);
+		
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].TwoPartNormErr->Fill(denIndex, q3, weightTotalErr);
+		}
+	      */
+	      
+	      //}// damp iter
+	      //}// R iter
+	      
 	      
 	      
 	    }
@@ -3426,6 +3441,7 @@ void AliChaoticity::GetQosl(Float_t track1[], Float_t track2[], Float_t& qout, F
 //void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F ***histos){
 void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
 //void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliChaoticity::kKbinsT][AliChaoticity::kCentBins]){
+  
   for(Int_t mb=0; mb<fMbins; mb++){
     for(Int_t edB=0; edB<kEDbins; edB++){
       for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
@@ -3448,6 +3464,10 @@ void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
   
   if(legoCase){
     cout<<"LEGO call to SetWeightArrays"<<endl;
+    // histos[0][0]->GetBinContent(3, 3, 3) should be ~0.14
+    if(histos[0][0]->GetBinContent(3, 3, 3) > 0.5) AliFatal("AliChaoticity: SetWeightArray Problem");// Additional test to make sure loaded correctly
+    if(histos[0][0]->GetBinContent(3, 3, 3) < 0.05) AliFatal("AliChaoticity: SetWeightArray Problem");// Additional test to make sure loaded correctly
+    
     for(Int_t mb=0; mb<fMbins; mb++){
       for(Int_t edB=0; edB<kEDbins; edB++){
 	for(Int_t tKbin=0; tKbin<kKbinsT; tKbin++){
@@ -3459,6 +3479,13 @@ void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[3][10]){
 		  
 		  fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = histos[tKbin][mb]->GetBinContent(qobin, qsbin, qlbin);
 		  fNormWeightErr[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = histos[tKbin][mb]->GetBinError(qobin, qsbin, qlbin);
+		  if(fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] > 2.0) {// In theory never greater than 1.0
+		    fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = 2.0;
+		  }
+		  if(fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] < -0.5) {// In theory never significantly less than 0
+		    fNormWeight[mb][edB][tKbin][yKbin][qobin-1][qsbin-1][qlbin-1] = -0.5;
+		  }
+		
 		}
 	      }
 	    }
@@ -3700,6 +3727,17 @@ void AliChaoticity::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D){
     momResFile->Close();
   }
 
+  // fMomResC2->GetBinContent(1,5) should be ~1.007
+  if(fMomResC2->GetBinContent(1,5) > 1.2) AliFatal("AliChaoticity: SetMomResCorrections Problem");// Additional Safety check
+  if(fMomResC2->GetBinContent(1,5) < 0.95) AliFatal("AliChaoticity: SetMomResCorrections Problem");// Additional Safety check
+
+  for(Int_t bx=1; bx<=fMomResC2->GetNbinsX(); bx++){
+    for(Int_t by=1; by<=fMomResC2->GetNbinsX(); by++){
+      if(fMomResC2->GetBinContent(bx,by) > 1.5) fMomResC2->SetBinContent(bx,by, 1.5);// Maximum is ~1.02 
+      if(fMomResC2->GetBinContent(bx,by) < 0.95) fMomResC2->SetBinContent(bx,by, 0.95);// Minimum is ~0.98
+    }
+  }
+
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
@@ -3808,6 +3846,24 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
       }
     }
   }
+  // fFSI2SS[1]->GetBinContent(1,2) should be ~0.32
+  if(fFSI2SS[1]->GetBinContent(1,2) > 1.0) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
+  if(fFSI2SS[1]->GetBinContent(1,2) < 0.1) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
+
+  for(Int_t ii=1; ii<=fFSI2SS[0]->GetNbinsX(); ii++){
+      for(Int_t jj=1; jj<=fFSI2SS[0]->GetNbinsY(); jj++){
+	if(fFSI2SS[0]->GetBinContent(ii,jj) > 1.0) fFSI2SS[0]->SetBinContent(ii,jj, 1.0);
+	if(fFSI2SS[1]->GetBinContent(ii,jj) > 1.0) fFSI2SS[1]->SetBinContent(ii,jj, 1.0);
+	if(fFSI2OS[0]->GetBinContent(ii,jj) > 10.0) fFSI2OS[0]->SetBinContent(ii,jj, 10.0);
+	if(fFSI2OS[1]->GetBinContent(ii,jj) > 10.0) fFSI2OS[1]->SetBinContent(ii,jj, 10.0);
+	//
+	if(fFSI2SS[0]->GetBinContent(ii,jj) < 0.05) fFSI2SS[0]->SetBinContent(ii,jj, 0.05);
+	if(fFSI2SS[1]->GetBinContent(ii,jj) < 0.05) fFSI2SS[1]->SetBinContent(ii,jj, 0.05);
+	if(fFSI2OS[0]->GetBinContent(ii,jj) < 0.9) fFSI2OS[0]->SetBinContent(ii,jj, 0.9);
+	if(fFSI2OS[1]->GetBinContent(ii,jj) < 0.9) fFSI2OS[1]->SetBinContent(ii,jj, 0.9);
+      }
+  }
+
   cout<<"Done reading FSI file"<<endl;
 }
 //________________________________________________________________________
@@ -3893,6 +3949,7 @@ void AliChaoticity::TestAddTask(){
   TH2D *FSI2therm[2];
   TH3D *FSI3ss[6];
   TH3D *FSI3os[6];
+  
   FSI2gaus[0] = (TH2D*)inputFileFSI->Get("K2ssG");
   FSI2gaus[1] = (TH2D*)inputFileFSI->Get("K2osG");
   FSI2therm[0] = (TH2D*)inputFileFSI->Get("K2ssT");
@@ -3914,6 +3971,7 @@ void AliChaoticity::TestAddTask(){
     FSI3ss[CB]->SetDirectory(0);
     FSI3os[CB]->SetDirectory(0);
   }
+  
   SetFSICorrelations( kTRUE, FSI2gaus, FSI2therm , FSI3os, FSI3ss);
   //
 
@@ -3927,8 +3985,8 @@ void AliChaoticity::TestAddTask(){
     
     ////////////////////////////////////////////////////
     // C2 Weight File
-    Int_t ktbins = GetNumKtbins();
-    Int_t cbins = GetNumCentBins();
+    const Int_t ktbins = 3;
+    const Int_t cbins = 10;
     TH3F *weightHisto[ktbins][cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
