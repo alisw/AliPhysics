@@ -10,7 +10,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   //____________________________________________//
   // Create tasks
   AliChaoticity *ChaoticityTask = new AliChaoticity("ChaoticityTask", MCcase, Tabulatecase, PbPbcase, CentLow, CentHigh, kTRUE);
-  if(!ChaoticityTask) exit(-1);
+  if(!ChaoticityTask) return NULL;
   mgr->AddTask(ChaoticityTask);
 
 
@@ -33,7 +33,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     inputFileWeight = TFile::Open(inputFileNameWeight,"OLD");
     if (!inputFileWeight){
       cout << "Requested file:" << inputFileWeight << " was not opened. ABORT." << endl;
-      return;
+      return NULL;
     }
     ////////////////////////////////////////////////////
     // C2 Weight File
@@ -60,7 +60,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
     inputFileMomRes = TFile::Open(inputFileNameMomRes,"OLD");
     if (!inputFileMomRes){
       cout << "Requested file:" << inputFileMomRes << " was not opened. ABORT." << endl;
-      return;
+      return NULL;
     }
     ////////////////////////////////////////////////////
     // Momentum Resolution File
@@ -76,7 +76,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   inputFileFSI = TFile::Open(inputFileNameFSI,"OLD");
   if (!inputFileFSI){
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
-    return;
+    return NULL;
   }  
   TH2D *FSI2gaus[2];
   TH2D *FSI2therm[2];
