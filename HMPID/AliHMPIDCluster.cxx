@@ -32,6 +32,13 @@ void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
   //Set the cluster properties for the AliCluster3D part
   //------------------------------------------------------------------------
 
+  fParam = AliHMPIDParam::Instance();
+    
+  if(!fParam->GetInstType())               //if there is no geometry we cannot retrieve the volId (only for monitoring)
+  {
+    new(this) AliCluster3D(); return;
+  }
+  
   //Get the volume ID from the previously set PNEntry
   UShort_t volId=AliGeomManager::LayerToVolUID(AliGeomManager::kHMPID,iCh);
 
