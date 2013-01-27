@@ -60,7 +60,7 @@ inline Bool_t AliITSUAux::OKforPhiMax(double phiMax,double phi) {
 //_________________________________________________________________________________
 inline UInt_t AliITSUAux::PackCluster(Int_t lr, Int_t clID) {
   // pack layer/cluster into single uint
-  UInt_t p = (clID<0 ? 0 : clID+1) + (p<<=kLrBitLow);
+  UInt_t p = (clID<0 ? 0 : clID+1) + (lr<<=kLrBitLow);
   return p;
 }
 
@@ -81,7 +81,7 @@ inline Int_t AliITSUAux::UnpackLayer(UInt_t p) {
 //_________________________________________________________________________________
 inline Int_t AliITSUAux::UnpackCluster(UInt_t p) {
   // unpack cluster
-  return int(p&kClMasl)-1;
+  return int(p&kClMask)-1;
 }
 
 //_________________________________________________________________________________

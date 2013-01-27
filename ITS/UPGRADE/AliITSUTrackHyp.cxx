@@ -29,6 +29,7 @@ AliITSUTrackHyp::~AliITSUTrackHyp()
 AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
   : AliKalmanTrack(src)
   , fNLayers(src.fNLayers)
+  , fITSLabel(src.fITSLabel)
   , fESDTrack(src.fESDTrack)
   , fLayerSeeds(0)
 {
