@@ -195,3 +195,11 @@ void AliHLTTPCClusterTransformation::Print(const char* /*option*/) const
   // print info
   fFastTransform.Print();
 }
+
+
+Int_t AliHLTTPCClusterTransformation::GetSize() const
+{
+  // total size of the object
+  int size = sizeof(AliHLTTPCClusterTransformation) - sizeof(AliHLTTPCFastTransform) + fFastTransform.GetSize();
+  return size;
+}

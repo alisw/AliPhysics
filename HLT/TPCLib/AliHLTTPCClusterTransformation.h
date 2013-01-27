@@ -73,6 +73,9 @@ class AliHLTTPCClusterTransformation{
   /** Printout */
   void Print(const char* option=NULL) const;
 
+  /** total size of the object*/
+  Int_t GetSize() const ;
+
  private:
 
   /** copy constructor prohibited */
