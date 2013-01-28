@@ -117,7 +117,8 @@ void AliDetectorPID::SetRawProbability(AliPIDResponse::EDetector det, const Doub
 }
 
 //_______________________________________________________________________
-void AliDetectorPID::SetNumberOfSigmas(AliPIDResponse::EDetector det, const Double_t nsig[], Int_t nspecies)
+void AliDetectorPID::SetNumberOfSigmas(AliPIDResponse::EDetector det, const Double_t nsig[], Int_t nspecies,
+                                       AliPIDResponse::EDetPidStatus status)
 {
   //
   // set number of sigmas for nspecies for 'det'ector
@@ -128,6 +129,7 @@ void AliDetectorPID::SetNumberOfSigmas(AliPIDResponse::EDetector det, const Doub
     val=new (fArrNsigmas[(Int_t)det]) AliPIDValues;
 
   val->SetValues(nsig,nspecies);
+  val->SetPIDStatus(status);
 }
 
 //_______________________________________________________________________
@@ -147,19 +149,15 @@ AliPIDResponse::EDetPidStatus AliDetectorPID::GetRawProbability(AliPIDResponse::
 }
 
 //_______________________________________________________________________
-void AliDetectorPID::GetNumberOfSigmas(AliPIDResponse::EDetector det, Double_t nsig[], Int_t nspecies) const
+AliPIDResponse::EDetPidStatus AliDetectorPID::GetNumberOfSigmas(AliPIDResponse::EDetector det, Double_t nsig[], Int_t nspecies) const
 {
-  //
-  // get number of sigmas for nspecies for detector 'det'
-  //
-  
   AliPIDValues *val=static_cast<AliPIDValues*>(fArrNsigmas.UncheckedAt((Int_t)det));
   if (!val) {
     for (Int_t i=0; i<nspecies; ++i) nsig[i]=-999.;
-    return;
+    return AliPIDResponse::kDetNoSignal;
   }
-
-  val->GetValues(nsig,nspecies);
+  
+  return val->GetValues(nsig,nspecies);
 }
 
 //_______________________________________________________________________
@@ -191,4 +189,51 @@ Double_t AliDetectorPID::GetNumberOfSigmas(AliPIDResponse::EDetector det, AliPID
   return val->GetValue(type);
 }
 
+//_______________________________________________________________________
+AliPIDResponse::EDetPidStatus AliDetectorPID::GetRawProbability(AliPIDResponse::EDetector det, AliPID::EParticleType type, Double_t &prob) const
+{
+  //
+  // get 'det'ector raw probability for particle 'type'
+  //
+  
+  AliPIDValues *val=static_cast<AliPIDValues*>(fArrRawProbabilities.UncheckedAt((Int_t)det));
+  if (!val) {
+    prob=0.;
+    return AliPIDResponse::kDetNoSignal; 
+  }
+  
+  prob=val->GetValue(type);
+  return val->GetPIDStatus();
+}
+
+//_______________________________________________________________________
+AliPIDResponse::EDetPidStatus AliDetectorPID::GetNumberOfSigmas(AliPIDResponse::EDetector det, AliPID::EParticleType type, Double_t &nsig) const
+{
+  //
+  // get 'det'ector number of sigmas for particle 'type'
+  //
+  AliPIDValues *val=static_cast<AliPIDValues*>(fArrNsigmas.UncheckedAt((Int_t)det));
+  if (!val) {
+    nsig=-999.;
+    return AliPIDResponse::kDetNoSignal; 
+  }
+  
+  nsig=val->GetValue(type);
+  return val->GetPIDStatus();
+}
+
+
+//_______________________________________________________________________
+AliPIDResponse::EDetPidStatus AliDetectorPID::GetPIDStatus(AliPIDResponse::EDetector det) const
+{
+  //
+  // return the detector PID status
+  //
+  
+  AliPIDValues *val=static_cast<AliPIDValues*>(fArrRawProbabilities.UncheckedAt((Int_t)det));
+  if (!val) val=static_cast<AliPIDValues*>(fArrNsigmas.UncheckedAt((Int_t)det));
+  if (val) return val->GetPIDStatus();
+
+  return AliPIDResponse::kDetNoSignal;
+}
 

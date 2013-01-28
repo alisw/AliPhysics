@@ -65,7 +65,8 @@ public:
   enum EDetPidStatus {
     kDetNoSignal=0,
     kDetPidOk=1,
-    kDetMismatch=2
+    kDetMismatch=2,
+    kDetNoParams=3
   };
 
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
@@ -74,29 +75,41 @@ public:
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
   AliEMCALPIDResponse &GetEMCALResponse() {return fEMCALResponse;}
 
-  //buffered PID calculation
+  // -----------------------------------------
+  // buffered getters
+  //
+  
+  // Number of sigmas
+  EDetPidStatus NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val) const;
+  
   Float_t NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmas(EDetCode  detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   
   virtual Float_t NumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
 
-  EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  // Probabilities
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
   virtual EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  virtual EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  virtual EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   virtual EDetPidStatus ComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+
+  virtual EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const;
+  
+  // pid status
+  EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
@@ -151,9 +164,11 @@ protected:
   ITSPIDmethod      fITSPIDmethod;   // 0 = trunc mean; 1 = likelihood
 
   //unbuffered PID calculation
-  virtual Float_t GetNumberOfSigmasTOF  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
+  virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
-  
+  EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
+  Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
+
 private:
   Bool_t fIsMC;                        //  If we run on MC data
   Bool_t fCachePID;
@@ -191,7 +206,7 @@ private:
   Float_t fCurrCentrality;             //! current centrality
   
   Bool_t fTuneMConData;                // switch to force the MC to be similar to data (dE/dx)
-
+  
   void ExecNewRun();
   
   //
@@ -228,13 +243,21 @@ private:
   //
   void SetRecoInfo();
 
+  //-------------------------------------------------
   //unbuffered PID calculation
+  //
+  
+  // Number of sigmas
   Float_t GetNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetNumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
   Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   Float_t GetNumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
+  Float_t GetBufferedNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  
+  // Probabilities
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -242,7 +265,16 @@ private:
   EDetPidStatus GetComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  
+
+  // pid status
+  EDetPidStatus GetPIDStatus(EDetector det, const AliVTrack *track) const;
+  EDetPidStatus GetITSPIDStatus(const AliVTrack *track) const;
+  EDetPidStatus GetTPCPIDStatus(const AliVTrack *track) const;
+  EDetPidStatus GetTRDPIDStatus(const AliVTrack *track) const;
+  EDetPidStatus GetHMPIDPIDStatus(const AliVTrack *track) const;
+  EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
+  EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
+
   ClassDef(AliPIDResponse, 11);  //PID response handling
 };
 

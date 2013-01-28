@@ -372,7 +372,8 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
 //----------------------------------------------------------------------------------------
 void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit, Double_t* p) const {
   switch (status) {
-  case AliPIDResponse::kDetNoSignal:
+    case AliPIDResponse::kDetNoParams:
+    case AliPIDResponse::kDetNoSignal:
     break;
   case AliPIDResponse::kDetPidOk:
     *maskDetIn = *maskDetIn | bit;

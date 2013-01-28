@@ -40,8 +40,8 @@ AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMi
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
 
-  Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return AliPIDResponse::NumberOfSigmasTOF(track,type);}
-  Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
+//   Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return AliPIDResponse::NumberOfSigmasTOF(track,type);}
+//   Float_t GetNumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
   
   void SetNMaxSigmaTOFTPCMismatch(Float_t range) {fRangeTOFMismatch=range;}
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
@@ -50,7 +50,7 @@ AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMi
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
 protected:
-  virtual Float_t GetNumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return NumberOfSigmasTOF(track,type,0); }
+  virtual Float_t GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EParticleType type) const;
 
 private:
 

@@ -104,7 +104,7 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
     return dedx;
 }
 //_________________________________________________________________________
-Float_t AliAODpidUtil::GetNumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const
+Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
   //
   // Number of sigma implementation for the TOF
@@ -112,7 +112,6 @@ Float_t AliAODpidUtil::GetNumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::
   
   AliAODTrack *track=(AliAODTrack*)vtrack;
 
-  if ( !(track->GetStatus() & AliVTrack::kTOFout) || !(track->GetStatus() & AliVTrack::kTIME) ) return -999.;
   Bool_t oldAod=kTRUE;
   Double_t sigTOF;
   AliAODPid *pidObj = track->GetDetPid();
