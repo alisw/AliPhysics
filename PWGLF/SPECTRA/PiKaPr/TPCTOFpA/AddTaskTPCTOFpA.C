@@ -70,11 +70,14 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
       mgr->CreateContainer(Form("akalweit_TPCTOFpA%i",identifier), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("akalweit_TPCTOFpA%i.root",identifier));
 */
+
+  AliAnalysisDataContainer *coutput1;
+
   if (!writeOwnFile) {
-  	AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer(Form("janielsk_TPCTOFpA%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:janielsk_TPCTOFpA", AliAnalysisManager::GetCommonFileName())); 
+  	coutput1 =  mgr->CreateContainer(Form("janielsk_TPCTOFpA%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:janielsk_TPCTOFpA", AliAnalysisManager::GetCommonFileName())); 
 	}
   else {
-	AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer(Form("janielsk_TPCTOFpA%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("janielsk_TPCTOFpA.root"));
+	coutput1 =  mgr->CreateContainer(Form("janielsk_TPCTOFpA%i",identifier), TList::Class(), AliAnalysisManager::kOutputContainer, Form("janielsk_TPCTOFpA.root"));
 	}
 
 
