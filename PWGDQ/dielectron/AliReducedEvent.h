@@ -182,8 +182,10 @@ class AliReducedPair : public TObject {
   Float_t  Rapidity()            const;
   Float_t  Theta()               const {return TMath::ACos(TMath::TanH(fEta));}
   Float_t  Lxy()                 const {return fLxy;}
+  Float_t  Radius()              const {return fLxy;}
   Float_t  LxyErr()              const {return fLxyErr;}
   Float_t  PointingAngle()       const {return fPointingAngle;}
+  Float_t  Chi2()                const {return fChisquare;}
   Bool_t   IsOnTheFly()          const {return fPairType;}
   Bool_t   IsPureV0K0s()         const {return (fMCid&(UInt_t(1)<<1));}
   Bool_t   IsPureV0Lambda()      const {return (fMCid&(UInt_t(1)<<2));}
@@ -201,14 +203,15 @@ class AliReducedPair : public TObject {
   Float_t fPhi;                 // pair phi in the [0,2*pi) interval
   Float_t fPt;                  // pair pt
   Float_t fEta;                 // pair eta 
-  Float_t fLxy;                 // pseudo-proper decay length
+  Float_t fLxy;                 // pseudo-proper decay length (pair candidates) or radius of the secondary vertex for V0s 
   Float_t fLxyErr;              // error on Lxy
   Float_t fPointingAngle;       // angle between the pair momentum vector and the secondary vertex position vector
+  Float_t fChisquare;           // chi2 for the legs matching
   UInt_t  fMCid;                // Bit map with Monte Carlo info about the pair
 
   AliReducedPair& operator= (const AliReducedPair &c);
 
-  ClassDef(AliReducedPair, 2);
+  ClassDef(AliReducedPair, 3);
 };
 
 
@@ -316,12 +319,20 @@ class AliReducedEvent : public TObject {
   // getters
   Int_t     RunNo()                           const {return fRunNo;}
   UShort_t  BC()                              const {return fBC;}
+  UInt_t    TimeStamp()                       const {return fTimeStamp;}
+  UInt_t    EventType()                       const {return fEventType;}
   ULong64_t TriggerMask()                     const {return fTriggerMask;}
   Bool_t    IsPhysicsSelection()              const {return fIsPhysicsSelection;}
+  Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
   Float_t   Vertex(Int_t axis)                const {return (axis>=0 && axis<=2 ? fVtx[axis] : 0);}
   Int_t     VertexNContributors()             const {return fNVtxContributors;}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
+  Int_t     NpileupSPD()                      const {return fNpileupSPD;}
+  Int_t     NpileupTracks()                   const {return fNpileupTracks;}
+  Int_t     NPMDtracks()                      const {return fNPMDtracks;}
+  Int_t     NTRDtracks()                      const {return fNTRDtracks;}
+  Int_t     NTRDtracklets()                   const {return fNTRDtracklets;}
   Float_t   CentralityVZERO()                 const {return fCentrality[0];}
   Float_t   CentralitySPD()                   const {return fCentrality[1];}
   Float_t   CentralityTPC()                   const {return fCentrality[2];}
@@ -333,6 +344,8 @@ class AliReducedEvent : public TObject {
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
   Int_t     SPDntracklets()                   const {return fSPDntracklets;}
+  Int_t     SPDntracklets(Int_t bin)          const {return (bin>=0 && bin<16 ? fSPDntrackletsEta[bin] : -999);}
+  Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
@@ -370,19 +383,29 @@ class AliReducedEvent : public TObject {
  private:
   Int_t     fRunNo;                 // run number
   UShort_t  fBC;                    // bunch crossing
+  UInt_t    fTimeStamp;             // time stamp of the event                (NEW)
+  UInt_t    fEventType;             // event type                             (NEW)
   ULong64_t fTriggerMask;           // trigger mask
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
+  Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
   Float_t   fVtxTPC[3];             // TPC only event vertex           
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
+  Int_t     fNpileupSPD;            // number of pileup vertices from SPD     (NEW)
+  Int_t     fNpileupTracks;         // number of pileup vertices from tracks  (NEW)
+  Int_t     fNPMDtracks;            // number of PMD tracks                   (NEW)
+  Int_t     fNTRDtracks;            // number of TRD tracks                   (NEW)
+  Int_t     fNTRDtracklets;         // number of TRD tracklets                (NEW)
   Float_t   fCentrality[4];         // centrality; 0-VZERO, 1-SPD, 2-TPC, 3-ZEMvsZDC 
   Int_t     fCentQuality;           // quality flag for the centrality 
   Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
   Int_t     fNDielectronCandidates; // number of pairs selected as dielectrons
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
   Int_t     fSPDntracklets;         // number of SPD tracklets in |eta|<1.0 
-
+  Int_t     fSPDntrackletsEta[16];  // number of SPD tracklets in equal eta bins between -1.6 --> +1.6    (NEW)
+  Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                (NEW)
+  
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
   Float_t   fZDCnEnergy[8];         // neutron ZDC energy in all 8 channels
     
@@ -400,7 +423,7 @@ class AliReducedEvent : public TObject {
   AliReducedEvent(const AliReducedEvent &c);
   AliReducedEvent& operator= (const AliReducedEvent &c);
 
-  ClassDef(AliReducedEvent, 2);
+  ClassDef(AliReducedEvent, 4);
 };
 
 //_______________________________________________________________________________

@@ -6,6 +6,8 @@ void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
 
 void AddMCSignals(AliDielectron *die);
 
+void SetupNanoTrackCuts(AliDielectron *die, Int_t cutDefinition);
+
 void SetEtaCorrection();
 TVectorD *GetRunNumbers();
 
@@ -55,8 +57,9 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
 
   // cut setup
   SetupEventCuts(die,triggers);
-  SetupTrackCuts(die,cutDefinition);
-  SetupPairCuts(die,cutDefinition);
+  //SetupTrackCuts(die,cutDefinition);
+  SetupNanoTrackCuts(die,cutDefinition);
+  //  SetupPairCuts(die,cutDefinition);
 
   // MC signals
   if(hasMC) {
@@ -91,7 +94,7 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
   */
 
   // prefilter settings
-  //die->SetNoPairing();
+  die->SetNoPairing();
   //die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
 
@@ -131,7 +134,7 @@ void SetupEventCuts(AliDielectron *die, ULong64_t triggers)
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(minCent,maxCent);
+  //eventCuts->SetCentralityRange(minCent,maxCent);
 
   /*
   TF1 *fMean  = new TF1("fMean", "pol1",               0,25e+3);
@@ -171,7 +174,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
   trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
   //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
-  if(!isESD) cuts->AddCut(trkFilter);
+  //if(!isESD) cuts->AddCut(trkFilter);
 
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 15); // ITS-4 = 1+2+4+8
@@ -187,15 +190,15 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   // track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  //varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  //varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  //  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  //varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
   //varCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
-  varCuts->Print();
+  //varCuts->Print();
   cuts->AddCut(varCuts);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -232,14 +235,50 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   } //hasMC
 
-  cuts->AddCut(pid);
+  //  cuts->AddCut(pid);
   /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PID CUTS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
   // exclude conversion electrons selected by the tender
   AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","noConv");
   noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
-  cuts->AddCut(noconv);
+  //cuts->AddCut(noconv);
+
+}
+
+void SetupNanoTrackCuts(AliDielectron *die, Int_t cutDefinition)
+{
+  //
+  // Setup the track cuts
+  //
+
+  // Quality cuts
+  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
+  die->GetTrackFilter().AddCuts(cuts);
+
+  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  //trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 15); // ITS-4 = 1+2+4+8
+  trkCuts->SetRequireITSRefit(kTRUE);
+  trkCuts->SetRequireTPCRefit(kTRUE);
+  //  cuts->AddCut(trkCuts);
+
+  //Pt cut, should make execution a bit faster
+  AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
+  pt->AddCut(AliDielectronVarManager::kPt,0.7,1e30);    //1.1
+  cuts->AddCut(pt);
+  pt->Print();
+
+  // track cuts ESD and AOD
+  AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
+  //varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.2,   4.0);
+  //varCuts->Print();
+  //cuts->AddCut(varCuts);
 
 }
 
@@ -319,6 +358,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","","", 80.,0.,80., 150,-15.,15.,
 			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kZvPrim);
 
+    histos->UserHistogram("Event","","", 300.,0.,6000., 300,0.,6000.,
+			  AliDielectronVarManager::kNVtxContrib, AliDielectronVarManager::kNVtxContribTPC);
+    histos->UserHistogram("Event","","", 200.,0.,4000., 200,0.,4000.,
+			  AliDielectronVarManager::kNVtxContrib, AliDielectronVarManager::kNacc);
+
+
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(250,0.,25000.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kMultV0);
     histos->UserHistogram("Event","","", 80.,0.,80., 250,0.,25000.,
@@ -332,6 +377,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0 );
     histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0A);
     histos->UserHistogram("Event","","", 200,0.,20000., 250,0.,25000., AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0C);
+
+    
 
     histos->UserHistogram("Event","","", 
 			  AliDielectronHelper::MakeLinBinning(200,0.,20000.),
@@ -352,12 +399,16 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kv0ArpH2);
     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kv0CrpH2);
-    //     histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
-    // 			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kTPCrpH2);
+    histos->UserHistogram("Event","","", GetRunNumbers(), AliDielectronHelper::MakeLinBinning(100,-2.,+2.),
+			  AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kTPCrpH2uc);
     histos->UserHistogram("Event","","", 80,0.,80., 100,-2.,+2.,
 			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kv0CrpH2);
     histos->UserHistogram("Event","","", 80,0.,80., 100,-2.,+2.,
 			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kv0ArpH2);
+    histos->UserHistogram("Event","","", 80,0.,80., 100,-2.,+2.,
+			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kTPCrpH2uc);
+    histos->UserHistogram("Event","","", 80,0.,80., 100,0.,250.,
+			  AliDielectronVarManager::kCentrality, AliDielectronVarManager::kTPCmagH2uc);
 
   }
 

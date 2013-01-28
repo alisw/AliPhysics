@@ -86,6 +86,7 @@ AliReducedPair::AliReducedPair() :
   fLxy(0.0),
   fLxyErr(0.0),
   fPointingAngle(0.0),
+  fChisquare(0.0),
   fMCid(0)
 {
   //
@@ -109,6 +110,7 @@ AliReducedPair::AliReducedPair(const AliReducedPair &c) :
   fLxy(c.Lxy()),
   fLxyErr(c.LxyErr()),
   fPointingAngle(c.PointingAngle()),
+  fChisquare(c.Chi2()),
   fMCid(c.MCid())
 {
   //
@@ -132,12 +134,20 @@ AliReducedEvent::AliReducedEvent() :
   TObject(),
   fRunNo(0),
   fBC(0),
+  fTimeStamp(0),
+  fEventType(0),
   fTriggerMask(0),
   fIsPhysicsSelection(kTRUE),
+  fIsSPDPileup(kTRUE),
   fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fNpileupSPD(0),
+  fNpileupTracks(0),
+  fNPMDtracks(0),
+  fNTRDtracks(0),
+  fNTRDtracklets(0),
   fCentrality(),
   fCentQuality(0),
   fNV0candidates(),
@@ -159,6 +169,8 @@ AliReducedEvent::AliReducedEvent() :
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
   fNtracks[0]=0; fNtracks[1]=0;
+  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;
 }
@@ -169,12 +181,20 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   TObject(),
   fRunNo(0),
   fBC(0),
+  fTimeStamp(0),
+  fEventType(0),
   fTriggerMask(0),
   fIsPhysicsSelection(kTRUE),
+  fIsSPDPileup(kTRUE),
   fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fNpileupSPD(0),
+  fNpileupTracks(0),
+  fNPMDtracks(0),
+  fNTRDtracks(0),
+  fNTRDtracklets(0),
   fCentrality(),
   fCentQuality(0),
   fNV0candidates(),
@@ -196,6 +216,8 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
   fNtracks[0]=0; fNtracks[1]=0;
+  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;
   
@@ -293,12 +315,22 @@ void AliReducedEvent::ClearEvent() {
   if(fCaloClusters) fCaloClusters->Clear("C");
   fRunNo = 0;
   fBC = 0;
+  fTimeStamp = 0;
+  fEventType = 0;
   fTriggerMask = 0;
   fIsPhysicsSelection = kTRUE;
+  fIsSPDPileup = kFALSE;
   fCentQuality = 0;
   fNV0candidates[0] = 0; fNV0candidates[1] = 0;
+  fNpileupSPD=0;
+  fNpileupTracks=0;
+  fNPMDtracks=0;
+  fNTRDtracks=0;
+  fNTRDtracklets=0;
   fNDielectronCandidates = 0;
   fNtracks[0] = 0; fNtracks[1] = 0;
+  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i] = 0;
+  for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.; fCentrality[i]=-1.;}
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;

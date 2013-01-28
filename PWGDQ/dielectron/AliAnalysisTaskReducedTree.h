@@ -50,11 +50,8 @@ public:
   void SetLambdaPionCuts(AliAnalysisCuts * const filter) {fLambdaPionCuts=filter;}
   void SetGammaElectronCuts(AliAnalysisCuts* const filter) {fGammaElectronCuts=filter;}
   void SetK0sCuts(AliESDv0Cuts* const cuts) {fK0sCuts = cuts;}
-  //void SetK0sStrongCuts(AliESDv0Cuts* const cuts) {fK0sStrongCuts = cuts;}
   void SetLambdaCuts(AliESDv0Cuts* const cuts) {fLambdaCuts = cuts;}
-  //void SetLambdaStrongCuts(AliESDv0Cuts* const cuts) {fLambdaStrongCuts = cuts;}
   void SetGammaConvCuts(AliESDv0KineCuts* const cuts) {fGammaConvCuts = cuts;}
-  //void SetGammaConvStrongCuts(AliESDv0KineCuts* const cuts) {fGammaConvStrongCuts = cuts;}
   void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
   void SetV0StrongCuts(AliESDv0KineCuts* const cuts) {fV0StrongCuts = cuts;}
   void SetK0sMassRange(Double_t min=0.4, Double_t max=0.6) {fK0sMassRange[0]=min; fK0sMassRange[1]=max;}
@@ -103,8 +100,8 @@ public:
   AliESDv0Cuts *fLambdaCuts;         // v0 standard filter for Lambda0->p + pi
   AliESDv0KineCuts *fGammaConvCuts;  // v0 standard filter for gamma conversions
   AliAnalysisCuts *fK0sPionCuts;     // filter for pions from K0s
-  AliAnalysisCuts *fLambdaProtonCuts;// filter for protons from Lambda
-  AliAnalysisCuts *fLambdaPionCuts;  // filter for pions from Lambda
+  AliAnalysisCuts *fLambdaProtonCuts;   // filter for protons from Lambda
+  AliAnalysisCuts *fLambdaPionCuts;     // filter for pions from Lambda
   AliAnalysisCuts *fGammaElectronCuts;  // filter for electrons from gamma conversions
   AliESDv0KineCuts *fV0OpenCuts;       // v0 strong filter for tagged V0s
   AliESDv0KineCuts *fV0StrongCuts;     // v0 strong filter for tagged V0s
@@ -128,8 +125,9 @@ public:
   void FillDielectronPairInfo(AliDielectron* die, Short_t iDie);  // fill dielectron reduced pair information
   void FillV0PairInfo();                    // fill V0 reduced pair information
   AliReducedPair* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
-  UChar_t EncodeTPCClusterMap(AliESDtrack* track);
+  UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
   void FillCaloClusters();
+  Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
   
   AliAnalysisTaskReducedTree(const AliAnalysisTaskReducedTree &c);
   AliAnalysisTaskReducedTree& operator= (const AliAnalysisTaskReducedTree &c);
