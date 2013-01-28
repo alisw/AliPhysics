@@ -39,19 +39,6 @@ AliMuonEffMC::AliMuonEffMC() :
   fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0)
 {
   // Constructor
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
-
-  for(Int_t i=0; i<4; i++)
-  {
-    fHMuMotherGenPt[i] = 0x0;
-    fHMuMotherRecPt[i] = 0x0;
-    fHMuMotherGenPhi[i] = 0x0;
-    fHMuMotherRecPhi[i] = 0x0;
-    fHMuMotherGenEta[i] = 0x0;
-    fHMuMotherRecEta[i] = 0x0;
-    fHMuDCA[i] = 0x0;
-  }
 }
 
 //________________________________________________________________________
@@ -64,17 +51,6 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
   // Constructor
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-
-  for(Int_t i=0; i<4; i++)
-  {
-    fHMuMotherGenPt[i] = 0x0;
-    fHMuMotherRecPt[i] = 0x0;
-    fHMuMotherGenPhi[i] = 0x0;
-    fHMuMotherRecPhi[i] = 0x0;
-    fHMuMotherGenEta[i] = 0x0;
-    fHMuMotherRecEta[i] = 0x0;
-    fHMuDCA[i] = 0x0;
-  }
 }
 
 //________________________________________________________________________
@@ -89,6 +65,16 @@ void AliMuonEffMC::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (per slave on PROOF!)
+  for(Int_t i=0; i<4; i++)
+  {
+    fHMuMotherGenPt[i] = 0x0;
+    fHMuMotherRecPt[i] = 0x0;
+    fHMuMotherGenPhi[i] = 0x0;
+    fHMuMotherRecPhi[i] = 0x0;
+    fHMuMotherGenEta[i] = 0x0;
+    fHMuMotherRecEta[i] = 0x0;
+    fHMuDCA[i] = 0x0;
+  }
 
   fOutputList = new TList();
   fOutputList->SetOwner(1);
@@ -313,7 +299,6 @@ void AliMuonEffMC::UserExec(Option_t *)
 	  dcavalue = muonTrack->GetDCA();
 	}
       }
-  
 
       Double_t fillArrayDetRec[5] = { tracketa, trackpt, fCentrality, fZVertex, trackphi };
       fHMuonDetRec->Fill(fillArrayDetRec); 
