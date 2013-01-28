@@ -704,11 +704,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    //for(Int_t tt=0;tt<ParticleList.GetEntries();tt++){
    //if(fFlagOnlyHardest!=0){if(tt!=nT) continue;}
    //AliVParticle *partback = (AliVParticle*)ParticleList.At(tt);     
-
-   fh2Ntriggers->Fill(centValue,partback->Pt());
-   Double_t phiBinT = RelativePhi(partback->Phi(),fRPAngle);
-   if(centValue<20.) fh2RPTC20->Fill(TMath::Abs(phiBinT),partback->Pt());
-   if(centValue<10.) fh2RPTC10->Fill(TMath::Abs(phiBinT),partback->Pt());
    Double_t accep=2.*TMath::Pi()*1.8;
    Int_t injet4=0;
    Int_t injet=0; 
@@ -719,6 +714,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    return;}
 
    }
+
+   fh2Ntriggers->Fill(centValue,partback->Pt());
+   Double_t phiBinT = RelativePhi(partback->Phi(),fRPAngle);
+   if(centValue<20.) fh2RPTC20->Fill(TMath::Abs(phiBinT),partback->Pt());
+   if(centValue<10.) fh2RPTC10->Fill(TMath::Abs(phiBinT),partback->Pt());
+
+
 
    for(Int_t i=0; i<fListJets[0]->GetEntries(); ++i){
            AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
