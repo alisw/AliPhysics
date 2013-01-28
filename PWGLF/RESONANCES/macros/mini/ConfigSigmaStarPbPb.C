@@ -8,7 +8,7 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 //
-Bool_t ConfigSigmaStar
+Bool_t ConfigSigmaStarPbPb
 (  
    AliRsnMiniAnalysisTask *task,
    Bool_t		   isPP, 
@@ -51,12 +51,11 @@ Bool_t ConfigSigmaStar
    esdTrackCuts->SetRequireTPCRefit();
    
    // cut lambda
-   //AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0);
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
    cutLambda->SetESDtrackCuts(esdTrackCuts);
    cutLambda->SetTolerance(0.01);
    cutLambda->SetMaxDCAVertex(0.3);
-   cutLambda->SetMinCosPointingAngle(0.99);
+   cutLambda->SetMinCosPointingAngle(0.97);
    cutLambda->SetMaxDaughtersDCA(0.5);
    cutLambda->SetMaxRapidity(0.8);
    cutLambda->SetAODTestFilterBit(aodFilterBit);
@@ -73,12 +72,11 @@ Bool_t ConfigSigmaStar
    Int_t iCutLambda = task->AddTrackCuts(cutSetLambda);
    
    // cut anti-AntiLambda
-   //AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar);
    AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar, AliPID::kProton, AliPID::kPion);
    cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
    cutAntiLambda->SetTolerance(0.01);
    cutAntiLambda->SetMaxDCAVertex(0.3);
-   cutAntiLambda->SetMinCosPointingAngle(0.99);
+   cutAntiLambda->SetMinCosPointingAngle(0.97);
    cutAntiLambda->SetMaxDaughtersDCA(0.5);
    cutAntiLambda->SetMaxRapidity(0.8);
    cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
@@ -91,8 +89,7 @@ Bool_t ConfigSigmaStar
    cutSetAntiLambda->AddCut(cutAntiLambda);
    cutSetAntiLambda->SetCutScheme(cutAntiLambda->GetName());
    // add to task
-   Int_t iCutAntiLambda = task->AddTrackCuts(cutSetAntiLambda);
-
+   Int_t iCutAntiLambda = task->AddTrackCuts(cutSetAntiLambda);   
    
    //######################################################################################################  
     
@@ -154,7 +151,6 @@ Bool_t ConfigSigmaStar
       if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
       
     } 
-   
    
    if (isMC) {
    

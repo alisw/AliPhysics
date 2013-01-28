@@ -39,7 +39,35 @@ AliESDtrackCuts *RsnQualityCut(TString cut="pp_LHC11_p4_120") {
       esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
       esdTrackCuts->SetEtaRange(-0.9,0.9);
       esdTrackCuts->SetPtRange(0.15, 1e10);
-   } else if (cut.Contains("pp_LHC11a_p3")) {
+   } else if (cut.Contains("pp_LHC11a_p3_bit4")) {
+      //AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
+      esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+
+      // std AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
+      esdTrackCuts->SetMinNClustersTPC(70);
+      esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+      esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+      esdTrackCuts->SetRequireTPCRefit(kTRUE);
+      // ITS
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                             AliESDtrackCuts::kAny);
+      if(selPrimaries) {
+         // 7*(0.0026+0.0050/pt^1.01)
+         esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+         esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+      }
+      esdTrackCuts->SetMaxDCAToVertexZ(2);
+      esdTrackCuts->SetDCAToVertex2D(kFALSE);
+      esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+      esdTrackCuts->SetMaxChi2PerClusterITS(36);
+
+      // additional to std cuts
+      esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+      esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+      esdTrackCuts->SetDCAToVertex2D(kTRUE);
+
+   } else if (cut.Contains("pp_LHC11a_p3_bit5")) {
       //AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
       esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
 
@@ -60,7 +88,8 @@ AliESDtrackCuts *RsnQualityCut(TString cut="pp_LHC11_p4_120") {
       esdTrackCuts->SetMaxDCAToVertexZ(2);
       esdTrackCuts->SetDCAToVertex2D(kFALSE);
       esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-      esdTrackCuts->SetMaxChi2PerClusterITS(36)
+      esdTrackCuts->SetMaxChi2PerClusterITS(36);
+
    }
 
    return esdTrackCuts;
