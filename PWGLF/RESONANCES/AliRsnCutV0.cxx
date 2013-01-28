@@ -365,7 +365,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
 
 
 
-   AliDebugClass(1, Form("fESDtrackCuts=%p",fESDtrackCuts));
+   /*AliDebugClass(1, Form("fESDtrackCuts=%p",fESDtrackCuts));
    if (fESDtrackCuts) { // use fESDtrackCuts to retrieve cuts values
 
 
@@ -386,7 +386,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       if(pTrack->GetTPCNcls() < CutMinNClusterTPC) {AliDebugClass(2, "Positive daughter not MinNclsTPC"); return kFALSE;}
       if(nTrack->GetTPCNcls() < CutMinNClusterTPC) {AliDebugClass(2, "Negative daughter not MinNclsTPC"); return kFALSE;}
 
-   }
+   }*/
 
    // filter like-sign V0
    if ( TMath::Abs( ((pTrack->Charge()) - (nTrack->Charge())) ) < 0.1) {

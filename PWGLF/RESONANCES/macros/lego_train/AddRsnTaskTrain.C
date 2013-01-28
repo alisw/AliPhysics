@@ -40,6 +40,13 @@ AliAnalysisTask *AddRsnTaskTrain(const char *commonStr,const char *rsnStr,const 
    // Generate Rsn Analysisa Task
    AliAnalysisTask *task = AddRsnTask(rsnStr,rsnCutStr,"");
 
+   Printf("Saving Rsn Info -> RsnInfo.root");
+   TFile *f = TFile::Open("RsnInfo.root","RECREATE");
+   AliRsnTrainManager *rsnMgr = AliRsnTrainManager::GetRsnTrainManager();
+   TMap *map = rsnMgr->GetGlobals();
+   f->WriteObject(map,"RsnInfoMap");
+   f->Close();
+
    // deleting AliRsnTrainManager to reset all previous settings
    delete rsnMgr;
 
