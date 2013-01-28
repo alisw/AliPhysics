@@ -37,8 +37,8 @@ void AliAnalysisTaskChargedJetsPA::Init()
   if (fAnalyzePythia)
   {
     AddHistogram1D<TH1D>("hPythiaPtHard", "Pythia p_{T} hard distribution", "", 2000, 0, 400, "p_{T} hard","dN^{Events}/dp_{T,hard}");
-    AddHistogram1D<TProfile>("hPythiaXSection", "Pythia cross section distribution", "", fNumPtHardBins, 0, fNumPtHardBins, "p_{T} hard bin","dN^{Events}/dp_{T,hard}");
-    AddHistogram1D<TH1D>("hPythiaNTrials", "Pythia trials (no correction for manual cuts)", "", fNumPtHardBins, 0, fNumPtHardBins, "p_{T} hard bin", "Trials");
+    AddHistogram1D<TProfile>("hPythiaXSection", "Pythia cross section distribution", "", fNumPtHardBins+2, -1, fNumPtHardBins+1, "p_{T} hard bin","dN^{Events}/dp_{T,hard}");
+    AddHistogram1D<TH1D>("hPythiaNTrials", "Pythia trials (no correction for manual cuts)", "", fNumPtHardBins+2, -1, fNumPtHardBins+1, "p_{T} hard bin", "Trials");
   }
 
   // NOTE: Jet histograms
@@ -1140,8 +1140,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   if(fAnalyzePythia)
   {
     FillHistogram("hPythiaPtHard", GetPtHard());
-    FillHistogram("hPythiaNTrials", GetPtHardBin()+0.1, fTrials);
-    FillHistogram("hPythiaXSection", GetPtHardBin()+0.1, fCrossSection);
+    FillHistogram("hPythiaNTrials", GetPtHardBin()-0.1, fTrials);
+    FillHistogram("hPythiaXSection", GetPtHardBin()-0.1, fCrossSection);
 
     #ifdef DEBUGMODE
       AliInfo("Calculate()::Pythia done.");
