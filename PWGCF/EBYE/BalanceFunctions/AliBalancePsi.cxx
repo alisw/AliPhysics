@@ -385,7 +385,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     
     trackVariablesSingle[0]    =  gPsiMinusPhiBin;
     trackVariablesSingle[1]    =  firstPt;
-      if(fEventClass=="Multiplicity"&&fEventClass == "Centrality" ) trackVariablesSingle[0] = kMultorCent;
+      if(fEventClass=="Multiplicity" || fEventClass == "Centrality" ) trackVariablesSingle[0] = kMultorCent;
     
     //fill single particle histograms
     if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
