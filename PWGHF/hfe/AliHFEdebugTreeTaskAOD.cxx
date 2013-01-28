@@ -376,7 +376,7 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     Int_t   chi2TRD = track->GetTRDchi2();
     AliAODPid* aodpid= track->GetDetPid();
     Double_t* arraytrdsignals;
-    arraytrdsignals=aodpid->GetTRDsignal();
+    arraytrdsignals=aodpid->GetTRDslices();
     Int_t nslicetemp=0;
     Int_t trdlayer[6];
     for(Int_t iplane = 0; iplane < 6; iplane++){
