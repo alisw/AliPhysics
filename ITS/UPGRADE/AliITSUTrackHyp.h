@@ -37,9 +37,9 @@ class AliITSUTrackHyp: public AliKalmanTrack
   virtual Double_t   GetPredictedChi2(const AliCluster *c) const;
   virtual Bool_t     PropagateTo(Double_t xr, Double_t x0, Double_t rho);
   virtual Bool_t     Update(const AliCluster* c, Double_t chi2, Int_t index);
-  virtual Int_t      GetClusterIndex(Int_t)  const { return -1;}
-  virtual Int_t      GetNumberOfTracklets()  const { return 0;}
-  virtual Int_t      GetTrackletIndex(Int_t) const { return -1;}
+  virtual Int_t      GetNumberOfClusters()   const;
+  virtual Int_t      GetClusterIndex(Int_t ind)  const;
+  //  virtual Int_t      GetTrackletIndex(Int_t) const { return -1;}
   virtual Double_t   GetPIDsignal()          const { return 0;}
   //
   virtual void       Print(Option_t* option = "") const;

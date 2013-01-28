@@ -126,8 +126,12 @@ Int_t AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
   // fill cl.id's in the array. The clusters of layer L will be set at slots
   // clID[2L] (and clID[2L+1] if there is an extra cluster).
   for (int i=fNLayers<<1;i--;) clIDarr[i]=-1;
-  AliITSUSeed* seed = GetWinner();
   Int_t lr,ncl=0;
+  AliITSUSeed* seed = GetWinner();
+  if (!seed) {
+    AliFatal("The winner is not set");
+    return ncl;
+  }
   while(seed) {
     int clID = seed->GetLrCluster(lr);
     if (clID>=0) {
@@ -138,4 +142,34 @@ Int_t AliITSUTrackHyp::FetchClusterInfo(Int_t *clIDarr) const
     seed = (AliITSUSeed*)seed->GetParent();
   }
   return ncl;
+}
+
+//__________________________________________________________________
+Int_t AliITSUTrackHyp::GetNumberOfClusters() const
+{
+  // This is a temporary (slow) way of accessing number of clusters
+  // TODO: add dedicated data members filled by winner
+  AliITSUSeed* seed = GetWinner();
+  int ncl = 0;
+  if (!seed) {
+    AliFatal("The winner is not set");
+    return ncl;
+  }
+  return seed->GetNClusters();
+  //
+}
+
+//__________________________________________________________________
+Int_t AliITSUTrackHyp::GetClusterIndex(Int_t ind) const 
+{
+  // This is a temporary (slow) way of accessing cluster index
+  // TODO: add dedicated data members filled by winner
+  AliITSUSeed* seed = GetWinner();
+  int ncl = 0;
+  if (!seed) {
+    AliFatal("The winner is not set");
+    return -1;
+  }
+  return seed->GetClusterIndex(ind);
+  //
 }

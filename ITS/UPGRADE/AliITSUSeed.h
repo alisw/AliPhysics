@@ -36,7 +36,10 @@ class AliITSUSeed: public AliExternalTrackParam
   Int_t           GetLayerID()                     const {return UnpackLayer(fClID);}
   Int_t           GetClusterID()                   const {return UnpackCluster(fClID);}
   Bool_t          HasClusterOnLayer(Int_t lr)      const {return fHitsPattern&(0x1<<lr);}
+  Bool_t          HasCluster()                     const {return IsCluster(fClID);}
   Int_t           GetNLayersHit()                  const {return NumberOfBitsSet(fHitsPattern);}
+  Int_t           GetNClusters()                   const;
+  Int_t           GetClusterIndex(Int_t ind)       const;
   UShort_t        GetHitsPattern()                 const {return fHitsPattern;}
   Float_t         GetChi2Cl()                      const {return fChi2Cl;}
   Float_t         GetChi2Glo()                     const {return fChi2Glo;}
@@ -74,17 +77,17 @@ class AliITSUSeed: public AliExternalTrackParam
   //
  protected:
   //
-  Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
-  Double_t              fKMatrix[kNKElem];  // Gain matrix non-trivial elements (note: standard MBF formula uses I-K*H)
-  Double_t              fRMatrix[kNRElem];  // rotation matrix non-trivial elements
-  Double_t              fCovIYZ[3];         // inverted matrix of propagation + meas errors = [Hi * Pi|i-1 * Hi^T + Ri]^-1
-  Double_t              fResid[2];          // residuals vector
   UShort_t              fHitsPattern;       // bit pattern of hits
   UShort_t              fNChildren;         // number of children (prolongations)
   UInt_t                fClID;              // packed cluster info (see AliITSUAux::PackCluster)
   Float_t               fChi2Glo;           // current chi2 global (sum of track-cluster chi2's on layers with hit)
   Float_t               fChi2Cl;            // track-cluster chi2 (if >0) or penalty for missing cluster (if < 0)
   Float_t               fChi2Penalty;       // total penalty (e.g. for missing clusters)
+  Double_t              fFMatrix[kNFElem];  // matrix of propagation from prev layer (non-trivial elements)
+  Double_t              fKMatrix[kNKElem];  // Gain matrix non-trivial elements (note: standard MBF formula uses I-K*H)
+  Double_t              fRMatrix[kNRElem];  // rotation matrix non-trivial elements
+  Double_t              fCovIYZ[3];         // inverted matrix of propagation + meas errors = [Hi * Pi|i-1 * Hi^T + Ri]^-1
+  Double_t              fResid[2];          // residuals vector
   TObject*              fParent;            // parent track (in higher tree hierarchy)
   
   ClassDef(AliITSUSeed,1)
@@ -143,6 +146,20 @@ inline const AliITSUSeed* AliITSUSeed::GetParent(Int_t lr) const
     par = dynamic_cast<const AliITSUSeed*>(par->GetParent());
   }
   return par;
+}
+
+//__________________________________________________________________
+inline Int_t AliITSUSeed::GetNClusters() const
+{
+  // count number of clusters (some layers may have >1 hit)
+  int ncl = 0;
+  const AliITSUSeed* seed = this;
+  while(seed) {
+    if (seed->HasCluster()) ncl++;
+    seed = (AliITSUSeed*)seed->GetParent();
+  }
+  return ncl;
+  //
 }
 
 #endif

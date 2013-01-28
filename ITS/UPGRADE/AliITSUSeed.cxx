@@ -241,6 +241,20 @@ Bool_t AliITSUSeed::PropagateToX(Double_t xk, Double_t b)
   return kTRUE;
 }
 
+//__________________________________________________________________
+Int_t AliITSUSeed::GetClusterIndex(Int_t ind) const
+{
+  // get ind-th cluster index
+  int ncl = 0;
+  const AliITSUSeed* seed = this;
+  while(seed) {
+    if ( HasCluster() && (ncl++==ind) ) return seed->GetClusterID();
+    seed = (AliITSUSeed*)seed->GetParent();
+  }
+  return -1;
+  //
+}
+
 //______________________________________________________________________________
 Bool_t AliITSUSeed::RotateToAlpha(Double_t alpha) 
 {
@@ -718,3 +732,4 @@ Bool_t AliITSUSeed::Smooth(Double_t vecL[5],Double_t matL[15])
 }
 
  */
+

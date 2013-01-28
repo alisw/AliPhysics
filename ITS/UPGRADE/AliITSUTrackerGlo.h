@@ -58,13 +58,15 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 InitHypothesis(AliESDtrack *esdTr, Int_t esdID);
   Bool_t                 TransportToLayer(AliITSUSeed* seed, Int_t lFrom, Int_t lTo);
   Bool_t                 TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo);
-  Bool_t                 GoToExitFromLayer(AliITSUSeed* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
-  Bool_t                 GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
+  Bool_t                 GoToExitFromLayer(AliITSUSeed* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kTRUE);
+  Bool_t                 GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kTRUE);
   Bool_t                 GoToEntranceToLayer(AliITSUSeed* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 RefitTrack(AliITSUTrackHyp* trc, Double_t r, Bool_t stopAtLastCl=kFALSE);
+  Int_t                  GetTrackingPhase()                 const {return fTrackPhase;}
+
   //
   void                   KillSeed(AliITSUSeed* seed, Bool_t branch=kFALSE);
   Bool_t                 NeedToKill(AliITSUSeed* seed, Int_t flag);
@@ -83,6 +85,7 @@ class AliITSUTrackerGlo : public AliTracker {
   void                   FinalizeHypotheses();
   void                   UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag);
   void                   CookMCLabel(AliITSUTrackHyp* hyp);
+  void                   SetTrackingPhase(Int_t p)        {fTrackPhase = p;}
  //
  protected:
   TObject*&              NextFreeSeed();

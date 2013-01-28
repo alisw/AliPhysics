@@ -118,8 +118,8 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
 {
   //
   //
+  SetTrackingPhase(kClus2Tracks);
   ResetSeedsPool();
-  fTrackPhase = kClus2Tracks;
   int nTrESD = esdEv->GetNumberOfTracks();
   AliInfo(Form("Will try to find prolongations for %d tracks",nTrESD));
   AliITSUReconstructor::GetRecoParam()->Print();
@@ -148,9 +148,9 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   //
   // Do outward fits in ITS
   //
-  fTrackPhase = kPropBack;
+  SetTrackingPhase(kPropBack);
   int nTrESD = esdEv->GetNumberOfTracks();
-  AliInfo(Form("Will fit %d tracks",nTrESD));
+  AliInfo(Form("Will propagate back %d tracks",nTrESD));
   //
   double bz0 = GetBz();
   Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
@@ -204,6 +204,9 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     if (RefitTrack(currTr,fITS->GetRMax())) { // propagate to exit from the ITS/TPC screen
       UpdateESDTrack(currTr,AliESDtrack::kITSout);
     }
+    else {
+      AliInfo(Form("Refit Failed for track %d",itr));
+    }
     //
   }
   //
@@ -211,13 +214,34 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
 }
 
 //_________________________________________________________________________
-Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent * /*event*/)
+Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
 {
   //
-  // To be implemented 
+  // refit the tracks inward, using current cov.matrix
   //
-  
-  Info("RefitInward","To be implemented");
+  SetTrackingPhase(kRefitInw);
+  Int_t nTrESD = esdEv->GetNumberOfTracks();
+  AliInfo(Form("Will refit inward %d tracks",nTrESD));
+  AliITSUTrackHyp *currTr=0;
+  //
+  for (int itr=0;itr<nTrESD;itr++) {
+    AliESDtrack *esdTr = esdEv->GetTrack(itr);
+    // Start time integral and add distance from current position to vertex 
+    UInt_t trStat = esdTr->GetStatus();
+    if ( !(trStat & AliESDtrack::kITSout) ) continue;
+    if (   trStat & AliESDtrack::kITSrefit ) continue; // already done
+    if (  (trStat & AliESDtrack::kTPCout) && !(trStat & AliESDtrack::kTPCrefit) ) continue;
+    //
+    currTr = GetTrackHyp(itr);
+    currTr->AliExternalTrackParam::operator=(*esdTr);  // fetch current ESDtrack kinematics
+    if (RefitTrack(currTr,fITS->GetRMin())) { // propagate up to inside radius of the beam pipe
+      UpdateESDTrack(currTr,AliESDtrack::kITSrefit);
+    }
+    else {
+      AliInfo(Form("Refit Failed for track %d",itr));
+    }
+  }    
+  //
   return 0;
 }
 
@@ -461,12 +485,14 @@ Bool_t AliITSUTrackerGlo::GoToExitFromLayer(AliITSUSeed* seed, AliITSURecoLayer*
   double xToGo = lr->GetR(dir);
   if (check) { // do we need to track till the surface of the current layer ?
     double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
+    //    AliInfo(Form(" dir:%d Cur: %e Tgt: %e",dir,Sqrt(curR2),xToGo));
     if      (dir>0) { if (curR2-xToGo*xToGo>fgkToler) return kTRUE; } // on the surface or outside of the layer
     else if (dir<0) { if (xToGo*xToGo-curR2>fgkToler) return kTRUE; } // on the surface or outside of the layer
   }
   if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
   // go via layer to its boundary, applying material correction.
   if (!PropagateSeed(seed,xToGo,fCurrMass, lr->GetMaxStep())) return kFALSE;
+  //
   return kTRUE;
   //
 }
@@ -485,6 +511,7 @@ Bool_t AliITSUTrackerGlo::GoToExitFromLayer(AliExternalTrackParam* seed, AliITSU
   if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
   // go via layer to its boundary, applying material correction.
   if (!PropagateSeed(seed,xToGo,fCurrMass, lr->GetMaxStep())) return kFALSE;
+  //
   return kTRUE;
   //
 }
@@ -860,7 +887,7 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     if (!lr->IsActive() || fClInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
     if (ilr!=lrStart && !TransportToLayer(&tmpTr,lrStart,ilr)) {
-      printf("Failed to transport %d -> %d\n",lrStart,ilr);
+      AliInfo(Form("Failed to transport %d -> %d\n",lrStart,ilr));
       return kFALSE; // go to the entrance to the layer
     }
     lrStart = ilr;
@@ -879,11 +906,20 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
     for (int icl=0;icl<nclLr;icl++) {
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
-      if (!tmpTr.Rotate(sens->GetPhiTF())) return kFALSE;
-      printf("Refit cl:%d on lr %d Need to go %.4f -> %.4f\n",icl,ilrA,tmpTr.GetX(),sens->GetXTF()+clus->GetX());
-      if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) return kFALSE;
-      if (!tmpTr.Update(clus)) return kFALSE;
-      printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
+      if (!tmpTr.Rotate(sens->GetPhiTF())) {
+	AliInfo(Form("Failed on rotate to %f",sens->GetPhiTF()));
+	return kFALSE;
+      }
+      //printf("Refit cl:%d on lr %d Need to go %.4f -> %.4f\n",icl,ilrA,tmpTr.GetX(),sens->GetXTF()+clus->GetX());
+      if (!PropagateSeed(&tmpTr,sens->GetXTF()+clus->GetX(),fCurrMass)) {
+	AliInfo(Form("Failed on propagate to %f",sens->GetXTF()+clus->GetX()));	
+	return kFALSE;
+      }
+      if (!tmpTr.Update(clus)) {
+	AliInfo(Form("Failed on Update"));		
+	return kFALSE;
+      }
+      //printf("AfterRefit: "); tmpTr.AliExternalTrackParam::Print();
       if (stopAtLastCl && ++clCount==ncl) return kTRUE; // it was requested to not propagate after last update
     }
     //
@@ -892,11 +928,17 @@ Bool_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Bool_
   // Still, try to go as close as possible to rDest.
   //
   if (lrStart!=lrStop) {
-    printf("Going to last layer %d -> %d\n",lrStart,lrStop);
-    if (!TransportToLayer(&tmpTr,lrStart,lrStop)) return kTRUE;    
-    if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) return kFALSE; // go till the exit from layer
+    //printf("Going to last layer %d -> %d\n",lrStart,lrStop);
+    if (!TransportToLayer(&tmpTr,lrStart,lrStop)) {
+      AliInfo(Form("Failed on TransportToLayer %d->%d",lrStart,lrStop));		
+      return kTRUE;
+    }    
+    if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) {
+      AliFatal(Form("Failed on GoToExitFromLayer %d",lrStop));		
+      return kTRUE; // go till the exit from layer
+    }
     //
-    printf("On exit from last layer\n");
+    //printf("On exit from last layer\n");
     tmpTr.AliExternalTrackParam::Print();
     // go to the destination radius
     if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),dir)) return kTRUE;
