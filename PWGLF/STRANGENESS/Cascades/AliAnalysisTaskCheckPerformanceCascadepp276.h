@@ -7,9 +7,9 @@
 // //        AliAnalysisTaskCheckPerformanceCascadePbPb class
 // //            This task is for a performance study of cascade identification.
 // //            It works with MC info and ESD and AOD tree 
-// //            Origin   : A.Maire Jan2010, antonin.maire@ires.in2p3.fr
+// //            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
 // //            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
-// //            Modified : D. Colella Feb2012, domenico.colella@ba.infn.it
+// //            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
 // //-----------------------------------------------------------------
 
 class TList;
@@ -89,9 +89,9 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
          TH1F *fHistCascadeMultiplicityBeforeAnySel;
          TH1F *fHistCascadeMultiplicityAfterSDDSel;
          TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
-         TH1F *fHistCascadeMultiplicityAfterVertexCutSel;
          TH1F *fHistCascadeMultiplicityForSelEvtNoTPCOnly;
          TH1F *fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup;
+         TH1F *fHistCascadeMultiplicityAfterVertexCutSel;
          TH1F *fHistnXiPlusPerEvTot;                  // After any event selections, in all the eta and pt range
          TH1F *fHistnXiMinusPerEvTot;                 // After any event selections, in all the eta and pt range
          TH1F *fHistnOmegaPlusPerEvTot;               // After any event selections, in all the eta and pt range
@@ -107,14 +107,14 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
          // Tracks multiplicity plots
          TH1F *fHistTrackMultiplicityBeforeAnySel;
          TH1F *fHistTrackMultiplicityAfterSDDSel;
-         TH1F * fHistTrackMultiplicityAfterPhysicsSel;
-         TH1F *fHistTrackMultiplicityAfterVertexCutSel;
+         TH1F *fHistTrackMultiplicityAfterPhysicsSel;
          TH1F *fHistTrackMultiplicityForSelEvtNoTPCOnly;
          TH1F *fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup;
+         TH1F *fHistTrackMultiplicityAfterVertexCutSel;
          // Vertex position plots (BestVertex)
-         TH1F *fHistPVx;                              // After SDD and Physics event selectione but before any other event selections
-         TH1F *fHistPVy;                              // After SDD and Physics event selectione but before any other event selections
-         TH1F *fHistPVz;                              // After SDD and Physics event selectione but before any other event selections
+         TH1F *fHistPVx;                              // After any selections but before |Z| < 10 cm
+         TH1F *fHistPVy;                              // After any selections but before |Z| < 10 cm
+         TH1F *fHistPVz;                              // After any selections but before |Z| < 10 cm
          TH1F *fHistPVxAnalysis;                      // After any event selections 
          TH1F *fHistPVyAnalysis;                      // After any event selections
          TH1F *fHistPVzAnalysis;                      // After any event selections

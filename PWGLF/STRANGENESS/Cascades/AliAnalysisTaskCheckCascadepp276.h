@@ -11,11 +11,10 @@
 //                   Origin:  AliAnalysisTaskESDCheckV0 by Boris Hippolyte Nov2007, hippolyt@in2p3.fr
 //                2. Prepare the plots which stand as raw material for yield extraction (wi/wo PID)
 //                3. Supply an AliCFContainer meant to define the optimised topological selections
-//                4. Rough azimuthal correlation study (Eta, Phi)
 //                Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
 //                Modified :           A.Maire Mar2010, antonin.maire@ires.in2p3.fr
 //                Modified for PbPb analysis: M. Nicassio Feb 2011, maria.nicassio@ba.infn.it
-//                Modified for pp2.76 analysis: D. Colella Feb2012, domenico.colella@ba.infn.it
+//                Modified for pp@2.76 analysis: D. Colella Feb2012, domenico.colella@ba.infn.it
 //-----------------------------------------------------------------
 
 class TList;
@@ -42,11 +41,6 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
-  /*void   DoAngularCorrelation(const Char_t   *lCascType, 
-				            Double_t  lInvMassCascade, 
-				            const Int_t    *lArrTrackID,
-				            TVector3 &lTVect3MomXi, 
-				            Double_t  lEtaXi);*/
   virtual Int_t  DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent);
          //virtual Int_t  Tracks2V0vertices(AliESDEvent *event);  
          //virtual Int_t  V0sTracks2CascadeVertices(AliESDEvent *event); 
@@ -58,21 +52,21 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
          //virtual Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
   virtual void   Terminate(Option_t *);
   
-  void SetAnalysisType               (const char* analysisType          = "ESD") { fAnalysisType                = analysisType;               }
-  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
-  void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE) { fkSDDSelectionOn             = sddOnSelection;             }
-  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx = qualityCutNoTPConlyPrimVtx; }
-  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit         = qualityCutTPCrefit;         }
-  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls          = qualityCutnTPCcls;          }
-  void SetQualityCutPileup           (Bool_t qualityCutPileup           = kTRUE) { fkQualityCutPileup           = qualityCutPileup;           }
-  void SetWithSDDOn                  (Bool_t withsddOn                  = kTRUE) { fwithSDD                     = withsddOn;                  }
-  void SetQualityCutMinnTPCcls       (Int_t  minnTPCcls                 = 70   ) { fMinnTPCcls                  = minnTPCcls;                 }
-  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections            = extraSelections;            }
-  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                   }
-  void SetVertexRangeMin             (Float_t vtxrangemin               = 0.   ) { fVtxRangeMin                 = vtxrangemin;                }
-  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks    = minptdaughtrks;             }
-  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks              = 0.   ) { fEtaCutOnDaughterTracks      = etadaughtrks;               }
+  void SetAnalysisType               (const char* analysisType          = "ESD"  ) { fAnalysisType                = analysisType;               }
+  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = kFALSE ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
+  void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE  ) { fkSDDSelectionOn             = sddOnSelection;             }
+  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE  ) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE  ) { fkQualityCutNoTPConlyPrimVtx = qualityCutNoTPConlyPrimVtx; }
+  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE  ) { fkQualityCutTPCrefit         = qualityCutTPCrefit;         }
+  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE  ) { fkQualityCutnTPCcls          = qualityCutnTPCcls;          }
+  void SetQualityCutPileup           (Bool_t qualityCutPileup           = kTRUE  ) { fkQualityCutPileup           = qualityCutPileup;           }
+  void SetWithSDDOn                  (Bool_t withsddOn                  = kTRUE  ) { fwithSDD                     = withsddOn;                  }
+  void SetQualityCutMinnTPCcls       (Int_t  minnTPCcls                 = 70     ) { fMinnTPCcls                  = minnTPCcls;                 }
+  void SetExtraSelections            (Bool_t extraSelections            = kFALSE ) { fkExtraSelections            = extraSelections;            }
+  void SetVertexRange                (Float_t vtxrange                  = 10.0   ) { fVtxRange                    = vtxrange;                   }
+  void SetVertexRangeMin             (Float_t vtxrangemin               = 0.0    ) { fVtxRangeMin                 = vtxrangemin;                }
+  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.0    ) { fMinPtCutOnDaughterTracks    = minptdaughtrks;             }
+  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks              = 0.8    ) { fEtaCutOnDaughterTracks      = etadaughtrks;               }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -108,16 +102,16 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
         TH1F   *fHistCascadeMultiplicityBeforeAnySel;                 //! Cascade multiplicity distribution before any evnt selection 
         TH1F   *fHistCascadeMultiplicityAfterSDDSel;                  //! Cascade multiplicity distribution after evnt selection on the SDD
         TH1F   *fHistCascadeMultiplicityAfterPhysicsSel;              //! Cascade multiplicity distribution after evnt Physics Selection  
-        TH1F   *fHistCascadeMultiplicityAfterVertexCutSel;            //! Cascade multiplicity distribution after evnt selection on the Z vertex position cut
         TH1F   *fHistCascadeMultiplicityForSelEvtNoTPCOnly;           //! Cascade multiplicity distribution after evnt noTPCOnly selection
         TH1F   *fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup;   //! Cascade multiplicity distribution after evnt PileUp selection
+        TH1F   *fHistCascadeMultiplicityAfterVertexCutSel;            //! Cascade multiplicity distribution after evnt selection on the Z vertex position cut
         // Tracks multiplicity plots
         TH1F   *fHistTrackMultiplicityBeforeAnySel;                   //! Track multiplicity distribution before any evnt selection  
         TH1F   *fHistTrackMultiplicityAfterSDDSel;                    //! Track multiplicity distribution after evnt selection on the SDD
         TH1F   *fHistTrackMultiplicityAfterPhysicsSel;                //! Track multiplicity distribution after evnt Physics Selection
-        TH1F   *fHistTrackMultiplicityAfterVertexCutSel;              //! Track multiplicity distribution after evnt selection on the Z vertex position cut
         TH1F   *fHistTrackMultiplicityForSelEvtNoTPCOnly;             //! Track multiplicity distribution after evnt noTPCOnly selection
         TH1F   *fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup;     //! Track multiplicity distributionafter evnt PileUp selection
+        TH1F   *fHistTrackMultiplicityAfterVertexCutSel;              //! Track multiplicity distribution after evnt selection on the Z vertex position cut
         // Vertex position plots (BestVertex)
         TH1F   *fHistPVx;                                             //! Best primary vertex X position distribution after all evnt selection
         TH1F   *fHistPVy;                                             //! Best primary vertex Y position distribution after all evnt selection
@@ -180,11 +174,11 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
         TH2F   *f2dHistDcaV0DaughtersXivsInvMass;                     //! cut variables vs inv. mass 
         TH2F   *f2dHistDcaV0ToPrimVertexXivsInvMass;                  //! cut variables vs inv. mass 
         // Containers for cuts study 
-	AliCFContainer  *fCFContCascadePIDXiMinus;                       //! for Xi-   : Container to store any 3D histos with the different PID flavours
-	AliCFContainer  *fCFContCascadePIDXiPlus;                        //! for Xi+   : Container to store any 3D histos with the different PID flavours
-	AliCFContainer  *fCFContCascadePIDOmegaMinus;                    //! for Omega-: Container to store any 3D histos with the different PID flavours
-	AliCFContainer  *fCFContCascadePIDOmegaPlus;                     //! for Omega+: Container to store any 3D histos with the different PID flavours
-	AliCFContainer  *fCFContCascadeCuts;                             //! Container meant to store all the relevant distributions corresponding to the cut variables
+        AliCFContainer  *fCFContCascadePIDXiMinus;                       //! for Xi-   : Container to store any 3D histos with the different PID flavours
+        AliCFContainer  *fCFContCascadePIDXiPlus;                        //! for Xi+   : Container to store any 3D histos with the different PID flavours
+        AliCFContainer  *fCFContCascadePIDOmegaMinus;                    //! for Omega-: Container to store any 3D histos with the different PID flavours
+        AliCFContainer  *fCFContCascadePIDOmegaPlus;                     //! for Omega+: Container to store any 3D histos with the different PID flavours
+        AliCFContainer  *fCFContCascadeCuts;                             //! Container meant to store all the relevant distributions corresponding to the cut variables
 
 
   AliAnalysisTaskCheckCascadepp276(const AliAnalysisTaskCheckCascadepp276&);            // not implemented
