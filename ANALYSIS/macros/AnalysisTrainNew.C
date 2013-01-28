@@ -501,12 +501,22 @@ void AddAnalysisTasks()
       if (!taskunicor) ::Warning("AnalysisTrainNew", "AliAnalysisTaskUnicor cannot run for this train conditions - EXCLUDED");
    }   
 
-   // FMD
+   // Forward Multiplicity
    AliAnalysisManager::SetCommonFileName("forward.root");
    if (iPWG2forward) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis/AddTaskFMD.C");
-      AliFMDAnalysisTaskSE *taskfmd = AddTaskFMD();
-      if (!taskfmd) ::Warning("AnalysisTrainNew", "AliFMDAnalysisTaskSE cannot run for this train conditions - EXCLUDED");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwardMult.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C");
+      Bool_t   mc  = false;
+      UShort_t sys = 0; // 0: get from data, 1: pp, 2: AA 
+      UShort_t sNN = 0; // 0: get from data, otherwise center of mass
+			// energy (per nucleon pair)
+      Short_t  fld = 0; // 0: get from data, otherwise L3 field in kG
+      AliAnalysisTask *taskForward = AddTaskForwardMult(mc, sys, sNN, fld);
+      if (!taskForward) 
+	::Warning("AnalysisTrainNew", "AliForwardMultiplicityTask cannot run for this train conditions - EXCLUDED");
+      AliAnalysisTask *taskCentral = AddTaskCentralMult(mc, sys, sNN, fld);
+      if (!taskCentral) 
+	::Warning("AnalysisTrainNew", "AliCentralMultiplicityTask cannot run for this train conditions - EXCLUDED");
    }   
    AliAnalysisManager::SetCommonFileName("PWG2histograms.root");
 
@@ -993,7 +1003,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }   
    // PWG2 FORWARD
    if (iPWG2forward) {
-      if (!LoadLibrary("PWG2forward", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("PWG2forward2", mode, kTRUE)) return kFALSE;
    }   
    // PWG3 Vertexing HF
    if (iPWG3vertexing || iPWG3d2h) {

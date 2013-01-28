@@ -153,7 +153,8 @@ public:
    // .txt file containing the list of files to be chained in test mode
    virtual void        SetFileForTestMode(const char *filename)          {fFileForTestMode = filename;}
    virtual TChain     *GetChainForTestMode(const char *treeName) const;
-
+   virtual const TString& GetGridJobIDs() const { return fGridJobIDs; }
+   virtual const TString& GetGridStages() const { return fGridStages; }
 protected:
    void                CdWork();
    Bool_t              CheckInputData();
@@ -238,7 +239,9 @@ private:
    TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
    TMap             fProofParam;      // Key-value pairs for proof mode
    Bool_t           fDropToShell;     // If true, execute aliensh on start
-   
-   ClassDef(AliAnalysisAlien, 21)   // Class providing some AliEn utilities
+   TString          fGridJobIDs;      // List of last committed jobs
+   TString          fGridStages;      // List of last committed jobs
+
+   ClassDef(AliAnalysisAlien, 22)   // Class providing some AliEn utilities
 };
 #endif

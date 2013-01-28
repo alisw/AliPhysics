@@ -139,7 +139,9 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fPackages(0),
                   fModules(0),
                   fProofParam(),
-                  fDropToShell(true)
+  fDropToShell(true),
+  fGridJobIDs(""),
+  fGridStages("")
 {
 // Dummy ctor.
    SetDefaults();
@@ -214,7 +216,9 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fPackages(0),
                   fModules(0),
                   fProofParam(),
-                  fDropToShell(true)
+                  fDropToShell(true),
+                  fGridJobIDs(""),
+                  fGridStages("")
 {
 // Default ctor.
    SetDefaults();
@@ -289,7 +293,9 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fPackages(0),
                   fModules(0),
                   fProofParam(),
-                  fDropToShell(other.fDropToShell)
+                  fDropToShell(other.fDropToShell),
+                  fGridJobIDs(other.fGridJobIDs),
+                  fGridStages(other.fGridStages)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -403,6 +409,8 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fProofProcessOpt         = other.fProofProcessOpt;
       fMergeDirName            = other.fMergeDirName;
       fDropToShell             = other.fDropToShell;
+      fGridJobIDs              = other.fGridJobIDs;
+      fGridStages              = other.fGridStages;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -2596,19 +2604,26 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    // Check if this is the last stage to be done.
    Bool_t laststage = (nfiles<nperchunk);
    if (fMaxMergeStages && stage>=fMaxMergeStages) laststage = kTRUE;
+   Int_t jobId = 0;
    if (laststage) {
       printf("### Submiting final merging stage %d\n", stage);
       TString finalJDL = jdl;
       finalJDL.ReplaceAll(".jdl", "_final.jdl");
       TString query = Form("submit %s %s %d", finalJDL.Data(), aliendir, stage);
-      Int_t jobId = SubmitSingleJob(query);
-      if (!jobId) return kFALSE;      
+      jobId = SubmitSingleJob(query);
    } else {
       printf("### Submiting merging stage %d\n", stage);
       TString query = Form("submit %s %s %d", jdl, aliendir, stage);
-      Int_t jobId = SubmitSingleJob(query);
-      if (!jobId) return kFALSE;           
+      jobId = SubmitSingleJob(query);
    }
+   if (!jobId) return kFALSE;           
+
+   if (!fGridJobIDs.IsNull()) fGridJobIDs.Append(" ");
+   fGridJobIDs.Append(Form("%d", jobId));
+   if (!fGridStages.IsNull()) fGridStages.Append(" ");
+   fGridStages.Append(Form("%s_merge_stage%d", 
+			   laststage ? "final" : "partial", stage));
+
    return kTRUE;   
 }        
 
@@ -2650,8 +2665,9 @@ Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
       ::Error("SubmitSingleJob", "Your query %s could not be submitted", query);
       return 0;
    }
-   printf(" Job id: %s\n", jobId.Data());
-   return atoi(jobId);
+   Int_t ijobId = jobId.Atoi();
+   printf(" Job id: '%s' (%d)\n", jobId.Data(), ijobId);
+   return ijobId; 
 }  
 
 //______________________________________________________________________________
@@ -3455,6 +3471,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    gGrid->Cd(fGridOutputDir);
    TGridResult *res;
    TString jobID = "";
+   fGridJobIDs = "";
+   fGridStages = "";
    if (!fRunNumbers.Length() && !fRunRange[0]) {
       // Submit a given xml or a set of runs
       res = gGrid->Command(Form("submit %s", fJDLName.Data()));
@@ -3472,6 +3490,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             \n_______________________________________________________________________",
                    fJDLName.Data(), cjobId);
             jobID = cjobId;      
+	    if (jobID.Atoi()) { 
+	      if (!fGridJobIDs.IsNull()) fGridJobIDs.Append(" ");
+	      fGridJobIDs.Append(jobID);
+	      if (!fGridStages.IsNull()) fGridStages.Append(" ");
+	      fGridStages.Append("full");
+	    }
          }          
          delete res;
       } else {
@@ -3481,6 +3505,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    } else {
       // Submit for a range of enumeration of runs.
       if (!Submit()) return kFALSE;
+      jobID = fGridJobIDs;
    }   
          
    if (fDropToShell) {
@@ -3741,6 +3766,10 @@ Bool_t AliAnalysisAlien::SubmitNext()
             \n#####   Your JDL %s submitted (%d to go). \nTHE JOB ID IS: %s \
             \n_______________________________________________________________________",
                 fJDLName.Data(), nmasterjobs-fNsubmitted-1, cjobId1.Data());
+	    if (!fGridJobIDs.IsNull()) fGridJobIDs.Append(" ");
+	    fGridJobIDs.Append(cjobId1);
+	    if (!fGridStages.IsNull()) fGridStages.Append(" ");
+	    fGridStages.Append("full");
             jobID += cjobId1;
             jobID += " ";
             lastmaster = cjobId1.Atoi();
