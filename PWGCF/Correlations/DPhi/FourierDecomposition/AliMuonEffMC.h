@@ -20,6 +20,7 @@ class AliESDtrackCuts;
 class AliEvtPoolManager;
 class AliMCEvent;
 class AliESDMuonTrack;
+class AliAODTrack;
 #include "AliAnalysisTaskSE.h"
 
 
@@ -45,6 +46,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
  protected:
   Bool_t       VertexOk(TObject* obj) const;
   Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
+  Bool_t       IsGoodMUONtrack(AliAODTrack &track);
 
  private:
   AliESDEvent *fESD;               //! ESD object
@@ -56,15 +58,15 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   TH1D        *fHEventStat;        //! statistics histo
   TH2F        *fHEvt;              //! Cent, vtx
 
-  Bool_t       fIsMc;              //! 
-  Bool_t       fMDProcess;         //! (mother hadron) : (daughter muon) QA 
+  Bool_t       fIsMc;              //
+  Bool_t       fMDProcess;         // (mother hadron) : (daughter muon) QA 
 
-  TString      fCentralityEstimator;//! 
-  Int_t        fNEtaBins;          //! number of eta bins
-  Int_t        fNpTBins;           //! number of p_T bins
-  Int_t        fNCentBins;         //! number of centrality bins
-  Int_t        fNZvtxBins;         //! number of Z-vertex bins
-  Int_t        fNPhiBins;          //! number of phi bins
+  TString      fCentralityEstimator;// 
+  Int_t        fNEtaBins;          // number of eta bins
+  Int_t        fNpTBins;           // number of p_T bins
+  Int_t        fNCentBins;         // number of centrality bins
+  Int_t        fNZvtxBins;         // number of Z-vertex bins
+  Int_t        fNPhiBins;          // number of phi bins
 
   THn         *fHMuonParGen;       //! truth muon track eta, p_T, Centrality, Z-vertex, phi 
   THn         *fHMuonDetGen;       //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi 
@@ -82,7 +84,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 1);
+  ClassDef(AliMuonEffMC, 2);
 };
 
 #endif

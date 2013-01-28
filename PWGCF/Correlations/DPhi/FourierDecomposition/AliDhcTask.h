@@ -21,6 +21,7 @@ class AliAODEvent;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDMuonTrack;
+class AliAODTrack;
 class AliEvtPoolManager;
 
 
@@ -28,7 +29,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
  public:
   AliDhcTask();
   AliDhcTask(const char *name);
-  virtual ~AliDhcTask() {}
+  virtual ~AliDhcTask();
   
   void         SetCentBins(TAxis *bins)               { fBCent=bins;              }
   void         SetCentMethod(const char *name)        { fCentMethod = name;       }
@@ -62,6 +63,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         GetAODTracks(MiniEvent*);
   Bool_t       VertexOk(TObject* obj) const;
   Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
+  Bool_t       IsGoodMUONtrack(AliAODTrack &track);
   Double_t     DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, 
 			Double_t rangeMax = 3*TMath::Pi()/2) const;

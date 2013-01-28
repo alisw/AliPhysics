@@ -520,46 +520,43 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
       Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
       miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
-    return;
-  }
+  } else {
+    TList *list = InputEvent()->GetList();
+    TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
 
-  TList *list = InputEvent()->GetList();
-  TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
-
-  if(!tcaTracks){
-    AliError("Ptr to tcaTracks zero");
-    return;
-  }
-
-  const Int_t ntracks = tcaTracks->GetEntries();
-  if (miniEvt)
-    miniEvt->reserve(ntracks);
-  else {
-    AliError("Ptr to miniEvt zero");
-    return;
-  }
-
-  for(Int_t itrack = 0; itrack < ntracks; itrack++) {
-    AliVTrack *esdtrack = static_cast<AliESDtrack*>(tcaTracks->At(itrack));
-    if(!esdtrack) {
-      AliError(Form("ERROR: Could not retrieve esdtrack %d",itrack));
-      continue;
+    if(!tcaTracks){
+      AliError("Ptr to tcaTracks zero");
+      return;
     }
-    Double_t pt = esdtrack->Pt();
-    Double_t eta  = esdtrack->Eta();
-    Double_t phi  = esdtrack->Phi();
-    Int_t    sign = esdtrack->Charge() > 0 ? 1 : -1;
-    miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+
+    const Int_t ntracks = tcaTracks->GetEntries();
+    if (miniEvt)
+      miniEvt->reserve(ntracks);
+    else {
+      AliError("Ptr to miniEvt zero");
+      return;
+    }
+
+    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+      AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
+      if (!vtrack) {
+        AliError(Form("ERROR: Could not retrieve track %d",itrack));
+        continue;
+      }
+      Double_t pt   = vtrack->Pt();
+      Double_t eta  = vtrack->Eta();
+      Double_t phi  = vtrack->Phi();
+      Int_t    sign = vtrack->Charge() > 0 ? 1 : -1;
+      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+    }
   }
 
   if (fFillMuons) {
-    Double_t ptMu, etaMu, phiMu;
-    Int_t signMu;
     // count good muons
     Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
-      if(muonTrack) {
+      if (muonTrack) {
           if (IsGoodMUONtrack(*muonTrack)) nGoodMuons++;
       }
     }
@@ -567,12 +564,13 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
     // fill them into the mini event
     for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
-      if(muonTrack) {
-        if(!IsGoodMUONtrack(*muonTrack)) continue;
-        ptMu   = muonTrack->Pt();
-        etaMu  = muonTrack->Eta();
-        phiMu  = muonTrack->Phi();
-        signMu = muonTrack->Charge() > 0 ? 1 : -1;
+      if (muonTrack) {
+        if (!IsGoodMUONtrack(*muonTrack)) 
+          continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        Double_t phiMu  = muonTrack->Phi();
+        Double_t signMu = muonTrack->Charge() > 0 ? 1 : -1;
         miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
       }
     }
@@ -584,65 +582,122 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
 {
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
 
-  Int_t nTrax = fAOD->GetNumberOfTracks();
-  Int_t nSelTrax = 0;
+  if (fTracksName.IsNull()) {
+    Int_t nTrax = fAOD->GetNumberOfTracks();
+    Int_t nSelTrax = 0;
 
-  if (fVerbosity > 2)
-    AliInfo(Form("%d tracks in event",nTrax));
+    if (fVerbosity > 2)
+      AliInfo(Form("%d tracks in event",nTrax));
 
-  // Loop 1.
-  for (Int_t i = 0; i < nTrax; ++i) {
-    AliAODTrack* aodtrack = fAOD->GetTrack(i);
-    if (!aodtrack) {
-      AliError(Form("Couldn't get AOD track %d\n", i));
-      continue;
+    // Loop 1.
+    for (Int_t i = 0; i < nTrax; ++i) {
+      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      if (!aodtrack) {
+        AliError(Form("Couldn't get AOD track %d\n", i));
+        continue;
+      }
+      // See $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
+      UInt_t tpcOnly = 1 << 7;
+      Bool_t trkOK = aodtrack->TestFilterBit(tpcOnly);
+      if (!trkOK)
+        continue;
+      Double_t pt = aodtrack->Pt();
+      Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
+      if (!ptOK)
+        continue;
+      Double_t eta = aodtrack->Eta();
+      if (TMath::Abs(eta) > fEtaMax)
+        continue;
+      nSelTrax++;
     }
-    // See $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
-    UInt_t tpcOnly = 1 << 7;
-    Bool_t trkOK = aodtrack->TestFilterBit(tpcOnly);
-    if (!trkOK)
-      continue;
-    Double_t pt = aodtrack->Pt();
-    Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
-    if (!ptOK)
-      continue;
-    Double_t eta = aodtrack->Eta();
-    if (TMath::Abs(eta) > fEtaMax)
-      continue;
-    nSelTrax++;
-  }
 
-  if (miniEvt)
-    miniEvt->reserve(nSelTrax);
-  else {
-    AliError("!miniEvt");
-    return;
-  }
+    if (miniEvt)
+      miniEvt->reserve(nSelTrax);
+    else {
+      AliError("!miniEvt");
+      return;
+    }
   
-  // Loop 2.  
-  for (Int_t i = 0; i < nTrax; ++i) {
-    AliAODTrack* aodtrack = fAOD->GetTrack(i);
-    if (!aodtrack) {
-      AliError(Form("Couldn't get AOD track %d\n", i));
-      continue;
-    }
+    // Loop 2.  
+    for (Int_t i = 0; i < nTrax; ++i) {
+      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      if (!aodtrack) {
+        AliError(Form("Couldn't get AOD track %d\n", i));
+        continue;
+      }
     
-    // See $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
-    UInt_t tpcOnly = 1 << 7;
-    Bool_t trkOK = aodtrack->TestFilterBit(tpcOnly);
-    if (!trkOK)
-      continue;
-    Double_t pt = aodtrack->Pt();
-    Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
-    if (!ptOK)
-      continue;
-    Double_t eta  = aodtrack->Eta();
-    if (TMath::Abs(eta) > fEtaMax)
-      continue;
+      // See $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
+      UInt_t tpcOnly = 1 << 7;
+      Bool_t trkOK = aodtrack->TestFilterBit(tpcOnly);
+      if (!trkOK)
+        continue;
+      Double_t pt = aodtrack->Pt();
+      Bool_t ptOK = pt >= fPtMin && pt < fPtMax;
+      if (!ptOK)
+        continue;
+      Double_t eta  = aodtrack->Eta();
+      if (TMath::Abs(eta) > fEtaMax)
+        continue;
+      
+      Double_t phi  = aodtrack->Phi();
+      Int_t    sign = aodtrack->Charge() > 0 ? 1 : -1;
+      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+    }
+  } else {
+    TList *list = InputEvent()->GetList();
+    TClonesArray *tcaTracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracksName));
 
-    Double_t phi  = aodtrack->Phi();
-    Int_t    sign = aodtrack->Charge() > 0 ? 1 : -1;
-    miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+    if (!tcaTracks){
+      AliError("Ptr to tcaTracks zero");
+      return;
+    }
+
+    const Int_t ntracks = tcaTracks->GetEntries();
+    if (miniEvt)
+      miniEvt->reserve(ntracks);
+    else {
+      AliError("Ptr to miniEvt zero");
+      return;
+    }
+
+    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+      AliVTrack *vtrack = static_cast<AliVTrack*>(tcaTracks->At(itrack));
+      if (!vtrack) {
+        AliError(Form("ERROR: Could not retrieve vtrack %d",itrack));
+        continue;
+      }
+      Double_t pt   = vtrack->Pt();
+      Double_t eta  = vtrack->Eta();
+      Double_t phi  = vtrack->Phi();
+      Int_t    sign = vtrack->Charge() > 0 ? 1 : -1;
+      miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
+    }
+  }
+
+  if (fFillMuons) {
+    // count good muons
+    Int_t nGoodMuons = 0;
+    for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
+      AliAODTrack* muonTrack = fAOD->GetTrack(iMu);
+      if(muonTrack) {
+        if (IsGoodMUONtrack(*muonTrack)) 
+          nGoodMuons++;
+      }
+    }
+    miniEvt->reserve(miniEvt->size()+nGoodMuons);
+    // fill them into the mini event
+    for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
+      AliAODTrack* muonTrack = fAOD->GetTrack(iMu);
+      if (muonTrack) {
+        if (!IsGoodMUONtrack(*muonTrack)) 
+          continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        Double_t phiMu  = muonTrack->Phi();
+        Double_t signMu = muonTrack->Charge() > 0 ? 1 : -1;
+        miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
+      }
+    }
   }
 }
 
@@ -687,8 +742,8 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
   TH2  **hist = fHMs;
   if (pairing == kSameEvt) {
     hist = fHSs;
-    fHCent->AddBinContent(cbin);
-    fHZvtx->AddBinContent(zbin);
+    fHCent->Fill(fCentrality);
+    fHZvtx->Fill(fZVertex);
   }
 
   Int_t nZvtx = fHZvtx->GetNbinsX();
@@ -806,7 +861,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       bCountTrg = kTRUE;
 
       if (pairing == kSameEvt) {
-        fHPtAss->AddBinContent(bbin);
+        fHPtAss->Fill(ptb);
       }
     }
     if (bCountTrg) {
@@ -826,12 +881,6 @@ void AliDhcTask::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-
-  delete fPoolMgr;
-  fHCent->SetEntries(fHCent->Integral());
-  fHZvtx->SetEntries(fHZvtx->Integral());
-  fHPtTrg->SetEntries(fHPtTrg->Integral());
-  fHPtAss->SetEntries(fHPtAss->Integral());
 }
 
 //________________________________________________________________________
@@ -877,15 +926,45 @@ Bool_t AliDhcTask::VertexOk(TObject* obj) const
 //________________________________________________________________________
 Bool_t AliDhcTask::IsGoodMUONtrack(AliESDMuonTrack &track)
 {
-    // Applying track cuts for MUON tracks
-    if(!track.ContainTrackerData()) return kFALSE;
-    if(!track.ContainTriggerData()) return kFALSE;
-    Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
-    Double_t eta = track.Eta();
-    if(!(thetaTrackAbsEnd >= 2. && thetaTrackAbsEnd <= 10. && eta >= -4. && eta <= -2.5)) return kFALSE;
-    if(track.GetMatchTrigger() <= 0) return kFALSE;
-    // if(track.Pt() <= 1.0) return kFALSE;
-    //  if(track.GetNormalizedChi2() >= 4.0) return kFALSE;
-    
-    return kTRUE;
+  // Applying track cuts for MUON tracks
+
+  if (!track.ContainTrackerData()) 
+    return kFALSE;
+  if (!track.ContainTriggerData()) 
+    return kFALSE;
+  Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
+  if ((thetaTrackAbsEnd < 2.) || (thetaTrackAbsEnd > 10.)) 
+    return kFALSE;
+  Double_t eta = track.Eta();
+  if ((eta < -4.) || (eta > -2.5))
+    return kFALSE;
+  if (track.GetMatchTrigger() < 0.5) 
+    return kFALSE;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliDhcTask::IsGoodMUONtrack(AliAODTrack &track)
+{
+  // Applying track cuts for MUON tracks
+
+  if (!track.IsMuonTrack()) 
+    return kFALSE;
+  Double_t dThetaAbs = TMath::ATan(track.GetRAtAbsorberEnd()/505.)* TMath::RadToDeg();
+  if ((dThetaAbs<2.) || (dThetaAbs>10.)) 
+    return kFALSE;
+  Double_t dEta = track.Eta();
+  if ((dEta<-4.) || (dEta>2.5)) 
+    return kFALSE;
+  if (track.GetMatchTrigger()<0.5) 
+    return kFALSE;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+AliDhcTask::~AliDhcTask()
+{
+  //Destructor
+  if (fPoolMgr) 
+    delete fPoolMgr;
 }
