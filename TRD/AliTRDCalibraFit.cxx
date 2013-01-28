@@ -438,7 +438,7 @@ Bool_t AliTRDCalibraFit::AnalyseCH(const TH2I *ch)
   }
   // Mean Statistic
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit, fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit), fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -533,7 +533,7 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
   }
   // Mean Statistics
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit, fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit), fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -717,7 +717,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
   
   // Mean Statistic
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -819,7 +819,7 @@ Bool_t AliTRDCalibraFit::AnalysePH(const TProfile2D *ph)
   } // Boucle object
   // Mean Statistic
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -906,8 +906,8 @@ Bool_t AliTRDCalibraFit::AnalysePRF(const TProfile2D *prf)
   if (fNumberFit > 0) {
     AliInfo(Form("There are %d with at least one entries.",fNumberEnt));
     AliInfo(Form("%d fits have been proceeded (sucessfully or not...).",fNumberFit));
-    AliInfo(Form("There is a mean statistic of: %d over these fitted histograms and %d successfulled fits"
-                ,(Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There is a mean statistic of: %f over these fitted histograms and %d successfulled fits"
+		 ,(Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -1002,8 +1002,8 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(const TProfile2D *prf)
   if (fNumberFit > 0) {
     AliInfo(Form("There are %d with at least one entries.",fNumberEnt));
     AliInfo(Form("%d fits have been proceeded (sucessfully or not...).",fNumberFit));
-    AliInfo(Form("There is a mean statistic of: %d over these fitted histograms and %d successfulled fits"
-                ,(Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There is a mean statistic of: %f over these fitted histograms and %d successfulled fits"
+		 ,(Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
     fStatisticMean = fStatisticMean / fNumberFit;
   }
   else {
@@ -1081,7 +1081,7 @@ Bool_t AliTRDCalibraFit::AnalysePRF(AliTRDCalibraVector *calvect)
   } // Boucle object
   // Mean Statistics
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
   }
   else {
     AliInfo(Form("There are %d with at least one entries. There is no fit!",fNumberEnt));
@@ -1184,7 +1184,7 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(AliTRDCalibraVector *calvect)
   } // Boucle object
   // Mean Statistics
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
   }
   else {
     AliInfo(Form("There are %d with at least one entries. There is no fit!",fNumberEnt));
@@ -1215,18 +1215,18 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
     // Take the result
     TVectorD param(2);
     TVectorD error(3);
-    fEntriesCurrent = 0;
+    Double_t entriesCurrent = 0;
     fCountDet       = idet;
     Bool_t here     = calivdli->GetParam(idet,&param);
     Bool_t heree    = calivdli->GetError(idet,&error);
     //printf("here %d and heree %d\n",here, heree);
     if(heree) {
-      fEntriesCurrent = (Int_t) error[2];
+      entriesCurrent = error[2];
       fNumberEnt++;
     }
     //printf("Number of entries %d\n",fEntriesCurrent);
     // Nothing found or not enough statistic
-    if((!heree) || (!here) || (fEntriesCurrent <= fMinEntries)) {
+    if((!heree) || (!here) || (entriesCurrent <= fMinEntries)) {
       NotEnoughStatisticLinearFitter();
       continue;
     }
@@ -1234,10 +1234,10 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
     //error.Print();
     //Statistics
     fNumberFit++;
-    fStatisticMean += fEntriesCurrent;     
+    fStatisticMean += entriesCurrent;     
 
     // Check the fit
-    if((-(param[1])) <= 0.0) {
+    if((-(param[1])) <= 0.000001) {
       NotEnoughStatisticLinearFitter();
       continue;
     }
@@ -1266,7 +1266,7 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
   }
   // Mean Statistics
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
   }
   else {
     AliInfo(Form("There are %d with at least one entries. There is no fit!",fNumberEnt));
@@ -1298,18 +1298,18 @@ Bool_t AliTRDCalibraFit::AnalyseExbAltFit(AliTRDCalibraExbAltFit *calivdli)
     // Take the result
     TVectorD param(3);
     TVectorD error(3);
-    fEntriesCurrent = 0;
+    Double_t entriesCurrent = 0;
     fCountDet       = idet;
     Bool_t here     = calivdli->GetParam(idet,&param);
     Bool_t heree    = calivdli->GetError(idet,&error);
     //printf("here %d and heree %d\n",here, heree);
     if(heree) {
-      fEntriesCurrent = (Int_t) error[2];
+      entriesCurrent =  error[2];
       fNumberEnt++;
     }
     //printf("Number of entries %d\n",fEntriesCurrent);
     // Nothing found or not enough statistic
-    if((!heree) || (!here) || (fEntriesCurrent <= fMinEntries)) {
+    if((!heree) || (!here) || (entriesCurrent <= fMinEntries)) {
       NotEnoughStatisticExbAlt();
       continue;
     }
@@ -1317,7 +1317,7 @@ Bool_t AliTRDCalibraFit::AnalyseExbAltFit(AliTRDCalibraExbAltFit *calivdli)
     //error.Print();
     //Statistics
     fNumberFit++;
-    fStatisticMean += fEntriesCurrent;
+    fStatisticMean += entriesCurrent;
 
     // Statistics   
     fNumberFitSuccess ++;
@@ -1337,7 +1337,7 @@ Bool_t AliTRDCalibraFit::AnalyseExbAltFit(AliTRDCalibraExbAltFit *calivdli)
   }
   // Mean Statistics
   if (fNumberFit > 0) {
-    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
+    AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %f over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Double_t) (fStatisticMean/fNumberFit),fNumberFitSuccess));
   }
   else {
     AliInfo(Form("There are %d with at least one entries. There is no fit!",fNumberEnt));
@@ -1399,7 +1399,7 @@ void AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinear
 
   // Fit
 
-  Int_t entries = 0;
+  Double_t entries = 0;
   TAxis *xaxis = linearfitterhisto->GetXaxis();
   TAxis *yaxis = linearfitterhisto->GetYaxis();
   TLinearFitter linearfitter = TLinearFitter(2,"pol1");
@@ -1417,12 +1417,12 @@ void AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinear
 	for(Int_t k = 0; k < (Int_t)linearfitterhisto->GetBinContent(ibinx+1,ibiny+1); k++){
 	  if(!securitybreaking){
 	    linearfitter.AddPoint(&x,y);
-	    entries++;
+	    entries = entries+1.;
 	  }
 	  else {
-	    if(entries< 1198){
+	    if(entries< 1198.0){
 	      linearfitter.AddPoint(&x,y);
-	      entries++; 
+	      entries = entries + 1.; 
 	    }
 	  }
 	}
@@ -1449,7 +1449,7 @@ void AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinear
       // Put the fCurrentCoef
       fCurrentCoef[0]  = -par[1];
       // here the database must be the one of the reconstruction for the lorentz angle....
-      if(fCurrentCoef[0] > 0.0) fCurrentCoef2[0] = (par[0]+meanvdriftused*meanexbused)/fCurrentCoef[0];
+      if(fCurrentCoef[0] > 0.00001) fCurrentCoef2[0] = (par[0]+meanvdriftused*meanexbused)/fCurrentCoef[0];
       else fCurrentCoef2[0] = 100.0;      
 
     }
