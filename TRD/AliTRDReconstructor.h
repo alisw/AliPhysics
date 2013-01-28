@@ -49,9 +49,9 @@ public:
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
-  static TClonesArray* GetClusters()             {return fgClusters;}
-  static TClonesArray* GetTracklets()            { return fgTracklets;}
-  static TClonesArray* GetTracks()               { return fgTracks;}
+  static TClonesArray* GetClusters();
+  static TClonesArray* GetTracklets(const char *trkltype = "AliTRDtrackletMCM");
+  static TClonesArray* GetTracks();
   static Int_t        GetNTimeBins()             { return fgNTimeBins;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
@@ -77,14 +77,15 @@ public:
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
-  static void         SetClusters(TClonesArray *clusters)  { fgClusters = clusters;} 
-  static void         SetTracklets(TClonesArray *tracklets) { fgTracklets = tracklets;}
-  static void         SetTracks(TClonesArray *tracks) { fgTracks = tracks;}
+ static void         SetClusters(TClonesArray *clusters)  { fgClusters = clusters;}
+ static void         SetTracklets(TClonesArray *tracklets) { fgTracklets = tracklets;}
+ static void         SetTracks(TClonesArray *tracks) { fgTracks = tracks;}
   void	              SetOption(Option_t *opt);
 
 private:
   AliTRDReconstructor(const AliTRDReconstructor &r); //Not implemented
   AliTRDReconstructor& operator = (const AliTRDReconstructor&); //Not implemented
+  void                ResetContainers() const;
 
   static Char_t const *fgSteerNames[kNsteer];//! steering names
   static Char_t const *fgSteerFlags[kNsteer];//! steering flags

@@ -118,6 +118,10 @@ AliTRDReconstructor::~AliTRDReconstructor()
   // Destructor
   //
 
+  if(fClusterizer){
+    delete fClusterizer;
+    fClusterizer = NULL;
+  }
   if(fgClusters) {
     fgClusters->Delete();
     delete fgClusters;
@@ -137,10 +141,6 @@ AliTRDReconstructor::~AliTRDReconstructor()
     for(Int_t itask = 0; itask < AliTRDrecoParam::kTRDreconstructionTasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }
-  if(fClusterizer){
-    delete fClusterizer;
-    fClusterizer = NULL;
-  }
 }
 
 
@@ -155,6 +155,7 @@ void AliTRDReconstructor::Init(){
   if(!fClusterizer){
     fClusterizer = new AliTRDclusterizer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
     fClusterizer->SetReconstructor(this);
+    AliInfo(Form("Build TRD clusterizer[%p]", (void*)fClusterizer));
   }
   
   // Make Debug Streams when Debug Streaming
@@ -176,27 +177,23 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   // Convert raw data digits into digit objects in a root tree
   //
 
-  //AliInfo("Convert raw data digits into digit objects [RawReader -> Digit TTree]");
+  AliDebug(1, "Convert raw data digits into digit objects [RawReader -> Digit TTree]");
+  AliDebug(2, Form("clusters[%p] tracklets[%p] tracks[%p]", (void*)fgClusters, (void*)fgTracklets, (void*)fgTracks));
 
-  AliTRDrawData rawData;
   rawReader->Reset();
   rawReader->Select("TRD");
+  ResetContainers();
+
+  AliTRDrawData rawData;
+  rawData.SetTracklets(GetTracklets("AliTRDtrackletMCM")); // link allocated online tracklets
+  rawData.SetTracks(GetTracks());                          // link allocated online tracks
+
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();
   delete manager;
 
-  // take over ownership of online tracklets
-  fgTracklets = rawData.TrackletsArray();
-  rawData.SetTrackletsOwner(0x0);
-
-  // take over GTU tracks
-  fgTracks = rawData.TracksArray();
-  rawData.SetTracksOwner(0x0);
-
-  for (Int_t iSector = 0; iSector < 18; iSector++) {
-    fgTriggerFlags.SetFlags(iSector, rawData.GetTriggerFlags(iSector));
-  }
+  for (Int_t iSector = 0; iSector < 18; iSector++) fgTriggerFlags.SetFlags(iSector, rawData.GetTriggerFlags(iSector));
 }
 
 //_____________________________________________________________________________
@@ -207,43 +204,22 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // Reconstruct clusters
   //
 
-  //AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
-
-
-  rawReader->Reset();
-  rawReader->Select("TRD");
-
+  AliDebug(1, "Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
+  AliDebug(2, Form("clusters[%p] tracklets[%p] tracks[%p]", (void*)fgClusters, (void*)fgTracklets, (void*)fgTracks));
   if(!fClusterizer){
     AliFatal("Clusterizer not available!");
     return;
   }
-
-  fClusterizer->ResetRecPoints();
-
+  rawReader->Reset();
+  rawReader->Select("TRD");
+  ResetContainers();
   fClusterizer->OpenOutput(clusterTree);
   fClusterizer->SetUseLabels(kFALSE);
   fClusterizer->SetStoreRawSignals(kTRUE);
+  fClusterizer->ResetRecPoints();
   fClusterizer->Raw2ClustersChamber(rawReader);
-  
   fgNTimeBins = fClusterizer->GetNTimeBins();
-  
-  // take over ownership of online tracklets
-  fgTracklets = fClusterizer->TrackletsArray();
-  fClusterizer->SetTrackletsOwner(kFALSE);
-
-  // take over GTU tracks
-  fgTracks = fClusterizer->TracksArray();
-  fClusterizer->SetTracksOwner(kFALSE);
-
-  for (Int_t iSector = 0; iSector < 18; iSector++) {
-    fgTriggerFlags.SetFlags(iSector, fClusterizer->GetTriggerFlags(iSector));
-  }
-
-  if(IsWritingClusters()) return;
-
-  // take over ownership of clusters
-  fgClusters = fClusterizer->RecPoints();
-  fClusterizer->SetClustersOwner(kFALSE);
+  for (Int_t iSector = 0; iSector < 18; iSector++) fgTriggerFlags.SetFlags(iSector, fClusterizer->GetTriggerFlags(iSector));
 }
 
 //_____________________________________________________________________________
@@ -254,35 +230,25 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // Reconstruct clusters
   //
 
-  //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
-  
-  AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
-  clusterer.SetReconstructor(this);
-  clusterer.SetUseLabels(kTRUE);
-  clusterer.SetStoreRawSignals(kTRUE);
-  clusterer.OpenOutput(clusterTree);
-  clusterer.ReadDigits(digitsTree);
-  clusterer.MakeClusters();
-
-  // read tracklets and tracks if not done during reading of raw data
-  if (!fgTracklets) {
-    clusterer.ReadTracklets();
-    fgTracklets = clusterer.TrackletsArray();
-    clusterer.SetTrackletsOwner(kFALSE);
-  }
-  if (!fgTracks) {
-    clusterer.ReadTracks();
-    fgTracks = clusterer.TracksArray();
-    clusterer.SetTracksOwner(kFALSE);
+  AliDebug(1, "Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
+  AliDebug(2, Form("Start :: clusters[%p] tracklets[%p] tracks[%p]", (void*)fgClusters, (void*)fgTracklets, (void*)fgTracks));
+  if(!fClusterizer){
+    AliFatal("Clusterizer not available!");
+    return;
   }
 
-  fgNTimeBins = clusterer.GetNTimeBins();
-
-  if(IsWritingClusters()) return;
-
-  // take over ownership of clusters
-  fgClusters = clusterer.RecPoints();
-  clusterer.SetClustersOwner(kFALSE);
+  if(fgClusters){
+    AliDebug(1, Form("Removing %5d clusters @ %p", fgClusters->GetEntriesFast(), (void*)fgClusters));
+    fgClusters->Clear();
+  }
+  AliTRDclusterizer clusterizer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
+  clusterizer.SetReconstructor(this);
+  clusterizer.SetUseLabels(kTRUE);
+  clusterizer.SetStoreRawSignals(kTRUE);
+  clusterizer.OpenOutput(clusterTree);
+  clusterizer.ReadDigits(digitsTree);
+  clusterizer.MakeClusters();
+  fgNTimeBins = clusterizer.GetNTimeBins();
 }
 
 //_____________________________________________________________________________
@@ -295,6 +261,7 @@ AliTracker *AliTRDReconstructor::CreateTracker() const
   //return new AliTRDtracker(NULL);
   AliTRDtrackerV1 *tracker = new AliTRDtrackerV1();
   tracker->SetReconstructor(this);
+  AliInfo(Form("Build TRD tracker[%p]", (void*)tracker));
   return tracker;
 
 }
@@ -309,25 +276,19 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   //
 
   // ----- filling tracklets -----
-  AliDebug(1, Form("Filling tracklets from %p (%i)",
-		   fgTracklets, fgTracklets ? fgTracklets->GetEntriesFast() : 0));
+  AliDebug(1, Form("Loading onl.tracklets(%i) to ESD", fgTracklets ? fgTracklets->GetEntriesFast() : 0));
   Int_t trackletIndex[1080] = { 0 };
   TList trklList;
   AliTRDrawStream::SortTracklets(fgTracklets, trklList, trackletIndex);
   TIter trackletIter(&trklList);
   while (AliTRDtrackletBase* tracklet = (AliTRDtrackletBase*) trackletIter()) {
     Int_t label = -2; // mark raw tracklets with label -2
-    if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet))
-      label = trklMCM->GetLabel();
-
-    AliESDTrdTracklet *esdTracklet = new AliESDTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label);
-
-    esd->AddTrdTracklet(esdTracklet);
+    if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet)) label = trklMCM->GetLabel();
+    esd->AddTrdTracklet(new AliESDTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label));
   }
 
   // ----- filling GTU tracks -----
-  AliDebug(1, Form("Now filling ESD with GTU tracks from %p (%i)",
-		   fgTracks, fgTracks ? fgTracks->GetEntriesFast() : 0));
+  AliDebug(1, Form("Loading gtu.tracks(%i) to ESD", fgTracks ? fgTracks->GetEntriesFast() : 0));
   if (fgTracks) {
     for (Int_t iTrack = 0; iTrack < fgTracks->GetEntriesFast(); iTrack++) {
       AliESDTrdTrack *trdTrack = (AliESDTrdTrack*) ((*fgTracks)[iTrack]);
@@ -338,29 +299,22 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
       AliTRDrawStream::AssignTracklets(trdTrack, trackletIndex, refIndex);
 
       for (Int_t iLayer = 0; iLayer < 6; ++iLayer) {
-	Int_t det = trdTrack->GetSector()*30 + stack*6 + iLayer;
-
-	AliESDTrdTracklet *trkl = refIndex[iLayer] > -1 ? esd->GetTrdTracklet(refIndex[iLayer]) : 0x0;
-	if (trkl) {
-	  AliDebug(5, Form("adding tracklet with index %i: 0x%08x",
-			   refIndex[iLayer], trkl->GetTrackletWord()));
-	  if (trkl->GetDetector() != det)
-	    AliError(Form("inconsistent assignment of tracklet 0x%08x in det %i to track in %i",
-			  trkl->GetTrackletWord(), trkl->GetDetector(), det));
-	  trdTrack->AddTrackletReference(trkl, iLayer);
-	}
+        Int_t det = trdTrack->GetSector()*30 + stack*6 + iLayer;
+        AliESDTrdTracklet *trkl = refIndex[iLayer] > -1 ? esd->GetTrdTracklet(refIndex[iLayer]) : 0x0;
+        if (trkl) {
+          AliDebug(5, Form("adding tracklet with index %i: 0x%08x",
+              refIndex[iLayer], trkl->GetTrackletWord()));
+          if (trkl->GetDetector() != det)
+            AliError(Form("inconsistent assignment of tracklet 0x%08x in det %i to track in %i",
+              trkl->GetTrackletWord(), trkl->GetDetector(), det));
+          trdTrack->AddTrackletReference(trkl, iLayer);
+        }
       }
-
       // only add the track when it's complete (including tracklet references)
       esd->AddTrdTrack(trdTrack);
     }
   }
-
   esd->SetTrdTrigger(&fgTriggerFlags);
-
-  // clearing variables for next event
-  fgTracklets = 0x0;
-  fgTracks = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -401,6 +355,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 
     AliWarning(Form("Unknown option flag %s.", sopt.Data()));
   }
+  opar->Delete();
   delete opar;
 }
 
@@ -416,3 +371,65 @@ void AliTRDReconstructor::Options(UInt_t steer)
   }
 }
 
+
+//_____________________________________________________________________________
+TClonesArray* AliTRDReconstructor::GetClusters()
+{
+// Build/ Retrieve cluster array
+  if(!fgClusters){
+    fgClusters = new TClonesArray("AliTRDcluster", Int_t(GetRecoParam()->GetNClusters()));
+    fgClusters->SetOwner();
+    AliInfoGeneral("AliTRDReconstructor", Form("Allocate cluster array @ %p", (void*)fgClusters));
+  }
+  return fgClusters;
+}
+
+//_____________________________________________________________________________
+TClonesArray* AliTRDReconstructor::GetTracklets(const char *trkltype)
+{
+// Build/ Retrieve online tracklets array
+
+  if (trkltype != 0) {
+    if(fgTracklets && (TClass::GetClass(trkltype) != fgTracklets->GetClass())){
+      fgTracklets->Delete();
+      delete fgTracklets;
+    }
+    if (!fgTracklets) {
+      fgTracklets = new TClonesArray(trkltype, 200);
+      fgTracklets->SetOwner(kTRUE);
+      AliInfoGeneral("AliTRDReconstructor", Form("Allocate online tracklets[%s] array @ %p", trkltype, (void*)fgTracklets));
+    }
+  }
+  return fgTracklets;
+}
+
+//_____________________________________________________________________________
+TClonesArray* AliTRDReconstructor::GetTracks()
+{
+// Build/ Retrieve cluster array
+  if(!fgTracks){
+    fgTracks = new TClonesArray("AliESDTrdTrack", 100);
+    fgTracks->SetOwner();
+    AliInfoGeneral("AliTRDReconstructor", Form("Allocate online tracks array @ %p", (void*)fgTracks));
+  }
+  return fgTracks;
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::ResetContainers() const
+{
+// prepare data containers for a new event
+
+  if(fgClusters){
+    AliDebug(1, Form("Removing %5d clusters @ %p", fgClusters->GetEntriesFast(), (void*)fgClusters));
+    fgClusters->Clear();
+  }
+  if(fgTracklets){
+    AliDebug(1, Form("Removing %3d online tracklets @ %p", fgTracklets->GetEntriesFast(), (void*)fgTracklets));
+    fgTracklets->Clear();
+  }
+  if(fgTracks){
+    AliDebug(1, Form("Removing %3d online tracks @ %p", fgTracks->GetEntriesFast(), (void*)fgTracks));
+    fgTracks->Clear();
+  }
+}

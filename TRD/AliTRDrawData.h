@@ -41,10 +41,8 @@ class AliTRDrawData : public TObject {
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
 
-  virtual TClonesArray    *TrackletsArray();
-  virtual TClonesArray    *TracksArray();
-  void                    SetTrackletsOwner(TClonesArray *trkl = 0x0) { fTracklets = trkl; } // set to own the given array
-  void                    SetTracksOwner(TClonesArray *trk = 0x0) { fTracks = trk; } // set to own the given array
+  void                    SetTracklets(TClonesArray *trkl = NULL) { fTracklets = trkl; } // link the given array
+  void                    SetTracks(TClonesArray *trk = NULL) { fTracks = trk; } // link the given array
 
   UInt_t  GetTriggerFlags(const Int_t sector) const { return fTrgFlags[sector]; }
 

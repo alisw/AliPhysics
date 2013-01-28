@@ -232,21 +232,6 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
-  if (fRecPoints/* && IsClustersOwner()*/){
-    fRecPoints->Delete();
-    delete fRecPoints;
-  }
-
-  if (fTracklets){
-    fTracklets->Delete();
-    delete fTracklets;
-  }
-
-  if (fTracks){
-    fTracks->Delete();
-    delete fTracks;
-  }
-
   if (fDigitsManager) {
     delete fDigitsManager;
     fDigitsManager = NULL;
@@ -266,7 +251,6 @@ AliTRDclusterizer::~AliTRDclusterizer()
     delete fRawStream;
     fRawStream = NULL;
   }
-
 }
 
 //_____________________________________________________________________________
@@ -525,20 +509,20 @@ Bool_t AliTRDclusterizer::ReadTracklets()
   trackletLoader->Load();
   TTree *trackletTree = trackletLoader->Tree();
 
- if (trackletTree) {
-   TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
-   TClonesArray *trklArray = TrackletsArray("AliTRDtrackletMCM");
-   if (trklbranch && trklArray) {
-     AliTRDtrackletMCM *trkl = 0x0;
-     trklbranch->SetAddress(&trkl);
-     for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
-	trklbranch->GetEntry(iTracklet);
-	new ((*trklArray)[trklArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
-     }
-     return kTRUE;
-   }
- }
- return kFALSE;
+  if (trackletTree) {
+    TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
+    TClonesArray *trklArray = TrackletsArray("AliTRDtrackletMCM");
+    if (trklbranch && trklArray) {
+      AliTRDtrackletMCM *trkl = 0x0;
+      trklbranch->SetAddress(&trkl);
+      for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
+        trklbranch->GetEntry(iTracklet);
+        new ((*trklArray)[trklArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
+      }
+      return kTRUE;
+    }
+  }
+  return kFALSE;
 }
 
 Bool_t AliTRDclusterizer::ReadTracks()
@@ -638,7 +622,10 @@ Bool_t AliTRDclusterizer::MakeClusters()
   
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
 
-  AliInfo(Form("Number of found clusters : %d", RecPoints()->GetEntriesFast())); 
+  AliInfo(Form("Found :: clusters[%d] tracklets[%d] tracks[%d]",
+    RecPoints()?RecPoints()->GetEntriesFast():0,
+    TrackletsArray()?TrackletsArray()->GetEntriesFast():0,
+    TracksArray()?TracksArray()->GetEntriesFast():0));
 
   return fReturn;
 
@@ -732,7 +719,10 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fRawStream = NULL;
   }
 
-  AliInfo(Form("Number of found clusters : %d", fNoOfClusters)); 
+  AliInfo(Form("Found :: clusters[%d] tracklets[%d] tracks[%d]",
+    RecPoints()?RecPoints()->GetEntriesFast():0,
+    TrackletsArray()?TrackletsArray()->GetEntriesFast():0,
+    TracksArray()?TracksArray()->GetEntriesFast():0));
   return kTRUE;
 
 }
@@ -973,7 +963,7 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Fl
   Float_t noiseMiddleThresh = fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.col, Max.row);
   if (Signals[1] <= noiseMiddleThresh) return kFALSE;  
 
-  UChar_t status[3]={
+  Char_t status[3]={
     fCalPadStatusROC->GetStatus(Max.col-1, Max.row)
    ,fCalPadStatusROC->GetStatus(Max.col,   Max.row)
    ,fCalPadStatusROC->GetStatus(Max.col+1, Max.row)
@@ -1068,7 +1058,7 @@ Bool_t AliTRDclusterizer::FivePadCluster(MaxStruct &ThisMax, MaxStruct &Neighbou
 void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
 {
   //
-  // Creates a cluster at the given position and saves it in fRecPoints
+  // Creates a cluster at the given position and saves it in RecPoints
   //
 
   Int_t nPadCount = 1;
@@ -1463,22 +1453,6 @@ void AliTRDclusterizer::DeConvExp(Short_t *const arr, const Int_t nTime, const I
     for (int k = 0; k < 2; k++) {
       correction += reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);
     }
-
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDclusterizer::ResetRecPoints() 
-{
-  //
-  // Resets the list of rec points
-  //
-
-  if (fRecPoints) {
-    fRecPoints->Clear();
-    fNoOfClusters = 0;
-    //    delete fRecPoints;
   }
 }
 
@@ -1489,18 +1463,9 @@ TClonesArray *AliTRDclusterizer::RecPoints()
   // Returns the list of rec points
   //
 
-  if (!fRecPoints) {
-    if(!(fRecPoints = AliTRDReconstructor::GetClusters())){
-      // determine number of clusters which has to be allocated
-      Float_t nclusters = fReconstructor->GetRecoParam()->GetNClusters();
-
-      fRecPoints = new TClonesArray("AliTRDcluster", Int_t(nclusters));
-    }
-    //SetClustersOwner(kTRUE);
-    AliTRDReconstructor::SetClusters(0x0);
-  }
+  fRecPoints = AliTRDReconstructor::GetClusters();
+  if (!fRecPoints) AliError("Missing cluster array");
   return fRecPoints;
-
 }
 
 //_____________________________________________________________________________
@@ -1509,17 +1474,8 @@ TClonesArray *AliTRDclusterizer::TrackletsArray(const TString &trkltype)
   //
   // Returns the array of on-line tracklets
   //
-
-  if (trkltype.Length() != 0) {
-    if (!fTracklets) {
-      fTracklets = new TClonesArray(trkltype, 200);
-  }
-    else if (TClass::GetClass(trkltype.Data()) != fTracklets->GetClass()){
-      fTracklets->Delete();
-      delete fTracklets;
-      fTracklets = new TClonesArray(trkltype, 200);
-    }
-  }
+  fTracklets = AliTRDReconstructor::GetTracklets(trkltype.Data());
+  if (!fTracklets) AliError("Missing online tracklets array");
   return fTracklets;
 }
 
@@ -1528,8 +1484,7 @@ TClonesArray* AliTRDclusterizer::TracksArray()
 {
   // return array of GTU tracks (create TClonesArray if necessary)
 
-  if (!fTracks) {
-    fTracks = new TClonesArray("AliESDTrdTrack",100);
-  }
+  fTracks = AliTRDReconstructor::GetTracks();
+  if (!fTracks) AliError("Missing online tracks array");
   return fTracks;
 }

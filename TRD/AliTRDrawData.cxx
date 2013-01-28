@@ -109,16 +109,6 @@ AliTRDrawData::~AliTRDrawData()
   // Destructor
   //
 
-  if (fTracklets){
-    fTracklets->Delete();
-    delete fTracklets;
-  }
-
-  if (fTracks){
-    fTracks->Delete();
-    delete fTracks;
-  }
-
   delete fMcmSim;
 
 }
@@ -575,8 +565,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   if (!trklTreeLoader->Tree())
     trklTreeLoader->MakeTree();
 
-  input.SetTrackletArray(TrackletsArray());
-  input.SetTrackArray(TracksArray());
+  input.SetTrackletArray(fTracklets);
+  input.SetTrackArray(fTracks);
 
   // Loop through the digits
   Int_t det    = 0;
@@ -667,24 +657,4 @@ void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, co
     //x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1; 	// old format
     x = ((kNTBin)<<26) | (bcCtr<<10) | (ptCtr<<6) | (ptPhase<<2) | 1;
     if (nw < maxSize) buf[nw++] = x; else of++;
-}
-
-TClonesArray *AliTRDrawData::TrackletsArray()
-{
-  // Returns the array of on-line tracklets
-
-  if (!fTracklets) {
-    fTracklets = new TClonesArray("AliTRDtrackletWord", 200);
-  }
-  return fTracklets;
-}
-
-TClonesArray* AliTRDrawData::TracksArray()
-{
-  // return array of GTU tracks (create TClonesArray if necessary)
-
-  if (!fTracks) {
-    fTracks = new TClonesArray("AliESDTrdTrack",100);
-  }
-  return fTracks;
 }

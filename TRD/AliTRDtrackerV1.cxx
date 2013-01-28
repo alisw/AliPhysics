@@ -133,7 +133,7 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   //
   // Destructor
   //
-  
+
   if(fgRieman) delete fgRieman; fgRieman = NULL;
   if(fgTiltedRieman) delete fgTiltedRieman; fgTiltedRieman = NULL;
   if(fgTiltedRiemanConstrained) delete fgTiltedRiemanConstrained; fgTiltedRiemanConstrained = NULL;
@@ -141,7 +141,8 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   if(fTracksESD){ fTracksESD->Delete(); delete fTracksESD; }
   if(fTracks) {fTracks->Delete(); delete fTracks;}
   if(fTracklets) {fTracklets->Delete(); delete fTracklets;}
-  if(fClusters) {
+  if(IsClustersOwner() && fClusters) {
+    AliInfo(Form("tracker[%p] removing %d own clusters @ %p", (void*)this, fClusters->GetEntries(), (void*)fClusters));
     fClusters->Delete(); delete fClusters;
   }
   if(fGeom) delete fGeom;
@@ -1337,13 +1338,13 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   covarPolZ.Invert();
 
   // Update the tracklets
-  Double_t x1, dy, dz;
+  Double_t dy, dz;
   Double_t cov[15];
   memset(cov, 0, sizeof(Double_t) * 15);
   for(Int_t iLayer = 0; iLayer < AliTRDtrackerV1::kNPlanes; iLayer++) {
 
     x  = tracklets[iLayer].GetX0();
-    x1 = x - xref;
+//    x1 = x - xref;
     y  = 0;
     z  = 0;
     dy = 0;
@@ -1929,12 +1930,14 @@ Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)
     return kFALSE;
   }
   branch->SetAddress(&clusterArray); 
-  
+
   if(!fClusters){ 
     Float_t nclusters =  fkRecoParam->GetNClusters();
     if(fkReconstructor->IsHLT()) nclusters /= AliTRDgeometry::kNsector;
     fClusters = new TClonesArray("AliTRDcluster", Int_t(nclusters));
     fClusters->SetOwner(kTRUE);
+    SetClustersOwner();
+    AliInfo(Form("Tracker owning clusters @ %p", (void*)fClusters));
   }
   
   // Loop through all entries in the tree
@@ -1968,26 +1971,25 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
   
   fkRecoParam = fkReconstructor->GetRecoParam(); // load reco param for this event
 
-  if(!fkReconstructor->IsWritingClusters()){ 
-    fClusters = AliTRDReconstructor::GetClusters();
+//  if(!fkReconstructor->IsWritingClusters()) AliInfo(Form("IsWritingClusters[%c]", fkReconstructor->IsWritingClusters()?'y':'n'));
+  if(!(fClusters = AliTRDReconstructor::GetClusters())){
+    AliWarning("Clusters unavailable from TRD reconstructor. Trying reading from tree ...");
   } else {
     if(!ReadClusters(cTree)) {
-      AliError("Problem with reading the clusters !");
+      AliError("Reading clusters from tree failed.");
       return 1;
     }
   }
-  SetClustersOwner();
 
   if(!fClusters || !fClusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
     return 1;
-  }
+  } else AliInfo(Form("Using :: clusters[%d] onl.tracklets[%d] onl.tracks[%d]",
+    fClusters?fClusters->GetEntriesFast():0,
+    AliTRDReconstructor::GetTracklets()?AliTRDReconstructor::GetTracklets()->GetEntriesFast():0,
+    AliTRDReconstructor::GetTracks()?AliTRDReconstructor::GetTracks()->GetEntriesFast():0));
 
-  //Int_t nin = 
   BuildTrackingContainers();  
-
-  //Int_t ncl  = fClusters->GetEntriesFast();
-  //AliInfo(Form("Clusters %d [%6.2f %% in the active volume]", ncl, 100.*float(nin)/ncl));
 
   return 0;
 }
@@ -2002,16 +2004,13 @@ Int_t AliTRDtrackerV1::LoadClusters(TClonesArray * const clusters)
   if(!clusters || !clusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
     return 1;
-  }
+  } else AliInfo(Form("Using :: external.clusters[%d]", clusters->GetEntriesFast()));
+
 
   fClusters = clusters;
-  SetClustersOwner();
 
   fkRecoParam = fkReconstructor->GetRecoParam(); // load reco param for this event
   BuildTrackingContainers();  
-
-  //Int_t ncl  = fClusters->GetEntriesFast();
-  //AliInfo(Form("Clusters %d [%6.2f %% in the active volume]", ncl, 100.*float(nin)/ncl));
 
   return 0;
 }
@@ -2061,14 +2060,15 @@ void AliTRDtrackerV1::UnloadClusters()
     fTracklets->Delete();
     if(HasRemoveContainers()){delete fTracklets; fTracklets = NULL;}
   }
-  if(fClusters){ 
-    if(IsClustersOwner()) fClusters->Delete();
-    
-    // save clusters array in the reconstructor for further use.
-    if(!fkReconstructor->IsWritingClusters()){
-      AliTRDReconstructor::SetClusters(fClusters);
-      SetClustersOwner(kFALSE);
-    } else AliTRDReconstructor::SetClusters(NULL);
+  if(fClusters && IsClustersOwner()){
+    AliInfo(Form("tracker[%p] clearing %d own clusters @ %p", (void*)this, fClusters->GetEntries(), (void*)fClusters));
+    fClusters->Delete();
+//     
+//     // save clusters array in the reconstructor for further use.
+//     if(!fkReconstructor->IsWritingClusters()){
+//       AliTRDReconstructor::SetClusters(fClusters);
+//       SetClustersOwner(kFALSE);
+//     } else AliTRDReconstructor::SetClusters(NULL);
   }
 
   for (int i = 0; i < AliTRDgeometry::kNsector; i++) fTrSec[i].Clear();
@@ -2644,7 +2644,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
   Double_t chi2[4];
 
   // this should be data member of AliTRDtrack TODO
-  Double_t seedQuality[kMaxTracksStack];
+//  Double_t seedQuality[kMaxTracksStack];
   
   // unpack control parameters
   Int_t config  = ipar[0];
@@ -2868,8 +2868,8 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         }
         //AliInfo(Form("Passed likelihood %f[%e].", TMath::Log(1.E-9 + like), like));
       
-        // book preliminary results
-        seedQuality[ntracks] = like;
+        // book preliminry results
+        //seedQuality[ntracks] = like;
         fSeedLayer[ntracks]  = config;/*sLayer;*/
       
         // attach clusters to the extrapolation seeds

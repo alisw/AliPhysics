@@ -91,9 +91,9 @@ class AliTRDclusterizer : public TNamed
   Bool_t   ReadTracks();
 
   Bool_t   WriteClusters(Int_t det);
-  void     ResetRecPoints();
+  void     ResetRecPoints()                { fNoOfClusters = 0;}
   virtual TClonesArray    *RecPoints();
-  virtual TClonesArray    *TrackletsArray(const TString &trkltype = "");
+  virtual TClonesArray    *TrackletsArray(const TString &trkltype = "AliTRDtrackletMCM");
   virtual TClonesArray    *TracksArray();
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
