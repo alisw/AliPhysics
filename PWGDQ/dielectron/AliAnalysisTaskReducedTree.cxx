@@ -84,9 +84,8 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree() :
   fLambdaProtonCuts(0x0),
   fLambdaPionCuts(0x0),
   fGammaElectronCuts(0x0),
-  fK0sStrongCuts(0x0),
-  fLambdaStrongCuts(0x0),
-  fGammaConvStrongCuts(0x0),
+  fV0OpenCuts(0x0),
+  fV0StrongCuts(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
   fGammaMassRange(),
@@ -130,9 +129,8 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   fLambdaProtonCuts(0x0),
   fLambdaPionCuts(0x0),
   fGammaElectronCuts(0x0),
-  fK0sStrongCuts(0x0),
-  fLambdaStrongCuts(0x0),
-  fGammaConvStrongCuts(0x0),
+  fV0OpenCuts(0x0),
+  fV0StrongCuts(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
   fGammaMassRange(),
@@ -350,7 +348,7 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   //cout << "event vtxZ/cent: " << fReducedEvent->fVtx[2] << "/" << fReducedEvent->fCentrality[0] << endl;
   
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
-  fReducedEvent->fSPDntracklets = (UChar_t)values[AliDielectronVarManager::kNaccTrckltsEsd10Corr];
+  fReducedEvent->fSPDntracklets = (Int_t)values[AliDielectronVarManager::kNaccTrckltsEsd10];
 
   AliVVZERO* vzero = event->GetVZEROData();
   for(Int_t i=0;i<64;++i) 
@@ -646,8 +644,14 @@ void AliAnalysisTaskReducedTree::FillV0PairInfo()
   Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
   Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
   
-  fGammaConvCuts->SetEvent(esd);
-  fGammaConvCuts->SetPrimaryVertex(&primaryVertexKF);
+  if(fV0OpenCuts) {
+    fV0OpenCuts->SetEvent(esd);
+    fV0OpenCuts->SetPrimaryVertex(&primaryVertexKF);
+  }
+  if(fV0StrongCuts) {
+    fV0StrongCuts->SetEvent(esd);
+    fV0StrongCuts->SetPrimaryVertex(&primaryVertexKF);
+  }
   
   Int_t pdgV0=0; Int_t pdgP=0; Int_t pdgN=0;
   for(Int_t iV0=0; iV0<InputEvent()->GetNumberOfV0s(); ++iV0) {   // loop over V0s
@@ -664,66 +668,49 @@ void AliAnalysisTaskReducedTree::FillV0PairInfo()
     legPos = (!v0ChargesAreCorrect ? esd->GetTrack(v0->GetNindex()) : legPos);
     legNeg = (!v0ChargesAreCorrect ? esd->GetTrack(v0->GetPindex()) : legNeg); 
     
-    // apply the K0s filter
-    Bool_t goodK0s = kTRUE;
-    Bool_t veryGoodK0s = kTRUE;   // flag for strong cuts to obtain pure V0s
-    if(fFillK0s) {
-      if(fK0sPionCuts && (!fK0sPionCuts->IsSelected(legPos) || !fK0sPionCuts->IsSelected(legNeg))) goodK0s = kFALSE;
-      if(goodK0s && fK0sCuts) {
-        TList k0sList;
-        k0sList.Add(v0);
-        k0sList.Add(legPos); k0sList.Add(legNeg);
-        k0sList.Add(const_cast<AliESDVertex*>(primaryVertex));
-        if(!fK0sCuts->IsSelected(&k0sList)) goodK0s = kFALSE;
+    pdgV0=0; pdgP=0; pdgN=0;
+    Bool_t goodK0s = kTRUE; Bool_t goodLambda = kTRUE; Bool_t goodALambda = kTRUE; Bool_t goodGamma = kTRUE;
+    if(fV0OpenCuts) {
+      goodK0s = kFALSE; goodLambda = kFALSE; goodALambda = kFALSE; goodGamma = kFALSE;
+      Bool_t processV0 = fV0OpenCuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+      if(processV0 && TMath::Abs(pdgV0)==310 && TMath::Abs(pdgP)==211 && TMath::Abs(pdgN)==211) {
+        goodK0s = kTRUE;
+        if(fK0sPionCuts && (!fK0sPionCuts->IsSelected(legPos) || !fK0sPionCuts->IsSelected(legNeg))) goodK0s = kFALSE;
       }
-      if(goodK0s && fK0sStrongCuts) {
-        TList k0sList;
-        k0sList.Add(v0);
-        k0sList.Add(legPos); k0sList.Add(legNeg);
-        k0sList.Add(const_cast<AliESDVertex*>(primaryVertex));
-        if(!fK0sStrongCuts->IsSelected(&k0sList)) veryGoodK0s = kFALSE;
+      if(processV0 && pdgV0==3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212)) {
+        goodLambda = kTRUE;
+        if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legPos)) goodLambda = kFALSE;
+        if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legNeg)) goodLambda = kFALSE;
       }
-    }  // end if fFillK0s
-    
-    // apply the lambda filter
-    Bool_t goodLambda = kTRUE;
-    Bool_t veryGoodLambda = kTRUE;
-    Bool_t goodALambda = kTRUE;
-    Bool_t veryGoodALambda = kTRUE;
-    if(fFillLambda) {
-      if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legPos)) goodLambda = kFALSE;
-      if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legNeg)) goodLambda = kFALSE;
-    }
-    if(fFillALambda) {
-      if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legNeg)) goodALambda = kFALSE;
-      if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legPos)) goodALambda = kFALSE;
-    }
-    if((fFillLambda || fFillALambda) && goodLambda && fLambdaCuts) {
-      TList lambdaList;
-      lambdaList.Add(v0);
-      lambdaList.Add(legPos); lambdaList.Add(legNeg);
-      lambdaList.Add(const_cast<AliESDVertex*>(primaryVertex));
-      if(!fLambdaCuts->IsSelected(&lambdaList)) {goodLambda = kFALSE; goodALambda = kFALSE;}
-    }
-    if((fFillLambda || fFillALambda) && goodLambda && fLambdaStrongCuts) {
-      TList lambdaList;
-      lambdaList.Add(v0);
-      lambdaList.Add(legPos); lambdaList.Add(legNeg);
-      lambdaList.Add(const_cast<AliESDVertex*>(primaryVertex));
-      if(!fLambdaStrongCuts->IsSelected(&lambdaList)) {veryGoodLambda = kFALSE; veryGoodALambda = kFALSE;}
+      if(processV0 && pdgV0==-3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212)) {
+        goodALambda = kTRUE;
+        if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legNeg)) goodALambda = kFALSE;
+        if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legPos)) goodALambda = kFALSE;
+      }
+      if(processV0 && TMath::Abs(pdgV0)==22 && TMath::Abs(pdgP)==11 && TMath::Abs(pdgN)==11) {
+        goodGamma = kTRUE;
+        if(fGammaElectronCuts && (!fGammaElectronCuts->IsSelected(legPos) || !fGammaElectronCuts->IsSelected(legNeg))) goodGamma = kFALSE;
+      }
+      //cout << "open cuts  pdgV0/pdgP/pdgN/processV0 : " << pdgV0 << "/" << pdgP << "/" << pdgN << "/" << processV0 << endl;     
+      //cout << "good K0s/Lambda/ALambda/Gamma : " << goodK0s << "/" << goodLambda << "/" << goodALambda << "/" << goodGamma << endl;
     }
     
-    // apply the gamma conversion filter
-    Bool_t goodGamma = kTRUE;
-    Bool_t veryGoodGamma = kTRUE;
-    if(fFillGammaConversions) {
-      if(fGammaElectronCuts && (!fGammaElectronCuts->IsSelected(legPos) || !fGammaElectronCuts->IsSelected(legNeg))) goodGamma = kFALSE;
-      if(fGammaConvCuts) goodGamma = goodGamma && fGammaConvCuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
-      if(pdgV0!=22 || TMath::Abs(pdgP)!=11 || TMath::Abs(pdgN)!=11) goodGamma = kFALSE;
-      veryGoodGamma = goodGamma && fGammaConvStrongCuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
-      if(pdgV0!=22 || TMath::Abs(pdgP)!=11 || TMath::Abs(pdgN)!=11) veryGoodGamma = kFALSE;
+    Bool_t veryGoodK0s = kFALSE; Bool_t veryGoodLambda = kFALSE; Bool_t veryGoodALambda = kFALSE; Bool_t veryGoodGamma = kFALSE;
+    if(fV0StrongCuts && (goodK0s || goodLambda || goodALambda || goodGamma)) {
+      pdgV0=0; pdgP=0; pdgN=0;
+      Bool_t processV0 = fV0StrongCuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+      if(processV0 && goodK0s && TMath::Abs(pdgV0)==310 && TMath::Abs(pdgP)==211 && TMath::Abs(pdgN)==211)
+        veryGoodK0s = kTRUE;
+      if(processV0 && goodLambda && pdgV0==3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212))
+        veryGoodLambda = kTRUE;
+      if(processV0 && goodALambda && pdgV0==-3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212))
+        veryGoodALambda = kTRUE;
+      if(processV0 && goodGamma && TMath::Abs(pdgV0)==22 && TMath::Abs(pdgP)==11 && TMath::Abs(pdgN)==11)
+        veryGoodGamma = kTRUE;
+      //cout << "strong cuts  pdgV0/pdgP/pdgN/processV0 : " << pdgV0 << "/" << pdgP << "/" << pdgN << "/" << processV0 << endl;     
+      //cout << "very good K0s/Lambda/ALambda/Gamma : " << veryGoodK0s << "/" << veryGoodLambda << "/" << veryGoodALambda << "/" << veryGoodGamma << endl;
     }
-        
+              
     if(!((goodK0s && fFillK0s) || 
          (goodLambda && fFillLambda) || 
          (goodALambda && fFillALambda) || 
