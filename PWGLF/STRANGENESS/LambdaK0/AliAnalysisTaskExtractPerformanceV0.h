@@ -69,7 +69,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
-  Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
+
 
   //Objects Controlling Task Behaviour 
   
@@ -77,6 +77,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkSwitchINT7 ; //if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; //if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
+  Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
 
 //===========================================================================================
 //   Variables for Tree, V0s
