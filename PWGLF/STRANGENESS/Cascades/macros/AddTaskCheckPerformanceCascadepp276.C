@@ -6,10 +6,10 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
                                                                                   Bool_t   kacccut                = kFALSE,
                                                                                   Bool_t   krelaunchvertexers     = kFALSE,
                                                                                   Bool_t   ksddonselection        = kFALSE,
-                                                                                  Float_t  minptondaughtertracks  = 0.,
-                                                                                  Float_t  etacutondaughtertracks = .8,
-                                                                                  Bool_t   standardAnalysis       = kTRUE ) {
-// Creates, configures and attaches to the train a cascades check task.
+                                                                                  Float_t  minptondaughtertracks  = 0.0,
+                                                                                  Float_t  etacutondaughtertracks = 0.8) {
+    
+   // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,77 +27,70 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276(Form("TaskCheckPerformanceCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin));
-
-   taskCheckPerfCascadepp276->SetAnalysisType               (type);
-   taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     
-   taskCheckPerfCascadepp276->SetSDDSelection               (fwithsdd);
-   taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);
-   taskCheckPerfCascadepp276->SetRejectEventPileUp          (kFALSE);
-   taskCheckPerfCascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);
-   taskCheckPerfCascadepp276->SetQualityCutTPCrefit         (kTRUE);
-   taskCheckPerfCascadepp276->SetQualityCutnTPCcls          (kTRUE);             
-   taskCheckPerfCascadepp276->SetWithSDDOn                  (ksddonselection);
-   taskCheckPerfCascadepp276->SetQualityCutMinnTPCcls       (minnTPCcls);    
-   taskCheckPerfCascadepp276->SetExtraSelections            (kextrasel);
-   taskCheckPerfCascadepp276->SetApplyAccCut                (kacccut);
-   taskCheckPerfCascadepp276->SetVertexRange                (vtxlim);
-   taskCheckPerfCascadepp276->SetVertexRangeMin             (vtxlimmin);
-   taskCheckPerfCascadepp276->SetMinptCutOnDaughterTracks   (minptondaughtertracks); 
-   taskCheckPerfCascadepp276->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
- 
+   //==============================================================================
+   TString tasknameperf = "TaskCheckPerformanceCascadepp276";
+     tasknameperf += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+   AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276(tasknameperf);
+     taskCheckPerfCascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
+     taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
+     taskCheckPerfCascadepp276->SetSDDSelection               (fwithsdd);               // choose if apply SDD event selection
+     taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection
+     taskCheckPerfCascadepp276->SetRejectEventPileUp          (kFALSE);                 // choose if apply no Pileup event selection
+     taskCheckPerfCascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);                  // choose if apply no TPC only event selection
+     taskCheckPerfCascadepp276->SetQualityCutTPCrefit         (kTRUE);                  // choose if apply TPC refit on daughter tracks
+     taskCheckPerfCascadepp276->SetQualityCutnTPCcls          (kTRUE);                  // choose if apply n TPC cluster selection on daughter tracks
+     taskCheckPerfCascadepp276->SetWithSDDOn                  (ksddonselection);        // which SDD selection do you want apply? [if kTRUE select SDDon events]
+     taskCheckPerfCascadepp276->SetQualityCutMinnTPCcls       (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
+     taskCheckPerfCascadepp276->SetExtraSelections            (kextrasel);              // choose if apply the extra selection of cascade reco.
+     taskCheckPerfCascadepp276->SetApplyAccCut                (kacccut);                // choose if apply acceptance cut
+     taskCheckPerfCascadepp276->SetVertexRange                (vtxlim);                 // which higher value do you want apply for vtx Z cut?
+     taskCheckPerfCascadepp276->SetVertexRangeMin             (vtxlimmin);              // which lower value do you want apply for vtx Z cut?
+     taskCheckPerfCascadepp276->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
+     taskCheckPerfCascadepp276->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
+    
    mgr->AddTask(taskCheckPerfCascadepp276);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
+   // Directory name
+   TString outputFileNamePerf = Form("%s:PWGLFStrangeness.outputCheckPerformanceCascadepp276", AliAnalysisManager::GetCommonFileName());
+   // Objects name
+   TString outputnameperf1 = Form("clistCascPerf_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
 
-   // User file name (if need be)
-
-   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   if (standardAnalysis) outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadepp276";
-   else                  outputFileName += Form(":PWGLFStrangeness.outputCheckPerformanceCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin); 
-   Printf("AddTaskCheckPerformanceCascadepp276 - Set OutputFileName : \n %s\n", outputFileName.Data() );
-   
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascPerf",
-							     TList::Class(),
-							     AliAnalysisManager::kOutputContainer,
-							     outputFileName );
-
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDAsXiM",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDAsXiP",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontAsCuts",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-
+   //Save objects into the train common file
+   AliAnalysisDataContainer *coutputperf1 = mgr->CreateContainer(outputnameperf1,
+							                                     TList::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+							                                     outputFileNamePerf );
+   AliAnalysisDataContainer *coutputperf2 = mgr->CreateContainer("cfcontPIDAsXiM",
+                                                                 AliCFContainer::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+                                                                 outputFileNamePerf );
+   AliAnalysisDataContainer *coutputperf3 = mgr->CreateContainer("cfcontPIDAsXiP",
+                                                                 AliCFContainer::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+                                                                 outputFileNamePerf );
+   AliAnalysisDataContainer *coutputperf4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
+                                                                 AliCFContainer::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+                                                                 outputFileNamePerf );
+   AliAnalysisDataContainer *coutputperf5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
+                                                                 AliCFContainer::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+                                                                 outputFileNamePerf );
+   AliAnalysisDataContainer *coutputperf6 = mgr->CreateContainer("cfcontAsCuts",
+                                                                 AliCFContainer::Class(),
+                                                                 AliAnalysisManager::kOutputContainer,
+                                                                 outputFileNamePerf );
 
    mgr->ConnectInput( taskCheckPerfCascadepp276, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 1, coutput1);
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 2, coutput2);
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 3, coutput3);
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 4, coutput4);
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 5, coutput5);
-   mgr->ConnectOutput(taskCheckPerfCascadepp276, 6, coutput6);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 1, coutputperf1);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 2, coutputperf2);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 3, coutputperf3);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 4, coutputperf4);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 5, coutputperf5);
+   mgr->ConnectOutput(taskCheckPerfCascadepp276, 6, coutputperf6);
    
    return taskCheckPerfCascadepp276;
 }   

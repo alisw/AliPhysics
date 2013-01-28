@@ -1,20 +1,19 @@
 AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls             = 70,
-                                                            Float_t  vtxlim                 = 10.,
-                                                            Float_t  vtxlimmin              = 0.,
+                                                            Float_t  vtxlim                 = 10.0,
+                                                            Float_t  vtxlimmin              = 0.0,
                                                             Bool_t   fwithsdd               = kFALSE,
                                                             Bool_t   kextrasel              = kFALSE,
                                                             Bool_t   krelaunchvertexers     = kFALSE,
                                                             Bool_t   ksddonselection        = kTRUE,
-                                                            Float_t  minptondaughtertracks  = 0.,
-                                                            Float_t  etacutondaughtertracks = .8,
-                                                            Bool_t   standardAnalysis       = kTRUE ) {
+                                                            Float_t  minptondaughtertracks  = 0.0,
+                                                            Float_t  etacutondaughtertracks = 0.8) {
 
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskCheckCascadeipp276", "No analysis manager to connect to.");
+      ::Error("AddTaskCheckCascadepp276", "No analysis manager to connect to.");
       return NULL;
    }   
 
@@ -27,69 +26,69 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276(Form("TaskCheckCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin));
-
-   taskcheckcascadepp276->SetAnalysisType               (type);
-   taskcheckcascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);
-   taskcheckcascadepp276->SetSDDSelection               (fwithsdd);          // if TRUE apply the sdd selection
-   taskcheckcascadepp276->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
-   taskcheckcascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
-   taskcheckcascadepp276->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-   taskcheckcascadepp276->SetQualityCutnTPCcls          (kTRUE);             // rejects tracks that have less than n clusters in the TPC
-   taskcheckcascadepp276->SetQualityCutPileup           (kTRUE);
-   taskcheckcascadepp276->SetWithSDDOn                  (ksddonselection);   // selects events with SDD on
-   taskcheckcascadepp276->SetQualityCutMinnTPCcls       (minnTPCcls);        // minimum number of TPC clusters to accept daughter tracks
-   taskcheckcascadepp276->SetExtraSelections            (kextrasel);         // used to add other selection cuts
-   taskcheckcascadepp276->SetVertexRange                (vtxlim);
-   taskcheckcascadepp276->SetVertexRangeMin             (vtxlimmin);
-   taskcheckcascadepp276->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  
-   taskcheckcascadepp276->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
+   //==============================================================================
+   TString taskname = Form("TaskCheckCascadepp276_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     if(fwithsdd) {
+          if (ksddonselection)       taskname += "_wSDDon";
+          else if (!ksddonselection) taskname += "_wSDDoff";
+     } else if (!fwithsdd)           taskname += "_woSDD";
+   AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276(taskname);
+     taskcheckcascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
+     taskcheckcascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
+     taskcheckcascadepp276->SetSDDSelection               (fwithsdd);               // choose if apply SDD event selection
+     taskcheckcascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection
+     taskcheckcascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);                  // choose if apply no TPC only event selection
+     taskcheckcascadepp276->SetQualityCutTPCrefit         (kTRUE);                  // choose if apply TPC refit on daughter tracks
+     taskcheckcascadepp276->SetQualityCutnTPCcls          (kTRUE);                  // choose if apply n TPC cluster selection on daughter tracks
+     taskcheckcascadepp276->SetQualityCutPileup           (kTRUE);                  // choose if apply no Pileup event selection
+     taskcheckcascadepp276->SetWithSDDOn                  (ksddonselection);        // which SDD selection do you want apply? [if kTRUE select SDDon events]
+     taskcheckcascadepp276->SetQualityCutMinnTPCcls       (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
+     taskcheckcascadepp276->SetExtraSelections            (kextrasel);              // choose if apply the extra selection of cascade reco.
+     taskcheckcascadepp276->SetVertexRange                (vtxlim);                 // which higher value do you want apply for vtx Z cut?
+     taskcheckcascadepp276->SetVertexRangeMin             (vtxlimmin);              // which lower value do you want apply for vtx Z cut?
+     taskcheckcascadepp276->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
+     taskcheckcascadepp276->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
 
    mgr->AddTask(taskcheckcascadepp276);
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
+   // Directory name
+   TString outputFileName = Form("%s:PWGLFStrangeness.outputCheckCascadepp276", AliAnalysisManager::GetCommonFileName());
+   // Objects name
+   TString outputlistname = Form("clistCasc_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     if(fwithsdd) {
+           if (ksddonselection)       outputlistname += "_wSDDon";
+           else if (!ksddonselection) outputlistname += "_wSDDoff";
+     } else if (!fwithsdd)            outputlistname += "_woSDD";
 
-   // User file name (if need be)
-   
-   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   if (standardAnalysis) outputFileName += ":PWGLFStrangeness.outputCheckCascadepp276";
-   else                  outputFileName += Form(":PWGLFStrangeness.outputCheckCascadepp276_vtxlim%2.1f-%2.1f",vtxlim,vtxlimmin);
-
-   Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
-
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
+   //Save objects into the train common file
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputlistname,
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
-   
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDXiM",
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDAsXiM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDAsXiP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontAsCuts",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
 
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDXiP",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDOmegaM",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDOmegaP",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontCuts",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-
-   
    mgr->ConnectInput( taskcheckcascadepp276, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascadepp276, 1, coutput1);
    mgr->ConnectOutput(taskcheckcascadepp276, 2, coutput2);
