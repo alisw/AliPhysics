@@ -2,7 +2,8 @@
 //
 // AddTask for AliAnalysisTaskV0ChCorrelations task
 //
-AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const Bool_t bMCtruth=kFALSE,
+AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const char * outfilename,
+														 const Bool_t bMCtruth=kFALSE,
 														 Float_t DcaDToPV = 0.5,
 														 Float_t DcaV0D = 0.1
 														)
@@ -40,7 +41,7 @@ AliAnalysisTaskV0ChCorrelations *AddTaskV0ChCorrelations(const Bool_t bMCtruth=k
 
     // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("coutput1", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outfilename, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
         
     // connect input/output
     mgr->ConnectInput(task, 0, cinput);
