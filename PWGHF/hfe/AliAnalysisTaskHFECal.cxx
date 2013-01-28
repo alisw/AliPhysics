@@ -104,6 +104,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fInvmassCut(0.01)	
   ,fNoEvents(0)
   ,fEMCAccE(0)
+  ,hEMCAccE(0)
   ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPAft(0)	
@@ -221,6 +222,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fInvmassCut(0.01)	
   ,fNoEvents(0)
   ,fEMCAccE(0)
+  ,hEMCAccE(0)
   ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPAft(0)	 
@@ -434,7 +436,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   if(TMath::Abs(pVtxZ)>10) return;
   fNoEvents->Fill(1);
   
-  if(fNOtrks<2) return;
+  if(fNOtrks<1) return;
   fNoEvents->Fill(2);
   
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
@@ -472,9 +474,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double emceta = clustpos.Eta();
          double calInfo[5];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
-         fEMCAccE->Fill(calInfo); 
-         //if(clustE>1.5)fEMCAccE->Fill(calInfo); 
+         //fEMCAccE->Fill(calInfo); 
+         //if(clustE>3.0)fEMCAccE->Fill(calInfo); 
          //if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
+         hEMCAccE->Fill(cent,clustE); 
         }
    }
 
@@ -924,6 +927,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t xmaxE[5] = {3.5,   1, 100.0, 100,  9.5}; 
   fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality;trugCondition;",5,binsE,xminE,xmaxE);
   if(fqahist==1)fOutputList->Add(fEMCAccE);
+
+  hEMCAccE = new TH2F("hEMCAccE","Cluster Energy",200,0,100,100,0,20);
+  fOutputList->Add(hEMCAccE);
 
   fTrkpt = new TH1F("fTrkpt","track pt",100,0,50);
   fOutputList->Add(fTrkpt);

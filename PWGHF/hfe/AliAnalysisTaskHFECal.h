@@ -91,6 +91,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
 
   TH1F			*fNoEvents;		//! no of events
   THnSparseD		*fEMCAccE;		//! EMC acc
+  TH2F  		*hEMCAccE;		//! EMC acc
   TH1F			*fTrkpt;		//! track pt
   TH2F			*fTrkEovPBef;		//! track E/p before HFE pid
   TH2F			*fTrkEovPAft;		//! track E/p after HFE pid
