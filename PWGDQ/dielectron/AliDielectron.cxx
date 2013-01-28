@@ -587,6 +587,9 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
   //
   
   Int_t ntracks=ev->GetNumberOfTracks();
+
+
+  fTrackFilter.Init();
   UInt_t selectedMask=(1<<fTrackFilter.GetCuts()->GetEntries())-1;
   for (Int_t itrack=0; itrack<ntracks; ++itrack){
     //get particle

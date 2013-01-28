@@ -50,11 +50,13 @@ public:
   void SetLambdaPionCuts(AliAnalysisCuts * const filter) {fLambdaPionCuts=filter;}
   void SetGammaElectronCuts(AliAnalysisCuts* const filter) {fGammaElectronCuts=filter;}
   void SetK0sCuts(AliESDv0Cuts* const cuts) {fK0sCuts = cuts;}
-  void SetK0sStrongCuts(AliESDv0Cuts* const cuts) {fK0sStrongCuts = cuts;}
+  //void SetK0sStrongCuts(AliESDv0Cuts* const cuts) {fK0sStrongCuts = cuts;}
   void SetLambdaCuts(AliESDv0Cuts* const cuts) {fLambdaCuts = cuts;}
-  void SetLambdaStrongCuts(AliESDv0Cuts* const cuts) {fLambdaStrongCuts = cuts;}
+  //void SetLambdaStrongCuts(AliESDv0Cuts* const cuts) {fLambdaStrongCuts = cuts;}
   void SetGammaConvCuts(AliESDv0KineCuts* const cuts) {fGammaConvCuts = cuts;}
-  void SetGammaConvStrongCuts(AliESDv0KineCuts* const cuts) {fGammaConvStrongCuts = cuts;}
+  //void SetGammaConvStrongCuts(AliESDv0KineCuts* const cuts) {fGammaConvStrongCuts = cuts;}
+  void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
+  void SetV0StrongCuts(AliESDv0KineCuts* const cuts) {fV0StrongCuts = cuts;}
   void SetK0sMassRange(Double_t min=0.4, Double_t max=0.6) {fK0sMassRange[0]=min; fK0sMassRange[1]=max;}
   void SetLambdaMassRange(Double_t min=1.08, Double_t max=1.15) {fLambdaMassRange[0]=min; fLambdaMassRange[1]=max;}
   void SetGammaConvMassRange(Double_t min=0.0, Double_t max=0.1) {fGammaMassRange[0]=min; fGammaMassRange[1]=max;}
@@ -104,9 +106,9 @@ public:
   AliAnalysisCuts *fLambdaProtonCuts;// filter for protons from Lambda
   AliAnalysisCuts *fLambdaPionCuts;  // filter for pions from Lambda
   AliAnalysisCuts *fGammaElectronCuts;  // filter for electrons from gamma conversions
-  AliESDv0Cuts *fK0sStrongCuts;               // v0 strong filter for K0s->pi+pi-
-  AliESDv0Cuts *fLambdaStrongCuts;            // v0 strong filter for Lambda0->p + pi
-  AliESDv0KineCuts *fGammaConvStrongCuts;     // v0 strong filter for gamma conversions
+  AliESDv0KineCuts *fV0OpenCuts;       // v0 strong filter for tagged V0s
+  AliESDv0KineCuts *fV0StrongCuts;     // v0 strong filter for tagged V0s
+  
     
   Double_t fK0sMassRange[2];         // mass range for allowed K0s pairs
   Double_t fLambdaMassRange[2];      // mass range for allowed Lambda pairs

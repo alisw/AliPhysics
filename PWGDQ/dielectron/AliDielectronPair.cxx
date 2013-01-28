@@ -257,10 +257,10 @@ Double_t AliDielectronPair::PsiPair(Double_t MagField) const
 {
   //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
   //to ID conversions. Adapted from AliTRDv0Info class
-  Double_t x, y, z;
+  Double_t x, y;//, z;
   x = fPair.GetX();
   y = fPair.GetY();
-  z = fPair.GetZ();
+  //  z = fPair.GetZ();
 
   Double_t m1[3] = {0,0,0};
   Double_t m2[3] = {0,0,0};
@@ -449,6 +449,44 @@ Double_t AliDielectronPair::GetCosPointingAngle(const AliVVertex *primVtx) const
   
   return TMath::Abs(cosinePointingAngle);
 
+}
+
+//______________________________________________
+Double_t AliDielectronPair::GetArmAlpha() const
+{
+  //
+  // Calculate the Armenteros-Podolanski Alpha
+  //
+  Int_t qD1 = fD1.GetQ();
+
+  TVector3 momNeg( (qD1<0?fD1.GetPx():fD2.GetPx()),
+		   (qD1<0?fD1.GetPy():fD2.GetPy()),
+		   (qD1<0?fD1.GetPz():fD2.GetPz()) );
+  TVector3 momPos( (qD1<0?fD2.GetPx():fD1.GetPx()),
+		   (qD1<0?fD2.GetPy():fD1.GetPy()),
+		   (qD1<0?fD2.GetPz():fD1.GetPz()) );
+  TVector3 momTot(Px(),Py(),Pz());
+
+  Double_t lQlNeg = momNeg.Dot(momTot)/momTot.Mag();
+  Double_t lQlPos = momPos.Dot(momTot)/momTot.Mag();
+
+  return ((lQlPos - lQlNeg)/(lQlPos + lQlNeg));
+}
+
+//______________________________________________
+Double_t AliDielectronPair::GetArmPt() const
+{
+  //
+  // Calculate the Armenteros-Podolanski Pt
+  //
+  Int_t qD1 = fD1.GetQ();
+
+  TVector3 momNeg( (qD1<0?fD1.GetPx():fD2.GetPx()),
+		   (qD1<0?fD1.GetPy():fD2.GetPy()),
+		   (qD1<0?fD1.GetPz():fD2.GetPz()) );
+  TVector3 momTot(Px(),Py(),Pz());
+
+  return (momNeg.Perp(momTot));
 }
 
 // //______________________________________________

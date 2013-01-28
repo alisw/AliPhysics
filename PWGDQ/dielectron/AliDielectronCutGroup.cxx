@@ -56,6 +56,14 @@ AliDielectronCutGroup::~AliDielectronCutGroup()
 }
 
 //_____________________________________________________________________
+void AliDielectronCutGroup::Init()
+{
+    // Loop over all cuts and call Init
+  TIter next(&fCutGroupList);
+  while (AliAnalysisCuts *thisCut = (AliAnalysisCuts*) next())    thisCut->Init();
+}
+
+//_____________________________________________________________________
 Bool_t AliDielectronCutGroup::IsSelected(TObject* track) 
 {
   //

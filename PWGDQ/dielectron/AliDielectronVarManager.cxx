@@ -138,6 +138,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"R",                      "d(#vec{x}_{vtx},#vec{x}_{part.})",                   "(cm)"},
   {"OpeningAngle",           "#varphi",                                            "(rad.)"},
   {"CosPointingAngle",       "cos(#theta)",                                        "(rad.)"},
+  {"ArmAlpha",               "#alpha^{arm}",                                       ""},
+  {"ArmPt",                  "#it{p}_{T}^{arm}",                                   "(GeV/#it{c})"},
   {"ThetaHE",                "cos(#theta_{HE})",                                   ""},
   {"PhiHE",                  "#phi_{HE}",                                          "(rad.)"},
   {"ThetaSqHE",              "cos^{2}(#theta_{HE})",                               ""},
