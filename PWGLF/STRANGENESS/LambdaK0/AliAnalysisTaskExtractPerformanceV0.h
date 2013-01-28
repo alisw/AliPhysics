@@ -58,6 +58,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
+  void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -68,6 +69,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
 
   //Objects Controlling Task Behaviour 
   
@@ -203,11 +205,19 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimAnalysisPtVsYVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimAnalysisPtVsYVsMultK0Short;    //! K0Short
 
+   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultLambda;     //! Lambda
+   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultAntiLambda; //! AntiLambda
+   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultK0Short;    //! K0Short
+
 //---> Containers for monte carlo information for calculating efficiency! 
 
    TH3F      *f3dHistPrimRawPtVsYVsMultLambda;     //! Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimRawPtVsYVsMultK0Short;    //! K0Short
+
+   TH3F      *f3dHistPrimRawPtVsYCMSVsMultLambda;     //! Lambda
+   TH3F      *f3dHistPrimRawPtVsYCMSVsMultAntiLambda; //! AntiLambda
+   TH3F      *f3dHistPrimRawPtVsYCMSVsMultK0Short;    //! K0Short
 
    TH3F      *f3dHistPrimRawPtVsYVsMultNonInjLambda;     //! Non-injected Lambda
    TH3F      *f3dHistPrimRawPtVsYVsMultNonInjAntiLambda; //! Non-injected AntiLambda
