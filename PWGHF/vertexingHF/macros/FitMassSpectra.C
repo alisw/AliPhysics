@@ -19,6 +19,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
@@ -34,9 +35,9 @@
 
 
 //
-enum {kD0toKpi, kDplusKpipi,kDsKKpi};
+enum {kD0toKpi, kDplusKpipi, kDStarD0pi, kDsKKpi};
 enum {kBoth, kParticleOnly, kAntiParticleOnly};
-enum {kExpo=0, kLinear, kPol2};
+enum {kExpo=0, kThrExpo=5, kLinear, kPol2};
 enum {kGaus=0, kDoubleGaus};
 
 
@@ -77,6 +78,8 @@ Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC1
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadDsHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass);
+Bool_t LoadDstarD0piHistos(TObjArray* listFiles, TH1F** hMass);
+
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
 
@@ -106,7 +109,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   TH1F** hmass=new TH1F*[nPtBins];
   for(Int_t i=0;i<nPtBins;i++) hmass[i]=0x0;
 
-  Float_t massD;
+  Float_t massD, massD0_fDstar;
   Bool_t retCode;
   if(analysisType==kD0toKpi){
     retCode=LoadD0toKpiHistos(listFiles,hmass);
@@ -115,6 +118,12 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   else if(analysisType==kDplusKpipi){
     retCode=LoadDplusHistos(listFiles,hmass);
     massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  }
+ else if(analysisType==kDStarD0pi){
+    retCode=LoadDstarD0piHistos(listFiles,hmass);
+    massD=TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    massD0_fDstar=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    massD =massD-massD0_fDstar;
   }
   else if(analysisType==kDsKKpi){
     retCode=LoadDsHistos(listFiles,hmass);
@@ -181,6 +190,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     rebin[iBin]=origNbins/fitter[iBin]->GetBinN();
     fitter[iBin]->SetReflectionSigmaFactor(factor4refl);
     fitter[iBin]->SetInitialGaussianMean(massD);
+    if(analysisType==kDStarD0pi) fitter[iBin]->SetInitialGaussianSigma(0.00065);
     Bool_t out=fitter[iBin]->MassFitter(0);
     if(!out) {
       fitter[iBin]->GetHistoClone()->Draw();
@@ -651,6 +661,82 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass){
   TString partname="Both";
   if(optPartAntiPart==kParticleOnly) partname="D0";
   if(optPartAntiPart==kAntiParticleOnly) partname="D0bar";
+
+  TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
+  outf->cd();
+  dcuts[0]->Write();
+  outf->Close();
+  return kTRUE;
+}
+
+Bool_t LoadDstarD0piHistos(TObjArray* listFiles, TH1F** hMass){
+  //
+  Int_t nFiles=listFiles->GetEntries();
+  TList **hlist=new TList*[nFiles];
+  AliRDHFCutsDStartoKpipi** dcuts=new AliRDHFCutsDStartoKpipi*[nFiles];
+  Int_t nReadFiles=0;
+  for(Int_t iFile=0; iFile<nFiles; iFile++){
+    TString fName=((TObjString*)listFiles->At(iFile))->GetString();    
+    TFile *f=TFile::Open(fName.Data());
+    if(!f){
+      printf("ERROR: file %s does not exist\n",fName.Data());
+      continue;
+    }
+    printf("Open File %s\n",f->GetName());
+    TString dirname="PWG3_D2H_DStarSpectra";
+    TDirectory *dir = (TDirectory*)f->Get(dirname);
+    if(!dir){
+      printf("ERROR: directory %s not found in %s\n",dirname.Data(),fName.Data());
+      continue;
+    }
+    TString listmassname="DStarPID00";
+
+    hlist[nReadFiles]=(TList*)dir->Get(listmassname);
+    TString cutsobjname="DStartoKpipiCuts";
+    dcuts[nReadFiles]=(AliRDHFCutsDStartoKpipi*)dir->Get(cutsobjname);
+    if(nReadFiles>0){
+      Bool_t sameCuts=dcuts[nReadFiles]->CompareCuts(dcuts[0]);
+      if(!sameCuts){
+	printf("ERROR: Cut objects do not match\n");
+	return kFALSE;
+      }
+    }
+    nReadFiles++;
+  }
+  if(nReadFiles<nFiles){
+    printf("WARNING: not all requested files have been found\n");
+    if (nReadFiles==0) {
+      printf("ERROR: Any file/dir found\n");
+      return kFALSE;
+    }
+  }
+  Int_t nPtBinsCuts=dcuts[0]->GetNPtBins();
+  printf("Number of pt bins for cut object = %d\n",nPtBins);
+  Float_t *ptlimsCuts=dcuts[0]->GetPtBinLimits();
+  ptlimsCuts[nPtBinsCuts]=ptlimsCuts[nPtBinsCuts-1]+4.;
+
+
+
+
+  Int_t iFinBin=0;
+  for(Int_t i=0;i<nPtBinsCuts;i++){
+    if(ptlimsCuts[i]>=ptlims[iFinBin+1]) iFinBin+=1; 
+    if(iFinBin>nPtBins) break;
+    if(ptlimsCuts[i]>=ptlims[iFinBin] && 
+       ptlimsCuts[i+1]<=ptlims[iFinBin+1]){
+      for(Int_t iFile=0; iFile<nReadFiles; iFile++){
+	TH1F* htemp=(TH1F*)hlist[iFile]->FindObject(Form("histDeltaMass_%d",i));
+	if(!hMass[iFinBin]){
+	  hMass[iFinBin]=new TH1F(*htemp);
+	}else{
+	  hMass[iFinBin]->Add(htemp);
+	}
+      }
+    }
+  }
+  TString partname="Both";
+  if(optPartAntiPart==kParticleOnly) partname="DStar";
+  if(optPartAntiPart==kAntiParticleOnly) partname="DStarbar";
 
   TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
   outf->cd();
