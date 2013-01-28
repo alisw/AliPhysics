@@ -139,7 +139,7 @@ int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData&
       }
       PushBack(strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, spec);
       fTracker->UnloadClusters();
-      AliTRDReconstructor::SetClusters(0x0);
+      //AliTRDReconstructor::SetClusters(0x0);
 
       if(fEmulateHLTTracks && trdTracks){
 	trdTracks->Delete();

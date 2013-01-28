@@ -183,7 +183,7 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   
   // We need to set clusters in Reconstructor to null to prevent from 
   // double deleting, since we delete TClonesArray by ourself.
-  fReconstructor->SetClusters(0x0);
+  //fReconstructor->SetClusters(0x0);
   delete fReconstructor;
   fReconstructor = NULL;
   delete fESD;
@@ -331,7 +331,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
       //here we are deleting clusters (but not the TClonesArray itself)
       fTracker->UnloadClusters();
-      AliTRDReconstructor::SetClusters(0x0);
+      //AliTRDReconstructor::SetClusters(0x0);
       fClusterArray->Delete();
       
     }

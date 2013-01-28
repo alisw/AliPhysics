@@ -183,7 +183,7 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   delete fClusterizer;
   fClusterizer = 0;
   
-  fReconstructor->SetClusters(0x0);
+  //fReconstructor->SetClusters(0x0);
   delete fReconstructor;
   fReconstructor = 0x0;
 
@@ -340,7 +340,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	HLTDebug("Array of clusters is empty!");
       }
     }
-  fReconstructor->SetClusters(0x0);
+  //fReconstructor->SetClusters(0x0);
 
   size = totalSize;
   HLTDebug("Event is done. size written to the output is %i", size);
