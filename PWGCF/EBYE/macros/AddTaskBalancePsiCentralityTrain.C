@@ -36,7 +36,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Int_t AODfilterBit = 128,
 						       Bool_t bCentralTrigger = kFALSE,
 						       TString fileNameBase="AnalysisResults",
-                   TString fArgEventClass="Centrality") {
+						       TString fArgEventClass="Centrality",
+						       TString analysisTypeUser="") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -57,6 +58,12 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   }
   TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
+
+  // to set the analysis type manually
+  if(analysisTypeUser != ""){
+    analysisType = analysisTypeUser;
+    ::Info("AddTaskBF",Form("Analysis Type manually set to %s",analysisType.Data()));
+  }
 
   // for local changed BF configuration
   //gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
