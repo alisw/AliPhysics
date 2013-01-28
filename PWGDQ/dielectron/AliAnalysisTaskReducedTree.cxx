@@ -40,6 +40,9 @@
 #include <AliESDv0Cuts.h>
 #include <AliESDv0KineCuts.h>
 #include <AliVCluster.h>
+#include <AliAODTracklets.h>
+#include <AliMultiplicity.h>
+#include <AliPIDResponse.h>
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
 #include "AliDielectronMC.h"
@@ -151,7 +154,7 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());   // QA histograms
-  //DefineOutput(2, TTree::Class());   // reduced information tree
+  DefineOutput(2, TTree::Class());   // reduced information tree
   //if(fFillFriendInfo) DefineOutput(3, TTree::Class());   // reduced information tree with friends
   //DefineOutput(2, TTree::Class());   // reduced information tree with friends
   //DefineOutput(2, TTree::Class());   // reduced information tree  
@@ -185,13 +188,14 @@ void AliAnalysisTaskReducedTree::UserCreateOutputObjects()
     fFriendTree->Branch("Event",&fReducedEventFriend,16000,99);
   }
   
-  fTreeFile = new TFile("dstTree.root", "RECREATE");
+  //fTreeFile = new TFile("dstTree.root", "RECREATE");
+  OpenFile(2);
   fTree = new TTree("DstTree","Reduced ESD information");
   fReducedEvent = new AliReducedEvent("DstEvent");
   fTree->Branch("Event",&fReducedEvent,16000,99);
     
   PostData(1, &fListHistos);
-  //PostData(2, fTree);
+  PostData(2, fTree);
   //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
   //PostData(1, fTree);
@@ -216,7 +220,7 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
   } else {
     AliFatal("This task needs the PID response attached to the input event handler!");
   }
-  
+
   // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
   if(fSelectPhysics && inputHandler){
@@ -283,7 +287,7 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
       
   // if there are candidate pairs, add the information to the reduced tree
   PostData(1, &fListHistos);
-  //PostData(2, fTree);
+  PostData(2, fTree);
   //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
   //PostData(2, fTree);
@@ -302,6 +306,11 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   Bool_t isESD = (event->IsA()==AliESDEvent::Class());
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
   
+  AliESDEvent* esdEvent = 0x0;
+  if(isESD) esdEvent = static_cast<AliESDEvent*>(event);
+  AliAODEvent* aodEvent = 0x0;
+  if(isAOD) aodEvent = static_cast<AliAODEvent*>(event);
+  
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   UInt_t isSelected = AliVEvent::kAny;
   if(inputHandler){
@@ -315,11 +324,13 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   
   fReducedEvent->fRunNo       = event->GetRunNumber();
   fReducedEvent->fBC          = event->GetBunchCrossNumber();
+  fReducedEvent->fEventType   = event->GetEventType();
   fReducedEvent->fTriggerMask = event->GetTriggerMask();
   fReducedEvent->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
+  fReducedEvent->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
   AliVVertex* eventVtx = 0x0;
-  if(isESD) eventVtx = const_cast<AliESDVertex*>((static_cast<AliESDEvent*>(event))->GetPrimaryVertexTracks());
-  if(isAOD) eventVtx = const_cast<AliAODVertex*>((static_cast<AliAODEvent*>(event))->GetPrimaryVertex());
+  if(isESD) eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
+  if(isAOD) eventVtx = const_cast<AliAODVertex*>(aodEvent->GetPrimaryVertex());
   if(eventVtx) {
     fReducedEvent->fVtx[0] = (isESD ? ((AliESDVertex*)eventVtx)->GetXv() : ((AliAODVertex*)eventVtx)->GetX());
     fReducedEvent->fVtx[1] = (isESD ? ((AliESDVertex*)eventVtx)->GetYv() : ((AliAODVertex*)eventVtx)->GetY());
@@ -327,12 +338,38 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
     fReducedEvent->fNVtxContributors = eventVtx->GetNContributors();
   }
   if(isESD) {
-    eventVtx = const_cast<AliESDVertex*>((static_cast<AliESDEvent*>(event))->GetPrimaryVertexTPC());
+    eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
     if(eventVtx) {
       fReducedEvent->fVtxTPC[0] = ((AliESDVertex*)eventVtx)->GetXv();
       fReducedEvent->fVtxTPC[1] = ((AliESDVertex*)eventVtx)->GetYv();
       fReducedEvent->fVtxTPC[2] = ((AliESDVertex*)eventVtx)->GetZv();
       fReducedEvent->fNVtxTPCContributors = eventVtx->GetNContributors();
+    }
+    fReducedEvent->fTimeStamp     = esdEvent->GetTimeStamp();
+    fReducedEvent->fNpileupSPD    = esdEvent->GetNumberOfPileupVerticesSPD();
+    fReducedEvent->fNpileupTracks = esdEvent->GetNumberOfPileupVerticesTracks();
+    fReducedEvent->fNPMDtracks    = esdEvent->GetNumberOfPmdTracks();
+    fReducedEvent->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
+    fReducedEvent->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
+    
+    AliESDZDC* zdc = esdEvent->GetESDZDC();
+    if(zdc) {
+      for(Int_t i=0; i<4; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN1TowerEnergy()[i];
+      for(Int_t i=4; i<8; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-4];
+    }
+  }
+  if(isAOD) {
+    fReducedEvent->fTimeStamp     = 0;
+    fReducedEvent->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
+    fReducedEvent->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();
+    fReducedEvent->fNPMDtracks    = aodEvent->GetNPmdClusters();
+    fReducedEvent->fNTRDtracks    = 0;
+    fReducedEvent->fNTRDtracklets = 0;
+    
+    AliAODZDC* zdc = aodEvent->GetZDCData();
+    if(zdc) {
+      for(Int_t i=0; i<4; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZNATowerEnergy()[i];
+      for(Int_t i=4; i<8; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZNCTowerEnergy()[i-4];
     }
   }
   
@@ -348,17 +385,13 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   //cout << "event vtxZ/cent: " << fReducedEvent->fVtx[2] << "/" << fReducedEvent->fCentrality[0] << endl;
   
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
-  fReducedEvent->fSPDntracklets = (Int_t)values[AliDielectronVarManager::kNaccTrckltsEsd10];
-
+  fReducedEvent->fSPDntracklets = GetSPDTrackletMultiplicity(event, -1.0, 1.0);
+  for(Int_t ieta=0; ieta<16; ++ieta)
+    fReducedEvent->fSPDntrackletsEta[ieta] = GetSPDTrackletMultiplicity(event, -1.6+0.2*ieta, -1.6+0.2*(ieta+1));
+  
   AliVVZERO* vzero = event->GetVZEROData();
   for(Int_t i=0;i<64;++i) 
     fReducedEvent->fVZEROMult[i] = vzero->GetMultiplicity(i);  
-
-  AliESDZDC* zdc = (isESD ? (static_cast<AliESDEvent*>(event))->GetESDZDC() : 0x0);
-  if(zdc) {
-    for(Int_t i=0; i<4; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN1TowerEnergy()[i];
-    for(Int_t i=4; i<8; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-4];
-  }
   
   // EMCAL/PHOS clusters
   if(fFillCaloClusterInfo) FillCaloClusters();
@@ -419,6 +452,10 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
   Bool_t isESD = (event->IsA()==AliESDEvent::Class());
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
 
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  AliPIDResponse* pidResponse = inputHandler->GetPIDResponse();
+  
   // find all the tracks which belong to a V0 stored in the reduced event
   UShort_t trackIdsV0[4][20000]={{0}};
   Int_t nV0LegsTagged[4] = {0};
@@ -492,7 +529,16 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
         break;
       }
     }
-        
+    
+    ULong_t status = (isESD ? esdTrack->GetStatus() : aodTrack->GetStatus());
+    //cout << "TRACK" << endl;
+    for(Int_t ibit=0; ibit<32; ++ibit) {
+      if(status & (ULong_t(1)<<ibit)) {
+        //cout << "bit " << ibit << endl;
+        fReducedEvent->fNtracksPerTrackingFlag[ibit] += 1;
+      }
+    }
+    
     //apply track cuts
     if(!usedForV0Or && !usedForDielectron && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
     //cout << "storing track " << trackId << endl;
@@ -502,7 +548,7 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
         
     Double_t values[AliDielectronVarManager::kNMaxValues];
     AliDielectronVarManager::Fill(particle, values);
-    reducedParticle->fStatus        = (ULong_t)values[AliDielectronVarManager::kTrackStatus];
+    reducedParticle->fStatus        = status;//(ULong_t)values[AliDielectronVarManager::kTrackStatus];
     reducedParticle->fGlobalPhi     = values[AliDielectronVarManager::kPhi];
     reducedParticle->fGlobalPt      = values[AliDielectronVarManager::kPt]*values[AliDielectronVarManager::kCharge];
     reducedParticle->fGlobalEta     = values[AliDielectronVarManager::kEta];    
@@ -525,6 +571,7 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     reducedParticle->fTPCnSig[1]   = values[AliDielectronVarManager::kTPCnSigmaPio];
     reducedParticle->fTPCnSig[2]   = values[AliDielectronVarManager::kTPCnSigmaKao];
     reducedParticle->fTPCnSig[3]   = values[AliDielectronVarManager::kTPCnSigmaPro];
+    reducedParticle->fTPCClusterMap = EncodeTPCClusterMap(particle, isAOD);
     
     reducedParticle->fTOFbeta      = values[AliDielectronVarManager::kTOFbeta];
     reducedParticle->fTOFnSig[0]   = values[AliDielectronVarManager::kTOFnSigmaEle];
@@ -532,9 +579,8 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     reducedParticle->fTOFnSig[2]   = values[AliDielectronVarManager::kTOFnSigmaKao];
     reducedParticle->fTOFnSig[3]   = values[AliDielectronVarManager::kTOFnSigmaPro];
 
-    reducedParticle->fTRDpid[0]    = values[AliDielectronVarManager::kTRDprobEle];
-    reducedParticle->fTRDpid[1]    = values[AliDielectronVarManager::kTRDprobPio];
-    
+    Double_t trdProbab[AliPID::kSPECIES]={0.0};
+        
     if(fFlowTrackFilter) {
       // switch on the first bit if this particle should be used for the event plane
       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fFlags |= (1<<0);
@@ -547,13 +593,18 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
       //AliESDtrack *track=static_cast<AliESDtrack*>(particle);
       reducedParticle->fTrackId          = (UShort_t)esdTrack->GetID();
       reducedParticle->fTPCCrossedRows   = (UChar_t)esdTrack->GetTPCCrossedRows();
-      reducedParticle->fTPCClusterMap    = EncodeTPCClusterMap(esdTrack);
+      //reducedParticle->fTPCClusterMap    = EncodeTPCClusterMap(esdTrack);
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
       reducedParticle->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
       reducedParticle->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
       reducedParticle->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
+      
       reducedParticle->fTRDntracklets[0] = esdTrack->GetTRDntracklets();
       reducedParticle->fTRDntracklets[1] = esdTrack->GetTRDntrackletsPID();
+      pidResponse->ComputeTRDProbability(esdTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ2D);
+      reducedParticle->fTRDpid[0]    = trdProbab[AliPID::kElectron];
+      reducedParticle->fTRDpid[1]    = trdProbab[AliPID::kPion];
+      
       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fFlags |= (1<<(5+idx));
       if(esdTrack->IsEMCAL()) reducedParticle->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) reducedParticle->fCaloClusterId = esdTrack->GetPHOScluster();
@@ -561,6 +612,19 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     if(isAOD) {
       //AliAODTrack *track=static_cast<AliAODTrack*>(particle);
       reducedParticle->fTrackId = aodTrack->GetID(); 
+      reducedParticle->fITSsignal = aodTrack->GetITSsignal();
+      if(pidResponse) {
+        reducedParticle->fITSnSig[0]    = pidResponse->NumberOfSigmasITS(aodTrack,AliPID::kElectron);
+        reducedParticle->fITSnSig[1]    = pidResponse->NumberOfSigmasITS(aodTrack,AliPID::kPion);
+        reducedParticle->fITSnSig[2]    = pidResponse->NumberOfSigmasITS(aodTrack,AliPID::kKaon);
+        reducedParticle->fITSnSig[3]    = pidResponse->NumberOfSigmasITS(aodTrack,AliPID::kProton);
+      }
+      reducedParticle->fTRDntracklets[0] = aodTrack->GetTRDntrackletsPID();
+      reducedParticle->fTRDntracklets[1] = aodTrack->GetTRDntrackletsPID();
+      pidResponse->ComputeTRDProbability(aodTrack,AliPID::kSPECIES,trdProbab,AliTRDPIDResponse::kLQ2D);
+      reducedParticle->fTRDpid[0]    = trdProbab[AliPID::kElectron];
+      reducedParticle->fTRDpid[1]    = trdProbab[AliPID::kPion];
+      
       if(aodTrack->IsEMCAL()) reducedParticle->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) reducedParticle->fCaloClusterId = aodTrack->GetPHOScluster();
       if(values[AliDielectronVarManager::kKinkIndex0]>0.0) reducedParticle->fFlags |= (1<<5);
@@ -809,6 +873,7 @@ AliReducedPair* AliAnalysisTaskReducedTree::FillV0PairInfo(AliESDv0* v0, Int_t i
     reducedPair->fEta          = v0->Eta();
     reducedPair->fLxy          = v0->GetRr();
     reducedPair->fPointingAngle = v0->GetV0CosineOfPointingAngle(vtxKF->GetX(), vtxKF->GetY(), vtxKF->GetZ());
+    reducedPair->fChisquare    = v0->GetChi2V0();
   }
   else {
     const AliExternalTrackParam *negHelix=v0->GetParamN();
@@ -842,21 +907,29 @@ AliReducedPair* AliAnalysisTaskReducedTree::FillV0PairInfo(AliESDv0* v0, Int_t i
     Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
     reducedPair->fPointingAngle = (deltaPos[0]*v0Refit.GetPx() + deltaPos[1]*v0Refit.GetPy() + deltaPos[2]*v0Refit.GetPz()) / 
                                   TMath::Sqrt(momV02*deltaPos2);
+    reducedPair->fChisquare = v0Refit.GetChi2();                              
   }
   return reducedPair;
 }
 
 
 //_________________________________________________________________________________
-UChar_t AliAnalysisTaskReducedTree::EncodeTPCClusterMap(AliESDtrack* track) {
+UChar_t AliAnalysisTaskReducedTree::EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD) {
   //
   // Encode the TPC cluster map into an UChar_t
   // Divide the 159 bits from the bit map into 8 groups of adiacent clusters
   // For each group enable its corresponding bit if in that group there are more clusters compared to
   // a threshold.
   //
+  AliESDtrack* esdTrack=0x0;
+  AliAODTrack* aodTrack=0x0;
+  if(isAOD)
+    aodTrack=static_cast<AliAODTrack*>(track);
+  else
+    esdTrack=static_cast<AliESDtrack*>(track);
+  
   const UChar_t threshold=5;
-  TBits tpcClusterMap = track->GetTPCClusterMap();
+  TBits tpcClusterMap = (isAOD ? aodTrack->GetTPCClusterMap() : esdTrack->GetTPCClusterMap());
   UChar_t map=0;
   UChar_t n=0;
   UChar_t j=0;
@@ -870,11 +943,46 @@ UChar_t AliAnalysisTaskReducedTree::EncodeTPCClusterMap(AliESDtrack* track) {
 
 
 //_________________________________________________________________________________
+Int_t AliAnalysisTaskReducedTree::GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta) {
+  //
+  // Count the number of SPD tracklets in a given eta range
+  //
+  if (!event) return -1;
+  
+  Int_t nTracklets = 0;
+  Int_t nAcc = 0;
+  
+  if(event->IsA() == AliAODEvent::Class()) {
+    AliAODTracklets *tracklets = ((AliAODEvent*)event)->GetTracklets();
+    nTracklets = tracklets->GetNumberOfTracklets();
+    for(Int_t nn=0; nn<nTracklets; ++nn) {
+      Double_t theta = tracklets->GetTheta(nn);
+      Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+      if(eta < lowEta) continue;
+      if(eta > highEta) continue;
+      ++nAcc;
+    }
+  } else if(event->IsA() == AliESDEvent::Class()) {
+    nTracklets = ((AliESDEvent*)event)->GetMultiplicity()->GetNumberOfTracklets();
+    for(Int_t nn=0; nn<nTracklets; ++nn) {
+      Double_t eta = ((AliESDEvent*)event)->GetMultiplicity()->GetEta(nn);
+      if(eta < lowEta) continue;
+      if(eta > highEta) continue; 
+      ++nAcc;
+    }
+  } else return -1;
+  
+  return nAcc;
+}
+
+
+//_________________________________________________________________________________
 void AliAnalysisTaskReducedTree::FinishTaskOutput()
 {
   //
   // Finish Task 
   //
-  fTreeFile->Write();
-  fTreeFile->Close();
+  
+  //fTreeFile->Write();
+  //fTreeFile->Close();
 }
