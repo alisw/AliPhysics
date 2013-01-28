@@ -7,7 +7,6 @@
 class TH1F;
 class TH2F;
 class TList;
-class AliESDtrackCuts;
 class TClonesArray;
 class TString;
 class AliEmcalJet;
@@ -37,7 +36,6 @@ class AliLog;
 #include "AliAnalysisTask.h"
 #include "AliCentrality.h"
 #include "AliStack.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
