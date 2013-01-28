@@ -2393,7 +2393,8 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
    aodpid->SetTRDmomentum(iPl,trdmom);
  }
 
- aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices.GetArray());
+ aodpid->SetTRDslices(track->GetNumberOfTRDslices()*6,trdslices.GetArray());
+ aodpid->SetTRDsignal(track->GetTRDsignal());
 
  //TRD clusters and tracklets
  aodpid->SetTRDncls(track->GetTRDncls());

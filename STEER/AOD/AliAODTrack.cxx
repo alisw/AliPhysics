@@ -691,7 +691,7 @@ Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
   // return TRD Pid information
   //
   if (!fDetPid) return -1;
-  Double32_t *trdSlices=fDetPid->GetTRDsignal();
+  Double32_t *trdSlices=fDetPid->GetTRDslices();
   if (!trdSlices) return -1;
   if ((plane<0) || (plane>=kTRDnPlanes)) {
     return -1.;

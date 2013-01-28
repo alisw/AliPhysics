@@ -38,6 +38,7 @@ AliAODPid::AliAODPid():
     fTRDnSlices(0),
     fTRDntls(0),
     fTRDslices(0x0),
+    fTRDsignal(0),
     fTRDChi2(0x0),
     fTOFesdsignal(0),
     fTPCdEdxInfo(0)
@@ -72,12 +73,13 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTRDnSlices(pid.fTRDnSlices),
   fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
+  fTRDsignal(pid.fTRDsignal),
   fTRDChi2(pid.fTRDChi2),
   fTOFesdsignal(pid.fTOFesdsignal),
   fTPCdEdxInfo(0x0)
 {
   // Copy constructor
-  SetTRDsignal(fTRDnSlices, pid.fTRDslices);
+  SetTRDslices(fTRDnSlices, pid.fTRDslices);
     for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
 
     for(Int_t i=0; i<6; i++){ 
@@ -106,7 +108,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTPCsignalN  = pid.fTPCsignalN;
     fTPCmomentum = pid.fTPCmomentum;
 
-
+    fTRDsignal = pid.fTRDsignal;
     if(fTRDnSlices != pid.fTRDnSlices) {
       // only delete if number changed or is 0
       delete [] fTRDslices;

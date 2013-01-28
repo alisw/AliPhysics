@@ -288,6 +288,7 @@ class AliAODTrack : public AliVTrack {
   
   void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
+  Double_t  GetTRDsignal()                        const {return fDetPid ? fDetPid->GetTRDsignal() : 0;}
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
   Double_t  GetTRDchi2()                 const {return fDetPid ? fDetPid->GetTRDChi2() : -1;}
   UChar_t   GetTRDncls(Int_t layer)      const;

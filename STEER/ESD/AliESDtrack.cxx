@@ -566,6 +566,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   AliTPCdEdxInfo * dEdxInfo = track->GetTPCdEdxInfo();
   if (dEdxInfo) SetTPCdEdxInfo(new AliTPCdEdxInfo(*dEdxInfo));
   //
+  SetTRDsignal(track->GetTRDsignal());
   int ntrdsl = track->GetNumberOfTRDslices();
   if (ntrdsl>0) {
     SetNumberOfTRDslices((ntrdsl+2)*kTRDnPlanes);

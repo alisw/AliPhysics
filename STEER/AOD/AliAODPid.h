@@ -31,7 +31,8 @@ class AliAODPid : public TObject {
   void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=(UChar_t)((tpcN<160)?tpcN:160);}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
   void      SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo);
-  void      SetTRDsignal(Int_t nslices, const Double_t * const trdslices);  
+  void      SetTRDslices(Int_t nslices, const Double_t * const trdslices);  
+  void      SetTRDsignal(Double_t sig)                         {fTRDsignal = sig;}
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
   void      SetTRDncls(UChar_t ncls, Int_t layer = -1);
   void      SetTRDntrackletsPID(UChar_t ntls) {fTRDntls = ntls;}
@@ -52,7 +53,8 @@ class AliAODPid : public TObject {
 
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Int_t     GetTRDnSlices()      const {return  fTRDnSlices/6;}
-  Double_t* GetTRDsignal()       const {return  fTRDslices;}
+  Double_t  GetTRDsignal()       const {return  fTRDsignal;}
+  Double_t* GetTRDslices()       const {return  fTRDslices;}
   Double_t  GetTRDChi2()         const {return fTRDChi2;}
   const Double_t*  GetTRDmomentum() const {return  fTRDmomentum;}
   UChar_t   GetTRDncls(UChar_t layer) const { if(layer > 5) return 0; return fTRDncls[layer];}
@@ -75,6 +77,7 @@ class AliAODPid : public TObject {
   UChar_t     fTRDntls;          // number of tracklets used for PID calculation
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
   Double32_t* fTRDslices;        //[fTRDnSlices][0.,0.,10]
+  Double32_t  fTRDsignal;        //[0.,0.,10]  TRD signal
   Double32_t  fTRDmomentum[6];   //[0.,0.,10]  momentum at the TRD layers
   Double32_t  fTRDChi2;          //[0.,0.,10]  TRD chi2
 
@@ -84,11 +87,11 @@ class AliAODPid : public TObject {
  
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 13);
+  ClassDef(AliAODPid, 14);
 };
 
 //_____________________________________________________________
-inline void AliAODPid::SetTRDsignal(Int_t nslices, const Double_t * const trdslices) {
+inline void AliAODPid::SetTRDslices(Int_t nslices, const Double_t * const trdslices) {
   //
   // Set TRD dE/dx slices and the number of dE/dx slices per track
   //
