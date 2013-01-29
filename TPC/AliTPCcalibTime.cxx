@@ -60,7 +60,7 @@ Comments to be written here:
 
 ClassImp(AliTPCcalibTime)
 
-Double_t AliTPCcalibTime::fgResHistoMergeCut = 10000000.;
+Double_t AliTPCcalibTime::fgResHistoMergeCut = 20000000.;
 
 AliTPCcalibTime::AliTPCcalibTime() 
   :AliTPCcalibBase(),  
@@ -1128,6 +1128,8 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
         {
           if (fResHistoTPCITS[imeas]->GetEntries()+(cal->fResHistoTPCITS[imeas])->GetEntries() < fgResHistoMergeCut)
             fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
+          else
+            AliInfo(Form("fResHistoTPCITS[%i] full (has %.0f merged tracks, max allowed: %.0f)",imeas,fResHistoTPCCE[imeas]->GetEntries(),fgResHistoMergeCut));
         }
         if (fMemoryMode>1) 
         {
