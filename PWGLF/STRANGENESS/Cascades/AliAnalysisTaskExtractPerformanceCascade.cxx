@@ -98,7 +98,8 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
   : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
-
+   fpArapidityShift ( 0.465 ),
+   fCentralityEstimator("V0M"),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -170,6 +171,14 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    f3dHistGenSelectedPtVsYVsMultXiPlus(0),
    f3dHistGenSelectedPtVsYVsMultOmegaMinus(0),
    f3dHistGenSelectedPtVsYVsMultOmegaPlus(0),
+   f3dHistGenPtVsYCMSVsMultXiMinus(0),
+   f3dHistGenPtVsYCMSVsMultXiPlus(0),
+   f3dHistGenPtVsYCMSVsMultOmegaMinus(0),
+   f3dHistGenPtVsYCMSVsMultOmegaPlus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultXiMinus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultXiPlus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus(0),
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -184,7 +193,8 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
   : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
-     
+   fpArapidityShift ( 0.465 ),
+   fCentralityEstimator("V0M"),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -257,6 +267,14 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    f3dHistGenSelectedPtVsYVsMultXiPlus(0),
    f3dHistGenSelectedPtVsYVsMultOmegaMinus(0),
    f3dHistGenSelectedPtVsYVsMultOmegaPlus(0),
+   f3dHistGenPtVsYCMSVsMultXiMinus(0),
+   f3dHistGenPtVsYCMSVsMultXiPlus(0),
+   f3dHistGenPtVsYCMSVsMultOmegaMinus(0),
+   f3dHistGenPtVsYCMSVsMultOmegaPlus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultXiMinus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultXiPlus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus(0),
+   f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus(0),
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -506,6 +524,28 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
       fListHist->Add(f3dHistGenPtVsYVsMultOmegaPlus);
    }
 
+//All generated cascades, YCMS
+
+   if(! f3dHistGenPtVsYCMSVsMultXiMinus) {
+      f3dHistGenPtVsYCMSVsMultXiMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenPtVsYCMSVsMultXiMinus);
+   }
+   if(! f3dHistGenPtVsYCMSVsMultXiPlus) {
+      f3dHistGenPtVsYCMSVsMultXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenPtVsYCMSVsMultXiPlus);
+   }
+//--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+
+   if(! f3dHistGenPtVsYCMSVsMultOmegaMinus) {
+      f3dHistGenPtVsYCMSVsMultOmegaMinus = new TH3F( "f3dHistGenPtVsYCMSVsMultOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenPtVsYCMSVsMultOmegaMinus);
+   }
+   if(! f3dHistGenPtVsYCMSVsMultOmegaPlus) {
+      f3dHistGenPtVsYCMSVsMultOmegaPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenPtVsYCMSVsMultOmegaPlus);
+   }
+
+
 //--------------------------------------------------------------------------------------
 //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
 
@@ -526,6 +566,28 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
    if(! f3dHistGenSelectedPtVsYVsMultOmegaPlus) {
       f3dHistGenSelectedPtVsYVsMultOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYVsMultOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHist->Add(f3dHistGenSelectedPtVsYVsMultOmegaPlus);
+   }
+
+//ANALYSIS level Cascades, YCMS
+
+
+   if(! f3dHistGenSelectedPtVsYCMSVsMultXiMinus) {
+      f3dHistGenSelectedPtVsYCMSVsMultXiMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultXiMinus);
+   }
+   if(! f3dHistGenSelectedPtVsYCMSVsMultXiPlus) {
+      f3dHistGenSelectedPtVsYCMSVsMultXiPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultXiPlus);
+   }
+//--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+
+   if(! f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus) {
+      f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus);
+   }
+   if(! f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus) {
+      f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus);
    }
 
 //----------------------------------
@@ -646,7 +708,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    if(fkIsNuclear == kTRUE){ 
       AliCentrality* centrality;
       centrality = lESDevent->GetCentrality();
-      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( "V0M" ) ) );
+      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( fCentralityEstimator.Data() ) ) );
       if (centrality->GetQuality()>1) {
         PostData(1, fListHist);
         PostData(2, fTreeCascade);
@@ -712,19 +774,23 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
          if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenPtVsYCMSVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenPtVsYCMSVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenPtVsYVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenPtVsYCMSVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
       } 
    }
@@ -881,19 +947,23 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
          if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenSelectedPtVsYCMSVsMultXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenSelectedPtVsYCMSVsMultXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHistGenSelectedPtVsYVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicity);
          }
       } 
    }

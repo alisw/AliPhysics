@@ -99,7 +99,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
   : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
-
+   fCentralityEstimator("V0M"),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -172,7 +172,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
   : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkSwitchINT7  ( kFALSE ),
-     
+   fCentralityEstimator("V0M"),     
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -534,7 +534,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
    if(fkIsNuclear == kTRUE){ 
       AliCentrality* centrality;
       centrality = lESDevent->GetCentrality();
-      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( "V0M" ) ) );
+      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( fCentralityEstimator.Data() ) ) );
       if (centrality->GetQuality()>1) {
         PostData(1, fListHist);
         PostData(2, fTreeCascade);
