@@ -55,6 +55,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
 
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7   = lSwitchINT7; }
+  void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -72,6 +73,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
   Bool_t fkSwitchINT7;  //if true, skip FASTOnly (default FALSE)
+  TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
 
 	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
