@@ -360,6 +360,8 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
   fListHist->Add(fHistMult);
   fListHist->Add(fHistCentrality);
   
+  PostData(1, fListHist);
+
 }
 
 //________________________________________________________________________
