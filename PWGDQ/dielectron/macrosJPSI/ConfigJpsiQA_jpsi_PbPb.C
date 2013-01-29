@@ -6,8 +6,6 @@ void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
 
 void AddMCSignals(AliDielectron *die);
 
-void SetupNanoTrackCuts(AliDielectron *die, Int_t cutDefinition);
-
 void SetEtaCorrection();
 TVectorD *GetRunNumbers();
 
@@ -57,9 +55,8 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
 
   // cut setup
   SetupEventCuts(die,triggers);
-  //SetupTrackCuts(die,cutDefinition);
-  SetupNanoTrackCuts(die,cutDefinition);
-  //  SetupPairCuts(die,cutDefinition);
+  SetupTrackCuts(die,cutDefinition);
+  SetupPairCuts(die,cutDefinition);
 
   // MC signals
   if(hasMC) {
@@ -190,15 +187,15 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   // track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
-  //varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  //varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  //  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
-  //varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
   //varCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
-  //varCuts->Print();
+  varCuts->Print();
   cuts->AddCut(varCuts);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -243,42 +240,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","noConv");
   noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
   //cuts->AddCut(noconv);
-
-}
-
-void SetupNanoTrackCuts(AliDielectron *die, Int_t cutDefinition)
-{
-  //
-  // Setup the track cuts
-  //
-
-  // Quality cuts
-  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
-  die->GetTrackFilter().AddCuts(cuts);
-
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
-  //trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 15); // ITS-4 = 1+2+4+8
-  trkCuts->SetRequireITSRefit(kTRUE);
-  trkCuts->SetRequireTPCRefit(kTRUE);
-  //  cuts->AddCut(trkCuts);
-
-  //Pt cut, should make execution a bit faster
-  AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
-  pt->AddCut(AliDielectronVarManager::kPt,0.7,1e30);    //1.1
-  cuts->AddCut(pt);
-  pt->Print();
-
-  // track cuts ESD and AOD
-  AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  //varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
-  varCuts->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.2,   4.0);
-  //varCuts->Print();
-  //cuts->AddCut(varCuts);
 
 }
 
@@ -391,7 +352,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			  GetRunNumbers(), 
 			  AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMultV0C,  AliDielectronVarManager::kRunNumber);
 
-
+    histos->UserHistogram("Event","","", 110,0.,1.1, AliDielectronVarManager::kMatchEffITSTPC);
+    histos->UserHistogram("Event","","", 200,0.,20000., 110,0.,1.1,
+			  AliDielectronVarManager::kNTrk, AliDielectronVarManager::kMatchEffITSTPC);
     histos->UserHistogram("Event","","", 80.,0.,80., 80.,0.,80., AliDielectronVarManager::kCentrality, AliDielectronVarManager::kCentralitySPD);
 
 
