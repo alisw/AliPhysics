@@ -335,7 +335,7 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const AliVTrack* track,
   //
   
   Double_t mom=track->GetTPCmomentum();
-  Double_t mass=AliPID::ParticleMass(species);
+  Double_t mass=AliPID::ParticleMassZ(species);
   
   //charge factor. BB goes with z^2, however in reality it is slightly larger (calibration, threshold effects, ...)
   // !!! Splines for light nuclei need to be normalised to this factor !!!
@@ -375,7 +375,7 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const AliVTrack* track,
     // !!! Splines for light nuclei need to be normalised to this factor !!!
     const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(species),2.3);
   
-    return Bethe(track->GetTPCmomentum() / AliPID::ParticleMass(species)) * chargeFactor;
+    return Bethe(track->GetTPCmomentum() / AliPID::ParticleMassZ(species)) * chargeFactor;
   }
   
   Double_t dEdx = -1;

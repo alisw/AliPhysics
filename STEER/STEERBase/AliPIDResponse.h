@@ -111,6 +111,8 @@ public:
   // pid status
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
+  Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
+  
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
@@ -167,7 +169,6 @@ protected:
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
-  Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
 
 private:
   Bool_t fIsMC;                        //  If we run on MC data
