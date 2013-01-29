@@ -325,6 +325,7 @@ public:
     kNVtxContrib,             // number of primary vertex contibutors
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
+    kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6        
     kNaccTrcklts0916,        // number of accepted SPD tracklets in 0.9<|eta|<1.6
     
@@ -1518,6 +1519,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
+  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
   values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event);      // etaRange = 1.6 (default)
   values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
   //  values[AliDielectronVarManager::kNaccTrcklts05]   = AliDielectronHelper::GetNaccTrcklts(event, 0.5);

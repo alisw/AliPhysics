@@ -20,7 +20,7 @@
 // Authors: 
 //   Jens Wiechula <Jens.Wiechula@cern.ch> 
 //   Frederick Kramer <Frederick.Kramer@cern.ch> 
-// 
+//   Julian Book <Julian.Book@cern.ch>
 
 
 
@@ -257,8 +257,9 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
-    if (varCuts->IsSelected(track) && trkCuts->IsSelected(track)) 
-      nAcc++;
+    if (!trkCuts->IsSelected(track)) continue;
+    if (!varCuts->IsSelected(track)) continue;
+    nAcc++;
   }
   
   delete varCuts;
@@ -266,6 +267,55 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 
   return nAcc;
 }
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
+  // recalulate the its-tpc matching efficiecy
+
+  if (!ev) return -1;
+
+  AliDielectronVarCuts *varCutsTPC = new AliDielectronVarCuts("VarCutsTPC","VarCutsTPC");
+  varCutsTPC->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCutsTPC->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCutsTPC->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCutsTPC->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  varCutsTPC->AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
+  AliDielectronTrackCuts *trkCutsTPC = new AliDielectronTrackCuts("TrkCutsTPC","TrkCutsTPC");
+  trkCutsTPC->SetRequireTPCRefit(kTRUE);
+
+  AliDielectronVarCuts *varCutsITS = new AliDielectronVarCuts("VarCutsITS","VarCutsITS");
+  varCutsITS->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  AliDielectronTrackCuts *trkCutsITS = new AliDielectronTrackCuts("TrkCutsITS","TrkCutsITS");
+  trkCutsITS->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
+  trkCutsITS->SetRequireITSRefit(kTRUE);
+
+
+  Int_t nRecoTracks = ev->GetNumberOfTracks();
+  Double_t nTPC = 0, nITS = 0;
+
+  for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
+    AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
+    if (!track) continue;
+
+    if(!trkCutsITS->IsSelected(track)) continue;
+    if(!varCutsITS->IsSelected(track)) continue;
+    nITS+=1.;
+
+    if(!trkCutsTPC->IsSelected(track)) continue;
+    if(!varCutsTPC->IsSelected(track)) continue;
+    nTPC+=1.;
+
+  }
+
+  delete varCutsITS;
+  delete trkCutsITS;
+  delete varCutsTPC;
+  delete trkCutsTPC;
+
+  printf(" tracks TPC %.3e ITS %.3e = %.5f \n",nTPC,nITS,(nITS>0. ? nTPC/nITS : -1));
+  return (nITS>0. ? nTPC/nITS : -1);
+}
+
 
 //_____________________________________________________________________________
 void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){

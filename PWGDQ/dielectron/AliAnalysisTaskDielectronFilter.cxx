@@ -21,7 +21,6 @@
 
 #include <TChain.h>
 #include <TH1D.h>
-
 #include <AliLog.h>
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
@@ -37,6 +36,7 @@
 #include "AliDielectronHistos.h"
 #include "AliDielectronVarManager.h"
 #include "AliAnalysisTaskDielectronFilter.h"
+#include "AliAODCaloCluster.h"
 
 ClassImp(AliAnalysisTaskDielectronFilter)
 
@@ -54,7 +54,7 @@ fTriggerLogic(kAny),
 fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
-fStoreTrackLegs(kFALSE),
+fCreateNanoAOD(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -76,7 +76,7 @@ fTriggerLogic(kAny),
 fTriggerAnalysis(0x0),
 fStoreLikeSign(kFALSE),
 fStoreRotatedPairs(kFALSE),
-fStoreTrackLegs(kFALSE),
+fCreateNanoAOD(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -135,7 +135,23 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1),Form("#splitline{1 candidate}{%s}",fDielectron->GetName()));
     fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2),Form("#splitline{With >1 candidate}{%s}",fDielectron->GetName()));
    }
- 
+
+Bool_t isAOD=AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODInputHandler::Class(); 
+if(fCreateNanoAOD && isAOD){
+  AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+  AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
+   TClonesArray *nanoAODTracks = new TClonesArray("AliAODTrack",500);
+   nanoAODTracks->SetName("tracks");
+   extDielectron->AddBranch("TClonesArray", &nanoAODTracks);
+   TClonesArray *nanoAODVertices = new TClonesArray("AliAODVertex",500);
+   nanoAODVertices->SetName("vertices");
+   extDielectron->AddBranch("TClonesArray", &nanoAODVertices);
+   TClonesArray *nanoAODCaloCluster = new TClonesArray("AliAODCaloCluster",500);
+   nanoAODCaloCluster->SetName("caloClusters");
+   extDielectron->AddBranch("TClonesArray", &nanoAODCaloCluster);  
+   extDielectron->GetAOD()->GetStdContent();
+   }else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  } 
+  
   PostData(2,fEventStat);
 }
 
@@ -283,22 +299,74 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     
     if (!t->GetBranch("dielectrons"))
       t->Bronch("dielectrons","TObjArray",fDielectron->GetPairArraysPointer());
+      
       // store positive and negative tracks
-      if(fStoreTrackLegs && t->GetBranch("tracks")){
-       Int_t nTracks = (fDielectron->GetTrackArray(0))->GetEntries() + (fDielectron->GetTrackArray(1))->GetEntries();
-      extDielectron->GetAOD()->ResetStd(nTracks);
+      if(fCreateNanoAOD && isAOD){
+      Int_t nTracks = (fDielectron->GetTrackArray(0))->GetEntries() + (fDielectron->GetTrackArray(1))->GetEntries();
+       AliAODEvent *nanoEv = extDielectron->GetAOD();
+       nanoEv->GetTracks()->Clear();      
+       nanoEv->GetVertices()->Clear();      
+       nanoEv->GetCaloClusters()->Clear();      
+       
+       AliAODVertex* tmp = ((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex())->CloneWithoutRefs();
+       nanoEv->AddVertex(tmp);
+       AliAODVertex* tmpSpd = ((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertexSPD())->CloneWithoutRefs();
+       nanoEv->AddVertex(tmpSpd);
+       nanoEv->GetVertex(0)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex()->GetNContributors());
+       nanoEv->GetVertex(1)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertexSPD()->GetNContributors());
 
-         for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++)
-         extDielectron->GetAOD()->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj));
+ 
+         for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++){
+         Int_t posit = nanoEv->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj));
+         Int_t posVtx = nanoEv->AddVertex(((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj))->GetProdVertex()); 
+         nanoEv->GetVertex(posVtx)->ResetBit(kIsReferenced);  
+         nanoEv->GetVertex(posVtx)->SetUniqueID(0);
+         nanoEv->GetVertex(posVtx)->RemoveDaughters();
+         nanoEv->GetTrack(posit)->ResetBit(kIsReferenced);  
+         nanoEv->GetTrack(posit)->SetUniqueID(0); 
+         // calo cluster
+         Int_t caloIndex = ((AliAODTrack*)fDielectron->GetTrackArray(0)->At(kj))->GetEMCALcluster();
+         if(caloIndex > 0 && (static_cast<AliAODEvent*>(InputEvent()))->GetCaloCluster(caloIndex)){
+         Int_t posCaloCls = nanoEv->AddCaloCluster(static_cast<AliAODEvent*>(InputEvent())->GetCaloCluster(caloIndex));
+         nanoEv->GetTrack(posit)->SetEMCALcluster(posCaloCls);
+         AliAODCaloCluster *clCls = nanoEv->GetCaloCluster(posCaloCls);
+         for(int t=0; t<clCls->GetNTracksMatched(); t++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(t)); 
+         nanoEv->GetCaloCluster(posCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(posit)); 
+         }
+         // set references for vtx
+         nanoEv->GetTrack(posit)->SetProdVertex(nanoEv->GetVertex(posVtx));
+         }
 
-         for(int kj=0; kj<(fDielectron->GetTrackArray(1))->GetEntries(); kj++)
-         extDielectron->GetAOD()->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(1)->At(kj));
-      }
-
+         for(int kj=0; kj<(fDielectron->GetTrackArray(1))->GetEntries(); kj++){
+         Int_t negat = nanoEv->AddTrack((AliAODTrack*)fDielectron->GetTrackArray(1)->At(kj));
+         Int_t negVtx = nanoEv->AddVertex(((AliAODTrack*)fDielectron->GetTrackArray(1)->At(kj))->GetProdVertex());    
+         nanoEv->GetVertex(negVtx)->ResetBit(kIsReferenced);  
+         nanoEv->GetVertex(negVtx)->SetUniqueID(0);
+         nanoEv->GetVertex(negVtx)->RemoveDaughters();
+         nanoEv->GetTrack(negat)->ResetBit(kIsReferenced);  
+         nanoEv->GetTrack(negat)->SetUniqueID(0);
+         // calo cluster
+         Int_t caloIndex = ((AliAODTrack*)fDielectron->GetTrackArray(1)->At(kj))->GetEMCALcluster(); 
+         if(caloIndex > 0 && (static_cast<AliAODEvent*>(InputEvent()))->GetCaloCluster(caloIndex)){
+         Int_t negCaloCls = nanoEv->AddCaloCluster(static_cast<AliAODEvent*>(InputEvent())->GetCaloCluster(caloIndex));
+         nanoEv->GetTrack(negat)->SetEMCALcluster(negCaloCls);
+         AliAODCaloCluster *clCls = nanoEv->GetCaloCluster(negCaloCls); 
+         for(int t=0; t<clCls->GetNTracksMatched(); t++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(t));
+         nanoEv->GetCaloCluster(negCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(negat));
+         }
+         nanoEv->GetTrack(negat)->SetProdVertex(nanoEv->GetVertex(negVtx)); 
+         }  
+        delete tmp; delete tmpSpd; 
+        nanoEv->GetTracks()->Expand(nTracks); 
+        nanoEv->GetVertices()->Expand(nTracks+2); 
+        nanoEv->GetCaloClusters()->Expand(nanoEv->GetNumberOfCaloClusters()); 
+   
+    }
     if(isAOD) t->Fill();
   }
   
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
   PostData(2,fEventStat);
+  return;
 }
 

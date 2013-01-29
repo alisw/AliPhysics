@@ -30,6 +30,7 @@ Add a sattelite AOD with the array of candidates.
 class AliDielectron;
 class TH1D;
 class AliTriggerAnalysis;
+class AliAODCaloCluster;
 
 class AliAnalysisTaskDielectronFilter : public AliAnalysisTaskSE {
   
@@ -60,7 +61,7 @@ public:
 
   void SetStoreLikeSignCandidates(Bool_t storeLS) { fStoreLikeSign = storeLS; }
   void SetStoreRotatedPairs(Bool_t storeTR) { fStoreRotatedPairs = storeTR; }
-  void SetStoreTrackLegs(Bool_t storeTrackRef) { fStoreTrackLegs = storeTrackRef; }
+  void SetStoreTrackLegs(Bool_t storeTrackRef) { fCreateNanoAOD = storeTrackRef; }
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
 
@@ -83,7 +84,8 @@ private:
   
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   Bool_t fStoreRotatedPairs;    // flag to store rotation
-  Bool_t fStoreTrackLegs;       // flag to store track legs
+  Bool_t fCreateNanoAOD;        // flag to store track legs
+
 
   AliAnalysisCuts *fEventFilter;     // event filter
   
