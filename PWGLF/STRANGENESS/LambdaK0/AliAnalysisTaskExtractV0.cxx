@@ -95,6 +95,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
    fkSwitchINT7    ( kFALSE ),
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
+   fCentralityEstimator("V0M"),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -183,7 +184,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
    fkSwitchINT7    ( kFALSE ),
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
-     
+   fCentralityEstimator("V0M"),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -574,7 +575,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    if(fkIsNuclear == kTRUE){ 
       AliCentrality* centrality;
       centrality = lESDevent->GetCentrality();
-      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( "V0M" ) ) );
+      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile(   fCentralityEstimator.Data() ) ) );
       if (centrality->GetQuality()>1) {
         PostData(1, fListHistV0);
         PostData(2, fTree);

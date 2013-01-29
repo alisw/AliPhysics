@@ -59,6 +59,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
   void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
+  void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -78,6 +79,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkUseOnTheFly; //if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
   Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
+  TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
 
 //===========================================================================================
 //   Variables for Tree, V0s
@@ -253,6 +255,16 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistGenSelectedPtVsYVsMultXiPlus;       //! Generated Xi+ Distrib, at event selection level
    TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
    TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
+
+   TH3F      *f3dHistGenPtVsYCMSVsMultXiMinus;      //! Generated Xi- Distrib
+   TH3F      *f3dHistGenPtVsYCMSVsMultXiPlus;       //! Generated Xi+ Distrib
+   TH3F      *f3dHistGenPtVsYCMSVsMultOmegaMinus;      //! Generated Omega- Distrib
+   TH3F      *f3dHistGenPtVsYCMSVsMultOmegaPlus;       //! Generated Omega+ Distrib
+
+   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultXiMinus;      //! Generated Xi- Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultXiPlus;       //! Generated Xi+ Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
 
    TH1F      *fHistPVx;                      //! PVx distrib
    TH1F      *fHistPVy;                      //! PVy distrib
