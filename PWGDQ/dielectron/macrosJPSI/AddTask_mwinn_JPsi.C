@@ -6,96 +6,92 @@ AliAnalysisTask *AddTask_mwinn_JPsi(){
     return 0;
   }
 
-  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTask_mwinn_JPsi", "Not used in AOD!!!");
-    return 0;
-  }
 
-  //Get the current train configuration
-  //NOTE train config not there on grid, PbPb anyhow not used for correlations
-  //TString trainConfig=gSystem->Getenv("CONFIG_FILE");
-
-  //set config file name
-  //for grid running: "$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeDebugTree.C"
-  //for gsi running "$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eeDebugTree.C"
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pp.C");
-  //NOTE train config not there on grid, PbPb anyhow not used for correlations
-  //if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eeDebugTreePbPb.C";
-  
-    //load dielectron configuration file
-  gROOT->LoadMacro(configFile.Data());
-
-  
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
-  //create task and add it to the manager
-  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("mwinn_JPsi");
-  if (!hasMC) task->UsePhysicsSelection();
-	  //NOTE trigger selection for EMCAL triggered data...
-	task->SetTriggerMask(AliVEvent::kEMC7);
-  mgr->AddTask(task);
+  //Get the current train configuration
+  TString trainConfig=gSystem->Getenv("CONFIG_FILE");
   
-  //load dielectron configuration file, already done before!
-  //gROOT->LoadMacro(configFile.Data());
+  //set config file name
+  // TString configFile("$TRAIN_ROOT/mwinn_jpsiCorr/ConfigJpsi2eeData.C");
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi_mw_pPb.C");
+  //TString configFile("$TRAIN_ROOT/jpsi_JPSI/ConfigJpsiStandard.C");
+  // if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eePbPb.C";
+  
+  //if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+  //  ::Info("AddTaskJPSI", "Using AOD configuration");
+  //  configFile="$TRAIN_ROOT/util/dielectron/dielectron/macros/ConfigJpsi2eeDataAOD.C";
+  // }
+
+  TString list=gSystem->Getenv("LIST");
+  //create task and add it to the manager
+  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
+  if (!hasMC&&(!list.Contains("LHC12h")) ) task->UsePhysicsSelection();//taking out for testing
+  task->SelectCollisionCandidates(AliVEvent::kINT7); //kINT7?, MB-trigger for MB pPb
+  if (list.Contains("LHC11d")) task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);
+  //if (list.Contains("LHC12h")) task->SetTRDtrigger(1+2);
+  mgr->AddTask(task);
+
+  
+  //load dielectron configuration file
+  gROOT->LoadMacro(configFile.Data());
   
   //add dielectron analysis with different cuts to the task
-	//NOTE: for 11d running just taking one single configuration, see configjpsi2eeDebugTree
+  cout << "!!!!!!!!!!!! nDie = " << nDie << endl;
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_mw_pp(i);
-    if(jpsi) {
-      jpsi->SetDontClearArrays();
-      task->AddDielectron(jpsi);
-    }
+    AliDielectron *jpsi=ConfigJpsi_mw_pPb(i);
+    if (!jpsi) continue;
+    task->AddDielectron(jpsi);
+//    printf("add: %s\n",jpsi->GetName());
   }
-
   
   //Add event filter
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  eventCuts->SetRequireVertex();
+  eventCuts->SetRequireVertex();//NOTE: all of these cuts can for some reasons not be applied to self-filtered AODs by mwinn in 
+  //(list/hera/alice/mwinn/mwinn/train/lists/...)
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
-  //NOTE train config not there on grid, PbPb anyhow not used for correlations
-  //  if ( trainConfig.Contains("PbPb") ) eventCuts->SetCentralityRange(40.,80.);
-  task->SetEventFilter(eventCuts);
-  
-  //   task->SetTriggerOnV0AND();
+//   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTracksOrSPD);
+//   eventCuts->SetRequireV0and();
+//   if ( trainConfig=="PbPb" ){
+//     eventCuts->SetCutOnMultipicityITSTPC();
+//   }
+   task->SetEventFilter(eventCuts);
+
+//   task->SetTriggerOnV0AND();
+  if ( trainConfig=="pp" ) task->SetRejectPileup();
   
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("mwinn_tree",
+    mgr->CreateContainer("jpsi_mwinn_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "mwinn_default");
-  												 
+                         "jpsi_mwinn_default");
+  
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("mwinn_QA",
+    mgr->CreateContainer("jpsi_mwinn_QA",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "mwinn.root");
+                         "jpsi_mwinn.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("mwinn_CF",
+    mgr->CreateContainer("jpsi_mwinn_CF",
                          TList::Class(),
-                         AliAnalysisManager::kExchangeContainer,
-                         "mwinn.root");
-												 
-
-
+                         AliAnalysisManager::kOutputContainer,
+                         "jpsi_mwinn.root");
+  
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("mwinn_EventStat",
+    mgr->CreateContainer("jpsi_mwinn_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "mwinn.root");
-
-												 
-	//is the first output type  a problem??!
+                         "jpsi_mwinn.root");
+  
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
   mgr->ConnectOutput(task, 3, cOutputHist3);
-
   
   return task;
 }
