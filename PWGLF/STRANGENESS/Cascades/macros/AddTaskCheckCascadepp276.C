@@ -57,34 +57,65 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
    // Directory name
    TString outputFileName = Form("%s:PWGLFStrangeness.outputCheckCascadepp276", AliAnalysisManager::GetCommonFileName());
    // Objects name
-   TString outputlistname = Form("clistCasc_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
-     if(fwithsdd) {
-           if (ksddonselection)       outputlistname += "_wSDDon";
-           else if (!ksddonselection) outputlistname += "_wSDDoff";
-     } else if (!fwithsdd)            outputlistname += "_woSDD";
+   TString outputname0 = "clistCasc";
+   TString outpotname1 = "cfcontPIDAsXiM";
+   TString outpotname2 = "cfcontPIDAsXiP";
+   TString outpotname3 = "cfcontPIDAsOmegaM";
+   TString outpotname4 = "cfcontPIDAsOmegaP";
+   TString outpotname5 = "cfcontAsCuts";
+      outputname0 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      outputname1 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      outputname2 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      outputname3 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      outputname4 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      outputname5 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+      if(fwithsdd) {
+          if (ksddonselection) {
+              outputname0 += "_wSDDon";
+              outputname1 += "_wSDDon";
+              outputname2 += "_wSDDon";
+              outputname3 += "_wSDDon";
+              outputname4 += "_wSDDon";
+              outputname5 += "_wSDDon";
+          } else if (!ksddonselection) {
+              outputname0 += "_wSDDoff";
+              outputname1 += "_wSDDoff";
+              outputname2 += "_wSDDoff";
+              outputname3 += "_wSDDoff";
+              outputname4 += "_wSDDoff";
+              outputname5 += "_wSDDoff";
+          }
+      } else if (!fwithsdd) {
+          outputname0 += "_woSDD";
+          outputname1 += "_woSDD";
+          outputname2 += "_woSDD";
+          outputname3 += "_woSDD";
+          outputname4 += "_woSDD";
+          outputname5 += "_woSDD";
+      }
 
    //Save objects into the train common file
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputlistname,
-							     TList::Class(),
-							     AliAnalysisManager::kOutputContainer,
-							     outputFileName );
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDAsXiM",
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0,
+							                                 TList::Class(),
+							                                 AliAnalysisManager::kOutputContainer,
+							                                 outputFileName );
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outputname1,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDAsXiP",
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(outputname2,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(outputname3,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
+   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(outputname4,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontAsCuts",
+   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(outputname5,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );

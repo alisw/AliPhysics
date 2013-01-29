@@ -56,30 +56,42 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
    // Directory name
    TString outputFileNamePerf = Form("%s:PWGLFStrangeness.outputCheckPerformanceCascadepp276", AliAnalysisManager::GetCommonFileName());
    // Objects name
-   TString outputnameperf1 = Form("clistCascPerf_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
-
+   TString outputnameperf0 = "clistCascPerf";
+   TString outputnameperf1 = "cfcontPIDAsXiM";
+   TString outputnameperf2 = "cfcontPIDAsXiP";
+   TString outputnameperf3 = "cfcontPIDAsOmegaM";
+   TString outputnameperf4 = "cfcontPIDAsOmegaP";
+   TString outputnameperf5 = "cfcontAsCuts";
+     outputnameperf0 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     outputnameperf1 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     outputnameperf2 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     outputnameperf3 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     outputnameperf4 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+     outputnameperf5 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
+    
+    
    //Save objects into the train common file
-   AliAnalysisDataContainer *coutputperf1 = mgr->CreateContainer(outputnameperf1,
+   AliAnalysisDataContainer *coutputperf1 = mgr->CreateContainer(outputnameperf0,
 							                                     TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
 							                                     outputFileNamePerf );
-   AliAnalysisDataContainer *coutputperf2 = mgr->CreateContainer("cfcontPIDAsXiM",
+   AliAnalysisDataContainer *coutputperf2 = mgr->CreateContainer(outputnameperf1,
                                                                  AliCFContainer::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileNamePerf );
-   AliAnalysisDataContainer *coutputperf3 = mgr->CreateContainer("cfcontPIDAsXiP",
+   AliAnalysisDataContainer *coutputperf3 = mgr->CreateContainer(outputnameperf2,
                                                                  AliCFContainer::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileNamePerf );
-   AliAnalysisDataContainer *coutputperf4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
+   AliAnalysisDataContainer *coutputperf4 = mgr->CreateContainer(outputnameperf3,
                                                                  AliCFContainer::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileNamePerf );
-   AliAnalysisDataContainer *coutputperf5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
+   AliAnalysisDataContainer *coutputperf5 = mgr->CreateContainer(outputnameperf4,
                                                                  AliCFContainer::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileNamePerf );
-   AliAnalysisDataContainer *coutputperf6 = mgr->CreateContainer("cfcontAsCuts",
+   AliAnalysisDataContainer *coutputperf6 = mgr->CreateContainer(outputnameperf5,
                                                                  AliCFContainer::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileNamePerf );
