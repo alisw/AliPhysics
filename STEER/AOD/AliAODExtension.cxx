@@ -207,7 +207,9 @@ Bool_t AliAODExtension::Init(Option_t *option)
     
     TString test(o->ClassName());
     test.ToUpper();
-    if (test.BeginsWith("ALIAODHEADER"))
+    // check if there is a replicator for the header
+    Bool_t headerHasReplicator = fRepFiMap && (fRepFiMap->FindObject(o->GetName())!=0x0);
+    if (test.BeginsWith("ALIAODHEADER") && !headerHasReplicator)
     {
       // do not allow to drop header branch
       mustKeep=kTRUE;
