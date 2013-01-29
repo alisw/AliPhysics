@@ -62,6 +62,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetINT7Trigger         (Bool_t lSwitchINT7  = kTRUE ) { fkSwitchINT7  = lSwitchINT7; }
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
+  void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
 
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -79,6 +80,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkSwitchINT7; // if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; // if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
+  TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
