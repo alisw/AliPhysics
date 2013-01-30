@@ -55,6 +55,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
+  void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
@@ -94,6 +95,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
   Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
+  TString                     fCentEst;                    // name of V0 centrality estimator
   Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -115,6 +117,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 8) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 9) // EMCAL base analysis task
 };
 #endif
