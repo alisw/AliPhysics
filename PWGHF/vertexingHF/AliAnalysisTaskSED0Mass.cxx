@@ -114,6 +114,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fIsRejectSDDClusters(0),
   fFillPtHist(kTRUE),
   fFillImpParHist(kFALSE),
+  fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables()
@@ -896,7 +897,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
  
-    if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
+    if(fUseSelectionBit && d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
 	fNentries->Fill(2);
 	continue; //skip the D0 from Dstar
       }
