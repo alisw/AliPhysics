@@ -1,12 +1,12 @@
-#ifndef ALIANALYSISTASKFLOWTPCEMCalQSP_H
-#define ALIANALYSISTASKFLOWTPCEMCalQSP_H
+#ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
+#define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//  Task for Heavy Flavour Electron Flow       //
+//  Task for Heavy Flavour Electron Flow                              //
 //                                                                    //
 //  Author: Andrea Dubla (Utrecht University)                         //
 //                                                                    //
@@ -40,12 +40,12 @@ class AliCentrality;
 #include "AliAnalysisTaskSE.h"
 //#include "AliCentrality.h"
 
-class AliAnalysisTaskFlowTPCEMCalQSP : public AliAnalysisTaskSE {
+class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
 
   public:
-    AliAnalysisTaskFlowTPCEMCalQSP();
-    AliAnalysisTaskFlowTPCEMCalQSP(const char *name);
-    virtual ~AliAnalysisTaskFlowTPCEMCalQSP();
+    AliAnalysisTaskFlowTPCEMCalQCSP();
+    AliAnalysisTaskFlowTPCEMCalQCSP(const char *name);
+    virtual ~AliAnalysisTaskFlowTPCEMCalQCSP();
 
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
@@ -104,8 +104,8 @@ class AliAnalysisTaskFlowTPCEMCalQSP : public AliAnalysisTaskSE {
     TH2F		         *fTPCnsigmaAft;		//TPC n sigma vs p after HFE pid
     TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
- //   THnSparse            *fSparseElectron;//! Trk matching sparse for v1 clusterizer
- //   Double_t             *fvalueElectron;//! 6dim sparse fill for trk matching quantities
+    THnSparse            *fSparseElectron;//! Trk matching sparse for v1 clusterizer
+    Double_t             *fvalueElectron;//! 6dim sparse fill for trk matching quantities
     TH1F                 *fInvmassLS1; //LS Invmass for all rec par
     TH1F                 *fInvmassULS1;//ULS Invmass for all rec par
     TH1F			     *fPhotoElecPt;		//photonic elec pt
@@ -124,10 +124,10 @@ class AliAnalysisTaskFlowTPCEMCalQSP : public AliAnalysisTaskSE {
     Double_t fDispersion;//ID cuts SS
     
 	
-    AliAnalysisTaskFlowTPCEMCalQSP(const AliAnalysisTaskFlowTPCEMCalQSP&); // not implemented
-    AliAnalysisTaskFlowTPCEMCalQSP& operator=(const AliAnalysisTaskFlowTPCEMCalQSP&); // not implemented
+    AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
+    AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
 
-    ClassDef(AliAnalysisTaskFlowTPCEMCalQSP, 2); //!example of analysis
+    ClassDef(AliAnalysisTaskFlowTPCEMCalQCSP, 2); //!example of analysis
 };
 
 #endif

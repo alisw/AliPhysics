@@ -16,8 +16,8 @@
 // Flow task class for the ALICE HFE group
 //
 //
-#ifndef ALIANALYSISTASKFlowTPCTOFEPSP_H
-#define ALIANALYSISTASKFlowTPCTOFEPSP_H
+#ifndef ALIANALYSISTASKFLOWTPCTOFEPSP_H
+#define ALIANALYSISTASKFLOWTPCTOFEPSP_H
 
 
 
@@ -234,6 +234,7 @@ private:
   
   // Histos
   TH2D *fHistEV;               //! Number of events
+  THnSparseF *fHistPileUp;     //! Pile up cut
   
   // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
   // a V0A, b V0C, c TPC,

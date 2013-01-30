@@ -41,7 +41,7 @@
 #include "AliESDHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
-#include "AliAnalysisTaskFlowTPCEMCalQSP.h"
+#include "AliAnalysisTaskFlowTPCEMCalQCSP.h"
 #include "TGeoGlobalMagField.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -100,13 +100,13 @@
 #include "AliFlowTrack.h"
 #include "AliAnalysisTaskVnV0.h"
 
-
+using namespace std;
 class AliFlowTrackCuts;
 
 
-ClassImp(AliAnalysisTaskFlowTPCEMCalQSP)
+ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
 //________________________________________________________________________
-  AliAnalysisTaskFlowTPCEMCalQSP::AliAnalysisTaskFlowTPCEMCalQSP(const char *name) 
+  AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fDebug(0)
   ,fAOD(0)
@@ -141,8 +141,8 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQSP)
   ,fTPCnsigmaAft(0)
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
-//  ,fSparseElectron(0)
-//  ,fvalueElectron(0)
+  ,fSparseElectron(0)
+  ,fvalueElectron(0)
   ,fInvmassLS1(0)
   ,fInvmassULS1(0)
   ,fPhotoElecPt(0)
@@ -172,12 +172,12 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQSP)
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliFlowEventSimple::Class());
  //  DefineOutput(3, TTree::Class());
- // fvalueElectron = new Double_t[8];
+  fvalueElectron = new Double_t[8];
 
 }
 
 //________________________________________________________________________
-AliAnalysisTaskFlowTPCEMCalQSP::AliAnalysisTaskFlowTPCEMCalQSP() 
+AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElectFlow")
   ,fDebug(0)
   ,fAOD(0)
@@ -212,8 +212,8 @@ AliAnalysisTaskFlowTPCEMCalQSP::AliAnalysisTaskFlowTPCEMCalQSP()
   ,fTPCnsigmaAft(0)
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
-//  ,fSparseElectron(0)
-//  ,fvalueElectron(0)
+  ,fSparseElectron(0)
+  ,fvalueElectron(0)
   ,fInvmassLS1(0)
   ,fInvmassULS1(0)
   ,fPhotoElecPt(0)
@@ -242,12 +242,12 @@ AliAnalysisTaskFlowTPCEMCalQSP::AliAnalysisTaskFlowTPCEMCalQSP()
   // DefineOutput(1, TH1I::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliFlowEventSimple::Class());
-  //  fvalueElectron = new Double_t[8];	//from here adding more, when done comment filling this
+  fvalueElectron = new Double_t[8];	//from here adding more, when done comment filling this
   //DefineOutput(3, TTree::Class());
 }
 //_________________________________________
 
-AliAnalysisTaskFlowTPCEMCalQSP::~AliAnalysisTaskFlowTPCEMCalQSP()
+AliAnalysisTaskFlowTPCEMCalQCSP::~AliAnalysisTaskFlowTPCEMCalQCSP()
 {
   //Destructor 
 
@@ -256,14 +256,14 @@ AliAnalysisTaskFlowTPCEMCalQSP::~AliAnalysisTaskFlowTPCEMCalQSP()
   delete fPID;
   delete fCFM;
   delete fPIDqa;
-//  delete fSparseElectron;
-//  delete [] fvalueElectron;
+  delete fSparseElectron;
+  delete [] fvalueElectron;
   if (fOutputList) delete fOutputList;
   if (fFlowEvent) delete fFlowEvent;
 }
 //_________________________________________
 
-void AliAnalysisTaskFlowTPCEMCalQSP::UserExec(Option_t*)
+void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
 {
   //Main loop
   //Called for each event
@@ -309,7 +309,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
   CheckCentrality(fAOD,pass);
 
   if(!pass)return;
-
+    
   Int_t fNOtrks =  fAOD->GetNumberOfTracks();
   const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
 
@@ -322,12 +322,10 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
   if(fNOtrks<2) return;
   if(TMath::Abs(pVtxZ)>10) return;
 
-    
-    
   fNoEvents->Fill(0);
   PlotVZeroMultiplcities(fAOD);
 
-    SetNullCuts(fAOD);
+  SetNullCuts(fAOD);
   PrepareFlowEvent(fAOD->GetNumberOfTracks(),fFlowEvent);    //Calculate event plane Qvector and EP resolution for inclusive
 
 
@@ -339,8 +337,6 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
   }
 
   fPID->SetPIDResponse(pidResponse);
-
-  //   fCFM->SetRecEventInfo(fESD);
   fCFM->SetRecEventInfo(fAOD);
 
   // Look for kink mother
@@ -438,13 +434,19 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
    
    
    if(fTPCnSigma < fminTPC || fTPCnSigma > fmaxTPC) continue; //cuts on nsigma tpc and EoP
-   if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
    if(m20 < fminM20 || m20 > fmaxM20) continue;
    if(m02 < fminM02 || m02 > fmaxM02) continue;
    if(disp > fDispersion ) continue;
 
+     
+     fvalueElectron[0] = pt;
+     fvalueElectron[1] = p;
+     fvalueElectron[2] = fEovP;
+     fSparseElectron->Fill(fvalueElectron);
 
-// fTrkEovPAft->Fill(pt,fEovP);
+   if(fEovP < fminEovP || fEovP >fmaxEovP) continue;
+
+
    fTPCnsigmaAft->Fill(p,fTPCnSigma);
    fInclusiveElecPt->Fill(pt); 
    fPhi->Fill(phi); 
@@ -466,7 +468,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
         if( sTrack->GetID() == iRP->GetID())
         {
           if(fDebug) printf(" was in RP set");
-            cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
+     //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
             iRP->SetForRPSelection(kFALSE);
             fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
         }
@@ -487,7 +489,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
  //----------hfe end---------
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
 
@@ -535,13 +537,10 @@ void AliAnalysisTaskFlowTPCEMCalQSP::SelectPhotonicElectron(Int_t itrack,const A
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     recg.GetMass(mass,width);
- //   cout << "mass = " << mass <<endl;
 
     if(fFlagLS) fInvmassLS1->Fill(mass);
     if(fFlagULS) fInvmassULS1->Fill(mass);
-     
-  //    cout << "InvMassCut  ==  " << fInvmassCut <<endl;
-      
+           
        if(mass<fInvmassCut){
        if(fFlagULS){fULSElecPt->Fill(track->Pt());}
        if(fFlagLS){fLSElecPt->Fill(track->Pt());}
@@ -554,7 +553,7 @@ void AliAnalysisTaskFlowTPCEMCalQSP::SelectPhotonicElectron(Int_t itrack,const A
   fFlagPhotonicElec = flagPhotonicElec;
 }
 //___________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::UserCreateOutputObjects()
+void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
 {
   //Create histograms
 
@@ -673,11 +672,11 @@ void AliAnalysisTaskFlowTPCEMCalQSP::UserCreateOutputObjects()
   fOutputList->Add(fTPCM);
 
     
-//  Int_t binsv1[8]={1000,1000,200,150,100, 100, 100 ,100}; //pt, p, tpcnSigma, dEdx, E/p, M20, M02, Disp
-//  Double_t xminv1[8]={0,   0, -10,   0,  0, 0, 0 ,0};
-//  Double_t xmaxv1[8]={50, 50,  10, 150,  2 ,2, 2, 2};
-//  fSparseElectron = new THnSparseD ("Electron","Electron",8,binsv1,xminv1,xmaxv1);
-//  fOutputList->Add(fSparseElectron);
+  Int_t binsv1[3]={1000,1000,100}; //pt, p, E/p
+  Double_t xminv1[3]={0,   0,  0};
+  Double_t xmaxv1[3]={50, 50,  2};
+  fSparseElectron = new THnSparseD ("Electron","Electron",3,binsv1,xminv1,xmaxv1);
+  fOutputList->Add(fSparseElectron);
   
   
   PostData(1,fOutputList);
@@ -688,20 +687,20 @@ void AliAnalysisTaskFlowTPCEMCalQSP::UserCreateOutputObjects()
  }
 
 //________________________________________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::Terminate(Option_t *)
+void AliAnalysisTaskFlowTPCEMCalQCSP::Terminate(Option_t *)
 {
   // Info("Terminate");
   AliAnalysisTaskSE::Terminate();
 }
 //_____________________________________________________________________________
-template <typename T> void AliAnalysisTaskFlowTPCEMCalQSP::PlotVZeroMultiplcities(const T* event) const
+template <typename T> void AliAnalysisTaskFlowTPCEMCalQCSP::PlotVZeroMultiplcities(const T* event) const
 {
   // QA multiplicity plots
   fVZEROA->Fill(event->GetVZEROData()->GetMTotV0A());
   fVZEROC->Fill(event->GetVZEROData()->GetMTotV0C());
 }
 //_____________________________________________________________________________
-template <typename T> void AliAnalysisTaskFlowTPCEMCalQSP::SetNullCuts(T* event)
+template <typename T> void AliAnalysisTaskFlowTPCEMCalQCSP::SetNullCuts(T* event)
 {
  //Set null cuts
     if (fDebug) cout << " fCutsRP " << fCutsRP << endl;
@@ -712,7 +711,7 @@ template <typename T> void AliAnalysisTaskFlowTPCEMCalQSP::SetNullCuts(T* event)
     fNullCuts->SetEvent(event, MCEvent());
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const 
+void AliAnalysisTaskFlowTPCEMCalQCSP::PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const 
 {
  //Prepare flow events
    FlowEv->ClearFast();
@@ -722,7 +721,7 @@ void AliAnalysisTaskFlowTPCEMCalQSP::PrepareFlowEvent(Int_t iMulti, AliFlowEvent
  //  FlowEv->TagSubeventsInEta(-0.7, 0, 0, 0.7);
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalQSP::ProcessCutStep(Int_t cutStep, AliVParticle *track)
+Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 {
   // Check single track cuts for a given cut step
   const Int_t kMCOffset = AliHFEcuts::kNcutStepsMCTrack;
@@ -730,28 +729,37 @@ Bool_t AliAnalysisTaskFlowTPCEMCalQSP::ProcessCutStep(Int_t cutStep, AliVParticl
   return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::CheckCentrality(AliAODEvent* event, Bool_t &centralitypass)
+void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t &centralitypass)
 {
   // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-  cout << "--------------Centrality evaluated-------------------------"<<endl;
+    
+ // cout << "--------------Centrality evaluated-------------------------"<<endl;
 
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
-    cout << "--------------Fill no pass-------------------------"<<endl;
+    //cout << "--------------Fill no pass-----"<< fCentrality <<"--------------------"<<endl;
     centralitypass = kFALSE;
   }else
   { 
-    fCentralityPass->Fill(fCentrality);
-    cout << "--------------Fill pass-------------------------"<<endl;
+    //fCentralityPass->Fill(fCentrality);
+  //  cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
     centralitypass = kTRUE; 
   }
+//to remove the bias introduced by multeplicity outliers---------------------
+    Float_t centTrk = event->GetCentrality()->GetCentralityPercentile("TRK");
+    if (TMath::Abs(fCentrality - centTrk) > 5.0){
+        centralitypass = kFALSE;
+        fCentralityNoPass->Fill(fCentrality);
+        //cout << "--------------OUTLIERS------"<< fCentrality <<"-----------------"<<endl;
 
+    }
+    if(centralitypass)fCentralityPass->Fill(fCentrality);;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)
 {
   // Set a centrality range ]min, max] and define the method to use for centrality selection
   fCentralityMin = CentralityMin;
@@ -759,7 +767,7 @@ void AliAnalysisTaskFlowTPCEMCalQSP::SetCentralityParameters(Double_t Centrality
   fkCentralityMethod = CentralityMethod;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowTPCEMCalQSP::SetIDCuts(Double_t minTPC, Double_t maxTPC, Double_t minEovP, Double_t maxEovP, Double_t minM20, Double_t maxM20, Double_t minM02, Double_t maxM02, Double_t Dispersion)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SetIDCuts(Double_t minTPC, Double_t maxTPC, Double_t minEovP, Double_t maxEovP, Double_t minM20, Double_t maxM20, Double_t minM02, Double_t maxM02, Double_t Dispersion)
 {
     //Set ID cuts
     fminTPC = minTPC;
