@@ -67,8 +67,11 @@ public:
 
   Double_t GetWeightedOffset(Double_t x, Double_t y, Double_t z);
   Double_t GetOffset(Double_t x, Double_t y, Double_t z);
+  Double_t GetDCA(Double_t x, Double_t y, Double_t z);
+  Double_t GetMomentumSpectrometer(Double_t z);
   Double_t GetOffsetX(Double_t x, Double_t z);
   Double_t GetOffsetY(Double_t y, Double_t z);
+  Double_t GetThetaAbs();
 
   void SetParentMCLabel(Int_t iParent, Int_t MClabel) { if (0<=iParent && iParent<fgkNParentsMax) fParentMCLabel[iParent] = MClabel; }
   void SetParentPDGCode(Int_t iParent, Int_t PDGCode) { if (0<=iParent && iParent<fgkNParentsMax) fParentPDGCode[iParent] = PDGCode; }

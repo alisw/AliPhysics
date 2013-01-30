@@ -34,6 +34,7 @@
 #include "AliMFTConstants.h"
 #include "TLorentzVector.h"
 #include "TDatabasePDG.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMuonForwardTrack)
 
@@ -426,6 +427,49 @@ Double_t AliMuonForwardTrack::GetOffset(Double_t x, Double_t y, Double_t z) {
   Double_t dX = param->GetNonBendingCoor() - x;
   Double_t dY = param->GetBendingCoor()    - y;
   return TMath::Sqrt(dX*dX + dY*dY);
+
+}
+
+//====================================================================================================================================================
+
+Double_t AliMuonForwardTrack::GetDCA(Double_t x, Double_t y, Double_t z) {
+
+  // Distance of Closest Approach, according to the standard MUON terminology. Actually, the offset of the track w.r.t. the primary vertex,
+  // where the extrapolation of the track DOES NOT include the MFT information
+
+  AliMUONTrackParam *param = GetTrackParamAtMUONCluster(0);
+  AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(param, z);
+  Double_t dX = param->GetNonBendingCoor() - x;
+  Double_t dY = param->GetBendingCoor()    - y;
+  return TMath::Sqrt(dX*dX + dY*dY);
+
+}
+
+//====================================================================================================================================================
+
+Double_t AliMuonForwardTrack::GetMomentumSpectrometer(Double_t z) {
+
+  // Momentum of the track at the primary vertex plane, where the extrapolation of the track DOES NOT include the MFT information
+
+  AliMUONTrackParam *param = GetTrackParamAtMUONCluster(0);
+  AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(param, z);
+  return param->P();
+
+}
+
+//====================================================================================================================================================
+
+Double_t AliMuonForwardTrack::GetThetaAbs() {
+
+  // it is the angle defined by the imaginary line goingo from the vertex to the exit point of the track at the end of the hadron absorber
+  
+  Double_t z = AliMUONConstants::AbsZEnd();
+  AliMUONTrackParam *param = GetTrackParamAtMFTCluster(0);
+  AliMUONTrackExtrap::ExtrapToZ(param, z);
+  Double_t x = param->GetNonBendingCoor();
+  Double_t y = param->GetBendingCoor();
+
+  return 180. +TMath::ATan(TMath::Sqrt(x*x + y*y)/z)*TMath::RadToDeg();
 
 }
 
