@@ -394,49 +394,49 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                            Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCA[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCA[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCA[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCA[i]);
     
     fhPtDCASPDRefit[i]  = new TH2F(Form("hPtDCA%sSPDRefit",dcaName[i].Data()),
                                         Form("Track DCA%s vs p_{T} distribution of tracks with SPD and ITS refit",dcaName[i].Data()),
                                         nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCASPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCASPDRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCASPDRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCASPDRefit[i]);
 
     fhPtDCANoSPDRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDRefit",dcaName[i].Data()),
                                  Form("Track DCA%s vs p_{T} distributionof constrained tracks no SPD and with ITSRefit",dcaName[i].Data()),
                                  nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCANoSPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCANoSPDRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCANoSPDRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoSPDRefit[i]);
 
     fhPtDCANoSPDNoRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDNoRefit",dcaName[i].Data()),
                            Form("Track DCA%s vs p_{T} distribution, constrained tracks with no SPD requierement and without ITSRefit",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCANoSPDNoRefit[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCANoSPDNoRefit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCANoSPDNoRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoSPDNoRefit[i]);
     
     fhPtDCATOFBC0[i]  = new TH2F(Form("hPtDCA%sTOFBC0",dcaName[i].Data()),
                            Form("Track DCA%s vs p_{T} distribution, BC=0",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCATOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCATOFBC0[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCATOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCATOFBC0[i]);
 
     fhPtDCATOFBCOut[i]  = new TH2F(Form("hPtDCA%sTOFBCOut",dcaName[i].Data()),
                                  Form("Track DCA%s vs p_{T} distribution, BC!=0",dcaName[i].Data()),
                                  nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCATOFBCOut[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCATOFBCOut[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCATOFBCOut[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCATOFBCOut[i]);
     
     fhPtDCANoTOFHit[i]  = new TH2F(Form("hPtDCA%sNoTOFHit",dcaName[i].Data()),
                            Form("Track (no TOF hit) DCA%s vs p_{T} distribution",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
     fhPtDCANoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCANoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+    fhPtDCANoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoTOFHit[i]);
 
     if(fFillVertexBC0Histograms)
@@ -445,28 +445,28 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                                       Form("Track DCA%s vs p_{T} distribution, vertex with BC!=0",dcaName[i].Data()),
                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAVtxOutBC0[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAVtxOutBC0[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAVtxOutBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxOutBC0[i]);
       
       fhPtDCAVtxOutBC0NoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxOutBC0NoTOFHit",dcaName[i].Data()),
                                               Form("Track (no TOF hit) DCA%s vs p_{T} distribution, vertex with BC!=0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAVtxOutBC0NoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAVtxOutBC0NoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAVtxOutBC0NoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxOutBC0NoTOFHit[i]);
       
       fhPtDCAVtxInBC0[i]  = new TH2F(Form("hPtDCA%sVtxInBC0",dcaName[i].Data()),
                                       Form("Track DCA%s vs p_{T} distribution, vertex with BC==0",dcaName[i].Data()),
                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAVtxInBC0[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAVtxInBC0[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAVtxInBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxInBC0[i]);
       
       fhPtDCAVtxInBC0NoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxInBC0NoTOFHit",dcaName[i].Data()),
                                               Form("Track (no TOF hit) DCA%s vs p_{T} distribution, vertex with BC==0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAVtxInBC0NoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAVtxInBC0NoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAVtxInBC0NoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxInBC0NoTOFHit[i]);
     }
     
@@ -476,21 +476,21 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                              Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up",dcaName[i].Data()),
                              nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAPileUp[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAPileUp[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAPileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUp[i]);
       
       fhPtDCAPileUpTOFBC0[i]  = new TH2F(Form("hPtDCA%sPileUpTOFBC0",dcaName[i].Data()),
                                    Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
                                    nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAPileUpTOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAPileUpTOFBC0[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAPileUpTOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUpTOFBC0[i]);
       
       fhPtDCAPileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sPileUpNoTOFHit",dcaName[i].Data()),
                                      Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                      nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
       fhPtDCAPileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAPileUpNoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      fhPtDCAPileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUpNoTOFHit[i]);
       
       if(fFillVertexBC0Histograms)
@@ -499,28 +499,28 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
                                               Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
         fhPtDCAVtxOutBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
-        fhPtDCAVtxOutBC0PileUp[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+        fhPtDCAVtxOutBC0PileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxOutBC0PileUp[i]);
         
         fhPtDCAVtxOutBC0PileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxOutBC0PileUpNoTOFHit",dcaName[i].Data()),
                                                       Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
         fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-        fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+        fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxOutBC0PileUpNoTOFHit[i]);
         
         fhPtDCAVtxInBC0PileUp[i]  = new TH2F(Form("hPtDCA%sPileUpVtxInBC0",dcaName[i].Data()),
                                               Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up,vertex with BC==0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
         fhPtDCAVtxInBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
-        fhPtDCAVtxInBC0PileUp[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+        fhPtDCAVtxInBC0PileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxInBC0PileUp[i]);
         
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxInBC0PileUpNoTOFHit",dcaName[i].Data()),
                                                       Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC==0",dcaName[i].Data()),
                                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
-        fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetXTitle(Form("DCA_{%s}",dcaName[i].Data()));
+        fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxInBC0PileUpNoTOFHit[i]);
         
       }
