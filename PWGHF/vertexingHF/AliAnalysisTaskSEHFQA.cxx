@@ -91,6 +91,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fEstimator(AliRDHFCuts::kCentTRK),
   fReadMC(kFALSE),
   fSimpleMode(kFALSE),
+  fUseSelectionBit(kTRUE),
   fOnOff()
 {
   //default constructor
