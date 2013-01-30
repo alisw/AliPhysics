@@ -10,6 +10,8 @@
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
+#include <TVector2.h>
+
 #include "AliVHeader.h"
 #include "AliAODVertex.h"
 #include <TString.h>
@@ -126,6 +128,8 @@ class AliAODHeader : public AliVHeader {
   void SetQTheta(Double_t *QTheta, UInt_t size = 5);  
   void RemoveQTheta();
 
+  void ResetEventplanePointer();
+  
   void SetDiamond(Float_t xy[2],Float_t cov[3]) { 
     for(Int_t i=0;i<3;i++) {fDiamondCovXY[i] = cov[i];}
     for(Int_t i=0;i<2;i++) {fDiamondXY[i]    = xy[i] ;}
@@ -183,6 +187,7 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fMuonMagFieldScale;   // magnetic field scale of muon arm magnet
   Double32_t  fCentrality;          // Centrality
   Double32_t  fEventplane;          // Event plane angle
+  Double32_t  fEventplaneMag;       // Length of Q vector from TPC event plance
   Double32_t  fZDCN1Energy;         // reconstructed energy in the neutron1 ZDC
   Double32_t  fZDCP1Energy;         // reconstructed energy in the proton1 ZDC
   Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
@@ -221,7 +226,7 @@ class AliAODHeader : public AliVHeader {
   AliEventplane* fEventplaneP;	    // Pointer to full event plane information
   Float_t     fVZEROEqFactors[64];  // V0 channel equalization factors for event-plane reconstruction
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
-  ClassDef(AliAODHeader, 18);
+  ClassDef(AliAODHeader, 19);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 
@@ -240,10 +245,19 @@ void AliAODHeader::SetEventplane(AliEventplane* eventplane)      {
 	if(fEventplaneP)*fEventplaneP = *eventplane;
 	else fEventplaneP = new AliEventplane(*eventplane);
 	fEventplane = eventplane->GetEventplane("Q");
+        const TVector2* qvect=eventplane->GetQVector();
+        fEventplaneMag = -999;
+        if (qvect) fEventplaneMag=qvect->Mod();
     }
     else{
 	fEventplane = -999;
+        fEventplaneMag = -999;
     }
+}
+inline
+void AliAODHeader::ResetEventplanePointer()      {
+  delete fEventplaneP;
+  fEventplaneP = 0x0;
 }
 
 inline

@@ -35,6 +35,7 @@ AliAODHeader::AliAODHeader() :
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
   fEventplane(-999.),
+  fEventplaneMag(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -91,6 +92,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
   fEventplane(-999.),
+  fEventplaneMag(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -227,6 +229,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fMuonMagFieldScale(hdr.fMuonMagFieldScale),
   fCentrality(hdr.fCentrality),
   fEventplane(hdr.fEventplane),
+  fEventplaneMag(hdr.fEventplaneMag),
   fZDCN1Energy(hdr.fZDCN1Energy),
   fZDCP1Energy(hdr.fZDCP1Energy),
   fZDCN2Energy(hdr.fZDCN2Energy),
@@ -299,6 +302,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fMuonMagFieldScale= hdr.fMuonMagFieldScale;
     fCentrality       = hdr.fCentrality;
     fEventplane       = hdr.fEventplane;
+    fEventplaneMag    = hdr.fEventplaneMag;
     fZDCN1Energy      = hdr.fZDCN1Energy;
     fZDCP1Energy      = hdr.fZDCP1Energy;
     fZDCN2Energy      = hdr.fZDCN2Energy;
@@ -423,6 +427,7 @@ void AliAODHeader::Clear(Option_t* /*opt*/)
     delete fEventplaneP;
     fEventplaneP = 0;
     fEventplane = -999;
+    fEventplaneMag = -999.;
   }
   return;
 }
@@ -444,6 +449,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   
   printf("Centrality              : %f\n", fCentrality);
   printf("Event plane             : %f\n", fEventplane);
+  printf("Event plane             : %f\n", fEventplaneMag);
   printf("ZDC N1 Energy           : %f\n", fZDCN1Energy);
   printf("ZDC P1 Energy           : %f\n", fZDCP1Energy);
   printf("ZDC N2 Energy           : %f\n", fZDCN2Energy);

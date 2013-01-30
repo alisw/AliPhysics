@@ -184,8 +184,8 @@ class AliAODEvent : public AliVEvent {
 
   // -- EMCAL and PHOS Cluster
   TClonesArray *GetCaloClusters()          const { return fCaloClusters; }
-  Int_t         GetNumberOfCaloClusters()  const { return fCaloClusters->GetEntriesFast(); }
-  AliAODCaloCluster *GetCaloCluster(Int_t nCluster) const { return (AliAODCaloCluster*)fCaloClusters->UncheckedAt(nCluster); }
+  Int_t         GetNumberOfCaloClusters()  const { return fCaloClusters?fCaloClusters->GetEntriesFast():0; }
+  AliAODCaloCluster *GetCaloCluster(Int_t nCluster) const { return fCaloClusters?(AliAODCaloCluster*)fCaloClusters->UncheckedAt(nCluster):0x0; }
   Int_t         AddCaloCluster(const AliAODCaloCluster* clus)
   {new((*fCaloClusters)[fCaloClusters->GetEntriesFast()]) AliAODCaloCluster(*clus); return fCaloClusters->GetEntriesFast()-1;}
   AliAODCaloTrigger *GetCaloTrigger(TString calo) const 
