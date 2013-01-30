@@ -62,6 +62,8 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Int_t SetStandardCuts(Float_t *&ptbinlimits);
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
   void SetAnalysisLevel(Int_t level){fFastAnalysis=level;}
+  void SetCheckBitD0flag(Bool_t checkfl){fcheckD0Bit=checkfl;}
+  Bool_t GetCheckBitD0flag(){return fcheckD0Bit;}
   Int_t GetAnalysisLevel(){return fFastAnalysis;}
   Int_t CheckOrigin(const TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate)const;
   AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
@@ -111,6 +113,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliRDHFCutsD0toKpi *fCutsTight;      // Vertexer heavy flavour
   Int_t fFastAnalysis;                  // Level of analysis speed: default is 1, switch it to 2 to fill the THnSparse
   Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
+  Bool_t fcheckD0Bit;                       // Flag to check the D0 bit flag
   Bool_t  fsplitMassD0D0bar;                // Flag to use two shistos for D0 and D0bar invariant masses
   Bool_t  fLikeSign;                        // Flag to analyse Like Sign array
   Bool_t  fusePID;                          // Flag to use PID
@@ -163,7 +166,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   
-  ClassDef(AliAnalysisTaskSECharmFraction,3); // analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,4); // analysis task for prompt charm fraction
 };
 
 #endif

@@ -61,51 +61,52 @@ class AliAnalysisTaskSE;
 ClassImp(AliAnalysisTaskSECharmFraction)
  
 //________________________________________________________________________
-  AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction() 
-    : AliAnalysisTaskSE(),
-      fCutsLoose(0),
-      fCutsTight(0),
-      fFastAnalysis(1),
-      fReadMC(kFALSE),
-      fsplitMassD0D0bar(kTRUE),
-      fLikeSign(kFALSE),
-      fusePID(kTRUE),
-      fmD0PDG(),
-      fnbins(1),
-      fptbins(0),
-      fNtrMaxforVtx(-1),
-      fptAll(),                          
-      fptAllSq(),                        
-      fptMax(),
-      fAcceptanceCuts(),
-      fsignalInvMassCut(),
-      flargeInvMassCut(),
-      fsidebandInvMassCut(),
-      fsidebandInvMassWindow(),
-      fUseMC(kTRUE),
-      fCleanCandOwnVtx(kFALSE),
-      fNentries(0),
-      fSignalType(0),
-      fSignalTypeLsCuts(0),
-      fSignalTypeTghCuts(0),
-      fCounter(0),
-      flistMCproperties(0),
-      flistNoCutsSignal(0),
-      flistNoCutsBack(0),
-      flistNoCutsFromB(0),
-      flistNoCutsFromDstar(0),
-      flistNoCutsOther(0),
-      flistLsCutsSignal(0),
-      flistLsCutsBack(0),
-      flistLsCutsFromB(0),
-      flistLsCutsFromDstar(0),
-      flistLsCutsOther(0),
-      flistTghCutsSignal(0),
-      flistTghCutsBack(0),
-      flistTghCutsFromB(0),
-      flistTghCutsFromDstar(0),
-      flistTghCutsOther(0)
-   
+AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction() 
+: AliAnalysisTaskSE(),
+  fCutsLoose(0),
+  fCutsTight(0),
+  fFastAnalysis(1),  
+  fReadMC(kFALSE),
+  fcheckD0Bit(kTRUE),
+  fsplitMassD0D0bar(kTRUE),
+  fLikeSign(kFALSE),
+  fusePID(kTRUE),
+  fmD0PDG(),
+  fnbins(1),
+  fptbins(0),
+  fNtrMaxforVtx(-1),
+  fptAll(),                          
+  fptAllSq(),                        
+  fptMax(),
+  fAcceptanceCuts(),
+  fsignalInvMassCut(),
+  flargeInvMassCut(),
+  fsidebandInvMassCut(),
+  fsidebandInvMassWindow(),
+  fUseMC(kTRUE),
+  fCleanCandOwnVtx(kFALSE),
+  fNentries(0),
+  fSignalType(0),
+  fSignalTypeLsCuts(0),
+  fSignalTypeTghCuts(0),
+  fCounter(0),
+  flistMCproperties(0),
+  flistNoCutsSignal(0),
+  flistNoCutsBack(0),
+  flistNoCutsFromB(0),
+  flistNoCutsFromDstar(0),
+  flistNoCutsOther(0),
+  flistLsCutsSignal(0),
+  flistLsCutsBack(0),
+  flistLsCutsFromB(0),
+  flistLsCutsFromDstar(0),
+  flistLsCutsOther(0),
+  flistTghCutsSignal(0),
+  flistTghCutsBack(0),
+  flistTghCutsFromB(0),
+  flistTghCutsFromDstar(0),
+  flistTghCutsOther(0)
+  
 {
   //Default constructor
 }
@@ -116,6 +117,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fCutsTight(0x0),
       fFastAnalysis(1),
       fReadMC(kFALSE),
+      fcheckD0Bit(kTRUE),
       fsplitMassD0D0bar(kTRUE),
       fLikeSign(kFALSE),
       fusePID(kTRUE),
@@ -188,6 +190,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fCutsTight(0),
     fFastAnalysis(1),
     fReadMC(kFALSE),
+    fcheckD0Bit(kTRUE),
     fsplitMassD0D0bar(kTRUE),
     fLikeSign(kFALSE),
     fusePID(kTRUE),
@@ -5641,8 +5644,8 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
    
 
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
-   
- 
+    if(fcheckD0Bit&&(!d->HasSelectionBit(AliRDHFCutsD0toKpi::kD0toKpiCuts)))continue;
+    
     //  Bool_t unsetvtx=kFALSE;
     //     if(!d->GetOwnPrimaryVtx()) {
     //       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
@@ -5657,7 +5660,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       
     }
 
-  
+    
     // ############ MISALIGN HERE: TEMPORARY SOLUTION ##########
     //    d->Misalign("resC");
 

@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t *switchMC=0x0,Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=7.5,Float_t minCloose=20., Float_t maxCloose=50.)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t *switchMC=0x0,Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=7.5,Float_t minCloose=20., Float_t maxCloose=50.,Bool_t checkBitD0=kTRUE)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -99,6 +99,8 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   hfTask->SetUsePID(usepid);
   hfTask->SetStandardMassSelection();
   hfTask->SetAnalysisLevel(analysLevel);
+
+  hfTask->SetCheckBitD0flag(checkBitD0);
 
   // hfTask->SignalInvMassCut(0.27);
 
