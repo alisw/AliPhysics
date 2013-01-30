@@ -82,6 +82,7 @@ AliAnalysisTaskSE(),
   fIsRejectSDDClusters(0),
   fFillPtHist(kTRUE),
   fFillImpParHist(kFALSE),
+  fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables()
