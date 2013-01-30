@@ -55,6 +55,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fCentEst("V0M"),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -105,6 +106,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fCentEst("V0M"),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -508,11 +510,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
   fBeamType = GetBeamType();
 
-  if (fBeamType == kAA) {
+  if (fBeamType == kAA || fBeamType == kpA ) {
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
-      fCent = aliCent->GetCentralityPercentile("V0M");
-      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+ 
+     if      (fCent >=  0 && fCent <   10) fCentBin = 0;
       else if (fCent >= 10 && fCent <   30) fCentBin = 1;
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
