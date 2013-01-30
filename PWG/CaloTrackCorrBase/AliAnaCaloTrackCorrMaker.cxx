@@ -511,7 +511,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
 	
   if(fAnaDebug >= 0 )
-  { 
+  {
 		printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
 	  if(fAnaDebug > 1 ) 
     {
@@ -541,6 +541,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   if(!ok)
   {
 	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
+    fReader->ResetLists();
 	  return ;
   }
 	
