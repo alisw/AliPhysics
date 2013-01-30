@@ -220,8 +220,14 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
-//  ,fSparseElectron(0)  
-//  ,fvalueElectron(0)   
+  ,fHadronDphi(0)
+  ,fHadronDphi1(0)
+  ,fHadronDphi2(0)
+  ,fHadronDphi3(0)
+  ,fHadronDphi4(0)
+  ,fPiPt(0)  
+    //  ,fSparseElectron(0)  
+    //  ,fvalueElectron(0)   
 {
   //Named constructor
 
@@ -361,6 +367,12 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fHadronPt(0)  
   ,fCentralityPass(0)
   ,fCentralityNoPass(0)
+  ,fHadronDphi(0)
+  ,fHadronDphi1(0)
+  ,fHadronDphi2(0)
+  ,fHadronDphi3(0)
+  ,fHadronDphi4(0)
+    ,fPiPt(0)
     //  ,fSparseElectron(0)  
     //    ,fvalueElectron(0)  
 {
@@ -432,7 +444,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
   // centrality selection 
-  SetCentralityParameters(0., 10., "V0M");
+  SetCentralityParameters(0., 7., "V0M");
   Bool_t pass = kFALSE; 
   CheckCentrality(fVevent,pass);
   if(!pass)return;
@@ -573,17 +585,21 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
         fSparseElectron->Fill(fvalueElectron);
       */
-     if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && cluster->GetM20()<0.2 && cluster->GetM02()<0.5 && cluster->GetDispersion()<1){
+     if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && cluster->GetM20()>0.03 && cluster->GetM20()<0.3 &&  cluster->GetM02()>0.03 && cluster->GetM02()<0.5 && cluster->GetDispersion()<1)
        fTrkEovPBef->Fill(pt,fEovP);
-     }
-     if(fTPCnSigma < -3.5)fTrkEovPBefHad->Fill(pt,fEovP);
 
+     //hadron E/p and Dphi distribution
+     if(fTPCnSigma < -3.5){
+       fTrkEovPBefHad->Fill(pt,fEovP);
+       ElectronHadCorrel(iTracks, track, fHadronDphi, fHadronDphi1,fHadronDphi2,fHadronDphi3,fHadronDphi4);
+       fPiPt->Fill(pt);
+     }
      //Electron id with TPC and E/p
      if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && fEovP >= 0.8 && fEovP <=1.2) {
        //   fElecPhiTPCEovP->Fill(track->Phi());
 
        //Electron id with shower shape  
-       if(cluster->GetM20()<0.2 && cluster->GetM02()< 0.5 && cluster->GetDispersion()<1){
+       if(cluster->GetM20()>0.03 && cluster->GetM20()<0.3 && cluster->GetM02()>0.03 && cluster->GetM02()< 0.5 && cluster->GetDispersion()<1){
 
          fElecPhi->Fill(track->Phi());
          fElecPhiPt->Fill(track->Phi(),track->Pt());
@@ -989,6 +1005,24 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
   fOutputList->Add(fCentralityNoPass);
+
+  fHadronDphi = new TH2F("fHadronDphi", "Hadron-had Dphi correlation",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphi);
+
+  fHadronDphi1 = new TH2F("fHadronDphi1", "Hadron-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphi1);
+
+  fHadronDphi2 = new TH2F("fHadronDphi2", "Hadron-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphi2);
+
+  fHadronDphi3 = new TH2F("fHadronDphi3", "Hadron-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphi3);
+
+  fHadronDphi4 = new TH2F("fHadronDphi4", "Hadron-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
+  fOutputList->Add(fHadronDphi4);
+
+  fPiPt = new TH1F("fPiPt","Pi (TPC nsig < 3.5) pt distribution",1000,0,100);
+  fOutputList->Add(fPiPt);
 
   /*
      Int_t binsv1[8]={1000,1000,200,150,100,100,100,100}; //pt, p, TPCnsig, dEdx, E/p, M20, M02, dispersion 
