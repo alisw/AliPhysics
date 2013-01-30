@@ -45,6 +45,7 @@ set ( SRCS
       dielectron/AliAnalysisTaskDielectronReadAODBranch.cxx
       dielectron/AliAnalysisTaskSingleParticle.cxx
       dielectron/AliDielectronVarCuts.cxx
+      dielectron/AliDielectronV0Cuts.cxx
       dielectron/AliDielectronTrackCuts.cxx
       dielectron/AliDielectronPairLegCuts.cxx
       dielectron/AliDielectronSignalBase.cxx
