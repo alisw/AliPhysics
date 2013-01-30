@@ -1,6 +1,6 @@
 Bool_t SetupPar(const char *parfile);
 
-void runGridAODpp()
+void runGridAODPbPb()
 {
    // Load common libraries
   gSystem->Load("libCore.so");  
@@ -45,12 +45,12 @@ void runGridAODpp()
    gROOT->ProcessLine(".include $ALICE_ROOT/PWG/FLOW/Tasks");
 
    // Create and configure the alien handler plugin
-   gROOT->LoadMacro("CreateAlienHandlerAODpp.C");
-   AliAnalysisGrid *alienHandler = CreateAlienHandlerAODpp();  
+   gROOT->LoadMacro("CreateAlienHandlerAODPbPb.C");
+   AliAnalysisGrid *alienHandler = CreateAlienHandlerAODPbPb();  
    if (!alienHandler) return;
 
    // Create the analysis manager
-   AliAnalysisManager *mgr = new AliAnalysisManager("tpctofpp");
+   AliAnalysisManager *mgr = new AliAnalysisManager("tpctofv2");
 
    // Connect plug-in to the analysis manager
    mgr->SetGridHandler(alienHandler);
@@ -79,22 +79,22 @@ void runGridAODpp()
    // AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
 
-
-   //==== Physics Selection ====
-   /*  gROOT->LoadMacro("AddTask_tender_PhysicsSelection.C");
-	   AddTask_tender_PhysicsSelection();
-
-   //==== Add tender ====
-   gROOT->LoadMacro("AddTaskTender.C");
-   AddTaskTender();
-	*/
-
+   //===== ADD PID RESPONSE: ===
    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
    //AliAnalysisTaskPIDResponse* aodPIDresponse = AddTaskPIDResponse();
    AddTaskPIDResponse();
 
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEtpctof.C");
-   AliAnalysisTask* anaTask = AddTaskHFEtpctof();
+   //===== ADD VZERO event plane: ===
+   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+   AddTaskVZEROEPSelection();
+
+   //===== ADD TPC event plane: ===
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskEventPlaneTPC.C");
+   AddTaskEventPlaneTPC(kTRUE,0.,kFALSE);
+
+   //===== ADD TASK::
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEFlowTPCTOFEPSP.C");
+   AddTaskHFEFlowTPCTOFEPSP();
 
 
 

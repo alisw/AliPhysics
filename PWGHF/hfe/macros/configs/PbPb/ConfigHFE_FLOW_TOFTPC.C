@@ -90,7 +90,7 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
   
 }
 
-AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Bool_t rejectkinkmother = kFALSE, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Int_t debuglevel, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Bool_t rejectkinkmother = kFALSE, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Int_t debuglevel, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
 {
   //
   // HFE flow task 
@@ -160,7 +160,7 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UIn
   printf("appendix %s\n", appendix.Data());
   
   // The task
-  AliAnalysisTaskHFEFlow *task = new AliAnalysisTaskHFEFlow(Form("HFE_%s", appendix.Data()));
+  AliAnalysisTaskFlowTPCTOFEPSP *task = new AliAnalysisTaskFlowTPCTOFEPSP(Form("HFE_%s", appendix.Data()));
   task->SelectCollisionCandidates(trigger); 
   task->SetDebugLevel(1);
   task->GetPIDQAManager()->SetHighResolutionHistos();

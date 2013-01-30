@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Double_t tpcsharedfraction=11, Bool_t rejectkinkmother=kFALSE, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=0,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
+AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Double_t tpcsharedfraction=11, Bool_t rejectkinkmother=kFALSE, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=0,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
 
   //
   // Define TPC cut for 2011 data
@@ -75,7 +75,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFEFlow *task = ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,trigger,aodfilter,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction,rejectkinkmother,itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,kFALSE,ITSclustersback,minTPCback,maxTPCback);  
+  AliAnalysisTaskFlowTPCTOFEPSP *task = ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,trigger,aodfilter,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction,rejectkinkmother,itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,kFALSE,ITSclustersback,minTPCback,maxTPCback);  
 
   
   task->SetNbBinsCentralityQCumulant(4);
@@ -89,7 +89,6 @@ AliAnalysisTask *AddTaskHFEtpctofv2(UInt_t trigger=131073,Int_t aodfilter=16,Int
   //task->SetBinCentralityLess(7,80.0);
 
   task->SetHFEVZEROEventPlane(0x0);
-  //task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
   //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);
   
   mgr->AddTask(task);
