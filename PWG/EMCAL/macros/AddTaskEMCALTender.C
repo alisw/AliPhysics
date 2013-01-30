@@ -14,7 +14,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t remBC         = kTRUE,
   Bool_t reclusterize  = kFALSE,
   UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
-  Bool_t trackMatch    = kFALSE)
+  Bool_t trackMatch    = kFALSE,
+  const char* pass     = 0)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -45,6 +46,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, clusterizer, trackMatch);
+  if (pass) 
+    EMCALSupply->SetPass(pass);
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     AliTender* alitender = new  AliTender("AliTender");
