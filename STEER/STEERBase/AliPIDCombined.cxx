@@ -100,154 +100,128 @@ void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior
 
 //-------------------------------------------------------------------------------------------------	
 UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities) const {
-	Double_t pITS[fSelectedSpecies];
-	Double_t pTPC[fSelectedSpecies];
-	Double_t pTRD[fSelectedSpecies];
-	Double_t pTOF[fSelectedSpecies];
-	Double_t pHMPID[fSelectedSpecies];
-	Double_t pEMCAL[fSelectedSpecies];
-	Double_t pPHOS[fSelectedSpecies];
-	for (Int_t i=0;i<fSelectedSpecies;i++) {
-	 pITS[i]=1.;
-	 pTPC[i]=1.;
-	 pTRD[i]=1.;
-	 pTOF[i]=1.;
-	 pHMPID[i]=1.;
-	 pEMCAL[i]=1.;
-	 pPHOS[i]=1.;
+  //
+  // (1) Get raw probabilities of requested detectors and combine
+  // (2) Get priors and propagate depending on detectors used
+  // (3) Compute Bayes probabilities
+  //
+
+
+  // (1) Get raw probabilities of selected detectors and combine
+  UInt_t usedMask=0;             // detectors actually used for track
+  AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
+  Double_t p[fSelectedSpecies];  // combined probabilities of selected detectors
+  for (Int_t i=0;i<fSelectedSpecies;i++) p[i]=1.; // no decision
+  for (Int_t ibit = 0; ibit < 7 ; ibit++) {
+    AliPIDResponse::EDetCode detBit = (AliPIDResponse::EDetCode)(1<<ibit);
+    if (fDetectorMask & detBit) {  	    // getting probabilities for requested detectors only
+      Double_t detProb[fSelectedSpecies];
+      status = response->ComputePIDProbability(detBit,track,fSelectedSpecies,detProb);
+      if (status == AliPIDResponse::kDetPidOk) {
+	if (fRejectMismatchMask & detBit) {         // mismatch check (currently just for TOF)
+	  if (detBit == AliPIDResponse::kDetTOF) {
+	    Float_t probMis = response->GetTOFMismatchProbability(track);
+	    SetCombinedStatus(status,&usedMask,detBit,detProb,probMis);
+	  } else {
+	    SetCombinedStatus(status,&usedMask,detBit);
+	  }
+	} else {
+	  SetCombinedStatus(status,&usedMask,detBit);
 	}
-	UInt_t usedMask=0;
-	AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
-	Double_t p[fSelectedSpecies];
-	memset(p,0,sizeof(Double_t)*fSelectedSpecies);
+	for (Int_t i=0;i<fSelectedSpecies;i++) p[i] *= detProb[i];
+      }
+    }
+  }
+  // if no detectors available there is no point to go further
+  if (usedMask == 0) return usedMask;
 
-	// getting probability distributions for selected detectors only
-	if (fDetectorMask & AliPIDResponse::kDetITS) {
-	  status = response->ComputeITSProbability(track, fSelectedSpecies, pITS);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetITS,pITS);
-	}
-
-	if (fDetectorMask & AliPIDResponse::kDetTPC) { 
-	  status = response->ComputeTPCProbability(track, fSelectedSpecies, pTPC);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetTPC,pTPC);
-	}
-
-
-	if (fDetectorMask & AliPIDResponse::kDetTRD) { 
-	  status = response->ComputeTRDProbability(track, fSelectedSpecies, pTRD);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetTRD,pTRD);
-	}
-
-	if (fDetectorMask &  AliPIDResponse::kDetTOF) { 
-	  status = response->ComputeTOFProbability(track, fSelectedSpecies, pTOF);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetTOF,pTOF);
-	}
-
-	if (fDetectorMask & AliPIDResponse::kDetHMPID) { 
-	  status = response->ComputeHMPIDProbability(track, fSelectedSpecies, pHMPID);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetHMPID,pHMPID);
-	}
-
-
-	if (fDetectorMask & AliPIDResponse::kDetEMCAL) { 
-	  status = response->ComputeEMCALProbability(track, fSelectedSpecies, pEMCAL);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetEMCAL,pEMCAL);
-	}
-
-
-	if (fDetectorMask & AliPIDResponse::kDetPHOS) { 
-	  status = response->ComputePHOSProbability(track, fSelectedSpecies, pPHOS);
-	  SetCombinedStatus(status,&usedMask,AliPIDResponse::kDetPHOS,pPHOS);
-	}
-
-
-	for (Int_t i =0; i<fSelectedSpecies; i++){
-	  p[i] = pITS[i]*pTPC[i]*pTRD[i]*pTOF[i]*pHMPID[i]*pEMCAL[i]*pPHOS[i];
-	}
-	Double_t priors[fSelectedSpecies];
-	memset(priors,0,fSelectedSpecies*sizeof(Double_t));
-	if (fEnablePriors){
-	  GetPriors(track,priors,response->GetCurrentCentrality());
-	  
-	  // for the moment we have four cases
-	  // TPC+TRD      --> apply TRD propagation factors
-	  // TPC+TOF      --> apply TOF propagation factors (TRD may be present)
-	  // TPC+EMCAL    --> apply EMCAL propagation factors (TRD and TOF if present)
-	  if(fUseDefaultTPCPriors) {
-	     Double_t pt=TMath::Abs(track->Pt());
-	     if ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL ) { // EMCAL is the outer having prop. factors for the moment
-	       // EMCal case (for the moment only in combination with TPC)
-	       // propagation factors determined from LHC11d MC (LHC12a15f)
-	       // v2 clusterizer, dEta < 0.015, dPhi < 0.03, NonLinearityFunction = 6
+  // (2) Get priors and propagate depending on detectors used
+  Double_t priors[fSelectedSpecies];
+  memset(priors,0,fSelectedSpecies*sizeof(Double_t));
+  if (fEnablePriors){
+    GetPriors(track,priors,response->GetCurrentCentrality());
+    
+    // for the moment we have three cases
+    // TPC+EMCAL    --> apply EMCAL propagation factors (TRD and TOF may be present)
+    // TPC+TOF      --> apply TOF propagation factors (TRD may be present)
+    // TPC+TRD      --> apply TRD propagation factors
+    if(fUseDefaultTPCPriors) {
+      Double_t pt=TMath::Abs(track->Pt());
+      if ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL ) { // EMCAL is the outer having prop. factors for the moment
+	// EMCal case (for the moment only in combination with TPC)
+	// propagation factors determined from LHC11d MC (LHC12a15f)
+	// v2 clusterizer, dEta < 0.015, dPhi < 0.03, NonLinearityFunction = 6
 	       
-	       Float_t electronEMCALfactor=0.1;
-	       Float_t kaonEMCALfactor = 0.1;
-	       Float_t protonEMCALfactor = 0.1;
+	Float_t electronEMCALfactor=0.1;
+	Float_t kaonEMCALfactor = 0.1;
+	Float_t protonEMCALfactor = 0.1;
 	       
-	       if(track->Charge() > 0){
-		 // positiv charge (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
-		 if(pt > 0.75 && pt < 20.0){
-		   electronEMCALfactor =  ( 0.214159 * ( 1 - TMath::Exp(-TMath::Power(pt,0.484512)/0.700499)*TMath::Power(pt,-0.669644)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
-		   kaonEMCALfactor =  ( 0.208686 * ( 1 - TMath::Exp(-TMath::Power(pt,-3.98149e-05)/1.28447)*TMath::Power(pt,-0.629191)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
-		   protonEMCALfactor =  ( 0.27555 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.97226e-05)/1.52719)*TMath::Power(pt,-0.209068)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+	if(track->Charge() > 0){
+	  // positiv charge (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
+	  if(pt > 0.75 && pt < 20.0){
+	    electronEMCALfactor =  ( 0.214159 * ( 1 - TMath::Exp(-TMath::Power(pt,0.484512)/0.700499)*TMath::Power(pt,-0.669644)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+	    kaonEMCALfactor =  ( 0.208686 * ( 1 - TMath::Exp(-TMath::Power(pt,-3.98149e-05)/1.28447)*TMath::Power(pt,-0.629191)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
+	    protonEMCALfactor =  ( 0.27555 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.97226e-05)/1.52719)*TMath::Power(pt,-0.209068)) ) /  ( 0.210436 * ( 1 - TMath::Exp(-TMath::Power(pt,-0.219228)/0.947432)*TMath::Power(pt,-0.700792)) );
 		   
-		   }
-	       }
+	  }
+	}
 	       
-	       if(track->Charge() < 0){
-		 // negative charge  (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
-		 if(pt > 0.75 && pt < 20.0){ 		   
-		   electronEMCALfactor =  ( 0.216895 * ( 1 - TMath::Exp(-TMath::Power(pt,0.000105924)/0.865938)*TMath::Power(pt,-1.32787)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
-		   kaonEMCALfactor =  ( 0.204117 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.6853e-05)/1.61765)*TMath::Power(pt,-0.738355)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
-		   protonEMCALfactor =  ( 0.215679 * ( 1 - TMath::Exp(-TMath::Power(pt,-4.10015e-05)/1.40921)*TMath::Power(pt,-0.533752)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
-		 }
-		 }
-	       p[0] *= electronEMCALfactor;
-	       p[3] *= kaonEMCALfactor;
-	       p[4] *= protonEMCALfactor;	      
-	     } // end of EMCAL case
-	     else if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){
-	       Float_t kaonTOFfactor = 0.1;
-	       if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
-	       Float_t protonTOFfactor = 0.1;
-	       if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
+	if(track->Charge() < 0){
+	  // negative charge  (start parametrization at 0.75 GeV/c and stop at 20 GeV/c for the moment)
+	  if(pt > 0.75 && pt < 20.0){ 		   
+	    electronEMCALfactor =  ( 0.216895 * ( 1 - TMath::Exp(-TMath::Power(pt,0.000105924)/0.865938)*TMath::Power(pt,-1.32787)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+	    kaonEMCALfactor =  ( 0.204117 * ( 1 - TMath::Exp(-TMath::Power(pt,-1.6853e-05)/1.61765)*TMath::Power(pt,-0.738355)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+	    protonEMCALfactor =  ( 0.215679 * ( 1 - TMath::Exp(-TMath::Power(pt,-4.10015e-05)/1.40921)*TMath::Power(pt,-0.533752)) ) /  ( 0.210385 * ( 1 - TMath::Exp(-TMath::Power(pt,4.41206e-07)/1.08984)*TMath::Power(pt,-0.544375)) );
+	  }
+	}
+	priors[0] *= electronEMCALfactor;
+	priors[3] *= kaonEMCALfactor;
+	priors[4] *= protonEMCALfactor;	      
+      } // end of EMCAL case
+      else if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){
+	Float_t kaonTOFfactor = 0.1;
+	if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
+	Float_t protonTOFfactor = 0.1;
+	if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
 	       
-	       if(track->Charge() < 0){ // for negative tracks
-		 kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
-		 protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
-	       }
-	       // TODO: we may need an electron factor for TOF as well, especially if TRD is present!
-	       p[3] *= kaonTOFfactor;
-	       p[4] *= protonTOFfactor;
-	     }  // end of TOF case
-	     else if ( (usedMask & AliPIDResponse::kDetTRD)==AliPIDResponse::kDetTRD ) {
-		 Float_t electronTRDfactor=0.1;
-		 Float_t kaonTRDfactor = 0.1;
-		 Float_t protonTRDfactor = 0.1;
+	if(track->Charge() < 0){ // for negative tracks
+	  kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
+	  protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
+	}
+	// TODO: we may need an electron factor for TOF as well, especially if TRD is present!
+	priors[3] *= kaonTOFfactor;
+	priors[4] *= protonTOFfactor;
+      }  // end of TOF case
+      else if ( (usedMask & AliPIDResponse::kDetTRD)==AliPIDResponse::kDetTRD ) {
+	Float_t electronTRDfactor=0.1;
+	Float_t kaonTRDfactor = 0.1;
+	Float_t protonTRDfactor = 0.1;
 		 
-		 if(track->Charge() > 0){
-		   // positiv charge
-		   if(pt > 0.25) electronTRDfactor =  1 - TMath::Exp(-TMath::Power(pt,5.13315e-03)/2.11145e-01)*TMath::Power(pt,-2.97659e+00);
-		   if(pt > 0.35) kaonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,-4.29549e-02)/4.87989e-01)*TMath::Power(pt,-1.54270e+00);
-		   if(pt > 0.35) protonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,2.81238e+00)/7.57082e-02)*TMath::Power(pt,-8.12595e-01);
-		 }
+	if(track->Charge() > 0){
+	  // positiv charge
+	  if(pt > 0.25) electronTRDfactor =  1 - TMath::Exp(-TMath::Power(pt,5.13315e-03)/2.11145e-01)*TMath::Power(pt,-2.97659e+00);
+	  if(pt > 0.35) kaonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,-4.29549e-02)/4.87989e-01)*TMath::Power(pt,-1.54270e+00);
+	  if(pt > 0.35) protonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,2.81238e+00)/7.57082e-02)*TMath::Power(pt,-8.12595e-01);
+	}
 		 
-		 if(track->Charge() < 0){
-		   // negative charge
-		   if(pt > 0.25) electronTRDfactor =  1 - TMath::Exp(-TMath::Power(pt,2.45537e-02)/1.90397e-01)*TMath::Power(pt,-3.33121e+00);
-		   if(pt > 0.35) kaonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt, -3.42831e-03)/5.57013e-01)*TMath::Power(pt,-1.39202e+00);
-		   if(pt > 0.35) protonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,3.36631e+00)/7.18819e-02)*TMath::Power(pt,-2.00577e-01);
-		 }
-		 // what about electrons
-		 p[0] *= electronTRDfactor;
-		 p[3] *= kaonTRDfactor;
-		 p[4] *= protonTRDfactor;	      
-	     } // end of TRD case
- 	  } // end of fUseDefaultTPCPriors
-	}   // end of use priors
-	else { for (Int_t i=0;i<fSelectedSpecies;i++) priors[i]=1.;}
-	ComputeBayesProbabilities(bayesProbabilities,p,priors);
-	return usedMask;
+	if(track->Charge() < 0){
+	  // negative charge
+	  if(pt > 0.25) electronTRDfactor =  1 - TMath::Exp(-TMath::Power(pt,2.45537e-02)/1.90397e-01)*TMath::Power(pt,-3.33121e+00);
+	  if(pt > 0.35) kaonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt, -3.42831e-03)/5.57013e-01)*TMath::Power(pt,-1.39202e+00);
+	  if(pt > 0.35) protonTRDfactor = 1 - TMath::Exp(-TMath::Power(pt,3.36631e+00)/7.18819e-02)*TMath::Power(pt,-2.00577e-01);
+	}
+	// what about electrons
+	priors[0] *= electronTRDfactor;
+	priors[3] *= kaonTRDfactor;
+	priors[4] *= protonTRDfactor;	      
+      } // end of TRD case
+    } // end of fUseDefaultTPCPriors
+  }   // end of use priors
+  else { for (Int_t i=0;i<fSelectedSpecies;i++) priors[i]=1.;}
+
+  // (3) Compute Bayes probabilities
+  ComputeBayesProbabilities(bayesProbabilities,p,priors);
+  return usedMask;
 }
 
 
@@ -369,22 +343,37 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
 
 }
 
+
 //----------------------------------------------------------------------------------------
-void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit, Double_t* p) const {
+void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit) const {
   switch (status) {
-    case AliPIDResponse::kDetNoParams:
-    case AliPIDResponse::kDetNoSignal:
+  case AliPIDResponse::kDetNoParams:
+  case AliPIDResponse::kDetNoSignal:
+  case AliPIDResponse::kDetMismatch: // for backward compatibilty, we need then to remove kDetMismatch from AliPIDResponse
     break;
   case AliPIDResponse::kDetPidOk:
     *maskDetIn = *maskDetIn | bit;
     break;
-  case AliPIDResponse::kDetMismatch:
-    if ( fRejectMismatchMask & bit) for (Int_t j=0;j<fSelectedSpecies;j++) p[j]=1./fSelectedSpecies;
-    else *maskDetIn = *maskDetIn | bit;
+  }
+
+}
+
+//----------------------------------------------------------------------------------------
+void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit, Double_t* p, const Float_t probMis) const {
+  switch (status) {
+  case AliPIDResponse::kDetNoParams:
+  case AliPIDResponse::kDetNoSignal:
+  case AliPIDResponse::kDetMismatch: // for backward compatibility, we need then to remove kDeteMismatch from AliPIDResponse
+    break;
+  case AliPIDResponse::kDetPidOk:
+      if (probMis > 0.5) for (Int_t j=0;j<fSelectedSpecies;j++) p[j]=1./fSelectedSpecies;
+      else *maskDetIn = *maskDetIn | bit;
     break;
   }
 
 }
+
+
 
 //----------------------------------------------------------------------------------------
 void AliPIDCombined::SetDefaultTPCPriors(){

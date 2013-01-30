@@ -50,7 +50,8 @@ public:
 protected:
   void GetPriors(const AliVTrack *track,Double_t* priors,Float_t centrality=-1) const;
   void ComputeBayesProbabilities(Double_t* bayesProbabilities,const Double_t* probDensity, const Double_t* priors) const;
-  void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit, Double_t* p) const;
+  void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit) const;
+  void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit, Double_t* p,const Float_t probMis) const;
 
 private:
   AliPIDCombined(const AliPIDCombined&);
