@@ -703,6 +703,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 		                  ((AliAODTrack*)part)->GetMostProbablePID()==AliAODTrack::kProton;
         	if (!isHadron) return 0;				  
 		}
+		
+	if (particleSpecies != -1 && GetParticleSpecies((AliVTrack*) part) != particleSpecies) return 0;
   
   }else if (obj->InheritsFrom("AliESDEvent")){ // RECO ESD TRACKS
   	AliESDEvent *esdEvent = static_cast<AliESDEvent*>(obj);
