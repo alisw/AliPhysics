@@ -257,8 +257,6 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
     return 0;
   }
 
-  if(!d->HasSelectionBit(AliRDHFCutsD0toKpi::kD0toKpiCuts)) return 0;
-
   if(fKeepSignalMC) if(IsSignalMC(d,aod,421)) return 3;
 
   Double_t ptD=d->Pt();
