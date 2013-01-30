@@ -50,6 +50,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetEvSelectionOn(Bool_t evselon=kTRUE){fOnOff[3]=evselon;}
   void SetFlowObsOn(Bool_t flowobson=kTRUE){fOnOff[4]=flowobson;}
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
+  void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -60,6 +61,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   Bool_t GetEvSelStatus() const {return fOnOff[3];}
   Bool_t GetFlowObsStatus() const {return fOnOff[4];}
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
+  AliRDHFCuts::ECentrality GetSecondCentralityEstimator()const {return fEstimator;}
 
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
