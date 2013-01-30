@@ -20,7 +20,9 @@ class TString;
 class TTree;
 class TGraph;
 class TGraph2D;
- 
+class TCanvas;
+class TMultiGraph; 
+
 class TStatToolkit : public TObject
 {
  public:
@@ -46,7 +48,7 @@ class TStatToolkit : public TObject
   //
   // Graph tools
   //
-  static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1);
+  static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   //
   // Fitting function
   //
@@ -61,7 +63,14 @@ class TStatToolkit : public TObject
  static void Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
   static void   Constrain1D(const TString &input, const TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma);
   static TString  MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar, Bool_t verbose=kFALSE);
-
+  //
+  // TTree function for the trneding
+  //
+  static Int_t  MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
+  static Int_t  SetStatusAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
+  static TMultiGraph*  MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr);  
+  static void  AddStatusPad(TCanvas* c1, Float_t padratio, Float_t bottommargin);
+  static void  DrawStatusGraphs(TObjArray* oaMultGr);
   //
   // TestFunctions:
   //

@@ -33,6 +33,10 @@
 #include "TGraph2D.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TMultiGraph.h"
+#include "TCanvas.h"
+#include "TLatex.h"
+#include "TCut.h"
 
 //
 // includes neccessary for test functions
@@ -1211,7 +1215,7 @@ TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param
 }
 
 
-TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize){
+TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
   //
   // Make a sparse draw of the variables
   // Writen by Weilin.Yu
@@ -1271,6 +1275,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   graphNew->SetMarkerStyle(mstyle); 
   graphNew->SetMarkerColor(mcolor);
   if (msize>0) graphNew->SetMarkerSize(msize);
+  for(Int_t i=0;i<graphNew->GetN();i++) graphNew->GetX()[i]+=offset;
   delete [] tempArray;
   delete [] index;
   delete [] newBins;
@@ -1278,3 +1283,232 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   return graphNew;
 }
 
+
+
+//
+// function used for the trending
+//
+
+Int_t  TStatToolkit::MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias) 
+{
+  //
+  // Add alias using statistical values of a given variable.
+  // (by MI, Patrick Reichelt)
+  //
+  // tree - input tree
+  // expr - variable expression
+  // cut  - selection criteria
+  // Output - return number of entries used to define variable
+  // In addition mean, rms, median, and robust mean and rms (choosing fraction of data with smallest RMS)
+  // 
+  // Example usage:
+  /*
+    Example usage to create the robust estimators for  variable expr="QA.TPC.CPass1.meanTPCncl" and create a corresponding
+    aliases with the prefix alias[0]="ncl", calculated using fraction alias[1]="0.90"
+
+    TStatToolkit::MakeStatAlias(tree,"QA.TPC.CPass1.meanTPCncl","QA.TPC.CPass1.status>0","ncl:0.9");
+    root [4] tree->GetListOfAliases().Print()
+    OBJ: TNamed    ncl_Mean        (122.120387+0)
+    OBJ: TNamed    ncl_RMS (33.509623+0)
+    OBJ: TNamed    ncl_Median      (130.964333+0)
+    OBJ: TNamed    ncl_Mean90      (131.503862+0)
+    OBJ: TNamed    ncl_RMS90       (3.738260+0)    
+   */
+  // 
+  Int_t entries= tree->Draw(expr,cut,"goff");
+  if (entries<=1){
+    printf("Expression or cut not valid:\t%s\t%s\n", expr, cut);
+    return 0;
+  }
+  //
+  TObjArray* oaAlias = TString(alias).Tokenize(":");
+  if (oaAlias->GetEntries()<2) return 0;
+  Float_t entryFraction = atof( oaAlias->At(1)->GetName() );
+  //
+  Double_t median = TMath::Median(entries,tree->GetV1());
+  Double_t mean = TMath::Mean(entries,tree->GetV1());
+  Double_t rms    = TMath::RMS(entries,tree->GetV1());
+  Double_t meanEF=0, rmsEF=0;
+  TStatToolkit::EvaluateUni(entries, tree->GetV1(), meanEF, rmsEF, entries*entryFraction);
+  //
+  tree->SetAlias(Form("%s_Mean",oaAlias->At(0)->GetName()), Form("(%f+0)",mean));
+  tree->SetAlias(Form("%s_RMS",oaAlias->At(0)->GetName()), Form("(%f+0)",rms));
+  tree->SetAlias(Form("%s_Median",oaAlias->At(0)->GetName()), Form("(%f+0)",median));
+  tree->SetAlias(Form("%s_Mean%d",oaAlias->At(0)->GetName(),Int_t(entryFraction*100)), Form("(%f+0)",meanEF));
+  tree->SetAlias(Form("%s_RMS%d",oaAlias->At(0)->GetName(),Int_t(entryFraction*100)), Form("(%f+0)",rmsEF));
+  delete oaAlias; 
+  return entries;
+}
+
+Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char * cut, const char * alias) 
+{
+  //
+  // Add alias to trending tree using statistical values of a given variable.
+  // (by MI, Patrick Reichelt)
+  //
+  // format of expr :  varname (e.g. meanTPCncl)
+  // format of cut  :  char like in TCut
+  // format of alias:  alias:query:entryFraction(EF) (fraction of entries used for uniformity evaluation)
+  //            e.g.:  varname_Out:(abs(varname-meanEF)>6.*rmsEF):0.8
+  // available internal variables are: 'varname, median, meanEF, rms, rmsEF'
+  // in the alias, 'varname' will be replaced by its content, and 'EF' by the percentage (e.g. meanEF -> mean80)
+  //
+  /* Example usage:
+     1.) Define robust  mean
+
+     TStatToolkit::SetStatusAlias(tree, "meanTPCnclF", "meanTPCnclF>0", "meanTPCnclF_meanEF:meanEF:0.80") ;
+     -->
+     root [10] tree->GetListOfAliases()->Print()
+               Collection name='TList', class='TList', size=1
+               OBJ: TNamed    meanTPCnclF_mean80      0.899308
+     2.) create alias outlyers  - 6 sigma cut
+      TStatToolkit::SetStatusAlias(tree, "meanTPCnclF", "meanTPCnclF>0", "meanTPCnclF_Out:(abs(meanTPCnclF-meanEF)>6.*rmsEF):0.8")          meanTPCnclF_Out ==> (abs(meanTPCnclF-0.899308)>6.*0.016590)
+     3.) the same functionality as in 2.)
+         TStatToolkit::SetStatusAlias(tree, "meanTPCnclF", "meanTPCnclF>0", "varname_Out2:(abs(varname-meanEF)>6.*rmsEF):0.8") 
+	 ->
+         meanTPCnclF_Out2 ==> (abs(meanTPCnclF-0.899308)>6.*0.016590)
+  */
+  //
+  TObjArray* oaVar = TString(expr).Tokenize(":");
+  char varname[50];
+  //char var_x[50];
+  snprintf(varname,50,"%s", oaVar->At(0)->GetName());
+  //snprintf(var_x  ,50,"%s", oaVar->At(1)->GetName());
+  TCut userCut(cut);
+  TObjArray* oaAlias = TString(alias).Tokenize(":");
+  Float_t entryFraction = atof( oaAlias->At(2)->GetName() );
+  //
+  Int_t entries = tree->Draw(expr, userCut, "goff");
+  if (entries<=1){
+    printf("Expression or cut not valid:\t%s\t%s\n", expr, cut);
+    return 0;
+  }
+  //printf("  entries (via tree->Draw(...)) = %d\n",entries);
+  Double_t mean = TMath::Mean(entries,tree->GetV1());
+  Double_t median = TMath::Median(entries,tree->GetV1());
+  Double_t rms    = TMath::RMS(entries,tree->GetV1());
+  Double_t meanEF=0, rmsEF=0;
+  TStatToolkit::EvaluateUni(entries, tree->GetV1(), meanEF, rmsEF, entries*entryFraction);
+  //printf("%s\t%f\t%f\t%f\t%f\n",varname, median, meanEF, rms, rmsEF);
+  //
+  TString sAlias( oaAlias->At(0)->GetName() );
+  sAlias.ReplaceAll("varname",varname);
+  sAlias.ReplaceAll("MeanEF", Form("mean%1.0f",entryFraction*100) );
+  sAlias.ReplaceAll("RMSEF",  Form("rms%1.0f",entryFraction*100) );
+  TString sQuery( oaAlias->At(1)->GetName() );
+  sQuery.ReplaceAll("varname",varname);
+  sQuery.ReplaceAll("MeanEF", Form("%f",meanEF) );
+  sQuery.ReplaceAll("RMSEF",  Form("%f",rmsEF) ); //make sure to replace 'rmsEF' before 'rms'...
+  sQuery.ReplaceAll("Median", Form("%f",median) );
+  sQuery.ReplaceAll("RMS",    Form("%f",rms) );
+  sQuery.ReplaceAll("Mean",    Form("%f",mean) );
+  printf("%s\n", sQuery.Data());
+  //
+  char query[200];
+  char aname[200];
+  snprintf(query,200,"%s", sQuery.Data());
+  snprintf(aname,200,"%s", sAlias.Data());
+  tree->SetAlias(aname, query);
+  return entries;
+}
+
+TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr) 
+{
+  //
+  // Compute a trending multigraph that shows for which runs a variable has outliers.
+  // (by MI, Patrick Reichelt)
+  //
+  // format of expr :  varname:xaxis (e.g. meanTPCncl:run)
+  // format of cut  :  char like in TCut
+  // format of alias:  (1):(varname_Out==0):(varname_Out)[:(varname_Warning):...]
+  // in the alias, 'varname' will be replaced by its content (e.g. varname_Out -> meanTPCncl_Out)
+  // note: the aliases 'varname_Out' etc have to be defined by function 'SetStatisticAlias(...)'
+  // counter igr is used to shift the multigraph in y when filling a TObjArray.
+  //
+  TObjArray* oaVar = TString(expr).Tokenize(":");
+  char varname[50];
+  char var_x[50];
+  snprintf(varname,50,"%s", oaVar->At(0)->GetName());
+  snprintf(var_x  ,50,"%s", oaVar->At(1)->GetName());
+  TCut userCut(cut);
+  TString sAlias(alias);
+  sAlias.ReplaceAll("varname",varname);
+  TObjArray* oaAlias = TString(sAlias.Data()).Tokenize(":");
+  //
+  char query[200];
+  TMultiGraph* multGr = new TMultiGraph();
+  Int_t marArr[6]    = {24+igr%2, 20+igr%2, 20+igr%2, 20+igr%2, 22, 23};
+  Int_t colArr[6]    = {kBlack, kBlack, kRed, kOrange, kMagenta, kViolet};
+  Double_t sizArr[6] = {1.2, 1.1, 1.0, 1.0, 1, 1};
+  const Int_t ngr = oaAlias->GetEntriesFast();
+  for (Int_t i=0; i<ngr; i++){
+    if (i==2) continue; // the Fatal(Out) graph will be added in the end to be plotted on top!
+    snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(i)->GetName(), var_x);
+    multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,userCut,marArr[i],colArr[i],sizArr[i]) );
+  }
+  snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(2)->GetName(), var_x);
+  multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,userCut,marArr[2],colArr[2],sizArr[2]) );
+  //
+  multGr->SetName(varname);
+  multGr->SetTitle(varname); // used for y-axis labels. // details to be included!
+  return multGr;
+}
+
+
+void  TStatToolkit::AddStatusPad(TCanvas* c1, Float_t padratio, Float_t bottommargin)
+{
+  //
+  // add pad to bottom of canvas for Status graphs (by Patrick Reichelt)
+  // call function "DrawStatusGraphs(...)" afterwards
+  //
+  TCanvas* c1_clone = (TCanvas*) c1->Clone("c1_clone");
+  c1->Clear();
+  // produce new pads
+  c1->cd();
+  TPad* pad1 = new TPad("pad1", "pad1", 0., padratio, 1., 1.); 
+  pad1->Draw();
+  pad1->SetNumber(1); // so it can be called via "c1->cd(1);"
+  c1->cd();
+  TPad* pad2 = new TPad("pad2", "pad2", 0., 0., 1., padratio);
+  pad2->Draw();
+  pad2->SetNumber(2);
+  // draw original canvas into first pad
+  c1->cd(1);
+  c1_clone->DrawClonePad();
+  pad1->SetBottomMargin(0.001);
+  pad1->SetRightMargin(0.01);
+  // set up second pad
+  c1->cd(2);
+  pad2->SetGrid(3);
+  pad2->SetTopMargin(0);
+  pad2->SetBottomMargin(bottommargin); // for the long x-axis labels (runnumbers)
+  pad2->SetRightMargin(0.01);
+}
+
+
+void  TStatToolkit::DrawStatusGraphs(TObjArray* oaMultGr)
+{
+  //
+  // draw Status graphs into active pad of canvas (by MI, Patrick Reichelt)
+  // ...into bottom pad, if called after "AddStatusPad(...)"
+  //
+  const Int_t nvars = oaMultGr->GetEntriesFast();
+  TGraph* grAxis = (TGraph*) ((TMultiGraph*) oaMultGr->At(0))->GetListOfGraphs()->At(0);
+  grAxis->SetMaximum(0.5*nvars+0.5);
+  grAxis->SetMinimum(0); 
+  grAxis->GetYaxis()->SetLabelSize(0);
+  Int_t entries = grAxis->GetN();
+  printf("entries (via GetN()) = %d\n",entries);
+  grAxis->GetXaxis()->SetLabelSize(5.7*TMath::Min(TMath::Max(5./entries,0.01),0.03));
+  grAxis->GetXaxis()->LabelsOption("v");
+  grAxis->Draw("ap");
+  //
+  // draw multigraphs & names of status variables on the y axis
+  for (Int_t i=0; i<nvars; i++){
+    ((TMultiGraph*) oaMultGr->At(i))->Draw("p");
+    TLatex* ylabel = new TLatex(-0.1, 0.5*i+0.5, ((TMultiGraph*) oaMultGr->At(i))->GetTitle());
+    ylabel->SetTextAlign(32); //hor:right & vert:centered
+    ylabel->SetTextSize(0.025/gPad->GetHNDC());
+    ylabel->Draw();
+  }
+}
