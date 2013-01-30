@@ -118,6 +118,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fEstimator(AliRDHFCuts::kCentTRK),
   fReadMC(kFALSE),
   fSimpleMode(kFALSE),
+  fUseSelectionBit(kTRUE),
   fOnOff()
 {
   //constructor
@@ -1502,7 +1503,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
       for (Int_t iCand = 0; iCand < nCand; iCand++) {
 	AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
-	if(d->GetSelectionMap()) {
+	if(fUseSelectionBit && d->GetSelectionMap()) {
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kD0toKpi && !d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) continue; //skip the D0 from Dstar
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kDplustoKpipi && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue; //skip the 3 prong !D+
 	}

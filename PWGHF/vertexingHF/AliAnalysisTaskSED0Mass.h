@@ -56,6 +56,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillImpactParameterHistos(Bool_t flag) {fFillImpParHist=flag;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
+  void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -66,6 +67,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t GetFillImpactParameterHistos() const {return fFillImpParHist;}
   Int_t  GetSystem() const {return fSys;}
   Bool_t GetRejectSDDClusters() const { return fIsRejectSDDClusters; }
+  Bool_t GetUseSelectionBit() const { return fUseSelectionBit; }
   Bool_t GetWriteVariableTree() const {return fWriteVariableTree;}
 
  private:
@@ -100,13 +102,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fIsRejectSDDClusters; // flag to reject events with SDD clusters
   Bool_t    fFillPtHist;          // flag to fill Pt and Impact Parameter Histograms
   Bool_t    fFillImpParHist;      // flag to fill Pt and Impact Parameter Histograms
+  Bool_t    fUseSelectionBit;     // flag to check or not the selection bit
 
   Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 7
   Double_t *fCandidateVariables;      //!  variables to be written to the tree
 
 
-  ClassDef(AliAnalysisTaskSED0Mass,16); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,17); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif
