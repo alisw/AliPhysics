@@ -70,6 +70,7 @@ public:
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
+  void           SetUseMonitoring(Bool_t flag=kTRUE) {fUseMonitoring = flag;}
 
   Bool_t         MisalignGeometry(AliRunLoader *runLoader = NULL);
 
@@ -168,6 +169,7 @@ private:
   Bool_t         fDeleteIntermediateFiles; // delete intermediate raw data files
   Bool_t         fWriteSelRawData;    // write detectors raw data in a separate file accoring to the trigger cluster
   Bool_t         fStopOnError;        // stop or continue on errors
+  Bool_t         fUseMonitoring;      // monitor simulation timing per volume
 
   Int_t          fNEvents;            // number of events
   TString        fConfigFileName;     // name of the config file

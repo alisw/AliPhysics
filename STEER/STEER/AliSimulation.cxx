@@ -182,6 +182,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fDeleteIntermediateFiles(kFALSE),
   fWriteSelRawData(kFALSE),
   fStopOnError(kFALSE),
+  fUseMonitoring(kFALSE),
   fNEvents(1),
   fConfigFileName(configFileName),
   fGAliceFileName("galice.root"),
@@ -1003,6 +1004,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     AliError("gAlice was already run. Restart aliroot and try again.");
     return kFALSE;
   }
+  
+  // Setup monitoring if requested
+  gAlice->GetMCApp()->SetUseMonitoring(fUseMonitoring);
 
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));

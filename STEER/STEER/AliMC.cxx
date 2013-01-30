@@ -53,6 +53,7 @@
 #include "AliSimulation.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
+#include "AliTransportMonitor.h"
 
 using std::endl;
 using std::cout;
@@ -64,6 +65,7 @@ AliMC::AliMC() :
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
   fReadRndmStatus(kFALSE),
+  fUseMonitoring(kFALSE),
   fRndmFileName("random.root"),
   fEventEnergy(0),
   fSummEnergy(0),
@@ -75,6 +77,7 @@ AliMC::AliMC() :
   fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
+  fMonitor(0),
   fHitLists(0),
   fTmpTreeTR(0),
   fTmpFileTR(0),
@@ -93,6 +96,7 @@ AliMC::AliMC(const char *name, const char *title) :
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
   fReadRndmStatus(kFALSE),
+  fUseMonitoring(kFALSE),
   fRndmFileName("random.root"),
   fEventEnergy(0),
   fSummEnergy(0),
@@ -104,6 +108,7 @@ AliMC::AliMC(const char *name, const char *title) :
   fDecayPdg(0),
   fImedia(new TArrayI(1000)),
   fTransParName("\0"),
+  fMonitor(0),
   fHitLists(new TList()),
   fTmpTreeTR(0),
   fTmpFileTR(0),
@@ -125,6 +130,7 @@ AliMC::~AliMC()
   delete fGenerator;
   delete fImedia;
   delete fHitLists;
+  delete fMonitor;
   // Delete track references
 }
 
@@ -456,6 +462,12 @@ void AliMC::FinishRun()
   // Clean generator information
   AliDebug(1, "fGenerator->FinishRun()");
   fGenerator->FinishRun();
+  
+  // Monitoring information
+  if (fMonitor) {
+    fMonitor->Print();
+    fMonitor->Export("timing.root");
+  }  
 
   //Output energy summary tables
   AliDebug(1, "EnergySummary()");
@@ -510,8 +522,25 @@ void AliMC::Stepping()
       FixParticleDecaytime();
   } 
     
-
-  
+  // --- If monitoring timing was requested, monitor the step
+  if (fUseMonitoring) {
+    if (!fMonitor) {
+      fMonitor = new AliTransportMonitor(gMC->NofVolumes()+1);
+      fMonitor->Start();
+    }  
+    if (gMC->IsNewTrack() || gMC->TrackTime() == 0. || gMC->TrackStep()<1.1E-10) {
+      fMonitor->DummyStep();
+    } else {
+    // Normal stepping
+      Int_t copy;
+      Int_t volId = gMC->CurrentVolID(copy);
+      Int_t pdg = gMC->TrackPid();
+      TLorentzVector xyz, pxpypz;
+      gMC->TrackPosition(xyz);
+      gMC->TrackMomentum(pxpypz);
+      fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
+    }  
+  }
   //
   // --- If lego option, do it and leave 
   if (AliSimulation::Instance()->Lego())

@@ -7,7 +7,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
- 
+
 #pragma link C++ global gAlice;
 #pragma link C++ global gMC;
  
@@ -154,8 +154,13 @@
 
 #pragma link C++ class AliLTUConfig+;
 
+#pragma link C++ class AliTransportMonitor+;
+#pragma link C++ class AliTransportMonitor::AliTransportMonitorVol+;
+#pragma link C++ struct AliTransportMonitor::AliTransportMonitorVol::AliPMonData+;
+
 #pragma link C++ typedef AliLHCDipValD; 	 
 #pragma link C++ typedef AliLHCDipValI; 	 
 #pragma link C++ typedef AliLHCDipValF; 	 
 #pragma link C++ typedef AliLHCDipValC;
+
 #endif

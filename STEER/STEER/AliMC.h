@@ -24,6 +24,7 @@ class TTree;
 
 class AliGenerator;
 class AliTrackReference;
+class AliTransportMonitor;
 
 class AliMC : public TVirtualMCApplication {
 public:
@@ -110,7 +111,9 @@ public:
 // Geometry related
    void           SetGeometryFromCDB();
    Bool_t         IsGeometryFromCDB() const;
-   
+// Monitor transport   
+   void           SetUseMonitoring(Bool_t flag=kTRUE)      { fUseMonitoring = flag; }
+   AliTransportMonitor *GetTransportMonitor() const        { return fMonitor; }
 // Random number generator status
    void           SetSaveRndmStatus(Bool_t value)          { fSaveRndmStatus = value; }  
    void           SetSaveRndmStatusPerEvent(Bool_t value)  { fSaveRndmEventStatus = value; }  
@@ -128,6 +131,7 @@ public:
    Bool_t         fSaveRndmStatus;    //! Options to save random engine status
    Bool_t         fSaveRndmEventStatus; //! Options to save random engine status for each event
    Bool_t         fReadRndmStatus;    //! Options to read random engine status
+   Bool_t         fUseMonitoring;     //! Activate monitoring
    TString        fRndmFileName;      //! The file name of random engine status to be read in
    TArrayF        fEventEnergy;       //! Energy deposit for current event
    TArrayF        fSummEnergy;        //! Energy per event in each volume
@@ -139,6 +143,7 @@ public:
    Int_t          fDecayPdg;          //  PDG code of particle with forced decay length
    TArrayI       *fImedia;            //! Array of correspondence between media and detectors
    TString        fTransParName;      //  Name of the transport parameters file
+   AliTransportMonitor *fMonitor;     //! Transport monitoring tool
    TList         *fHitLists;          //! Lists of hits to be remapped by PurifyKine
    //Temporary Track Reference tree related
    TTree         *fTmpTreeTR;            //! Temporary track reference tree
