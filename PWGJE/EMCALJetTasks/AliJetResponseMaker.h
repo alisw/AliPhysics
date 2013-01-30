@@ -17,78 +17,90 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const char *name);
   virtual ~AliJetResponseMaker();
 
+  enum MatchingType{
+    kNoMatching = 0,
+    kGeometrical = 1,
+    kMCLabel = 2
+  };
+
   void                        UserCreateOutputObjects();
 
-  void                        SetMCJetsName(const char *n)       { fMCJetsName      = n; }
-  void                        SetMCTracksName(const char *n)     { fMCTracksName    = n; }
-  void                        SetMaxDistance(Double_t d)         { fMaxDistance     = d; }
-  void                        SetDoWeighting(Bool_t d = kTRUE)   { fDoWeighting     = d; }
-  void                        SetMCFiducial(Bool_t f = kTRUE)    { fMCFiducial      = f; }
-  void                        SetEventWeightHist(Bool_t h)       { fEventWeightHist = h; }
-  void                        SetPtHardBin(Int_t b)              { fSelectPtHardBin = b; }
-  void                        SetDoMatching(Bool_t b)            { fDoMatching      = b; }
+  void                        SetJets2Name(const char *n)                            { fJets2Name         = n         ; }
+  void                        SetTracks2Name(const char *n)                          { fTracks2Name       = n         ; }
+  void                        SetClus2Name(const char *n)                            { fCalo2Name         = n         ; }
+  void                        SetJet2EtaLimits(Float_t min=-999, Float_t max=-999)   { fJet2MinEta = min, fJet2MaxEta = max ; }
+  void                        SetJet2PhiLimits(Float_t min=-999, Float_t max=-999)   { fJet2MinPhi = min, fJet2MaxPhi = max ; }
+  void                        SetRho2Name(const char *n)                             { fRho2Name          = n         ; }
+  void                        SetPtBiasJet2Clus(Float_t b)                           { fPtBiasJet2Clus    = b         ; }
+  void                        SetPtBiasJet2Track(Float_t b)                          { fPtBiasJet2Track   = b         ; }
+  void                        SetMatching(MatchingType t, Double_t p=1)              { fMatching = t; fMatchingPar = p; }
+  void                        SetPtHardBin(Int_t b)                                  { fSelectPtHardBin   = b         ; }
+  void                        SetMCflag1(Bool_t f)                                   { fAreCollections1MC = f         ; }
+  void                        SetMCflag2(Bool_t f)                                   { fAreCollections2MC = f         ; }
 
  protected:
   Bool_t                      IsEventSelected();
-  Bool_t                      AcceptJet(AliEmcalJet* jet)   const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet) const;
+  Bool_t                      AcceptBiasJet2(AliEmcalJet *jet) const;
   void                        ExecOnce();
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
+  Double_t                    GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2) const;
 
-  TString                     fMCTracksName;                  // name of MC particle collection
-  TString                     fMCJetsName;                    // name of MC jet collection
-  Double_t                    fMaxDistance;                   // maximum distance between matched particle and detector level jets
-  Bool_t                      fDoWeighting;                   // = true, weight using trials and given x section
-  Bool_t                      fEventWeightHist;               // = true create event weight histogram
-  Bool_t                      fMCFiducial;                    // = true MC jets in fiducial acceptance
-  Double_t                    fMCminEta;                      // MC jets minimum eta
-  Double_t                    fMCmaxEta;                      // MC jets maximum eta
-  Double_t                    fMCminPhi;                      // MC jets minimum phi
-  Double_t                    fMCmaxPhi;                      // MC jets maximum phi
+  TString                     fTracks2Name;                   // name of second track collection
+  TString                     fCalo2Name;                     // name of second cluster collection
+  TString                     fJets2Name;                     // name of second jet collection
+  TString                     fRho2Name;                      // name of second jet collection
+  Float_t                     fPtBiasJet2Track;               // select jets 2 with a minimum pt track
+  Float_t                     fPtBiasJet2Clus;                // select jets 2 with a minimum pt cluster
+  Bool_t                      fAreCollections1MC;             // collections 1 MC
+  Bool_t                      fAreCollections2MC;             // collections 1 MC
+  MatchingType                fMatching;                      // matching type
+  Double_t                    fMatchingPar;                   // maximum distance between matched particle and detector level jets
+  Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
+  Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
+  Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
+  Float_t                     fJet2MaxPhi;                    // maximum phi jet 2 acceptance  
   Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
-  Bool_t                      fDoMatching;                    // whether or not it should run the matching between MC and rec jets
 
   AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
-  Double_t                    fEventWeight;                   //!event weight
   Int_t                       fPtHardBin;                     //!event pt hard bin
   Int_t                       fNTrials;                       //!event trials
-  TClonesArray               *fMCTracks;                      //!MC particles
-  TClonesArray               *fMCJets;                        //!MC jets
+  TClonesArray               *fTracks2;                       //!Tracks 2
+  TClonesArray               *fCaloClusters2;                 //!Clusters 2
+  TClonesArray               *fJets2;                       //!Jets 2
+  AliRhoParameter            *fRho2;                          //!Event rho 2
+  Double_t                    fRho2Val;                       //!Event rho 2 value 
   // General histograms
   TH1                        *fHistNTrials;                   //!total number of trials per pt hard bin
   TH1                        *fHistEvents;                    //!total number of events per pt hard bin
-  TH1                        *fHistEventWeight[11];           //!event weight
-  // Particle level jets
-  TH2                        *fHistMCJetsPhiEta;              //!phi-eta distribution of jets
-  TH2                        *fHistMCJetsPtArea;              //!inclusive jet pt vs area histogram
-  TH2                        *fHistMCJetsPhiEtaFiducial;      //!phi-eta distribution of jets in fiducial acceptance (plus lead hadron bias)
-  TH2                        *fHistMCJetsPtAreaFiducial;      //!inclusive jet pt spectrum in fiducial acceptance (plus lead hadron bias)
-  TH2                        *fHistMCJetsNEFvsPt;             //!jet neutral energy fraction vs. jet pt
-  TH2                        *fHistMCJetsZvsPt;               //!constituent Pt over Jet Pt ratio vs. jet pt
-  // Detector level jets
-  TH2                        *fHistJetsPhiEta;                //!phi-eta distribution of jets
-  TH2                        *fHistJetsPtArea;                //!inclusive jet pt vs. area histogram
-  TH2                        *fHistJetsCorrPtArea;            //!inclusive jet pt vs. area histogram
-  TH2                        *fHistJetsNEFvsPt;               //!jet neutral energy fraction vs. jet pt
-  TH2                        *fHistJetsZvsPt;                 //!constituent Pt over Jet Pt ratio vs. jet pt
-  // Detector-particle level matching
-  TH2                        *fHistMatchingLevelMCPt;         //!matching level vs. particle level pt
-  TH3                        *fHistClosestDeltaEtaPhiMCPt;    //!delta eta-phi between closest particle level to detector level jet vs. particle level pt
-  TH2                        *fHistClosestDeltaPtMCPt;        //!delta pt between closest particle level to detector level jet vs. particle level pt
-  TH2                        *fHistClosestDeltaCorrPtMCPt;    //!delta pt between closest particle level to detector level jet vs. particle level pt
-  TH2                        *fHistNonMatchedMCJetsPtArea;    //!non-matched mc jet pt distribution
-  TH2                        *fHistNonMatchedJetsPtArea;      //!non-matched jet pt distribution
-  TH2                        *fHistNonMatchedJetsCorrPtArea;  //!non-matched jet pt distribution
-  TH2                        *fHistPartvsDetecPt;             //!particle vs detector level jet pt
-  TH2                        *fHistPartvsDetecCorrPt;         //!particle vs detector level jet pt
-  TH2                        *fHistMissedMCJetsPtArea;         //!mc jets not measured
+  // Jets 1
+  TH2                        *fHistJets1PhiEta;               //!phi-eta distribution of jets 1
+  TH2                        *fHistJets1PtArea;               //!inclusive jet pt vs area histogram 1
+  TH2                        *fHistJets1CorrPtArea;           //!inclusive jet pt vs. area histogram 1
+  // Jets 2
+  TH2                        *fHistJets2PhiEta;               //!phi-eta distribution of jets 2
+  TH2                        *fHistJets2PtArea;               //!inclusive jet pt vs. area histogram 2
+  TH2                        *fHistJets2CorrPtArea;           //!inclusive jet pt vs. area histogram 2
+  // Jet1-Jet2 matching
+  TH2                        *fHistMatchingLevelvsJet2Pt;              //!matching level vs jet 2 pt
+  TH3                        *fHistClosestDeltaEtaPhivsJet2Pt;         //!delta eta-phi between matched jets vs jet 2 pt
+  TH2                        *fHistClosestDeltaPtvsJet2Pt;             //!delta pt between matched jets vs jet 2 pt
+  TH2                        *fHistClosestDeltaCorrPtvsJet2Pt;         //!delta pt corr between matched jets vs jet 2 pt
+  TH2                        *fHistNonMatchedJets1PtArea;              //!non-matched jet 1 pt distribution
+  TH2                        *fHistNonMatchedJets2PtArea;              //!non-matched jet 2 pt distribution
+  TH2                        *fHistNonMatchedJets1CorrPtArea;          //!non-matched jet pt distribution
+  TH2                        *fHistNonMatchedJets2CorrPtArea;          //!non-matched jet pt distribution
+  TH2                        *fHistJet1PtvsJet2Pt;                     //!correlation jet 1 pt vs jet 2 pt
+  TH2                        *fHistJet1CorrPtvsJet2CorrPt;             //!correlation jet 1 corr pt vs jet 2 corr pt
+  TH2                        *fHistMissedJets2PtArea;                  //!jets 2 not found in jet 1 collection
 
  private:
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 9) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 10) // Jet response matrix producing task
 };
 #endif

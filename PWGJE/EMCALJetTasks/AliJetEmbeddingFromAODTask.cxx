@@ -6,8 +6,6 @@
 
 #include "AliJetEmbeddingFromAODTask.h"
 
-//#include <iostream>
-
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -15,6 +13,8 @@
 #include <TObjString.h>
 #include <TGrid.h>
 #include <TH2C.h>
+#include <TList.h>
+#include <TStreamerInfo.h>
 
 #include "AliVEvent.h"
 #include "AliAODTrack.h"
@@ -52,6 +52,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fCurrentFileID(0),
   fCurrentAODFileID(-1),
   fCurrentAODFile(0),
+  fPicoTrackVersion(0),
   fAODHeader(0),
   fAODVertex(0),
   fAODTracks(0),
@@ -86,6 +87,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fCurrentFileID(0),
   fCurrentAODFileID(-1),
   fCurrentAODFile(0),
+  fPicoTrackVersion(0),
   fAODHeader(0),
   fAODVertex(0),
   fAODTracks(0),
@@ -180,6 +182,15 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
 
   if (!fCurrentAODFile || fCurrentAODFile->IsZombie()) {
     return kFALSE;
+  }
+
+  const TList *clist = fCurrentAODFile->GetStreamerInfoCache();
+  if(clist) {
+    TStreamerInfo *cinfo = static_cast<TStreamerInfo*>(clist->FindObject("AliPicoTrack"));
+    if(cinfo) 
+      fPicoTrackVersion = cinfo->GetClassVersion();
+    else
+      fPicoTrackVersion = 0;
   }
 
   if (fQAhistos)
@@ -319,10 +330,13 @@ void AliJetEmbeddingFromAODTask::Run()
 	      aodtrack->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
 	    isEmc = kTRUE;
 	}
-	else { /*not AOD mode, let's see if it is PicoTrack*/
+	else if (fPicoTrackVersion > 0) { /*not AOD mode, let's see if it is PicoTrack*/
 	  AliPicoTrack *ptrack = dynamic_cast<AliPicoTrack*>(track);
 	  if (ptrack) {
-	    type = ptrack->GetTrackType();
+	    if (fPicoTrackVersion >= 3)
+	      type = ptrack->GetTrackType();
+	    else
+	      type = ptrack->GetLabel();
 	    isEmc = ptrack->IsEMCAL();
 	  }
 	}
@@ -376,5 +390,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	AddCell(amp, cellNum, time);
       }
     }
+
+    AliDebug(2,Form("Added cells = %d, total cells = %d", fAddedCells, totalCells));
   }
 }
