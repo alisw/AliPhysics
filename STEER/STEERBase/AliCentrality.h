@@ -32,11 +32,22 @@ class AliCentrality : public TNamed
   void SetCentralityCL0(Float_t cent) {fCentralityCL0 = cent;}
   void SetCentralityCL1(Float_t cent) {fCentralityCL1 = cent;}
   void SetCentralityCND(Float_t cent) {fCentralityCND = cent;}
-  void SetCentralityNPA(Float_t cent) {fCentralityNPA = cent;}
   void SetCentralityZNA(Float_t cent) {fCentralityZNA = cent;}
+  void SetCentralityNPA(Float_t cent) {fCentralityNPA = cent;}
   void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
   void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
   void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
+
+  void SetCentralityV0Mtrue(Float_t cent) {fCentralityV0Mtrue = cent;} 
+  void SetCentralityV0Atrue(Float_t cent) {fCentralityV0Atrue = cent;} 
+  void SetCentralityV0Ctrue(Float_t cent) {fCentralityV0Ctrue = cent;} 
+  void SetCentralityFMDtrue(Float_t cent) {fCentralityFMDtrue = cent;}
+  void SetCentralityTRKtrue(Float_t cent) {fCentralityTRKtrue = cent;}
+  void SetCentralityTKLtrue(Float_t cent) {fCentralityTKLtrue = cent;}
+  void SetCentralityCL0true(Float_t cent) {fCentralityCL0true = cent;}
+  void SetCentralityCL1true(Float_t cent) {fCentralityCL1true = cent;}
+  void SetCentralityCNDtrue(Float_t cent) {fCentralityCNDtrue = cent;}
+  void SetCentralityZNAtrue(Float_t cent) {fCentralityZNAtrue = cent;}
 
   /// get centrality result
   Float_t GetCentralityPercentile(const char *method) const;
@@ -63,12 +74,23 @@ class AliCentrality : public TNamed
   Float_t fCentralityCL0;   // Centrality from Clusters in layer 0
   Float_t fCentralityCL1;   // Centrality from Clusters in layer 1
   Float_t fCentralityCND;   // Centrality from tracks (candle condition)
+  Float_t fCentralityZNA;   // Centrality from ZNA
   Float_t fCentralityNPA;   // Centrality from Npart (MC)
-  Float_t fCentralityZNA;   // Centrality from ZNA)
   Float_t fCentralityV0MvsFMD;   // Centrality from V0 vs FMD
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
   Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC
 
-  ClassDef(AliCentrality, 5)
+  Float_t fCentralityV0Mtrue;   // Centrality from true (sim) V0A+V0C
+  Float_t fCentralityV0Atrue;   // Centrality from true (sim) V0A
+  Float_t fCentralityV0Ctrue;   // Centrality from true (sim) V0C
+  Float_t fCentralityFMDtrue;   // Centrality from true (sim) FMD
+  Float_t fCentralityTRKtrue;   // Centrality from true (sim) tracks
+  Float_t fCentralityTKLtrue;   // Centrality from true (sim) tracklets
+  Float_t fCentralityCL0true;   // Centrality from true (sim) Clusters in layer 0
+  Float_t fCentralityCL1true;   // Centrality from true (sim) Clusters in layer 1
+  Float_t fCentralityCNDtrue;   // Centrality from true (sim) tracks (candle condition)
+  Float_t fCentralityZNAtrue;   // Centrality from true (sim) ZNA
+
+  ClassDef(AliCentrality, 6)
 };
 #endif //ALICENTRALITY_H

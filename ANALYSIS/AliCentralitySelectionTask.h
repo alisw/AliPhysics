@@ -114,11 +114,23 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentCL0;            // percentile centrality from clusters in layer 0
   Float_t  fCentCL1;            // percentile centrality from clusters in layer 1
   Float_t  fCentCND;            // percentile centrality from candle 
-  Float_t  fCentNPA;            // percentile centrality from Npart (MC) 
   Float_t  fCentZNA;            // percentile centrality from ZNA 
+  Float_t  fCentNPA;            // percentile centrality from Npart (MC) 
   Float_t  fCentV0MvsFMD;       // percentile centrality from V0 vs FMD
   Float_t  fCentTKLvsV0M;       // percentile centrality from tracklets vs V0
   Float_t  fCentZEMvsZDC;       // percentile centrality from ZEM vs ZDC
+
+  Float_t  fCentV0Mtrue;        // percentile centrality from true (sim) V0A+V0C
+  Float_t  fCentV0Atrue;        // percentile centrality from true (sim) V0A
+  Float_t  fCentV0Ctrue;        // percentile centrality from true (sim) V0C
+  Float_t  fCentFMDtrue;        // percentile centrality from true (sim) FMD
+  Float_t  fCentTRKtrue;        // percentile centrality from true (sim) tracks
+  Float_t  fCentTKLtrue;        // percentile centrality from true (sim) tracklets
+  Float_t  fCentCL0true;        // percentile centrality from true (sim) Clusters in layer 0
+  Float_t  fCentCL1true;        // percentile centrality from true (sim) Clusters in layer 1
+  Float_t  fCentCNDtrue;        // percentile centrality from true (sim) tracks (candle condition)
+  Float_t  fCentZNAtrue;        // percentile centrality from true (sim) ZNA
+
 
   TH1F    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
   TH1F    *fHtempV0A;           // histogram with centrality vs multiplicity using V0A
@@ -129,11 +141,22 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempCL0;           // histogram with centrality vs multiplicity using clusters in layer 0
   TH1F    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 1
   TH1F    *fHtempCND;           // histogram with centrality vs multiplicity using candle
-  TH1F    *fHtempNPA;           // histogram with centrality vs multiplicity using Npart
   TH1F    *fHtempZNA;           // histogram with centrality vs multiplicity using ZNA
   TH1F    *fHtempV0MvsFMD;      // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1F    *fHtempTKLvsV0M;      // histogram with centrality vs multiplicity using tracklets vs V0
   TH2F    *fHtempZEMvsZDC;      // histogram with centrality vs multiplicity using ZEM vs ZDC 
+  TH1F    *fHtempNPA;           // histogram with centrality vs multiplicity using Npart
+
+  TH1F    *fHtempV0Mtrue;       // histogram with centrality true (sim) vs multiplicity using V0
+  TH1F    *fHtempV0Atrue;       // histogram with centrality true (sim) vs multiplicity using V0A
+  TH1F    *fHtempV0Ctrue;       // histogram with centrality true (sim) vs multiplicity using V0C
+  TH1F    *fHtempFMDtrue;       // histogram with centrality true (sim) vs multiplicity using FMD
+  TH1F    *fHtempTRKtrue;       // histogram with centrality true (sim) vs multiplicity using tracks
+  TH1F    *fHtempTKLtrue;       // histogram with centrality true (sim) vs multiplicity using tracklets
+  TH1F    *fHtempCL0true;       // histogram with centrality true (sim) vs multiplicity using clusters in layer 0
+  TH1F    *fHtempCL1true;       // histogram with centrality true (sim) vs multiplicity using clusters in layer 1
+  TH1F    *fHtempCNDtrue;       // histogram with centrality true (sim) vs multiplicity using candle
+  TH1F    *fHtempZNAtrue;       // histogram with centrality true (sim) vs multiplicity using ZNA
 
   TList   *fOutputList; // output list
   
@@ -244,7 +267,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 24); 
+  ClassDef(AliCentralitySelectionTask, 25); 
 };
 
 #endif

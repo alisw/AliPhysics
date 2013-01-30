@@ -138,11 +138,21 @@ AliAnalysisTaskSE(),
   fCentCL0(0),
   fCentCL1(0),
   fCentCND(0),
-  fCentNPA(0),
   fCentZNA(0),
+  fCentNPA(0),
   fCentV0MvsFMD(0),
   fCentTKLvsV0M(0),
   fCentZEMvsZDC(0),
+  fCentV0Mtrue(0),
+  fCentV0Atrue(0),
+  fCentV0Ctrue(0),
+  fCentFMDtrue(0),
+  fCentTRKtrue(0),
+  fCentTKLtrue(0),
+  fCentCL0true(0),
+  fCentCL1true(0),
+  fCentCNDtrue(0),
+  fCentZNAtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
   fHtempV0C(0),
@@ -152,15 +162,25 @@ AliAnalysisTaskSE(),
   fHtempCL0(0),
   fHtempCL1(0),
   fHtempCND(0),
-  fHtempNPA(0),
   fHtempZNA(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
   fHtempZEMvsZDC(0),
+  fHtempNPA(0),
+  fHtempV0Mtrue(0),
+  fHtempV0Atrue(0),
+  fHtempV0Ctrue(0),
+  fHtempFMDtrue(0),
+  fHtempTRKtrue(0),
+  fHtempTKLtrue(0),
+  fHtempCL0true(0),
+  fHtempCL1true(0),
+  fHtempCNDtrue(0),
+  fHtempZNAtrue(0),
   fOutputList(0),
-  fHOutCentV0M    (0),
-  fHOutCentV0A    (0),
-  fHOutCentV0C    (0),
+  fHOutCentV0M(0),
+  fHOutCentV0A(0),
+  fHOutCentV0C(0),
   fHOutCentV0MCVHN(0),
   fHOutCentV0MCVLN(0),
   fHOutCentV0MCVHNinMB(0),
@@ -183,14 +203,14 @@ AliAnalysisTaskSE(),
   fHOutCentV0MEJEinMB(0),
   fHOutCentV0MEGAinMB(0),
   fHOutCentV0MPHSinMB(0),
-  fHOutCentFMD     (0),
-  fHOutCentTRK     (0),
-  fHOutCentTKL     (0),
-  fHOutCentCL0     (0),
-  fHOutCentCL1     (0),
-  fHOutCentCND     (0),
-  fHOutCentNPA     (0),
-  fHOutCentZNA     (0),
+  fHOutCentFMD(0),
+  fHOutCentTRK(0),
+  fHOutCentTKL(0),
+  fHOutCentCL0(0),
+  fHOutCentCL1(0),
+  fHOutCentCND(0),
+  fHOutCentNPA(0),
+  fHOutCentZNA(0),
   fHOutCentV0MvsFMD(0),
   fHOutCentTKLvsV0M(0),
   fHOutCentZEMvsZDC(0),
@@ -330,11 +350,21 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCentCL0(0),
   fCentCL1(0),
   fCentCND(0),
-  fCentNPA(0),
   fCentZNA(0),
+  fCentNPA(0),
   fCentV0MvsFMD(0),
   fCentTKLvsV0M(0),
   fCentZEMvsZDC(0),
+  fCentV0Mtrue(0),
+  fCentV0Atrue(0),
+  fCentV0Ctrue(0),
+  fCentFMDtrue(0),
+  fCentTRKtrue(0),
+  fCentTKLtrue(0),
+  fCentCL0true(0),
+  fCentCL1true(0),
+  fCentCNDtrue(0),
+  fCentZNAtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
   fHtempV0C(0),
@@ -344,15 +374,25 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempCL0(0),
   fHtempCL1(0),
   fHtempCND(0),
-  fHtempNPA(0),
   fHtempZNA(0),
   fHtempV0MvsFMD(0),
   fHtempTKLvsV0M(0),
   fHtempZEMvsZDC(0),
+  fHtempNPA(0),
+  fHtempV0Mtrue(0),
+  fHtempV0Atrue(0),
+  fHtempV0Ctrue(0),
+  fHtempFMDtrue(0),
+  fHtempTRKtrue(0),
+  fHtempTKLtrue(0),
+  fHtempCL0true(0),
+  fHtempCL1true(0),
+  fHtempCNDtrue(0),
+  fHtempZNAtrue(0),
   fOutputList(0),
-  fHOutCentV0M    (0),
-  fHOutCentV0A    (0),
-  fHOutCentV0C    (0),
+  fHOutCentV0M(0),
+  fHOutCentV0A(0),
+  fHOutCentV0C(0),
   fHOutCentV0MCVHN(0),
   fHOutCentV0MCVLN(0),
   fHOutCentV0MCVHNinMB(0),
@@ -375,14 +415,14 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutCentV0MEJEinMB(0),
   fHOutCentV0MEGAinMB(0),
   fHOutCentV0MPHSinMB(0),
-  fHOutCentFMD     (0),
-  fHOutCentTRK     (0),
-  fHOutCentTKL     (0),
-  fHOutCentCL0     (0),
-  fHOutCentCL1     (0),
-  fHOutCentCND     (0),
-  fHOutCentNPA     (0),
-  fHOutCentZNA     (0),
+  fHOutCentFMD(0),
+  fHOutCentTRK(0),
+  fHOutCentTKL(0),
+  fHOutCentCL0(0),
+  fHOutCentCL1(0),
+  fHOutCentCND(0),
+  fHOutCentNPA(0),
+  fHOutCentZNA(0),
   fHOutCentV0MvsFMD(0),
   fHOutCentTKLvsV0M(0),
   fHOutCentZEMvsZDC(0),
@@ -532,11 +572,21 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCentCL0(ana.fCentCL0),
   fCentCL1(ana.fCentCL1),
   fCentCND(ana.fCentCND),
-  fCentNPA(ana.fCentNPA),
   fCentZNA(ana.fCentZNA),
+  fCentNPA(ana.fCentNPA),
   fCentV0MvsFMD(ana.fCentV0MvsFMD),
   fCentTKLvsV0M(ana.fCentTKLvsV0M),
   fCentZEMvsZDC(ana.fCentZEMvsZDC),
+  fCentV0Mtrue(ana.fCentV0Mtrue),
+  fCentV0Atrue(ana.fCentV0Atrue),
+  fCentV0Ctrue(ana.fCentV0Ctrue),
+  fCentFMDtrue(ana.fCentFMDtrue),
+  fCentTRKtrue(ana.fCentTRKtrue),
+  fCentTKLtrue(ana.fCentTKLtrue),
+  fCentCL0true(ana.fCentCL0true),
+  fCentCL1true(ana.fCentCL1true),
+  fCentCNDtrue(ana.fCentCNDtrue),
+  fCentZNAtrue(ana.fCentZNAtrue),
   fHtempV0M(ana.fHtempV0M),
   fHtempV0A(ana.fHtempV0A),
   fHtempV0C(ana.fHtempV0C),
@@ -546,15 +596,25 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHtempCL0(ana.fHtempCL0),
   fHtempCL1(ana.fHtempCL1),
   fHtempCND(ana.fHtempCND),
-  fHtempNPA(ana.fHtempNPA),
   fHtempZNA(ana.fHtempZNA),
   fHtempV0MvsFMD(ana.fHtempV0MvsFMD),
   fHtempTKLvsV0M(ana.fHtempTKLvsV0M),
   fHtempZEMvsZDC(ana.fHtempZEMvsZDC),
+  fHtempNPA(ana.fHtempNPA),
+  fHtempV0Mtrue(ana.fHtempV0Mtrue),
+  fHtempV0Atrue(ana.fHtempV0Atrue),
+  fHtempV0Ctrue(ana.fHtempV0Ctrue),
+  fHtempFMDtrue(ana.fHtempFMDtrue),
+  fHtempTRKtrue(ana.fHtempTRKtrue),
+  fHtempTKLtrue(ana.fHtempTKLtrue),
+  fHtempCL0true(ana.fHtempCL0true),
+  fHtempCL1true(ana.fHtempCL1true),
+  fHtempCNDtrue(ana.fHtempCNDtrue),
+  fHtempZNAtrue(ana.fHtempZNAtrue),
   fOutputList(ana.fOutputList),
-  fHOutCentV0M    (ana.fHOutCentV0M    ),
-  fHOutCentV0A    (ana.fHOutCentV0A    ),
-  fHOutCentV0C    (ana.fHOutCentV0C    ),
+  fHOutCentV0M(ana.fHOutCentV0M),
+  fHOutCentV0A(ana.fHOutCentV0A),
+  fHOutCentV0C(ana.fHOutCentV0C),
   fHOutCentV0MCVHN(ana.fHOutCentV0MCVHN),
   fHOutCentV0MCVLN(ana.fHOutCentV0MCVLN),
   fHOutCentV0MCVHNinMB(ana.fHOutCentV0MCVHNinMB),
@@ -577,14 +637,14 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutCentV0MEJEinMB(ana.fHOutCentV0MEJEinMB),
   fHOutCentV0MEGAinMB(ana.fHOutCentV0MEGAinMB),
   fHOutCentV0MPHSinMB(ana.fHOutCentV0MPHSinMB),
-  fHOutCentFMD     (ana.fHOutCentFMD     ),
-  fHOutCentTRK     (ana.fHOutCentTRK     ),
-  fHOutCentTKL     (ana.fHOutCentTKL     ),
-  fHOutCentCL0     (ana.fHOutCentCL0     ),
-  fHOutCentCL1     (ana.fHOutCentCL1     ),
-  fHOutCentCND     (ana.fHOutCentCND     ),
-  fHOutCentNPA     (ana.fHOutCentNPA     ),
-  fHOutCentZNA     (ana.fHOutCentZNA     ),
+  fHOutCentFMD(ana.fHOutCentFMD),
+  fHOutCentTRK(ana.fHOutCentTRK),
+  fHOutCentTKL(ana.fHOutCentTKL),
+  fHOutCentCL0(ana.fHOutCentCL0),
+  fHOutCentCL1(ana.fHOutCentCL1),
+  fHOutCentCND(ana.fHOutCentCND),
+  fHOutCentNPA(ana.fHOutCentNPA),
+  fHOutCentZNA(ana.fHOutCentZNA),
   fHOutCentV0MvsFMD(ana.fHOutCentV0MvsFMD),
   fHOutCentTKLvsV0M(ana.fHOutCentTKLvsV0M),
   fHOutCentZEMvsZDC(ana.fHOutCentZEMvsZDC),
@@ -1214,7 +1274,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if(fHtempCL0) fCentCL0 = fHtempCL0->GetBinContent(fHtempCL0->FindBin(nClusters[0]));
   if(fHtempCL1) fCentCL1 = fHtempCL1->GetBinContent(fHtempCL1->FindBin(spdCorr));
   if(fHtempCND) fCentCND = fHtempCND->GetBinContent(fHtempCND->FindBin(multCND));
-  if(fHtempNPA) fCentNPA = fHtempNPA->GetBinContent(fHtempNPA->FindBin(Npart));
   if(fHtempZNA) {
     if(znaFired) fCentZNA = fHtempZNA->GetBinContent(fHtempZNA->FindBin(znaTower));
     else fCentZNA = 101;
@@ -1222,6 +1281,19 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if(fHtempV0MvsFMD) fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
   if(fHtempTKLvsV0M) fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
   if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin(zem1Energy+zem2Energy,zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
+
+  if(fHtempNPA) fCentNPA = fHtempNPA->GetBinContent(fHtempNPA->FindBin(Npart));
+  if(fHtempV0Mtrue) fCentV0Mtrue = fHtempV0Mtrue->GetBinContent(fHtempV0Mtrue->FindBin((multV0ACorr+multV0CCorr)));
+  if(fHtempV0Atrue) fCentV0Atrue = fHtempV0Atrue->GetBinContent(fHtempV0Atrue->FindBin((multV0ACorr)));
+  if(fHtempV0Ctrue) fCentV0Ctrue = fHtempV0Ctrue->GetBinContent(fHtempV0Ctrue->FindBin((multV0CCorr)));
+  if(fHtempFMDtrue) fCentFMDtrue = fHtempFMDtrue->GetBinContent(fHtempFMDtrue->FindBin((multFMDA+multFMDC)));
+  if(fHtempTRKtrue) fCentTRKtrue = fHtempTRKtrue->GetBinContent(fHtempTRKtrue->FindBin(nTracks));
+  if(fHtempTKLtrue) fCentTKLtrue = fHtempTKLtrue->GetBinContent(fHtempTKLtrue->FindBin(nTracklets));
+  if(fHtempCL0true) fCentCL0true = fHtempCL0true->GetBinContent(fHtempCL0true->FindBin(nClusters[0]));
+  if(fHtempCL1true) fCentCL1true = fHtempCL1true->GetBinContent(fHtempCL1true->FindBin(spdCorr));
+  if(fHtempCNDtrue) fCentCNDtrue = fHtempCNDtrue->GetBinContent(fHtempCNDtrue->FindBin(multCND));
+  if(fHtempZNAtrue) fCentZNAtrue = fHtempZNAtrue->GetBinContent(fHtempZNAtrue->FindBin(znaTower));
+   
 
 
   // ***** Cleaning
@@ -1268,6 +1340,21 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   // filling QA histograms
   if (fFillHistos) {    
+
+    if (fIsMCInput) { // fill histo with true centrality for simulations
+      fCentV0M = fCentV0Mtrue;        
+      fCentV0A = fCentV0Atrue;        
+      fCentV0C = fCentV0Ctrue;        
+      fCentFMD = fCentFMDtrue;        
+      fCentTRK = fCentTRKtrue;        
+      fCentTKL = fCentTKLtrue;        
+      fCentCL0 = fCentCL0true;        
+      fCentCL1 = fCentCL1true;        
+      fCentCND = fCentCNDtrue;        
+      fCentZNA = fCentZNAtrue;        
+    }
+
+
     if ((fMB) && (abs(zvtx)<10))	fHOutMultCL1vsTKL->Fill(spdCorr,nTracklets);
 
     if (fCVHN)   fHOutCentV0MCVHN->Fill(fCentV0M);
@@ -1284,7 +1371,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     if (((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==0)) ||
 	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7) && (runType==1))) { // fill the QA histograms only for MB events!
-
+      
       fHOutQuality->Fill(fQuality);
       fHOutVertex->Fill(zvtx);
       fHOutVertexT0->Fill(zvtxT0);
@@ -1419,6 +1506,19 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
     centOADB  = (AliOADBCentrality*)(con->GetDefaultObject("oadbDefault"));
   }
 
+  Bool_t isHijing=kFALSE;
+  Bool_t isDpmjet=kFALSE;
+  AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+  AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+  AliMCEvent*  mcEvent=0;
+  if (fIsMCInput && eventHandler && (mcEvent=eventHandler->MCEvent()) ) {     
+    AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+    if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) isHijing=kTRUE;
+    else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) isHijing=kTRUE;
+    else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) isDpmjet=kTRUE;
+  }
+
+
   // modes
   fUseScaling   = centOADB->UseScaling();
   fUseCleaning  = centOADB->UseCleaning();
@@ -1434,10 +1534,32 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
   fHtempTRK       = centOADB->TPChist();
   fHtempCL1       = centOADB->SPDhist();
   fHtempCND       = centOADB->CNDhist();
-  fHtempNPA       = centOADB->NPAhist();
+  fHtempFMD       = centOADB->FMDhist();
   fHtempZNA       = centOADB->ZNAhist();
   fHtempZEMvsZDC  = centOADB->ZEMvsZDChist();
-  
+
+  if (isHijing) {       
+    fHtempNPA           = centOADB->NPAhist();
+    fHtempV0Mtrue       = centOADB->V0histtrue(); 
+    fHtempV0Atrue       = centOADB->V0Ahisttrue(); 
+    fHtempV0Ctrue       = centOADB->V0Chisttrue(); 
+    fHtempTRKtrue       = centOADB->TPChisttrue();
+    fHtempCL1true       = centOADB->SPDhisttrue();
+    fHtempCNDtrue       = centOADB->CNDhisttrue();
+    fHtempFMDtrue       = centOADB->FMDhisttrue();
+    fHtempZNAtrue       = centOADB->ZNAhisttrue();
+  }   else if (isDpmjet)   {
+    fHtempNPA           = centOADB->NPAhistDPM();
+    fHtempV0Mtrue       = centOADB->V0histtrueDPM(); 
+    fHtempV0Atrue       = centOADB->V0AhisttrueDPM(); 
+    fHtempV0Ctrue       = centOADB->V0ChisttrueDPM(); 
+    fHtempTRKtrue       = centOADB->TPChisttrueDPM();
+    fHtempCL1true       = centOADB->SPDhisttrueDPM();
+    fHtempCNDtrue       = centOADB->CNDhisttrueDPM();
+    fHtempFMDtrue       = centOADB->FMDhisttrueDPM();
+    fHtempZNAtrue       = centOADB->ZNAhisttrueDPM();
+  }
+
   TString path = gSystem->ExpandPathName(fileName.Data());
   if (!fHtempV0M) AliWarning(Form("Calibration for V0M does not exist in %s", path.Data()));
   if (!fHtempV0A) AliWarning(Form("Calibration for V0A does not exist in %s", path.Data()));
@@ -1445,9 +1567,19 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
   if (!fHtempTRK) AliWarning(Form("Calibration for TRK does not exist in %s", path.Data()));
   if (!fHtempCL1) AliWarning(Form("Calibration for CL1 does not exist in %s", path.Data()));
   if (!fHtempCND) AliWarning(Form("Calibration for CND does not exist in %s", path.Data()));
-  if (!fHtempNPA) AliWarning(Form("Calibration for NPA does not exist in %s", path.Data()));
   if (!fHtempZNA) AliWarning(Form("Calibration for ZNA does not exist in %s", path.Data()));
+  if (!fHtempFMD) AliWarning(Form("Calibration for FMD does not exist in %s", path.Data()));
   if (!fHtempZEMvsZDC) AliWarning(Form("Calibration for ZEMvsZDC does not exist in %s", path.Data()));
+  if (!fHtempNPA) AliWarning(Form("Calibration for NPA does not exist in %s", path.Data()));
+
+  if (!fHtempV0Mtrue) AliWarning(Form("Calibration for V0Mtrue does not exist in %s", path.Data()));
+  if (!fHtempV0Atrue) AliWarning(Form("Calibration for V0Atrue does not exist in %s", path.Data()));
+  if (!fHtempV0Ctrue) AliWarning(Form("Calibration for V0Ctrue does not exist in %s", path.Data()));
+  if (!fHtempTRKtrue) AliWarning(Form("Calibration for TRKtrue does not exist in %s", path.Data()));
+  if (!fHtempCL1true) AliWarning(Form("Calibration for CL1true does not exist in %s", path.Data()));
+  if (!fHtempCNDtrue) AliWarning(Form("Calibration for CNDtrue does not exist in %s", path.Data()));
+  if (!fHtempZNAtrue) AliWarning(Form("Calibration for ZNAtrue does not exist in %s", path.Data()));
+  if (!fHtempFMDtrue) AliWarning(Form("Calibration for FMDtrue does not exist in %s", path.Data()));
 
   // scale factors
   fV0MScaleFactor    = centOADB->V0MScaleFactor();
