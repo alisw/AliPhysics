@@ -147,13 +147,22 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fOutClusters->Delete();
   }
 
+  AliVCaloCells *tempCaloCells = 0;
+
   if (fCaloCells) {
     fAddedCells = 0;
-    if (!fCopyArray)
-      fCaloCells = static_cast<AliVCaloCells*>(fCaloCells->Clone(Form("%s_old",fCaloCells->GetName())));
+    if (!fCopyArray) {
+      tempCaloCells = fCaloCells;
+      fCaloCells = static_cast<AliVCaloCells*>(tempCaloCells->Clone(Form("%s_old",fCaloCells->GetName())));
+    }
   }
 
   Run();
+
+  if (fCaloCells) {
+    delete fCaloCells;
+    fCaloCells = tempCaloCells;
+  }
 }
 
 //________________________________________________________________________
@@ -285,7 +294,7 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-if (!fGeom && (fClusters || fCaloCells)) {
+  if (!fGeom && (fClusters || fCaloCells)) {
     if (fGeomName.Length() > 0) {
       fGeom = AliEMCALGeometry::GetInstance(fGeomName);
       if (!fGeom)
@@ -346,6 +355,8 @@ void AliJetModelBaseTask::CopyCells()
   }
 
   fAddedCells = fCaloCells->GetNumberOfCells();
+
+  AliDebug(2, Form("%d cells from the PYTHIA event", fAddedCells));
 }
 
 //________________________________________________________________________

@@ -63,14 +63,14 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
-  jetTask->SetMCJetsName(nmcjets);
-  jetTask->SetMCTracksName(nmctracks);
+  jetTask->SetJets2Name(nmcjets);
+  jetTask->SetTracks2Name(nmctracks);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
-  jetTask->SetMaxDistance(maxDistance);
+  jetTask->SetMatching(AliJetResponseMaker::kGeometrical, maxDistance);
   jetTask->SetVzRange(-10,10);
   jetTask->SetPtHardBin(ptHardBin);
   

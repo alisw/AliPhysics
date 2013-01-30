@@ -59,6 +59,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Int_t          fCurrentFileID    ;//! Current file being processed (trough the event handler)
   Int_t          fCurrentAODFileID ;//! Current file ID
   TFile         *fCurrentAODFile   ;//! Current open file
+  Int_t          fPicoTrackVersion ;//! Version of the PicoTrack class (if any) in fCurrentAODFile
   AliVHeader    *fAODHeader        ;//! AOD header
   TClonesArray  *fAODVertex        ;//! AOD vertex
   TClonesArray  *fAODTracks        ;//! AOD track collection
@@ -70,6 +71,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 1) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 2) // Jet embedding from AOD task
 };
 #endif
