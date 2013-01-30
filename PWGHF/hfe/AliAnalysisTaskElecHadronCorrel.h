@@ -198,6 +198,14 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fHadronPt;//
     TH1F       *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F       *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
+    
+    TH2F       *fHadronDphi;    //Hadron - had DPhi
+    TH2F       *fHadronDphi1;   //Hadron - had DPhi
+    TH2F       *fHadronDphi2;   //Hadron - had DPhi
+    TH2F       *fHadronDphi3;   //Hadron - had DPhi
+    TH2F       *fHadronDphi4;   //Hadron - had DPhi
+    TH1F       *fPiPt; //TPC nsig < 3.5 pt
+
     //  THnSparse  *fSparseElectron;//!Electron info 
     //  Double_t *fvalueElectron;//!Electron info 
 
@@ -207,11 +215,11 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     ClassDef(AliAnalysisTaskElecHadronCorrel, 2); //!example of analysis
 };
 /*
-class AliehDPhiBasicParticle : public AliVParticle
-{
-  public:
-    AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+   class AliehDPhiBasicParticle : public AliVParticle
+   {
+   public:
+   AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+   : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
     {
     }
     ~AliehDPhiBasicParticle() {}
