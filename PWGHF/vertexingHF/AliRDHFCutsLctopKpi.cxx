@@ -294,6 +294,8 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
       case kCombinedSoft:
        returnvaluePID = IsSelectedCombinedPIDSoft(d);
       break;
+      case kNSigmaStrong:
+       returnvaluePID = IsSelectedPIDStrong(d);
      }
      fIsSelectedPID=returnvaluePID;
   }
@@ -1023,4 +1025,73 @@ Bool_t isK1=kFALSE;
     return returnvalue;
  
 
+}
+//----------------------------------------------------------
+Int_t AliRDHFCutsLctopKpi::IsSelectedPIDStrong(AliAODRecoDecayHF* obj) {
+
+
+    if(!fUsePID || !obj) return 3;
+    Int_t okLcpKpi=0,okLcpiKp=0;
+    Int_t returnvalue=0;
+    Bool_t isPeriodd=fPidHF->GetOnePad();
+    Bool_t isMC=fPidHF->GetMC();
+    Bool_t ispion0=kTRUE,ispion2=kTRUE;
+    Bool_t isproton0=kFALSE,isproton2=kFALSE;
+    Bool_t iskaon1=kFALSE;
+    if(isPeriodd) {
+     fPidObjprot->SetOnePad(kTRUE);
+     fPidObjpion->SetOnePad(kTRUE);
+    }
+    if(isMC) {
+     fPidObjprot->SetMC(kTRUE);
+     fPidObjpion->SetMC(kTRUE);
+    }
+
+    for(Int_t i=0;i<3;i++){
+     AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
+     if(!track) return 0;
+     // identify kaon
+     if(i==1) {
+      Int_t isKaon=fPidHF->MakeRawPid(track,3);
+      if(isKaon>=1) {
+       iskaon1=kTRUE;
+      if(fPidHF->MakeRawPid(track,2)>=1) iskaon1=kFALSE;
+      }
+      if(!iskaon1) return 0;
+     
+     }else{
+     //pion or proton
+     
+     Int_t isProton=fPidObjprot->MakeRawPid(track,4);
+     if(isProton>=1){
+      if(fPidHF->MakeRawPid(track,2)>=1) isProton=-1;
+      if(fPidHF->MakeRawPid(track,3)>=1) isProton=-1;
+     }
+
+     Int_t isPion=fPidObjpion->MakeRawPid(track,2);
+     if(fPidHF->MakeRawPid(track,3)>=1) isPion=-1;
+     if(fPidObjprot->MakeRawPid(track,4)>=1) isPion=-1;
+
+
+     if(i==0) {
+      if(isPion<0) ispion0=kFALSE;
+      if(isProton>=1) isproton0=kTRUE;
+
+     }
+      if(!ispion0 && !isproton0) return 0;
+     if(i==2) {
+      if(isPion<0) ispion2=kFALSE;
+      if(isProton>=1) isproton2=kTRUE;
+     }
+
+    }
+   }
+
+    if(ispion2 && isproton0 && iskaon1) okLcpKpi=1;
+    if(ispion0 && isproton2 && iskaon1) okLcpiKp=1;
+    if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
+    if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
+    if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+
+ return returnvalue;
 }

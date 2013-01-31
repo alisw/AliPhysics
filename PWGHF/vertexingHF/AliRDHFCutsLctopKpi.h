@@ -22,7 +22,8 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
  enum EPIDStrategy {
   kNSigma,
   kCombined,
-  kCombinedSoft
+  kCombinedSoft,
+  kNSigmaStrong
  };
  enum ECutsStrategy {
   kStandard,
@@ -88,6 +89,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDSoft(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedPIDStrong(AliAODRecoDecayHF* obj);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
