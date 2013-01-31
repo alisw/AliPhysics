@@ -50,6 +50,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
   void SetAODheader(AliAODHeader *aAODheader);
   void SetMagneticFieldSign(int s);
+  void SetEPVZERO(Bool_t);
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetUseMultiplicity(EstEventMult aType);
 
@@ -88,6 +89,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TChain*        fTree;             // AOD tree
   TFile*         fAodFile;          // AOD file 
   int            fMagFieldSign;     // Magnetic field sign
+  Bool_t fisEPVZ; // to get event plane angle from VZERO
 
 
 #ifdef __ROOT__

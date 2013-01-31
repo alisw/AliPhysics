@@ -28,6 +28,9 @@
 #include "AliFemtoShareQualityPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
 
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
+
 class AliFemtoPairCutRadialDistance : public AliFemtoPairCutAntiGamma {
 public:
   AliFemtoPairCutRadialDistance();

@@ -65,6 +65,8 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   TH2D *fEst2Norm;           // Tracklets vs Normalized
   TH2D *fEst3Norm;           // ITS Pure vs Normalized
 
+  TH1D *fPsiVZERO;    // psi from vzero
+
 };
 
 #endif

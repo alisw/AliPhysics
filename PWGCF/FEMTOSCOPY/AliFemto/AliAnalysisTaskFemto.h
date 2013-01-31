@@ -9,6 +9,7 @@
 #define ALIANALYSISTASKFEMTO_H
 
 #include "TH1.h"
+#include "TString.h"
 
 #include "AliESDInputHandler.h"
 #include "AliAODHandler.h"
@@ -70,8 +71,8 @@ class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
   AliFemtoEventReader         *fReader;       //! Reference to the reader
   AliFemtoManager             *fManager;      //! AliFemto top-level manager 
   int                          fAnalysisType; //  Mark ESD of AOD analysis
-  char                        *fConfigMacro;  //  Config macro location
-  char                        *fConfigParams; //  Config macro parameters
+    TString                      fConfigMacro;  //  Config macro location
+    TString                      fConfigParams; //  Config macro parameters
 
 
   ClassDef(AliAnalysisTaskFemto, 3); // example of analysis

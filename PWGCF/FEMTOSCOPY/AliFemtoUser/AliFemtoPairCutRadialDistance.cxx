@@ -80,12 +80,38 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
 
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
+
+    AliAODEvent *fAOD;
+
+    if (!aodH) {
+        // AliWarning("Could not get AODInputHandler");
+        return false;
+    }
+    else {
+
+        fAOD = aodH->GetEvent();
+    }
+
+    Int_t magsign = fAOD->GetMagneticField();
+    if (magsign > 1)
+        fMagSign = 1;
+    else if ( magsign < 1)
+        fMagSign = -1;
+    else
+        fMagSign = magsign;
+
+
+     // cout << "mag sign = " << fMagSign << endl;
+
   Double_t rad;
   Bool_t pass5 = kTRUE;
 
     rad = fMinRad;
     for (Double_t iter=fMinRad*10; iter<251; iter+=1.0) {
       Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
+        dps = TVector2::Phi_mpi_pi(dps);
       double etad = eta2 - eta1;
       if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
 	//       cout << "5% cut is not passed - returning" << endl;

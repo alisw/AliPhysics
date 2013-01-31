@@ -34,6 +34,8 @@ public:
   bool GetAcceptOnlyPhysics();
   void SetTriggerSelection(int trig);
 
+  void SetEPVZERO(const float& lo, const float& hi);
+
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
@@ -43,6 +45,7 @@ private:   // here are the quantities I want to cut on...
 
   int fEventMult[2];      // range of multiplicity
   float fVertZPos[2];     // range of z-position of vertex
+  float fPsiEP[2];     // range of vzero ep angle
   bool fAcceptBadVertex;  // Set to true to accept events with bad vertex
   long fNEventsPassed;    // Number of events checked by this cut that passed
   long fNEventsFailed;    // Number of events checked by this cut that failed
@@ -57,6 +60,7 @@ private:   // here are the quantities I want to cut on...
 
 inline void AliFemtoBasicEventCut::SetEventMult(const int& lo, const int& hi){fEventMult[0]=lo; fEventMult[1]=hi;}
 inline void AliFemtoBasicEventCut::SetVertZPos(const float& lo, const float& hi){fVertZPos[0]=lo; fVertZPos[1]=hi;}
+inline void AliFemtoBasicEventCut::SetEPVZERO(const float& lo, const float& hi){fPsiEP[0]=lo; fPsiEP[1]=hi;}
 inline int  AliFemtoBasicEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoBasicEventCut::NEventsFailed() const {return fNEventsFailed;}
 inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig) { fSelectTrigger = trig; }
@@ -66,6 +70,8 @@ inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : 
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
   fVertZPos[1] = c.fVertZPos[1];
+  fPsiEP[0] = c.fPsiEP[0];
+  fPsiEP[1] = c.fPsiEP[1];
 }
 
 inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c) {   
@@ -75,6 +81,8 @@ inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEven
     fEventMult[1] = c.fEventMult[1];
     fVertZPos[0] = c.fVertZPos[0];
     fVertZPos[1] = c.fVertZPos[1];
+    fPsiEP[0] = c.fPsiEP[0];
+    fPsiEP[1] = c.fPsiEP[1];
   }
 
   return *this;
