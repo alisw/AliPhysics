@@ -206,8 +206,8 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
 class AliBFBasicParticle : public AliVParticle
 { 
   public:
-    AliBFBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+  AliBFBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Double_t correction)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fCorrection(correction)
     {
     }
     ~AliBFBasicParticle() {}
@@ -238,6 +238,9 @@ class AliBFBasicParticle : public AliVParticle
     
     virtual Short_t Charge()      const { return fCharge; }
     virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t Correction()        const { return fCorrection; } //=============================correction
+    
     // PID
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
@@ -247,7 +250,8 @@ class AliBFBasicParticle : public AliVParticle
     Float_t fPhi;      // phi
     Float_t fpT;       // pT
     Short_t fCharge;   // charge
-    
+    Double_t fCorrection; //============================correction
+
     ClassDef( AliBFBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
