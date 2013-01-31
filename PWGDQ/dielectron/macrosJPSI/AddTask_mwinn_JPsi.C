@@ -28,7 +28,7 @@ AliAnalysisTask *AddTask_mwinn_JPsi(){
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   if (!hasMC&&(!list.Contains("LHC12h")) ) task->UsePhysicsSelection();//taking out for testing
-  task->SelectCollisionCandidates(AliVEvent::kINT7); //kINT7?, MB-trigger for MB pPb
+  task->SetTriggerMask(AliVEvent::kINT7); //kINT7?, MB-trigger for MB pPb
   if (list.Contains("LHC11d")) task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);
   //if (list.Contains("LHC12h")) task->SetTRDtrigger(1+2);
   mgr->AddTask(task);
