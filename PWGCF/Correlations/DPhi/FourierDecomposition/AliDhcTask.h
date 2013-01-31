@@ -37,6 +37,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
+  void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
@@ -83,6 +84,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TString            fTracksName;      //  name of track collection
   Bool_t             fDoWeights;       //  if true weight with 1/N per event
   Bool_t             fFillMuons;       //  fill the muon tracks into the mini event
+  Bool_t             fPtTACrit;        //  use the pTT > pTA criterion?
   Double_t           fEtaTLo;          //  Min eta for triggers
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated

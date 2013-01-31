@@ -35,6 +35,7 @@ ClassImp(AliDhcTask)
 AliDhcTask::AliDhcTask()
 : AliAnalysisTaskSE(), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
+  fPtTACrit(kTRUE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -53,6 +54,7 @@ AliDhcTask::AliDhcTask()
 AliDhcTask::AliDhcTask(const char *name) 
 : AliAnalysisTaskSE(name), fVerbosity(0), fEtaMax(1), fZVtxMax(10), fPtMin(0.25), fPtMax(15),
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
+  fPtTACrit(kTRUE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0),
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
@@ -100,6 +102,7 @@ void AliDhcTask::UserCreateOutputObjects()
     AliInfo(Form(" efficiency correct triggers? %d", fHEffT!=0));
     AliInfo(Form(" efficiency correct associates? %d", fHEffA!=0));
     AliInfo(Form(" fill muons? %d", fFillMuons));
+    AliInfo(Form(" use pTT > pTA criterion? %d", fPtTACrit));
     AliInfo(Form(" trigger eta range %f .. %f", fEtaTLo, fEtaTHi));
     AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
   }
@@ -236,7 +239,7 @@ void AliDhcTask::BookHistos()
 }
 
 //________________________________________________________________________
-void AliDhcTask::SetAnaMode(Int_t iAna=kHH)
+void AliDhcTask::SetAnaMode(Int_t iAna)
 {
   if (iAna==kHH) {
     SetFillMuons(kFALSE);
@@ -570,7 +573,7 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
         Double_t ptMu   = muonTrack->Pt();
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
-        Double_t signMu = muonTrack->Charge() > 0 ? 1 : -1;
+        Int_t    signMu = muonTrack->Charge() > 0 ? 1 : -1;
         miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
       }
     }
@@ -694,7 +697,7 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
         Double_t ptMu   = muonTrack->Pt();
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
-        Double_t signMu = muonTrack->Charge() > 0 ? 1 : -1;
+        Int_t    signMu = muonTrack->Charge() > 0 ? 1 : -1;
         miniEvt->push_back(AliMiniTrack(ptMu, etaMu, phiMu, signMu));
       }
     }
@@ -814,8 +817,9 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t ptb  = b.Pt();
       Float_t etab = b.Eta();
       Float_t phib = b.Phi();
-      if (pta < ptb)
-	    continue;
+      if (pta < ptb) {
+        continue;
+      }
 
       Int_t bbin = fHPtAss->FindBin(ptb);
       if (fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))
