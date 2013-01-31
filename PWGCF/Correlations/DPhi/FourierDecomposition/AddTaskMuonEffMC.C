@@ -1,5 +1,6 @@
 
 AliMuonEffMC* AddTaskMuonEffMC(Bool_t MDProcess = kTRUE,
+			       Bool_t IsMc = kTRUE,
 			       TString centralityEstimator = "V0M",
 			       const Int_t NEtaBins = 15,
 			       const Int_t NpTBins = 100,
@@ -26,17 +27,12 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t MDProcess = kTRUE,
     return NULL;
   }
 
-  TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
-
-  Bool_t IsMc = kTRUE;
-  if (analysisType !="MC") IsMc = kFALSE;
-
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
   AliMuonEffMC *MuonEff = new AliMuonEffMC("MuonEffMC");
+
   MuonEff->SetMcAna(IsMc);
   MuonEff->SetMDProcess(MDProcess);
   MuonEff->SetCentEstimator(centralityEstimator);
@@ -59,7 +55,6 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t MDProcess = kTRUE,
                                                              TList::Class(), 
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s:%s", outputFileName, folderName));
-
   // Connect input/output
   mgr->ConnectInput(MuonEff, 0, cinput);
   mgr->ConnectOutput(MuonEff, 1, coutputpt);

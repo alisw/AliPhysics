@@ -25,6 +25,7 @@
 #include "AliMCParticle.h"
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliMCEvent.h"
+#include "AliAODMCParticle.h"
 
 using std::cout;
 using std::endl;
@@ -39,6 +40,7 @@ AliMuonEffMC::AliMuonEffMC() :
   fHMuonParGen(0x0), fHMuonDetGen(0x0), fHMuonDetRec(0x0), fHEtcDetRec(0x0)
 {
   // Constructor
+ 
 }
 
 //________________________________________________________________________
@@ -51,6 +53,7 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
   // Constructor
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+
 }
 
 //________________________________________________________________________
@@ -65,6 +68,10 @@ void AliMuonEffMC::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (per slave on PROOF!)
+
+  fOutputList = new TList();
+  fOutputList->SetOwner(1);
+ 
   for(Int_t i=0; i<4; i++)
   {
     fHMuMotherGenPt[i] = 0x0;
@@ -76,9 +83,6 @@ void AliMuonEffMC::UserCreateOutputObjects()
     fHMuDCA[i] = 0x0;
   }
 
-  fOutputList = new TList();
-  fOutputList->SetOwner(1);
- 
   fHEventStat = new TH1D("fHEventStat","Event statistics for analysis",18,0,18);
   fHEventStat->GetXaxis()->SetBinLabel(1,"Event");
   fHEventStat->GetXaxis()->SetBinLabel(2,"SelectedEvent");
@@ -227,19 +231,19 @@ void AliMuonEffMC::UserExec(Option_t *)
   { 
     const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
     fZVertex = vertex->GetZ();
-    if(fAOD->GetCentrality())  fCentrality = fAOD->GetCentrality()->GetCentralityPercentile("fCentralityEstimator");
+    if(fAOD->GetCentrality())  fCentrality = fAOD->GetCentrality()->GetCentralityPercentile(fCentralityEstimator);
   }
   else if(fESD) 
   {
     const AliESDVertex* vertex = fESD->GetPrimaryVertex();
     fZVertex = vertex->GetZ();
-    if(fESD->GetCentrality()) fCentrality = fESD->GetCentrality()->GetCentralityPercentile("fCentralityEstimator");
+    if(fESD->GetCentrality()) fCentrality = fESD->GetCentrality()->GetCentralityPercentile(fCentralityEstimator);
   }   
 
   if ((fESD && !VertexOk(fESD)) || (fAOD && !VertexOk(fAOD))) { AliInfo(Form("Event REJECTED. z = %.1f", fZVertex)); return; }
   if (fCentrality > 100. || fCentrality < -1.5) { AliInfo(Form("Event REJECTED. fCentrality = %.1f", fCentrality)); return; }
  
-  if(fCentrality < 0) fCentrality = 100.5;
+  if(fCentrality < 0) fCentrality = 0.5; //ad hoc centrality for pp
   // Fill Event histogram
   fHEvt->Fill(fZVertex, fCentrality);
   fHEventStat->Fill(1.5);
@@ -263,108 +267,20 @@ void AliMuonEffMC::UserExec(Option_t *)
   if (trigword & 0x1000) fHEventStat->Fill(14.5);
   if (trigword & 0x2000) fHEventStat->Fill(15.5);
   if (trigword & 0x4000) fHEventStat->Fill(16.5);
-
-  if(fIsMc)
+  
+  // generated level loop
+  for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
   {
-    for (Int_t iTrack = 0; iTrack<ntrks; iTrack++) 
-    { 
-      // loop on muon tracks
-      Int_t label = 0;
-      Double_t trackpt = 0;
-      Double_t tracketa = 0;
-      Double_t trackphi = 0;
-      Double_t dcavalue = 0;
-      if(fAOD)
+    if(fAOD)
+    {
+      AliAODMCParticle *AodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(ipart);
+      if(TMath::Abs(AodMcParticle->PdgCode())==13) 
       {
-	AliAODTrack* muonTrack = (AliAODTrack*)fAOD->GetTrack(iTrack);
-	if(muonTrack)
-	{
-	  if(!(IsGoodMUONtrack(*muonTrack)) || !(muonTrack->IsMuonTrack())) continue;
-	  trackpt = muonTrack->Pt();
-	  tracketa = muonTrack->Eta();
-	  trackphi = muonTrack->Phi();
-	  label =  TMath::Abs(muonTrack->GetLabel());
-	}
+	Double_t fillArrayParGen[5] = { AodMcParticle->Eta(), AodMcParticle->Pt(), fCentrality, fZVertex, AodMcParticle->Phi() };
+	fHMuonParGen->Fill(fillArrayParGen);
       }
-      else if(fESD)
-      {
-	AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack);
-	if(muonTrack)
-	{
-	  if(!IsGoodMUONtrack(*muonTrack)) continue;
-	  trackpt = muonTrack->Pt();
-	  tracketa = muonTrack->Eta();
-	  trackphi = muonTrack->Phi();
-	  label =  TMath::Abs(muonTrack->GetLabel());
-	  dcavalue = muonTrack->GetDCA();
-	}
-      }
-
-      Double_t fillArrayDetRec[5] = { tracketa, trackpt, fCentrality, fZVertex, trackphi };
-      fHMuonDetRec->Fill(fillArrayDetRec); 
-	
-      AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
-      if(TMath::Abs(McParticle->PdgCode()) != 13) 
-      {
-	fHEtcDetRec->Fill(fillArrayDetRec); 
-	continue;
-      }
-      Double_t fillArrayDetGen[5] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi() };
-      fHMuonDetGen->Fill(fillArrayDetGen);
-	
-      if(fMDProcess)
-      {
-	if(McParticle->GetMother() > 0)
-	{
-	  AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(McParticle->GetMother());
-	  Int_t motherlabel = TMath::Abs(MotherParticle->PdgCode());
-	    
-	  if(motherlabel==411 || motherlabel==413 || motherlabel==421 || motherlabel==423 || motherlabel==431 || motherlabel==433 || motherlabel==10413 || motherlabel==10411 || motherlabel==10423 || motherlabel==10421 || motherlabel==10433 || motherlabel==10431 || motherlabel==20413 || motherlabel==415 || motherlabel==20423 || motherlabel==425 || motherlabel==20433 || motherlabel==435)
-	  {  
-	    fHMuMotherGenPt[2]->Fill(McParticle->Pt(), MotherParticle->Pt());
-	    fHMuMotherRecPt[2]->Fill(trackpt, MotherParticle->Pt());
-	    fHMuMotherGenPhi[2]->Fill(McParticle->Phi(), MotherParticle->Phi());
-	    fHMuMotherRecPhi[2]->Fill(trackphi, MotherParticle->Phi());
-	    fHMuMotherGenEta[2]->Fill(McParticle->Eta(), MotherParticle->Eta());
-	    fHMuMotherRecEta[2]->Fill(tracketa, MotherParticle->Eta());
-	    if(fESD) fHMuDCA[2]->Fill(dcavalue);
-	  }
-	  else if(motherlabel==211) 
-	    {
-	      fHMuMotherGenPt[0]->Fill(McParticle->Pt(), MotherParticle->Pt());
-	      fHMuMotherRecPt[0]->Fill(trackpt, MotherParticle->Pt());
-	      fHMuMotherGenPhi[0]->Fill(McParticle->Phi(), MotherParticle->Phi());
-	      fHMuMotherRecPhi[0]->Fill(trackphi, MotherParticle->Phi());
-	      fHMuMotherGenEta[0]->Fill(McParticle->Eta(), MotherParticle->Eta());
-	      fHMuMotherRecEta[0]->Fill(tracketa, MotherParticle->Eta());
-	      if(fESD) fHMuDCA[0]->Fill(dcavalue);
-	    }
-	    else if(motherlabel==321)
-	    {
-	      fHMuMotherGenPt[1]->Fill(McParticle->Pt(), MotherParticle->Pt());
-	      fHMuMotherRecPt[1]->Fill(trackpt, MotherParticle->Pt());
-	      fHMuMotherGenPhi[1]->Fill(McParticle->Phi(), MotherParticle->Phi());
-	      fHMuMotherRecPhi[1]->Fill(trackphi, MotherParticle->Phi());
-	      fHMuMotherGenEta[1]->Fill(McParticle->Eta(), MotherParticle->Eta());
-	      fHMuMotherRecEta[1]->Fill(tracketa, MotherParticle->Eta());
-	      if(fESD) fHMuDCA[1]->Fill(dcavalue);
-	    }	
-	    else 
-	    {
-	      fHMuMotherGenPt[3]->Fill(McParticle->Pt(), MotherParticle->Pt());
-	      fHMuMotherRecPt[3]->Fill(trackpt, MotherParticle->Pt());
-	      fHMuMotherGenPhi[3]->Fill(McParticle->Phi(), MotherParticle->Phi());
-	      fHMuMotherRecPhi[3]->Fill(trackphi, MotherParticle->Phi());
-	      fHMuMotherGenEta[3]->Fill(McParticle->Eta(), MotherParticle->Eta());
-	      fHMuMotherRecEta[3]->Fill(tracketa, MotherParticle->Eta());
-	      if(fESD) fHMuDCA[3]->Fill(dcavalue);
-	    }
-	  }    
-	} // (mother hadron) : (daughter muon) QA 
-      } 
-    }
-    
-    for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
+    } 
+    else if(fESD)
     {
       AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
       if(TMath::Abs(McParticle->PdgCode())==13) 
@@ -372,8 +288,151 @@ void AliMuonEffMC::UserExec(Option_t *)
 	Double_t fillArrayParGen[5] = { McParticle->Eta(), McParticle->Pt(), fCentrality, fZVertex, McParticle->Phi() };
 	fHMuonParGen->Fill(fillArrayParGen);
       }
-    }  
-
+    }
+  }
+  
+  // reconstructed level loop
+  for (Int_t iTrack = 0; iTrack<ntrks; iTrack++) 
+  { 
+    Int_t label = 0;
+    Double_t trackpt = 0;
+    Double_t tracketa = 0;
+    Double_t trackphi = 0;
+    Double_t dcavalue = 0;
+    
+    Double_t mcpt = 0;
+    Double_t mceta = 0;
+    Double_t mcphi = 0;
+    
+    Int_t motherlabel =0;
+    Int_t motherpdg = 0;
+    Double_t motherpt = 0;
+    Double_t mothereta = 0;
+    Double_t motherphi = 0;
+    
+    if(fAOD)
+    {
+      AliAODTrack* muonTrack = (AliAODTrack*)fAOD->GetTrack(iTrack);
+      if(muonTrack)
+      {
+	if(!(IsGoodMUONtrack(*muonTrack)) || !(muonTrack->IsMuonTrack())) continue;
+	trackpt = muonTrack->Pt();
+	tracketa = muonTrack->Eta();
+	trackphi = muonTrack->Phi();
+	label =  TMath::Abs(muonTrack->GetLabel());
+      }
+    }
+    else if(fESD)
+    {
+      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack);
+      if(muonTrack)
+      {
+	if(!IsGoodMUONtrack(*muonTrack)) continue;
+	trackpt = muonTrack->Pt();
+	tracketa = muonTrack->Eta();
+	trackphi = muonTrack->Phi();
+	label =  TMath::Abs(muonTrack->GetLabel());
+	dcavalue = muonTrack->GetDCA();
+      }
+    }
+    
+    Double_t fillArrayDetRec[5] = { tracketa, trackpt, fCentrality, fZVertex, trackphi };
+    fHMuonDetRec->Fill(fillArrayDetRec); 
+    
+    if(fAOD)
+    {
+      AliAODMCParticle *aodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(label);
+      if(TMath::Abs(aodMcParticle->PdgCode()) != 13) 
+      {
+	fHEtcDetRec->Fill(fillArrayDetRec); 
+	continue;
+      }
+      mcpt = aodMcParticle->Pt();
+      mceta = aodMcParticle->Eta();
+      mcphi = aodMcParticle->Phi();
+      motherlabel = aodMcParticle->GetMother();
+      if(motherlabel > 0) 
+      { 
+	AliAODMCParticle *aodMotherParticle  = (AliAODMCParticle*)fMC->GetTrack(motherlabel);
+	motherpdg = TMath::Abs(aodMotherParticle->PdgCode());
+	motherpt = aodMotherParticle->Pt();
+	mothereta = aodMotherParticle->Eta();
+	motherphi = aodMotherParticle->Phi();
+      }      
+    }
+    else if(fESD)
+    {
+      AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
+      if(TMath::Abs(McParticle->PdgCode()) != 13) 
+      {
+	fHEtcDetRec->Fill(fillArrayDetRec); 
+	continue;
+      }
+      mcpt = McParticle->Pt();
+      mceta = McParticle->Eta();
+      mcphi = McParticle->Phi();
+      motherlabel = McParticle->GetMother();
+      if(motherlabel > 0) 
+      { 
+	AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
+	motherpdg = TMath::Abs(MotherParticle->PdgCode());
+	motherpt = MotherParticle->Pt();
+	mothereta = MotherParticle->Eta();
+	motherphi = MotherParticle->Phi();
+      }
+    }
+    Double_t fillArrayDetGen[5] = { mceta, mcpt, fCentrality, fZVertex, mcphi };
+    fHMuonDetGen->Fill(fillArrayDetGen);
+    
+    // mother-daughter kinematic relation
+    if(fMDProcess)
+    {
+      if(motherlabel > 0)
+      {
+	if(motherpdg==411 || motherpdg==413 || motherpdg==421 || motherpdg==423 || motherpdg==431 || motherpdg==433 || motherpdg==10413 || motherpdg==10411 || motherpdg==10423 || motherpdg==10421 || motherpdg==10433 || motherpdg==10431 || motherpdg==20413 || motherpdg==415 || motherpdg==20423 || motherpdg==425 || motherpdg==20433 || motherpdg==435)
+	{  
+	  fHMuMotherGenPt[2]->Fill(mcpt, motherpt);
+	  fHMuMotherRecPt[2]->Fill(trackpt, motherpt);
+	  fHMuMotherGenPhi[2]->Fill(mcphi, motherphi);
+	  fHMuMotherRecPhi[2]->Fill(trackphi, motherphi);
+	  fHMuMotherGenEta[2]->Fill(mceta, mothereta);
+	  fHMuMotherRecEta[2]->Fill(tracketa, mothereta);
+	  if(fESD) fHMuDCA[2]->Fill(dcavalue);
+	}
+	else if(motherpdg==211) 
+	{
+	  fHMuMotherGenPt[0]->Fill(mcpt, motherpt);
+	  fHMuMotherRecPt[0]->Fill(trackpt, motherpt);
+	  fHMuMotherGenPhi[0]->Fill(mcphi, motherphi);
+	  fHMuMotherRecPhi[0]->Fill(trackphi, motherphi);
+	  fHMuMotherGenEta[0]->Fill(mceta, mothereta);
+	  fHMuMotherRecEta[0]->Fill(tracketa, mothereta);
+	  if(fESD) fHMuDCA[0]->Fill(dcavalue);
+	}
+	else if(motherpdg==321)
+	{
+	  fHMuMotherGenPt[1]->Fill(mcpt, motherpt);
+	  fHMuMotherRecPt[1]->Fill(trackpt, motherpt);
+	  fHMuMotherGenPhi[1]->Fill(mcphi, motherphi);
+	  fHMuMotherRecPhi[1]->Fill(trackphi, motherphi);
+	  fHMuMotherGenEta[1]->Fill(mceta, mothereta);
+	  fHMuMotherRecEta[1]->Fill(tracketa, mothereta);
+	  if(fESD) fHMuDCA[1]->Fill(dcavalue);
+	}	
+	else 
+	{
+	  fHMuMotherGenPt[3]->Fill(mcpt, motherpt);
+	  fHMuMotherRecPt[3]->Fill(trackpt, motherpt);
+	  fHMuMotherGenPhi[3]->Fill(mcphi, motherphi);
+	  fHMuMotherRecPhi[3]->Fill(trackphi, motherphi);
+	  fHMuMotherGenEta[3]->Fill(mceta, mothereta);
+	  fHMuMotherRecEta[3]->Fill(tracketa, mothereta);
+	  if(fESD) fHMuDCA[3]->Fill(dcavalue);
+	}
+      }    
+    }	 // (mother hadron) : (daughter muon) QA */
+  } 
+  
   PostData(1, fOutputList);
   return;
 }
