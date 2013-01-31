@@ -43,6 +43,7 @@ AliAnalysisTaskJetShapeTool(TClonesArray *list);
 
  void SetVecJ(TVector3 v);
  void SetPtMinTr(Double_t a, Double_t b) {fPtMinTr[0] = a; fPtMinTr[1] = b;}
+
  void SetNEntries(Int_t n) {fEntries = n;}
 
  TArrayI GetListJ(Int_t b, Int_t i)  {return fListJ[b][i];}
@@ -156,12 +157,24 @@ return (TVector3*) fList->At(i);
 
  void Clean();
 
- Double_t CalcdPhi0To2pi(Double_t phi1, Double_t phi2=0.)
+static Double_t CalcdPhi0To2pi(Double_t phi1, Double_t phi2=0.)
 {
   Double_t dphi = CalcdPhi(phi1, phi2);
   while(dphi<0) dphi+=TMath::TwoPi();
   while(dphi>TMath::TwoPi()) dphi-=TMath::TwoPi();
   return dphi;
+}
+
+static Double_t CalcdPhi(Double_t phi1, Double_t phi2);
+
+static Double_t CalcdPhiSigned(Double_t phi1, Double_t phi2)
+{
+
+  Double_t dphi = CalcdPhi(phi1, phi2);
+  if(dphi <  TMath::Pi()) return dphi;
+  else return  (dphi-  TMath::Pi());
+
+  return -999;
 }
 
 
@@ -195,7 +208,6 @@ private:
  Int_t fEntries;
 
  Double_t CalcR(TVector3 v1, TVector3 v2);
- Double_t CalcdPhi(Double_t phi1, Double_t phi2);
  void GetLocalMom(TVector3 vecJ, TVector3 *q);
 
 
@@ -224,6 +236,8 @@ public:
  void SetPtTrackRange(Double_t min = 1., Double_t max = 100.) {fPtTrackMin = min; fPtTrackMax = max;}
  void SetPtJetRange(Double_t min = 1., Double_t max = 200. ) {fPtJmin  =min; fPtJmax = max; }
 
+ void MCprod(Bool_t kMCprod=kTRUE) {fkMCprod=kMCprod; }
+
 
  Double_t GetPtJ() {return fPtJ;}
  void InitHistos();
@@ -234,6 +248,7 @@ public:
 private:
  TString fComment;
  Bool_t fkMC;
+ Bool_t fkMCprod;
  TH1F *fhEvent;//! 
  TH1F *fhMult; //! 
  TH1F *fhPtJ;//! 
@@ -242,6 +257,11 @@ private:
  TH2F *fhPsiVsRPtJ;//! 
  TH2F *fhPhiEtaTrack;//! 
 
+ TH1F *fhPsiVsR_MCtr; //!
+ TH2F *fhPsiVsRPtJ_MCtr; //!
+ TH2F *fhJetTrPtVsPartPt;//!
+
+
  TH1F *fhTMA_JAA[3];//! 
  TH1F *fhTMA_JAp[3];//! 
  TH1F *fhTMA_B1AA[3];//! 
@@ -249,6 +269,13 @@ private:
  TH1F *fhTMA_B2AA[3];//! 
  TH1F *fhTMA_B2Ap[3];//! 
 
+    TH2F *fhPtresVsPt[3][2] ;//!
+    TH2F *fhPhiresVsPhi[3][2];//!
+    TH2F *fhEtaresVsEta[3][2];//!
+    TH2F *fhRresVsPt[3][2];//!
+    TH2F *fhDCAxy[3][2]; //!
+    TH2F *fhDCAz[3][2]; //!
+    TH3F *fhTrackPtEtaPhi[2][2];//!
 
  Int_t     fPtJetNbin;
  TArrayD   fPtJetArray;
@@ -275,6 +302,7 @@ private:
  TH2F *Hist2D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t yMin, Double_t yMax, const char* xLabel = NULL, const char* yLabel = NULL, Int_t color=1);
  TH2F *Hist2D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t *yArray, const char* xLabel = NULL, const char* yLabel = NULL, Int_t color=1, const char* zLabel = NULL);
  TH2F *Hist2D(const char* name, Int_t nBinsx, Double_t *yArrax, Int_t nBinsy, Double_t yMin, Double_t yMax, const char* xLabel = NULL, const char* yLabel = NULL, Int_t color=1, const char* zLabel = NULL);
+  TH3F *Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t yMin, Double_t yMax, Int_t nBinsz, Double_t zMin, Double_t zMax, const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL, Int_t color=1);
 
 
   AliAnalysisTaskJetShapeHM(const AliAnalysisTaskJetShapeHM&);            // not implemented
@@ -369,6 +397,13 @@ ClassDef(AliAnalysisTaskJetShapeHM,1)   // tbd
   //  TClonesArray farray;
     AliAnalysisTaskJetShapeHM *fanalJetSubStrHM;//!
     AliAnalysisTaskJetShapeHM *fanalJetSubStrMCHM;//!
+
+    TH2F *fhPtresVsPt[3] ;//!
+    TH2F *fhPhiresVsPhi[3];//!
+    TH2F *fhEtaresVsEta[3];//!
+    TH2F *fhDCAxy[3]; //!
+    TH2F *fhDCAz[3]; //!
+    TH3F *fhTrackPtEtaPhi[3];//!
 
    Bool_t IsGoodEvent();
 
