@@ -120,7 +120,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fHistoMCNch(0x0),
   fResonantDecay(0),
   fLctoV0bachelorOption(1),
-  fGenLctoV0bachelorOption(0)
+  fGenLctoV0bachelorOption(0),
+  fUseSelectionBit(kTRUE)
 {
   //
   //Default ctor
@@ -168,7 +169,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fHistoMCNch(0x0),
   fResonantDecay(0),
   fLctoV0bachelorOption(1),
-  fGenLctoV0bachelorOption(0)
+  fGenLctoV0bachelorOption(0),
+  fUseSelectionBit(kTRUE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -245,7 +247,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fHistoMCNch(c.fHistoMCNch),
   fResonantDecay(c.fResonantDecay),
   fLctoV0bachelorOption(c.fLctoV0bachelorOption),
-  fGenLctoV0bachelorOption(c.fGenLctoV0bachelorOption)
+  fGenLctoV0bachelorOption(c.fGenLctoV0bachelorOption),
+  fUseSelectionBit(c.fUseSelectionBit)
 {
   //
   // Copy Constructor
@@ -834,6 +837,19 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       Bool_t recoStep = cfVtxHF->RecoStep();
       Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
 			
+
+      // Selection on the filtering bit
+      Bool_t isBitSelected = kTRUE;
+      if(fDecayChannel==2) {
+	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==31){
+	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDplusCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==33){
+	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
+      }
+      if(!isBitSelected) continue;
+
+
 
       if (recoStep && recoContFilled && vtxCheck){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;   
