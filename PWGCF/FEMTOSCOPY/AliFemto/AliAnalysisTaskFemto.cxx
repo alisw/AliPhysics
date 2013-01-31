@@ -44,18 +44,15 @@ AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fReader(0x0),
   fManager(0x0),
   fAnalysisType(0),
-  fConfigMacro(0),
-  fConfigParams(0)
+    fConfigMacro(aConfigMacro),
+    fConfigParams(aConfigParams)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0, TList::Class());
-  fConfigMacro = (char *) malloc(sizeof(char) * strlen(aConfigMacro));
-  strcpy(fConfigMacro, aConfigMacro);
-  fConfigParams = (char *) malloc(sizeof(char) * strlen(aConfigParams));
-  strcpy(fConfigParams, aConfigParams);
+
 }
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro="ConfigFemtoAnalysis.C"): 
@@ -70,18 +67,15 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
-    fConfigMacro(0),
-    fConfigParams(0)
+    fConfigMacro(aConfigMacro),
+    fConfigParams("")
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0, TList::Class());
-  fConfigMacro = (char *) malloc(sizeof(char) * strlen(aConfigMacro));
-  strcpy(fConfigMacro, aConfigMacro);
-  fConfigParams = (char *) malloc(sizeof(char) * 2);
-  strcpy(fConfigParams, "");
+
 }
 
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
@@ -110,10 +104,10 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
   fReader = aFemtoTask.fReader;       
   fManager = aFemtoTask.fManager;      
   fAnalysisType = aFemtoTask.fAnalysisType; 
-  fConfigMacro = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigMacro));
-  strcpy(fConfigMacro, aFemtoTask.fConfigMacro);
-  fConfigParams = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigParams));
-  strcpy(fConfigParams, aFemtoTask.fConfigParams);
+
+  fConfigMacro = aFemtoTask.fConfigMacro;
+  fConfigParams = aFemtoTask.fConfigParams;
+
 }
 
 
@@ -132,20 +126,15 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   fReader = aFemtoTask.fReader;       
   fManager = aFemtoTask.fManager;      
   fAnalysisType = aFemtoTask.fAnalysisType; 
-  if (fConfigMacro) free(fConfigMacro);
-  fConfigMacro = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigMacro));
-  strcpy(fConfigMacro, aFemtoTask.fConfigMacro);
-  if (fConfigParams) free(fConfigParams);
-  fConfigParams = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigParams));
-  strcpy(fConfigParams, aFemtoTask.fConfigParams);
+
+  fConfigMacro = aFemtoTask.fConfigMacro;
+  fConfigParams = aFemtoTask.fConfigParams;
 
   return *this;
 }
 
 AliAnalysisTaskFemto::~AliAnalysisTaskFemto() 
 {
-  if (fConfigMacro) free(fConfigMacro);
-  if (fConfigParams) free(fConfigParams);
 }
 
 
@@ -294,7 +283,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
   if (!fConfigParams)
     SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
   else
-    SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams)));
+      SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data())));
 
   TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();
@@ -434,14 +423,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
 
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
+    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
   if(!isSelected) {//cout << "AliAnalysisTaskFemto: is not selected" << endl; 
     return;}
 
 
 
 
-    AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
+    // AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
     
     if (fAOD->GetNumberOfTracks() > 0) {
       if (!fReader) {

@@ -59,7 +59,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fFileName(" "),
   fTree(0x0),
   fAodFile(0x0),
-  fMagFieldSign(1)
+    fMagFieldSign(1),
+    fisEPVZ(kTRUE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -87,7 +88,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fFileName(" "),
   fTree(0x0),
   fAodFile(0x0),
-  fMagFieldSign(1)
+    fMagFieldSign(1),
+    fisEPVZ(kTRUE)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -200,7 +202,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
   // convert it to AliFemtoEvent and return
   // for further analysis
   AliFemtoEvent *hbtEvent = 0;
-  cout<<"reader"<<endl;
+    // cout<<"reader"<<endl;
   if (fCurEvent==fNumberofEvent)//open next file  
     {
       if(fNumberofEvent==0)	
@@ -222,13 +224,13 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
 	}
       else //no more data to read
 	{
-	  cout<<"no more files "<<hbtEvent<<endl;
+            // cout<<"no more files "<<hbtEvent<<endl;
 	  fReaderStatus=1;
 	  return hbtEvent; 
 	}
     }		
 
-  cout<<"starting to read event "<<fCurEvent<<endl;
+    // cout<<"starting to read event "<<fCurEvent<<endl;
   fTree->GetEvent(fCurEvent);//getting next event
   //  cout << "Read event " << fEvent << " from file " << fTree << endl;
 	
@@ -312,6 +314,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   AliEventplane *ep = fEvent->GetEventplane();
   if (ep) {
     tEvent->SetEP(ep);
+        if (fisEPVZ)
+            tEvent->SetReactionPlaneAngle(ep->GetEventplane("V0",fEvent,2));
+        else
     tEvent->SetReactionPlaneAngle(ep->GetEventplane("Q"));
   }
 
@@ -321,7 +326,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
 	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
       {
-	cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
+            // cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
 	
 	return;
       }
@@ -660,7 +665,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   if (mcP) delete [] motherids;
 
-  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+    // cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 
   if(fReadV0)
     {
@@ -1215,6 +1220,10 @@ void AliFemtoEventReaderAOD::SetMagneticFieldSign(int s)
     fMagFieldSign = 0;
 }
 
+void AliFemtoEventReaderAOD::SetEPVZERO(Bool_t iepvz)
+{
+    fisEPVZ = iepvz;
+}
 
 void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3])
 {

@@ -26,7 +26,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0)
+  fEst3Norm(0),
+  fPsiVZERO(0)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
@@ -49,7 +50,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0)
+  fEst3Norm(0),
+  fPsiVZERO(0)
+
 {
   // Normal constructor
   char name[200];
@@ -58,6 +61,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
 
   snprintf(name, 200, "NormEvMult%s", aName);
   fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", 5001, -0.5, 5000.5);
+
+
 
   if(!freadMC) {
     snprintf(name, 200, "SPDEvMult%s", aName);
@@ -99,6 +104,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
       fEst3Norm = new TH2D(name,"ITS Pure vs Normalized Mult",501,-0.5,5000.5,501,-0.5,5000.5);
     }
 
+  snprintf(name, 200, "PsiEPVZERO%s", aName);
+  fPsiVZERO = new TH1D(name, "event plane angle from vzero", 157, -1.575, 1.565);
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut):
@@ -117,7 +124,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0)
+  fEst3Norm(0),
+  fPsiVZERO(0)
+
 {
   // copy constructor
   if (fEvMult) delete fEvMult;
@@ -126,6 +135,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
 
+  
   
   if(!freadMC){
     if (fSPDMult) delete fSPDMult;
@@ -166,6 +176,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
       fEst3Norm = new TH2D(*aCut.fEst3Norm);
     }
 
+  if (fPsiVZERO) delete fPsiVZERO;
+  fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
+
 }
 
 AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
@@ -173,6 +186,7 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
   // Destructor
   delete fEvMult;
   delete fNormEvMult;
+
   if(!freadMC){
     delete fSPDMult;
   }
@@ -190,6 +204,9 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
       delete fEst2Norm;
       delete fEst3Norm;
     }   
+
+  delete fPsiVZERO;
+
 }
 
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
@@ -203,6 +220,10 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
   
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
+  
+  
+  if (fPsiVZERO) delete fPsiVZERO;
+  fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
   
   if(!freadMC){
     if (fSPDMult) delete fSPDMult;
@@ -258,71 +279,80 @@ void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
   // Fill in the monitor histograms with the values from the current track
   fEvMult->Fill(aEvent->NumberOfTracks());
   fNormEvMult->Fill(aEvent->UncorrectedNumberOfPrimaries());
-  if(!freadMC){
-    fSPDMult->Fill(aEvent->SPDMultiplicity());
-  }
-  fMultSumPt->Fill(aEvent->UncorrectedNumberOfPrimaries(), aEvent->ZDCEMEnergy());
 
-  if(faddhists)
-    {
-      fEstimateITSTPC->Fill(aEvent->MultiplicityEstimateITSTPC());
-      fEstimateTracklets->Fill(aEvent->MultiplicityEstimateTracklets());
-      fEstimateITSPure->Fill(aEvent->MultiplicityEstimateITSPure());
-      fEst1Est2->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->MultiplicityEstimateTracklets());
-      fEst1Est3->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->MultiplicityEstimateITSPure());
-      fEst2Est3->Fill(aEvent->MultiplicityEstimateTracklets(),aEvent->MultiplicityEstimateITSPure());
-      fEst1Norm->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->UncorrectedNumberOfPrimaries());
-      fEst2Norm->Fill(aEvent->MultiplicityEstimateTracklets(),aEvent->UncorrectedNumberOfPrimaries());
-      fEst3Norm->Fill(aEvent->MultiplicityEstimateITSPure(),aEvent->UncorrectedNumberOfPrimaries());
-    }
+  double epvzero = aEvent->ReactionPlaneAngle();
+
+  fPsiVZERO->Fill(epvzero);
+
+
+  // if(!freadMC){
+  //   fSPDMult->Fill(aEvent->SPDMultiplicity());
+  // }
+  // fMultSumPt->Fill(aEvent->UncorrectedNumberOfPrimaries(), aEvent->ZDCEMEnergy());
+
+  // if(faddhists)
+  //   {
+  //     fEstimateITSTPC->Fill(aEvent->MultiplicityEstimateITSTPC());
+  //     fEstimateTracklets->Fill(aEvent->MultiplicityEstimateTracklets());
+  //     fEstimateITSPure->Fill(aEvent->MultiplicityEstimateITSPure());
+  //     fEst1Est2->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->MultiplicityEstimateTracklets());
+  //     fEst1Est3->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->MultiplicityEstimateITSPure());
+  //     fEst2Est3->Fill(aEvent->MultiplicityEstimateTracklets(),aEvent->MultiplicityEstimateITSPure());
+  //     fEst1Norm->Fill(aEvent->MultiplicityEstimateITSTPC(),aEvent->UncorrectedNumberOfPrimaries());
+  //     fEst2Norm->Fill(aEvent->MultiplicityEstimateTracklets(),aEvent->UncorrectedNumberOfPrimaries());
+  //     fEst3Norm->Fill(aEvent->MultiplicityEstimateITSPure(),aEvent->UncorrectedNumberOfPrimaries());
+  //   }
 
 }
 
 void AliFemtoCutMonitorEventMult::Write()
 {
   // Write out the relevant histograms
-  fEvMult->Write();
+  // fEvMult->Write();
   fNormEvMult->Write();
-  if(!freadMC){
-    fSPDMult->Write();
-  }
-  fMultSumPt->Write();
+  fPsiVZERO->Write();
 
-  if(faddhists)
-    {
-      fEstimateITSTPC->Write();
-      fEstimateTracklets->Write();
-      fEstimateITSPure->Write();
-      fEst1Est2->Write();
-      fEst1Est3->Write();
-      fEst2Est3->Write();
-      fEst1Norm->Write();
-      fEst2Norm->Write();
-      fEst3Norm->Write();
-    }
+  // if(!freadMC){
+  //   fSPDMult->Write();
+  // }
+  // fMultSumPt->Write();
+
+  // if(faddhists)
+  //   {
+  //     fEstimateITSTPC->Write();
+  //     fEstimateTracklets->Write();
+  //     fEstimateITSPure->Write();
+  //     fEst1Est2->Write();
+  //     fEst1Est3->Write();
+  //     fEst2Est3->Write();
+  //     fEst1Norm->Write();
+  //     fEst2Norm->Write();
+  //     fEst3Norm->Write();
+  //   }
 
 }
 
 TList *AliFemtoCutMonitorEventMult::GetOutputList()
 {
   TList *tOutputList = new TList();
-  tOutputList->Add(fEvMult);
+  // tOutputList->Add(fEvMult);
   tOutputList->Add(fNormEvMult);
-  tOutputList->Add(fSPDMult);
-  tOutputList->Add(fMultSumPt);
+  tOutputList->Add(fPsiVZERO);
+  // tOutputList->Add(fSPDMult);
+  // tOutputList->Add(fMultSumPt);
 
-  if(faddhists)
-    {
-      tOutputList->Add(fEstimateITSTPC);
-      tOutputList->Add(fEstimateTracklets);
-      tOutputList->Add(fEstimateITSPure);
-      tOutputList->Add(fEst1Est2);
-      tOutputList->Add(fEst1Est3);
-      tOutputList->Add(fEst2Est3);
-      tOutputList->Add(fEst1Norm);
-      tOutputList->Add(fEst2Norm);
-      tOutputList->Add(fEst3Norm);
-    }
+  // if(faddhists)
+  //   {
+  //     tOutputList->Add(fEstimateITSTPC);
+  //     tOutputList->Add(fEstimateTracklets);
+  //     tOutputList->Add(fEstimateITSPure);
+  //     tOutputList->Add(fEst1Est2);
+  //     tOutputList->Add(fEst1Est3);
+  //     tOutputList->Add(fEst2Est3);
+  //     tOutputList->Add(fEst1Norm);
+  //     tOutputList->Add(fEst2Norm);
+  //     tOutputList->Add(fEst3Norm);
+  //   }
   return tOutputList;
 }
 

@@ -37,7 +37,7 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   fRatio = new TH1D(tTitRat,title,nbins,QinvLo,QinvHi);
   char tTitkT[101] = "kTDep";
   strncat(tTitkT,title, 100);
-  fkTMonitor = new TH1D(tTitkT,title,200,0.0,2.0);
+  fkTMonitor = new TH1D(tTitkT,title,250,0.0,5.0);
   // this next bit is unfortunately needed so that we can have many histos of same "title"
   // it is neccessary if we typedef TH1D to TH1d (which we do)
   //fNumerator->SetDirectory(0);

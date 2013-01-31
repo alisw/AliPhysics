@@ -85,7 +85,7 @@ AliFemtoEvent* AliFemtoEventReaderAODChain::ReturnHbtEvent()
 //     cout << "Reading only tracks with the additional information" << endl;
 //   }
 
-  cout<<"starting to read event "<<fCurEvent<<endl;
+  // cout<<"starting to read event "<<fCurEvent<<endl;
 	
   hbtEvent = new AliFemtoEvent;
 

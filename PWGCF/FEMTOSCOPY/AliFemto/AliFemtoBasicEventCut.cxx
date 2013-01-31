@@ -27,6 +27,8 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut() :
   fEventMult[1] = 100000;
   fVertZPos[0] = -100.0;
   fVertZPos[1] = 100.0;
+  fPsiEP[0] = -100.0;
+  fPsiEP[1] = 100.0;
 } 
 //------------------------------
 AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
@@ -40,17 +42,35 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   //  int mult =  event->NumberOfTracks();
   int mult = (int) event->UncorrectedNumberOfPrimaries();
   double vertexZPos = event->PrimVertPos().z();
+
+
+  // Double_t qxEPVZERO = 0, qyEPVZERO = 0;
+  // Double_t qVZERO = -999;
+  double epvzero = event->ReactionPlaneAngle();
+
+  // cout << "AliFemtoBasicEventCut:: epvzero:       " << fPsiEP[0] << " < " << epvzero << " < " << fPsiEP[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
+  // cout << "AliFemtoBasicEventCut:: MagneticField: " << event->MagneticField() << endl;
+  // cout << "AliFemtoBasicEventCut:: IsCollisionCandidate: " << event->IsCollisionCandidate() << endl;
+  // cout << "AliFemtoBasicEventCut:: TriggerCluster: " << event->TriggerCluster() << endl;
+  // cout << "AliFemtoBasicEventCut:: fSelectTrigger: " << fSelectTrigger << endl;
+  // cout << "AliFemtoBasicEventCut:: " << endl;
   bool goodEvent =
     ((mult >= fEventMult[0]) && 
      (mult <= fEventMult[1]) && 
      (vertexZPos > fVertZPos[0]) &&
      (vertexZPos < fVertZPos[1]) &&
+     (epvzero > fPsiEP[0]) &&
+     (epvzero < fPsiEP[1]) &&
      ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
      ((!fAcceptOnlyPhysics) || (event->IsCollisionCandidate())) &&
-     ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger)));
+      ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger))
+);
+
+  // cout << "AliFemtoBasicEventCut:: goodEvent" <<goodEvent << endl;
+
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
 //   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
