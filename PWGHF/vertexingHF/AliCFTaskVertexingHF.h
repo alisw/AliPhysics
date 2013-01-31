@@ -170,6 +170,9 @@ public:
 	void SetCountAllLctoBachelor(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountAllLctoV0;}
 	void SetCountLctoK0Sp(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountK0Sp;}
 	void SetCountLambdaBarpi(){fGenLctoV0bachelorOption=AliCFVertexingHFLctoV0bachelor::kCountLambdapi;}
+    
+	void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
+	Bool_t GetUseSelectionBit() const { return fUseSelectionBit; }
 
 	Bool_t ProcessLctoV0Bachelor(Int_t returnCodeDs) const;
 
@@ -214,8 +217,9 @@ protected:
         UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
 	Int_t fLctoV0bachelorOption; // Lc->V0+bachelor decay option (selection level)
 	Int_t fGenLctoV0bachelorOption; // Lc->V0+bachelor decay option (generation level)
+	Bool_t fUseSelectionBit;     // flag to use selection bit
 
-	ClassDef(AliCFTaskVertexingHF,13); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,14); // class for HF corrections as a function of many variables
 };
 
 #endif
