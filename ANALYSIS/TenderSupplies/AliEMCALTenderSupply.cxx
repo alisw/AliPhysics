@@ -138,7 +138,8 @@ AliTenderSupply(name,tender)
 ,fRecalShowerShape(kFALSE)
 ,fInputTree(0)  
 ,fInputFile(0)
-,fFilepass(0) 
+,fGetPassFromFileName(kTRUE)
+,fFilepass("") 
 ,fMass(-1)
 ,fStep(-1)
 ,fCutEtaPhiSum(kTRUE)
@@ -196,7 +197,8 @@ AliTenderSupply(name)
 ,fRecalShowerShape(kFALSE)
 ,fInputTree(0)  
 ,fInputFile(0)
-,fFilepass(0) 
+,fGetPassFromFileName(kTRUE)
+,fFilepass("") 
 ,fMass(-1)
 ,fStep(-1)
 ,fCutEtaPhiSum(kTRUE)
@@ -468,7 +470,8 @@ void AliEMCALTenderSupply::ProcessEvent()
     } 
 
     // get pass
-    GetPass();
+    if (fGetPassFromFileName)
+      GetPass();
 
     // define what recalib parameters are needed for various switches
     // this is based on implementation in AliEMCALRecoUtils
@@ -1583,7 +1586,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
 //_____________________________________________________
 void AliEMCALTenderSupply::GetPass()
 {
-  // Get passx from filename.
+  // Get passx from filename
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   fInputTree = mgr->GetTree();

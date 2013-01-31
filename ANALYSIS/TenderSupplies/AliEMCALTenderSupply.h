@@ -157,7 +157,10 @@ public:
 
   void     SwitchOnUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = kTRUE  ;}
   void     SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = kFALSE ;}
-  
+
+  void     SetPass(const char* p)                         { fFilepass = p; fGetPassFromFileName = kFALSE; }
+  void     UnsetPass()                                    { fFilepass = ""; fGetPassFromFileName = kTRUE; }
+   
 private:
 
   AliVEvent* GetEvent();
@@ -204,7 +207,8 @@ private:
   Bool_t                 fRecalShowerShape;       // switch for recalculation of the shower shape
   TTree                 *fInputTree;              //!input data tree
   TFile                 *fInputFile;              //!input data file 
-  TString                fFilepass;               //!input data pass number
+  Bool_t                 fGetPassFromFileName;    // get fFilepass from file name
+  TString                fFilepass;               // input data pass number
   Double_t               fMass;                   // mass for track matching
   Double_t               fStep;                   // step size during track matching
   Bool_t                 fCutEtaPhiSum;           // swicth to apply residual cut together
@@ -233,6 +237,6 @@ private:
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 13); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 14); // EMCAL tender task
 };
 #endif
