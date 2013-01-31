@@ -874,10 +874,13 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       fhPtTOFSignal->Fill(pt, tof);
       if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtTOFSignalDCACut->Fill(pt, tof);
         
-      if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
-        fhPtTOFSignalVtxOutBC0->Fill(pt, tof);
-      else
-        fhPtTOFSignalVtxInBC0->Fill(pt, tof);
+      if(fFillVertexBC0Histograms)
+      {
+        if(TMath::Abs(vtxBC) > 0 && vtxBC!=AliVTrack::kTOFBCNA)
+          fhPtTOFSignalVtxOutBC0->Fill(pt, tof);
+        else
+          fhPtTOFSignalVtxInBC0->Fill(pt, tof);
+      }
       
       if(trackBC==0)
       {
