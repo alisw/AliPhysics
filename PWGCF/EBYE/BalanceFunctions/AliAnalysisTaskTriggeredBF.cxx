@@ -707,7 +707,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t vCharge = 0.;
+  Short_t vCharge = 0;
   Double_t vEta    = 0.;
   Double_t vPhi    = 0.;
   Double_t vPt     = 0.;
@@ -764,7 +764,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
     fHistPhi->Fill(vPhi);
     
     // add the track to the TObjArray
-    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
+    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge,1.));
   }
 
   return tracksAccepted;
@@ -779,7 +779,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t vCharge = 0.;
+  Short_t vCharge = 0;
   Double_t vEta    = 0.;
   Double_t vPhi    = 0.;
   Double_t vPt     = 0.;
@@ -1040,7 +1040,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
 		    fHistPhi->Fill(vPhi);
 		    
 		    // add the track to the TObjArray
-		    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
+		    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge,1.));
 		  }
 		}
 	      }
@@ -1072,7 +1072,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetShuffledTracks(TObjArray *tracks){
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);
-    tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i)));
+    tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i),1.));
   }
 
   delete chargeVector;

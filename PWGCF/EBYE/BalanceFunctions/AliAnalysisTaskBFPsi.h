@@ -8,6 +8,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TF1;
+class TH3D;
 
 class AliBalancePsi;
 class AliESDtrackCuts;
@@ -21,17 +22,24 @@ class AliEventPoolManager;
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
  
+//================================correction
+#define kCENTRALITY 9  
+const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
+//================================correction
 
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
   virtual ~AliAnalysisTaskBFPsi(); 
-  
-  
+   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
+
+  //========================correction
+  virtual void   SetInputCorrection(const char* filename, const char* gSystem); 
+  //========================correction
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
@@ -137,13 +145,19 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
         fEventClass = receivedEventClass;
     }
 
+    //========================correction=============================//
+    // void SetInputCorrection(const char* filename = "efficiencyCorrection.root"){}
+
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
   Double_t    GetRefMultiOrCentrality(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
-  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t fCentrality, Double_t gReactionPlane);
-  TObjArray* GetShuffledTracks(TObjArray* tracks);
-
+  //===============================correction
+  Double_t    GetTrackbyTrackCorrectionMatrix(Double_t vEta, Double_t vPhi, Double_t vPt, Short_t vCharge, Double_t gCentrality);
+  //===============================correction
+  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
+  TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
+  
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
@@ -198,6 +212,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
+  
+  TH3D *fHistMatrixCorrectionPlus[kCENTRALITY]; //======================================================correction
+  TH3D *fHistMatrixCorrectionMinus[kCENTRALITY]; //=====================================================correction
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
@@ -236,8 +253,19 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
+  Double_t fPtMinForCorrections;//only used for AODs
+  Double_t fPtMaxForCorrections;//only used for AODs
+  Double_t fPtBinForCorrections; //=================================correction
   Double_t fEtaMin;//only used for AODs
   Double_t fEtaMax;//only used for AODs
+  Double_t fEtaMinForCorrections;//only used for AODs
+  Double_t fEtaMaxForCorrections;//only used for AODs
+  Double_t fEtaBinForCorrections; //=================================correction
+  Double_t fPhiMin; //=================================correction 
+  Double_t fPhiMax; //=================================correction
+  Double_t fPhiMinForCorrections;//only used for AODs
+  Double_t fPhiMaxForCorrections;//only used for AODs
+  Double_t fPhiBinForCorrections; //=================================correction
 
   Double_t fDCAxyCut;//only used for AODs
   Double_t fDCAzCut;//only used for AODs

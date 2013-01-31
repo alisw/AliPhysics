@@ -37,6 +37,7 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliTHn.h"
+#include "AliAnalysisTaskTriggeredBF.h"
 
 #include "AliBalancePsi.h"
 
@@ -340,23 +341,27 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   TArrayF secondPhi(jMax);
   TArrayF secondPt(jMax);
   TArrayS secondCharge(jMax);
+  TArrayD secondCorrection(jMax);
 
   for (Int_t i=0; i<jMax; i++){
     secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
     secondPhi[i] = ((AliVParticle*) particlesSecond->At(i))->Phi();
     secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
     secondCharge[i]  = (Short_t)((AliVParticle*) particlesSecond->At(i))->Charge();
+    secondCorrection[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->Correction();   //==========================correction
   }
   
   // 1st particle loop
   for (Int_t i = 0; i < iMax; i++) {
-    AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
+    //AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
+    AliBFBasicParticle* firstParticle = (AliBFBasicParticle*) particles->At(i); //==========================correction
     
     // some optimization
     Float_t firstEta = firstParticle->Eta();
     Float_t firstPhi = firstParticle->Phi();
     Float_t firstPt  = firstParticle->Pt();
-    
+    Float_t firstCorrection  = firstParticle->Correction();//==========================correction
+
     // Event plane (determine psi bin)
     Double_t gPsiMinusPhi    =   0.;
     Double_t gPsiMinusPhiBin = -10.;
@@ -388,8 +393,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       if(fEventClass=="Multiplicity" || fEventClass == "Centrality" ) trackVariablesSingle[0] = kMultorCent;
     
     //fill single particle histograms
-    if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
-    else if(charge1 < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
+    if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,firstCorrection); //==========================correction
+    else if(charge1 < 0) fHistN->Fill(trackVariablesSingle,0,firstCorrection);  //==========================correction
     
     // 2nd particle loop
     for(Int_t j = 0; j < jMax; j++) {   
@@ -502,10 +507,10 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	}
       }//conversion cut
       
-      if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,1.); 
-      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,1.); 
-      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,1.); 
-      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,1.); 
+      if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]); //==========================correction
+      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
+      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
+      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
       else {
 	//AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
 	continue;
