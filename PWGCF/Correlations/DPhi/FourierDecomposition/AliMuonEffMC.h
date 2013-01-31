@@ -84,7 +84,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 3);
+  ClassDef(AliMuonEffMC, 4);
 };
 
 #endif
