@@ -147,6 +147,8 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fHistPileUp(0),
+  fUpperPileUpCut(0),
+  fLowerPileUpCut(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -260,6 +262,8 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fHistPileUp(0),
+  fUpperPileUpCut(0),
+  fLowerPileUpCut(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -395,6 +399,8 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fHFEVZEROEventPlane(NULL),
   fHistEV(NULL),
   fHistPileUp(NULL),
+  fUpperPileUpCut(NULL),
+  fLowerPileUpCut(NULL),
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
@@ -803,7 +809,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   Double_t binLimInvMass[nBinsInvMass+1];
   for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
 
-  Int_t nBinsMult = 50;
+  Int_t nBinsMult = 100;
   Double_t minMult = 0.;
   Double_t maxMult = 25000;
   Double_t binLimMult[nBinsMult+1];
@@ -1447,7 +1453,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   // Event cut
   //////////////////
   if(!fHFECuts->CheckEventCuts("fEvRecCuts", fInputEvent)) {
-    AliDebug(2,"Do not pass the event cut");
+    AliDebug(2,"Does not pass the event cut");
     PostData(1, fListHist);
     return;
   }
@@ -1469,7 +1475,15 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   mult[1]=multV0A+multV0C;
   mult[2]=binctMore;
   fHistPileUp->Fill(mult);
-   
+
+  if(fUpperPileUpCut&&fLowerPileUpCut){
+    if((mult[0]<fLowerPileUpCut->Eval(mult[1])) || 
+       (mult[0]>fUpperPileUpCut->Eval(mult[1]))){
+      AliDebug(2,"Does not pass the pileup cut");
+      PostData(1, fListHist);
+      return;
+    }
+  }
 
   ////////////////////////////////////  
   // First method event plane
