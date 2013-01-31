@@ -36,18 +36,31 @@ public:
   //
   //Analysis cuts interface
   //
-  virtual void Init();
+  void InitEvent(AliVTrack *trk);
+  Bool_t IsNewEvent(const AliVEvent *ev);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
+  void SetPdgCodes(Int_t mother, Int_t negDaughter, Int_t posDaughter) {fMotherPdg=mother; fNegPdg=negDaughter; fPosPdg=posDaughter;}
+  void SetExcludeTracks(Bool_t exclude) {fExcludeTracks=exclude;}
 
 private:
 
-  TArrayC *fV0TrackArr;                        // array where TrackID corresponds to index
+  TBits fV0TrackArr;                        // array with booleans where TrackID corresponds to bitnumber
+  Bool_t fExcludeTracks;                       // cut logic: exclude or include tracks corresponding to a V0 candidate
+
+  Int_t fMotherPdg;                         // target pdg code of the mother
+  Int_t fNegPdg;                            // target pdg code of the negative daughter
+  Int_t fPosPdg;                            // target pdg code of the positive daughter
+
+  // memebers needed to identify an event
+  UInt_t fOrbit;                            // orbit number
+  UInt_t fPeriod;                           // period number
+  UShort_t fBunchCross;                     // bunch cross number
 
   AliDielectronV0Cuts(const AliDielectronV0Cuts &c);
   AliDielectronV0Cuts &operator=(const AliDielectronV0Cuts &c);
 
-  ClassDef(AliDielectronV0Cuts,0)
+  ClassDef(AliDielectronV0Cuts,1)
 };
 
 #endif
