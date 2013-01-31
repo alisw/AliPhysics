@@ -115,13 +115,22 @@ ClassImp(AliAnalysisTaskJetShape)
   fJetBranchName[0] = "";
   fJetBranchName[1] = "";
 
+  for(Int_t i=0; i<3; i++)
+    {
+      fhPtresVsPt[i]=0;
+      fhPhiresVsPhi[i]=0;
+      fhEtaresVsEta[i]=0;
+      fhDCAxy[i]=0;
+      fhDCAz[i]=0;
+      fhTrackPtEtaPhi[i]=0;
+    }
   //  fkIsPbPb = kFALSE;
   //  fDebug=0;
 
 
 
-    fanalJetSubStrHM   = new AliAnalysisTaskJetShapeHM("rec");
-    fanalJetSubStrMCHM = new AliAnalysisTaskJetShapeHM("truth", kTRUE);
+  fanalJetSubStrHM   = new AliAnalysisTaskJetShapeHM("rec", kFALSE);
+  fanalJetSubStrMCHM = new AliAnalysisTaskJetShapeHM("truth", kTRUE);
 
   DefineOutput(1, TList::Class());
 
@@ -1096,7 +1105,7 @@ if(scenario ==3)
   return kTRUE;
 }
 
-
+/*
 /////////////////////////////////////
 
  TH2F *fhPhiEtaTrack;//! 
@@ -1124,11 +1133,12 @@ if(scenario ==3)
  Double_t fPtJ;
 
  TVector3 fJvec;
+*/
 
-
-  AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AliAnalysisTaskJetShapeHM(TString comment, Bool_t kMC):TObject(),
+AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AliAnalysisTaskJetShapeHM(TString comment, Bool_t kMC):TObject(),
 fComment(comment),
 fkMC(kMC),
+fkMCprod(0),
 fhEvent(0),
 fhMult(0),
 fhPtJ(0),
@@ -1136,6 +1146,9 @@ fhPtJvsPtCorr(0),
 fhPsiVsR(0),
 fhPsiVsRPtJ(0),
 fhPhiEtaTrack(0),
+fhPsiVsR_MCtr(0),
+fhPsiVsRPtJ_MCtr(0),
+fhJetTrPtVsPartPt(0),
 fPtJetNbin(0),
 fPtJetArray(0),
 fPsiVsRNbin(0),
@@ -1159,6 +1172,20 @@ fJvec(0,0,0)
       fhTMA_B1Ap[i]=0;
       fhTMA_B2AA[i]=0;
       fhTMA_B2Ap[i]=0;
+    }
+
+  for(Int_t i=0; i<3; i++)
+    {
+      for(Int_t j=0; j<2; j++)
+	{
+	  fhPtresVsPt[i][j]=0;
+	  fhPhiresVsPhi[i][j]=0;
+	  fhEtaresVsEta[i][j]=0;
+	  fhRresVsPt[i][j]=0;
+	  fhDCAxy[i][j]=0;
+	  fhDCAz[i][j]=0;
+	  fhTrackPtEtaPhi[i][j]=0;
+	}
     }
 
 
@@ -1212,7 +1239,7 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
   fhEvent    = Hist1D("hEvent" , 3  , -0.5,   2.5, "Event");
   fhMult     = Hist1D("hMult"  , 101, -0.5, 100.5, "N_{ch}");
 
-  fhPhiEtaTrack = Hist2D("hPhiEtaTrack", 100, 0, TMath::TwoPi(), 20, -1, 1., "#phi_{tr}", "#eta_{tr}");
+  fhPhiEtaTrack = Hist2D("hPhiEtaTrack", 100, 0, TMath::TwoPi(), 20, -1, 1., "#phi", "#eta");
 
   if(fPtJetNbin<1) {
     Int_t Nbin = 13;
@@ -1226,6 +1253,9 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
 
   fhPtJvsPtCorr  = Hist2D("fhPtJvsPtCorr", fPtJetNbin, fPtJetArray.GetArray(), 100, -100, 100, "P_{tJ} GeV/c", "P_{tJ} - P_{tJ,corr} GeV/c" , 1);
 
+
+
+
   for(Int_t i=0; i<3; i++)
     {
       fhTMA_JAA[i]  = Hist1D(Form("fhTMA_JAA_%d",i), fPsiVsPhiNbin, 0, TMath::TwoPi(), "#phi_{R}", 1, "#Psi(#phi_{R})");
@@ -1238,6 +1268,26 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::InitHistos()
       fhTMA_B2Ap[i]  = Hist1D(Form("fhTMA_B2Ap_%d",i), fPsiVsPhiNbin, 0, TMath::TwoPi(), "#phi_{R}", 1, "#Psi(#phi_{R})");
     }
 
+  if(fkMCprod)
+    {
+  fhPsiVsR_MCtr      = Hist1D("hPsiVsR_MCtr", fPsiVsRNbin, 0., fRmax, "R", 1, "#Psi(R)");
+  fhPsiVsRPtJ_MCtr   = Hist2D("hPsiVsRPtJ_MCtr", fPsiVsRNbin, 0., fRmax, fPtJetNbin, fPtJetArray.GetArray(), "R", "P_{tJ} GeV/c", 1, "#Psi(R)");
+  fhJetTrPtVsPartPt  = Hist2D("fhJetTrPtVsPartPt", fPtJetNbin, fPtJetArray.GetArray(), 100, -1, 1, "P_{tJ,part} GeV/c", "1-P_{tJ,tr}/P_{tJ,part} GeV/c" , 1);
+      const char *ch[2]={"p","m"};
+      for(Int_t i=0; i<3; i++)
+	{
+	  for(Int_t j=0; j<2; j++)
+	    {
+	  fhPtresVsPt[i][j]    = Hist2D(Form("hPtresVsPt%d%s",i,ch[j]), 100, 0, 100, 100, -0.5, 0.5, "P_{t}^{gen} GeV/c", "1-P_{t}^{rec}/P_{t}^{gen} GeV/c" );    
+	  fhPhiresVsPhi[i][j]  = Hist2D(Form("hPhiresVsPhi%d%s",i,ch[j]), 600, 0, TMath::TwoPi(), 128, -0.2, 0.2, "#phi^{gen} rad", "#phi^{rec} - #phi^{gen} rad" );
+	  fhEtaresVsEta[i][j]  = Hist2D(Form("hEtaresVsEta%d%s",i,ch[j]), 200, -1, 1, 40, -0.2, 0.2, "#eta^{gen}", "#eta^{rec} - #eta^{gen}" ); 
+	  fhRresVsPt[i][j]     = Hist2D(Form("hRresVsPt%d%s",i,ch[j])  , 100, 0, 100, 500, -fRmax, fRmax, "P_{t, track}^{gen} GeV/c", "R^{gen}-R^{rec}" );    
+	  fhDCAxy[i][j]        = Hist2D(Form("hDCAxy%d%s",i,ch[j]), 100, 0, 100, 300, -3, 3, "DCAxy of prim [cm]");
+	  fhDCAz[i][j]         = Hist2D(Form("hDCAz%d%s",i,ch[j]) , 100, 0, 100, 300, -3, 3, "DCAz of prim [cm]") ;
+	  fhTrackPtEtaPhi[i][j]= Hist3D(Form("hTrackPtEtaPhi%d%s",i,ch[j]), 100, 0, 100, 100, -1, 1, 100, 0, TMath::TwoPi(),"P_{t} GeV/c ","#eta","#phi rad");
+	    }
+	}
+    }
 
 }
 
@@ -1255,6 +1305,7 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddToList(TList *list)
   list->Add(fhPsiVsRPtJ);
   list->Add(fhPtJvsPtCorr);
 
+
   for(Int_t i=0; i<3; i++)
     {
       list->Add(fhTMA_JAA[i]);
@@ -1267,7 +1318,26 @@ void AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddToList(TList *list)
       list->Add(fhTMA_B2Ap[i]);
     }
 
+  if(fkMCprod)
+    {
+      list->Add(fhPsiVsR_MCtr);
+      list->Add(fhPsiVsRPtJ_MCtr);
+      list->Add(fhJetTrPtVsPartPt);
 
+      for(Int_t i=0; i<3; i++)
+	{
+	  for(Int_t j=0; j<2; j++)
+	    {
+	      list->Add(fhPtresVsPt[i][j]);
+	      list->Add(fhPhiresVsPhi[i][j]);
+	      list->Add(fhEtaresVsEta[i][j]);
+	      list->Add(fhRresVsPt[i][j]);
+	      list->Add(fhDCAxy[i][j]);
+	      list->Add(fhDCAz[i][j]);
+	      list->Add(fhTrackPtEtaPhi[i][j]);
+	    }
+	}
+    }
 }
 
 
@@ -1282,7 +1352,7 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
   TClonesArray *arrP = 0;
 
-  if(fkMC)
+  if(fkMC || fkMCprod)
     {
       arrP = dynamic_cast<TClonesArray*>(aodE->FindListObject(AliAODMCParticle::StdBranchName()));
      if(!arrP) 
@@ -1290,25 +1360,36 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 	 printf("ERROR: no Info about particles in AOD\n");
 	 return kFALSE;
        }
-     size = arrP->GetEntriesFast();
     }
 
+  if(fkMC)
+     size = arrP->GetEntriesFast();
 
   Int_t IndexArray[size];
+  Int_t IndexArrayMC[size];
 
   TClonesArray farray("TVector3", size);
 
   Int_t counter = 0;
+  Int_t counterMC = 0;
   Int_t counterAll = 0;
   Double_t pJ[3] = {0, 0, 0};
+  Double_t pJmc[3] = {0, 0, 0};
 
+  AliAODVertex* primVtx = aodE->GetPrimaryVertex();
+  Double_t bfield = aodE->GetMagneticField();
+  Double_t dca[2];
+  Double_t cov[3];
 
   TVector3 vecJ(jet->Px(),jet->Py(),jet->Pz());
 
   for(int it = 0;it < size;++it){
 
     TVector3 vec;
+    Int_t ch = -999;
+    Int_t label = -999;
 
+ 
     if(fkMC)
       {
 	AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(it));
@@ -1322,7 +1403,11 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 	AliAODTrack *tr = aodE->GetTrack(it);
 	if(!tr) continue;
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+	label = tr->GetLabel();
+	AliAODTrack tmp(*tr);
+	tmp.PropagateToDCA(primVtx, bfield, 5., dca, cov);
 	vec.SetXYZ(tr->Px(), tr->Py(), tr->Pz());
+	ch = tr->Charge();
       }
 
 
@@ -1344,6 +1429,47 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
     IndexArray[counter] = it;
     counter++;
+
+
+    
+    // effics
+    if(fkMCprod)
+      {
+	//	  printf("A1\n");
+	AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(TMath::Abs(label)));
+	if(!part)continue;
+
+	Int_t type = 0;
+	if(!part->IsPhysicalPrimary()) type=1;
+	if(label <0) type=2;
+
+	if(!(ch==-1 || ch==1)) AliFatal("ch != +/- 1!!!\n\n");
+	  //	  printf("A4\n");
+	if(ch==-1) ch=0;
+
+	Double_t phip = AliAnalysisTaskJetShapeTool::CalcdPhi0To2pi(part->Phi());
+	Double_t dphi = AliAnalysisTaskJetShapeTool::CalcdPhiSigned(part->Phi(), vec.Phi());
+
+	fhPtresVsPt[type][ch]->Fill(part->Pt(), 1-vec.Pt()/part->Pt());
+	fhPhiresVsPhi[type][ch]->Fill(phip, dphi);
+	fhEtaresVsEta[type][ch]->Fill(part->Eta(), vec.Eta() - part->Eta());
+	fhDCAxy[type][ch]->Fill(part->Pt(), dca[0]);
+	fhDCAz[type][ch]->Fill( part->Pt(), dca[1]);
+	fhTrackPtEtaPhi[type][ch]->Fill(vec.Pt(), vec.Eta(), vec.Phi());
+
+	TVector3 vecP(part->Px(), part->Py(), part->Pz());
+	Double_t Rgen = CalcR(vecJ, vecP);
+	fhRresVsPt[type][ch]->Fill(part->Pt(), Rgen - R);
+        
+	pJmc[0]+=part->Px();
+	pJmc[1]+=part->Py();
+	pJmc[2]+=part->Pz();
+
+	IndexArrayMC[counterMC] = label;
+	counterMC++;
+	  //	  printf("A5\n");
+      }
+  
   }
 
   fhMult->Fill(counter);
@@ -1351,11 +1477,16 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
   fJvec.SetXYZ(pJ[0], pJ[1], pJ[2]);
 
+
   fPtJ =  TMath::Sqrt(pJ[0]*pJ[0] + pJ[1]*pJ[1]);
   if((fPtJ < fPtJmin) || (fPtJ > fPtJmax)) return kFALSE;
   fhPtJ->Fill(fPtJ);
 
-  fhPtJvsPtCorr->Fill(fPtJ, jet->Px() - DeltaPtJ);
+
+
+
+
+  fhPtJvsPtCorr->Fill(fPtJ, jet->Pt() - DeltaPtJ);
 
   for(Int_t it = 0; it<counter; it++)
     {
@@ -1364,27 +1495,55 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
       if(fkMC)
 	{
 	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(IndexArray[it]));
-	  if(part)vec.SetXYZ(part->Px(), part->Py(), part->Pz());
+	  if(!part) continue;
+	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
 	}
       else 
 	{
 	  AliAODTrack *tr = aodE->GetTrack(IndexArray[it]);
-	  if(tr)vec.SetXYZ(tr->Px(), tr->Py(), tr->Pz());
+	  if(!tr) continue;
+          AliAODTrack tmp(*tr);
+          tmp.PropagateToDCA(primVtx, bfield, 5., dca, cov);
+	  if(tr)vec.SetXYZ(tmp.Px(), tmp.Py(), tmp.Pz());
 	}
 
 	Double_t R = CalcR(fJvec, vec);
 	//	Double_t pt = (tr->Px()*pJ[0] + tr->Py()*pJ[1])/PtJ;
-	Double_t probL = fJvec.Dot(vec)/fJvec.Mag2();
-	fhPsiVsR->Fill(R, probL);
-	fhPsiVsRPtJ->Fill(R, fPtJ, probL);
+	//	Double_t probL = fJvec.Dot(vec)/fJvec.Mag2();
+	//	fhPsiVsR->Fill(R, probL);
+	//	fhPsiVsRPtJ->Fill(R, fPtJ, probL);
+	fhPsiVsR->Fill(R);
+	fhPsiVsRPtJ->Fill(R, fPtJ);
  
-	Double_t phi = vec.Phi();
-	while(phi<0) phi+=TMath::TwoPi();
-	while(phi>TMath::TwoPi()) phi-=TMath::TwoPi();
+	Double_t phi = AliAnalysisTaskJetShapeTool::CalcdPhi0To2pi(vec.Phi());
 	fhPhiEtaTrack->Fill(phi, vec.Eta());
 
-     }
+    }
 
+
+  if(fkMCprod)
+    {
+      TVector3 fJvecMCtr(pJmc[0], pJmc[1], pJmc[2]);
+  Double_t fPtJMCtr=  fJvecMCtr.Perp();
+
+  fhJetTrPtVsPartPt->Fill(fPtJMCtr, 1-fPtJ/fPtJMCtr);
+      for(Int_t it = 0; it<counterMC; it++)
+	{
+	  TVector3 vec;
+
+	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(IndexArrayMC[it]));
+	  if(!part) continue;
+	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
+
+	  Double_t R = CalcR(fJvecMCtr, vec);
+	  //	  Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
+	  //	  fhPsiVsR->Fill(R, probL);
+	  //	  fhPsiVsRPtJ->Fill(R, fPtJ, probL);
+	  //	  Double_t probL = fJvecMCtr.Dot(vec)/fJvecMCtr.Mag2();
+	  fhPsiVsR_MCtr->Fill(R);
+	  fhPsiVsRPtJ_MCtr->Fill(R, fPtJMCtr);
+ 	}
+    }
 
   // ang. distr.
   //     fMyTool->Clean();
@@ -1486,6 +1645,9 @@ Double_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::CalcdPhi(Double_t p
 
 
 
+
+
+
 TH1F* AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::Hist1D(const char* name, Int_t nBins, Double_t xMin, Double_t xMax,  const char* xLabel, Int_t color, const char* yLabel)
 {
 // create a 1D histogram
@@ -1554,6 +1716,22 @@ TH2F *AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::Hist2D(const char* nam
   return res;
 }
 
+TH3F *AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, 
+                                                  Int_t nBinsy, Double_t yMin, Double_t yMax, 
+				                  Int_t nBinsz, Double_t zMin, Double_t zMax, const char* xLabel, const char* yLabel, const char* zLabel, Int_t color)
+{
+// create a 3D histogram
+
+  TH3F *res = new TH3F(Form("%s_%s",fComment.Data(), name), Form("%s_%s",fComment.Data(), name), nBinsx, xMin, xMax, nBinsy, yMin, yMax, nBinsz, zMin, zMax);
+  if (xLabel) res->GetXaxis()->SetTitle(xLabel);
+  if (yLabel) res->GetYaxis()->SetTitle(yLabel);
+  if (zLabel) res->GetZaxis()->SetTitle(zLabel);
+  //  res->SetMarkerStyle(kFullCircle);
+  //  res->SetOption("E");
+  res->SetLineColor(color);
+  //  fOutputList->Add(res);
+  return res;
+}
 
 
 //////////////////////////////////////
@@ -1603,12 +1781,16 @@ void AliAnalysisTaskJetShape::UserCreateOutputObjects()
   fhPtJL  = Hist1D("hPtJL", 100, 0, 200, "Pt_{JL}"); fOutputList->Add(fhPtJL);
   fhAreaJL = Hist1D("hAreaJL", 100, 0., 4, "AreaJL"); fOutputList->Add(fhAreaJL);
 
-  
+
+
+  printf("AliAnalysisTaskJetShape::UserCreateOutputObjects() \n");
+
+
   fanalJetSubStrHM->SetFilterMask(fFilterMask);
+  if(fkMC)   fanalJetSubStrHM->MCprod();
   fanalJetSubStrHM->InitHistos();
   fanalJetSubStrHM->AddToList(fOutputList);
 
-  printf("AliAnalysisTaskJetShape::UserCreateOutputObjects() \n");
 
   if(fkMC)
     {
@@ -1616,8 +1798,22 @@ void AliAnalysisTaskJetShape::UserCreateOutputObjects()
       printf("AliAnalysisTaskJetShape::UserCreateOutputObjects() MC\n");
       fanalJetSubStrMCHM->InitHistos();
       fanalJetSubStrMCHM->AddToList(fOutputList);
+
+      for(Int_t i=0; i<3; i++)
+	{
+	  fhPtresVsPt[i]    = Hist2D(Form("hPtresVsPt%d",i), 100, 0, 100, 100, -0.5, 0.5, "P_{t}^{gen} GeV/c", "1-P_{t}^{rec}/P_{t}^{gen} GeV/c" );      fOutputList->Add(fhPtresVsPt[i]);
+	  fhPhiresVsPhi[i]  = Hist2D(Form("hPhiresVsPhi%d",i), 600, 0, TMath::TwoPi(), 128, -0.2, 0.2, "#phi^{gen} rad", "#phi^{rec} - #phi^{gen} rad" );      fOutputList->Add(fhPhiresVsPhi[i]);
+	  fhEtaresVsEta[i]  = Hist2D(Form("hEtaresVsEta%d",i), 200, -1, 1, 40, -0.2, 0.2, "#eta^{gen}", "#eta^{rec} - #eta^{gen}" );      fOutputList->Add(fhEtaresVsEta[i]);
+	  fhDCAxy[i]        = Hist2D(Form("hDCAxy%d",i), 100, 0, 100, 300, -3, 3, "DCAxy of prim [cm]"); fOutputList->Add(fhDCAxy[i]);
+	  fhDCAz[i]         = Hist2D(Form("hDCAz%d",i) , 100, 0, 100, 300, -3, 3, "DCAz of prim [cm]") ; fOutputList->Add(fhDCAz[i]);
+	  fhTrackPtEtaPhi[i]= Hist3D(Form("hTrackPtEtaPhi%d",i), 100, 0, 100, 100, -1, 1, 100, 0, TMath::TwoPi(),"P_{t} GeV/c ","#eta","#phi rad");  fOutputList->Add(fhTrackPtEtaPhi[i]);
+	}
     }
   
+
+
+
+   printf(" JetBranchName[0]=%s\n JetBranchName[1]=%s\n", fJetBranchName[0].Data(), fJetBranchName[1].Data());
 
 
 
@@ -1673,20 +1869,31 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
 //    return;
   
   //  return;
+ if(fDebug)  Printf("\n\n\nEvent #%5d", (Int_t) fEntry);
   if(fDebug) printf("NEW EVENT 0\n");
 
   if(!IsGoodEvent()) return;
 
-  if(fDebug) printf("NEW EVENT 1\n");
 
   //   printf("\n\n\n NEW EVENT\n");
- if(fDebug)  Printf("Event #%5d", (Int_t) fEntry);
 
    AliAODEvent* aodE = 0;
    if(!aodE){
      if(!fESD)aodE = fAODIn;
      else aodE = fAODOut;}
 
+   /*
+   AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+if(!aodH){
+    Printf("%s:%d no output aodHandler found Jet",(char*)__FILE__,__LINE__);
+    return;
+  }
+   */
+   if(fDebug) {
+     printf("NEW EVENT 1:  Number of tracks = %d\n",aodE->GetNumberOfTracks());
+     //     aodE->GetList()->Print();
+     //     printf("Look for %s\n",fJetBranchName[0].Data());
+   }
 
 
   // centrality selection
@@ -1702,7 +1909,7 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
      centrality=1.;
    }
 
-  if(fDebug) printf("NEW EVENT 2\n");
+//  if(fDebug) printf("NEW EVENT 2\n");
 
    Bool_t  fUseAOD049 = kFALSE;// kTRUE;// 
       if(fUseAOD049&&centrality>=0){
@@ -1725,7 +1932,14 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
       }
    
 
-    if(fDebug) printf("centrality: %f\n", centrality);
+    if(fDebug) 
+      {
+	printf("centrality: %f\n", centrality);
+	aodE->Print();
+	aodE->GetList()->Print();
+      }
+
+
     if (centrality < fCentMin || centrality > fCentMax){
     //    PostData(1, fOutputList);
     return;
@@ -1736,8 +1950,6 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
    // accepted events  
    // -- end event selection --
   
-    //  aodE->Print();
-    //   aodE->GetList()->Print();
    
    // get background
    AliAODJetEventBackground* externalBackground = 0;
@@ -1779,6 +1991,58 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
 
 
 
+  if(fkMC)
+    {
+      AliAODVertex* primVtx = aodE->GetPrimaryVertex();
+      Double_t bfield = aodE->GetMagneticField();
+
+      TClonesArray *arrP = dynamic_cast<TClonesArray*>(aodE->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!arrP)
+	{
+	  printf("ERROR: no Info about particles in AOD\n");
+	  return;
+	}
+
+      for(int it = 0;it < aodE->GetNumberOfTracks(); it++)
+	{
+	  AliAODTrack *tr = aodE->GetTrack(it);
+	  if(!tr) continue;
+	  if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask))) continue;
+	  if(TMath::Abs(tr->Eta())>1.) continue;
+	  Int_t label = TMath::Abs(tr->GetLabel());
+
+	  AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrP->At(label));
+	  if(!part)continue;
+	  //	  if(!part->IsPhysicalPrimary())continue;
+	  //	  if(part->Charge()==0)continue;
+	  //	  vec.SetXYZ(part->Px(), part->Py(), part->Pz());
+
+
+
+	  Double_t dca[2];
+	  Double_t cov[3];
+       
+	  AliAODTrack tmp(*tr);
+	  tmp.PropagateToDCA(primVtx, bfield, 5., dca, cov);
+       
+	  Int_t type = 0;
+	  if(!part->IsPhysicalPrimary()) type=1;
+	  if(label<0) type =2;
+
+	  fhPtresVsPt[type]->Fill(part->Pt(), 1-tr->Pt()/part->Pt());
+	  fhPhiresVsPhi[type]->Fill(part->Phi(), tr->Phi() - part->Phi());
+	  fhEtaresVsEta[type]->Fill(part->Eta(), tr->Eta() - part->Eta());
+	  fhDCAxy[type]->Fill(part->Pt(), dca[0]);
+	  fhDCAz[type]->Fill( part->Pt(), dca[1]);
+	  fhTrackPtEtaPhi[type]->Fill(tr->Pt(), tr->Eta(), tr->Phi());
+	}
+
+
+    }
+
+
+
+
 
    //   printf("rho = %f\n",rho);
 
@@ -1806,20 +2070,21 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
   Float_t ptmax = 0.;
   Int_t   imax  = -1;
 
-  if(fDebug) printf("NEW EVENT 3\n");
-
+  if(fDebug) {
+    printf("NEW EVENT 3:  Number of Rec. jets  %d\n",nJ);
+  }
 
 //
 // Find highest pT jet with pt > 20 GeV
 //
-//  fPtJcorrMin=30;
+//  fPtJcorrMin=0;
 
   Float_t etaJmax = 0.4;
 
      for (Int_t i = 0; i < nJ; i++) {
        AliAODJet* jet = dynamic_cast<AliAODJet*> (Jets[0]->At(i));
        if (!jet) continue;
-       //       jet->Print("0");
+       //              jet->Print("0");
        Float_t ptJ  = jet->Pt();
        Float_t etaJ = TMath::Abs(jet->Eta());
 
@@ -1832,6 +2097,11 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
        }
        
      }
+
+
+  if(fDebug) {
+    printf("NEW EVENT 4:\n");
+  }
 
      TVector3 vecJ;
 
@@ -1851,19 +2121,31 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
 	 fhAreaJL->Fill(areaJL);
 	 vecJ.SetXYZ(jetL->Px(), jetL->Py(), jetL->Pz());
 	 fanalJetSubStrHM->AddEvent(aodE, jetL, rho*areaJL);
+
+	 if(fDebug) {
+	   Printf("Leading Jet");
+	   jetL->Print("0");
+	 }
+
        }
      }
-
 
 
      if(!fkMC)
        {
 	 PostData(1, fOutputList);
+	 if(fDebug)  Printf("End of event #%5d", (Int_t) fEntry);
 	 return;
        }
 
 
+
+
      nJ = Jets[1]->GetEntries();
+  if(fDebug) {
+    printf("NEW EVENT 5:  Number of Rec. jets  %d\n",nJ);
+  }
+
      ptmax = 0;
      imax = -1;
      Float_t areaJL_MC=0;
@@ -1886,6 +2168,10 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
        
      }
 
+  if(fDebug) {
+    printf("NEW EVENT 6:\n");
+  }
+
  
      AliAODJet* jetMCL=0;
 
@@ -1894,19 +2180,34 @@ void AliAnalysisTaskJetShape::UserExec(Option_t *)
       if(jetMCL){
 	fanalJetSubStrMCHM->AddEvent(aodE, jetMCL, rho_MC*areaJL_MC);
       }
-     }
+    }
 
 
 
 
 
      PostData(1, fOutputList);
+
+    if(fDebug)  Printf("End of event #%5d", (Int_t) fEntry);
+
      return;
 
 
 
 
 }      
+
+
+
+
+
+
+
+
+
+
+
+
 
 Double_t AliAnalysisTaskJetShape::CalcdPhi(Double_t phi1, Double_t phi2)
 {
@@ -1970,12 +2271,21 @@ Bool_t AliAnalysisTaskJetShape::IsGoodEvent()
     if(fAODExtension) printf("fAODExtension\n");
    }
 
+
+   /*
+   AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+if(!aodH){
+    Printf("%s:%d no output aodHandler found Jet",(char*)__FILE__,__LINE__);
+      return kFALSE;
+  }
+   */
+
    // -- event selection --
 
    // physics selection
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-   //   cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<endl;
+   //     cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<endl;
    if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
       if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
       return kFALSE;
