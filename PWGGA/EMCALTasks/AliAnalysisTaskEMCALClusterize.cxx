@@ -87,6 +87,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
 , fCentralityClass(""),   fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
+, fSetCellMCLabelFromCluster(kFALSE)
 {
   // Constructor
   
@@ -129,6 +130,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
 , fCentralityClass(""),     fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
+, fSetCellMCLabelFromCluster(kFALSE)
 {
   // Constructor
   
@@ -663,8 +665,14 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       continue;
     }
     
-    //Create the digit, put a fake primary deposited energy to trick the clusterizer when checking the most likely primary
-    new((*fDigitsArr)[idigit]) AliEMCALDigit( fCellLabels[id], fCellLabels[id],id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1); 
+    Int_t mcLabel = cells->GetMCLabel(icell);
+    //if(fCellLabels[id]!=mcLabel)printf("mcLabel %d - %d\n",mcLabel,fCellLabels[id]);
+    if(fSetCellMCLabelFromCluster) mcLabel = fCellLabels[id]; // Older aliroot MC productions
+    
+    // Create the digit, put a fake primary deposited energy to trick the clusterizer
+    // when checking the most likely primary
+    
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1);
     
     fCellLabels[id] =-1; //reset the entry in the array for next event
     
