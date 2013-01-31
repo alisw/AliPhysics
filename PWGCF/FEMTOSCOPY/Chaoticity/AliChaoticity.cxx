@@ -3072,7 +3072,7 @@ Bool_t AliChaoticity::AcceptPair(AliChaoticityTrackStruct first, AliChaoticityTr
 
    
   //
-  
+  /*
   Int_t ncl1 = first.fClusterMap.GetNbits();
   Int_t ncl2 = second.fClusterMap.GetNbits();
   Int_t sumCls = 0; Int_t sumSha = 0; Int_t sumQ = 0;
@@ -3095,7 +3095,7 @@ Bool_t AliChaoticity::AcceptPair(AliChaoticityTrackStruct first, AliChaoticityTr
   }
    
   if(qfactor > fShareQuality || shfrac > fShareFraction) return kFALSE;
-  
+  */
   
   return kTRUE;
   
