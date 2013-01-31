@@ -596,6 +596,9 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
     hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
+
+    //normalize to bin width
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -744,6 +747,9 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
+
+    //normalize to bin width
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -817,6 +823,9 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
     hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
+
+    //normalize to bin width
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -963,6 +972,9 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
 
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
+  
+    //normalize to bin width
+    gHistBalanceFunctionHistogram->Scale(1./((Double_t)gHistBalanceFunctionHistogram->GetXaxis()->GetBinWidth(1)*(Double_t)gHistBalanceFunctionHistogram->GetYaxis()->GetBinWidth(1)));
   }
 
   return gHistBalanceFunctionHistogram;
@@ -1022,6 +1034,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
 
   if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
+
+  //normalize to bin width
+  gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
     
   return gHist;
 }
@@ -1059,6 +1074,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
   //Printf("Entries (2D): %lf",(Double_t)(fHistNP->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
+
+  //normalize to bin width
+  gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
     
   return gHist;
 }
@@ -1096,6 +1114,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
   //Printf("Entries (2D): %lf",(Double_t)(fHistPP->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
+
+  //normalize to bin width
+  gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
   
   return gHist;
 }
@@ -1133,6 +1154,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
   //Printf("Entries (2D): %lf",(Double_t)(fHistNN->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
     gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
+
+  //normalize to bin width
+  gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
     
   return gHist;
 }
@@ -1200,6 +1224,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   // divide by sum of + and - triggers
   if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0 && (Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
     gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries() + fHistN->Project(0,1)->GetEntries()));
+
+  //normalize to bin width
+  gHistNN->Scale(1./((Double_t)gHistNN->GetXaxis()->GetBinWidth(1)*(Double_t)gHistNN->GetYaxis()->GetBinWidth(1)));
   
   return gHistNN;
 }

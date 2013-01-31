@@ -362,7 +362,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
   gHist[0] = b->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHist[0]->Rebin2D(rebinEta,rebinPhi);
+  if(rebinEta > 1 || rebinPhi > 1){
+    gHist[0]->Rebin2D(rebinEta,rebinPhi);
+    gHist[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+  }
   gHist[0]->GetYaxis()->SetTitleOffset(1.5);
   gHist[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHist[0]->SetTitle(histoTitle.Data());
@@ -393,7 +396,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHist[1] = bShuffled->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHist[1]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHist[1]->Rebin2D(rebinEta,rebinPhi);
+      gHist[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     gHist[1]->GetYaxis()->SetTitleOffset(1.5);
     gHist[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHist[1]->SetTitle(histoTitle.Data());
@@ -427,8 +433,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHist[2] = bMixed->GetCorrelationFunctionChargeIndependent(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHist[2]->Rebin2D(rebinEta,rebinPhi);
-    
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHist[2]->Rebin2D(rebinEta,rebinPhi);
+      gHist[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHist[2]->Integral(gHist[2]->GetXaxis()->FindBin(0-10e-5),gHist[2]->GetXaxis()->FindBin(0+10e-5),1,gHist[2]->GetNbinsX());

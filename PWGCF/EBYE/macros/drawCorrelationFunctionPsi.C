@@ -404,11 +404,9 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 
       TH2D* fHistPos = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiPos"))->Project3D("xy");
       fHistPos->GetYaxis()->SetRangeUser(-0.79,0.79);
-      //fHistPos->Rebin2D(3,2);
       
       TH2D* fHistNeg = (TH2D*)((TH3D*)listQA->FindObject("fHistEtaPhiNeg"))->Project3D("xy");
       fHistNeg->GetYaxis()->SetRangeUser(-0.79,0.79);
-      //fHistNeg->Rebin2D(3,2);
       
       gHistPN[2] = convolute2D(fHistPos, fHistNeg, "hConvPN");
       gHistPN[2]->Scale(1./gHistPN[2]->GetBinContent(gHistPN[2]->FindBin(0,0)));
@@ -456,7 +454,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
+  if(rebinEta > 1 || rebinPhi > 1){
+    gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
+    gHistPN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+  }
   gHistPN[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistPN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPN[0]->SetTitle(histoTitle.Data());
@@ -487,7 +488,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistPN[1] = bShuffled->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistPN[1]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPN[1]->Rebin2D(rebinEta,rebinPhi);
+      gHistPN[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
     gHistPN[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistPN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPN[1]->SetTitle(histoTitle.Data());
@@ -521,7 +525,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPN[2] = bMixed->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistPN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
     
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
@@ -580,8 +587,11 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
-    if(rebinEta > 1 || rebinPhi > 1) gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
-    
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistPN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
+
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPN[2]->GetNbinsX());
@@ -658,7 +668,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
+  if(rebinEta > 1 || rebinPhi > 1){
+    gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
+    gHistNP[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+  }
   gHistNP[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistNP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNP[0]->SetTitle(histoTitle.Data());
@@ -690,7 +703,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistNP[1] = bShuffled->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHistNP[1]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNP[1]->Rebin2D(rebinEta,rebinPhi);
+      gHistNP[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
     gHistNP[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistNP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNP[1]->SetTitle(histoTitle.Data());
@@ -724,8 +740,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
 
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNP[2] = bMixed->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
-
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistNP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNP[2]->GetNbinsX());
@@ -783,7 +801,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
 
-    if(rebinEta > 1 || rebinPhi > 1) gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNP[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistNP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+    }
 
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
@@ -862,7 +883,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   }
 
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
+  if(rebinEta > 1 || rebinPhi > 1){
+    gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
+    gHistPP[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+  }
   gHistPP[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistPP[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistPP[0]->SetTitle(histoTitle.Data());
@@ -894,7 +918,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistPP[1] = bShuffled->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistPP[1]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPP[1]->Rebin2D(rebinEta,rebinPhi);
+      gHistPP[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     gHistPP[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistPP[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistPP[1]->SetTitle(histoTitle.Data());
@@ -928,8 +955,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistPP[2] = bMixed->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
-
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistPP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPP[2]->GetNbinsX());
@@ -987,8 +1016,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
-    if(rebinEta > 1 || rebinPhi > 1) gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
-
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistPP[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistPP[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPP[2]->GetNbinsX());
@@ -1065,7 +1096,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
   } 
 
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  if(rebinEta > 1 || rebinPhi > 1) gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
+  if(rebinEta > 1 || rebinPhi > 1){
+    gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
+    gHistNN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+  }
   gHistNN[0]->GetYaxis()->SetTitleOffset(1.5);
   gHistNN[0]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistNN[0]->SetTitle(histoTitle.Data());
@@ -1097,7 +1131,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
     gHistNN[1] = bShuffled->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistNN[1]->Rebin2D(rebinEta,rebinPhi);
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNN[1]->Rebin2D(rebinEta,rebinPhi);
+      gHistNN[1]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     gHistNN[1]->GetYaxis()->SetTitleOffset(1.5);
     gHistNN[1]->GetYaxis()->SetTitle("#Delta #varphi (rad)");
     gHistNN[1]->SetTitle(histoTitle.Data());
@@ -1131,8 +1168,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     
     // if normalization to trigger then do not divide Event mixing by number of trigger particles
     gHistNN[2] = bMixed->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    if(rebinEta > 1 || rebinPhi > 1) gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
-
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistNN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNN[2]->GetNbinsX());
@@ -1190,8 +1229,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed, TList *listQA,
     else 
       histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
     
-    if(rebinEta > 1 || rebinPhi > 1) gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
-
+    if(rebinEta > 1 || rebinPhi > 1){
+      gHistNN[2]->Rebin2D(rebinEta,rebinPhi);
+      gHistNN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
+    }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
       Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNN[2]->GetNbinsX());

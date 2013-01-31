@@ -403,6 +403,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunction->Clone());
   gHistBalanceFunctionSubtracted->Add(gHistBalanceFunctionMixed,-1);
   gHistBalanceFunctionSubtracted->Rebin(gRebin);
+  gHistBalanceFunctionSubtracted->Scale(1./(Double_t)(gRebin));    
   gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
   gHistBalanceFunctionSubtracted->SetTitle(histoTitle.Data());
   gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
