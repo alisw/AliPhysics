@@ -129,6 +129,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Float_t       GetCentralityBin(Int_t i)                 const { if(i < 0 || i > 1) return -1 ; 
                                                                   else               return fCentralityBin[i]   ; }
   
+  void          SwitchOnUseClusterMCLabelForCell()              { fSetCellMCLabelFromCluster = kTRUE  ;}
+  void          SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = kFALSE ;}
+
+  
  private:
     
   virtual void   FillCaloClusterInEvent();
@@ -209,10 +213,13 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Float_t                fEMCALEnergyCut;         //  At least an EMCAL cluster with this energy in the event
   Int_t                  fEMCALNcellsCut;         //  At least an EMCAL cluster with fNCellsCut cells over fEnergyCut
 
+  Bool_t                 fSetCellMCLabelFromCluster; // Use cluster MC label as cell label
+
+  
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 24);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 25);
 
 };
 
