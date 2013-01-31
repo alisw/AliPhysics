@@ -63,7 +63,7 @@ public:
   virtual void Print(const Option_t* option = "") const;
 
   
- protected:
+ private:
 
   UShort_t  fActiveCuts[AliDielectronVarManager::kNMaxValues];       // list of activated cuts
   UShort_t  fNActiveCuts;                      // number of acive cuts
@@ -78,8 +78,6 @@ public:
   Double_t fCutMin[AliDielectronVarManager::kNMaxValues];           // minimum values for the cuts
   Double_t fCutMax[AliDielectronVarManager::kNMaxValues];           // maximum values for the cuts
   Bool_t fCutExclude[AliDielectronVarManager::kNMaxValues];         // inverse cut logic?
-
- private:
 
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);

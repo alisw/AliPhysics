@@ -237,33 +237,30 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   // put a robust Nacc definition here
 
   if (!ev) return -1;
-  
-  AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,  -0.5,   0.5);   //noKinks
-    
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
-  trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
-  trkCuts->SetRequireITSRefit(kTRUE);
-  trkCuts->SetRequireTPCRefit(kTRUE);
+
+  AliDielectronVarCuts varCuts;
+  varCuts.AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCuts.AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCuts.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCuts.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  varCuts.AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
+  varCuts.AddCut(AliDielectronVarManager::kKinkIndex0,  -0.5,   0.5);   //noKinks
+
+  AliDielectronTrackCuts trkCuts;
+  trkCuts.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
+  trkCuts.SetRequireITSRefit(kTRUE);
+  trkCuts.SetRequireTPCRefit(kTRUE);
 
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Int_t nAcc = 0;
-  
+
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
-    if (!trkCuts->IsSelected(track)) continue;
-    if (!varCuts->IsSelected(track)) continue;
+    if (!trkCuts.IsSelected(track)) continue;
+    if (!varCuts.IsSelected(track)) continue;
     nAcc++;
   }
-  
-  delete varCuts;
-  delete trkCuts;
 
   return nAcc;
 }
@@ -274,20 +271,20 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
 
   if (!ev) return -1;
 
-  AliDielectronVarCuts *varCutsTPC = new AliDielectronVarCuts("VarCutsTPC","VarCutsTPC");
-  varCutsTPC->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCutsTPC->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCutsTPC->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCutsTPC->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCutsTPC->AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
-  AliDielectronTrackCuts *trkCutsTPC = new AliDielectronTrackCuts("TrkCutsTPC","TrkCutsTPC");
-  trkCutsTPC->SetRequireTPCRefit(kTRUE);
+  AliDielectronVarCuts varCutsTPC;
+  varCutsTPC.AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCutsTPC.AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCutsTPC.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCutsTPC.AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  varCutsTPC.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
+  AliDielectronTrackCuts trkCutsTPC;
+  trkCutsTPC.SetRequireTPCRefit(kTRUE);
 
-  AliDielectronVarCuts *varCutsITS = new AliDielectronVarCuts("VarCutsITS","VarCutsITS");
-  varCutsITS->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  AliDielectronTrackCuts *trkCutsITS = new AliDielectronTrackCuts("TrkCutsITS","TrkCutsITS");
-  trkCutsITS->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
-  trkCutsITS->SetRequireITSRefit(kTRUE);
+  AliDielectronVarCuts varCutsITS;
+  varCutsITS.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  AliDielectronTrackCuts trkCutsITS;
+  trkCutsITS.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
+  trkCutsITS.SetRequireITSRefit(kTRUE);
 
 
   Int_t nRecoTracks = ev->GetNumberOfTracks();
@@ -297,22 +294,17 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
 
-    if(!trkCutsITS->IsSelected(track)) continue;
-    if(!varCutsITS->IsSelected(track)) continue;
+    if(!trkCutsITS.IsSelected(track)) continue;
+    if(!varCutsITS.IsSelected(track)) continue;
     nITS+=1.;
 
-    if(!trkCutsTPC->IsSelected(track)) continue;
-    if(!varCutsTPC->IsSelected(track)) continue;
+    if(!trkCutsTPC.IsSelected(track)) continue;
+    if(!varCutsTPC.IsSelected(track)) continue;
     nTPC+=1.;
 
   }
 
-  delete varCutsITS;
-  delete trkCutsITS;
-  delete varCutsTPC;
-  delete trkCutsTPC;
-
-  printf(" tracks TPC %.3e ITS %.3e = %.5f \n",nTPC,nITS,(nITS>0. ? nTPC/nITS : -1));
+  //  printf(" tracks TPC %.3e ITS %.3e = %.5f \n",nTPC,nITS,(nITS>0. ? nTPC/nITS : -1));
   return (nITS>0. ? nTPC/nITS : -1);
 }
 

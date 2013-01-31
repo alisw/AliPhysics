@@ -38,7 +38,14 @@ ClassImp(AliDielectronV0Cuts)
 
 AliDielectronV0Cuts::AliDielectronV0Cuts() :
   AliDielectronVarCuts(),
-  fV0TrackArr(0x0)
+  fV0TrackArr(0),
+  fExcludeTracks(kTRUE),
+  fMotherPdg(0),
+  fNegPdg(0),
+  fPosPdg(0),
+  fOrbit(0),
+  fPeriod(0),
+  fBunchCross(0)
 {
   //
   // Default costructor
@@ -48,7 +55,14 @@ AliDielectronV0Cuts::AliDielectronV0Cuts() :
 //________________________________________________________________________
 AliDielectronV0Cuts::AliDielectronV0Cuts(const char* name, const char* title) :
   AliDielectronVarCuts(name,title),
-  fV0TrackArr(0x0)
+  fV0TrackArr(0),
+  fExcludeTracks(kTRUE),
+  fMotherPdg(0),
+  fNegPdg(0),
+  fPosPdg(0),
+  fOrbit(0),
+  fPeriod(0),
+  fBunchCross(0)
 {
   //
   // Named contructor
@@ -61,150 +75,128 @@ AliDielectronV0Cuts::~AliDielectronV0Cuts()
   //
   // Destructor
   //
-  if(fV0TrackArr) {
-    delete fV0TrackArr;
-    fV0TrackArr=0;
-  }
+
 }
 
-
 //________________________________________________________________________
-void AliDielectronV0Cuts::Init()
+void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 {
   //
   // Init the V0 candidates
   //
 
+  // take current event from the track
+  // TODO: this should be simplyfied by AliVTrack::GetEvent() as soon as implemented
+  const AliVEvent *ev=0;
+  if(trk->IsA() == AliAODTrack::Class())
+    ev=static_cast<const AliVEvent*>((static_cast<const AliAODTrack*>(trk))->GetAODEvent());
+  else if(trk->IsA() == AliESDtrack::Class())
+    ev=static_cast<const AliVEvent*>((static_cast<const AliESDtrack*>(trk))->GetESDEvent());
+  else
+    return;
+
+
+  // IsNewEvent
+  if(!ev) return;
+  if(!IsNewEvent(ev)) return;
+  //  printf(" Build V0 candidates according to the applied cuts \n");
+
   // TODO think about MCevent
   //  Print();
 
-  // take current event from the varmanager
-  AliVEvent *ev  =   AliDielectronVarManager::GetCurrentEvent();
-  if(!ev) return;
-  fV0TrackArr = new TArrayC(ev->GetNumberOfTracks());
+  // rest booleans
+  fV0TrackArr.ResetAllBits();
 
   // basic quality cut, at least one of the V0 daughters has to fullfill
-  AliDielectronVarCuts *dauQAcuts1 = new AliDielectronVarCuts();
-  dauQAcuts1->AddCut(AliDielectronVarManager::kPt,           0.5,  1e30);
-  dauQAcuts1->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  dauQAcuts1->AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
-  AliDielectronTrackCuts *dauQAcuts2 = new AliDielectronTrackCuts();
-  dauQAcuts2->SetRequireITSRefit(kTRUE);
-  dauQAcuts2->SetRequireTPCRefit(kTRUE);
+  AliDielectronVarCuts dauQAcuts1;
+  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,           0.5,  1e30);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,     50.0, 160.0);
+  AliDielectronTrackCuts dauQAcuts2;
+  dauQAcuts2.SetRequireITSRefit(kTRUE);
+  dauQAcuts2.SetRequireTPCRefit(kTRUE);
 
   Int_t nV0s = 0;
+  AliDielectronPair candidate;
+  candidate.SetPdgCode(fMotherPdg);
 
   // ESD or AOD event
   if(ev->IsA() == AliESDEvent::Class()) {
     const AliESDEvent *esdev = static_cast<const AliESDEvent*>(ev);
+
     // loop over V0s
     for (Int_t iv=0; iv<esdev->GetNumberOfV0s(); ++iv){
       AliESDv0 *v = esdev->GetV0(iv);
       if(!v) continue;
 
-      AliESDtrack *tr1=esdev->GetTrack(v->GetIndex(0));
-      AliESDtrack *tr2=esdev->GetTrack(v->GetIndex(1));
-      if(!tr1 || !tr2){
-	printf("Error: Couldn't get V0 daughter: %p - %p\n",tr1,tr2);
+      // should we make use of AliESDv0Cuts::GetPdgCode() to preselect candiadtes, e.g.:
+      // if(fMotherPdg!=v->GetPdgCode()) continue;
+
+      AliESDtrack *trNeg=esdev->GetTrack(v->GetIndex(0));
+      AliESDtrack *trPos=esdev->GetTrack(v->GetIndex(1));
+      if(!trNeg || !trPos){
+	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
 
       // at least one of the daughter has to pass basic QA cuts
-      if(!(dauQAcuts1->IsSelected(tr1) && dauQAcuts2->IsSelected(tr1)) ||
-	 !(dauQAcuts1->IsSelected(tr1) && dauQAcuts2->IsSelected(tr1))  ) continue;
-      //      printf(" One or both V0 daughters pass the qa cuts \n");
+      if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
+	 !(dauQAcuts1.IsSelected(trPos) && dauQAcuts2.IsSelected(trPos))  ) continue;
 
+      if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);
+      else candidate.SetTracks(trNeg, fNegPdg, trPos, fPosPdg);
       // eventually take the external trackparam and build the KFparticles by hand (see AliESDv0::GetKFInfo)
-      AliDielectronPair candidate;
-      candidate.SetPdgCode(22);
-      candidate.SetGammaTracks(tr1, 11, tr2, 11);
-      // this is not needed, because the daughters where used in the v0 vertex fit (I guess)
+      // the folowing is not needed, because the daughters where used in the v0 vertex fit (I guess)
       //      AliKFVertex v0vtx = *v;
       //      candidate.SetProductionVertex(v0vtx);
 
-      //Fill values
-      Double_t values[AliDielectronVarManager::kNMaxValues];
-      AliDielectronVarManager::Fill(&candidate,values);
-
-      fSelectedCutsMask=0;
-      for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
-	Int_t cut=fActiveCuts[iCut];
-	SETBIT(fSelectedCutsMask,iCut);
-	if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
-      }
-
-      Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
-      if ( fCutType==kAny ) isSelected=(fSelectedCutsMask>0);
-
-      // store boolean at index=trackID
-      if(isSelected) {
+      if(AliDielectronVarCuts::IsSelected(&candidate)) {
 	nV0s++;
-	if(tr1->GetID()>fV0TrackArr->GetSize()) {/* printf(" size of array %d too small expand to %d \n",fV0TrackArr->GetSize(), tr1->GetID());*/ fV0TrackArr->Set(tr1->GetID()+1); }
-	if(tr2->GetID()>fV0TrackArr->GetSize()) {/* printf(" size of array %d too small expand to %d \n",fV0TrackArr->GetSize(), tr2->GetID());*/ fV0TrackArr->Set(tr2->GetID()+1); }
-	//	printf(" gamma found for vtx %p dau1id %d dau2id %d \n",v,tr1->GetID(),tr2->GetID());
-	fV0TrackArr->AddAt(1,tr1->GetID());
-	fV0TrackArr->AddAt(1,tr2->GetID());
+	//printf(" gamma found for vtx %p dau1id %d dau2id %d \n",v,trNeg->GetID(),trPos->GetID());
+	fV0TrackArr.SetBitNumber(trNeg->GetID());
+	fV0TrackArr.SetBitNumber(trPos->GetID());
       }
     }
+
   }
   else if(ev->IsA() == AliAODEvent::Class()) {
     const AliAODEvent *aodEv = static_cast<const AliAODEvent*>(ev);
+
     // loop over vertices
     for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfVertices(); ++ivertex){
       AliAODVertex *v=aodEv->GetVertex(ivertex);
       if(v->GetType()!=AliAODVertex::kV0) continue;
       if(v->GetNDaughters()!=2) continue;
 
-      AliAODTrack *tr1=dynamic_cast<AliAODTrack*>(v->GetDaughter(0));
-      AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(v->GetDaughter(1));
-      if(!tr1 || !tr2){
-	printf("Error: Couldn't get V0 daughter: %p - %p\n",tr1,tr2);
+      AliAODTrack *trNeg=dynamic_cast<AliAODTrack*>(v->GetDaughter(0));
+      AliAODTrack *trPos=dynamic_cast<AliAODTrack*>(v->GetDaughter(1));
+      if(!trNeg || !trPos){
+	printf("Error: Couldn't get V0 daughter: %p - %p\n",trNeg,trPos);
 	continue;
       }
 
       // at least one of the daughter has to pass basic QA cuts
-      if(!(dauQAcuts1->IsSelected(tr1) && dauQAcuts2->IsSelected(tr1)) ||
-	 !(dauQAcuts1->IsSelected(tr1) && dauQAcuts2->IsSelected(tr1))  ) continue;
-
-      //      printf(" One or both V0 daughters pass the qa cuts \n");
+      if(!(dauQAcuts1.IsSelected(trNeg) && dauQAcuts2.IsSelected(trNeg)) ||
+	 !(dauQAcuts1.IsSelected(trPos) && dauQAcuts2.IsSelected(trPos))  ) continue;
 
       AliKFVertex v0vtx = *v;
-      AliDielectronPair candidate;
-      candidate.SetPdgCode(22); // TODO setter?
-      candidate.SetGammaTracks(tr1, 11, tr2, 11);
+      if(fMotherPdg==22) candidate.SetGammaTracks(trNeg, 11, trPos, 11);
+      else candidate.SetTracks(trNeg, (trNeg->Charge()<0?fNegPdg:fPosPdg), trPos, (trPos->Charge()<0?fNegPdg:fPosPdg));
       candidate.SetProductionVertex(v0vtx);
 
-      //Fill values
-      Double_t values[AliDielectronVarManager::kNMaxValues];
-      AliDielectronVarManager::Fill(&candidate,values);
-
-      fSelectedCutsMask=0;
-      for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
-	Int_t cut=fActiveCuts[iCut];
-	SETBIT(fSelectedCutsMask,iCut);
-	if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
-      }
-
-      Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
-      if ( fCutType==kAny ) isSelected=(fSelectedCutsMask>0);
-
-      // store boolean at index=trackID
-      if(isSelected) {
+      if(AliDielectronVarCuts::IsSelected(&candidate)) {
 	nV0s++;
-	if(tr1->GetID()>fV0TrackArr->GetSize()) {/* printf(" size of array %d too small expand to %d \n",fV0TrackArr->GetSize(), tr1->GetID());*/ fV0TrackArr->Set(tr1->GetID()+1); }
-	if(tr2->GetID()>fV0TrackArr->GetSize()) {/* printf(" size of array %d too small expand to %d \n",fV0TrackArr->GetSize(), tr2->GetID());*/ fV0TrackArr->Set(tr2->GetID()+1); }
-	//	printf(" gamma found for vtx %p dau1id %d dau2id %d \n",v,tr1->GetID(),tr2->GetID());
-	fV0TrackArr->AddAt(1,tr1->GetID());
-	fV0TrackArr->AddAt(1,tr2->GetID());
+	//printf(" gamma found for vtx %p dau1id %d dau2id %d \n",v,trNeg->GetID(),trPos->GetID());
+	fV0TrackArr.SetBitNumber(trNeg->GetID());
+	fV0TrackArr.SetBitNumber(trPos->GetID());
       }
     }
+
   }
   else
     return;
 
-  delete dauQAcuts1;
-  delete dauQAcuts2;
-  //  printf(" Number of V0s candiates found %d \n",nV0s);
+  printf(" Number of V0s candiates found %d \n",nV0s);
 
 }
 //________________________________________________________________________
@@ -213,18 +205,35 @@ Bool_t AliDielectronV0Cuts::IsSelected(TObject* track)
   //
   // Make cut decision
   //
-  if(!fV0TrackArr->GetSum()) return kTRUE;
+
   if(!track) return kFALSE;
-  //what about VParticles MC, better to store pointers??
+
   AliVTrack *vtrack = static_cast<AliVTrack*>(track);
-  if(!vtrack) return kFALSE;
+  InitEvent(vtrack);
+  printf(" track ID %d selected result %d \n",vtrack->GetID(),(fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks);
+  return ( (fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks );
+}
 
-  //  printf(" tttttrackID %d \n",vtrack->GetID());
+//________________________________________________________________________
+Bool_t AliDielectronV0Cuts::IsNewEvent(const AliVEvent *ev)
+{
+  //
+  // check weather we process a new event
+  //
 
-  if(fV0TrackArr->At(vtrack->GetID()) != 1) return kTRUE;
-  else {
-    //printf(" track belongs to a V0 candidate \n");
-    return kFALSE;
+  //  printf(" current ev %d %d %d \n",fBunchCross, fOrbit, fPeriod);
+  //  printf(" new event %p %d %d %d \n",ev, ev->GetBunchCrossNumber(), ev->GetOrbitNumber(), ev->GetPeriodNumber());
+
+  if( fBunchCross == ev->GetBunchCrossNumber() ) {
+    if( fOrbit == ev->GetOrbitNumber() )         {
+      if( fPeriod == ev->GetPeriodNumber() )     {
+	return kFALSE;
+      }
+    }
   }
 
+  fBunchCross = ev->GetBunchCrossNumber();
+  fOrbit      = ev->GetOrbitNumber();
+  fPeriod     = ev->GetPeriodNumber();
+  return kTRUE;
 }
