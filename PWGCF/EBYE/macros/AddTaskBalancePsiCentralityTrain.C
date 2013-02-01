@@ -136,6 +136,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   }
   else if(analysisType == "MC") {
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
+    taskBF->SetImpactParameterRange(centrMin,centrMax);
   }
 
   // offline trigger selection (AliVEvent.h)
