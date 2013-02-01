@@ -79,7 +79,9 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA():
     fhZNACentroid(0x0), 
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0)
+    fDebunch(0x0),
+    fhTDCZNAcorr(0x0),
+    fhTDCZNCcorr(0x0)
 {   
    // Default constructor
 }   
@@ -108,7 +110,10 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA(const char *name):
     fhZNACentroid(0x0), 
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0)
+    fDebunch(0x0),
+    fhTDCZNAcorr(0x0),
+    fhTDCZNCcorr(0x0)
+
 {  
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -151,7 +156,10 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA(const AliAnalysisTaskZDCpA& ana):
   fhZNACentroid(ana.fhZNACentroid), 
   fhPMCZNCemd(ana.fhPMCZNCemd), 
   fhPMCZNAemd(ana.fhPMCZNAemd),
-  fDebunch(ana.fDebunch)
+  fDebunch(ana.fDebunch),
+  fhTDCZNAcorr(ana.fhTDCZNAcorr),
+  fhTDCZNCcorr(ana.fhTDCZNCcorr)
+
 {
   //
   // Copy Constructor	
@@ -227,7 +235,14 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   
   fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
   fOutput->Add(fDebunch);     
+  
+  fhTDCZNAcorr = new TH1F("fhTDCZNAcorr","ZNA TDC corrected",120, -20., 20.);
+  fOutput->Add(fhTDCZNAcorr);
+  
+  fhTDCZNCcorr = new TH1F("fhTDCZNCcorr","ZNC TDC corrected",120, -20., 20.);
+  fOutput->Add(fhTDCZNCcorr);
     
+  
   PostData(1, fOutput);
 }
 
@@ -315,6 +330,8 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
     Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i));
     Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,i));
     Float_t tdcL0 = 0.025*(esdZDC->GetZDCTDCData(15,i));
+    if(tdcC != 0.) fhTDCZNCcorr->Fill(esdZDC->GetZDCTDCCorrected(10,i));
+    if(tdcA != 0.) fhTDCZNAcorr->Fill(esdZDC->GetZDCTDCCorrected(12,i));
     //
     if(tdcC != 0.){
       fhTDCZNC->Fill(tdcC-tdcL0);
@@ -325,7 +342,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
 	fDebunch->Fill(tdcC-tdcA, tdcC+tdcA-2*tdcL0);
       }
     }
-  }
+  }  
   
   PostData(1, fOutput);
    
