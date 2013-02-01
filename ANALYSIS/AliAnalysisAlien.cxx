@@ -131,7 +131,6 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fProofCluster(),
                   fProofDataSet(),
                   fFileForTestMode(),
-                  fRootVersionForProof(),
                   fAliRootMode(),
                   fProofProcessOpt(),
                   fMergeDirName(),
@@ -208,7 +207,6 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fProofCluster(),
                   fProofDataSet(),
                   fFileForTestMode(),
-                  fRootVersionForProof(),
                   fAliRootMode(),
                   fProofProcessOpt(),
                   fMergeDirName(),
@@ -285,7 +283,6 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fProofCluster(other.fProofCluster),
                   fProofDataSet(other.fProofDataSet),
                   fFileForTestMode(other.fFileForTestMode),
-                  fRootVersionForProof(other.fRootVersionForProof),
                   fAliRootMode(other.fAliRootMode),
                   fProofProcessOpt(other.fProofProcessOpt),
                   fMergeDirName(other.fMergeDirName),
@@ -404,7 +401,6 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fProofCluster            = other.fProofCluster;
       fProofDataSet            = other.fProofDataSet;
       fFileForTestMode         = other.fFileForTestMode;
-      fRootVersionForProof     = other.fRootVersionForProof;
       fAliRootMode             = other.fAliRootMode;
       fProofProcessOpt         = other.fProofProcessOpt;
       fMergeDirName            = other.fMergeDirName;
@@ -2400,8 +2396,8 @@ void AliAnalysisAlien::Print(Option_t *) const
       printf("=   Soft reset signal will be send to master______ CHANGE BEHAVIOR AFTER COMPLETION\n");      
       if (fProofReset>1)   
       printf("=   Hard reset signal will be send to master______ CHANGE BEHAVIOR AFTER COMPLETION\n");      
-      if (!fRootVersionForProof.IsNull())
-      printf("=   ROOT version requested________________________ %s\n", fRootVersionForProof.Data());
+      if (!fROOTVersion.IsNull())
+      printf("=   ROOT version requested________________________ %s\n", fROOTVersion.Data());
       else
       printf("=   ROOT version requested________________________ default\n");
       printf("=   AliRoot version requested_____________________ %s\n", fAliROOTVersion.Data());
@@ -2553,6 +2549,14 @@ void AliAnalysisAlien::SetDefaults()
    fOverwriteMode              = 1;
 }   
 
+//______________________________________________________________________________
+void AliAnalysisAlien::SetRootVersionForProof(const char *version)
+{
+// Obsolete method. Use SetROOTVersion instead
+   Warning("SetRootVersionForProof", "Obsolete. Use SetROOTVersion instead");
+   SetROOTVersion(version);
+}
+   
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, const char *jdl)
 {
@@ -3159,9 +3163,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
         }
       }
       // Do we need to change the ROOT version ? The success of this cannot be checked.
-      if (!fRootVersionForProof.IsNull() && !testMode) {
+      if (!fROOTVersion.IsNull() && !testMode) {
          gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->SetROOTVersion(\"%s\");", 
-                            fProofCluster.Data(), fRootVersionForProof.Data()));
+                            fProofCluster.Data(), fROOTVersion.Data()));
       }
       // Connect to PROOF and check the status
       Long_t proof = 0;
