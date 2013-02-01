@@ -82,7 +82,7 @@ void MakeFileList(const char *searchdir, const char *pattern, const char* output
   TGrid::Connect("alien");
 
   TString command;
-  command = Form("find %s/ %s", searchdir, pattern);
+  command = Form("find %s %s", searchdir, pattern);
   cerr<<"command: "<<command<<endl;
   TGridResult *res = gGrid->Command(command);
   if (!res) return;
@@ -92,6 +92,30 @@ void MakeFileList(const char *searchdir, const char *pattern, const char* output
   ofstream outputFile;
   outputFile.open(Form(outputFileName));
 
+  //first identify the largest file and put it at the beginning
+  Int_t largestFileSize=0;
+  TString largestFile;
+  TObject* largestObject;
+  while((map=(TMap*)nextmap()))
+  {
+    TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
+    TObjString *objsSize = dynamic_cast<TObjString*>(map->GetValue("size"));
+    if (!objs || !objs->GetString().Length()) continue;
+    if (!objsSize || !objsSize->GetString().Length()) continue;
+
+    Int_t currentFileSize=objsSize->GetString().Atoi();
+    if (currentFileSize>largestFileSize) 
+    {
+      largestFileSize=currentFileSize;
+      largestFile=objs->GetString();
+      largestObject=map;
+    }
+  }
+  outputFile << largestFile.Data()<< endl;
+  res->Remove(largestObject);
+  
+  //then write the rest of the entries to the file
+  nextmap.Reset();
   while((map=(TMap*)nextmap()))
   {
     TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
