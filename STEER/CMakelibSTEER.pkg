@@ -116,6 +116,7 @@ set ( SRCS
     STEER/AliLTUConfig.cxx
     STEER/AliTriggerUtils.cxx
     STEER/AliTransportMonitor.cxx
+    STEER/AliParamList.cxx
     )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")

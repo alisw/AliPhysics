@@ -158,6 +158,8 @@
 #pragma link C++ class AliTransportMonitor::AliTransportMonitorVol+;
 #pragma link C++ struct AliTransportMonitor::AliTransportMonitorVol::AliPMonData+;
 
+#pragma link C++ class AliParamList+;
+
 #pragma link C++ typedef AliLHCDipValD; 	 
 #pragma link C++ typedef AliLHCDipValI; 	 
 #pragma link C++ typedef AliLHCDipValF; 	 
