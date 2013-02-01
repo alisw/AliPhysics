@@ -11,7 +11,8 @@
 #                "tfilecp" will copy the files first using TFile::Cp()
 #                "nocopy" will access files over the network directly TFile::Open()
 #                default is tfilecp, use 0
-#    6 - number of files to download per iteration, default 20
+#    6 - number of files to download per iteration, default 50
+#    7 - maximum number of chunks to be merged for TPC, default 3000"
 #
 # example local use (files will be downloaded from alien)
 #./mergeMakeOCDB.byComponent.sh /alice/data/2012/LHC12g/000188362/cpass0/ 188362 local://./OCDB local:///cvmfs/alice.gsi.de/alice/data/2011/OCDB/ 0 30
@@ -32,7 +33,8 @@ if [[ $# -eq 0 ]]; then
   echo  "              \"tfilecp\" will copy the files first using TFile::Cp()"
   echo  "              \"nocopy\" will access files over the network directly TFile::Open()"
   echo  "              default is tfilecp (use 0)"
-  echo  "  6 - number of files to download/merge per iteration, default 20"
+  echo  "  6 - number of files to download/merge per iteration, default 50"
+  echo  "  7 - maximum number of chunks to be merged for TPC, default 3000"
   echo
   echo "example:"
   echo  " ./mergeMakeOCDB.byComponent.sh /alice/data/2012/LHC12g/000188362/cpass1/ 188362 local://./OCDB raw:// alien_cp 10"
@@ -58,13 +60,20 @@ cleanup=1
 [[ $isLocal -eq 1 ]] && cleanup=0
 [[ $isLocal -eq 1 ]] && fileAccessMethod="nocopy"
 
+maxChunksTPC=3000
+[[ -n $7 ]] && maxChunksTPC=$7
+
+maxTimeToLive=53000
+[[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
+
 # setup components to be merged
-components="TOF MeanVertex T0 SDD TRD TPCCalib TPCAlign TPCCluster"
+#components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
+components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
 #################################################################
-echo
-echo $0" $*"
-echo
+echo "" | tee -a merge.log
+echo $0" $*" | tee -a merge.log
+echo "" | tee -a merge.log
 echo "***********************" | tee -a merge.log
 echo mergeMakeOCDB.byComponent.sh started | tee -a merge.log
 echo path = $path | tee -a merge.log
@@ -79,6 +88,9 @@ echo "***********************" | tee -a merge.log
 
 alienFileList="alien.list"
 localFileList="local.list"
+filesProcessedTPClist="filesProcessedTPC.log"
+rm -f $filesProcessedTPClist
+touch $filesProcessedTPClist
 partialLocalFileListPrefix=${localFileList}_
 partialAlienFileListPrefix=${alienFileList}_
 runningMergeByComponentLockFile="runningMergeByComponent.lock"
@@ -99,15 +111,19 @@ mergeByComponent()
   cleanup=$2
   
   #sanity checks
-  [[ ! -f $fileList ]] && echo "$fileList does not exist" && return
-  mkdir -p $runningDirectory
-  [[ ! -d $runningDirectory ]] && echo "cannot create the running directory $runningDirectory" && return 1
-  
-  #add the results of previous iteration to the BEGINNING of the list of files to be merged
-  if [[ -f CalibObjects.root ]]; then
-    echo "../CalibObjects.root" > $runningDirectory/$fileList
+  if [[ ! -f ${fileList} ]]; then
+    echo "${fileList} does not exist"
+    rm -f $runningMergeByComponentLockFile
+    return 1
   fi
-
+  mkdir -p $runningDirectory
+  if [[ ! -d $runningDirectory ]]; then
+    echo "cannot create the running directory $runningDirectory"
+    echo removing lock $runningMergeByComponentLockFile
+    rm -f $runningMergeByComponentLockFile
+    return 1
+  fi
+  
   #move the to be merged files to the running directory and make a list of available files
   #handle the case of archives (x.zip#y.root) as well
   nFiles=0
@@ -120,59 +136,64 @@ mergeByComponent()
       if [[ -f ${file} ]]; then
         ((nFiles++))
         if [[ -f "./${file}" ]]; then
-          echo "../${file}${fileContent}" >> "${runningDirectory}/$fileList"
+          echo "../${file}${fileContent}" >> "${runningDirectory}/${fileList}"
         else
-          echo "${file}${fileContent}" >> "${runningDirectory}/$fileList"
+          echo "${file}${fileContent}" >> "${runningDirectory}/${fileList}"
         fi
       fi
     fi
-  done < $fileList
-  [[ $nFiles -lt 1 ]] && echo "no new files in $fileList" && rm -rf $runningDirectory && return
+  done < ${fileList}
+  if [[ $nFiles -lt 1 ]]; then
+    echo "no new files in ${fileList}"
+    echo rm -rf $runningDirectory 
+    rm -rf $runningDirectory 
+    echo removing lock $runningMergeByComponentLockFile
+    rm -f $runningMergeByComponentLockFile
+    return 1
+  fi
 
   #copy the macro to the running directory
   [[ -f mergeByComponent.C ]] && cp mergeByComponent.C $runningDirectory
 
+  #go to running directory
   cd $runningDirectory
-
-  echo "processing following files from $fileList:"
-  cat $fileList
+  
+  numberOfChunksTPC=$(cat ../$filesProcessedTPClist 2>/dev/null | wc -l )
 
   for det in $components; do
+  
     # merge
     echo "***********************" 
-    echo merging $det data
+    echo merging ${det} data
     echo "***********************"
-    echo aliroot -b -q "mergeByComponent.C(\"$det\", \"$fileList\")"
-    aliroot -b -q "mergeByComponent.C(\"$det\", \"$fileList\")" 2>&1 | tee -a merge_${det}.log
+
+    #limit the number of chunks processed by TPC
+    if [[ "${det}" =~ TPC && $numberOfChunksTPC -ge $maxChunksTPC ]]; then
+      echo "Not merging TPC anymore, max number of chunks processed ($maxChunksTPC)"
+      continue
+    fi
+
+    #add the results of previous iteration to the BEGINNING of the list of files to be merged
+    [[ -f ../CalibObjects_${det}.root ]] && echo "../CalibObjects_${det}.root" > ${fileList}_${det}
+    cat ${fileList} >> ${fileList}_${det}
+
+    echo "processing following files from ${fileList}_${det}:"
+    cat ${fileList}_${det}
+
+    echo aliroot -b -q "mergeByComponent.C(\"${det}\", \"${fileList}_${det}\")"
+    aliroot -b -q "mergeByComponent.C(\"${det}\", \"${fileList}_${det}\")" 2>&1 | tee -a merge_${det}.log
     if validateMerging ${det}; then
-      echo "### merge OK: mv CalibObjects.root CalibObjects_$det.root"
-      mv CalibObjects.root CalibObjects_$det.root
+      echo "### merge OK: mv CalibObjects.root ../CalibObjects_${det}.root"
+      mv -f CalibObjects.root ../CalibObjects_${det}.root
+      [[ "${det}" =~ TPCCalib ]] && cat ${fileList} >> ../$filesProcessedTPClist
     else 
-    echo "### merging not validated"
+      echo "### merging not validated"
       rm -f CalibObjects.root
     fi
-    mv syswatch.log syswatch_merge_$det.log
-  done
-  
-  # global merge
-  echo "***********************"
-  echo merging ALL data
-  echo "***********************"
-  partialCalibObjectsList="objects.list.${1}"
-  ls -1 CalibObjects_*.root > $partialCalibObjectsList
-  echo aliroot -b -q "mergeByComponent.C(\"ALL\", \"$partialCalibObjectsList\")"
-  aliroot -b -q "mergeByComponent.C(\"ALL\", \"$partialCalibObjectsList\")" 2>&1 | tee -a merge_ALL.log
-  if validateMerging "ALL"; then
-    #move the new CalibObjects to parent directory
-    echo mv -f CalibObjects.root ..
-    mv -f CalibObjects.root ..
-  else 
-    echo "### merging not validated"
-    rm -f CalibObjects.root
-  fi
+    mv syswatch.log syswatch_merge_${det}.log
 
-  mv syswatch.log syswatch_ALL.log
-  rm $partialCalibObjectsList
+  done
+
   
   #move stuff back to the parent dir and clean up
   #merge the syswatch logs
@@ -216,10 +237,11 @@ mergeByComponent()
   rm -rf $runningDirectory
 
   #unlock
+  echo removing lock $runningMergeByComponentLockFile
   rm -f $runningMergeByComponentLockFile
-  [[ ! -f CalibObjects.root ]] && echo "WARNING: CalibObjects.root not available!"
   echo "***mergeByComponent() DONE"
   echo
+  echo "numberOfChunksTPC=$numberOfChunksTPC"
   return 0
 }
 
@@ -277,11 +299,23 @@ if [[ $isLocal -eq 0 ]]; then
 else
   cp $path $alienFileList
 fi
+#randomize the list
+#keep the first line intact (it is the largest file of the entire collection)
+sed -n '1p' ${alienFileList} > ${alienFileList}.tmp
+sed '1d' ${alienFileList} | while read x; do echo "${RANDOM} ${x}"; done|sort -n|cut -d" " -f2- >> ${alienFileList}.tmp
+mv -f ${alienFileList}.tmp ${alienFileList}
+
+#split into sublists, each to be processed separately
 echo split --numeric-suffixes --suffix-length=6 --lines=$numberOfFilesInAbunch ${alienFileList} ${partialAlienFileListPrefix} | tee -a copy.log
 split --numeric-suffixes --suffix-length=6 --lines=$numberOfFilesInAbunch ${alienFileList} ${partialAlienFileListPrefix}
 rm -f $runningMergeByComponentLockFile
+
 for partialAlienFileList in ${partialAlienFileListPrefix}*
 do
+
+  #if it takes too long, break
+  #[[ ${SECONDS} -gt ${maxTimeToLive} ]] && break
+
   partialAlienFileListPostfix=${partialAlienFileList#$partialAlienFileListPrefix}
   partialLocalFileList=${partialLocalFileListPrefix}${partialAlienFileListPostfix}
 
@@ -327,14 +361,37 @@ do
   fi
 done
 
+#merge all the subfiles into one, wait for the last one to complete
+echo "waitIfLocked $runningMergeByComponentLockFile" | tee -a merge.log
+waitIfLocked $runningMergeByComponentLockFile
+if [[ "$components" =~ ALL && -f CalibObjects_ALL.root ]]; then
+  mv -f CalibObjects_ALL.root CalibObjects.root
+else
+  echo "***********************"
+  echo merging ALL data
+  echo "***********************"
+  finalCalibObjectsList="finalObjects.list"
+  ls -1 CalibObjects_*.root > $finalCalibObjectsList
+  echo aliroot -b -q "mergeByComponent.C(\"ALL\", \"$finalCalibObjectsList\")" | tee -a merge.log
+  aliroot -b -q "mergeByComponent.C(\"ALL\", \"$finalCalibObjectsList\")" 2>&1 | tee -a merge.log
+  mv -f syswatch.log syswatch_merge_ALL.log
+fi
+
+if ! validateMerging "ALL"; then
+  echo final merging not validatet, exiting...
+  exit 1
+fi
+rm -f CalibObjects_*.root
+
 #cleanup
 rm -f ${partialAlienFileListPrefix}*
 rm -f ${partialLocalFileListPrefix}*
 rm -f $alienFileList
+rm -f $localFileList
 
 # make OCDB
 echo "***********************" 2>&1 | tee -a ocdb.log
-echo making $det OCDB 2>&1 | tee -a ocdb.log
+echo making ${det} OCDB 2>&1 | tee -a ocdb.log
 echo "***********************" 2>&1 | tee -a ocdb.log
 echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
 aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
@@ -344,4 +401,4 @@ mv syswatch.log syswatch_makeOCDB.log
 echo "***********************" 2>&1 | tee -a ocdb.log
 echo SUMMARY 2>&1 | tee -a ocdb.log
 echo "***********************" 2>&1 | tee -a ocdb.log
-ls -altr *CalibObjects.root *done 2>&1 | tee -a ocdb.log
+ls -altr CalibObjects.root *done 2>&1 | tee -a ocdb.log
