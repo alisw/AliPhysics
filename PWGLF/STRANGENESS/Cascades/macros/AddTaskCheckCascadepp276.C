@@ -58,11 +58,11 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
    TString outputFileName = Form("%s:PWGLFStrangeness.outputCheckCascadepp276", AliAnalysisManager::GetCommonFileName());
    // Objects name
    TString outputname0 = "clistCasc";
-   TString outpotname1 = "cfcontPIDAsXiM";
-   TString outpotname2 = "cfcontPIDAsXiP";
-   TString outpotname3 = "cfcontPIDAsOmegaM";
-   TString outpotname4 = "cfcontPIDAsOmegaP";
-   TString outpotname5 = "cfcontAsCuts";
+   TString outputname1 = "cfcontPIDAsXiM";
+   TString outputname2 = "cfcontPIDAsXiP";
+   TString outputname3 = "cfcontPIDAsOmegaM";
+   TString outputname4 = "cfcontPIDAsOmegaP";
+   TString outputname5 = "cfcontAsCuts";
       outputname0 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
       outputname1 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
       outputname2 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
