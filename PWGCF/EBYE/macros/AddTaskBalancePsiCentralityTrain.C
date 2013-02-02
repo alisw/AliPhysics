@@ -28,7 +28,6 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t ptMax=1.5,
 						       Double_t etaMin=-0.8,
 						       Double_t etaMax=0.8,
-						       Double_t deltaEtaMax=2.0,
 						       Double_t maxTPCchi2 = -1, 
 						       Int_t minNClustersTPC = -1,
 						       Bool_t kUsePID = kFALSE,
@@ -72,6 +71,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
   AliBalancePsi *bfm = 0;  // mixing Balance function object
+
+  //maximum Delta eta range
+  Double_t deltaEtaMax=TMath::Abs(etaMax-etaMin);
 
   if (analysisType=="ESD"){
     bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
