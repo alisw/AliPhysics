@@ -906,8 +906,8 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 //========================correction=============================//
 Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta, Double_t vPhi, 
 								Double_t vPt, Short_t vCharge, Double_t gCentrality) {
-  // -- Get efficiency correction of particle dependent on (eta, phi, pt, charge, centrality)  
-  
+  // -- Get efficiency correction of particle dependent on (eta, phi, pt, charge, centrality) 
+
   Double_t correction = 1.;
   //Double_t dimBin[3] = {vEta, vPhi, vPt, gCentrality}; // eta, phi, pt, centrality
  
@@ -923,6 +923,11 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta, D
     if ((Int_t)(centralityArrayForPbPb[i]) <= gCentrality <= (Int_t)(centralityArrayForPbPb[i])){
       gCentralityInt = i;
     }
+  }
+
+  // safety check if correction matrix is available --> return correction = 1.
+  if(!fHistMatrixCorrectionPlus[gCentralityInt-1] || !fHistMatrixCorrectionPlus[gCentralityInt-1]){
+    return 1.;
   }
     
   if (vCharge > 0) {
