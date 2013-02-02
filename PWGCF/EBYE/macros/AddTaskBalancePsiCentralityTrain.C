@@ -28,6 +28,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t ptMax=1.5,
 						       Double_t etaMin=-0.8,
 						       Double_t etaMax=0.8,
+						       Double_t deltaEtaMax=2.0,
 						       Double_t maxTPCchi2 = -1, 
 						       Int_t minNClustersTPC = -1,
 						       Bool_t kUsePID = kFALSE,
@@ -73,19 +74,19 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliBalancePsi *bfm = 0;  // mixing Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass);
-    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,fArgEventClass,deltaEtaMax);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");

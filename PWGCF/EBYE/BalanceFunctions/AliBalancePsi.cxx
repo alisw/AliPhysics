@@ -64,6 +64,7 @@ AliBalancePsi::AliBalancePsi() :
   fHistConversionafter(0),
   fHistPsiMinusPhi(0),
   fPsiInterval(15.),
+  fDeltaEtaMax(2.0),
   fHBTCut(kFALSE),
   fConversionCut(kFALSE),
   fEventClass("EventPlane"){
@@ -90,6 +91,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistConversionafter(balance.fHistConversionafter),
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
   fPsiInterval(balance.fPsiInterval),
+  fDeltaEtaMax(balance.fDeltaEtaMax),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
   fEventClass("EventPlane"){
@@ -197,7 +199,7 @@ void AliBalancePsi::InitHistograms() {
   const Int_t kNDeltaEtaBins = 80;
   Double_t deltaEtaBins[kNDeltaEtaBins+1];
   for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
-    deltaEtaBins[i] = -2.0 + i * 0.05;
+    deltaEtaBins[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBins;
   iBinPair[1]       = kNDeltaEtaBins;
   dBinsPair[1]      = deltaEtaBins;
   axisTitlePair[1]  = "#Delta#eta"; 

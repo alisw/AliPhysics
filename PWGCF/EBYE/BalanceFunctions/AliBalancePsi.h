@@ -29,8 +29,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t kTrackVariablesSingle = 2;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
-const Int_t kTrackVariablesPair   = 5;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
+const Int_t kTrackVariablesSingle = 2;       // track variables in histogram (event class, pTtrig)
+const Int_t kTrackVariablesPair   = 5;       // track variables in histogram (event class, dEta, dPhi, pTtrig, ptAssociated)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 class AliBalancePsi : public TObject {
@@ -57,6 +57,7 @@ class AliBalancePsi : public TObject {
   void SetShuffle(Bool_t shuffle) {fShuffle = shuffle;}
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
   void SetEventClass(TString receivedEventClass){ fEventClass = receivedEventClass; } 
+  void SetDeltaEtaMax(Double_t receivedDeltaEtaMax){ fDeltaEtaMax = receivedDeltaEtaMax; }
 
   void InitHistograms(void);
 
@@ -181,11 +182,12 @@ class AliBalancePsi : public TObject {
   TH2D *fHistPsiMinusPhi;//
 
   Double_t fPsiInterval;// interval in Psi-phi1
+  Double_t fDeltaEtaMax;// maximum delta eta for output THnSparse
 
   Bool_t fHBTCut;//HBT cut
   Bool_t fConversionCut;//conversion cut
 
-    TString fEventClass;
+  TString fEventClass;
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
