@@ -123,7 +123,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
     Double_t  dvertex = TMath::Abs(vzPRI-vzSPD);
     // skip events with dvertex>1mm if requested
-    // https://indico.cern.ch/getFixle.py/access?contribId=4&resId=0&materialId=slides&confId=189624
+    // https://indico.cern.ch/getFile.py/access?contribId=4&resId=0&materialId=slides&confId=189624
     // also check on vertex z if requested
     if (fZvertexDiff && (dvertex>0.1))
       fIsGoodEvent = kFALSE;
