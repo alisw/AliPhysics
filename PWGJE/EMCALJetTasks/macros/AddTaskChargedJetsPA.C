@@ -41,9 +41,9 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   }
   TString myContName("");
   if(isMC)
-    myContName = Form("ChargedJetsPA_R0%2.0f_%s_MC",jetRadius*100,triggerName.Data());
+    myContName = Form("AnalysisR0%2.0f_%s_MC",jetRadius*100,triggerName.Data());
   else
-    myContName = Form("ChargedJetsPA_R0%2.0f_%s",jetRadius*100,triggerName.Data());
+    myContName = Form("AnalysisR0%2.0f_%s",jetRadius*100,triggerName.Data());
 
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
@@ -52,7 +52,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 
   // #### Define analysis task
   AliAnalysisTaskChargedJetsPA *task = NULL;
-  contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, kFileName);
+  contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
   task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, usedClusters, jetFinderTask->GetName(),jetFinderTaskKT->GetName());
 
   // #### Task preferences

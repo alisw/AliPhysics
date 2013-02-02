@@ -1,6 +1,6 @@
 // $Id$
 
-void AddTaskJetPreparation(
+AliAnalysisTaskSE* AddTaskJetPreparation(
   const char*    dataType           = "ESD",
   const char*    periodstr          = "LHC11h",
   const char*    usedTracks         = "PicoTracks",
@@ -92,4 +92,7 @@ void AddTaskJetPreparation(
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(usedMCParticles, kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
   }
+
+  // Return one task that represents the jet preparation on LEGO trains
+  return emcalParts;
 }
