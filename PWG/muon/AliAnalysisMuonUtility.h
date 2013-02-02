@@ -79,6 +79,8 @@ class AliAnalysisMuonUtility : public TObject {
   // Utilities for ESD/AOD
   static Int_t GetPassNumber ( const AliInputEventHandler* eventHandler );
   static Int_t GetPassNumber ( const char* str );
+  static TString GetPassName ( const AliInputEventHandler* eventHandler );
+  static TString GetPassName ( const char* str );
   
   ClassDef(AliAnalysisMuonUtility, 0);
 };

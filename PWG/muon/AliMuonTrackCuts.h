@@ -1,6 +1,7 @@
 #ifndef ALIMUONTRACKCUTS_H
 #define ALIMUONTRACKCUTS_H
 
+#include "TString.h"
 #include "AliAnalysisCuts.h"
 #include "AliOADBMuonTrackCutsParam.h"
 
@@ -36,13 +37,18 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   virtual Bool_t IsSelected ( TList* /*list */ );
   
   void SetDefaultFilterMask();
-  void SetPassNumber ( Int_t passNumber ) { fPassNumber = passNumber; }
+  void SetPassNumber ( Int_t passNumber );
+  /// Set pass name
+  void SetPassName ( TString passName ) { fPassName = passName; }
+  /// Set is MC
   void SetIsMC ( Bool_t isMC = kTRUE ) { fIsMC = isMC; }
-  void SetAllowDefaultParams ( Bool_t allowDefaultParams = kTRUE, Int_t passNumber = -1 ) { fAllowDefaultParams = allowDefaultParams; fPassNumber = passNumber; }
-  void SetCustomParamFromRun ( Int_t runNumber = -1, Int_t passNumber = -1 );
+  /// Allow default parameters
+  void SetAllowDefaultParams ( Bool_t allowDefaultParams = kTRUE ) { fAllowDefaultParams = allowDefaultParams; }
+  void SetCustomParamFromRun ( Int_t runNumber = -1, TString passName = "" );
+  void SetCustomParam ( const AliInputEventHandler* eventHandler );
   
-  /// Get pass number
-  Int_t GetPassNumber () const { return fPassNumber; }
+  /// Get pass name
+  TString GetPassName () const { return fPassName; }
 
   Bool_t SetRun ( const AliInputEventHandler* eventHandler );
   
@@ -65,16 +71,17 @@ class AliMuonTrackCuts : public AliAnalysisCuts
 
  private:
   
-  Bool_t ReadParamFromOADB ( Int_t runNumber, Int_t passNumber );
+  TString GuessPass ( const AliInputEventHandler* eventHandler );
+  Bool_t ReadParamFromOADB ( Int_t runNumber, TString passName );
 
   Bool_t fIsMC;               ///< Monte Carlo analysis
   Bool_t fUseCustomParam;     ///< Use custom parameters (do not search in OADB)
   Bool_t fSharpPtCut;         ///< Flag to apply sharp pt cut in track-trigger matching
   Bool_t fAllowDefaultParams; ///< Flag to allow default parameters from OADB
-  Int_t fPassNumber;          ///< Pass number
+  TString fPassName;          ///< Pass name
   AliOADBMuonTrackCutsParam fOADBParam; ///< Track param in OADB
 
-  ClassDef(AliMuonTrackCuts, 4); // Class for muon track filters
+  ClassDef(AliMuonTrackCuts, 5); // Class for muon track filters
 };
  
 #endif
