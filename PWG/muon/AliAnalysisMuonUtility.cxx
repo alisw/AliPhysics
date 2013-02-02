@@ -382,6 +382,38 @@ AliVVertex* AliAnalysisMuonUtility::GetVertexSPD ( const AliVEvent* event )
 
 
 //________________________________________________________________________
+TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventHandler )
+{
+  /// Get pass name from event
+  
+  // At present there is no straightforward way to get the pass name.
+  // The pass name is usually written in the path to the ESDs/AODs
+  // but this won't work for:
+  // - MC data (no pass info available)
+  // - local ESDs/AODs
+  
+  TString filePath = "";
+  const AliVEvent* event = eventHandler->GetEvent();
+  if ( IsAODEvent(event) ) {
+    // In AODs, the header contains the path to the input ESD event
+    // However, sometimes there is not the FULL path of the ESDs.
+    // In that case we cannot extract the pass number.
+    // To increase the possibility of getting the pass number,
+    // try first to find the info in the AOD header
+    // (which is a priori safer because it works even on local copies of AODs)
+    // and if it does not work, directly check the path to the AOD
+    filePath = static_cast<const AliAODEvent*> (event)->GetHeader()->GetESDFileName();
+    TString passName = GetPassName(filePath.Data());
+    if ( passName.IsNull() ) AliWarningClass("Check again with the AOD path");
+    else return passName;
+  }
+  
+  filePath = eventHandler->GetTree()->GetCurrentFile()->GetName();
+  return GetPassName(filePath.Data());
+}
+
+
+//________________________________________________________________________
 Int_t AliAnalysisMuonUtility::GetPassNumber ( const AliInputEventHandler* eventHandler )
 {
   /// Get pass number from event
@@ -392,26 +424,38 @@ Int_t AliAnalysisMuonUtility::GetPassNumber ( const AliInputEventHandler* eventH
   // - MC data (no pass info available)
   // - local ESDs/AODs
   
-  TString filePath = "";
-  const AliVEvent* event = eventHandler->GetEvent();  
-  if ( IsAODEvent(event) ) {
-    // In AODs, the header contains the path to the input ESD event
-    // However, sometimes there is not the FULL path of the ESDs.
-    // In that case we cannot extract the pass number.
-    // To increase the possibility of getting the pass number,
-    // try first to find the info in the AOD header
-    // (which is a priori safer because it works even on local copies of AODs)
-    // and if it does not work, directly check the path to the AOD
-    filePath = static_cast<const AliAODEvent*> (event)->GetHeader()->GetESDFileName();
-    Int_t passNumber = GetPassNumber(filePath.Data());
-    if ( passNumber < 0 ) AliWarningClass("Check again with the AOD path");
-    else return passNumber;
-  }
-  
-  filePath = eventHandler->GetTree()->GetCurrentFile()->GetName();
-  return GetPassNumber(filePath.Data());
+  TString passName = GetPassName(eventHandler);
+  return GetPassNumber(passName);
 }
 
+
+//________________________________________________________________________
+TString AliAnalysisMuonUtility::GetPassName ( const char* str )
+{
+  //
+  /// Get pass name from string
+  //
+  
+  TString currName(str);
+  TObjArray* array = currName.Tokenize("/");
+  
+  TString passName = "";
+  for ( Int_t ientry=0; ientry<array->GetEntries(); ientry++ ) {
+    TString currToken = static_cast<TObjString*>(array->At(ientry))->GetString();
+    TString checkToken(currToken);
+    checkToken.ToUpper();
+    if ( checkToken.Contains("PASS") || checkToken.Contains("MUON_CALO") ) {
+      passName = currToken;
+      break;
+    }
+  }
+  
+  delete array;
+  
+  if ( passName.IsNull() ) AliWarningClass(Form("Cannot find pass name in: %s", str));
+  
+  return passName;
+}
 
 //________________________________________________________________________
 Int_t AliAnalysisMuonUtility::GetPassNumber ( const char* str )

@@ -34,6 +34,7 @@
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 
+#include "AliProdInfo.h"
 #include "AliOADBContainer.h"
 
 #include "AliAnalysisMuonUtility.h"
@@ -50,7 +51,7 @@ AliMuonTrackCuts::AliMuonTrackCuts() :
   fUseCustomParam(kFALSE),
   fSharpPtCut(kFALSE),
   fAllowDefaultParams(kFALSE),
-  fPassNumber(-1),
+  fPassName(""),
   fOADBParam()
 {
   /// Default ctor.
@@ -63,7 +64,7 @@ AliAnalysisCuts(name, title),
   fUseCustomParam(kFALSE),
   fSharpPtCut(kFALSE),
   fAllowDefaultParams(kFALSE),
-  fPassNumber(-1),
+  fPassName(""),
   fOADBParam("muonTrackCutsParam")
 {
   /// Constructor
@@ -78,7 +79,7 @@ AliMuonTrackCuts::AliMuonTrackCuts(const AliMuonTrackCuts& obj) :
   fUseCustomParam(obj.fUseCustomParam),
   fSharpPtCut(obj.fSharpPtCut),
   fAllowDefaultParams(obj.fAllowDefaultParams),
-  fPassNumber(obj.fPassNumber),
+  fPassName(obj.fPassName),
   fOADBParam(obj.fOADBParam)
 {
   /// Copy constructor
@@ -95,7 +96,7 @@ AliMuonTrackCuts& AliMuonTrackCuts::operator=(const AliMuonTrackCuts& obj)
     fUseCustomParam = obj.fUseCustomParam;
     fSharpPtCut = obj.fSharpPtCut;
     fAllowDefaultParams = obj.fAllowDefaultParams;
-    fPassNumber = obj.fPassNumber;
+    fPassName = obj.fPassName;
     fOADBParam = obj.fOADBParam;
   }
   return *this;
@@ -109,19 +110,26 @@ AliMuonTrackCuts::~AliMuonTrackCuts()
 }
 
 //________________________________________________________________________
-void AliMuonTrackCuts::SetCustomParamFromRun( Int_t runNumber, Int_t passNumber )
+void AliMuonTrackCuts::SetPassNumber ( Int_t passNumber )
+{
+  /// Set pass number (for backward compatibility)
+  AliWarning("Obsolete: please use SetPassName instead");
+  fPassName = Form("pass%i",passNumber);
+}
+
+//________________________________________________________________________
+void AliMuonTrackCuts::SetCustomParamFromRun( Int_t runNumber, TString passName )
 {
   /// It first searches the default parameters in OADB
   /// then disables the access to the OADB
   /// and allows to manually modify parameters
-
-  fPassNumber = passNumber;
-  ReadParamFromOADB ( runNumber, passNumber );
+  
+  if ( passName.IsNull() ) passName = fPassName;
+  else fPassName = passName;
+  ReadParamFromOADB ( runNumber, passName );
   fUseCustomParam = kTRUE;
-  //AliWarning (Form("Setting parameters from run %i pass %i. From now on SetRun does NOTHING!!", runNumber, passNumber));
-  AliWarning (Form("From now on SetRun does NOTHING!!"));
+  AliWarning ("From now on SetRun does NOTHING!!");
 }
-
 
 //________________________________________________________________________
 AliOADBMuonTrackCutsParam* AliMuonTrackCuts::CustomParam ( )
@@ -139,30 +147,59 @@ AliOADBMuonTrackCutsParam* AliMuonTrackCuts::CustomParam ( )
 }
 
 //________________________________________________________________________
+void AliMuonTrackCuts::SetCustomParam ( const AliInputEventHandler* eventHandler )
+{
+  /// It tries to sets the parameters from the OADB
+  /// for the current run, then gives the possiblity to the user
+  /// to change them in his task
+  
+  Int_t runNumber = eventHandler->GetEvent()->GetRunNumber();
+  TString passName = GuessPass(eventHandler);
+  SetCustomParamFromRun( runNumber, passName );
+}
+
+//________________________________________________________________________
+TString AliMuonTrackCuts::GuessPass ( const AliInputEventHandler* eventHandler )
+{
+  /// If pass not defined guess it from event handler
+  
+  TString passName = fPassName;
+  if ( passName.IsNull() ) {
+    // Pass number not set by user
+    // First try to get it from data
+    //    AliProdInfo prodInfo(eventHandler->GetUserInfo());
+    //    if ( prodInfo.GetRecoPass() >= 0 ) {
+    //      passNumber = prodInfo.GetRecoPass();
+    //      AliInfo(Form("Getting pass number from prodInfo: pass%i", passNumber));
+    //    }
+    //    else {
+    // If not found, try to guess it from data path
+    passName = AliAnalysisMuonUtility::GetPassName(eventHandler);
+    AliInfo(Form("Guessing pass name from path: %s", passName.Data()));
+    //    }
+  }
+  return passName;
+}
+
+//________________________________________________________________________
 Bool_t AliMuonTrackCuts::SetRun ( const AliInputEventHandler* eventHandler )
 {
   /// Get parameters from OADB for current run
   
   if ( fUseCustomParam ) return kFALSE;
-  Int_t runNumber = eventHandler->GetEvent()->GetRunNumber();
-  
-  Int_t passNumber = fPassNumber;
-  if ( fPassNumber < 0 && ! fAllowDefaultParams ) {
-    // Pass number not set by user: try to guess it from data
-    passNumber = AliAnalysisMuonUtility::GetPassNumber(eventHandler);
-    AliInfo(Form("Guessing pass number from path: pass%i", passNumber));
-  }
-  return ReadParamFromOADB ( runNumber, passNumber );
+  Int_t runNumber = eventHandler->GetEvent()->GetRunNumber();  
+  TString passName = GuessPass(eventHandler);
+  return ReadParamFromOADB ( runNumber, passName );
 }
 
 
 //________________________________________________________________________
-Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, Int_t passNumber )
+Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, TString passName )
 {
 
   /// Read parameters from OADB
   
-  if ( passNumber < 0 && ! fAllowDefaultParams ) AliFatal("Pass number not specified!");
+  if ( passName.IsNull() && ! fAllowDefaultParams ) AliFatal("Pass name not specified! Please provide one or allow for default parameters");
   
   TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
   if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
@@ -174,63 +211,55 @@ Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, Int_t passNumber )
   }
 
   // Search the container name to find the correct pass
-  AliOADBContainer* oadbContainer = 0x0;
-  AliOADBMuonTrackCutsParam* runMatchParams = 0x0, *lastMatchParams = 0x0, *lastDefaultParams = 0x0;
+  AliOADBContainer* matchContainer = 0x0, *defaultContainer = 0x0;
+  AliOADBMuonTrackCutsParam* matchParams = 0x0, *defaultParams = 0x0;
   
-  Int_t lastDefaultPass = -999, lastMatchPass = -999, foundPass = -999;
   TList* listOfKeys = file->GetListOfKeys();
   TIter next(listOfKeys);
   TObject* key = 0x0;
   // loop on keys
   while ( ( key = next() ) ) {
-    Int_t currPass = AliAnalysisMuonUtility::GetPassNumber(key->GetName());
-    // if user selects a specific pass number, check for it
-    if ( fPassNumber >= 0 && currPass != fPassNumber ) continue;
-    
-    oadbContainer = static_cast<AliOADBContainer*> (file->Get(key->GetName()));    
+
+    TString checkName(key->GetName());
+    checkName.ToUpper();
+    Bool_t isDefault = checkName.Contains("DEFAULT");
+    // if user selects a specific pass name, check for it
+    // otherwise use default
+    if ( isDefault ) {
+      if ( ! fAllowDefaultParams ) continue;
+    }
+    else if ( passName.CompareTo(key->GetName()) ) continue;
+
+    AliOADBContainer* oadbContainer = static_cast<AliOADBContainer*> (file->Get(key->GetName()));
     // Check if the found parameters are default or match the requested run
     AliOADBMuonTrackCutsParam* currParams = static_cast<AliOADBMuonTrackCutsParam*> (oadbContainer->GetObject(runNumber, "default"));
-    if ( oadbContainer->GetDefaultObject(currParams->GetName()) ) {
-      if ( currPass > lastDefaultPass ) {
-        lastDefaultPass = currPass;
-        lastDefaultParams = currParams;
-      }
+    if ( ! currParams ) continue;
+    if ( isDefault ) {
+      defaultContainer = oadbContainer;
+      defaultParams = currParams;
     }
     else {
-      if ( currPass == passNumber ) {
-        foundPass = currPass;
-        runMatchParams = currParams;
-        break;
-      }
-      else if ( currPass > lastMatchPass ) {
-        lastMatchPass = currPass;
-        lastMatchParams = currParams;
-      }
+      matchContainer = oadbContainer;
+      matchParams = currParams;
+      break;
     }
   } // loop on keys
-  
-  if ( ! oadbContainer ) {
-    file->Close();
-    AliFatal(Form("Requested pass%i not found!", passNumber));
-    return kFALSE; // Not needed, but Coverity could complain
+
+  AliOADBContainer* selectedContainer = 0x0;
+  if ( matchParams ) {
+    selectedContainer = matchContainer;
+    fOADBParam = *matchParams;
   }
-  
-  if ( runMatchParams ) fOADBParam = *runMatchParams;
-  else if ( fAllowDefaultParams ) {
-    AliOADBMuonTrackCutsParam* currParams = ( lastMatchParams ) ? lastMatchParams : lastDefaultParams;
-    if ( ! currParams ) { // This case should be impossible, but Coverity complains
-      AliFatal("No parameter found");
-      return kFALSE;
-    }
-    foundPass = ( lastMatchParams ) ? lastMatchPass : lastDefaultPass;
-    fOADBParam = *currParams;
-    AliWarning(Form("Requested run %i not found in pass%i: using %s (pass%i)", runNumber, passNumber, fOADBParam.GetName(),foundPass));
+  else if ( defaultParams ) {
+    selectedContainer = defaultContainer;
+    fOADBParam = *defaultParams;
+    AliWarning(Form("Requested run %i not found in %s: using %s (%s)", runNumber, passName.Data(), fOADBParam.GetName(), selectedContainer->GetName()));
   }
-  else AliFatal(Form("Requested run %i not found in pass%i!", runNumber, passNumber));
+  else AliFatal(Form("Requested run %i not found in %s! Please check your pass name or allow default parameters", runNumber, passName.Data()));
   
   file->Close();
 
-  AliInfo(Form("Requested run %i pass%i. Param. set: %s (pass%i)", runNumber, passNumber, fOADBParam.GetName(), foundPass));
+  AliInfo(Form("Requested run %i in pass %s. Param. set: %s (%s)", runNumber, passName.Data(), fOADBParam.GetName(), selectedContainer->GetName()));
   
   return kTRUE;
 }
