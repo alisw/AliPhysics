@@ -7,7 +7,6 @@ class AliVEvent;
 class AliVVertex;
 class TList;
 class TAxis;
-class AliTimeStamp;
 class TArrayI;
 class TString;
 class TObjString;
@@ -104,10 +103,10 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TAxis* fCentralityClasses;   ///< Centrality classes
   
   private:
-  AliTimeStamp* fTimeStamp; //!< current event time stamp
+  ULong64_t fEventTriggerMask; //!< Fired trigger mask in the event
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event 
   
-  ClassDef(AliMuonEventCuts, 3); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 4); // Class for muon event filters
 };
 
 #endif

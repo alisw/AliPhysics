@@ -34,7 +34,6 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliCentrality.h"
-#include "AliTimeStamp.h"
 
 #include "AliAnalysisMuonUtility.h"
 
@@ -58,7 +57,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fTrigInputsMap(0x0),
   fAllSelectedTrigClasses(0x0),
   fCentralityClasses(0x0),
-  fTimeStamp(0x0),
+  fEventTriggerMask(0),
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Default ctor.
@@ -79,7 +78,7 @@ AliAnalysisCuts(name, title),
   fTrigInputsMap(new THashList()),
   fAllSelectedTrigClasses(new THashList()),
   fCentralityClasses(0x0),
-  fTimeStamp(0x0),
+  fEventTriggerMask(0),
   fSelectedTrigClassesInEvent(new TObjArray())
 {
   /// Constructor
@@ -108,7 +107,7 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fTrigInputsMap(obj.fTrigInputsMap),
   fAllSelectedTrigClasses(obj.fAllSelectedTrigClasses),
   fCentralityClasses(obj.fCentralityClasses),
-  fTimeStamp(obj.fTimeStamp),
+  fEventTriggerMask(obj.fEventTriggerMask),
   fSelectedTrigClassesInEvent(obj.fSelectedTrigClassesInEvent)
 {
   /// Copy constructor
@@ -133,7 +132,7 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fTrigInputsMap = obj.fTrigInputsMap;
     fAllSelectedTrigClasses = obj.fAllSelectedTrigClasses;
     fCentralityClasses = obj.fCentralityClasses;
-    fTimeStamp = obj.fTimeStamp;
+    fEventTriggerMask = obj.fEventTriggerMask;
     fSelectedTrigClassesInEvent = obj.fSelectedTrigClassesInEvent;
   }
   return *this;
@@ -152,7 +151,6 @@ AliMuonEventCuts::~AliMuonEventCuts()
   delete fAllSelectedTrigClasses;
   delete fSelectedTrigClassesInEvent;
   delete fCentralityClasses;
-  delete fTimeStamp;
 }
 
 //________________________________________________________________________
@@ -211,13 +209,11 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
 {
   /// Update the transient data member per event
   
-  AliTimeStamp currTimeStamp(event->GetOrbitNumber(), event->GetPeriodNumber(), event->GetBunchCrossNumber());
-  if ( fTimeStamp && fTimeStamp->Compare(&currTimeStamp) == 0 ) return kFALSE;
+  if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) ) return kFALSE;
   
   BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event), AliAnalysisMuonUtility::GetL0TriggerInputs(event), AliAnalysisMuonUtility::GetL1TriggerInputs(event), AliAnalysisMuonUtility::GetL2TriggerInputs(event));
   
-  delete fTimeStamp;
-  fTimeStamp = new AliTimeStamp(currTimeStamp);
+  fEventTriggerMask = event->GetTriggerMask();
   
   return kTRUE;
 }
@@ -525,9 +521,12 @@ void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
   
   AliDebug(2,Form("Fired classes: %s  Inputs 0x%x 0x%x 0x%x",firedTrigClasses.Data(),l0Inputs,l1Inputs,l2Inputs));
   
-  delete fSelectedTrigClassesInEvent;
-  fSelectedTrigClassesInEvent = new TObjArray(0);
-  fSelectedTrigClassesInEvent->SetOwner();
+  if ( fSelectedTrigClassesInEvent) fSelectedTrigClassesInEvent->Delete();
+  else {
+    fSelectedTrigClassesInEvent = new TObjArray(0);
+    fSelectedTrigClassesInEvent->SetOwner();
+  }
+  
 
   TString firedTrigClassesAny = "ANY " + firedTrigClasses;
   
@@ -756,7 +755,7 @@ void AliMuonEventCuts::Print(Option_t* option) const
     printf(" *** Muon event filter mask: *** \n");
     printf("  0x%x\n", filterMask);
     if ( filterMask & kPhysicsSelected ) printf("  Pass physics selection 0x%x\n", fPhysicsSelectionMask);
-    if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality < %g", fCentralityClasses->GetXmin(), fCentralityClasses->GetXmax() );
+    if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality < %g\n", fCentralityClasses->GetXmin(), fCentralityClasses->GetXmax() );
     if ( filterMask & kSelectedTrig )    printf("  Has selected trigger classes\n");
     if ( filterMask & kGoodVertex )      printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());
     printf(" ******************** \n");
