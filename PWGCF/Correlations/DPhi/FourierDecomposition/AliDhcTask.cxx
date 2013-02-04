@@ -40,7 +40,9 @@ AliDhcTask::AliDhcTask()
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
-  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fIndex(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
+  fHQAT(0x0), fHQAA(0x0),
+  fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
@@ -59,7 +61,9 @@ AliDhcTask::AliDhcTask(const char *name)
   fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
-  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fIndex(0x0),
+  fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0),
+  fHQAT(0x0), fHQAA(0x0),
+  fIndex(0x0),
   fCentrality(99), fZVertex(99), fEsdTPCOnly(0), fPoolMgr(0),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
@@ -160,11 +164,11 @@ void AliDhcTask::BookHistos()
   for (Int_t i=1; i<=nZvtx; i++) {
     zvtx[i] = fBZvtx->GetBinUpEdge(i);
   }
-
+  
   fHEvt = new TH2F("fHEvt", "Event-level variables; Zvtx; Cent", nZvtx, zvtx, nCent, cent);
   fOutputList->Add(fHEvt);
-  fHTrk = new TH2F("fHTrk", "Track-level variables", 
-		   100, 0, TMath::TwoPi(), 100, -fEtaMax, +fEtaMax);
+  fHTrk = new TH2F("fHTrk", "Track-level variables",
+                   100, 0, TMath::TwoPi(), 100, -fEtaMax, +fEtaMax);
   fOutputList->Add(fHTrk);
   
   fHPtAss = new TH1F("fHPtAss","PtAssoc;P_{T} (GeV/c) [GeV/c]",nPtAssc,pta);
@@ -180,59 +184,71 @@ void AliDhcTask::BookHistos()
   fOutputList->Add(fHPtTrgNorm2S);
   fHPtTrgNorm2M = (TH3*) fHPtTrgNorm1S->Clone("fHPtTrgNorm2M");
   fOutputList->Add(fHPtTrgNorm2M);
-
+  
   fHCent = new TH1F("fHCent","Cent;bins",nCent,cent);
   fOutputList->Add(fHCent);
   fHZvtx = new TH1F("fHZvtx","Zvertex;bins",nZvtx,zvtx);
   fOutputList->Add(fHZvtx);
+  
+  fHQAT = new TH3F("fHQAT","QA trigger;p_{T} (GeV/c);#eta;#phi",
+                   100,0.0,10.0,
+                   40,fEtaTLo,fEtaTHi,
+                   36,0.0,TMath::TwoPi());
+  fOutputList->Add(fHQAT);
+
+  fHQAA = new TH3F("fHQAA","QA associated;p_{T} (GeV/c);#eta;#phi",
+                   100,0.0,10.0,
+                   40,fEtaALo,fEtaAHi,
+                   36,0.0,TMath::TwoPi());
+  fOutputList->Add(fHQAA);
 
   fNbins = nPtTrig*nPtAssc*nCent*nZvtx;
   fHSs   = new TH2*[fNbins];
   fHMs   = new TH2*[fNbins];
   fHPts  = new TH1*[fNbins];
-
+  
   fIndex = new TFormula("GlobIndex","(t-1)*[0]*[1]*[2]+(z-1)*[0]*[1]+(x-1)*[0]+(y-1)+0*[4]");
   fIndex->SetParameters(nPtTrig,nPtAssc,nZvtx,nCent);
   fIndex->SetParNames("NTrigBins","NAssocBins", "NZvertexBins", "NCentBins");
   fOutputList->Add(fIndex);
-
+  
   Int_t count = 0;
   for (Int_t c=1; c<=nCent; ++c) {
     for (Int_t z=1; z<=nZvtx; ++z) {
       for (Int_t t=1; t<=nPtTrig; ++t) {
-	for (Int_t a=1; a<=nPtAssc; ++a) {
-	  fHSs[count]  = 0;
-	  fHMs[count]  = 0;
+        for (Int_t a=1; a<=nPtAssc; ++a) {
+          fHSs[count]  = 0;
+          fHMs[count]  = 0;
           fHPts[count] = 0;
-	  if (a>t) {
-	    ++count;
-	    continue;
-	  }
+          if (a>t) {
+            ++count;
+            continue;
+          }
           if (t==1 && a==1) {
             TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f)",
-                               c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c), 
+                               c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c),
                                z, fBZvtx->GetBinLowEdge(z), fBZvtx->GetBinUpEdge(z)));
             fHPts[count] = new TH1F(Form("hPt%d",count), Form("Ptdist %s;p_{T} (GeV/c)",title.Data()), 200,0,20);
             fOutputList->Add(fHPts[count]);
           }
-	  TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f), trig=%d (%.1f to %.1f), assoc=%d (%.1f to %.1f)",
-			     c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c), 
+          TString title(Form("cen=%d (%.1f to %.1f), zVtx=%d (%.1f to %.1f), trig=%d (%.1f to %.1f), assoc=%d (%.1f to %.1f)",
+                             c, fBCent->GetBinLowEdge(c), fBCent->GetBinUpEdge(c),
                              z, fBZvtx->GetBinLowEdge(z), fBZvtx->GetBinUpEdge(z),
-			     t, fBPtT->GetBinLowEdge(t),  fBPtT->GetBinUpEdge(t),
+                             t, fBPtT->GetBinLowEdge(t),  fBPtT->GetBinUpEdge(t),
                              a, fBPtA->GetBinLowEdge(a),  fBPtA->GetBinUpEdge(a)));
-	  fHSs[count] = new TH2F(Form("hS%d",count), Form("Signal %s;#Delta #varphi;#Delta #eta",title.Data()),
-				 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
-	  fHMs[count] = new TH2F(Form("hM%d",count), Form("Mixed %s;#Delta #varphi;#Delta #eta",title.Data()),
-				 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
-	  fOutputList->Add(fHSs[count]);
-	  fOutputList->Add(fHMs[count]);
+          fHSs[count] = new TH2F(Form("hS%d",count), Form("Signal %s;#Delta #varphi;#Delta #eta",title.Data()),
+                                 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
+          fHMs[count] = new TH2F(Form("hM%d",count), Form("Mixed %s;#Delta #varphi;#Delta #eta",title.Data()),
+                                 fNBdphi,-0.5*TMath::Pi(),1.5*TMath::Pi(),fNBdeta,-2*fEtaMax,2*fEtaMax);
+          fOutputList->Add(fHSs[count]);
+          fOutputList->Add(fHMs[count]);
           Int_t tcount = (Int_t)fIndex->Eval(t,a,z,c);
-	  if (fVerbosity>5)
-	    cout << count << " " << tcount << ": " << title << endl;
+          if (fVerbosity>5)
+            cout << count << " " << tcount << ": " << title << endl;
           if (count != tcount)
             AliFatal(Form("Index mismatch: %d %d", count, tcount));
-	  ++count;
-	}
+          ++count;
+        }
       }
     }
   }
@@ -250,7 +266,7 @@ void AliDhcTask::SetAnaMode(Int_t iAna)
   } else if (iAna==kMuH) {
     SetFillMuons(kTRUE);
     fEtaTLo = -5.0;
-    fEtaTHi = -2.0;
+    fEtaTHi = -1.0;
     fEtaALo = -1.0;
     fEtaAHi = 1.0;
   } else if (iAna==kHMu) {
@@ -258,13 +274,13 @@ void AliDhcTask::SetAnaMode(Int_t iAna)
     fEtaTLo = -1.0;
     fEtaTHi = 1.0;
     fEtaALo = -5.0;
-    fEtaAHi = -2.0;
+    fEtaAHi = -1.0;
   } else if (iAna==kMuMu) {
     SetFillMuons(kTRUE);
     fEtaTLo = -5.0;
-    fEtaTHi = -2.0;
+    fEtaTHi = -1.0;
     fEtaALo = -5.0;
-    fEtaAHi = -2.0;
+    fEtaAHi = -1.0;
   } else if (iAna==kPSide) {
     SetFillMuons(kFALSE);
     fEtaTLo = -1.0;
@@ -776,6 +792,18 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     Float_t pta  = a.Pt();
     Float_t etaa = a.Eta();
     Float_t phia = a.Phi();
+    
+    // brief intermezzo in the trigger particle loop: do associated particle QA here in order to avoid double counting
+    if (pairing == kSameEvt) {
+      if (etaa>fEtaALo && etaa<fEtaAHi) {
+        Int_t bbin = fHPtAss->FindBin(pta);
+        if (!(fHPtAss->IsBinOverflow(bbin) || fHPtAss->IsBinUnderflow(bbin))) {
+          fHQAA->Fill(pta,etaa,phia); // fill every associated particle once
+        }
+      }
+    }
+
+    // back to triggers
     Int_t abin = fHPtTrg->FindBin(pta);
     if (fHPtTrg->IsBinOverflow(abin) || fHPtTrg->IsBinUnderflow(abin))
       continue;
@@ -801,6 +829,8 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     
     if (pairing == kSameEvt) {
       fHTrk->Fill(phia,etaa);
+      fHQAT->Fill(pta,etaa,phia);
+      fHPtTrg->Fill(pta);
       fHPtTrgNorm1S->Fill(pta,fCentrality,fZVertex,effWtT);
     } else {
       fHPtTrgNorm1M->Fill(pta,fCentrality,fZVertex,effWtT);
@@ -817,7 +847,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
       Float_t ptb  = b.Pt();
       Float_t etab = b.Eta();
       Float_t phib = b.Phi();
-      if (pta < ptb) {
+      if (fPtTACrit&&(pta < ptb)) {
         continue;
       }
 
@@ -861,11 +891,12 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
         }
         weight *= fHEffA->GetBinContent(effBinA);
       }
-      hist[index]->Fill(dphi,deta,weight);
-      bCountTrg = kTRUE;
-
-      if (pairing == kSameEvt) {
-        fHPtAss->Fill(ptb);
+      if (hist[index]) { // check if this histogram exists, relevant in the fPtTACrit==kFALSE case
+        hist[index]->Fill(dphi,deta,weight);
+        bCountTrg = kTRUE;
+        if (pairing == kSameEvt) {
+          fHPtAss->Fill(ptb); // fill every associated particle every time it is used
+        }
       }
     }
     if (bCountTrg) {

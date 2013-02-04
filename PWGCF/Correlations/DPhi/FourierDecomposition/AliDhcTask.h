@@ -106,7 +106,9 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Int_t              fNbins;           //! Number of histogram bins
   TH2              **fHSs;             //! Same-evt correlations
   TH2              **fHMs;             //! Diff-evt correlations
-  TH1              **fHPts;            //! Pt distributions 
+  TH1              **fHPts;            //! Pt distributions
+  TH3               *fHQAT;            //! trigger particle distribution for QA
+  TH3               *fHQAA;            //! associated particle distribution for QA
   TFormula          *fIndex;           //! Index for histograms
   Double_t           fCentrality;      //! V0M for now
   Double_t           fZVertex;         //! Of current event

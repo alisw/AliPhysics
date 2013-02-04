@@ -1,40 +1,33 @@
-AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chHEffFile = "alien:///alice/cern.ch/user/t/tschuste/correction_hybrid_nulled.root", TString chMuEffFile = "", TString chTaskFile = "", TString chTaskName = "")
+// alien:///alice/cern.ch/user/t/tschuste/correction_hybrid_nulled.root
+AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chUName = "", TString chHEffFile = "", TString chMuEffFile = "", TString chTaskFile = "", TString chTaskName = "", TString chNTracks = "PicoTracks")
 {
-  const char *nTracks     = "PicoTracks";
-  const char *inputTracks = "HybridTracks";
+
+  Char_t chExtraName[256];
   
+  // Get the analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskDhc", "No analysis manager found.");
     return;
   }
 
-  TString chIsESD("ESD");
-  if (chIsESD.EqualTo(mgr->GetInputEventHandler()->GetDataType())) {
-    Info("AddTaskDhc","adding ESD track selection tasks ...");
-    // ESD Track Cuts
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
-    AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks,"Hybrid_LHC11h",kFALSE);
-    // Pico Tracks
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(nTracks, inputTracks, "LHC11h");
-  } else {
-    Info("AddTaskDhc","AOD analysis, no extra track selection tasks required.");
-    sprintf(nTracks,"tracks");
-  }  
+  // ESD or AOD? write into the task name etc.
+  sprintf(chExtraName,"_%s",mgr->GetInputEventHandler()->GetDataType());
 
   AliDhcTask *dhcTask = 0x0;
-  
-  if (!chTaskFile.EqualTo("")) { // if string is given, load the task from file
+
+  // If string chTaskFile is given, load a pre-configured task from file
+  if (!chTaskFile.EqualTo("")) {
     iAna=999;
     TFile *fiDhcTask = 0x0;
     fiDhcTask = TFile::Open(chTaskFile,"OLD");
     if (!fiDhcTask){
-      cout << "Requested file:" << fiDhcTask << " was not opened. ABORT." << endl;
+      Error("AddTaskDhc",Form("Requested file: %s was not opened. ABORT.",chTaskFile));
       return;
     }
     dhcTask = (AliDhcTask*) fiDhcTask->Get(chTaskName);
-  } else { // create a new task
+  }
+  else { // create a new task
     // Binning
     Double_t arPt[5] = {0.5, 1.0, 2.0, 4.0};
     TAxis *axPt = new TAxis(3,arPt);
@@ -53,22 +46,21 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chHEffFile = "alien:///alice/cern
     if (!chHEffFile.EqualTo("")) {
       fiHEff = TFile::Open(chHEffFile,"OLD");
       if (!fiHEff){
-        cout << "Requested file:" << fiHEff << " was not opened. ABORT." << endl;
+        Error("AddTaskDhc",Form("Requested file: %s was not opened. ABORT.",chHEffFile));
         return;
       }
       hHEff = (THnF*) fiHEff->Get("correction");
     }
-    
     if (!chMuEffFile.EqualTo("")) {
       fiMuEff = TFile::Open(chMuEffFile,"OLD");
       if (!fiMuEff){
-        cout << "Requested file:" << fiMuEff << " was not opened. ABORT." << endl;
+        Error("AddTaskDhc",Form("Requested file: %s was not opened. ABORT.",chMuEffFile));
         return;
       }
       hMuEff = (THnF*) fiMuEff->Get("correction");
     }
     
-    dhcTask = new AliDhcTask(Form("Task_tschuste_Dhc_%d",iAna));
+    dhcTask = new AliDhcTask("Task_tschuste_Dhc_fornow");
     if (iAna==1) { // h-h
       Int_t nDetaBins = 40;
       Int_t nDPhiBins = 72;
@@ -77,6 +69,10 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chHEffFile = "alien:///alice/cern
       dhcTask->SetHEffA(hHEff);
       dhcTask->SetEtaMax(1.2);
       dhcTask->SetPtTACrit(kTRUE);
+      sprintf(chExtraName,"%s_HH",chExtraName);
+      if (hHEff) {
+        sprintf(chExtraName,"%s_corrH",chExtraName);
+      }
     } else if (iAna==2) { // mu-h
       Int_t nDetaBins = 100;
       Int_t nDPhiBins = 36;
@@ -85,8 +81,15 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chHEffFile = "alien:///alice/cern
       dhcTask->SetHEffA(hHEff);
       dhcTask->SetEtaMax(5.0);
       dhcTask->SetPtTACrit(kFALSE);
+      sprintf(chExtraName,"%s_MuH",chExtraName);
+      if (hMuEff) {
+        sprintf(chExtraName,"%s_corrMu",chExtraName);
+      }
+      if (hHEff) {
+        sprintf(chExtraName,"%s_corrH",chExtraName);
+      }
     }
-    dhcTask->SetTracksName(nTracks);
+    dhcTask->SetTracksName(chNTracks);
     dhcTask->SetDoWeights(kFALSE);
     dhcTask->SetCentMethod("V0M");
     dhcTask->SetDEtaDPhiBins(nDetaBins,nDPhiBins);
@@ -100,15 +103,29 @@ AliDhcTask *AddTaskDhc(Int_t iAna = 2, TString chHEffFile = "alien:///alice/cern
     dhcTask->SetVerbosity(0);
   }
   if (!dhcTask) {
-    cout << "no DhcTask---return" << endl;
+    Error("AddTaskDhc","no dhcTask");
     return 0x0;
   }
 
-  mgr->AddTask(dhcTask);    
-  AliAnalysisDataContainer *co_Dhc = mgr->CreateContainer(Form("Cont_tschuste_DhcAna_%d",iAna),
+  // make a unique task name
+  Char_t chNewTaskName[256];
+  if (chTaskName.EqualTo("")) {
+    sprintf(chNewTaskName,"Task_Dhc%s%s",chExtraName,chUName.Data());
+  } else {
+    sprintf(chNewTaskName,"%s",chTaskName);
+  }
+
+  AliDhcTask *mgrTask = mgr->GetTask(chNewTaskName);
+  if (mgrTask)
+    sprintf(chNewTaskName,"%s_bis%04.0f",chNewTaskName,10000*gRandom->Rndm());
+  
+  dhcTask->SetName(chNewTaskName);
+  Info("AddTaskDhc",Form("DHC Analysis, adding task %s",dhcTask->GetName()));
+  mgr->AddTask(dhcTask);
+  AliAnalysisDataContainer *co_Dhc = mgr->CreateContainer(Form("Cont_%s",chNewTaskName),
                                                           TList::Class(),
                                                           AliAnalysisManager::kOutputContainer,
-                                                          Form("%s:PWGCF_outDhc_%d", AliAnalysisManager::GetCommonFileName(), iAna));
+                                                          Form("%s:PWGCF_out_%s", AliAnalysisManager::GetCommonFileName(), chNewTaskName));
   mgr->ConnectInput(dhcTask,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(dhcTask,1,co_Dhc);
   
