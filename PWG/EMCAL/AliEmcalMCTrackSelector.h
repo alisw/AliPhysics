@@ -5,6 +5,7 @@
 
 class TClonesArray;
 class TString;
+class TH1I;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -25,12 +26,15 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   TString            fTracksOutName;        // name of output track array
   Bool_t             fRejectNK;             // true = reject k0l and neutrons
   Bool_t             fChargedMC;            // true = only charged particles
+  Bool_t             fInit;                 // true = task initialized
+  TString            fTracksMapName;        // name of the track map
   TClonesArray      *fTracksOut;            //!track array out
+  TH1I              *fTracksMap;            //!track mapping
 
  private:
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 1); // Task to select tracks in MC events
+  ClassDef(AliEmcalMCTrackSelector, 2); // Task to select tracks in MC events
 };
 #endif

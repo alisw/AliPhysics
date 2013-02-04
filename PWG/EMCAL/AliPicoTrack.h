@@ -37,7 +37,7 @@ class AliPicoTrack: public AliVTrack {
   Short_t  Charge()                    const { return (char)fQ;}
   Int_t    GetLabel()                  const { return fLabel;  }
   void     SetLabel(Int_t label)             { fLabel = label; }
-  Int_t    GetTrackType()              const { return fTrackType;}
+  Byte_t   GetTrackType()              const { return fTrackType;}
   Int_t    PdgCode()                   const { return 0;       }
   const Double_t *PID()                const { return 0;       }
   Int_t    GetID()                     const { return 0;       }
@@ -67,14 +67,14 @@ class AliPicoTrack: public AliVTrack {
   Double32_t       fEta;      //[-1,1,12]  eta at vertex
   Double32_t       fPhi;      //[0,6.3,12] phi at vertex
   Byte_t           fQ;        //           charge
-  Byte_t           fLabel;    //           label  
-  Int_t            fTrackType;//           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
+  Int_t            fLabel;    //           label  
+  Byte_t           fTrackType;//           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
   Double32_t       fEtaEmc;   //[-1,1,12]  eta at emcal surface
   Double32_t       fPhiEmc;   //[0,6.3,12] phi at emcal surface
   Bool_t           fEmcal;    //           is true if track propagated to emcal
   Short_t          fClusId;   //!          cluster id of matched cluster; -1 if not set
 
 
-  ClassDef(AliPicoTrack, 3) // Pico track class
+  ClassDef(AliPicoTrack, 4) // Pico track class
 };
 #endif
