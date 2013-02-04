@@ -9,6 +9,7 @@ class TH1;
 class TH2;
 class TH3;
 
+#include "AliEmcalJet.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
@@ -43,11 +44,13 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      AcceptJet(AliEmcalJet* jet) const;
   Bool_t                      AcceptBiasJet2(AliEmcalJet *jet) const;
   void                        ExecOnce();
-  void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
+  void                        DoJetLoop(Bool_t order);
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
-  Double_t                    GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2) const;
+  Bool_t                      MCLabelMatching();
+  Bool_t                      GeometricalMatching();
+  Double_t                    GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
 
   TString                     fTracks2Name;                   // name of second track collection
   TString                     fCalo2Name;                     // name of second cluster collection
@@ -70,9 +73,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fNTrials;                       //!event trials
   TClonesArray               *fTracks2;                       //!Tracks 2
   TClonesArray               *fCaloClusters2;                 //!Clusters 2
-  TClonesArray               *fJets2;                       //!Jets 2
+  TClonesArray               *fJets2;                         //!Jets 2
   AliRhoParameter            *fRho2;                          //!Event rho 2
   Double_t                    fRho2Val;                       //!Event rho 2 value 
+  TH1                        *fTracks2Map;                    //!MC particle map
   // General histograms
   TH1                        *fHistNTrials;                   //!total number of trials per pt hard bin
   TH1                        *fHistEvents;                    //!total number of events per pt hard bin
@@ -84,11 +88,17 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets2PhiEta;               //!phi-eta distribution of jets 2
   TH2                        *fHistJets2PtArea;               //!inclusive jet pt vs. area histogram 2
   TH2                        *fHistJets2CorrPtArea;           //!inclusive jet pt vs. area histogram 2
+  TH2                        *fHistJets2PhiEtaAcceptance;     //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2PtAreaAcceptance;     //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
+  TH2                        *fHistJets2CorrPtAreaAcceptance; //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   // Jet1-Jet2 matching
   TH2                        *fHistMatchingLevelvsJet2Pt;              //!matching level vs jet 2 pt
-  TH3                        *fHistClosestDeltaEtaPhivsJet2Pt;         //!delta eta-phi between matched jets vs jet 2 pt
-  TH2                        *fHistClosestDeltaPtvsJet2Pt;             //!delta pt between matched jets vs jet 2 pt
-  TH2                        *fHistClosestDeltaCorrPtvsJet2Pt;         //!delta pt corr between matched jets vs jet 2 pt
+  TH2                        *fHistDistancevsCommonEnergy;             //!distance vs common energy (%)
+  TH3                        *fHistDeltaEtaPhivsJet2Pt;                //!delta eta-phi between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaPtvsJet2Pt;                    //!delta pt between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaPtvsMatchingLevel;             //!delta pt between matched jets vs matching level
+  TH2                        *fHistDeltaCorrPtvsJet2Pt;                //!delta pt corr between matched jets vs jet 2 pt
+  TH2                        *fHistDeltaCorrPtvsMatchingLevel;         //!delta pt corr between matched jets vs matching level
   TH2                        *fHistNonMatchedJets1PtArea;              //!non-matched jet 1 pt distribution
   TH2                        *fHistNonMatchedJets2PtArea;              //!non-matched jet 2 pt distribution
   TH2                        *fHistNonMatchedJets1CorrPtArea;          //!non-matched jet pt distribution

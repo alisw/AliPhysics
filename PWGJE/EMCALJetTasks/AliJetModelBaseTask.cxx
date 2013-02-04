@@ -294,32 +294,34 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (!fGeom && (fClusters || fCaloCells)) {
-    if (fGeomName.Length() > 0) {
-      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-      if (!fGeom)
-	AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
-    } else {
-      fGeom = AliEMCALGeometry::GetInstance();
-      if (!fGeom) 
-	AliError("Could not get default geometry!");
+  if (!fCaloName.IsNull() || !fCellsName.IsNull()) {
+    if (!fGeom) {
+      if (fGeomName.Length() > 0) {
+	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+	if (!fGeom)
+	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+      } else {
+	fGeom = AliEMCALGeometry::GetInstance();
+	if (!fGeom) 
+	  AliError("Could not get default geometry!");
+      }
     }
+  
+    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+    
+    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
+    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
+    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
+    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
+    
+    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
+    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
+    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
+    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
   }
-  
-  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
-  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
-  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
-  
-  if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
-  if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
-  if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
-  if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
-  
-  if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
-  if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
-  if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
-  if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
 
   return kTRUE;
 }
