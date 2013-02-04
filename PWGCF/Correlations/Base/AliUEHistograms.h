@@ -26,7 +26,7 @@ class TH3F;
 class AliUEHistograms : public TNamed
 {
  public:
-  AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "");
+  AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "", const char* binning = 0);
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
@@ -66,6 +66,7 @@ class AliUEHistograms : public TNamed
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
   TH1F* GetVertexContributors() { return fVertexContributors; }
   TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
+  TH2F* GetCentralityCorrelation() { return fCentralityCorrelation; }
   Long64_t GetRunNumber() { return fRunNumber; }
   Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }

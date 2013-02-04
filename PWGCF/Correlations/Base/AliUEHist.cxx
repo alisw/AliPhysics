@@ -41,7 +41,7 @@ ClassImp(AliUEHist)
 
 const Int_t AliUEHist::fgkCFSteps = 11;
 
-AliUEHist::AliUEHist(const char* reqHist) : 
+AliUEHist::AliUEHist(const char* reqHist, const char* binning) : 
   TObject(),
   fkRegions(4),
   fEventHist(0),
@@ -72,7 +72,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   if (strlen(reqHist) == 0)
     return;
   
-  Printf("Creating AliUEHist with %s", reqHist);
+  Printf("Creating AliUEHist with %s (binning: %s)", reqHist, binning);
     
   AliLog::SetClassDebugLevel("AliCFContainer", -1);
   AliLog::SetClassDebugLevel("AliCFGridSparse", -3);
@@ -86,109 +86,48 @@ AliUEHist::AliUEHist(const char* reqHist) :
   const char* trackAxisTitle[6];
   
   // eta
-  const Int_t kNEtaBins = 20;
-  Double_t etaBins[20+1];
-  for (Int_t i=0; i<=kNEtaBins; i++)
-    etaBins[i] = -1.0 + 0.1 * i;
-  const char* etaTitle = "#eta";
-  iTrackBin[0] = kNEtaBins;
-  trackBins[0] = etaBins;
-  trackAxisTitle[0] = etaTitle;
+  trackBins[0] = GetBinning(binning, "eta", iTrackBin[0]);
+  trackAxisTitle[0] = "#eta";
   
   // delta eta
-  const Int_t kNDeltaEtaBins = 48;
-  Double_t deltaEtaBins[kNDeltaEtaBins+1] = { -2.4, -2.3, -2.2, -2.1, 
-					      -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
-					      -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
-					      0, 
-					      0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-					      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-					      2.1, 2.2, 2.3, 2.4 };
+  Int_t nDeltaEtaBins = -1;
+  Double_t* deltaEtaBins = GetBinning(binning, "delta_eta", nDeltaEtaBins);
   
-  const Int_t kNDeltaEtaBinsTTR = 40+4;
-  Double_t deltaEtaBinsTTR[kNDeltaEtaBinsTTR+1] = { -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
-						  -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 
-						  -0.05, -0.025, 0, 0.025, 0.05, 
-						  0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-						  1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
-
   // pT
-  iTrackBin[1] = 9;
-  Double_t pTBins[] = {0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0 };
-  trackBins[1] = pTBins;
+  trackBins[1] = GetBinning(binning, "p_t_assoc", iTrackBin[1]);
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
   // pT, fine
-  const Int_t kNpTBinsFine = 22;
-  Double_t pTBinsFine[kNpTBinsFine+1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0};
-
-  // pT, wide range
-  //const Int_t kNpTBinsWideRange = 20;
-  //Double_t pTBinsWideRange[kNpTBinsWideRange+1] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+  Int_t npTBinsFine = -1;
+  Double_t* pTBinsFine = GetBinning(binning, "p_t_eff", npTBinsFine);
 
   // pT,lead binning 1
-  const Int_t kNLeadingpTBins = 100;
-  Double_t leadingpTBins[kNLeadingpTBins+1];
-  for (Int_t i=0; i<=kNLeadingpTBins; i++)
-    leadingpTBins[i] = 0.5 * i;
-  
-  // pT,lead binning 2
-  //const Int_t kNLeadingpTBins2 = 8;
-//   Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0 };
-  const Int_t kNLeadingpTBins2 = 6;
-  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
-  
-  // phi,lead; this binning starts at -pi/2 and is modulo 3
-  const Int_t kNLeadingPhiSpacing = 72;
-  const Int_t kNLeadingPhiBins = kNLeadingPhiSpacing;
-  Double_t leadingPhiBins[kNLeadingPhiBins+1];
-  for (Int_t i=0; i<=kNLeadingPhiSpacing; i++)
-    leadingPhiBins[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
-  
-  const Int_t kNLeadingPhiBinsTTR = kNLeadingPhiSpacing+4;
-  Double_t leadingPhiBinsTTR[kNLeadingPhiBinsTTR+1];
-  for (Int_t i=0; i<=17; i++)
-    leadingPhiBinsTTR[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
-  leadingPhiBinsTTR[18] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2;
-  leadingPhiBinsTTR[19] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 1.5;
-  leadingPhiBinsTTR[20] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2; // = 0
-  leadingPhiBinsTTR[21] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 2.5;
-  leadingPhiBinsTTR[22] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * 17 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() / 2 * 3;
-  for (Int_t i=19; i<=kNLeadingPhiSpacing; i++)
-    leadingPhiBinsTTR[i+4] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiSpacing * TMath::TwoPi() * i;
+  Int_t nLeadingpTBins = -1;
+  Double_t* leadingpTBins = GetBinning(binning, "p_t_leading", nLeadingpTBins);
 
-  // multiplicity
-  const Int_t kNMultiplicityBins = 15;
-  Double_t multiplicityBins[kNMultiplicityBins+1];
-  for (Int_t i=0; i<=kNMultiplicityBins; i++)
-    multiplicityBins[i] = -0.5 + i;
-  multiplicityBins[kNMultiplicityBins] = 200;
+  // pT,lead binning 2
+  Int_t nLeadingpTBins2 = -1;
+  Double_t* leadingpTBins2 = GetBinning(binning, "p_t_leading_course", nLeadingpTBins2);
   
-  trackBins[3] = multiplicityBins;
-  iTrackBin[3] = kNMultiplicityBins;
+  // phi,lead
+  Int_t nLeadingPhiBins = -1;
+  Double_t* leadingPhiBins = GetBinning(binning, "delta_phi", nLeadingPhiBins);
+  
+  trackBins[3] = GetBinning(binning, "multiplicity", iTrackBin[3]);
   trackAxisTitle[3] = "multiplicity";
   
-  // centrality (in %)
-  const Int_t kNCentralityBins = 5 + 1 + 9;
-  Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
-  
-  const Int_t kNCentralityBinsCourse = 5;
-  Double_t centralityBinsCourse[] = { 0, 20, 40, 60, 80, 100.1 };
-
   // particle species
   const Int_t kNSpeciesBins = 4; // pi, K, p, rest
   Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
   
   // vtx-z axis
   const char* vertexTitle = "z-vtx (cm)";
-  const Int_t kNVertexBins = 7;
-  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
-  const Int_t kNVertexBins2 = 10;
-  Double_t vertexBins2[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10 };
+  Int_t nVertexBins = -1;
+  Double_t* vertexBins = GetBinning(binning, "vertex", nVertexBins);
+  Int_t nVertexBinsEff = -1;
+  Double_t* vertexBinsEff = GetBinning(binning, "vertex_eff", nVertexBinsEff);
   
   Int_t useVtxAxis = 0;
-  Bool_t useTTRBinning = kFALSE;
-  Bool_t useCourseCentralityBinning = kFALSE;
   
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
@@ -206,12 +145,6 @@ AliUEHist::AliUEHist(const char* reqHist) :
   {
     if (TString(reqHist).Contains("Vtx"))
       useVtxAxis = 1;
-    if (TString(reqHist).Contains("Vtx10"))
-      useVtxAxis = 2;
-    if (TString(reqHist).Contains("TTR"))
-      useTTRBinning = kTRUE;
-    if (TString(reqHist).Contains("Course"))
-      useCourseCentralityBinning = kTRUE;
     
     reqHist = "NumberDensityPhiCentrality";
     fHistogramType = reqHist;
@@ -231,7 +164,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   if (axis == 0)
   {
     trackBins[2] = leadingpTBins;
-    iTrackBin[2] = kNLeadingpTBins;
+    iTrackBin[2] = nLeadingpTBins;
     trackAxisTitle[2] = "leading p_{T} (GeV/c)";
     
   }
@@ -240,11 +173,11 @@ AliUEHist::AliUEHist(const char* reqHist) :
     nTrackVars = 5;
     initRegions = 1;
   
-    iTrackBin[2] = kNLeadingpTBins2;
+    iTrackBin[2] = nLeadingpTBins2;
     trackBins[2] = leadingpTBins2;
     trackAxisTitle[2] = "leading p_{T} (GeV/c)";
     
-    iTrackBin[4] = kNLeadingPhiBins;
+    iTrackBin[4] = nLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
     trackAxisTitle[4] = "#Delta #varphi w.r.t. leading track";
   }
@@ -253,27 +186,25 @@ AliUEHist::AliUEHist(const char* reqHist) :
     nTrackVars = 5;
     initRegions = 1;
   
-    iTrackBin[0] = (useTTRBinning) ? kNDeltaEtaBinsTTR : kNDeltaEtaBins;
-    trackBins[0] = (useTTRBinning) ? deltaEtaBinsTTR : deltaEtaBins;
+    iTrackBin[0] = nDeltaEtaBins;
+    trackBins[0] = deltaEtaBins;
     trackAxisTitle[0] = "#Delta#eta";
   
-    iTrackBin[2] = kNLeadingpTBins2;
+    iTrackBin[2] = nLeadingpTBins2;
     trackBins[2] = leadingpTBins2;
     trackAxisTitle[2] = "leading p_{T} (GeV/c)";
     
-    trackBins[3] = (useCourseCentralityBinning) ? centralityBinsCourse : centralityBins;
-    iTrackBin[3] = (useCourseCentralityBinning) ? kNCentralityBinsCourse : kNCentralityBins;
     trackAxisTitle[3] = "centrality";
   
-    iTrackBin[4] = (useTTRBinning) ? kNLeadingPhiBinsTTR : kNLeadingPhiBins;
-    trackBins[4] = (useTTRBinning) ? leadingPhiBinsTTR : leadingPhiBins;
+    iTrackBin[4] = nLeadingPhiBins;
+    trackBins[4] = leadingPhiBins;
     trackAxisTitle[4] = "#Delta#varphi (rad)";
 
     if (useVtxAxis > 0)
     {
       nTrackVars = 6;
-      iTrackBin[5] = (useVtxAxis == 1) ? kNVertexBins : kNVertexBins2;
-      trackBins[5] = (useVtxAxis == 1) ? vertexBins : vertexBins2;
+      iTrackBin[5] = nVertexBins;
+      trackBins[5] = vertexBins;
       trackAxisTitle[5] = vertexTitle;
     }
   }
@@ -325,9 +256,9 @@ AliUEHist::AliUEHist(const char* reqHist) :
 
   SetStepNames(fEventHist);
   
-  iTrackBin[1] = kNpTBinsFine;
+  iTrackBin[1] = npTBinsFine;
   iTrackBin[2] = kNSpeciesBins;
-  iTrackBin[4] = kNVertexBins2;
+  iTrackBin[4] = nVertexBinsEff;
 
   fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 5, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
@@ -338,10 +269,46 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fTrackHistEfficiency->SetVarTitle(2, "particle species");
   fTrackHistEfficiency->SetBinLimits(3, trackBins[3]);
   fTrackHistEfficiency->SetVarTitle(3, trackAxisTitle[3]);
-  fTrackHistEfficiency->SetBinLimits(4, vertexBins2);
+  fTrackHistEfficiency->SetBinLimits(4, vertexBinsEff);
   fTrackHistEfficiency->SetVarTitle(4, vertexTitle);
 
   fFakePt = new TH3F("fFakePt","fFakePt;p_{T,rec};p_{T};centrality", 200, 0, 20, 200, 0, 20, 20, 0, 100);
+}
+
+Double_t* AliUEHist::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
+{
+  // takes the binning from <configuration> identified by <tag>
+  // configuration syntax example:
+  // eta: 2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4
+  // phi: .....
+  //
+  // returns bin edges which have to be deleted by the caller
+  
+  TString config(configuration);
+  TObjArray* lines = config.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    if (line.BeginsWith(TString(tag) + ":"))
+    {
+      line.Remove(0, strlen(tag) + 1);
+      line.ReplaceAll(" ", "");
+      TObjArray* binning = line.Tokenize(",");
+      Double_t* bins = new Double_t[binning->GetEntriesFast()];
+      for (Int_t j=0; j<binning->GetEntriesFast(); j++)
+	bins[j] = TString(binning->At(j)->GetName()).Atof();
+      
+      nBins = binning->GetEntriesFast() - 1;
+
+      delete binning;
+      delete lines;
+      return bins;
+    }
+  }
+  
+  delete lines;
+  AliFatal(Form("Tag %s not found in %s", tag, configuration));
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -645,7 +612,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
 }  
 
 //____________________________________________________________________
-TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD, Bool_t etaNorm, Int_t* normEvents)
+TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD, Bool_t etaNorm, Long64_t* normEvents)
 {
   // Extracts the UE histogram at the given step and in the given region by projection and dividing tracks by events
   //
@@ -779,8 +746,8 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     
     // NOTE fEventHist contains the number of events for the underlying event analysis and the number of trigger particles for the azimuthal correlation analysis. In the latter case the naming is therefore somewhat misleading!
     TH1D* events = fEventHist->ShowProjection(0, step);
-    Int_t nEvents = (Int_t) events->Integral(firstBin, lastBin);
-    Printf("Calculated histogram --> %d events", nEvents);
+    Long64_t nEvents = (Long64_t) events->Integral(firstBin, lastBin);
+    Printf("Calculated histogram --> %lld events", nEvents);
     if (normEvents)
       *normEvents = nEvents;
       
@@ -1173,7 +1140,7 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
 	multIter++;
       }
 	
-      Int_t nEvents = 0;
+      Long64_t nEvents = 0;
       TH2* tracks = (TH2*) GetUEHist(step, region, ptLeadMin, ptLeadMax, multBinBeginLocal, multBinEndLocal, 1, etaNorm, &nEvents);
       // undo normalization
       tracks->Scale(nEvents);

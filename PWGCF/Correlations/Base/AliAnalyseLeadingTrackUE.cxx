@@ -293,7 +293,7 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
       continue;
     }
    
-    if (mother->GetLabel() > maxLabel)
+    if (mother->GetLabel() >= maxLabel)
     {
 //       Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
       TObject* object = tracks->RemoveAt(i);
