@@ -1,4 +1,5 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
+void InitCF(AliDielectron* die, Int_t cutDefinition);
 
 void SetupEventCuts(AliDielectron *die, ULong64_t triggers);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
@@ -67,6 +68,8 @@ AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULon
   InitHistograms(die,cutDefinition);
   printf(" Add %d classes to the manager \n",die->GetHistogramList()->GetEntries());
 
+  // CF container setup
+  InitCF(die,cutDefinition);
 
   /*
   // tpc event plane
@@ -509,6 +512,22 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   }
 
   die->SetHistogramManager(histos);
+}
+
+void InitCF(AliDielectron* die, Int_t cutDefinition)
+{
+  //
+  // Setup the CF Manager
+  //
+
+  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
+  // event variables
+  cf->AddVariable(AliDielectronVarManager::kMultV0,         125,0.,25000. );
+  cf->AddVariable(AliDielectronVarManager::kNTrk,           100,0.,20000. );
+  cf->AddVariable(AliDielectronVarManager::kNacc,           100,0., 4000. );
+  cf->AddVariable(AliDielectronVarManager::kMatchEffITSTPC,  55,0.,    1.1);
+
+  die->SetCFManagerPair(cf);
 }
 
 void AddMCSignals(AliDielectron *die){

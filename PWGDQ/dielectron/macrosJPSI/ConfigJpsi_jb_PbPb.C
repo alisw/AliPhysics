@@ -194,6 +194,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  //  varCuts->AddCut(AliDielectronVarManager::kV0Index0,     0.0);
   if(cutDefinition==kTOF || cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2D)
     varCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   cuts->AddCut(varCuts);
@@ -340,15 +341,17 @@ void SetupV0Cuts(AliDielectron *die, Int_t cutDefinition)
   }
 
   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05);
-  //  gammaV0Cuts->AddCut(AliDielectronVarManager::kOpeningAngle,              0.0,   0.1);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05);
-  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35);
+  gammaV0Cuts->SetPdgCodes(22,11,11);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+  //  gammaV0Cuts->AddCut(AliDielectronVarManager::kOpeningAngle,              0.0,   0.1, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE);
+  gammaV0Cuts->SetExcludeTracks(kTRUE);
   gammaV0Cuts->Print();
 
  //  const Double_t |cutAlphaG| < 0.35; &&  const Double_t cutQTG < 0.05;                                                        
@@ -599,7 +602,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Track","","", 400,0.2,20.,200,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
     histos->UserHistogram("Track","","", 250,0.0,5.0,300,0.,1.2,  AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta,kTRUE);
 
-    histos->UserHistogram("Track","","",   10000,-5000.,5000.,      AliDielectronVarManager::kTrackID);
     histos->UserHistogram("Pair","","", 210,-1.05,1.05, 100,0.,2.5, AliDielectronVarManager::kArmAlpha,AliDielectronVarManager::kArmPt);
 
     ///// add histograms to Pair classes /////
