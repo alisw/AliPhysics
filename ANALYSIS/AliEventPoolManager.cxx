@@ -96,7 +96,7 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
   Int_t mult = trk->GetEntries();
   Int_t nTrk = NTracksInPool();
 
-  if (nTrk < fTargetTrackDepth && ((nTrk + mult) >= fTargetTrackDepth)) 
+  if (!IsReady() && IsReady(nTrk + mult, GetCurrentNEvents() + 1))
     fNTimes++;
 
   // remove 0th element before appending this event
@@ -279,6 +279,21 @@ Int_t AliEventPoolManager::InitEventPools(Int_t depth,
   return fEvPool.size();
 }
 
+void AliEventPoolManager::SetTargetValues(Int_t trackDepth, Float_t fraction, Int_t events)
+{
+  // sets target values (when a pool becomes ready) in all event pools
+  
+  fTargetTrackDepth = trackDepth;
+  
+  for (Int_t iM=0; iM<fNMultBins; iM++) {
+    for (Int_t iZ=0; iZ<fNZvtxBins; iZ++) {
+      for (Int_t iP=0; iP<fNPsiBins; iP++) {
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetTargetTrackDepth(trackDepth, fraction);
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetTargetEvents(events);
+      }
+    }
+  }
+}
 
 AliEventPool *AliEventPoolManager::GetEventPool(Int_t iMult, Int_t iZvtx, Int_t iPsi) const
 {

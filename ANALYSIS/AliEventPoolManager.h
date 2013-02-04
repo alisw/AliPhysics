@@ -45,7 +45,9 @@ class AliEventPool : public TObject
     fDebug(0), 
     fTargetTrackDepth(0),
     fFirstFilled(0),
-    fNTimes(0) {;}
+    fNTimes(0),
+    fTargetFraction(1),
+    fTargetEvents(0)  {;}
   
 
  AliEventPool(Int_t d, Double_t multMin, Double_t multMax, 
@@ -68,13 +70,15 @@ class AliEventPool : public TObject
     fDebug(0),
     fTargetTrackDepth(0),
     fFirstFilled(0),
-    fNTimes(0) {;}
+    fNTimes(0),
+    fTargetFraction(1),
+    fTargetEvents(0) {;}
   
   ~AliEventPool() {;}
   
   Bool_t      EventMatchesBin(Int_t mult,    Double_t zvtx, Double_t psi=0.) const;
   Bool_t      EventMatchesBin(Double_t mult, Double_t zvtx, Double_t psi=0.) const;
-  Bool_t      IsReady()                    const { return NTracksInPool() >= fTargetTrackDepth; }
+  Bool_t      IsReady()                    const { return IsReady(NTracksInPool(), GetCurrentNEvents()); }
   Bool_t      IsFirstReady()               const { return fFirstFilled;   }
   Int_t       GetNTimes()                  const { return fNTimes;        }
   Int_t       GetCurrentNEvents()          const { return fEvents.size(); }
@@ -91,7 +95,8 @@ class AliEventPool : public TObject
   Bool_t      WasUpdated()                 const { return fWasUpdated; }
   Int_t       ZvtxBinIndex()               const { return fZvtxBinIndex; }
   void        SetDebug(Bool_t b)                 { fDebug = b; }
-  void        SetTargetTrackDepth(Int_t d)       { fTargetTrackDepth = d; }
+  void        SetTargetTrackDepth(Int_t d, Float_t fraction = 1.0) { fTargetTrackDepth = d; fTargetFraction = fraction; }
+  void        SetTargetEvents(Int_t ev)          { fTargetEvents = ev; }
   Int_t       SetEventMultRange(Int_t    multMin, Int_t multMax);
   Int_t       SetEventMultRange(Double_t multMin, Double_t multMax);
   Int_t       SetEventZvtxRange(Double_t zvtxMin, Double_t zvtxMax);
@@ -102,6 +107,8 @@ class AliEventPool : public TObject
   Int_t       UpdatePool(TObjArray *trk);
   
 protected:
+  Bool_t      IsReady(Int_t tracks, Int_t events) const { return (tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents)); }
+  
   deque<TObjArray*>     fEvents;              //Holds TObjArrays of MyTracklets
   deque<int>            fNTracksInEvent;      //Tracks in event
   deque<int>            fEventIndex;          //Original event index
@@ -117,8 +124,10 @@ protected:
   Int_t                 fTargetTrackDepth;    //Number of tracks, once full
   Bool_t                fFirstFilled;         //Init to false
   Int_t                 fNTimes;              //Number of times init. condition reached
+  Float_t               fTargetFraction;      //fraction of fTargetTrackDepth at which pool is ready (default: 1.0)
+  Int_t                 fTargetEvents;        //if non-zero: number of filled events after which pool is ready regardless of fTargetTrackDepth (default: 0)
 
-  ClassDef(AliEventPool,2) // Event pool class
+  ClassDef(AliEventPool,3) // Event pool class
 };
 
 class AliEventPoolManager : public TObject
@@ -155,6 +164,7 @@ public:
   void        SetTargetTrackDepth(Int_t d) { fTargetTrackDepth = d;} // Same as for G.E.P. class
   Int_t       UpdatePools(TObjArray *trk);
   void        SetDebug(Bool_t b) { fDebug = b; }
+  void        SetTargetValues(Int_t trackDepth, Float_t fraction, Int_t events);
   
  protected:
   Int_t      fDebug;                                    // If 1 then debug on
