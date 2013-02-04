@@ -13,9 +13,9 @@ void AnalyzeDiff()
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
 
   // A task can be compiled dynamically with AClic
-  gSystem->Load("AliCaloPhoton_cxx");
+//  gSystem->Load("AliCaloPhoton_cxx");
 //  gSystem->Load("AliAnalysisTaskPi0Efficiency_cxx");
-  gROOT->LoadMacro("AliAnalysisTaskPi0Efficiency.cxx+g");
+  gROOT->LoadMacro("AliCaloPhoton.cxx+g");
   gROOT->LoadMacro("AliAnalysisTaskPi0DiffEfficiency.cxx+g");
   
   // Create the chain

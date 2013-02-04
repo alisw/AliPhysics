@@ -49,6 +49,7 @@ AliCaloPhoton::AliCaloPhoton() :
   fConverted(0),
   fConvertedPartner(0),
   fPartnerPt(0),
+  fWeight(1.),
   fPrimary(0)
 {
 
@@ -82,6 +83,7 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fConverted(0),
   fConvertedPartner(0),
   fPartnerPt(0),
+  fWeight(1.),
   fPrimary(0)
 {
   

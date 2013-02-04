@@ -44,7 +44,9 @@ class AliCaloPhoton :public TLorentzVector{
    Bool_t   IsPhoton()const {return fIsPhoton ;} //check if this particle is indeed photon (this bit is set with MC stack info
    Bool_t   IsntUnfolded()const{return fUnfolded;}
    Int_t    IsConvertedPartner(){ if(fConvertedPartner == 1) return 1; else return 0; }
-//ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
+   Double_t GetWeight(void){return fWeight;}
+
+   //ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
 //there is conversion of one or both of the photons and results of their conversion are registered by PHOS.
 //This process is marked as tagged photons but actually the energy of photons is changed and pi0 can't be
 //correctly found.
@@ -81,6 +83,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetPartnerPt(Double_t pt){fPartnerPt=pt;}
    void SetPrimary(Int_t label){fPrimary=label;}
    void SetUnfolded(Bool_t wasNotUnfolded){fUnfolded=wasNotUnfolded;} 
+   void SetWeight(Double_t w){fWeight=w;}
 
    void SetLambdas(Double_t l1,Double_t l2){fLambda0=l1; fLambda1=l2;}
    Double_t GetLambda1(void){return fLambda0;}
@@ -115,9 +118,10 @@ private:
   Int_t     fConverted; //If this photon originated from convertion on material (i.e. its primary is electron)
   Int_t	    fConvertedPartner;
   Double_t  fPartnerPt;
+  Double_t  fWeight ;   //Weight of parent particle
   Int_t     fPrimary;   //Primary label
 
-  ClassDef(AliCaloPhoton,2)
+  ClassDef(AliCaloPhoton,3)
 
 };
 
