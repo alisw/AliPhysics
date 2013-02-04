@@ -2070,8 +2070,10 @@ negC->Scale(1.,"width");
 
 TF1 fpt("fpt","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2("fpt2","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fpt.SetParameters(1,0.5);
-fpt2.SetParameters(1,0.5);
+fpt.SetParLimits(0,0.1,2.0);
+fpt2.SetParLimits(0,0.1,2.0);
+fpt.SetParameters(0.5,1.0);
+fpt2.SetParameters(0.5,1.0);
 pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4);
 neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4);
 
@@ -2082,7 +2084,9 @@ ratio->Divide(neg);
 
 ratio->Draw();
 TF1 fptRatio("fptratio","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatio.SetParameters(0.5,0.006,1);
+fptRatio.SetParLimits(0,0.1,2.0);
+fptRatio.SetParLimits(1,-0.1,0.1);
+fptRatio.SetParameters(0.5,0.006,1.0);
 fptRatio.FixParameter(0,slope);
 fptRatio.Draw();
 ratio->Fit(&fptRatio,"","",1,4); ratio->Fit(&fptRatio,"","",1,4); 
@@ -2099,8 +2103,10 @@ deltaPt_Err = fptRatio.GetParError(1);
 
 TF1 fptA("fptA","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2A("fpt2A","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptA.SetParameters(1,0.5);
-fpt2A.SetParameters(1,0.5);
+fptA.SetParLimits(0,0.1,2.0);
+fpt2A.SetParLimits(0,0.1,2.0);
+fptA.SetParameters(0.5,1.0);
+fpt2A.SetParameters(0.5,1.0);
 posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4);
 negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4);
 
@@ -2111,6 +2117,8 @@ ratioA->Divide(negA);
 
 ratioA->Draw();
 TF1 fptRatioA("fptratioA","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+fptRatioA.SetParLimits(0,0.1,2.0);
+fptRatioA.SetParLimits(1,-0.1,0.1);
 fptRatioA.SetParameters(0.5,0.006,1);
 fptRatioA.FixParameter(0,slopeA);
 fptRatioA.Draw();
@@ -2131,8 +2139,10 @@ deltaPtA_Err = fptRatioA.GetParError(1);
 //C side
 TF1 fptC("fptC","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2C("fpt2C","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptC.SetParameters(1,0.5);
-fpt2C.SetParameters(1,0.5);
+fptC.SetParLimits(0,0.1,2.0);
+fpt2C.SetParLimits(0,0.1,2.0);
+fptC.SetParameters(0.5,1.0);
+fpt2C.SetParameters(0.5,1.0);
 posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4);
 negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4);
 
@@ -2143,7 +2153,9 @@ ratioC->Divide(negC);
 
 ratioC->Draw();
 TF1 fptRatioC("fptratioC","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatioC.SetParameters(0.5,0.006,1);
+fptRatioC.SetParLimits(0,0.1,2.0);
+fptRatioC.SetParLimits(1,-0.1,0.1);
+fptRatioC.SetParameters(0.5,0.006,1.0);
 fptRatioC.FixParameter(0,slopeC);
 fptRatioC.Draw();
 ratioC->Fit(&fptRatioC,"","",1,4); ratio->Fit(&fptRatioC,"","",1,4); 
