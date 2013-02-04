@@ -1,10 +1,13 @@
 #ifndef ALIANALYSISTASKPI0EFFICIENCY_H
 #define ALIANALYSISTASKPI0EFFICIENCY_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 // example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
+// Authors: D.Peressounko, S.Nikolaev
 
 class TObjArray;
+class THashList;
 class TH1F;
 class TH2I;
 class TH2F;
@@ -52,7 +55,7 @@ protected:
  
 protected:
   AliStack * fStack ;
-  TList * fOutputContainer;        //final histogram container
+  THashList * fOutputContainer;        //final histogram container
   TList * fPHOSEvents[1][10][11] ; //Containers for events with PHOS photons
   TClonesArray * fPHOSEvent ;      //PHOS photons in current event
   AliPHOSCalibData *fPHOSCalibData; // PHOS calibration object

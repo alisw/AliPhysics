@@ -1,6 +1,22 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TObjArray.h"
+#include "THashList.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -65,7 +81,7 @@ AliAnalysisTaskPi0Efficiency::AliAnalysisTaskPi0Efficiency(const char *name)
   }
   
   // Output slots #0 write into a TH1 container
-  DefineOutput(1,TList::Class());
+  DefineOutput(1,THashList::Class());
 
   // Set bad channel map
   char key[55] ;
@@ -98,7 +114,7 @@ void AliAnalysisTaskPi0Efficiency::UserCreateOutputObjects()
   if(fOutputContainer != NULL){
     delete fOutputContainer;
   }
-  fOutputContainer = new TList();
+  fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
 
   //Event selection
@@ -841,58 +857,40 @@ Bool_t AliAnalysisTaskPi0Efficiency::IsGoodChannel(const char * det, Int_t mod, 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Efficiency::FillHistogram(const char * key,Double_t x)const{
   //FillHistogram
-  TH1I * tmpI = dynamic_cast<TH1I*>(fOutputContainer->FindObject(key)) ;
-  if(tmpI){
-    tmpI->Fill(x) ;
-    return ;
-  }
-  TH1F * tmpF = dynamic_cast<TH1F*>(fOutputContainer->FindObject(key)) ;
-  if(tmpF){
-    tmpF->Fill(x) ;
-    return ;
-  }
-  TH1D * tmpD = dynamic_cast<TH1D*>(fOutputContainer->FindObject(key)) ;
-  if(tmpD){
-    tmpD->Fill(x) ;
-    return ;
-  }
-  AliInfo(Form("can not find histogram <%s> ",key)) ;
+  TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
+  if(hist)
+    hist->Fill(x) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Efficiency::FillHistogram(const char * key,Double_t x,Double_t y)const{
   //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
+  TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
+  if(th1)
+    th1->Fill(x, y) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Efficiency::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
   //Fills 1D histograms with key
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
+  TObject * obj = fOutputContainer->FindObject(key);
+  
+  TH2 * th2 = dynamic_cast<TH2*> (obj);
+  if(th2) {
+    th2->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
+
+  TH3 * th3 = dynamic_cast<TH3*> (obj);
+  if(th3) {
+    th3->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
+  
+  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPi0Efficiency::TestLambda(Double_t pt,Double_t l1,Double_t l2){
