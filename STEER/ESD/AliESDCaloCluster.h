@@ -98,7 +98,7 @@ class AliESDCaloCluster : public AliVCluster
   
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
   TArrayI * GetLabelsArray() const    {return  fLabels;}
-  Int_t   * GetLabels() const         {return  fLabels->GetArray();}
+  Int_t   * GetLabels() const         {if (fLabels) return  fLabels->GetArray(); else return 0;}
 
   Int_t GetTrackMatchedIndex() const   
   {if( fTracksMatched &&  fTracksMatched->GetSize() >0)  return  fTracksMatched->At(0); 
