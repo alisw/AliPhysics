@@ -102,6 +102,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetRemoveDuplicates(Bool_t flag = kTRUE) { fRemoveDuplicates = flag; }
     void   SetSkipFastCluster(Bool_t flag = kTRUE)  { fSkipFastCluster = flag; }
     void   SetWeightPerEvent(Bool_t flag = kTRUE)   { fWeightPerEvent = flag; }
+    void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -113,6 +114,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void            Initialize(); 			                // initialize some common pointer
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
     void RemoveDuplicates(TObjArray* tracks);
+    void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -158,7 +160,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Double_t      	fTrackEtaCut;          // Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
-    UInt_t         	fFilterBit;            // Select tracks from an specific track cut (default 0xFF all track selected)
+    UInt_t         	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     Int_t               fSelectParticleSpecies; // Select which particle to use [ -1 (all) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
@@ -176,10 +178,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fRemoveDuplicates;      // remove particles with the same label (double reconstruction)
     Bool_t fSkipFastCluster;	   // skip kFastOnly flagged events (only for data)
     Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
+    TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 23); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 24); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

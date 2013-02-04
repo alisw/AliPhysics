@@ -27,7 +27,7 @@ class THnBase;
 class AliUEHist : public TObject
 {
  public:
-  AliUEHist(const char* reqHist = "");
+  AliUEHist(const char* reqHist = "", const char* binning = 0);
   virtual ~AliUEHist();
   
   const UInt_t fkRegions;
@@ -51,7 +51,7 @@ class AliUEHist : public TObject
   void CopyReconstructedData(AliUEHist* from);
   void DeepCopy(AliUEHist* from);
   
-  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE, Int_t* normEvents = 0);
+  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE, Long64_t* normEvents = 0);
   TH1* GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiMin, Float_t phiMax, Float_t etaMin, Float_t etaMax, Bool_t skipPhiNormalization = kFALSE);
   TH2* GetSumOfRatios(AliUEHist* mixed, CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm = kTRUE, Bool_t useVertexBins = kFALSE);
   
@@ -132,6 +132,7 @@ class AliUEHist : public TObject
   THnBase* ChangeToThn(THnBase* sparse);
   
 protected:
+  Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
   void SetStepNames(AliCFContainer* container);
   void WeightHistogram(TH3* hist1, TH1* hist2);
   void MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* histogram, Int_t var1, Int_t var2);

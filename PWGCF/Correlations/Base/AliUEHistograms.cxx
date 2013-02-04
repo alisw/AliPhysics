@@ -40,7 +40,7 @@ ClassImp(AliUEHistograms)
 
 const Int_t AliUEHistograms::fgkUEHists = 3;
 
-AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) : 
+AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const char* binning) : 
   TNamed(name, name),
   fNumberDensitypT(0),
   fSumpT(0),
@@ -88,31 +88,70 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   TString histogramsStr(histograms);
   
+  TString defaultBinningStr;
+  defaultBinningStr = "eta: -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0\n"
+    "p_t_assoc: 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0\n"
+    "p_t_leading: 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0, 20.5, 21.0, 21.5, 22.0, 22.5, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 29.0, 29.5, 30.0, 30.5, 31.0, 31.5, 32.0, 32.5, 33.0, 33.5, 34.0, 34.5, 35.0, 35.5, 36.0, 36.5, 37.0, 37.5, 38.0, 38.5, 39.0, 39.5, 40.0, 40.5, 41.0, 41.5, 42.0, 42.5, 43.0, 43.5, 44.0, 44.5, 45.0, 45.5, 46.0, 46.5, 47.0, 47.5, 48.0, 48.5, 49.0, 49.5, 50.0\n"
+    "p_t_leading_course: 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0\n"
+    "p_t_eff: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0\n"
+    "vertex_eff: -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10\n"
+  ;
+
+  if (histogramsStr.Contains("4") || histogramsStr.Contains("5") || histogramsStr.Contains("6")) // Dphi Corr
+  {
+    if (histogramsStr.Contains("C"))
+      defaultBinningStr += "multiplicity: 0, 20, 40, 60, 80, 100.1\n"; // course
+    else
+      defaultBinningStr += "multiplicity: 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1\n";
+
+    if (histogramsStr.Contains("5"))
+      defaultBinningStr += "vertex: -7, -5, -3, -1, 1, 3, 5, 7\n";
+    else
+      defaultBinningStr += "vertex: -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10\n";
+    
+    if (histogramsStr.Contains("R"))
+      defaultBinningStr += "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n" // this binning starts at -pi/2 and is modulo 3 
+	"delta_eta: -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,2.1, 2.2, 2.3, 2.4\n"
+      ;
+    else // for TTR studies
+      defaultBinningStr += "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, -0.043633, -0.021817, 0.0, 0.021817, 0.043633, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n"
+	"delta_eta: -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.05, -0.025, 0, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0\n"
+      ;
+  }
+  else // UE
+    defaultBinningStr += "multiplicity: -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 200.0\n"
+      "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n"
+      "vertex: -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10\n"
+    ;
+
+  // combine customBinning with defaultBinningStr -> use customBinning where available and otherwise defaultBinningStr
+  TString customBinning(binning);
+  TString binningStr;
+
+  TObjArray* lines = defaultBinningStr.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    TString tag = line(0, line.Index(":")+1);
+    if (!customBinning.Contains(tag))
+      binningStr += line + "\n";
+    else
+      Printf("Using custom binning for %s", tag.Data());
+  }
+  delete lines;
+  binningStr += customBinning;
+
   if (histogramsStr.Contains("1"))
-    fNumberDensitypT = new AliUEHist("NumberDensitypT");
+    fNumberDensitypT = new AliUEHist("NumberDensitypT", binningStr);
   if (histogramsStr.Contains("2"))
-    fSumpT = new AliUEHist("SumpT");
+    fSumpT = new AliUEHist("SumpT", binningStr);
   
   if (histogramsStr.Contains("3"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
-  else if (histogramsStr.Contains("4RC"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityCourse");
-  else if (histogramsStr.Contains("4R"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality");
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhi", binningStr);
   else if (histogramsStr.Contains("4"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityTTR");
-  else if (histogramsStr.Contains("5RC"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtxCourse");
-  else if (histogramsStr.Contains("5R"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx");
-  else if (histogramsStr.Contains("5"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtxTTR");
-  else if (histogramsStr.Contains("6RC"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10Course");
-  else if (histogramsStr.Contains("6R"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10");
-  else if (histogramsStr.Contains("6"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx10TTR");
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality", binningStr);
+  else if (histogramsStr.Contains("5") || histogramsStr.Contains("6"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx", binningStr);
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -567,17 +606,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	if (triggerParticle->Charge() * fTriggerSelectCharge < 0)
 	  continue;
 
-      if (!mixed)
-      {
-        // QA
-        fCorrelationpT->Fill(centrality, triggerParticle->Pt());
-        fCorrelationEta->Fill(centrality, triggerEta);
-        fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
-	fYields->Fill(centrality, triggerParticle->Pt(), triggerEta);
-/*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
-          fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
-      }
-        
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -790,6 +818,15 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 	
         fNumberDensityPhi->GetEventHist()->Fill(vars, step, useWeight);
+
+	// QA
+        fCorrelationpT->Fill(centrality, triggerParticle->Pt());
+        fCorrelationEta->Fill(centrality, triggerEta);
+        fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
+	fYields->Fill(centrality, triggerParticle->Pt(), triggerEta);
+
+/*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
+          fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
       }
     }
     
