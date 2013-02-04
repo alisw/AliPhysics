@@ -19,7 +19,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
-  gROOT->LoadMacro("ConfigBJpsi_ff_PbPbFilter.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
   AliDielectron *jpsi=ConfigBJpsi_ff_PbPbFilter(0,hasMC);
   
   if(isAOD) {
