@@ -55,6 +55,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
+  void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
 
  protected:
@@ -95,6 +96,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
   Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
+  Double_t                    fEventPlaneVsEmcal;          // select events which have a certain event plane wrt the emcal
+  Double_t                    fMinEventPlane;              // minimum event plane value
+  Double_t                    fMaxEventPlane;              // maximum event plane value
   TString                     fCentEst;                    // name of V0 centrality estimator
   Int_t                       fNcentBins;                  //!how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
@@ -112,11 +116,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   TH1F                       *fHistCentrality;             //!Event centrality distribution
   TH1F                       *fHistZVertex;                //!Z vertex position
+  TH1F                       *fHistEventPlane;             //!Event plane distribution
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 9) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 10) // EMCAL base analysis task
 };
 #endif
