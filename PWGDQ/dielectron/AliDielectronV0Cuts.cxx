@@ -196,7 +196,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   else
     return;
 
-  printf(" Number of V0s candiates found %d \n",nV0s);
+  //  printf(" Number of V0s candiates found %d \n",nV0s);
 
 }
 //________________________________________________________________________
@@ -210,7 +210,7 @@ Bool_t AliDielectronV0Cuts::IsSelected(TObject* track)
 
   AliVTrack *vtrack = static_cast<AliVTrack*>(track);
   InitEvent(vtrack);
-  printf(" track ID %d selected result %d \n",vtrack->GetID(),(fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks);
+  //  printf(" track ID %d selected result %d \n",vtrack->GetID(),(fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks);
   return ( (fV0TrackArr.TestBitNumber(vtrack->GetID()))^fExcludeTracks );
 }
 
