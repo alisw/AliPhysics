@@ -76,6 +76,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2010PbPb4060CentScan();
   void InitD0toKpi2010PbPb6080CentScan();
 
+  void InitD0toKpi2011PbPb3050InPlane();
+  void InitD0toKpi2011PbPb3050OutOfPlane();
+
   void InitDplustoKpipi2010PbPb010CentScan();
   void InitDplustoKpipi2010PbPb1020CentScan();
   void InitDplustoKpipi2010PbPb2040CentScan();
