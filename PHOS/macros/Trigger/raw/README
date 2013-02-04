@@ -1,0 +1,11 @@
+This folder: 
+/opt/alice/aliroot/trunk/PHOS/macros/Trigger/raw 
+contains code for analyzing the raw TRU data from an raw data stream.
+
+truPedestalAnalysis.C - contains functions which takes a list of raw files and produces some histograms.
+
+runTRUPedestalAnalysis.C - shows how to use this analysis.
+
+It is a required that you provide a file containing a list of raw .root files, files.txt by default.
+Assuming you have such a files.txt file, you should be a ble to run the analysis as is by the following command:
+$ aliroot runTRUPedestalAnalysis.C
