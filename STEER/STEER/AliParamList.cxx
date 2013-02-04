@@ -6,9 +6,10 @@ ClassImp(AliParamList)
 
 //_____________________________________________________________________
 AliParamList::AliParamList(Int_t n, const Double_t *parVal)
- : fNPar(0)
- , fNames(0)
- , fParams(0)
+: fID(0)
+  , fNPar(0)
+  , fNames(0)
+  , fParams(0)
 {
   // def. c-tor
   //
@@ -21,16 +22,17 @@ AliParamList::AliParamList(Int_t n, const Double_t *parVal)
 //_____________________________________________________________________
 AliParamList::AliParamList(const AliParamList& src)
   : TNamed(src)
+  , fID(src.fID)
   , fNPar(src.fNPar)
   , fNames(0)
   , fParams(0)
 {
   // copy c-tor
   if (fNPar>0) {
-    fNames =  new TString[fNPar];
+    if (src.fNames) fNames = new TString[fNPar];
     fParams = new Double_t[fNPar];
     for (int i=fNPar;i--;) {
-      fNames[i]  = src.fNames[i];
+      if (fNames) fNames[i] = src.fNames[i];
       fParams[i] = src.fParams[i];
     }
   }
@@ -62,12 +64,9 @@ void AliParamList::SetNParams(Int_t n)
   // init params structure
   if (fNPar) AliFatal(Form("N params was already set to %d",fNPar));
   fNPar = n;
-  fNames =  new TString[fNPar];
   fParams = new Double_t[fNPar];
-  for (int i=fNPar;i--;) {
-    fNames[i]  = Form("Par%d",i);
-    fParams[i] = 0.;
-  }  
+  for (int i=fNPar;i--;) fParams[i] = 0.;
+  //
 }
 
 //_____________________________________________________________________
@@ -75,6 +74,7 @@ void AliParamList::SetParName(Int_t i,const char* nm)
 {
   // assign param name
   if (i<0||i>=fNPar) AliFatal(Form("Param %d accessed while the range is %d : %d",i,0,fNPar));
+  if (!fNames) fNames = new TString[fNPar];
   fNames[i] = nm;
 }
 
@@ -84,13 +84,23 @@ void AliParamList::SetParameter(Int_t i, Double_t v, const char* nm)
   // assign param value and optionally name
   if (i<0||i>=fNPar) AliFatal(Form("Param %d accessed while the range is %d : %d",i,0,fNPar));
   fParams[i] = v;
-  if (nm) fNames[i] = nm;
+  if (nm) {
+    if (!fNames) fNames = new TString[fNPar];
+    fNames[i] = nm;
+  }
 }
 
 //_____________________________________________________________________
 void AliParamList::Print(Option_t *) const
 {
   // print itself
-  printf("ParamList#%d %s %s\n",GetUniqueID(),GetName(),GetTitle());
+  printf("ParamList#%d/%d %s %s\n",fID,GetUniqueID(),GetName(),GetTitle());
   for (int i=0;i<fNPar;i++) printf("#%2d\t%s\t%e\n",i,GetParName(i),GetParameter(i));
+}
+
+//_____________________________________________________________________
+const Char_t* AliParamList::GetParName(Int_t i) const 
+{
+  // get par name
+  return (fNames && !fNames[i].IsNull()) ? fNames[i].Data() : Form("par%d",i);;
 }
