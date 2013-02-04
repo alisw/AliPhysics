@@ -55,6 +55,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fEventPlaneVsEmcal(-1),
+  fMinEventPlane(-10),
+  fMaxEventPlane(10),
   fCentEst("V0M"),
   fNcentBins(4),
   fGeom(0),
@@ -69,7 +72,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fBeamType(kNA),
   fOutput(0),
   fHistCentrality(0),
-  fHistZVertex(0)
+  fHistZVertex(0),
+  fHistEventPlane(0)
 {
   // Default constructor.
 
@@ -106,6 +110,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
+  fEventPlaneVsEmcal(-1),
+  fMinEventPlane(-10),
+  fMaxEventPlane(10),
   fCentEst("V0M"),
   fNcentBins(4),
   fGeom(0),
@@ -120,7 +127,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fBeamType(kNA),
   fOutput(0),
   fHistCentrality(0),
-  fHistZVertex(0)
+  fHistZVertex(0),
+  fHistEventPlane(0)
 {
   // Standard constructor.
 
@@ -166,6 +174,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
+  fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
+  fHistEventPlane->GetXaxis()->SetTitle("event plane");
+  fHistEventPlane->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistEventPlane);
+
   PostData(1, fOutput);
 }
 
@@ -174,6 +187,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   fHistCentrality->Fill(fCent);
   fHistZVertex->Fill(fVertex[2]);
+  fHistEventPlane->Fill(fEPV0);
 
   return kTRUE;
 }
@@ -305,6 +319,12 @@ void AliAnalysisTaskEmcal::ExecOnce()
   fGeom = AliEMCALGeometry::GetInstance();
   if (!fGeom) 
     AliWarning(Form("%s: Can not create geometry", GetName()));
+
+  if (fEventPlaneVsEmcal >= 0) {
+    Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();
+    fMinEventPlane = ep - TMath::Pi() / 4;
+    fMaxEventPlane = ep + TMath::Pi() / 4;
+  }
 
   if (!fCaloName.IsNull() && !fCaloClusters) {
     fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
@@ -458,6 +478,13 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (!trackInEmcalOk)
       return kFALSE;
   }
+
+
+  if (!(fEPV0 > fMinEventPlane && fEPV0 <= fMaxEventPlane) &&
+      !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
+      !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
+    return kFALSE;
+
 
   return kTRUE;
 }
