@@ -30,7 +30,7 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
                            const TString& outputTag  = "lhc10d",
                            const TString& multTag    = "",
                            const TString& multCorTag = "",
-                           Bool_t normToInel         = 1,  // for mult
+                           Bool_t inel               = 1,  // for mult
                            Bool_t drawOutput         = 1,  // for batch
                            const TString& species    = "Proton")
 {
@@ -41,7 +41,7 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	const Int_t kProtonJointBin    = 11;
 	const Int_t kProtonHiPtBin     = 36;
 	
-	const Int_t kDeuteronLowPtBin  = 3;
+	const Int_t kDeuteronLowPtBin  = 4;
 	const Int_t kDeuteronJointBin  = 6;
 	const Int_t kDeuteronHiPtBin   = 13;
 	
@@ -74,14 +74,14 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 		cout << "Config_Proton_TPC_LHC10x.C" << endl << endl;
 		gROOT->ProcessLine(Form(".x Config_Proton_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
 					, kArgTPC.Data()
-					, normToInel
+					, inel
 					, kProtonLowPtBin
 					, kProtonJointBin));
 		
 		cout << "Config_Proton_TOF_LHC10x.C" << endl << endl;
 		gROOT->ProcessLine(Form(".x Config_Proton_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
 					, kArgTOF.Data()
-					, normToInel
+					, inel
 					, kProtonJointBin
 					, kProtonHiPtBin));
 	}
@@ -90,14 +90,14 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 		cout << "Config_Deuteron_TPC_LHC10x.C" << endl << endl;
 		gROOT->ProcessLine(Form(".x Config_Deuteron_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
 					, kArgTPC.Data()
-					, normToInel
+					, inel
 					, kDeuteronLowPtBin
 					, kDeuteronJointBin));
 		
 		cout << "Config_Deuteron_TOF_LHC10x.C" << endl << endl;
 		gROOT->ProcessLine(Form(".x Config_Deuteron_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
 					, kArgTOF.Data()
-					, normToInel
+					, inel
 					, kDeuteronJointBin
 					, kDeuteronHiPtBin));
 	}
@@ -135,7 +135,7 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	GetInelXSection(xsec, period);
 	
 	driver.SetInelXSection(xsec);
-	driver.SetNormalizeToINEL(normToInel);
+	driver.SetExtrapolateToINEL(inel);
 
 	if(species == "Proton") driver.SetSysErr(kProtonSysErr[0],kProtonSysErr[1]);
 	if(species == "Deuteron") driver.SetSysErr(kDeuteronSysErr[0],kDeuteronSysErr[1]);

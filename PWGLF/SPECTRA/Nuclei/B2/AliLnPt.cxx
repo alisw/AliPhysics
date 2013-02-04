@@ -68,7 +68,7 @@ AliLnPt::AliLnPt(const TString& particle, Double_t trigEff, const TString& input
 , fMinM2tpc(2.)
 , fMaxM2tpc(6.)
 , fMakeStats(1)
-, fVtxCorr(0)
+, fMCtoINEL(0)
 , fVtxFactor(1)
 , fFitFrac(1)
 , fFdwnCorr(1)
@@ -202,6 +202,12 @@ Int_t AliLnPt::Exec()
 		TH1D* hEffCorPt = 0;
 		if(fEfficiency)
 		{
+			if(fMCtoINEL)
+			{
+				TH1D* hStatsMC = (TH1D*)FindObj(fcorr, species + "_Stats");
+				fVtxFactor = this->GetVertexCorrection(hStats, hStatsMC);
+			}
+			
 			hEffCorPt = this->Efficiency(hUnfoldedPt, hEffVtxPt, hEffAccTrkPt, fParticle + "_EffCor_Pt");
 		}
 		else
@@ -262,7 +268,7 @@ Int_t AliLnPt::Exec()
 		TH1D* hStatsFix = new TH1D(Form("%s_Stats", fParticle.Data()), "Stats", 6, 0, 6);
 		hStatsFix->GetXaxis()->SetBinLabel(1,"Events");
 		hStatsFix->GetXaxis()->SetBinLabel(2,"Trig");
-		hStatsFix->GetXaxis()->SetBinLabel(3,"Ana");
+		hStatsFix->GetXaxis()->SetBinLabel(3,"AnaT");
 		hStatsFix->GetXaxis()->SetBinLabel(4,"Inel");
 		hStatsFix->GetXaxis()->SetBinLabel(5,"Vtx");
 		hStatsFix->GetXaxis()->SetBinLabel(6,"Vz");
@@ -278,23 +284,22 @@ Int_t AliLnPt::Exec()
 		}
 		else
 		{
-			Double_t nTrig   = hStats->Integral(2,2);
-			Double_t nAna    = hStats->Integral(3,3);
-			Double_t nVtx    = hStats->Integral(4,4);
-			Double_t nVz     = hStats->Integral(5,5);
-			Double_t nInel   = nTrig/fTrigEff;
+			Double_t nTrig = hStats->Integral(2,2);
+			Double_t nAna  = hStats->Integral(3,3);
+			Double_t nVtx  = hStats->Integral(4,4);
+			Double_t nVz   = hStats->Integral(5,5);
+			Double_t nAnaT = nTrig; // all triggering events since we have the MC correction
+			Double_t nInel = nTrig/fTrigEff;
 			
-			if(!fVtxCorr)
+			if(!fMCtoINEL)
 			{
-				// Add events without vertex and not triggered
-				//Double_t nNoVtx = (nVz/nVtx)*(nTrig-nVtx);
+				// Add events without vertex to get the proportional trig. events
 				Double_t nNoVtx = (nAna/nVtx)*(nTrig-nVtx);
-				nInel = (nAna + nNoVtx)/fTrigEff;
-				nAna  = nAna + nNoVtx;
-				// Nvz/Ninel * (Ninel - Nvtx)
+				nAnaT = nAna + nNoVtx;
+				nInel = nAnaT/fTrigEff;
 			}
 			
-			hStatsFix->Fill("Ana",nAna);
+			hStatsFix->Fill("AnaT",nAnaT);
 			hStatsFix->Fill("Inel",nInel);
 			hStatsFix->Fill("Vtx",nVtx);
 			hStatsFix->Fill("Vz",nVz);
@@ -309,6 +314,19 @@ Int_t AliLnPt::Exec()
 	delete finput;
 	
 	return 0;
+}
+
+Double_t AliLnPt::GetVertexCorrection(const TH1D* hData, const TH1D* hMC) const
+{
+//
+// vertex correction factor
+//
+	Double_t nAna   = hData->Integral(3,3);
+	Double_t nVtx   = hData->Integral(4,4);
+	Double_t nAnaMC = hMC->Integral(3,3);
+	Double_t nVtxMC = hMC->Integral(4,4);
+	
+	return (nVtx/nAna)/(nVtxMC/nAnaMC);
 }
 
 Double_t AliLnPt::GetM2Width(Double_t pt, Double_t m) const
@@ -523,12 +541,12 @@ TH1D* AliLnPt::Secondaries(const TH1D* hPt, TF1* fncMatPt, TF1* fncFdwnPt, const
 TH1D* AliLnPt::Efficiency(const TH1D* hPt, const TH1D* hEffVtxPt, const TH1D* hEffAccTrkPt, const TString& name) const
 {
 //
-// correct by efficiency 1/(eff_vtx x eff_acc x eff_trk)
+// correct by efficiency
 //
 	TH1D* hEffCorPt = (TH1D*)hPt->Clone(name.Data());
 	hEffCorPt->Divide(hEffAccTrkPt);
 	
-	if(fVtxCorr)
+	if(fMCtoINEL)
 	{
 		hEffCorPt->Divide(hEffVtxPt);
 		hEffCorPt->Scale(fVtxFactor);

@@ -24,31 +24,6 @@ namespace B2mult
 	const Double_t kKNOmultErr[kNmult] = { 0, 0, 0, 0, 0, 0 };
 };
 
-Double_t GetVertexCorrection(const TString& period, Int_t vtxCut=10)
-{
-//
-// vertex correction factor for |Vz| < 10 cm, |Vz| < 5 cm and LHC12a5x simulations
-//
-	TString name = period;
-	name.ToLower();
-	
-	if(name == "lhc10c900" && vtxCut == 10)   return 1.0142;
-	if(name == "lhc10b" && vtxCut == 10)      return 1.0006;
-	if(name == "lhc10c" && vtxCut == 10)      return 1.0007;
-	if(name == "lhc10d" && vtxCut == 10)      return 1.0224;
-	if(name == "lhc10e" && vtxCut == 10)      return 1.0423;
-	if(name == "lhc11a_wsdd" && vtxCut == 10) return 1.0728;
-	
-	if(name == "lhc10c900" && vtxCut == 5)    return 1.0866;
-	if(name == "lhc10b" && vtxCut == 5)       return 1.0175;
-	if(name == "lhc10c" && vtxCut == 5)       return 1.0180;
-	if(name == "lhc10d" && vtxCut == 5)       return 1.0431;
-	if(name == "lhc10e" && vtxCut == 5)       return 1.0934;
-	if(name == "lhc11a_wsdd" && vtxCut == 5)  return 1.1716;
-	
-	return 1;
-}
-
 TString GetCollSystem(const TString& period)
 {
 //
