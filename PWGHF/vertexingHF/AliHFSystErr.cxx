@@ -107,6 +107,8 @@ void AliHFSystErr::Init(Int_t decay){
       else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
       else if (fCentralityClass=="020") InitD0toKpi2010PbPb020();
       else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
+      else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
+      else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
       else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
       else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
       else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
@@ -337,9 +339,72 @@ void AliHFSystErr::InitD0toKpi2011PbPb07half() {
   
   return;
 }
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb3050InPlane() {
+  //
+  // D0->Kpi syst errors. Responsible: D. Caffarri
+  //   2011 PbPb sample, 30-50 CC InPlane
+  //
+  InitD0toKpi2011PbPb07half();
+  // Raw yield extraction
+  // fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(1,0);
+  fRawYield->SetBinContent(2,0);
+  fRawYield->SetBinContent(3,0.05);
+  fRawYield->SetBinContent(4,0.08);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.15);
+  for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.);// OUT OF MEASUREMENT RANGE
+
+  // Cuts efficiency (from cuts variation)
+  //fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  fCutsEff->SetBinContent(1,0.);
+  fCutsEff->SetBinContent(2,0.0);
+  fCutsEff->SetBinContent(3,0.10);
+  fCutsEff->SetBinContent(4,0.10);
+  fCutsEff->SetBinContent(5,0.10);
+  fCutsEff->SetBinContent(6,0.10);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=25;i<=36;i++) fCutsEff->SetBinContent(i,0.0);// OUT OF MEASUREMENT RANGE
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb3050OutOfPlane() {
+  //
+  // D0->Kpi syst errors. Responsible: D. Caffarri
+  //   2011 PbPb sample, 30-50 CC OutOfPlane
+  //
+  InitD0toKpi2011PbPb07half();
+  // Raw yield extraction
+  //fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(1,0);
+  fRawYield->SetBinContent(2,0.);
+  fRawYield->SetBinContent(3,0.05);
+  for(Int_t i=4;i<=6;i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.15);
+  for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.);// OUT OF MEASUREMENT RANGE
+
+  // Cuts efficiency (from cuts variation)
+  // fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  fCutsEff->SetBinContent(1,0.);
+  fCutsEff->SetBinContent(2,0.);
+  fCutsEff->SetBinContent(3,0.10);
+  fCutsEff->SetBinContent(4,0.10);
+  fCutsEff->SetBinContent(5,0.10);
+  fCutsEff->SetBinContent(6,0.10);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=17;i<=36;i++) fCutsEff->SetBinContent(i,0.0);// OUT OF MEASUREMENT RANGE
+}
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitD0toKpi2010PbPb4080() {
-  // 
+  //
   // D0->Kpi syst errors. Responsible: A. Rossi
   //   2010 PbPb sample, 40-80 CC
   //
