@@ -189,7 +189,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fClosestJetsDist[1] = jet.fClosestJetsDist[1]; 
     fMatched            = jet.fMatched;
     fPtSub              = jet.fPtSub;
-    fPtVectSub              = jet.fPtVectSub;
+    fPtVectSub          = jet.fPtVectSub;
   }
 
   return *this;
@@ -242,4 +242,30 @@ void AliEmcalJet::SortConstituents()
 
   std::sort(fClusterIDs.GetArray(), fClusterIDs.GetArray() + fClusterIDs.GetSize());
   std::sort(fTrackIDs.GetArray(), fTrackIDs.GetArray() + fTrackIDs.GetSize());
+}
+
+//__________________________________________________________________________________________________
+AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
+{
+  AliVParticle* maxTrack = 0;
+  for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
+    AliVParticle *track = TrackAt(i, tracks);
+    if (!maxTrack || track->Pt() > maxTrack->Pt()) 
+      maxTrack = track;
+  }
+
+  return maxTrack;
+}
+
+//__________________________________________________________________________________________________
+AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray *clusters) const
+{
+  AliVCluster* maxCluster = 0;
+  for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
+    AliVCluster *cluster = ClusterAt(i, clusters);
+    if (!maxCluster || cluster->E() > maxCluster->E()) 
+      maxCluster = cluster;
+  }
+
+  return maxCluster;
 }

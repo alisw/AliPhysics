@@ -25,7 +25,7 @@ ClassImp(AliAnalysisTaskDeltaPt)
 //________________________________________________________________________
 AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskDeltaPt", kTRUE),
-  fMCAna(kFALSE),
+  fMCJetPtThreshold(1),
   fMinRC2LJ(-1),
   fEmbJetsName(""),
   fEmbTracksName(""),
@@ -38,8 +38,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fEmbCaloClusters(0),
   fRandTracks(0),
   fRandCaloClusters(0),
-  fEmbeddedClusterId(-1),
-  fEmbeddedTrackId(-1),
+  fEmbeddedClusterNIds(0),
+  fEmbeddedTrackNIds(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistEmbJetPhiEta(0),
@@ -71,7 +71,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
 //________________________________________________________________________
 AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fMCAna(kFALSE),
+  fMCJetPtThreshold(1),
   fMinRC2LJ(-1),
   fEmbJetsName(""),
   fEmbTracksName(""),
@@ -84,8 +84,8 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fEmbCaloClusters(0),
   fRandTracks(0),
   fRandCaloClusters(0),
-  fEmbeddedClusterId(-1),
-  fEmbeddedTrackId(-1),
+  fEmbeddedClusterNIds(0),
+  fEmbeddedTrackNIds(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistEmbJetPhiEta(0),
@@ -329,70 +329,101 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
   if (!fEmbJets)
     return kTRUE;
 
-  AliEmcalJet *embJet  = 0;
-  TObject     *embPart = 0;
+  AliEmcalJet *embJet = NextEmbeddedJet(0);
 
-  DoEmbJetLoop(embJet, embPart);
+  Int_t countEmbJets = 0;
 
-  if (embJet) {
+  while (embJet != 0) {
+
+    countEmbJets++;
+
+    Double_t maxClusterPt = 0;
+    Double_t maxClusterEta = 0;
+    Double_t maxClusterPhi = 0;
+
+    Double_t maxTrackPt = 0;
+    Double_t maxTrackEta = 0;
+    Double_t maxTrackPhi = 0;
+
     Double_t probePt = 0;
     Double_t probeEta = 0;
     Double_t probePhi = 0;
 
-    AliVCluster *cluster = dynamic_cast<AliVCluster*>(embPart);
+    AliVCluster *cluster = embJet->GetLeadingCluster(fEmbCaloClusters);
     if (cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
 
-      probeEta = nPart.Eta();
-      probePhi = nPart.Phi();
-      probePt = nPart.Pt();
+      maxClusterEta = nPart.Eta();
+      maxClusterPhi = nPart.Phi();
+      maxClusterPt = nPart.Pt();
+    }
+
+    AliVParticle *track = embJet->GetLeadingTrack(fEmbTracks);
+    if (track) {
+      maxTrackEta = track->Eta();
+      maxTrackPhi = track->Phi();
+      maxTrackPt = track->Pt();
+    }
+
+    if (!track && !cluster) {
+      AliWarning(Form("%s - Embedded jet found but no leading particle was found (?) !", GetName()));
+      return kTRUE;
+    }
+
+    if (maxTrackPt > maxClusterPt) {
+      probePt = maxTrackPt;
+      probeEta = maxTrackEta;
+      probePhi = maxTrackPhi;
     }
     else {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(embPart);
-      if (track) {
-	probeEta = track->Eta();
-	probePhi = track->Phi();
-	probePt = track->Pt();
-      }
-      else {
-	AliWarning(Form("%s - Embedded jet found but embedded particle not found (wrong type?)!", GetName()));
-	return kTRUE;
-      }
+      probePt = maxClusterPt;
+      probeEta = maxClusterEta;
+      probePhi = maxClusterPhi;
     }
+
     Double_t distProbeJet = TMath::Sqrt((embJet->Eta() - probeEta) * (embJet->Eta() - probeEta) + (embJet->Phi() - probePhi) * (embJet->Phi() - probePhi));
 
     fHistEmbPartPt[fCentBin]->Fill(probePt);
     fHistEmbPartPhiEta->Fill(probeEta, probePhi);
-    
     fHistDistEmbPartJetAxis[fCentBin]->Fill(distProbeJet);
 
     fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt());
     fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area());
     fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
 
-    fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - probePt);
-    fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - probePt);
-    fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - probePt);
+    fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
+    fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
+    fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
 
+    embJet = NextEmbeddedJet();
   }
-  else {
-    if (fEmbTracks)
+
+  if (countEmbJets==0) {
+    if (fEmbTracks) {
       DoEmbTrackLoop();
-    if (fEmbCaloClusters)
+      AliVParticle* maxTrack = 0;
+      for (Int_t i = 0; i < fEmbeddedTrackNIds; i++) {
+	AliVParticle *track2 = static_cast<AliVParticle*>(fEmbTracks->At(fEmbeddedTrackIds[i]));
+	if (!maxTrack || track2->Pt() > maxTrack->Pt())
+	  maxTrack = track2;
+      }
+      if (maxTrack)
+	fHistEmbNotFoundPhiEta[fCentBin]->Fill(maxTrack->Eta(), maxTrack->Phi());
+    }
+
+    if (fEmbCaloClusters) {
       DoEmbClusterLoop();
-    if (fEmbTracks && fEmbeddedTrackId >= 0) {
-      AliVTrack *track2 = static_cast<AliVTrack*>(fEmbTracks->At(fEmbeddedTrackId));
-      fHistEmbNotFoundPhiEta[fCentBin]->Fill(track2->Eta(), track2->Phi());
-    }
-    else if (fEmbCaloClusters && fEmbeddedClusterId >= 0) {
-      AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterId));
-      TLorentzVector nPart;
-      cluster2->GetMomentum(nPart, fVertex);
-      fHistEmbNotFoundPhiEta[fCentBin]->Fill(nPart.Eta(), nPart.Phi());
-    }
-    else {
-      AliWarning(Form("%s - Embedded particle not found!", GetName()));
+      TLorentzVector maxCluster;
+      for (Int_t i = 0; i < fEmbeddedClusterNIds; i++) {
+	AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterIds[i]));
+	TLorentzVector nPart;
+	cluster2->GetMomentum(nPart, fVertex);
+	if (nPart.Pt() > maxCluster.Pt())
+	  maxCluster = nPart;
+      }
+      if (maxCluster.Pt() > 0)
+	fHistEmbNotFoundPhiEta[fCentBin]->Fill(maxCluster.Eta(), maxCluster.Phi());
     }
   }
 
@@ -404,10 +435,10 @@ void AliAnalysisTaskDeltaPt::DoEmbTrackLoop()
 {
   // Do track loop.
 
+  fEmbeddedTrackNIds = 0;
+
   if (!fEmbTracks)
     return;
-
-  fEmbeddedTrackId = -1;
 
   Int_t ntracks = fEmbTracks->GetEntriesFast();
 
@@ -422,12 +453,12 @@ void AliAnalysisTaskDeltaPt::DoEmbTrackLoop()
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
     
-    if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
+    if (vtrack && !AcceptTrack(vtrack)) 
       continue;
 
-    if (track->GetLabel() == 100) {
-      fEmbeddedTrackId = i;
-      continue;
+    if (track->GetLabel() >= 0) {
+      fEmbeddedTrackIds[fEmbeddedTrackNIds] = i;
+      fEmbeddedTrackNIds++;
     }
   }
 }
@@ -437,10 +468,10 @@ void AliAnalysisTaskDeltaPt::DoEmbClusterLoop()
 {
   // Do cluster loop.
 
+  fEmbeddedClusterNIds = 0;
+
   if (!fEmbCaloClusters)
     return;
-
-  fEmbeddedClusterId = -1;
 
   Int_t nclusters =  fEmbCaloClusters->GetEntriesFast();
 
@@ -451,89 +482,50 @@ void AliAnalysisTaskDeltaPt::DoEmbClusterLoop()
       continue;
     }  
 
-    if (!AcceptCluster(cluster, kTRUE)) 
+    if (!AcceptCluster(cluster)) 
       continue;
 
-    if (cluster->Chi2() == 100) {
-      fEmbeddedClusterId = iClusters;
-      continue;
+    if (cluster->GetLabel() >= 0) {
+      fEmbeddedClusterIds[fEmbeddedClusterNIds] = iClusters;
+      fEmbeddedClusterNIds++;
     }
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskDeltaPt::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)
+AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Int_t i)
 {
   // Do the embedded jet loop.
 
+  static Int_t iJet = 0;
+
+  if (i >= 0)
+    iJet = i;
+
   if (!fEmbJets)
-    return;
+    return 0;
 
   TLorentzVector maxClusVect;
 
-  Int_t nembjets = fEmbJets->GetEntriesFast();
+  const Int_t nembjets = fEmbJets->GetEntriesFast();
 
-  for (Int_t ij = 0; ij < nembjets; ij++) {
+  for (; iJet < nembjets; iJet++) {
       
-    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fEmbJets->At(ij));
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fEmbJets->At(iJet));
       
     if (!jet) {
-      AliError(Form("Could not receive jet %d", ij));
+      AliError(Form("Could not receive jet %d", iJet));
       continue;
     } 
       
     if (!AcceptJet(jet))
       continue;
 
-    if (!jet->IsMC())
-      continue;
-
-    AliVParticle *maxTrack = 0;
-
-    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      AliVParticle *track = jet->TrackAt(it, fEmbTracks);
-      
-      if (!track) 
-	continue;
-
-      if (track->GetLabel() != 100)
-	continue;
-      
-      if (!maxTrack || track->Pt() > maxTrack->Pt())
-	maxTrack = track;
-    }
-    
-    AliVCluster *maxClus = 0;
-
-    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-      AliVCluster *cluster = jet->ClusterAt(ic, fEmbCaloClusters);
-      
-      if (!cluster) 
-	continue;
-
-      if (cluster->Chi2() != 100)
-	continue;
-      
-      TLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
-      
-      if (!maxClus || nPart.Et() > maxClusVect.Et()) {
-	new (&maxClusVect) TLorentzVector(nPart);
-	maxClus = cluster;
-      } 
-    }
-
-    if ((maxClus && maxTrack && maxClusVect.Et() > maxTrack->Pt()) || (maxClus && !maxTrack)) {
-      embPart = maxClus;
-      embJet = jet;
-    }
-    else if (maxTrack) {
-      embPart = maxTrack;
-      embJet = jet;
-    }
-
-    return;  // MC jet found, exit
+    if (jet->MCPt() >= fMCJetPtThreshold)
+      return jet;
   }
+
+  return 0;
 }
 
 //________________________________________________________________________
@@ -594,7 +586,7 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
 	continue;
       }  
       
-      if (!AcceptCluster(cluster, fMCAna))
+      if (!AcceptCluster(cluster))
 	continue;
       
       TLorentzVector nPart;
@@ -616,7 +608,7 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
 	continue; 
       }
       
-      if (!AcceptTrack(track, fMCAna)) 
+      if (!AcceptTrack(track)) 
 	continue;
       
       Float_t tracketa = track->Eta();

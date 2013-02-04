@@ -10,6 +10,7 @@ class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
 class AliVTrack;
+class AliVCaloCells;
 class TH1F;
 class AliEMCALGeometry;
 
@@ -41,6 +42,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type ;                         ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetClusName(const char *n)                            { fCaloName          = n                              ; }
+  void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
   void                        SetClusPtCut(Double_t cut)                            { fClusPtCut         = cut                            ; }
   void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow    = min  ; fClusTimeCutUp = max    ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
@@ -59,9 +61,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
 
  protected:
-  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
-  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE) const;
-  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE) const;
+  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kTRUE) const;
+  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kTRUE) const;
+  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kTRUE) const;
   virtual void                ExecOnce();
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
@@ -78,6 +80,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fCreateHisto;                // whether or not create histograms
   TString                     fTracksName;                 // name of track collection
   TString                     fCaloName;                   // name of calo cluster collection
+  TString                     fCaloCellsName;              // name of calo cell collection
   Double_t                    fMinCent;                    // min centrality for event selection
   Double_t                    fMaxCent;                    // max centrality for event selection
   Double_t                    fMinVz;                      // min vertex for event selection
@@ -104,6 +107,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
+  AliVCaloCells              *fCaloCells;                  //!cells
   Double_t                    fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
   Double_t                    fEPV0;                       //!event plane V0

@@ -37,6 +37,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCreateHisto(kTRUE),
   fTracksName(),
   fCaloName(),
+  fCaloCellsName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -63,6 +64,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
+  fCaloCells(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -92,6 +94,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCreateHisto(histo),
   fTracksName(),
   fCaloName(),
+  fCaloCellsName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -118,6 +121,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
+  fCaloCells(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -239,7 +243,7 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) c
   if (!clus->IsEMCAL())
     return kFALSE;
 
-  if (!acceptMC && clus->Chi2() == 100)
+  if (!acceptMC && clus->GetLabel() > 0)
     return kFALSE;
 
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
@@ -262,7 +266,7 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) cons
   if (!track)
     return kFALSE;
 
-  if (!acceptMC && track->GetLabel() == 100)
+  if (!acceptMC && track->GetLabel() > 0)
     return kFALSE;
 
   if (track->Pt() < fTrackPtCut)
@@ -353,6 +357,14 @@ void AliAnalysisTaskEmcal::ExecOnce()
 	fTracks = 0;
 	return;
       }
+    }
+  }
+
+  if (!fCaloCellsName.IsNull() && !fCaloCells) {
+    fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
+    if (!fCaloCells) {
+      AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloCellsName.Data())); 
+      return;
     }
   }
 

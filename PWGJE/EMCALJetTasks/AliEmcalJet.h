@@ -53,6 +53,7 @@ class AliEmcalJet : public AliVParticle
   Int_t             Compare(const TObject* obj)  const;
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)  const { if (!ca) return 0; return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx))); }
+  AliVCluster      *GetLeadingCluster(TClonesArray *clusters) const;
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize();       }
   UShort_t          GetNumberOfConstituents()    const { return GetNumberOfClusters()+GetNumberOfTracks();       }
@@ -78,6 +79,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtSubVect(Double_t rho)      const;
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
+  AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }

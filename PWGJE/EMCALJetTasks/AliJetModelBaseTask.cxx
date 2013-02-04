@@ -48,7 +48,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fNClusters(0),
   fNCells(0),
   fNTracks(0),
-  fMarkMC(kTRUE),
+  fMarkMC(100),
   fPtSpectrum(0),
   fQAhistos(kFALSE),
   fIsInit(0),
@@ -87,7 +87,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fNClusters(0),
   fNCells(0),
   fNTracks(1),
-  fMarkMC(kTRUE),
+  fMarkMC(100),
   fPtSpectrum(0),
   fQAhistos(drawqa),
   fIsInit(0),
@@ -396,9 +396,7 @@ Int_t AliJetModelBaseTask::AddCell(Double_t e, Int_t absId, Double_t time)
 {
   // Add a cell to the event.
 
-  Int_t label = fMarkMC ? 100 : -1;
-
-  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, label, 0);
+  Bool_t r = fOutCaloCells->SetCell(fAddedCells, absId, e, time, fMarkMC, 0);
 
   if (r) {
     fAddedCells++;
@@ -475,9 +473,18 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
   cluster->SetCellsAmplitudeFraction(&fract);
   cluster->SetID(nClusters);
   cluster->SetEmcCpvDistance(-1);
-  if (fMarkMC)
-    cluster->SetChi2(100); // MC flag!
 
+  //MC label
+  if (fEsdMode) {
+    AliESDCaloCluster *esdClus = static_cast<AliESDCaloCluster*>(cluster);
+    TArrayI parents(1, &fMarkMC);
+    esdClus->AddLabels(parents); 
+  }
+  else {
+    AliAODCaloCluster *aodClus = static_cast<AliAODCaloCluster*>(cluster);
+    aodClus->SetLabel(&fMarkMC, 1); 
+  }
+  
   return cluster;
 }
 
@@ -495,13 +502,11 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if (phi < 0) 
     phi = GetRandomPhi();
 
-  Int_t label = fMarkMC ? 100 : -1;
-
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
 								  1,
-								  label,    // MC flag!
+								  fMarkMC,    // MC flag!
 								  type, 
 								  etaemc, 
 								  phiemc, 
