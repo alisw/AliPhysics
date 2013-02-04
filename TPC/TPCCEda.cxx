@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
       return -1;
     }
 
-    
+    Bool_t hasNewData=kFALSE;
     /* read until EOF */
     while (true) {
       struct eventHeaderStruct *event;
@@ -278,7 +278,7 @@ int main(int argc, char **argv) {
       if (event==NULL){
         //use time in between bursts to
         // send the data to AMOREdb
-        if (stopWatch.RealTime()>updateInterval){
+        if (stopWatch.RealTime()>updateInterval && hasNewData){
           calibCE->Analyse();
           if (!skipAmore) SendToAmoreDB(calibCE,runNb);
           stopWatch.Start();
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
           printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE->GetNeventsProcessed());
           neventsOld=nevents;
         }
-        
+        hasNewData=kFALSE;
         continue;
       }
       
@@ -306,6 +306,7 @@ int main(int argc, char **argv) {
       
       // CE calibration
       calibCE->ProcessEvent(event);
+      hasNewData=kTRUE;
       
       /* free resources */
       free(event);
