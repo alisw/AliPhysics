@@ -638,6 +638,14 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContFillingScheme->AppendObject(fs1000ns_50b_35_14_35, 130601, 130640);
 
 
+  AliOADBFillingScheme * fs200ns_192Pb_216p_9inj24bpi = new AliOADBFillingScheme("200ns_192Pb_216p_9inj24bpi");
+  fs200ns_192Pb_216p_9inj24bpi->SetFillingSchemeName("200ns_192Pb_216p_9inj24bpi");
+  fs200ns_192Pb_216p_9inj24bpi->SetBXIDs("B","  #346  #354  #363  #371  #380  #388  #397  #405  #414  #422  #431  #439  #448  #456  #465  #473  #482  #490  #499  #507  #516  #524  #533  #541  #578  #586  #595  #603  #612  #620  #629  #637  #646  #654  #663  #671  #680  #688  #697  #705  #714  #722  #731  #739  #748  #756  #765  #773  #810  #818  #827  #835  #844  #852  #861  #869  #878  #886  #895  #903  #912  #920  #929  #937  #946  #954  #963  #971  #980  #988  #997  #1005  #1237  #1245  #1254  #1262  #1271  #1279  #1288  #1296  #1305  #1313  #1322  #1330  #1339  #1347  #1356  #1364  #1373  #1381  #1390  #1398  #1407  #1415  #1424  #1432  #1469  #1477  #1486  #1494  #1503  #1511  #1520  #1528  #1537  #1545  #1554  #1562  #1571  #1579  #1588  #1596  #1605  #1613  #1622  #1630  #1639  #1647  #1656  #1664  #1701  #1709  #1718  #1726  #1735  #1743  #1752  #1760  #1769  #1777  #1786  #1794  #1803  #1811  #1820  #1828  #1837  #1845  #1854  #1862  #1871  #1879  #1888  #1896  #2128  #2136  #2145  #2153  #2162  #2170  #2179  #2187  #2196  #2204  #2213  #2221  #2230  #2238  #2247  #2255  #2264  #2272  #2281  #2289  #2298  #2306  #2315  #2323  #3019  #3027  #3036  #3044  #3053  #3061  #3070  #3078  #3087  #3095  #3104  #3112  #3121  #3129  #3138  #3146  #3155  #3163  #3172  #3180  #3189  #3197  #3206  #3214 ");
+  fs200ns_192Pb_216p_9inj24bpi->SetBXIDs("A","");
+  fs200ns_192Pb_216p_9inj24bpi->SetBXIDs("C","  #1  #9  #18  #26  #35  #43  #52  #60  #69  #77  #86  #94  #103  #111  #120  #128  #3497  #3505  #3514  #3522  #3531  #3539  #3548  #3556 ");
+  fs200ns_192Pb_216p_9inj24bpi->SetBXIDs("E","  #176  #261 ");	   
+  oadbContFillingScheme->AppendObject(fs200ns_192Pb_216p_9inj24bpi, 196474, 196474);
+
 
   // 2010 ----- Heavy Ion -------
 
@@ -1384,6 +1392,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC13b->AddBGTriggerClass          ( AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHQU-ACE-NOPF-FAST -CINT7WUHQU-ACE-NOPF-[ALL|CENT]","ACE",triggerCount);
   oadbLHC13b->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
   oadbLHC13b->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG  && !ZNABG && !ZNCBG && !TPCLaserWarmUp");
+
+  triggerCount++;
+  oadbLHC13b->AddCollisionTriggerClass   ( AliVEvent::kTRD,"+CEMC7WUHEE-B-NOPF-CENT", "B",   triggerCount);
+  oadbLHC13b->AddBGTriggerClass          ( AliVEvent::kTRD,"+CEMC7WUHEE-ACE-NOPF-CENT","ACE",triggerCount);
+  oadbLHC13b->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbLHC13b->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG && !ZNABG && !ZNCBG && !TPCLaserWarmUp");
 
   triggerCount++;
   oadbLHC13b->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSHM7-B-NOPF-ALLNOTRD","B",   triggerCount);
