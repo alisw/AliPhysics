@@ -17,7 +17,7 @@
    const Int_t nDie=arrNames->GetEntries();
    Bool_t MCenabled=kFALSE;
 
-   Bool_t kMix = 1; //Event mixing (M.Koehler)
+   Bool_t kMix = 0; //Event mixing (M.Koehler)
 
    AliDielectron* ConfigLowMassDiEOezdemir(Int_t cutDefinition,Bool_t hasMC=kFALSE)
    {
@@ -758,18 +758,19 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
  
   //pair variables
-  cf->AddVariable(AliDielectronVarManager::kPt,200,0,20);
+  cf->AddVariable(AliDielectronVarManager::kPt,100,0,10);
   //cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
+  //cf->AddVariable(AliDielectronVarManager::kPhi,64, -3.2, 3.2);
   cf->AddVariable(AliDielectronVarManager::kY,40,-2,2);
   cf->AddVariable(AliDielectronVarManager::kM,500,0.,4.); 
   //cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
-  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,315,0,3.15);
+  //cf->AddVariable(AliDielectronVarManager::kOpeningAngle,315,0,3.15);
   //cf->AddVariable(AliDielectronVarManager::kDeltaEta,200,-2,2);
   //cf->AddVariable(AliDielectronVarManager::kDeltaPhi,100,0,3.15);
   //cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10);
-  cf->AddVariable(AliDielectronVarManager::kNumberOfDaughters,11,0,10);
+  cf->AddVariable(AliDielectronVarManager::kNumberOfDaughters,5,0,5);
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kPt,200,0.,20.,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPt,100,0.,10.,kTRUE);
   //cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
   //cf->AddVariable(AliDielectronVarManager::kY,40,-2.,2.,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,20,-1.,1.,kTRUE);
@@ -782,19 +783,19 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
  
   if (MCenabled) {
 	cf->SetStepForMCtruth();
-	cf->SetStepsForMCtruthOnly();
+	//cf->SetStepsForMCtruthOnly();
 	//cf->SetStepForNoCutsMCmotherPid();
 	cout << "MC ENABLED ------------------------------------------------------" << endl;
     cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
   }
 
-cf->SetStepsForEachCut();
-//  cf->SetStepForPreFilter();
+  //cf->SetStepsForEachCut();
+  //cf->SetStepForPreFilter();
   cf->SetStepForAfterAllCuts();
-  cf->SetStepsForBackground();
- 
+  //cf->SetStepsForBackground();
   cf->SetStepsForSignal();
+  
   die->SetCFManagerPair(cf);
 
 /*
@@ -863,9 +864,16 @@ cf->SetStepsForEachCut();
   OmegaDecays->SetMothersRelation(AliDielectronSignalMC::kSame); 
   OmegaDecays->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(OmegaDecays);
-
-
-
+/*
+AliDielectronSignalMC* DieleConti= new AliDielectronSignalMC("DieleConti","low mass dielectron pairs");
+DieleConti->SetLegPDGs(11,-11);
+DieleConti->SetMotherPDGs(0,0,22,22);
+DieleConti->SetCheckBothChargesLegs(kTRUE,kTRUE);
+DieleConti->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+DieleConti->SetMothersRelation(AliDielectronSignalMC::kSame);
+DieleConti->SetFillPureMCStep(kTRUE);
+die->AddSignalMC(DieleConti);
+*/
 
 }
 

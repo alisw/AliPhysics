@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_oezdemir_LOWMASS(){
+AliAnalysisTask *AddTask_oezdemir_LOWMASS(Bool_t getFromAlien=kFALSE){
 
 
   //get the current analysis manager
@@ -10,13 +10,29 @@ AliAnalysisTask *AddTask_oezdemir_LOWMASS(){
 
 //Get the current train configuration
   TString trainConfig=gSystem->Getenv("CONFIG_FILE");
-
-  //set config file name
-  TString configFile("$TRAIN_ROOT/oezdemir_LOWMASS/ConfigLowMassDiEOezdemir.C");
+  TString configBasePath("$TRAIN_ROOT/oezdemir_LOWMASS/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
 
-  if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/ConfigLowMassDiEOezdemir.C";
+  if (getFromAlien &&
+      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/ConfigLowMassDiEOezdemir.C"))
+     ) {
+        configBasePath=Form("%s/",gSystem->pwd());
+  }
 
+  TString configFile("ConfigLowMassDiEOezdemir.C");
+
+  TString configFilePath(configBasePath+configFile);
+/*
+  //AOD Usage currently tested with separate task, to be merged
+  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+        ::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
+  }
+  else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+        ::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code");
+        bESDANA=kTRUE;
+  }
+*/
 /*
 //AOD Usage currently not allows-----------------------------------------
 
