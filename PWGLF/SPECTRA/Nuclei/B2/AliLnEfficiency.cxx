@@ -97,6 +97,12 @@ Int_t AliLnEfficiency::Exec()
 		delete fncG3Fluka;
 	}
 	
+	if(!fParticle.Contains("Anti"))
+	{
+		TH1D* hStats = (TH1D*)FindObj(fsimu, fParticle + "_Stats");
+		hStats->Write();
+	}
+	
 	hEffAccTrkPt->SetTitle(fParticle.Data());
 	hEffTrkPt->SetTitle(fParticle.Data());
 	hEffAccPt->SetTitle(fParticle.Data());

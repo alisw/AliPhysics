@@ -38,7 +38,7 @@ AliLnSpectra::AliLnSpectra(const TString& particle, const TString& ptFilename, c
 , fOutputTag(otag)
 , fYMin(-0.5)
 , fYMax(0.5)
-, fNormToInel(1)
+, fINEL(1)
 , fIsOnlyGen(0)
 , fSysErr(1)
 {
@@ -71,7 +71,7 @@ Int_t AliLnSpectra::Exec()
 	TH1D* hStats = (TH1D*)FindObj(finput, fParticle + "_Stats");
 	
 	Double_t nEvent = hStats->Integral(3,3);
-	if(fNormToInel) nEvent = hStats->Integral(4,4);
+	if(fINEL) nEvent = hStats->Integral(4,4);
 	
 	// ouputfile
 	

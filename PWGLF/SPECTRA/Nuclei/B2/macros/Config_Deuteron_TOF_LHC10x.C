@@ -27,7 +27,7 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
                                  const TString& outputTag  = "lhc10d",
                                  const TString& multTag    = "",
                                  const TString& multCorTag = "",
-                                 Bool_t normToInel         = 1,  // for mult
+                                 Bool_t inel               = 1,  // for mult
                                  Bool_t drawOutput         = 1,  // for batch
                                  Int_t  lowPtBin           = 5,  // 0.8 Gev/c
                                  Int_t  hiPtBin            = 17, // 3.2 GeV/c
@@ -43,8 +43,7 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	const TString  kSpecies         = "Deuteron";
 	const TString  kTrkSel          = "its_tpc_tof_dca-tpc3";
 	const TString  kTrigName        = "mbor";
-	const Bool_t   kVtxCorr         = 0;
-	const Double_t kVtxCorrVal      = GetVertexCorrection(period);
+	const Bool_t   kMCtoINEL        = 1;
 	const Int_t    kM2Bin[2]        = {8,18};
 	const Bool_t   kPidM2           = 1;
 	const Bool_t   kUnfolding       = 0;
@@ -90,8 +89,8 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetOutputTag(outputTag);
 	driver.SetTriggerEfficiency(trigEff);
 	driver.SetInelXSection(xsec);
-	driver.SetNormalizeToINEL(normToInel);
-	driver.SetVertexCorrection(kVtxCorr, kVtxCorrVal);
+	driver.SetExtrapolateToINEL(inel);
+	driver.SetMCtoINEL(kMCtoINEL);
 	driver.SetPtBinInterval(lowPtBin, hiPtBin);
 	driver.SetPidM2(kPidM2);
 	driver.SetM2BinInterval(kM2Bin[0], kM2Bin[1]);
@@ -125,7 +124,7 @@ Int_t Config_Deuteron_TOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	st->cd();
 	gROOT->ForceStyle();
 	
-	DrawOutputCorr(kSpecies,inputCorr);
+	DrawOutputCorr(kSpecies, inputCorr, driver.GetOutputCorrTag());
 	
 	if(kSecProd != 2) gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"\",\"Deuteron\", %d, %d, %f, %f)", driver.GetPtCorrDebugFilename().Data(), lowPtBin, hiPtBin, kDCAxy[0], kDCAxy[1]));
 	

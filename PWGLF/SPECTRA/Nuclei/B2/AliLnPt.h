@@ -35,6 +35,8 @@ class AliLnPt: public TObject
 	TH1D* Secondaries(const TH1D* hPt, TF1* fncMatPt, TF1* fncFdwnPt, const TString& name) const;
 	TH1D* Efficiency(const TH1D* hPt, const TH1D* hEffVtxPt, const TH1D* hEffAccTrkPt, const TString& name) const;
 	
+	Double_t GetVertexCorrection(const TH1D* hData, const TH1D* hMC) const;
+	
 	Int_t Exec();
 	
 	void SetRapidityInterval(Double_t ymin, Double_t ymax) { fYMin = ymin; fYMax = ymax; }
@@ -59,10 +61,11 @@ class AliLnPt: public TObject
 	
 	void SetMakeStats(Bool_t flag=1) { fMakeStats = flag; }
 	
-	void SetVertexCorrection(Bool_t flag=1, Double_t factor=1) { fVtxCorr=flag; fVtxFactor=factor; }
+	void SetMCtoINEL(Bool_t flag=1) { fMCtoINEL=flag;}
 	void SetFitFractionCorr(Bool_t flag=1) { fFitFrac=flag; }
 	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn=flag; }
+	
 	
   private:
  
@@ -112,8 +115,8 @@ class AliLnPt: public TObject
 	
 	Bool_t fMakeStats; // make event stats
 	
-	Bool_t fVtxCorr; // use simulation to correct from non reconstructed vertex events
-	Double_t fVtxFactor; // correction factor between simulation and data
+	Bool_t fMCtoINEL; // MC to extrapolate to inel or for triggering events
+	Double_t fVtxFactor; // vertex correction factor between simulation and data
 	
 	Bool_t fFitFrac; // fit for fraction of secondaries
 	Bool_t fFdwnCorr; // enable feed-down correction

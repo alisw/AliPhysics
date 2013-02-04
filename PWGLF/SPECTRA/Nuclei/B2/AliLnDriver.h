@@ -47,7 +47,7 @@ class AliLnDriver: public TObject
 	
 	void SetTriggerEfficiency(Double_t eff[3]);
 	void SetInelXSection(Double_t xsec[3]);
-	void SetNormalizeToINEL(Bool_t flag=1) { fNormToInel = flag; }
+	void SetExtrapolateToINEL(Bool_t flag=1) { fINEL = flag; }
 	void SetOnlyGeneration(Bool_t flag=1) { fIsOnlyGen = flag; }
 	
 	void SetMakeCorrections(Bool_t flag=1) { fMakeCorr = flag; }
@@ -73,7 +73,7 @@ class AliLnDriver: public TObject
 	void SetEfficiency(Bool_t flag=1, Bool_t g3Fluka=0) { fEfficiency = flag; fG3Fluka=g3Fluka; }
 	void SetScalingFactors(Double_t mat, Double_t fd) { fScMat=mat; fScFd=fd; }
 	
-	void SetVertexCorrection(Bool_t flag=1, Double_t val=1) { fVtxCorr = flag; fVtxCorrVal=val; }
+	void SetMCtoINEL(Bool_t flag=1) { fMCtoINEL = flag; }
 	void SetFitFractionCorr(Bool_t flag=1) { fFitFrac=flag; }
 	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn = flag; }
@@ -96,7 +96,7 @@ class AliLnDriver: public TObject
 	Double_t fTrigEff[3];   // trigger efficiency, stat. and syst. errors
 	Double_t fXsec[3];      // total inelastic cross section, stat. and syst. errors
 	Bool_t  fIsOnlyGen;     // if it is only generation
-	Bool_t  fNormToInel;    // normalize to inelastic events
+	Bool_t  fINEL;          // extrapolate to inelastic events
 	
 	Bool_t  fMakeCorr;      // make corrections
 	Bool_t  fMakePt;        // make pt
@@ -125,7 +125,7 @@ class AliLnDriver: public TObject
 	Double_t fMinM2tpc;     // min M2 for integration
 	Double_t fMaxM2tpc;     // max M2 for integration
 	Bool_t   fEfficiency;   // efficiency correction
-	Bool_t   fG3Fluka;      // enable G3/Fluka correction
+	Bool_t   fG3Fluka;      // enable G3/Fluka correction for TPC
 	Double_t fScMat;        // scaling factor for material fraction
 	Double_t fScFd;         // scaling factor for feed-down fraction
 	
@@ -147,8 +147,7 @@ class AliLnDriver: public TObject
 	Bool_t fFitFrac;        // fit for fraction of secondaries
 	Bool_t fFdwnCorr;       // enable feed-down correction
 	Bool_t fSameFdwn;       // same feed-down correction for positives and negatives
-	Bool_t fVtxCorr;        // enable vertex correction from simulation
-	Double_t fVtxCorrVal;   // vertex correction value
+	Bool_t fMCtoINEL;       // MC to extrapolate to inel or for triggering events
 	
 	Bool_t fAddFakeTracks;  // include fake tracks in the efficiency and templates
 	

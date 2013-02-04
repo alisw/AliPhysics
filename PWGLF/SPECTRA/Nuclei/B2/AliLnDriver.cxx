@@ -42,7 +42,7 @@ AliLnDriver::AliLnDriver()
 , fOutputTag("test")
 , fOutputCorTag("")
 , fIsOnlyGen(0)
-, fNormToInel(1)
+, fINEL(1)
 , fMakeCorr(1)
 , fMakePt(1)
 , fMakeRatio(1)
@@ -85,8 +85,7 @@ AliLnDriver::AliLnDriver()
 , fFitFrac(0)
 , fFdwnCorr(1)
 , fSameFdwn(0)
-, fVtxCorr(0)
-, fVtxCorrVal(1)
+, fMCtoINEL(0)
 , fAddFakeTracks(1)
 {
 //
@@ -267,7 +266,7 @@ void AliLnDriver::MakePt() const
 		lnpt.SetSecondaries(fSecondaries);
 		lnpt.SetEfficiency(fEfficiency);
 		lnpt.SetMakeStats(fMakeStats);
-		lnpt.SetVertexCorrection(fVtxCorr, fVtxCorrVal);
+		lnpt.SetMCtoINEL(fMCtoINEL);
 		lnpt.SetFitFractionCorr(fFitFrac);
 		lnpt.SetFeedDownCorr(fFdwnCorr);
 		lnpt.SetSameFeedDownCorr(fSameFdwn);
@@ -321,7 +320,7 @@ void AliLnDriver::MakeSpectra() const
 		AliLnSpectra lnspectra(kParticle[i], fOutputPt, fOutputTag, spectrafile, fOutputTag, fXsec);
 		
 		lnspectra.SetRapidityInterval(fYMin, fYMax);
-		lnspectra.SetNormalizeToINEL(fNormToInel);
+		lnspectra.SetExtrapolateToINEL(fINEL);
 		lnspectra.SetOnlyGeneration(fIsOnlyGen);
 		lnspectra.SetScalingFactor(kSysErr[i]);
 		

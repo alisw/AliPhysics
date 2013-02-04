@@ -27,7 +27,7 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
                                  const TString& outputTag  = "lhc10d",
                                  const TString& multTag    = "",
                                  const TString& multCorTag = "",
-                                 Bool_t normToInel         = 1,  // for mult
+                                 Bool_t inel               = 1,  // for mult
                                  Bool_t drawOutput         = 1,  // for batch
                                  Int_t  lowPtBin           = 3,  // 0.4 Gev/c
                                  Int_t  hiPtBin            = 6,  // 1.0 GeV/c
@@ -44,9 +44,8 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	const TString  kSpecies         = "Deuteron";
 	const TString  kTrkSel          = "its_tpc_dca-tpc3";
 	const TString  kTrigName        = "mbor";
-	const Bool_t   kVtxCorr         = 0;
-	const Double_t kVtxCorrVal      = GetVertexCorrection(period);
-	const Bool_t   kUnfolding       = 0;
+	const Bool_t   kMCtoINEL        = 1;
+	const Bool_t   kUnfolding       = 1;
 	const Int_t    kIter            = 7;
 	const Bool_t   kSecondaries     = 1;
 	const Int_t    kSecProd         = 0; // 0 tff, 1 roofit, 2 mc
@@ -87,8 +86,8 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.SetOutputTag(outputTag);
 	driver.SetTriggerEfficiency(trigEff);
 	driver.SetInelXSection(xsec);
-	driver.SetNormalizeToINEL(normToInel);
-	driver.SetVertexCorrection(kVtxCorr, kVtxCorrVal);
+	driver.SetExtrapolateToINEL(inel);
+	driver.SetMCtoINEL(kMCtoINEL);
 	driver.SetPtBinInterval(lowPtBin, hiPtBin);
 	driver.SetPidM2(0);
 	driver.SetUnfolding(kUnfolding, kIter);
@@ -118,7 +117,7 @@ Int_t Config_Deuteron_TPC_LHC10x(const TString& inputDir   = "~/alice/input",
 	st->cd();
 	gROOT->ForceStyle();
 	
-	DrawOutputCorr(kSpecies,inputCorr);
+	DrawOutputCorr(kSpecies, inputCorr, driver.GetOutputCorrTag());
 	
 	if(kSecProd != 2) gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"\",\"Deuteron\", %d, %d, %f, %f)", driver.GetPtCorrDebugFilename().Data(), lowPtBin, hiPtBin, kDCAxy[0], kDCAxy[1]));
 	

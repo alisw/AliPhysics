@@ -30,7 +30,7 @@ class AliLnSpectra: public TObject
 	Int_t Exec();
 	
 	void SetRapidityInterval(Double_t ymin, Double_t ymax) { fYMin = ymin; fYMax = ymax; }
-	void SetNormalizeToINEL(Bool_t flag=1) { fNormToInel = flag; }
+	void SetExtrapolateToINEL(Bool_t flag=1) { fINEL = flag; }
 	
 	void SetOnlyGeneration(Bool_t flag=1) { fIsOnlyGen = flag; }
 	
@@ -60,7 +60,7 @@ class AliLnSpectra: public TObject
 	Double_t fYMin; // rapidity low limit
 	Double_t fYMax; // rapidity high limit
 	
-	Bool_t fNormToInel; // normalize to inelastic events
+	Bool_t fINEL; // extrapolate to inelastic events
 	Bool_t fIsOnlyGen; // if no need for correction
 	
 	Double_t fSysErr; // variation for systematics
