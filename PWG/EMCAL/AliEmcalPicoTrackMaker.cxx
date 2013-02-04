@@ -189,7 +189,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 									 track->Eta(), 
 									 track->Phi(), 
 									 track->Charge(), 
-									 -1,
+									 track->GetLabel(),
 									 type,
 									 track->GetTrackEtaOnEMCal(), 
 									 track->GetTrackPhiOnEMCal(), 

@@ -7,6 +7,7 @@
 #include "AliEmcalMCTrackSelector.h"
 
 #include <TClonesArray.h>
+#include <TH1I.h>
 
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
@@ -22,7 +23,10 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fTracksOutName("PicoTracks"),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fTracksOut(0)
+  fInit(kFALSE),
+  fTracksMapName(""),
+  fTracksOut(0),
+  fTracksMap(0)
 {
   // Constructor.
 }
@@ -33,7 +37,10 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fTracksOutName("PicoTracks"),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fTracksOut(0)
+  fInit(kFALSE),
+  fTracksMapName(""),
+  fTracksOut(0),
+  fTracksMap(0)
 {
   // Constructor.
 }
@@ -51,6 +58,10 @@ void AliEmcalMCTrackSelector::UserCreateOutputObjects()
 
   fTracksOut = new TClonesArray("AliMCParticle");
   fTracksOut->SetName(fTracksOutName);
+
+  fTracksMapName = fTracksOutName;
+  fTracksMapName += "_Map";
+  fTracksMap = new TH1I(fTracksMapName, fTracksMapName, 1000, 0, 1);
 }
 
 //________________________________________________________________________
@@ -71,18 +82,27 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     return;
   }
 
-  // add tracks to event if not yet there
-  fTracksOut->Delete();
-  if (!(event->FindListObject(fTracksOutName))) {
-    event->AddObject(fTracksOut);
+  if (!fInit) {
+    // add tracks to event if not yet there
+    if (!(event->FindListObject(fTracksOutName))) 
+      event->AddObject(fTracksOut);
+
+    if (!(event->FindListObject(fTracksMapName)))
+      event->AddObject(fTracksMap);
+
+    fInit = kTRUE;
   }
 
+  new (fTracksMap) TH1I(fTracksMapName, fTracksMapName, 1000, 0, 1);
+
   // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Clear();
+  fTracksOut->Delete();
  
   // loop over tracks
   const Int_t Ntracks = mcevent->GetNumberOfTracks();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
+
+    fTracksMap->SetBinContent(iTracks, -1);
 
     if (!mcevent->IsPhysicalPrimary(iTracks))
       continue;
@@ -99,8 +119,10 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     if (fRejectNK && (pdgCode == 130 || pdgCode == 2112)) continue;
     
     if (fChargedMC && track->Charge() == 0) continue;
-    
+
+    fTracksMap->SetBinContent(iTracks, nacc);
     new ((*fTracksOut)[nacc]) AliMCParticle(track->Particle(), 0, track->Label());
+
     ++nacc;
   }
 }
