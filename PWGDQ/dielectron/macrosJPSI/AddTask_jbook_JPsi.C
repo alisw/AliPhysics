@@ -31,11 +31,20 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString prod="",
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (!trainRoot.IsNull())
     configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";   // gsi config
-  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C ."))
+  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C .")) {
+    gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
     configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
+  }
+  else {
+    printf("ERROR: couldn't copy file %s from grid \n",
+	   "alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C");
+    return;
+  }
 
+  // using aliroot config
   if(!gridconf)
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
+
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task;

@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_mwinn_JPsi(){
   
   //set config file name
   // TString configFile("$TRAIN_ROOT/mwinn_jpsiCorr/ConfigJpsi2eeData.C");
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi_mw_pPb.C");
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPb.C");
   //TString configFile("$TRAIN_ROOT/jpsi_JPSI/ConfigJpsiStandard.C");
   // if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eePbPb.C";
   

@@ -31,9 +31,17 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (!trainRoot.IsNull())
     configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsiQA_jpsi_PbPb.C";   // gsi config
-  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C ."))
+  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C .")) {
+    gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
     configFile=Form("%s/ConfigJpsiQA_jpsi_PbPb.C",gSystem->pwd());                        // alien config
+  }
+  else {
+    printf("ERROR: couldn't copy file %s from grid \n",
+	   "alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C");
+    return;
+  }
 
+  // using aliroot config
   if(!gridconf)
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C"; // forced aliroot config
 
@@ -57,7 +65,7 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
   printf("triggers:   %s \n",         triggerNames[j]  );
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
 
-  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
+  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJpsiQA_%s",triggerNames[j])));
   task->SetBeamEnergy(1380.);
   task->SetTriggerMask(triggers);
   //task->SetTriggerMask(AliVEvent::kMB);
