@@ -12,10 +12,11 @@ AliAnalysisTask AddTaskHFEElecHadronCorrlPbPb()
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (type=="AOD"){
+/*  if (type=="AOD"){
     ::Error("AddTaskHFEElecHadronCorrlPbPb", "The tasks exits because AODs are in input");
     return NULL;
   }
+  */
   Bool_t MCthere=kTRUE;
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
   if(!mcH){
