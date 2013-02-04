@@ -31,6 +31,7 @@ AliEmcalJet::AliEmcalJet() :
   fClusterIDs(),
   fTrackIDs(),
   fMatched(2),
+  fMatchingType(0),
   fPtSub(0),
   fPtVectSub(0)
 {
@@ -65,6 +66,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fClusterIDs(), 
   fTrackIDs(),
   fMatched(2),
+  fMatchingType(0),
   fPtSub(0),
   fPtVectSub(0)
 {    
@@ -105,6 +107,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fClusterIDs(), 
   fTrackIDs(),
   fMatched(2),
+  fMatchingType(0),
   fPtSub(0),
   fPtVectSub(0)
 {
@@ -142,6 +145,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fClusterIDs(jet.fClusterIDs), 
   fTrackIDs(jet.fTrackIDs),
   fMatched(jet.fMatched),
+  fMatchingType(jet.fMatchingType),
   fPtSub(jet.fPtSub),
   fPtVectSub(jet.fPtVectSub)
 {

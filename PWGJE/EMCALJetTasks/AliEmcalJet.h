@@ -51,8 +51,6 @@ class AliEmcalJet : public AliVParticle
   Double_t          AreaEmc()                    const { return fAreaEmc;                  }
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   Int_t             Compare(const TObject* obj)  const;
-  AliEmcalJet*      ClosestJet()                 const { return fClosestJets[0];           }
-  Double_t          ClosestJetDistance()         const { return fClosestJetsDist[0];       }
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)  const { if (!ca) return 0; return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx))); }
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
@@ -71,7 +69,6 @@ class AliEmcalJet : public AliVParticle
   UShort_t          N()                          const { return Nch()+Nn();                }
   Int_t             NEmc()                       const { return fNEmc;                     }
   Double_t          MCPt()                       const { return fMCPt;                     }
-  AliEmcalJet*      MatchedJet()                 const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
   Double_t          MaxClusterPt()               const { return MaxNeutralPt();            }
   Double_t          MaxTrackPt()                 const { return MaxChargedPt();            }
   Double_t          MaxPartPt()                  const { return fMaxCPt < fMaxNPt ? fMaxNPt : fMaxCPt;     }
@@ -79,8 +76,6 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtSub()                      const { return fPtSub;                    }
   Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
   Double_t          PtSubVect(Double_t rho)      const;
-  AliEmcalJet*      SecondClosestJet()           const { return fClosestJets[1];           }
-  Double_t          SecondClosestJetDistance()   const { return fClosestJetsDist[1];       }
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
 
@@ -102,14 +97,22 @@ class AliEmcalJet : public AliVParticle
   void              SetNumberOfNeutrals(Int_t n)       { fNn = n;                          }
   void              SetMCPt(Double_t p)                { fMCPt = p;                        }
   void              SortConstituents();
-  void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d; }
-  void              SetSecondClosestJet(AliEmcalJet *j, Double_t d) { fClosestJets[1] = j; fClosestJetsDist[1] = d; }
-  void              SetMatchedToClosest()                           { fMatched   = 0;      }
-  void              SetMatchedToSecondClosest()                     { fMatched   = 1;      }
-  void              SetNEmc(Int_t n)                                { fNEmc      = n;      }
-  void              SetPtEmc(Double_t pt)                           { fPtEmc     = pt;     }
-  void              SetPtSub(Double_t ps)                           { fPtSub     = ps;     } 
-  void              SetPtSubVect(Double_t ps)                       { fPtVectSub = ps;     } 
+  void              SetNEmc(Int_t n)                                { fNEmc           = n;      }
+  void              SetPtEmc(Double_t pt)                           { fPtEmc          = pt;     }
+  void              SetPtSub(Double_t ps)                           { fPtSub          = ps;     } 
+  void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     } 
+
+  // Matching
+  void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d     ; }
+  void              SetSecondClosestJet(AliEmcalJet *j, Double_t d) { fClosestJets[1] = j; fClosestJetsDist[1] = d    ; }
+  void              SetMatchedToClosest(UShort_t m)                 { fMatched        = 0; fMatchingType       = m    ; }
+  void              SetMatchedToSecondClosest(UShort_t m)           { fMatched        = 1; fMatchingType       = m    ; }
+  AliEmcalJet*      ClosestJet()                              const { return fClosestJets[0]                          ; }
+  Double_t          ClosestJetDistance()                      const { return fClosestJetsDist[0]                      ; }
+  AliEmcalJet*      SecondClosestJet()                        const { return fClosestJets[1]                          ; }
+  Double_t          SecondClosestJetDistance()                const { return fClosestJetsDist[1]                      ; }
+  AliEmcalJet*      MatchedJet()                              const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
+  UShort_t          GetMatchingType()                         const { return fMatchingType                            ; }
 
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
@@ -134,6 +137,7 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
+  UShort_t          fMatchingType;        //!          matching type
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
 
