@@ -48,8 +48,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
-  Bool_t                      MCLabelMatching();
-  Bool_t                      GeometricalMatching();
+  Bool_t                      DoJetMatching();
   Double_t                    GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
 
   TString                     fTracks2Name;                   // name of second track collection

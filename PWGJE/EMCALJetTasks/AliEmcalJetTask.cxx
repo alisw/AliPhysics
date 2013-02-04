@@ -214,7 +214,7 @@ void AliEmcalJetTask::FindJets()
 	  (cPhi<fPhiMin) || (cPhi>fPhiMax))
 	continue;
       // offset of 100 to skip ghost particles uid = -1
-      fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);   
+      fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
     }
   }
   
@@ -290,7 +290,7 @@ void AliEmcalJetTask::FindJets()
             maxCh = cPt;
         }
 
-        if (fIsMcPart || t->GetLabel() == 100) // check if MC particle
+        if (fIsMcPart || t->GetLabel() >= 0) // check if MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
@@ -335,7 +335,7 @@ void AliEmcalJetTask::FindJets()
         if (cPt > maxNe)
           maxNe = cPt;
 
-        if (c->Chi2() == 100) // MC particle
+        if (c->GetLabel() >= 0) // MC particle
           mcpt += cPt;
 
         if (cPhi<0) 

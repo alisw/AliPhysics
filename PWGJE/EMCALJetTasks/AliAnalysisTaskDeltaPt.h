@@ -27,20 +27,20 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   void                        SetEmbClusName(const char *n)                        { fEmbCaloName             = n          ; }
   void                        SetRandTracksName(const char *n)                     { fRandTracksName          = n          ; }
   void                        SetRandClusName(const char *n)                       { fRandCaloName            = n          ; }
-  void                        SetMC(Bool_t m)                                      { fMCAna                   = m          ; }
   void                        SetRCperEvent(Int_t n)                               { fRCperEvent              = n          ; }
+  void                        SetMCJetPtThreshold(Double_t t)                      { fMCJetPtThreshold        = t          ; }
 
  protected:
   void                        ExecOnce()                                                                                    ;
   Bool_t                      FillHistograms()                                                                              ;
   void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
-  void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                         ;
+  AliEmcalJet*                NextEmbeddedJet(Int_t i=-1)                                                                   ;
   void                        DoEmbTrackLoop()                                                                              ;
   void                        DoEmbClusterLoop()                                                                            ;
   void                        GetRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, 
 					    AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
-  Bool_t                      fMCAna;                      // =true MC analysis (toy model)
+  Double_t                    fMCJetPtThreshold;           // threshold for MC jets
   Float_t                     fMinRC2LJ;                   // Minimum distance random cone to leading jet
   TString                     fEmbJetsName;                // Name of embedded jet collection
   TString                     fEmbTracksName;              // Name of embedded track collection
@@ -54,8 +54,10 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fEmbCaloClusters;            //!Embedded clusters  
   TClonesArray               *fRandTracks;                 //!Randomized tracks
   TClonesArray               *fRandCaloClusters;           //!Randomized clusters
-  Int_t                       fEmbeddedClusterId;          //!Embedded cluster id
-  Int_t                       fEmbeddedTrackId;            //!Embedded track id
+  Int_t                       fEmbeddedClusterNIds;        //!Embedded cluster id count
+  Int_t                       fEmbeddedClusterIds[999];    //!Embedded cluster ids
+  Int_t                       fEmbeddedTrackNIds;          //!Embedded track id count
+  Int_t                       fEmbeddedTrackIds[999];      //!Embedded track ids
 
   // Random cones
   TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
@@ -84,6 +86,6 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskDeltaPt(const AliAnalysisTaskDeltaPt&);            // not implemented
   AliAnalysisTaskDeltaPt &operator=(const AliAnalysisTaskDeltaPt&); // not implemented
 
-  ClassDef(AliAnalysisTaskDeltaPt, 2) // deltaPt analysis task
+  ClassDef(AliAnalysisTaskDeltaPt, 3) // deltaPt analysis task
 };
 #endif

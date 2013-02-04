@@ -185,11 +185,15 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	continue;
     }
 
+    Int_t label = -1;
+    if (track->GetLabel() >= 0)
+      label = track->GetLabel();
+
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
 									 track->Eta(), 
 									 track->Phi(), 
 									 track->Charge(), 
-									 track->GetLabel(),
+									 label,
 									 type,
 									 track->GetTrackEtaOnEMCal(), 
 									 track->GetTrackPhiOnEMCal(), 

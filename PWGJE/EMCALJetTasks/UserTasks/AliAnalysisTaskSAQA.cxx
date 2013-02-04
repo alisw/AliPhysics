@@ -439,7 +439,7 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
       continue;
     }  
 
-    if (!AcceptCluster(cluster, kTRUE))
+    if (!AcceptCluster(cluster))
       continue;
 
     sum += cluster->E();
@@ -487,7 +487,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
     
-    if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
+    if (vtrack && !AcceptTrack(vtrack)) 
       continue;
 
     fNtracks++;

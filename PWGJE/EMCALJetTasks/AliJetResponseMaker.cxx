@@ -480,60 +480,20 @@ Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
 
-  switch (fMatching) {
-  case kGeometrical:
-    return GeometricalMatching();
-  case kMCLabel: 
-    return MCLabelMatching();
-  default:
+  if (fMatching == kNoMatching) 
     return kTRUE;
-  }
+  else
+    return DoJetMatching();
 }
 
 //________________________________________________________________________
-Bool_t AliJetResponseMaker::GeometricalMatching()
-{
-  DoJetLoop(kFALSE);
-  DoJetLoop(kTRUE);
-
-  const Int_t nJets2 = fJets2->GetEntriesFast();
-
-  for (Int_t i = 0; i < nJets2; i++) {
-
-    AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(fJets2->At(i));
-
-    if (!jet2) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }  
-
-    if (!AcceptJet(jet2))
-      continue;
-
-    if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
-      continue;
-
-    if (jet2->Pt() > fMaxBinPt)
-      continue;
-
-    if (jet2->ClosestJet() && jet2->ClosestJet()->ClosestJet() == jet2 && 
-        jet2->ClosestJetDistance() < fMatchingPar) {    // Matched jet found
-      jet2->SetMatchedToClosest(fMatching);
-      jet2->ClosestJet()->SetMatchedToClosest(fMatching);
-    }
-  }
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliJetResponseMaker::MCLabelMatching()
+Bool_t AliJetResponseMaker::DoJetMatching()
 {
   DoJetLoop(kFALSE);
 
-  const Int_t nJets1 = fJets->GetEntriesFast();
+  const Int_t nJets = fJets->GetEntriesFast();
 
-  for (Int_t i = 0; i < nJets1; i++) {
+  for (Int_t i = 0; i < nJets; i++) {
 
     AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(fJets->At(i));
 
@@ -551,9 +511,9 @@ Bool_t AliJetResponseMaker::MCLabelMatching()
     if (jet1->Pt() > fMaxBinPt)
       continue;
 
-    if (jet1->ClosestJet() && jet1->ClosestJetDistance() < fMatchingPar) {    // Matched jet found
+    if (jet1->ClosestJet() && jet1->ClosestJet()->ClosestJet() == jet1 && 
+        jet1->ClosestJetDistance() < fMatchingPar && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar) {    // Matched jet found
       jet1->SetMatchedToClosest(fMatching);
-      jet1->ClosestJet()->SetClosestJet(jet1, jet1->ClosestJetDistance());
       jet1->ClosestJet()->SetMatchedToClosest(fMatching);
     }
   }
@@ -623,18 +583,7 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
 	  continue;
       }
 
-      Double_t d = GetMatchingLevel(jet1, jet2, fMatching);
-
-      if (d < 0)
-	continue;
-
-      if (d < jet1->ClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
-	jet1->SetClosestJet(jet2, d);
-      }
-      else if (d < jet1->SecondClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet2, d);
-      }
+      GetMatchingLevel(jet1, jet2, fMatching);
     }
   }
 }
@@ -642,17 +591,19 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
 //________________________________________________________________________
 Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching) 
 {
-  Double_t r = -1;
+  Double_t d1 = -1;
+  Double_t d2 = -1;
 
   switch (matching) {
   case kGeometrical:
     {
       Double_t deta = jet2->Eta() - jet1->Eta();
       Double_t dphi = jet2->Phi() - jet1->Phi();
-      r = TMath::Sqrt(deta * deta + dphi * dphi);
+      d1 = TMath::Sqrt(deta * deta + dphi * dphi);
+      d2 = d1;
     }
     break;
-  case kMCLabel: // jet1 should be detector level and jet2 particle level!
+  case kMCLabel: // jet1 = detector level and jet2 = particle level!
     { 
       if (!fTracks2Map) {
 	fTracks2Map = new TH1I("tracksMap","tracksMap",1000,0,1);
@@ -660,7 +611,9 @@ Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *j
 	  fTracks2Map->SetBinContent(i,i);
 	}
       }
-      r = jet1->Pt();
+      d1 = jet1->Pt();
+      d2 = jet2->Pt();
+      Double_t totalPt1 = d1;
       for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
 	AliVParticle *track = jet1->TrackAt(iTrack,fTracks);
 	if (!track) {
@@ -668,6 +621,12 @@ Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *j
 	  continue;
 	}
 	Int_t MClabel = track->GetLabel();
+	if (MClabel < 0) {// this is not a MC particle; remove it completely
+	  AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
+	  totalPt1 -= track->Pt();
+	  d1 -= track->Pt();
+	  continue;
+	}
 	Int_t index = fTracks2Map->GetBinContent(MClabel);
 	if (index < 0) {
 	  AliDebug(2,Form("Track %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
@@ -676,7 +635,11 @@ Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *j
 	for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
 	  Int_t index2 = jet2->TrackAt(iTrack2);
 	  if (index2 == index) { // found common particle
-	    r -= track->Pt();
+	    d1 -= track->Pt();
+	    AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+	    AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			    iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+	    d2 -= MCpart->Pt();
 	    break;
 	  }
 	}
@@ -689,34 +652,105 @@ Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *j
 	}
 	TLorentzVector part;
 	clus->GetMomentum(part, fVertex);
-	Int_t *MClabels = clus->GetLabels();
-	UInt_t nMClabels = clus->GetNLabels();
-	for (UInt_t j = 0; j < nMClabels; j++) {
-	  Int_t index = fTracks2Map->GetBinContent(MClabels[j]);
+
+	if (fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
+	  for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
+	    Int_t cellId = clus->GetCellAbsId(iCell);
+	    Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
+	    Int_t MClabel = fCaloCells->GetCellMCLabel(cellId);
+
+	    if (MClabel < 0) {// this is not a MC particle; remove it competely
+	      AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
+	      totalPt1 -= part.Pt() * cellFrac;
+	      d1 -= part.Pt() * cellFrac;
+	      continue;
+	    }
+
+	    Int_t index = fTracks2Map->GetBinContent(MClabel);
+	    if (index < 0) {
+	      AliDebug(3,Form("Cell %d (frac = %f) does not have an associated MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
+	      continue;
+	    }
+	    for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
+	      Int_t index2 = jet2->TrackAt(iTrack2);
+	      if (index2 == index) { // found common particle
+		d1 -= part.Pt() * cellFrac;
+		AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+		AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+				iCell,iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+		if (MCpart->Charge() != 0) // only if it is a neutral particle (charged particles are most likely already removed, to be fixed)
+		  d2 -= MCpart->Pt() * cellFrac;
+		break;
+	      }
+	    }
+	  }
+	}
+	else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
+	  Int_t MClabel = clus->GetLabel();
+	  
+	  if (MClabel < 0) {// this is not a MC particle; remove it competely
+	    AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
+	    totalPt1 -= part.Pt();
+	    d1 -= part.Pt();
+	    continue;
+	  }
+	  
+	  Int_t index = fTracks2Map->GetBinContent(MClabel);
 	  if (index < 0) {
-	    AliDebug(3,Form("Cluster %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iClus,part.Pt(),MClabels[j]));
+	    AliDebug(3,Form("Cluster %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
 	    continue;
 	  }
 	  for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
 	    Int_t index2 = jet2->TrackAt(iTrack2);
 	    if (index2 == index) { // found common particle
-	      r -= part.Pt();
-	      j = nMClabels; // stop looking for other MC particles
+	      d1 -= part.Pt();
+	      AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+	      AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			      iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+	      if (MCpart->Charge() != 0) // only if it is a neutral particle (charged particles are most likely already removed, to be fixed)
+		d2 -= MCpart->Pt();
 	      break;
 	    }
 	  }
 	}
       }
-      if (r < 0)
-	r = 0;
-      r /= jet1->Pt();
+      if (d1 <= 0 || totalPt1 < 1)
+	d1 = 0;
+      else
+	d1 /= totalPt1;
+      if (jet2->Pt() > 0)
+	d2 /= jet2->Pt();
+      else
+	d2 = 0;
     }
     break;
   default:
     ;
   }
+
+  if (d1 > 0) {
+
+    if (d1 < jet1->ClosestJetDistance()) {
+      jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+      jet1->SetClosestJet(jet2, d1);
+    }
+    else if (d1 < jet1->SecondClosestJetDistance()) {
+      jet1->SetSecondClosestJet(jet2, d1);
+    }
+  }
   
-  return r;
+  if (d2 > 0) {
+    
+    if (d2 < jet2->ClosestJetDistance()) {
+      jet2->SetSecondClosestJet(jet2->ClosestJet(), jet2->ClosestJetDistance());
+      jet2->SetClosestJet(jet1, d2);
+    }
+    else if (d2 < jet2->SecondClosestJetDistance()) {
+      jet2->SetSecondClosestJet(jet1, d2);
+    }
+  }
+  
+  return d1;
 }
 
 //________________________________________________________________________

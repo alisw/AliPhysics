@@ -37,7 +37,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetSuffix(const char *s)              { fSuffix       = s;    }
 
   void                   SetGeometryName(const char *n)        { fGeomName     = n;    }
-  void                   SetMarkMC(Bool_t m)                   { fMarkMC       = m;    }
+  void                   SetMarkMC(Int_t m)                    { fMarkMC       = m;    }
   virtual void           SetNClusters(Int_t n)                 { fNClusters    = n;    }
   virtual void           SetNCells(Int_t n)                    { fNCells       = n;    }
   virtual void           SetNTracks(Int_t n)                   { fNTracks      = n;    }
@@ -79,7 +79,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fNClusters;              // how many clusters are being processed
   Int_t                  fNCells;                 // how many cells are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
-  Bool_t                 fMarkMC;                 // whether or not mark new tracks/cluster as MC
+  Int_t                  fMarkMC;                 // which MC label is to be used (default=100)
   TH1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
   Bool_t                 fQAhistos;               // draw QA histograms
   Bool_t                 fIsInit;                 //=true if initialized
@@ -98,6 +98,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 5) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 6) // Jet modelling task
 };
 #endif

@@ -29,7 +29,7 @@ AliJetRandomizerTask::AliJetRandomizerTask() :
   // Default constructor.
 
   SetSuffix("Randomized");
-  SetMarkMC(kFALSE);
+  SetMarkMC(-1);
 }
 
 //________________________________________________________________________
@@ -40,7 +40,7 @@ AliJetRandomizerTask::AliJetRandomizerTask(const char *name) :
   // Standard constructor.
 
   SetSuffix("Randomized");
-  SetMarkMC(kFALSE);
+  SetMarkMC(-1);
 }
 
 //________________________________________________________________________
