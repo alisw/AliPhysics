@@ -239,6 +239,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 	if(!PropagateTrackTo(t,radius)) continue;
       }
     } else {          // AOD (only ITS mode)
+      if(track->GetID()<0) continue; // exclude global constrained and TPC only tracks (filter bits 128 and 512)
       Int_t ncls0=0;
       for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
       if(ncls0 < fMinClusters) continue;
