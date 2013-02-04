@@ -524,6 +524,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t zdcA    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
       Bool_t zdcC    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
       Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
+      Bool_t znABG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
+      Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
 
       Bool_t laserCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
 
@@ -633,9 +635,16 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
 	if (zdcTime)
 	  fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
+	if (znABG)
+	  fHistStatistics[iHistStat]->Fill(kStatZNABG, i);
+	if (znCBG)
+	  fHistStatistics[iHistStat]->Fill(kStatZNCBG, i);
   
 	if (v0A && v0C && !v0BG && (!bgID && fIsPP))
 	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
+
+	if (v0A && v0C && !v0BG && (!bgID && fIsPP) && !znABG && !znCBG)
+	  fHistStatistics[iHistStat]->Fill(kStatV0ZN, i);
 
 	if (bgID && !v0BG) 
 	  fHistStatistics[iHistStat]->Fill(kStatBG, i);
@@ -1121,10 +1130,13 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatZDCC,          "ZDCC");
   h->GetXaxis()->SetBinLabel(kStatZDCAC,         "ZDCA & ZDCC");
   h->GetXaxis()->SetBinLabel(kStatZDCTime,       "ZDC Time Cut");
+  h->GetXaxis()->SetBinLabel(kStatZNABG,         "ZNA BG");
+  h->GetXaxis()->SetBinLabel(kStatZNCBG,         "ZNC BG");
   h->GetXaxis()->SetBinLabel(kStatMB1,	         "(FO >= 1 | V0A | V0C) & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatMB1Prime,      "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A &v0C) ) & !V0 BG");
   //h->GetXaxis()->SetBinLabel(kStatFO1AndV0,	 "FO >= 1 & (V0A | V0C) & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatV0,	         "V0A & V0C & !V0 BG & !BG ID");
+  h->GetXaxis()->SetBinLabel(kStatV0ZN,	         "V0A & V0C & !V0 BG & !BG ID & !ZN BG");
   h->GetXaxis()->SetBinLabel(kStatOffline,	 "Offline Trigger");
   //h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
