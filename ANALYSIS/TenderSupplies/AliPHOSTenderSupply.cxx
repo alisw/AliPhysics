@@ -233,7 +233,6 @@ void AliPHOSTenderSupply::ProcessEvent()
     vertex.SetXYZ(0.,0.,0.) ;
 
 
-  
   //For re-calibration
   const Double_t logWeight=4.5 ;  
 
@@ -322,33 +321,51 @@ void AliPHOSTenderSupply::ProcessEvent()
         clu->SetE(0.) ;
         continue ;
       }  
+      TVector3 locPosOld; //Use it to re-calculate distance to track
+      fPHOSGeo->Global2Local(locPosOld,global,mod) ;
     
       //Apply re-Calibreation
       AliPHOSAodCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
       cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
-    
-      Float_t  xyz[3];
-      cluPHOS.GetPosition(xyz);
-      clu->SetPosition(xyz);                       //rec.point position in MARS
+
+      //Correct Misalignment
+      cluPHOS.GetPosition(position);
+      global.SetXYZ(position[0],position[1],position[2]);
+      CorrectPHOSMisalignment(global,mod) ;
+      position[0]=global.X() ;
+      position[1]=global.Y() ;
+      position[2]=global.Z() ;
+
+      clu->SetPosition(position);                       //rec.point position in MARS
       clu->SetE(cluPHOS.E());                           //total or core particle energy
       clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
       //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
       clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
       clu->SetM20(cluPHOS.GetM20()) ;               //second moment M2z
-      Double_t dx=0.,dz=0. ;
-      fPHOSGeo->GlobalPos2RelId(global,relId) ;
-      TVector3 locPos;
-      fPHOSGeo->Global2Local(locPos,global,mod) ;
-
-      Double_t pttrack=0.;
-      Int_t charge=0;
-      FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
-      Double_t r=TestCPV(dx, dz, pttrack,charge) ;
-      clu->SetTrackDistance(dx,dz); 
+      //correct distance to track
+      Double_t dx=clu->GetTrackDx() ;
+      Double_t dz=clu->GetTrackDz() ;
+      if(dx!=-999.){ //there is matched track
+        TVector3 locPos;
+        fPHOSGeo->Global2Local(locPos,global,mod) ;
+        dx+=locPos.X()-locPosOld.X() ;
+        dz+=locPos.Z()-locPosOld.Z() ;      
+        clu->SetTrackDistance(dx,dz);
+      }
+      Double_t r = 999. ; //Big distance
+      int nTracksMatched = clu->GetNTracksMatched();
+      if(nTracksMatched > 0) {
+        AliVTrack* track = dynamic_cast<AliVTrack*> (clu->GetTrackMatched(0));
+        if ( track ) {
+          Double_t pttrack = track->Pt();
+          Short_t charge = track->Charge();
+          r=TestCPV(dx, dz, pttrack,charge) ;
+	}
+      }
+      clu->SetEmcCpvDistance(r); //Distance in sigmas
      
-      clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
       clu->SetTOF(cluPHOS.GetTOF());       
     }
@@ -361,22 +378,18 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
   AliESDEvent *esd = 0x0 ;
-  AliAODEvent *aod = 0x0 ;
   if(fTender)
     esd= fTender->GetEvent();
   else{ 
     esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
-    aod= dynamic_cast<AliAODEvent*>(fTask->InputEvent());
   }
   
-  if(!aod && !esd){
-    AliError("Neither AOD nor ESD is found") ;
+  if(!esd){
+    AliError("ESD is not found") ;
     return ;
   }
-  Double_t  magF = 0;
-  if(esd) magF = esd->GetMagneticField();
-  else  magF = aod->GetMagneticField();
-  
+  Double_t  magF = esd->GetMagneticField();
+ 
   Double_t magSign = 1.0;
   if(magF<0)magSign = -1.0;
   
@@ -387,8 +400,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 
   // *** Start the matching
   Int_t nt=0;
-  if(esd)nt = esd->GetNumberOfTracks();
-  else nt = aod->GetNumberOfTracks();
+  nt = esd->GetNumberOfTracks();
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -406,7 +418,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 
   Double_t b[3]; 
-  if(esd){
+
     for (Int_t i=0; i<nt; i++) {
       AliESDtrack *esdTrack=esd->GetTrack(i);
 
@@ -452,55 +464,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
         }
       }
     }//Scanned all tracks
-  }
-  else{
-    for (Int_t i=0; i<nt; i++) {
-      AliAODTrack *aodTrack=aod->GetTrack(i);
-
-      // Skip the tracks having "wrong" status (has to be checked/tuned)
-      ULong_t status = aodTrack->GetStatus();
-      if ((status & AliESDtrack::kTPCout)   == 0) continue;
-     
-      //Continue extrapolation from TPC outer surface
-      const AliExternalTrackParam *outerParam=aodTrack->GetOuterParam();
-      if (!outerParam) continue;
-      AliExternalTrackParam t(*outerParam);
-     
-      t.GetBxByBz(b) ;
-      //Direction to the current PHOS module
-      Double_t phiMod=kAlpha0-kAlpha*mod ;
-      if(!t.Rotate(phiMod))
-        continue ;
-    
-      Double_t y;                       // Some tracks do not reach the PHOS
-      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
-      
-      Double_t z; 
-      if(!t.GetZAt(rPHOS,bz,z))
-        continue ;
-      if (TMath::Abs(z) > kZmax) 
-        continue; // Some tracks miss the PHOS in Z
-      if(TMath::Abs(y) < kYmax){
-        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-        t.GetXYZ(gposTrack) ;
-        TVector3 globalPositionTr(gposTrack) ;
-        TVector3 localPositionTr ;
-        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
-        Double_t ddx = locpos->X()-localPositionTr.X();
-        Double_t ddz = locpos->Z()-localPositionTr.Z();
-        Double_t d2 = ddx*ddx + ddz*ddz;
-        if(d2 < minDistance) {
-	  dx = ddx ;
-  	  dz = ddz ;
-	  minDistance=d2 ;
-	  pt=aodTrack->Pt() ;
-	  charge=aodTrack->Charge() ;
-        }
-      }
-    }//Scanned all tracks
-    
-  }
+ 
 }
 //____________________________________________________________
 Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
