@@ -1,0 +1,10 @@
+This is test directory, content often changes.
+
+
+Thu Nov 15 04:02:21 CET 2012
+To run the code requiring new ITS CDB unpack the itsupcdb.tar.gz file 
+and point specific paths to it
+
+Wed Feb  6 00:46:42 CET 2013
+MakeITSUSimuParam.C example macro is added to create simulation parameters
+

@@ -818,8 +818,7 @@ void AliITSUTrackerGlo::FinalizeHypotheses()
   int nh = fHypStore.GetEntriesFast();
   for (int ih=0;ih<nh;ih++) {
     AliITSUTrackHyp* hyp = (AliITSUTrackHyp*) fHypStore.UncheckedAt(ih); 
-    if (!hyp) continue;
-    hyp->DefineWinner();  // TODO
+    if (!hyp || !hyp->DefineWinner()) continue; // TODO
     CookMCLabel(hyp);
     UpdateESDTrack(hyp,AliESDtrack::kITSin);
   }

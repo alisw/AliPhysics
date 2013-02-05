@@ -69,18 +69,20 @@ void AliITSUTrackHyp::Print(Option_t* ) const
 //__________________________________________________________________
 AliITSUSeed* AliITSUTrackHyp::GetWinner() const
 {
-  // Get best candidate
+  // Get best candidate. TODO
   return fLayerSeeds[0].GetEntriesFast()>0 ? GetSeed(0,0) : 0;
 }
 
 //__________________________________________________________________
-void AliITSUTrackHyp::DefineWinner(int lr, int id)
+AliITSUSeed* AliITSUTrackHyp::DefineWinner(int lr, int id)
 {
   // assign best candidate
+  if (GetNSeeds(lr)<=id) return 0;
   AliITSUSeed* winner = GetSeed(lr,id);
   this->AliExternalTrackParam::operator=(*winner);
   SetChi2(winner->GetChi2GloNrm());
   SetNumberOfClusters(winner->GetNLayersHit());
+  return winner;
 }
 
 //__________________________________________________________________

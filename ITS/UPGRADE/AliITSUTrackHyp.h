@@ -24,7 +24,7 @@ class AliITSUTrackHyp: public AliKalmanTrack
   AliITSUSeed*       GetWinner()         const;
   AliESDtrack*       GetESDTrack()       const {return fESDTrack;}
   Int_t              GetITSLabel()       const {return fITSLabel;}
-  void               DefineWinner(Int_t lr=0, Int_t id=0);
+  AliITSUSeed*       DefineWinner(Int_t lr=0, Int_t id=0);
   const TObjArray*   GetLayerSeeds(Int_t lr) const {return lr<fNLayers ? &fLayerSeeds[lr] : 0;}
   void               AddSeed(AliITSUSeed* seed, Int_t lr);
   void               SetESDTrack(AliESDtrack* esdtr) {fESDTrack = esdtr;}

@@ -844,14 +844,17 @@ void AliITSU::InitSimulation()
   //
   // add known simulation types used in the setup
   for (int i=fNLayers;i--;) {
+    fSimModelLr[i] = 0;
+    fSegModelLr[i] = 0;
+    fResponseLr[i] = 0;
     int dType = fGeomTGeo->GetLayerDetTypeID(i);           // fine detector type: class + segmentation
     int sType = dType/AliITSUGeomTGeo::kMaxSegmPerDetType; // detector simulation class
     //
     // check if the simulation of this sType was already created for preceeding layers
     AliITSUSimulation* simUpg = 0;
-    for (int j=fNLayers;j>i;j--) {
+    for (int j=fNLayers-1;j>i;j--) {
       simUpg = GetSimulationModel(j);
-      if (int(simUpg->GetUniqueID())==sType) break;
+      if (simUpg && int(simUpg->GetUniqueID())==sType) break;
       else simUpg = 0;
     }
     //

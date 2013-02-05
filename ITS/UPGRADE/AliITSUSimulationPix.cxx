@@ -422,7 +422,6 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
       z2  = z1 + dzi; // Upper
       z1 -= dzi;      // Lower
       s   = el* (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fSpreadFun)(dtIn);
-      //(*((AliITSUSimulationPix*)this)->AliITSUSimulationPix::fSpreadFun)(dtIn)); // calculate charge deposited in the cell
       if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,tID,hID,s);
     } // end for ix, iz
   //
@@ -436,22 +435,21 @@ Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
   // The spread function is assumed to be double gaussian in 2D
   // Parameters should be: mean0,sigma0, mean1,sigma1, relative strenght of 2nd gaussian wrt 1st one
   //
-  int ip = kParamStart;
   // 1st gaussian
-  double intg1 = GausInt2D(fResponseParam->GetParameter(ip+1),  // sigX
-			   fResponseParam->GetParameter(ip+3),  // sigZ
-			   dtIn[kCellX1]-fResponseParam->GetParameter(ip),      // x1-xmean
-			   dtIn[kCellX2]-fResponseParam->GetParameter(ip),      // x2-xmean
-			   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+2),    // z1-zmean
-			   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+2));   // z2-zmean
+  double intg1 = GausInt2D(fResponseParam->GetParameter(kG2SigX0),  // sigX
+			   fResponseParam->GetParameter(kG2SigZ0),  // sigZ
+			   dtIn[kCellX1]-fResponseParam->GetParameter(kG2MeanX0),      // x1-xmean
+			   dtIn[kCellX2]-fResponseParam->GetParameter(kG2MeanX0),      // x2-xmean
+			   dtIn[kCellZ1]-fResponseParam->GetParameter(kG2MeanZ0),    // z1-zmean
+			   dtIn[kCellZ2]-fResponseParam->GetParameter(kG2MeanZ0));   // z2-zmean
   // 2nd gaussian
-  double intg2 = GausInt2D(fResponseParam->GetParameter(ip+5),  // sigX
-			   fResponseParam->GetParameter(ip+7),  // sigZ
-			   dtIn[kCellX1]-fResponseParam->GetParameter(ip+4),    // x1-xmean
-			   dtIn[kCellX2]-fResponseParam->GetParameter(ip+4),    // x2-xmean
-			   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+6),    // z1-zmean
-			   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+6));   // z2-zmean
-  double scl = fResponseParam->GetParameter(ip+8);
+  double intg2 = GausInt2D(fResponseParam->GetParameter(kG2SigX1),  // sigX
+			   fResponseParam->GetParameter(kG2SigZ1),  // sigZ
+			   dtIn[kCellX1]-fResponseParam->GetParameter(kG2MeanX1),      // x1-xmean
+			   dtIn[kCellX2]-fResponseParam->GetParameter(kG2MeanX1),      // x2-xmean
+			   dtIn[kCellZ1]-fResponseParam->GetParameter(kG2MeanZ1),    // z1-zmean
+			   dtIn[kCellZ2]-fResponseParam->GetParameter(kG2MeanZ1));   // z2-zmean
+  double scl = fResponseParam->GetParameter(kG2ScaleG2);
   return (intg1+intg2*scl)/(1+scl);
   //
 } 
@@ -463,13 +461,12 @@ Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
   // and Z=dtIn[kCellZ1]:dtIn[kCellZ2] 
   // The spread function is assumed to be gaussian in 2D
   // Parameters should be: mean0,sigma0
-  int ip = kParamStart;
-  return GausInt2D(fResponseParam->GetParameter(ip+1),  // sigX
-		   fResponseParam->GetParameter(ip+3),  // sigZ
-		   dtIn[kCellX1]-fResponseParam->GetParameter(ip),      // x1-xmean
-		   dtIn[kCellX2]-fResponseParam->GetParameter(ip),      // x2-xmean
-		   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+2),    // z1-zmean
-		   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+2));
+  return GausInt2D(fResponseParam->GetParameter(kG1SigX),  // sigX
+		   fResponseParam->GetParameter(kG1SigZ),  // sigZ
+		   dtIn[kCellX1]-fResponseParam->GetParameter(kG1MeanX),    // x1-xmean
+		   dtIn[kCellX2]-fResponseParam->GetParameter(kG1MeanX),    // x2-xmean
+		   dtIn[kCellZ1]-fResponseParam->GetParameter(kG1MeanZ),    // z1-zmean
+		   dtIn[kCellZ2]-fResponseParam->GetParameter(kG1MeanZ));   // z2-zmean
   //
 } 
 
@@ -738,9 +735,9 @@ void AliITSUSimulationPix::SetResponseParam(AliParamList* resp)
   // attach response parameterisation data
   fResponseParam = resp;
   switch (fResponseParam->GetID()) {
-  case kSpreadSingleGauss: fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D; 
+  case kSpreadFunDoubleGauss2D: fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D; 
     break;
-  case kSpreadDoubleGauss: fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;       
+  case kSpreadFunGauss2D      : fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;       
     break;
   default: AliFatal(Form("Did not find requested spread function id=%d",fResponseParam->GetID()));
   }

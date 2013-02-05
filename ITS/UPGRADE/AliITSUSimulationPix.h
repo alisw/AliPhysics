@@ -24,8 +24,8 @@ public:
   enum {kCellX1,kCellX2,kCellZ1,kCellZ2,kCellYDepth,kNDtSpread}; // data used for ch. spread integral calc.
   //
   // charge spread functions defined
-  enum {kSpreadSingleGauss,                  // single gaussian in 2D, SpreadFunGauss2D
-	kSpreadDoubleGauss,      // double gaussian in 2D, SpreadFunDoubleGauss2D
+  enum {kSpreadFunGauss2D,                  // single gaussian in 2D, SpreadFunGauss2D
+	kSpreadFunDoubleGauss2D,            // double gaussian in 2D, SpreadFunDoubleGauss2D
 	kNSpreadFuns
   };
   // fist kParamStart entried of spread fun params are reserved for common parameters
@@ -33,6 +33,10 @@ public:
 	kSpreadFunParamNZoffs,               // number of pixels to consider +- from injection point (in Z)
 	kParamStart
   };
+  // elements of the SpreadFunGauss2D parameterization (offsetted by kParamStart)
+  enum {kG1MeanX=kParamStart,kG1SigX,kG1MeanZ,kG1SigZ,kNG1Par};
+  // elements of the SpreadFunDoubleGauss2D parameterization (offsetted by kParamStart)
+  enum {kG2MeanX0=kParamStart,kG2SigX0,kG2MeanZ0,kG2SigZ0,kG2MeanX1,kG2SigX1,kG2MeanZ1,kG2SigZ1,kG2ScaleG2,kNG2Par};
   //
   AliITSUSimulationPix();
   AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap* map);
