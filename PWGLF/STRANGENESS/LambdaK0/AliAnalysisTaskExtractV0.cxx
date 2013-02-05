@@ -145,6 +145,9 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fTreeVariablePVy(0),
   fTreeVariablePVz(0),
 
+  fTreeVariableNegTrackStatus(0),
+  fTreeVariablePosTrackStatus(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -233,6 +236,9 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fTreeVariablePVx(0),
   fTreeVariablePVy(0),
   fTreeVariablePVz(0),
+
+  fTreeVariableNegTrackStatus(0),
+  fTreeVariablePosTrackStatus(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -350,6 +356,10 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableV0Px",&fTreeVariableV0Px,"fTreeVariableV0Px/F");
         fTree->Branch("fTreeVariableV0Py",&fTreeVariableV0Py,"fTreeVariableV0Py/F");
         fTree->Branch("fTreeVariableV0Pz",&fTreeVariableV0Pz,"fTreeVariableV0Pz/F");
+  
+        fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
+        fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+  
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -796,7 +806,11 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
       if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
       if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-
+     
+      //Get status flags
+      fTreeVariablePosTrackStatus = pTrack->GetStatus();
+      fTreeVariableNegTrackStatus = nTrack->GetStatus();
+     
       if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) )&&(fkTakeAllTracks==kFALSE) ) continue;
 	
       //GetKinkIndex condition
