@@ -10,6 +10,8 @@
 #include "TClonesArray.h"
 #include "TH2D.h"
 
+class AliEventPoolManager;
+
 //====================================================================================================================================================
 
 class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
@@ -34,31 +36,28 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   //  void SetMaxChi2Muon(Double_t chi2Max) { fMaxChi2Muon = chi2Max; }
   void SetRAbsRangeMuon (Double_t rAbsMin,Double_t rAbsMax) { fMinRAbsMuon = rAbsMin; fMaxRAbsMuon = rAbsMax; }
 
-  void SetTriggerWord(TString triggerWord) { fTriggerWord = triggerWord; fIsTriggerSet = kTRUE; }
-
   // ------------- Analysis -------------
 
   Float_t GetV0Multiplicity();
   Double_t GetITSMultiplicity();
   Bool_t IsTriggerFired();
-  TClonesArray* GetAcceptedTracksCentralBarrel(AliAODEvent *aodEvent);
-  TClonesArray* GetAcceptedTracksMuonArm(AliAODEvent *aodEvent);
+  TObjArray* GetAcceptedTracksCentralBarrel(AliAODEvent *aodEvent);
+  TObjArray* GetAcceptedTracksMuonArm(AliAODEvent *aodEvent);
   void SetPtBinning(Int_t nBins, Double_t *limits);
   void SetCentBinning(Int_t nBins, Double_t *limits);
-  void SetMultBinning(Int_t nBins, Double_t *limits);
   void SetCentMethod(const Char_t *method) { fCentMethod = method; }
   void FillHistograms(Int_t centrality, Int_t option);
   Int_t GetCentBin();
-  Int_t GetMultBin();
 
  private:
 
   static const Int_t fNMaxBinsCentrality = 20;
   static const Int_t fNMaxBinsPt = 10;
 
-  AliAODEvent *fAOD;
-  TClonesArray *fTracksCentralBarrel, *fTracksMuonArm;
-  AliAODTrack *fTrackCB, *fTrackMA;
+  AliAODEvent *fAOD; //!
+  AliEventPoolManager *fPoolMgr; //! event pool manager
+  AliAODTrack *fTrackCB; //!
+  AliAODTrack *fTrackMA; //!
   
   Int_t fFilterBitCentralBarrel;
   Double_t fMaxEtaCentralBarrel;
@@ -66,24 +65,22 @@ class  AliAnalysisTaskMuonHadronCorrelations : public AliAnalysisTaskSE {
   Double_t fMaxChi2Muon, fMinRAbsMuon, fMaxRAbsMuon;
   Short_t fTriggerMatchLevelMuon;
 
-  TString fTriggerWord;
-  Bool_t fIsTriggerSet;
-
   Int_t fNbinsCent, fNbinsPt;
   
-  TAxis *fCentAxis, *fMultAxis, *fPtAxis;
+  TAxis *fCentAxis;
+  TAxis *fPtAxis;
 
-  TH1D *fHistDeltaPhi[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt], *fHistDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt];
-  TH2D *fHistNTracksCB_vs_NTracksMA[fNMaxBinsCentrality];
+  TH1D *fHistDeltaPhi[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
+  TH1D *fHistDeltaPhiMix[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsPt]; //!
+  TH2D *fHistNTracksCB_vs_NTracksMA[fNMaxBinsCentrality]; //!
 
-  TH1D *fHistV0Multiplicity, *fHistITSMultiplicity;
-  TH1D *fHistCentrality;
+  TH1D *fHistV0Multiplicity; //!
+  TH1D *fHistITSMultiplicity; //!
+  TH1D *fHistCentrality; //!
 
   TString fCentMethod;
 
-  Int_t fEvt;
-
-  TList *fOutputList;
+  TList *fOutputList; //!
 
   AliAnalysisTaskMuonHadronCorrelations(const AliAnalysisTaskMuonHadronCorrelations&);//not implimented
   AliAnalysisTaskMuonHadronCorrelations& operator=(const AliAnalysisTaskMuonHadronCorrelations&);//not implimnted
