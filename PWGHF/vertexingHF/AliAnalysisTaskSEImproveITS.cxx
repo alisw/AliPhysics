@@ -61,6 +61,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fRunInVertexing(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -74,7 +75,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
 AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
                            const char *resfileCurURI,
                            const char *resfileUpgURI,
-                           Int_t ndebug)
+                           Bool_t isRunInVertexing,
+			   Int_t ndebug)
   :AliAnalysisTaskSE(name),
    fD0ZResPCur  (0),
    fD0ZResKCur  (0),
@@ -94,6 +96,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fRunInVertexing(isRunInVertexing),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -195,14 +198,19 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   //
   // The event loop
   //
-  AliAODEvent *ev=dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODEvent *ev=0x0;
+  if(!fRunInVertexing) {
+    ev=dynamic_cast<AliAODEvent*>(InputEvent());
+  } else {
+    if(AODEvent() && IsStandardAOD()) ev = dynamic_cast<AliAODEvent*> (AODEvent());
+  }  
   if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
   // Smear all tracks
   TClonesArray *mcs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if (!mcs) return;
-  for (Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack)
+  for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack)
     SmearTrack(ev->GetTrack(itrack),mcs);
 
   // TODO: recalculated primary vertex

@@ -21,7 +21,9 @@ public:
   AliAnalysisTaskSEImproveITS(const char *name,
                               const char *resfileCurURI,
                               const char *resfileUpgURI,
+                              Bool_t isRunInVertexing,
                               Int_t ndebug);
+
   virtual ~AliAnalysisTaskSEImproveITS();
 
   // Implementation of interface methods
@@ -58,11 +60,13 @@ private:
   TGraph *fPt1ResKUpg  ; // new pt dep. 1/pt res. for kaons
   TGraph *fPt1ResPiUpg ; // new pt dep. 1/pt res. for pions
 
+  Bool_t fRunInVertexing;// flag to run hybrid task before the vertexingHF task or in standard mode
+                           
   TList   *fDebugOutput; //! collection of debug output
   TNtuple *fDebugNtuple; //! debug send on output slot 1
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
-  ClassDef(AliAnalysisTaskSEImproveITS,1);
+  ClassDef(AliAnalysisTaskSEImproveITS,2);
 };
 
 #endif

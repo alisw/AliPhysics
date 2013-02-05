@@ -1,6 +1,7 @@
-AliAnalysisTaskSEImproveITS *AddTaskImproveITS(const char *resfileCurURI,
-                                               const char *resfileUpgURI,
-                                               Int_t ndebug=0) {
+AliAnalysisTaskSEImproveITS *AddTaskImproveITS(Bool_t isRunInVertexing=kFALSE, // set to kTRUE to run during AODvertexingHF creation
+					       const char *resfileCurURI="$ALICE_ROOT/PWGHF/vertexingHF/macros/ITSgraphs_Current.root",
+                                               const char *resfileUpgURI="$ALICE_ROOT/PWGHF/vertexingHF/macros/ITSgraphs_NewAll-X0.3-Res4um.root",
+					       Int_t ndebug=0) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddAliAnalysisTaskSEImproveITS", "No analysis manager to connect to.");
@@ -11,6 +12,7 @@ AliAnalysisTaskSEImproveITS *AddTaskImproveITS(const char *resfileCurURI,
     =new AliAnalysisTaskSEImproveITS("ITSImprover",
                                      resfileCurURI,
                                      resfileUpgURI,
+                                     isRunInVertexing,
                                      ndebug);
   mgr->AddTask(task);
                 
