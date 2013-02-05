@@ -165,6 +165,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Float_t fTreeVariableMCPVz; //!
 
   Bool_t fTreeVariableIsNonInjected; //!
+  //Decay Length issue debugging: ULong_t with track status
+  ULong64_t fTreeVariableNegTrackStatus;
+  ULong64_t fTreeVariablePosTrackStatus;
 
 //===========================================================================================
 //   Histograms
