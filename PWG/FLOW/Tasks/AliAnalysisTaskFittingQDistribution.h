@@ -54,6 +54,8 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   Int_t GetqNbins() const {return this->fqNbins;};  
   void SetStoreqDistributionVsMult(Bool_t const sqdvm) {this->fStoreqDistributionVsMult = sqdvm;};
   Bool_t GetStoreqDistributionVsMult() const {return this->fStoreqDistributionVsMult;};  
+  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
+  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};  
   void SetqDistributionVsMult(TH2D* const qdvm) {this->fqDistributionVsMult = qdvm;};
   TH2D* GetqDistributionVsMult() const {return this->fqDistributionVsMult;};
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -71,19 +73,20 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   AliFlowAnalysisWithFittingQDistribution* fFQD; // Fitting q-distribution (FQD) object
   TList *fListHistos;                            // collection of output 
      
-  Bool_t fBookOnlyBasicCCH;          // book only basis common control histrograms (by default book them all) 
-  Bool_t fUseWeights;               // use any weights
-  Bool_t fUsePhiWeights;            // phi weights
-  TList* fListWeights;              // list with weights  
-  Int_t fHarmonic;                  // harmonic   
-  Double_t fqMin;                   // lower boundary of TH1D *fqDistribution
-  Double_t fqMax;                   // upper boundary of TH1D *fqDistribution
-  Int_t fqNbins;                    // number of bins of TH1D *fqDistribution                                             
-  Bool_t fStoreqDistributionVsMult; // store q-distributions vs M 
-  TH2D *fqDistributionVsMult;       // distribution of Q/sqrt{M} vs multiplicity
-  Double_t fMinMult;                // minimum multiplicity
-  Double_t fMaxMult;                // maximum multiplicity
-  Int_t fnBinsMult;                 // number of multiplicity bins
+  Bool_t fBookOnlyBasicCCH;              // book only basis common control histrograms (by default book them all) 
+  Bool_t fUseWeights;                    // use any weights
+  Bool_t fUsePhiWeights;                 // phi weights
+  TList* fListWeights;                   // list with weights  
+  Int_t fHarmonic;                       // harmonic   
+  Double_t fqMin;                        // lower boundary of TH1D *fqDistribution
+  Double_t fqMax;                        // upper boundary of TH1D *fqDistribution
+  Int_t fqNbins;                         // number of bins of TH1D *fqDistribution                                             
+  Bool_t fStoreqDistributionVsMult;      // store q-distributions vs M
+  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD  
+  TH2D *fqDistributionVsMult;            // distribution of Q/sqrt{M} vs multiplicity
+  Double_t fMinMult;                     // minimum multiplicity
+  Double_t fMaxMult;                     // maximum multiplicity
+  Int_t fnBinsMult;                      // number of multiplicity bins
                                                            
   ClassDef(AliAnalysisTaskFittingQDistribution, 1); 
 };

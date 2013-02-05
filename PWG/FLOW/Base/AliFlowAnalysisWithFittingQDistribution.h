@@ -113,6 +113,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   Int_t GetqNbins() const {return this->fqNbins;};
   void SetStoreqDistributionVsMult(Bool_t const sqdvm) {this->fStoreqDistributionVsMult = sqdvm;};
   Bool_t GetStoreqDistributionVsMult() const {return this->fStoreqDistributionVsMult;};  
+  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
+  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};
   void SetqDistributionVsMult(TH2D* const qdvm) {this->fqDistributionVsMult = qdvm;};
   TH2D* GetqDistributionVsMult() const {return this->fqDistributionVsMult;};
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -191,6 +193,7 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t fqMax; // upper boundary of TH1D *fqDistribution
   Int_t fqNbins; // number of bins of TH1D *fqDistribution
   Bool_t fStoreqDistributionVsMult; // store q-distributions vs M 
+  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD     
   TH2D *fqDistributionVsMult; // distribution of Q/sqrt{M} vs multiplicity
   Double_t fMinMult; // minimum multiplicity
   Double_t fMaxMult; // maximum multiplicity

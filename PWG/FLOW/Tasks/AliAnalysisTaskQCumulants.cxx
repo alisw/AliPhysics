@@ -59,6 +59,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE), 
  fCalculateAllCorrelationsVsM(kFALSE), 
+ fMultiplicityIsRefMultiplicity(kFALSE),
  fCalculateMixedHarmonics(kFALSE),
  fCalculateMixedHarmonicsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
@@ -117,7 +118,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fCalculateDiffFlowVsEta(kTRUE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
- fCalculateAllCorrelationsVsM(kFALSE),   
+ fCalculateAllCorrelationsVsM(kFALSE),  
+ fMultiplicityIsRefMultiplicity(kFALSE), 
  fCalculateMixedHarmonics(kFALSE),
  fCalculateMixedHarmonicsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kFALSE), 
@@ -168,6 +170,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetCalculateAllCorrelationsVsM(fCalculateAllCorrelationsVsM);
+ fQC->SetMultiplicityIsRefMultiplicity(fMultiplicityIsRefMultiplicity);
  fQC->SetCalculateMixedHarmonics(fCalculateMixedHarmonics);
  fQC->SetCalculateMixedHarmonicsVsM(fCalculateMixedHarmonicsVsM);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
