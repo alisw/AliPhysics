@@ -11,8 +11,10 @@
 ///////////////////////////////////////////////////////////////////
 #include <TRandom.h>
 #include <TObject.h>
+#include <TObjArray.h>
 #include <TMath.h>
 #include "AliMathBase.h"
+class AliParamList;
 
 class AliITSUSimuParam : public TObject {
 
@@ -46,18 +48,11 @@ class AliITSUSimuParam : public TObject {
   Double_t GetGeVToCharge()                                                  const  {return fGeVcharge;}
   Double_t GeVToCharge(Double_t gev)                                         const  {return gev/fGeVcharge;}
   //
-  void     SetDistanceOverVoltage(Double_t d,Double_t v)                            {fDOverV = d/v;}
-  void     SetDistanceOverVoltage(Double_t dv=fgkDOverVDefault)                     {fDOverV = dv;}
-  Double_t GetDistanceOverVoltage()                                          const  {return fDOverV;}
-  //
   void     SetPixCouplingOption(UInt_t opt);
   UInt_t   GetPixCouplingOption()                                         const  {return fPixCouplOpt;}
 
   void     SetPixCouplingParam(Double_t col, Double_t row)                       {fPixCouplCol = col; fPixCouplRow = row;}
   void     GetPixCouplingParam(Double_t &col, Double_t &row)              const  {col = fPixCouplCol; row = fPixCouplRow;}
-
-  void     SetPixSigmaDiffusionAsymmetry(Double_t ecc)                           {fPixEccDiff=ecc;}   
-  void     GetPixSigmaDiffusionAsymmetry(Double_t &ecc)                   const  {ecc=fPixEccDiff;}
 
   void     SetPixLorentzDrift(Bool_t ison)                                       {fPixLorentzDrift=ison;}
   Bool_t   GetPixLorentzDrift()                                           const  {return fPixLorentzDrift;}
@@ -75,6 +70,11 @@ class AliITSUSimuParam : public TObject {
   Double_t SigmaDiffusion3D(Double_t  l)                                     const;
   Double_t SigmaDiffusion2D(Double_t l)                                      const;
   Double_t SigmaDiffusion1D(Double_t l)                                      const;
+  //
+  Int_t    GetNRespFunParams()                                               const {return fRespFunParam.GetEntriesFast();}
+  const AliParamList* GetRespFunParams(Int_t i)                              const {return (const AliParamList*)fRespFunParam[i];}
+  const AliParamList* FindRespFunParams(Int_t detId)                         const;
+  void     AddRespFunParam(AliParamList* pr);
   //
   virtual void Print(Option_t *opt = "")                                     const; 
   //
@@ -130,6 +130,7 @@ class AliITSUSimuParam : public TObject {
   Double_t*  fPixNoise;       //[fNPix] Pix electronic noise: sigma
   Double_t*  fPixBaseline;    //[fNPix] Pix electronic noise: baseline
   //
+  TObjArray  fRespFunParam;   // set of parameterizations for response function (AliParamList)
 
   ClassDef(AliITSUSimuParam,1);  // ITSU simulataion params
 };

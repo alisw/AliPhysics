@@ -22,6 +22,8 @@
 #include "TSeqCollection.h"
 #include "AliITSUSimulation.h"
 #include "AliITSUSDigit.h"
+#include "AliITSUModule.h"
+#include "AliParamList.h"
 using namespace TMath;
 
 ClassImp(AliITSUSimulation)
@@ -33,6 +35,7 @@ AliITSUSimulation::AliITSUSimulation()
   ,fCalibNoisy(0)
   ,fSensMap(0)
   ,fSimuParam(0)
+  ,fResponseParam(0)
   ,fModule(0)
   ,fEvent(0)
   ,fDebug(0)
@@ -46,6 +49,7 @@ AliITSUSimulation::AliITSUSimulation(AliITSUSimuParam* sim,AliITSUSensMap* map)
   ,fCalibNoisy(0)
   ,fSensMap(map)
   ,fSimuParam(sim)
+  ,fResponseParam(0)
   ,fModule(0)
   ,fEvent(0)
   ,fDebug(0)
@@ -61,6 +65,7 @@ AliITSUSimulation::AliITSUSimulation(const AliITSUSimulation &s)
   ,fCalibNoisy(s.fCalibNoisy)
   ,fSensMap(s.fSensMap)
   ,fSimuParam(s.fSimuParam)   
+  ,fResponseParam(s.fResponseParam)
   ,fModule(s.fModule)
   ,fEvent(s.fEvent)
   ,fDebug(s.fDebug)
@@ -78,21 +83,26 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
   fCalibNoisy= s.fCalibNoisy;
   fSensMap   = s.fSensMap;
   fSimuParam = s.fSimuParam;
+  fResponseParam = s.fResponseParam;
   fModule    = s.fModule;
   fEvent     = s.fEvent;
   return *this;
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::InitSimulationModule(Int_t module, Int_t event, AliITSsegmentation* seg)
+void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, AliITSsegmentation* seg, AliParamList* resp)
 {
   //  This function creates maps to build the list of tracks for each
   //  summable digit. Inputs defined by base class.
   //
-  SetModule(module);
-  SetEvent(event);
+  SetModule(mod);
   SetSegmentation(seg);
+  SetResponseParam(resp);
   ClearMap();
+  //
+  if (event != fEvent) GenerateStrobePhase(); 
+  SetEvent(event);
+  
 }
 
 //______________________________________________________________________
@@ -108,7 +118,7 @@ Bool_t AliITSUSimulation::AddSDigitsToModule(TSeqCollection *pItemArr,Int_t mask
   // 
   for( Int_t i=0; i<nItems; i++ ) {
     AliITSUSDigit * pItem = (AliITSUSDigit *)(pItemArr->At( i ));
-    if( pItem->GetModule() != fModule ) AliFatal(Form("SDigits module %d != current module %d: exit", pItem->GetModule(), fModule ));
+    if(pItem->GetModule() != int(fModule->GetIndex()) ) AliFatal(Form("SDigits module %d != current module %d: exit", pItem->GetModule(),fModule->GetIndex()));
     if(pItem->GetSumSignal()>0.0 ) sig = kTRUE;
     AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(pItem);
     if (!oldItem) {
@@ -126,7 +136,7 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t dim0,UInt_t dim1,Int_t trk,Int_t 
   // update map with new hit
   UInt_t ind = fSensMap->GetIndex(dim0,dim1);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule,ind,signal) );
+  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal) );
   else oldItem->AddSignal(trk,ht,signal);
 }
 
@@ -136,7 +146,7 @@ void AliITSUSimulation::UpdateMapNoise(UInt_t dim0,UInt_t dim1,Double_t noise)
   // update map with new hit
   UInt_t ind = fSensMap->GetIndex(dim0,dim1);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
-  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule,ind,noise) );
+  if (!oldItem) fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise) );
   else oldItem->AddNoise(noise);
 }
 

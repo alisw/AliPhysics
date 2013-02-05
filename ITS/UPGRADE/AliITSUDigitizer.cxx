@@ -154,12 +154,12 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
   for (int module=0; module<nModules; module++ ) {
     //
     if (!fRoif && !fModActive[module]) continue;
-    int id = geom->GetModuleDetTypeID(module);
-    AliITSUSimulation *sim = fITS->GetSimulationModel(id);
-    if (!sim) AliFatal(Form("The simulation model %d is not available",id));
+    int lr = geom->GetLayer(module);
+    AliITSUSimulation *sim = fITS->GetSimulationModel(lr);
+    if (!sim) AliFatal(Form("The simulation model for layer %d is not available",lr));
     //
     // Fill the module with the sum of SDigits
-    sim->InitSimulationModule(module, event, fITS->GetSegmentation(id));
+    sim->InitSimulationModule(fITS->GetModule(module), event, fITS->GetSegmentation(lr), fITS->GetResponseParam(lr));
     //
     for (int ifiles=0; ifiles<nfiles; ifiles++ ) {
       //

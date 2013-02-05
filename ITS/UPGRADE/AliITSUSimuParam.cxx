@@ -24,6 +24,8 @@
 ///////////////////////////////////////////////////////////////////
 #include "AliITSUSimuParam.h"
 #include "AliLog.h"
+#include "AliParamList.h"
+
 using namespace TMath;
 
 
@@ -74,8 +76,10 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fPixSigma(0)
   ,fPixNoise(0)
   ,fPixBaseline(0)
+  ,fRespFunParam(0)
 {  
   // default constructor
+  fRespFunParam.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________
@@ -107,6 +111,7 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   ,fPixSigma(0)
   ,fPixNoise(0)
   ,fPixBaseline(0)
+  ,fRespFunParam(0)
 {  
   // regular constructor
   if (fNPix>0) {
@@ -119,6 +124,7 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   SetPixThreshold(fgkPixThreshDefault,fgkPixThrSigmaDefault);
   SetPixNoise(0.,0.);
   SetPixBiasVoltage(fgkPixBiasVoltageDefault);
+  fRespFunParam.SetOwner(kTRUE);
   //
 }
 
@@ -152,6 +158,7 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
   ,fPixSigma(0)
   ,fPixNoise(0)
   ,fPixBaseline(0)   
+  ,fRespFunParam(0)
    //
 {
   // copy constructor
@@ -170,6 +177,11 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
     fPixBaseline[i]    = simpar.fPixBaseline[i];
   }
   //
+  for (int i=0;i<simpar.fRespFunParam.GetEntriesFast();i++) {
+    AliParamList* pr = (AliParamList*)simpar.fRespFunParam[0];
+    if (pr) fRespFunParam.AddLast(new AliParamList(*pr));
+  }
+  fRespFunParam.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________
@@ -420,71 +432,20 @@ Double_t AliITSUSimuParam::LorentzAngleElectron(Double_t B) const
   return angle;
 }
 
-//______________________________________________________________________
-Double_t AliITSUSimuParam::SigmaDiffusion3D(Double_t l) const 
+//___________________________________________________________
+const AliParamList* AliITSUSimuParam::FindRespFunParams(Int_t detId) const
 {
-  // Returns the Gaussian sigma^2 == <x^2+y^2+z^2> [cm^2] due to the
-  // defusion of electrons or holes through a distance l [cm] caused
-  // by an applied voltage v [volt] through a distance d [cm] in any
-  //  material at a temperature T [degree K]. The sigma diffusion when
-  //  expressed in terms of the distance over which the diffusion
-  // occures, l=time/speed, is independent of the mobility and therefore
-  //  the properties of the material. The charge distributions is given by
-  // n = exp(-r^2/4Dt)/(4piDt)^1.5. From this <r^2> = 6Dt where D=mkT/e
-  // (m==mobility, k==Boltzman's constant, T==temparature, e==electric
-  // charge. and vel=m*v/d. consiquently sigma^2=6kTdl/ev.
-  // Inputs:
-  //    Double_t l   Distance the charge has to travel.
-  // Output:
-  //    none.
-  // Return:
-  //    The Sigma due to the diffution of electrons. [cm]
-  const Double_t kcon = 5.17040258E-04; // == 6k/e [J/col or volts]  
-  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
+  // find parameters list for detID
+  for (int i=fRespFunParam.GetEntriesFast();i--;) {
+    const AliParamList* pr = GetRespFunParams(i);
+    if (int(pr->GetUniqueID())==detId) return pr;
+  }
+  return 0;
 }
 
-//______________________________________________________________________
-Double_t AliITSUSimuParam::SigmaDiffusion2D(Double_t l) const 
+//___________________________________________________________
+void AliITSUSimuParam::AddRespFunParam(AliParamList* pr)
 {
-  // Returns the Gaussian sigma^2 == <x^2+z^2> [cm^2] due to the defusion
-  // of electrons or holes through a distance l [cm] caused by an applied
-  // voltage v [volt] through a distance d [cm] in any material at a
-  // temperature T [degree K]. The sigma diffusion when expressed in terms
-  // of the distance over which the diffusion occures, l=time/speed, is
-  // independent of the mobility and therefore the properties of the
-  // material. The charge distributions is given by
-  // n = exp(-r^2/4Dt)/(4piDt)^1.5. From this <x^2+z^2> = 4Dt where D=mkT/e
-  // (m==mobility, k==Boltzman's constant, T==temparature, e==electric
-  // charge. and vel=m*v/d. consiquently sigma^2=4kTdl/ev.
-  // Inputs:
-  //    Double_t l   Distance the charge has to travel.
-  // Output:
-  //    none.
-  // Return:
-  //    The Sigma due to the diffution of electrons. [cm]
-  const Double_t kcon = 3.446935053E-04; // == 4k/e [J/col or volts]
-  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
-}
-
-//______________________________________________________________________
-Double_t AliITSUSimuParam::SigmaDiffusion1D(Double_t l) const 
-{
-  // Returns the Gaussian sigma^2 == <x^2> [cm^2] due to the defusion
-  // of electrons or holes through a distance l [cm] caused by an applied
-  // voltage v [volt] through a distance d [cm] in any material at a
-  // temperature T [degree K]. The sigma diffusion when expressed in terms
-  // of the distance over which the diffusion occures, l=time/speed, is
-  // independent of the mobility and therefore the properties of the
-  // material. The charge distributions is given by
-  // n = exp(-r^2/4Dt)/(4piDt)^1.5. From this <r^2> = 2Dt where D=mkT/e
-  // (m==mobility, k==Boltzman's constant, T==temparature, e==electric
-  // charge. and vel=m*v/d. consiquently sigma^2=2kTdl/ev.
-  // Inputs:
-  //    Double_t l   Distance the charge has to travel.
-  // Output:
-  //    none.
-  // Return:
-  //    The Sigma due to the diffution of electrons. [cm]
-  const Double_t kcon = 1.723467527E-04; // == 2k/e [J/col or volts]
-  return Sqrt(kcon*fT*fDOverV*l);  // [cm]
+  // add spread parameterization data
+  fRespFunParam.AddLast(pr);
 }

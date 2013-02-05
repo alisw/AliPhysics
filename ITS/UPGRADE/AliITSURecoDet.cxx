@@ -105,15 +105,21 @@ Bool_t AliITSURecoDet::Build()
   }
   //
   // TPC-ITS wall
-  lrp = new AliITSURecoLayer("TPC-ITSwall");
-  lrp->SetRMin(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMin());
-  lrp->SetRMax(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMax());
-  lrp->SetR(0.5*(lrp->GetRMin()+lrp->GetRMax()));
-  lrp->SetZMin(-AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
-  lrp->SetZMax( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
-  lrp->SetMaxStep( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallMaxStep());
-  lrp->SetPassive(kTRUE);
-  AddLayer(lrp);
+  const AliITSURecoParam* recopar = AliITSUReconstructor::GetRecoParam();
+  if (recopar) {
+    lrp = new AliITSURecoLayer("TPC-ITSwall");
+    lrp->SetRMin(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMin());
+    lrp->SetRMax(AliITSUReconstructor::GetRecoParam()->GetTPCITSWallRMax());
+    lrp->SetR(0.5*(lrp->GetRMin()+lrp->GetRMax()));
+    lrp->SetZMin(-AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
+    lrp->SetZMax( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallZSpanH());
+    lrp->SetMaxStep( AliITSUReconstructor::GetRecoParam()->GetTPCITSWallMaxStep());
+    lrp->SetPassive(kTRUE);
+    AddLayer(lrp);
+  }
+  else {
+    AliWarning("RecoParam is not available, TPC-ITS wall is not set");
+  }
   //
   IndexLayers();
   Print("lr");

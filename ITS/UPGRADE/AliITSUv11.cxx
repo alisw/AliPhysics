@@ -130,7 +130,7 @@ AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
       fModPerLadd[j] = 0;
       fLadWidth[j] = 0.;
       fDetThick[j] = 0.;
-      fDetTypeID[j] = 0.;
+      fDetTypeID[j] = 0;
       fUpGeom[j] = 0;
     }
   }

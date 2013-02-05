@@ -97,6 +97,9 @@ the AliITS class.
 #include "AliITSUSegmentationPix.h"
 #include "AliITSUSimuParam.h"
 #include "AliITSFOSignalsSPD.h"
+#include "AliParamList.h"
+#include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
+#include "AliCDBEntry.h"
 
 ClassImp(AliITSU)
 
@@ -117,8 +120,9 @@ AliDetector()
   ,fModuleHits(0)
   ,fDetDigits(0)
   ,fSensMap(0)
-  ,fSimulation(0)
-  ,fSegmentation(0)
+  ,fSimModelLr(0)
+  ,fSegModelLr(0)
+  ,fResponseLr(0)
   ,fCalibration(0)
   ,fRunNumber(0)
   ,fSimInitDone(kFALSE)
@@ -143,8 +147,9 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fModuleHits(0)
   ,fDetDigits(0)
   ,fSensMap(0)
-  ,fSimulation(0)
-  ,fSegmentation(0)
+  ,fSimModelLr(0)
+  ,fSegModelLr(0)
+  ,fResponseLr(0)
   ,fCalibration(0)
   ,fRunNumber(0)
   ,fSimInitDone(kFALSE)
@@ -164,11 +169,25 @@ AliITSU::~AliITSU()
   // Default destructor for ITS.
   //  
   delete fHits;
-  delete fSimuParam;
+  //  delete fSimuParam; // provided by the CDBManager
   delete fSensMap;
-  if (fSimulation) fSimulation->Delete();
-  delete fSimulation;
-  delete fSegmentation;
+  if (fSimModelLr) {
+    for (int i=fNLayers;i--;) { // different layers may use the same simulation model
+      for (int j=i;j--;) if (fSimModelLr[j]==fSimModelLr[i]) fSimModelLr[j] = 0;
+      delete fSimModelLr[i];
+    }
+    delete[] fSimModelLr;
+  }
+  if (fSegModelLr) {
+    for (int i=fNLayers;i--;) { // different layers may use the same simulation model     
+      for (int j=i;j--;) if (fSegModelLr[j]==fSegModelLr[i]) fSegModelLr[j] = 0;
+      delete fSegModelLr[i];
+    }
+    delete[] fSegModelLr;
+  }
+  //
+  delete fResponseLr; // note: the response data is owned by the CDBManager, we don't delete them
+  //
   delete[] fLayerName;  // Array of TStrings
   delete[] fIdSens;
   //
@@ -486,11 +505,12 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
   FillModules(bgrev,option,filename);
   //
   Int_t nmodules = fGeomTGeo->GetNModules();
+  
   for(int module=0;module<nmodules;module++) {
-    int id = fGeomTGeo->GetModuleDetTypeID(module);
-    AliITSUSimulation* sim = GetSimulationModel(id);
-    if (!sim) AliFatal(Form("The sim.class for module %d of DetTypeID %d is missing",module,id));
-    sim->SDigitiseModule( GetModule(module), module, evNumber, GetSegmentation(id));
+    int lr = fGeomTGeo->GetLayer(module);
+    AliITSUSimulation* sim = GetSimulationModel(lr);
+    sim->InitSimulationModule(GetModule(module),evNumber/*,gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    sim->SDigitiseModule();
     fLoader->TreeS()->Fill();      // fills all branches - wasted disk space
     ResetSDigits();
   } 
@@ -544,10 +564,10 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   // 
   Int_t nmodules = fGeomTGeo->GetNModules();
   for (Int_t module=0;module<nmodules;module++) {
-    int id = fGeomTGeo->GetModuleDetTypeID(module);
-    AliITSUSimulation* sim = GetSimulationModel(id);
-    if (!sim) AliFatal(Form("The sim.class for module %d of DetTypeID %d is missing",module,id));
-    sim->DigitiseModule( GetModule(module) ,module, evNumber, GetSegmentation(id));
+    int lr = fGeomTGeo->GetLayer(module);
+    AliITSUSimulation* sim = GetSimulationModel(lr);
+    sim->InitSimulationModule(GetModule(module),evNumber/*gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    sim->DigitiseModule();
     // fills all branches - wasted disk space
     fLoader->TreeD()->Fill(); 
     ResetDigits();
@@ -786,13 +806,9 @@ void AliITSU::SDigits2Digits()
   //
   int nmodules = fGeomTGeo->GetNModules();
   for (int module=0;module<nmodules;module++) {
-    int id = fGeomTGeo->GetModuleDetTypeID(module);
-    AliITSUSimulation *sim = GetSimulationModel(id);
-    if(!sim){
-      AliFatal(Form("The sim.class for module %d of DetTypeID %d is missing",module,id));
-      exit(1);
-    }
-    sim->InitSimulationModule(module,gAlice->GetEvNumber(),GetSegmentation(id));
+    int lr = fGeomTGeo->GetLayer(module);
+    AliITSUSimulation* sim = GetSimulationModel(lr);
+    sim->InitSimulationModule(GetModule(module),gAlice->GetEvNumber(),GetSegmentation(lr),GetResponseParam(lr));
     fSDigits->Clear();
     brchSDigits->GetEvent(module);
     sim->AddSDigitsToModule(fSDigits,0);
@@ -814,27 +830,51 @@ void AliITSU::InitSimulation()
   //
   if (fSimInitDone) {AliInfo("Already done"); return;}
   //
-  fSimuParam    = new AliITSUSimuParam();
+  AliCDBEntry* cdbEnt = AliCDBManager::Instance()->Get("ITS/Calib/SimuParam"); // tmp: load it centrally
+  if (!cdbEnt) {AliFatal("Failed to find ITS/Calib/SimuParam on CDB"); exit(1);}
+  fSimuParam    = (AliITSUSimuParam*)cdbEnt->GetObject();
+  //
   fSensMap      = new AliITSUSensMap("AliITSUSDigit",0,0);
-  fSimulation   = new TObjArray(kNDetTypes);
-  fSegmentation = new TObjArray();
-  AliITSUSegmentationPix::LoadSegmentations(fSegmentation, AliITSUGeomTGeo::GetITSsegmentationFileName());
-  fSegmentation->SetOwner(kTRUE);
+  fSimModelLr   = new AliITSUSimulation*[fNLayers];
+  fSegModelLr   = new AliITSsegmentation*[fNLayers];
+  fResponseLr   = new AliParamList*[fNLayers];
+  //
+  TObjArray arrSeg;
+  AliITSUSegmentationPix::LoadSegmentations(&arrSeg, AliITSUGeomTGeo::GetITSsegmentationFileName());
   //
   // add known simulation types used in the setup
   for (int i=fNLayers;i--;) {
-    int sType = fGeomTGeo->GetLayerDetTypeID(i)/AliITSUGeomTGeo::kMaxSegmPerDetType;
-    if (fSimulation->At(sType)) continue;
+    int dType = fGeomTGeo->GetLayerDetTypeID(i);           // fine detector type: class + segmentation
+    int sType = dType/AliITSUGeomTGeo::kMaxSegmPerDetType; // detector simulation class
     //
+    // check if the simulation of this sType was already created for preceeding layers
     AliITSUSimulation* simUpg = 0;
-    switch (sType) {
-    case AliITSUGeomTGeo::kDetTypePix : 
-      simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap); 
-      break;
-    default: AliFatal(Form("No %d detector type is defined",sType));
-    };
-    fSimulation->AddAtAndExpand(simUpg,sType);
+    for (int j=fNLayers;j>i;j--) {
+      simUpg = GetSimulationModel(j);
+      if (int(simUpg->GetUniqueID())==sType) break;
+      else simUpg = 0;
+    }
+    //
+    if (!simUpg) { // need to create simulation for detector class sType
+      switch (sType) 
+	{
+	case AliITSUGeomTGeo::kDetTypePix : 
+	  simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap); 
+	  break;
+	default: AliFatal(Form("No %d detector type is defined",sType));
+	}
+    }
+    fSimModelLr[i] = simUpg;
+    //
+    // add segmentations used in the setup
+    if (!(fSegModelLr[i]=(AliITSsegmentation*)arrSeg[dType])) {AliFatal(Form("Segmentation for DetType#%d is not found",dType)); exit(1);}
+    //
+    // add response function for the detectors of this layer
+    if ( !(fResponseLr[i]=(AliParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for DetType#%d is not found in SimuParams",dType)); exit(1);}
   }
+  // delete non needed segmentations
+  for (int i=fNLayers;i--;) arrSeg.Remove(fSegModelLr[i]);
+  arrSeg.Delete();
   //
   InitArrays();
   //

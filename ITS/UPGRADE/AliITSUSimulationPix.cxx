@@ -36,6 +36,7 @@
 #include "AliMathBase.h"
 #include "AliITSUSimuParam.h"
 #include "AliITSUSDigit.h"
+#include "AliParamList.h"
 
 using std::cout;
 using std::endl;
@@ -65,8 +66,10 @@ AliITSUSimulationPix::AliITSUSimulationPix()
   ,fStrobe(kTRUE)
   ,fStrobeLenght(4)
   ,fStrobePhase(-12.5e-9)
+  ,fSpreadFun(0)
 {
    // Default constructor.
+  SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
 }
 
 //______________________________________________________________________
@@ -76,8 +79,10 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
   ,fStrobe(kTRUE)
   ,fStrobeLenght(4)
   ,fStrobePhase(-12.5e-9)
+  ,fSpreadFun(0)
 {
   // standard constructor
+  SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
   Init();
 }
 
@@ -88,6 +93,7 @@ AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s)
   ,fStrobe(s.fStrobe)
   ,fStrobeLenght(s.fStrobeLenght)
   ,fStrobePhase(s.fStrobePhase)
+  ,fSpreadFun(s.fSpreadFun)
 {
   //     Copy Constructor
 }
@@ -109,6 +115,8 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
   fStrobe       = s.fStrobe;
   fStrobeLenght = s.fStrobeLenght;
   fStrobePhase  = s.fStrobePhase;
+  fSpreadFun    = s.fSpreadFun;
+  //
   return *this;
 }
 
@@ -147,19 +155,17 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 }
 
 //_____________________________________________________________________
-void AliITSUSimulationPix::SDigitiseModule(AliITSUModule *mod, Int_t /*mask*/,Int_t event, AliITSsegmentation* seg)
+void AliITSUSimulationPix::SDigitiseModule()
 {
   //  This function begins the work of creating S-Digits.
-  if (!(mod->GetNHits())) {
+  if (!(fModule->GetNHits())) {
     AliDebug(1,Form("In event %d module %d there are %d hits returning.",
-		    event, mod->GetIndex(),mod->GetNHits()));
+		    fEvent, fModule->GetIndex(),fModule->GetNHits()));
     return;
   } 
   //
-  if (fStrobe) if (event != fEvent) GenerateStrobePhase(); 
-  InitSimulationModule(mod->GetIndex(), event, seg );
-  // Hits2SDigits(mod);
-  Hits2SDigitsFast(mod);
+  Hits2SDigitsFast();
+  //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
   if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels();  
   WriteSDigits();
@@ -190,16 +196,14 @@ void AliITSUSimulationPix::FinishSDigitiseModule()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::DigitiseModule(AliITSUModule *mod,Int_t /*mask*/, Int_t event, AliITSsegmentation* seg)
+void AliITSUSimulationPix::DigitiseModule()
 {
   //  This function creates Digits straight from the hits and then adds
   //  electronic noise to the digits before adding them to pList
   //  Each of the input variables is passed along to Hits2SDigits
   //
-  if (fStrobe) if (event != fEvent) GenerateStrobePhase();
-  InitSimulationModule( mod->GetIndex(), event, seg );
-  // Hits2SDigits(mod);
-  Hits2SDigitsFast(mod);
+  // pick charge spread function
+  Hits2SDigitsFast();
   //
   if (fSimuParam->GetPixAddNoisyFlag())   AddNoisyPixels();
   if (fSimuParam->GetPixRemoveDeadFlag()) RemoveDeadPixels();
@@ -208,58 +212,54 @@ void AliITSUSimulationPix::DigitiseModule(AliITSUModule *mod,Int_t /*mask*/, Int
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
+void AliITSUSimulationPix::Hits2SDigits()
 {
   // Does the charge distributions using Gaussian diffusion charge charing.
   const Double_t kBunchLenght = 25e-9; // LHC clock
-  Int_t nhits = mod->GetNHits();
+  Int_t nhits = fModule->GetNHits();
   if (!nhits) return;
   //
   Int_t h,ix,iz,i;
   Int_t idtrack;
   Float_t x,y,z;  // keep coordinates float (required by AliSegmentation)
-  Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
-  Double_t t,tp,st,dt=0.2,el,sig,sigx,sigz,fda;
+  Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
+  Double_t t,tp,st,dt=0.2,el;
   Double_t thick = 0.5*fSeg->Dy();  // Half Thickness
-  fSimuParam->GetPixSigmaDiffusionAsymmetry(fda);
+
   //
   for (h=0;h<nhits;h++) {
     if (fStrobe && 
-	((mod->GetHit(h)->GetTOF()<fStrobePhase) || 
-	 (mod->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
+	((fModule->GetHit(h)->GetTOF()<fStrobePhase) || 
+	 (fModule->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
 	) continue;
     //
-    if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
+    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
     st = Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) {
       st = (Double_t)((Int_t)(st*1e4)); // number of microns
       if (st<=1.0) st = 1.0;
       dt = 1.0/st;               // RS TODO: do we need 1 micron steps?
+      double dy = dt*thick;
+      y = -0.5*dy;
       for (t=0.0;t<1.0;t+=dt) { // Integrate over t
 	tp  = t+0.5*dt;
 	x   = x0+x1*tp;
-	y   = y0+y1*tp;
+	y  += dy;
 	z   = z0+z1*tp;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
 	el  = dt * de / fSimuParam->GetGeVToCharge();
 	//
-	sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y)); 
-	sigx=sig;
-	sigz=sig*fda;
-	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
-	SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
+	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
       } // end for t
     } else { // st == 0.0 deposit it at this point
       x   = x0;
-      y   = y0;
+      y   = y0 + 0.5*thick;
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
-      sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
-      sigx = sig;
-      sigz = sig*fda;
-      if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
-      SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
+      if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+      SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
     } // end if st>0.0    
   } // Loop over all hits h
   //
@@ -289,28 +289,13 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
+void AliITSUSimulationPix::Hits2SDigitsFast()
 {
   // Does the charge distributions using Gaussian diffusion charge charing.    // Inputs:
   //    AliITSUModule *mod  Pointer to this module
-  // Output:
-  //    none.
-  // Return:
-  //    none.
-  /* 
-  // RSTmp this injection points partitioning should be reimplemented
-  const Int_t kn10=10;
-  const Double_t kti[kn10]={7.443716945e-3,2.166976971e-1,3.397047841e-1,
-			    4.325316833e-1,4.869532643e-1,5.130467358e-1,
-			    5.674683167e-1,6.602952159e-1,7.833023029e-1,
-			    9.255628306e-1};
-  const Double_t kwi[kn10]={1.477621124e-1,1.346333597e-1,1.095431813e-1,
-			    7.472567455e-2,3.333567215e-2,3.333567215e-2,
-			    7.472567455e-2,1.095431813e-1,1.346333597e-1,
-			    1.477621124e-1};
-  */
+  //
   const Double_t kBunchLenght = 25e-9; // LHC clock
-  TObjArray *hits = mod->GetHits();
+  TObjArray *hits = fModule->GetHits();
   Int_t nhits = hits->GetEntriesFast();
   if (nhits<=0) return;
   //
@@ -318,54 +303,46 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
   Int_t idtrack;
   Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
   Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0; 
-  Double_t t,st,el,sig,sigx,sigz,fda,de=0.0,ld=0.0;
-  Double_t thick = 0.5*fSeg->Dy();  // Half thickness
+  Double_t t,st,el,de=0.0;
   Double_t minDim = Min(fSeg->Dpx(1),fSeg->Dpz(1)); // RStmp: smallest pitch
-  fSimuParam->GetPixSigmaDiffusionAsymmetry(fda);
+  Double_t thick = fSeg->Dy();
   //
   for (h=0;h<nhits;h++) {
     // Check if the hit is inside readout window
     if (fStrobe && 
-	((mod->GetHit(h)->GetTOF()<fStrobePhase) || 
-	 (mod->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
+	((fModule->GetHit(h)->GetTOF()<fStrobePhase) || 
+	 (fModule->GetHit(h)->GetTOF()>(fStrobePhase+fStrobeLenght*kBunchLenght)))
 	) continue;
     //
-    if (!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
+    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
     st = Sqrt(x1*x1+y1*y1+z1*z1); 
     if (st>0.0) {
       int np = int(1.5*st/minDim);  //RStmp: at the moment neglect kti,kwi: inject the points in such a way that there is ~1.5 point per cell
-      if (np<5) np = 5;             //RStmp
-      double dt = 1./(np+1);        //RStmp
-      double dw = 1./np;
-      //      printf("Dst: %f md:%f np=%d Tr#%d\n",st,minDim,np,idtrack);
+      if (np<3) np = 3;             //RStmp
+      double dt = 1./np;
+      double dy = dt*thick;
+      y = -0.5*dy;
       t = -0.5*dt;
       for (i=0;i<np;i++) {          //RStmp Integrate over t
 	//      for (i=0;i<kn10;i++) { // Integrate over t
 	t  += dt;  // RStmp kti[i];
 	x   = x0+x1*t;
-	y   = y0+y1*t;
+	y  += dy;
 	z   = z0+z1*t;
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
-	//	el  = kwi[i]*de/fSimuParam->GetGeVToCharge();
-	el  = dw*de/fSimuParam->GetGeVToCharge();
-	sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
-	sigx=sig;
-	sigz=sig*fda;
-	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
-	SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
+	el  = dt*de/fSimuParam->GetGeVToCharge();
+	if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+	SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
       } // end for i // End Integrate over t
     }
     else { // st == 0.0 deposit it at this point
       x   = x0;
-      y   = y0;
+      y   = y0+0.5*thick;
       z   = z0;
       if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
       el  = de / fSimuParam->GetGeVToCharge();
-      sig = fSimuParam->SigmaDiffusion1D(Abs(thick + y));
-      sigx=sig;
-      sigz=sig*fda;
-      if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
-      SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
+      if (fSimuParam->GetPixLorentzDrift()) x += y*fTanLorAng;
+      SpreadCharge2D(x,z,y,ix,iz,el,idtrack,h);
     } // end if st>0.0
     
   } // Loop over all hits h
@@ -394,137 +371,107 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SpreadCharge(Double_t x0,Double_t z0,
-					  Int_t ix0,Int_t iz0,
-					  Double_t el,Double_t sig,Double_t ld,
-					  Int_t t,Int_t hi)
-{
-   // Spreads the charge over neighboring cells. Assume charge is distributed
-   // as charge(x,z) = (el/2*pi*sig*sig)*exp(-arg)
-   // arg=((x-x0)*(x-x0)/2*sig*sig)+((z-z0*z-z0)/2*sig*sig)
-   // if fSimuParam->GetPixLorentzDrift()=kTRUE, then x0=x0+ld (Lorentz drift taken into account)
-   // Defined this way, the integral over all x and z is el.
-   // Inputs:
-   //    Double_t x0   x position of point where charge is liberated
-   //    Double_t z0   z position of point where charge is liberated
-   //    Int_t    ix0  row of cell corresponding to point x0
-   //    Int_t    iz0  columb of cell corresponding to point z0
-   //    Double_t el   number of electrons liberated in this step
-   //    Double_t sig  Sigma difusion for this step (y0 dependent)
-   //    Double_t ld   lorentz drift in x for this step (y0 dependent)
-   //    Int_t    t    track number
-   //    Int_t    ti   hit track index number
-   //    Int_t    hi   hit "hit" index number
-   // Outputs:
-   //     none.
-   // Return:
-   //     none.
-   const Int_t knx = 3,knz = 2;
-   const Double_t kRoot2 = 1.414213562; // Sqrt(2).
-   Int_t ix,iz,ixs,ixe,izs,ize;
-   Float_t x,z;  // keep coordinates float (required by AliSegmentation)
-   Double_t s,sp,x1,x2,z1,z2; 
-   //
-   if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sig,t,hi));
-   if (sig<=0.0) { // if sig<=0 No diffusion to simulate.
-     UpdateMapSignal(iz0,ix0,t,hi,el);
-     return;
-   } // end if
-   sp = 1.0/(sig*kRoot2);
-   ixs = Max(-knx+ix0,0);
-   ixe = Min(knx+ix0,fSeg->Npx()-1);
-   izs = Max(-knz+iz0,0);
-   ize = Min(knz+iz0,fSeg->Npz()-1);
-   for (ix=ixs;ix<=ixe;ix++) 
-     for (iz=izs;iz<=ize;iz++) {
-       fSeg->DetToLocal(ix,iz,x,z); // pixel center
-       double dxi = 0.5*fSeg->Dpx(ix);
-       double dzi = 0.5*fSeg->Dpz(iz);
-       x1  = x;
-       z1  = z;
-       x2  = x1 + dxi; // Upper
-       x1 -= dxi;  // Lower
-       z2  = z1 + dzi; // Upper
-       z1 -= dzi;  // Lower
-       x1 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
-       x2 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
-       z1 -= z0; // Distance from where track traveled
-       z2 -= z0; // Distance from where track traveled
-       s   = el*0.25; // Correction based on definision of Erfc
-       s  *= AliMathBase::ErfcFast(sp*x1) - AliMathBase::ErfcFast(sp*x2);
-       s  *= AliMathBase::ErfcFast(sp*z1) - AliMathBase::ErfcFast(sp*z2);
-       if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,t,hi,s);
-     } // end for ix, iz
-   //
-}
-
-//______________________________________________________________________
-void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
-					    Int_t ix0,Int_t iz0,
-					    Double_t el,Double_t sigx,Double_t sigz,
-					    Double_t ld,Int_t t,Int_t hi)
+void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
+					  Double_t el, Int_t tID, Int_t hID)
 {
   // Spreads the charge over neighboring cells. Assume charge is distributed
   // as charge(x,z) = (el/2*pi*sigx*sigz)*exp(-arg)
   // arg=((x-x0)*(x-x0)/2*sigx*sigx)+((z-z0*z-z0)/2*sigz*sigz)
-  // if fSimuParam->GetPixLorentzDrift()=kTRUE, then x0=x0+ld (Lorentz drift taken into account)
   // Defined this way, the integral over all x and z is el.
   // Inputs:
-  //    Double_t x0   x position of point where charge is liberated
-  //    Double_t z0   z position of point where charge is liberated
+  //    Double_t x0   x position of point where charge is liberated (local)
+  //    Double_t z0   z position of point where charge is liberated (local)
+  //    Double_t dy   distance from the entrance surface (diffusion sigma may depend on it)
   //    Int_t    ix0  row of cell corresponding to point x0
   //    Int_t    iz0  columb of cell corresponding to point z0
   //    Double_t el   number of electrons liberated in this step
   //    Double_t sigx Sigma difusion along x for this step (y0 dependent)
   //    Double_t sigz Sigma difusion along z for this step (z0 dependent)
-  //    Double_t ld   lorentz drift in x for this stip (y0 dependent)
-  //    Int_t    t    track number
-  //    Int_t    ti   hit track index number
-  //    Int_t    hi   hit "hit" index number
-  // Outputs:
-  //     none.
-  // Return:
-  //     none.
-  const Int_t knx = 3,knz = 3; // RS: TO TUNE
-  const Double_t kRoot2 = 1.414213562; // Sqrt(2).
+  //    Int_t    tID  track number
+  //    Int_t    hID  hit "hit" index number
+  //
   Int_t ix,iz,ixs,ixe,izs,ize;
   Float_t x,z;   // keep coordinates float (required by AliSegmentation)
-  Double_t s,spx,spz,x1,x2,z1,z2; 
+  Double_t s,dtIn[kNDtSpread]; // data transfered to spread function for integral calculation
   //
-  if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sigx=%e, sigz=%e, t=%d,i=%d,ld=%e)",
-				x0,z0,ix0,iz0,el,sigx,sigz,t,hi,ld));
-  if (sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
-    UpdateMapSignal(iz0,ix0,t,hi,el);
-    return;
-  } // end if
-  spx = 1.0/(sigx*kRoot2);     
-  spz = 1.0/(sigz*kRoot2);
-  ixs = Max(-knx+ix0,0);
-  ixe = Min(knx+ix0,fSeg->Npx()-1);
-  izs = Max(-knz+iz0,0);
-  ize = Min(knz+iz0,fSeg->Npz()-1);
+  if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,dy=%e, ix0=%d,iz0=%d,el=%e,tID=%d,hID=%d)",
+				x0,z0,dy,ix0,iz0,el,tID,hID));
+  //
+  Double_t &x1 = dtIn[kCellX1];
+  Double_t &x2 = dtIn[kCellX2];
+  Double_t &z1 = dtIn[kCellZ1];
+  Double_t &z2 = dtIn[kCellZ2];
+  //
+  int nx = GetResponseParam()->GetParameter(kSpreadFunParamNXoffs);
+  int nz = GetResponseParam()->GetParameter(kSpreadFunParamNZoffs);
+  //
+  dtIn[kCellYDepth]  = dy;
+  ixs = Max(-nx+ix0,0);
+  ixe = Min( nx+ix0,fSeg->Npx()-1);
+  izs = Max(-nz+iz0,0);
+  ize = Min( nz+iz0,fSeg->Npz()-1);
   for (ix=ixs;ix<=ixe;ix++) 
     for (iz=izs;iz<=ize;iz++) {
       fSeg->DetToLocal(ix,iz,x,z); // pixel center
       double dxi = 0.5*fSeg->Dpx(ix);
       double dzi = 0.5*fSeg->Dpz(iz);
-      x1  = x;
-      z1  = z;
+      x1  = x - x0;   // calculate distance of cell boundaries from injection center
+      z1  = z - z0;
       x2  = x1 + dxi; // Upper
       x1 -= dxi;      // Lower
       z2  = z1 + dzi; // Upper
       z1 -= dzi;      // Lower
-      x1 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
-      x2 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
-      z1 -= z0; // Distance from where track traveled
-      z2 -= z0; // Distance from where track traveled
-      s   = el*0.25; // Correction based on definision of Erfc
-      s  *= AliMathBase::ErfcFast(spx*x1) - AliMathBase::ErfcFast(spx*x2);
-      s  *= AliMathBase::ErfcFast(spz*z1) - AliMathBase::ErfcFast(spz*z2);
-      if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,t,hi,s);
+      s   = el* (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fSpreadFun)(dtIn);
+      //(*((AliITSUSimulationPix*)this)->AliITSUSimulationPix::fSpreadFun)(dtIn)); // calculate charge deposited in the cell
+      if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,tID,hID,s);
     } // end for ix, iz
   //
 }
+
+//______________________________________________________________________
+Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
+{
+  // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2] 
+  // and Z=dtIn[kCellZ1]:dtIn[kCellZ2] 
+  // The spread function is assumed to be double gaussian in 2D
+  // Parameters should be: mean0,sigma0, mean1,sigma1, relative strenght of 2nd gaussian wrt 1st one
+  //
+  int ip = kParamStart;
+  // 1st gaussian
+  double intg1 = GausInt2D(fResponseParam->GetParameter(ip+1),  // sigX
+			   fResponseParam->GetParameter(ip+3),  // sigZ
+			   dtIn[kCellX1]-fResponseParam->GetParameter(ip),      // x1-xmean
+			   dtIn[kCellX2]-fResponseParam->GetParameter(ip),      // x2-xmean
+			   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+2),    // z1-zmean
+			   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+2));   // z2-zmean
+  // 2nd gaussian
+  double intg2 = GausInt2D(fResponseParam->GetParameter(ip+5),  // sigX
+			   fResponseParam->GetParameter(ip+7),  // sigZ
+			   dtIn[kCellX1]-fResponseParam->GetParameter(ip+4),    // x1-xmean
+			   dtIn[kCellX2]-fResponseParam->GetParameter(ip+4),    // x2-xmean
+			   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+6),    // z1-zmean
+			   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+6));   // z2-zmean
+  double scl = fResponseParam->GetParameter(ip+8);
+  return (intg1+intg2*scl)/(1+scl);
+  //
+} 
+
+//______________________________________________________________________
+Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
+{
+  // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2] 
+  // and Z=dtIn[kCellZ1]:dtIn[kCellZ2] 
+  // The spread function is assumed to be gaussian in 2D
+  // Parameters should be: mean0,sigma0
+  int ip = kParamStart;
+  return GausInt2D(fResponseParam->GetParameter(ip+1),  // sigX
+		   fResponseParam->GetParameter(ip+3),  // sigZ
+		   dtIn[kCellX1]-fResponseParam->GetParameter(ip),      // x1-xmean
+		   dtIn[kCellX2]-fResponseParam->GetParameter(ip),      // x2-xmean
+		   dtIn[kCellZ1]-fResponseParam->GetParameter(ip+2),    // z1-zmean
+		   dtIn[kCellZ2]-fResponseParam->GetParameter(ip+2));
+  //
+} 
 
 //______________________________________________________________________
 void AliITSUSimulationPix::RemoveDeadPixels() 
@@ -564,7 +511,7 @@ void AliITSUSimulationPix::AddNoisyPixels()
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibNoisy();
   if (!calObj) return;
   for (Int_t i=calObj->GetNrBad(); i--;) UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i), 
-							10*fSimuParam->GetPixThreshold(fModule));
+							10*fSimuParam->GetPixThreshold(fModule->GetIndex()));
   //
 }
 
@@ -590,13 +537,14 @@ void AliITSUSimulationPix::FrompListToDigits()
   //
   int maxInd = fSensMap->GetMaxIndex();
   double minProb = 0.1/maxInd;
+  int modId = fModule->GetIndex();
   //
   int nsd = fSensMap->GetEntries();
   Int_t prevID=0,curID=0;
   TArrayI ordSampleInd(100),ordSample(100);
   //
-  double probNoisy,noiseSig,noiseMean,thresh = fSimuParam->GetPixThreshold(fModule);
-  fSimuParam->GetPixNoise(fModule, noiseSig, noiseMean);
+  double probNoisy,noiseSig,noiseMean,thresh = fSimuParam->GetPixThreshold(modId);
+  fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
   probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
   //
   for (int i=0;i<nsd;i++) {
@@ -609,7 +557,7 @@ void AliITSUSimulationPix::FrompListToDigits()
       prevID = curID+1;
     }
     //
-    if ((sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(fModule)) continue;
+    if ((sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(modId)) continue;
     if (Abs(sig)>2147483647.0) { //RS?
       //PH 2147483647 is the max. integer
       //PH This apparently is a problem which needs investigation
@@ -745,6 +693,7 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
   // module         module number
   //
   UInt_t col,row;
+  Int_t modId = fModule->GetIndex();
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   //
@@ -759,13 +708,13 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old, Int_t ntrack,Int_t
    //
    int j1 = int(col)+isign;
    pulse1 *= couplC;    
-   if ((j1<0)||(j1>fSeg->Npz()-1)||(pulse1<fSimuParam->GetPixThreshold(fModule))) pulse1 = old->GetSignal();
+   if ((j1<0)||(j1>fSeg->Npz()-1)||(pulse1<fSimuParam->GetPixThreshold(modId))) pulse1 = old->GetSignal();
    else UpdateMapSignal(UInt_t(j1),row,ntrack,idhit,pulse1);
    
    // loop in row direction
    int j2 = int(row) + isign;
    pulse2 *= couplR;
-   if ((j2<0)||(j2>(fSeg->Npx()-1))||(pulse2<fSimuParam->GetPixThreshold(fModule))) pulse2 = old->GetSignal();
+   if ((j2<0)||(j2>(fSeg->Npx()-1))||(pulse2<fSimuParam->GetPixThreshold(modId))) pulse2 = old->GetSignal();
    else UpdateMapSignal(col,UInt_t(j2),ntrack,idhit,pulse2);
  } // for isign
 }
@@ -777,8 +726,23 @@ void AliITSUSimulationPix::GenerateStrobePhase()
   // phase w.r.t to the LHC clock
   // Done once per event
   const Double_t kBunchLenght = 25e-9; // LHC clock
+  if (!fStrobe) return;
   fStrobePhase = ((Double_t)gRandom->Integer(fStrobeLenght))*kBunchLenght-
     (Double_t)fStrobeLenght*kBunchLenght+
     kBunchLenght/2;
 }
 
+//______________________________________________________________________
+void AliITSUSimulationPix::SetResponseParam(AliParamList* resp)
+{
+  // attach response parameterisation data
+  fResponseParam = resp;
+  switch (fResponseParam->GetID()) {
+  case kSpreadSingleGauss: fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D; 
+    break;
+  case kSpreadDoubleGauss: fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;       
+    break;
+  default: AliFatal(Form("Did not find requested spread function id=%d",fResponseParam->GetID()));
+  }
+  //
+}

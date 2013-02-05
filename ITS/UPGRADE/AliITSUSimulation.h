@@ -18,12 +18,14 @@
 #include <TObject.h>
 #include "AliITSUSensMap.h"
 #include "AliITSsegmentation.h"
+#include "AliMathBase.h"
 
 class AliITSCalibration;
 class AliITSUSimuParam;
 class AliITSUModule;
 class TRandom;
 class TSegCollection;
+class AliParamList;
 
 // This is the base class for ITS detector signal simulations. Data members
 // include are a pointer to the detectors specific response and segmentation
@@ -45,33 +47,38 @@ class AliITSUSimulation : public TObject
   //
   void UpdateMapSignal(UInt_t dim0,UInt_t dim1, Int_t trk,Int_t ht,Double_t signal);
   void UpdateMapNoise(UInt_t dim0,UInt_t dim1, Double_t noise);
-  virtual void InitSimulationModule(Int_t, Int_t, AliITSsegmentation*);
+  virtual void InitSimulationModule(AliITSUModule* mod, Int_t ev, AliITSsegmentation* seg, AliParamList* resp);
   //
   // Hits -> SDigits
-  virtual void SDigitiseModule(AliITSUModule* mod, Int_t mask, Int_t event, AliITSsegmentation* seg) = 0;
+  virtual void SDigitiseModule() = 0;
   virtual void FinishSDigitiseModule() = 0;
   virtual Bool_t AddSDigitsToModule( TSeqCollection *pItemArray, Int_t mask );
   //
   // Hits -> Digits
-  virtual void DigitiseModule(AliITSUModule* mod, Int_t mask, Int_t event, AliITSsegmentation* seg) = 0;
+  virtual void DigitiseModule() = 0;
   virtual void CreateFastRecPoints(AliITSUModule *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
+  //
+  // readout phase (strobe, timing etc) generation
+  virtual void GenerateStrobePhase() {}
   //
   AliITSCalibration*  GetCalibDead()                   const {return fCalibDead;}
   AliITSCalibration*  GetCalibNoisy()                  const {return fCalibNoisy;}
   AliITSsegmentation* GetSegmentation()                const {return fSeg;}
-  AliITSUSimuParam* GetSimuParam()                   const {return fSimuParam;}
-  AliITSUSensMap*   GetMap()                         const {return fSensMap;}
-  Int_t               GetModule()                      const {return fModule;}
+  AliITSUSimuParam*   GetSimuParam()                   const {return fSimuParam;}
+  AliITSUSensMap*     GetMap()                         const {return fSensMap;}
+  AliITSUModule*      GetModule()                      const {return fModule;}
+  AliParamList*       GetResponseParam()               const {return fResponseParam;}
   Int_t               GetEvent()                       const {return fEvent;}
   Bool_t              GetDebug(Int_t level=1)          const {return fDebug>=level;}
-
+  
   //
   void SetCalibDead(AliITSCalibration *calib)              {fCalibDead = calib;}
   void SetCalibNoisy(AliITSCalibration *calib)             {fCalibNoisy = calib;}
   void SetSegmentation(AliITSsegmentation *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx());}
-  void SetSimuParam(AliITSUSimuParam *sp)                {fSimuParam = sp;}
-  void SetMap(AliITSUSensMap *p)                         {fSensMap = p;}
-  void SetModule(Int_t mod)                                {fModule=mod;} 
+  void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
+  virtual void SetResponseParam(AliParamList* resp)        {fResponseParam = resp;}
+  void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
+  void SetModule(AliITSUModule* mod)                       {fModule=mod;} 
   void SetEvent(Int_t evnt)                                {fEvent=evnt;} 
   void SetDebug(Int_t level=5)                             {fDebug=level;}
   void SetNoDebug()                                        {fDebug=0;}
@@ -79,18 +86,44 @@ class AliITSUSimulation : public TObject
   //
   static  Int_t GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,TArrayI &ind);
   //
+  static  Double_t GausInt1D(Double_t sig,Double_t a,Double_t b);
+  static  Double_t GausInt2D(Double_t sig0,Double_t a0,Double_t b0,
+			     Double_t sig1,Double_t a1,Double_t b1);
+  //
  protected:
   AliITSsegmentation  *fSeg;            //! segmentation
   AliITSCalibration   *fCalibDead;      //! dead channels
   AliITSCalibration   *fCalibNoisy;     //! noisy channels
-  AliITSUSensMap    *fSensMap;        //! sensor map for hits manipulations
-  AliITSUSimuParam  *fSimuParam;      //! simulation parameters
-  Int_t                fModule;         //! module number being processed
+  AliITSUSensMap      *fSensMap;        //! sensor map for hits manipulations
+  AliITSUSimuParam    *fSimuParam;      //! simulation parameters
+  AliParamList        *fResponseParam;  //! response parameterization data
+  AliITSUModule       *fModule;         //! module being processed
   Int_t                fEvent;          //! event number being processed
   Int_t                fDebug;          //!  debug flag
 
   ClassDef(AliITSUSimulation,1)       // Simulation base class 
     
 };
+
+//_____________________________________________________________________________
+inline Double_t AliITSUSimulation::GausInt1D(Double_t sig,Double_t a,Double_t b)
+{
+  // calculate gaussian integral from a to b (with respecto to mean)
+  const Double_t kRoot2 = 1.414213562; // Sqrt(2).
+  double sp = 1.0/(sig*kRoot2);
+  return 0.5*TMath::Abs( AliMathBase::ErfcFast(sp*a) - AliMathBase::ErfcFast(sp*b) );
+}
+
+//_____________________________________________________________________________
+inline Double_t AliITSUSimulation::GausInt2D(Double_t sig0,Double_t a0,Double_t b0,
+					     Double_t sig1,Double_t a1,Double_t b1)
+{
+  // calculate gaussian 2D integral from x0 to x1 (with respect to mean)
+  const Double_t kRoot2 = 1.414213562; // Sqrt(2).
+  double sp0 = 1.0/(sig0*kRoot2);
+  double sp1 = 1.0/(sig1*kRoot2);
+  return 0.25*TMath::Abs( (AliMathBase::ErfcFast(sp0*a0) - AliMathBase::ErfcFast(sp0*b0)) *
+			  (AliMathBase::ErfcFast(sp1*a1) - AliMathBase::ErfcFast(sp1*b1)));
+}
 
 #endif
