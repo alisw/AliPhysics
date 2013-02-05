@@ -5426,3 +5426,70 @@ void Acceptance2DToy(Float_t etaAcceptance = 1.0)
   Printf("%f", func1->Integral(-2, 2) / projSame->GetBinWidth(1));
 }
 
+void Convolute()
+{
+  TFile::Open("phi.root");
+  TH1* phi = (TH1*) gFile->Get("phi");
+
+  phi->SetFillColor(0);
+  //TH1* phi = new TH1F("phi", "", 20, 0, 2); phi->SetBinContent(9, 1);  phi->SetBinContent(10, 1); phi->SetBinContent(11, 1); phi->SetBinContent(12, 1);
+  
+//   TH1* phi = new TH1F("phi", "", 20, 0, TMath::TwoPi()); 
+//   for (Int_t x=0; x<phi->GetNbinsX(); x++)    phi->SetBinContent(x+1, 1);
+//   phi->SetBinContent(10, 0);
+//   phi->SetBinContent(11, 0);
+  
+//   
+//   TH1* phi = new TH1F("phi", "", 4, -1, 1); phi->SetBinContent(1, 1);  phi->SetBinContent(2, 1); phi->SetBinContent(3, 1); phi->SetBinContent(4, 1);
+  
+  new TCanvas; phi->Draw();
+  
+  TH1* conv = (TH1*) phi->Clone("conv");
+  conv->Reset();
+  
+  for (Int_t x=1; x<=phi->GetNbinsX(); x++)
+  {
+    Double_t value = 0;
+    for (Int_t y=1; y<=phi->GetNbinsX(); y++)
+    {
+      Int_t bin = x - y;
+      if (bin < 1)
+	bin += phi->GetNbinsX();
+      if (bin > phi->GetNbinsX())
+	bin -= phi->GetNbinsX();
+      value += phi->GetBinContent(y) * phi->GetBinContent(bin);
+    }
+    conv->SetBinContent(x, value);
+  }
+  
+  conv->Scale(1.0 / conv->Integral());
+  new TCanvas; conv->Draw();
+  
+  return;
+  
+  // random approach
+  
+  TH1* rand = (TH1*) phi->Clone("rand");
+  rand->Reset();
+  
+  for (Int_t i=0; i<1000000000; i++)
+  {
+    Float_t value1 = phi->GetRandom();
+    Float_t value2 = phi->GetRandom();
+    
+    Int_t x = rand->FindBin(value1);
+    Int_t y = rand->FindBin(value2);
+    
+    Int_t bin = x - y;
+    if (bin < 0)
+      bin += phi->GetNbinsX();
+    if (bin >= phi->GetNbinsX())
+      bin -= phi->GetNbinsX();
+    
+    rand->SetBinContent(bin+1, rand->GetBinContent(bin+1) + 1);
+  }
+  
+  rand->Scale(1.0 / rand->Integral());
+  rand->SetLineColor(2);
+  rand->Draw("SAME");
+}

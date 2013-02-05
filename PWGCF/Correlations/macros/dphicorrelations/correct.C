@@ -1237,8 +1237,13 @@ void Validation2DAllBins(const char* fileName, const char *fileName2)
       proj1 = ((TH2*) hist1)->ProjectionX(Form("proj1a_%d_%d", centr, i), hist1->GetYaxis()->FindBin(-outerEta + 0.01), hist1->GetYaxis()->FindBin(-exclusion - 0.01));
       proj1b = ((TH2*) hist1)->ProjectionX(Form("proj1b_%d_%d", centr, i), hist1->GetYaxis()->FindBin(exclusion + 0.01), hist1->GetYaxis()->FindBin(outerEta - 0.01));
       proj1->Add(proj1b);
-      proj1->DrawCopy()->GetYaxis()->SetRangeUser(proj1->GetMinimum() * 0.9, proj1->GetMaximum() * 1.2);
+      copy = proj1->DrawCopy();
+      copy->GetYaxis()->SetRangeUser(proj1->GetMinimum() * 0.9, proj1->GetMaximum() * 1.2);
       proj1c = ((TH2*) hist1)->ProjectionX(Form("proj1c_%d_%d", centr, i), hist1->GetYaxis()->FindBin(-outerEta + 0.01), hist1->GetYaxis()->FindBin(outerEta - 0.01));
+      proj1c->SetLineColor(2);
+      proj1c->DrawCopy("SAME");
+      copy->SetMinimum(TMath::Min(copy->GetMinimum(), proj1c->GetMinimum()));
+      copy->SetMaximum(1.2 * TMath::Max(copy->GetMaximum(), proj1c->GetMaximum()));
       
       baselineValues1 = proj1->Integral(proj1->FindBin(TMath::Pi()/2 - 0.2), proj1->FindBin(TMath::Pi()/2 + 0.2)) / (proj1->FindBin(TMath::Pi()/2 + 0.2) - proj1->FindBin(TMath::Pi()/2 - 0.2) + 1);
       peakYield1 = proj1->Integral(proj1->GetXaxis()->FindBin(-1), proj1->GetXaxis()->FindBin(1)) / (proj1->GetXaxis()->FindBin(0.99) - proj1->GetXaxis()->FindBin(-0.99) + 1) - baselineValues1;
@@ -1246,9 +1251,11 @@ void Validation2DAllBins(const char* fileName, const char *fileName2)
       proj2 = ((TH2*) hist2)->ProjectionX(Form("proj2a_%d_%d", centr, i), hist2->GetYaxis()->FindBin(-outerEta + 0.01), hist2->GetYaxis()->FindBin(-exclusion - 0.01));
       proj2b = ((TH2*) hist2)->ProjectionX(Form("proj2b_%d_%d", centr, i), hist2->GetYaxis()->FindBin(exclusion + 0.01), hist2->GetYaxis()->FindBin(outerEta - 0.01));
       proj2->Add(proj2b);
-      proj2->SetLineColor(2);
+      proj2->SetLineColor(3);
       proj2->DrawCopy("SAME");
       proj2c = ((TH2*) hist2)->ProjectionX(Form("proj2c_%d_%d", centr, i), hist2->GetYaxis()->FindBin(-outerEta + 0.01), hist2->GetYaxis()->FindBin(outerEta - 0.01));
+      proj2c->SetLineColor(4);
+      proj2c->DrawCopy("SAME");
       
       baselineValues2 = proj2->Integral(proj1->FindBin(TMath::Pi()/2 - 0.2), proj2->FindBin(TMath::Pi()/2 + 0.2)) / (proj2->FindBin(TMath::Pi()/2 + 0.2) - proj2->FindBin(TMath::Pi()/2 - 0.2) + 1);
       peakYield2 = proj2->Integral(proj2->GetXaxis()->FindBin(-1), proj2->GetXaxis()->FindBin(1)) / (proj2->GetXaxis()->FindBin(0.99) - proj2->GetXaxis()->FindBin(-0.99) + 1) - baselineValues2;
@@ -7035,7 +7042,7 @@ void PlotDeltaPhiDistributions(const char* fileName1, const char* fileName2, Flo
       Float_t assocPtArr[] =     { 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
       leadingPtOffset = 2;
     }
-    else     
+    else
     {
       Int_t maxLeadingPt = 3;
       Int_t maxAssocPt = 3;
@@ -7595,7 +7602,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  if (1)
+  else if (1)
   {
     //pA
     maxLeadingPt = 3;
@@ -7603,7 +7610,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  if (0)
+  else if (0)
   {
     // pA, CMS ridge comparison
     maxLeadingPt = 4;
@@ -7611,38 +7618,40 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   }
-  if (0) 
+  else if (0) 
   {
     maxLeadingPt = 1;
     maxAssocPt = 3;
     Float_t leadingPtArr[] = { 2.0, 3.0};
     Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 2.0};
   }
-  if (0) //Comparison to STAR (p_T,t)
+  else if (0) //Comparison to STAR (p_T,t)
   {
     maxLeadingPt = 4;
     maxAssocPt = 3;
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 5.0, 6.0};
     Float_t assocPtArr[] =     {0.15, 0.5, 1.5, 6.0};
   }
-  if (0) //Comparison to STAR (p_T,a)
+  else if (0) //Comparison to STAR (p_T,a)
   {
     maxLeadingPt = 1;
     maxAssocPt = 6;
     Float_t leadingPtArr[] = { 3.0, 6.0};
     Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0};
   }
-  if (0) 
+  else if (0) 
   {
     maxLeadingPt = 4;
     maxAssocPt = 4;
     Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 8.0, 15.0 };
     Float_t assocPtArr[] =     {0.15, 0.5, 1.0, 1.5, 2.0};
   }
-  if (0)
+  else if (1)
   {
-    Float_t leadingPtArr[] = { 0.15, 10.0 };
-    Float_t assocPtArr[] =     { 0.15, 10.0 };
+    Float_t leadingPtArr[] = { 0.5, 10.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 10.0 };
+    maxLeadingPt = 1;
+    maxAssocPt = 2;
   }
   leadingPtOffset = 1;
   
@@ -11847,12 +11856,13 @@ void PlotQA(const char* fileName, const char* tag = "")
     ((AliTHn*) hMixed->GetUEHist(2)->GetTrackHist(0))->FillParent();
   }
 
-  hMixed->SetPtRange(1.01, 3.99);
-  dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
+  Float_t ptMin = 0.51;
+  hMixed->SetPtRange(ptMin, 3.99);
+  dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, ptMin, 14.99, 1, 8);
   if (dphi_corr_mixed->GetEntries() == 0)
-    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, 4.01, 14.99, 1, 8);
+    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, ptMin, 14.99, 1, 8);
   if (dphi_corr_mixed->GetEntries() == 0)
-    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepAll, 0, 4.01, 14.99, 1, 8);
+    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepAll, 0, ptMin, 14.99, 1, 8);
   
   if (runNumber != 0 && runNumber != h->GetRunNumber())
     AliFatal("Run numbers inconsistent");
@@ -13975,6 +13985,30 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile)
   // centrality, pT, eta
   yieldsUncorr = h->GetYield();
   new TCanvas; yieldsUncorr->DrawCopy();
+//   new TCanvas; yieldsUncorr->ProjectionX("x1")->DrawCopy();
+ 
+  // normalize per event
+  centrDist = h->GetCentralityCorrelation()->ProjectionX();
+  new TCanvas; centrDist->Draw();
+
+  for (Int_t x=1; x<=yieldsUncorr->GetNbinsX(); x++)
+  {
+    Double_t factor = centrDist->GetBinContent(centrDist->FindBin(yieldsUncorr->GetXaxis()->GetBinCenter(x)));
+//     Printf("%d %f %d %f", x, yieldsUncorr->GetXaxis()->GetBinCenter(x), centrDist->FindBin(yieldsUncorr->GetXaxis()->GetBinCenter(x)), factor);
+    if (factor <= 0)
+      continue;
+    
+    for (Int_t y=0; y<=yieldsUncorr->GetNbinsY()+1; y++)
+      for (Int_t z=0; z<=yieldsUncorr->GetNbinsZ()+1; z++)
+      {
+	if (yieldsUncorr->GetBinContent(x, y, z) <= 0)
+	  continue;
+	yieldsUncorr->SetBinContent(x, y, z, yieldsUncorr->GetBinContent(x, y, z) / factor);
+	yieldsUncorr->SetBinError(x, y, z, yieldsUncorr->GetBinError(x, y, z) / factor);
+      }
+  }
+
+//   new TCanvas; yieldsUncorr->ProjectionX("x2")->DrawCopy(); return;
   
   AliUEHistograms* hCorr = (AliUEHistograms*) GetUEHistogram(correctionFile);
   
@@ -14004,7 +14038,7 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile)
     for (Int_t y=1; y<=yieldsUncorr->GetNbinsY(); y++)
       for (Int_t z=1; z<=yieldsUncorr->GetNbinsZ(); z++)
       {
-	Float_t factor = effCorr->GetBinContent(effCorr->GetXaxis()->FindBin(yieldsUncorr->GetZaxis()->GetBinCenter(z)), effCorr->GetYaxis()->FindBin(yieldsUncorr->GetYaxis()->GetBinCenter(y)));
+	Double_t factor = effCorr->GetBinContent(effCorr->GetXaxis()->FindBin(yieldsUncorr->GetZaxis()->GetBinCenter(z)), effCorr->GetYaxis()->FindBin(yieldsUncorr->GetYaxis()->GetBinCenter(y)));
 	yieldsCorr->SetBinContent(x, y, z, yieldsUncorr->GetBinContent(x, y, z) * factor);
 	yieldsCorr->SetBinError(x, y, z, yieldsUncorr->GetBinError(x, y, z) * factor);
       }
@@ -14014,13 +14048,35 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile)
   TFile::Open("corr_yield.root", "RECREATE");
   yieldsCorr->Write();
   gFile->Close();
+  
+  yieldsUncorr->GetXaxis()->SetRangeUser(1, yieldsUncorr->GetNbinsX());
 
-  new TCanvas; yieldsUncorr->Project3D("z1")->Draw(); yieldsCorr->Project3D("z2")->DrawCopy("SAME")->SetLineColor(2);
+  new TCanvas; yieldsUncorr->Project3D("z1")->DrawCopy()->SetLineColor(1); yieldsCorr->Project3D("z2")->DrawCopy("SAME")->SetLineColor(2);
 
   yieldsUncorr->GetXaxis()->SetRangeUser(0.1, 9.9);
   yieldsCorr->GetXaxis()->SetRangeUser(0.1, 9.9);
-  new TCanvas; yieldsUncorr->Project3D("z3")->Draw(); yieldsCorr->Project3D("z4")->DrawCopy("SAME")->SetLineColor(2);
+  new TCanvas; yieldsUncorr->Project3D("z3")->DrawCopy()->SetLineColor(1); yieldsCorr->Project3D("z4")->DrawCopy("SAME")->SetLineColor(2);
   yieldsUncorr->GetXaxis()->SetRangeUser(60.1, 99.9);
   yieldsCorr->GetXaxis()->SetRangeUser(60.1, 99.9);
   yieldsUncorr->Project3D("z5")->DrawCopy("SAME")->SetLineColor(3); yieldsCorr->Project3D("z6")->DrawCopy("SAME")->SetLineColor(4);
+}
+
+void PlotPtCentrality()
+{
+  TFile::Open("corr_yield.root");
+  yieldsCorr = (TH3F*) gFile->Get("fYieldsCorr");
+  
+  yieldsCorr->GetZaxis()->SetRangeUser(-0.4999, 0.4999);
+  yieldsProj = (TH2*) yieldsCorr->Project3D("yx");
+  Printf("%f", yieldsProj->Integral());
+  
+  Float_t ptMin[] = { 0.5001, 1.0001, 2.0001 };
+  Float_t ptMax = 10;
+  
+  for (Int_t i=0; i<3; i++)
+  {
+    profile = yieldsProj->ProjectionX(Form("x%d", i), yieldsProj->GetYaxis()->FindBin(ptMin[i]), yieldsProj->GetYaxis()->FindBin(ptMax));
+    profile->SetLineColor(i+1);
+    profile->Draw((i > 0) ? "SAME" : "");
+  }
 }

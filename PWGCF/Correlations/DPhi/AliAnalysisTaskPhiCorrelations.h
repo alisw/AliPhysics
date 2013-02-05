@@ -88,7 +88,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
-    void   SetSelectParticleSpecies( Int_t val ) { fSelectParticleSpecies = val; }
+    void   SetSelectParticleSpecies( Int_t trigger, Int_t associated ) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
     void   SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
     void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
@@ -163,7 +163,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     UInt_t         	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
-    Int_t               fSelectParticleSpecies; // Select which particle to use [ -1 (all) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
+    Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
+    Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
 
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Int_t fTriggerSelectCharge;    // select charge of trigger particle
@@ -182,7 +183,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 24); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 25); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

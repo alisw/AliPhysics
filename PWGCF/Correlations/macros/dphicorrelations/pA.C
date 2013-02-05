@@ -12,6 +12,8 @@ const char* kProjYieldTitleEta = "1/#it{N}_{trig} d#it{N}_{assoc}/d#Delta#eta pe
 // const char* kProjYieldTitlePhiOrEta = "1/N_{trig} dN_{assoc}/d#Delta#varphi (1/rad) , dN_{assoc}/d#Delta#eta";
 const char* kProjYieldTitlePhiOrEta = "#frac{1}{#it{N}_{trig}} #frac{d#it{N}_{assoc}}{d#Delta#varphi} (rad^{-1}) , d#it{N}_{assoc}/d#Delta#eta";
 
+Float_t etaMax = 1.8;
+
 void CreateGraphStructure()
 {
   graphs = new TGraphErrors**[NGraphs];
@@ -129,6 +131,115 @@ void GraphShiftX(TGraphErrors* graph, Float_t offset)
     graph->GetX()[i] += offset;
 }
 
+TGraphErrors* ReadHepdata(const char* fileName, Bool_t errorsAreAdded = kFALSE, Int_t skipYErrors = 0, Int_t skipXerrors = 1)
+{
+  // expected format: x [x2] y [ye] [ye2] [xe]
+  //
+  // skipYErrors:   0 --> ye present
+  //                1 --> no errors ye
+  //                2 --> y and ye are lower and upper error, i.e. y' = (y + ye) / 2 and ye = (ye - y) / 2
+  //                3 --> ye and ye2 are stat and syst error, will be added in quadrature
+  // 
+  // skipXerrors:   0 --> xe present
+  //                1 --> no errors xe
+  //                2 --> x2 present, xe not present and is calculated from x2 - x
+  
+  ifstream fin(fileName);
+
+  graph = new TGraphErrors(0);
+
+  Double_t sum = 0;
+
+  while (fin.good())
+  {
+    char buffer[2000];
+    if (fin.peek() == '#')
+    {
+      fin.getline(buffer, 2000);
+      continue;
+    }
+  
+    Double_t x = -1;
+    Double_t x2 = -1;
+    Double_t y = -1;
+    Double_t ye = 0;
+    Double_t xe = 0;
+
+    fin >> x;
+    
+    if (skipXerrors == 2)
+    {
+      fin >> x2;
+      xe = (x2 - x + 1) / 2;
+      x = x + (x2 - x) / 2;
+    }
+    
+    fin >> y;
+
+    if (y == -1)
+      continue;
+
+    if (skipYErrors == 0)
+    {
+      ye = -1;
+      fin >> ye;
+      if (ye == -1)
+        continue;
+    }
+    else if (skipYErrors == 2)
+    {
+      ye = -1;
+      fin >> ye;
+      if (ye == -1)
+        continue;
+      
+      Double_t newy = (y + ye) / 2;
+      ye = (ye - y) / 2;
+      y = newy;
+    }
+    else if (skipYErrors == 3)
+    {
+      ye = -1;
+      fin >> ye;
+      if (ye == -1)
+        continue;
+      
+      Double_t ye2 = -1;
+      fin >> ye2;
+      if (ye2 == -1)
+        continue;
+
+      ye = TMath::Sqrt(ye*ye + ye2*ye2);
+    }
+
+    if (skipXerrors == 0)
+    {
+      xe = -1;
+      fin >> xe;
+      if (xe == -1)
+        continue;
+    }
+
+    //Printf("%f %f %f %f", x, y, xe, ye);
+
+    if (errorsAreAdded)
+      ye -= y;
+
+    graph->SetPoint(graph->GetN(), x, y);
+    graph->SetPointError(graph->GetN()-1, xe, ye);
+
+    sum += y;
+    
+    // read rest until end of line...
+    fin.getline(buffer, 2000);
+  }
+  fin.close();
+
+  Printf("%s: %f", fileName, sum);
+
+  return graph;
+}
+
 TH2* SubtractEtaGapNS(TH2* hist, Float_t etaLimit, Float_t outerLimit, Bool_t drawEtaGapDist = kFALSE)
 {
   TString histName(hist->GetName());
@@ -216,8 +327,6 @@ TH1* GetProjections(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaBegi
   
 //   new TCanvas; hist1->Draw("surf1");
   
-  Float_t etaMax = 1.8;
-  
   if (etaBegin > 0)
     SubtractEtaGapNS(hist1, etaBegin, etaMax, kTRUE);
   
@@ -289,8 +398,6 @@ TH1* GetProjectionsNew(Int_t i, Int_t j, Int_t centr, char** label, Float_t etaB
   hist1->Rebin2D(2, 1); hist1->Scale(0.5);
   
 //   new TCanvas; hist1->Draw("surf1");
-  
-  Float_t etaMax = 1.8;
   
   tokens = TString(hist1->GetTitle()).Tokenize("-");
   centralityStr = new TString;
@@ -778,7 +885,15 @@ void CalculateIAA(Int_t i, Int_t j, Int_t centr, Float_t etaBegin, Double_t& nsP
 {
   TH2* hist = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, centr));
   if (!hist)
-    return 0;
+  {
+    nsPeak = 0;
+    nsPeakE = 0;
+    asPeak = 0;
+    asPeakE = 0;
+    nsRidge = 0;
+    nsRidgeE = 0;
+    return;
+  }
   
 //   new TCanvas; hist->Draw("COLZ");
   
@@ -815,10 +930,9 @@ void CalculateIAA(Int_t i, Int_t j, Int_t centr, Float_t etaBegin, Double_t& nsP
       hist1->SetBinError(xTarget, yTarget, error);
     }
   
-//   new TCanvas; hist1->Draw("COLZ");
-  
   // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
   hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
+  new TCanvas; hist1->Draw("COLZ");
 //   new TCanvas; hist1->Draw("SURF1");
   
   tokens = TString(hist1->GetTitle()).Tokenize("-");
@@ -829,10 +943,6 @@ void CalculateIAA(Int_t i, Int_t j, Int_t centr, Float_t etaBegin, Double_t& nsP
     *centralityStr = *centralityStr + "-" + tokens->At(1)->GetName();
   }
   *label = centralityStr->Data();
-
-//   const Float_t etaMax = 1.5;
-  const Float_t etaMax = 1.8;
-//   const Float_t etaMax = 2.0;
 
   Int_t phi1 = hist1->GetXaxis()->FindBin(0.0001);
   Int_t phi3 = hist1->GetXaxis()->FindBin(TMath::Pi()/2 - 0.3);
@@ -855,6 +965,10 @@ void CalculateIAA(Int_t i, Int_t j, Int_t centr, Float_t etaBegin, Double_t& nsP
   Double_t zyamYield  = hist1->IntegralAndError(phi3, phi4, eta1, eta4, zyamYieldE, "width");
   Double_t zyamYield1 = hist1->IntegralAndError(phi3, phi4, eta1, eta2, zyamYieldE1, "width");
   Double_t zyamYield2 = hist1->IntegralAndError(phi3, phi4, eta3, eta4, zyamYieldE2, "width");
+  
+  // factor 4 from folding to one quadrant above
+  Double_t zyamYield2Density = zyamYield2 / (hist1->GetXaxis()->GetBinUpEdge(phi4) - hist1->GetXaxis()->GetBinLowEdge(phi3)) / (hist1->GetYaxis()->GetBinUpEdge(eta4) - hist1->GetYaxis()->GetBinLowEdge(eta3)) / 4;
+  Double_t zyamYieldE2Density = zyamYieldE2 / (hist1->GetXaxis()->GetBinUpEdge(phi4) - hist1->GetXaxis()->GetBinLowEdge(phi3)) / (hist1->GetYaxis()->GetBinUpEdge(eta4) - hist1->GetYaxis()->GetBinLowEdge(eta3)) / 4;
   
   Double_t nsZyamScaling = 1.0 * (phi2 - phi1 + 1) / (phi4 - phi3 + 1);
   Double_t asZyamScaling = 1.0 * (phi6 - phi5 + 1) / (phi4 - phi3 + 1);
@@ -883,7 +997,7 @@ void CalculateIAA(Int_t i, Int_t j, Int_t centr, Float_t etaBegin, Double_t& nsP
   nsRidge /= (etaMax - etaBegin) * 2;
   nsRidgeE /= (etaMax - etaBegin) * 2;
   
-  Printf("Peak yields (%d %d %d): %f +- %f; %f +- %f; %f +- %f", i, j, centr, nsPeak, nsPeakE, asPeak, asPeakE, nsRidge, nsRidgeE);  
+  Printf("Peak yields (%d %d %d): %f +- %f; %f +- %f; %f +- %f; %f +- %f", i, j, centr, nsPeak, nsPeakE, asPeak, asPeakE, nsRidge, nsRidgeE, zyamYield2Density, zyamYieldE2Density);
 
 //   Printf("");
 }
@@ -893,7 +1007,7 @@ void PlotIAA(const char* fileName)
   Int_t colors[] = { 1, 2, 3, 4, 6, 7 };
   Int_t markers[] = { 20, 21, 22, 23, 24, 25 };
   
-  if (1)
+  if (0)
   {
     Int_t n = 6;
     Int_t is[] = { 0, 0, 1, 1, 1, 2 };
@@ -903,7 +1017,7 @@ void PlotIAA(const char* fileName)
     Float_t centralityX[] = { 10, 30, 110, 50, 80, 120 };
     Float_t centralityEX[] = { 10, 10, 0, 10, 20, 0 };
   }
-  else
+  else if (0)
   {
     Int_t n = 3;
     Int_t is[] = { 0, 1, 2, 3 };
@@ -912,6 +1026,16 @@ void PlotIAA(const char* fileName)
     Int_t centralityBins = 4;
     Float_t centralityX[] = { 1.5, 6.5, 30, 75 };
     Float_t centralityEX[] = { 1.5, 2.5, 20, 25 };
+  }
+  else
+  {
+    Int_t n = 1;
+    Int_t is[] = { 0 };
+    Int_t js[] = { 1 };
+  
+    Int_t centralityBins = 6;
+    Float_t centralityX[] = { 10, 30, 110, 50, 80, 120 };
+    Float_t centralityEX[] = { 10, 10, 0, 10, 20, 0 };
   }
   
   const char* graphTitles[] = { "NS Yield", "AS Yield", "NS Ridge" };
@@ -968,7 +1092,7 @@ void PlotIAA(const char* fileName)
       canvas[ci-3]->cd();
       graph[ci]->SetLineColor(colors[i]);
       graph[ci]->Sort();
-//       graph[ci]->Draw("LSAME");
+      graph[ci]->Draw("LSAME");
     }
     
     legend->AddEntry(graph[0], label, "P");
@@ -1011,11 +1135,16 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr)
   CorrelationSubtraction(fileName, i, j, centr, graphs[0], 0);
 }
 
-void CorrelationSubtractionAll(const char* fileName)
+void CorrelationSubtractionAll(const char* fileName, Int_t centr = 0)
 {
-  CorrelationSubtractionAll(0, 1, 0);
-  CorrelationSubtractionAll(1, 2, 0);
-  CorrelationSubtractionAll(2, 2, 0);
+  Int_t n = 6;
+  Int_t is[] = { 0, 1, 1, 2, 2, 2, 3 };
+  Int_t js[] = { 1, 1, 2, 1, 2, 3, 3 };
+
+  CreateGraphStructure();
+
+  for (Int_t i=0; i<n; i++)
+    CorrelationSubtraction(fileName, is[i], js[i], centr, graphs[0], 0);
 }
 
 Int_t gStudySystematic = 0; // 10 = exclusion zone to 0.5; 11 = exclusion off; 12 = exclusion 0.8 and mirror to AS; 13 = scale peripheral; 14 = exclusion 1.2; 20 = non closure; 30 = baseline; 40 = track cuts; 50/51 = cms comparison; 60 = other peripheral bin
@@ -1255,8 +1384,6 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     hist2->Scale(1.0 + factor[i][j][centr]);
   }
   
-  const Float_t etaMax = 1.8;
-//   const Float_t etaMax = 1.5;
   const Float_t etaFlat = 1.2;
   const Float_t centralEta = 0.5;
 
@@ -1512,6 +1639,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     paveText->Draw();
     paveText2->Draw();
     gPad->GetCanvas()->SaveAs(Form("ridge_%d_%d.png", i, j));
+    gPad->GetCanvas()->SaveAs(Form("ridge_%d_%d.eps", i, j));
     gPad->GetCanvas()->SaveAs("fig3a.eps");
     
     Float_t fontSize = 0.05;
@@ -1559,8 +1687,6 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     legend5->AddEntry(etaProj3, "Remaining #Delta#varphi", "P");
     legend5->Draw();
     
-    gPad->GetCanvas()->SaveAs(Form("ridge_eta_%d_%d.png", i, j));
-
     c = new TCanvas("c2", "c2", 600, 400);
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.01);
@@ -1580,9 +1706,18 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     proj->SetMarkerStyle(21);
     proj->SetMarkerSize(0.7);
     proj->Draw("E0 X0");
-    proj->SetMinimum(proj->GetMinimum() * 0.98);
-    proj->SetMaximum(proj->GetMaximum() * 1.065);
+    proj->SetMinimum(proj->GetMinimum() * 0.98); proj->SetMaximum(proj->GetMaximum() * 1.065);
+//     proj->SetMinimum(proj->GetMinimum() * 1.2); proj->SetMaximum(proj->GetMaximum() * 0.6);
     fitOption = "I";
+    
+    if (0)
+    {
+      Printf("\nPer-trigger yield per unit of delta eta (y) as function of delta phi (x) in the bin %s", centralityStr.Data());
+      Printf("Systematic uncertainties are mostly correlated and affect the baseline. Uncorrelated uncertainties are less than 1%% and not indicated explicitly in the table below.");
+
+      for (Int_t k=1; k<=proj->GetNbinsX(); k++)
+	Printf("x = %.2f, y = %.4f +- %.4f (stat)", proj->GetXaxis()->GetBinCenter(k), proj->GetBinContent(k), proj->GetBinError(k));
+    }
   }
   
   fileProj = TFile::Open("dphi_proj.root", "UPDATE");
@@ -1595,6 +1730,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   
   TF1* v2v3 = new TF1("func", "[0]+2*[1]*cos(2*x)+2*[2]*cos(3*x)", -5, 5);
   v2v3->SetLineColor(2);
+//   v2v3->FixParameter(2, 0);
   proj->Fit(v2, fitOption);
 //   return;
     
@@ -1735,16 +1871,19 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 
     if (1)
     {
-      TFile::Open("dphi_proj_hijing.root");
-      hijing = (TH1*) gFile->Get(Form("proj_%d_%d_%d_0", i, j, centr));
-      if (hijing)
+      hijingFile = TFile::Open("dphi_proj_hijing.root");
+      if (hijingFile)
       {
-	hijing->Add(new TF1("flat", "1", -5, 5), min - ((i == 1) ? 0.192078 : 0.373710));
-	hijing->SetMarkerColor(2);
-	hijing->SetLineColor(2);
-	hijing->SetMarkerStyle(25);
-	hijing->Draw("SAME E0X0");
-	legend->AddEntry(hijing, "HIJING shifted", "P");
+	hijing = (TH1*) hijingFile->Get(Form("proj_%d_%d_%d_0", i, j, centr));
+	if (hijing)
+	{
+	  hijing->Add(new TF1("flat", "1", -5, 5), min - ((i == 1) ? 0.192078 : 0.373710));
+	  hijing->SetMarkerColor(2);
+	  hijing->SetLineColor(2);
+	  hijing->SetMarkerStyle(25);
+	  hijing->Draw("SAME E0X0");
+	  legend->AddEntry(hijing, "HIJING shifted", "P");
+	}
       }
     }
     
@@ -1777,11 +1916,14 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 //     DrawLatex(0.27, 0.19, 1, Form("%sGeV/#it{c}       %sGeV/#it{c}", objArray->At(0)->GetName(), objArray->At(1)->GetName()), fontSize);
     
     gPad->GetCanvas()->SaveAs(Form("ridge_fit_%d_%d.png", i, j));
+    gPad->GetCanvas()->SaveAs(Form("ridge_fit_%d_%d.eps", i, j));
     gPad->GetCanvas()->SaveAs("fig3b.eps");
     
     c3->cd();
     paveText3 = (TPaveText*) paveText4->Clone();
     paveText3->Draw();
+    gPad->GetCanvas()->SaveAs(Form("ridge_eta_%d_%d.png", i, j));
+    gPad->GetCanvas()->SaveAs(Form("ridge_eta_%d_%d.eps", i, j));
     gPad->GetCanvas()->SaveAs("fig3c.eps");
   }
   
@@ -1831,7 +1973,9 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   Float_t yMax[] = { 0.1, 0.1, 2, 2, 0.25, 0.25, 4, 1.5, 50, 50, 4, 4 };
   Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26 };
 
-  TCanvas* canvas = new TCanvas(Form("%s_%d", graphFiles[0], id), Form("%s_%d", graphFiles[0], id), 800, 600);
+  TString baseName(graphFiles[0]);
+  baseName.ReplaceAll(".", "_");
+  TCanvas* canvas = new TCanvas(Form("%s_%d", baseName.Data(), id), Form("%s_%d", baseName.Data(), id), 800, 600);
 //   Printf("%p", canvas);
   gPad->SetGridx();
   gPad->SetGridy();
@@ -1839,7 +1983,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   dummy->SetStats(0);
   dummy->DrawCopy();
   
-  TCanvas* canvas2 = new TCanvas(Form("%s_%d_ratio", graphFiles[0], id), Form("%s_%d", graphFiles[0], id), 800, 600);
+  TCanvas* canvas2 = new TCanvas(Form("%s_%d_ratio", baseName.Data(), id), Form("%s_%d", baseName.Data(), id), 800, 600);
   gPad->SetGridx();
   gPad->SetGridy();
   dummy = new TH2F(Form("hist_%s_%d_ratio", graphFiles[0], id), Form(";%s;%s ratio", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, 0, 2);
@@ -1878,11 +2022,11 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
 
   canvas->cd();
   legend->Draw();
-  canvas->SaveAs(Form("%s.png", canvas->GetName()));
+  canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 
   canvas2->cd();
   legend->Draw();
-  canvas2->SaveAs(Form("%s.png", canvas2->GetName()));
+  canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
 }
 
 void CMSRidge()
@@ -2004,10 +2148,10 @@ void GetSystematic()
 
 void DrawSystematics(TString fileTag = "graphs_121119")
 {
-  if (0)
+  if (1)
   {
     const Int_t n = 6;
-    const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_exclusion00", "_exclusionAS", "_exclusionScale", "_trackcuts", "_nonclosure", "_baseline" };
+    const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_exclusion00", "_exclusionAS", "_exclusionScale" };
   }
   else
   {
@@ -2023,8 +2167,8 @@ void DrawSystematics(TString fileTag = "graphs_121119")
     files[i] = str->Data();
   }
   
-  const Int_t plots = 7;
-  Int_t ids[plots] = { 0, 1, 2, 3, 4, 5, 7 };
+  const Int_t plots = 6;
+  Int_t ids[7] = { 0, 1, 2, 3, 4, 5, 7 };
   
   for (Int_t i=0; i<plots; i++)
   {
@@ -2114,15 +2258,13 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
 
   if (1)
   {
-//     graphs[0][id1]->Print();
-
     // default systs (for all pT, centr)
-    Float_t syst020Array[] = { 0.16, 0.18, 0.2, 0.2, 0.14, 0.23 };
-    Float_t syst2060Array[] = { 0.23, 0.25, 0.2, 0.2, 0.18, 0.42 };
+    Float_t syst020Array[] = { 0.16, 0.18, 0.15, 0.15, 0.14, 0.23 };
+    Float_t syst2060Array[] = { 0.23, 0.25, 0.23, 0.23, 0.18, 0.42 };
     
     // 0.5<1 0.5<1
-    Float_t syst020ArrayGr0[] = { 0.23, 0.25, 0.2, 0.2, 0.14, 0.23 };
-    Float_t syst2060ArrayGr0[] = { 0.42, 0.43, 0.2, 0.2, 0.18, 0.42 };
+    Float_t syst020ArrayGr0[] = { 0.23, 0.25, 0.15, 0.15, 0.14, 0.23 };
+    Float_t syst2060ArrayGr0[] = { 0.42, 0.43, 0.23, 0.23, 0.18, 0.42 };
 
     for (Int_t i=0; i<NGraphs; i++)
     {
@@ -2157,7 +2299,27 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
 //     graphs[0][id1]->Print();
   }
   
-  
+  const char* eventClass[] = { "0-20%", "20-40%", "40-60%" };
+  Printf("\n%s:", graphTitles[id1]);
+  for (Int_t i=0; i<3; i++)
+  {
+    Printf("Event class: %s minus 60-100%%", eventClass[i]);
+    
+    for (Int_t j=0; j<NGraphs; j++)
+      if (graphs[j][id1]->GetN() > i)
+	Printf("%s: %.4f +- %.4f (stat) +- %.4f (syst)", graphs[j][id1]->GetTitle(), graphs[j][id1]->GetY()[i], graphs[j][id1]->GetEY()[i], graphsSyst[j][id1]->GetEY()[i]);
+  }
+    
+  Printf("\n%s:", graphTitles[id2]);
+  for (Int_t i=0; i<3; i++)
+  {
+    Printf("Event class: %s minus 60-100%%", eventClass[i]);
+    
+    for (Int_t j=0; j<NGraphs; j++)
+      if (graphs[j][id2]->GetN() > i)
+	Printf("%s: %.4f +- %.4f (stat) +- %.4f (syst)", graphs[j][id2]->GetTitle(), graphs[j][id2]->GetY()[i], graphs[j][id2]->GetEY()[i], graphsSyst[j][id2]->GetEY()[i]);
+  }
+
   TCanvas* canvas = new TCanvas;
   gPad->SetTopMargin(0.03);
   gPad->SetRightMargin(0.01);
@@ -2309,11 +2471,23 @@ void DrawGraph(const char* graphFile, Int_t id1, Int_t id2, const char* yLabel =
   DrawLatex(0.18, 0.92, 1, "p-Pb #sqrt{s_{NN}} = 5.02 TeV", 0.04);
 }
 
-void PaperCorrFunc(const char* fileName, Int_t centr)
+void PaperCorrFuncAll(const char* fileName)
+{
+  Int_t n = 6;
+  Int_t is[] = { 0, 1, 1, 2, 2, 2, 3 };
+  Int_t js[] = { 1, 1, 2, 1, 2, 3, 3 };
+  Int_t centr[] = { 0, 1, 3, 4 };
+
+  for (Int_t i=0; i<n; i++)
+    for (Int_t j=0; j<4; j++)
+      PaperCorrFunc(fileName, is[i], js[i], centr[j]);
+}
+
+void PaperCorrFunc(const char* fileName, Int_t i = 2, Int_t j = 2, Int_t centr = 0)
 {
   TFile::Open(fileName);
   
-  TH2* hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", 2, 2, centr));
+  TH2* hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, centr));
 
   if (!hist1)
     return 0;
@@ -2383,10 +2557,12 @@ void PaperCorrFunc(const char* fileName, Int_t centr)
   paveText->Draw();
   paveText2->Draw();
   
-  if (centr == 0)
+  if (i == 2 && j == 2 && centr == 0)
     c->SaveAs("fig1b.eps");
-  else if (centr == 4)
+  else if (i == 2 && j == 2 && centr == 4)
     c->SaveAs("fig1a.eps");
+  
+  c->SaveAs(Form("corr_%d_%d_%d.eps", i, j, centr));
 }
 
 void ExtractSystematics(const char* fileName = "dphi_proj.root")
@@ -2530,7 +2706,6 @@ void CMSPlot()
 	*centralityStr = *centralityStr + "-" + tokens->At(3)->GetName();
       
       Float_t etaMin = 1.0;
-      Float_t etaMax = 1.8;
       
       proj1x = hist1->ProjectionX(Form("proj1x_%d_%d_%d_%d", i, j, centr, fileId), hist1->GetYaxis()->FindBin(-etaMax+0.01), hist1->GetYaxis()->FindBin(-etaMin-0.01));
       proj2x = hist1->ProjectionX(Form("proj2x_%d_%d_%d_%d", i, j, centr, fileId), hist1->GetYaxis()->FindBin(etaMin+0.01), hist1->GetYaxis()->FindBin(etaMax-0.01));
@@ -2586,4 +2761,25 @@ void FourierFactorization(const char* fileName)
 //   graphs[1][graphID]->Draw("A*");
   
   WriteGraphs();
+}
+
+void CompareATLAS()
+{
+  atlas = ReadHepdata("/home/jgrosseo/Dropbox/alice-paper-paridge/comparison_atlas/atlas_figaux10.txt", kFALSE, 1, 1);
+  atlas->SetMarkerStyle(20);
+  atlas->Draw("PA");
+  atlas->SetTitle("");
+  atlas->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  atlas->GetYaxis()->SetTitle("s_{2} / v_{2}");
+  atlas->GetYaxis()->SetRangeUser(0.02, 0.18);
+
+  alice = new TGraphErrors;
+  AddPoint(alice, 0.75, 0.0583503, 0.25, 0.00831755);
+  AddPoint(alice, 1.5, 0.0953562, 0.5, 0.0134597);
+  AddPoint(alice, 3, 0.128309, 1, 0.0189634);
+  
+  alice->SetMarkerStyle(21);
+  alice->SetLineColor(2);
+  alice->SetMarkerColor(2);
+  alice->Draw("PSAME");
 }

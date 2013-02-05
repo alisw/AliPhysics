@@ -122,7 +122,8 @@ fPtMin(0.5),
 fFilterBit(0xFF),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
 fUseChargeHadrons(kFALSE),
-fSelectParticleSpecies(-1),
+fParticleSpeciesTrigger(-1),
+fParticleSpeciesAssociated(-1),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fTriggerRestrictEta(-1),
@@ -354,7 +355,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
-  settingsTree->Branch("fSelectParticleSpecies", &fSelectParticleSpecies,"ParticleSpecies/I");
+  settingsTree->Branch("fParticleSpeciesTrigger", &fParticleSpeciesTrigger,"ParticleSpeciesTrigger/I");
+  settingsTree->Branch("fParticleSpeciesAssociated", &fParticleSpeciesAssociated,"ParticleSpeciesAssociated/I");
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
@@ -497,17 +499,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   // Get MC primaries
   // triggers
-  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
   CleanUp(tmpList, mc, skipParticlesAbove);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
   // associated
   TObjArray* tracksCorrelateMC = tracksMC;
-  if (fSelectParticleSpecies != -1)
+  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
   {
     // TODO for MC this uses to PDG of the mother of the particle
-    tracksCorrelateMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fSelectParticleSpecies, kTRUE);
+    tracksCorrelateMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
     CleanUp(tracksCorrelateMC, mc, skipParticlesAbove);
   }
   
@@ -601,13 +603,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries that match reconstructed track
       // triggers
-      TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE);
+      TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE);
       CleanUp(tracksRecoMatchedPrim, mc, skipParticlesAbove);
       // associated
       TObjArray* tracksCorrelateRecoMatchedPrim = tracksRecoMatchedPrim;
-      if (fSelectParticleSpecies != -1)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelateRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fSelectParticleSpecies, kTRUE);
+	tracksCorrelateRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tracksCorrelateRecoMatchedPrim, mc, skipParticlesAbove);
       }
 
@@ -627,13 +629,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries + secondaries that match reconstructed track
       // triggers
-      TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, -1, kTRUE);
+      TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE);
       CleanUp(tracksRecoMatchedAll, mc, skipParticlesAbove);
       // associated
       TObjArray* tracksCorrelateRecoMatchedAll = tracksRecoMatchedAll;
-      if (fSelectParticleSpecies != -1)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelateRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fSelectParticleSpecies, kTRUE);
+	tracksCorrelateRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tracksCorrelateRecoMatchedAll, mc, skipParticlesAbove);
       }
       
@@ -653,13 +655,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get RECO tracks
       // triggers
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
       CleanUp(tracks, mc, skipParticlesAbove);
       // associated
       TObjArray* tracksCorrelate = tracks;
-      if (fSelectParticleSpecies != -1)
+      if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
       {
-	tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fSelectParticleSpecies, kTRUE);
+	tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
 	CleanUp(tracksCorrelate, mc, skipParticlesAbove);
       }
      
@@ -904,7 +906,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality < 0 && !fCompareCentralities)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
   // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
@@ -935,8 +937,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
-  if (fSelectParticleSpecies != -1)
-    tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fSelectParticleSpecies, kTRUE);
+  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+    tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   
   // reference multiplicity
   Int_t referenceMultiplicity = -1;
