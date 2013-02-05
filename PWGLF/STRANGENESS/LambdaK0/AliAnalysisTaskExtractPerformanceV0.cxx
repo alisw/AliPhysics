@@ -187,6 +187,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
 
   fTreeVariableIsNonInjected(0),
 
+  fTreeVariableNegTrackStatus(0),
+  fTreeVariablePosTrackStatus(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -374,6 +377,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
 
   fTreeVariableIsNonInjected(0),
 
+  fTreeVariableNegTrackStatus(0),
+  fTreeVariablePosTrackStatus(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -588,7 +593,11 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableMCPVy",&fTreeVariableMCPVy,"fTreeVariableMCPVy/F");
         fTree->Branch("fTreeVariableMCPVz",&fTreeVariableMCPVz,"fTreeVariableMCPVz/F");
 
-        fTree->Branch("fTreeVariableIsNonInjected",&fTreeVariableIsNonInjected,"fTreeVariableIsNonInjected/O"); //O for bOOlean... 
+        fTree->Branch("fTreeVariableIsNonInjected",&fTreeVariableIsNonInjected,"fTreeVariableIsNonInjected/O"); //O for bOOlean...
+  
+        fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
+        fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+  
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -1698,6 +1707,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;      
       if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
+      //Get status flags
+      fTreeVariablePosTrackStatus = pTrack->GetStatus();
+      fTreeVariableNegTrackStatus = nTrack->GetStatus();
+    
       if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) )&&(fkTakeAllTracks==kFALSE) ) continue;
 	
       //GetKinkIndex condition
