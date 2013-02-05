@@ -842,56 +842,6 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
 void AliAnalysisTaskFullpAJets::Terminate(Option_t *) //specify what you want to have done
 {
     // Called once at the end of the query. Done nothing here.
-
-    // Scale Histograms by the number of events that made the Physics Selection Task
-    // All of these histograms should be additionally scaled by the number of events where the TPC+EMCal are turned on. (fnEvents)
-    if (fnEvents>0)
-    {
-        fhBckgMult->Scale(1.0/fhBckgMult->Integral());
-        fhBckgFluc->Scale(1.0/fhBckgFluc->Integral());
-        fhDeltaPtTotal->Scale(1.0/fhDeltaPtTotal->Integral());
-        fhDeltaPtNoLeading->Scale(1.0/fhDeltaPtNoLeading->Integral());
-        fhDeltaPt1B->Scale(1.0/fhDeltaPt1B->Integral());
-    }
-    fhClusterPt->Scale(1.0/(fhClusterPt->GetBinWidth(1)));
-    fhClusterEta->Scale(1.0/(fhClusterEta->GetBinWidth(1)));
-    fhClusterPhi->Scale(1.0/(fhClusterPhi->GetBinWidth(1)));
-    fhClusterEtaPhi->Scale(1.0/(fhClusterEtaPhi->GetBinWidth(1)));
-    fhJetPtEMCal->Scale(1.0/(fhJetPtEMCal->GetBinWidth(1)));
-    fhJetPtEMCalAreaCut->Scale(1.0/(fhJetPtEMCalAreaCut->GetBinWidth(1)));
-    fhJetPtEMCalAreaCutSignal->Scale(1.0/(fhJetPtEMCalAreaCutSignal->GetBinWidth(1)));
-    fhJetPtTPC->Scale(1.0/(fhJetPtTPC->GetBinWidth(1)));
-    fhJetPtTPCAreaCut->Scale(1.0/(fhJetPtTPCAreaCut->GetBinWidth(1)));
-    fhJetTPtRhoTotal->Scale(1.0/(fhJetTPtRhoTotal->GetBinWidth(1)));
-    fhJetTPtRhoTotalSignal->Scale(1.0/(fhJetTPtRhoTotalSignal->GetBinWidth(1)));
-    fhJetTPtRhoNoLeading->Scale(1.0/(fhJetTPtRhoNoLeading->GetBinWidth(1)));
-    fhJetTPtRhoNoLeadingSignal->Scale(1.0/(fhJetTPtRhoNoLeadingSignal->GetBinWidth(1)));
-    fhJetTrigR1A->Scale(1.0/(fhJetTrigR1A->GetBinWidth(1)));
-    fhJetTPt1B->Scale(1.0/(fhJetTPt1B->GetBinWidth(1)));
-    fhJetTPt1BSignal->Scale(1.0/(fhJetTPt1BSignal->GetBinWidth(1)));
-    fhEMCalBckg1B->Scale(1.0/(fhEMCalBckg1B->GetBinWidth(1)));
-    fhRho1B->Scale(1.0/(fhRho1B->GetBinWidth(1)));
-    fhJetTPt1C->Scale(1.0/(fhJetTPt1C->GetBinWidth(1)));
-    fhRho1C->Scale(1.0/(fhRho1C->GetBinWidth(1)));
-    fhEMCalBckg1C->Scale(1.0/(fhEMCalBckg1C->GetBinWidth(1)));
-    fhEMCalJet2A->Scale(1.0/(fhEMCalJet2A->GetBinWidth(1)));
-    fhJetTPt2B->Scale(1.0/(fhJetTPt2B->GetBinWidth(1)));
-    fhEMCalBckg2B->Scale(1.0/(fhEMCalBckg2B->GetBinWidth(1)));
-    fhRho2B->Scale(1.0/(fhRho2B->GetBinWidth(1)));
-    fhJetConstituentPt->Scale(1.0/(fhJetConstituentPt->GetBinWidth(1)));
-    fhDeltaRho01->Scale(1.0/fhDeltaRho01->GetBinWidth(1));
-    fhRhoCenTotal->Scale(1.0);
-    fhRhoCenNoLeading->Scale(1.0);
-
-    // These histograms should be ascaled by the number of events where the TPC is switched on. (fnEvents+fnEventsCharged)
-    fhTrackPt->Scale(1.0/(fhTrackPt->GetBinWidth(1)));
-    fhTrackEta->Scale(1.0/(fhTrackEta->GetBinWidth(1)));
-    fhTrackPhi->Scale(1.0/(fhTrackPhi->GetBinWidth(1)));
-    fhTrackEtaPhi->Scale(1.0/(fhTrackEtaPhi->GetBinWidth(1)));
-    fhChargedJetPt->Scale(1.0/(fhChargedJetPt->GetBinWidth(1)));
-    fhChargedJetPtAreaCut->Scale(1.0/(fhChargedJetPtAreaCut->GetBinWidth(1)));
-    fhJetTPt3->Scale(1.0/(fhJetTPt3->GetBinWidth(1)));
-    fhRho3->Scale(1.0/(fhRho3->GetBinWidth(1)));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
