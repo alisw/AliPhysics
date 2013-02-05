@@ -67,10 +67,6 @@ class AliITSUSimuParam : public TObject {
   Double_t LorentzAngleElectron(Double_t bz)                                 const;
   Double_t LorentzAngleHole(Double_t bz)                                     const;
   //
-  Double_t SigmaDiffusion3D(Double_t  l)                                     const;
-  Double_t SigmaDiffusion2D(Double_t l)                                      const;
-  Double_t SigmaDiffusion1D(Double_t l)                                      const;
-  //
   Int_t    GetNRespFunParams()                                               const {return fRespFunParam.GetEntriesFast();}
   const AliParamList* GetRespFunParams(Int_t i)                              const {return (const AliParamList*)fRespFunParam[i];}
   const AliParamList* FindRespFunParams(Int_t detId)                         const;
@@ -109,7 +105,6 @@ class AliITSUSimuParam : public TObject {
   UInt_t     fPixCouplOpt;     // Pix Coupling Option
   Double_t   fPixCouplCol;     // Pix Coupling parameter along the cols
   Double_t   fPixCouplRow;     // Pix Coupling parameter along the rows
-  Double_t   fPixEccDiff;      // Eccentricity (i.e. asymmetry parameter) in the  Gaussian diffusion for Pix  
   Bool_t     fPixLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in Pix
   Double_t   fPixLorentzHoleWeight;// Lorentz Angle is computed for Pix as average of Hole and Electron
   //                                    this parameter gives the relative weights between the two
