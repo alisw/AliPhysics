@@ -9,6 +9,9 @@
 #include "TString.h"
 
 #include "AliAnalysisTaskMuonHadronCorrelations.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliEventPoolManager.h"
 
 ClassImp(AliAnalysisTaskMuonHadronCorrelations)
 
@@ -17,8 +20,7 @@ ClassImp(AliAnalysisTaskMuonHadronCorrelations)
 AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() : 
   AliAnalysisTaskSE(), 
   fAOD(0x0),
-  fTracksCentralBarrel(0x0),
-  fTracksMuonArm(0x0),
+  fPoolMgr(0x0),
   fTrackCB(0x0),
   fTrackMA(0x0),
   fFilterBitCentralBarrel(0),
@@ -27,18 +29,14 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
   fMinRAbsMuon(0), 
   fMaxRAbsMuon(9999999999.),
   fTriggerMatchLevelMuon(0),
-  fTriggerWord(""),
-  fIsTriggerSet(kFALSE),
   fNbinsCent(1), 
   fNbinsPt(1),
   fCentAxis(0x0), 
-  fMultAxis(0x0),
   fPtAxis(0x0),
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
   fCentMethod(0),
-  fEvt(0),
   fOutputList(0x0)
 {
 
@@ -62,8 +60,7 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations() :
 AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(const char *name) : 
   AliAnalysisTaskSE(name), 
   fAOD(0x0),
-  fTracksCentralBarrel(0x0),
-  fTracksMuonArm(0x0),
+  fPoolMgr(0x0),
   fTrackCB(0x0),
   fTrackMA(0x0),
   fFilterBitCentralBarrel(0),
@@ -72,18 +69,14 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
   fMinRAbsMuon(0), 
   fMaxRAbsMuon(9999999999.),
   fTriggerMatchLevelMuon(0),
-  fTriggerWord(""),
-  fIsTriggerSet(kFALSE),
   fNbinsCent(1), 
   fNbinsPt(1),
   fCentAxis(0x0), 
-  fMultAxis(0x0),
   fPtAxis(0x0),
   fHistV0Multiplicity(0x0), 
   fHistITSMultiplicity(0x0),
   fHistCentrality(0x0),
   fCentMethod(0),
-  fEvt(0),
   fOutputList(0x0)
 {
 
@@ -108,23 +101,11 @@ AliAnalysisTaskMuonHadronCorrelations::AliAnalysisTaskMuonHadronCorrelations(con
 
 AliAnalysisTaskMuonHadronCorrelations::~AliAnalysisTaskMuonHadronCorrelations() {
   
-  delete fAOD;
-  delete fTrackCB;
-  delete fTrackMA;
-  
   delete fCentAxis;
   delete fPtAxis;
 
-  for (Int_t iCent=0; iCent<fNMaxBinsCentrality; iCent++) {
-    for (Int_t iPtBinCB=0; iPtBinCB<fNMaxBinsPt; iPtBinCB++) {
-      for (Int_t iPtBinMA=0; iPtBinMA<fNMaxBinsPt; iPtBinMA++) {
-	delete fHistDeltaPhi[iCent][iPtBinCB][iPtBinMA];
-	delete fHistDeltaPhiMix[iCent][iPtBinCB][iPtBinMA];
-      }
-    }
-    delete fHistNTracksCB_vs_NTracksMA[iCent];
-  }
-  
+  if (fOutputList  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+    delete fOutputList;
 }
 
 //====================================================================================================================================================
@@ -198,6 +179,14 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
   fOutputList -> Add(fHistITSMultiplicity);
   fOutputList -> Add(fHistCentrality);
 
+  const Int_t kNZvtxBins  = 10;
+  // bins for further buffers are shifted by 100 cm
+  Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10 };
+  Int_t nZvtxBins  = kNZvtxBins;
+  Double_t* zvtxbin = vertexBins;
+
+  fPoolMgr = new AliEventPoolManager(1000, 20000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nZvtxBins, zvtxbin);
+
   PostData(1, fOutputList); 
 
 }
@@ -205,8 +194,6 @@ void AliAnalysisTaskMuonHadronCorrelations::UserCreateOutputObjects() {
 //====================================================================================================================================================
 
 void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
-
-  AliDebug(2, Form("Single Event analysis : event %05d",fEvt));
 
   fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) return;  
@@ -216,27 +203,55 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
   
   fHistV0Multiplicity  -> Fill(GetV0Multiplicity());
   fHistITSMultiplicity -> Fill(GetITSMultiplicity());
-  
+
   Int_t centBin = GetCentBin();
   if (centBin<0) return;
-  
-  fTracksCentralBarrel = GetAcceptedTracksCentralBarrel(fAOD);
-  fTracksMuonArm       = GetAcceptedTracksMuonArm(fAOD);
-  
-  fHistNTracksCB_vs_NTracksMA[centBin] -> Fill(fTracksCentralBarrel->GetEntries(), fTracksMuonArm->GetEntries());
+  Double_t percentile = fAOD->GetCentrality()->GetCentralityPercentile(fCentMethod.Data());
+  fHistCentrality->Fill(percentile);
 
-  AliDebug(1, Form("Single Event analysis : event %05d, nTracksCB = %4d, nTracksMA = %4d",fEvt, fTracksCentralBarrel->GetEntries(), fTracksMuonArm->GetEntries()));
+  const AliVVertex* vertex = fAOD->GetPrimaryVertex();
+  Double_t zVtx = vertex->GetZ();
+  if (TMath::Abs(zVtx) > 10.) return;
   
-  for (Int_t iTrCB=0; iTrCB<fTracksCentralBarrel->GetEntriesFast(); iTrCB++) {
-    for (Int_t iTrMA=0; iTrMA<fTracksMuonArm->GetEntriesFast(); iTrMA++) {
-      fTrackCB = (AliAODTrack*) fTracksCentralBarrel -> At(iTrCB);
-      fTrackMA = (AliAODTrack*) fTracksMuonArm       -> At(iTrMA);
+  TObjArray *tracksMuonArm = GetAcceptedTracksMuonArm(fAOD);
+  if (tracksMuonArm->GetEntriesFast() == 0) {
+    delete tracksMuonArm;
+    return;
+  }
+  TObjArray *tracksCentralBarrel = GetAcceptedTracksCentralBarrel(fAOD);
+  
+  fHistNTracksCB_vs_NTracksMA[centBin] -> Fill(tracksCentralBarrel->GetEntries(), tracksMuonArm->GetEntries());
+
+  AliDebug(1, Form("Single Event analysis : nTracksCB = %4d, nTracksMA = %4d", tracksCentralBarrel->GetEntries(), tracksMuonArm->GetEntries()));
+
+  // Same event  
+  for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
+    fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
+    for (Int_t iTrCB=0; iTrCB<tracksCentralBarrel->GetEntriesFast(); iTrCB++) {
+      fTrackCB = (AliAODTrack*) tracksCentralBarrel -> At(iTrCB);
       FillHistograms(centBin, kSingleEvent);
     }
   }
 
-  delete fTracksCentralBarrel;
-  delete fTracksMuonArm;
+  // Mixed event
+  {
+    AliEventPool* pool = fPoolMgr->GetEventPool(percentile, zVtx);
+    //pool->PrintInfo();
+    if (pool->IsReady() || pool->NTracksInPool() > 2000 || pool->GetCurrentNEvents() >= 5) 
+      for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
+	for (Int_t iTrMA=0; iTrMA<tracksMuonArm->GetEntriesFast(); iTrMA++) {
+	  fTrackMA = (AliAODTrack*) tracksMuonArm->At(iTrMA);
+	  TObjArray *mixedTracks = pool->GetEvent(jMix);
+	  for (Int_t iTrCB=0; iTrCB<mixedTracks->GetEntriesFast(); iTrCB++) {
+	    fTrackCB = (AliAODTrack*) mixedTracks -> At(iTrCB);
+	    FillHistograms(centBin, kMixedEvent);
+	  }
+	}
+      }
+    pool->UpdatePool(tracksCentralBarrel);
+  }
+
+  delete tracksMuonArm;
 
   PostData(1, fOutputList); 
 
@@ -264,10 +279,9 @@ void AliAnalysisTaskMuonHadronCorrelations::FillHistograms(Int_t centrality, Int
 
 Bool_t AliAnalysisTaskMuonHadronCorrelations::IsTriggerFired() {
   
-  Bool_t v0and = ((fAOD->GetVZEROData()->GetV0ADecision()==1) && (fAOD->GetVZEROData()->GetV0CDecision()==1)); 
-  TString trigStr(fAOD->GetHeader()->GetFiredTriggerClasses());
-  return (trigStr.Contains(fTriggerWord) && v0and);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7); 
 
+  return isSelected;
 }
 
 //====================================================================================================================================================
@@ -282,11 +296,12 @@ Float_t AliAnalysisTaskMuonHadronCorrelations::GetV0Multiplicity() {
 
 //====================================================================================================================================================
 
-TClonesArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel(AliAODEvent *aodEvent) {
+TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel(AliAODEvent *aodEvent) {
 
   // fills the array of central barrel tracks that pass the cuts
 
-  TClonesArray *tracks = new TClonesArray("AliAODTrack");
+  TObjArray *tracks = new TObjArray;
+  tracks->SetOwner(kTRUE);
 
   Int_t nTracks = aodEvent->GetNTracks();
 
@@ -295,7 +310,7 @@ TClonesArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBar
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     track = aodEvent->GetTrack(iTrack);
     if (track->TestFilterBit(fFilterBitCentralBarrel) && TMath::Abs(track->Eta())<fMaxEtaCentralBarrel) {
-      new ((*tracks)[tracks->GetEntries()]) AliAODTrack(*track);
+      tracks->Add(new AliAODTrack(*track));
     }
   }
 
@@ -305,11 +320,12 @@ TClonesArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBar
 
 //====================================================================================================================================================
 
-TClonesArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAODEvent *aodEvent) {
+TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAODEvent *aodEvent) {
 
   // fills the array of muon tracks that pass the cuts
 
-  TClonesArray *tracks = new TClonesArray("AliAODTrack");
+  TObjArray *tracks = new TObjArray;
+  tracks->SetOwner(kFALSE);
 
   Int_t nTracks = aodEvent->GetNTracks();
 
@@ -318,7 +334,7 @@ TClonesArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(Al
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     track = aodEvent->GetTrack(iTrack);
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
-      new ((*tracks)[tracks->GetEntries()]) AliAODTrack(*track);
+      tracks->Add(new AliAODTrack(*track));
     }
   }
 
@@ -346,24 +362,6 @@ void AliAnalysisTaskMuonHadronCorrelations::SetCentBinning(Int_t nBins, Double_t
 
 //====================================================================================================================================================
 
-void AliAnalysisTaskMuonHadronCorrelations::SetMultBinning(Int_t nBins, Double_t *limits) {
-
-  if (nBins>fNMaxBinsCentrality) {
-    AliInfo(Form("WARNING : only %d centrality bins (out of the %d proposed) will be considered",fNMaxBinsCentrality,nBins));
-    nBins = fNMaxBinsCentrality;
-  }
-  if (nBins<=0) {
-    AliInfo("WARNING : at least one centrality bin must be considered");
-    nBins = 1;
-  }
-  
-  fNbinsCent = nBins;
-  fMultAxis  = new TAxis(fNbinsCent, limits);
-
-}
-
-//====================================================================================================================================================
-
 void AliAnalysisTaskMuonHadronCorrelations::SetPtBinning(Int_t nBins, Double_t *limits) {
 
   if (nBins>fNMaxBinsPt) {
@@ -383,27 +381,12 @@ void AliAnalysisTaskMuonHadronCorrelations::SetPtBinning(Int_t nBins, Double_t *
 //====================================================================================================================================================
 
 Int_t AliAnalysisTaskMuonHadronCorrelations::GetCentBin() {
-  
-  if (fCentMethod.CompareTo("V0M")==0) return GetMultBin();
-  if (fCentMethod.CompareTo("CL1")==0) return GetMultBin();
 
-  return -1;
-  
-}
+  Double_t percentile = fAOD->GetCentrality()->GetCentralityPercentile(fCentMethod.Data());
 
-//====================================================================================================================================================
-
-Int_t AliAnalysisTaskMuonHadronCorrelations::GetMultBin() {
-  
-  Double_t multiplicity = 0;
-  
-  if (fCentMethod.CompareTo("V0M")==0) multiplicity = GetV0Multiplicity();
-  if (fCentMethod.CompareTo("CL1")==0) multiplicity = GetITSMultiplicity();
-  
-  Int_t multBin = fMultAxis->FindBin(-1.*multiplicity);
-  if (0<multBin && multBin<=fNbinsCent) return multBin-1;
-  
-  return -1;
+  Int_t bin = fCentAxis->FindBin(percentile) - 1;
+  if (bin >= fNbinsCent) bin = -1;
+  return bin;
   
 }
 
@@ -411,7 +394,7 @@ Int_t AliAnalysisTaskMuonHadronCorrelations::GetMultBin() {
 
 Double_t AliAnalysisTaskMuonHadronCorrelations::GetITSMultiplicity() {
 
-  Double_t multiplicity = 0.5 * (fAOD->GetHeader()->GetNumberOfITSClusters(0) + fAOD->GetHeader()->GetNumberOfITSClusters(1));
+  Double_t multiplicity = fAOD->GetHeader()->GetNumberOfITSClusters(1);
 
   return multiplicity;
 

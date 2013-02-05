@@ -136,26 +136,14 @@ Bool_t RunAnalysisTaskMuonHadronCorrelations(Int_t runNumber = 188362, const cha
   gROOT->LoadMacro("AliAnalysisTaskMuonHadronCorrelations.cxx++g");
   AliAnalysisTaskMuonHadronCorrelations *task = new AliAnalysisTaskMuonHadronCorrelations("AliAnalysisTaskMuonHadronCorrelations");
 
-  task->SetTriggerWord("CINT5-B-");
-
   // Set analysis cuts   
   task->SetFilterBitCentralBarrel(7);  // -> 128
   task->SetMaxEtaCentralBarrel(1.0);
   task->SetTriggerMatchLevelMuon(1);
 
-  const Int_t nBinCent = 3;
-  Double_t centLimits[nBinCent+1] = {0., 20.,  60.,  100.};
+  const Int_t nBinCent = 4;
+  Double_t centLimits[nBinCent+1] = {0., 20., 40, 60., 100.};
   task->SetCentBinning(nBinCent, centLimits);
-
-  if (centMethod.CompareTo("V0M")==0) {
-    Double_t multLimits[nBinCent+1] = {-1000., -312., -136., 0.};
-    task->SetMultBinning(nBinCent, multLimits);
-  }
-
-  if (centMethod.CompareTo("CL1")==0) {
-    Double_t multLimits[nBinCent+1] = {-500., -119.,  -49., 0.};
-    task->SetMultBinning(nBinCent, multLimits);
-  }
 
   task->SetCentMethod(centMethod);
 
