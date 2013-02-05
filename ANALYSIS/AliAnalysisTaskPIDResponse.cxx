@@ -175,7 +175,7 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     fPIDResponse->SetCurrentFile(fileName.Data());
   }
 
-  if (!(prodInfo.IsMC())) {      // reco pass is needed only for data
+  if ( (prodInfo.IsMC() == kFALSE) || (fIsMC == kFALSE) ) {      // reco pass is needed only for data
     fRecoPass = prodInfo.GetRecoPass();
     if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
       TString fileName(file->GetName());
