@@ -125,6 +125,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fPropagateErrorAlsoFromNIT(kFALSE), 
  fCalculateCumulantsVsM(kFALSE),
  fCalculateAllCorrelationsVsM(kFALSE), 
+ fMultiplicityIsRefMultiplicity(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -705,6 +706,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fStorePhiDistributionForOneEvent = (Bool_t)fIntFlowFlags->GetBinContent(13);
  fFillMultipleControlHistograms = (Bool_t)fIntFlowFlags->GetBinContent(14); 
  fCalculateAllCorrelationsVsM = (Bool_t)fIntFlowFlags->GetBinContent(15);
+ fMultiplicityIsRefMultiplicity = (Bool_t)fIntFlowFlags->GetBinContent(16);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -981,6 +983,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
  Double_t dImQ2n = (*fImQ)(1,0);
  //Double_t dImQ3n = (*fImQ)(2,0);
  //Double_t dImQ4n = (*fImQ)(3,0);
+
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
         
  //                                  *************************************************************
  //                                  **** corrections for non-uniform acceptance (cos terms): ****
@@ -1010,7 +1022,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   
   // final average non-weighted 1-particle correction (cos terms) for non-uniform acceptance for all events:
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(0.5,cosP1n,dMult);  
-  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[1][0]->Fill(dMult+0.5,cosP1n,dMult);}    
+  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[1][0]->Fill(dMultiplicityBin,cosP1n,dMult);}    
  } 
  
  // 2-particle:
@@ -1034,8 +1046,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(3.5,cosP2nM1n,dMult*(dMult-1));
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrectionTermsForNUAVsMPro[1][1]->Fill(dMult+0.5,cosP1nP1n,dMult*(dMult-1));  
-   fIntFlowCorrectionTermsForNUAVsMPro[1][3]->Fill(dMult+0.5,cosP2nM1n,dMult*(dMult-1));
+   fIntFlowCorrectionTermsForNUAVsMPro[1][1]->Fill(dMultiplicityBin,cosP1nP1n,dMult*(dMult-1));  
+   fIntFlowCorrectionTermsForNUAVsMPro[1][3]->Fill(dMultiplicityBin,cosP2nM1n,dMult*(dMult-1));
   }
  } 
  
@@ -1054,14 +1066,12 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   
   // final average non-weighted 3-particle correction (cos terms) for non-uniform acceptance for all events:
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(2.5,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));
-  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[1][2]->Fill(dMult+0.5,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));}  
+  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[1][2]->Fill(dMultiplicityBin,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));}  
  } 
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
 
-
 //=======================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
 {
@@ -1080,6 +1090,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
  //Double_t dImQ3n = (*fImQ)(2,0);
  //Double_t dImQ4n = (*fImQ)(3,0);
         
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
+
  //                                  *************************************************************
  //                                  **** corrections for non-uniform acceptance (sin terms): ****
  //                                  *************************************************************
@@ -1108,7 +1128,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   
   // final average non-weighted 1-particle correction (sin terms) for non-uniform acceptance for all events:   
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(0.5,sinP1n,dMult);  
-  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[0][0]->Fill(dMult+0.5,sinP1n,dMult);} 
+  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[0][0]->Fill(dMultiplicityBin,sinP1n,dMult);} 
  } 
  
  // 2-particle:
@@ -1131,8 +1151,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(3.5,sinP2nM1n,dMult*(dMult-1));  
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrectionTermsForNUAVsMPro[0][1]->Fill(dMult+0.5,sinP1nP1n,dMult*(dMult-1));  
-   fIntFlowCorrectionTermsForNUAVsMPro[0][3]->Fill(dMult+0.5,sinP2nM1n,dMult*(dMult-1));    
+   fIntFlowCorrectionTermsForNUAVsMPro[0][1]->Fill(dMultiplicityBin,sinP1nP1n,dMult*(dMult-1));  
+   fIntFlowCorrectionTermsForNUAVsMPro[0][3]->Fill(dMultiplicityBin,sinP2nM1n,dMult*(dMult-1));    
   }
  } 
  
@@ -1151,7 +1171,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   
   // final average non-weighted 3-particle correction (sin terms) for non-uniform acceptance for all events:  
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(2.5,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));
-  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[0][2]->Fill(dMult+0.5,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));}  
+  if(fCalculateCumulantsVsM){fIntFlowCorrectionTermsForNUAVsMPro[0][2]->Fill(dMultiplicityBin,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));}  
  } 
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
@@ -1609,7 +1629,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",15,0,15);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",16,0,16);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.04);
@@ -1630,6 +1650,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(13,"fStorePhiDistributionForOneEvent");
  fIntFlowFlags->GetXaxis()->SetBinLabel(14,"fFillMultipleControlHistograms");
  fIntFlowFlags->GetXaxis()->SetBinLabel(15,"Calculate all correlations vs M");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(16,"fMultiplicityIsRefMultiplicity");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -1727,6 +1748,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowCorrelationsVsMPro[ci]->Sumw2();                                                                                       
    fIntFlowCorrelationsVsMPro[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
    fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
    fIntFlowProfiles->Add(fIntFlowCorrelationsVsMPro[ci]);
    // average squared correlations <<2>^2>, <<4>^2>, <<6>^2> and <<8>^2> versus multiplicity for all events:  
    TString intFlowSquaredCorrelationsVsMProName = "fIntFlowSquaredCorrelationsVsMPro";
@@ -1737,6 +1759,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    fIntFlowSquaredCorrelationsVsMPro[ci]->Sumw2();                                                                                              
    fIntFlowSquaredCorrelationsVsMPro[ci]->GetYaxis()->SetTitle(squaredCorrelationFlag[ci].Data());
    fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowSquaredCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
    fIntFlowProfiles->Add(fIntFlowSquaredCorrelationsVsMPro[ci]);
   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index  
  } // end of if(fCalculateCumulantsVsM)
@@ -1820,237 +1843,79 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   // 2-p correlations vs M:  
   fIntFlowCorrelationsAllVsMPro[0] = new TProfile("two1n1n","#LT#LT2#GT#GT_{n|n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[0]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[0]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[0]);  
   fIntFlowCorrelationsAllVsMPro[1] = new TProfile("two2n2n","#LT#LT2#GT#GT_{2n|2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[1]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[1]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[1]);
   fIntFlowCorrelationsAllVsMPro[2] = new TProfile("two3n3n","#LT#LT2#GT#GT_{3n|3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[2]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[2]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[2]);
   fIntFlowCorrelationsAllVsMPro[3] = new TProfile("two4n4n","#LT#LT2#GT#GT_{4n|4n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[3]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[3]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[3]);
   // 3-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[5] = new TProfile("three2n1n1n","#LT#LT3#GT#GT_{2n|n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[5]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[5]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[5]);
   fIntFlowCorrelationsAllVsMPro[6] = new TProfile("three3n2n1n","#LT#LT3#GT#GT_{3n|2n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[6]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[6]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[6]);
   fIntFlowCorrelationsAllVsMPro[7] = new TProfile("three4n2n2n","#LT#LT3#GT#GT_{4n|2n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[7]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[7]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[7]);
   fIntFlowCorrelationsAllVsMPro[8] = new TProfile("three4n3n1n","#LT#LT3#GT#GT_{4n|3n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[8]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[8]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[8]);
   // 4-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[10] = new TProfile("four1n1n1n1n","#LT#LT4#GT#GT_{n,n|n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[10]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[10]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[10]);
   fIntFlowCorrelationsAllVsMPro[11] = new TProfile("four2n1n2n1n","#LT#LT4#GT#GT_{2n,n|2n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[11]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[11]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[11]);
   fIntFlowCorrelationsAllVsMPro[12] = new TProfile("four2n2n2n2n","#LT#LT4#GT#GT_{2n,2n|2n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[12]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[12]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[12]);
   fIntFlowCorrelationsAllVsMPro[13] = new TProfile("four3n1n1n1n","#LT#LT4#GT#GT_{3n|n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[13]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[13]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[13]);
   fIntFlowCorrelationsAllVsMPro[14] = new TProfile("four3n1n3n1n","#LT#LT4#GT#GT_{3n,n|3n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[14]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[14]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[14]);
   fIntFlowCorrelationsAllVsMPro[15] = new TProfile("four3n1n2n2n","#LT#LT4#GT#GT_{3n,n|2n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[15]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[15]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[15]);
   fIntFlowCorrelationsAllVsMPro[16] = new TProfile("four4n2n1n1n","#LT#LT4#GT#GT_{4n|2n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[16]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[16]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[16]);
   // 5-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[18] = new TProfile("five2n1n1n1n1n","#LT#LT5#GT#GT_{2n,n|n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[18]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[18]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[18]);
   fIntFlowCorrelationsAllVsMPro[19] = new TProfile("five2n2n2n1n1n","#LT#LT5#GT#GT_{2n,2n|2n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[19]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[19]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[19]);
   fIntFlowCorrelationsAllVsMPro[20] = new TProfile("five3n1n2n1n1n","#LT#LT5#GT#GT_{3n,n|2n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[20]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[20]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[20]);
   fIntFlowCorrelationsAllVsMPro[21] = new TProfile("five4n1n1n1n1n","#LT#LT5#GT#GT_{4n|n,n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[21]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[21]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[21]);
   // 6-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[23] = new TProfile("six1n1n1n1n1n1n","#LT#LT6#GT#GT_{n,n,n|n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[23]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[23]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[23]);
   fIntFlowCorrelationsAllVsMPro[24] = new TProfile("six2n1n1n2n1n1n","#LT#LT6#GT#GT_{2n,n,n|2n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[24]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[24]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[24]);
   fIntFlowCorrelationsAllVsMPro[25] = new TProfile("six2n2n1n1n1n1n","#LT#LT6#GT#GT_{2n,2n|n,n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[25]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[25]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[25]);
   fIntFlowCorrelationsAllVsMPro[26] = new TProfile("six3n1n1n1n1n1n","#LT#LT6#GT#GT_{3n,n|n,n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[26]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[26]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[26]);
   // 7-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[28] = new TProfile("seven2n1n1n1n1n1n1n","#LT#LT7#GT#GT_{2n,n,n|n,n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[28]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[28]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[28]);
   // 8-p correlations vs M:
   fIntFlowCorrelationsAllVsMPro[30] = new TProfile("eight1n1n1n1n1n1n1n1n","#LT#LT8#GT#GT_{n,n,n,n|n,n,n,n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[30]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[30]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[30]);
   // EXTRA correlations vs M for v3{5} study (to be improved - put them in a right order somewhere):
   fIntFlowCorrelationsAllVsMPro[32] = new TProfile("four4n2n3n3n","#LT#LT4#GT#GT_{4n,2n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[32]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[32]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[32]);
   fIntFlowCorrelationsAllVsMPro[33] = new TProfile("five3n3n2n2n2n","#LT#LT5#GT#GT_{3n,3n|2n,2n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[33]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[33]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[33]);
   // EXTRA correlations vs M for Teaney-Yan study (to be improved - put them in a right order somewhere):
   fIntFlowCorrelationsAllVsMPro[34] = new TProfile("two5n5n","#LT#LT2#GT#GT_{5n|5n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[34]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[34]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[34]);  
   fIntFlowCorrelationsAllVsMPro[35] = new TProfile("two6n6n","#LT#LT2#GT#GT_{6n|6n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[35]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[35]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[35]);  
   fIntFlowCorrelationsAllVsMPro[36] = new TProfile("three5n3n2n","#LT#LT3#GT#GT_{5n|3n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[36]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[36]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[36]); 
   fIntFlowCorrelationsAllVsMPro[37] = new TProfile("three5n4n1n","#LT#LT3#GT#GT_{5n|4n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[37]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[37]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[37]);
   fIntFlowCorrelationsAllVsMPro[38] = new TProfile("three6n3n3n","#LT#LT3#GT#GT_{6n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[38]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[38]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[38]);  
   fIntFlowCorrelationsAllVsMPro[39] = new TProfile("three6n4n2n","#LT#LT3#GT#GT_{6n|4n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[39]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[39]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[39]);
   fIntFlowCorrelationsAllVsMPro[40] = new TProfile("three6n5n1n","#LT#LT3#GT#GT_{6n|5n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[40]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[40]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[40]);
   fIntFlowCorrelationsAllVsMPro[41] = new TProfile("four6n3n2n1n","#LT#LT4#GT#GT_{6n|3n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[41]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[41]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[41]);
   fIntFlowCorrelationsAllVsMPro[42] = new TProfile("four3n2n3n2n","#LT#LT4#GT#GT_{3n,2n|3n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[42]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[42]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[42]);
   fIntFlowCorrelationsAllVsMPro[43] = new TProfile("four4n1n3n2n","#LT#LT4#GT#GT_{4n,1n|3n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[43]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[43]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[43]);
   fIntFlowCorrelationsAllVsMPro[44] = new TProfile("four3n3n3n3n","#LT#LT4#GT#GT_{3n,3n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[44]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[44]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[44]);
   fIntFlowCorrelationsAllVsMPro[45] = new TProfile("four4n2n3n3n","#LT#LT4#GT#GT_{4n,2n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[45]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[45]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[45]);
   fIntFlowCorrelationsAllVsMPro[46] = new TProfile("four5n1n3n3n","#LT#LT4#GT#GT_{5n,1n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[46]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[46]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[46]);
   fIntFlowCorrelationsAllVsMPro[47] = new TProfile("four4n2n4n2n","#LT#LT4#GT#GT_{4n,2n|4n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[47]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[47]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[47]);
   fIntFlowCorrelationsAllVsMPro[48] = new TProfile("four5n1n4n2n","#LT#LT4#GT#GT_{5n,1n|4n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[48]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[48]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[48]);
   fIntFlowCorrelationsAllVsMPro[49] = new TProfile("four5n3n1n1n","#LT#LT4#GT#GT_{5n|3n,1n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[49]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[49]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[49]);
   fIntFlowCorrelationsAllVsMPro[50] = new TProfile("four5n2n2n1n","#LT#LT4#GT#GT_{5n|2n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[50]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[50]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[50]);
   fIntFlowCorrelationsAllVsMPro[51] = new TProfile("four5n1n5n1n","#LT#LT4#GT#GT_{5n,1n|5n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[51]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[51]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[51]);
   fIntFlowCorrelationsAllVsMPro[52] = new TProfile("five3n3n3n2n1n","#LT#LT5#GT#GT_{3n,3n|3n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[52]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[52]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[52]);
   fIntFlowCorrelationsAllVsMPro[53] = new TProfile("five4n2n3n2n1n","#LT#LT5#GT#GT_{4n,2n|3n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[53]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[53]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[53]);
   fIntFlowCorrelationsAllVsMPro[54] = new TProfile("five3n2n3n1n1n","#LT#LT5#GT#GT_{3n,2n|3n,1n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[54]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[54]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[54]);
   fIntFlowCorrelationsAllVsMPro[55] = new TProfile("five3n2n2n2n1n","#LT#LT5#GT#GT_{3n,2n|2n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[55]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[55]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[55]);
   fIntFlowCorrelationsAllVsMPro[56] = new TProfile("five5n1n3n2n1n","#LT#LT5#GT#GT_{5n,1n|3n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[56]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[56]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[56]);
   fIntFlowCorrelationsAllVsMPro[57] = new TProfile("six3n2n1n3n2n1n","#LT#LT6#GT#GT_{3n,2n,1n|3n,2n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[57]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[57]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[57]);  
   fIntFlowCorrelationsAllVsMPro[58] = new TProfile("four6n4n1n1n","#LT#LT4#GT#GT_{6n|4n,1n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[58]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[58]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[58]);
   fIntFlowCorrelationsAllVsMPro[59] = new TProfile("four6n2n2n2n","#LT#LT4#GT#GT_{6n|2n,2n,2n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[59]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[59]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[59]);
   fIntFlowCorrelationsAllVsMPro[60] = new TProfile("five6n2n2n1n1n","#LT#LT5#GT#GT_{6n|2n,2n,1n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[60]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[60]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[60]);
   fIntFlowCorrelationsAllVsMPro[61] = new TProfile("five4n1n1n3n3n","#LT#LT5#GT#GT_{4n,1n,1n|3n,3n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[61]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[61]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[61]);
   fIntFlowCorrelationsAllVsMPro[62] = new TProfile("six3n3n2n2n1n1n","#LT#LT6#GT#GT_{3n,3n|2n,2n,1n,1n}",fnBinsMult,fMinMult,fMaxMult);
-  fIntFlowCorrelationsAllVsMPro[62]->Sumw2();
-  fIntFlowCorrelationsAllVsMPro[62]->GetXaxis()->SetTitle("M");  
-  fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[62]);
+  for(Int_t n=0;n<63;n++)
+  {
+   if(fIntFlowCorrelationsAllVsMPro[n])
+   {
+    fIntFlowCorrelationsAllVsMPro[n]->Sumw2();
+    fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("M");  
+    if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsAllVsMPro[n]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}  
+    fIntFlowAllCorrelationsVsM->Add(fIntFlowCorrelationsAllVsMPro[n]);
+   } // end of if(fIntFlowCorrelationsAllVsMPro[n])
+  } // end of for(Int_t n=0;n<63;n++)
  } // end of if(fCalculateAllCorrelationsVsM)
  // when particle weights are used some extra correlations appear:
  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights) 
@@ -2094,6 +1959,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                           Form("%s versus multiplicity",productFlag[pi].Data()),
                                                           fnBinsMult,fMinMult,fMaxMult);             
    fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
    fIntFlowProfiles->Add(fIntFlowProductOfCorrelationsVsMPro[pi]);
   } // end of for(Int_t pi=0;pi<6;pi++)
  } // end of if(fCalculateCumulantsVsM) 
@@ -2188,6 +2054,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                               fnBinsMult,fMinMult,fMaxMult);                                            
    fIntFlowCorrelationsVsMHist[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
    fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
    fIntFlowResults->Add(fIntFlowCorrelationsVsMHist[ci]);
   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index   
  } // end of if(fCalculateCumulantsVsM) 
@@ -2311,6 +2178,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                          fnBinsMult,fMinMult,fMaxMult);
    fIntFlowCovariancesVsM[ci]->GetYaxis()->SetTitle(covarianceFlag[ci].Data());
    fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
    fIntFlowResults->Add(fIntFlowCovariancesVsM[ci]);
   }
  } // end of if(fCalculateCumulantsVsM) 
@@ -2330,7 +2198,8 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                        Form("%s vs multiplicity",sumFlag[power][si].Data()),
                                                        fnBinsMult,fMinMult,fMaxMult);    
     fIntFlowSumOfEventWeightsVsM[si][power]->GetYaxis()->SetTitle(sumFlag[power][si].Data());  
-    fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("M");  
+    fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("M"); 
+    if(fMultiplicityIsRefMultiplicity){fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");} 
     fIntFlowResults->Add(fIntFlowSumOfEventWeightsVsM[si][power]);
    } // end of for(Int_t power=0;power<2;power++)
   } // end of for(Int_t si=0;si<4;si++)   
@@ -2350,6 +2219,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
                                                         Form("%s versus multiplicity",sopowFlag[pi].Data()),
                                                         fnBinsMult,fMinMult,fMaxMult); 
    fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}
    fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetYaxis()->SetTitle(sopowFlag[pi].Data()); 
    fIntFlowResults->Add(fIntFlowSumOfProductOfEventWeightsVsM[pi]);
   } // end of for(Int_t pi=0;pi<6;pi++) 
@@ -2498,9 +2368,10 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   for(Int_t co=0;co<4;co++) // cumulant order
   {
    fIntFlowQcumulantsVsM[co] = new TH1D(Form("%s, %s",intFlowQcumulantsVsMName.Data(),cumulantFlag[co].Data()),
-                                        Form("%s vs multipicity",cumulantFlag[co].Data()),
+                                        Form("%s vs multiplicity",cumulantFlag[co].Data()),
                                         fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("M");                                     
+   fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("M"); 
+   if(fMultiplicityIsRefMultiplicity){fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                    
    fIntFlowQcumulantsVsM[co]->GetYaxis()->SetTitle(cumulantFlag[co].Data());  
    fIntFlowResults->Add(fIntFlowQcumulantsVsM[co]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
@@ -2540,9 +2411,10 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   for(Int_t co=0;co<4;co++) // cumulant order
   {
    fIntFlowVsM[co] = new TH1D(Form("%s, %s",intFlowVsMName.Data(),flowFlag[co].Data()),
-                              Form("%s vs multipicity",flowFlag[co].Data()),
+                              Form("%s vs multiplicity",flowFlag[co].Data()),
                               fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowVsM[co]->GetXaxis()->SetTitle("M");                                     
+   fIntFlowVsM[co]->GetXaxis()->SetTitle("M");
+   if(fMultiplicityIsRefMultiplicity){fIntFlowVsM[co]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                      
    fIntFlowVsM[co]->GetYaxis()->SetTitle(flowFlag[co].Data());  
    fIntFlowResults->Add(fIntFlowVsM[co]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
@@ -2566,9 +2438,10 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   for(Int_t ci=0;ci<4;ci++) // correlation index
   {
    fIntFlowDetectorBiasVsM[ci] = new TH1D(Form("%s for %s",intFlowDetectorBiasVsMName.Data(),cumulantFlag[ci].Data()),
-                                          Form("Quantifying detector bias for %s vs multipicity",cumulantFlag[ci].Data()),
+                                          Form("Quantifying detector bias for %s vs multiplicity",cumulantFlag[ci].Data()),
                                           fnBinsMult,fMinMult,fMaxMult);
-   fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("M");                                     
+   fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("M");    
+   if(fMultiplicityIsRefMultiplicity){fIntFlowDetectorBiasVsM[ci]->GetXaxis()->SetTitle("Reference multiplicity (from ESD)");}                                 
    fIntFlowDetectorBiasVsM[ci]->GetYaxis()->SetTitle("#frac{corrected}{measured}");  
    fIntFlowResults->Add(fIntFlowDetectorBiasVsM[ci]);                                    
   } // end of for(Int_t co=0;co<4;co++) // cumulant order
@@ -3508,6 +3381,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t dImQ4n = (*fImQ)(3,0);
  Double_t dImQ5n = (*fImQ)(4,0); 
  Double_t dImQ6n = (*fImQ)(5,0);
+
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
   
  // Real parts of expressions involving various combinations of Q-vectors which appears
  // simultaneously in several equations for multiparticle correlations bellow: 
@@ -3712,15 +3595,15 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(0.5,two1n1n*two1n1n,mWeight2p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[0]->Fill(dMult+0.5,two1n1n,mWeight2p);
-   fIntFlowSquaredCorrelationsVsMPro[0]->Fill(dMult+0.5,two1n1n*two1n1n,mWeight2p);
+   fIntFlowCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n,mWeight2p);
+   fIntFlowSquaredCorrelationsVsMPro[0]->Fill(dMultiplicityBin,two1n1n*two1n1n,mWeight2p);
   } 
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[0]->Fill(dMult+0.5,two1n1n,mWeight2p);
-   fIntFlowCorrelationsAllVsMPro[1]->Fill(dMult+0.5,two2n2n,mWeight2p);
-   fIntFlowCorrelationsAllVsMPro[2]->Fill(dMult+0.5,two3n3n,mWeight2p);
-   fIntFlowCorrelationsAllVsMPro[3]->Fill(dMult+0.5,two4n4n,mWeight2p);
+   fIntFlowCorrelationsAllVsMPro[0]->Fill(dMultiplicityBin,two1n1n,mWeight2p);
+   fIntFlowCorrelationsAllVsMPro[1]->Fill(dMultiplicityBin,two2n2n,mWeight2p);
+   fIntFlowCorrelationsAllVsMPro[2]->Fill(dMultiplicityBin,two3n3n,mWeight2p);
+   fIntFlowCorrelationsAllVsMPro[3]->Fill(dMultiplicityBin,two4n4n,mWeight2p);
   }  
  } // end of if(dMult>1)
  
@@ -3758,10 +3641,10 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 3-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[5]->Fill(dMult+0.5,three2n1n1n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[6]->Fill(dMult+0.5,three3n2n1n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[7]->Fill(dMult+0.5,three4n2n2n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[8]->Fill(dMult+0.5,three4n3n1n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[5]->Fill(dMultiplicityBin,three2n1n1n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[6]->Fill(dMultiplicityBin,three3n2n1n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[7]->Fill(dMultiplicityBin,three4n2n2n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[8]->Fill(dMultiplicityBin,three4n3n1n,dMult*(dMult-1.)*(dMult-2.));
   }    
  } // end of if(dMult>2)
  
@@ -3828,13 +3711,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 4-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[10]->Fill(dMult+0.5,four1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[11]->Fill(dMult+0.5,four2n1n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[12]->Fill(dMult+0.5,four2n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[13]->Fill(dMult+0.5,four3n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[14]->Fill(dMult+0.5,four3n1n3n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[15]->Fill(dMult+0.5,four3n1n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[16]->Fill(dMult+0.5,four4n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[10]->Fill(dMultiplicityBin,four1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[11]->Fill(dMultiplicityBin,four2n1n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[12]->Fill(dMultiplicityBin,four2n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[13]->Fill(dMultiplicityBin,four3n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[14]->Fill(dMultiplicityBin,four3n1n3n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[15]->Fill(dMultiplicityBin,four3n1n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[16]->Fill(dMultiplicityBin,four4n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
   }       
   // Store separetately <4>:
   fIntFlowCorrelationsEBE->SetBinContent(2,four1n1n1n1n); // <4>
@@ -3855,8 +3738,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(1.5,four1n1n1n1n*four1n1n1n1n,mWeight4p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[1]->Fill(dMult+0.5,four1n1n1n1n,mWeight4p);
-   fIntFlowSquaredCorrelationsVsMPro[1]->Fill(dMult+0.5,four1n1n1n1n*four1n1n1n1n,mWeight4p);
+   fIntFlowCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n,mWeight4p);
+   fIntFlowSquaredCorrelationsVsMPro[1]->Fill(dMultiplicityBin,four1n1n1n1n*four1n1n1n1n,mWeight4p);
   }   
  } // end of if(dMult>3)
 
@@ -3912,10 +3795,10 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 5-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[18]->Fill(dMult+0.5,five2n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[19]->Fill(dMult+0.5,five2n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[20]->Fill(dMult+0.5,five3n1n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[21]->Fill(dMult+0.5,five4n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[18]->Fill(dMultiplicityBin,five2n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[19]->Fill(dMultiplicityBin,five2n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[20]->Fill(dMultiplicityBin,five3n1n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[21]->Fill(dMultiplicityBin,five4n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   }    
  } // end of if(dMult>4)
     
@@ -3978,10 +3861,10 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 6-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[23]->Fill(dMult+0.5,six1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
-   fIntFlowCorrelationsAllVsMPro[24]->Fill(dMult+0.5,six2n1n1n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
-   fIntFlowCorrelationsAllVsMPro[25]->Fill(dMult+0.5,six2n2n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
-   fIntFlowCorrelationsAllVsMPro[26]->Fill(dMult+0.5,six3n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[23]->Fill(dMultiplicityBin,six1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[24]->Fill(dMultiplicityBin,six2n1n1n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[25]->Fill(dMultiplicityBin,six2n2n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[26]->Fill(dMultiplicityBin,six3n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
   }    
   // Store separetately <6>:
   fIntFlowCorrelationsEBE->SetBinContent(3,six1n1n1n1n1n1n); // <6>
@@ -4002,8 +3885,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(2.5,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[2]->Fill(dMult+0.5,six1n1n1n1n1n1n,mWeight6p);
-   fIntFlowSquaredCorrelationsVsMPro[2]->Fill(dMult+0.5,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
+   fIntFlowCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n,mWeight6p);
+   fIntFlowSquaredCorrelationsVsMPro[2]->Fill(dMultiplicityBin,six1n1n1n1n1n1n*six1n1n1n1n1n1n,mWeight6p);
   }    
  } // end of if(dMult>5)
  
@@ -4037,7 +3920,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 7-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[28]->Fill(dMult+0.5,seven2n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)
+   fIntFlowCorrelationsAllVsMPro[28]->Fill(dMultiplicityBin,seven2n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)
                                                                               *(dMult-4.)*(dMult-5.)*(dMult-6.));
   }    
  } // end of if(dMult>6)
@@ -4075,7 +3958,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 8-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[30]->Fill(dMult+0.5,eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)
+   fIntFlowCorrelationsAllVsMPro[30]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)
                                                                                 *(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.));
   }     
   // Store separetately <8>:
@@ -4097,8 +3980,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowSquaredCorrelationsPro->Fill(3.5,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);  
   if(fCalculateCumulantsVsM)
   {
-   fIntFlowCorrelationsVsMPro[3]->Fill(dMult+0.5,eight1n1n1n1n1n1n1n1n,mWeight8p);
-   fIntFlowSquaredCorrelationsVsMPro[3]->Fill(dMult+0.5,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);
+   fIntFlowCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n,mWeight8p);
+   fIntFlowSquaredCorrelationsVsMPro[3]->Fill(dMultiplicityBin,eight1n1n1n1n1n1n1n1n*eight1n1n1n1n1n1n1n1n,mWeight8p);
   }    
  } // end of if(dMult>7) 
  
@@ -4117,7 +4000,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // Average 4-particle correlations vs M for all events:                
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[32]->Fill(dMult+0.5,four4n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[32]->Fill(dMultiplicityBin,four4n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
   }    
  } // end of if(dMult>3.)
  
@@ -4138,7 +4021,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(33.5,five3n3n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[33]->Fill(dMult+0.5,five3n3n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[33]->Fill(dMultiplicityBin,five3n3n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   }     
  } // end of if(dMult>4.)
  
@@ -4155,8 +4038,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(35.5,two6n6n,dMult*(dMult-1.)); 
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[34]->Fill(dMult+0.5,two5n5n,dMult*(dMult-1.));
-   fIntFlowCorrelationsAllVsMPro[35]->Fill(dMult+0.5,two6n6n,dMult*(dMult-1.));
+   fIntFlowCorrelationsAllVsMPro[34]->Fill(dMultiplicityBin,two5n5n,dMult*(dMult-1.));
+   fIntFlowCorrelationsAllVsMPro[35]->Fill(dMultiplicityBin,two6n6n,dMult*(dMult-1.));
   }       
  } // end of if(dMult>1)
  
@@ -4195,11 +4078,11 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(40.5,three6n5n1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n(6*phi1-5*phi2-1*phi3)>>
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[36]->Fill(dMult+0.5,three5n3n2n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[37]->Fill(dMult+0.5,three5n4n1n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[38]->Fill(dMult+0.5,three6n3n3n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[39]->Fill(dMult+0.5,three6n4n2n,dMult*(dMult-1.)*(dMult-2.));
-   fIntFlowCorrelationsAllVsMPro[40]->Fill(dMult+0.5,three6n5n1n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[36]->Fill(dMultiplicityBin,three5n3n2n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[37]->Fill(dMultiplicityBin,three5n4n1n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[38]->Fill(dMultiplicityBin,three6n3n3n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[39]->Fill(dMultiplicityBin,three6n4n2n,dMult*(dMult-1.)*(dMult-2.));
+   fIntFlowCorrelationsAllVsMPro[40]->Fill(dMultiplicityBin,three6n5n1n,dMult*(dMult-1.)*(dMult-2.));
   }       
  } // end of if(dMult>2)
  
@@ -4299,19 +4182,19 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(59.5,four6n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[41]->Fill(dMult+0.5,four6n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[42]->Fill(dMult+0.5,four3n2n3n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[43]->Fill(dMult+0.5,four4n1n3n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[44]->Fill(dMult+0.5,four3n3n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   //fIntFlowCorrelationsAllVsMPro[45]->Fill(dMult+0.5,four4n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[46]->Fill(dMult+0.5,four5n1n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[47]->Fill(dMult+0.5,four4n2n4n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[48]->Fill(dMult+0.5,four5n1n4n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[49]->Fill(dMult+0.5,four5n3n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[50]->Fill(dMult+0.5,four5n2n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[51]->Fill(dMult+0.5,four5n1n5n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[58]->Fill(dMult+0.5,four6n4n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
-   fIntFlowCorrelationsAllVsMPro[59]->Fill(dMult+0.5,four6n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[41]->Fill(dMultiplicityBin,four6n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[42]->Fill(dMultiplicityBin,four3n2n3n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[43]->Fill(dMultiplicityBin,four4n1n3n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[44]->Fill(dMultiplicityBin,four3n3n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   //fIntFlowCorrelationsAllVsMPro[45]->Fill(dMultiplicityBin,four4n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[46]->Fill(dMultiplicityBin,four5n1n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[47]->Fill(dMultiplicityBin,four4n2n4n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[48]->Fill(dMultiplicityBin,four5n1n4n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[49]->Fill(dMultiplicityBin,four5n3n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[50]->Fill(dMultiplicityBin,four5n2n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[51]->Fill(dMultiplicityBin,four5n1n5n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[58]->Fill(dMultiplicityBin,four6n4n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+   fIntFlowCorrelationsAllVsMPro[59]->Fill(dMultiplicityBin,four6n2n2n2n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
   }       
  } // end of if(dMult>3)
 
@@ -4415,13 +4298,13 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(61.5,five4n1n1n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[52]->Fill(dMult+0.5,five3n3n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[53]->Fill(dMult+0.5,five4n2n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[54]->Fill(dMult+0.5,five3n2n3n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[55]->Fill(dMult+0.5,five3n2n2n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[56]->Fill(dMult+0.5,five5n1n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[60]->Fill(dMult+0.5,five6n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
-   fIntFlowCorrelationsAllVsMPro[61]->Fill(dMult+0.5,five4n1n1n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[52]->Fill(dMultiplicityBin,five3n3n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[53]->Fill(dMultiplicityBin,five4n2n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[54]->Fill(dMultiplicityBin,five3n2n3n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[55]->Fill(dMultiplicityBin,five3n2n2n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[56]->Fill(dMultiplicityBin,five5n1n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[60]->Fill(dMultiplicityBin,five6n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+   fIntFlowCorrelationsAllVsMPro[61]->Fill(dMultiplicityBin,five4n1n1n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
   }         
  } // end of if(dMult>4)
 
@@ -4492,8 +4375,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   fIntFlowCorrelationsAllPro->Fill(62.5,six3n3n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
   if(fCalculateAllCorrelationsVsM)
   {
-   fIntFlowCorrelationsAllVsMPro[57]->Fill(dMult+0.5,six3n2n1n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
-   fIntFlowCorrelationsAllVsMPro[62]->Fill(dMult+0.5,six3n3n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[57]->Fill(dMultiplicityBin,six3n2n1n3n2n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
+   fIntFlowCorrelationsAllVsMPro[62]->Fill(dMultiplicityBin,six3n3n2n2n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.));
   }          
  } // end of if(dMult>5.)
  
@@ -12770,6 +12653,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
  // multiplicity:
  Double_t dMult = (*fSpk)(0,0);
  
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
+
  Int_t counter = 0;
  
  for(Int_t ci1=1;ci1<4;ci1++)
@@ -12784,7 +12677,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
    // products versus multiplicity:  // [0=<<2><4>>,1=<<2><6>>,2=<<2><8>>,3=<<4><6>>,4=<<4><8>>,5=<<6><8>>]
    if(fCalculateCumulantsVsM)
    {
-    fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMult+0.5, // to be improved: dMult => sum of weights ?
+    fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights ?
                                                        fIntFlowCorrelationsEBE->GetBinContent(ci1)*
                                                        fIntFlowCorrelationsEBE->GetBinContent(ci2),
                                                        fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
@@ -15683,6 +15576,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
  
  // multiplicity:
  Double_t dMult = (*fSpk)(0,0);
+
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
                         
  for(Int_t p=0;p<2;p++) // power-1
  {
@@ -15691,7 +15594,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
    fIntFlowSumOfEventWeights[p]->Fill(ci+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); 
    if(fCalculateCumulantsVsM)
    {
-    fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMult+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); // to be improved: dMult => sum of weights?
+    fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMultiplicityBin,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); // to be improved: dMult => sum of weights?
    }
   }
  }
@@ -15725,6 +15628,16 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
   
  // multiplicity:
  Double_t dMult = (*fSpk)(0,0);
+
+ // Multiplicity bin of an event (relevant for all histos vs M): 
+ Double_t dMultiplicityBin = 0.;
+ if(!fMultiplicityIsRefMultiplicity)
+ {
+  dMultiplicityBin = dMult+0.5;
+ } else
+   {
+    dMultiplicityBin = fReferenceMultiplicityEBE+0.5;
+   }
   
  Int_t counter = 0;
  
@@ -15737,7 +15650,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
                                             fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
    if(fCalculateCumulantsVsM)
    {                                                                                    
-    fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMult+0.5, // to be improved: dMult => sum of weights?
+    fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMultiplicityBin, // to be improved: dMult => sum of weights?
                                                          fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
                                                          fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
    } // end of if(fCalculateCumulantsVsM)
@@ -17280,6 +17193,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(12.5,(Int_t)fStorePhiDistributionForOneEvent); 
  fIntFlowFlags->Fill(13.5,(Int_t)fFillMultipleControlHistograms);  
  fIntFlowFlags->Fill(14.5,(Int_t)fCalculateAllCorrelationsVsM);  
+ fIntFlowFlags->Fill(15.5,(Int_t)fMultiplicityIsRefMultiplicity);  
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
 //=======================================================================================================================

@@ -61,7 +61,9 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};
   void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
-  Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;};   
+  Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;}; 
+  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
+  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};   
   void SetCalculateMixedHarmonics(Bool_t const cmh) {this->fCalculateMixedHarmonics = cmh;};
   Bool_t GetCalculateMixedHarmonics() const {return this->fCalculateMixedHarmonics;};   
   void SetCalculateMixedHarmonicsVsM(Bool_t const cmhvm) {this->fCalculateMixedHarmonicsVsM = cmhvm;};
@@ -113,7 +115,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fCalculateDiffFlowVsEta;        // if you set kFALSE only differential flow vs pt is calculated  
   Bool_t fStoreDistributions;            // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
-  Bool_t fCalculateAllCorrelationsVsM;   // calculate all correlations versus multiplicity     
+  Bool_t fCalculateAllCorrelationsVsM;   // calculate all correlations versus multiplicity   
+  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD  
   Bool_t fCalculateMixedHarmonics;       // calculate all mixed harmonics correlations     
   Bool_t fCalculateMixedHarmonicsVsM;    // calculate all mixed harmonics correlations versus multiplicity     
   Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     

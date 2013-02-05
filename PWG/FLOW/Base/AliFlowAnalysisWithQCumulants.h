@@ -257,6 +257,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
   void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
   Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;};   
+  void SetMultiplicityIsRefMultiplicity(Bool_t const mirm) {this->fMultiplicityIsRefMultiplicity = mirm;};
+  Bool_t GetMultiplicityIsRefMultiplicity() const {return this->fMultiplicityIsRefMultiplicity;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
@@ -542,6 +544,7 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotropic terms (not sure if resulting error then is correct - to be improved)
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
   Bool_t fCalculateAllCorrelationsVsM; // calculate all correlations versus multiplicity   
+  Bool_t fMultiplicityIsRefMultiplicity; // kFALSE = multiplicity is # of selected tracks; kTRUE = multiplicity is ref. mult from ESD     
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
@@ -670,7 +673,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
   
   // 7.) various:
-  TList *fVariousList; // list to hold various unclassified objects
+  TList *fVariousList; // list to hold various unclassified objects (TBI: what a crazy name.... )
   TH1D *fPhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
     
   // 8.) debugging and cross-checking:

@@ -92,6 +92,7 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fqMax(100.),
  fqNbins(10000),
  fStoreqDistributionVsMult(kFALSE),
+ fMultiplicityIsRefMultiplicity(kFALSE),
  fqDistributionVsMult(NULL),
  fMinMult(0.),
  fMaxMult(10000.),
@@ -238,18 +239,22 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
                                            
  // d) Fill the histogram for q-distribution and sum of particle weights:
  Double_t q = 0.; // q = Q\sqrt{sum of particle weights}                                         
- if(dSumOfParticleWeights > 0.)
+ if(dSumOfParticleWeights > 1.)
  {
   q = pow(dReQ*dReQ+dImQ*dImQ,0.5)/pow(dSumOfParticleWeights,0.5);
   fqDistribution->Fill(q,1.);
   fSumOfParticleWeights->Fill(dSumOfParticleWeights,1.);
-  if(fStoreqDistributionVsMult){fqDistributionVsMult->Fill(q,dSumOfParticleWeights);}
- } else
+  if(fStoreqDistributionVsMult)
+  {
+   if(!fMultiplicityIsRefMultiplicity)
    {
-    cout<<endl;
-    cout<<" WARNING (FQD::Make()): dSumOfParticleWeights == 0. !!!!"<<endl;
-    cout<<endl;
-   }
+    fqDistributionVsMult->Fill(q,dSumOfParticleWeights); 
+   } else
+     {
+      fqDistributionVsMult->Fill(q,anEvent->GetReferenceMultiplicity()); 
+     }
+  } // end of if(fStoreqDistributionVsMult)
+ }
 
 } // end of Make()
 
@@ -759,7 +764,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  TString fqDistributionName = "fqDistribution";
  fqDistributionName += fAnalysisLabel->Data();
  fqDistribution = new TH1D(Form("%s",fqDistributionName.Data()),"q-distribution",fqNbins,fqMin,fqMax);  
- fqDistribution->SetXTitle("q_{n}=|Q_{n}|/#sqrt{M}");
+ fqDistribution->SetXTitle(Form("q_{%d}=|Q_{%d}|/#sqrt{M}",fHarmonic,fHarmonic));
  fqDistribution->SetYTitle("Counts");
  fHistList->Add(fqDistribution); 
  // q-distribution vs multiplicity:
@@ -768,8 +773,9 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   TString fqDistributionVsMultName = "fqDistributionVsMult";
   fqDistributionVsMultName += fAnalysisLabel->Data();
   fqDistributionVsMult = new TH2D(Form("%s",fqDistributionVsMultName.Data()),"q-distribution vs M",fqNbins,fqMin,fqMax,fnBinsMult,fMinMult,fMaxMult);  
-  fqDistributionVsMult->GetXaxis()->SetTitle("q_{n}=|Q_{n}|/#sqrt{M}");
-  fqDistributionVsMult->GetYaxis()->SetTitle("multiplicity");
+  fqDistributionVsMult->GetXaxis()->SetTitle(Form("q_{%d}=|Q_{%d}|/#sqrt{M}",fHarmonic,fHarmonic));
+  fqDistributionVsMult->GetYaxis()->SetTitle("M");
+  if(fMultiplicityIsRefMultiplicity){fqDistributionVsMult->GetYaxis()->SetTitle("Reference multiplicity (from ESD)");} 
   fqDistributionVsMult->GetZaxis()->SetTitle("Counts");
   fHistList->Add(fqDistributionVsMult);
  } // end of if(fStoreqDistributionVsMult)
@@ -799,7 +805,6 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   // final results for integrated flow:
   fIntFlow[f] = new TH1D(Form("%s, %s",fIntFlowName.Data(),sigmaFlag[f].Data()),Form("Reference Flow (%s)",sigmaFlag[f].Data()),1,0,1);
   fIntFlow[f]->SetLabelSize(0.08);
-  (fIntFlow[f]->GetXaxis())->SetBinLabel(1,"v_{n}");
   fHistList->Add(fIntFlow[f]);
   // sigma^2:
   fSigma2[f] = new TH1D(Form("%s, %s",fSigma2Name.Data(),sigmaFlag[f].Data()),Form("#sigma^{2} (%s)",sigmaFlag[f].Data()),1,0,1);
@@ -819,17 +824,19 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  // Book profile fFittingParameters which will hold all fitting parameters:
  TString fFittingParametersName = "fFittingParameters";
  fFittingParametersName += fAnalysisLabel->Data(); 
- fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",9,0,9);
+ fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",11,0,11);
  fFittingParameters->SetLabelSize(0.05);
  (fFittingParameters->GetXaxis())->SetBinLabel(1,"treshold");
- (fFittingParameters->GetXaxis())->SetBinLabel(2,"starting v_{n}");
- (fFittingParameters->GetXaxis())->SetBinLabel(3,"min. v_{n}");
- (fFittingParameters->GetXaxis())->SetBinLabel(4,"max. v_{n}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(2,Form("starting v_{%d}",fHarmonic));
+ (fFittingParameters->GetXaxis())->SetBinLabel(3,Form("min. v_{%d}",fHarmonic));
+ (fFittingParameters->GetXaxis())->SetBinLabel(4,Form("max. v_{%d}",fHarmonic));
  (fFittingParameters->GetXaxis())->SetBinLabel(5,"starting #sigma^{2}");
  (fFittingParameters->GetXaxis())->SetBinLabel(6,"min. #sigma^{2}");
  (fFittingParameters->GetXaxis())->SetBinLabel(7,"max. #sigma^{2}");
  (fFittingParameters->GetXaxis())->SetBinLabel(8,"Final result is from #sigma^{2} fitted?"); 
  (fFittingParameters->GetXaxis())->SetBinLabel(9,"Print results on the screen?"); 
+ (fFittingParameters->GetXaxis())->SetBinLabel(10,"fStoreqDistributionVsMult"); 
+ (fFittingParameters->GetXaxis())->SetBinLabel(11,"fMultiplicityIsRefMultiplicity"); 
  fHistList->Add(fFittingParameters);
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
@@ -1037,6 +1044,8 @@ void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
  fFittingParameters->Fill(6.5,fSigma2Max);
  fFittingParameters->Fill(7.5,fFinalResultIsFromSigma2Fitted); 
  fFittingParameters->Fill(8.5,fPrintOnTheScreen); 
+ fFittingParameters->Fill(9.5,fStoreqDistributionVsMult); 
+ fFittingParameters->Fill(10.5,fMultiplicityIsRefMultiplicity); 
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
 
@@ -1055,5 +1064,7 @@ void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()
  fSigma2Max = fFittingParameters->GetBinContent(7);
  fFinalResultIsFromSigma2Fitted = (Bool_t)fFittingParameters->GetBinContent(8);
  fPrintOnTheScreen = (Bool_t)fFittingParameters->GetBinContent(9);
+ fStoreqDistributionVsMult = (Bool_t)fFittingParameters->GetBinContent(10);
+ fMultiplicityIsRefMultiplicity = (Bool_t)fFittingParameters->GetBinContent(11);
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()

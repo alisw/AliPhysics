@@ -56,6 +56,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fqMax(100.),
  fqNbins(10000),
  fStoreqDistributionVsMult(kFALSE),
+ fMultiplicityIsRefMultiplicity(kFALSE),
  fqDistributionVsMult(NULL),
  fMinMult(0.),
  fMaxMult(10000.),
@@ -92,6 +93,7 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fqMax(0.),
  fqNbins(0),
  fStoreqDistributionVsMult(kFALSE),
+ fMultiplicityIsRefMultiplicity(kFALSE),
  fqDistributionVsMult(NULL),
  fMinMult(0.),
  fMaxMult(0.),
@@ -131,6 +133,7 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
   fFQD->SetqMax(fqMax);
   fFQD->SetqNbins(fqNbins); 
   fFQD->SetStoreqDistributionVsMult(fStoreqDistributionVsMult);
+  fFQD->SetMultiplicityIsRefMultiplicity(fMultiplicityIsRefMultiplicity);
   fFQD->SetqDistributionVsMult(fqDistributionVsMult);
   fFQD->SetMinMult(fMinMult);
   fFQD->SetMaxMult(fMaxMult);
