@@ -31,6 +31,18 @@ AliFemtoK0Particle::AliFemtoK0Particle() :
  fDaughterID1(0),
  fDaughterID2(0),
  fK0(0),
+ fSideLeft(0),
+ fSideRight(0),
+ fSkipShared(0),
+ fV0Dca(0),
+ fDDDca(0),
+ fDecayLength(0),
+ fPosDca(0),
+ fNegDca(0),
+ fPosPt(0),
+ fNegPt(0),
+ fPosPhi(0),
+ fNegPhi(0),
  fXPos(),
  fXNeg(),
  fPPos(),
@@ -48,6 +60,18 @@ AliFemtoK0Particle::AliFemtoK0Particle(const AliFemtoK0Particle &obj) :
  fDaughterID1(obj.fDaughterID1),
  fDaughterID2(obj.fDaughterID2),
  fK0(obj.fK0),
+ fSideLeft(obj.fSideLeft),
+ fSideRight(obj.fSideRight),
+ fSkipShared(obj.fSkipShared),
+ fV0Dca(obj.fV0Dca),
+ fDDDca(obj.fDDDca),
+ fDecayLength(obj.fDecayLength),
+ fPosDca(obj.fPosDca),
+ fNegDca(obj.fNegDca),
+ fPosPt(obj.fPosPt),
+ fNegPt(obj.fNegPt),
+ fPosPhi(obj.fPosPhi),
+ fNegPhi(obj.fNegPhi),
  fXPos(),
  fXNeg(),
  fPPos(),
@@ -71,6 +95,18 @@ AliFemtoK0Particle &AliFemtoK0Particle::operator=(const AliFemtoK0Particle &obj)
  fDaughterID1 = obj.fDaughterID1;
  fDaughterID2 = obj.fDaughterID2;
  fK0 = obj.fK0;
+ fSideLeft = obj.fSideLeft;
+ fSideRight = obj.fSideRight;
+ fSkipShared = obj.fSkipShared;
+ fV0Dca = obj.fV0Dca;
+ fDDDca = obj.fDDDca;
+ fDecayLength = obj.fDecayLength;
+ fPosDca = obj.fPosDca;
+ fNegDca = obj.fNegDca;
+ fPosPt = obj.fPosPt;
+ fNegPt = obj.fNegPt;
+ fPosPhi = obj.fPosPhi;
+ fNegPhi = obj.fNegPhi;
  fXPos[0] = obj.fXPos[0];
  fXPos[1] = obj.fXPos[1];
  fXPos[2] = obj.fXPos[2];
