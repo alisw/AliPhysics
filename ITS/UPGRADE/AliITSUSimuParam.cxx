@@ -18,8 +18,35 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Implementation of the class to store the parameters used in   //
-// the simulation of SPD, SDD and SSD detectors                  //
-// Origin: F.Prino, Torino, prino@to.infn.it                     //
+// the simulation of ITS upgrade detectors                       //
+//                                                               //
+// On the fRespFunParam array content: it holds the AliParamList //
+// type objects with data for response simulation of type of     //
+// detector (e.g. Class/Segmentation) used in the Config.C       //
+// The convention is:                                            //
+// 1) AliParamList::GetUniqueID() defines detectorID (see header //
+// of the AliITSUGeomTGeo.h) for which these response data is    //
+// defined                                                       //
+//                                                               //
+// 2) AliParamList::GetID() defines the charge spread function   //
+// server by these data, for instance in case of Pixels these    //
+// are the functions aliased to enums kSpreadFunGauss2D... in    //
+// AliITSUSimulationPix.h                                        //
+//                                                               //
+// 3) Each detector class is free to interpred the content of    //
+// AliParamList. AliITSUSimulationPix, for instance requests that//
+// first AliITSUSimulationPix::kParamStart are reserved for some //
+// standard properties (like number of neighbours around the     //
+// pixel with the charge is injected to consider for the charge  //
+// spread (the values may be different for different finctions)  //
+//                                                               //
+//                                                               //
+//                                                               //
+//                                                               //
+//                                                               //
+//                                                               //
+//                                                               //
+//                                                               //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 #include "AliITSUSimuParam.h"
