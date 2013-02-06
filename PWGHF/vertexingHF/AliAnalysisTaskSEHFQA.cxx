@@ -202,63 +202,60 @@ void AliAnalysisTaskSEHFQA::Init(){
 
   //initialization
   if(fDebug > 1) printf("AnalysisTaskSEHFQA::Init() \n");
+  AliRDHFCuts *copycut = 0x0;
 
   switch(fDecayChannel){
   case 0:
     {
-      AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
     }
     break;
   case 1:
     {
-      AliRDHFCutsD0toKpi* copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
     }
     break;
   case 2:
     {
-      AliRDHFCutsDStartoKpipi* copycut=new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
     }
     break;
   case 3:
     {
-      AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
     }
     break;
   case 4:
     {
-      AliRDHFCutsD0toKpipipi* copycut=new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
     }
     break;
   case 5:
     {
-      AliRDHFCutsLctopKpi* copycut=new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
     }
     break;
   case kLambdactoV0:
     {
-      AliRDHFCutsLctoV0* copycut=new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fCuts)));
-      // Post the data
-      PostData(4,copycut);
+      copycut=new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fCuts)));
     }
     break;
-
   default:
-    return;
-  }
+    AliFatal("Bad initialization for the decay channe - Exiting...");
+    break;
+  }  
 
+  const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
+  if (copycut){
+    copycut->SetName(nameoutput);
+    
+    // Post the data
+    PostData(4,copycut);
+  }else{
+    AliFatal("Failing initializing AliRDHFCuts object - Exiting...");
+  }	
 
+  return;
 
 }
 
@@ -1154,12 +1151,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->GetWhyRejection()==1) {fNEntries->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
-    if(fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3) evSelbyCentrality=kFALSE; //rejected by centrality
-    if(fCuts->GetWhyRejection()==4) evSelByVertex=kFALSE; //rejected by vertex
-    if(fCuts->GetWhyRejection()==5) fNEntries->Fill(5);//tmp
-    if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
-    if(fCuts->GetWhyRejection()==7) { evSelByPS=kFALSE; }
+    if(fCuts->IsEventRejectedDueToPileupSPD()) {fNEntries->Fill(1); evselByPileup=kFALSE;}// rejected for pileup
+    if(fCuts->IsEventRejectedDueToCentrality()) evSelbyCentrality=kFALSE; //rejected by centrality
+    if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
+       fCuts->IsEventRejectedDueToVertexContributors() ||
+       fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){ 
+      evSelByVertex=kFALSE; 
+    }
+    if(fCuts->IsEventRejectedDueToTrigger()) fNEntries->Fill(5);//tmp
+    if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion() && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
+    if(fCuts->IsEventRejectedDuePhysicsSelection()) { evSelByPS=kFALSE; }
   }
   if(evSelected){
     TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");

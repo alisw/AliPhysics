@@ -107,6 +107,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out2name+=suffix;
   out3name+=suffix;
   out4name=cutsobjname;
+  out4name+=suffix;
   out5name+=suffix;
   out6name+=suffix;
   out7name+=suffix;
