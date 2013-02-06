@@ -111,3 +111,64 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* t
 
    return task;
 }
+
+
+AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString branch2 = "", TString branch3 = "", Int_t iTask = 0, Bool_t emb = kTRUE, Int_t eventClassMin = 0, Int_t eventClassMax = 4){
+
+   Printf("adding task jet response\n");
+
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if(!mgr){
+      ::Error("AddTaskJetResponseV2", "No analysis manager to connect to.");
+      return NULL;
+   }
+   if(!mgr->GetInputEventHandler()){
+      ::Error("AddTaskJetResponseV2", "This task requires an input event handler.");
+      return NULL;
+   }
+
+  
+
+   
+   AliAnalysisTaskJetResponseV2 *task = new AliAnalysisTaskJetResponseV2(Form("JetResponseV2_%d", iTask));
+   
+   Printf("Branch1: %s",branch1.Data());
+   Printf("Branch2: %s",branch2.Data());
+   Printf("Branch2: %s",branch3.Data());
+
+   task->SetBranchNames(branch1,branch2,branch3);
+   task->SetOfflineTrgMask(AliVEvent::kMB);
+
+   task->SetEvtClassMin(eventClassMin);
+   task->SetEvtClassMax(eventClassMax);
+   task->SetCentMin(0.);
+   task->SetCentMax(100.);
+
+   task->SetJetPtMin(0.);   // min jet pt is implicit a cut on delta pT!!
+
+   task->SetKeepJets(kTRUE);
+
+   //task->SetNMatchJets(1); // leading jets only
+
+
+   if(!emb){
+      task->SetIsPbPb(kFALSE);
+      task->SetJetPtFractionMin(0.01);
+      task->SetNMatchJets(999);
+   }
+
+   mgr->AddTask(task);
+
+
+   AliAnalysisDataContainer *coutputJetResponseV2 = mgr->CreateContainer(
+	Form("jetresponseV2_%s%s%s", branch1.Data(),branch2.Data(),branch3.Data()), 
+        TList::Class(), AliAnalysisManager::kOutputContainer,
+         Form("%s:PWG4_JetResponseV2_%s%s%s", AliAnalysisManager::GetCommonFileName(),branch1.Data(),branch2.Data(),branch3.Data()));
+
+   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
+   mgr->ConnectOutput(task, 1, coutputJetResponseV2);
+
+   return task;
+}
+
