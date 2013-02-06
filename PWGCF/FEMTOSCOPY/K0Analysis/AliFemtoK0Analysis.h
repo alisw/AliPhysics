@@ -49,7 +49,10 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
     kCentBins    = 16,
     kZVertexBins = 10,
     kEventsToMix =  5,
-    kMultLimit   = 300              //maximum number of v0s, array size
+    kMultLimit   = 300,              //maximum number of v0s, array size
+ 
+    ncthetabins = 36,
+    nphibins    = 72
   };
 
   int fEventCount;

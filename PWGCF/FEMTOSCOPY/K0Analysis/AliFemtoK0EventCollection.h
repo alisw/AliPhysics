@@ -37,6 +37,20 @@ class AliFemtoK0Particle  // Reconstructed K0s parameters needed for correlation
   short fDaughterID1;   //Daughter (pion) AODtrack ID
   short fDaughterID2;   //Daughter (pion) AODtrack ID
   bool fK0;             //if v0 has "good" K0 mass
+  bool fSideLeft;
+  bool fSideRight;
+  bool fSkipShared;
+  double fV0Dca;	//used in v0 selection process
+
+  //for single particle histograms
+  double fDDDca;	//daughter-daughter DCA
+  double fDecayLength; 	//v0 decay length
+  double fPosDca;	//positive daughter Dca to prim vert
+  double fNegDca;	//negative ""
+  double fPosPt; 	//positive daughter pt
+  double fNegPt;	//negative daughter pt
+  double fPosPhi;	//positive daughter phi
+  double fNegPhi;	//negative daughter phi
 
   //for separation
   double fXPos[3];      //Positive daughter position
