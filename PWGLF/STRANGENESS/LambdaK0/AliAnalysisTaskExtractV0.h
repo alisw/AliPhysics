@@ -63,7 +63,8 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetUseOnTheFly         (Bool_t lUseOnTheFly = kTRUE ) { fkUseOnTheFly = lUseOnTheFly; }
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
-
+  void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
+  
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
 				// your data member object is created on the worker nodes and streaming is not needed.
@@ -81,6 +82,9 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkUseOnTheFly; // if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
+  
+  Bool_t fkLightWeight; // if true, analysis output will exclude some non-fundamental
+                        // debugging information. This creates smaller output. 
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!

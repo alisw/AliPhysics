@@ -96,6 +96,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
    fCentralityEstimator("V0M"),
+   fkLightWeight   ( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -188,6 +189,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
    fkUseOnTheFly   ( kFALSE ),
    fkTakeAllTracks ( kFALSE ),
    fCentralityEstimator("V0M"),
+   fkLightWeight   ( kFALSE ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -344,6 +346,8 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*24*/	fTree->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
 /*25*/	fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 /*26*/	fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
+  
+  if( fkLightWeight == kFALSE ){
 //-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info 
         fTree->Branch("fTreeVariablePVx",&fTreeVariablePVx,"fTreeVariablePVx/F");
         fTree->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
@@ -359,6 +363,7 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
   
         fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
         fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+  }
   
 //------------------------------------------------
 // Particle Identification Setup
