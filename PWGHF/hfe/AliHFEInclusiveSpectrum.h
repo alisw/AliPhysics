@@ -43,10 +43,11 @@ class AliHFEInclusiveSpectrum : public AliHFECorrectSpectrumBase{
     ~AliHFEInclusiveSpectrum();
     
 
-    virtual Bool_t Init(const AliHFEcontainer *datahfecontainer, const AliHFEcontainer *mchfecontainer, const AliHFEcontainer *v0hfecontainer=0x0, const AliHFEcontainer */*bghfecontainer*/=0x0);
-    virtual Bool_t Correct(Bool_t subtractcontamination=kTRUE);
+    virtual Bool_t Init(const AliHFEcontainer *datahfecontainer, const AliHFEcontainer *mchfecontainer, const AliHFEcontainer */*bghfecontainer*/=0x0, const AliHFEcontainer *v0hfecontainer=0x0,AliCFContainer *photoniccontainerD=0x0);
+    virtual Bool_t Correct(Bool_t subtractcontamination=kTRUE,  Bool_t subtractphotonic=kFALSE);
    
     AliCFDataGrid *SubtractBackground();
+    AliCFDataGrid *SubtractPhotonicBackground();
     AliCFDataGrid *CorrectV0Efficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
     AliCFDataGrid *CorrectParametrizedEfficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
     THnSparse *Unfold(AliCFDataGrid* const bgsubpectrum = 0x0);

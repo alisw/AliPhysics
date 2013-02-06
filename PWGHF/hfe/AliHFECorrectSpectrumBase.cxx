@@ -62,7 +62,7 @@ ClassImp(AliHFECorrectSpectrumBase)
 //____________________________________________________________
 AliHFECorrectSpectrumBase::AliHFECorrectSpectrumBase(const char *name):
   TNamed(name, ""),
-  fCFContainers(new TObjArray(kDataContainerV0+1)),
+  fCFContainers(new TObjArray(kNbCFContainers)),
   fCorrelation(NULL),
   fEfficiencyFunction(NULL),
   fEtaSelected(kFALSE),
@@ -254,7 +254,7 @@ void AliHFECorrectSpectrumBase::SetContainer(AliCFContainer *cont, AliHFECorrect
   //
   // Set the container for a given step to the 
   //
-  if(!fCFContainers) fCFContainers = new TObjArray(kDataContainerV0+1);
+  if(!fCFContainers) fCFContainers = new TObjArray(kNbCFContainers);
   fCFContainers->AddAt(cont, type);
 }
 

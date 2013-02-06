@@ -39,14 +39,18 @@ class AliCFEffGrid;
 class AliHFECorrectSpectrumBase : public TNamed{
   public:
     enum CFContainer_t{
-      kDataContainer  = 0,
+      kDataContainer = 0,
       kBackgroundData = 1,
       kMCContainerMC = 2,
       kMCContainerESD = 3,
       kMCContainerCharmMC = 4,
-      kMCWeightedContainerNonHFEESD =5,
+      kMCWeightedContainerNonHFEESD = 5,
       kMCWeightedContainerConversionESD = 6,
-      kDataContainerV0 = 7
+      kDataContainerV0 = 7,
+      kMCWeightedContainerNonHFEESDSig = 8,
+      kMCWeightedContainerConversionESDSig = 9,
+      kPhotonicBackground = 10,
+      kNbCFContainers = 11
     };
 
     enum Chargetype_t{
@@ -59,8 +63,8 @@ class AliHFECorrectSpectrumBase : public TNamed{
     ~AliHFECorrectSpectrumBase();
     
 
-    virtual Bool_t Init(const AliHFEcontainer */*datahfecontainer*/, const AliHFEcontainer */*mchfecontainer*/, const AliHFEcontainer */*v0hfecontainer*/, const AliHFEcontainer */*bghfecontainer*/) { return kTRUE;};
-    virtual Bool_t Correct(Bool_t /*subtractcontamination*/) { return kTRUE;};
+    virtual Bool_t Init(const AliHFEcontainer */*datahfecontainer*/, const AliHFEcontainer */*mchfecontainer*/, const AliHFEcontainer */*bghfecontainer*/, const AliHFEcontainer */*v0hfecontainer*/,AliCFContainer */*photoniccontainerD*/) { return kTRUE;};
+    virtual Bool_t Correct(Bool_t /*subtractcontamination*/, Bool_t /*subtractphotonic*/) { return kTRUE;};
    
     TGraphErrors *Normalize(THnSparse * const spectrum) const;
     TGraphErrors *Normalize(AliCFDataGrid * const spectrum) const;

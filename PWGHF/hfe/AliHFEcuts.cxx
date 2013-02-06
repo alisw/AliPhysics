@@ -58,7 +58,6 @@
 #include "AliCFAcceptanceCuts.h"
 #include "AliCFCutBase.h"
 #include "AliCFEventGenCuts.h"
-#include "AliCFEventRecCuts.h"
 #include "AliCFManager.h"
 #include "AliCFParticleGenCuts.h"
 #include "AliCFTrackIsPrimaryCuts.h"
@@ -134,8 +133,11 @@ AliHFEcuts::AliHFEcuts():
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
+  fUseSPDVertex(kFALSE),
+  fUseCorrelationVertex(kFALSE),
   fIsIPSigmacut(kFALSE),
-  fIsIPAbs(kTRUE),
+  fIsIPcharge(kFALSE),
+  fIsIPOpp(kFALSE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
@@ -181,8 +183,11 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
+  fUseSPDVertex(kFALSE),
+  fUseCorrelationVertex(kFALSE),
   fIsIPSigmacut(kFALSE),
-  fIsIPAbs(kTRUE),
+  fIsIPcharge(kFALSE),
+  fIsIPOpp(kFALSE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
@@ -227,8 +232,11 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(c.fITSpatternCut),
   fUseMixedVertex(kTRUE),
+  fUseSPDVertex(kFALSE),
+  fUseCorrelationVertex(kFALSE),
   fIsIPSigmacut(kFALSE),
-  fIsIPAbs(kTRUE),
+  fIsIPcharge(kFALSE),
+  fIsIPOpp(kFALSE),
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
@@ -281,8 +289,11 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fTOFMISMATCHStep = fTOFMISMATCHStep;
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
   target.fUseMixedVertex = fUseMixedVertex;
+  target.fUseSPDVertex = fUseSPDVertex;
+  target.fUseCorrelationVertex = fUseCorrelationVertex;
   target.fIsIPSigmacut = fIsIPSigmacut;
-  target.fIsIPAbs = fIsIPAbs;
+  target.fIsIPcharge = fIsIPcharge;
+  target.fIsIPOpp = fIsIPOpp;
   target.fFractionOfSharedTPCClusters = fFractionOfSharedTPCClusters;
   target.fMaxImpactParameterRpar = fMaxImpactParameterRpar;
   target.fAdditionalStatusRequirement = fAdditionalStatusRequirement;
@@ -437,7 +448,7 @@ void AliHFEcuts::Initialize(){
   SetHFElectronITSCuts();
   SetHFElectronTOFCuts();
   SetHFElectronTPCCuts();
-  SetHFElectronTRDCuts();
+  SetHFElectronTRDCuts();  
   SetHFElectronDcaCuts();
 
   // Publish to the cuts which analysis type they are (ESD Analysis by default)
@@ -481,29 +492,18 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
     arr->AddLast(evGenCuts);
   } else {
 
-    if(!fUseMixedVertex) {
-      AliCFEventRecCuts *evRecCuts = new AliCFEventRecCuts((Char_t *)"fCutsEvRec", (Char_t *)"Event Reconstructed cuts");
-      //evRecCuts->SetNTracksCut(1);
-      evRecCuts->SetRequireVtxCuts(kTRUE);
-      //evRecCuts->SetVertexXCut(-1, 1);
-      //evRecCuts->SetVertexYCut(-1, 1);
-      //evRecCuts->SetVertexZCut(-30, 30);
-      evRecCuts->SetVertexZCut(-fVertexRangeZ, fVertexRangeZ);
-      evRecCuts->SetVertexNContributors(1,(Int_t)1.e9);
-      if(IsQAOn()) evRecCuts->SetQAOn(fHistQA);
-      arr->SetName("fEvRecCuts");
-      arr->AddLast(evRecCuts);
-    } else {
-      AliHFEextraEventCuts *evRecCuts = new AliHFEextraEventCuts((Char_t *)"fCutsEvRec", (Char_t *)"Event Reconstructed cuts");
-      evRecCuts->SetRequireVtxCuts(kTRUE);
-      evRecCuts->SetUseMixedVertex();
-      evRecCuts->SetVertexZCut(-fVertexRangeZ, fVertexRangeZ);
-      //evRecCuts->SetVertexNContributors(1,(Int_t)1.e9);
-      if(IsQAOn()) evRecCuts->SetQAOn(fHistQA);
-      arr->SetName("fEvRecCuts");
-      arr->AddLast(evRecCuts);
-    }
-  }
+    AliHFEextraEventCuts *evRecCuts = new AliHFEextraEventCuts((Char_t *)"fCutsEvRec", (Char_t *)"Event Reconstructed cuts");
+    evRecCuts->SetRequireVtxCuts(kTRUE);
+    if(fUseSPDVertex) evRecCuts->SetUseSPDVertex();
+    if(fUseMixedVertex) evRecCuts->SetUseMixedVertex();
+    if(fUseCorrelationVertex) evRecCuts->SetCheckCorrelationSPDVtx();
+    evRecCuts->SetVertexZCut(-fVertexRangeZ, fVertexRangeZ);
+    //evRecCuts->SetVertexNContributors(1,(Int_t)1.e9);
+    if(IsQAOn()) evRecCuts->SetQAOn(fHistQA);
+    arr->SetName("fEvRecCuts");
+    arr->AddLast(evRecCuts);
+   
+  } 
   fCutList->AddLast(arr);
 }
 
@@ -778,7 +778,7 @@ void AliHFEcuts::SetHFElectronDcaCuts(){
   //
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupDCA","Extra cuts from the HFE group");
-  hfecuts->SetMinHFEImpactParamR(fIPCutParams,fIsIPSigmacut,fIsIPAbs);
+  hfecuts->SetMinHFEImpactParamR(fIPCutParams,fIsIPSigmacut,fIsIPcharge,fIsIPOpp);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
 

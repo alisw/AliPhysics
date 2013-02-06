@@ -85,6 +85,8 @@ set (SRCS
     hfe/AliHFECorrectSpectrumBase.cxx
     hfe/AliHFEInclusiveSpectrum.cxx
     hfe/AliHFEInclusiveSpectrumQA.cxx 
+    hfe/AliHFEBeautySpectrum.cxx
+    hfe/AliHFEBeautySpectrumQA.cxx 
     hfe/AliHFEsmearDCA.cxx
     hfe/AliAnalysisTaskFlowTPCEMCalQCSP.cxx
     )

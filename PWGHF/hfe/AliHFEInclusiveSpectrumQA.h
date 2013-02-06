@@ -54,7 +54,9 @@ class AliHFEInclusiveSpectrumQA : public TNamed{
     kUEfficiency = 16,
     kFinalResultUnfolded = 17,
     kFinalResultDirectEfficiency = 18,
-    kNResults = 19
+    kBeforeSPB = 19,
+    kAfterSPB = 20,
+    kNResults = 21
   };
 
 
@@ -70,6 +72,7 @@ class AliHFEInclusiveSpectrumQA : public TNamed{
   
   void DrawProjections() const;
   void DrawSubtractContamination() const;
+  void DrawSubtractPhotonicBackground() const;
   void DrawCorrectWithEfficiency(Int_t typeeff) const;
   void DrawUnfolding() const;
   void DrawResult();

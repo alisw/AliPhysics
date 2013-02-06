@@ -77,7 +77,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     inline void SetMaxImpactParamR(Double_t impactParam);
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
-    inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut, Bool_t isabs);
+    inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut, Bool_t isipcharge, Bool_t isopp);
     inline void SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact = kFALSE);
     inline void SetMaxChi2TRD(Float_t maxchi2);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
@@ -97,11 +97,11 @@ class AliHFEextraCuts: public AliCFCutBase{
 
     Bool_t GetCheckITSstatus() const { return fCheck; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
-    void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
-    void GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]);
+    void GetHFEImpactParameters(const AliVTrack * const track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
+    void GetHFEImpactParameters(const AliVTrack * const track, Double_t dcaD[2], Double_t covD[3]);
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
-    const AliVVertex* RemoveDaughtersFromPrimaryVtx(AliESDEvent *esdevent, AliVTrack *track);
-    AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, AliVTrack *track);
+    const AliVVertex* RemoveDaughtersFromPrimaryVtx(const AliESDEvent * const esdevent, const AliVTrack * const track);
+    AliAODVertex* RemoveDaughtersFromPrimaryVtx(const AliAODEvent * const aod, const AliVTrack * const track);
     Int_t GetITSstatus(const AliVTrack * const track, Int_t layer) const;
     Bool_t CheckITSstatus(Int_t itsStatus) const;
     Bool_t CheckITSpattern(const AliVTrack *const track) const;
@@ -125,9 +125,9 @@ class AliHFEextraCuts: public AliCFCutBase{
     Bool_t GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track);
     Double_t GetTPCclusterRatio(AliVTrack *track); 
     //void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
-    void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
-    void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
-    void GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, Double_t &tofsignalDz);
+    void GetHFEImpactParameterCuts(const AliVTrack * const track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
+    void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
+    void GetTOFsignalDxDz(const AliVTrack * const track, Double_t &tofsignalDx, Double_t &tofsignalDz);
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
     Float_t GetTRDchi(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
@@ -159,7 +159,8 @@ class AliHFEextraCuts: public AliCFCutBase{
       kTOFsignalDxy = 21,
       kMaxTRDChi2 = 22,
       kITSpattern = 23,
-      kNcuts = 24
+      kMinHFEImpactParamRcharge = 24,
+      kNcuts = 25
     } Cut_t;
     enum{
       //
@@ -186,9 +187,10 @@ class AliHFEextraCuts: public AliCFCutBase{
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
     Double_t  fFractionTPCShared;     // Cut on fraction of shared clusters
-    Bool_t fAbsHFEImpactParamNsigmaR; // flag to use abs ip cut
+    Bool_t fOppSideIPcut;             // flag to use conversion peak side of ip*charge cut
     Double_t fTOFsignalDx;            // TOF signal dx
     Double_t fTOFsignalDz;            // TOF signal dz
+    Double_t fMagField;               // Magnetic field
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
@@ -241,14 +243,17 @@ void AliHFEextraCuts::SetMaxImpactParamZ(Double_t impactParam){
 }
 
 //__________________________________________________________
-void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigmacut, Bool_t isabs){
-  if(isSigmacut) SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);
-  else SETBIT(fRequirements, kMinHFEImpactParamR);
-  fIPcutParam[0]=ipcutParam[0];
-  fIPcutParam[1]=ipcutParam[1];
-  fIPcutParam[2]=ipcutParam[2];
-  fIPcutParam[3]=ipcutParam[3];
-  fAbsHFEImpactParamNsigmaR = isabs;
+void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigmacut, Bool_t isIPcharge, Bool_t isopp){
+  if(isSigmacut){ SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);}
+  else{ 
+    if(isIPcharge){ SETBIT(fRequirements, kMinHFEImpactParamRcharge);}
+    else {SETBIT(fRequirements, kMinHFEImpactParamR);}
+    fIPcutParam[0]=ipcutParam[0];
+    fIPcutParam[1]=ipcutParam[1];
+    fIPcutParam[2]=ipcutParam[2];
+    fIPcutParam[3]=ipcutParam[3];
+    fOppSideIPcut = isopp;
+  }
 }
 
 //__________________________________________________________

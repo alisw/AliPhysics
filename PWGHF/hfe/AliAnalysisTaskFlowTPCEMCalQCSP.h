@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
-#define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
+#ifndef ALIANALYSISTASKFLOWTPCEMCalQCSP_H
+#define ALIANALYSISTASKFLOWTPCEMCalQCSP_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -123,6 +123,8 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     Double_t fmaxM02;//ID cuts SS
     Double_t fDispersion;//ID cuts SS
     
+    TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
+    TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
 	
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
