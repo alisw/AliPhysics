@@ -95,7 +95,8 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath, Int_t m
          in.open(filepath);
          while(in.good()){
             in >> line;
-            if(line.Length() == 0) continue;
+            if(line.Length() == 0)  continue;
+	    
             Printf("found aod path %s", line.Data());
             ostr = new TObjString(line.Data());
             array->Add(ostr);
@@ -103,6 +104,16 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath, Int_t m
          Printf("-> %d aod paths found", array->GetEntries());
          
          task->SetArrayOfAODPaths(array);
+      }
+      if(mode==2) { //read root file which contains object array
+	TFile *f = TFile::Open(filepath);
+	TObjArray *objarray;
+	f->GetObject("array",objarray);
+
+        Printf("-> %d aod paths found", objarray->GetEntries());
+	
+	task->SetArrayOfAODPaths(objarray);
+
       }
 
       task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kAODFull);

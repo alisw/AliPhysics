@@ -139,6 +139,7 @@ AliAnalysisTaskSE(),
   fh2MultGen(0x0),
   fh2RPCentrality(0x0),
   fh2PtFGen(0x0),
+  fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
   fHistList(0x0)  
@@ -249,6 +250,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2MultGen(0x0),
   fh2RPCentrality(0x0),
   fh2PtFGen(0x0),
+  fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
   fHistList(0x0)
@@ -457,6 +459,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2PtFGen = new TH2F("fh2PtFGen",Form("%s vs. %s;p_{T,gen};p_{T,rec}",fBranchRec.Data(),fBranchGen.Data()),nBinPt,binLimitsPt,nBinPt,binLimitsPt);
   fHistList->Add(fh2PtFGen);
 
+  //  fh2deltaPt1Pt2(0x0),
+  fh2deltaPt1Pt2 = new TH3F("fh2deltaPt1Pt2",Form("%s vs. %s;delta;p_{T,gen};p_{T,rec}",fBranchRec.Data(),fBranchGen.Data()),nBinPt,binLimitsPt,nBinPt,binLimitsPt,nBinPt,binLimitsPt);
+  fHistList->Add(fh2deltaPt1Pt2);
+
   fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};p_{T,rec}-p_{T,gen}/p_{T,Gen}",nBinPt,binLimitsPt,241,-2.41,2.41);
   fHistList->Add(fh2RelPtFGen);
 
@@ -574,14 +580,14 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area, trigger, acceptance, signed pT leading
     const Int_t nBinsSparse2 = 9;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  18, 72, 10,fNTrigger,fNAcceptance+1,20};
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  18, 18, 100,fNTrigger,fNAcceptance+1,20};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
     const Double_t xmin2[nBinsSparse2]  = {        -0.5, -50,  0,-0.9,              0,  0.,        -0.5,            -0.5, -100};
     const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5, 250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5,fNAcceptance+0.5,  100};
     fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger;acceptance bin;signed pt leading",nBinsSparse2,nBins2,xmin2,xmax2);
-    fhnJetPt[ij]->SetBinEdges(5,binArrayArea);
+    //    fhnJetPt[ij]->SetBinEdges(5,binArrayArea);
     fHistList->Add(fhnJetPtQA[ij]);
     
     // Bins:track number  pTtrack, cent, mult, RP.  charge total bins = 224 k
@@ -1413,12 +1419,14 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
 	fhnJetContainer->Fill(containerGen,kStep6); // all rec jets in eta window with generated partner
 
 	fhnCorrelation->Fill(container);
-	if(ptGen>0){
-	  Float_t delta = (ptRec-ptGen)/ptGen;
-	  fh2RelPtFGen->Fill(ptGen,delta);
-	  fh3RelPtFGenLeadTrkPt->Fill(ptGen,delta,recJet->GetPtLeading());
-	  fh2PtFGen->Fill(ptGen,ptRec);
-	}
+	
+	Float_t delta = (ptRec-ptGen)/ptGen;
+	fh2RelPtFGen->Fill(ptGen,delta);
+	fh3RelPtFGenLeadTrkPt->Fill(ptGen,delta,recJet->GetPtLeading());
+	fh2PtFGen->Fill(ptGen,ptRec);
+
+	fh2deltaPt1Pt2->Fill(ptRec-ptGen,ptRec,ptGen);
+	
       } 
     }// loop over reconstructed jets
   }
