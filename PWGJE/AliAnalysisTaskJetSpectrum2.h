@@ -227,6 +227,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2RPCentrality;   //! RP vs centrality
 
     TH2F*         fh2PtFGen;                //! found vs generated 
+    TH3F*         fh2deltaPt1Pt2;           //! ptjet1 - ptjet2 vs ptjet1 vs ptjet2
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
     TH3F*         fh3RelPtFGenLeadTrkPt;    //! relative difference between generated and found vs leading track pT
 
@@ -249,8 +250,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TProfile2D    *fp2MultRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
     TProfile2D    *fp2CentRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
     THnSparseF    *fhnJetPt[kJetTypes];                  //! jet pt information for analysis
-    THnSparseF    *fhnJetPtBest[kJetTypes];                  //! best jet for analysis
-    THnSparseF    *fhnJetPtRej[kJetTypes];                  //! Rej jet for analysis
+    THnSparseF    *fhnJetPtBest[kJetTypes];              //! best jet for analysis
+    THnSparseF    *fhnJetPtRej[kJetTypes];               //! Rej jet for analysis
     THnSparseF    *fhnJetPtQA[kJetTypes];                //! jet pt information for QA
     THnSparseF    *fhnTrackPt[kJetTypes];                //! track pt information for analysis
     THnSparseF    *fhnTrackPtQA[kJetTypes];              //! track pt information for analysis

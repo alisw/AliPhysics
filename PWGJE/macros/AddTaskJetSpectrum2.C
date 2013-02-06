@@ -152,7 +152,11 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d_HJ%d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl,hjet));
+   AliAnalysisDataContainer *coutput1_Spec = ;
+   if(hjet>0)
+     coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d_HJ%d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl,hjet));
+   else
+     coutput1_Spec = mgr->CreateContainer(Form("pwgje_spec2_%s_%s_%010d_Class%02d_HJ%d",bRec,bGen,iEventSelectionMask,iCl,hjet),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_spec2_%s_%s_%010d_Class%02d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask,iCl));
 
    mgr->ConnectInput  (jetspec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (jetspec, 0, mgr->GetCommonOutputContainer());
