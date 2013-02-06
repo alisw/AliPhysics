@@ -77,6 +77,8 @@
 #pragma link C++ class  AliHFECorrectSpectrumBase+;
 #pragma link C++ class  AliHFEInclusiveSpectrum+;
 #pragma link C++ class  AliHFEInclusiveSpectrumQA+;
+#pragma link C++ class  AliHFEBeautySpectrum+;
+#pragma link C++ class  AliHFEBeautySpectrumQA+;
 #pragma link C++ class  AliHFEsmearDCA+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalQCSP+;
 

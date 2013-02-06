@@ -71,9 +71,10 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fTPCclusterDef(0),
   fTPCclusterRatioDef(0),
   fFractionTPCShared(-1.0),
-  fAbsHFEImpactParamNsigmaR(kTRUE),
+  fOppSideIPcut(kFALSE),
   fTOFsignalDx(1.0),
   fTOFsignalDz(1.0),
+  fMagField(-10000),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -104,9 +105,10 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
   fFractionTPCShared(c.fFractionTPCShared),
-  fAbsHFEImpactParamNsigmaR(c.fAbsHFEImpactParamNsigmaR),
+  fOppSideIPcut(c.fOppSideIPcut),
   fTOFsignalDx(c.fTOFsignalDx),
   fTOFsignalDz(c.fTOFsignalDz),
+  fMagField(c.fMagField),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -146,9 +148,10 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fTPCclusterDef = c.fTPCclusterDef;
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
     fFractionTPCShared = c.fFractionTPCShared;
-    fAbsHFEImpactParamNsigmaR = c.fAbsHFEImpactParamNsigmaR;
+    fOppSideIPcut = c.fOppSideIPcut;
     fTOFsignalDx = c.fTOFsignalDx;
     fTOFsignalDz = c.fTOFsignalDz;
+    fMagField = c.fMagField;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -219,7 +222,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Double_t hfeimpactRcut, hfeimpactnsigmaRcut;
   Double_t maximpactRcut; 
   GetImpactParameters(track, impactR, impactZ);
-  if(TESTBIT(fRequirements, kMinHFEImpactParamR) || TESTBIT(fRequirements, kMinHFEImpactParamNsigmaR)){
+  if(TESTBIT(fRequirements, kMinHFEImpactParamR) || TESTBIT(fRequirements, kMinHFEImpactParamNsigmaR)||TESTBIT(fRequirements, kMinHFEImpactParamRcharge)){
     // Protection for PbPb
     GetHFEImpactParameterCuts(track, hfeimpactRcut, hfeimpactnsigmaRcut);
     GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
@@ -272,29 +275,38 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     // cut on min. HFE Impact Parameter in Radial direction
     if(TMath::Abs(hfeimpactR) >= hfeimpactRcut) SETBIT(survivedCut, kMinHFEImpactParamR);
   }
+  if(TESTBIT(fRequirements, kMinHFEImpactParamRcharge)){
+    // cut on min. HFE Impact Parameter in Radial direction, multiplied by particle charge
+    Double_t charge = (Double_t)track->Charge();
+    
+    if(fMagField < 0)charge *= -1.;//the IP distribution side to be chosen depends on magnetic field polarization
+    if(fOppSideIPcut)charge*=-1.;//in case we choose to select electrons from the side of the photon peak
+    Double_t hfeimpactRcharge = hfeimpactR*charge;//switch selected side of the peak
+    if(hfeimpactRcharge >= hfeimpactRcut) SETBIT(survivedCut, kMinHFEImpactParamRcharge);
+  }
   if(TESTBIT(fRequirements, kMinHFEImpactParamNsigmaR)){
     // cut on max. HFE Impact Parameter n sigma in Radial direction
-    if(fAbsHFEImpactParamNsigmaR) {
-//      if((TMath::Abs(hfeimpactnsigmaR) >= hfeimpactnsigmaRcut) && (TMath::Abs(hfeimpactnsigmaR) < 8)) { //mj debug
-      if(TMath::Abs(hfeimpactnsigmaR) >= hfeimpactnsigmaRcut) {
+    // if(fAbsHFEImpactParamNsigmaR) {
+    //   //if((TMath::Abs(hfeimpactnsigmaR) >= hfeimpactnsigmaRcut) && (TMath::Abs(hfeimpactnsigmaR) < 8)) { //mj debug
+    //     if(TMath::Abs(hfeimpactnsigmaR) >= hfeimpactnsigmaRcut) {
+    //       SETBIT(survivedCut, kMinHFEImpactParamNsigmaR);
+    //       //  printf("0: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
+    //     }
+    //   }
+    //   else {
+    if(hfeimpactnsigmaRcut>0){
+      if(hfeimpactnsigmaR >= hfeimpactnsigmaRcut) {
         SETBIT(survivedCut, kMinHFEImpactParamNsigmaR);
-//        printf("0: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
+        //printf("1: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
       }
     }
-    else {
-      if(hfeimpactnsigmaRcut>0){
-        if(hfeimpactnsigmaR >= hfeimpactnsigmaRcut) {
-          SETBIT(survivedCut, kMinHFEImpactParamNsigmaR);
-          //printf("1: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
-        }
-      }
-      else{
-        if(hfeimpactnsigmaR <= hfeimpactnsigmaRcut) {
-          SETBIT(survivedCut, kMinHFEImpactParamNsigmaR);
-          //printf("2: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
-        }
+    else{
+      if(hfeimpactnsigmaR <= hfeimpactnsigmaRcut) {
+        SETBIT(survivedCut, kMinHFEImpactParamNsigmaR);
+        //printf("2: hfeimpactnsigmaR= %lf hfeimpactnsigmaRcut= %lf\n",hfeimpactnsigmaR,hfeimpactnsigmaRcut);
       }
     }
+    //}
   }
   if(TESTBIT(fRequirements, kClusterRatioTPC)){
     // cut on min ratio of found TPC clusters vs findable TPC clusters
@@ -829,7 +841,7 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
     AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
     if(!vtxAODSkip) return;
     AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
-    if(etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD)) {
+    if(etp.PropagateToDCA(vtxAODSkip, aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD)) {
       radial = dcaD[0];
       z = dcaD[1];
     }
@@ -926,7 +938,7 @@ Int_t AliHFEextraCuts::GetITSNbOfcls(AliVTrack *track){
   return 0;
 }
 //______________________________________________________
-void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy){
+void AliHFEextraCuts::GetHFEImpactParameters(const AliVTrack * const track, Double_t &dcaxy, Double_t &dcansigmaxy){
   //
   // Get HFE impact parameter (with recalculated primary vertex)
   //
@@ -940,6 +952,7 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
   const Double_t kBeampiperadius=3.;
   Double_t dcaD[2]={-999.,-999.},
            covD[3]={-999.,-999.,-999.};
+  Bool_t isRecalcVertex(kFALSE);
 
   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
     //case of ESD tracks
@@ -949,24 +962,28 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
       return;
     }
 
-    //case ESD track: take copy constructor
-    AliESDtrack *esdtrack = NULL;
-    AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
-    if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-
     const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
     if(!vtxESDSkip) return;
-    if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-      vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
-    }
 
-    if(!vtxESDSkip) return;
-    if(esdtrack && esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD)){
-      dcaxy = dcaD[0];
-      if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+    //case ESD track: take copy constructor
+    const AliESDtrack *tmptrack = dynamic_cast<const AliESDtrack *>(track);
+    if(tmptrack){
+
+      if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+        vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
+        isRecalcVertex = kTRUE;
+      }
+
+      if(vtxESDSkip){
+        AliESDtrack esdtrack(*tmptrack);
+        fMagField = fEvent->GetMagneticField();
+        if(esdtrack.PropagateToDCA(vtxESDSkip, fMagField, kBeampiperadius, dcaD, covD)){
+          dcaxy = dcaD[0];
+          if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+        }
+        if(isRecalcVertex) delete vtxESDSkip;
+      }
     }
-    //delete vtxESDSkip;
-    delete esdtrack;
   }
   else {
     //case of AOD tracks
@@ -976,29 +993,33 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
       return;
     }
 
-    //Case ESD track: take copy constructor
-    AliAODTrack *aodtrack = NULL;
-    AliAODTrack *tmptrack = dynamic_cast<AliAODTrack *>(track);
-    if(tmptrack) aodtrack = new AliAODTrack(*tmptrack);
-
     AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
     if(!vtxAODSkip) return;
-    if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-      vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
-    } 
-    if(!vtxAODSkip) return;
-    AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
-    if(etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD)) {
-      dcaxy = dcaD[0];
-      if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+
+    //Case ESD track: take copy constructor
+    const AliAODTrack *tmptrack = dynamic_cast<const AliAODTrack *>(track);
+    if(tmptrack){ 
+
+      if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+        vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
+        isRecalcVertex = kTRUE;
+      } 
+      if(vtxAODSkip){
+        AliAODTrack aodtrack(*tmptrack);
+        AliExternalTrackParam etp; etp.CopyFromVTrack(&aodtrack);
+        fMagField = aodevent->GetMagneticField();
+        if(etp.PropagateToDCA(vtxAODSkip,fMagField, kBeampiperadius, dcaD, covD)) {
+          dcaxy = dcaD[0];
+          if(covD[0]) dcansigmaxy = dcaxy/TMath::Sqrt(covD[0]);
+        }
+        if(isRecalcVertex) delete vtxAODSkip;
+      }
     }
-    //if(vtxAODSkip) delete vtxAODSkip;
-    if(aodtrack) delete aodtrack;
   }
 }
 
 //______________________________________________________
-void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]){
+void AliHFEextraCuts::GetHFEImpactParameters(const AliVTrack * const track, Double_t dcaD[2], Double_t covD[3]){
 	//
 	// Get HFE impact parameter (with recalculated primary vertex)
 	//
@@ -1008,6 +1029,7 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2],
   }
   const Double_t kBeampiperadius=3.;
   TString type = track->IsA()->GetName();
+  Bool_t isRecalcVertex(kFALSE);
   
   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
     //case of ESD tracks
@@ -1017,22 +1039,26 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2],
       return;
     }
 
-    //case ESD track: take copy constructor
-    AliESDtrack *esdtrack = NULL;
-    AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
-    if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
-
+    // Check whether primary vertex is available
     const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
     if(!vtxESDSkip) return;
-    if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-      vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
+
+    const AliESDtrack *tmptrack = dynamic_cast<const AliESDtrack *>(track);
+    if(tmptrack){
+      //case ESD track: take copy constructor
+
+      if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+        vtxESDSkip = RemoveDaughtersFromPrimaryVtx(esdevent, track);
+        isRecalcVertex = kTRUE;
+      }
+      if(vtxESDSkip){
+        AliESDtrack esdtrack(*tmptrack);
+        fMagField = fEvent->GetMagneticField();
+        esdtrack.PropagateToDCA(vtxESDSkip, fMagField, kBeampiperadius, dcaD, covD);
+
+        if(isRecalcVertex) delete vtxESDSkip;
+      }
     }
-    if(!vtxESDSkip) return;
-
-    if(esdtrack) esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dcaD, covD);
-
-    //delete vtxESDSkip;
-    delete esdtrack;
   }
   else {
     //case of AOD tracks
@@ -1042,66 +1068,61 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2],
       return;
     }
 
-    //Case ESD track: take copy constructor
-    AliAODTrack *aodtrack = NULL;
-    AliAODTrack *tmptrack = dynamic_cast<AliAODTrack *>(track);
-    if(tmptrack) aodtrack = new AliAODTrack(*tmptrack);
-
+    // Check whether primary vertex is available
     AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
     if(!vtxAODSkip) return;
-    if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
-      vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
-    }
-    if(!vtxAODSkip) return;
-    AliExternalTrackParam etp; etp.CopyFromVTrack(aodtrack);
-    etp.PropagateToDCA(vtxAODSkip,aodevent->GetMagneticField(), kBeampiperadius, dcaD, covD);
 
-    //delete vtxAODSkip;
-    delete aodtrack;
+    //Case ESD track: take copy constructor
+    const AliAODTrack *tmptrack = dynamic_cast<const AliAODTrack *>(track);
+    if(tmptrack){
+
+      if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+        vtxAODSkip = RemoveDaughtersFromPrimaryVtx(aodevent, track);
+        isRecalcVertex = kTRUE;
+      }
+      if(vtxAODSkip){
+        AliAODTrack aodtrack(*tmptrack);
+        AliExternalTrackParam etp; etp.CopyFromVTrack(&aodtrack);
+        fMagField = aodevent->GetMagneticField();
+        etp.PropagateToDCA(vtxAODSkip, fMagField, kBeampiperadius, dcaD, covD);
+
+        if(isRecalcVertex) delete vtxAODSkip;
+      }
+    }
   }
 }
 
 //______________________________________________________
-void AliHFEextraCuts::GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut){
+void AliHFEextraCuts::GetHFEImpactParameterCuts(const AliVTrack * const track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut){
 	//
 	// Get HFE impact parameter cut(pt dependent)
 	//
   
-  TString type = track->IsA()->GetName();
-  if(!type.CompareTo("AliESDtrack")){
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-    if(!esdtrack) return;
-    Double_t pt = esdtrack->Pt();	
-    hfeimpactRcut = fIPcutParam[0]+fIPcutParam[1]*exp(fIPcutParam[2]*pt);  // abs R cut
-    hfeimpactnsigmaRcut = fIPcutParam[3];                                  // sigma cut
-  }
+  Double_t pt = track->Pt();	
+  hfeimpactRcut = fIPcutParam[0]+fIPcutParam[1]*exp(fIPcutParam[2]*pt);  // abs R cut
+  hfeimpactnsigmaRcut = fIPcutParam[3];                                  // sigma cut
 }
 //______________________________________________________
-void AliHFEextraCuts::GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut){
+void AliHFEextraCuts::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
 	//
 	// Get max impact parameter cut r (pt dependent)
 	//
   
-  TString type = track->IsA()->GetName();
-  if(!type.CompareTo("AliESDtrack")){
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-    if(!esdtrack) return;
-    Double_t pt = esdtrack->Pt();	
-    if(pt > 0.15) {
-      maximpactRcut = 0.0182 + 0.035/TMath::Power(pt,1.01);  // abs R cut
-    }
-    else maximpactRcut = 9999999999.0;
+  Double_t pt = track->Pt();	
+  if(pt > 0.15) {
+    maximpactRcut = 0.0182 + 0.035/TMath::Power(pt,1.01);  // abs R cut
   }
+  else maximpactRcut = 9999999999.0;
 }
 //______________________________________________________
-void AliHFEextraCuts::GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, Double_t &tofsignalDz){
+void AliHFEextraCuts::GetTOFsignalDxDz(const AliVTrack * const track, Double_t &tofsignalDx, Double_t &tofsignalDz){
   //
   // TOF matching 
   //
   
   TString type = track->IsA()->GetName();
   if(!type.CompareTo("AliESDtrack")){
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
     if(!esdtrack) return;
     tofsignalDx = esdtrack->GetTOFsignalDx();
     tofsignalDz = esdtrack->GetTOFsignalDz();
@@ -1132,7 +1153,7 @@ Bool_t AliHFEextraCuts::CheckITSpattern(const AliVTrack *const track) const {
 }
 
 //---------------------------------------------------------------------------
-const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliESDEvent *esdevent, AliVTrack *track) {
+const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(const AliESDEvent * const esdevent, const AliVTrack * const track) {
   //
   // This method returns a primary vertex without the daughter tracks of the 
   // candidate and it recalculates the impact parameters and errors for ESD tracks.
@@ -1155,17 +1176,16 @@ const AliVVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliESDEvent *es
   esdevent->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={esdevent->GetDiamondX(),esdevent->GetDiamondY(),0.};
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-  AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-  vertexer.SetVtxStart(diamond);
-  delete diamond; diamond=NULL;
+  AliESDVertex diamond(pos,cov,1.,1);
+  vertexer.SetVtxStart(&diamond);
 
-  const AliVVertex *vtxESDSkip = (const AliVVertex *) vertexer.FindPrimaryVertex(fEvent);
+  const AliVVertex *vtxESDSkip = vertexer.FindPrimaryVertex(fEvent);
 
   return vtxESDSkip;
 }
 
 //---------------------------------------------------------------------------
-AliAODVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, AliVTrack *track) {
+AliAODVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(const AliAODEvent * const aod, const AliVTrack * const track) {
   //
   // This method returns a primary vertex without the daughter tracks of the 
   // candidate and it recalculates the impact parameters and errors for AOD tracks.
@@ -1177,20 +1197,19 @@ AliAODVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, A
   TString title=vtxAOD->GetTitle();
   if(!title.Contains("VertexerTracks")) return 0;
 
-  AliVertexerTracks *vertexer = new AliVertexerTracks(aod->GetMagneticField());
+  AliVertexerTracks vertexer(aod->GetMagneticField());
 
-  vertexer->SetITSMode();
-  vertexer->SetMinClusters(3);
-  vertexer->SetConstraintOff();
+  vertexer.SetITSMode();
+  vertexer.SetMinClusters(3);
+  vertexer.SetConstraintOff();
 
   if(title.Contains("WithConstraint")) {
     Float_t diamondcovxy[3];
     aod->GetDiamondCovXY(diamondcovxy);
     Double_t pos[3]={aod->GetDiamondX(),aod->GetDiamondY(),0.};
     Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-    AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-    vertexer->SetVtxStart(diamond);
-    delete diamond; diamond=NULL;
+    AliESDVertex diamond(pos,cov,1.,1);
+    vertexer.SetVtxStart(&diamond);
   }
   Int_t skipped[2]; for(Int_t i=0;i<2;i++) skipped[i]=-1;
   Int_t id = (Int_t)track->GetID();
@@ -1206,10 +1225,8 @@ AliAODVertex* AliHFEextraCuts::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, A
     }
   }*/
 
-  vertexer->SetSkipTracks(1,skipped);
-  AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(aod);
-
-  delete vertexer; vertexer=NULL;
+  vertexer.SetSkipTracks(1,skipped);
+  AliESDVertex *vtxESDNew = vertexer.FindPrimaryVertex(aod);
 
   if(!vtxESDNew) return 0;
   if(vtxESDNew->GetNContributors()<=0) {

@@ -259,6 +259,75 @@ void AliHFEInclusiveSpectrumQA::DrawSubtractContamination() const
 
 }
 
+//____________________________________________________________
+void AliHFEInclusiveSpectrumQA::DrawSubtractPhotonicBackground() const
+{
+  //
+  // get spectrum
+  //
+
+  TH1D *measuredTH1Dafterphotonicsubstraction = (TH1D *) fListOfResult->UncheckedAt(kAfterSPB);
+  TH1D *measuredTH1Dbeforephotonicsubstraction = (TH1D *) fListOfResult->UncheckedAt(kBeforeSPB);
+  if(!measuredTH1Dafterphotonicsubstraction || !measuredTH1Dbeforephotonicsubstraction) return;
+
+  SetStyle();
+
+  TCanvas * cphotonic = new TCanvas("Photonic Subtraction","Photonic Subtraction",1000,700);
+  cphotonic->Divide(2,1);
+  cphotonic->cd(1);
+  gPad->SetLogy();
+  gPad->SetTicks();
+  measuredTH1Dafterphotonicsubstraction->SetStats(0);
+  measuredTH1Dafterphotonicsubstraction->SetTitle("");
+  measuredTH1Dafterphotonicsubstraction->GetYaxis()->SetTitleOffset(1.5);
+  measuredTH1Dafterphotonicsubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  measuredTH1Dafterphotonicsubstraction->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  measuredTH1Dafterphotonicsubstraction->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  measuredTH1Dafterphotonicsubstraction->SetMarkerStyle(25);
+  measuredTH1Dafterphotonicsubstraction->SetMarkerColor(kBlack);
+  measuredTH1Dafterphotonicsubstraction->SetLineColor(kBlack);
+  measuredTH1Dbeforephotonicsubstraction->SetStats(0);
+  measuredTH1Dbeforephotonicsubstraction->SetTitle("");
+  measuredTH1Dbeforephotonicsubstraction->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  measuredTH1Dbeforephotonicsubstraction->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  measuredTH1Dbeforephotonicsubstraction->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  measuredTH1Dbeforephotonicsubstraction->SetMarkerStyle(24);
+  measuredTH1Dbeforephotonicsubstraction->SetMarkerColor(kBlue);
+  measuredTH1Dbeforephotonicsubstraction->SetLineColor(kBlue);
+  measuredTH1Dafterphotonicsubstraction->Draw();
+  measuredTH1Dbeforephotonicsubstraction->Draw("same");
+  TLegend *legsubstraction = new TLegend(0.4,0.6,0.89,0.89);
+  legsubstraction->AddEntry(measuredTH1Dbeforephotonicsubstraction,"With photonic background","p");
+  legsubstraction->AddEntry(measuredTH1Dafterphotonicsubstraction,"Without photonic background","p");
+  legsubstraction->SetFillStyle(0);
+  legsubstraction->SetLineStyle(0);
+  legsubstraction->SetLineColor(0);
+  legsubstraction->Draw("same");
+  cphotonic->cd(2);
+  gPad->SetLogy();
+  gPad->SetTicks();
+  TH1D* ratiomeasuredphotonic = (TH1D*)measuredTH1Dbeforephotonicsubstraction->Clone();
+  ratiomeasuredphotonic->SetName("ratiomeasuredphotonic");
+  ratiomeasuredphotonic->SetTitle("");
+  ratiomeasuredphotonic->GetYaxis()->SetTitleOffset(1.5);
+  ratiomeasuredphotonic->GetYaxis()->SetTitle("(with photonic background - without photonic background) / with photonic background");
+  ratiomeasuredphotonic->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  ratiomeasuredphotonic->GetYaxis()->SetRangeUser(0.8,1.2);
+  ratiomeasuredphotonic->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  ratiomeasuredphotonic->Sumw2();
+  ratiomeasuredphotonic->Add(measuredTH1Dafterphotonicsubstraction,-1.0);
+  ratiomeasuredphotonic->Divide(measuredTH1Dbeforephotonicsubstraction);
+  ratiomeasuredphotonic->SetStats(0);
+  ratiomeasuredphotonic->SetMarkerStyle(26);
+  ratiomeasuredphotonic->SetMarkerColor(kBlack);
+  ratiomeasuredphotonic->SetLineColor(kBlack);
+  for(Int_t k=0; k < ratiomeasuredphotonic->GetNbinsX(); k++){
+    ratiomeasuredphotonic->SetBinError(k+1,0.0);
+  }
+  ratiomeasuredphotonic->Draw("P");
+  if(fWriteToFile) cphotonic->SaveAs("PhotonicSubtracted.png");
+
+}
 
 //____________________________________________________________
 void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
@@ -289,9 +358,10 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
     efficiencyparametrized = (TF1 *) fListOfResult->UncheckedAt(kPEfficiency);
   }
 
- if(!afterE || !beforeE) return;
+ if((typeeff==kV0 || typeeff==kMC) && (!afterE || !beforeE || !efficiencyDproj)) return;
+ if(typeeff==kParametrized && (!afterE || !beforeE || !efficiencyparametrized)) return;
 
- SetStyle();
+  SetStyle();
 
   TCanvas * cEfficiency = new TCanvas(AliHFEInclusiveSpectrumQA::fgkNameCanvas[typeeff],AliHFEInclusiveSpectrumQA::fgkNameCanvas[typeeff],1000,700);
   cEfficiency->Divide(2,1);

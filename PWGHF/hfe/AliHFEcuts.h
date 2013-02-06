@@ -133,6 +133,7 @@ class AliHFEcuts : public TNamed{
     Bool_t IsRequireKineMCCuts() const {return TESTBIT(fRequirements, kKineMCCuts); };
     Double_t GetVertexRange() const {return fVertexRangeZ; };
     Int_t GetMinTrackletsTRD() const { return fMinTrackletsTRD; }
+    Bool_t GetUseMixedVertex() const { return fUseMixedVertex;};   
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);
@@ -146,7 +147,7 @@ class AliHFEcuts : public TNamed{
     void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
-    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isabs);
+    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isIPcharge, Bool_t isipsigma, Bool_t isopp);
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     void SetTOFsignaldxz(Double_t tofsignaldx, Double_t tofsignaldz){fTOFsignaldx = tofsignaldx; fTOFsignaldz = tofsignaldz;};
@@ -164,7 +165,9 @@ class AliHFEcuts : public TNamed{
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetITSpatternCut() { fITSpatternCut = kTRUE; }
-    void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
+    inline void SetUseMixedVertex(Bool_t useMixedVertex);    
+    inline void SetUseSPDVertex(Bool_t useSPDVertex);
+    void SetUseCorrelationVertex() { fUseCorrelationVertex = kTRUE;};
     void SetFractionOfSharedTPCClusters(Double_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
     
@@ -243,10 +246,13 @@ class AliHFEcuts : public TNamed{
     Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
     Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step
     Bool_t   fITSpatternCut;          // Cut on ITS pattern
-    Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
+    Bool_t   fUseMixedVertex;         // Use primary vertex from track if there otherwise SPD vertex
+    Bool_t   fUseSPDVertex;           // Use primary SPD vertex 
+    Bool_t   fUseCorrelationVertex;   // Use the correlation of the vertex in z
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
-    Bool_t   fIsIPAbs;                // if abs IP sigma cut
+    Bool_t   fIsIPcharge;             // if cut on IP * charge (cut using only positive side of distribution, to eliminate conversions)
+    Bool_t   fIsIPOpp;                // if IP*charge cut on side of the photon peak
     Double_t fFractionOfSharedTPCClusters; // Fraction of shared TPC clusters
     Bool_t   fMaxImpactParameterRpar;      // Max impact parameter
     Long_t   fAdditionalStatusRequirement; // Additional status bit requirement 
@@ -298,14 +304,15 @@ void AliHFEcuts::SetMaxImpactParam(Double_t radial, Double_t z){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isabs){
+void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isIPcharge, Bool_t isopp){
   // Set parameters for impact parameter cut parametrization
   fIPCutParams[0] = p0;
   fIPCutParams[1] = p1;
   fIPCutParams[2] = p2;
   fIPCutParams[3] = p3;
   fIsIPSigmacut = isipsigma;
-  fIsIPAbs = isabs;
+  fIsIPcharge = isIPcharge;
+  fIsIPOpp = isopp;
 }
 
 //__________________________________________________________________
@@ -318,6 +325,22 @@ void AliHFEcuts::SetCutITSpixel(UChar_t cut){
 void AliHFEcuts::SetCutITSdrift(UChar_t cut){
   SetRequireITSDrift();
   fCutITSDrift = cut;
+}
+//__________________________________________________________________
+void AliHFEcuts::SetUseMixedVertex(Bool_t useMixedVertex){
+  //
+  // Choice of a vertex
+  //
+  fUseMixedVertex = useMixedVertex;
+  if(useMixedVertex) fUseSPDVertex = kFALSE;
+}
+//__________________________________________________________________
+void AliHFEcuts::SetUseSPDVertex(Bool_t useSPDVertex){
+  //
+  // Choice of a vertex
+  //
+  fUseSPDVertex = useSPDVertex;
+  if(useSPDVertex) fUseMixedVertex = kFALSE;
 }
 
 //__________________________________________________________________

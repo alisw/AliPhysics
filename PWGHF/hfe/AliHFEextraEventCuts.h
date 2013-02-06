@@ -43,7 +43,9 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void SetVertexZCut(Double_t zMin=-1.e99, Double_t zMax=1.e99) { fVtxZMin=zMin; fVtxZMax=zMax;} // cut values setter
 
   void SetVertexNContributors(Int_t min) {fVtxNCtrbMin=min;}
-  void SetUseMixedVertex() {fVtxMixed=kTRUE ;} //default is vertex from tracks
+  void SetUseMixedVertex() {fVtxMixed=kTRUE; fVtxSPD=kFALSE;} //default is vertex from tracks
+  void SetUseSPDVertex() {fVtxSPD=kTRUE; fVtxMixed=kFALSE;} //default is vertex from tracks
+  void SetCheckCorrelationSPDVtx() {fCheckCorrelationSPDVtx=kTRUE;} // check the correlation between z of different vertices
  
   Bool_t   GetRequireVtxCuts() const {return fRequireVtxCuts;} // cut value getter
   Double_t GetVertexZMax() const {return fVtxZMax;} // cut values getter
@@ -71,6 +73,8 @@ class AliHFEextraEventCuts: public AliCFCutBase
   Double_t fVtxZMin ; //Z vertex position, minimum value
   Int_t    fVtxNCtrbMin; //Min number of contributors to vertex
   Bool_t   fVtxMixed;  //Flag for use of mixed vertex (primary vertex with track, if not SPD vertex)
+  Bool_t   fVtxSPD;    //Flag for use of SPD vertex 
+  Bool_t   fCheckCorrelationSPDVtx;   //Check the correlation SPD, track vertex
  
   TBits *fBitMap ; //cut mask
 

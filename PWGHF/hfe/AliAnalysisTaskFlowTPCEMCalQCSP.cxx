@@ -158,7 +158,8 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalQCSP)
   ,fminM02(0.03)
   ,fmaxM02(0.5)
   ,fDispersion(1)
-
+  ,fMultCorAfterCuts(0)
+  ,fMultvsCentr(0)
 {
   //Named constructor
 
@@ -229,7 +230,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
   ,fminM02(0.03)
   ,fmaxM02(0.5)
   ,fDispersion(1)
-
+  ,fMultCorAfterCuts(0)
+  ,fMultvsCentr(0)
 {
   //Default constructor
   fPID = new AliHFEpid("hfePid");
@@ -679,6 +681,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
   fOutputList->Add(fSparseElectron);
   
   
+  fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+  fOutputList->Add(fMultCorAfterCuts);
+  fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 100.5, 101, 0, 3000);
+  fOutputList->Add(fMultvsCentr);
+    
+    
   PostData(1,fOutputList);
  // create and post flowevent
   fFlowEvent = new AliFlowEvent(10000);
@@ -734,9 +742,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
   // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
   if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-    
  // cout << "--------------Centrality evaluated-------------------------"<<endl;
-
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
@@ -744,7 +750,6 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     centralitypass = kFALSE;
   }else
   { 
-    //fCentralityPass->Fill(fCentrality);
   //  cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
     centralitypass = kTRUE; 
   }
@@ -753,10 +758,37 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     if (TMath::Abs(fCentrality - centTrk) > 5.0){
         centralitypass = kFALSE;
         fCentralityNoPass->Fill(fCentrality);
-        //cout << "--------------OUTLIERS------"<< fCentrality <<"-----------------"<<endl;
-
+     }
+    const Int_t nGoodTracks = event->GetNumberOfTracks();
+    
+    Float_t multTPC(0.); // tpc mult estimate
+    Float_t multGlob(0.); // global multiplicity
+    for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        if (!trackAOD) continue;
+        if (!(trackAOD->TestFilterBit(1))) continue;
+        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+        multTPC++;
     }
-    if(centralitypass)fCentralityPass->Fill(fCentrality);;
+    for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        if (!trackAOD) continue;
+        if (!(trackAOD->TestFilterBit(16))) continue;
+        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+        if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+        multGlob++;
+    } //track loop
+    //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
+    if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))){
+        centralitypass = kFALSE;
+        fCentralityNoPass->Fill(fCentrality);
+    }
+    fMultCorAfterCuts->Fill(multGlob, multTPC);
+    fMultvsCentr->Fill(fCentrality, multTPC);
+    if(centralitypass)fCentralityPass->Fill(fCentrality);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)

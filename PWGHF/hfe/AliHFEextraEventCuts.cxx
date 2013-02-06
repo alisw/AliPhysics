@@ -40,6 +40,8 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
   fVtxZMin(-1.e99),
   fVtxNCtrbMin(0),
   fVtxMixed(0),
+  fVtxSPD(0),
+  fCheckCorrelationSPDVtx(0),
   fBitMap(0x0)
 {
   //
@@ -55,6 +57,8 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) :
   fVtxZMin(-1.e99),
   fVtxNCtrbMin(0),
   fVtxMixed(0),
+  fVtxSPD(0),
+  fCheckCorrelationSPDVtx(0),
   fBitMap(0x0)
  {
   //
@@ -72,6 +76,8 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) :
   fVtxZMin(c.fVtxZMin),
   fVtxNCtrbMin(c.fVtxNCtrbMin),
   fVtxMixed(c.fVtxMixed),
+  fVtxSPD(c.fVtxSPD),
+  fCheckCorrelationSPDVtx(c.fCheckCorrelationSPDVtx),
   fBitMap(c.fBitMap)
 {
   //
@@ -132,6 +138,8 @@ AliHFEextraEventCuts& AliHFEextraEventCuts::operator=(const AliHFEextraEventCuts
     fVtxZMin=c.fVtxZMin;
     fVtxNCtrbMin=c.fVtxNCtrbMin;
     fVtxMixed=c.fVtxMixed;
+    fVtxSPD=c.fVtxSPD;
+    fCheckCorrelationSPDVtx=c.fCheckCorrelationSPDVtx;
     fBitMap=c.fBitMap;
   }
 
@@ -204,8 +212,17 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
 	  }
 	}
       }
-      else {   
-	vtxESD = esd->GetPrimaryVertexTracks() ;
+      else if(fVtxSPD) {   
+	vtxESD = esd->GetPrimaryVertexSPD() ;
+	if(fCheckCorrelationSPDVtx) {
+	  const AliESDVertex* vtxESDtr = esd->GetPrimaryVertexTracks();
+	  if((!vtxESD) || (vtxESD->GetNContributors() <= 0) || (!vtxESDtr) || (vtxESDtr->GetNContributors() <= 0)) {
+	    if(TMath::Abs(vtxESD->GetZv()-vtxESDtr->GetZv())>0.5) return;
+	  }
+	}
+      }
+      else {
+      	vtxESD = esd->GetPrimaryVertexTracks() ;
       }
       
       if(!vtxESD){
@@ -215,12 +232,6 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
       }
       
       // Pick up the position and uncertainties
-      vtxESD = esd->GetPrimaryVertex();
-      if(!vtxESD){
-	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	AliWarning("Cannot get vertex, skipping event");
-	return;
-      }
       Double_t vtxPos[3];
       vtxPos[0] = vtxESD->GetXv();
       vtxPos[1] = vtxESD->GetYv();
@@ -266,7 +277,16 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
 	  }
 	}
       }
-      else {   
+      else if(fVtxSPD) {   
+	vtxAOD = aod->GetPrimaryVertexSPD() ;
+	if(fCheckCorrelationSPDVtx) {
+	  const AliAODVertex* vtxAODtr = aod->GetPrimaryVertex();
+	  if((!vtxAOD) || (vtxAOD->GetNContributors() <= 0) || (!vtxAODtr) || (vtxAODtr->GetNContributors() <= 0)) {
+	    if(TMath::Abs(vtxAOD->GetZ()-vtxAODtr->GetZ())>0.5) return;
+	  }
+	}
+      }
+      else {
 	vtxAOD = aod->GetPrimaryVertex() ;
       }
       
@@ -277,12 +297,6 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
       }
       
       // Pick up the position and uncertainties
-      vtxAOD = aod->GetPrimaryVertex();
-      if(!vtxAOD){
-	for(Int_t j=1;j<kNCuts;j++)fBitMap->SetBitNumber(j,kFALSE); 
-	AliWarning("Cannot get vertex, skipping event");
-	return;
-      }
       Double_t vtxPos[3];
       vtxPos[0] = vtxAOD->GetX();
       vtxPos[1] = vtxAOD->GetY();
