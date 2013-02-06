@@ -437,16 +437,16 @@ Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
   //
   // 1st gaussian
   double intg1 = GausInt2D(fResponseParam->GetParameter(kG2SigX0),  // sigX
-			   fResponseParam->GetParameter(kG2SigZ0),  // sigZ
 			   dtIn[kCellX1]-fResponseParam->GetParameter(kG2MeanX0),      // x1-xmean
 			   dtIn[kCellX2]-fResponseParam->GetParameter(kG2MeanX0),      // x2-xmean
+			   fResponseParam->GetParameter(kG2SigZ0),  // sigZ
 			   dtIn[kCellZ1]-fResponseParam->GetParameter(kG2MeanZ0),    // z1-zmean
 			   dtIn[kCellZ2]-fResponseParam->GetParameter(kG2MeanZ0));   // z2-zmean
   // 2nd gaussian
   double intg2 = GausInt2D(fResponseParam->GetParameter(kG2SigX1),  // sigX
-			   fResponseParam->GetParameter(kG2SigZ1),  // sigZ
 			   dtIn[kCellX1]-fResponseParam->GetParameter(kG2MeanX1),      // x1-xmean
 			   dtIn[kCellX2]-fResponseParam->GetParameter(kG2MeanX1),      // x2-xmean
+			   fResponseParam->GetParameter(kG2SigZ1),  // sigZ
 			   dtIn[kCellZ1]-fResponseParam->GetParameter(kG2MeanZ1),    // z1-zmean
 			   dtIn[kCellZ2]-fResponseParam->GetParameter(kG2MeanZ1));   // z2-zmean
   double scl = fResponseParam->GetParameter(kG2ScaleG2);
