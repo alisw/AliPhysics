@@ -103,6 +103,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    fkTakeAllTracks ( kFALSE ),
    fpArapidityShift ( 0.465 ),
   fCentralityEstimator("V0M"),
+  fkLightWeight  ( kFALSE ),  
 //------------------------------------------------
 // Tree Variables 
 
@@ -293,6 +294,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    fkTakeAllTracks ( kFALSE ),
    fpArapidityShift ( 0.465 ),
   fCentralityEstimator("V0M"),
+  fkLightWeight  ( kFALSE ),  
 //------------------------------------------------
 // Tree Variables 
 
@@ -517,7 +519,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 
 //-----------BASIC-INFO---------------------------
 /* 1*/   fTree->Branch("fTreeVariablePrimaryStatus",&fTreeVariablePrimaryStatus,"fTreeVariablePrimaryStatus/I");	
-/* 1*/   fTree->Branch("fTreeVariablePrimaryStatusMother",&fTreeVariablePrimaryStatusMother,"fTreeVariablePrimaryStatusMother/I");	
+/* 2*/   fTree->Branch("fTreeVariablePrimaryStatusMother",&fTreeVariablePrimaryStatusMother,"fTreeVariablePrimaryStatusMother/I");	
 /* 2*/   fTree->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"Chi2V0/F");
 /* 3*/   fTree->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
 /* 4*/   fTree->Branch("fTreeVariableDcaPosToPrimVertex",&fTreeVariableDcaPosToPrimVertex,"fTreeVariableDcaPosToPrimVertex/F");
@@ -558,14 +560,20 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*34*/   fTree->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
 /*35*/   fTree->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
 /*36*/   fTree->Branch("fTreeVariableV0CreationRadius",&fTreeVariableV0CreationRadius,"fTreeVariableV0CreationRadius/F");
+  
+    if ( fkLightWeight == kFALSE ){ // these are debugging branches!
 /*37*/   fTree->Branch("fTreeVariableIndexStatus",&fTreeVariableIndexStatus,"fTreeVariableIndexStatus/I");
 /*38*/   fTree->Branch("fTreeVariableIndexStatusMother",&fTreeVariableIndexStatusMother,"fTreeVariableIndexStatusMother/I");
+    }
 
 /*39*/ 	 fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 /*40*/   fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
 
+    if ( fkLightWeight == kFALSE ){ // these are debugging branches!
 /*34*/   fTree->Branch("fTreeVariableVertexZ",&fTreeVariableVertexZ,"fTreeVariableVertexZ/F");
-
+    }
+      
+    if ( fkLightWeight == kFALSE ){ // these are debugging branches!
 //-----------FOR CTAU DEBUGGING: Full Phase Space + Decay Position Info 
         fTree->Branch("fTreeVariableV0x",&fTreeVariableV0x,"fTreeVariableV0x/F");
         fTree->Branch("fTreeVariableV0y",&fTreeVariableV0y,"fTreeVariableV0y/F");
@@ -592,11 +600,14 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableMCPVx",&fTreeVariableMCPVx,"fTreeVariableMCPVx/F");
         fTree->Branch("fTreeVariableMCPVy",&fTreeVariableMCPVy,"fTreeVariableMCPVy/F");
         fTree->Branch("fTreeVariableMCPVz",&fTreeVariableMCPVz,"fTreeVariableMCPVz/F");
+    }
 
         fTree->Branch("fTreeVariableIsNonInjected",&fTreeVariableIsNonInjected,"fTreeVariableIsNonInjected/O"); //O for bOOlean...
   
+  if ( fkLightWeight == kFALSE ){ // these are debugging branches!
         fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
         fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+  }
   
 //------------------------------------------------
 // Particle Identification Setup
