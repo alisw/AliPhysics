@@ -9,7 +9,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliRhoParameter;
-
+#include <TH3F.h>
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
