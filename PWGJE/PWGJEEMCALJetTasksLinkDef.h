@@ -34,5 +34,6 @@
 #pragma link C++ class AliAnalysisTaskChargedJetsPA;
 #pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 
 #endif
