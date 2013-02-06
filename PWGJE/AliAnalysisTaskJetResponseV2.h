@@ -57,7 +57,7 @@ public:
    virtual Float_t  GetJetPtFractionMin() const { return fJetPtFractionMin; }
    virtual Int_t    GetNMatchJets() const { return fNMatchJets; }
 
-   virtual void     SetBranchNames(const TString &branch1, const TString &branch2);
+   virtual void     SetBranchNames(const TString &branch1= "", const TString &branch2 = "", const TString &branch3 = "");
    virtual void     SetBackgroundBranch(TString &branch) { fBackgroundBranch = branch;}
    virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
    virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
@@ -84,6 +84,7 @@ public:
    virtual void     SetFillJetsEta(Bool_t b) { fbJetsEta = b; }
    virtual void     SetFillJetsPhi(Bool_t b) { fbJetsPhi = b; }
    virtual void     SetFillJetsArea(Bool_t b) { fbJetsArea = b; }
+   virtual void     SetFillJets3Branches(Bool_t b) { fbJets3Branches = b; }
    virtual void     SetFillJetsBeforeCut1(Bool_t b) { fbJetsBeforeCut1 = b; }
    virtual void     SetFillJetsBeforeCut2(Bool_t b) { fbJetsBeforeCut2 = b; }
    virtual void     SetKeepJets(Bool_t b = kTRUE) { fKeepJets = b; }
@@ -94,12 +95,12 @@ private:
    AliAODEvent *fAOD;    //! AOD event
 
    // jets to compare
-   TString fJetBranchName[2]; //  name of jet branches to compare
-   TList *fListJets[2];       //! jet lists
+   TString fJetBranchName[3]; //  name of jet branches to compare
+   TList *fListJets[3];       //! jet lists
 
    TString fBackgroundBranch;  // branch of external background
 
-   // event selection
+    // event selection
    Bool_t fIsPbPb;         // is Pb-Pb (fast embedding) or p-p (detector response)
    AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
    Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
@@ -122,7 +123,7 @@ private:
 
 
    // output objects
-   const Int_t fkNbranches;                   //! number of branches to be read
+   Int_t fkNbranches;                   //! number of branches to be read
    const Int_t fkEvtClasses;                  //! number of event classes
    TList *fOutputList;                        //! output data container
    Bool_t fbEvent;                            // fill fhnEvent
@@ -133,6 +134,7 @@ private:
    Bool_t fbJetsEta;                          // fill fhnJetsEta
    Bool_t fbJetsPhi;                          // fill fhnJetsEta
    Bool_t fbJetsArea;                         // fill fhnJetsArea
+   Bool_t fbJets3Branches;                         // fill fhnJets3Branches
    Bool_t fbJetsBeforeCut1;                   // fill fhnJetsBeforeCut1
    Bool_t fbJetsBeforeCut2;                   // fill fhnJetsBeforeCut2
    TH1I  *fHistEvtSelection;                  //! event selection statistic
@@ -146,8 +148,9 @@ private:
    THnSparse *fhnJetsEta;                     //! variables per jet
    THnSparse *fhnJetsPhi;                     //! variables per jet
    THnSparse *fhnJetsArea;                    //! variables per jet
-   THnSparse *fhnJetsBeforeCut1;               //! variables per jet before acceptance cut
-   THnSparse *fhnJetsBeforeCut2;               //! variables per jet before acceptance cut
+   THnSparse *fhnJets3Branches;               //! variables per jet
+   THnSparse *fhnJetsBeforeCut1;              //! variables per jet before acceptance cut
+   THnSparse *fhnJetsBeforeCut2;              //! variables per jet before acceptance cut
 
    AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
    AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
