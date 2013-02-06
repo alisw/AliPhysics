@@ -15,6 +15,8 @@
 #include "Riostream.h"
 
 #include <vector>
+#include <set>
+#include <map>
 
 class AliTriggerBCMask;
 class AliAnalysisTriggerScalerItem;
@@ -23,6 +25,8 @@ class TGraph;
 class AliAnalysisTriggerScalers : public TObject
 {
 public:
+  AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* ocdbPath="raw://");
+  AliAnalysisTriggerScalers(const std::set<int>& runs, const char* ocdbPath="raw://");
   AliAnalysisTriggerScalers(Int_t runNumber, const char* ocdbPath="raw://");
   AliAnalysisTriggerScalers(const char* runlist, const char* ocdbPath="raw://");
   virtual ~AliAnalysisTriggerScalers();
@@ -34,10 +38,11 @@ public:
   AliAnalysisTriggerScalerItem* GetTriggerScaler(Int_t runNumber, const char* level, const char* triggerClassName);
 
   void IntegratedLuminosity(const char* triggerList="",
-                            const char* lumiTrigger="C0TVX-S-NOPF-ALLNOTRD",
-                            Double_t lumiCrossSection=28.0,
+                            const char* lumiTrigger="C0TVX-B-NOPF-ALLNOTRD",
+                            Double_t lumiCrossSection=0.755*2000,
                             const char* csvOutputFile="",
-                            const char sep='\t');
+                            const char sep='\t',
+                            const char* csUnit="ub");
     
   TGraph* PlotTriggerRatio(const char* triggerClassName1,
                            const char* what1,
@@ -49,8 +54,11 @@ public:
   TGraph* PlotTriggerEvolution(const char* triggerClassName,
                                const char* what,
                                bool draw=kTRUE,
-                               double* mean=0x0);
+                               double* mean=0x0,
+                               bool removeZero=kFALSE);
 
+  void SetRunList(const std::vector<int>& runlist);
+  void SetRunList(const std::set<int>& runlist);
   void SetRunList(Int_t runNumber);
   void SetRunList(const char* runlist);
 
@@ -65,8 +73,18 @@ public:
 
   TObject* GetOCDBObject(const char* path, Int_t runNumber);
   
+  const std::vector<int>& GetRunList() const { return fRunList; }
+
+  void DrawFills(Double_t ymin, Double_t ymax);
+  
 private:
   
+  void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
+
+  void GetFillBoundaries(std::map<int, std::pair<int,int> >& fills);
+  
+  Float_t GetPauseAndConfigCorrection(Int_t runNumber, const char* triggerClassName);
+
   TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
                     const std::vector<double>& vy, const std::vector<double>& vey);
 
@@ -128,17 +146,17 @@ private:
   AliAnalysisTriggerScalerItem& operator=(const AliAnalysisTriggerScalerItem& rhs);
   
 private:
-  Int_t fRunNumber;
-  TString fLevel;
-  TString fDipoleCurrent;
-  TString fTriggerClassName;
-  ULong64_t fValue;  
-  Int_t fNofRuns;
-  AliTriggerBCMask* fTriggerBCMask;
-  Int_t fDS;
-  time_t fDuration;
+  Int_t fRunNumber; // run number for this scaler
+  TString fLevel; // L0, L1 or L2
+  TString fDipoleCurrent; // dipole current (A)
+  TString fTriggerClassName; // trigger class name for this scaler
+  ULong64_t fValue; // counter
+  Int_t fNofRuns; // number of runs corresponding to counter
+  AliTriggerBCMask* fTriggerBCMask; // pointer to BCMasks
+  Int_t fDS; // downscaling factor
+  time_t fDuration; // duration
   
-  ClassDef(AliAnalysisTriggerScalerItem,5)
+  ClassDef(AliAnalysisTriggerScalerItem,5) // class to hold information about one scaler for one trigger class
 };
 
 #endif
