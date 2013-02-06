@@ -60,6 +60,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetTakeAllTracks       (Bool_t lTakeAllTracks = kTRUE ) { fkTakeAllTracks = lTakeAllTracks; }
   void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
+  void SetLightWeightAnalysis (Bool_t lLightWeight = kTRUE) {fkLightWeight = lLightWeight;  }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -80,6 +81,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkTakeAllTracks; // if true, no TPC crossed rows and ratio cut
   Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
+  
+  Bool_t fkLightWeight; //if true, skip a number of debugging information branches in TTree
+                        //(to make resulting tree output significantly smaller!
 
 //===========================================================================================
 //   Variables for Tree, V0s
