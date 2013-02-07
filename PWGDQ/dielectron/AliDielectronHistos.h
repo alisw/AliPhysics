@@ -19,7 +19,10 @@
 // #include <TCollection.h>
 #include <THashList.h>
 #include <TVectorDfwd.h>
+#include <THn.h>
+#include <THnSparse.h>
 
+//class THn;
 class TH1;
 class TString;
 class TList;
@@ -71,14 +74,16 @@ public:
 		   const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
 		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0, TString option="");
 
+  void UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
+  void UserSparse(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE) 
+                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE)
   { UserProfile(histClass,name,title,999,nbinsX,xmin,xmax,valTypeX,logBinX); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
-                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE)    
+                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE)
   { UserProfile(histClass,name,title,999,nbinsX,xmin,xmax,nbinsY,ymin,ymax,valTypeX,valTypeY,logBinX,logBinY); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
@@ -104,7 +109,7 @@ public:
                      UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0)
   { UserProfile(histClass,name,title,999,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ); }
   
-  void UserHistogram(const char* histClass, TH1* hist, UInt_t valTypes=kNoAutoFill);
+  void UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes=kNoAutoFill);
 
   void Fill(const char* histClass, const char* name, Double_t xval);
   void Fill(const char* histClass, const char* name, Double_t xval, Double_t yval);
@@ -112,9 +117,21 @@ public:
   
 //   void FillClass(const char* histClass, const TVectorD &vals);
   void FillClass(const char* histClass, Int_t nValues, const Double_t *values);
-
   
+  void StoreVariables(TObject *obj, UInt_t valType[20]);
+  void StoreVariables(TH1 *obj, UInt_t valType[20]);
+  void StoreVariables(THn *obj, UInt_t valType[20]);
+  void StoreVariables(THnSparse *obj, UInt_t valType[20]);
+  void AdaptNameTitle(TH1 *hist, const char* histClass);
+  void FillVarArray(TObject *obj, UInt_t *valType);
+  void FillValues(TObject *obj, const Double_t *values);
+  void FillValues(TH1 *obj, const Double_t *values);
+  void FillValues(THn *obj, const Double_t *values);
+  void FillValues(THnSparse *obj, const Double_t *values);
+
+  TObject* GetHist(const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* histClass, const char* name) const;
+  TObject* GetHist(const char* cutClass, const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* cutClass, const char* histClass, const char* name) const;
   
   void SetHistogramList(THashList &list, Bool_t setOwner=kTRUE);
@@ -134,7 +151,7 @@ public:
   virtual void DrawSame(const char* histName, const Option_t *opt="leg can");
 
   void SetReservedWords(const char* words);
-  void StoreVarForProfile(TObject *obj, UInt_t valType);
+  //  void StoreVarForProfile(TObject *obj, UInt_t valType);
 //   virtual void       Add(TObject *obj) {};
 //   virtual void       Clear(Option_t *option="") {};
 //   virtual void       Delete(Option_t *option="") {};
@@ -149,7 +166,7 @@ private:
   TList    *fList;                  //! List of list of histograms
 
   TString *fReservedWords;          //! list of reserved words
-  void UserHistogramReservedWords(const char* histClass, const TH1 *hist, UInt_t valTypes);
+  void UserHistogramReservedWords(const char* histClass, const TObject *hist, UInt_t valTypes);
   void FillClass(THashTable *classTable, Int_t nValues, Double_t *values);
   
   void PrintPDF(Option_t* opt);
