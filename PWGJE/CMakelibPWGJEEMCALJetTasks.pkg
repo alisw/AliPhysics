@@ -48,6 +48,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
