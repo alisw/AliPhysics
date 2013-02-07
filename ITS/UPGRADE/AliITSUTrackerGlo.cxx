@@ -964,7 +964,7 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
       nCl++;
       for (int imc=0;imc<kMaxLbPerCl;imc++) { // labels within single cluster
 	int trLb = cl->GetLabel(imc);
-	if (imc<0) break;
+	if (trLb<0) break;
 	// search this mc track in already accounted ones
 	int iLab;
 	for (iLab=0;iLab<nLab;iLab++) if (lbID[iLab]==trLb) break;
