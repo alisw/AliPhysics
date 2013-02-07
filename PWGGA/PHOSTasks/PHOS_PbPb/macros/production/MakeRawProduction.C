@@ -6,6 +6,7 @@
 #include "TF1.h"
 #include "TAttLine.h"
 #include "TAttMarker.h"
+#include "TH1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TSystem.h"
@@ -23,6 +24,7 @@
 #include <TMap.h>
 #include <TObjString.h>
 #include "TCanvas.h"
+#include "TAxis.h"
 
 namespace RawProduction {
 
@@ -107,7 +109,7 @@ namespace RawProduction {
   // Object describing the output of the macros
   class Output {
   public:
-    Output(const TString& fileName = "Pi0_FitResult.root", const char* options = "READ");
+    Output(const TString& fileName = "Pi0_FitResult.root", const char* options = "UPDATE");
     TH1* GetHistogram(const TString& name, const InputBin& outputBin);
     void AddHistogram(const InputBin& outputBin, TH1* histogram );
     void Write();
@@ -117,19 +119,19 @@ namespace RawProduction {
     TMap* fBinListMap;
   };
 
-  void MakePi0Fit(Input& input, Int_t centrality=0, TString pid="CPV", const TString saveToFileName="Pi0_FitResult.root")
+  void MakePi0Fit(Input& input, const OutputBin& outBin, Output& output)
   {
     MakePtBins();
-    char key[256];
-    sprintf(key, "c%03i_%s_%s", centrality, pid.Data(), input.Bin().Trigger().Data());
-    Printf("\nMakePi0Fit(%s)", key);
+    Printf("\nMakePi0Fit(%s)", outBin.Key().Data());
   
     
     TH1F * hTotSelEvents          = (TH1F*) input.GetHistogram("hTotSelEvents");
     TH2F * hCentrality  = (TH2F*) input.GetHistogram("hCenPHOSCells");
     TH1D * hCentralityX = hCentrality->ProjectionX();
-    TH2F *hPi0 =    (TH2F*)GetHistogram_cent(input, Form("hPi0%s", pid.Data()), centrality);
-    TH2F *hPi0Mix = (TH2F*)GetHistogram_cent(input, Form("hMiPi0%s", pid.Data()), centrality);
+    TH2F *hPi0 =    (TH2F*)GetHistogram_cent(input, Form("hPi0%s", outBin.PID().Data()), outBin.Centrality());
+    TH2F *hPi0Mix = (TH2F*)GetHistogram_cent(input, Form("hMiPi0%s", outBin.PID().Data()), outBin.Centrality());
+    output.AddHistogram(outBin, hPi0);
+    output.AddHistogram(outBin, hPi0Mix);
 
     printf("TotSelEvents (4): %.0f \n", hTotSelEvents->GetBinContent(4)) ;
     printf("Centrality:   %.0f \n",     hCentralityX->Integral()) ;
@@ -140,13 +142,8 @@ namespace RawProduction {
     }
 
     // for temp convas for drawing/monitoring
-    static TCanvas* canvas = new TCanvas("cMakePi0Fit", Form("MakePi0Fit Canvas, %s", key),10,10,1200,800);
+    static TCanvas* canvas = new TCanvas("cMakePi0Fit", Form("MakePi0Fit Canvas, %s", outBin.Key().Data()),10,10,1200,800);
   
-    // A list for adding histograms for storing.
-    TFile* outputFile = TFile::Open(saveToFileName.Data(), "UPDATE");
-    TDirectory* outputDir = outputFile->mkdir(key);
-    outputDir->cd();
-
   
     // Peak Parameterization
     //  1. Linear Bg
@@ -173,12 +170,12 @@ namespace RawProduction {
     TStringToken names("mr1;mr1r;sr1;sr1r;ar1;br1;yr1;yr1int", ";");
     TStringToken titles("Mass;Mass, Ratio Fit;Width;Width, Ratio Fit;a;b;Raw Yield; Raw Yield, integrated", ";");
     while( names.NextToken() && titles.NextToken() )
-      new TH1D(names.Data(), titles.Data(), nPtBins,ptBinEdges);
+      output.AddHistogram(outBin, new TH1D(names.Data(), titles.Data(), nPtBins,ptBinEdges));
     //  2. Quadratic Bg
     TStringToken names2("mr2;mr2r;sr2;sr2r;ar2;br2;cr2;yr2;yr2int", ";");
     TStringToken titles2("Mass;Mass, Ratio Fit;Width;Width, Ratio Fit;a;b;c;Raw Yield; Raw Yield, integrated", ";");
     while( names2.NextToken() && titles2.NextToken() )
-      new TH1D(names2.Data(), titles2.Data(), nPtBins,ptBinEdges);
+      output.AddHistogram(outBin, new TH1D(names2.Data(), titles2.Data(), nPtBins,ptBinEdges));
   
     // Pt slice loop
     for(Int_t ptBin=1; ptBin<=nPtBins; ptBin++){
@@ -233,9 +230,9 @@ namespace RawProduction {
       }
       std::cout << std::endl;
     
-      hPi0Proj->SetTitle(Form("M_{#gamma#gamma}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid.Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+      hPi0Proj->SetTitle(Form("M_{#gamma#gamma}, PID=%s, %.1f<p_{T}<%.1f GeV/c",outBin.PID().Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
       hPi0Proj->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-      hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",pid.Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
+      hPi0ProjMix->SetTitle(Form("M_{#gamma#gamma}^{Mix}, PID=%s, %.1f<p_{T}<%.1f GeV/c",outBin.PID().Data(),ptBinEdges[ptBin-1],ptBinEdges[ptBin]));
       hPi0ProjMix->SetXTitle("M_{#gamma#gamma}^{Mix} (GeV/c^{2})");
 
 
@@ -246,12 +243,13 @@ namespace RawProduction {
       // Signal-Mix Ratio
       canvas->cd(2);
       TH1D * hPi0Ratio = (TH1D*)hPi0Proj->Clone( Form("pt%03i_hPi0Ratio",ptBin) ) ;
+      output.AddHistogram(outBin, hPi0Ratio);
       hPi0Ratio->SetTitle(Form("#frac{M_{#gamma#gamma}}{M_{#gamma#gamma}^{Mix}}, %.1f<p_{T}<%.1f GeV/c", ptBinEdges[ptBin-1], ptBinEdges[ptBin]));
       hPi0Ratio->Divide(hPi0ProjMix) ;
       hPi0Ratio->SetMarkerStyle(20) ;
       hPi0Ratio->SetMarkerSize(0.7) ;
 
-      //     if(centrality==0) rangeMax=0.4 ;
+      //     if(outBin.Centrality()==0) rangeMax=0.4 ;
       //     if(ptBin==1){
       //       rangeMin=0.06 ;
       //       rangeMax=0.25 ;
@@ -286,10 +284,10 @@ namespace RawProduction {
 	Printf("in ERROR, %i", ratioFitError1);
       } else {
 	Printf("converged, status:%i, covMatrixStatus: %i", ratioFitResultPtr1->Status(), ratioFitResultPtr1->CovMatrixStatus());
-	((TH1D*) outputDir->FindObject("ar1"))->SetBinContent(ptBin,funcRatioFit1->GetParameter(3)) ;
-	((TH1D*) outputDir->FindObject("ar1"))->SetBinError  (ptBin,funcRatioFit1->GetParError(3)) ;
-	((TH1D*) outputDir->FindObject("br1"))->SetBinContent(ptBin,funcRatioFit1->GetParameter(4)) ;
-	((TH1D*) outputDir->FindObject("br1"))->SetBinError  (ptBin,funcRatioFit1->GetParError(4)) ;
+	((TH1D*) output.GetHistogram("ar1", outBin))->SetBinContent(ptBin,funcRatioFit1->GetParameter(3)) ;
+	((TH1D*) output.GetHistogram("ar1", outBin))->SetBinError  (ptBin,funcRatioFit1->GetParError(3)) ;
+	((TH1D*) output.GetHistogram("br1", outBin))->SetBinContent(ptBin,funcRatioFit1->GetParameter(4)) ;
+	((TH1D*) output.GetHistogram("br1", outBin))->SetBinError  (ptBin,funcRatioFit1->GetParError(4)) ;
       }
 
     
@@ -325,12 +323,12 @@ namespace RawProduction {
 	Printf("in ERROR, %i", ratioFitError2);
       } else {
 	Printf("converged, status:%i, covMatrixStatus: %i", ratioFitResultPtr2->Status(), ratioFitResultPtr2->CovMatrixStatus());
-	((TH1D*) outputDir->FindObject("ar2"))->SetBinContent(ptBin,funcRatioFit2->GetParameter(3)) ;
-	((TH1D*) outputDir->FindObject("ar2"))->SetBinError  (ptBin,funcRatioFit2->GetParError(3)) ;
-	((TH1D*) outputDir->FindObject("br2"))->SetBinContent(ptBin,funcRatioFit2->GetParameter(4)) ;
-	((TH1D*) outputDir->FindObject("br2"))->SetBinError  (ptBin,funcRatioFit2->GetParError(4)) ;
-	((TH1D*) outputDir->FindObject("cr2"))->SetBinContent(ptBin,funcRatioFit2->GetParameter(5)) ;
-	((TH1D*) outputDir->FindObject("cr2"))->SetBinError  (ptBin,funcRatioFit2->GetParError(5)) ;
+	((TH1D*) output.GetHistogram("ar2", outBin))->SetBinContent(ptBin,funcRatioFit2->GetParameter(3)) ;
+	((TH1D*) output.GetHistogram("ar2", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(3)) ;
+	((TH1D*) output.GetHistogram("br2", outBin))->SetBinContent(ptBin,funcRatioFit2->GetParameter(4)) ;
+	((TH1D*) output.GetHistogram("br2", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(4)) ;
+	((TH1D*) output.GetHistogram("cr2", outBin))->SetBinContent(ptBin,funcRatioFit2->GetParameter(5)) ;
+	((TH1D*) output.GetHistogram("cr2", outBin))->SetBinError  (ptBin,funcRatioFit2->GetParError(5)) ;
       }
     
 
@@ -357,7 +355,9 @@ namespace RawProduction {
       if( ! ratioFitError1 ) {
 	printf("Pol1 BS Fit, ");
 	TH1D * hPi0MixScaledPol1 = (TH1D*)hPi0ProjMix->Clone(Form("pt%03i_hPi0MixScaledPol1", ptBin)) ;
+	output.AddHistogram(outBin, hPi0MixScaledPol1);
 	TH1D * hPi0BSPol1 = (TH1D*)hPi0Proj->Clone(Form("pt%03i_hPi0BSPol1", ptBin)) ;
+	output.AddHistogram(outBin, hPi0BSPol1);
 
 	// Scale Mix by linear part of ratio, yielding approx background
 	fbg1->SetParameters(funcRatioFit1->GetParameter(3), funcRatioFit1->GetParameter(4));
@@ -388,22 +388,22 @@ namespace RawProduction {
 	  Printf("in ERROR, %i", bs1FitError);
 	} else {
 	  Printf("converged, status:%i, covMatrixStatus: %i", bs1FitResultPtr->Status(), bs1FitResultPtr->CovMatrixStatus());
-	  ((TH1D*) outputDir->FindObject("mr1"))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
-	  ((TH1D*) outputDir->FindObject("mr1"))->SetBinError  (ptBin,fgs->GetParError(1) ) ;
-	  ((TH1D*) outputDir->FindObject("sr1"))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
-	  ((TH1D*) outputDir->FindObject("sr1"))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
+	  ((TH1D*) output.GetHistogram("mr1", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
+	  ((TH1D*) output.GetHistogram("mr1", outBin))->SetBinError  (ptBin,fgs->GetParError(1) ) ;
+	  ((TH1D*) output.GetHistogram("sr1", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
+	  ((TH1D*) output.GetHistogram("sr1", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
 	  Double_t y=fgs->GetParameter(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
-	  ((TH1D*) outputDir->FindObject("yr1"))->SetBinContent(ptBin,y/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinContent(ptBin,y/dpt) ;
 	  Double_t ey=fgs->GetParError(0)/hPi0BSPol1->GetXaxis()->GetBinWidth(1) ;
-	  ((TH1D*) outputDir->FindObject("yr1"))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr1", outBin))->SetBinError(ptBin,ey/dpt) ;
 
 	  Double_t npiInt = hPi0BSPol1->Integral(intBinMin,intBinMax) ;
 	  Double_t norm   = fbg1->GetParameter(0) ;
 	  Double_t normErr= fbg1->GetParError(0) ;
 	  if(npiInt>0.){
-	    ((TH1D*) outputDir->FindObject("yr1int"))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) outputDir->FindObject("yr1int"))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr1int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
 	    // maybe we should use TH1::IntegralAndError
 	  }
 	}
@@ -427,7 +427,9 @@ namespace RawProduction {
       if( ! ratioFitError2 ) {
 	printf("Pol1 Scaled Background Subtraction, ");
 	TH1D * hPi0MixScaledPol2 = (TH1D*)hPi0ProjMix->Clone(Form("pt%03i_hPi0MixScaledPol2", ptBin)) ;
+	output.AddHistogram(outBin, hPi0MixScaledPol2);
 	TH1D * hPi0BSPol2     = (TH1D*)hPi0Proj    ->Clone(Form("pt%03i_hPi0BSPol2", ptBin)) ;
+	output.AddHistogram(outBin, hPi0BSPol2);
 
 	
 	hPi0MixScaledPol2->Multiply(fbg2) ;
@@ -457,22 +459,22 @@ namespace RawProduction {
 	  Printf("in ERROR, %i", bs2FitError);
 	} else {
 	  Printf("converged, status:%i, covMatrixStatus: %i", bs2FitResultPtr->Status(), bs2FitResultPtr->CovMatrixStatus());
-	  ((TH1D*) outputDir->FindObject("mr2"))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
-	  ((TH1D*) outputDir->FindObject("mr2"))->SetBinError  (ptBin,fgs->GetParError(1) ) ;
-	  ((TH1D*) outputDir->FindObject("sr2"))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
-	  ((TH1D*) outputDir->FindObject("sr2"))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
+	  ((TH1D*) output.GetHistogram("mr2", outBin))->SetBinContent(ptBin,fgs->GetParameter(1)) ;
+	  ((TH1D*) output.GetHistogram("mr2", outBin))->SetBinError  (ptBin,fgs->GetParError(1) ) ;
+	  ((TH1D*) output.GetHistogram("sr2", outBin))->SetBinContent(ptBin,TMath::Abs(fgs->GetParameter(2))) ;
+	  ((TH1D*) output.GetHistogram("sr2", outBin))->SetBinError  (ptBin,fgs->GetParError(2) ) ;
 
 	  Double_t y=fgs->GetParameter(0)/hPi0BSPol2->GetXaxis()->GetBinWidth(1) ;
-	  ((TH1D*) outputDir->FindObject("yr2"))->SetBinContent(ptBin,y/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinContent(ptBin,y/dpt) ;
 	  Double_t ey=fgs->GetParError(0)/hPi0BSPol2->GetXaxis()->GetBinWidth(1) ;
-	  ((TH1D*) outputDir->FindObject("yr2"))->SetBinError(ptBin,ey/dpt) ;
+	  ((TH1D*) output.GetHistogram("yr2", outBin))->SetBinError(ptBin,ey/dpt) ;
 
 	  Double_t npiInt = hPi0BSPol2->Integral(intBinMin,intBinMax) ;
 	  Double_t norm   = fbg2->GetParameter(0) ;
 	  Double_t normErr= fbg2->GetParError(0) ;
 	  if(npiInt>0.){
-	    ((TH1D*) outputDir->FindObject("yr2int"))->SetBinContent(ptBin,npiInt/dpt) ;
-	    ((TH1D*) outputDir->FindObject("yr2int"))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinContent(ptBin,npiInt/dpt) ;
+	    ((TH1D*) output.GetHistogram("yr2int", outBin))->SetBinError(ptBin,TMath::Sqrt(npiInt + norm*mixInt + normErr*normErr*mixInt*mixInt + norm*norm*mixInt)/dpt) ;
 	    // maybe we should use TH1::IntegralAndError
 	    }
 	}
@@ -501,8 +503,8 @@ namespace RawProduction {
       
       canvas->Update();
       
-      canvas->Print(Form("imgs/%s_ptBin:%03i.pdf", key, ptBin));
-      canvas->Print(Form("imgs/%s_ptBin:%03i.png", key, ptBin));
+      canvas->Print(Form("imgs/%s_ptBin:%03i.pdf", outBin.Key().Data(), ptBin));
+      canvas->Print(Form("imgs/%s_ptBin:%03i.png", outBin.Key().Data(), ptBin));
     
       std::cout << std::endl;
     }// end of Pt slice loop
@@ -511,13 +513,13 @@ namespace RawProduction {
     //Normalize by the number of events
     Int_t cMin=0, cMax=0;
     if( input.Bin().Trigger().EqualTo("kCentral") )
-      switch(centrality) { 
+      switch(outBin.Centrality()) { 
       case 0: cMin = 1; cMax = 5; break;
       case 1: cMin = 6; cMax = 10; break;
       default: Printf("ERROR: cent bin not defined for trigger");
       }
     else if( input.Bin().Trigger().EqualTo("kSemiCentral") )
-      switch(centrality) { 
+      switch(outBin.Centrality()) { 
       case 0: cMin = 11; cMax = 20; break;
       case 1: cMin = 21; cMax = 30; break;
       case 2: cMin = 31; cMax = 40; break;
@@ -525,7 +527,7 @@ namespace RawProduction {
       default: Printf("ERROR: cent bin not defined for trigger");
       }
     else if ( input.Bin().Trigger().EqualTo("kMB") || input.Bin().Trigger().EqualTo("kPHOSPb") )
-      switch(centrality) {
+      switch(outBin.Centrality()) {
       case 0: cMin = 1; cMax = 5; break;
       case 1: cMin = 6; cMax = 10; break;
       case 2: cMin = 11; cMax = 20; break;
@@ -541,10 +543,10 @@ namespace RawProduction {
 
     Double_t nevents = hCentralityX->Integral(cMin,cMax);
     if ( nevents > 0.9 ) {
-      ((TH1D*) outputDir->FindObject("yr1")) ->Scale(1./nevents) ;
-      ((TH1D*) outputDir->FindObject("yr1int")) ->Scale(1./nevents) ;
-      ((TH1D*) outputDir->FindObject("yr2")) ->Scale(1./nevents) ;
-      ((TH1D*) outputDir->FindObject("yr2int")) ->Scale(1./nevents) ;
+      ((TH1D*) output.GetHistogram("yr1", outBin)) ->Scale(1./nevents) ;
+      ((TH1D*) output.GetHistogram("yr1int", outBin)) ->Scale(1./nevents) ;
+      ((TH1D*) output.GetHistogram("yr2", outBin)) ->Scale(1./nevents) ;
+      ((TH1D*) output.GetHistogram("yr2int", outBin)) ->Scale(1./nevents) ;
     } else {
       Printf("WARNING: non positive nEvents in centrality range, cMin:%d, cMax:%d, nEvents:%f", cMin, cMax, nevents );
 
@@ -555,13 +557,14 @@ namespace RawProduction {
     //  TFile* outputFile = TFile::Open(saveToFileName.Data(), "UPDATE");
     //outputList->Write(input.KeySuggestion(), TObject::kSingleKey);
     //outputList->Write();
-    outputFile->Write();
-    outputFile->Close();
-    delete outputFile;
+//     outputFile->Write();
+//     outputFile->Close();
+//     delete outputFile;
     // delete list and content from memory
     //outputList->SetOwner(kTRUE);
     //outputList->Delete("slow");
     //delete outputList;
+    //output.Write();
   }
 
 
@@ -698,7 +701,7 @@ namespace RawProduction {
   OutputBin::OutputBin(Int_t centrality, const TString& pid, const TString& trigger)
   : InputBin(trigger), fCentrality(centrality), fPID(pid)
   {
-    fKey.Format("c%03i_%s_%s", centrality, pid.Data(), trigger.Data());
+    fKey.Form("c%03i_%s_%s", centrality, pid.Data(), trigger.Data());
   }
 
   Output::Output(const TString& fileName, const char* options)
@@ -747,7 +750,8 @@ namespace RawProduction {
   {
     TList* list = GetList(outputBin);
     if( ! list ) {
-      fBinListMap->Add(new TObjString(outputBin.Key()), new THashList);
+      list = new THashList;
+      fBinListMap->Add(new TObjString(outputBin.Key()), list);
     }
     list->Add(histogram);
   }
@@ -756,13 +760,14 @@ namespace RawProduction {
   {
     fFile->cd();
     
-    TIterator* iter = fBinListMap->MakeIterator();
+    TMapIter* iter = (TMapIter*)fBinListMap->MakeIterator();
     while(iter->Next()) {
-      TPair* pair = (TPair*) (iter);
+      TPair* pair = (TPair*) iter->operator*();
+      TObjString* key = (TObjString*) (pair->Key());
+      //Printf(key->GetString().Data());
       TList* list = (TList*) pair->Value();
-      TObjString* ostr = (TObjString*) pair->Key();
       
-      list->Write(ostr->GetString().Data(), TObject::kSingleKey);
+      list->Write(key->GetString().Data(), TObject::kSingleKey);
     }
   }
 
@@ -926,9 +931,15 @@ namespace RawProduction {
 
 void MakeRawProduction()
 {
-  RawProduction::Input input("AnalysisResults.root", "kMB");
-  //TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
-  TStringToken pids("Bothcore", " ");
-  while(pids.NextToken())
-    RawProduction::MakePi0Fit(input, -1, pids.Data());
+  RawProduction::InputBin inBin("kMB");
+  RawProduction::Input input("AnalysisResults.root", inBin);
+  
+  RawProduction::Output output;
+  TStringToken pids("All Allcore Allwou Disp Disp2 Dispcore Dispwou CPV CPVcore CPV2 Both Bothcore", " ");
+  //TStringToken pids("Bothcore", " ");
+  while(pids.NextToken()) {
+    RawProduction::OutputBin outBin(-1, pids, inBin.Trigger());
+    RawProduction::MakePi0Fit(input, outBin, output);
+  }
+  output.Write();
 }
