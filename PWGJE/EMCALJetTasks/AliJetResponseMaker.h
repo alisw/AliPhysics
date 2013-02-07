@@ -21,23 +21,23 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   enum MatchingType{
     kNoMatching = 0,
     kGeometrical = 1,
-    kMCLabel = 2
+    kMCLabel = 2,
+    kSameCollections = 3
   };
 
   void                        UserCreateOutputObjects();
 
-  void                        SetJets2Name(const char *n)                            { fJets2Name         = n         ; }
-  void                        SetTracks2Name(const char *n)                          { fTracks2Name       = n         ; }
-  void                        SetClus2Name(const char *n)                            { fCalo2Name         = n         ; }
-  void                        SetJet2EtaLimits(Float_t min=-999, Float_t max=-999)   { fJet2MinEta = min, fJet2MaxEta = max ; }
-  void                        SetJet2PhiLimits(Float_t min=-999, Float_t max=-999)   { fJet2MinPhi = min, fJet2MaxPhi = max ; }
-  void                        SetRho2Name(const char *n)                             { fRho2Name          = n         ; }
-  void                        SetPtBiasJet2Clus(Float_t b)                           { fPtBiasJet2Clus    = b         ; }
-  void                        SetPtBiasJet2Track(Float_t b)                          { fPtBiasJet2Track   = b         ; }
-  void                        SetMatching(MatchingType t, Double_t p=1)              { fMatching = t; fMatchingPar = p; }
-  void                        SetPtHardBin(Int_t b)                                  { fSelectPtHardBin   = b         ; }
-  void                        SetMCflag1(Bool_t f)                                   { fAreCollections1MC = f         ; }
-  void                        SetMCflag2(Bool_t f)                                   { fAreCollections2MC = f         ; }
+  void                        SetJets2Name(const char *n)                                     { fJets2Name         = n         ; }
+  void                        SetTracks2Name(const char *n)                                   { fTracks2Name       = n         ; }
+  void                        SetClus2Name(const char *n)                                     { fCalo2Name         = n         ; }
+  void                        SetJet2EtaLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinEta = min, fJet2MaxEta = max ; }
+  void                        SetJet2PhiLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinPhi = min, fJet2MaxPhi = max ; }
+  void                        SetRho2Name(const char *n)                                      { fRho2Name          = n         ; }
+  void                        SetPtBiasJet2Clus(Float_t b)                                    { fPtBiasJet2Clus    = b         ; }
+  void                        SetPtBiasJet2Track(Float_t b)                                   { fPtBiasJet2Track   = b         ; }
+  void                        SetMatching(MatchingType t, Double_t p1=1, Double_t p2=1)       { fMatching = t; fMatchingPar1 = p1; fMatchingPar2 = p2; }
+  void                        SetPtHardBin(Int_t b)                                           { fSelectPtHardBin   = b         ; }
+  void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
 
  protected:
   Bool_t                      IsEventSelected();
@@ -49,7 +49,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
   Bool_t                      DoJetMatching();
-  Double_t                    GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
+  void                        SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
+  void                        GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
+  void                        GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
+  void                        GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
 
   TString                     fTracks2Name;                   // name of second track collection
   TString                     fCalo2Name;                     // name of second cluster collection
@@ -60,7 +63,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      fAreCollections1MC;             // collections 1 MC
   Bool_t                      fAreCollections2MC;             // collections 1 MC
   MatchingType                fMatching;                      // matching type
-  Double_t                    fMatchingPar;                   // maximum distance between matched particle and detector level jets
+  Double_t                    fMatchingPar1;                  // matching parameter for generated-reconstructed matching
+  Double_t                    fMatchingPar2;                  // matching parameter for reconstructed-generated matching
   Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
   Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
   Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
@@ -110,6 +114,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 10) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 11) // Jet response matrix producing task
 };
 #endif

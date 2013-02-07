@@ -15,7 +15,8 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    jetBiasTrack       = 5,
   Double_t    jetBiasClus        = 5,
   UInt_t      matching           = AliJetResponseMaker::kGeometrical,
-  Double_t    maxDistance        = 0.25,
+  Double_t    maxDistance1       = 0.25,
+  Double_t    maxDistance2       = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       ptHardBin          = -999,
   const char *taskname           = "AliJetResponseMaker",
@@ -76,7 +77,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
-  jetTask->SetMatching(matching, maxDistance);
+  jetTask->SetMatching(matching, maxDistance1, maxDistance2);
   jetTask->SetVzRange(-10,10);
   jetTask->SetPtHardBin(ptHardBin);
 

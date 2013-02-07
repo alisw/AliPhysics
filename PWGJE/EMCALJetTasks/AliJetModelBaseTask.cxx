@@ -48,7 +48,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fNClusters(0),
   fNCells(0),
   fNTracks(0),
-  fMarkMC(100),
+  fMarkMC(99999),
   fPtSpectrum(0),
   fQAhistos(kFALSE),
   fIsInit(0),
@@ -87,7 +87,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fNClusters(0),
   fNCells(0),
   fNTracks(1),
-  fMarkMC(100),
+  fMarkMC(99999),
   fPtSpectrum(0),
   fQAhistos(drawqa),
   fIsInit(0),
@@ -298,12 +298,16 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     if (!fGeom) {
       if (fGeomName.Length() > 0) {
 	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-	if (!fGeom)
-	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+	if (!fGeom) {
+	  AliFatal(Form("Could not get geometry with name %s!", fGeomName.Data()));
+	  return kFALSE;
+	}
       } else {
 	fGeom = AliEMCALGeometry::GetInstance();
-	if (!fGeom) 
-	  AliError("Could not get default geometry!");
+	if (!fGeom) {
+	  AliFatal("Could not get default geometry!");
+	  return kFALSE;
+	}
       }
     }
   
@@ -346,7 +350,7 @@ Int_t AliJetModelBaseTask::SetNumberOfOutCells(Int_t n)
 void AliJetModelBaseTask::CopyCells()
 {
   for (Short_t i = 0; i < fCaloCells->GetNumberOfCells(); i++) {
-    Short_t mclabel = -1;
+    Short_t mclabel = 0;
     Double_t efrac = 0.;
     Double_t time = -1;
     Short_t cellNum = -1;

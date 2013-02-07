@@ -456,7 +456,7 @@ void AliAnalysisTaskDeltaPt::DoEmbTrackLoop()
     if (vtrack && !AcceptTrack(vtrack)) 
       continue;
 
-    if (track->GetLabel() >= 0) {
+    if (track->GetLabel() > 0) {
       fEmbeddedTrackIds[fEmbeddedTrackNIds] = i;
       fEmbeddedTrackNIds++;
     }
@@ -485,7 +485,7 @@ void AliAnalysisTaskDeltaPt::DoEmbClusterLoop()
     if (!AcceptCluster(cluster)) 
       continue;
 
-    if (cluster->GetLabel() >= 0) {
+    if (cluster->GetLabel() > 0) {
       fEmbeddedClusterIds[fEmbeddedClusterNIds] = iClusters;
       fEmbeddedClusterNIds++;
     }
@@ -501,6 +501,8 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Int_t i)
 
   if (i >= 0)
     iJet = i;
+  else
+    iJet++;
 
   if (!fEmbJets)
     return 0;
@@ -607,7 +609,7 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
 	AliError(Form("Could not retrieve track %d",iTracks)); 
 	continue; 
       }
-      
+
       if (!AcceptTrack(track)) 
 	continue;
       

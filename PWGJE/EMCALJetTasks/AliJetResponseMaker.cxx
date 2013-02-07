@@ -34,7 +34,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fAreCollections1MC(kFALSE),  
   fAreCollections2MC(kTRUE),
   fMatching(kNoMatching),
-  fMatchingPar(0),
+  fMatchingPar1(0),
+  fMatchingPar2(0),
   fJet2MinEta(-999),
   fJet2MaxEta(-999),
   fJet2MinPhi(-999),
@@ -92,7 +93,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fAreCollections1MC(kFALSE),  
   fAreCollections2MC(kTRUE),
   fMatching(kNoMatching),
-  fMatchingPar(0.25),
+  fMatchingPar1(0),
+  fMatchingPar2(0),
   fJet2MinEta(-999),
   fJet2MaxEta(-999),
   fJet2MinPhi(-999),
@@ -390,9 +392,14 @@ void AliJetResponseMaker::ExecOnce()
 
     if (fAreCollections2MC) {
       fTracks2Map = dynamic_cast<TH1*>(InputEvent()->FindListObject(fTracks2Name + "_Map"));
+      // this is needed to map the MC labels with the indexes of the MC particle collection
+      // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
       if (!fTracks2Map) {
-	AliError(Form("%s: Could not retrieve map for tracks2 %s!", GetName(), fTracks2Name.Data())); 
-	return;
+	AliWarning(Form("%s: Could not retrieve map for tracks2 %s! Will assume MC labels consistent with indexes...", GetName(), fTracks2Name.Data())); 
+	fTracks2Map = new TH1I("tracksMap","tracksMap",9999,0,1);
+	for (Int_t i = 0; i < 9999; i++) {
+	  fTracks2Map->SetBinContent(i,i);
+	}
       }
     }
   }
@@ -512,7 +519,7 @@ Bool_t AliJetResponseMaker::DoJetMatching()
       continue;
 
     if (jet1->ClosestJet() && jet1->ClosestJet()->ClosestJet() == jet1 && 
-        jet1->ClosestJetDistance() < fMatchingPar && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar) {    // Matched jet found
+        jet1->ClosestJetDistance() < fMatchingPar1 && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar2) {    // Matched jet found
       jet1->SetMatchedToClosest(fMatching);
       jet1->ClosestJet()->SetMatchedToClosest(fMatching);
     }
@@ -583,146 +590,241 @@ void AliJetResponseMaker::DoJetLoop(Bool_t order)
 	  continue;
       }
 
-      GetMatchingLevel(jet1, jet2, fMatching);
+      SetMatchingLevel(jet1, jet2, fMatching);
     }
   }
 }
 
 //________________________________________________________________________
-Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching) 
+void AliJetResponseMaker::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
+{
+  Double_t deta = jet2->Eta() - jet1->Eta();
+  Double_t dphi = jet2->Phi() - jet1->Phi();
+  d = TMath::Sqrt(deta * deta + dphi * dphi);
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const
+{ 
+  // d1 and d2 represent the matching level: 0 = maximum level of matching, 1 = the two jets are completely unrelated
+  d1 = jet1->Pt();
+  d2 = jet2->Pt();
+  Double_t totalPt1 = d1; // the total pt of the reconstructed jet will be cleaned from the background
+
+  for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
+    Bool_t track2Found = kFALSE;
+    Int_t index2 = jet2->TrackAt(iTrack2);
+    for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
+      AliVParticle *track = jet1->TrackAt(iTrack,fTracks);
+      if (!track) {
+	AliWarning(Form("Could not find track %d!", iTrack));
+	continue;
+      }
+      Int_t MClabel = track->GetLabel();
+      Int_t index = -1;
+	  
+      if (MClabel <= 0) {// this is not a MC particle; remove it completely
+	AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
+	totalPt1 -= track->Pt();
+	d1 -= track->Pt();
+	continue;
+      }
+      else if (MClabel < fTracks2Map->GetNbinsX()-2) {
+	index = fTracks2Map->GetBinContent(MClabel);
+      }
+	  
+      if (index < 0) {
+	AliDebug(2,Form("Track %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
+	continue;
+      }
+
+      if (index2 == index) { // found common particle
+	track2Found = kTRUE;
+	d1 -= track->Pt();
+	AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+	AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+	d2 -= MCpart->Pt();
+	break;
+      }
+    }
+    for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+      AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+      if (!clus) {
+	AliWarning(Form("Could not find cluster %d!", iClus));
+	continue;
+      }
+      TLorentzVector part;
+      clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	  
+      if (fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
+	for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
+	  Int_t cellId = clus->GetCellAbsId(iCell);
+	  Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
+
+	  Int_t MClabel = fCaloCells->GetCellMCLabel(cellId);
+	  Int_t index = -1;
+	  
+	  if (MClabel <= 0) {// this is not a MC particle; remove it completely
+	    AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
+	    totalPt1 -= part.Pt() * cellFrac;
+	    d1 -= part.Pt() * cellFrac;
+	    continue;
+	  }
+	  else if (MClabel < fTracks2Map->GetNbinsX()-2) {
+	    index = fTracks2Map->GetBinContent(MClabel);
+	  }
+
+	  if (index < 0) {
+	    AliDebug(3,Form("Cell %d (frac = %f) does not have an associated MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
+	    continue;
+	  }
+	  if (index2 == index) { // found common particle
+	    d1 -= part.Pt() * cellFrac;
+		
+	    if (!track2Found) {// only if it is not already found among charged tracks (charged particles are most likely already found)
+	      AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+	      AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			      iCell,iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));		  
+	      d2 -= MCpart->Pt() * cellFrac;
+	    }
+	    break;
+	  }
+	}
+      }
+      else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
+	Int_t MClabel = clus->GetLabel();
+	Int_t index = -1;
+	    
+	if (MClabel <= 0) {// this is not a MC particle; remove it completely
+	  AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
+	  totalPt1 -= part.Pt();
+	  d1 -= part.Pt();
+	  continue;
+	}
+	else if (MClabel < fTracks2Map->GetNbinsX()-2) {
+	  index = fTracks2Map->GetBinContent(MClabel);
+	}
+	 
+	if (index < 0) {
+	  AliDebug(3,Form("Cluster %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
+	  continue;
+	}
+	if (index2 == index) { // found common particle
+	  d1 -= part.Pt();
+
+	  if (!track2Found) {// only if it is not already found among charged tracks (charged particles are most likely already found)
+	    AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
+	    AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			    iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+		
+	    d2 -= MCpart->Pt();
+	  }
+	  break;
+	}
+      }
+    }
+  }
+  if (d1 <= 0 || totalPt1 < 1)
+    d1 = 0;
+  else
+    d1 /= totalPt1;
+
+  if (jet2->Pt() > 0 && d2 > 0)
+    d2 /= jet2->Pt();
+  else
+    d2 = 0;
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const
+{ 
+  // d1 and d2 represent the matching level: 0 = maximum level of matching, 1 = the two jets are completely unrelated
+  d1 = jet1->Pt();
+  d2 = jet2->Pt();
+
+  if (fTracks && fTracks2) {
+
+    for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
+      Int_t index2 = jet2->TrackAt(iTrack2);
+      for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
+	Int_t index = jet1->TrackAt(iTrack);
+	if (index2 == index) { // found common particle
+	  AliVParticle *part = static_cast<AliVParticle*>(fTracks->At(index));
+	  if (!part) {
+	    AliWarning(Form("Could not find track %d!", index));
+	    continue;
+	  }
+	  AliVParticle *part2 = static_cast<AliVParticle*>(fTracks2->At(index2));
+	  if (!part2) {
+	    AliWarning(Form("Could not find track %d!", index2));
+	    continue;
+	  }
+
+	  d1 -= part->Pt();
+	  d2 -= part2->Pt();
+	  break;
+	}
+      }
+    }
+
+  }
+
+  if (fCaloClusters && fCaloClusters2) {
+
+    for (Int_t iClus2 = 0; iClus2 < jet2->GetNumberOfClusters(); iClus2++) {
+      Int_t index2 = jet2->ClusterAt(iClus2);
+      for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+	Int_t index = jet1->ClusterAt(iClus);
+	AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
+	if (!clus) {
+	  AliWarning(Form("Could not find cluster %d!", index));
+	  continue;
+	}
+	AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	if (!clus2) {
+	  AliWarning(Form("Could not find cluster %d!", index2));
+	  continue;
+	}
+	TLorentzVector part, part2;
+	clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+
+	d1 -= part.Pt();
+	d2 -= part2.Pt();
+	break;
+      }
+    }
+
+  }
+
+  if (jet1->Pt() > 0 && d1 > 0)
+    d1 /= jet1->Pt();
+  else
+    d1 = 0;
+
+  if (jet2->Pt() > 0 && d2 > 0)
+    d2 /= jet2->Pt();
+  else
+    d2 = 0;
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching) 
 {
   Double_t d1 = -1;
   Double_t d2 = -1;
 
   switch (matching) {
   case kGeometrical:
-    {
-      Double_t deta = jet2->Eta() - jet1->Eta();
-      Double_t dphi = jet2->Phi() - jet1->Phi();
-      d1 = TMath::Sqrt(deta * deta + dphi * dphi);
-      d2 = d1;
-    }
+    GetGeometricalMatchingLevel(jet1,jet2,d1);
+    d2 = d1;
     break;
   case kMCLabel: // jet1 = detector level and jet2 = particle level!
-    { 
-      if (!fTracks2Map) {
-	fTracks2Map = new TH1I("tracksMap","tracksMap",1000,0,1);
-	for (Int_t i = 0; i < 1000; i++) {
-	  fTracks2Map->SetBinContent(i,i);
-	}
-      }
-      d1 = jet1->Pt();
-      d2 = jet2->Pt();
-      Double_t totalPt1 = d1;
-      for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
-	AliVParticle *track = jet1->TrackAt(iTrack,fTracks);
-	if (!track) {
-	  AliWarning(Form("Could not find track %d!", iTrack));
-	  continue;
-	}
-	Int_t MClabel = track->GetLabel();
-	if (MClabel < 0) {// this is not a MC particle; remove it completely
-	  AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
-	  totalPt1 -= track->Pt();
-	  d1 -= track->Pt();
-	  continue;
-	}
-	Int_t index = fTracks2Map->GetBinContent(MClabel);
-	if (index < 0) {
-	  AliDebug(2,Form("Track %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
-	  continue;
-	}
-	for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
-	  Int_t index2 = jet2->TrackAt(iTrack2);
-	  if (index2 == index) { // found common particle
-	    d1 -= track->Pt();
-	    AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-	    AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-			    iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
-	    d2 -= MCpart->Pt();
-	    break;
-	  }
-	}
-      }
-      for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-	AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
-	if (!clus) {
-	  AliWarning(Form("Could not find cluster %d!", iClus));
-	  continue;
-	}
-	TLorentzVector part;
-	clus->GetMomentum(part, fVertex);
-
-	if (fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
-	  for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
-	    Int_t cellId = clus->GetCellAbsId(iCell);
-	    Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
-	    Int_t MClabel = fCaloCells->GetCellMCLabel(cellId);
-
-	    if (MClabel < 0) {// this is not a MC particle; remove it competely
-	      AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
-	      totalPt1 -= part.Pt() * cellFrac;
-	      d1 -= part.Pt() * cellFrac;
-	      continue;
-	    }
-
-	    Int_t index = fTracks2Map->GetBinContent(MClabel);
-	    if (index < 0) {
-	      AliDebug(3,Form("Cell %d (frac = %f) does not have an associated MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
-	      continue;
-	    }
-	    for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
-	      Int_t index2 = jet2->TrackAt(iTrack2);
-	      if (index2 == index) { // found common particle
-		d1 -= part.Pt() * cellFrac;
-		AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-		AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-				iCell,iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
-		if (MCpart->Charge() != 0) // only if it is a neutral particle (charged particles are most likely already removed, to be fixed)
-		  d2 -= MCpart->Pt() * cellFrac;
-		break;
-	      }
-	    }
-	  }
-	}
-	else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
-	  Int_t MClabel = clus->GetLabel();
-	  
-	  if (MClabel < 0) {// this is not a MC particle; remove it competely
-	    AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
-	    totalPt1 -= part.Pt();
-	    d1 -= part.Pt();
-	    continue;
-	  }
-	  
-	  Int_t index = fTracks2Map->GetBinContent(MClabel);
-	  if (index < 0) {
-	    AliDebug(3,Form("Cluster %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
-	    continue;
-	  }
-	  for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
-	    Int_t index2 = jet2->TrackAt(iTrack2);
-	    if (index2 == index) { // found common particle
-	      d1 -= part.Pt();
-	      AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-	      AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-			      iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
-	      if (MCpart->Charge() != 0) // only if it is a neutral particle (charged particles are most likely already removed, to be fixed)
-		d2 -= MCpart->Pt();
-	      break;
-	    }
-	  }
-	}
-      }
-      if (d1 <= 0 || totalPt1 < 1)
-	d1 = 0;
-      else
-	d1 /= totalPt1;
-      if (jet2->Pt() > 0)
-	d2 /= jet2->Pt();
-      else
-	d2 = 0;
-    }
+    GetMCLabelMatchingLevel(jet1,jet2,d1,d2);
+    break;
+  case kSameCollections:
+    GetSameCollectionsMatchingLevel(jet1,jet2,d1,d2);
     break;
   default:
     ;
@@ -749,8 +851,6 @@ Double_t AliJetResponseMaker::GetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *j
       jet2->SetSecondClosestJet(jet1, d2);
     }
   }
-  
-  return d1;
 }
 
 //________________________________________________________________________
@@ -808,12 +908,20 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	fHistMissedJets2PtArea->Fill(jet2->Area(), jet2->Pt());
       }
       else {
-	if (jet2->GetMatchingType() == kGeometrical)
-	  fHistDistancevsCommonEnergy->Fill(jet2->ClosestJetDistance(), GetMatchingLevel(jet2->MatchedJet(), jet2, kMCLabel));
-	else if (jet2->GetMatchingType() == kMCLabel)
-	  fHistDistancevsCommonEnergy->Fill(GetMatchingLevel(jet2->MatchedJet(), jet2, kGeometrical), jet2->ClosestJetDistance());
-	else
-	  fHistDistancevsCommonEnergy->Fill(GetMatchingLevel(jet2->MatchedJet(), jet2, kGeometrical), GetMatchingLevel(jet2->MatchedJet(), jet2, kMCLabel));
+	Double_t d1=-1, d2=-1;
+	if (jet2->GetMatchingType() == kGeometrical) {
+
+	  if (fAreCollections2MC && !fAreCollections1MC)
+	    GetMCLabelMatchingLevel(jet2->MatchedJet(), jet2, d1, d2);
+	  else if ((fAreCollections1MC && fAreCollections2MC) || (!fAreCollections1MC && !fAreCollections2MC))
+	    GetSameCollectionsMatchingLevel(jet2->MatchedJet(), jet2, d1, d2);
+
+	  fHistDistancevsCommonEnergy->Fill(jet2->ClosestJetDistance(), d2);
+	}
+	else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
+	  GetGeometricalMatchingLevel(jet2->MatchedJet(), jet2, d1);
+	  fHistDistancevsCommonEnergy->Fill(d1, jet2->ClosestJetDistance());
+	}
 	  
 	fHistMatchingLevelvsJet2Pt->Fill(jet2->ClosestJetDistance(), jet2->Pt());
 

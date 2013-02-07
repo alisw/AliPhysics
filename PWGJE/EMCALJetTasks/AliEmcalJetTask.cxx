@@ -290,7 +290,7 @@ void AliEmcalJetTask::FindJets()
             maxCh = cPt;
         }
 
-        if (fIsMcPart || t->GetLabel() >= 0) // check if MC particle
+        if (fIsMcPart || t->GetLabel() > 0) // check if MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
@@ -335,7 +335,7 @@ void AliEmcalJetTask::FindJets()
         if (cPt > maxNe)
           maxNe = cPt;
 
-        if (c->GetLabel() >= 0) // MC particle
+        if (c->GetLabel() > 0) // MC particle
           mcpt += cPt;
 
         if (cPhi<0) 
