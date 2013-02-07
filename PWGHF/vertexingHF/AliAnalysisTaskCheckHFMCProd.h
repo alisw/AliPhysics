@@ -45,8 +45,9 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Int_t CheckLcDecay(Int_t labLc, AliStack* stack) const;
 
   void SetReadMC(Bool_t opt) {fReadMC=opt;}
-  void SetPbPb() {fPbPb=kTRUE;}
-  void Setpp() {fPbPb=kFALSE;}
+  void SetpPb() {fSystem=2;}
+  void SetPbPb() {fSystem=1;}
+  void Setpp() {fSystem=0;}
 
  private:
 
@@ -55,7 +56,8 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   
   TList* fOutput;          //! list of output histos
   TH1F* fHistoNEvents;     //! histo with N of events  
-  
+
+  TH1F* fHistoPhysPrim;    //! histo of n. of physical primaries in |eta|<0.5
   TH1F* fHistoTracks;      //! histo with number of ESD tracks
   TH1F* fHistoSelTracks;   //! histo with number of TPC+ITS refit ESD tracks
   TH1F* fHistoTracklets;   //! histo with number of SPD tracklets
@@ -75,6 +77,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistoNcharmed;   //! histo of D mesons vs. dN/dy
   TH2F* fHistoNbVsNc;     //! histo of n. b quarks vs. n c. quarks
 
+  TH2F*  fHistBYPtAllDecay[5];   //! histo of y vs. pt from prompt B0, B+, B*, Bs, Lb
   TH2F*  fHistYPtAllDecay[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel  
   TH2F*  fHistYPtPromptAllDecay[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel  
   TH2F*  fHistYPtFeeddownAllDecay[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel
@@ -84,10 +87,10 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistYPtDplusbyDecChannel[2]; //! histo of y vs. pt for D+->Kpipi and D+->K0*pi
   TH2F* fHistYPtDsbyDecChannel[2]; //! histo of y vs. pt for Ds->phipi and Ds->K0*K
 
-  Bool_t fPbPb;
+  Int_t fSystem; // 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,1);  
+  ClassDef(AliAnalysisTaskCheckHFMCProd,2);  
 };
 
 
