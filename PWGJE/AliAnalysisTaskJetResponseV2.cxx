@@ -196,8 +196,10 @@ void AliAnalysisTaskJetResponseV2::SetBranchNames(const TString &branch1, const 
   fJetBranchName[1] = branch2;
   fJetBranchName[2] = branch3;
 
-  if(strlen(fJetBranchName[2].Data()) ) 
+  if(strlen(fJetBranchName[2].Data()) ) {
     fkNbranches = 3;
+    fbJets3Branches = kTRUE;
+  }
 }
 
 void AliAnalysisTaskJetResponseV2::Init()
@@ -763,11 +765,11 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
     }
 
     if(fbJets3Branches){
-      Double_t jetEntries3Branches[14] = {
+      Double_t jetEntries3Branches[13] = {
 	(Double_t)centValue, (Double_t)nInputTracks, 
 	(Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetPt[2], 
 	(Double_t)deltaPt, (Double_t)delta,
-	(Double_t)jetArea[0], (Double_t)jetArea[1],(Double_t)jetArea[3], 
+	(Double_t)jetArea[0], (Double_t)jetArea[1],(Double_t)jetArea[2], 
 	(Double_t)fraction, (Double_t)fraction2,
 	(Double_t)pthardbin
       };				 
