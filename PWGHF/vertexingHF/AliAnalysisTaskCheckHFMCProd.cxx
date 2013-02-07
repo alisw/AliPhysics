@@ -48,6 +48,7 @@ ClassImp(AliAnalysisTaskCheckHFMCProd)
 AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE("HFMCChecks"), 
   fOutput(0),
   fHistoNEvents(0),
+  fHistoPhysPrim(0),
   fHistoTracks(0),
   fHistoSelTracks(0),
   fHistoTracklets(0),
@@ -62,7 +63,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistoTRKVtxZ(0),
   fHistoNcharmed(0),
   fHistoNbVsNc(0),
-  fPbPb(kFALSE),
+  fSystem(0),
   fReadMC(kTRUE)
 {
   //
@@ -95,7 +96,11 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fOutput->Add(fHistoNEvents);
 
   Double_t maxMult=100.;
-  if(fPbPb) maxMult=10000.;
+  if(fSystem==1) maxMult=10000.;
+  if(fSystem==2) maxMult=500.;
+  fHistoPhysPrim = new TH1F("hPhysPrim","",100,0.,maxMult);
+  fHistoPhysPrim->Sumw2();
+  fOutput->Add(fHistoPhysPrim);
   fHistoTracks = new TH1F("hTracks","",100,0.,maxMult*2);
   fHistoTracks->Sumw2();
   fOutput->Add(fHistoTracks);
@@ -138,7 +143,8 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fOutput->Add(fHistoTRKVtxZ);
 
   Int_t nBinscb=11;
-  if(fPbPb) nBinscb=200;
+  if(fSystem==1) nBinscb=200;
+  if(fSystem==2) nBinscb=21;
   Double_t maxncn=nBinscb-0.5;
   fHistoNcharmed = new TH2F("hncharmed","",100,0.,maxMult,nBinscb,-0.5,maxncn);
   fHistoNcharmed->Sumw2();
@@ -147,38 +153,47 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoNbVsNc->Sumw2();
   fOutput->Add(fHistoNbVsNc);
 
-  fHistYPtPrompt[0] = new TH2F("hyptd0prompt","D0 - Prompt",20,0.,20.,20,-2.,2.);
-  fHistYPtPrompt[1] = new TH2F("hyptdplusprompt","Dplus - Prompt",20,0.,20.,20,-2.,2.);
-  fHistYPtPrompt[2] = new TH2F("hyptdstarprompt","Dstar - Prompt",20,0.,20.,20,-2.,2.);
-  fHistYPtPrompt[3] = new TH2F("hyptdsprompt","Ds - Prompt",20,0.,20.,20,-2.,2.);
-  fHistYPtPrompt[4] = new TH2F("hyptlcprompt","Lc - Prompt",20,0.,20.,20,-2.,2.);
+  fHistYPtPrompt[0] = new TH2F("hyptD0prompt","D0 - Prompt",40,0.,40.,20,-2.,2.);
+  fHistYPtPrompt[1] = new TH2F("hyptDplusprompt","Dplus - Prompt",40,0.,40.,20,-2.,2.);
+  fHistYPtPrompt[2] = new TH2F("hyptDstarprompt","Dstar - Prompt",40,0.,40.,20,-2.,2.);
+  fHistYPtPrompt[3] = new TH2F("hyptDsprompt","Ds - Prompt",40,0.,40.,20,-2.,2.);
+  fHistYPtPrompt[4] = new TH2F("hyptLcprompt","Lc - Prompt",40,0.,40.,20,-2.,2.);
 
-  fHistYPtAllDecay[0] = new TH2F("hyptd0AllDecay","D0 - All",20,0.,20.,40,-2.,2.);
-  fHistYPtAllDecay[1] = new TH2F("hyptdplusAllDecay","Dplus - All",20,0.,20.,40,-2.,2.);
-  fHistYPtAllDecay[2] = new TH2F("hyptdstarAllDecay","Dstar - All",20,0.,20.,40,-2.,2.);
-  fHistYPtAllDecay[3] = new TH2F("hyptdsAllDecay","Ds - All",20,0.,20.,40,-2.,2.);
-  fHistYPtAllDecay[4] = new TH2F("hyptlcAllDecay","Lc - All",20,0.,20.,40,-2.,2.);
+  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",40,0.,40.,40,-2.,2.);
+  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",40,0.,40.,40,-2.,2.);
+  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",40,0.,40.,40,-2.,2.);
+  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",40,0.,40.,40,-2.,2.);
+  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",40,0.,40.,40,-2.,2.);
 
-  fHistYPtPromptAllDecay[0] = new TH2F("hyptd0promptAllDecay","D0 - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllDecay[1] = new TH2F("hyptdpluspromptAllDecay","Dplus - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllDecay[2] = new TH2F("hyptdstarpromptAllDecay","Dstar - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllDecay[3] = new TH2F("hyptdspromptAllDecay","Ds - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllDecay[4] = new TH2F("hyptlcpromptAllDecay","Lc - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtAllDecay[0] = new TH2F("hyptD0AllDecay","D0 - All",40,0.,40.,40,-2.,2.);
+  fHistYPtAllDecay[1] = new TH2F("hyptDplusAllDecay","Dplus - All",40,0.,40.,40,-2.,2.);
+  fHistYPtAllDecay[2] = new TH2F("hyptDstarAllDecay","Dstar - All",40,0.,40.,40,-2.,2.);
+  fHistYPtAllDecay[3] = new TH2F("hyptDsAllDecay","Ds - All",40,0.,40.,40,-2.,2.);
+  fHistYPtAllDecay[4] = new TH2F("hyptLcAllDecay","Lc - All",40,0.,40.,40,-2.,2.);
 
-  fHistYPtFeeddownAllDecay[0] = new TH2F("hyptd0feeddownAllDecay","D0 - FromB",20,0.,20.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[1] = new TH2F("hyptdplusfeeddownAllDecay","Dplus - FromB",20,0.,20.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[2] = new TH2F("hyptdstarfeeddownAllDecay","Dstar - FromB",20,0.,20.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[3] = new TH2F("hyptdsfeeddownAllDecay","Ds - FromB",20,0.,20.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[4] = new TH2F("hyptlcfeeddownAllDecay","Lc - FromB",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllDecay[0] = new TH2F("hyptD0promptAllDecay","D0 - Prompt",40,0.,40.,40,-2.,2.);
+  fHistYPtPromptAllDecay[1] = new TH2F("hyptDpluspromptAllDecay","Dplus - Prompt",40,0.,40.,40,-2.,2.);
+  fHistYPtPromptAllDecay[2] = new TH2F("hyptDstarpromptAllDecay","Dstar - Prompt",40,0.,40.,40,-2.,2.);
+  fHistYPtPromptAllDecay[3] = new TH2F("hyptDspromptAllDecay","Ds - Prompt",40,0.,40.,40,-2.,2.);
+  fHistYPtPromptAllDecay[4] = new TH2F("hyptLcpromptAllDecay","Lc - Prompt",40,0.,40.,40,-2.,2.);
+
+  fHistYPtFeeddownAllDecay[0] = new TH2F("hyptD0feeddownAllDecay","D0 - FromB",40,0.,40.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[1] = new TH2F("hyptDplusfeeddownAllDecay","Dplus - FromB",40,0.,40.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[2] = new TH2F("hyptDstarfeeddownAllDecay","Dstar - FromB",40,0.,40.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[3] = new TH2F("hyptDsfeeddownAllDecay","Ds - FromB",40,0.,40.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[4] = new TH2F("hyptLcfeeddownAllDecay","Lc - FromB",40,0.,40.,40,-2.,2.);
 
 
- fHistYPtFeeddown[0] = new TH2F("hyptd0feeddown","D0 - Feeddown",20,0.,20.,20,-2.,2.);
-  fHistYPtFeeddown[1] = new TH2F("hyptdplusfeeddown","Dplus - Feeddown",20,0.,20.,20,-2.,2.);
-  fHistYPtFeeddown[2] = new TH2F("hyptdstarfeedown","Dstar - Feeddown",20,0.,20.,20,-2.,2.);
-  fHistYPtFeeddown[3] = new TH2F("hyptdsfeedown","Ds - Feeddown",20,0.,20.,20,-2.,2.);
-  fHistYPtFeeddown[4] = new TH2F("hyptlcfeedown","Lc - Feeddown",20,0.,20.,20,-2.,2.);
+  fHistYPtFeeddown[0] = new TH2F("hyptD0feeddown","D0 - Feeddown",40,0.,40.,20,-2.,2.);
+  fHistYPtFeeddown[1] = new TH2F("hyptDplusfeeddown","Dplus - Feeddown",40,0.,40.,20,-2.,2.);
+  fHistYPtFeeddown[2] = new TH2F("hyptDstarfeedown","Dstar - Feeddown",40,0.,40.,20,-2.,2.);
+  fHistYPtFeeddown[3] = new TH2F("hyptDsfeedown","Ds - Feeddown",40,0.,40.,20,-2.,2.);
+  fHistYPtFeeddown[4] = new TH2F("hyptLcfeedown","Lc - Feeddown",40,0.,40.,20,-2.,2.);
 
   for(Int_t ih=0; ih<5; ih++){
+    fHistBYPtAllDecay[ih]->Sumw2();
+    fHistBYPtAllDecay[ih]->SetMinimum(0);
+    fOutput->Add(fHistBYPtAllDecay[ih]);
     fHistYPtAllDecay[ih]->Sumw2();
     fHistYPtAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtAllDecay[ih]);
@@ -196,12 +211,12 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
     fOutput->Add(fHistYPtFeeddown[ih]);
   }
 
-  fHistYPtD0byDecChannel[0] = new TH2F("hyptD02","D0 - 2prong",20,0.,20.,20,-2.,2.);
-  fHistYPtD0byDecChannel[1] = new TH2F("hyptD04","D0 - 4prong",20,0.,20.,20,-2.,2.);
-  fHistYPtDplusbyDecChannel[0] = new TH2F("hyptDplusnonreson","Dplus - non reson",20,0.,20.,20,-2.,2.);
-  fHistYPtDplusbyDecChannel[1] = new TH2F("hyptDplusreson","Dplus - reson via K0*",20,0.,20.,20,-2.,2.);
-  fHistYPtDsbyDecChannel[0] = new TH2F("hyptdsphi","Ds - vis Phi",20,0.,20.,20,-2.,2.);
-  fHistYPtDsbyDecChannel[1] = new TH2F("hyptdsk0st","Ds - via k0*",20,0.,20.,20,-2.,2.);
+  fHistYPtD0byDecChannel[0] = new TH2F("hyptD02","D0 - 2prong",40,0.,40.,20,-2.,2.);
+  fHistYPtD0byDecChannel[1] = new TH2F("hyptD04","D0 - 4prong",40,0.,40.,20,-2.,2.);
+  fHistYPtDplusbyDecChannel[0] = new TH2F("hyptDplusnonreson","Dplus - non reson",40,0.,40.,20,-2.,2.);
+  fHistYPtDplusbyDecChannel[1] = new TH2F("hyptDplusreson","Dplus - reson via K0*",40,0.,40.,20,-2.,2.);
+  fHistYPtDsbyDecChannel[0] = new TH2F("hyptDsphi","Ds - vis Phi",40,0.,40.,20,-2.,2.);
+  fHistYPtDsbyDecChannel[1] = new TH2F("hyptDsk0st","Ds - via k0*",40,0.,40.,20,-2.,2.);
 
   for(Int_t ih=0; ih<2; ih++){
 
@@ -293,6 +308,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     Double_t dNchdy = 0.;
     Int_t nb = 0, nc=0;
     Int_t nCharmed=0;
+    Int_t nPhysPrim=0;
     for (Int_t i=0;i<nParticles;i++){
       TParticle* part = (TParticle*)stack->Particle(i);
       Int_t absPdg=TMath::Abs(part->GetPdgCode());
@@ -300,7 +316,10 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       if(absPdg==5) nb++;
       if(stack->IsPhysicalPrimary(i)){
 	Double_t eta=part->Eta();
-	if(TMath::Abs(eta)<0.5) dNchdy+=0.6666;   // 2/3 for the ratio charged/all    
+	if(TMath::Abs(eta)<0.5){
+	  dNchdy+=0.6666;   // 2/3 for the ratio charged/all
+	  nPhysPrim++;
+	}
       }
       Float_t rapid=-999.;
       if (part->Energy() != TMath::Abs(part->Pz())){
@@ -336,8 +355,16 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	iType=CheckLcDecay(i,stack);
 	if(iType>=0) iPart=4;
       }
-      if(iSpecies<0) continue;
-      fHistYPtAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+      if(iSpecies>=0) fHistYPtAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+
+      // check beauty mesons
+      if(absPdg==511) fHistBYPtAllDecay[0]->Fill(part->Pt(),rapid);
+      else if(absPdg==521) fHistBYPtAllDecay[1]->Fill(part->Pt(),rapid);
+      else if(absPdg==513) fHistBYPtAllDecay[2]->Fill(part->Pt(),rapid);
+      else if(absPdg==531) fHistBYPtAllDecay[3]->Fill(part->Pt(),rapid);
+      else if(absPdg==5122) fHistBYPtAllDecay[4]->Fill(part->Pt(),rapid);
+
+      if(iSpecies<0) continue; // not a charm meson
 
       TParticle* runningpart=part;
       Int_t iFromB=-1;
@@ -377,6 +404,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     }
     fHistoNcharmed->Fill(dNchdy,nCharmed);
     fHistoNbVsNc->Fill(nc,nb);
+    fHistoPhysPrim->Fill(nPhysPrim);
   }
 
   PostData(1,fOutput);
