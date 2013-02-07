@@ -1216,6 +1216,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 				      AliDielectronVarManager::GetValueLabel(varz), 
 				      AliDielectronVarManager::GetValueUnit(varz))
 				 );
+      break;
     case 2:
       hist->GetXaxis()->SetTitle(Form("%s %s",
 				      AliDielectronVarManager::GetValueLabel(varx), 
@@ -1231,6 +1232,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 					AliDielectronVarManager::GetValueLabel(varz), 
 					AliDielectronVarManager::GetValueUnit(varz))
 				   );
+      break;
     case 1:
       hist->GetXaxis()->SetTitle(Form("%s %s",
 				      AliDielectronVarManager::GetValueLabel(varx), 
@@ -1242,6 +1244,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 					AliDielectronVarManager::GetValueLabel(vary), 
 					AliDielectronVarManager::GetValueUnit(vary))
 				   );
+      break;
     }
 
     // create an unique name
