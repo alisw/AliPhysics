@@ -54,15 +54,15 @@ class AliHFENonPhotonicElectron : public TNamed {
   AliHFENonPhotonicElectron &operator=(const AliHFENonPhotonicElectron &ref);
   virtual ~AliHFENonPhotonicElectron();
 
-  void SetMCEvent		(AliMCEvent *mcEvent)		{fMCEvent = mcEvent; };
-  void SetAODArrayMCInfo	(TClonesArray *aodArrayMCInfo) {fAODArrayMCInfo = aodArrayMCInfo; };
+  void SetAOD    		(Bool_t isAOD)     		{ fIsAOD = isAOD; };
+  void SetMCEvent		(AliMCEvent *mcEvent)		{ fMCEvent = mcEvent; };
+  void SetAODArrayMCInfo	(TClonesArray *aodArrayMCInfo) { fAODArrayMCInfo = aodArrayMCInfo; };
+  void SetUseFilterAOD		(Bool_t useFilterAOD)		{ fUseFilterAOD = useFilterAOD; };
+  void SetFilter		(UInt_t filter)			{ fFilter = filter; };
+  void SetHFEBackgroundCuts	(AliHFEcuts * const cuts)	{ fHFEBackgroundCuts = cuts; };
 
-  void SetUseFilterAOD(Bool_t useFilterAOD) { fUseFilterAOD = useFilterAOD; };
-  void SetFilter(UInt_t filter)             { fFilter = filter; };
-
-  void			 SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
-  AliHFEpid		*GetPIDBackground() const { return fPIDBackground; };
-  AliHFEpidQAmanager	*GetPIDBackgroundQAManager() const { return fPIDBackgroundQA; };
+  AliHFEpid		*GetPIDBackground()		const	{ return fPIDBackground; };
+  AliHFEpidQAmanager	*GetPIDBackgroundQAManager()	const	{ return fPIDBackgroundQA; };
 
   void  SetMaxInvMass		(Double_t MaxInvMass)		{ fMaxInvMass		= MaxInvMass; };
   void  SetMaxOpening3D		(Double_t MaxOpening3D)		{ fMaxOpening3D		= MaxOpening3D; };
@@ -71,17 +71,19 @@ class AliHFENonPhotonicElectron : public TNamed {
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
 
-  TList      *GetListOutput()       const { return fListOutput; };
-  THnSparseF *GetMCSourceHisto() const { return fMCSource; };
-  THnSparseF *GetUSignHisto()    const { return fUSign; };
-  THnSparseF *GetLSignHisto()    const { return fLSign; };
+  TList      *GetListOutput()		const	{ return fListOutput; };
+  THnSparseF *GetAssElectronHisto()	const	{ return fAssElectron; };
+  THnSparseF *GetIncElectronHisto()	const	{ return fIncElectron; };
+  THnSparseF *GetUSignHisto()		const	{ return fUSign; };
+  THnSparseF *GetLSignHisto()		const	{ return fLSign; };
 //  THnSparseF *GetUSignAngleHisto() const { return fUSignAngle; };
 //  THnSparseF *GetLSignAngleHisto() const { return fLSignAngle; };
 
   void     Init				();
-  void     InitRun			(const AliVEvent *inputEvent,const AliPIDResponse *pidResponse);
-  Int_t    FillPoolAssociatedTracks	(AliVEvent *inputEvent,Int_t binct=-1);
-  Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent ,Double_t weight=1.,Int_t binct=-1,Double_t deltaphi=-1,Int_t source=-1,Int_t indexmother=-1);
+  void     InitRun			(const AliVEvent *inputEvent, const AliPIDResponse *pidResponse);
+  Int_t    FillPoolAssociatedTracks	(AliVEvent *inputEvent, Int_t binct=-1);
+  Int_t    CountPoolAssociated		(AliVEvent *inputEvent, Int_t binct=-1);
+  Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight=1., Int_t binct=-1, Double_t deltaphi=-1, Int_t source=-1, Int_t indexmother=-1);
 
   Int_t    FindMother		(Int_t tr, Int_t &indexmother);
   Int_t    CheckPdg		(Int_t tr);
@@ -93,11 +95,13 @@ class AliHFENonPhotonicElectron : public TNamed {
 
 
  private:
+  Bool_t		 fIsAOD;			// Is AOD
   AliMCEvent		*fMCEvent;			//! MC event ESD
   TClonesArray		*fAODArrayMCInfo;		//! MC info particle AOD
-  AliESDtrackCuts	*fHFEBackgroundCuts;		// HFE background cuts
+  AliHFEcuts		*fHFEBackgroundCuts;		// HFE background cuts
   AliHFEpid		*fPIDBackground;		// PID background cuts
   AliHFEpidQAmanager	*fPIDBackgroundQA;		// QA Manager Background
+  const AliPIDResponse	*fkPIDRespons;			// PID response
   Bool_t		 fAlgorithmMA;			// algorithm MA
   Bool_t		 fUseFilterAOD;			// Use the preselected AOD track
   UInt_t		 fFilter;			// filter AOD status
@@ -108,17 +112,19 @@ class AliHFENonPhotonicElectron : public TNamed {
   Double_t		 fMaxOpening3D;			// Limit opening 3D
   Double_t		 fMaxInvMass;			// Limit invariant mass
   Bool_t		 fSetMassConstraint;		// Set mass constraint
-  TArrayI		*fArraytrack;			//! list of tracks
-  Int_t			 fCounterPoolBackground;	// number of tracks
+  TArrayI		*fArraytrack;			//! list of associated tracks
+  Int_t			 fCounterPoolBackground;	// number of associated electrons
+  Int_t			 fnumberfound;			// number of inclusive  electrons
   TList			*fListOutput;			// List of histos
-  THnSparseF		*fMCSource;			//! centrality, pt, Source MC
+  THnSparseF		*fAssElectron;			//! centrality, pt, Source MC, P, TPCsignal
+  THnSparseF		*fIncElectron;			//! centrality, pt, Source MC, P, TPCsignal
   THnSparseF		*fUSign;			//! delta phi, c, pt, inv, source
   THnSparseF		*fLSign;			//! delta phi, c, pt, inv, source
 //  THnSparseF		*fUSignAngle;			//! angle, c, source
 //  THnSparseF		*fLSignAngle;			//! angle, c, source
 
 
-  AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron&ref); 
+  AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref); 
 
   ClassDef(AliHFENonPhotonicElectron, 1); //!example of analysis
 };
