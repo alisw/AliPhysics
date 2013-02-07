@@ -1,35 +1,45 @@
 // $Id: AddTaskEMCALPi0V2.C 56081 2012-05-01 08:57:08Z loizides $
 
-AliAnalysisTask *AddTaskEMCALPi0V2()
+AliAnalysisTask *AddTaskPi0V2Pdsf(TString trackName="PicoTracks",
+                                             Double_t Ecut = 1,   Double_t M02cut = 0.5, Double_t fDrCut=0.025, Bool_t IsV1cus = 0,
+                                             TString V1ClusName="CaloClusters", TString V2ClusName="CaloClusters", TString trigClass ="",
+                                             Bool_t IsPhosCali = 1
+                                            )
+
 {
-  // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskEMCALPi0V2", "No analysis manager to connect to.");
-    return NULL;
-  }  
-
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEMCALPi0V2", "This task requires an input event handler");
+    Error("AddTaskEMCALPi0V2hardCodeEP", "No analysis manager found.");
     return NULL;
   }
 
-  // Create the task and configure it.
-  //===========================================================================
-  AliAnalysisTaskPi0V2* ana = new  AliAnalysisTaskPi0V2("Pi0v2Task");
-  
-  mgr->AddTask(ana);
-  
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosEMCALP0v2", 
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
-							    Form("%s_v2task", AliAnalysisManager::GetCommonFileName()));
-  
-  mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (ana, 1, coutput1 );
-   
-  return ana;
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskEMCALPi0V2hardCodeEP", "This task requires an input event handler");
+    return NULL;
+  }
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  AliAnalysisTaskPi0V2Pdsf* taskMB = new  AliAnalysisTaskPi0V2Pdsf("Pi0v2Task");
+  taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kAnyINT);
+  taskMB->SetTracksName(trackName.Data());
+  taskMB->SetClusE(Ecut);
+  taskMB->SetClusM02(M02cut);
+  taskMB->SetDrCut(fDrCut);
+  taskMB->SetIsV1Clus(IsV1cus);
+  taskMB->SetV1ClusName(V1ClusName);
+  taskMB->SetV2ClusName(V2ClusName);
+  taskMB->SetTrigClass(trigClass);
+  taskMB->SetIsPHOSCali(IsPhosCali);
+
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":PWGGA_pi0v2CalSemiCentral";
+
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("histv2task_E%1.2f_M02%1.2f", Ecut, M02cut), TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  mgr->ConnectInput(taskMB, 0, cinput);
+  mgr->ConnectOutput(taskMB, 1, coutput2);
+
+  return NULL;
+
 }
