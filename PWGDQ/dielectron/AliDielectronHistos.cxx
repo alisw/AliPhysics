@@ -1000,27 +1000,15 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
     dim++;
   }
 
-  //  if( valTypeP!=999 && option.Contains("s",TString::kIgnoreCase) )
-  //    tit += Form(";RMS(%s) %s",AliDielectronVarManager::GetValueLabel(valTypeP), AliDielectronVarManager::GetValueUnit(valTypeP));
-  //  if( valTypeP==999 )
-  //  tit += Form(";#%ss",histClass);
-  //if(!strlen(title)) title=tit.Data();
-
-
   switch( dim ) {
   case 4:
     obj->SetUniqueID(valType[3]); // Tprofile3D variable
   case 3:
     obj->GetZaxis()->SetUniqueID(valType[2]);
-    obj->GetZaxis()->SetTitle(Form("%s %s",AliDielectronVarManager::GetValueLabel(valType[2]), AliDielectronVarManager::GetValueUnit(valType[2])));
-    if(bprf && dim<4) obj->GetZaxis()->SetTitle(Form("#LT%s#GT %s",AliDielectronVarManager::GetValueLabel(valType[2]), AliDielectronVarManager::GetValueUnit(valType[2])));
   case 2:
     obj->GetYaxis()->SetUniqueID(valType[1]);
-    obj->GetYaxis()->SetTitle(Form("%s %s", AliDielectronVarManager::GetValueLabel(valType[1]), AliDielectronVarManager::GetValueUnit(valType[1])));
-    if(bprf && dim<3) obj->GetYaxis()->SetTitle(Form("#LT%s#GT %s",AliDielectronVarManager::GetValueLabel(valType[1]), AliDielectronVarManager::GetValueUnit(valType[1])));
   case 1:
     obj->GetXaxis()->SetUniqueID(valType[0]);
-    obj->GetXaxis()->SetTitle(Form("%s %s", AliDielectronVarManager::GetValueLabel(valType[0]), AliDielectronVarManager::GetValueUnit(valType[0])));
   }
 
   return;
