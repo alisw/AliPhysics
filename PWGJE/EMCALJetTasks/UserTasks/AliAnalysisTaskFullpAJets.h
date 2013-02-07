@@ -45,6 +45,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void JetPtChargedProfile();
     void JetPtEtaProfile();
     void FillFullCorrJetPt(TH1D *myHisto,Double_t rho,Bool_t signal_cut);
+    void FillFullCorrJetPt(TH2D *myHisto,Double_t rho, Bool_t signal_cut);
     void FillFullDeltaRho(TH1D *myHisto,Double_t delta_rho,Bool_t signal_cut);
     void FillBckgFlucDeltaPt(TH1D *myHisto, Double_t rho);
     void DeleteArrays(Bool_t EMCalOn);
@@ -64,8 +65,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t AreaOverlap(Double_t r,Double_t x,Double_t y);
     Double_t TransverseArea(Double_t r,Double_t psi0,Double_t phi,Double_t eta);
     
-    // Used to set the R for anti-kt algorithm
-    inline void SetR_JET(Int_t r)
+    // Used to set the R for the jet finders
+    inline void SetRjet(Int_t r)
     {
         fRJET = r;
     };
@@ -80,6 +81,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhClusterPt;  //!
     TH1D *fhClusterEta;  //!
     TH1D *fhClusterPhi;  //!
+    TH1D *fhCentrality; //!
     TH1D *fhBckgMult;  //!
     TH1D *fhBckgFluc;  //!
     TH1D *fhChargedJetPt; //! Charged Jet Pt distribution
@@ -107,24 +109,56 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhDeltaPt1B;  //! Delta pT spectrum with all signal jets subtracted rho used
     TH1D *fhDeltaRho01;  //! Differential between rho_0 to rho_1 event by event
     TH1D *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
-    
+    TH1D *fh020RhoTotal; //! 0-20% Centrality rho plot for rho_0
+    TH1D *fh020RhoNoLeading; //! 0-20% Centrality rho plot for rho_1
+    TH1D *fh020Rho1B; //! 0-20% Centrality rho plot for rho_n
+    TH1D *fh020Rho2B; //! 0-20% Centrality rho plot for di-jet rho
+    TH1D *fh020Rho3; //! 0-20% Centrality rho plot for charged rho
+    TH1D *fh020JetPtEMCal; //!
+    TH1D *fh020JetPtEMCalAreaCut; //!
+    TH1D *fh020JetPtEMCalAreaCutSignal; //!
+    TH1D *fh020JetTPtRhoTotal;  //!
+    TH1D *fh020JetTPtRhoTotalSignal;  //!
+    TH1D *fh020JetTPtRhoNoLeading;  //!
+    TH1D *fh020JetTPtRhoNoLeadingSignal;  //!
+    TH1D *fh020JetTPt1B;  //!
+    TH1D *fh020JetTPt1BSignal;  //!
+    TH1D *fh020JetTPt1C;  //!
+    TH1D *fh020JetTPt2B;  //!
+    TH1D *fh020JetTPt3;  //!
+    TH1D *fhDeltaPt2B;  //! Delta pT spectrum with Method 2B used for rho
+    TH1D *fhDeltaPtkT;  //! Delta pT spectrum with kT jets used to calculate rho
+
     TH2D *fhTrackEtaPhi;  //!
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
-    TH2D *fhRhoCenTotal;  //! Energy density of the EMCal (No jet exclusion)
-    TH2D *fhRhoCenNoLeading;  //! Energy density of EMCal - leading fiducial jet
+    TH2D *fhRhoTotal;  //! Energy density of the EMCal (No jet exclusion)
+    TH2D *fhRhoNoLeading;  //! Energy density of EMCal - leading fiducial jet
     TH2D *fhRho1B; //! Background estimate vs Centrality
     TH2D *fhRho1C; //! Background estimate vs Centrality
     TH2D *fhRho2B; //! Background estimate vs Centrality
     TH2D *fhRho3; //! Background estimate vs Centrality
     TH2D *fhJetConstituentPt; //! Pt distribution of jet constituents
-
+    TH2D *fhJetPtCenEMCal;  //!
+    TH2D *fhJetPtCenEMCalAreaCut;  //!
+    TH2D *fhJetPtCenEMCalAreaCutSignal;  //!
+    TH2D *fhJetTPtCenRhoTotal;  //!
+    TH2D *fhJetTPtCenRhoTotalSignal;  //!
+    TH2D *fhJetTPtCenRhoNoLeading;  //!
+    TH2D *fhJetTPtCenRhoNoLeadingSignal;  //!
+    TH2D *fhJetTPtCen1B;  //!
+    TH2D *fhJetTPtCen1BSignal;  //!
+    TH2D *fhJetTPtCen1C;  //!
+    TH2D *fhJetTPtCen2B;  //!
+    TH2D *fhJetTPtCen3;  //!
+    
     TH3D *fhJetTrigR1A; //! Clusters from events with high Pt trigger as a funtion of trigger Pt and delta_R
 
     TProfile *fpEventMult;  //!
     TProfile *fpRhoTotal;  //!
     TProfile *fpRhoNoLeading;  //!
     TProfile *fpRho1B;  //!
+    TProfile *fpRho2B;  //!
     TProfile *fpRho3;  //!
     TProfile *fpRhoScale; //! Scale of rho_total/rho_charged event/event vs centrality
     TProfile *fpRhokT;  //! Rho profile using rho from median kT jet
