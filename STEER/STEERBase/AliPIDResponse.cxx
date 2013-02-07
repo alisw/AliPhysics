@@ -618,6 +618,8 @@ void AliPIDResponse::SetRecoInfo()
   // exception for 12f1a, 12f1b and 12i3
   if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")
       || fCurrentFile.Contains("LHC12i3/")) fMCperiodTPC="LHC12F1";
+  // exception for 12c4
+  if (fCurrentFile.Contains("LHC12c4/")) fMCperiodTPC="LHC12C4";
 }
 
 //______________________________________________________________________________
