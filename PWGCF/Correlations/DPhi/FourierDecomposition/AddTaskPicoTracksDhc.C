@@ -7,6 +7,7 @@ void AddTaskPicoTracksDhc(TString chNOutTracks = "PicoTracks") {
     Error("AddTaskPicoTracksDhc", "No analysis manager found.");
     return;
   }
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
   
   // ESD or AOD? Create track cuts with pico track maker
   AliEmcalPicoTrackMaker *pTrackTask = 0x0;
@@ -18,7 +19,6 @@ void AddTaskPicoTracksDhc(TString chNOutTracks = "PicoTracks") {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
     AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(chNIntermTracks.Data(),"Hybrid_LHC11h",kFALSE);
     // Pico Tracks
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     pTrackTask = AddTaskEmcalPicoTrackMaker(chNOutTracks.Data(), chNIntermTracks.Data(), "LHC11h");
   }
   else {
