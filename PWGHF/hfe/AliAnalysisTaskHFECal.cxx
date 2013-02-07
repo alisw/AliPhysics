@@ -648,7 +648,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     eta = track->Eta();
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-    
+    if(mcLabel==-1) // nsigma mean correction
+      {
+       double mean_corr = NsigCorr(cent);
+       //printf("correction %f\n",fTPCnSigma);
+       fTPCnSigma -= mean_corr;
+      }    
+
         double ncells = -1.0;
         double m20 = -1.0;
         double m02 = -1.0;
@@ -1701,7 +1707,16 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
 }
 
 
-
+double NsigCorr(int cent)
+{
+ double shift = 0.0;
+ if(cent>=20 && cent<30)shift = 0.156;
+ if(cent>=30 && cent<40)shift = 0.316;
+ if(cent>=40 && cent<50)shift = 0.336;
+ if(cent>=50 && cent<70)shift = 0.440;
+ if(cent>=70 && cent<90)shift = 0.534;
+ return shift;
+}
 
 
 
