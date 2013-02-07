@@ -30,6 +30,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAnalysis.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb2011.cxx
+	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAnalysispPb.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtBackgroundCuts.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtCorrection.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtCutAnalysis.cxx

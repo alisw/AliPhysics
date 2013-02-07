@@ -6,15 +6,19 @@
 //
 // Origin: Jan Fiete Grosse-Oetringhaus
 // Modified and Extended: Jacek Otwinowski 19/11/2009
+// last change: 2013-02-05 by M.Knichel
 //
 
 #include <TObject.h>
 #include <THnSparse.h>
 #include "AliTriggerAnalysis.h"
+#include "AliPWG0Helper.h"
 
 class TF1;
 class TH1;
 class TH2;
+class TH3;
+class TTree;
 class THnSparse;
 class TParticle;
 class AliHeader;
@@ -29,6 +33,8 @@ class AliESDtrackCuts;
 class AlidNdPtAcceptanceCuts;
 class AlidNdPtEventCuts;
 class AliPWG0Helper;
+class AliOfflineTrigger;
+class AliMultiplicity;
 
 class AliGenDPMjetEventHeader;
 class AliGenCocktailEventHeader;
@@ -112,8 +118,12 @@ class AlidNdPtHelper : public TObject
 
     // function to rebin THnSparse, the content of hist1 will be rebinned, hist2 serves as a protoype for the binning
     static THnSparse* RebinTHnSparse(const THnSparse* hist1, THnSparse* hist2, const Char_t* newname = "",  Option_t* option = "");
+    
+    // function to get processtype (kSD, kND) from DPMJET header in PA
+    static AliPWG0Helper::MCProcessType GetEventProcessTypePA(AliHeader* aHeader, Bool_t adebug = kFALSE);
+    static AliPWG0Helper::MCProcessType GetDPMjetEventProcessTypePA(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
 
-    ClassDef(AlidNdPtHelper, 1);
+    ClassDef(AlidNdPtHelper, 2);
 
   private:
     AlidNdPtHelper(const AlidNdPtHelper&);

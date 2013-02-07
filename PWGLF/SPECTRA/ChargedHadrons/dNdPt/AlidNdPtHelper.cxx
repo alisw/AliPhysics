@@ -20,7 +20,7 @@
 //
 // Origin: Jan Fiete Grosse-Oetringhaus
 // Modified and Extended: Jacek Otwinowski 19/11/2009
-//
+// last change: 2013-02-05 by M.Knichel
 // 
 
 #include <TROOT.h>
@@ -43,6 +43,10 @@
 #include <AliTracker.h>
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
+#include <AliGenEventHeader.h>
+#include <AliGenPythiaEventHeader.h>
+#include <AliGenCocktailEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
 #include "AlidNdPtHelper.h"
 
 //____________________________________________________________________
@@ -1492,6 +1496,7 @@ Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, 
 
 return inputCount;
 }
+
 //_____________________________________________________________________________
 
 THnSparse* AlidNdPtHelper::RebinTHnSparse(const THnSparse* hist1, THnSparse* hist2, const Char_t* newname, Option_t* option)
@@ -1558,4 +1563,79 @@ THnSparse* AlidNdPtHelper::RebinTHnSparse(const THnSparse* hist1, THnSparse* his
     return hnew;
 }
 
+//_____________________________________________________________________________
+AliPWG0Helper::MCProcessType AlidNdPtHelper::GetEventProcessTypePA(AliHeader* aHeader, Bool_t adebug) {
+  //
+  // get the process type of the event.
+  //
+
+
+  // Check for simple headers first
+
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aHeader->GenEventHeader());
+  if (dpmJetGenHeader) {
+    return GetDPMjetEventProcessTypePA(dpmJetGenHeader,adebug);
+  }
+  
+  // only dpmjet currently supported
+  /*
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+  if (pythiaGenHeader) {
+    return AliPWG0Helper::GetPythiaEventProcessType(pythiaGenHeader,adebug);
+  }  
+  */
+
+  // check for cocktail
+
+  AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(aHeader->GenEventHeader());
+  if (!genCocktailHeader) {
+    printf("AlidNdPtHelper::GetEventProcessTypePA : Unknown header type. \n");
+    return AliPWG0Helper::kInvalidProcess;
+  }
+
+  TList* headerList = genCocktailHeader->GetHeaders();
+  if (!headerList) {
+    return AliPWG0Helper::kInvalidProcess;
+  }
+
+  for (Int_t i=0; i<headerList->GetEntries(); i++) {
+    /*
+    pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+    if (pythiaGenHeader) {
+      return AliPWG0Helper::GetPythiaEventProcessType(pythiaGenHeader,adebug);
+    }
+    */
+
+    dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(headerList->At(i));
+    if (dpmJetGenHeader) {
+      return GetDPMjetEventProcessTypePA(dpmJetGenHeader,adebug);
+    }
+  }
+  return AliPWG0Helper::kInvalidProcess;
+}
+
+
+//_____________________________________________________________________________
+AliPWG0Helper::MCProcessType AlidNdPtHelper::GetDPMjetEventProcessTypePA(AliGenEventHeader* aHeader, Bool_t adebug) {
+  //
+  // get the process type of the event.
+  // here kSD means (pure) single diffractive
+  // and kND means non-single-diffractive
+
+  // can only read pythia headers, either directly or from cocktalil header
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aHeader);
+
+  if (!dpmJetGenHeader) {
+    printf("AlidNdPtHelper::GetDPMjetProcessTypePA : Unknown header type (not DPMjet or). \n");
+    return AliPWG0Helper::kInvalidProcess;
+  }
+   
+  Int_t nsd1=0, nsd2=0, ndd=0;
+  dpmJetGenHeader->GetNDiffractive(nsd1,nsd2,ndd);
+  //      printf("%d+%d->%d %d\n",dpmHeader->ProjectileParticipants(),dpmHeader->TargetParticipants(),
+  //         nsd1,nsd2);
+  if((dpmJetGenHeader->ProjectileParticipants()==nsd1) && (ndd==0)) { return AliPWG0Helper::kSD; }
+  else if ((dpmJetGenHeader->ProjectileParticipants()==nsd2) && (ndd==0)) { return AliPWG0Helper::kSD; }
+  else { return AliPWG0Helper::kND; }
+}
 
