@@ -539,6 +539,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
 
+  fHistEventsProcessed->Fill(0.5);
+
   Double_t* containerInput = new Double_t[fNvar];
   Double_t* containerInputMC = new Double_t[fNvar]; 
 	
@@ -961,7 +963,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   fCountRecoPPR+= icountRecoPPR;
   fCountRecoPID+= icountRecoPID;
 	
-  fHistEventsProcessed->Fill(0);
+  fHistEventsProcessed->Fill(1.5);
 
   delete[] containerInput;
   delete[] containerInputMC;
@@ -1248,7 +1250,9 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",1,0,1) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",2,0,2) ;
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
