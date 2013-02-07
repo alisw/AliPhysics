@@ -33,6 +33,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TProfile.h"
 #include "TCanvas.h"
 #include "TList.h"
 
@@ -54,6 +55,8 @@
 #include "AliCaloPID.h"
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
+#include "AliPHOSEPFlattener.h"
+#include "AliOADBContainer.h"
 
 using std::cout;
 using std::endl;
@@ -64,30 +67,31 @@ ClassImp(AliAnalysisTaskPi0V2)
 AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
    :AliAnalysisTaskSE(name),
     fOutput(0),
-    fESD(0),
+    fESD(0),fAOD(0),
     fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
-    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
+    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"), type("AOD"),
     fTracks(0), fV1Clus(0), fV2Clus(0),
-    fRunNumber(-999.),
-    fEvtSelect(1),
+    fRunNumber(-999),fInterRunNumber(-999),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5),fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),
+    fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5),fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1), isPhosCali(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-    hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
-    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
+    hEvtCount(0), 
+    h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0), 
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
+    hEPTPCCor(0), hEPV0ACor(0), hEPV0CCor(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0), 
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
-    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
+    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), 
+    fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
     fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
-    fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
+    fHEPV0r(0x0), fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0)
 
 {
     // Dummy constructor ALWAYS needed for I/O.
@@ -99,30 +103,31 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
 AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initialised here
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
-    fESD(0),
+    fESD(0),fAOD(0),
     fTracksName("PicoTrack"), fV1ClusName("CaloCluster"), fV2ClusName("CaloCluster"),
-    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"),
+    fTrigClass("CVLN_|CSEMI_|CCENT|CVHN"), type("AOD"),
     fTracks(0), fV1Clus(0), fV2Clus(0),
-    fRunNumber(-999.),
-    fEvtSelect(1),
+    fRunNumber(-999),fInterRunNumber(-999),
     fVtxCut(15.),
-    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),
+    fNcellCut(2.), fECut(1.), fEtaCut(0.65), fM02Cut(0.5), fDrCut(0.025), fPi0AsyCut(0), isV1Clus(1),isPhosCali(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-    hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
-    h2DcosV0r(0), h2DsinV0r(0), h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0),
+    hEvtCount(0), 
+    h2DcosV0A(0), h2DsinV0A(0), h2DcosV0C(0), h2DsinV0C(0), h2DcosTPC(0), h2DsinTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
+    hEPTPCCor(0), hEPV0ACor(0), hEPV0CCor(0),
     hdifV0Ar_V0Cr(0), hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),
     hM02vsPtA(0), hM02vsPtB(0), hClusDxDZA(0), hClusDxDZB(0),
     hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0),
-    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
+    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), 
+    fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
     fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
-    fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
+    fHEPV0r(0x0), fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0)
 {
     // Constructor
     // Define input and output slots here (never in the dummy constructor)
@@ -137,6 +142,9 @@ AliAnalysisTaskPi0V2::~AliAnalysisTaskPi0V2()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
+     if(fTPCFlat)delete fTPCFlat;  fTPCFlat=0x0;
+     if(fV0AFlat)delete fV0AFlat;  fV0AFlat=0x0;
+     if(fV0CFlat)delete fV0CFlat;  fV0CFlat=0x0;
      delete fOutput;
 }
 //_____________________________________________________________________
@@ -147,8 +155,11 @@ Double_t AliAnalysisTaskPi0V2::GetMaxCellEnergy(const AliVCluster *cluster, Shor
   id = -1;
 
   AliVCaloCells *cells = 0;
-  if (fESD)
+  if (type=="ESD"){
     cells = fESD->GetEMCALCells();
+  } else if(type=="AOD"){
+    cells = fAOD->GetEMCALCells();
+  }
   if (!cells)
     return 0;
 
@@ -168,9 +179,12 @@ Double_t AliAnalysisTaskPi0V2::GetCrossEnergy(const AliVCluster *cluster, Short_
 {
   // Calculate the energy of cross cells around the leading cell.
 
-  AliVCaloCells *cells = 0;
-  if (fESD)
+  AliVCaloCells *cells;
+  if (type=="ESD"){
     cells = fESD->GetEMCALCells();
+  } else if(type=="AOD"){
+    cells = fAOD->GetEMCALCells();
+  }
   if (!cells)
     return 0;
 
@@ -266,7 +280,6 @@ Bool_t AliAnalysisTaskPi0V2::IsWithinFiducialVolume(Short_t id) const
 //______________________________________________________________________
 Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliVCluster *c) const
 {
-
   if(!c)
     return kFALSE;
 
@@ -275,7 +288,6 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliVCluster *c) const
 
   if(c->E() < fECut)
    return kFALSE;
-
   Short_t id = -1;
   Double_t maxE = GetMaxCellEnergy(c, id); 
      if((1. - double(GetCrossEnergy(c,id))/maxE) > 0.97)
@@ -359,7 +371,7 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodPion(const TLorentzVector &p1, const TLorentz
   return kTRUE;
 }
 //_______________________________________________________________________
-void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC)
+void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC)
 {
   // Fill histogram.
 
@@ -372,57 +384,38 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   Double_t pt   = pion.Pt();
   Double_t phi  = pion.Phi();
 
-  Double_t dphiV0   = phi-EPV0r;
   Double_t dphiV0A  = phi-EPV0A;
   Double_t dphiV0C  = phi-EPV0C;
   Double_t dphiTPC  = phi-EPTPC;
 
-  Double_t cos2phiV0  = TMath::Cos(2.*(dphiV0));
-  Double_t cos2phiV0A = TMath::Cos(2.*(dphiV0A));
-  Double_t cos2phiV0C = TMath::Cos(2.*(dphiV0C));
-  Double_t cos2phiTPC = TMath::Cos(2.*(dphiTPC));
-
-  dphiV0  = TVector2::Phi_0_2pi(dphiV0);  if(dphiV0  >TMath::Pi())  dphiV0 -= TMath::Pi();
   dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi())  dphiV0A -= TMath::Pi();
   dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi())  dphiV0C -= TMath::Pi();
   dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi())  dphiTPC -= TMath::Pi();
 
-  Double_t xV0[5]; // Match ndims in fH  V0 EP
-  xV0[0]       = mass;
-  xV0[1]       = pt;
-  xV0[2]       = fCentrality;
-  xV0[3]       = dphiV0;
-  xV0[4]       = cos2phiV0;
-  fHEPV0r->Fill(xV0);
-
-  Double_t xV0A[5]; // Match ndims in fH V0A EP
+  Double_t xV0A[4]; // Match ndims in fH V0A EP
   xV0A[0]       = mass;
   xV0A[1]       = pt;
   xV0A[2]       = fCentrality;
   xV0A[3]       = dphiV0A;
-  xV0A[4]       = cos2phiV0A;
   fHEPV0A->Fill(xV0A);
 
-  Double_t xV0C[5]; // Match ndims in fH V0C EP
+  Double_t xV0C[4]; // Match ndims in fH V0C EP
   xV0C[0]       = mass;
   xV0C[1]       = pt;
   xV0C[2]       = fCentrality;
   xV0C[3]       = dphiV0C;
-  xV0C[4]       = cos2phiV0C;
   fHEPV0C->Fill(xV0C);
 
-  Double_t xTPC[5]; // Match ndims in fH TPC EP
+  Double_t xTPC[4]; // Match ndims in fH TPC EP
   xTPC[0]       = mass;
   xTPC[1]       = pt;
   xTPC[2]       = fCentrality;
   xTPC[3]       = dphiTPC;
-  xTPC[4]       = cos2phiTPC;
   fHEPTPC->Fill(xTPC);
-
 
 }
 //________________________________________________________________________________________________________________________________
-void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c)
+void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c)
 {
   //cluster(photon) v2 method
 //  Double_t Pt   = p1.Pt();
@@ -433,53 +426,32 @@ void AliAnalysisTaskPi0V2::FillCluster(const TLorentzVector& p1, Double_t EPV0r,
   Double_t DzClus = c->GetTrackDz();
   Double_t dr = TMath::Sqrt(DxClus*DxClus + DzClus*DzClus);
 
-  Double_t difClusV0 = TVector2::Phi_0_2pi(Phi-EPV0r);   if(difClusV0 >TMath::Pi()) difClusV0  -= TMath::Pi();
   Double_t difClusV0A = TVector2::Phi_0_2pi(Phi-EPV0A);  if(difClusV0A >TMath::Pi()) difClusV0A -= TMath::Pi();
   Double_t difClusV0C = TVector2::Phi_0_2pi(Phi-EPV0C);  if(difClusV0C >TMath::Pi()) difClusV0C -= TMath::Pi();
   Double_t difClusTPC = TVector2::Phi_0_2pi(Phi-EPTPC);  if(difClusTPC >TMath::Pi()) difClusTPC -= TMath::Pi();
 
-  Double_t DataV0[8];
-  DataV0[0] = Et;
-  DataV0[1] = M02;
-  DataV0[2] = fCentrality;
-  DataV0[3] = difClusV0;
-  DataV0[4] = EPV0r;
-  DataV0[5] = DxClus;
-  DataV0[6] = DzClus;
-  DataV0[7] = dr;
-  fClusterPbV0->Fill(DataV0);
-
-  Double_t DataV0A[8];
+  Double_t DataV0A[5];
   DataV0A[0] = Et;
   DataV0A[1] = M02;
   DataV0A[2] = fCentrality;
-  DataV0A[3] = difClusV0;
-  DataV0A[4] = EPV0A;
-  DataV0A[5] = DxClus;
-  DataV0A[6] = DzClus;
-  DataV0A[7] = dr;
+  DataV0A[3] = difClusV0A;
+  DataV0A[4] = dr;
   fClusterPbV0A->Fill(DataV0A);
 
-  Double_t DataV0C[8];
+  Double_t DataV0C[5];
   DataV0C[0] = Et;
   DataV0C[1] = M02;
   DataV0C[2] = fCentrality;
-  DataV0C[3] = difClusV0;
-  DataV0C[4] = EPV0C;
-  DataV0C[5] = DxClus;
-  DataV0C[6] = DzClus;
-  DataV0C[7] = dr;
+  DataV0C[3] = difClusV0C;
+  DataV0C[4] = dr;
   fClusterPbV0C->Fill(DataV0C);
 
-  Double_t DataTPC[8];
+  Double_t DataTPC[5];
   DataTPC[0] = Et;
   DataTPC[1] = M02;
   DataTPC[2] = fCentrality;
-  DataTPC[3] = difClusV0;
-  DataTPC[4] = EPTPC;
-  DataTPC[5] = DxClus;
-  DataTPC[6] = DzClus;
-  DataTPC[7] = dr;
+  DataTPC[3] = difClusTPC;
+  DataTPC[4] = dr;
   fClusterPbTPC->Fill(DataTPC);
 
 }
@@ -516,14 +488,14 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput = new TList();
     fOutput->SetOwner();  // IMPORTANT!
 
-    hEvtCount = new TH1F("hEvtCount", " Event Plane", 10, 0.5, 10.5);
+    hEvtCount = new TH1F("hEvtCount", " Event Plane", 9, 0.5, 9.5);
     hEvtCount->GetXaxis()->SetBinLabel(1,"All");
-    hEvtCount->GetXaxis()->SetBinLabel(2,"Evt Cut");
+    hEvtCount->GetXaxis()->SetBinLabel(2,"Evt");
     hEvtCount->GetXaxis()->SetBinLabel(3,"Trg Class");
     hEvtCount->GetXaxis()->SetBinLabel(4,"Vtx");
     hEvtCount->GetXaxis()->SetBinLabel(5,"Cent");
-    hEvtCount->GetXaxis()->SetBinLabel(5,"EPtask");
-    hEvtCount->GetXaxis()->SetBinLabel(7,"EPvalue");
+    hEvtCount->GetXaxis()->SetBinLabel(6,"EPtask");
+    hEvtCount->GetXaxis()->SetBinLabel(7,"ClusterTask");
     hEvtCount->GetXaxis()->SetBinLabel(8,"Pass");
     fOutput->Add(hEvtCount);
     
@@ -551,6 +523,13 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hEPV0AR7);
     fOutput->Add(hEPV0CR0);
     fOutput->Add(hEPV0CR3);
+
+    hEPTPCCor  = new TH2F("hEPTPCCor",   "EPTPC  vs cent after PHOS Correct", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0ACor  = new TH2F("hEPV0ACor",   "EPV0A  vs cent after PHOS Correct", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0CCor  = new TH2F("hEPV0CCor",   "EPV0C  vs cent after PHOS Correct", 100, 0., 100., 100, 0., TMath::Pi());
+    fOutput->Add(hEPTPCCor);
+    fOutput->Add(hEPV0ACor);
+    fOutput->Add(hEPV0CCor);
 
     hdifV0Ar_V0Cr    = new TH2F("hdifV0Ar_V0Cr",    "EP Ar-Cr ", 100, 0., 100., 100, -1., 1.);    
     hdifV0A_V0CR0    = new TH2F("hdifV0A_V0CR0",    "EP A-R0 ",  100, 0., 100., 100, -1., 1.);    
@@ -599,60 +578,34 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifout_EPV0A);
     fOutput->Add(hdifout_EPV0C);
 
-    hdifEMC_EPTPC = new TH3F("hdifEMC_EPTPC", "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifful_EPTPC = new TH3F("hdifful_EPTPC",  "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifout_EPTPC = new TH3F("hdifout_EPTPC", "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    fOutput->Add(hdifEMC_EPTPC);
-    fOutput->Add(hdifful_EPTPC);
-    fOutput->Add(hdifout_EPTPC);
+  if(isV1Clus){
+		      //  Et   M02  spdcent DeltaPhi    Dr  
+    Int_t    bins[5] = {  500, 350,  100,     100,      100}; // binning
+    Double_t min[5]  = {  0.0, 0.0,    0,     0.0,      0 }; // min x
+    Double_t max[5]  = { 50.0, 3.5,  100,  TMath::Pi(), 0.1}; // max x
 
-		      //  Et   M02  spdcent DeltaPhi     EPangle      Dx    Dz    Dr  
-    Int_t    bins[8] = {  500, 350,  100,     100,       100,         500,  500,  100}; // binning
-    Double_t min[8]  = {  0.0, 0.0,    0,     0.0,       0.,          -1.,  -1.,  0 }; // min x
-    Double_t max[8]  = { 50.0, 3.5,  100,  TMath::Pi(),  TMath::Pi(), 1.,   1.,   0.1}; // max x
-
-    fClusterPbV0 = new THnSparseF("fClusterPbV0","",9,bins,min,max);
-    fClusterPbV0->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0->GetAxis(1)->SetTitle("M02"); fClusterPbV0->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0->GetAxis(4)->SetTitle("EP");fClusterPbV0->GetAxis(5)->SetTitle("Dx");fClusterPbV0->GetAxis(6)->SetTitle("Dz");fClusterPbV0->GetAxis(7)->SetTitle("Dr");
-    fOutput->Add(fClusterPbV0);
-
-    fClusterPbV0A = new THnSparseF("fClusterPbV0A","",9,bins,min,max);
+    fClusterPbV0A = new THnSparseF("fClusterPbV0A","",5,bins,min,max);
     fClusterPbV0A->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0A->GetAxis(1)->SetTitle("M02"); fClusterPbV0A->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0A->GetAxis(4)->SetTitle("EP");fClusterPbV0A->GetAxis(5)->SetTitle("Dx");fClusterPbV0A->GetAxis(6)->SetTitle("Dz");fClusterPbV0A->GetAxis(7)->SetTitle("Dr"); 
+    fClusterPbV0A->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0A->GetAxis(4)->SetTitle("Dr"); 
     fOutput->Add(fClusterPbV0A);
 
-    fClusterPbV0C = new THnSparseF("fClusterPbV0C","",9,bins,min,max);
+    fClusterPbV0C = new THnSparseF("fClusterPbV0C","",5,bins,min,max);
     fClusterPbV0C->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbV0C->GetAxis(1)->SetTitle("M02"); fClusterPbV0C->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0C->GetAxis(4)->SetTitle("EP");fClusterPbV0C->GetAxis(5)->SetTitle("Dx");fClusterPbV0C->GetAxis(6)->SetTitle("Dz");fClusterPbV0C->GetAxis(7)->SetTitle("Dr");
+    fClusterPbV0C->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbV0C->GetAxis(4)->SetTitle("Dr");
     fOutput->Add(fClusterPbV0C);
 
-    fClusterPbTPC = new THnSparseF("fClusterPbTPC","",9,bins,min,max);
+    fClusterPbTPC = new THnSparseF("fClusterPbTPC","",5,bins,min,max);
     fClusterPbTPC->GetAxis(0)->SetTitle("Transverse Energy [GeV]"); fClusterPbTPC->GetAxis(1)->SetTitle("M02"); fClusterPbTPC->GetAxis(2)->SetTitle("V0M Centrality");
-    fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbTPC->GetAxis(4)->SetTitle("EP");fClusterPbTPC->GetAxis(5)->SetTitle("Dx");fClusterPbTPC->GetAxis(6)->SetTitle("Dz");fClusterPbTPC->GetAxis(7)->SetTitle("Dr");
+    fClusterPbTPC->GetAxis(3)->SetTitle("Delta(#phi) [rad]"); fClusterPbTPC->GetAxis(4)->SetTitle("Dr");
     fOutput->Add(fClusterPbTPC);
-
-
-    hAllcentV0  = new TH1F("hAllcentV0",  "All cent EP V0",  100, 0., TMath::Pi());
-    hAllcentV0r = new TH1F("hAllcentV0r", "All cent EP V0r", 100, 0., TMath::Pi());
-    hAllcentV0A = new TH1F("hAllcentV0A", "All cent EP V0A", 100, 0., TMath::Pi());
-    hAllcentV0C = new TH1F("hAllcentV0C", "All cent EP V0C", 100, 0., TMath::Pi());
-    hAllcentTPC = new TH1F("hAllcentTPC", "All cent EP TPC", 100, 0., TMath::Pi());
-    fOutput->Add(hAllcentV0);
-    fOutput->Add(hAllcentV0r);
-    fOutput->Add(hAllcentV0A);
-    fOutput->Add(hAllcentV0C);
-    fOutput->Add(hAllcentTPC);
-
-    h2DcosV0r = new TH2F("h2DcosV0r", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DsinV0r = new TH2F("h2DsinV0r", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DcosV0A = new TH2F("h2DcosV0A", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DsinV0A = new TH2F("h2DsinV0A", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DcosV0C = new TH2F("h2DcosV0C", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DsinV0C = new TH2F("h2DsinV0C", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DcosTPC = new TH2F("h2DcosTPC", "cos(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    h2DsinTPC = new TH2F("h2DsinTPC", "sin(Phi) V0r vs Run NUmber", 200, 0, 200, 100, -1, 1);
-    fOutput->Add(h2DcosV0r);
-    fOutput->Add(h2DsinV0r);
+   }
+  
+    h2DcosV0A = new TProfile("h2DcosV0A", "cos(Phi) V0r vs Run NUmber", 200, 0., 200.);
+    h2DsinV0A = new TProfile("h2DsinV0A", "sin(Phi) V0r vs Run NUmber", 200, 0., 200.);
+    h2DcosV0C = new TProfile("h2DcosV0C", "cos(Phi) V0r vs Run NUmber", 200, 0., 200.);
+    h2DsinV0C = new TProfile("h2DsinV0C", "sin(Phi) V0r vs Run NUmber", 200, 0., 200.);
+    h2DcosTPC = new TProfile("h2DcosTPC", "cos(Phi) V0r vs Run NUmber", 200, 0., 200.);
+    h2DsinTPC = new TProfile("h2DsinTPC", "sin(Phi) V0r vs Run NUmber", 200, 0., 200.);
     fOutput->Add(h2DcosV0A);
     fOutput->Add(h2DsinV0A);
     fOutput->Add(h2DcosV0C);
@@ -660,30 +613,33 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(h2DcosTPC);
     fOutput->Add(h2DsinTPC);
 
-    hM02vsPtA = new TH2F("hM02vsPtA", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
-    hM02vsPtB = new TH2F("hM02vsPtB", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
-    fOutput->Add(hM02vsPtA);
-    fOutput->Add(hM02vsPtB);
-
-    hClusDxDZA = new TH2F("hClusDxDZA", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);  
-    hClusDxDZB = new TH2F("hClusDxDZB", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
-    fOutput->Add(hClusDxDZA);
-    fOutput->Add(hClusDxDZB);
-
-    const Int_t ndims = 5;
-    Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
-    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi, ncos2phi};
-    Double_t xmin[ndims] = { 0,   0.,  0,   0.,     -1.};
-    Double_t xmax[ndims] = { 0.5, 20., 100, 3.15,   1.};
-    fHEPV0r  = new THnSparseF("fHEPV0r",  "Flow histogram EPV0",  ndims, binsv1, xmin, xmax);
+    if(isV1Clus){
+      hM02vsPtA = new TH2F("hM02vsPtA", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
+      hM02vsPtB = new TH2F("hM02vsPtB", "M02 vs Et before cut", 5000, 0, 50, 400, 0, 4.);
+      fOutput->Add(hM02vsPtA);
+      fOutput->Add(hM02vsPtB);
+     }
+      hClusDxDZA = new TH2F("hClusDxDZA", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);  
+      hClusDxDZB = new TH2F("hClusDxDZB", "clus Dx vs Dz", 1000, -1., 1., 1000, -1., 1);
+      fOutput->Add(hClusDxDZA);
+      fOutput->Add(hClusDxDZB);
+    
+  if(!isV1Clus){
+    const Int_t ndims = 4;
+    Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315;
+    Int_t binsv1[ndims] = {nMgg, nPt, nCent, nDeltaPhi};
+    Double_t xmin[ndims] = { 0,   0.,  0,   0.};
+    Double_t xmax[ndims] = { 0.5, 20., 100, 3.15};
     fHEPV0A = new THnSparseF("fHEPV0A",   "Flow histogram EPV0A", ndims, binsv1, xmin, xmax);
     fHEPV0C = new THnSparseF("fHEPV0C",   "Flow histogram EPV0C", ndims, binsv1, xmin, xmax);
     fHEPTPC = new THnSparseF("fHEPTPC",   "Flow histogram EPTPC", ndims, binsv1, xmin, xmax);
-    fOutput->Add(fHEPV0r);
+    fHEPV0A->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); fHEPV0A->GetAxis(1)->SetTitle("p_{T}[GeV]"); fHEPV0A->GetAxis(2)->SetTitle("centrality");fHEPV0A->GetAxis(3)->SetTitle("#delta #phi");
+    fHEPV0C->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); fHEPV0C->GetAxis(1)->SetTitle("p_{T}[GeV]"); fHEPV0C->GetAxis(2)->SetTitle("centrality");fHEPV0C->GetAxis(3)->SetTitle("#delta #phi");
+    fHEPTPC->GetAxis(0)->SetTitle("m_{#gamma#gamma} "); fHEPTPC->GetAxis(1)->SetTitle("p_{T}[GeV]"); fHEPTPC->GetAxis(2)->SetTitle("centrality");fHEPTPC->GetAxis(3)->SetTitle("#delta #phi");
     fOutput->Add(fHEPV0A);
     fOutput->Add(fHEPV0C);
     fOutput->Add(fHEPTPC);
-
+  }
     
 
     PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -692,39 +648,46 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskPi0V2::UserExec(Option_t *) 
 {
-    // Main loop
-    // Called for each event
-        
-    // Create pointer to reconstructed event
-   AliVEvent *event = InputEvent();
+  // Main loop
+  // Called for each event
+
+  hEvtCount->Fill(1);
+  // Create pointer to reconstructed event
+  AliVEvent *event = InputEvent();
    if (!event) { Printf("ERROR: Could not retrieve event"); return; }
    // create pointer to event
-   fESD = dynamic_cast<AliESDEvent*>(event);
-   if (!fESD) {
-     AliError("Cannot get the ESD event");
+  type = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetDataType();
+  if(!type){
+     AliError("Cannot get the event");
      return;
    }
-   hEvtCount->Fill(1);
-    
-  Int_t AbsRunNumber = fESD->GetRunNumber();
-  fRunNumber = ConvertToInternalRunNumber(AbsRunNumber);
 
-  Bool_t isSelected =0;      
-  if(fEvtSelect == 1){  //MB+SemiCentral
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT | AliVEvent::kSemiCentral));
-  } else if (fEvtSelect == 2){  //MB+Central+SemiCentral
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT | AliVEvent::kSemiCentral | AliVEvent::kCentral));
-  } else if(fEvtSelect == 3){  //MB
- isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT ));
+  if(type=="ESD"){
+    fESD = dynamic_cast<AliESDEvent*>(event);
+    if (!fESD) {
+	    AliError("Cannot get the ESD event");
+	    return;
+    }
+  } else if (type=="AOD"){
+    fAOD = dynamic_cast<AliAODEvent*>(event);
+    if (!fAOD) {
+            AliError("Cannot get the AOD event");
+            return;
+    }
   }
 
-  if(!isSelected )
-        return; 
+  if(type=="ESD") fRunNumber = fESD->GetRunNumber();
+  else if(type=="AOD") fRunNumber = fAOD->GetRunNumber();
+  fInterRunNumber = ConvertToInternalRunNumber(fRunNumber);
 
   hEvtCount->Fill(2);
   if(!fTrigClass.IsNull()){
     TString fired;
+    if(type=="ESD"){
     fired = fESD->GetFiredTriggerClasses();
+    } else if(type=="AOD"){
+    fired = fAOD->GetFiredTriggerClasses();
+    }
     if (!fired.Contains("-B-"))
       return;
     TObjArray *arr = fTrigClass.Tokenize("|");
@@ -743,37 +706,50 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     delete arr;
     if (
 	!match && //select by Trigger classes in KCentral and KSemiCentral
-        !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT ))              // always accept MB
-	) 
+        !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAnyINT ))  // always accept MB
+	)
       return; //Not match skip this event
   }
-
     hEvtCount->Fill(3);
-    const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
+
+  if(isPhosCali){
+    SetFlatteningData();
+  }
+    const AliVVertex* fvertex;
+    if(type=="ESD"){
+    fvertex = fESD->GetPrimaryVertex();
+    }else if(type=="AOD"){
+    fvertex = fAOD->GetPrimaryVertex();
+    }
     if(TMath::Abs(fvertex->GetZ())>fVtxCut)
       return;
     Double_t vertex[3] = {fvertex->GetX(), fvertex->GetY(), fvertex->GetZ()};
 
     hEvtCount->Fill(4);
 
-    if(fESD->GetCentrality()) {
-      fCentrality = 
-	fESD->GetCentrality()->GetCentralityPercentile("CL1"); //spd vertex
-    } else{
-	   return;
-    }
-
+    if(type=="ESD"){
+      if(fESD->GetCentrality()) {
+        fCentrality = 
+        	fESD->GetCentrality()->GetCentralityPercentile("CL1"); //spd vertex
+    } 
+   } else if(type=="AOD"){
+      if(fAOD->GetCentrality()) {
+        fCentrality = 
+                fAOD->GetCentrality()->GetCentralityPercentile("CL1"); //spd vertex
+    }  
+   }
     hEvtCount->Fill(5);
-    AliEventplane *ep = fESD->GetEventplane();
+    if(type=="ESD"){
+      AliEventplane *ep = fESD->GetEventplane();
     if (ep) {
       if (ep->GetQVector())
-	fEPTPC    = ep->GetQVector()->Phi()/2. ;
+        fEPTPC    = ep->GetQVector()->Phi()/2. ;
       else
-	fEPTPC = -999.;
+        fEPTPC = -999.;
       if (ep->GetQsub1()&&ep->GetQsub2())
-	fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
+        fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
       else
-	fEPTPCreso = -1;
+        fEPTPCreso = -1;
 
       fEPV0    = ep->GetEventplane("V0",  fESD);
       fEPV0A   = ep->GetEventplane("V0A", fESD);
@@ -794,14 +770,49 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       fEPV0CR2 = ep->CalculateVZEROEventPlane(fESD, 2, 2, qx, qy);
       fEPV0CR3 = ep->CalculateVZEROEventPlane(fESD, 3, 2, qx, qy);
     }
+    } else if(type=="AOD"){
+      AliEventplane *ep = fAOD->GetEventplane();
+    if (ep) {
+      if (fAOD->GetHeader()){
+	fEPTPC  = fAOD->GetHeader()->GetEventplane();
+      }
+      else
+	fEPTPC = -999.;
+      if (ep->GetQsub1()&&ep->GetQsub2())
+	fEPTPCreso  = TMath::Cos(2.*(ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.));
+      else
+	fEPTPCreso = -1;
+
+      fEPV0    = ep->GetEventplane("V0",  fAOD);
+      fEPV0A   = ep->GetEventplane("V0A", fAOD);
+      fEPV0C   = ep->GetEventplane("V0C", fAOD);
+      Double_t qx=0, qy=0;
+      Double_t qxr=0, qyr=0;
+      fEPV0Ar  = ep->CalculateVZEROEventPlane(fAOD, 4, 5, 2, qxr, qyr);
+      fEPV0Cr  = ep->CalculateVZEROEventPlane(fAOD, 2, 3, 2, qx,  qy);
+      qxr += qx;
+      qyr += qy;
+      fEPV0r   = TMath::ATan2(qyr,qxr)/2.;
+      fEPV0AR4 = ep->CalculateVZEROEventPlane(fAOD, 4, 2, qx, qy);
+      fEPV0AR5 = ep->CalculateVZEROEventPlane(fAOD, 5, 2, qx, qy);
+      fEPV0AR6 = ep->CalculateVZEROEventPlane(fAOD, 6, 2, qx, qy);
+      fEPV0AR7 = ep->CalculateVZEROEventPlane(fAOD, 7, 2, qx, qy);
+      fEPV0CR0 = ep->CalculateVZEROEventPlane(fAOD, 0, 2, qx, qy);
+      fEPV0CR1 = ep->CalculateVZEROEventPlane(fAOD, 1, 2, qx, qy);
+      fEPV0CR2 = ep->CalculateVZEROEventPlane(fAOD, 2, 2, qx, qy);
+      fEPV0CR3 = ep->CalculateVZEROEventPlane(fAOD, 3, 2, qx, qy);
+    }
+  }
     FillEPQA(); //Fill the EP QA
 
     hEvtCount->Fill(6);
 
-    if( fEPV0A<-2. || fEPV0C<-2. || fEPTPC<-2. || fEPV0r<-2.) 
-      return;
-
-    hEvtCount->Fill(7);
+    if(isPhosCali){
+     // PHOS Flattening
+     fEPV0A = ApplyFlatteningV0A(fEPV0A, fCentrality); //V0A after Phos flatten
+     fEPV0C = ApplyFlatteningV0C(fEPV0C, fCentrality); //V0C after Phos flatten
+     fEPTPC = ApplyFlattening(fEPTPC, fCentrality);    //TPC after Phos flatten
+    }
 
     fEPV0   = TVector2::Phi_0_2pi(fEPV0);    if(fEPV0>TMath::Pi())   fEPV0  = fEPV0  - TMath::Pi();
     fEPV0r  = TVector2::Phi_0_2pi(fEPV0r);   if(fEPV0r>TMath::Pi())  fEPV0r = fEPV0r - TMath::Pi();
@@ -814,7 +825,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     fEPV0CR0   = TVector2::Phi_0_2pi(fEPV0CR0);    if(fEPV0CR0>TMath::Pi())   fEPV0CR0  = fEPV0CR0 - TMath::Pi();
     fEPV0CR3   = TVector2::Phi_0_2pi(fEPV0CR3);    if(fEPV0CR3>TMath::Pi())   fEPV0CR3  = fEPV0CR3 - TMath::Pi();
 
-   if(fEPTPC != -999.)
+   if(fEPTPC != -999. &&  fEPTPC != -1)
    hEPTPC->Fill(fCentrality,  fEPTPC); 
    if(fEPTPCreso!=-1) hresoTPC->Fill(fCentrality, fEPTPCreso);
    hEPV0->Fill(fCentrality,   fEPV0);
@@ -828,11 +839,16 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hEPV0CR0->Fill(fCentrality, fEPV0CR0);
    hEPV0CR3->Fill(fCentrality, fEPV0CR3);
 
-   hAllcentV0->Fill(fEPV0);
-   hAllcentV0r->Fill(fEPV0r);
-   hAllcentV0A->Fill(fEPV0A);
-   hAllcentV0C->Fill(fEPV0C);  
-   hAllcentTPC->Fill(fEPTPC);
+   if(!isPhosCali){
+     SetFlatteningData();
+     hEPTPCCor->Fill(fCentrality, ApplyFlattening(fEPTPC, fCentrality));
+     hEPV0ACor->Fill(fCentrality, ApplyFlatteningV0A(fEPV0A, fCentrality));
+     hEPV0CCor->Fill(fCentrality, ApplyFlatteningV0C(fEPV0C, fCentrality));
+   } else {
+     hEPTPCCor->Fill(fCentrality, fEPTPC);
+     hEPV0ACor->Fill(fCentrality, fEPV0A);
+     hEPV0CCor->Fill(fCentrality, fEPV0C);
+  } 
 
    hdifV0Ar_V0Cr->Fill(fCentrality, TMath::Cos(2.*(fEPV0Ar - fEPV0Cr)));
    hdifV0A_V0CR0->Fill(fCentrality, TMath::Cos(2.*(fEPV0A - fEPV0CR0)));
@@ -843,8 +859,10 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hdifV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2*(fEPV0AR4 - fEPV0AR7)));
         
    hdifV0A_V0C->Fill(fCentrality, TMath::Cos(2*(fEPV0A - fEPV0C)));
-   hdifV0A_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0A - fEPTPC)));
-   hdifV0C_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPTPC)));
+   if(fEPTPC!=-1 && fEPTPC!=-999.){
+     hdifV0A_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0A - fEPTPC)));
+     hdifV0C_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPTPC)));
+   }
    hdifV0C_V0A->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPV0A)));
     // Cluster loop for reconstructed event
 
@@ -868,13 +886,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       TLorentzVector p1;
       GetMom(p1, c1, vertex);
       for(Int_t j=i+1; j<nCluster; ++j){
-	AliVCluster *c2 = static_cast<AliVCluster*>(fV2Clus->At(i));      
+	  AliVCluster *c2 = static_cast<AliVCluster*>(fV2Clus->At(j));      
 	if(!c2) continue;
 	if(!c2->IsEMCAL()) continue;
 	if(!IsGoodCluster(c2)) continue;
 	TLorentzVector p2;
 	GetMom(p2, c2, vertex);
-	FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+	FillPion(p1, p2, fEPV0A, fEPV0C, fEPTPC);
       }
     }
   }
@@ -889,7 +907,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
     Int_t nClusterV1 = fV1Clus->GetEntries();
     for(Int_t i=0; i<nClusterV1; ++i){
-      AliVCluster *c3 = static_cast<AliVCluster*>(fV1Clus->At(i));      
+      AliVCluster *c3 = dynamic_cast<AliVCluster*>(fV1Clus->At(i));      
       if(!c3) continue;
       if(!c3->IsEMCAL()) continue;
       Double_t M02c3 = c3->GetM02();
@@ -907,10 +925,11 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       hClusDxDZB->Fill(Dzc3, Dxc3);
       TLorentzVector p3;
       GetMom(p3, c3, vertex);
-      FillCluster(p3, fEPV0r, fEPV0A, fEPV0C, fEPTPC, c3);
+      FillCluster(p3, fEPV0A, fEPV0C, fEPTPC, c3);
     }
   }
 
+    hEvtCount->Fill(7);
 
    if (!fTracksName.IsNull() && !fTracks) {
      fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
@@ -926,26 +945,24 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      if(!track) continue;
      Double_t tPhi = track->Phi();
      Double_t tPt  = track->Pt();
+     Double_t Eta  = track->Eta();
 
      Double_t difTrackV0  = TVector2::Phi_0_2pi(tPhi-fEPV0);   if(difTrackV0  >TMath::Pi()) difTrackV0  -= TMath::Pi();
      Double_t difTrackV0A = TVector2::Phi_0_2pi(tPhi-fEPV0A);  if(difTrackV0A >TMath::Pi()) difTrackV0A -= TMath::Pi();
      Double_t difTrackV0C = TVector2::Phi_0_2pi(tPhi-fEPV0C);  if(difTrackV0C >TMath::Pi()) difTrackV0C -= TMath::Pi();
      Double_t difTrackTPC = TVector2::Phi_0_2pi(tPhi-fEPTPC);  if(difTrackTPC >TMath::Pi()) difTrackTPC -= TMath::Pi();
-     if(track->IsEMCAL()){	
+     if(tPhi*TMath::RadToDeg()>80. && tPhi*TMath::RadToDeg()<180. && Eta <0.7 && Eta >(-0.7)){	
        hdifEMC_EPV0->Fill(fCentrality, difTrackV0, tPt);
        hdifEMC_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
        hdifEMC_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
-       hdifEMC_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
      }else{
        hdifout_EPV0->Fill(fCentrality, difTrackV0, tPt);
        hdifout_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
        hdifout_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
-       hdifout_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
      }
      hdifful_EPV0->Fill(fCentrality,    difTrackV0, tPt);
      hdifful_EPV0A->Fill(fCentrality,   difTrackV0A, tPt);
      hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
-     hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
    } 
     hEvtCount->Fill(8);
 
@@ -1144,15 +1161,63 @@ Int_t AliAnalysisTaskPi0V2::ConvertToInternalRunNumber(Int_t n)
 void AliAnalysisTaskPi0V2::FillEPQA()
 {
   
-  h2DcosV0r->Fill(fRunNumber, TMath::Cos(fEPV0r));
-  h2DsinV0r->Fill(fRunNumber, TMath::Sin(fEPV0r));
-  h2DcosV0A->Fill(fRunNumber, TMath::Cos(fEPV0A));
-  h2DsinV0A->Fill(fRunNumber, TMath::Sin(fEPV0A));
-  h2DcosV0C->Fill(fRunNumber, TMath::Cos(fEPV0C));
-  h2DsinV0C->Fill(fRunNumber, TMath::Sin(fEPV0C));
-  h2DcosTPC->Fill(fRunNumber, TMath::Cos(fEPTPC));
-  h2DsinTPC->Fill(fRunNumber, TMath::Sin(fEPTPC));
+  h2DcosV0A->Fill(fInterRunNumber, TMath::Cos(fEPV0A));
+  h2DsinV0A->Fill(fInterRunNumber, TMath::Sin(fEPV0A));
+  h2DcosV0C->Fill(fInterRunNumber, TMath::Cos(fEPV0C));
+  h2DsinV0C->Fill(fInterRunNumber, TMath::Sin(fEPV0C));
+  h2DcosTPC->Fill(fInterRunNumber, TMath::Cos(fEPTPC));
+  h2DsinTPC->Fill(fInterRunNumber, TMath::Sin(fEPTPC));
 
+
+}
+//_________________________________________________________________________________
+void AliAnalysisTaskPi0V2::SetFlatteningData(){
+  //Read objects with flattening parameters
+  AliOADBContainer flatContainer("phosFlat");
+  flatContainer.InitFromFile(fEPcalibFileName.Data(),"phosFlat");
+  TObjArray *maps = (TObjArray*)flatContainer.GetObject(fRunNumber,"phosFlat");
+  if(!maps){
+      AliError(Form("Can not read Flattening for run %d. \n From file >%s<\n",fRunNumber,fEPcalibFileName.Data())) ;    
+  }
+  else{
+    AliInfo(Form("Setting PHOS flattening with name %s \n",maps->GetName())) ;
+    AliPHOSEPFlattener * h = (AliPHOSEPFlattener*)maps->At(0) ;  
+    if(fTPCFlat) delete fTPCFlat ;
+    fTPCFlat = new AliPHOSEPFlattener();
+    fTPCFlat = h ;
+    h = (AliPHOSEPFlattener*)maps->At(1);  
+    if(fV0AFlat) delete fV0AFlat ;
+    fV0AFlat = new AliPHOSEPFlattener();
+    fV0AFlat = h ;
+    h = (AliPHOSEPFlattener*)maps->At(2);  
+    if(fV0CFlat) delete fV0CFlat ;
+    fV0CFlat = new AliPHOSEPFlattener();
+    fV0CFlat = h ;
+  }    
+ 
+}
+ //____________________________________________________________________________
+Double_t  AliAnalysisTaskPi0V2::ApplyFlattening(Double_t phi, Double_t c){
+ 
+  if(fTPCFlat)
+    return fTPCFlat->MakeFlat(phi,c);
+  return phi ;
+
+}
+//____________________________________________________________________________
+Double_t  AliAnalysisTaskPi0V2::ApplyFlatteningV0A(Double_t phi, Double_t c){
+ 
+  if(fV0AFlat)
+    return fV0AFlat->MakeFlat(phi,c);
+  return phi ;
+
+}
+//____________________________________________________________________________
+Double_t  AliAnalysisTaskPi0V2::ApplyFlatteningV0C(Double_t phi, Double_t c){
+ 
+  if(fV0CFlat)
+    return fV0CFlat->MakeFlat(phi,c);
+  return phi ;
 
 }
 //________________________________________________________________________

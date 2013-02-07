@@ -27,7 +27,9 @@ class TString;
 class AliCaloPID;
 class AliCalorimeterUtils;
 class AliCaloTrackReader;
-
+class TProfile;
+class AliPHOSEPFlattener;
+class AliOADBContainer;
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -48,10 +50,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t		IsGoodCluster(const AliVCluster *c) const;
     Bool_t		IsGoodClusterV1(const AliVCluster *c) const;
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
-    void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
-    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC, AliVCluster *c);
+    void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
+    void		FillCluster(const TLorentzVector& p1, Double_t EPV0r, Double_t EPV0C, Double_t EPTPC, AliVCluster *c);
     void 		GetMom(TLorentzVector& p, const AliVCluster *c, Double_t *vertex);		
-    void		SetEventMethod(Double_t e )	{ fEvtSelect  =e ;}
     void		SetVtxCut(Double_t v )	        { fVtxCut     =v ;}
     void		SetClusNcell(Double_t c )	{ fNcellCut   =c ;}
     void		SetClusE(Double_t e )	        { fECut       =e ;}
@@ -63,24 +64,32 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void                SetTrigClass(const char *n)     { fTrigClass  =n ;} 
     void                SetV1ClusName(const char *n)    { fV1ClusName =n ;} 
     void                SetV2ClusName(const char *n)    { fV2ClusName =n ;} 
+    void                SetInputData(const char *n)     { type        =n ;} 
     Int_t		ConvertToInternalRunNumber(Int_t n);
     void		FillEPQA();
-    void		SetIsV1Clus(Bool_t e)		{ isV1Clus   =e  ;}
+    void		SetIsV1Clus(Bool_t e)		{ isV1Clus     =e  ;}
+    void		SetIsPHOSCali(Bool_t e)		{ isPhosCali   =e  ;}
+    void 		SetFlatteningData(); // phos flattening
+    Double_t		ApplyFlattening(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
+    Double_t		ApplyFlatteningV0A(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
+    Double_t		ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     
 
     
  private:
     TList           		*fOutput;	        //! Output list
     AliESDEvent			*fESD;		        //!ESD object
+    AliAODEvent			*fAOD;		        //!AOD object
     TString                     fTracksName;	        // name of track collection
     TString                     fV1ClusName;	        // name of V1 Clus collection
     TString                     fV2ClusName;	        // name of V1 Clus collection
     TString                     fTrigClass;	        // trigger class name for event selection
+    TString			type;			// AOD or ESD
     TClonesArray                *fTracks;		//! pico tracks specific for Skim ESD
     TClonesArray                *fV1Clus;		//! Cluster Array for V1
     TClonesArray                *fV2Clus;		//! Cluster Array for V2
     Int_t			fRunNumber;		//! Run numbers
-    Double_t 			fEvtSelect;	  	// 1 = MB+Semi+Central, 2 = MB+Semi, 3 = MB;
+    Int_t			fInterRunNumber;	//! Run numbers
     Double_t			fVtxCut;		// vertex cut
     Double_t			fNcellCut;	        // N cells Cut
     Double_t			fECut;			// Cluster E cut
@@ -89,6 +98,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fDrCut;		// Cluster long axis cut
     Bool_t			fPi0AsyCut;		// pion Asymetry cut 0=off 1=on
     Bool_t			isV1Clus;		// pion Asymetry cut 0=off 1=on
+    Bool_t			isPhosCali;		// use Phos flattening
     Double_t			fCentrality;	  	//! Centrality
     Double_t			fEPTPC;			//! Evt plane TPC
     Double_t			fEPTPCreso;		//! resolution of TPC method
@@ -108,20 +118,13 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fEPV0CR3;		//! EP V0C ring3 only	
 
     TH1F			*hEvtCount;		//!
-    TH1F			*hAllcentV0;		//!
-    TH1F			*hAllcentV0r;		//!
-    TH1F			*hAllcentV0A;	  	//!
-    TH1F			*hAllcentV0C;	    	//!
-    TH1F			*hAllcentTPC;	        //!
   
-    TH2F			*h2DcosV0r;		//! QA for cos(Phi) V0r vs Run NUmber
-    TH2F			*h2DsinV0r;		//! QA for cos(Phi) V0r vs Run NUmber
-    TH2F			*h2DcosV0A;		//!
-    TH2F			*h2DsinV0A;		//!
-    TH2F			*h2DcosV0C;		//!
-    TH2F			*h2DsinV0C;		//!
-    TH2F			*h2DcosTPC;		//!
-    TH2F			*h2DsinTPC;		//!
+    TProfile			*h2DcosV0A;		//!
+    TProfile			*h2DsinV0A;		//!
+    TProfile			*h2DcosV0C;		//!
+    TProfile			*h2DsinV0C;		//!
+    TProfile 			*h2DcosTPC;		//!
+    TProfile			*h2DsinTPC;		//!
 
     TH2F			*hEPTPC;		//! 2-D histo EPTPC  vs cent
     TH2F			*hresoTPC;		//! 2-D histo TPC resolution vs cent
@@ -135,6 +138,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH2F			*hEPV0AR7;		//! 2-D histo EPV0AR7 vs cent
     TH2F			*hEPV0CR0;		//! 2-D histo EPV0AR0 vs cent
     TH2F			*hEPV0CR3;		//! 2-D histo EPV0AR3 vs cent
+
+    TH2F			*hEPTPCCor;		//! 2-D histo EPTPC vs cent after PHOS Correct
+    TH2F			*hEPV0ACor;		//! 2-D histo EPV0A vs cent after PHOS Correct
+    TH2F			*hEPV0CCor;		//! 2-D histo EPV0C vs cent after PHOS Correct
 
     TH2F			*hdifV0Ar_V0Cr;		//! 2-D histo diff V0Ar, V0Cr vs cent
     TH2F			*hdifV0A_V0CR0;		//! 2-D histo diff V0A, V0CR0 vs cent
@@ -166,9 +173,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH3F			*hdifout_EPV0A;		//! 3-D histo dif phi out EMC with EPV0A
     TH3F			*hdifout_EPV0C;		//! 3-D histo dif phi out EMC with EPV0C
 
-    TH3F			*hdifEMC_EPTPC;		//! 3-D histo dif phi in EMC with EPTPC
-    TH3F			*hdifful_EPTPC;		//! 3-D histo dif phi in full with EPTPC
-    TH3F			*hdifout_EPTPC;		//! 3-D histo dif phi out EMC with EPTPC
+    TString fEPcalibFileName;
+    AliPHOSEPFlattener * fTPCFlat ;			 //Object for flattening of TPC
+    AliPHOSEPFlattener * fV0AFlat ;			 //Object for flattening of V0A
+    AliPHOSEPFlattener * fV0CFlat ; 			//Object for flattening of V0C
 
     THnSparse		        *fClusterPbV0;
     THnSparse		        *fClusterPbV0A;
