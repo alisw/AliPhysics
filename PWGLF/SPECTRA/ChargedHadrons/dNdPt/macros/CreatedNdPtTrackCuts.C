@@ -2,9 +2,9 @@
 
 // this macro creates the track and event cuts used in this analysis
 
-// last modified: 2011-03-28 
+// last modified: 2012-02-06 
 // m.l.knichel@gsi.de
-// added cut modes 200,201: replacing TPCNcluster cut
+// added cut modes 2000-2222 for cut studies
 
 
 AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
@@ -1777,6 +1777,54 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "TPC refit + Kink rejection required - for cut studies";
   }
+  
+  // TPC+ITS combine tracking + DCAr(pt) (2011)
+  // used for step-by-step cut studies!
+  if ((cutMode >= 2000) && (cutMode <= 2222))
+  {
+    //Int_t    minclsTPC=70;
+    Float_t minNCrossedRowsTPC = 120; 
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+    Float_t maxFractionSharedTPCCluster = 0.4;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=2.0;
+    Double_t maxdaczTPC=3.0;
+    Double_t maxdcaxyTPC=3.0;
+
+    //
+    // TPC
+    //
+    if (cutMode >= 2001) { esdTrackCuts->SetRequireTPCRefit(kTRUE); }
+    
+    
+    if (cutMode >= 2002) { esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC); }
+    if (cutMode >= 2003) { esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC); }
+    if (cutMode >= 2004) { esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl); }
+    if (cutMode >= 2005) { esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster); }
+    if (cutMode >= 2006) { esdTrackCuts->SetMaxDCAToVertexZ(maxdaczTPC); }
+    if (cutMode >= 2007) { esdTrackCuts->SetMaxDCAToVertexXY(maxdcaxyTPC); }
+    //
+    // ITS
+    //
+    if (cutMode >= 2008) { esdTrackCuts->SetRequireITSRefit(kTRUE); }
+    if (cutMode >= 2009) { esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); }
+    if (cutMode >= 2010) { esdTrackCuts->SetMaxChi2PerClusterITS(36.); }
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    if (cutMode >= 2011) { esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC); }
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    if (cutMode >= 2012) { esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); }
+    if (cutMode >= 2013) { esdTrackCuts->SetAcceptKinkDaughters(kFALSE); }
+    
+    if (cutMode >= 2014) { esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); }
+
+    TString tag = "for cut/efficiency studies)";
+  }  
 
 
 
